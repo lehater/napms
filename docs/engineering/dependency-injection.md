@@ -1,6 +1,6 @@
 # Dependency injection and composition model
 
-Status: `accepted and exercised through I8 greenfield HTTP composition`.
+Status: `accepted through I11 Dockerized Local Runtime`.
 
 Date: 2026-09-09.
 
@@ -53,6 +53,19 @@ The first HTTP runtime composition owns:
 - readiness probing.
 
 The concrete Connectivity Decision implementation remains an injected outer dependency. Runtime composition must not replace that unresolved domain seam with hidden business logic.
+
+## I11 local executable process roots
+
+Docker Compose introduces process orchestration, not a DI container.
+
+Python executable roots remain explicit:
+- `napms-migrate` -> typed application config -> tracked PostgreSQL migration runner;
+- `napms-seed-local` -> typed local seed config -> idempotent local demo seed;
+- `napms-http` -> typed HTTP runtime config -> existing greenfield composition + FastAPI.
+
+The Web image is an outer static/runtime adapter: nginx serves built React assets and proxies same-origin HTTP traffic. It does not compose Domain/Application objects.
+
+Compose dependency ordering (`postgres -> migrate -> seed -> api -> web`) is deployment/runtime sequencing and does not change inward dependency direction.
 
 ## Container policy
 
