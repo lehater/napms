@@ -8,7 +8,7 @@ Define and implement the minimum accepted Access Policy semantics for declarativ
 
 ## Current stage
 
-D1-D3 are accepted and propagated through requirements, acceptance examples, semantic contracts, Tactical DDD, Ubiquitous Language and message flows. Next stage: implement Domain/Application/Ports core for EffectiveWindow mutation/evaluation and authorized one-governance-scope effective-policy selection. No PostgreSQL adaptation is admitted until that core gate passes.
+I4 Domain/Application/Ports core is implemented and the core-only hosted gate passed. PostgreSQL adaptation is now admitted: persist EffectiveWindow + property audit atomically, support exact RuleGovernanceScope reads behind the application port, and prove stale/concurrent property mutation plus logical-as-of selection without moving effectiveness semantics into SQL.
 
 Accepted Wave-1 truth establishes the predicate:
 
