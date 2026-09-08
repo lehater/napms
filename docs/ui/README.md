@@ -37,4 +37,4 @@ Approval workflow and persistent generic Access Request lifecycle are deliberate
 - `implementation-plan.md` — UI build order;
 - `references/napms-dashboard-reference.png` — visual direction only.
 
-The reference screenshot is not pixel-perfect and its sample entities/statuses are not NAPMS domain truth.
+The reference screenshot stored in the repository is a scaled visual preview for composition, palette and density only. It is not a pixel/dimension source of truth, and its sample entities/statuses are not NAPMS domain truth.
