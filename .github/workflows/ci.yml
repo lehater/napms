@@ -6,8 +6,12 @@ on:
     paths:
       - "src/**"
       - "tests/access_policy/**"
+      - "tests/application_catalogue/**"
+      - "tests/authority_management/**"
+      - "tests/runtime/**"
       - "tests/architecture/**"
       - "pyproject.toml"
+      - "web/**"
       - "Makefile"
       - ".github/workflows/ci.yml"
   workflow_dispatch:
