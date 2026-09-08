@@ -8,7 +8,7 @@ Prove that a real relational AccessRuleRepository/UnitOfWork preserves the alrea
 
 ## Current stage
 
-PostgreSQL is accepted as the I2 production proof engine. Next: define the persistence adapter boundary, migration/schema, test harness and transaction/conflict mapping before implementing the real repository/UoW.
+PostgreSQL persistence candidate implemented on `i2/postgres-persistence`: raw-SQL repository/UoW adapter, schema migration, neutral persistence exception mapping, and dedicated PostgreSQL integration gate. Current work is final model/transaction/architecture review followed by exact-candidate CI proof.
 
 ## Inputs
 
@@ -68,7 +68,7 @@ None currently known.
 - harness/process changes: `make harness-check`;
 - living DDD changes, if any become necessary: `make knowledge-check`;
 - final multi-area candidate: `make check`;
-- persistence integration command: define as part of the selected engine/test harness before implementation is considered complete.
+- PostgreSQL integration proof: `make postgres-test` with `NAPMS_TEST_POSTGRES_DSN` pointing to the PostgreSQL proof engine.
 
 ## Next
 
