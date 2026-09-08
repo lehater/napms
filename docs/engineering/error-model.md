@@ -1,12 +1,12 @@
 # Error and message model
 
-Status: `accepted pre-infrastructure engineering decision`.
+Status: `accepted engineering decision`.
 
 Date: 2026-09-08.
 
 ## Purpose
 
-Define failure semantics for the executable core before transport, persistence, logging and external adapters are introduced.
+Define failure semantics for the executable core and infrastructure boundaries without coupling Domain/Application to transport, database or vendor exception types.
 
 ## Decision
 
@@ -25,17 +25,29 @@ Expected outcomes are explicit typed results, not exceptions:
 
 Domain exceptions are reserved for attempts to construct or mutate an impossible domain state. They are not transport messages and are not used for normal business branching.
 
-Unexpected programming defects are not converted into a business outcome. They propagate to the application boundary, where infrastructure will later log/correlate them and map them to a generic failure response.
+Unexpected programming defects are not converted into a business outcome. They propagate to the application boundary, where infrastructure later logs/correlates them and maps them to a generic failure response.
 
-Technical adapter failures must eventually be translated at the adapter/application boundary into the relevant port-level `Unknown/Unavailable` result when the application can safely continue with an explicit degraded outcome. An adapter must not leak vendor/driver exceptions into Domain.
+Technical adapter failures are translated at the adapter/application boundary into port-level semantics. Vendor/driver exception classes do not enter Domain/Application contracts.
 
-Persistence failure is special: no materialization success may be reported unless the authoritative result is established. Detailed transaction/concurrency exception mapping belongs I2, but it must preserve this rule.
+Persistence failure is special: no materialization success may be reported unless the authoritative result is established.
+
+## I2 persistence exception contract
+
+The Access Policy repository port exposes infrastructure-neutral persistence failures:
+
+- `RuleSemanticIdentityConflict` — the authoritative semantic-identity unique constraint selected another Rule; application may resolve that winner by exact identity;
+- `AccessRulePersistenceError` — persistence execution failed and no application success is established;
+- `AccessRuleCommitOutcomeUnknown` — commit acknowledgement failed and the server-side outcome may be uncertain.
+
+The PostgreSQL adapter translates only the named semantic-identity unique constraint to `RuleSemanticIdentityConflict`. A primary-key collision or other database failure is not misclassified as an idempotency race.
+
+On `AccessRulePersistenceError` or `AccessRuleCommitOutcomeUnknown`, the current materialization use case returns no success; the exception propagates to the application boundary. An outer operation/composition layer may later perform authoritative recovery/reconciliation, but it must not infer success from the failed acknowledgement.
 
 ## Stable error identity
 
-Application outcomes are the stable machine-readable error/non-success identity for I1. Human-readable messages are presentation concerns and must not be parsed to recover semantics.
+Application outcomes are the stable machine-readable business/non-success identity. Infrastructure failure classes are stable port-level execution identities, not user-facing messages.
 
-Transport adapters may later map an application outcome to HTTP/status/message, but they must not redefine the outcome. Public error codes, if introduced, are stable symbolic codes derived from application semantics rather than Python exception class names.
+Transport adapters may later map an application outcome or infrastructure failure to HTTP/status/message, but they must not redefine domain meaning. Public error codes, if introduced, are symbolic codes rather than Python/vendor exception class names.
 
 ## Messages
 
@@ -47,7 +59,7 @@ Messages must never expose:
 - unrelated authority/catalogue/decision data;
 - database/driver/vendor details.
 
-Diagnostic detail may be attached to internal observability context later, subject to the logging policy.
+Diagnostic detail may be attached to internal observability context, subject to the logging policy.
 
 ## Invariants
 
@@ -56,7 +68,4 @@ Diagnostic detail may be attached to internal observability context later, subje
 - dependency subject mismatch is never silently repaired or substituted.
 - rejected/unknown outcomes leave authoritative Rule state unchanged.
 - Domain/Application do not depend on HTTP status codes, FastAPI exceptions, database exceptions or external SDK exception classes.
-
-## I1 implementation consequence
-
-The current `MaterializationOutcome` result model is retained as the application branching mechanism. Domain invariant failures use a domain-specific exception rather than generic `ValueError`. Transport/persistence-specific exception taxonomy is intentionally deferred until the corresponding adapter exists.
+- a database uniqueness failure is treated as idempotent Rule resolution only when it is specifically the authoritative `RuleSemanticIdentity` constraint.
