@@ -1,7 +1,7 @@
 # Active execution
 
-Current: none.
+Current: `PLAN-013-i13-connectivity-requirements-core.md`
 
-I12 Human-readable Catalogue UX is complete and absorbed into canonical domain/requirements/engineering/UI truth.
+Roadmap: `docs/engineering/post-wave1-product-completion-roadmap.md`.
 
-Select the next product/increment priority before creating the next active plan.
+Read the current plan before starting or resuming non-trivial implementation work.
