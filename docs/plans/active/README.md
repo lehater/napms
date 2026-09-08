@@ -1,5 +1,7 @@
 # Active execution
 
-Current: `PLAN-008-i8-consumer-runtime-boundary.md`
+Current: none.
 
-Read the current plan before starting or resuming non-trivial implementation work.
+I8 consumer/runtime boundary is complete and absorbed into canonical requirements/engineering truth.
+
+Select the next product/increment priority before creating the next active plan.
