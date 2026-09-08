@@ -6,7 +6,11 @@ from typing import Protocol
 from napms.access_policy.domain.model import AccessRule, RuleSemanticIdentity
 
 
-class AuthorityAction(str, Enum):\n    PROPOSE_CONNECTIVITY = "ProposeConnectivity"\n\n\nclass TernaryOutcome(str, Enum):
+class AuthorityAction(str, Enum):
+    PROPOSE_CONNECTIVITY = "ProposeConnectivity"
+
+
+class TernaryOutcome(str, Enum):
     PERMITTED = "Permitted"
     DENIED = "Denied"
     UNKNOWN = "Unknown"
@@ -44,7 +48,14 @@ class ConnectivityDecision:
 
 
 class AuthorityPort(Protocol):
-    def check(\n        self,\n        *,\n        actor_id: str,\n        action: AuthorityAction,\n        scope: str,\n        effective_time: datetime,\n    ) -> AuthorityCheck: ...
+    def check(
+        self,
+        *,
+        actor_id: str,
+        action: AuthorityAction,
+        scope: str,
+        effective_time: datetime,
+    ) -> AuthorityCheck: ...
 
 
 class CommunicationCataloguePort(Protocol):
