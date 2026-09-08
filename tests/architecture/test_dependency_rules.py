@@ -72,3 +72,35 @@ def test_core_does_not_depend_on_adapter_layer():
                 if ".adapters" in module:
                     violations.append((path, module))
     assert violations == []
+
+
+POSTGRES_SCHEMA_OWNERS = (
+    (
+        NAPMS / "access_policy" / "adapters" / "postgres",
+        "napms_access_policy",
+    ),
+    (
+        NAPMS / "authority_management" / "adapters" / "postgres",
+        "napms_authority",
+    ),
+    (
+        NAPMS / "application_catalogue" / "adapters" / "postgres",
+        "napms_application_catalogue",
+    ),
+    (
+        NAPMS / "resource_catalogue" / "adapters" / "postgres",
+        "napms_resource_catalogue",
+    ),
+)
+
+
+def test_postgres_modules_do_not_read_or_reference_other_module_schemas():
+    all_schemas = {schema for _, schema in POSTGRES_SCHEMA_OWNERS}
+    violations = []
+    for module_path, owned_schema in POSTGRES_SCHEMA_OWNERS:
+        for path in list(module_path.rglob("*.py")) + list(module_path.rglob("*.sql")):
+            text = path.read_text(encoding="utf-8")
+            for schema in all_schemas - {owned_schema}:
+                if schema in text:
+                    violations.append((path, owned_schema, schema))
+    assert violations == []
