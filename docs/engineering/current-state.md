@@ -1,39 +1,43 @@
 # Current implementation state
 
-Status: `I1 PASS — I2 infrastructure proof may begin under the active plan`.
+Status: `I2 PASS — I3 operational-state core may begin under the active plan`.
 
 Date: 2026-09-08.
 
 Current execution is owned by `docs/plans/active/README.md`; do not mirror its work-package status here.
 
-## Completed through I1
+## Completed through I2
 
 - accepted Wave-1 product/quality/acceptance baseline;
 - accepted Strategic DDD baseline and Access Policy tactical model;
 - accepted target architecture and ADRs;
-- Access Policy Domain/Application/Ports executable core;
-- I1 semantic and architecture tests;
-- error/message model;
-- logging/observability policy;
-- centralized configuration model;
-- dependency-injection/composition model;
-- Authority port aligned with the accepted G4 action `ProposeConnectivity`;
-- exact catalogue-identity validation and fail-closed dependency behavior;
-- authoritative Rule preservation of decision and proposal/authority/catalogue provenance;
-- repository/UoW port semantics for commit, load-by-RuleId and uniqueness-conflict winner resolution;
-- final I1 model/port/architecture review with no open P0/P1 finding;
-- core and harness gates passed on the I1 closure candidate.
+- Access Policy Domain/Application/Ports executable core and I1 semantic/architecture proof;
+- PostgreSQL selected as the I2 production persistence proof engine;
+- operation-scoped PostgreSQL AccessRuleRepository/UoW adapter behind application-owned ports;
+- SQL migration for the Access Policy dataset;
+- authoritative unique constraint over `RuleSemanticIdentity`;
+- persistence round-trip preserving Rule identity, decision correlation and proposal/authority/catalogue provenance;
+- concurrent identical Allowed materialization resolves one authoritative RuleId;
+- semantic-identity uniqueness races are translated and resolved without treating unrelated database uniqueness failures as idempotent retries;
+- transaction rollback produces no authoritative Rule;
+- failed/unknown commit acknowledgement produces no application success;
+- PostgreSQL driver failures are translated to infrastructure-neutral port exceptions;
+- core remains independent of PostgreSQL/framework/infrastructure imports;
+- final I2 model/transaction/architecture review has no open P0/P1 finding;
+- core, knowledge, harness and PostgreSQL persistence gates passed on the I2 implementation candidate.
 
-## I1 result
+## I2 result
 
 `PASS`.
 
-The executable core now proves the accepted first-slice Domain/Application/Port semantics without claiming production database concurrency. No production framework, persistence implementation, transport adapter or external integration is required to establish I1.
+The production concurrency claim is now backed by executable PostgreSQL 16 integration evidence, not by the I1 in-memory repository.
 
-## Infrastructure gate
+The proof uses ordinary PostgreSQL transactions and an authoritative unique constraint; PostgreSQL-specific exception types remain inside the adapter.
 
-The broad pre-I1 prohibition is lifted only to the scope admitted by the active I2 plan.
+## Current infrastructure boundary
 
-I2 may introduce the relational AccessRuleRepository/UoW, schema/migrations and integration tests needed to prove authoritative uniqueness, concurrent retry resolution and rollback/uncertain-outcome behavior. Infrastructure must continue to adapt to the accepted core semantics rather than redefine them.
+Persistence for the Access Policy I1 materialization slice is admitted and proven.
 
-Production HTTP and external Authority/Catalogue/Decision adapters are introduced only when an active increment explicitly needs and admits them.
+HTTP and real Authority/Catalogue/Connectivity Decision adapters are still not implied by I2 and are introduced only when an active increment requires them.
+
+Subsequent domain behavior continues inside-out: Domain/Application/Ports and core tests first, then adaptation of PostgreSQL persistence.
