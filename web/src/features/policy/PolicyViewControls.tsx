@@ -21,16 +21,40 @@ export function PolicyViewControls({
 
   useEffect(() => {
     let active = true
-    void listPolicyViewScopes()
+    let instant: string
+    try {
+      instant = toOffsetAwareIso(asOf)
+    } catch {
+      setScopes([])
+      setAmbiguousScopes([])
+      setScope("")
+      setLoading(false)
+      return () => {
+        active = false
+      }
+    }
+
+    setLoading(true)
+    setError(null)
+    void listPolicyViewScopes(instant)
       .then((result) => {
         if (!active) return
         const values = result.scopes.map((item) => item.scope)
         setScopes(values)
         setAmbiguousScopes(result.ambiguousScopes.map((item) => item.scope))
-        if (values.length === 1) setScope(values[0])
+        setScope((current) =>
+          values.includes(current)
+            ? current
+            : values.length === 1
+              ? values[0]
+              : "",
+        )
       })
       .catch((caught) => {
         if (!active) return
+        setScopes([])
+        setAmbiguousScopes([])
+        setScope("")
         setError(
           caught instanceof ApiError
             ? caught
@@ -44,7 +68,7 @@ export function PolicyViewControls({
     return () => {
       active = false
     }
-  }, [])
+  }, [asOf])
 
   async function submit(event: React.FormEvent) {
     event.preventDefault()
