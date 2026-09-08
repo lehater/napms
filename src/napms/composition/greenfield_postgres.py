@@ -47,6 +47,21 @@ from napms.resource_catalogue.adapters.postgres import (
 from napms.resource_catalogue.application.resolve import ResolveResourceRealization
 
 
+
+@dataclass(slots=True)
+class GreenfieldPostgresScope:
+    authority: AccessPolicyAuthorityAdapter
+    proposal_scope_discovery: AccessPolicyProposalScopeAdapter
+    rule_read_scope_discovery: AccessPolicyRuleReadScopeAdapter
+    effective_policy_scope_discovery: AccessPolicyEffectivePolicyReadScopeAdapter
+    proposal_catalogue: AccessPolicyCommunicationCatalogueAdapter
+    proposal_interaction_catalogue: AccessPolicyProposalInteractionCatalogueAdapter
+    application_projection: PolicyExportApplicationCatalogueAdapter
+    resource_projection: PolicyExportResourceCatalogueAdapter
+    access_rules: PostgresAccessRuleRepository
+    dcs_decoder: JsonDcsProjectionCodec
+
+
 @contextmanager
 def open_greenfield_scope(
     config: ApplicationConfig,
