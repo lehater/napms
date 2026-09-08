@@ -1,5 +1,1 @@
-# Active execution
-
-Current: `PLAN-002-i2-infrastructure-proof.md`
-
-Read the current plan before starting or resuming non-trivial implementation work.
+# Active execution\n\nCurrent: `PLAN-003-i3-operational-state-mutation.md`\n\nRead the current plan before starting or resuming non-trivial implementation work.\n
