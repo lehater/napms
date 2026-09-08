@@ -19,6 +19,9 @@ from napms.application_catalogue.adapters.policy_export import (
 from napms.application_catalogue.adapters.postgres import (
     PostgresApplicationCatalogueRepository,
 )
+from napms.application_catalogue.application.describe_interactions import (
+    DescribeDirectedInteractions,
+)
 from napms.application_catalogue.application.list_interactions import ListDirectedInteractions
 from napms.application_catalogue.application.resolve import (
     ResolveApplicationProjection,
@@ -71,16 +74,22 @@ def clean_acc(postgres_dsn):
         )
 
 
-def seed_deployment(connection, deployment_id, provenance):
+def seed_deployment(
+    connection,
+    deployment_id,
+    provenance,
+    display_name=None,
+):
     connection.execute(
         """
         INSERT INTO napms_application_catalogue.component_deployments (
             component_deployment_id,
-            provenance_reference
+            provenance_reference,
+            display_name
         )
-        VALUES (%s, %s)
+        VALUES (%s, %s, %s)
         """,
-        (deployment_id, provenance),
+        (deployment_id, provenance, display_name),
     )
 
 
@@ -91,6 +100,7 @@ def seed_dcs(
     destination=DESTINATION,
     revision=DCS,
     payload=b'{"version":1,"alternatives":[]}',
+    display_name=None,
 ):
     connection.execute(
         """
@@ -99,11 +109,19 @@ def seed_dcs(
             source_component_deployment_id,
             destination_component_deployment_id,
             projection_payload,
-            provenance_reference
+            provenance_reference,
+            display_name
         )
-        VALUES (%s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s)
         """,
-        (revision, source, destination, payload, "dcs-provenance-1"),
+        (
+            revision,
+            source,
+            destination,
+            payload,
+            "dcs-provenance-1",
+            display_name,
+        ),
     )
 
 
@@ -337,3 +355,88 @@ def test_postgres_acc_discovers_directed_interaction_identities(postgres_dsn):
     assert result.page == 1
     assert result.page_size == 50
     assert result.has_more is False
+
+
+
+def test_postgres_acc_searches_human_readable_interactions(postgres_dsn):
+    with psycopg.connect(postgres_dsn) as connection:
+        seed_deployment(
+            connection,
+            SOURCE,
+            "source-provenance",
+            "Checkout Web",
+        )
+        seed_deployment(
+            connection,
+            DESTINATION,
+            "destination-provenance",
+            "Orders API",
+        )
+        seed_dcs(
+            connection,
+            display_name="HTTPS Orders",
+        )
+        connection.commit()
+
+    with psycopg.connect(postgres_dsn) as connection:
+        query = ListDirectedInteractions(catalogue=repository(connection))
+        by_source = query.execute(search="checkout")
+        by_destination = query.execute(search="orders api")
+        by_dcs = query.execute(search="https orders")
+        missing = query.execute(search="does-not-exist")
+
+    assert tuple(item.dcs_contract_revision_id for item in by_source.items) == (DCS,)
+    assert tuple(item.dcs_contract_revision_id for item in by_destination.items) == (DCS,)
+    assert tuple(item.dcs_contract_revision_id for item in by_dcs.items) == (DCS,)
+    assert missing.items == ()
+
+
+def test_postgres_acc_batch_describes_exact_interaction_labels(postgres_dsn):
+    with psycopg.connect(postgres_dsn) as connection:
+        seed_deployment(
+            connection,
+            SOURCE,
+            "source-provenance",
+            "Checkout Web",
+        )
+        seed_deployment(
+            connection,
+            DESTINATION,
+            "destination-provenance",
+            "Orders API",
+        )
+        seed_dcs(
+            connection,
+            display_name="HTTPS Orders",
+        )
+        connection.commit()
+
+    with psycopg.connect(postgres_dsn) as connection:
+        descriptions = DescribeDirectedInteractions(
+            catalogue=repository(connection)
+        ).execute(
+            (
+                __import__(
+                    "napms.application_catalogue.domain.model",
+                    fromlist=["DirectedInteractionIdentity"],
+                ).DirectedInteractionIdentity(SOURCE, DESTINATION, DCS),
+            )
+        )
+
+    assert len(descriptions) == 1
+    description = descriptions[0]
+    assert description.source_display_name == "Checkout Web"
+    assert description.destination_display_name == "Orders API"
+    assert description.dcs_display_name == "HTTPS Orders"
+    assert description.dcs_projection_payload is not None
+
+
+def test_database_rejects_blank_display_metadata(postgres_dsn):
+    with psycopg.connect(postgres_dsn) as connection:
+        with pytest.raises(psycopg.errors.CheckViolation):
+            seed_deployment(
+                connection,
+                SOURCE,
+                "source-provenance",
+                "   ",
+            )
