@@ -222,9 +222,87 @@ Minimum mapping for the first slice:
 | persistence execution unavailable | 503 | `PersistenceUnavailable` |
 | persistence commit outcome uncertain | 503 | `PersistenceOutcomeUnknown` |
 | malformed request/UUID/schema | 400/422 | transport validation code |
+| incomplete/stale/correlation-failed export snapshot | 409 | `SnapshotIncomplete` |
+| normalized export invariant/codec failure | 500 | `NormalizationFailed` |
 | unexpected defect | 500 | `InternalError` |
 
 The semantic code remains the stable identity; HTTP status is transport behavior.
+
+## Normalized policy JSON
+
+### GET /api/v1/normalized-policy
+
+Purpose: execute the accepted authorized effective-policy -> coherent snapshot -> normalized vendor-neutral export chain.
+
+Query:
+- `scope` — one Rule Governance Scope;
+- `asOf` — required RFC 3339 timestamp with explicit timezone offset.
+
+Authenticated session identity supplies `actor_id` for `ReadEffectiveDesiredPolicy`.
+
+Success: `200`.
+
+```json
+{
+  "scope": "scope-a",
+  "asOf": "2026-09-08T12:00:00+00:00",
+  "authorityReference": "authority-ref",
+  "rows": [
+    {
+      "ruleId": "uuid",
+      "semanticIdentity": {
+        "sourceComponentDeploymentId": "uuid",
+        "destinationComponentDeploymentId": "uuid",
+        "dcsContractRevisionId": "uuid"
+      },
+      "decisionReference": "decision-ref-or-null",
+      "governanceScope": "scope-a",
+      "operationalState": "Active",
+      "effectiveWindow": null,
+      "snapshotAsOf": "2026-09-08T12:00:00+00:00",
+      "readAuthorityReference": "authority-ref",
+      "source": {
+        "resourceReference": "resource-ref",
+        "endpointReference": "endpoint-ref",
+        "technicalAddress": "198.51.100.10",
+        "factReference": "fact-ref",
+        "validityReference": "validity-ref",
+        "provenanceReference": "provenance-ref"
+      },
+      "destination": {
+        "resourceReference": "resource-ref",
+        "endpointReference": "endpoint-ref",
+        "technicalAddress": "203.0.113.20",
+        "factReference": "fact-ref",
+        "validityReference": "validity-ref",
+        "provenanceReference": "provenance-ref"
+      },
+      "traffic": {
+        "protocol": "tcp",
+        "sourcePorts": {"kind": "Any"},
+        "destinationPorts": {
+          "kind": "Ranges",
+          "ranges": [{"first": 443, "last": 443}]
+        },
+        "serviceReference": "https"
+      },
+      "applicationCommunicationCatalogue": {
+        "factReference": "acc-fact",
+        "validityReference": "acc-validity",
+        "provenanceReference": "acc-provenance"
+      }
+    }
+  ]
+}
+```
+
+Rules:
+- `Any`, `NotApplicable` and `Ranges` remain distinct JSON values;
+- ranges remain inclusive ranges and are never expanded into individual ports;
+- Rule/decision/Authority/ACC/RC provenance required by the normalized row is preserved;
+- an authorized empty effective policy returns `200` with `rows: []`;
+- incomplete/stale/mismatched snapshot data returns no partial rows and fails closed as `409 SnapshotIncomplete` with safe structured diagnostics;
+- normalization invariant/codec failure returns no rows and a generic `500 NormalizationFailed`.
 
 ## Health/readiness
 
