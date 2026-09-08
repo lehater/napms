@@ -1,7 +1,5 @@
 # Active execution
 
-Current: none.
+Current: `PLAN-011-i11-dockerized-local-runtime.md`
 
-I10 Policy Operations Workspace is complete and absorbed into canonical requirements/engineering/UI truth.
-
-Select the next product/increment priority before creating the next active plan.
+Read the current plan before starting or resuming non-trivial implementation work.
