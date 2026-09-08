@@ -6,7 +6,7 @@ Authoritative greenfield NAPMS product repository.
 
 ## Current implementation state
 
-NAPMS is implemented through I10:
+NAPMS is implemented through I11:
 - Access Policy, Authority Management, Application Communication Catalogue and Resource Catalogue;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
@@ -14,7 +14,7 @@ NAPMS is implemented through I10:
 - EffectiveWindow management;
 - Effective Desired Policy and normalized policy views.
 
-I11 adds the reproducible local Docker runtime.
+I11 adds and proves the reproducible local Docker runtime.
 
 ## Local Docker start
 
