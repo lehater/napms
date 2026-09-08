@@ -31,11 +31,24 @@ Rules:
 
 The I7 composition is deliberately limited to `local-dev`; using the same configuration object with an unaccepted environment identity fails validation rather than silently implying production readiness.
 
+## I8 HTTP local-dev configuration surface
+
+The admitted HTTP runtime extends the existing application configuration with:
+
+- `NAPMS_LOCAL_AUTH_LOGIN`;
+- `NAPMS_LOCAL_AUTH_ACTOR_ID`;
+- `NAPMS_LOCAL_AUTH_PASSWORD_HASH` — supported scrypt hash only, never plaintext;
+- optional `NAPMS_HTTP_HOST` (default `127.0.0.1`);
+- optional `NAPMS_HTTP_PORT` (default `8000`).
+
+The local credential is process configuration for the bounded test/local authentication adapter. It does not define Authority; the authenticated `actor_id` is still evaluated by Authority Management for each domain action.
+
+The password hash is secret-bearing configuration and is redacted from runtime configuration representation.
+
 ## Future configuration categories
 
 Add only when the corresponding runtime adapter is admitted:
-- logging/observability settings;
-- transport/server settings;
+- richer logging/observability settings when deployment needs them;
 - persistence pool/timeout settings if the runtime needs them;
 - external-provider endpoint/credential references;
 - feature switches only when an accepted requirement needs them.
