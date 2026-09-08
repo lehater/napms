@@ -77,3 +77,5 @@ Until then the stable seam is only:
 ```text
 Proposal -> ConnectivityDecision(Allowed | NotAllowed) -> Access Policy
 ```
+
+For the bounded I8 `local-dev` executable only, an explicit outer adapter may deterministically return `Allowed` after the proposal has passed existing Authority and structural-validity checks. This adapter is test/development plumbing, not accepted Decision Domain behavior, and must not be promoted to a non-local environment.
