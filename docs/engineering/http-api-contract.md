@@ -94,11 +94,14 @@ Success: `200`.
 {
   "scopes": [
     { "scope": "scope-a" }
+  ],
+  "ambiguousScopes": [
+    { "scope": "scope-b" }
   ]
 }
 ```
 
-A scope with ambiguous effective authority is not presented as permitted. The application query may report an `AuthorityUnknown` condition rather than silently treating ambiguity as permission.
+A scope with ambiguous effective authority is not presented as permitted. It is returned separately in `ambiguousScopes` so the UI can surface a fail-closed authority condition without granting access.
 
 ### GET /api/v1/access-rule-proposals/interactions
 
@@ -241,6 +244,10 @@ For every request:
 4. include it in safe public error envelopes.
 
 Correlation identity never replaces Rule/domain identity.
+
+## Selected HTTP adapter
+
+The I8 HTTP adapter uses FastAPI as an outer transport framework. FastAPI/Pydantic types remain confined to `napms.runtime`; Domain/Application stay framework-independent.
 
 ## Deferred HTTP surfaces
 
