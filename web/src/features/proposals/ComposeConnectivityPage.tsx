@@ -25,6 +25,8 @@ export function ComposeConnectivityPage() {
   const [ambiguousScopes, setAmbiguousScopes] = useState<string[]>([])
   const [scope, setScope] = useState("")
   const [interactions, setInteractions] = useState<ProposalInteraction[]>([])
+  const [interactionPage, setInteractionPage] = useState(1)
+  const [hasMoreInteractions, setHasMoreInteractions] = useState(false)
   const [source, setSource] = useState("")
   const [destination, setDestination] = useState("")
   const [dcs, setDcs] = useState("")
@@ -63,6 +65,7 @@ export function ComposeConnectivityPage() {
 
   useEffect(() => {
     setInteractions([])
+    setHasMoreInteractions(false)
     setSource("")
     setDestination("")
     setDcs("")
@@ -72,9 +75,11 @@ export function ComposeConnectivityPage() {
     let active = true
     setLoadingInteractions(true)
     setError(null)
-    void listProposalInteractions(scope)
-      .then((items) => {
-        if (active) setInteractions(items)
+    void listProposalInteractions(scope, interactionPage)
+      .then((result) => {
+        if (!active) return
+        setInteractions(result.items)
+        setHasMoreInteractions(result.hasMore)
       })
       .catch((caught) => {
         if (active) {
@@ -96,7 +101,7 @@ export function ComposeConnectivityPage() {
     return () => {
       active = false
     }
-  }, [scope])
+  }, [scope, interactionPage])
 
   const sources = useMemo(
     () => unique(interactions.map((item) => item.sourceComponentDeploymentId)),
@@ -189,7 +194,10 @@ export function ComposeConnectivityPage() {
             <Field label="Governance scope">
               <Select
                 value={scope}
-                onChange={(event) => setScope(event.target.value)}
+                onChange={(event) => {
+                  setScope(event.target.value)
+                  setInteractionPage(1)
+                }}
                 disabled={loadingScopes}
                 required
               >
@@ -250,6 +258,30 @@ export function ComposeConnectivityPage() {
                   ))}
                 </Select>
               </Field>
+            </div>
+
+            <div className="flex items-center justify-between rounded-md border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2">
+              <span className="text-xs text-[#64748B]">
+                Interaction page {interactionPage}
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={interactionPage === 1 || loadingInteractions}
+                  onClick={() => setInteractionPage((value) => Math.max(1, value - 1))}
+                >
+                  Previous
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={!hasMoreInteractions || loadingInteractions}
+                  onClick={() => setInteractionPage((value) => value + 1)}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
 
             <Field
