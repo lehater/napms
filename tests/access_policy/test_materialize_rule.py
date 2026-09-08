@@ -436,3 +436,5 @@ def test_materialized_rule_establishes_governance_scope_from_proposal_authority_
     assert result.rule.governance_scope == "governance-scope-1"
     assert result.rule.proposal_provenance.authority_scope == "governance-scope-1"
     assert result.rule.operational_state_history == ()
+    assert result.rule.effective_window is None
+    assert result.rule.effective_window_history == ()
