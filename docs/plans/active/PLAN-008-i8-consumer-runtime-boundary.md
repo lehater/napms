@@ -129,7 +129,7 @@ The first runtime boundary implements:
 
 ## Blockers
 
-No current owner/product blocker for WP5.
+No current owner/product blocker for WP6–WP7.
 
 Approval/review workflow is explicitly deferred. Reopen the Connectivity Decision Domain before introducing approval actors, lifecycle/statuses or queue semantics.
 
@@ -137,4 +137,4 @@ External IdP integration remains deferred.
 
 ## Next
 
-Implement and test the normalized-policy JSON endpoint, then complete observability/error-mapping proof and final I8 review.
+Complete observability/error-mapping proof, then run final architecture/security review and all gates.
