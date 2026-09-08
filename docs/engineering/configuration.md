@@ -1,8 +1,8 @@
 # Configuration model
 
-Status: `accepted and exercised through I7 local-dev PostgreSQL composition`.
+Status: `accepted and exercised through I8 local-dev HTTP composition`.
 
-Date: 2026-09-08.
+Date: 2026-09-09.
 
 ## Purpose
 
@@ -14,7 +14,7 @@ The executable application has **one typed application configuration object asse
 
 Configuration sources are outer-runtime concerns. All sources normalize into the same typed configuration model before dependency construction.
 
-## Current I7 configuration surface
+## Base local-dev configuration surface
 
 The admitted local-dev greenfield composition uses:
 
@@ -29,7 +29,7 @@ Rules:
 - no Legacy/MSSQL configuration exists;
 - no HTTP/server, public serializer or external-service credential fields are invented before their adapters are selected.
 
-The I7 composition is deliberately limited to `local-dev`; using the same configuration object with an unaccepted environment identity fails validation rather than silently implying production readiness.
+The current composition is deliberately limited to `local-dev`; using the same configuration object with an unaccepted environment identity fails validation rather than silently implying production readiness.
 
 ## I8 HTTP local-dev configuration surface
 
