@@ -1,6 +1,6 @@
 # Configuration model
 
-Status: `accepted through I11 local Docker runtime`.
+Status: `accepted and exercised through I11 local Docker runtime`.
 
 Date: 2026-09-09.
 
