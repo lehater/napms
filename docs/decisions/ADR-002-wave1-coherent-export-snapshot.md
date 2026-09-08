@@ -14,11 +14,14 @@ Treat export input as an explicit immutable **logical export snapshot** assemble
 
 The snapshot contains/correlates:
 - selected effective Access Rules and decision/state/property provenance;
-- source/destination technical realizations proven valid for `asOf`;
-- referenced DCS projection semantics and validity/provenance;
+- Application Communication Catalogue facts binding each exact source/destination ComponentDeployment to one-or-more stable Resource references for `asOf`;
+- Resource Catalogue endpoint/address realizations for those stable Resource references, proven valid for `asOf`;
+- complete immutable DCS projection-semantics payload correlated to the exact referenced DCS revision, with provenance;
 - authority/provenance required for the export action.
 
-Each contributing external fact must carry a stable identity/version/effective-validity reference sufficient to demonstrate it was valid for the snapshot `asOf`. If the architecture cannot establish that for every selected effective Rule, snapshot assembly fails and no successful export artifact is produced.
+Each contributing external fact must carry a stable identity/version/effective-validity reference sufficient to demonstrate it was valid for the snapshot `asOf`. Application Communication Catalogue owns the time-qualified ComponentDeployment -> Resource-reference relation; Resource Catalogue owns Resource/Endpoint realization and is queried by Resource reference rather than ComponentDeployment identity. If the architecture cannot establish complete exact correlation and temporal validity for every selected effective Rule, snapshot assembly fails and no successful export artifact is produced.
+
+I5 captures DCS projection semantics as an immutable ACC-owned payload and does not interpret protocol/service/port structure. The first normalization-facing schema is an I6 concern.
 
 The snapshot is a semantic consistency boundary, not necessarily a persisted aggregate or database snapshot. PLAN-028 may choose transaction snapshots, version tokens, temporal queries, immutable read models or equivalent mechanisms per source.
 
@@ -31,6 +34,7 @@ The snapshot is a semantic consistency boundary, not necessarily a persisted agg
 ## Consequences
 
 - normalization operates on stable captured inputs rather than live mutable lookups;
+- cross-context deployment/resource correlation is captured from its ACC owner before RC realization lookup;
 - provenance/version/effective-time references are architecture-significant data;
 - external integrations must support temporal/version evidence or an adapter-owned capture mechanism;
 - snapshot assembly has an explicit failure/degraded result distinct from successful export.
