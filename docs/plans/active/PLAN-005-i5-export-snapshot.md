@@ -10,7 +10,7 @@ I5 stops before vendor-neutral row normalization/serialization and before real/t
 
 ## Current stage
 
-Canonical review resolved the snapshot success/failure model from ADR-002 but exposed one P1 cross-context gap: no accepted owner/contract currently connects Access Rule ComponentDeployment identities to Resource Catalogue Resource/Endpoint identities. A second bounded decision controls whether I5 interprets DCS protocol/service/port structure or only captures an immutable ACC-owned payload for I6.
+D1-D3 are accepted and propagated. Application Communication Catalogue owns the time-qualified ComponentDeployment -> one-or-more Resource-reference binding; Resource Catalogue resolves realization only for stable Resource references; I5 captures complete immutable DCS projection semantics without interpreting normalization-facing protocol/service/port structure. Next stage: implement projection ports + immutable Export Snapshot assembly with fakes and exhaustive fail-closed core tests.
 
 ## Inputs
 
@@ -124,7 +124,7 @@ Current accepted ownership says:
 
 No canonical contract defines how a ComponentDeployment identifies the Resource(s) whose realization RC must resolve. Directly passing ComponentDeploymentId to RC would silently make RC own/understand an ACC identity relation that is not accepted.
 
-Recommended minimal decision:
+Accepted decision:
 
 > Application Communication Catalogue owns the time-qualified binding from each ComponentDeployment to one-or-more stable Resource references. Resource Catalogue remains owner of each Resource and resolves its Resource Endpoint/address realization for the requested as-of.
 
@@ -141,7 +141,7 @@ This puts the cross-context relation on the owner of ComponentDeployment while p
 
 I5 does not normalize protocol/service/port data; I6 does.
 
-Recommended minimal decision:
+Accepted decision:
 
 > I5 treats the ACC-returned DCS projection semantics as an immutable, complete ACC-owned payload correlated to the exact DCS contract/revision and preserves it verbatim in the snapshot. I5 validates correlation/completeness/provenance but does not invent or interpret protocol/service/port field structure. I6 owns the first explicit normalization-facing schema for that payload.
 
@@ -151,11 +151,9 @@ The ACC port must still distinguish resolved-complete from missing/invalid/unkno
 
 ## Blockers
 
-Owner acceptance required for:
-1. ACC ownership of time-qualified ComponentDeployment -> one-or-more Resource references;
-2. I5 capture-only treatment of immutable DCS projection semantics, with explicit normalization-facing structure deferred to I6.
+No blocker for fake-port/core I5 proof.
 
-Real catalogue adapter work is additionally blocked until a concrete authoritative source/environment is selected; this does not block fake-port/core I5 proof after the two decisions above.
+Real catalogue adapter work remains blocked until a concrete authoritative source/environment is selected. That blocker does not prevent I5 core completion and should not be bypassed by inventing a source.
 
 ## Validation
 
