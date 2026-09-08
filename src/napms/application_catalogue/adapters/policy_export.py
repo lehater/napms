@@ -2,6 +2,7 @@ from napms.application_catalogue.application.resolve import (
     CatalogueResolutionOutcome,
     ResolveApplicationProjection,
 )
+from napms.application_catalogue.domain.model import DirectedInteractionIdentity
 from napms.policy_export.application.ports import (
     ApplicationProjectionFact,
     ApplicationProjectionOutcome,
@@ -14,19 +15,32 @@ class PolicyExportApplicationCatalogueAdapter:
         self._resolver = resolver
 
     def resolve_projection(self, *, subject, as_of) -> ApplicationProjectionFact:
-        result = self._resolver.execute(subject=subject, as_of=as_of)
+        catalogue_subject = DirectedInteractionIdentity(
+            source_component_deployment_id=subject.source_component_deployment_id,
+            destination_component_deployment_id=subject.destination_component_deployment_id,
+            dcs_contract_revision_id=subject.dcs_contract_revision_id,
+        )
+        result = self._resolver.execute(
+            subject=catalogue_subject,
+            as_of=as_of,
+        )
         outcome = {
             CatalogueResolutionOutcome.RESOLVED: ApplicationProjectionOutcome.RESOLVED,
             CatalogueResolutionOutcome.MISSING: ApplicationProjectionOutcome.MISSING,
             CatalogueResolutionOutcome.INVALID: ApplicationProjectionOutcome.INVALID,
             CatalogueResolutionOutcome.UNKNOWN: ApplicationProjectionOutcome.UNKNOWN,
         }[result.outcome]
+        if (
+            outcome is ApplicationProjectionOutcome.RESOLVED
+            and result.subject != catalogue_subject
+        ):
+            outcome = ApplicationProjectionOutcome.INVALID
         if outcome is not ApplicationProjectionOutcome.RESOLVED:
             return ApplicationProjectionFact(outcome=outcome)
 
         return ApplicationProjectionFact(
             outcome=outcome,
-            subject=result.subject,
+            subject=subject,
             as_of=result.as_of,
             source_resource_references=tuple(
                 ResourceReference(value)
