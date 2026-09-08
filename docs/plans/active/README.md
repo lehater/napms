@@ -1,7 +1,5 @@
 # Active execution
 
-Current: none.
+Current: `PLAN-009-i9-operational-web-workspace.md`
 
-I8 consumer/runtime boundary is complete and absorbed into canonical requirements/engineering truth.
-
-Select the next product/increment priority before creating the next active plan.
+Read the current plan before starting or resuming non-trivial implementation work.
