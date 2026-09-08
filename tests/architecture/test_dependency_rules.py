@@ -94,6 +94,10 @@ POSTGRES_SCHEMA_OWNERS = (
         NAPMS / "resource_catalogue" / "adapters" / "postgres",
         "napms_resource_catalogue",
     ),
+    (
+        NAPMS / "connectivity_requirements" / "adapters" / "postgres",
+        "napms_connectivity_requirements",
+    ),
 )
 
 
