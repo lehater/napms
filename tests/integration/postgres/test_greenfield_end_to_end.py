@@ -15,6 +15,11 @@ from napms.access_policy.application.ports import (
     ConnectivityDecision,
     DecisionOutcome,
 )
+from napms.access_policy.application.proposal_options import (
+    DiscoverProposalInteractions,
+    DiscoverProposalScopes,
+    ProposalInteractionDiscoveryOutcome,
+)
 from napms.access_policy.application.select_effective_policy import (
     EffectivePolicySelectionOutcome,
     SelectAccessPolicyEffectiveDesiredPolicy,
@@ -456,6 +461,24 @@ def test_greenfield_postgres_end_to_end_produces_complete_normalized_export(
     seed_greenfield(postgres_dsn)
 
     with open_greenfield_scope(greenfield_config) as scope:
+        proposal_scopes = DiscoverProposalScopes(
+            authority=scope.proposal_scope_discovery
+        ).execute(actor_id=ACTOR, effective_time=PROPOSAL_TIME)
+        assert proposal_scopes.permitted_scopes == (SCOPE,)
+        assert proposal_scopes.ambiguous_scopes == ()
+
+        interactions = DiscoverProposalInteractions(
+            authority=scope.authority,
+            catalogue=scope.proposal_interaction_catalogue,
+        ).execute(
+            actor_id=ACTOR,
+            scope=SCOPE,
+            effective_time=PROPOSAL_TIME,
+        )
+        assert interactions.outcome is ProposalInteractionDiscoveryOutcome.AVAILABLE
+        assert interactions.page is not None
+        assert IDENTITY in interactions.page.identities
+
         materialized = materialize(scope)
         assert materialized.outcome is MaterializationOutcome.MATERIALIZED
         assert materialized.rule.rule_id == RULE_ID
