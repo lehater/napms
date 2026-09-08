@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
@@ -103,7 +104,7 @@ class NormalizedPolicyRow:
     rule_governance_scope: str
     rule_operational_state: OperationalState
     rule_effective_window: EffectiveWindow | None
-    snapshot_as_of: object
+    snapshot_as_of: datetime
     read_authority_reference: str
 
     source_resource_reference: ResourceReference
@@ -133,6 +134,6 @@ class NormalizedPolicyRow:
 @dataclass(frozen=True, slots=True)
 class SuccessfulNormalizedPolicyExport:
     scope: str
-    as_of: object
+    as_of: datetime
     authority_reference: str
     rows: tuple[NormalizedPolicyRow, ...]
