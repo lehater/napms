@@ -95,15 +95,25 @@ export async function listProposalScopes(): Promise<{
   return request("/api/v1/access-rule-proposals/scopes")
 }
 
+export type ProposalInteractionPage = {
+  items: ProposalInteraction[]
+  page: number
+  pageSize: number
+  hasMore: boolean
+}
+
 export async function listProposalInteractions(
   scope: string,
-): Promise<ProposalInteraction[]> {
-  const params = new URLSearchParams({ scope, page: "1", pageSize: "100" })
-  const result = await request<{
-    items: ProposalInteraction[]
-    hasMore: boolean
-  }>(`/api/v1/access-rule-proposals/interactions?${params}`)
-  return result.items
+  page: number,
+): Promise<ProposalInteractionPage> {
+  const params = new URLSearchParams({
+    scope,
+    page: String(page),
+    pageSize: "50",
+  })
+  return request<ProposalInteractionPage>(
+    `/api/v1/access-rule-proposals/interactions?${params}`,
+  )
 }
 
 export async function submitProposal(input: {
