@@ -27,7 +27,7 @@ I13 deliberately stops before Requirement-to-Policy Alignment and before Connect
 
 ## Current stage
 
-**WP2 — Requirements and acceptance examples.**
+**WP4 — Domain + Application executable core.**
 
 Evidence synthesis is complete. Working packet:
 `docs/plans/active/I13-WP1-connectivity-requirements-decision-packet.md`.
@@ -106,7 +106,7 @@ accepted aggregate/lifecycle/value-object/command/query/invariant semantics suff
 
 ### WP2 — Requirements and acceptance examples
 
-Status: `active`.
+Status: `done`.
 
 Add post-Wave-1 requirements/examples for:
 - authorized declaration;
@@ -123,7 +123,7 @@ behavior matrix is testable without persistence/HTTP choices.
 
 ### WP3 — Architecture and ports
 
-Status: `planned`.
+Status: `done`.
 
 Define:
 - Connectivity Requirements module boundary;
@@ -138,7 +138,7 @@ dependency direction and semantic ownership are explicit.
 
 ### WP4 — Domain + Application executable core
 
-Status: `planned`.
+Status: `active`.
 
 Implement inside-out:
 - aggregate/value objects;
@@ -243,8 +243,8 @@ I13 is complete only when:
 
 No current owner/product blocker.
 
-Implementation must still wait for WP2/WP3 behavior/architecture closure, but no unresolved Tactical identity/lifecycle decision remains.
+No current semantic blocker. WP1-WP3 are accepted; core implementation gate is open.
 
 ## Next
 
-Complete WP2 requirements/acceptance examples, then define WP3 architecture/ports before implementation.
+Implement WP4 inside-out: Connectivity Requirements Domain -> consumer-owned Application ports/use cases -> executable core tests. Do not add PostgreSQL/HTTP yet.
