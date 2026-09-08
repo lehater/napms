@@ -1,0 +1,33 @@
+name: docker local runtime gate
+
+on:
+  pull_request:
+    types: [ready_for_review]
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "compose.yaml"
+      - ".env.example"
+      - "web/Dockerfile"
+      - "web/nginx.conf"
+      - "src/napms/composition/postgres_migrations.py"
+      - "src/napms/runtime/migrations.py"
+      - "src/napms/runtime/local_seed.py"
+      - "tools/dev_compose.py"
+      - "pyproject.toml"
+      - "Makefile"
+      - ".github/workflows/docker.yml"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose version
+      - run: python tools/dev_compose.py up --no-print-credentials
+      - run: docker compose ps
+      - if: always()
+        run: docker compose logs --no-color
+      - if: always()
+        run: docker compose down --volumes --remove-orphans
