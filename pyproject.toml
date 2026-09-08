@@ -9,6 +9,9 @@ description = "Network Access Policy Management System"
 requires-python = ">=3.10"
 dependencies = ["fastapi>=0.141,<1"]
 
+[project.scripts]
+napms-http = "napms.runtime.main:run"
+
 [project.optional-dependencies]
 dev = ["pytest>=8.0.0", "httpx>=0.28,<1"]
 runtime = ["uvicorn>=0.52,<1"]
