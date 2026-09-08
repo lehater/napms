@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I7 PASS — I8 first consumer/runtime boundary decision may begin under the active plan`.
+Status: `I7 PASS — I8 runtime direction accepted; Web UI refinement is the active gate`.
 
 Date: 2026-09-08.
 
@@ -41,6 +41,17 @@ Current execution is owned by `docs/plans/active/README.md`; do not mirror its w
 
 I7 proves that the accepted Wave-1 semantics can run end-to-end through owned NAPMS modules and PostgreSQL adapters without cross-owner persistence shortcuts or Legacy dependencies. It does **not** claim a public runtime/API, production deployment topology, public export serialization, durable Connectivity Decision internals or device enforcement.
 
+## I8 accepted runtime direction
+
+- first human-facing consumer: Web UI;
+- backend boundary: HTTP JSON API;
+- current local/test authentication: login + password through a replaceable authentication boundary;
+- authenticated backend identity, not request-supplied actor ID, feeds Authority Management;
+- normalized-policy machine handoff: JSON through the API;
+- structured JSON logs, correlation/request ID and health/readiness are required at the HTTP runtime boundary;
+- exact UI journeys/screens/navigation/template/design system remain under separate refinement in `docs/requirements/web-ui-requirements.md`;
+- external OIDC/OAuth2/corporate IdP, CSV/XLSX and other public serializers remain deferred.
+
 ## Current infrastructure boundary
 
 Implemented:
@@ -52,8 +63,11 @@ Implemented:
 - typed local-dev configuration and explicit composition root.
 
 Still deferred:
-- first real consumer/invocation surface;
-- public normalized-export handoff/serialization;
+- concrete Web UI implementation until UI refinement is accepted;
+- concrete HTTP route shapes until derived from accepted UI/application journeys;
+- login/session mechanism implementation;
+- HTTP runtime and JSON serializer implementation;
 - runtime structured logging/correlation implementation required by the accepted observability policy;
+- external enterprise identity provider integration;
 - durable Connectivity Decision Domain internals;
 - rendering/configured-state reconciliation/device execution according to the Wave-1 deferral register.

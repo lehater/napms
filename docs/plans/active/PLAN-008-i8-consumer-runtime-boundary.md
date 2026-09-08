@@ -10,9 +10,16 @@ I8 must not redefine Access Policy, Authority, ACC, RC, Export Snapshot or norma
 
 ## Current stage
 
-Owner decision required before transport/handoff code.
+Runtime direction is accepted; detailed Web UI refinement is the current owner/product gate before Web UI implementation and before freezing concrete HTTP route shapes.
 
-I7 proves direct local-dev application composition against PostgreSQL. The repository deliberately has no accepted first external consumer, HTTP/CLI contract or public normalized-export serialization.
+Accepted:
+- first human-facing consumer: Web UI;
+- backend invocation boundary: HTTP JSON API;
+- current local/test authentication: login + password through a replaceable authentication boundary;
+- normalized-policy machine handoff: JSON through the API;
+- operability: structured JSON logging, correlation/request ID and health/readiness behavior.
+
+The UI itself must be refined separately under `docs/requirements/web-ui-requirements.md`: user journeys, screen inventory, information architecture and template/design-system choice are intentionally not yet frozen.
 
 ## Inputs
 
@@ -40,65 +47,75 @@ I7 proves direct local-dev application composition against PostgreSQL. The repos
 
 ## Decision gates
 
-### D1 — First actual consumer
+### D1 — First actual consumer — accepted
 
-Name the first consumer of the runtime boundary.
+The first human-facing consumer is the NAPMS **Web UI**.
 
-Examples only:
-- a web/UI backend;
-- another internal service;
-- an operator/administrator using a CLI;
-- a scheduled automation/job.
+The Web UI design is a separate product/UX refinement step. The choice of dashboard/template/design system is not an infrastructure default and must be accepted before UI implementation.
 
-Do not choose a transport until this consumer is explicit.
+Canonical UI requirements: `docs/requirements/web-ui-requirements.md`.
 
-### D2 — Invocation surface
+### D2 — Invocation surface — accepted
 
-Choose the minimum surface required by D1:
-- HTTP API;
-- CLI;
-- scheduled/internal application runner;
-- another explicit boundary.
+Use an **HTTP JSON API** as the Web UI backend boundary.
 
-### D3 — Actor identity/authentication handoff
+Rules:
+- routes expose application use cases, not database CRUD;
+- transport status/error syntax does not redefine semantic outcomes;
+- Domain/Application remain framework-independent;
+- concrete route shapes should follow accepted Web UI journeys/use cases.
 
-Define how the runtime obtains the actor identity used by Authority Management.
+### D3 — Actor identity/authentication handoff — accepted for local/test stage
 
-The runtime must distinguish authenticated/trusted identity from arbitrary request fields. Full IAM is not implied, but an untrusted caller-supplied actor ID is not sufficient for an admitted non-test runtime.
+Use local **login + password** authentication for the current controlled/test runtime.
 
-### D4 — Normalized export handoff
+Rules:
+- no external OIDC/OAuth2/corporate IdP is required in I8;
+- successful authentication establishes the backend actor identity used for Authority checks;
+- `actor_id` supplied in an ordinary request body/query parameter is never trusted as authentication;
+- password material is never stored/logged in plaintext;
+- authentication is an outer replaceable boundary so a future enterprise IdP does not change Domain/Application or Authority semantics.
 
-Only if D1 requires external export delivery, select the minimum representation:
-- synchronous structured response;
-- JSON artifact;
-- CSV/XLSX artifact;
-- persisted/downloadable artifact;
-- another explicit consumer contract.
+Exact session/cookie/token mechanics remain an implementation choice to resolve with the Web UI/runtime contract.
 
-Serialization is replaceable interface detail and must retain all required provenance/semantics.
+External IdP integration is deferred.
 
-### D5 — Operability boundary
+### D4 — Normalized export handoff — accepted
 
-Implement the already accepted observability obligations:
+Primary machine handoff: **JSON through the HTTP API**.
+
+CSV/XLSX/downloadable artifacts are deferred until a concrete consumer requires them.
+
+The JSON representation must preserve all normalized semantics/provenance required by the accepted export contract.
+
+### D5 — Operability boundary — accepted
+
+The first runtime boundary implements:
+- structured JSON logs;
 - correlation/request ID;
 - one structured completion event per operation;
 - semantic outcome code;
 - duration;
 - safe Rule/decision/authority/dependency references when applicable;
-- unexpected exception context without secrets/raw payload leakage;
-- explicit startup/configuration failure.
-
-Choose a logging sink/format only to the extent needed by the selected runtime.
+- unexpected exception context without secret/raw-payload leakage;
+- explicit startup/configuration failure;
+- health/readiness endpoints appropriate to the selected HTTP runtime.
 
 ## Work packages
 
-1. Resolve D1-D4 with the owner; D5 semantics are already accepted.
-2. Record the bounded runtime contract before framework/serializer code.
-3. Add only the transport/authentication/serialization dependencies admitted by that contract.
-4. Wire the runtime through the existing typed configuration and explicit composition root.
-5. Prove semantic outcome -> transport/result mapping for positive and fail-closed cases.
-6. Prove actor identity cannot be spoofed through ordinary request payload fields.
-7. Prove structured correlation/logging and secret redaction.
+1. Refine the first Web UI increment under `docs/requirements/web-ui-requirements.md`:
+   - personas/roles;
+   - top user journeys;
+   - screen inventory;
+   - navigation/information architecture;
+   - dashboard/template/design-system choice;
+   - implementation-oriented visual/specification handoff.
+2. Derive the minimum HTTP use-case contract from the accepted UI journeys and existing application use cases.
+3. Implement the replaceable local login/password authentication boundary and prove request-payload actor spoofing cannot establish identity.
+4. Implement the HTTP JSON runtime adapter and wire it through the existing typed configuration/composition root.
+5. Implement JSON representation for normalized policy where required by the accepted first UI/API journeys.
+6. Implement structured JSON logging, correlation/request ID, health/readiness and startup/configuration failure behavior.
+7. Prove positive plus denied/unknown/not-found/stale/correlation failure mappings without leaking domain/infrastructure internals.
 8. Run core, PostgreSQL and runtime-specific gates; close all P0/P1 findings.
 
 ## Exit criteria
@@ -115,9 +132,11 @@ Choose a logging sink/format only to the extent needed by the selected runtime.
 
 ## Blockers
 
-D1-D4 are not yet owner-accepted.
+High-level runtime decisions D1-D5 are accepted.
 
-No HTTP/CLI/public serializer/authentication adapter should be implemented before those decisions.
+Before Web UI implementation and before freezing concrete HTTP route shapes, resolve the open UI refinement items in `docs/requirements/web-ui-requirements.md`.
+
+Local authentication/session mechanics may be designed as part of that bounded runtime/UI refinement, but external IdP integration must not be introduced.
 
 ## Next
 
