@@ -221,11 +221,12 @@ export async function setAccessRuleEffectiveWindow(
   )
 }
 
-export async function listPolicyViewScopes(): Promise<{
+export async function listPolicyViewScopes(asOf: string): Promise<{
   scopes: ProposalScope[]
   ambiguousScopes: ProposalScope[]
 }> {
-  return request("/api/v1/policy-views/scopes")
+  const params = new URLSearchParams({ asOf })
+  return request(`/api/v1/policy-views/scopes?${params}`)
 }
 
 export type EffectivePolicyResponse = {
