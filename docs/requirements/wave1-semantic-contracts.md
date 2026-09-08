@@ -1,6 +1,6 @@
 # Wave-1 semantic contracts — PLAN-026 WP-06
 
-Status: `accepted G2 semantic-contract baseline through I5 snapshot-boundary refinement`.
+Status: `accepted G2 semantic-contract baseline through I6 normalization refinement`.
 
 Date: 2026-09-08.
 
@@ -225,28 +225,58 @@ Rules:
 
 ## C9 — Normalized Policy Export contract
 
-Purpose: provide a vendor-neutral downstream-ready projection of selected effective desired policy.
+Purpose: provide a vendor-neutral downstream-ready projection of one successful immutable Export Snapshot.
 
 Minimum row semantics:
 
 ```text
 Rule correlation
+Rule semantic identity
 Connectivity Decision correlation/reference
-source technical realization
-destination technical realization
-DCS-derived protocol/service/port semantics
-supported declarative Rule properties where required
-export as-of
-source-fact/effective-validity provenance
+RuleGovernanceScope
+effective Rule state/property context
+snapshot as-of
+snapshot read-authority provenance
+
+source:
+    Resource reference
+    endpoint reference
+    technical address
+    RC fact/validity/provenance references
+
+destination:
+    Resource reference
+    endpoint reference
+    technical address
+    RC fact/validity/provenance references
+
+traffic:
+    protocol = canonical source-neutral token
+    sourcePorts = NotApplicable | Any | canonical PortRange set
+    destinationPorts = NotApplicable | Any | canonical PortRange set
+    serviceReference = optional ACC-owned semantic reference/label
+
+ACC fact/validity/provenance references
 ```
 
-Artifact-level rules:
-- one logical `as-of`;
-- successful artifact is complete for all selected effective Rules;
-- diagnostic partial rows may exist only under explicit non-successful/degraded result;
-- one Rule may expand to multiple rows with Rule/source correlation retained;
-- independently authoritative Rules are not merged if provenance/business meaning would be lost;
-- normalization does not broaden/narrow selected semantics;
+Port semantics:
+- `PortRange(first,last)` is inclusive; both boundaries are integers in `0..65535`; `first <= last`;
+- a range set is sorted, non-overlapping and non-adjacent after canonicalization;
+- ranges are preserved as ranges rather than enumerated into individual ports;
+- `Any` means unconstrained ports where port semantics are applicable;
+- `NotApplicable` is distinct from `Any` and means ports do not apply for that protocol/side;
+- `serviceReference` preserves ACC-owned semantics/correlation but does not replace explicit protocol/port traffic meaning;
+- the protocol token is non-empty and canonical within this contract; no Wave-1 protocol registry, numeric mapping or vendor syntax is implied.
+
+Artifact/transform rules:
+- normalization consumes only one successful immutable Export Snapshot and performs no live owner lookup;
+- one Rule may expand to multiple rows;
+- expansion is the deterministic product of captured source endpoint/address realizations, captured destination endpoint/address realizations and decoded DCS traffic alternatives;
+- every row belongs to exactly one authoritative Rule;
+- independently authoritative Rules are never cross-Rule merged/deduplicated when that would lose provenance/business meaning;
+- normalization does not broaden or narrow selected semantics;
+- every row preserves Rule/decision/snapshot-as-of/read-authority plus ACC/RC provenance;
+- DCS payload decoding is a pure/local translation boundary; concrete source encoding is not normalized export meaning;
 - serialization format is not domain meaning.
 
 ## C10 — Normalized Policy Export -> future Configuration Rendering

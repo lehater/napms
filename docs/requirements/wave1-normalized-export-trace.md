@@ -61,24 +61,40 @@ Missing realization for a selected but non-effective Rule does not by itself mak
 A successful normalized row carries enough semantics to avoid reconstructing missing domain meaning downstream:
 
 ```text
-Rule ID / Rule provenance correlation
+Rule ID + Rule semantic identity + RuleGovernanceScope
 + Connectivity Decision correlation/reference
-+ source technical realization
-+ destination technical realization
-+ DCS-derived protocol/service/port semantics
-+ supported declarative Rule properties where required
-+ export as-of
-+ source-fact/effective-validity provenance
++ effective Rule state/property context
++ one source Resource/Endpoint/address realization + RC provenance
++ one destination Resource/Endpoint/address realization + RC provenance
++ DcsTrafficAlternative
++ snapshot/export as-of
++ read-authority provenance
++ ACC fact/validity/provenance
 ```
+
+`DcsTrafficAlternative` is the Wave-1 source-neutral traffic selector:
+
+```text
+protocol = canonical non-empty token
+sourcePorts = NotApplicable | Any | canonical inclusive PortRange set
+destinationPorts = NotApplicable | Any | canonical inclusive PortRange set
+serviceReference = optional ACC-owned semantic reference/label
+```
+
+Port ranges are inclusive `0..65535`, canonicalized to sorted non-overlapping/non-adjacent ranges, and remain ranges rather than per-port expansion. `Any` and `NotApplicable` are distinct meanings.
 
 Serialization such as CSV/XLSX is an interface choice.
 
 ## Normalization boundaries
 
-- one Rule may expand into several rows when endpoint/protocol/port realization requires it;
-- every expanded row retains correlation to its authoritative Rule and source facts;
-- technically equivalent rows from independently authoritative Rules must not be collapsed when provenance/business meaning would be lost;
-- normalization must not broaden or narrow selected Rule semantics.
+- normalization consumes only a successful immutable Export Snapshot; it performs no live catalogue/authority lookup;
+- each row uses exactly one captured source EndpointRealization and one captured destination EndpointRealization;
+- one Rule expands by the deterministic product of source realizations × destination realizations × DCS traffic alternatives;
+- every expanded row retains correlation to its authoritative Rule and all contributing source facts;
+- technically equivalent rows from independently authoritative Rules are not cross-Rule collapsed;
+- range semantics stay ranges and are not enumerated into individual ports;
+- normalization must not broaden or narrow selected Rule semantics;
+- concrete DCS payload byte encoding is a translation/codec concern, not normalized policy meaning.
 
 ## Context contributions
 

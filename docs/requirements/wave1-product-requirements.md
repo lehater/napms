@@ -163,7 +163,7 @@ Missing, stale or unknown required realization prevents a complete successful pr
 
 ### REQ-W1-010 — Produce a complete vendor-neutral Normalized Policy Export
 
-Status: `accepted`.
+Status: `accepted with I6 normalized traffic-selector semantics`.
 Disposition: `replace/defer` historical firewall split and configuration-generation pipeline.
 
 For the selected effective Rule subset, the product produces a vendor-neutral normalized technical table suitable for downstream human use or a future renderer without reconstructing missing domain meaning.
@@ -172,12 +172,30 @@ Minimum row semantics include:
 
 - authoritative Rule correlation;
 - Connectivity Decision correlation/reference where available/required;
-- source technical realization;
-- destination technical realization;
-- DCS-derived protocol/ports/interaction semantics required for realization;
-- supported declarative Rule properties;
+- one captured source Resource/Endpoint/address realization;
+- one captured destination Resource/Endpoint/address realization;
+- one DCS-derived `DcsTrafficAlternative`;
+- supported declarative Rule properties required to explain effective selection;
 - export `as-of`;
-- source-fact provenance/effective validity sufficient to explain the projection.
+- read-authority and ACC/RC fact/provenance/effective-validity references sufficient to explain the projection.
+
+The Wave-1 normalized traffic selector is:
+
+```text
+DcsTrafficAlternative
+    protocol = non-empty canonical source-neutral token
+    sourcePorts = NotApplicable | Any | canonical PortRange set
+    destinationPorts = NotApplicable | Any | canonical PortRange set
+    serviceReference = optional ACC-owned semantic reference/label
+```
+
+`PortRange(first, last)` is inclusive with integer boundaries `0..65535` and `first <= last`. A range set is canonicalized to sorted, non-overlapping, non-adjacent ranges; ranges remain ranges and are not expanded into individual ports.
+
+`Any` means the port side is unconstrained where port semantics are applicable. `NotApplicable` is distinct and means the protocol does not use port semantics for that side. `serviceReference` preserves ACC-owned meaning/correlation but never substitutes for explicit protocol/port semantics.
+
+The protocol token is canonical within the normalized export contract but Wave 1 does not invent a protocol registry, numeric mapping or vendor/device syntax.
+
+Normalization expands each Rule by the deterministic product of captured source endpoint/address realization × captured destination endpoint/address realization × DCS traffic alternative.
 
 CSV/XLSX or another serialization is an interface choice, not domain meaning.
 

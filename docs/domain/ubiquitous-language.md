@@ -75,7 +75,32 @@ Application Communication Catalogue-owned, time-qualified relation from one Comp
 The binding is not Resource realization and is not part of Access Rule identity.
 
 ### DCS Projection Semantics
-Complete immutable Application Communication Catalogue-owned projection payload correlated to one exact DCS contract/revision. I5 captures it without interpreting protocol/service/port structure; I6 defines the first normalization-facing schema.
+Complete immutable Application Communication Catalogue-owned projection payload correlated to one exact DCS contract/revision. I5 captures it without interpreting protocol/service/port structure. I6 decodes it through a local translation boundary into normalized DCS Traffic Alternatives.
+
+### DCS Traffic Alternative
+One vendor-neutral traffic selector derived from DCS projection semantics:
+
+```text
+protocol
++ source Ports
++ destination Ports
++ optional ACC service reference
+```
+
+The protocol is a non-empty canonical token within the normalized export contract.
+
+### Port Constraint
+
+```text
+NotApplicable
+Any
+PortRangeSet
+```
+
+`Any` means unconstrained ports where port semantics apply. `NotApplicable` means ports do not apply for that protocol/side.
+
+### Port Range
+Inclusive integer interval `first..last` within `0..65535`. Sets of ranges are canonicalized to sorted, non-overlapping and non-adjacent ranges and are not expanded into individual ports.
 
 ### Directed Communication Specification
 Application-owned communication contract connecting compatible source/destination component roles and carrying protocol/service/port semantics.
