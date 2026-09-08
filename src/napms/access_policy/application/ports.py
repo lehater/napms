@@ -103,6 +103,21 @@ class AccessRuleReadAuthorityDiscoveryPort(Protocol):
     ) -> AccessRuleReadScopeOptions: ...
 
 
+@dataclass(frozen=True, slots=True)
+class EffectivePolicyReadScopeOptions:
+    permitted_scopes: tuple[str, ...]
+    ambiguous_scopes: tuple[str, ...]
+
+
+class EffectivePolicyReadAuthorityDiscoveryPort(Protocol):
+    def list_effective_policy_read_scopes(
+        self,
+        *,
+        actor_id: str,
+        effective_time: datetime,
+    ) -> EffectivePolicyReadScopeOptions: ...
+
+
 class ProposalInteractionCataloguePort(Protocol):
     def list_directed_interactions(
         self,
