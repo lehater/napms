@@ -19,7 +19,7 @@ I10 must reuse existing Access Policy, Authority Management, snapshot and normal
 
 ## Current stage
 
-**WP1 — admit policy-view scope discovery and HTTP/UI contracts.**
+**WP8 — final architecture/security review and repository gates.**
 
 No new Authority action is required:
 - EffectiveWindow mutation uses existing `SetRuleEffectiveWindow`;
@@ -53,14 +53,14 @@ No new Authority action is required:
 
 ## Work packages
 
-1. **ACTIVE — Contract/admission refinement.** Add policy-view scope discovery and admit EffectiveWindow mutation/effective-policy HTTP/UI surfaces in canonical contracts.
-2. **Rule details capability.** Expose independent `SetRuleEffectiveWindow` admission alongside existing state mutation admission.
-3. **EffectiveWindow HTTP slice.** Add PATCH route using trusted session actor/runtime time/stored Rule scope; prove set/change/clear/same-value/denied/unknown/invalid/persistence paths.
-4. **Effective Desired Policy HTTP slice.** Add policy-scope discovery and effective-policy endpoint over the existing application query.
-5. **Web UI — Rule EffectiveWindow.** Add set/change/clear controls and business history on Rule Details.
-6. **Web UI — Policy Views.** Add Effective Policy and Normalized Policy navigation/screens with explicit scope + asOf and safe empty/error states.
-7. **Runtime/PostgreSQL evidence.** Prove end-to-end EffectiveWindow mutation/evaluation and normalized-policy view through PostgreSQL.
-8. **Final review/gates.** Run core, PostgreSQL, Web, harness and knowledge gates; close all P0/P1.
+1. **DONE — Contract/admission refinement.** Canonical HTTP/UI contracts admit EffectiveWindow mutation and asOf-bound policy-view scope discovery.
+2. **DONE — Rule details capability.** Independent SetRuleEffectiveWindow admission is exposed alongside state mutation admission.
+3. **DONE — EffectiveWindow HTTP slice.** PATCH route and runtime tests cover set/change/clear/same-value/denied/invalid/spoofing semantics.
+4. **DONE — Effective Desired Policy HTTP slice.** Application-level scope discovery and effective-policy endpoint are implemented with explicit asOf.
+5. **DONE — Web UI — Rule EffectiveWindow.** Rule Details support set/change/clear and EffectiveWindow history.
+6. **DONE — Web UI — Policy Views.** Effective and Normalized Policy screens preserve explicit scope/asOf and normalized provenance semantics.
+7. **DONE — Runtime/PostgreSQL evidence.** End-to-end EffectiveWindow -> selection -> normalized export is covered through PostgreSQL.
+8. **ACTIVE — Final review/gates.** Run core, PostgreSQL, Web, harness and knowledge gates; close all P0/P1.
 
 ## Exit criteria
 
@@ -80,4 +80,4 @@ No current owner/product blocker.
 
 ## Next
 
-Update canonical HTTP/UI contracts, then implement independent EffectiveWindow capability and transport tests before Web UI changes.
+Run final architecture/security review and all repository gates; close P0/P1 before I10 absorption.
