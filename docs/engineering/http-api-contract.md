@@ -1,6 +1,6 @@
 # HTTP API contract — Web UI boundary
 
-Status: `accepted through I10 Policy Operations Workspace`.
+Status: `accepted through I12 Human-readable Catalogue UX`.
 
 Date: 2026-09-09.
 
@@ -192,6 +192,52 @@ HTTP `200`.
 ```
 
 `NotAllowed` is a normal business result and never becomes `403`.
+
+## Catalogue presentation metadata
+
+I12 adds optional presentation enrichment to responses that are already authorized by their enclosing use case. It does not add a generic catalogue read endpoint.
+
+Presentation block:
+
+```json
+{
+  "catalogue": {
+    "sourceDisplayName": "Checkout Web",
+    "destinationDisplayName": "Orders API",
+    "dcsDisplayName": "HTTPS Orders",
+    "trafficAlternatives": [
+      {
+        "protocol": "tcp",
+        "sourcePorts": {"kind": "Any"},
+        "destinationPorts": {
+          "kind": "Ranges",
+          "ranges": [{"first": 443, "last": 443}]
+        },
+        "serviceReference": "https"
+      }
+    ],
+    "dcsProvenanceReference": "..."
+  }
+}
+```
+
+Rules:
+- all display-name fields are nullable;
+- stable semantic IDs remain present outside the presentation block;
+- missing labels or presentation decode failure do not redefine/deny an otherwise authorized Rule/policy read;
+- DCS presentation is used only when the exact revision subject matches the requested Source/Destination identity;
+- the block may appear on proposal interaction options, Rule DTOs, Effective Desired Policy Rules and normalized rows.
+
+### Proposal interaction search
+
+`GET /api/v1/access-rule-proposals/interactions` additionally accepts optional `search` (maximum 256 characters).
+
+Search is applied server-side after the existing `ProposeConnectivity` authority gate and may match:
+- Source Component Deployment display name or UUID;
+- Destination Component Deployment display name or UUID;
+- DCS display name or revision UUID.
+
+Search does not broaden the set of structurally valid directed interactions.
 
 ## Access Rule workspace
 
