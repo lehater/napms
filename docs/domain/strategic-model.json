@@ -1,0 +1,55 @@
+{
+  "model_id": "NAPMS-DDD-001",
+  "source_baseline": "DDD-BDM-010",
+  "status": "accepted",
+  "bounded_contexts": [
+    {
+      "name": "Connectivity Requirements",
+      "responsibility": "Connectivity-need identity/lifecycle, required semantic interaction, applicability and justification/provenance."
+    },
+    {
+      "name": "Access Policy",
+      "responsibility": "Authoritative Access Rule identity, uniqueness/idempotency, properties, Active/Inactive, connectivity-decision consumption and desired-policy projections."
+    },
+    {
+      "name": "Authority Management",
+      "responsibility": "Scoped authority for domain actions by scope/effective time, including assignment, delegation, transfer/revocation and accountability."
+    },
+    {
+      "name": "Resource Catalogue",
+      "responsibility": "Access-domain Resource/Endpoint identity and current/historical technical realization."
+    },
+    {
+      "name": "Application Communication Catalogue",
+      "responsibility": "Application/Component/Deployment/DCS communication semantics and structural validity."
+    },
+    {
+      "name": "Network Enforcement Placement",
+      "responsibility": "Forwarding/path and enforcement placement/relevance semantics."
+    },
+    {
+      "name": "Technical Access Evidence",
+      "responsibility": "Normalized source-qualified technical access evidence with provenance/time/freshness/coverage."
+    },
+    {
+      "name": "Access Policy Realization",
+      "responsibility": "Technical-to-domain correspondence, enforcement-policy derivation and desired-vs-configured reconciliation."
+    }
+  ],
+  "wave1_direct_participants": [
+    "Access Policy",
+    "Authority Management",
+    "Application Communication Catalogue",
+    "Resource Catalogue"
+  ],
+  "external_seams": [
+    "Connectivity Decision"
+  ],
+  "invariants": [
+    "Bounded Context is not a deployment unit.",
+    "Connectivity need does not authorize access.",
+    "Technical evidence does not authorize access.",
+    "Access Policy owns authoritative Access Rule identity and operational state.",
+    "Technical realization changes do not redefine Rule semantic identity."
+  ]
+}
