@@ -10,9 +10,7 @@ I6 stops before vendor/device rendering, configured-state reconciliation and pro
 
 ## Current stage
 
-D2-D3 are evidence-resolved; D1 has one owner-level normalization-contract choice.
-
-I5 deliberately preserves DCS projection semantics as a complete immutable ACC-owned payload without interpreting protocol/service/port structure. E12/E13/QS-08 determine row expansion/provenance, and the current I5 EndpointRealization contract determines address-side expansion. Repository truth does not define the normalization-facing transport selector deeply enough to choose source/destination port semantics without an explicit decision.
+D1-D3 are accepted and propagated through requirements, C9, normalized-export trace, Ubiquitous Language and F3. Next stage: implement pure I5 snapshot -> normalized rows in `policy_export` core, using a local DCS payload decoder boundary and no live owner lookup.
 
 ## Inputs
 
@@ -124,7 +122,7 @@ Rules:
 - deterministic ordering is by Rule ID, source Resource/endpoint/address, destination Resource/endpoint/address, then normalized DCS alternative;
 - row provenance retains Rule ID + semantic identity, Connectivity Decision reference, RuleGovernanceScope, current EffectiveWindow/state needed to explain snapshot selection, snapshot as-of/read-authority provenance, ACC fact/validity/provenance and both RC fact/validity/provenance chains.
 
-### D1 — owner decision required: normalization-facing DCS selector
+### D1 — accepted: normalization-facing DCS selector
 
 Known:
 - downstream must not infer missing protocol/address/schedule meaning (QS-09);
@@ -134,7 +132,7 @@ Known:
 
 Repository evidence does **not** specify source-vs-destination port shape, Any/not-applicable semantics, canonical protocol identifier form, or whether a service label is traffic semantics or supporting ACC correlation.
 
-#### Recommended option A — bounded source-neutral L3/L4 selector
+#### Accepted option A — bounded source-neutral L3/L4 selector
 
 Decode the I5 DCS payload into one-or-more immutable `DcsTrafficAlternative` values:
 
@@ -177,13 +175,25 @@ Model TCP/UDP/ICMP/etc as separate selector variants with protocol-specific fiel
 
 More semantically precise for non-port protocols, but substantially broader than current Wave-1 evidence and would force ICMP/other protocol decisions not required by any accepted example.
 
-Recommendation: **Option A**.
+Decision: **Option A accepted**.
+
+## Implementation boundary
+
+I5 stores the ACC-owned DCS projection payload as immutable bytes. I6 may introduce a pure/local decoder port:
+
+`DcsProjectionDecoder.decode(payload) -> DcsTrafficAlternative+`
+
+The decoder:
+- performs no live catalogue/authority lookup;
+- must return one-or-more valid alternatives or fail normalization;
+- is a translation/codec boundary, not a semantic owner;
+- concrete ACC byte encoding remains deferred until a real source/format is selected.
 
 ## Blockers
 
-Owner acceptance of D1 Option A (or selection of B/C) is required before updating C9/REQ-W1-010 and before I6 transformation code.
+None for I6 core proof.
 
-Serialization is additionally deferred until a concrete output format is selected; that does not block core normalization proof.
+Serialization and the concrete DCS payload codec remain deferred until a real output/source format is selected; those deferrals do not block pure core normalization proof.
 
 ## Validation
 
