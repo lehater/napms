@@ -107,12 +107,21 @@ Every state transition is auditable at business level.
 
 ### REQ-W1-006 — Maintain supported declarative operational properties
 
-Status: `accepted at current D1 depth`.
+Status: `accepted with I4 minimum condition semantics`.
 Disposition: `new/change` target requirement.
 
-An allowed Rule may carry supported declarative operational properties required by Wave 1, including schedule/periodicity where applicable. These properties describe when/how an already allowed Rule contributes desired effect and do not redefine Rule identity or decision subject.
+Wave 1 first implements an optional absolute `EffectiveWindow(start, end)` on an allowed Rule.
 
-Exact tactical representation is deferred to implementation design; material examples are owned by WP-04.
+Semantics:
+- `start` and `end` are explicit offset-aware instants;
+- the interval is half-open: `start <= as-of < end`;
+- `start < end` is required;
+- no EffectiveWindow means no time-window restriction;
+- changing/removing EffectiveWindow does not redefine Rule identity or Connectivity Decision subject and does not periodically mutate stored `Active/Inactive`.
+
+An authorized actor may set/change/remove the EffectiveWindow through Access Policy. Accepted property changes are business-audited and preserve Rule ID, semantic identity, governance scope and decision correlation.
+
+Recurring/calendar/cron/frequency-duration schedule semantics are deferred until a material requirement/example requires them.
 
 ### REQ-W1-007 — Preserve semantic identity across technical realization changes
 
@@ -125,20 +134,23 @@ Technical projection is recalculated from authoritative current catalogue truth.
 
 ### REQ-W1-008 — Select an authorized effective desired-policy subset
 
-Status: `accepted`.
+Status: `accepted with I4 first selection semantics`.
 Disposition: `new` target requirement.
 
-An actor with the required read/export authority may select a domain-policy subset for export.
+An actor with effective `ReadEffectiveDesiredPolicy` authority may select one RuleGovernanceScope at a logical `as-of`.
 
-At export `as-of`, a Rule contributes desired effect only when:
+After authority is established for that scope/time, Access Policy selects authoritative Rules whose stored RuleGovernanceScope equals the requested scope.
+
+At `as-of`, a selected Rule contributes desired effect only when:
 
 ```text
 authoritative Rule exists from an Allowed decision
+AND RuleGovernanceScope == selected scope
 AND Rule == Active
-AND declarative effective conditions permit effect
+AND (EffectiveWindow absent OR EffectiveWindow contains as-of)
 ```
 
-Selection/filter semantics must operate on domain-policy meaning, not vendor/device syntax.
+The first implementation selects one governance scope at a time. Selection/filter semantics operate on domain-policy meaning, not vendor/device syntax, and arbitrary caller filters do not establish authorization membership.
 
 ### REQ-W1-009 — Resolve technical realization for one logical export time
 
