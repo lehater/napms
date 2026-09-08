@@ -18,7 +18,7 @@ Follow-on I9 slices may add EffectiveWindow, Effective Desired Policy UI and Nor
 
 ## Current stage
 
-**WP2 — implement Access Rule authorized read-side core.**
+**WP6 — runtime/DB evidence and final integration proof.**
 
 The workspace must not reuse mutation authority as implicit read authority and must not expose authoritative Rule data before an explicit backend authorization decision.
 
@@ -59,11 +59,11 @@ This is an Authority/Access Policy semantic extension and must be accepted befor
 ## Planned work packages
 
 1. **DONE — Read authority decision.** `ReadAccessRule` accepted and absorbed into Access Policy/UI semantics.
-2. **ACTIVE — Access Rule read-side.** Add core application queries/ports for authorized list and details; no HTTP/framework dependency.
-3. **HTTP contract.** Add use-case-oriented list/details/state routes and stable semantic mappings.
-4. **State mutation HTTP slice.** Attach trusted session actor/runtime time to existing `SetRuleOperationalState`; preserve stored governance scope and audit semantics.
-5. **Web UI workspace.** Add Access Rules navigation, server-backed list, Rule Details and admitted Active/Inactive action.
-6. **Runtime/DB evidence.** Prove positive, denied, unknown, not-found, already-in-state and persistence-failure paths.
+2. **DONE — Access Rule read-side.** Authorized paged list/details application queries and consumer ports are implemented with core tests.
+3. **DONE — HTTP contract.** Use-case-oriented list/details/state routes and stable mappings are implemented/documented.
+4. **DONE — State mutation HTTP slice.** Session actor/runtime time feed the existing `SetRuleOperationalState`; client cannot supply actor/scope/time.
+5. **DONE — Web UI workspace.** Access Rules navigation, paged list, Rule Details/history and admitted Active/Inactive action are implemented.
+6. **ACTIVE — Runtime/DB evidence.** Prove positive, denied, unknown, not-found, already-in-state and persistence-failure paths.
 7. **Final review/gates.** Run core, PostgreSQL, Web, harness and knowledge gates; close P0/P1.
 
 ## Exit criteria
@@ -84,4 +84,4 @@ No current owner/product blocker.
 
 ## Next
 
-Implement the authorized Access Rule list/details application queries and executable core tests before HTTP/Web adapters.
+Complete PostgreSQL/runtime evidence, then run final architecture/security review and all repository gates.
