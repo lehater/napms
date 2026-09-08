@@ -8,9 +8,11 @@ from napms.access_policy.application.ports import (
     AccessRulePersistenceError,
     AuthorityAction,
     AuthorityCheck,
+    EffectivePolicyReadScopeOptions,
     TernaryOutcome,
 )
 from napms.access_policy.application.select_effective_policy import (
+    DiscoverEffectivePolicyScopes,
     EffectivePolicySelectionOutcome,
     SelectAccessPolicyEffectiveDesiredPolicy,
     SelectEffectiveDesiredPolicy,
@@ -90,6 +92,20 @@ class FakeAuthority:
         return AuthorityCheck(
             self.outcome,
             self.reference if self.outcome is TernaryOutcome.PERMITTED else None,
+        )
+
+
+class FakePolicyScopeDiscovery:
+    def __init__(self, permitted=(), ambiguous=()):
+        self.permitted = permitted
+        self.ambiguous = ambiguous
+        self.calls = []
+
+    def list_effective_policy_read_scopes(self, **kwargs):
+        self.calls.append(kwargs)
+        return EffectivePolicyReadScopeOptions(
+            self.permitted,
+            self.ambiguous,
         )
 
 
@@ -388,6 +404,27 @@ def test_window_persistence_failure_is_not_reported_as_success():
                 NOW,
             )
         )
+
+
+def test_effective_policy_scope_discovery_uses_explicit_effective_time():
+    authority = FakePolicyScopeDiscovery(
+        permitted=("scope-a",),
+        ambiguous=("scope-b",),
+    )
+
+    result = DiscoverEffectivePolicyScopes(authority=authority).execute(
+        actor_id="reader",
+        effective_time=START,
+    )
+
+    assert result.permitted_scopes == ("scope-a",)
+    assert result.ambiguous_scopes == ("scope-b",)
+    assert authority.calls == [
+        {
+            "actor_id": "reader",
+            "effective_time": START,
+        }
+    ]
 
 
 def selection_service(rules, authority=None):
