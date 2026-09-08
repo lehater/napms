@@ -1,6 +1,6 @@
 # Wave-1 semantic contracts — PLAN-026 WP-06
 
-Status: `accepted G2 semantic-contract baseline through I4 effective-policy refinement`.
+Status: `accepted G2 semantic-contract baseline through I5 snapshot-boundary refinement`.
 
 Date: 2026-09-08.
 
@@ -161,32 +161,67 @@ Rules:
 - arbitrary caller filters do not establish that a Rule belongs to an authorized selection;
 - evaluation uses the requested logical `as-of`, not hidden wall-clock time.
 
-## C7 — Resource Catalogue -> Normalized Policy Export
+## C7 — Resource Catalogue -> Export Snapshot
 
-Purpose: resolve current technical realization without changing Rule identity.
+Purpose: resolve technical realization for stable Resource references without changing Rule or ComponentDeployment identity.
 
 Owner: Resource Catalogue.
 
-Minimum meaning for each required endpoint realization:
+Input:
 
 ```text
-Resource/Endpoint correlation
-technical address/endpoint realization required for projection
-effective validity / source provenance
+Resource reference
++ logical as-of
 ```
 
-Temporal rule: realization must be valid for export `as-of` or provide equivalent evidence sufficient to establish that validity.
+Minimum resolved meaning:
 
-Error rule: missing/stale/unknown realization for a selected effective Rule prevents a complete successful export of that selection.
-
-## C8 — Application Communication Catalogue -> Normalized Policy Export
-
-Purpose: supply immutable DCS protocol/service/port semantics and any current nonidentity facts required for technical projection.
+```text
+exact Resource correlation
+one-or-more endpoint/address realizations required for later projection
+stable fact/version/effective-validity evidence proving validity at as-of
+opaque source provenance reference
+```
 
 Rules:
+- Resource Catalogue does not receive ComponentDeploymentId as if it owned the deployment-to-resource relation;
+- realization is resolved for the requested logical `as-of`;
+- changing endpoint/address/provider realization does not change Resource, ComponentDeployment or Access Rule identity;
+- missing/stale/unknown realization for any required Resource prevents a successful Export Snapshot.
+
+## C8 — Application Communication Catalogue -> Export Snapshot
+
+Purpose: bridge exact Rule-side ComponentDeployments to Resources and capture immutable DCS projection semantics without moving catalogue ownership into Access Policy.
+
+Owner: Application Communication Catalogue.
+
+Input:
+
+```text
+exact RuleSemanticIdentity
++ logical as-of
+```
+
+Minimum resolved meaning:
+
+```text
+exact RuleSemanticIdentity correlation
+source ComponentDeployment -> one-or-more stable Resource references
+destination ComponentDeployment -> one-or-more stable Resource references
+binding validity/provenance for as-of
+exact DCS contract/revision correlation
+complete immutable DCS projection-semantics payload
+DCS/source provenance reference
+```
+
+Rules:
+- Application Communication Catalogue owns the time-qualified ComponentDeployment -> Resource-reference binding;
+- Resource Catalogue remains owner of Resource/Endpoint realization;
+- if a deployment-to-resource binding varies over time, the returned fact must prove the binding valid for the requested `as-of`;
 - DCS decision-relevant semantics referenced by Rule identity are immutable;
-- required facts must be valid/explainable for export `as-of` where temporality applies;
-- missing required facts for an effective Rule prevent complete successful export.
+- I5 captures the complete DCS projection-semantics payload verbatim and does not interpret protocol/service/port field structure;
+- the first normalization-facing protocol/service/port schema belongs to I6;
+- subject/DCS mismatch, missing required Resource references, missing/invalid/unknown projection facts or missing provenance prevent successful snapshot assembly.
 
 ## C9 — Normalized Policy Export contract
 

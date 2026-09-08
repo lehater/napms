@@ -69,6 +69,14 @@ Application structure used to identify the communicating domain participants rel
 ### Component Deployment
 Concrete deployment of a Component used as one side of an Access Rule / Domain Interaction.
 
+### Deployment Resource Binding
+Application Communication Catalogue-owned, time-qualified relation from one Component Deployment to one-or-more stable Resource references used to obtain technical realization from Resource Catalogue.
+
+The binding is not Resource realization and is not part of Access Rule identity.
+
+### DCS Projection Semantics
+Complete immutable Application Communication Catalogue-owned projection payload correlated to one exact DCS contract/revision. I5 captures it without interpreting protocol/service/port structure; I6 defines the first normalization-facing schema.
+
 ### Directed Communication Specification
 Application-owned communication contract connecting compatible source/destination component roles and carrying protocol/service/port semantics.
 
