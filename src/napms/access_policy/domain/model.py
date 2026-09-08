@@ -8,6 +8,11 @@ class DomainInvariantError(Exception):
     """Raised when constructing or applying an impossible Access Policy state."""
 
 
+def _require_offset_aware(value: datetime, *, field_name: str) -> None:
+    if value.tzinfo is None or value.utcoffset() is None:
+        raise DomainInvariantError(f"{field_name} must be an offset-aware datetime")
+
+
 @dataclass(frozen=True, slots=True)
 class RuleSemanticIdentity:
     source_component_deployment_id: UUID
@@ -23,6 +28,22 @@ class OperationalState(str, Enum):
 class ConnectivityDecisionResult(str, Enum):
     ALLOWED = "Allowed"
     NOT_ALLOWED = "NotAllowed"
+
+
+@dataclass(frozen=True, slots=True)
+class EffectiveWindow:
+    start: datetime
+    end: datetime
+
+    def __post_init__(self) -> None:
+        _require_offset_aware(self.start, field_name="EffectiveWindow.start")
+        _require_offset_aware(self.end, field_name="EffectiveWindow.end")
+        if self.start >= self.end:
+            raise DomainInvariantError("EffectiveWindow requires start < end")
+
+    def contains(self, as_of: datetime) -> bool:
+        _require_offset_aware(as_of, field_name="as_of")
+        return self.start <= as_of < self.end
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,6 +74,17 @@ class OperationalStateTransition:
 
 
 @dataclass(frozen=True, slots=True)
+class EffectiveWindowChange:
+    rule_id: UUID
+    previous_window: EffectiveWindow | None
+    new_window: EffectiveWindow | None
+    actor_id: str
+    effective_time: datetime
+    governance_scope: str
+    authority_reference: str
+
+
+@dataclass(frozen=True, slots=True)
 class AccessRule:
     rule_id: UUID
     semantic_identity: RuleSemanticIdentity
@@ -60,6 +92,18 @@ class AccessRule:
     decision: DecisionReference
     proposal_provenance: ProposalProvenance
     operational_state_history: tuple[OperationalStateTransition, ...] = ()
+    effective_window: EffectiveWindow | None = None
+    effective_window_history: tuple[EffectiveWindowChange, ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.decision.subject != self.semantic_identity:
+            raise DomainInvariantError(
+                "decision subject does not match rule semantic identity"
+            )
+        if self.decision.result is not ConnectivityDecisionResult.ALLOWED:
+            raise DomainInvariantError(
+                "authoritative AccessRule requires an Allowed connectivity decision"
+            )
 
     @property
     def governance_scope(self) -> str:
@@ -112,3 +156,35 @@ class AccessRule:
             operational_state=target_state,
             operational_state_history=self.operational_state_history + (transition,),
         )
+
+    def with_effective_window(
+        self,
+        *,
+        window: EffectiveWindow | None,
+        actor_id: str,
+        effective_time: datetime,
+        authority_reference: str,
+    ) -> "AccessRule":
+        if window == self.effective_window:
+            raise DomainInvariantError("EffectiveWindow change requires a different value")
+
+        change = EffectiveWindowChange(
+            rule_id=self.rule_id,
+            previous_window=self.effective_window,
+            new_window=window,
+            actor_id=actor_id,
+            effective_time=effective_time,
+            governance_scope=self.governance_scope,
+            authority_reference=authority_reference,
+        )
+        return replace(
+            self,
+            effective_window=window,
+            effective_window_history=self.effective_window_history + (change,),
+        )
+
+    def contributes_effect_at(self, as_of: datetime) -> bool:
+        _require_offset_aware(as_of, field_name="as_of")
+        if self.operational_state is not OperationalState.ACTIVE:
+            return False
+        return self.effective_window is None or self.effective_window.contains(as_of)

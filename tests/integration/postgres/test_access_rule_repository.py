@@ -1,6 +1,6 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from importlib.resources import files
 from threading import Barrier
 from uuid import UUID, uuid4
@@ -18,6 +18,7 @@ from napms.access_policy.application.materialize_rule import (
 from napms.access_policy.application.ports import (
     AccessRuleCommitOutcomeUnknown,
     AccessRulePersistenceError,
+    AuthorityAction,
     AuthorityCheck,
     ConnectivityDecision,
     DecisionOutcome,
@@ -25,6 +26,16 @@ from napms.access_policy.application.ports import (
     InteractionOutcome,
     RuleSemanticIdentityConflict,
     TernaryOutcome,
+)
+from napms.access_policy.application.select_effective_policy import (
+    EffectivePolicySelectionOutcome,
+    SelectAccessPolicyEffectiveDesiredPolicy,
+    SelectEffectiveDesiredPolicy,
+)
+from napms.access_policy.application.set_effective_window import (
+    EffectiveWindowMutationOutcome,
+    SetAccessRuleEffectiveWindow,
+    SetRuleEffectiveWindow,
 )
 from napms.access_policy.application.set_operational_state import (
     OperationalStateMutationOutcome,
@@ -35,6 +46,7 @@ from napms.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,
+    EffectiveWindow,
     OperationalState,
     ProposalProvenance,
     RuleSemanticIdentity,
@@ -71,6 +83,8 @@ def clean_access_rules(postgres_dsn):
         connection.execute(
             """
             TRUNCATE TABLE
+                napms_access_policy.access_rule_effective_window_changes,
+                napms_access_policy.access_rule_effective_windows,
                 napms_access_policy.access_rule_state_transitions,
                 napms_access_policy.access_rules
             """
@@ -188,7 +202,7 @@ def new_identity():
     return RuleSemanticIdentity(uuid4(), uuid4(), uuid4())
 
 
-def new_rule(identity=None, rule_id=None):
+def new_rule(identity=None, rule_id=None, scope="scope-1"):
     identity = identity or new_identity()
     return AccessRule.materialized_from_allowed_decision(
         rule_id=rule_id or uuid4(),
@@ -200,7 +214,7 @@ def new_rule(identity=None, rule_id=None):
         ),
         proposal_provenance=ProposalProvenance(
             actor_id="actor-1",
-            authority_scope="scope-1",
+            authority_scope=scope,
             effective_time=NOW,
             authority_reference="auth-1",
             catalogue_reference="catalogue-1",
@@ -513,3 +527,315 @@ def test_concurrent_same_target_state_mutation_has_one_accepted_transition(postg
 
     assert reloaded.operational_state is OperationalState.INACTIVE
     assert len(reloaded.operational_state_history) == 1
+
+
+WINDOW_START = datetime(2026, 9, 10, 8, 0, tzinfo=timezone.utc)
+WINDOW_END = datetime(2026, 9, 10, 18, 0, tzinfo=timezone.utc)
+
+
+def window_command(rule_id, window):
+    return SetRuleEffectiveWindow(
+        rule_id=rule_id,
+        window=window,
+        actor_id="window-operator",
+        effective_time=MUTATION_TIME,
+    )
+
+
+def window_service(repository, authority=None):
+    return SetAccessRuleEffectiveWindow(
+        authority=authority or PermittedAuthority("window-auth-1"),
+        rules=repository,
+    )
+
+
+def selection_service(repository, authority=None):
+    return SelectAccessPolicyEffectiveDesiredPolicy(
+        authority=authority or PermittedAuthority("read-auth-1"),
+        rules=repository,
+    )
+
+
+def test_repository_lists_exact_governance_scope(postgres_dsn):
+    scope_one = new_rule(rule_id=UUID(int=51), scope="scope-1")
+    scope_two = new_rule(rule_id=UUID(int=52), scope="scope-2")
+    persist_rule(postgres_dsn, scope_one)
+    persist_rule(postgres_dsn, scope_two)
+
+    with psycopg.connect(postgres_dsn) as connection:
+        rules = PostgresAccessRuleRepository(connection).list_by_governance_scope(
+            "scope-1"
+        )
+
+    assert rules == (scope_one,)
+
+
+def test_effective_window_round_trip_preserves_identity_state_decision_and_audit(
+    postgres_dsn,
+):
+    rule = new_rule(rule_id=UUID(int=53))
+    persist_rule(postgres_dsn, rule)
+    window = EffectiveWindow(WINDOW_START, WINDOW_END)
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAccessRuleRepository(connection)
+        result = window_service(repository).execute(
+            window_command(rule.rule_id, window)
+        )
+
+    assert result.outcome is EffectiveWindowMutationOutcome.UPDATED
+
+    with psycopg.connect(postgres_dsn) as connection:
+        reloaded = PostgresAccessRuleRepository(connection).get_by_id(rule.rule_id)
+
+    assert reloaded.rule_id == rule.rule_id
+    assert reloaded.semantic_identity == rule.semantic_identity
+    assert reloaded.decision == rule.decision
+    assert reloaded.operational_state is OperationalState.ACTIVE
+    assert reloaded.governance_scope == "scope-1"
+    assert reloaded.effective_window == window
+    assert len(reloaded.effective_window_history) == 1
+    audit = reloaded.effective_window_history[0]
+    assert audit.previous_window is None
+    assert audit.new_window == window
+    assert audit.actor_id == "window-operator"
+    assert audit.effective_time == MUTATION_TIME
+    assert audit.governance_scope == "scope-1"
+    assert audit.authority_reference == "window-auth-1"
+
+
+def test_effective_window_remove_appends_history(postgres_dsn):
+    rule = new_rule(rule_id=UUID(int=54))
+    persist_rule(postgres_dsn, rule)
+    window = EffectiveWindow(WINDOW_START, WINDOW_END)
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAccessRuleRepository(connection)
+        first = window_service(repository).execute(
+            window_command(rule.rule_id, window)
+        )
+        assert first.outcome is EffectiveWindowMutationOutcome.UPDATED
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAccessRuleRepository(connection)
+        second = window_service(repository).execute(
+            SetRuleEffectiveWindow(
+                rule_id=rule.rule_id,
+                window=None,
+                actor_id="window-remover",
+                effective_time=MUTATION_TIME + timedelta(minutes=1),
+            )
+        )
+        assert second.outcome is EffectiveWindowMutationOutcome.UPDATED
+
+    with psycopg.connect(postgres_dsn) as connection:
+        reloaded = PostgresAccessRuleRepository(connection).get_by_id(rule.rule_id)
+
+    assert reloaded.effective_window is None
+    assert len(reloaded.effective_window_history) == 2
+    assert reloaded.effective_window_history[0].new_window == window
+    assert reloaded.effective_window_history[1].previous_window == window
+    assert reloaded.effective_window_history[1].new_window is None
+
+
+def test_state_and_window_changes_can_interleave_without_losing_either_history(
+    postgres_dsn,
+):
+    rule = new_rule(rule_id=UUID(int=55))
+    persist_rule(postgres_dsn, rule)
+    window = EffectiveWindow(WINDOW_START, WINDOW_END)
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAccessRuleRepository(connection)
+        assert (
+            state_service(repository).execute(state_command(rule.rule_id)).outcome
+            is OperationalStateMutationOutcome.UPDATED
+        )
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAccessRuleRepository(connection)
+        assert (
+            window_service(repository).execute(
+                window_command(rule.rule_id, window)
+            ).outcome
+            is EffectiveWindowMutationOutcome.UPDATED
+        )
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAccessRuleRepository(connection)
+        assert (
+            state_service(repository).execute(
+                SetRuleOperationalState(
+                    rule_id=rule.rule_id,
+                    target_state=OperationalState.ACTIVE,
+                    actor_id="state-operator-2",
+                    effective_time=MUTATION_TIME + timedelta(minutes=2),
+                )
+            ).outcome
+            is OperationalStateMutationOutcome.UPDATED
+        )
+
+    with psycopg.connect(postgres_dsn) as connection:
+        reloaded = PostgresAccessRuleRepository(connection).get_by_id(rule.rule_id)
+
+    assert reloaded.operational_state is OperationalState.ACTIVE
+    assert reloaded.effective_window == window
+    assert len(reloaded.operational_state_history) == 2
+    assert len(reloaded.effective_window_history) == 1
+
+
+def test_window_and_audit_rollback_together_on_failed_commit(postgres_dsn):
+    rule = new_rule(rule_id=UUID(int=56))
+    persist_rule(postgres_dsn, rule)
+    window = EffectiveWindow(WINDOW_START, WINDOW_END)
+
+    with psycopg.connect(postgres_dsn) as connection:
+        delegate = PostgresAccessRuleRepository(connection)
+        repository = RollbackThenFailRepository(delegate, connection)
+        with pytest.raises(AccessRulePersistenceError):
+            window_service(repository).execute(window_command(rule.rule_id, window))
+
+    with psycopg.connect(postgres_dsn) as connection:
+        reloaded = PostgresAccessRuleRepository(connection).get_by_id(rule.rule_id)
+
+    assert reloaded.effective_window is None
+    assert reloaded.effective_window_history == ()
+
+
+def test_unknown_window_commit_acknowledgement_is_not_reported_as_success(
+    postgres_dsn,
+):
+    rule = new_rule(rule_id=UUID(int=57))
+    persist_rule(postgres_dsn, rule)
+    window = EffectiveWindow(WINDOW_START, WINDOW_END)
+
+    with psycopg.connect(postgres_dsn) as connection:
+        delegate = PostgresAccessRuleRepository(connection)
+        repository = CommitThenUnknownRepository(delegate)
+        with pytest.raises(AccessRuleCommitOutcomeUnknown):
+            window_service(repository).execute(window_command(rule.rule_id, window))
+
+    with psycopg.connect(postgres_dsn) as connection:
+        reloaded = PostgresAccessRuleRepository(connection).get_by_id(rule.rule_id)
+
+    assert reloaded.effective_window == window
+    assert len(reloaded.effective_window_history) == 1
+
+
+def test_concurrent_same_window_mutation_has_one_accepted_change(postgres_dsn):
+    rule = new_rule(rule_id=UUID(int=58))
+    persist_rule(postgres_dsn, rule)
+    window = EffectiveWindow(WINDOW_START, WINDOW_END)
+    barrier = Barrier(2)
+
+    def worker(actor_id):
+        try:
+            with psycopg.connect(postgres_dsn) as connection:
+                repository = SaveBarrierRepository(
+                    PostgresAccessRuleRepository(connection),
+                    barrier,
+                )
+                return window_service(repository).execute(
+                    SetRuleEffectiveWindow(
+                        rule_id=rule.rule_id,
+                        window=window,
+                        actor_id=actor_id,
+                        effective_time=MUTATION_TIME,
+                    )
+                )
+        except AccessRulePersistenceError as exc:
+            return exc
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(executor.map(worker, ("window-a", "window-b")))
+
+    assert sum(
+        isinstance(result, AccessRulePersistenceError) for result in results
+    ) == 1
+    successful = [
+        result
+        for result in results
+        if not isinstance(result, AccessRulePersistenceError)
+    ]
+    assert len(successful) == 1
+    assert successful[0].outcome is EffectiveWindowMutationOutcome.UPDATED
+
+    with psycopg.connect(postgres_dsn) as connection:
+        reloaded = PostgresAccessRuleRepository(connection).get_by_id(rule.rule_id)
+
+    assert reloaded.effective_window == window
+    assert len(reloaded.effective_window_history) == 1
+
+
+def test_effective_policy_selection_uses_postgres_scope_read_and_core_as_of_logic(
+    postgres_dsn,
+):
+    always = new_rule(rule_id=UUID(int=61), scope="scope-1")
+    in_window = new_rule(rule_id=UUID(int=62), scope="scope-1")
+    ended = new_rule(rule_id=UUID(int=63), scope="scope-1")
+    suspended = new_rule(rule_id=UUID(int=64), scope="scope-1")
+    other_scope = new_rule(rule_id=UUID(int=65), scope="scope-2")
+    for rule in (always, in_window, ended, suspended, other_scope):
+        persist_rule(postgres_dsn, rule)
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAccessRuleRepository(connection)
+        assert (
+            window_service(repository).execute(
+                window_command(
+                    in_window.rule_id,
+                    EffectiveWindow(WINDOW_START, WINDOW_END),
+                )
+            ).outcome
+            is EffectiveWindowMutationOutcome.UPDATED
+        )
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAccessRuleRepository(connection)
+        assert (
+            window_service(repository).execute(
+                window_command(
+                    ended.rule_id,
+                    EffectiveWindow(
+                        WINDOW_START - timedelta(hours=2),
+                        WINDOW_START,
+                    ),
+                )
+            ).outcome
+            is EffectiveWindowMutationOutcome.UPDATED
+        )
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAccessRuleRepository(connection)
+        assert (
+            state_service(repository).execute(
+                state_command(suspended.rule_id)
+            ).outcome
+            is OperationalStateMutationOutcome.UPDATED
+        )
+
+    authority = PermittedAuthority("read-auth-1")
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAccessRuleRepository(connection)
+        result = selection_service(repository, authority).execute(
+            SelectEffectiveDesiredPolicy(
+                scope="scope-1",
+                as_of=WINDOW_START,
+                actor_id="reader-1",
+            )
+        )
+
+    assert result.outcome is EffectivePolicySelectionOutcome.SELECTED
+    assert tuple(rule.rule_id for rule in result.rules) == (
+        UUID(int=61),
+        UUID(int=62),
+    )
+    assert result.authority_reference == "read-auth-1"
+    assert authority.calls == [
+        {
+            "actor_id": "reader-1",
+            "action": AuthorityAction.READ_EFFECTIVE_DESIRED_POLICY,
+            "scope": "scope-1",
+            "effective_time": WINDOW_START,
+        }
+    ]
