@@ -2,6 +2,6 @@
 
 Current: none.
 
-I10 Policy Operations Workspace is complete and absorbed into canonical requirements/engineering/UI truth.
+I11 Dockerized Local Runtime is complete and absorbed into canonical engineering/runtime truth.
 
 Select the next product/increment priority before creating the next active plan.

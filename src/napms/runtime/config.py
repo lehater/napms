@@ -19,6 +19,12 @@ class HttpServerConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class LocalSeedConfig:
+    application: ApplicationConfig
+    actor_id: str
+
+
+@dataclass(frozen=True, slots=True)
 class HttpRuntimeConfig:
     application: ApplicationConfig
     local_credential: LocalCredential = field(repr=False)
@@ -63,4 +69,19 @@ def load_http_runtime_config(
             host=source.get("NAPMS_HTTP_HOST", "127.0.0.1"),
             port=port,
         ),
+    )
+
+
+
+def load_local_seed_config(
+    environ: Mapping[str, str] | None = None,
+) -> LocalSeedConfig:
+    source = os.environ if environ is None else environ
+    application = load_application_config(source)
+    actor_id = source.get("NAPMS_LOCAL_AUTH_ACTOR_ID")
+    if not actor_id:
+        raise ConfigurationError("NAPMS_LOCAL_AUTH_ACTOR_ID is required")
+    return LocalSeedConfig(
+        application=application,
+        actor_id=actor_id,
     )

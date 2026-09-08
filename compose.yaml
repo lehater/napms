@@ -1,0 +1,69 @@
+name: napms-local
+
+x-backend: &backend
+  image: napms-api:local
+  build:
+    context: .
+    dockerfile: Dockerfile
+  environment: &backend-environment
+    NAPMS_ENVIRONMENT: local-dev
+    NAPMS_DATABASE_DSN: postgresql://napms@postgres:5432/napms
+    NAPMS_LOCAL_AUTH_LOGIN: ${NAPMS_LOCAL_AUTH_LOGIN:-local-admin}
+    NAPMS_LOCAL_AUTH_ACTOR_ID: ${NAPMS_LOCAL_AUTH_ACTOR_ID:-local-admin}
+    NAPMS_LOCAL_AUTH_PASSWORD_HASH: ${NAPMS_LOCAL_AUTH_PASSWORD_HASH:-invalid-local-hash}
+    NAPMS_HTTP_HOST: 0.0.0.0
+    NAPMS_HTTP_PORT: "8000"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: napms
+      POSTGRES_DB: napms
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - napms-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U napms -d napms"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  migrate:
+    <<: *backend
+    command: ["napms-migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  seed:
+    <<: *backend
+    command: ["napms-seed-local"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
+  api:
+    <<: *backend
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  web:
+    image: napms-web:local
+    build:
+      context: web
+      dockerfile: Dockerfile
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${NAPMS_WEB_PORT:-8080}:8080"
+    restart: unless-stopped
+
+volumes:
+  napms-postgres:

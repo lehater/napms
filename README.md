@@ -2,40 +2,72 @@
 
 **Network Access Policy Management System**
 
-This is the authoritative greenfield product repository for NAPMS.
-
-## Repository boundary
-
-This repository contains current product requirements, living DDD models, architecture decisions, engineering policies, production-target code and tests.
-
-It intentionally does **not** contain Legacy implementation, reverse-engineering evidence, old prototypes or reconstruction workflow artifacts. Historical material may inform problem framing only; it is not an implementation dependency of NAPMS.
+Authoritative greenfield NAPMS product repository.
 
 ## Current implementation state
 
-Wave 1 is implementation-ready through I7: Access Policy semantics, PostgreSQL persistence, Authority Management, Application Communication Catalogue, Resource Catalogue, coherent Export Snapshot, vendor-neutral normalization and a local-dev greenfield PostgreSQL end-to-end proof have passed their gates.
+NAPMS is implemented through I11:
+- Access Policy, Authority Management, Application Communication Catalogue and Resource Catalogue;
+- PostgreSQL persistence;
+- Web/HTTP runtime;
+- Access Rule operational workspace;
+- EffectiveWindow management;
+- Effective Desired Policy and normalized policy views.
 
-The active plan owns selection of the first concrete consumer/runtime boundary. HTTP/CLI/public serialization are not assumed before that consumer is selected.
+I11 adds and proves the reproducible local Docker runtime.
 
-## Layout
+## Local Docker start
 
-```text
-src/napms/                 product code
-tests/                     executable specifications and architecture tests
-docs/domain/               living DDD model
-docs/requirements/         accepted product requirements
-docs/architecture/         target architecture
-docs/decisions/            ADRs
-docs/engineering/          implementation and engineering policies
-docs/baseline/             accepted readiness/provenance snapshots
-```
-
-## Development
+Prerequisites: Docker Engine/Desktop with Docker Compose v2 and Python 3.
 
 ```bash
-python -m pip install -e ".[dev]"
+make dev-up
+```
+
+The command builds and starts PostgreSQL, tracked migrations, local demo seed, FastAPI and Web/nginx, runs an authenticated smoke check, then prints the local URL and generated login credentials.
+
+Open the printed URL (default `http://127.0.0.1:8080`).
+
+Useful commands:
+
+```bash
+make dev-logs
+make dev-down
+make dev-reset
+```
+
+`dev-down` preserves the database volume. `dev-reset` deletes local database state.
+
+See `docs/engineering/local-docker-runtime.md` for the topology and explicit non-production boundary.
+
+## Native development
+
+```bash
+python -m pip install -e ".[dev,postgres,runtime]"
 make test
 ```
 
-PostgreSQL integration tests use the optional `postgres` extra and `make postgres-test`.
+PostgreSQL integration tests use `NAPMS_TEST_POSTGRES_DSN` and `make postgres-test`.
+
+Web build:
+
+```bash
+cd web
+npm install
+npm run build
+```
+
+## Repository layout
+
+```text
+src/napms/                 product code
+web/                       React Web UI
+tests/                     executable specifications and integration tests
+docs/domain/               living DDD model
+docs/requirements/         accepted product requirements
+docs/architecture/         architecture contracts
+docs/engineering/          engineering/runtime policies
+docs/plans/active/         current execution plan
+```
 
 See `AGENTS.md` and `docs/README.md` before changing domain or architecture semantics.

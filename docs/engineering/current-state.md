@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I10 PASS — Policy Operations Workspace implemented`.
+Status: `I11 PASS — Dockerized Local Runtime implemented`.
 
 Date: 2026-09-09.
 
@@ -79,6 +79,29 @@ Implemented:
 - final architecture/security review has no open P0/P1 finding;
 - core, PostgreSQL, Web, harness and knowledge gates passed.
 
+## I11 result
+
+`PASS` for the Dockerized Local Runtime.
+
+Implemented:
+- one-command local startup through `make dev-up`;
+- non-root Python backend image;
+- multi-stage React build + nginx runtime image;
+- Docker Compose topology `postgres -> migrate -> seed -> api -> web`;
+- one public local endpoint on `127.0.0.1:8080`; PostgreSQL and FastAPI remain unexposed to the host;
+- named persistent PostgreSQL volume with explicit `dev-reset`;
+- tracked global migration registry over module-owned SQL files;
+- migration journal with SHA-256 checksum protection and PostgreSQL advisory locking;
+- repeatable migration execution and fail-fast checksum drift behavior;
+- idempotent local-demo seed for one usable connectivity flow and current Authority actions;
+- typed seed/runtime configuration;
+- secret-safe local login bootstrap: random plaintext password exists only in startup-helper process memory; only its scrypt hash is passed to Compose;
+- public-endpoint smoke proof through nginx: readiness -> login -> session -> seeded proposal scope;
+- Docker CI gate proving fresh full-stack startup plus repeated migration and seed execution;
+- explicit local-only PostgreSQL trust boundary with no host DB port and no production claim;
+- final architecture/security review has no open P0/P1 finding;
+- core, PostgreSQL, Web, Docker, harness and knowledge gates passed.
+
 ## I8 scope boundary
 
 I8 intentionally does **not** define Connectivity Decision Domain internals.
@@ -108,6 +131,7 @@ Implemented:
 - explicit local-dev Connectivity Decision adapter;
 - public normalized-policy JSON serializer;
 - React Web UI through Operational Workspace and Policy Operations views;
-- structured runtime observability/correlation and health/readiness.
+- structured runtime observability/correlation and health/readiness;
+- Dockerized local runtime with tracked migrations, demo seed and nginx same-origin entrypoint.
 
 The implementation remains greenfield: Legacy, MSSQL and vendor/device execution are not dependencies.
