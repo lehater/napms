@@ -92,6 +92,25 @@ def authenticated_smoke(
         if "local-demo" not in scopes:
             raise RuntimeError("local demo authority seed is unavailable")
 
+    with opener.open(
+        f"{base_url}/api/v1/access-rule-proposals/interactions"
+        "?scope=local-demo&page=1&pageSize=50",
+        timeout=5,
+    ) as response:
+        payload = json.load(response)
+        if len(payload["items"]) != 1:
+            raise RuntimeError("local demo interaction seed is unavailable")
+        catalogue = payload["items"][0].get("catalogue") or {}
+        if catalogue.get("sourceDisplayName") != "Demo Web Frontend":
+            raise RuntimeError("local demo source display metadata is unavailable")
+        if catalogue.get("destinationDisplayName") != "Demo Orders API":
+            raise RuntimeError("local demo destination display metadata is unavailable")
+        if catalogue.get("dcsDisplayName") != "HTTPS Orders API":
+            raise RuntimeError("local demo DCS display metadata is unavailable")
+        alternatives = catalogue.get("trafficAlternatives") or []
+        if not alternatives or alternatives[0].get("protocol") != "tcp":
+            raise RuntimeError("local demo DCS traffic summary is unavailable")
+
 
 def up(*, print_credentials: bool = True) -> None:
     login = os.environ.get("NAPMS_LOCAL_AUTH_LOGIN", "local-admin")
