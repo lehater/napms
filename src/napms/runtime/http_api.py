@@ -45,6 +45,7 @@ from napms.access_policy.application.set_operational_state import (
     SetRuleOperationalState,
 )
 from napms.access_policy.application.select_effective_policy import (
+    DiscoverEffectivePolicyScopes,
     EffectivePolicySelectionOutcome,
     SelectAccessPolicyEffectiveDesiredPolicy,
     SelectEffectiveDesiredPolicy,
@@ -943,7 +944,9 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                 message="asOf must include an explicit timezone offset.",
             )
         with dependencies.open_scope() as runtime_scope:
-            result = runtime_scope.effective_policy_scope_discovery.list_effective_policy_read_scopes(
+            result = DiscoverEffectivePolicyScopes(
+                authority=runtime_scope.effective_policy_scope_discovery,
+            ).execute(
                 actor_id=actor.actor_id,
                 effective_time=as_of,
             )
