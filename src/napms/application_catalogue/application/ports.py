@@ -15,6 +15,13 @@ class CataloguePersistenceError(Exception):
 class ApplicationCatalogueRepository(Protocol):
     def get_dcs_revision(self, revision_id: UUID) -> DcsRevision | None: ...
 
+    def list_dcs_revisions(
+        self,
+        *,
+        offset: int,
+        limit: int,
+    ) -> tuple[DcsRevision, ...]: ...
+
     def find_effective_bindings(
         self,
         *,
