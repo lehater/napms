@@ -3,7 +3,7 @@ export function toLocalDateTimeInput(value: string | null): string {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return ""
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
-  return local.toISOString().slice(0, 16)
+  return local.toISOString().slice(0, 19)
 }
 
 export function nowLocalDateTimeInput(): string {
