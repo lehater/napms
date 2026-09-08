@@ -1,4 +1,5 @@
 import {
+  ClipboardList,
   Clock3,
   ListTree,
   LogOut,
@@ -10,7 +11,7 @@ import {
 import type { Actor } from "@/api"
 import { Button } from "@/components/ui/Button"
 
-type NavKey = "compose" | "rules" | "effective" | "normalized"
+type NavKey = "requirements" | "compose" | "rules" | "effective" | "normalized"
 
 export function AppShell({
   actor,
@@ -44,6 +45,19 @@ export function AppShell({
         </div>
         <nav className="flex-1 p-3" aria-label="Primary navigation">
           <div className="px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
+            Connectivity Needs
+          </div>
+          <button
+            type="button"
+            className={navClass("requirements")}
+            aria-current={activeNav === "requirements" ? "page" : undefined}
+            onClick={() => onNavigate("requirements")}
+          >
+            <ClipboardList className="size-4" aria-hidden="true" />
+            My Connectivity Needs
+          </button>
+
+          <div className="px-3 pb-2 pt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
             Access Policy
           </div>
           <button
@@ -92,6 +106,13 @@ export function AppShell({
       <div className="min-w-0">
         <header className="flex min-h-16 items-center justify-between gap-3 border-b border-[#E2E8F0] bg-white px-4 md:px-6">
           <div className="flex items-center gap-2 md:hidden">
+            <button
+              type="button"
+              className="rounded-md px-2 py-1.5 text-xs font-semibold text-[#334155] hover:bg-[#F1F5F9]"
+              onClick={() => onNavigate("requirements")}
+            >
+              Needs
+            </button>
             <button
               type="button"
               className="rounded-md px-2 py-1.5 text-xs font-semibold text-[#334155] hover:bg-[#F1F5F9]"
