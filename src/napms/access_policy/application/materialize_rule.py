@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 from napms.access_policy.application.ports import (
     AccessRuleRepository,
+    AuthorityAction,
     AuthorityPort,
     CommunicationCataloguePort,
     ConnectivityDecisionPort,
@@ -71,6 +72,7 @@ class MaterializeAllowedAccessRule:
     def execute(self, command: SubmitAccessRuleProposal) -> MaterializationResult:
         authority = self._authority.check(
             actor_id=command.actor_id,
+            action=AuthorityAction.PROPOSE_CONNECTIVITY,
             scope=command.authority_scope,
             effective_time=command.effective_time,
         )
