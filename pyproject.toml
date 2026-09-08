@@ -11,6 +11,7 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0.0"]
+postgres = ["psycopg[binary]>=3.2,<4"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -18,5 +19,11 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"napms.access_policy.adapters.postgres" = ["migrations/*.sql"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "postgres: requires the PostgreSQL I2 integration test environment",
+]
