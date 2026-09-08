@@ -136,6 +136,22 @@ The following remain deferred:
 - CSV/XLSX serializers;
 - vendor rendering, configured-state reconciliation and device execution.
 
+## Post-Wave-1 execution
+
+The ordered path toward the current strategic-model notion of product completion is tracked in:
+
+`docs/engineering/post-wave1-product-completion-roadmap.md`.
+
+Current selected increment:
+
+`I13 — Connectivity Requirements Core`.
+
+The detailed mutable execution state lives only in:
+
+`docs/plans/active/PLAN-013-i13-connectivity-requirements-core.md`.
+
+Future roadmap increments are not pre-expanded into active plans; each is promoted only when selected, so deferred domain unknowns are not accidentally represented as accepted implementation detail.
+
 ## Current infrastructure boundary
 
 Implemented:
