@@ -80,6 +80,6 @@ NetFlow/syslog capture, vendor polling/parsers, CSV/XLSX import and raw config s
 
 `DDD-BDM-010 / P-010-EIGHT-BC` is the accepted current Strategic DDD baseline. `docs/ddd/connectivity-requirements-evidence.md` records the eighth-context evidence and `docs/ddd/bdm-010-delta.json` records the accepted delta.
 
-The deterministic scorer rerun for DDD-BDM-010 was explicitly waived by architectural/domain-owner decision. No DDD-BDM-010 scorer metrics are claimed; the previously generated DDD-BDM-009 metrics remain historical evidence only.
+The legacy-reconstruction scorer was not rerun for the accepted DDD-BDM-010 baseline. No scorer metrics are claimed by the NAPMS living model; historical scoring evidence remains in the source reconstruction repository.
 
 Strategic DDD is closed for the current scope. This statement does not start or imply Tactical DDD.

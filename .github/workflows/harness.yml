@@ -1,0 +1,29 @@
+name: harness gate
+
+on:
+  pull_request:
+    types: [ready_for_review]
+    paths:
+      - "AGENTS.md"
+      - "src/AGENTS.md"
+      - "docs/AGENTS.md"
+      - ".agents/**"
+      - "docs/process/**"
+      - "docs/plans/**"
+      - "tools/validate_harness.py"
+      - "tools/validate_plans.py"
+      - "tools/validate_skill_routing.py"
+      - "tests/evals/**"
+      - "Makefile"
+      - ".github/workflows/harness.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - run: make harness-check
