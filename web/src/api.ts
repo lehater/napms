@@ -55,6 +55,7 @@ export type RuleDetailResponse = {
   rule: RuleDetailDto
   capabilities: {
     setOperationalState: "Permitted" | "Denied" | "Unknown"
+    setEffectiveWindow: "Permitted" | "Denied" | "Unknown"
   }
 }
 
@@ -200,5 +201,106 @@ export async function setAccessRuleOperationalState(
       method: "PATCH",
       body: JSON.stringify({ targetState }),
     },
+  )
+}
+
+
+export async function setAccessRuleEffectiveWindow(
+  ruleId: string,
+  window: { start: string; end: string } | null,
+): Promise<{
+  outcome: "Updated" | "AlreadyInRequestedWindow"
+  rule: RuleDto
+}> {
+  return request(
+    `/api/v1/access-rules/${encodeURIComponent(ruleId)}/effective-window`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ window }),
+    },
+  )
+}
+
+export async function listPolicyViewScopes(): Promise<{
+  scopes: ProposalScope[]
+  ambiguousScopes: ProposalScope[]
+}> {
+  return request("/api/v1/policy-views/scopes")
+}
+
+export type EffectivePolicyResponse = {
+  scope: string
+  asOf: string
+  authorityReference: string
+  rules: RuleDto[]
+}
+
+export async function getEffectiveDesiredPolicy(
+  scope: string,
+  asOf: string,
+): Promise<EffectivePolicyResponse> {
+  const params = new URLSearchParams({ scope, asOf })
+  return request<EffectivePolicyResponse>(
+    `/api/v1/effective-desired-policy?${params}`,
+  )
+}
+
+export type PortConstraintDto = {
+  kind: "Any" | "NotApplicable" | "Ranges"
+  ranges?: { first: number; last: number }[]
+}
+
+export type NormalizedPolicyRow = {
+  ruleId: string
+  semanticIdentity: ProposalInteraction
+  decisionReference: string | null
+  governanceScope: string
+  operationalState: "Active" | "Inactive"
+  effectiveWindow: { start: string; end: string } | null
+  snapshotAsOf: string
+  readAuthorityReference: string
+  source: {
+    resourceReference: string
+    endpointReference: string
+    technicalAddress: string
+    factReference: string
+    validityReference: string
+    provenanceReference: string
+  }
+  destination: {
+    resourceReference: string
+    endpointReference: string
+    technicalAddress: string
+    factReference: string
+    validityReference: string
+    provenanceReference: string
+  }
+  traffic: {
+    protocol: string
+    sourcePorts: PortConstraintDto
+    destinationPorts: PortConstraintDto
+    serviceReference: string | null
+  }
+  applicationCommunicationCatalogue: {
+    factReference: string
+    validityReference: string
+    provenanceReference: string
+  }
+}
+
+export type NormalizedPolicyResponse = {
+  scope: string
+  asOf: string
+  authorityReference: string
+  rows: NormalizedPolicyRow[]
+}
+
+export async function getNormalizedPolicy(
+  scope: string,
+  asOf: string,
+): Promise<NormalizedPolicyResponse> {
+  const params = new URLSearchParams({ scope, asOf })
+  return request<NormalizedPolicyResponse>(
+    `/api/v1/normalized-policy?${params}`,
   )
 }
