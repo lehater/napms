@@ -8,7 +8,7 @@ Prove that a real relational AccessRuleRepository/UnitOfWork preserves the alrea
 
 ## Current stage
 
-Select the simplest production-grade relational engine supported by the intended deployment and define the persistence adapter/integration-test harness. No persistence implementation should start by weakening or reshaping the accepted core contract.
+PostgreSQL is accepted as the I2 production proof engine. Next: define the persistence adapter boundary, migration/schema, test harness and transaction/conflict mapping before implementing the real repository/UoW.
 
 ## Inputs
 
@@ -60,7 +60,7 @@ HTTP is not required for the persistence proof. Add a transport adapter in I2 on
 
 ## Blockers
 
-The production-grade relational engine/deployment support constraint is not yet recorded in this repository. This is an engineering choice to resolve before adapter implementation; it does not reopen I1 semantics.
+None currently known.
 
 ## Validation
 
