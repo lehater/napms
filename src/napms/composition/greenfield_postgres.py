@@ -9,6 +9,10 @@ from napms.application_catalogue.adapters.access_policy import (
     AccessPolicyCommunicationCatalogueAdapter,
     AccessPolicyProposalInteractionCatalogueAdapter,
 )
+from napms.application_catalogue.adapters.connectivity_requirements import (
+    ConnectivityRequirementsCatalogueAdapter,
+    ConnectivityRequirementsInteractionDiscoveryAdapter,
+)
 from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
 from napms.application_catalogue.adapters.policy_export import (
     PolicyExportApplicationCatalogueAdapter,
@@ -32,6 +36,11 @@ from napms.authority_management.adapters.access_policy import (
     AccessPolicyProposalScopeAdapter,
     AccessPolicyRuleReadScopeAdapter,
 )
+from napms.authority_management.adapters.connectivity_requirements import (
+    ConnectivityRequirementsAuthorityAdapter,
+    ConnectivityRequirementsDeclarationScopeAdapter,
+    ConnectivityRequirementsReadScopeAdapter,
+)
 from napms.authority_management.adapters.postgres import (
     PostgresAuthorityAssignmentRepository,
 )
@@ -40,6 +49,9 @@ from napms.authority_management.application.list_scopes import (
     ListEffectiveAuthorityScopes,
 )
 from napms.composition.config import ApplicationConfig
+from napms.connectivity_requirements.adapters.postgres import (
+    PostgresConnectivityRequirementRepository,
+)
 from napms.composition.postgres_migrations import apply_greenfield_migrations
 from napms.resource_catalogue.adapters.policy_export import (
     PolicyExportResourceCatalogueAdapter,
@@ -64,6 +76,12 @@ class GreenfieldPostgresScope:
     resource_projection: PolicyExportResourceCatalogueAdapter
     access_rules: PostgresAccessRuleRepository
     dcs_decoder: JsonDcsProjectionCodec
+    requirement_authority: ConnectivityRequirementsAuthorityAdapter
+    requirement_declaration_scopes: ConnectivityRequirementsDeclarationScopeAdapter
+    requirement_read_scopes: ConnectivityRequirementsReadScopeAdapter
+    requirement_catalogue: ConnectivityRequirementsCatalogueAdapter
+    requirement_interaction_catalogue: ConnectivityRequirementsInteractionDiscoveryAdapter
+    connectivity_requirements: PostgresConnectivityRequirementRepository
 
 
 @contextmanager
@@ -77,6 +95,9 @@ def open_greenfield_scope(
         acc_connection = stack.enter_context(psycopg.connect(config.postgres.dsn))
         rc_connection = stack.enter_context(psycopg.connect(config.postgres.dsn))
         access_policy_connection = stack.enter_context(
+            psycopg.connect(config.postgres.dsn)
+        )
+        connectivity_requirements_connection = stack.enter_context(
             psycopg.connect(config.postgres.dsn)
         )
 
@@ -105,6 +126,22 @@ def open_greenfield_scope(
             discovery=ListEffectiveAuthorityScopes(assignments=authority_repository)
         )
 
+        requirement_authority = ConnectivityRequirementsAuthorityAdapter(
+            checker=CheckAuthority(assignments=authority_repository)
+        )
+        requirement_declaration_scopes = (
+            ConnectivityRequirementsDeclarationScopeAdapter(
+                discovery=ListEffectiveAuthorityScopes(
+                    assignments=authority_repository
+                )
+            )
+        )
+        requirement_read_scopes = ConnectivityRequirementsReadScopeAdapter(
+            discovery=ListEffectiveAuthorityScopes(
+                assignments=authority_repository
+            )
+        )
+
         application_repository = PostgresApplicationCatalogueRepository(
             acc_connection
         )
@@ -118,6 +155,18 @@ def open_greenfield_scope(
         )
         catalogue_describer = DescribeDirectedInteractions(
             catalogue=application_repository
+        )
+        requirement_catalogue = ConnectivityRequirementsCatalogueAdapter(
+            validator=ValidateDirectedInteraction(
+                catalogue=application_repository
+            )
+        )
+        requirement_interaction_catalogue = (
+            ConnectivityRequirementsInteractionDiscoveryAdapter(
+                discovery=ListDirectedInteractions(
+                    catalogue=application_repository
+                )
+            )
         )
         application_projection = PolicyExportApplicationCatalogueAdapter(
             resolver=ResolveApplicationProjection(
@@ -144,4 +193,12 @@ def open_greenfield_scope(
             resource_projection=resource_projection,
             access_rules=PostgresAccessRuleRepository(access_policy_connection),
             dcs_decoder=JsonDcsProjectionCodec(),
+            requirement_authority=requirement_authority,
+            requirement_declaration_scopes=requirement_declaration_scopes,
+            requirement_read_scopes=requirement_read_scopes,
+            requirement_catalogue=requirement_catalogue,
+            requirement_interaction_catalogue=requirement_interaction_catalogue,
+            connectivity_requirements=PostgresConnectivityRequirementRepository(
+                connectivity_requirements_connection
+            ),
         )
