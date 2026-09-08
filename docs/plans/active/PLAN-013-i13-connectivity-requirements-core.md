@@ -27,7 +27,7 @@ I13 deliberately stops before Requirement-to-Policy Alignment and before Connect
 
 ## Current stage
 
-**WP5 — PostgreSQL persistence.**
+**WP6 — HTTP contract/runtime.**
 
 Evidence synthesis is complete. Working packet:
 `docs/plans/active/I13-WP1-connectivity-requirements-decision-packet.md`.
@@ -151,7 +151,7 @@ Core gate must pass before infrastructure.
 
 ### WP5 — PostgreSQL persistence
 
-Status: `active`.
+Status: `done`.
 
 Implement module-owned schema/migration/repository:
 - authoritative uniqueness/idempotency from accepted identity;
@@ -161,7 +161,7 @@ Implement module-owned schema/migration/repository:
 
 ### WP6 — HTTP contract/runtime
 
-Status: `planned`.
+Status: `active`.
 
 Add only use-case-oriented endpoints required by the first owner/responsible-user journey.
 
@@ -243,8 +243,8 @@ I13 is complete only when:
 
 No current owner/product blocker.
 
-No current semantic blocker. WP4 core/harness/knowledge gates passed; PostgreSQL gate is open.
+No current semantic blocker. WP5 PostgreSQL gate passed. Docker fresh-stack packaging gap was identified and fixed by including the new migration in package data.
 
 ## Next
 
-Implement WP5 module-owned PostgreSQL schema/repository, tracked migration, active semantic uniqueness/version concurrency and integration evidence.
+Implement WP6 AM/ACC adapters, greenfield composition and the use-case-oriented HTTP contract/runtime tests. Preserve the server trust boundary.
