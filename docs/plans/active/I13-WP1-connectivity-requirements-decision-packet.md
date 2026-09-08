@@ -1,6 +1,6 @@
 # I13 WP1 — Connectivity Requirements Tactical decision packet
 
-Status: `working decision packet; not canonical domain truth`.
+Status: `accepted owner decisions; canonicalized into Connectivity Requirements Tactical DDD`.
 
 Date: 2026-09-09.
 
@@ -15,7 +15,7 @@ This packet separates:
 - alternatives;
 - owner decisions still required.
 
-Nothing marked `RECOMMENDED` becomes canonical until accepted.
+All seven recommended owner choices were accepted on 2026-09-09 and canonicalized in `docs/domain/connectivity-requirements/tactical-model.md`.
 
 ## Accepted strategic facts
 
