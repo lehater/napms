@@ -8,7 +8,7 @@ Prove that a real relational AccessRuleRepository/UnitOfWork preserves the alrea
 
 ## Current stage
 
-Select the simplest production-grade relational engine supported by the intended deployment and define the persistence adapter/integration-test harness. No persistence implementation should start by weakening or reshaping the accepted core contract.
+Persistence-engine decision prepared in `docs/engineering/i2-persistence-engine-decision.md`. PostgreSQL is the recommended simplest option if supported by the intended deployment. Adapter implementation remains blocked until the production engine is explicitly accepted.
 
 ## Inputs
 
@@ -60,7 +60,9 @@ HTTP is not required for the persistence proof. Add a transport adapter in I2 on
 
 ## Blockers
 
-The production-grade relational engine/deployment support constraint is not yet recorded in this repository. This is an engineering choice to resolve before adapter implementation; it does not reopen I1 semantics.
+P1 execution blocker: production database support is not recorded. The repository has no evidence that PostgreSQL, SQL Server, MySQL/MariaDB or another engine is approved for the intended deployment.
+
+The bounded owner decision is recorded in `docs/engineering/i2-persistence-engine-decision.md`. This does not reopen I1 semantics.
 
 ## Validation
 
