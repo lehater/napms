@@ -1,5 +1,5 @@
 # Active execution
 
-Current: `PLAN-004-i4-effective-desired-policy.md`
+Current: `PLAN-005-i5-export-snapshot.md`
 
 Read the current plan before starting or resuming non-trivial implementation work.
