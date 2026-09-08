@@ -53,6 +53,11 @@ MIGRATIONS: tuple[Migration, ...] = (
         "migrations/0003_effective_windows.sql",
     ),
     Migration(
+        "application-catalogue/0002",
+        "napms.application_catalogue.adapters.postgres",
+        "migrations/0002_display_metadata.sql",
+    ),
+    Migration(
         "authority-management/0001",
         "napms.authority_management.adapters.postgres",
         "migrations/0001_authority_assignments.sql",
