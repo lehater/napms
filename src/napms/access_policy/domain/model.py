@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
@@ -19,10 +20,25 @@ class OperationalState(str, Enum):
     INACTIVE = "Inactive"
 
 
+class ConnectivityDecisionResult(str, Enum):
+    ALLOWED = "Allowed"
+    NOT_ALLOWED = "NotAllowed"
+
+
 @dataclass(frozen=True, slots=True)
 class DecisionReference:
     subject: RuleSemanticIdentity
+    result: ConnectivityDecisionResult
     decision_id: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ProposalProvenance:
+    actor_id: str
+    authority_scope: str
+    effective_time: datetime
+    authority_reference: str
+    catalogue_reference: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,8 +47,7 @@ class AccessRule:
     semantic_identity: RuleSemanticIdentity
     operational_state: OperationalState
     decision: DecisionReference
-    proposal_reference: str
-    authority_reference: str
+    proposal_provenance: ProposalProvenance
 
     @classmethod
     def materialized_from_allowed_decision(
@@ -41,16 +56,16 @@ class AccessRule:
         rule_id: UUID,
         semantic_identity: RuleSemanticIdentity,
         decision: DecisionReference,
-        proposal_reference: str,
-        authority_reference: str,
+        proposal_provenance: ProposalProvenance,
     ) -> "AccessRule":
         if decision.subject != semantic_identity:
             raise DomainInvariantError("decision subject does not match rule semantic identity")
+        if decision.result is not ConnectivityDecisionResult.ALLOWED:
+            raise DomainInvariantError("access rule requires an Allowed connectivity decision")
         return cls(
             rule_id=rule_id,
             semantic_identity=semantic_identity,
             operational_state=OperationalState.ACTIVE,
             decision=decision,
-            proposal_reference=proposal_reference,
-            authority_reference=authority_reference,
+            proposal_provenance=proposal_provenance,
         )
