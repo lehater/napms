@@ -16,6 +16,7 @@ from napms.resource_catalogue.adapters.policy_export import (
 from napms.resource_catalogue.adapters.postgres import (
     PostgresResourceCatalogueRepository,
 )
+from napms.resource_catalogue.application.ports import ResourceCataloguePersistenceError
 from napms.resource_catalogue.application.resolve import ResolveResourceRealization
 
 
@@ -257,7 +258,7 @@ def test_database_requires_endpoint_for_resolved_domain_hydration(postgres_dsn):
         connection.commit()
 
     with psycopg.connect(postgres_dsn) as connection:
-        with pytest.raises(Exception):
+        with pytest.raises(ResourceCataloguePersistenceError):
             adapter(connection).resolve_realization(
                 resource_reference=ResourceReference("resource-1"),
                 as_of=AS_OF,
