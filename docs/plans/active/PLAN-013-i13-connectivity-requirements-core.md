@@ -27,12 +27,12 @@ I13 deliberately stops before Requirement-to-Policy Alignment and before Connect
 
 ## Current stage
 
-**WP1 — Tactical DDD owner decision gate.**
+**WP2 — Requirements and acceptance examples.**
 
 Evidence synthesis is complete. Working packet:
 `docs/plans/active/I13-WP1-connectivity-requirements-decision-packet.md`.
 
-Implementation/infrastructure gate remains closed until the seven owner choices in that packet are accepted.
+WP1 owner choices are accepted and canonicalized. Infrastructure remains deferred until WP2/WP3 behavior and ports are explicit.
 
 ## Inputs
 
@@ -92,7 +92,7 @@ Unknown answers stay explicitly unknown; do not choose a database key/API shape 
 
 ### WP1 — Tactical DDD closure
 
-Status: `active`.
+Status: `done`.
 
 Method:
 - synthesize accepted strategic evidence;
@@ -106,7 +106,7 @@ accepted aggregate/lifecycle/value-object/command/query/invariant semantics suff
 
 ### WP2 — Requirements and acceptance examples
 
-Status: `planned`.
+Status: `active`.
 
 Add post-Wave-1 requirements/examples for:
 - authorized declaration;
@@ -241,20 +241,10 @@ I13 is complete only when:
 
 ## Blockers
 
-Research synthesis is complete.
+No current owner/product blocker.
 
-Implementation gate blockers are now the seven explicit owner choices in
-`I13-WP1-connectivity-requirements-decision-packet.md`:
-- first-slice Dependent kind;
-- exact interaction abstraction;
-- stable ID + active semantic uniqueness;
-- applicability shape;
-- lifecycle/property mutability;
-- mandatory justification;
-- explicit Authority action granularity.
-
-No infrastructure/code implementation should begin before these are accepted.
+Implementation must still wait for WP2/WP3 behavior/architecture closure, but no unresolved Tactical identity/lifecycle decision remains.
 
 ## Next
 
-Obtain the seven owner decisions in the WP1 decision packet. Then canonicalize the accepted Tactical model/UL before entering WP2 acceptance examples.
+Complete WP2 requirements/acceptance examples, then define WP3 architecture/ports before implementation.
