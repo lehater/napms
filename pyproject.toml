@@ -21,9 +21,12 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "napms.access_policy.adapters.postgres" = ["migrations/*.sql"]
+"napms.authority_management.adapters.postgres" = ["migrations/*.sql"]
+"napms.application_catalogue.adapters.postgres" = ["migrations/*.sql"]
+"napms.resource_catalogue.adapters.postgres" = ["migrations/*.sql"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
-    "postgres: requires the PostgreSQL I2 integration test environment",
+    "postgres: requires the PostgreSQL integration test environment",
 ]
