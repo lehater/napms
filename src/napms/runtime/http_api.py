@@ -641,6 +641,7 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
         scope: str,
         page: int = Query(1, ge=1),
         pageSize: int = Query(50, ge=1, le=100),
+        search: str | None = Query(None, max_length=256),
         actor: AuthenticatedActor = Depends(require_actor),
     ):
         request.state.operation = "DiscoverProposalInteractions"
@@ -655,6 +656,15 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                 effective_time=effective_time,
                 page=page,
                 page_size=pageSize,
+                search=search,
+            )
+            proposal_presentations = (
+                _describe_semantic_identities(
+                    runtime_scope,
+                    result.page.identities,
+                )
+                if result.page is not None
+                else {}
             )
 
         if result.outcome is ProposalInteractionDiscoveryOutcome.AUTHORITY_DENIED:
@@ -683,6 +693,7 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                     "dcsContractRevisionId": str(
                         identity.dcs_contract_revision_id
                     ),
+                    "catalogue": proposal_presentations.get(identity),
                 }
                 for identity in result.page.identities
             ],
@@ -714,6 +725,14 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                 decisions=dependencies.decisions,
                 rules=scope.access_rules,
             ).execute(command)
+            proposal_rule_presentation = (
+                _describe_semantic_identities(
+                    scope,
+                    (result.rule.semantic_identity,),
+                ).get(result.rule.semantic_identity)
+                if result.rule is not None
+                else None
+            )
 
         if result.outcome in {
             MaterializationOutcome.MATERIALIZED,
@@ -735,7 +754,10 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                 ),
                 content={
                     "outcome": result.outcome.value,
-                    "rule": _rule_dto(result.rule),
+                    "rule": _rule_dto(
+                        result.rule,
+                        proposal_rule_presentation,
+                    ),
                 },
             )
 
@@ -801,13 +823,23 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                 page=page,
                 page_size=pageSize,
             )
+            rule_presentations = _describe_semantic_identities(
+                runtime_scope,
+                tuple(rule.semantic_identity for rule in result.rules),
+            )
 
         _set_outcome(
             request,
             "AuthorityUnknown" if result.ambiguous_scopes else "Available",
         )
         return {
-            "items": [_rule_dto(rule) for rule in result.rules],
+            "items": [
+                _rule_dto(
+                    rule,
+                    rule_presentations.get(rule.semantic_identity),
+                )
+                for rule in result.rules
+            ],
             "page": result.page,
             "pageSize": result.page_size,
             "hasMore": result.has_more,
@@ -832,6 +864,14 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                 rule_id=rule_id,
                 actor_id=actor.actor_id,
                 effective_time=effective_time,
+            )
+            rule_detail_presentation = (
+                _describe_semantic_identities(
+                    runtime_scope,
+                    (result.rule.semantic_identity,),
+                ).get(result.rule.semantic_identity)
+                if result.rule is not None
+                else None
             )
 
         if result.outcome is AccessRuleDetailOutcome.RULE_NOT_FOUND:
@@ -860,7 +900,10 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
         request.state.authority_reference = result.read_authority_reference
         _set_outcome(request, "Found")
         return {
-            "rule": _rule_detail_dto(result.rule),
+            "rule": _rule_detail_dto(
+                result.rule,
+                rule_detail_presentation,
+            ),
             "capabilities": {
                 "setOperationalState": result.state_mutation_admission.value,
                 "setEffectiveWindow": result.effective_window_mutation_admission.value,
