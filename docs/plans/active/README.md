@@ -1,1 +1,5 @@
-# Active execution\n\nCurrent: `PLAN-003-i3-operational-state-mutation.md`\n\nRead the current plan before starting or resuming non-trivial implementation work.\n
+# Active execution
+
+Current: `PLAN-003-i3-operational-state-mutation.md`
+
+Read the current plan before starting or resuming non-trivial implementation work.
