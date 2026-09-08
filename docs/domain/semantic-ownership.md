@@ -1,6 +1,6 @@
 # Semantic Ownership
 
-Status: `accepted DDD-BDM-009 / DDD-REV-015 Strategic DDD semantic ownership`.
+Status: `accepted NAPMS-DDD-001 / source DDD-BDM-010 Strategic DDD semantic ownership`.
 
 This file defines semantic ownership, not runtime/service ownership.
 
