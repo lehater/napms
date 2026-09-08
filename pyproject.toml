@@ -11,6 +11,7 @@ dependencies = ["fastapi>=0.141,<1"]
 
 [project.scripts]
 napms-http = "napms.runtime.main:run"
+napms-migrate = "napms.runtime.migrations:run"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0.0", "httpx>=0.28,<1"]
