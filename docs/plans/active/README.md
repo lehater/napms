@@ -1,5 +1,7 @@
 # Active execution
 
-Current: `PLAN-011-i11-dockerized-local-runtime.md`
+Current: none.
 
-Read the current plan before starting or resuming non-trivial implementation work.
+I11 Dockerized Local Runtime is complete and absorbed into canonical engineering/runtime truth.
+
+Select the next product/increment priority before creating the next active plan.
