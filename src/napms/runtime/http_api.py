@@ -58,6 +58,20 @@ SESSION_COOKIE_NAME = "napms_session"
 CORRELATION_HEADER = "X-Correlation-ID"
 _CORRELATION_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 _LOGGER = logging.getLogger("napms.runtime.http")
+_ERROR_DEPENDENCIES = {
+    "AuthorityDenied": "AuthorityManagement",
+    "AuthorityUnknown": "AuthorityManagement",
+    "AuthorityUnavailable": "AuthorityManagement",
+    "InteractionInvalid": "ApplicationCommunicationCatalogue",
+    "InteractionUnknown": "ApplicationCommunicationCatalogue",
+    "CatalogueUnavailable": "ApplicationCommunicationCatalogue",
+    "DecisionUnknown": "ConnectivityDecision",
+    "DecisionSubjectMismatch": "ConnectivityDecision",
+    "PersistenceUnavailable": "AccessPolicyPersistence",
+    "PersistenceOutcomeUnknown": "AccessPolicyPersistence",
+    "SnapshotIncomplete": "PolicyExportSnapshot",
+    "NormalizationFailed": "PolicyExportNormalization",
+}
 
 
 def _utc_now() -> datetime:
@@ -132,6 +146,10 @@ def _set_outcome(request: Request, outcome: str) -> None:
     request.state.semantic_outcome = outcome
 
 
+def _set_dependency(request: Request, dependency: str) -> None:
+    request.state.dependency = dependency
+
+
 def _error_response(
     request: Request,
     *,
@@ -141,6 +159,9 @@ def _error_response(
     details: dict[str, Any] | None = None,
 ) -> JSONResponse:
     _set_outcome(request, code)
+    dependency = _ERROR_DEPENDENCIES.get(code)
+    if dependency is not None and not getattr(request.state, "dependency", None):
+        _set_dependency(request, dependency)
     error = {
         "code": code,
         "message": message,
@@ -222,9 +243,15 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
         actor_id = getattr(request.state, "actor_id", None)
         if actor_id:
             event["actorId"] = actor_id
-        rule_id = getattr(request.state, "rule_id", None)
-        if rule_id:
-            event["ruleId"] = rule_id
+        for state_name, event_name in (
+            ("rule_id", "ruleId"),
+            ("authority_reference", "authorityReference"),
+            ("decision_reference", "decisionReference"),
+            ("dependency", "dependency"),
+        ):
+            value = getattr(request.state, state_name, None)
+            if value:
+                event[event_name] = value
 
         level = logging.INFO
         if response.status_code >= 500:
@@ -500,6 +527,11 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
         }:
             assert result.rule is not None
             request.state.rule_id = str(result.rule.rule_id)
+            request.state.authority_reference = (
+                result.rule.proposal_provenance.authority_reference
+            )
+            if result.rule.decision.decision_id:
+                request.state.decision_reference = result.rule.decision.decision_id
             _set_outcome(request, result.outcome.value)
             return JSONResponse(
                 status_code=(
@@ -619,6 +651,7 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                 decoder=runtime_scope.dcs_decoder
             ).execute(assembly.snapshot)
 
+        request.state.authority_reference = normalized.authority_reference
         _set_outcome(request, "NormalizedPolicyExported")
         return normalized_policy_export_json(normalized)
 
@@ -636,6 +669,7 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
         except Exception:
             ready = False
         if not ready:
+            _set_dependency(request, "PostgreSQL")
             _set_outcome(request, "NotReady")
             return JSONResponse(status_code=503, content={"status": "not-ready"})
         _set_outcome(request, "Ready")
