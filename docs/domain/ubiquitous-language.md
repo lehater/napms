@@ -13,6 +13,11 @@ Source Component Deployment
 + Directed Communication Specification
 ```
 
+### Rule Governance Scope
+Stable non-identity Scope under which Authority Management evaluates later domain actions on one Access Rule.
+
+It is established from the accepted proposal authority scope at Rule materialization. Actor assignments/delegations may change over time without silently changing Rule Governance Scope or Rule identity.
+
 ### Global Policy
 Projection of authorized Access Rules.
 

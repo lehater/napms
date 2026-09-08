@@ -19,18 +19,23 @@ Flows name semantic requests/results/queries and owners. They do not choose sync
 7. Access Policy verifies decision subject matches exact proposal identity.
 8. `Allowed` -> `MaterializeOrResolveRule(subject, decisionRef)`; `NotAllowed` -> no authoritative Rule.
 9. Access Policy atomically/idempotently resolves one Rule ID for the semantic identity; first materialization is Active.
+10. The accepted proposal authority scope becomes the materialized Rule's stable non-identity governance scope for later Rule actions.
 
 Failure semantics: identity mismatch, unknown decision subject or failed Access Policy invariants must not materialize a Rule. Retries/concurrency must not create duplicates.
 
 ## F2 — Change Rule operational state
 
-1. Actor requests `SetRuleOperationalState(ruleId, Active|Inactive)`.
-2. Authority Management evaluates mutation authority for scope/effective time.
-3. Access Policy loads authoritative Rule and applies only a valid Active<->Inactive transition.
-4. Access Policy records attributable temporal audit/provenance.
-5. Rule ID, semantic identity and Connectivity Decision correlation remain unchanged.
+1. Actor requests `SetRuleOperationalState(ruleId, Active|Inactive)`; caller does not supply an authority scope.
+2. Access Policy loads the authoritative Rule and obtains its stored governance scope.
+3. Authority Management evaluates `SetRuleOperationalState` authority for that governance scope and effective time.
+4. Denied/unknown authority produces no state/audit mutation.
+5. If requested state equals current state, return explicit no accepted transition and produce no transition audit.
+6. Access Policy applies only `Active -> Inactive` or `Inactive -> Active`.
+7. Access Policy records attributable temporal business audit/provenance: Rule, from/to, actor, effective time, governance scope and authority provenance/reference.
+8. State change and audit are committed atomically.
+9. Rule ID, semantic identity, governance scope and Connectivity Decision correlation remain unchanged.
 
-Failure semantics: absent authority, unknown Rule or invalid mutation produces no accepted state change.
+Failure semantics: absent/unknown authority, unknown Rule, same-state request, invalid domain mutation or failed persistence produces no accepted state change. A caller cannot substitute another scope for authorization.
 
 ## F3 — Produce Normalized Policy Export
 
@@ -63,9 +68,11 @@ This flow is the key guardrail separating semantic policy identity from mutable 
 ## Temporal/consistency implications handed to architecture
 
 - Access Policy uniqueness/materialization requires an authoritative atomic consistency point.
+- Access Policy state mutation + audit require one authoritative transactional write boundary.
 - Successful export requires a credible logical-as-of strategy across Access Policy + Resource Catalogue + Application Communication Catalogue facts; it does not require those facts to share one physical database.
 - Provenance must cross every semantic boundary used in export.
 - Authority checks are action-scoped inputs, not static UI role assumptions.
+- Rule action authorization uses the Rule's authoritative governance scope rather than caller-supplied scope.
 - Connectivity Decision is a semantic dependency whose implementation/transport is intentionally unresolved.
 
 ## WP-02 result
