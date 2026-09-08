@@ -1,5 +1,5 @@
 # Active execution
 
-Current: `PLAN-001-i1-core-completion.md`
+Current: `PLAN-002-i2-infrastructure-proof.md`
 
 Read the current plan before starting or resuming non-trivial implementation work.
