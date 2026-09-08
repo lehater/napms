@@ -10,11 +10,17 @@ I7 stops before vendor/device rendering, configured-state reconciliation, provid
 
 ## Current stage
 
-Greenfield environment/source decision gate before infrastructure implementation.
+D1-D5 are accepted. I7 may now implement the first greenfield controlled integration using PostgreSQL-only module-owned persistence.
 
-Legacy is explicitly out of scope for NAPMS implementation. There are no Legacy/MSSQL/transitional source adapters, identity mappings or migration bridges in I7. Historical material may inform problem framing only; it is not an implementation dependency.
-
-The first controlled integration must use the accepted NAPMS modular-monolith/ports-and-adapters architecture and PostgreSQL where relational persistence is required.
+Accepted scope:
+- local/dev controlled integration environment;
+- Authority Management, Application Communication Catalogue and Resource Catalogue are implemented as first-class NAPMS modules;
+- Connectivity Decision remains behind its existing semantic port in I7; its internal model is still deferred;
+- one PostgreSQL instance may host separate module-owned schemas/migrations, with no direct cross-module SQL reads;
+- ACC/RC temporal facts use explicit version/effective-validity rows and logical-as-of queries;
+- end-to-end proof uses direct application composition/integration tests;
+- HTTP/CLI/public serialization remain deferred until a concrete consumer exists;
+- Legacy/MSSQL/transitional sources remain completely out of scope.
 
 ## Inputs
 
@@ -104,17 +110,17 @@ Select only what the first controlled proof needs:
 
 Do not add interfaces without a concrete consumer.
 
-## Recommended greenfield baseline
-
-Unless owner decisions say otherwise:
+## Accepted greenfield baseline
 
 1. **Environment:** local/dev controlled integration environment.
 2. **Database:** PostgreSQL only.
-3. **Physical topology:** one PostgreSQL instance is acceptable initially, with separate module-owned schemas/migrations and no cross-schema reads from application code.
-4. **Temporal model:** explicit version/effective-validity rows for ACC/RC facts.
-5. **Trigger:** direct application/integration composition first; no HTTP/CLI requirement yet.
-6. **Serialization:** defer until a concrete consumer exists.
-7. **Legacy:** no implementation dependency whatsoever.
+3. **Modules implemented in I7:** Authority Management, Application Communication Catalogue and Resource Catalogue.
+4. **Connectivity Decision:** remains an external semantic port/test double for I7; no internal Decision Domain persistence/model is invented.
+5. **Physical topology:** one PostgreSQL instance, separate module-owned schemas/migrations/repositories, no cross-schema reads from application code.
+6. **Temporal model:** explicit version/effective-validity rows for ACC/RC facts, queried by logical `asOf`.
+7. **Trigger:** direct application/integration composition.
+8. **Public interfaces/serialization:** HTTP, CLI and CSV/JSON/XLSX remain deferred until a concrete consumer exists.
+9. **Legacy:** no implementation dependency whatsoever.
 
 ## Work packages
 
@@ -141,9 +147,53 @@ Unless owner decisions say otherwise:
 - no P0/P1 authority, correlation, temporal, provenance, security or architecture finding remains;
 - I7 result clearly states its environment/scope and does not overclaim broader production readiness.
 
+## Accepted minimum durable models
+
+### Authority Management
+
+Minimum persisted truth required by Wave 1:
+- stable assignment/reference ID;
+- actor ID;
+- semantic action;
+- scope;
+- `valid_from`;
+- optional `valid_to`;
+- provenance/reference.
+
+Effective permission is true only when an assignment exactly matches actor/action/scope and `valid_from <= effectiveTime < valid_to` (or no `valid_to`). Missing/ambiguous/invalid data fails closed.
+
+This is not generic IAM/RBAC/account lifecycle.
+
+### Application Communication Catalogue
+
+Minimum persisted truth:
+- ComponentDeployment stable identity;
+- immutable DCS revision identity;
+- source/destination deployment compatibility for the DCS;
+- time-qualified ComponentDeployment -> one-or-more ResourceReference binding with revision/provenance;
+- immutable DCS projection payload + provenance.
+
+ACC owns these facts. It does not own Resource endpoint/address realization.
+
+### Resource Catalogue
+
+Minimum persisted truth:
+- stable ResourceReference;
+- one-or-more endpoint/address realization facts;
+- `valid_from`;
+- optional `valid_to`;
+- stable fact/revision identity;
+- provenance/reference.
+
+RC resolves exactly the realization valid for requested `asOf`; overlapping ambiguous current facts fail closed.
+
+### Connectivity Decision
+
+No durable model in I7. Existing `ConnectivityDecisionPort` remains the boundary and integration proof uses a deterministic test adapter.
+
 ## Blockers
 
-D1-D5 require owner decisions before real module infrastructure is implemented.
+None for the selected I7 local/dev greenfield proof.
 
 ## Validation
 
