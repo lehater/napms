@@ -165,6 +165,10 @@ def test_detail_checks_read_authority_then_separate_state_mutation_admission():
                 TernaryOutcome.DENIED,
                 None,
             ),
+            "SetRuleEffectiveWindow": (
+                TernaryOutcome.PERMITTED,
+                "window-auth-1",
+            ),
         }
     )
 
@@ -181,9 +185,11 @@ def test_detail_checks_read_authority_then_separate_state_mutation_admission():
     assert result.rule == item
     assert result.read_authority_reference == "read-auth-1"
     assert result.state_mutation_admission is TernaryOutcome.DENIED
+    assert result.effective_window_mutation_admission is TernaryOutcome.PERMITTED
     assert [call["action"].value for call in authority.calls] == [
         "ReadAccessRule",
         "SetRuleOperationalState",
+        "SetRuleEffectiveWindow",
     ]
 
 
@@ -205,6 +211,7 @@ def test_detail_read_authority_fails_closed_without_rule_data(
         {
             "ReadAccessRule": (read_outcome, reference),
             "SetRuleOperationalState": (TernaryOutcome.PERMITTED, "mutation-auth"),
+            "SetRuleEffectiveWindow": (TernaryOutcome.PERMITTED, "window-auth"),
         }
     )
 
@@ -243,6 +250,7 @@ def test_state_mutation_admission_permitted_without_provenance_fails_closed():
         {
             "ReadAccessRule": (TernaryOutcome.PERMITTED, "read-auth"),
             "SetRuleOperationalState": (TernaryOutcome.PERMITTED, None),
+            "SetRuleEffectiveWindow": (TernaryOutcome.PERMITTED, "window-auth"),
         }
     )
     result = GetAuthorizedAccessRule(
@@ -256,3 +264,26 @@ def test_state_mutation_admission_permitted_without_provenance_fails_closed():
 
     assert result.outcome is AccessRuleDetailOutcome.FOUND
     assert result.state_mutation_admission is TernaryOutcome.UNKNOWN
+
+
+
+def test_effective_window_admission_permitted_without_provenance_fails_closed():
+    item = rule(1, "scope-a")
+    authority = FakeAuthority(
+        {
+            "ReadAccessRule": (TernaryOutcome.PERMITTED, "read-auth"),
+            "SetRuleOperationalState": (TernaryOutcome.PERMITTED, "state-auth"),
+            "SetRuleEffectiveWindow": (TernaryOutcome.PERMITTED, None),
+        }
+    )
+    result = GetAuthorizedAccessRule(
+        authority=authority,
+        rules=MemoryRules((item,)),
+    ).execute(
+        rule_id=item.rule_id,
+        actor_id="actor-1",
+        effective_time=NOW,
+    )
+
+    assert result.outcome is AccessRuleDetailOutcome.FOUND
+    assert result.effective_window_mutation_admission is TernaryOutcome.UNKNOWN
