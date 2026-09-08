@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I7 PASS — I8 runtime direction accepted; Web UI refinement is the active gate`.
+Status: `I7 PASS — I8 Web UI refinement accepted; HTTP use-case contract is next`.
 
 Date: 2026-09-08.
 
@@ -41,15 +41,17 @@ Current execution is owned by `docs/plans/active/README.md`; do not mirror its w
 
 I7 proves that the accepted Wave-1 semantics can run end-to-end through owned NAPMS modules and PostgreSQL adapters without cross-owner persistence shortcuts or Legacy dependencies. It does **not** claim a public runtime/API, production deployment topology, public export serialization, durable Connectivity Decision internals or device enforcement.
 
-## I8 accepted runtime direction
+## I8 accepted runtime/UI direction
 
 - first human-facing consumer: Web UI;
 - backend boundary: HTTP JSON API;
+- first UI journey: Login -> Compose Connectivity -> Access Rule Proposal -> ConnectivityDecision result -> Allowed Rule summary/details;
+- React + TypeScript + Tailwind + shadcn/ui with the accepted dark-navy enterprise shell under `docs/ui/`;
+- no approval/review workflow or persistent generic Access Request lifecycle in I8;
 - current local/test authentication: login + password through a replaceable authentication boundary;
 - authenticated backend identity, not request-supplied actor ID, feeds Authority Management;
 - normalized-policy machine handoff: JSON through the API;
 - structured JSON logs, correlation/request ID and health/readiness are required at the HTTP runtime boundary;
-- exact UI journeys/screens/navigation/template/design system remain under separate refinement in `docs/requirements/web-ui-requirements.md`;
 - external OIDC/OAuth2/corporate IdP, CSV/XLSX and other public serializers remain deferred.
 
 ## Current infrastructure boundary
@@ -62,12 +64,15 @@ Implemented:
 - strict internal DCS projection codec;
 - typed local-dev configuration and explicit composition root.
 
+Still to implement in I8:
+- minimum HTTP use-case contract derived from the accepted UI journey;
+- local login/session mechanism;
+- HTTP runtime and JSON serializer;
+- Web UI application/foundation and first vertical slice;
+- runtime structured logging/correlation, health/readiness and explicit startup failure behavior;
+- normalized-policy public JSON representation when required by the accepted UI/API journey.
+
 Still deferred:
-- concrete Web UI implementation until UI refinement is accepted;
-- concrete HTTP route shapes until derived from accepted UI/application journeys;
-- login/session mechanism implementation;
-- HTTP runtime and JSON serializer implementation;
-- runtime structured logging/correlation implementation required by the accepted observability policy;
 - external enterprise identity provider integration;
-- durable Connectivity Decision Domain internals;
+- durable Connectivity Decision Domain internals and approval workflow;
 - rendering/configured-state reconciliation/device execution according to the Wave-1 deferral register.
