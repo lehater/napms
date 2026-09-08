@@ -11,6 +11,7 @@ from napms.access_policy.application.ports import InteractionOutcome
 from napms.access_policy.domain.model import RuleSemanticIdentity
 from napms.application_catalogue.adapters.access_policy import (
     AccessPolicyCommunicationCatalogueAdapter,
+    AccessPolicyProposalInteractionCatalogueAdapter,
 )
 from napms.application_catalogue.adapters.policy_export import (
     PolicyExportApplicationCatalogueAdapter,
@@ -18,6 +19,7 @@ from napms.application_catalogue.adapters.policy_export import (
 from napms.application_catalogue.adapters.postgres import (
     PostgresApplicationCatalogueRepository,
 )
+from napms.application_catalogue.application.list_interactions import ListDirectedInteractions
 from napms.application_catalogue.application.resolve import (
     ResolveApplicationProjection,
     ValidateDirectedInteraction,
@@ -317,3 +319,21 @@ def test_database_rejects_invalid_binding_validity(postgres_dsn):
                 valid_from=VALID_TO,
                 valid_to=AS_OF,
             )
+
+
+
+def test_postgres_acc_discovers_directed_interaction_identities(postgres_dsn):
+    with psycopg.connect(postgres_dsn) as connection:
+        seed_base(connection)
+        connection.commit()
+
+    with psycopg.connect(postgres_dsn) as connection:
+        adapter = AccessPolicyProposalInteractionCatalogueAdapter(
+            discovery=ListDirectedInteractions(catalogue=repository(connection))
+        )
+        result = adapter.list_directed_interactions(page=1, page_size=50)
+
+    assert result.identities == (IDENTITY,)
+    assert result.page == 1
+    assert result.page_size == 50
+    assert result.has_more is False
