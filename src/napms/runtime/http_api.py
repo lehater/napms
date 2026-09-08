@@ -932,14 +932,20 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
     @app.get("/api/v1/policy-views/scopes", name="DiscoverPolicyViewScopes")
     def discover_policy_view_scopes(
         request: Request,
+        as_of: datetime = Query(alias="asOf"),
         actor: AuthenticatedActor = Depends(require_actor),
     ):
         request.state.operation = "DiscoverPolicyViewScopes"
-        effective_time = dependencies.clock()
+        if as_of.tzinfo is None or as_of.utcoffset() is None:
+            raise PublicApiError(
+                status_code=422,
+                code="InvalidAsOf",
+                message="asOf must include an explicit timezone offset.",
+            )
         with dependencies.open_scope() as runtime_scope:
             result = runtime_scope.effective_policy_scope_discovery.list_effective_policy_read_scopes(
                 actor_id=actor.actor_id,
-                effective_time=effective_time,
+                effective_time=as_of,
             )
         _set_outcome(
             request,
