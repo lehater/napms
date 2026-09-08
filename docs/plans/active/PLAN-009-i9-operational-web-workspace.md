@@ -18,7 +18,7 @@ Follow-on I9 slices may add EffectiveWindow, Effective Desired Policy UI and Nor
 
 ## Current stage
 
-**WP6 — runtime/DB evidence and final integration proof.**
+**WP7 — final architecture/security review and repository gates.**
 
 The workspace must not reuse mutation authority as implicit read authority and must not expose authoritative Rule data before an explicit backend authorization decision.
 
@@ -63,8 +63,8 @@ This is an Authority/Access Policy semantic extension and must be accepted befor
 3. **DONE — HTTP contract.** Use-case-oriented list/details/state routes and stable mappings are implemented/documented.
 4. **DONE — State mutation HTTP slice.** Session actor/runtime time feed the existing `SetRuleOperationalState`; client cannot supply actor/scope/time.
 5. **DONE — Web UI workspace.** Access Rules navigation, paged list, Rule Details/history and admitted Active/Inactive action are implemented.
-6. **ACTIVE — Runtime/DB evidence.** Prove positive, denied, unknown, not-found, already-in-state and persistence-failure paths.
-7. **Final review/gates.** Run core, PostgreSQL, Web, harness and knowledge gates; close P0/P1.
+6. **DONE — Runtime/DB evidence.** Core/runtime/PostgreSQL tests cover authorized list/details, independent mutation admission, spoofing rejection, not-found, already-in-state, persistence failure and persisted business audit.
+7. **ACTIVE — Final review/gates.** Run core, PostgreSQL, Web, harness and knowledge gates; close P0/P1.
 
 ## Exit criteria
 
@@ -84,4 +84,4 @@ No current owner/product blocker.
 
 ## Next
 
-Complete PostgreSQL/runtime evidence, then run final architecture/security review and all repository gates.
+Run final architecture/security review and all repository gates; close P0/P1 before I9 absorption.
