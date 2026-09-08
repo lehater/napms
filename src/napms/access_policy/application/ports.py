@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Protocol
+from uuid import UUID
 
 from napms.access_policy.domain.model import AccessRule, RuleSemanticIdentity
 
@@ -37,6 +38,7 @@ class AuthorityCheck:
 @dataclass(frozen=True, slots=True)
 class InteractionCheck:
     outcome: InteractionOutcome
+    identity: RuleSemanticIdentity | None = None
     provenance_reference: str | None = None
 
 
@@ -45,6 +47,10 @@ class ConnectivityDecision:
     outcome: DecisionOutcome
     subject: RuleSemanticIdentity
     decision_reference: str | None = None
+
+
+class RuleSemanticIdentityConflict(Exception):
+    """The authoritative uniqueness boundary selected another Rule for this identity."""
 
 
 class AuthorityPort(Protocol):
@@ -70,4 +76,6 @@ class ConnectivityDecisionPort(Protocol):
 
 class AccessRuleRepository(Protocol):
     def find_by_identity(self, identity: RuleSemanticIdentity) -> AccessRule | None: ...
+    def get_by_id(self, rule_id: UUID) -> AccessRule | None: ...
     def add(self, rule: AccessRule) -> None: ...
+    def commit(self) -> None: ...
