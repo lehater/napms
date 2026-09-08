@@ -50,14 +50,24 @@ from napms.access_policy.application.select_effective_policy import (
     SelectAccessPolicyEffectiveDesiredPolicy,
     SelectEffectiveDesiredPolicy,
 )
-from napms.access_policy.domain.model import AccessRule, EffectiveWindow, OperationalState
+from napms.access_policy.domain.model import (
+    AccessRule,
+    EffectiveWindow,
+    OperationalState,
+    RuleSemanticIdentity,
+)
+from napms.application_catalogue.application.describe_interactions import (
+    DirectedInteractionDescription,
+)
 from napms.application_catalogue.application.ports import CataloguePersistenceError
+from napms.application_catalogue.domain.model import DirectedInteractionIdentity
 from napms.authority_management.application.ports import AuthorityPersistenceError
 from napms.policy_export.application.export_snapshot import (
     AssembleExportSnapshot,
     SnapshotAssemblyOutcome,
 )
 from napms.policy_export.application.normalize_snapshot import NormalizeExportSnapshot
+from napms.policy_export.application.normalization_ports import DcsProjectionDecodeError
 from napms.policy_export.application.normalization_types import (
     NormalizationInvariantError,
 )
@@ -68,6 +78,7 @@ from napms.runtime.auth import (
 )
 from napms.runtime.normalized_policy_json import (
     normalized_policy_export_json,
+    port_constraint_json,
     snapshot_diagnostic_json,
 )
 
@@ -216,7 +227,66 @@ def _actor_dto(actor: AuthenticatedActor) -> dict[str, str]:
     return {"actorId": actor.actor_id, "login": actor.login}
 
 
-def _rule_dto(rule: AccessRule) -> dict[str, Any]:
+def _interaction_identity(
+    identity: RuleSemanticIdentity,
+) -> DirectedInteractionIdentity:
+    return DirectedInteractionIdentity(
+        source_component_deployment_id=identity.source_component_deployment_id,
+        destination_component_deployment_id=identity.destination_component_deployment_id,
+        dcs_contract_revision_id=identity.dcs_contract_revision_id,
+    )
+
+
+def _catalogue_presentation_dto(
+    description: DirectedInteractionDescription,
+    *,
+    decoder,
+) -> dict[str, Any]:
+    traffic_alternatives: list[dict[str, Any]] = []
+    if description.dcs_projection_payload is not None:
+        try:
+            alternatives = decoder.decode(description.dcs_projection_payload)
+        except DcsProjectionDecodeError:
+            alternatives = ()
+        traffic_alternatives = [
+            {
+                "protocol": alternative.protocol,
+                "sourcePorts": port_constraint_json(alternative.source_ports),
+                "destinationPorts": port_constraint_json(
+                    alternative.destination_ports
+                ),
+                "serviceReference": alternative.service_reference,
+            }
+            for alternative in alternatives
+        ]
+
+    return {
+        "sourceDisplayName": description.source_display_name,
+        "destinationDisplayName": description.destination_display_name,
+        "dcsDisplayName": description.dcs_display_name,
+        "trafficAlternatives": traffic_alternatives,
+        "dcsProvenanceReference": description.dcs_provenance_reference,
+    }
+
+
+def _describe_semantic_identities(runtime_scope, identities) -> dict[RuleSemanticIdentity, dict[str, Any]]:
+    semantic_identities = tuple(dict.fromkeys(identities))
+    descriptions = runtime_scope.catalogue_describer.execute(
+        tuple(_interaction_identity(identity) for identity in semantic_identities)
+    )
+    return {
+        semantic_identity: _catalogue_presentation_dto(
+            description,
+            decoder=runtime_scope.dcs_decoder,
+        )
+        for semantic_identity, description in zip(semantic_identities, descriptions)
+    }
+
+
+def _rule_dto(
+    rule: AccessRule,
+    catalogue: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     window = None
     if rule.effective_window is not None:
         window = {
@@ -240,11 +310,15 @@ def _rule_dto(rule: AccessRule) -> dict[str, Any]:
         "operationalState": rule.operational_state.value,
         "effectiveWindow": window,
         "decisionReference": rule.decision.decision_id,
+        "catalogue": catalogue,
     }
 
 
-def _rule_detail_dto(rule: AccessRule) -> dict[str, Any]:
-    payload = _rule_dto(rule)
+def _rule_detail_dto(
+    rule: AccessRule,
+    catalogue: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload = _rule_dto(rule, catalogue)
     payload["proposalProvenance"] = {
         "actorId": rule.proposal_provenance.actor_id,
         "effectiveTime": rule.proposal_provenance.effective_time.isoformat(),
