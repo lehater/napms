@@ -10,20 +10,26 @@ I8 must not redefine Access Policy, Authority, ACC, RC, Export Snapshot or norma
 
 ## Current stage
 
-Runtime direction is accepted; detailed Web UI refinement is the current owner/product gate before Web UI implementation and before freezing concrete HTTP route shapes.
+Web UI refinement is accepted. The current stage is **WP2 — derive the minimum HTTP use-case contract** from the accepted UI journey and existing application semantics before implementing runtime or frontend code.
 
 Accepted:
 - first human-facing consumer: Web UI;
 - backend invocation boundary: HTTP JSON API;
 - current local/test authentication: login + password through a replaceable authentication boundary;
 - normalized-policy machine handoff: JSON through the API;
-- operability: structured JSON logging, correlation/request ID and health/readiness behavior.
+- operability: structured JSON logging, correlation/request ID and health/readiness behavior;
+- first UI journey: Login -> Compose Connectivity -> Access Rule Proposal -> ConnectivityDecision result -> Allowed Rule summary/details;
+- UI stack/direction: React + TypeScript + Tailwind + shadcn/ui, dark navy collapsible shell and dense enterprise workspace;
+- approval/review workflow and persistent generic Access Request lifecycle are deferred with the Connectivity Decision Domain.
 
-The UI itself must be refined separately under `docs/requirements/web-ui-requirements.md`: user journeys, screen inventory, information architecture and template/design-system choice are intentionally not yet frozen.
+Canonical UI requirements: `docs/requirements/web-ui-requirements.md`.
+Implementation-oriented visual handoff: `docs/ui/`.
 
 ## Inputs
 
 - `docs/engineering/current-state.md`;
+- `docs/requirements/web-ui-requirements.md`;
+- `docs/ui/`;
 - `docs/requirements/wave1-product-requirements.md`;
 - `docs/requirements/wave1-semantic-contracts.md`;
 - `docs/requirements/wave1-deferrals.md`;
@@ -43,7 +49,8 @@ The UI itself must be refined separately under `docs/requirements/web-ui-require
 - normalized export meaning is unchanged by serialization;
 - structured logging/correlation is mandatory at the first runtime boundary;
 - secrets/DSNs/raw dependency payloads are never logged;
-- vendor rendering/device execution remains out of scope.
+- vendor rendering/device execution remains out of scope;
+- UI convenience must not invent Connectivity Decision workflow/domain semantics.
 
 ## Decision gates
 
@@ -51,9 +58,7 @@ The UI itself must be refined separately under `docs/requirements/web-ui-require
 
 The first human-facing consumer is the NAPMS **Web UI**.
 
-The Web UI design is a separate product/UX refinement step. The choice of dashboard/template/design system is not an infrastructure default and must be accepted before UI implementation.
-
-Canonical UI requirements: `docs/requirements/web-ui-requirements.md`.
+The accepted first increment and visual/interaction baseline are defined by `docs/requirements/web-ui-requirements.md` and `docs/ui/`.
 
 ### D2 — Invocation surface — accepted
 
@@ -63,7 +68,7 @@ Rules:
 - routes expose application use cases, not database CRUD;
 - transport status/error syntax does not redefine semantic outcomes;
 - Domain/Application remain framework-independent;
-- concrete route shapes should follow accepted Web UI journeys/use cases.
+- concrete route shapes follow the accepted Web UI journey/use cases.
 
 ### D3 — Actor identity/authentication handoff — accepted for local/test stage
 
@@ -76,9 +81,7 @@ Rules:
 - password material is never stored/logged in plaintext;
 - authentication is an outer replaceable boundary so a future enterprise IdP does not change Domain/Application or Authority semantics.
 
-Exact session/cookie/token mechanics remain an implementation choice to resolve with the Web UI/runtime contract.
-
-External IdP integration is deferred.
+Exact session/cookie/token mechanics remain an implementation choice for WP3.
 
 ### D4 — Normalized export handoff — accepted
 
@@ -103,14 +106,8 @@ The first runtime boundary implements:
 
 ## Work packages
 
-1. Refine the first Web UI increment under `docs/requirements/web-ui-requirements.md`:
-   - personas/roles;
-   - top user journeys;
-   - screen inventory;
-   - navigation/information architecture;
-   - dashboard/template/design-system choice;
-   - implementation-oriented visual/specification handoff.
-2. Derive the minimum HTTP use-case contract from the accepted UI journeys and existing application use cases.
+1. **DONE — Web UI refinement.** Accepted personas/authority model, first journey, initial screen inventory, navigation, design system, interaction states, accessibility baseline and implementation-oriented handoff under `docs/ui/`.
+2. **ACTIVE — Minimum HTTP use-case contract.** Derive only the operations/DTOs required by the accepted first UI journey and existing application use cases.
 3. Implement the replaceable local login/password authentication boundary and prove request-payload actor spoofing cannot establish identity.
 4. Implement the HTTP JSON runtime adapter and wire it through the existing typed configuration/composition root.
 5. Implement JSON representation for normalized policy where required by the accepted first UI/API journeys.
@@ -132,12 +129,12 @@ The first runtime boundary implements:
 
 ## Blockers
 
-High-level runtime decisions D1-D5 are accepted.
+No current owner/product blocker for WP2.
 
-Before Web UI implementation and before freezing concrete HTTP route shapes, resolve the open UI refinement items in `docs/requirements/web-ui-requirements.md`.
+Approval/review workflow is explicitly deferred. Reopen the Connectivity Decision Domain before introducing approval actors, lifecycle/statuses or queue semantics.
 
-Local authentication/session mechanics may be designed as part of that bounded runtime/UI refinement, but external IdP integration must not be introduced.
+External IdP integration remains deferred.
 
 ## Next
 
-After I8, choose the next wave/increment from accepted product priorities and the Wave-1 deferral register. Do not preselect rendering/device execution without a corresponding product decision.
+Derive the minimum HTTP use-case contract for Login + Compose Connectivity + proposal result/Allowed Rule handoff. Then implement the local authentication boundary without expanding into deferred decision workflow.
