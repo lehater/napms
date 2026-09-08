@@ -18,7 +18,7 @@ Follow-on I9 slices may add EffectiveWindow, Effective Desired Policy UI and Nor
 
 ## Current stage
 
-**WP1 — resolve workspace read authority semantics before implementation.**
+**WP2 — implement Access Rule authorized read-side core.**
 
 The workspace must not reuse mutation authority as implicit read authority and must not expose authoritative Rule data before an explicit backend authorization decision.
 
@@ -36,7 +36,7 @@ The workspace must not reuse mutation authority as implicit read authority and m
 
 ## Decision gate
 
-### D1 — Access Rule workspace read authority — OPEN
+### D1 — Access Rule workspace read authority — ACCEPTED
 
 Current accepted Authority vocabulary contains:
 - `ProposeConnectivity`;
@@ -46,7 +46,7 @@ Current accepted Authority vocabulary contains:
 
 There is no accepted authority action for listing or viewing authoritative Access Rules including inactive/out-of-window Rules.
 
-Recommended decision:
+Accepted decision:
 - add explicit `ReadAccessRule` authority;
 - evaluate it against each Rule's stored `RuleGovernanceScope`;
 - list queries return only Rules from scopes where the actor has unambiguous effective `ReadAccessRule` authority;
@@ -58,8 +58,8 @@ This is an Authority/Access Policy semantic extension and must be accepted befor
 
 ## Planned work packages
 
-1. **ACTIVE — Read authority decision.** Resolve D1 and update canonical Authority/Access Policy/UI requirements if accepted.
-2. **Access Rule read-side.** Add core application queries/ports for authorized list and details; no HTTP/framework dependency.
+1. **DONE — Read authority decision.** `ReadAccessRule` accepted and absorbed into Access Policy/UI semantics.
+2. **ACTIVE — Access Rule read-side.** Add core application queries/ports for authorized list and details; no HTTP/framework dependency.
 3. **HTTP contract.** Add use-case-oriented list/details/state routes and stable semantic mappings.
 4. **State mutation HTTP slice.** Attach trusted session actor/runtime time to existing `SetRuleOperationalState`; preserve stored governance scope and audit semantics.
 5. **Web UI workspace.** Add Access Rules navigation, server-backed list, Rule Details and admitted Active/Inactive action.
@@ -80,8 +80,8 @@ This is an Authority/Access Policy semantic extension and must be accepted befor
 
 ## Blockers
 
-D1 is the only current product/domain blocker.
+No current owner/product blocker.
 
 ## Next
 
-Resolve D1. If accepted, update canonical semantic truth first, then implement the read-side core and tests before HTTP/Web adapters.
+Implement the authorized Access Rule list/details application queries and executable core tests before HTTP/Web adapters.
