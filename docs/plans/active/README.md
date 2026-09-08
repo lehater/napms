@@ -1,7 +1,5 @@
 # Active execution
 
-Current: none.
+Current: `PLAN-010-i10-policy-operations-workspace.md`
 
-I9 Operational Web Workspace is complete and absorbed into canonical requirements/domain/engineering truth.
-
-Select the next product/increment priority before creating the next active plan.
+Read the current plan before starting or resuming non-trivial implementation work.
