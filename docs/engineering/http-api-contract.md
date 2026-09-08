@@ -249,6 +249,8 @@ Correlation identity never replaces Rule/domain identity.
 
 The I8 HTTP adapter uses FastAPI as an outer transport framework. FastAPI/Pydantic types remain confined to `napms.runtime`; Domain/Application stay framework-independent.
 
+For the explicitly bounded `local-dev` runtime, the concrete Connectivity Decision adapter returns `Allowed` for every proposal that has already passed Authority and ACC structural validation, with decision reference `local-dev:allowed`. This is a test/development seam only; it does not model approval/policy logic and is rejected outside `local-dev` composition.
+
 ## Deferred HTTP surfaces
 
 Not part of the first vertical slice:
