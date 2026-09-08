@@ -14,6 +14,9 @@ from napms.access_policy.application.ports import (
     ProposalScopeOptions,
     TernaryOutcome,
 )
+from napms.application_catalogue.application.describe_interactions import (
+    DirectedInteractionDescription,
+)
 from napms.policy_export.application.ports import (
     ApplicationProjectionFact,
     ApplicationProjectionOutcome,
@@ -52,7 +55,7 @@ class FakeScopeDiscovery:
 
 
 class FakeInteractionCatalogue:
-    def list_directed_interactions(self, *, page, page_size):
+    def list_directed_interactions(self, *, page, page_size, search=None):
         return ProposalInteractionPage(
             identities=(
                 _identity(),
@@ -60,6 +63,21 @@ class FakeInteractionCatalogue:
             page=page,
             page_size=page_size,
             has_more=False,
+        )
+
+
+class FakeCatalogueDescriber:
+    def execute(self, identities):
+        return tuple(
+            DirectedInteractionDescription(
+                identity=identity,
+                source_display_name="Checkout Web",
+                destination_display_name="Orders API",
+                dcs_display_name="HTTPS Orders",
+                dcs_projection_payload=None,
+                dcs_provenance_reference="dcs-1",
+            )
+            for identity in identities
         )
 
 
@@ -134,6 +152,7 @@ class Scope:
         self.authority = authority
         self.proposal_scope_discovery = FakeScopeDiscovery()
         self.proposal_interaction_catalogue = FakeInteractionCatalogue()
+        self.catalogue_describer = FakeCatalogueDescriber()
         self.proposal_catalogue = FakeProposalCatalogue()
         self.access_rules = FakeRules()
         self.application_projection = FakeApplicationProjection()
@@ -305,6 +324,13 @@ def test_scope_and_interaction_discovery_are_session_and_authority_aware():
         "sourceComponentDeploymentId": str(SOURCE),
         "destinationComponentDeploymentId": str(DESTINATION),
         "dcsContractRevisionId": str(DCS),
+        "catalogue": {
+            "sourceDisplayName": "Checkout Web",
+            "destinationDisplayName": "Orders API",
+            "dcsDisplayName": "HTTPS Orders",
+            "trafficAlternatives": [],
+            "dcsProvenanceReference": "dcs-1",
+        },
     }
     assert authority.calls[-1]["actor_id"] == "actor-1"
 
