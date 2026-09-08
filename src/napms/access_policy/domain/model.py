@@ -95,6 +95,16 @@ class AccessRule:
     effective_window: EffectiveWindow | None = None
     effective_window_history: tuple[EffectiveWindowChange, ...] = ()
 
+    def __post_init__(self) -> None:
+        if self.decision.subject != self.semantic_identity:
+            raise DomainInvariantError(
+                "decision subject does not match rule semantic identity"
+            )
+        if self.decision.result is not ConnectivityDecisionResult.ALLOWED:
+            raise DomainInvariantError(
+                "authoritative AccessRule requires an Allowed connectivity decision"
+            )
+
     @property
     def governance_scope(self) -> str:
         """Stable Rule governance scope established by accepted proposal authority."""
