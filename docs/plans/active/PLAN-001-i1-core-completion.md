@@ -12,11 +12,20 @@ Final core/model/architecture review after the migrated core test suite first pa
 
 ## Inputs
 
-- accepted Wave-1 requirements and acceptance examples;
-- Strategic DDD model and Access Policy tactical model;
-- implementation contracts and acceptance pack;
-- error/message, observability, configuration and DI/composition policies;
-- current `src/napms/access_policy` core and tests.
+Canonical inputs for this plan:
+
+- `docs/requirements/wave1-product-requirements.md`;
+- `docs/requirements/wave1-acceptance-examples.md`;
+- `docs/requirements/wave1-semantic-contracts.md`;
+- `docs/domain/strategic-model.md` + `strategic-model.json`;
+- `docs/domain/access-policy/tactical-model.md`;
+- `docs/engineering/walking-skeleton-implementation-contracts.md`;
+- `docs/engineering/walking-skeleton-acceptance-pack.md`;
+- `docs/engineering/error-model.md`;
+- `docs/engineering/observability.md`;
+- `docs/engineering/configuration.md`;
+- `docs/engineering/dependency-injection.md`;
+- `src/napms/access_policy/` and the corresponding tests.
 
 ## Work packages
 
@@ -42,6 +51,13 @@ None currently known. Any newly discovered material semantic unknown keeps I1 op
 ## Infrastructure prohibition
 
 Until I1 PASS, do not add production DB/ORM/migrations, HTTP/FastAPI wiring, real external adapters or infrastructure mechanisms that shape unclear core semantics.
+
+## Validation
+
+- core candidate: `make test`;
+- harness/process changes: `make harness-check`;
+- living DDD changes: `make knowledge-check`;
+- final repository candidate when several areas changed: `make check`.
 
 ## Next
 
