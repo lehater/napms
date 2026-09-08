@@ -1,6 +1,6 @@
 # Wave-1 semantic contracts — PLAN-026 WP-06
 
-Status: `accepted G2 semantic-contract baseline`.
+Status: `accepted G2 semantic-contract baseline with I3 Rule-governance refinement`.
 
 Date: 2026-09-08.
 
@@ -104,6 +104,7 @@ Minimum meaning:
 ```text
 Rule ID
 semantic identity = Source Deployment + Destination Deployment + immutable DCS
+Rule governance scope = accepted proposal authority scope
 operational state = Active | Inactive
 supported declarative operational properties
 Connectivity Decision correlation
@@ -114,7 +115,12 @@ Rules:
 - exactly one authoritative Rule per semantic identity;
 - repeated allowed materialization is idempotent;
 - first materialization from `Allowed` starts `Active`;
-- `Active <-> Inactive` preserves Rule identity/decision coverage and is auditable;
+- Rule governance scope is stable non-identity governance metadata and is not caller-substitutable on later Rule actions;
+- Authority Management evaluates later Rule actions against current/effective assignments for that stored governance scope;
+- actor/ownership/responsibility changes do not silently rewrite Rule governance scope, Rule identity or historical decision;
+- `Active <-> Inactive` preserves Rule identity/governance scope/decision coverage and is auditable;
+- same-state request is not an accepted state transition and produces no transition audit;
+- accepted state transition audit must identify who/when/what plus authority provenance sufficient for explanation;
 - schedule/periodicity does not redefine identity/decision subject;
 - technical realization is not copied into Rule identity.
 
