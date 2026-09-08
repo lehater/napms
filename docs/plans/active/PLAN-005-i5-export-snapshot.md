@@ -10,7 +10,7 @@ I5 stops before vendor-neutral row normalization/serialization and before real/t
 
 ## Current stage
 
-Refine the minimum projection-fact and failure contracts handed to application composition by Resource Catalogue and Application Communication Catalogue. Do not implement I5 code until the core can distinguish complete/as-of-valid facts from missing/stale/unknown facts without inventing source-system internals.
+Canonical review resolved the snapshot success/failure model from ADR-002 but exposed one P1 cross-context gap: no accepted owner/contract currently connects Access Rule ComponentDeployment identities to Resource Catalogue Resource/Endpoint identities. A second bounded decision controls whether I5 interprets DCS protocol/service/port structure or only captures an immutable ACC-owned payload for I6.
 
 ## Inputs
 
@@ -101,11 +101,61 @@ The snapshot is application-composition truth for one attempt, not a new peer do
 - no open P0/P1 semantic, temporal, provenance or architecture issue;
 - I5 result is recorded in canonical engineering state.
 
+## Refinement findings
+
+### D3 — resolved from accepted architecture
+
+No new owner decision is required for snapshot success/failure shape.
+
+Use:
+- `SuccessfulExportSnapshot(scope, asOf, authorityProvenance, items)` only when every selected effective Rule has complete coherent facts;
+- otherwise an explicit non-success assembly result with diagnostics and no successful snapshot;
+- each diagnostic identifies at minimum affected Rule, semantic source/context and missing/invalid/stale/unknown category;
+- partial captured facts may be diagnostic evidence but never a successful snapshot;
+- snapshot has no independent long-lived business identity and is immutable per attempt.
+
+### P1 — missing ComponentDeployment -> Resource correlation owner
+
+Current accepted ownership says:
+- Application Communication Catalogue owns ComponentDeployment;
+- Resource Catalogue owns Resource/Endpoint identity and technical realization;
+- Access Rule identity contains ComponentDeployment IDs;
+- Resource Catalogue realization is required for export.
+
+No canonical contract defines how a ComponentDeployment identifies the Resource(s) whose realization RC must resolve. Directly passing ComponentDeploymentId to RC would silently make RC own/understand an ACC identity relation that is not accepted.
+
+Recommended minimal decision:
+
+> Application Communication Catalogue owns the time-qualified binding from each ComponentDeployment to one-or-more stable Resource references. Resource Catalogue remains owner of each Resource and resolves its Resource Endpoint/address realization for the requested as-of.
+
+Consequences:
+- ACC projection response for the exact Rule subject returns source/destination Resource references plus DCS projection semantics/provenance;
+- RC port accepts Resource reference + asOf, never ComponentDeploymentId;
+- changing Resource realization does not change ComponentDeployment or Rule identity;
+- if deployment-to-resource binding itself varies, ACC must provide validity/provenance for the requested asOf;
+- no Resource/Endpoint technical facts are copied into Access Rule.
+
+This puts the cross-context relation on the owner of ComponentDeployment while preserving RC ownership of Resource realization.
+
+### D2 — DCS payload depth
+
+I5 does not normalize protocol/service/port data; I6 does.
+
+Recommended minimal decision:
+
+> I5 treats the ACC-returned DCS projection semantics as an immutable, complete ACC-owned payload correlated to the exact DCS contract/revision and preserves it verbatim in the snapshot. I5 validates correlation/completeness/provenance but does not invent or interpret protocol/service/port field structure. I6 owns the first explicit normalization-facing schema for that payload.
+
+This preserves ADR-002's stable-input requirement without prematurely deciding source/destination port-range/service representation.
+
+The ACC port must still distinguish resolved-complete from missing/invalid/unknown; an opaque provenance reference alone is not enough.
+
 ## Blockers
 
-D1-D3 require bounded application/semantic refinement before code.
+Owner acceptance required for:
+1. ACC ownership of time-qualified ComponentDeployment -> one-or-more Resource references;
+2. I5 capture-only treatment of immutable DCS projection semantics, with explicit normalization-facing structure deferred to I6.
 
-Real catalogue adapter work is additionally blocked until a concrete authoritative source/environment is selected; this does not block fake-port/core I5 proof.
+Real catalogue adapter work is additionally blocked until a concrete authoritative source/environment is selected; this does not block fake-port/core I5 proof after the two decisions above.
 
 ## Validation
 
