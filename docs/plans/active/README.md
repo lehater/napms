@@ -1,7 +1,5 @@
 # Active execution
 
-Current: none.
+Current: `PLAN-012-i12-human-readable-catalogue-ux.md`
 
-I11 Dockerized Local Runtime is complete and absorbed into canonical engineering/runtime truth.
-
-Select the next product/increment priority before creating the next active plan.
+Read the current plan before starting or resuming non-trivial implementation work.
