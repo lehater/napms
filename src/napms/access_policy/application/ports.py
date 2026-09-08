@@ -64,6 +64,38 @@ class RuleSemanticIdentityConflict(AccessRulePersistenceError):
     """The authoritative uniqueness boundary selected another Rule for this identity."""
 
 
+@dataclass(frozen=True, slots=True)
+class ProposalScopeOptions:
+    permitted_scopes: tuple[str, ...]
+    ambiguous_scopes: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class ProposalInteractionPage:
+    identities: tuple[RuleSemanticIdentity, ...]
+    page: int
+    page_size: int
+    has_more: bool
+
+
+class ProposalAuthorityDiscoveryPort(Protocol):
+    def list_effective_proposal_scopes(
+        self,
+        *,
+        actor_id: str,
+        effective_time: datetime,
+    ) -> ProposalScopeOptions: ...
+
+
+class ProposalInteractionCataloguePort(Protocol):
+    def list_directed_interactions(
+        self,
+        *,
+        page: int,
+        page_size: int,
+    ) -> ProposalInteractionPage: ...
+
+
 class AuthorityPort(Protocol):
     def check(
         self,
