@@ -14,6 +14,10 @@ from napms.access_policy.application.ports import (
     ProposalScopeOptions,
     TernaryOutcome,
 )
+from napms.policy_export.application.ports import (
+    ApplicationProjectionFact,
+    ApplicationProjectionOutcome,
+)
 from napms.runtime.auth import (
     InMemorySessionStore,
     LocalCredential,
@@ -68,6 +72,21 @@ class FakeProposalCatalogue:
         )
 
 
+class FakeApplicationProjection:
+    def resolve_projection(self, *, subject, as_of):
+        return ApplicationProjectionFact(ApplicationProjectionOutcome.MISSING)
+
+
+class FakeResourceProjection:
+    def resolve_realization(self, **kwargs):
+        raise AssertionError("resource projection must not run after missing ACC projection")
+
+
+class FakeDecoder:
+    def decode(self, payload):
+        raise AssertionError("decoder must not run without successful snapshot")
+
+
 class FakeRules:
     def __init__(self):
         self.rules = {}
@@ -117,6 +136,9 @@ class Scope:
         self.proposal_interaction_catalogue = FakeInteractionCatalogue()
         self.proposal_catalogue = FakeProposalCatalogue()
         self.access_rules = FakeRules()
+        self.application_projection = FakeApplicationProjection()
+        self.resource_projection = FakeResourceProjection()
+        self.dcs_decoder = FakeDecoder()
 
 
 def _identity():
@@ -316,3 +338,72 @@ def test_health_endpoints_are_explicit():
 
     assert client.get("/health/live").json() == {"status": "alive"}
     assert client.get("/health/ready").json() == {"status": "ready"}
+
+
+
+def test_normalized_policy_empty_export_preserves_scope_as_of_and_authority():
+    client, _, _ = _client()
+    _login(client)
+
+    response = client.get(
+        "/api/v1/normalized-policy",
+        params={"scope": "scope-a", "asOf": NOW.isoformat()},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "scope": "scope-a",
+        "asOf": NOW.isoformat(),
+        "authorityReference": "authority-1",
+        "rows": [],
+    }
+
+
+def test_normalized_policy_fails_closed_on_read_authority_denial():
+    client, _, _ = _client(authority=TernaryOutcome.DENIED)
+    _login(client)
+
+    response = client.get(
+        "/api/v1/normalized-policy",
+        params={"scope": "scope-a", "asOf": NOW.isoformat()},
+    )
+
+    assert response.status_code == 403
+    assert response.json()["error"]["code"] == "AuthorityDenied"
+
+
+def test_normalized_policy_rejects_naive_as_of():
+    client, _, _ = _client()
+    _login(client)
+
+    response = client.get(
+        "/api/v1/normalized-policy",
+        params={"scope": "scope-a", "asOf": "2026-09-08T12:00:00"},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "InvalidAsOf"
+
+
+def test_normalized_policy_reports_snapshot_diagnostics_without_partial_rows():
+    client, _, _ = _client()
+    _login(client)
+    submitted = client.post(
+        "/api/v1/access-rule-proposals",
+        json=_proposal_payload(),
+    )
+    assert submitted.status_code == 201
+
+    response = client.get(
+        "/api/v1/normalized-policy",
+        params={"scope": "scope-a", "asOf": NOW.isoformat()},
+    )
+
+    assert response.status_code == 409
+    error = response.json()["error"]
+    assert error["code"] == "SnapshotIncomplete"
+    assert error["details"]["diagnostics"][0]["source"] == (
+        "ApplicationCommunicationCatalogue"
+    )
+    assert error["details"]["diagnostics"][0]["category"] == "Missing"
+    assert "rows" not in response.json()
