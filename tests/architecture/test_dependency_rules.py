@@ -3,11 +3,28 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).parents[2]
-ACCESS_POLICY = ROOT / "src" / "napms" / "access_policy"
-DOMAIN = ACCESS_POLICY / "domain"
-APPLICATION = ACCESS_POLICY / "application"
-POLICY_EXPORT_APPLICATION = ROOT / "src" / "napms" / "policy_export" / "application"
-CORE_LAYERS = (DOMAIN, APPLICATION, POLICY_EXPORT_APPLICATION)
+NAPMS = ROOT / "src" / "napms"
+
+ACCESS_POLICY = NAPMS / "access_policy"
+AUTHORITY_MANAGEMENT = NAPMS / "authority_management"
+APPLICATION_CATALOGUE = NAPMS / "application_catalogue"
+RESOURCE_CATALOGUE = NAPMS / "resource_catalogue"
+
+DOMAIN_LAYERS = (
+    ACCESS_POLICY / "domain",
+    AUTHORITY_MANAGEMENT / "domain",
+    APPLICATION_CATALOGUE / "domain",
+    RESOURCE_CATALOGUE / "domain",
+)
+APPLICATION_LAYERS = (
+    ACCESS_POLICY / "application",
+    AUTHORITY_MANAGEMENT / "application",
+    APPLICATION_CATALOGUE / "application",
+    RESOURCE_CATALOGUE / "application",
+    NAPMS / "policy_export" / "application",
+)
+CORE_LAYERS = DOMAIN_LAYERS + APPLICATION_LAYERS
+
 FORBIDDEN_INFRASTRUCTURE_ROOTS = (
     "fastapi",
     "psycopg",
@@ -27,7 +44,7 @@ def imported_modules(path):
             yield node.module
 
 
-def test_access_policy_core_has_no_infrastructure_framework_imports():
+def test_core_has_no_infrastructure_framework_imports():
     violations = []
     for layer in CORE_LAYERS:
         for path in layer.rglob("*.py"):
@@ -37,12 +54,13 @@ def test_access_policy_core_has_no_infrastructure_framework_imports():
     assert violations == []
 
 
-def test_domain_does_not_depend_on_application_layer():
+def test_domain_layers_do_not_depend_on_application_or_adapters():
     violations = []
-    for path in DOMAIN.rglob("*.py"):
-        for module in imported_modules(path):
-            if module.startswith("napms.access_policy.application"):
-                violations.append((path, module))
+    for layer in DOMAIN_LAYERS:
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".application" in module or ".adapters" in module:
+                    violations.append((path, module))
     assert violations == []
 
 
