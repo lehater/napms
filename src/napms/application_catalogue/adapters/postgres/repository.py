@@ -44,6 +44,43 @@ class PostgresApplicationCatalogueRepository:
         except (PsycopgError, CatalogueInvariantError) as exc:
             raise CataloguePersistenceError() from exc
 
+    def list_dcs_revisions(
+        self,
+        *,
+        offset: int,
+        limit: int,
+    ) -> tuple[DcsRevision, ...]:
+        try:
+            rows = self._connection.execute(
+                """
+                SELECT
+                    revision_id,
+                    source_component_deployment_id,
+                    destination_component_deployment_id,
+                    projection_payload,
+                    provenance_reference
+                FROM napms_application_catalogue.dcs_revisions
+                ORDER BY revision_id
+                OFFSET %s
+                LIMIT %s
+                """,
+                (offset, limit),
+            ).fetchall()
+            return tuple(
+                DcsRevision(
+                    revision_id=row[0],
+                    source_component_deployment_id=row[1],
+                    destination_component_deployment_id=row[2],
+                    projection_payload=bytes(row[3]),
+                    provenance_reference=row[4],
+                )
+                for row in rows
+            )
+        except CataloguePersistenceError:
+            raise
+        except (PsycopgError, CatalogueInvariantError) as exc:
+            raise CataloguePersistenceError() from exc
+
     def find_effective_bindings(
         self,
         *,
