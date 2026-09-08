@@ -24,7 +24,7 @@ Canonical inputs:
 - `docs/architecture/wave1-domain-message-flows.md` — F3/F4;
 - `docs/architecture/wave1-data-ownership.md`;
 - `docs/architecture/wave1-threat-model.md`;
-- `docs/decisions/ADR-002-logical-as-of-snapshots.md`;
+- `docs/decisions/ADR-002-wave1-coherent-export-snapshot.md`;
 - current I4 effective desired-policy application result and AccessRule model.
 
 ## Accepted behavior already fixed
