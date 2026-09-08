@@ -53,6 +53,7 @@ from napms.composition.greenfield_postgres import (
     apply_greenfield_migrations,
     open_greenfield_scope,
 )
+from napms.composition.postgres_migrations import MIGRATIONS
 from napms.policy_export.application.export_snapshot import (
     AssembleExportSnapshot,
     SnapshotAssemblyOutcome,
@@ -522,6 +523,35 @@ def snapshot(scope, selection):
         application_catalogue=scope.application_projection,
         resource_catalogue=scope.resource_projection,
     ).execute(selection)
+
+
+def test_tracked_greenfield_migrations_are_repeatable_and_journaled(
+    postgres_dsn,
+    greenfield_config,
+):
+    with psycopg.connect(postgres_dsn, autocommit=True) as connection:
+        connection.execute("DROP SCHEMA IF EXISTS napms_runtime CASCADE")
+
+    first = apply_greenfield_migrations(greenfield_config)
+    second = apply_greenfield_migrations(greenfield_config)
+
+    assert first == tuple(item.migration_id for item in MIGRATIONS)
+    assert second == ()
+
+    with psycopg.connect(postgres_dsn) as connection:
+        rows = connection.execute(
+            """
+            SELECT migration_id, checksum_sha256
+            FROM napms_runtime.schema_migrations
+            ORDER BY migration_id
+            """
+        ).fetchall()
+
+    assert len(rows) == len(MIGRATIONS)
+    assert {row[0] for row in rows} == {
+        item.migration_id for item in MIGRATIONS
+    }
+    assert all(len(row[1]) == 64 for row in rows)
 
 
 def test_greenfield_access_rule_workspace_read_and_state_mutation(
