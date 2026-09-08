@@ -23,6 +23,17 @@ Effective / Normalized Policy
 
 **WP7–WP8 — PostgreSQL/runtime/Docker evidence.**
 
+## Inputs
+
+- `docs/engineering/current-state.md`;
+- `docs/domain/ubiquitous-language.md`;
+- `docs/requirements/web-ui-requirements.md`;
+- `docs/engineering/http-api-contract.md`;
+- current Application Communication Catalogue PostgreSQL model/migrations;
+- existing proposal interaction discovery and Authority gate;
+- I9/I10 Rule and policy HTTP/Web workspaces;
+- I11 local Docker seed and smoke gate.
+
 ## Accepted constraints
 
 - Component Deployment UUID and DCS revision UUID remain authoritative identities;
