@@ -546,8 +546,8 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
     def discover_proposal_interactions(
         request: Request,
         scope: str,
-        page: int = 1,
-        pageSize: int = 50,
+        page: int = Query(1, ge=1),
+        pageSize: int = Query(50, ge=1, le=100),
         actor: AuthenticatedActor = Depends(require_actor),
     ):
         request.state.operation = "DiscoverProposalInteractions"
@@ -692,8 +692,8 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
     @app.get("/api/v1/access-rules", name="ListAccessRules")
     def list_access_rules(
         request: Request,
-        page: int = 1,
-        pageSize: int = 50,
+        page: int = Query(1, ge=1),
+        pageSize: int = Query(50, ge=1, le=100),
         actor: AuthenticatedActor = Depends(require_actor),
     ):
         request.state.operation = "ListAccessRules"
@@ -818,6 +818,13 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
 
         assert result.rule is not None
         request.state.rule_id = str(result.rule.rule_id)
+        if (
+            result.outcome is OperationalStateMutationOutcome.UPDATED
+            and result.rule.operational_state_history
+        ):
+            request.state.authority_reference = (
+                result.rule.operational_state_history[-1].authority_reference
+            )
         _set_outcome(request, result.outcome.value)
         return {
             "outcome": result.outcome.value,
