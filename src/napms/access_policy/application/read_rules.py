@@ -120,12 +120,12 @@ class GetAuthorizedAccessRule:
             scope=rule.governance_scope,
             effective_time=effective_time,
         )
-        mutation_admission = (
-            TernaryOutcome.PERMITTED
-            if mutation.outcome is TernaryOutcome.PERMITTED
-            and mutation.authority_reference is not None
-            else mutation.outcome
-        )
+        mutation_admission = mutation.outcome
+        if (
+            mutation.outcome is TernaryOutcome.PERMITTED
+            and mutation.authority_reference is None
+        ):
+            mutation_admission = TernaryOutcome.UNKNOWN
 
         return AccessRuleDetailResult(
             AccessRuleDetailOutcome.FOUND,
