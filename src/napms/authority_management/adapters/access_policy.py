@@ -1,11 +1,15 @@
 from napms.access_policy.application.ports import (
     AuthorityAction,
     AuthorityCheck,
+    ProposalScopeOptions,
     TernaryOutcome,
 )
 from napms.authority_management.application.check_authority import (
     AuthorityOutcome,
     CheckAuthority,
+)
+from napms.authority_management.application.list_scopes import (
+    ListEffectiveAuthorityScopes,
 )
 
 
@@ -41,4 +45,27 @@ class AccessPolicyAuthorityAdapter:
                 if decision.outcome is AuthorityOutcome.PERMITTED
                 else None
             ),
+        )
+
+
+class AccessPolicyProposalScopeAdapter:
+    """Translate actor proposal-scope discovery to the Access Policy consumer contract."""
+
+    def __init__(self, *, discovery: ListEffectiveAuthorityScopes) -> None:
+        self._discovery = discovery
+
+    def list_effective_proposal_scopes(
+        self,
+        *,
+        actor_id: str,
+        effective_time,
+    ) -> ProposalScopeOptions:
+        result = self._discovery.execute(
+            actor_id=actor_id,
+            action=AuthorityAction.PROPOSE_CONNECTIVITY.value,
+            effective_time=effective_time,
+        )
+        return ProposalScopeOptions(
+            permitted_scopes=result.permitted_scopes,
+            ambiguous_scopes=result.ambiguous_scopes,
         )

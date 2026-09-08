@@ -1,10 +1,10 @@
 # Current implementation state
 
-Status: `I7 PASS — I8 runtime direction accepted; Web UI refinement is the active gate`.
+Status: `I8 PASS — first Web UI and HTTP runtime boundary implemented`.
 
-Date: 2026-09-08.
+Date: 2026-09-09.
 
-Current execution is owned by `docs/plans/active/README.md`; do not mirror its work-package status here.
+Current execution is owned by `docs/plans/active/README.md`.
 
 ## Completed through I7
 
@@ -14,43 +14,48 @@ Current execution is owned by `docs/plans/active/README.md`; do not mirror its w
 - I4 EffectiveWindow mutation/evaluation and authorized effective desired-policy selection;
 - I5 coherent immutable Export Snapshot;
 - I6 vendor-neutral normalized policy transformation;
-- first-class greenfield Authority Management bounded context with exact actor/action/scope/effective-validity semantics;
-- first-class greenfield Application Communication Catalogue bounded context owning ComponentDeployment identity, immutable DCS revision and time-qualified Deployment -> ResourceReference bindings;
-- first-class greenfield Resource Catalogue bounded context owning Resource realization versions and endpoint/address facts;
-- PostgreSQL-only persistence for all implemented bounded contexts, with separate module-owned schemas/migrations/repositories;
-- architecture guard forbidding cross-module PostgreSQL schema access;
-- bounded-context core independence guard: Domain/Application of one bounded context cannot import another bounded context core;
-- ACC identity translated at consumer adapter boundaries rather than importing Access Policy domain identity into ACC core;
-- ACC projection evidence preserves attributable DCS/binding fact, validity and provenance references rather than irreversible provenance hashes;
-- explicit half-open `valid_from <= asOf < valid_to` semantics for Authority, ACC bindings and RC realization facts;
-- fail-closed ambiguity: overlapping Authority assignments, ACC versions or RC realization versions never become permission/success;
-- strict versioned internal greenfield DCS JSON codec preserving accepted I6 protocol/source-port/destination-port/service semantics;
-- one typed local-dev application configuration with PostgreSQL DSN validation and no secret leakage through repr;
-- explicit greenfield PostgreSQL composition root with separate owner connections; ACC/RC snapshot reads use `REPEATABLE READ READ ONLY`;
-- direct end-to-end integration proof:
-  proposal -> Authority -> ACC -> ConnectivityDecisionPort -> Access Policy/PostgreSQL -> authorized effective selection -> ACC/RC snapshot -> normalized export;
-- end-to-end degraded paths proven for denied/ambiguous authority, missing/mismatched DCS, decision subject mismatch, missing/stale RC facts and denied policy read;
-- Connectivity Decision remains intentionally behind its accepted semantic port; no internal Decision Domain model was invented;
-- no HTTP, CLI, public serializer, vendor rendering/device execution, Legacy or MSSQL dependency was introduced;
-- final I7 semantic/provenance/architecture review has no open P0/P1 finding;
-- hosted core and PostgreSQL gates passed after the final I7 P1 corrections.
+- first-class greenfield Authority Management, Application Communication Catalogue and Resource Catalogue bounded contexts;
+- PostgreSQL-only persistence with module-owned schemas/repositories and cross-module persistence guards;
+- fail-closed temporal Authority/catalogue semantics;
+- typed local-dev PostgreSQL configuration/composition;
+- direct end-to-end proposal -> Authority -> ACC -> Connectivity Decision -> Access Policy -> effective selection -> snapshot -> normalized export proof.
 
-## I7 result
+## I8 result
 
-`PASS` for the explicitly bounded `local-dev` greenfield PostgreSQL environment.
+`PASS` for the explicitly bounded `local-dev` Web UI + HTTP JSON runtime.
 
-I7 proves that the accepted Wave-1 semantics can run end-to-end through owned NAPMS modules and PostgreSQL adapters without cross-owner persistence shortcuts or Legacy dependencies. It does **not** claim a public runtime/API, production deployment topology, public export serialization, durable Connectivity Decision internals or device enforcement.
+Implemented:
+- accepted Web UI product/UX baseline and implementation handoff under `docs/ui/`;
+- first Web UI vertical slice: Login -> Compose Connectivity -> Access Rule Proposal -> Materialized/Resolved/NotAllowed result;
+- React + TypeScript + Tailwind + shadcn-oriented frontend foundation with dark-navy enterprise shell;
+- FastAPI HTTP JSON outer adapter derived from application use cases rather than database CRUD;
+- local login/password authentication with scrypt-hashed configured credentials and opaque server-side sessions;
+- trusted authenticated backend actor identity feeding Authority Management; request-payload `actorId` spoofing is rejected;
+- authority-aware proposal-scope discovery and paginated ACC directed-interaction discovery;
+- explicit `local-dev` Connectivity Decision adapter returning `Allowed` only after existing Authority and structural-validity checks, with `local-dev:allowed` provenance;
+- normalized-policy JSON handoff preserving Rule/decision/Authority/ACC/RC semantics and provenance;
+- no partial normalized rows when snapshot facts are stale, missing, ambiguous or correlation-invalid;
+- structured JSON completion events, bounded correlation IDs, safe dependency/outcome context and generic public unexpected-error responses;
+- explicit liveness/readiness and startup/configuration failure behavior;
+- safe mappings for authentication, authority denied/unknown, invalid/unknown interaction, decision unknown/mismatch, persistence uncertainty, not-found, stale/correlation and normalization failures;
+- final I8 architecture/security review has no open P0/P1 findings;
+- final core, PostgreSQL, Web, harness and knowledge gates passed.
 
-## I8 accepted runtime direction
+## I8 scope boundary
 
-- first human-facing consumer: Web UI;
-- backend boundary: HTTP JSON API;
-- current local/test authentication: login + password through a replaceable authentication boundary;
-- authenticated backend identity, not request-supplied actor ID, feeds Authority Management;
-- normalized-policy machine handoff: JSON through the API;
-- structured JSON logs, correlation/request ID and health/readiness are required at the HTTP runtime boundary;
-- exact UI journeys/screens/navigation/template/design system remain under separate refinement in `docs/requirements/web-ui-requirements.md`;
-- external OIDC/OAuth2/corporate IdP, CSV/XLSX and other public serializers remain deferred.
+I8 intentionally does **not** define Connectivity Decision Domain internals.
+
+The following remain deferred:
+- approval/review workflow, approver roles and `Pending/Approved/Rejected` lifecycle;
+- persistent generic `Access Request` business identity;
+- external OIDC/OAuth2/corporate IdP;
+- production authentication/session topology;
+- dashboard and secondary aggregate UI;
+- full Access Rule workspace/state-management UI;
+- Effective Desired Policy and Normalized Policy Web UI screens beyond the implemented HTTP handoff;
+- generic IAM/CMDB administration;
+- CSV/XLSX serializers;
+- vendor rendering, configured-state reconciliation and device execution.
 
 ## Current infrastructure boundary
 
@@ -60,14 +65,12 @@ Implemented:
 - Application Communication Catalogue PostgreSQL;
 - Resource Catalogue PostgreSQL;
 - strict internal DCS projection codec;
-- typed local-dev configuration and explicit composition root.
+- typed local-dev configuration/composition;
+- FastAPI HTTP runtime;
+- local-dev authentication/session boundary;
+- explicit local-dev Connectivity Decision adapter;
+- public normalized-policy JSON serializer;
+- React Web UI first vertical slice;
+- structured runtime observability/correlation and health/readiness.
 
-Still deferred:
-- concrete Web UI implementation until UI refinement is accepted;
-- concrete HTTP route shapes until derived from accepted UI/application journeys;
-- login/session mechanism implementation;
-- HTTP runtime and JSON serializer implementation;
-- runtime structured logging/correlation implementation required by the accepted observability policy;
-- external enterprise identity provider integration;
-- durable Connectivity Decision Domain internals;
-- rendering/configured-state reconciliation/device execution according to the Wave-1 deferral register.
+The implementation remains greenfield: Legacy, MSSQL and vendor/device execution are not dependencies.

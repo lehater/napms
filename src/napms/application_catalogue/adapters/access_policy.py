@@ -1,6 +1,11 @@
 from napms.access_policy.application.ports import (
     InteractionCheck,
     InteractionOutcome,
+    ProposalInteractionPage,
+)
+from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.application_catalogue.application.list_interactions import (
+    ListDirectedInteractions,
 )
 from napms.application_catalogue.application.resolve import (
     CatalogueResolutionOutcome,
@@ -48,4 +53,32 @@ class AccessPolicyCommunicationCatalogueAdapter:
                 if outcome is InteractionOutcome.VALID
                 else None
             ),
+        )
+
+
+class AccessPolicyProposalInteractionCatalogueAdapter:
+    """Translate ACC directed-interaction discovery to Access Policy identities."""
+
+    def __init__(self, *, discovery: ListDirectedInteractions) -> None:
+        self._discovery = discovery
+
+    def list_directed_interactions(
+        self,
+        *,
+        page: int,
+        page_size: int,
+    ) -> ProposalInteractionPage:
+        result = self._discovery.execute(page=page, page_size=page_size)
+        return ProposalInteractionPage(
+            identities=tuple(
+                RuleSemanticIdentity(
+                    source_component_deployment_id=item.source_component_deployment_id,
+                    destination_component_deployment_id=item.destination_component_deployment_id,
+                    dcs_contract_revision_id=item.dcs_contract_revision_id,
+                )
+                for item in result.items
+            ),
+            page=result.page,
+            page_size=result.page_size,
+            has_more=result.has_more,
         )

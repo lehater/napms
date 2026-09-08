@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ACTIVE = ROOT / "docs" / "plans" / "active"
 INDEX = ACTIVE / "README.md"
-CURRENT_RE = re.compile(r"^Current:\s+`([^`]+)`\s*$", re.MULTILINE)
+CURRENT_RE = re.compile(r"^Current:\s+(?:`([^`]+)`|(none)\.?)\s*$", re.MULTILINE | re.IGNORECASE)
 STATUS_RE = re.compile(r"^Status:\s+`([^`]+)`\s*$", re.MULTILINE)
 REQUIRED_HEADINGS = [
     "## Goal",
@@ -31,6 +31,9 @@ def main() -> int:
         match = CURRENT_RE.search(text)
         if not match:
             errors.append("active plan index must contain Current: `<plan-file>`")
+        elif match.group(2):
+            if any(ACTIVE.glob("PLAN-*.md")):
+                errors.append("Current: none requires no PLAN-*.md files under active/")
         else:
             current = ACTIVE / match.group(1)
             if not current.is_file():

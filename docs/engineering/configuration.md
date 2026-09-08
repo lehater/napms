@@ -1,8 +1,8 @@
 # Configuration model
 
-Status: `accepted and exercised through I7 local-dev PostgreSQL composition`.
+Status: `accepted and exercised through I8 local-dev HTTP composition`.
 
-Date: 2026-09-08.
+Date: 2026-09-09.
 
 ## Purpose
 
@@ -14,7 +14,7 @@ The executable application has **one typed application configuration object asse
 
 Configuration sources are outer-runtime concerns. All sources normalize into the same typed configuration model before dependency construction.
 
-## Current I7 configuration surface
+## Base local-dev configuration surface
 
 The admitted local-dev greenfield composition uses:
 
@@ -29,13 +29,26 @@ Rules:
 - no Legacy/MSSQL configuration exists;
 - no HTTP/server, public serializer or external-service credential fields are invented before their adapters are selected.
 
-The I7 composition is deliberately limited to `local-dev`; using the same configuration object with an unaccepted environment identity fails validation rather than silently implying production readiness.
+The current composition is deliberately limited to `local-dev`; using the same configuration object with an unaccepted environment identity fails validation rather than silently implying production readiness.
+
+## I8 HTTP local-dev configuration surface
+
+The admitted HTTP runtime extends the existing application configuration with:
+
+- `NAPMS_LOCAL_AUTH_LOGIN`;
+- `NAPMS_LOCAL_AUTH_ACTOR_ID`;
+- `NAPMS_LOCAL_AUTH_PASSWORD_HASH` — supported scrypt hash only, never plaintext;
+- optional `NAPMS_HTTP_HOST` (default `127.0.0.1`);
+- optional `NAPMS_HTTP_PORT` (default `8000`).
+
+The local credential is process configuration for the bounded test/local authentication adapter. It does not define Authority; the authenticated `actor_id` is still evaluated by Authority Management for each domain action.
+
+The password hash is secret-bearing configuration and is redacted from runtime configuration representation.
 
 ## Future configuration categories
 
 Add only when the corresponding runtime adapter is admitted:
-- logging/observability settings;
-- transport/server settings;
+- richer logging/observability settings when deployment needs them;
 - persistence pool/timeout settings if the runtime needs them;
 - external-provider endpoint/credential references;
 - feature switches only when an accepted requirement needs them.

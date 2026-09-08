@@ -17,6 +17,7 @@ A new session must be able to recover:
 
 - Keep only current/planned execution artifacts under `docs/plans/active/`.
 - One plan is current unless the index explicitly declares independent parallel work.
+- When a completed plan has been absorbed and the next increment has not yet been selected, the index may state `Current: none.`; in that state no `PLAN-*.md` file remains under `active/`.
 - A completed plan is absorbed into canonical product/domain/architecture/engineering truth and removed from `active/`.
 - Git history preserves completed plan history.
 - Do not mirror the current execution pointer in root `AGENTS.md` or other documents.

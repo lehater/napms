@@ -1,8 +1,8 @@
 # Logging and observability policy
 
-Status: `accepted pre-infrastructure engineering decision`.
+Status: `accepted and exercised through I8 HTTP runtime`.
 
-Date: 2026-09-08.
+Date: 2026-09-09.
 
 ## Purpose
 
@@ -12,7 +12,7 @@ Define what the application must make observable without coupling Domain/Applica
 
 Logging is a **central application/runtime concern**, configured and emitted at boundaries/composition rather than scattered through domain entities. Domain objects do not call a logger.
 
-The runtime will use structured logging. A single application logging configuration controls handlers, format, level policy and redaction. Modules use named loggers or an injected observability abstraction only where a business-significant application event cannot be reconstructed safely at the boundary; no module configures its own handlers.
+The I8 runtime uses structured JSON logging. A single application logging configuration controls handlers, format, level policy and redaction. Modules use named loggers or an injected observability abstraction only where a business-significant application event cannot be reconstructed safely at the boundary; no module configures its own handlers.
 
 ## Mandatory events for the I1 use case
 
@@ -68,6 +68,12 @@ Business audit/provenance is not replaced by application logs. Authoritative Rul
 
 An exception is logged once at the boundary that has enough context and owns recovery/response. Lower layers do not repeatedly log-and-rethrow the same failure. Adapters may add dependency-specific structured context but the application boundary owns the final operation outcome event.
 
-## I1 implementation consequence
+## I8 implementation evidence
 
-No logging framework is added to Domain/Application in I1. The required event/context contract is fixed here so the later composition/runtime adapter can implement centralized structured logging without changing core semantics.
+The FastAPI runtime boundary emits one JSON completion event per request with operation, correlation ID, semantic outcome, HTTP status and duration. When safe/applicable it includes authenticated actor, Rule, authority, decision and degraded dependency references.
+
+Unexpected exceptions are returned publicly as generic failures. Internal structured events record exception class and stack-frame locations without serializing the exception message, raw payloads, credentials or connection strings.
+
+`/health/live` proves process liveness without dependency traversal. `/health/ready` checks the admitted PostgreSQL runtime dependency and returns only safe readiness state.
+
+Domain/Application remain free of logging-framework dependencies.

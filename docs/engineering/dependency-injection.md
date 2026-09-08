@@ -1,8 +1,8 @@
 # Dependency injection and composition model
 
-Status: `accepted and exercised through I7 greenfield PostgreSQL composition`.
+Status: `accepted and exercised through I8 greenfield HTTP composition`.
 
-Date: 2026-09-08.
+Date: 2026-09-09.
 
 ## Purpose
 
@@ -21,7 +21,7 @@ There is one outer **composition root** for each executable process. It owns:
 
 The composition root depends inward. Domain/Application never import the composition root, DI container, HTTP framework primitives or adapter implementations.
 
-## I7 concrete composition
+## Greenfield PostgreSQL composition
 
 The local-dev greenfield PostgreSQL composition constructs:
 - Authority Management PostgreSQL repository -> Authority application checker -> Access Policy authority adapter;
@@ -34,13 +34,25 @@ Each persisted bounded context uses its own repository/schema ownership. No appl
 
 ACC and RC use separate read-only `REPEATABLE READ` connections for one logical snapshot scope. Access Policy uses its own transactional connection. These are infrastructure mechanics and do not alter Domain/Application semantics.
 
-Connectivity Decision remains an explicit external port dependency in I7 and is supplied by a deterministic test adapter for the controlled end-to-end proof.
+Connectivity Decision remains an explicit external port dependency. I8 additionally admits an explicit deterministic `local-dev` Allowed adapter at outer composition only; this does not define Decision Domain semantics.
 
 ## Ports
 
 Port protocols are owned by the consuming application/module. Cross-bounded-context translation belongs in outer adapters. A bounded context Domain/Application core does not import another bounded context core merely to share a convenient type.
 
 This rule is executable in architecture tests.
+
+## I8 HTTP composition
+
+The first HTTP runtime composition owns:
+- validated `HttpRuntimeConfig`;
+- process-lifetime local authenticator and opaque in-memory session store;
+- request-lifetime greenfield PostgreSQL scope;
+- injected `ConnectivityDecisionPort`;
+- FastAPI transport attachment;
+- readiness probing.
+
+The concrete Connectivity Decision implementation remains an injected outer dependency. Runtime composition must not replace that unresolved domain seam with hidden business logic.
 
 ## Container policy
 
@@ -70,4 +82,4 @@ Core tests construct use cases directly with fakes/in-memory implementations. Po
 
 Logging, metrics, tracing, retries and authorization must not become an all-purpose context/service locator. Runtime observability belongs at the outer boundary. Business Authority remains an explicit semantic dependency.
 
-The first public runtime boundary must implement the structured logging/correlation obligations in `docs/engineering/observability.md`; I7's direct integration harness does not itself select a public transport.
+The I8 HTTP runtime implements the structured logging/correlation obligations in `docs/engineering/observability.md`; Domain/Application remain transport- and logging-framework-independent.

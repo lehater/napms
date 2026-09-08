@@ -1,129 +1,225 @@
-# Web UI requirements — initial baseline
+# Web UI requirements — accepted I8 refinement
 
-Status: `accepted partial baseline — detailed UI refinement required before implementation`.
+Status: `accepted I8 Web UI product/UX baseline`.
 
 Date: 2026-09-08.
 
 ## Purpose
 
-Define the currently accepted human-facing UI direction without prematurely fixing a template, information architecture or component library.
+Define the accepted first NAPMS Web UI increment and the product/UX constraints from which the HTTP runtime contract is derived.
 
-This document is the canonical owner for Web UI product/UX requirements. Runtime/API engineering decisions remain in the active execution plan and engineering artifacts.
+This document owns Web UI product/UX requirements. `docs/ui/` owns the implementation-oriented visual handoff. Runtime/API mechanics remain engineering concerns.
 
-## Accepted product direction
+## Product boundary
 
-### First human-facing consumer
+The Web UI is the first human-facing consumer of the NAPMS HTTP JSON API.
 
-The first intended human-facing consumer is a **Web UI** backed by the NAPMS HTTP JSON API.
+The UI is an outer adapter, not a second source of business truth. Access Policy, Authority Management, Application Communication Catalogue, Resource Catalogue and normalized export semantics remain owned by backend Domain/Application modules.
 
-The UI is not a second source of business truth. Access Policy, Authority Management, Application Communication Catalogue and Resource Catalogue semantics remain in the backend application/domain modules.
+Backend routes and DTOs must follow accepted application use cases and UI journeys rather than generic database CRUD.
 
-### UI design is a separate refinement step
+## First persona and authority model
 
-The Web UI must be designed/refined separately before screen implementation.
+The first UI persona is an authenticated actor with effective Authority Management permission to submit an `Access Rule Proposal` for a relevant scope/time.
 
-The refinement must cover:
-- user roles and concrete user journeys;
-- screen inventory;
-- information architecture and navigation;
-- selected dashboard/template/design-system approach;
-- state/error/empty/loading behavior;
-- component/layout rules;
-- development handoff artifacts such as screen mockups/images and an implementation-oriented UI specification.
+The UI persona is defined by effective domain authority, not by a hard-coded UI role name. One authenticated actor may have different allowed actions across scopes and times.
 
-Backend API routes should be derived from accepted application use cases and UI journeys rather than from generic CRUD over database tables.
+The backend remains authoritative for both visibility and action admission. Client-side hiding/disabling is UX only.
 
-### Visual direction
+## First end-to-end journey
 
-Accepted visual direction:
-- blue / dark-blue / navy primary palette;
-- restrained enterprise/administrative appearance;
-- dashboard/workspace-oriented product rather than a document-only or form-only interface;
-- clear visual hierarchy suitable for dense operational data.
+The first useful UI journey is:
 
-The exact template, component library, navigation layout, typography, spacing system and light/dark treatment remain open until UI refinement.
+```text
+Login
+    -> Compose Connectivity
+    -> select Source Component Deployment
+    -> select Destination Component Deployment
+    -> select one compatible immutable DCS contract/revision
+    -> Submit Access Rule Proposal
+    -> consume ConnectivityDecision(Allowed | NotAllowed)
+    -> Allowed: show created/resolved authoritative Access Rule
+    -> NotAllowed: show the business result; no Access Rule exists
+```
 
-### Personal workspaces and authority separation
+Rules:
+- the user chooses trusted catalogue/domain references rather than entering firewall addresses, protocol/ports or vendor syntax;
+- composition must expose only references/interactions admitted by backend use cases for the authenticated actor/scope;
+- the UI never supplies a trusted `actor_id`; authenticated backend identity feeds Authority Management;
+- repeated Allowed materialization may resolve the existing Rule and must be presented as the same authoritative outcome, not a duplicate request;
+- `NotAllowed` is a valid business outcome, distinct from transport/security failure.
 
-Resource/system owners need a personal workspace where they can:
-- see the resources/systems within their authorized scope;
-- inspect relevant connectivity/access state;
-- declare/request a connectivity need for their scope;
-- see the state/result of that request.
+## Connectivity Decision deferral
 
-Declaring a need does **not** grant access. Approval/authorization must be performed by another actor with the required authority.
+I8 does not implement or expose an approval workflow.
 
-The UI must not allow a resource/system owner to bypass Authority Management or self-approve merely because the resource is visible in their workspace.
+The current stable seam remains:
 
-### Authorization-aware presentation
+```text
+Access Rule Proposal
+    -> ConnectivityDecision(Allowed | NotAllowed)
+    -> Access Policy
+```
 
-The UI may present only actions/data returned or admitted by backend use cases for the authenticated actor/scope.
+Do not introduce UI/domain concepts such as persistent `Access Request`, `Pending`, `Approved`, `Rejected`, approval queue, approver, human approval lifecycle or self-approval.
 
-Client-side hiding/disabling is UX only and never the security boundary. Backend Authority checks remain authoritative.
+If a future product increment must manage the Connectivity Decision process, first reopen the deferred Connectivity Decision Domain and define its semantics before adding workflow UI.
 
-## Authentication baseline for the current test/local stage
+## Initial screen set
 
-For the current controlled/test stage:
-- local `login + password` authentication is sufficient;
-- no external OIDC/OAuth2/enterprise IdP integration is required yet;
-- authentication must establish a trusted backend actor identity; ordinary request payload fields must not be able to spoof `actor_id`;
-- password material must never be stored or logged in plaintext;
-- the authentication boundary must be replaceable later without changing Domain/Application semantics or Authority Management.
+### 1. Login
 
-Exact session/token mechanics are an I8 runtime decision/implementation detail.
+Purpose: authenticate into the controlled/test environment.
 
-External corporate identity integration is explicitly deferred.
+Inputs: login, password.
 
-## Normalized policy/export UI boundary
+Output: authenticated application session or explicit authentication failure.
 
-The primary machine-facing normalized export handoff is JSON through the HTTP API.
+### 2. Compose Connectivity
 
-CSV/XLSX and other downloadable representations are deferred until a concrete consumer/use case requires them.
+Purpose: create one structurally valid Access Rule Proposal from trusted application-catalogue references.
 
-The Web UI may display normalized-policy data, but serialization/presentation must not redefine normalized policy semantics or drop required provenance.
+Inputs:
+- current authorized scope/context;
+- Source Component Deployment;
+- Destination Component Deployment;
+- compatible immutable DCS contract/revision.
 
-## Candidate screen inventory for refinement
+Output: proposal submission result.
 
-The following are **candidate screens**, not yet accepted implementation scope:
+The composition UX should constrain later choices using backend-provided valid options rather than let the user assemble arbitrary identifier combinations.
 
-1. Login.
-2. Role/scope-aware dashboard.
-3. My resources / systems.
-4. Connectivity need/request composition.
-5. Request/rule status and details.
-6. Approval/review queue for authorized reviewers.
-7. Access Rule details, state, EffectiveWindow and business history.
-8. Effective desired policy view.
-9. Normalized policy/export view.
-10. Administration/reference-data surfaces only where concrete owner workflows require them.
+### 3. Proposal Result
 
-The UI refinement step may merge, split or remove these screens.
+Purpose: present the semantic result of proposal submission.
 
-## Open UI decisions
+Outcomes:
+- `Allowed` -> created/resolved Access Rule summary and navigation to Rule Details;
+- `NotAllowed` -> explicit business outcome with no Rule;
+- denied/unknown authority, invalid interaction, not-found, stale/conflict or dependency failure -> distinct recoverable/error presentation where applicable.
 
-Must be resolved before Web UI implementation:
+This may be a result state of Compose Connectivity rather than a dedicated route.
 
-- exact role/persona set represented in the first UI increment;
-- first end-to-end user journeys and acceptance examples;
-- initial screen set;
-- sidebar vs top navigation vs hybrid information architecture;
-- exact dashboard/template/design system/component library;
-- table density, filtering/search, detail-panel patterns;
-- responsive/mobile requirements;
-- light/dark theme requirements;
-- accessibility target;
-- login/session UX and timeout/logout behavior;
-- error/denied/unknown/stale-data presentation;
-- how provenance/audit detail is progressively disclosed without overwhelming normal workflows.
+### 4. Access Rules
 
-## Non-goals for the current UI baseline
+Purpose: inspect authoritative Access Rules visible through admitted backend use cases.
 
-Not yet implied:
+Initial useful data includes Rule ID, source deployment, destination deployment, DCS revision/reference, governance scope, operational state and effective-window summary where available.
+
+### 5. Access Rule Details
+
+Purpose: inspect one authoritative Rule and supported management/provenance information.
+
+Show progressively:
+- Rule ID and immutable semantic identity;
+- Rule Governance Scope;
+- `Active | Inactive` state;
+- optional EffectiveWindow;
+- Connectivity Decision correlation/reference where available;
+- business audit/provenance;
+- admitted state/property actions only when backend use cases allow them.
+
+### 6. Effective Desired Policy
+
+Purpose: select and inspect the authorized effective desired-policy subset for one Rule Governance Scope and explicit `asOf`.
+
+### 7. Normalized Policy
+
+Purpose: present the vendor-neutral normalized policy JSON/view while preserving required row semantics and provenance.
+
+The UI presentation must not redefine or omit normalized export meaning.
+
+### Deferred screens
+
+- Dashboard: add after source screens expose real data/metrics.
+- Global audit log: add when a concrete cross-entity audit query/use case is required; Rule business history is sufficient for the first increment.
+- Resource/application portfolio administration: only when a concrete owner workflow requires it.
+- Approval/review queue: deferred with the Connectivity Decision Domain.
+
+## Information architecture
+
+Use a desktop-first enterprise application shell:
+
+```text
+ACCESS POLICY
+  Compose Connectivity
+  Access Rules
+
+POLICY VIEWS
+  Effective Policy
+  Normalized Policy
+```
+
+Dashboard may be added above these groups only after real aggregate use cases exist.
+
+Do not add inactive navigation controls as decoration.
+
+## Visual/design-system baseline
+
+Accepted implementation direction:
+- React + TypeScript;
+- Tailwind CSS;
+- shadcn/ui as the component foundation;
+- Tabler-like enterprise/control-plane visual language without adopting a heavyweight admin theme;
+- dark navy collapsible sidebar;
+- light working area;
+- blue primary accent;
+- information-dense tables/forms;
+- borders and restrained elevation rather than decorative cards.
+
+The visual reference under `docs/ui/references/` defines composition/style direction only; its sample IAM/resource/request data is not NAPMS domain truth and is not a pixel-perfect contract.
+
+Detailed tokens/layout/components are owned by `docs/ui/`.
+
+## Interaction and state requirements
+
+- list view state should be URL-shareable where reasonable (`page`, `sort`, `filters`, `search`);
+- potentially unbounded lists use server-side pagination/filtering/sorting;
+- forms validate obvious constraints client-side while the server remains authoritative;
+- duplicate mutation submission is prevented while a request is pending;
+- initial loading, background refresh, empty, filtered-empty, unauthorized-empty and retryable error states are distinct;
+- semantic statuses use one central UI mapping and never rely on color alone;
+- domain/business outcomes remain distinct from transport/authentication failures;
+- provenance/audit details use progressive disclosure rather than overwhelming the primary workflow.
+
+## Authentication/session UX
+
+For I8 local/test runtime:
+- login + password only;
+- no social login, OIDC/OAuth2 or corporate IdP controls;
+- explicit logout is available from the user menu;
+- an expired/invalid session returns the user to Login and may preserve the intended route for post-login navigation;
+- failed login must not reveal whether a login or password component was incorrect;
+- exact cookie/token/session-storage mechanics and timeout values remain runtime engineering choices, subject to the security constraints in the active plan.
+
+## Responsive baseline
+
+- `>= 1280px`: full desktop shell;
+- `768..1279px`: collapsed sidebar by default; dense tables may scroll horizontally;
+- `< 768px`: functional overlay navigation and usable forms/details, without making mobile the primary optimization target.
+
+## Accessibility target
+
+Applicable Web UI behavior targets WCAG 2.2 AA.
+
+Minimum implementation obligations:
+- keyboard operation;
+- visible focus states;
+- semantic labels;
+- accessible dialogs/drawers;
+- sufficient contrast;
+- statuses not encoded by color alone.
+
+## Non-goals for I8 UI
+
+- persistent generic Access Request lifecycle;
+- approval/review workflow;
 - mobile/native applications;
 - public/anonymous access;
 - external enterprise SSO;
+- generic IAM administration;
+- generic CMDB/application-portfolio administration;
 - device/firewall execution UI;
 - configured-state reconciliation UI;
-- generic IAM administration;
-- generic CMDB/application-portfolio UI;
-- vendor-specific policy rendering.
+- vendor-specific policy rendering;
+- CSV/XLSX export.

@@ -17,3 +17,11 @@ class AuthorityAssignmentRepository(Protocol):
         scope: str,
         effective_time: datetime,
     ) -> tuple[AuthorityAssignment, ...]: ...
+
+    def find_effective_for_actor_action(
+        self,
+        *,
+        actor_id: str,
+        action: str,
+        effective_time: datetime,
+    ) -> tuple[AuthorityAssignment, ...]: ...

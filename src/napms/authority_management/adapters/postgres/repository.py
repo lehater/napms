@@ -54,6 +54,44 @@ class PostgresAuthorityAssignmentRepository:
         except (PsycopgError, AuthorityInvariantError) as exc:
             raise AuthorityPersistenceError() from exc
 
+    def find_effective_for_actor_action(
+        self,
+        *,
+        actor_id: str,
+        action: str,
+        effective_time: datetime,
+    ) -> tuple[AuthorityAssignment, ...]:
+        try:
+            rows = self._connection.execute(
+                """
+                SELECT
+                    reference_id,
+                    actor_id,
+                    action,
+                    scope,
+                    valid_from,
+                    valid_to,
+                    provenance_reference
+                FROM napms_authority.authority_assignments
+                WHERE actor_id = %s
+                  AND action = %s
+                  AND valid_from <= %s
+                  AND (valid_to IS NULL OR %s < valid_to)
+                ORDER BY scope, reference_id
+                """,
+                (
+                    actor_id,
+                    action,
+                    effective_time,
+                    effective_time,
+                ),
+            ).fetchall()
+            return tuple(self._hydrate(row) for row in rows)
+        except AuthorityPersistenceError:
+            raise
+        except (PsycopgError, AuthorityInvariantError) as exc:
+            raise AuthorityPersistenceError() from exc
+
     def _hydrate(self, row: tuple) -> AuthorityAssignment:
         try:
             return AuthorityAssignment(
