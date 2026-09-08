@@ -6,10 +6,14 @@ import { LoginPage } from "@/features/auth/LoginPage"
 import { EffectivePolicyPage } from "@/features/policy/EffectivePolicyPage"
 import { NormalizedPolicyPage } from "@/features/policy/NormalizedPolicyPage"
 import { ComposeConnectivityPage } from "@/features/proposals/ComposeConnectivityPage"
+import { ConnectivityRequirementDetailsPage } from "@/features/requirements/ConnectivityRequirementDetailsPage"
+import { ConnectivityRequirementsPage } from "@/features/requirements/ConnectivityRequirementsPage"
 import { AccessRuleDetailsPage } from "@/features/rules/AccessRuleDetailsPage"
 import { AccessRulesPage } from "@/features/rules/AccessRulesPage"
 
 type Route =
+  | { kind: "requirements"; page: number }
+  | { kind: "requirement"; requirementId: string }
   | { kind: "compose" }
   | { kind: "rules"; page: number }
   | { kind: "rule"; ruleId: string }
@@ -18,6 +22,23 @@ type Route =
 
 function readRoute(): Route {
   const hash = window.location.hash.replace(/^#/, "")
+  if (hash.startsWith("connectivity-needs/")) {
+    const requirementId = hash.slice("connectivity-needs/".length).split("?")[0]
+    if (requirementId) {
+      return {
+        kind: "requirement",
+        requirementId: decodeURIComponent(requirementId),
+      }
+    }
+  }
+  if (hash.startsWith("connectivity-needs")) {
+    const query = hash.includes("?") ? hash.split("?")[1] : ""
+    const page = Number(new URLSearchParams(query).get("page") ?? "1")
+    return {
+      kind: "requirements",
+      page: Number.isInteger(page) && page > 0 ? page : 1,
+    }
+  }
   if (hash.startsWith("effective-policy")) return { kind: "effective" }
   if (hash.startsWith("normalized-policy")) return { kind: "normalized" }
   if (hash.startsWith("access-rules/")) {
@@ -84,8 +105,10 @@ export function App() {
   }
 
   const activeNav =
-    route.kind === "compose"
-      ? "compose"
+    route.kind === "requirements" || route.kind === "requirement"
+      ? "requirements"
+      : route.kind === "compose"
+        ? "compose"
       : route.kind === "effective"
         ? "effective"
         : route.kind === "normalized"
@@ -98,8 +121,10 @@ export function App() {
       activeNav={activeNav}
       onNavigate={(target) =>
         navigate(
-          target === "compose"
-            ? "compose"
+          target === "requirements"
+            ? "connectivity-needs?page=1"
+            : target === "compose"
+              ? "compose"
             : target === "rules"
               ? "access-rules?page=1"
               : target === "effective"
@@ -112,7 +137,24 @@ export function App() {
         setActor(null)
       }}
     >
-      {route.kind === "compose" ? (
+      {route.kind === "requirements" ? (
+        <ConnectivityRequirementsPage
+          page={route.page}
+          onPageChange={(page) =>
+            navigate(`connectivity-needs?page=${page}`)
+          }
+          onOpenRequirement={(requirementId) =>
+            navigate(
+              `connectivity-needs/${encodeURIComponent(requirementId)}`,
+            )
+          }
+        />
+      ) : route.kind === "requirement" ? (
+        <ConnectivityRequirementDetailsPage
+          requirementId={route.requirementId}
+          onBack={() => navigate("connectivity-needs?page=1")}
+        />
+      ) : route.kind === "compose" ? (
         <ComposeConnectivityPage />
       ) : route.kind === "effective" ? (
         <EffectivePolicyPage
