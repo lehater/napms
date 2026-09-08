@@ -55,25 +55,26 @@ Define only the Bounded Context responsibilities required by the accepted Wave-1
 - own Application/Component roles, Component Deployment and DCS identity;
 - expose structurally valid directed interactions;
 - provide immutable decision-relevant DCS contract/revision semantics;
-- provide protocol/service/port facts required by normalized projection.
+- own the time-qualified binding from each Component Deployment to one-or-more stable Resource references;
+- provide complete immutable DCS projection semantics required by later normalization.
 
 **Decision:** whether selected source/destination deployments are compatible under an explicitly described DCS interaction.
 
-**Outbound:** valid Rule-subject facts and DCS projection facts with identity/provenance/effective validity where applicable.
+**Outbound:** valid Rule-subject facts; exact ComponentDeployment -> Resource-reference bindings with as-of validity/provenance; and complete immutable DCS projection-semantics payload with exact DCS correlation/provenance.
 
-**Not owned:** authorization to create policy, Rule lifecycle, technical endpoint realization, vendor syntax.
+**Not owned:** authorization to create policy, Rule lifecycle, Resource/Endpoint technical realization, vendor syntax or I6 normalization schema.
 
 ### Resource Catalogue
 
 **Purpose:** own access-domain Resource/Endpoint identity and current/historical technical realization.
 
-**Wave-1 responsibilities:** resolve technical source/destination realization required for normalized export at one logical as-of; expose validity/provenance sufficient to establish temporal coherence.
+**Wave-1 responsibilities:** resolve technical realization for stable Resource references required by export at one logical as-of; expose validity/provenance sufficient to establish temporal coherence.
 
 **Decision:** what technical realization is authoritative/valid for a Resource/Endpoint at the requested as-of.
 
 **Outbound:** endpoint/address realization plus correlation, effective validity and provenance.
 
-**Not owned:** Access Rule semantic identity, connectivity permission, DCS semantics, normalized policy meaning.
+**Not owned:** ComponentDeployment identity/binding, Access Rule semantic identity, connectivity permission, DCS semantics, normalized policy meaning.
 
 ## Participating application composition — not a peer BC
 
