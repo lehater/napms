@@ -8,6 +8,7 @@ from napms.composition.greenfield_postgres import open_greenfield_scope
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
 from napms.runtime.config import HttpRuntimeConfig
 from napms.runtime.http_api import HttpApiDependencies, create_http_api
+from napms.runtime.local_decision import LocalDevAllowedConnectivityDecisionAdapter
 
 
 def build_http_api(
@@ -41,4 +42,18 @@ def build_http_api(
             readiness=readiness_probe or default_readiness,
             secure_cookie=False,
         )
+    )
+
+
+def build_local_dev_http_api(
+    *,
+    config: HttpRuntimeConfig,
+    readiness_probe: Callable[[], bool] | None = None,
+) -> FastAPI:
+    if config.application.environment != "local-dev":
+        raise ValueError("local-dev decision adapter is admitted only for local-dev")
+    return build_http_api(
+        config=config,
+        decisions=LocalDevAllowedConnectivityDecisionAdapter(),
+        readiness_probe=readiness_probe,
     )
