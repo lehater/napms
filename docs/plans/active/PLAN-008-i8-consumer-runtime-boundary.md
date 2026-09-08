@@ -10,7 +10,7 @@ I8 must not redefine Access Policy, Authority, ACC, RC, Export Snapshot or norma
 
 ## Current stage
 
-Web UI refinement, HTTP contract, local authentication and the first browser-facing vertical slice are implemented and green. The current stage is **WP5 — implement the public normalized-policy JSON handoff**.
+Web UI refinement, HTTP runtime, first Web UI slice and normalized-policy JSON handoff are implemented and green. The current stage is **WP6–WP7 — complete observability and runtime failure-mapping proof**.
 
 Accepted:
 - first human-facing consumer: Web UI;
@@ -110,9 +110,9 @@ The first runtime boundary implements:
 2. **DONE — Minimum HTTP use-case contract.** Accepted in `docs/engineering/http-api-contract.md`, including trusted actor/time boundary, proposal composition support, semantic outcome mapping and health/correlation conventions.
 3. **DONE — Local authentication boundary.** Hashed local credentials, opaque server-side sessions and explicit logout are implemented; proposal payload uses `extra=forbid` and executable tests prove request-supplied `actorId` cannot establish identity.
 4. **DONE — HTTP JSON runtime adapter/composition + first Web UI slice.** FastAPI runtime, local-dev Decision adapter, React Login -> Compose Connectivity -> Rule-result slice and runtime/web gates are green.
-5. **ACTIVE — Normalized-policy JSON handoff.** Serialize and expose the existing authorized effective-policy -> coherent snapshot -> normalized export chain without dropping row semantics or provenance.
-6. Implement structured JSON logging, correlation/request ID, health/readiness and startup/configuration failure behavior.
-7. Prove positive plus denied/unknown/not-found/stale/correlation failure mappings without leaking domain/infrastructure internals.
+5. **DONE — Normalized-policy JSON handoff.** Authorized effective-policy selection -> coherent snapshot -> normalized rows is exposed through semantics-preserving JSON; incomplete snapshots return no partial rows.
+6. **ACTIVE — Observability/operability proof.** Structured completion events, correlation, health/readiness and startup/configuration failure behavior are being verified.
+7. **ACTIVE — Runtime failure mappings.** Denied/unknown/not-found/stale/correlation/persistence paths are being verified with safe public errors.
 8. Run core, PostgreSQL and runtime-specific gates; close all P0/P1 findings.
 
 ## Exit criteria
