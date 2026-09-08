@@ -8,7 +8,7 @@ Close I1 with a proven Access Policy Domain/Application/Ports core and no open P
 
 ## Current stage
 
-Final core/model/architecture review after the migrated core test suite first passed in GitHub Actions.
+Final candidate gate after the core/model/architecture review. All discovered P1 findings are closed on `i1/closure-review`; I1 remains open until the exact candidate passes the final gate.
 
 ## Inputs
 
@@ -34,6 +34,18 @@ Canonical inputs for this plan:
 3. Classify findings P0-P3 and close all P0/P1.
 4. Run the complete core gate on the exact candidate state.
 5. Record I1 PASS only when the exit criteria are met.
+
+## Review findings
+
+| Priority | Finding | Result |
+|---|---|---|
+| P1 | authoritative Rule did not preserve the explicit Allowed decision result or sufficient proposal authority/catalogue provenance | CLOSED — domain provenance/value model and tests aligned |
+| P1 | a catalogue response labelled valid did not return/prove the exact requested RuleSemanticIdentity | CLOSED — valid response now carries identity/provenance and mismatch fails closed |
+| P1 | permitted authority without required provenance was detected only after catalogue/decision calls | CLOSED — authority evidence is required before any downstream dependency call |
+| P1 | repository port omitted accepted commit, load-by-RuleId and uniqueness-conflict resolution semantics | CLOSED — port + in-memory contract tests now model commit/conflict winner resolution without claiming production concurrency |
+| P2 | current use-case/port names are implementation-oriented rather than fully BC-qualified | ACCEPTED NON-BLOCKING — ownership/dependency direction is explicit; rename only when it improves a real integration surface |
+
+Open P0/P1: none in the reviewed I1 scope.
 
 ## Exit criteria
 
