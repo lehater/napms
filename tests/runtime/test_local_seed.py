@@ -53,7 +53,7 @@ def test_local_demo_seed_contains_one_directed_https_interaction():
     assert revision_id != destination_id
     assert source_id != destination_id
     assert b'"protocol":"tcp"' in payload
-    assert b'"first":443' in payload
+    assert b'"ranges":[[443,443]]' in payload
     assert provenance == "local-demo:https-dcs"
 
 
