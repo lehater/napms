@@ -21,8 +21,8 @@ class FakeCatalogue:
         self.rows = tuple(rows)
         self.calls = []
 
-    def list_dcs_revisions(self, *, offset, limit):
-        self.calls.append((offset, limit))
+    def list_dcs_revisions(self, *, offset, limit, search=None):
+        self.calls.append((offset, limit, search))
         return self.rows[offset : offset + limit]
 
 
@@ -37,7 +37,7 @@ def test_interaction_discovery_is_bounded_and_reports_has_more():
         UUID(int=2),
     )
     assert result.has_more is True
-    assert catalogue.calls == [(0, 3)]
+    assert catalogue.calls == [(0, 3, None)]
 
 
 @pytest.mark.parametrize(("page", "page_size"), ((0, 50), (1, 0), (1, 101)))
@@ -45,3 +45,30 @@ def test_invalid_pagination_is_rejected(page, page_size):
     query = ListDirectedInteractions(catalogue=FakeCatalogue(()))
     with pytest.raises(ValueError):
         query.execute(page=page, page_size=page_size)
+
+
+
+def test_interaction_search_is_trimmed_and_forwarded_server_side():
+    catalogue = FakeCatalogue((_revision(1),))
+    query = ListDirectedInteractions(catalogue=catalogue)
+
+    result = query.execute(page=1, page_size=50, search="  orders  ")
+
+    assert result.items
+    assert catalogue.calls == [(0, 51, "orders")]
+
+
+def test_blank_interaction_search_becomes_unfiltered():
+    catalogue = FakeCatalogue((_revision(1),))
+    query = ListDirectedInteractions(catalogue=catalogue)
+
+    query.execute(search="   ")
+
+    assert catalogue.calls == [(0, 51, None)]
+
+
+def test_interaction_search_is_bounded():
+    query = ListDirectedInteractions(catalogue=FakeCatalogue(()))
+
+    with pytest.raises(ValueError):
+        query.execute(search="x" * 257)

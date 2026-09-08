@@ -69,20 +69,30 @@ def seed_local_demo(connection, *, actor_id: str) -> None:
             ),
         )
 
-    for deployment_id, provenance in (
-        (_SOURCE, "local-demo:source-deployment"),
-        (_DESTINATION, "local-demo:destination-deployment"),
+    for deployment_id, display_name, provenance in (
+        (
+            _SOURCE,
+            "Demo Web Frontend",
+            "local-demo:source-deployment",
+        ),
+        (
+            _DESTINATION,
+            "Demo Orders API",
+            "local-demo:destination-deployment",
+        ),
     ):
         connection.execute(
             """
             INSERT INTO napms_application_catalogue.component_deployments (
                 component_deployment_id,
-                provenance_reference
+                provenance_reference,
+                display_name
             )
-            VALUES (%s, %s)
-            ON CONFLICT (component_deployment_id) DO NOTHING
+            VALUES (%s, %s, %s)
+            ON CONFLICT (component_deployment_id) DO UPDATE
+            SET display_name = EXCLUDED.display_name
             """,
-            (deployment_id, provenance),
+            (deployment_id, provenance, display_name),
         )
 
     connection.execute(
@@ -92,10 +102,12 @@ def seed_local_demo(connection, *, actor_id: str) -> None:
             source_component_deployment_id,
             destination_component_deployment_id,
             projection_payload,
-            provenance_reference
+            provenance_reference,
+            display_name
         )
-        VALUES (%s, %s, %s, %s, %s)
-        ON CONFLICT (revision_id) DO NOTHING
+        VALUES (%s, %s, %s, %s, %s, %s)
+        ON CONFLICT (revision_id) DO UPDATE
+        SET display_name = EXCLUDED.display_name
         """,
         (
             _DCS,
@@ -103,6 +115,7 @@ def seed_local_demo(connection, *, actor_id: str) -> None:
             _DESTINATION,
             _dcs_payload(),
             "local-demo:https-dcs",
+            "HTTPS Orders API",
         ),
     )
 

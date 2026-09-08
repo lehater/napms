@@ -50,14 +50,24 @@ from napms.access_policy.application.select_effective_policy import (
     SelectAccessPolicyEffectiveDesiredPolicy,
     SelectEffectiveDesiredPolicy,
 )
-from napms.access_policy.domain.model import AccessRule, EffectiveWindow, OperationalState
+from napms.access_policy.domain.model import (
+    AccessRule,
+    EffectiveWindow,
+    OperationalState,
+    RuleSemanticIdentity,
+)
+from napms.application_catalogue.application.describe_interactions import (
+    DirectedInteractionDescription,
+)
 from napms.application_catalogue.application.ports import CataloguePersistenceError
+from napms.application_catalogue.domain.model import DirectedInteractionIdentity
 from napms.authority_management.application.ports import AuthorityPersistenceError
 from napms.policy_export.application.export_snapshot import (
     AssembleExportSnapshot,
     SnapshotAssemblyOutcome,
 )
 from napms.policy_export.application.normalize_snapshot import NormalizeExportSnapshot
+from napms.policy_export.application.normalization_ports import DcsProjectionDecodeError
 from napms.policy_export.application.normalization_types import (
     NormalizationInvariantError,
 )
@@ -68,6 +78,7 @@ from napms.runtime.auth import (
 )
 from napms.runtime.normalized_policy_json import (
     normalized_policy_export_json,
+    port_constraint_json,
     snapshot_diagnostic_json,
 )
 
@@ -216,7 +227,81 @@ def _actor_dto(actor: AuthenticatedActor) -> dict[str, str]:
     return {"actorId": actor.actor_id, "login": actor.login}
 
 
-def _rule_dto(rule: AccessRule) -> dict[str, Any]:
+def _interaction_identity(
+    identity: RuleSemanticIdentity,
+) -> DirectedInteractionIdentity:
+    return DirectedInteractionIdentity(
+        source_component_deployment_id=identity.source_component_deployment_id,
+        destination_component_deployment_id=identity.destination_component_deployment_id,
+        dcs_contract_revision_id=identity.dcs_contract_revision_id,
+    )
+
+
+def _catalogue_presentation_dto(
+    description: DirectedInteractionDescription,
+    *,
+    decoder,
+) -> dict[str, Any]:
+    traffic_alternatives: list[dict[str, Any]] = []
+    if description.dcs_projection_payload is not None:
+        try:
+            alternatives = decoder.decode(description.dcs_projection_payload)
+        except DcsProjectionDecodeError:
+            alternatives = ()
+        traffic_alternatives = [
+            {
+                "protocol": alternative.protocol,
+                "sourcePorts": port_constraint_json(alternative.source_ports),
+                "destinationPorts": port_constraint_json(
+                    alternative.destination_ports
+                ),
+                "serviceReference": alternative.service_reference,
+            }
+            for alternative in alternatives
+        ]
+
+    return {
+        "sourceDisplayName": description.source_display_name,
+        "destinationDisplayName": description.destination_display_name,
+        "dcsDisplayName": description.dcs_display_name,
+        "trafficAlternatives": traffic_alternatives,
+        "dcsProvenanceReference": description.dcs_provenance_reference,
+    }
+
+
+def _describe_semantic_identities(
+    runtime_scope,
+    identities,
+) -> dict[RuleSemanticIdentity, dict[str, Any]]:
+    semantic_identities = tuple(dict.fromkeys(identities))
+    if not semantic_identities:
+        return {}
+    try:
+        descriptions = runtime_scope.catalogue_describer.execute(
+            tuple(
+                _interaction_identity(identity)
+                for identity in semantic_identities
+            )
+        )
+    except CataloguePersistenceError:
+        return {}
+
+    return {
+        semantic_identity: _catalogue_presentation_dto(
+            description,
+            decoder=runtime_scope.dcs_decoder,
+        )
+        for semantic_identity, description in zip(
+            semantic_identities,
+            descriptions,
+        )
+    }
+
+
+def _rule_dto(
+    rule: AccessRule,
+    catalogue: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     window = None
     if rule.effective_window is not None:
         window = {
@@ -240,11 +325,15 @@ def _rule_dto(rule: AccessRule) -> dict[str, Any]:
         "operationalState": rule.operational_state.value,
         "effectiveWindow": window,
         "decisionReference": rule.decision.decision_id,
+        "catalogue": catalogue,
     }
 
 
-def _rule_detail_dto(rule: AccessRule) -> dict[str, Any]:
-    payload = _rule_dto(rule)
+def _rule_detail_dto(
+    rule: AccessRule,
+    catalogue: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload = _rule_dto(rule, catalogue)
     payload["proposalProvenance"] = {
         "actorId": rule.proposal_provenance.actor_id,
         "effectiveTime": rule.proposal_provenance.effective_time.isoformat(),
@@ -567,6 +656,7 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
         scope: str,
         page: int = Query(1, ge=1),
         pageSize: int = Query(50, ge=1, le=100),
+        search: str | None = Query(None, max_length=256),
         actor: AuthenticatedActor = Depends(require_actor),
     ):
         request.state.operation = "DiscoverProposalInteractions"
@@ -581,6 +671,15 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                 effective_time=effective_time,
                 page=page,
                 page_size=pageSize,
+                search=search,
+            )
+            proposal_presentations = (
+                _describe_semantic_identities(
+                    runtime_scope,
+                    result.page.identities,
+                )
+                if result.page is not None
+                else {}
             )
 
         if result.outcome is ProposalInteractionDiscoveryOutcome.AUTHORITY_DENIED:
@@ -609,6 +708,7 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                     "dcsContractRevisionId": str(
                         identity.dcs_contract_revision_id
                     ),
+                    "catalogue": proposal_presentations.get(identity),
                 }
                 for identity in result.page.identities
             ],
@@ -640,6 +740,14 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                 decisions=dependencies.decisions,
                 rules=scope.access_rules,
             ).execute(command)
+            proposal_rule_presentation = (
+                _describe_semantic_identities(
+                    scope,
+                    (result.rule.semantic_identity,),
+                ).get(result.rule.semantic_identity)
+                if result.rule is not None
+                else None
+            )
 
         if result.outcome in {
             MaterializationOutcome.MATERIALIZED,
@@ -661,7 +769,10 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                 ),
                 content={
                     "outcome": result.outcome.value,
-                    "rule": _rule_dto(result.rule),
+                    "rule": _rule_dto(
+                        result.rule,
+                        proposal_rule_presentation,
+                    ),
                 },
             )
 
@@ -727,13 +838,23 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                 page=page,
                 page_size=pageSize,
             )
+            rule_presentations = _describe_semantic_identities(
+                runtime_scope,
+                tuple(rule.semantic_identity for rule in result.rules),
+            )
 
         _set_outcome(
             request,
             "AuthorityUnknown" if result.ambiguous_scopes else "Available",
         )
         return {
-            "items": [_rule_dto(rule) for rule in result.rules],
+            "items": [
+                _rule_dto(
+                    rule,
+                    rule_presentations.get(rule.semantic_identity),
+                )
+                for rule in result.rules
+            ],
             "page": result.page,
             "pageSize": result.page_size,
             "hasMore": result.has_more,
@@ -758,6 +879,14 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                 rule_id=rule_id,
                 actor_id=actor.actor_id,
                 effective_time=effective_time,
+            )
+            rule_detail_presentation = (
+                _describe_semantic_identities(
+                    runtime_scope,
+                    (result.rule.semantic_identity,),
+                ).get(result.rule.semantic_identity)
+                if result.rule is not None
+                else None
             )
 
         if result.outcome is AccessRuleDetailOutcome.RULE_NOT_FOUND:
@@ -786,7 +915,10 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
         request.state.authority_reference = result.read_authority_reference
         _set_outcome(request, "Found")
         return {
-            "rule": _rule_detail_dto(result.rule),
+            "rule": _rule_detail_dto(
+                result.rule,
+                rule_detail_presentation,
+            ),
             "capabilities": {
                 "setOperationalState": result.state_mutation_admission.value,
                 "setEffectiveWindow": result.effective_window_mutation_admission.value,
@@ -987,6 +1119,14 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                     actor_id=actor.actor_id,
                 )
             )
+            effective_policy_presentations = (
+                _describe_semantic_identities(
+                    runtime_scope,
+                    tuple(rule.semantic_identity for rule in selection.rules),
+                )
+                if selection.outcome is EffectivePolicySelectionOutcome.SELECTED
+                else {}
+            )
 
         if selection.outcome is EffectivePolicySelectionOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
@@ -1007,7 +1147,13 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             "scope": selection.scope,
             "asOf": selection.as_of.isoformat(),
             "authorityReference": selection.authority_reference,
-            "rules": [_rule_dto(rule) for rule in selection.rules],
+            "rules": [
+                _rule_dto(
+                    rule,
+                    effective_policy_presentations.get(rule.semantic_identity),
+                )
+                for rule in selection.rules
+            ],
         }
 
     @app.get("/api/v1/normalized-policy", name="GetNormalizedPolicy")
@@ -1072,10 +1218,22 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             normalized = NormalizeExportSnapshot(
                 decoder=runtime_scope.dcs_decoder
             ).execute(assembly.snapshot)
+            normalized_presentations = _describe_semantic_identities(
+                runtime_scope,
+                tuple(
+                    row.rule_semantic_identity
+                    for row in normalized.rows
+                ),
+            )
 
         request.state.authority_reference = normalized.authority_reference
         _set_outcome(request, "NormalizedPolicyExported")
-        return normalized_policy_export_json(normalized)
+        payload = normalized_policy_export_json(normalized)
+        for encoded, row in zip(payload["rows"], normalized.rows):
+            encoded["catalogue"] = normalized_presentations.get(
+                row.rule_semantic_identity
+            )
+        return payload
 
     @app.get("/health/live", name="Liveness")
     def liveness(request: Request):

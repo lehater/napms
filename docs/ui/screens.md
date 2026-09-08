@@ -20,6 +20,12 @@ Inputs:
 
 The UI should progressively constrain destination/DCS choices using backend-provided valid options. Users do not enter firewall addresses/protocol/ports/vendor syntax.
 
+I12 presentation:
+- Source/Destination/DCS display labels are primary when available;
+- stable UUIDs remain visible/fallback;
+- bounded search is server-side;
+- DCS options show decoded immutable protocol/service/port summary.
+
 Submit result:
 - `Allowed` -> authoritative Access Rule summary/link;
 - `NotAllowed` -> explicit no-Rule business outcome;
@@ -38,7 +44,7 @@ Useful columns when available:
 - operational state;
 - EffectiveWindow summary.
 
-Row opens Rule Details.
+Source/Destination/DCS cells render optional catalogue labels first and stable technical IDs second. Row opens Rule Details.
 
 ## Access Rule Details
 
@@ -56,7 +62,7 @@ Sections:
 - business history;
 - admitted mutation actions.
 
-Use progressive disclosure for low-frequency provenance detail.
+Use progressive disclosure for low-frequency provenance detail. Semantic identity fields show catalogue labels first and stable IDs second; labels never replace identity.
 
 ## Effective Policy
 
@@ -64,13 +70,13 @@ Responsibility: run/view `SelectEffectiveDesiredPolicy(scope, asOf, actor)`.
 
 Inputs: one Rule Governance Scope + explicit offset-aware `asOf`.
 
-Scope discovery is evaluated for the same `asOf`; ambiguous scopes remain fail-closed. Denied/unknown authority returns no policy data and is presented distinctly from an authorized empty result.
+Scope discovery is evaluated for the same `asOf`; ambiguous scopes remain fail-closed. Denied/unknown authority returns no policy data and is presented distinctly from an authorized empty result. Rule rows use the same label-first catalogue presentation as Access Rules.
 
 ## Normalized Policy
 
 Responsibility: present vendor-neutral normalized policy for an accepted export journey.
 
-Preserve Rule/decision correlation, technical realization, DCS traffic alternatives, export `asOf` and required provenance. Presentation renders `Any`, `NotApplicable` and inclusive ranges distinctly and exposes Rule/Authority/ACC/RC provenance without flattening it.
+Preserve Rule/decision correlation, technical realization, DCS traffic alternatives, export `asOf` and required provenance. Presentation renders `Any`, `NotApplicable` and inclusive ranges distinctly and exposes Rule/Authority/ACC/RC provenance without flattening it. Optional catalogue labels supplement, but never replace, technical addresses and semantic IDs.
 
 ## Deferred
 

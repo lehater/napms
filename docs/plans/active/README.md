@@ -2,6 +2,6 @@
 
 Current: none.
 
-I11 Dockerized Local Runtime is complete and absorbed into canonical engineering/runtime truth.
+I12 Human-readable Catalogue UX is complete and absorbed into canonical domain/requirements/engineering/UI truth.
 
 Select the next product/increment priority before creating the next active plan.

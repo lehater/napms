@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I11 PASS — Dockerized Local Runtime implemented`.
+Status: `I12 PASS — Human-readable Catalogue UX implemented`.
 
 Date: 2026-09-09.
 
@@ -102,6 +102,25 @@ Implemented:
 - final architecture/security review has no open P0/P1 finding;
 - core, PostgreSQL, Web, Docker, harness and knowledge gates passed.
 
+## I12 result
+
+`PASS` for Human-readable Catalogue UX.
+
+Implemented:
+- optional ACC-owned display names for Component Deployments and immutable DCS revisions without changing UUID-based identity;
+- checksum-tracked PostgreSQL migration `application-catalogue/0002`;
+- exact-identity batch catalogue presentation reads with DCS subject correlation;
+- bounded server-side interaction search executed only after existing `ProposeConnectivity` authority admission;
+- DCS traffic summaries decoded from the existing immutable projection payload;
+- optional presentation enrichment on already-authorized proposal, Rule, Effective Desired Policy and normalized-policy responses;
+- presentation enrichment is fail-soft: missing labels or presentation lookup/decode failure falls back to stable IDs without changing an authorized business result;
+- Compose Connectivity is searchable and label-first while submitting the same stable semantic IDs;
+- Access Rules, Rule Details, Effective Policy and Normalized Policy show display names first and technical IDs/provenance second;
+- local Docker demo seeds `Demo Web Frontend -> Demo Orders API / HTTPS Orders API` and the public smoke test verifies the labels and traffic summary;
+- no generic catalogue browse/read endpoint, catalogue CRUD/admin workflow or new read authority was introduced;
+- final architecture/security review has no open P0/P1 finding;
+- core, PostgreSQL, Web, Docker, harness and knowledge gates passed.
+
 ## I8 scope boundary
 
 I8 intentionally does **not** define Connectivity Decision Domain internals.
@@ -130,7 +149,7 @@ Implemented:
 - local-dev authentication/session boundary;
 - explicit local-dev Connectivity Decision adapter;
 - public normalized-policy JSON serializer;
-- React Web UI through Operational Workspace and Policy Operations views;
+- React Web UI through Operational Workspace, Policy Operations and Human-readable Catalogue UX;
 - structured runtime observability/correlation and health/readiness;
 - Dockerized local runtime with tracked migrations, demo seed and nginx same-origin entrypoint.
 

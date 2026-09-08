@@ -1,6 +1,6 @@
 # Web UI requirements — accepted I8 refinement
 
-Status: `accepted through I10 Policy Operations Workspace`.
+Status: `accepted through I12 Human-readable Catalogue UX`.
 
 Date: 2026-09-09.
 
@@ -89,6 +89,13 @@ Output: proposal submission result.
 
 The composition UX should constrain later choices using backend-provided valid options rather than let the user assemble arbitrary identifier combinations.
 
+I12 presentation rules:
+- Component Deployment and DCS display names are shown as primary text when available;
+- the stable UUID remains visible as secondary technical identity;
+- missing display metadata falls back to the stable ID without changing semantics;
+- DCS traffic summary is decoded from the existing immutable projection payload;
+- interaction search is server-side and bounded, searching admitted catalogue labels and stable IDs only after the proposal-authority gate.
+
 ### 3. Proposal Result
 
 Purpose: present the semantic result of proposal submission.
@@ -104,7 +111,7 @@ This may be a result state of Compose Connectivity rather than a dedicated route
 
 Purpose: inspect authoritative Access Rules visible through explicit `ReadAccessRule` authority. List results contain only Rules from unambiguously permitted governance scopes; read authority does not imply mutation authority.
 
-Initial useful data includes Rule ID, source deployment, destination deployment, DCS revision/reference, governance scope, operational state and effective-window summary where available.
+Initial useful data includes Rule ID, source deployment, destination deployment, DCS revision/reference, governance scope, operational state and effective-window summary where available. Source/destination/DCS display names are primary presentation when available; stable IDs remain visible and authoritative.
 
 ### 5. Access Rule Details
 
@@ -131,7 +138,7 @@ Purpose: select and inspect the authorized effective desired-policy subset for o
 
 Purpose: present the vendor-neutral normalized policy JSON/view for the same explicit authorized scope/asOf context while preserving required row semantics and provenance.
 
-The UI presentation must not redefine or omit normalized export meaning.
+The UI presentation must not redefine or omit normalized export meaning. I12 may add catalogue display labels beside normalized rows, but the normalized technical addresses, traffic semantics and provenance remain authoritative.
 
 ### Deferred screens
 

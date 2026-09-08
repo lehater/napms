@@ -18,6 +18,9 @@ from napms.access_policy.application.ports import (
     TernaryOutcome,
 )
 from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.application_catalogue.application.describe_interactions import (
+    DirectedInteractionDescription,
+)
 from napms.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
@@ -122,6 +125,21 @@ class FakeRules:
             raise self.commit_error
 
 
+class FakeCatalogueDescriber:
+    def execute(self, identities):
+        return tuple(
+            DirectedInteractionDescription(
+                identity=identity,
+                source_display_name=None,
+                destination_display_name=None,
+                dcs_display_name=None,
+                dcs_projection_payload=None,
+                dcs_provenance_reference=None,
+            )
+            for identity in identities
+        )
+
+
 class FakeApplicationProjection:
     def __init__(self, mode="resolved"):
         self.mode = mode
@@ -205,6 +223,7 @@ class Scope:
         self.authority = authority
         self.proposal_catalogue = FakeProposalCatalogue(interaction)
         self.access_rules = FakeRules(commit_error)
+        self.catalogue_describer = FakeCatalogueDescriber()
         self.application_projection = FakeApplicationProjection(application_mode)
         self.resource_projection = FakeResourceProjection(resource_mode)
         self.dcs_decoder = FakeDecoder()

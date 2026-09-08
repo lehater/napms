@@ -67,8 +67,13 @@ class AccessPolicyProposalInteractionCatalogueAdapter:
         *,
         page: int,
         page_size: int,
+        search: str | None = None,
     ) -> ProposalInteractionPage:
-        result = self._discovery.execute(page=page, page_size=page_size)
+        result = self._discovery.execute(
+            page=page,
+            page_size=page_size,
+            search=search,
+        )
         return ProposalInteractionPage(
             identities=tuple(
                 RuleSemanticIdentity(

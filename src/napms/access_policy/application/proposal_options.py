@@ -59,6 +59,7 @@ class DiscoverProposalInteractions:
         effective_time: datetime,
         page: int = 1,
         page_size: int = 50,
+        search: str | None = None,
     ) -> ProposalInteractionDiscoveryResult:
         authority = self._authority.check(
             actor_id=actor_id,
@@ -77,5 +78,9 @@ class DiscoverProposalInteractions:
 
         return ProposalInteractionDiscoveryResult(
             ProposalInteractionDiscoveryOutcome.AVAILABLE,
-            self._catalogue.list_directed_interactions(page=page, page_size=page_size),
+            self._catalogue.list_directed_interactions(
+                page=page,
+                page_size=page_size,
+                search=search,
+            ),
         )

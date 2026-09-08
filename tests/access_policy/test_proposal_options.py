@@ -35,9 +35,11 @@ class FakeAuthority:
 class FakeCatalogue:
     def __init__(self):
         self.called = False
+        self.search = None
 
-    def list_directed_interactions(self, *, page, page_size):
+    def list_directed_interactions(self, *, page, page_size, search=None):
         self.called = True
+        self.search = search
         return ProposalInteractionPage(
             identities=(
                 RuleSemanticIdentity(UUID(int=1), UUID(int=2), UUID(int=3)),
@@ -89,3 +91,20 @@ def test_permitted_interaction_discovery_returns_candidate_page():
     assert result.outcome is ProposalInteractionDiscoveryOutcome.AVAILABLE
     assert result.page is not None
     assert result.page.identities[0].dcs_contract_revision_id == UUID(int=3)
+
+
+
+def test_permitted_interaction_discovery_forwards_search_after_authority():
+    catalogue = FakeCatalogue()
+    result = DiscoverProposalInteractions(
+        authority=FakeAuthority(TernaryOutcome.PERMITTED),
+        catalogue=catalogue,
+    ).execute(
+        actor_id="actor-1",
+        scope="scope-a",
+        effective_time=NOW,
+        search="orders",
+    )
+
+    assert result.outcome is ProposalInteractionDiscoveryOutcome.AVAILABLE
+    assert catalogue.search == "orders"

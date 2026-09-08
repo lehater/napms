@@ -124,6 +124,7 @@ class ProposalInteractionCataloguePort(Protocol):
         *,
         page: int,
         page_size: int,
+        search: str | None = None,
     ) -> ProposalInteractionPage: ...
 
 

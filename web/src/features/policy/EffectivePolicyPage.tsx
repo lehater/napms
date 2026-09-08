@@ -5,12 +5,12 @@ import {
   getEffectiveDesiredPolicy,
   type EffectivePolicyResponse,
 } from "@/api"
+import {
+  CatalogueIdentity,
+  shortId,
+} from "@/components/catalogue/CatalogueIdentity"
 import { StatusBadge } from "@/components/ui/StatusBadge"
 import { PolicyViewControls } from "@/features/policy/PolicyViewControls"
-
-function shortId(value: string) {
-  return value.length <= 18 ? value : `${value.slice(0, 8)}…${value.slice(-6)}`
-}
 
 export function EffectivePolicyPage({
   onOpenRule,
@@ -109,14 +109,23 @@ export function EffectivePolicyPage({
                           {shortId(rule.ruleId)}
                         </button>
                       </td>
-                      <td className="px-5 py-3 font-mono text-xs">
-                        {shortId(rule.semanticIdentity.sourceComponentDeploymentId)}
+                      <td className="px-5 py-3">
+                        <CatalogueIdentity
+                          name={rule.catalogue?.sourceDisplayName}
+                          id={rule.semanticIdentity.sourceComponentDeploymentId}
+                        />
                       </td>
-                      <td className="px-5 py-3 font-mono text-xs">
-                        {shortId(rule.semanticIdentity.destinationComponentDeploymentId)}
+                      <td className="px-5 py-3">
+                        <CatalogueIdentity
+                          name={rule.catalogue?.destinationDisplayName}
+                          id={rule.semanticIdentity.destinationComponentDeploymentId}
+                        />
                       </td>
-                      <td className="px-5 py-3 font-mono text-xs">
-                        {shortId(rule.semanticIdentity.dcsContractRevisionId)}
+                      <td className="px-5 py-3">
+                        <CatalogueIdentity
+                          name={rule.catalogue?.dcsDisplayName}
+                          id={rule.semanticIdentity.dcsContractRevisionId}
+                        />
                       </td>
                       <td className="px-5 py-3">
                         <StatusBadge value={rule.operationalState} />

@@ -63,6 +63,11 @@ MIGRATIONS: tuple[Migration, ...] = (
         "migrations/0001_application_catalogue.sql",
     ),
     Migration(
+        "application-catalogue/0002",
+        "napms.application_catalogue.adapters.postgres",
+        "migrations/0002_display_metadata.sql",
+    ),
+    Migration(
         "resource-catalogue/0001",
         "napms.resource_catalogue.adapters.postgres",
         "migrations/0001_resource_catalogue.sql",

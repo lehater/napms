@@ -7,10 +7,26 @@ export type ProposalScope = {
   scope: string
 }
 
+export type TrafficAlternativeDto = {
+  protocol: string
+  sourcePorts: PortConstraintDto
+  destinationPorts: PortConstraintDto
+  serviceReference: string | null
+}
+
+export type CataloguePresentation = {
+  sourceDisplayName: string | null
+  destinationDisplayName: string | null
+  dcsDisplayName: string | null
+  trafficAlternatives: TrafficAlternativeDto[]
+  dcsProvenanceReference: string | null
+}
+
 export type ProposalInteraction = {
   sourceComponentDeploymentId: string
   destinationComponentDeploymentId: string
   dcsContractRevisionId: string
+  catalogue?: CataloguePresentation | null
 }
 
 export type RuleDto = {
@@ -20,6 +36,7 @@ export type RuleDto = {
   operationalState: "Active" | "Inactive"
   effectiveWindow: { start: string; end: string } | null
   decisionReference: string | null
+  catalogue?: CataloguePresentation | null
 }
 
 export type RuleStateTransition = {
@@ -150,12 +167,16 @@ export type ProposalInteractionPage = {
 export async function listProposalInteractions(
   scope: string,
   page: number,
+  search?: string,
 ): Promise<ProposalInteractionPage> {
   const params = new URLSearchParams({
     scope,
     page: String(page),
     pageSize: "50",
   })
+  if (search?.trim()) {
+    params.set("search", search.trim())
+  }
   return request<ProposalInteractionPage>(
     `/api/v1/access-rule-proposals/interactions?${params}`,
   )
@@ -282,6 +303,7 @@ export type NormalizedPolicyRow = {
     destinationPorts: PortConstraintDto
     serviceReference: string | null
   }
+  catalogue?: CataloguePresentation | null
   applicationCommunicationCatalogue: {
     factReference: string
     validityReference: string

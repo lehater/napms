@@ -48,15 +48,39 @@ def test_local_demo_seed_contains_one_directed_https_interaction():
         if "INSERT INTO napms_application_catalogue.dcs_revisions" in sql
     ]
     assert len(dcs_rows) == 1
-    revision_id, source_id, destination_id, payload, provenance = dcs_rows[0]
+    revision_id, source_id, destination_id, payload, provenance, display_name = dcs_rows[0]
     assert revision_id != source_id
     assert revision_id != destination_id
     assert source_id != destination_id
     assert b'"protocol":"tcp"' in payload
     assert b'"ranges":[[443,443]]' in payload
     assert provenance == "local-demo:https-dcs"
+    assert display_name == "HTTPS Orders API"
 
 
 def test_local_demo_seed_requires_explicit_actor():
     with pytest.raises(ValueError):
         seed_local_demo(FakeConnection(), actor_id="")
+
+
+
+def test_local_demo_seed_contains_human_readable_deployment_labels():
+    connection = FakeConnection()
+
+    seed_local_demo(connection, actor_id="local-admin")
+
+    deployment_rows = [
+        params
+        for sql, params in connection.calls
+        if "INSERT INTO napms_application_catalogue.component_deployments" in sql
+    ]
+    assert {(row[0], row[2]) for row in deployment_rows} == {
+        (
+            __import__("uuid").UUID("00000000-0000-0000-0000-000000000101"),
+            "Demo Web Frontend",
+        ),
+        (
+            __import__("uuid").UUID("00000000-0000-0000-0000-000000000102"),
+            "Demo Orders API",
+        ),
+    }

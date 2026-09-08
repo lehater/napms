@@ -19,14 +19,21 @@ class DirectedInteractionIdentity:
     dcs_contract_revision_id: UUID
 
 
+def _validate_display_name(value: str | None, *, field_name: str) -> None:
+    if value is not None and not value.strip():
+        raise CatalogueInvariantError(f"{field_name} must be non-empty when provided")
+
+
 @dataclass(frozen=True, slots=True)
 class ComponentDeployment:
     deployment_id: UUID
     provenance_reference: str
+    display_name: str | None = None
 
     def __post_init__(self) -> None:
         if not self.provenance_reference:
             raise CatalogueInvariantError("provenance_reference must be non-empty")
+        _validate_display_name(self.display_name, field_name="display_name")
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,12 +43,14 @@ class DcsRevision:
     destination_component_deployment_id: UUID
     projection_payload: bytes
     provenance_reference: str
+    display_name: str | None = None
 
     def __post_init__(self) -> None:
         if not self.projection_payload:
             raise CatalogueInvariantError("projection_payload must be non-empty")
         if not self.provenance_reference:
             raise CatalogueInvariantError("provenance_reference must be non-empty")
+        _validate_display_name(self.display_name, field_name="display_name")
 
 
 @dataclass(frozen=True, slots=True)

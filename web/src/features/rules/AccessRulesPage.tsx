@@ -2,12 +2,12 @@ import { useEffect, useState } from "react"
 import { ChevronRight, CircleAlert } from "lucide-react"
 
 import { ApiError, listAccessRules, type RuleDto } from "@/api"
+import {
+  CatalogueIdentity,
+  shortId,
+} from "@/components/catalogue/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import { StatusBadge } from "@/components/ui/StatusBadge"
-
-function shortId(value: string) {
-  return value.length <= 18 ? value : `${value.slice(0, 8)}…${value.slice(-6)}`
-}
 
 export function AccessRulesPage({
   page,
@@ -137,14 +137,23 @@ export function AccessRulesPage({
                     <td className="px-5 py-3 font-mono text-xs text-[#334155]">
                       {shortId(rule.ruleId)}
                     </td>
-                    <td className="px-5 py-3 font-mono text-xs">
-                      {shortId(rule.semanticIdentity.sourceComponentDeploymentId)}
+                    <td className="px-5 py-3">
+                      <CatalogueIdentity
+                        name={rule.catalogue?.sourceDisplayName}
+                        id={rule.semanticIdentity.sourceComponentDeploymentId}
+                      />
                     </td>
-                    <td className="px-5 py-3 font-mono text-xs">
-                      {shortId(rule.semanticIdentity.destinationComponentDeploymentId)}
+                    <td className="px-5 py-3">
+                      <CatalogueIdentity
+                        name={rule.catalogue?.destinationDisplayName}
+                        id={rule.semanticIdentity.destinationComponentDeploymentId}
+                      />
                     </td>
-                    <td className="px-5 py-3 font-mono text-xs">
-                      {shortId(rule.semanticIdentity.dcsContractRevisionId)}
+                    <td className="px-5 py-3">
+                      <CatalogueIdentity
+                        name={rule.catalogue?.dcsDisplayName}
+                        id={rule.semanticIdentity.dcsContractRevisionId}
+                      />
                     </td>
                     <td className="px-5 py-3">{rule.governanceScope}</td>
                     <td className="px-5 py-3">

@@ -50,6 +50,7 @@ def test_migration_registry_has_stable_unique_ids():
         "access-policy/0003",
         "authority-management/0001",
         "application-catalogue/0001",
+        "application-catalogue/0002",
         "resource-catalogue/0001",
     )
     assert len(ids) == len(set(ids))

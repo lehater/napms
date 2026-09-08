@@ -14,6 +14,10 @@ from napms.access_policy.application.ports import (
     ProposalScopeOptions,
     TernaryOutcome,
 )
+from napms.application_catalogue.application.describe_interactions import (
+    DirectedInteractionDescription,
+)
+from napms.application_catalogue.application.ports import CataloguePersistenceError
 from napms.policy_export.application.ports import (
     ApplicationProjectionFact,
     ApplicationProjectionOutcome,
@@ -52,7 +56,7 @@ class FakeScopeDiscovery:
 
 
 class FakeInteractionCatalogue:
-    def list_directed_interactions(self, *, page, page_size):
+    def list_directed_interactions(self, *, page, page_size, search=None):
         return ProposalInteractionPage(
             identities=(
                 _identity(),
@@ -60,6 +64,26 @@ class FakeInteractionCatalogue:
             page=page,
             page_size=page_size,
             has_more=False,
+        )
+
+
+class FakeCatalogueDescriber:
+    def __init__(self, *, fail=False):
+        self.fail = fail
+
+    def execute(self, identities):
+        if self.fail:
+            raise CataloguePersistenceError()
+        return tuple(
+            DirectedInteractionDescription(
+                identity=identity,
+                source_display_name="Checkout Web",
+                destination_display_name="Orders API",
+                dcs_display_name="HTTPS Orders",
+                dcs_projection_payload=None,
+                dcs_provenance_reference="dcs-1",
+            )
+            for identity in identities
         )
 
 
@@ -130,10 +154,11 @@ class FakeDecisions:
 
 
 class Scope:
-    def __init__(self, authority):
+    def __init__(self, authority, catalogue_describer=None):
         self.authority = authority
         self.proposal_scope_discovery = FakeScopeDiscovery()
         self.proposal_interaction_catalogue = FakeInteractionCatalogue()
+        self.catalogue_describer = catalogue_describer or FakeCatalogueDescriber()
         self.proposal_catalogue = FakeProposalCatalogue()
         self.access_rules = FakeRules()
         self.application_projection = FakeApplicationProjection()
@@ -147,9 +172,14 @@ def _identity():
     return RuleSemanticIdentity(SOURCE, DESTINATION, DCS)
 
 
-def _client(*, decision=DecisionOutcome.ALLOWED, authority=TernaryOutcome.PERMITTED):
+def _client(
+    *,
+    decision=DecisionOutcome.ALLOWED,
+    authority=TernaryOutcome.PERMITTED,
+    catalogue_describer=None,
+):
     auth_port = FakeAuthority(authority)
-    scope = Scope(auth_port)
+    scope = Scope(auth_port, catalogue_describer=catalogue_describer)
     decisions = FakeDecisions(decision)
     sessions = InMemorySessionStore(new_session_id=lambda: "opaque-session")
     credential = LocalCredential(
@@ -305,6 +335,13 @@ def test_scope_and_interaction_discovery_are_session_and_authority_aware():
         "sourceComponentDeploymentId": str(SOURCE),
         "destinationComponentDeploymentId": str(DESTINATION),
         "dcsContractRevisionId": str(DCS),
+        "catalogue": {
+            "sourceDisplayName": "Checkout Web",
+            "destinationDisplayName": "Orders API",
+            "dcsDisplayName": "HTTPS Orders",
+            "trafficAlternatives": [],
+            "dcsProvenanceReference": "dcs-1",
+        },
     }
     assert authority.calls[-1]["actor_id"] == "actor-1"
 
@@ -407,3 +444,26 @@ def test_normalized_policy_reports_snapshot_diagnostics_without_partial_rows():
     )
     assert error["details"]["diagnostics"][0]["category"] == "Missing"
     assert "rows" not in response.json()
+
+
+
+def test_optional_catalogue_presentation_failure_does_not_change_proposal_outcome():
+    client, _, _ = _client(
+        catalogue_describer=FakeCatalogueDescriber(fail=True)
+    )
+    _login(client)
+
+    interactions = client.get(
+        "/api/v1/access-rule-proposals/interactions",
+        params={"scope": "scope-a"},
+    )
+    submitted = client.post(
+        "/api/v1/access-rule-proposals",
+        json=_proposal_payload(),
+    )
+
+    assert interactions.status_code == 200
+    assert interactions.json()["items"][0]["catalogue"] is None
+    assert submitted.status_code == 201
+    assert submitted.json()["outcome"] == "Materialized"
+    assert submitted.json()["rule"]["catalogue"] is None

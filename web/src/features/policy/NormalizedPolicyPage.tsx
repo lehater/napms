@@ -6,6 +6,7 @@ import {
   type NormalizedPolicyResponse,
   type PortConstraintDto,
 } from "@/api"
+import { displayName } from "@/components/catalogue/CatalogueIdentity"
 import { PolicyViewControls } from "@/features/policy/PolicyViewControls"
 
 function renderPorts(value: PortConstraintDto): string {
@@ -110,12 +111,24 @@ export function NormalizedPolicyPage() {
                     >
                       <td className="px-4 py-3">
                         <div className="font-mono text-xs">{row.ruleId}</div>
+                        <div className="mt-1 text-xs font-medium text-[#334155]">
+                          {displayName(
+                            row.catalogue?.dcsDisplayName,
+                            row.semanticIdentity.dcsContractRevisionId,
+                          )}
+                        </div>
                         <div className="mt-1 text-xs text-[#64748B]">
                           decision {row.decisionReference ?? "—"}
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-mono text-xs">
+                        <div className="font-medium text-[#172033]">
+                          {displayName(
+                            row.catalogue?.sourceDisplayName,
+                            row.semanticIdentity.sourceComponentDeploymentId,
+                          )}
+                        </div>
+                        <div className="mt-1 font-mono text-xs">
                           {row.source.technicalAddress}
                         </div>
                         <div className="mt-1 text-xs text-[#64748B]">
@@ -123,7 +136,13 @@ export function NormalizedPolicyPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-mono text-xs">
+                        <div className="font-medium text-[#172033]">
+                          {displayName(
+                            row.catalogue?.destinationDisplayName,
+                            row.semanticIdentity.destinationComponentDeploymentId,
+                          )}
+                        </div>
+                        <div className="mt-1 font-mono text-xs">
                           {row.destination.technicalAddress}
                         </div>
                         <div className="mt-1 text-xs text-[#64748B]">

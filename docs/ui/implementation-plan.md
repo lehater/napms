@@ -65,3 +65,13 @@ Add aggregate dashboard and any global audit/search features only after concrete
 - abstractions are extracted after demonstrated reuse;
 - no client-side role assumption substitutes for backend Authority Management;
 - no approval workflow is introduced by UI convenience.
+
+
+## UI-5 — Human-readable Catalogue UX — implemented in I12
+
+- optional Component Deployment and DCS display labels;
+- stable UUID shown as secondary/fallback identity;
+- server-side authorized interaction search in Compose Connectivity;
+- DCS traffic summary decoded from immutable projection semantics;
+- Access Rules, Rule Details, Effective Policy and Normalized Policy render catalogue labels without changing business meaning;
+- no generic catalogue CRUD/browse surface is introduced.
