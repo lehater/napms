@@ -1,5 +1,7 @@
 # Active execution
 
-Current: `PLAN-010-i10-policy-operations-workspace.md`
+Current: none.
 
-Read the current plan before starting or resuming non-trivial implementation work.
+I10 Policy Operations Workspace is complete and absorbed into canonical requirements/engineering/UI truth.
+
+Select the next product/increment priority before creating the next active plan.
