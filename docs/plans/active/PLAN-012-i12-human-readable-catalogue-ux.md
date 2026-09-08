@@ -21,7 +21,7 @@ Effective / Normalized Policy
 
 ## Current stage
 
-**WP7–WP8 — PostgreSQL/runtime/Docker evidence.**
+**WP9 — final architecture/security review and repository gates.**
 
 ## Inputs
 
@@ -54,9 +54,9 @@ Effective / Normalized Policy
 4. **DONE — Rule/API enrichment.** Already-authorized proposal/Rule/Effective Policy responses carry optional presentation descriptors.
 5. **DONE — Normalized-policy enrichment.** Authorized normalized rows carry catalogue labels without changing technical/provenance semantics.
 6. **DONE — Web UX.** Compose is searchable/label-first; Rules/Details/Policy views show names first and stable IDs second.
-7. **ACTIVE — PostgreSQL/runtime evidence.** Migration/search/fallback/authorization behavior is covered and being gated.
-8. **ACTIVE — Docker demo evidence.** Local seed and public smoke assert labels/traffic summary.
-9. **Final review/gates.** Run core, PostgreSQL, Web, Docker, harness and knowledge gates; close all P0/P1.
+7. **DONE — PostgreSQL/runtime evidence.** Migration/search/fallback/authorization behavior is covered; core and PostgreSQL gates passed on the implementation head.
+8. **DONE — Docker demo evidence.** Fresh Compose startup, migration, seed, labels and DCS traffic summary passed through the public nginx endpoint.
+9. **ACTIVE — Final review/gates.** Re-run all repository gates on the final documentation/lifecycle head and close P0/P1. Run core, PostgreSQL, Web, Docker, harness and knowledge gates; close all P0/P1.
 
 ## Exit criteria
 
@@ -75,4 +75,4 @@ No current owner/product blocker.
 
 ## Next
 
-Run core/PostgreSQL/Web/Docker evidence, close P0/P1 findings, then absorb I12 into canonical current state.
+Run the final repository gate set on the current head. If green with no open P0/P1, absorb I12 into canonical current state and squash-merge.
