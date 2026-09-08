@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+import traceback
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from time import perf_counter
@@ -254,6 +255,17 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             if value:
                 event[event_name] = value
 
+        if error is not None:
+            event["exception"] = {
+                "class": type(error).__name__,
+                "stack": [
+                    frame.rstrip()
+                    for frame in traceback.format_list(
+                        traceback.extract_tb(error.__traceback__)
+                    )
+                ],
+            }
+
         level = logging.INFO
         if response.status_code >= 500:
             level = logging.ERROR if error is not None else logging.WARNING
@@ -262,7 +274,6 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
         _LOGGER.log(
             level,
             json.dumps(event, separators=(",", ":"), sort_keys=True),
-            exc_info=error if error is not None else None,
         )
         return response
 
