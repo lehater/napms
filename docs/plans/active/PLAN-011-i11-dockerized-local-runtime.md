@@ -10,14 +10,14 @@ Make the complete local-dev NAPMS runtime start from one repository command with
 Browser -> Web/nginx -> FastAPI -> PostgreSQL
                          ^
                          |
-                    migrations
+PostgreSQL -> migrations -> local demo seed
 ```
 
 This is local/developer packaging, not production deployment architecture.
 
 ## Current stage
 
-**WP1 — executable migration/runtime packaging.**
+**WP9 — final architecture/security review and repository gates.**
 
 ## Inputs
 
@@ -45,15 +45,15 @@ This is local/developer packaging, not production deployment architecture.
 
 ## Work packages
 
-1. **ACTIVE — Migration runner.** Add packaged migration registry/journal, checksum validation and `napms-migrate` entrypoint with tests.
-2. **Backend image.** Add minimal Python runtime Dockerfile and container health behavior.
-3. **Web image.** Add multi-stage React build + nginx SPA/proxy configuration.
-4. **Compose topology.** Add PostgreSQL, migrate, api and web services with health/dependency ordering and named volume.
-5. **Local startup UX.** Add `.env.example`, one-command Make targets and secret-safe local credential bootstrap.
-6. **Smoke proof.** Add container smoke flow: readiness -> login -> authenticated session/API call.
-7. **CI Docker gate.** Build images and run Compose smoke test in GitHub Actions.
-8. **Docs/current-state.** Document local run/reset/log workflows and explicit non-production boundary.
-9. **Final review/gates.** Run core, PostgreSQL, Web, Docker, harness and knowledge gates; close P0/P1.
+1. **DONE — Migration runner.** Packaged migration registry/journal, checksum validation, advisory lock and `napms-migrate` are implemented with core/PostgreSQL tests.
+2. **DONE — Backend image.** Minimal non-root Python runtime image with readiness healthcheck is implemented.
+3. **DONE — Web image.** Multi-stage React build + nginx SPA/same-origin proxy image is implemented.
+4. **DONE — Compose topology.** PostgreSQL, migrate, local demo seed, API and Web services use health/completion ordering and a named volume.
+5. **DONE — Local startup UX.** `.env.example`, Make targets and in-memory random credential bootstrap are implemented.
+6. **DONE — Smoke proof.** Public readiness, login/session and seeded demo-scope checks run through nginx.
+7. **DONE — CI Docker gate.** Full Compose startup plus repeated migration/seed proof runs in GitHub Actions.
+8. **DONE — Docs.** README and local Docker runtime/configuration/composition contracts document operations and non-production boundaries.
+9. **ACTIVE — Final review/gates.** Run core, PostgreSQL, Web, Docker, harness and knowledge gates; close P0/P1.
 
 ## Exit criteria
 
@@ -75,4 +75,4 @@ No current owner/product blocker.
 
 ## Next
 
-Implement migration runner and tests first, then build Docker images around the existing runtime.
+Run final architecture/security review and all repository gates; close P0/P1 before I11 absorption.
