@@ -66,7 +66,7 @@ Existing module schema ownership is unchanged.
 
 Uses the backend image and runs `napms-seed-local`.
 
-It inserts deterministic local-demo catalogue/resource facts plus Authority assignments for the configured local actor:
+It inserts deterministic local-demo catalogue/resource facts plus Authority assignments for the configured local actor. I12 gives the demo Source, Destination and DCS human-readable display labels so a fresh stack is usable without interpreting UUIDs:
 - `ProposeConnectivity`;
 - `ReadAccessRule`;
 - `SetRuleOperationalState`;
