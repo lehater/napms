@@ -1,89 +1,82 @@
-# Walking Skeleton engineering readiness — PLAN-028 WP-05
+# Walking Skeleton engineering readiness
 
-Status: `accepted G4 engineering baseline with prototype replacement guardrail`.
+Status: `accepted pre-infrastructure engineering baseline`.
 
 Date: 2026-09-08.
 
 ## Repository/module path
 
-Use `apps/api` as reusable Python/FastAPI engineering scaffolding only. Existing `AccessRequestService` code/models/database semantics are prototype evidence and must not be incrementally treated as target domain. Replace/restructure target source around the accepted modular architecture.
-
-Recommended target package shape inside the API application:
+The product package is:
 
 ```text
-src/napm/
-  access_policy/        # domain + application-owned policy semantics
-  application/          # use cases/orchestration
-  ports/                # authority/catalogue/decision/persistence abstractions
-  adapters/http/        # FastAPI
-  adapters/persistence/ # relational repository/UoW
-  adapters/integration/ # fake/manual/enterprise/Legacy adapters
+src/napms/
+  access_policy/
+    domain/
+    application/
 ```
 
-Dependency rule: domain -> no framework/adapters; application -> domain + ports; adapters -> application/ports/domain as required.
+I1 contains Domain + Application + consuming ports only. Infrastructure/adapters are intentionally absent until the I1 core gate passes.
+
+Dependency rule: Domain has no outward dependencies; Application depends on Domain + owned port abstractions; future adapters depend inward.
 
 ## Build/package/local workflow
 
-Retain Python >=3.10 + setuptools/pytest/FastAPI toolchain initially because it already provides a runnable/testable repository path and no accepted architecture driver requires a language/framework change. Rename package/product semantics away from historical AccessRequestService during implementation.
+Current minimum:
+- Python >=3.10;
+- setuptools;
+- pytest;
+- editable local install;
+- deterministic core/architecture tests without external services.
 
-Required local path:
-- install editable dev dependencies;
-- run unit/component tests without external MSSQL;
-- run persistence integration tests against the selected relational test engine/container;
-- run FastAPI locally with fake/manual dependency adapters by configuration.
+No FastAPI, ORM, SQL driver or external SDK is required by I1.
 
-## Persistence
+## I1 test gate
 
-First skeleton requires relational transactional uniqueness. Do not adopt existing MSSQL schema/procedures as target model. PLAN implementation may choose a lightweight local relational engine for fast tests plus a deployment relational engine, provided concurrency semantics are validated against the real deployment engine before production readiness.
+Before infrastructure:
+- complete Access Policy core behavior matrix;
+- architecture/import rules;
+- error/message model accepted;
+- observability policy accepted;
+- configuration model accepted;
+- dependency-injection/composition model accepted;
+- no open P0/P1 semantic or structural issue;
+- successful full test execution.
 
-## Test gates
+In-memory repository tests prove semantic idempotency only. Production concurrency/transaction semantics are not claimed until I2.
 
-Minimum pre-merge implementation gates:
-- domain/application unit/component tests;
-- persistence integration test including duplicate/concurrent materialization;
-- HTTP acceptance tests from `walking-skeleton-acceptance-pack.md`;
-- module dependency/import rule;
-- formatting/lint/type/security checks selected when implementation dependencies are finalized.
+## Post-I1 infrastructure proof
 
-Existing `make api-test` can be evolved rather than preserving historical test semantics.
+Only after I1 PASS may I2 add:
+- relational repository/UoW;
+- schema/migrations and authoritative unique constraint;
+- real concurrency/rollback tests;
+- an HTTP adapter if still selected;
+- external Authority/Catalogue/Decision adapters in later increments.
 
-## CI
-
-CI must install the target API package and execute the above deterministic checks. Harness `make agent-check` remains scoped to Harness/process/DDD-gate changes and is not a substitute for product-code tests.
+Infrastructure must adapt to the accepted ports/core semantics.
 
 ## Configuration/secrets
 
-- dependency adapter selection and connection strings through environment/configuration;
-- no secrets committed;
-- fake/manual adapters available for local/acceptance runs;
-- production credentials supplied by deployment environment/secret facility; concrete platform is not yet a domain/architecture requirement.
+The central typed configuration model is defined in `configuration.md`. Domain/Application never read environment variables, files or secrets directly.
 
-## Deploy/run
+## DI/composition
 
-First production-shaped unit is one NAPM API application plus its authoritative relational persistence and configured external adapters. Container/process technology may follow existing repository infrastructure where suitable; no additional service topology is required for the skeleton.
+Constructor injection is the core rule. A production composition root is introduced when concrete runtime adapters exist. No container/service locator may leak into Domain/Application.
 
 ## Observability
 
-At minimum log/measure with correlation identifiers:
-- proposal command/request ID;
-- canonical semantic identity correlation (avoid leaking unnecessary sensitive detail);
-- authority/catalogue/decision dependency outcome category;
-- materialization created/resolved/NotAllowed/failure outcome;
-- RuleId on successful authoritative resolution;
-- latency/error counters by use case/dependency.
+The logging/observability contract is defined in `observability.md`. Business audit/provenance remains domain truth and is not replaced by operational logs.
 
-Never log secrets; address/topology details should be minimized according to operational need.
+## Bootstrap data
 
-## Bootstrap
+I1 tests use only explicit fakes/in-memory implementations:
+- permitted/denied/unknown authority;
+- valid/invalid/unknown directed interaction;
+- exact Allowed/NotAllowed/Unknown/mismatch decision;
+- empty/in-memory Access Rule repository.
 
-Skeleton test/demo requires only:
-- fake authority assignment allowing/denying a known actor/scope;
-- fake catalogue containing one valid Source/Destination/DCS interaction plus invalid case;
-- fake/manual decision adapter returning exact Allowed/NotAllowed/mismatch/unknown cases;
-- empty target Access Policy store.
-
-No Legacy data migration is required to prove the first skeleton.
+No Legacy migration or infrastructure is required to prove I1.
 
 ## Readiness result
 
-The repository has sufficient Python/API/test scaffolding to begin the target implementation without a platform-first project. Existing prototype domain/database code must be replaced or isolated rather than treated as accepted target semantics.
+The clean NAPMS repository is sufficient for domain/application-first implementation. Infrastructure remains intentionally gated behind successful I1 proof.
