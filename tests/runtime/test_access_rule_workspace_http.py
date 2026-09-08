@@ -360,3 +360,17 @@ def test_state_mutation_persistence_failure_is_not_success():
 
     assert response.status_code == 503
     assert response.json()["error"]["code"] == "PersistenceUnavailable"
+
+
+
+def test_list_rejects_invalid_pagination_at_transport_boundary():
+    client, _ = build_client()
+    login(client)
+
+    too_small = client.get("/api/v1/access-rules", params={"page": 0})
+    too_large = client.get("/api/v1/access-rules", params={"pageSize": 101})
+
+    assert too_small.status_code == 422
+    assert too_small.json()["error"]["code"] == "ValidationError"
+    assert too_large.status_code == 422
+    assert too_large.json()["error"]["code"] == "ValidationError"
