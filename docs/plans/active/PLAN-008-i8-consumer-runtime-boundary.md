@@ -10,7 +10,7 @@ I8 must not redefine Access Policy, Authority, ACC, RC, Export Snapshot or norma
 
 ## Current stage
 
-Web UI refinement, HTTP contract and local authentication boundary are implemented. The current stage is **WP4 — complete the HTTP runtime composition and first browser-facing vertical slice**.
+Web UI refinement, HTTP contract, local authentication and the first browser-facing vertical slice are implemented and green. The current stage is **WP5 — implement the public normalized-policy JSON handoff**.
 
 Accepted:
 - first human-facing consumer: Web UI;
@@ -109,8 +109,8 @@ The first runtime boundary implements:
 1. **DONE — Web UI refinement.** Accepted personas/authority model, first journey, initial screen inventory, navigation, design system, interaction states, accessibility baseline and implementation-oriented handoff under `docs/ui/`.
 2. **DONE — Minimum HTTP use-case contract.** Accepted in `docs/engineering/http-api-contract.md`, including trusted actor/time boundary, proposal composition support, semantic outcome mapping and health/correlation conventions.
 3. **DONE — Local authentication boundary.** Hashed local credentials, opaque server-side sessions and explicit logout are implemented; proposal payload uses `extra=forbid` and executable tests prove request-supplied `actorId` cannot establish identity.
-4. **ACTIVE — HTTP JSON runtime adapter/composition.** FastAPI adapter, semantic mappings, correlation and health endpoints are implemented and wired to PostgreSQL composition. A concrete local-dev `ConnectivityDecisionPort` remains required before the executable runtime can complete an Allowed/NotAllowed journey without a test-injected dependency.
-5. Implement JSON representation for normalized policy where required by the accepted first UI/API journeys.
+4. **DONE — HTTP JSON runtime adapter/composition + first Web UI slice.** FastAPI runtime, local-dev Decision adapter, React Login -> Compose Connectivity -> Rule-result slice and runtime/web gates are green.
+5. **ACTIVE — Normalized-policy JSON handoff.** Serialize and expose the existing authorized effective-policy -> coherent snapshot -> normalized export chain without dropping row semantics or provenance.
 6. Implement structured JSON logging, correlation/request ID, health/readiness and startup/configuration failure behavior.
 7. Prove positive plus denied/unknown/not-found/stale/correlation failure mappings without leaking domain/infrastructure internals.
 8. Run core, PostgreSQL and runtime-specific gates; close all P0/P1 findings.
@@ -129,7 +129,7 @@ The first runtime boundary implements:
 
 ## Blockers
 
-WP4 blocker: the repository intentionally owns only the `ConnectivityDecisionPort`; I7 supplied deterministic test adapters, but no concrete local-dev runtime provider is accepted yet.
+No current owner/product blocker for WP5.
 
 Approval/review workflow is explicitly deferred. Reopen the Connectivity Decision Domain before introducing approval actors, lifecycle/statuses or queue semantics.
 
@@ -137,4 +137,4 @@ External IdP integration remains deferred.
 
 ## Next
 
-Resolve the concrete local-dev Connectivity Decision provider without inventing Decision Domain semantics; then finish the first runnable Web UI vertical slice.
+Implement and test the normalized-policy JSON endpoint, then complete observability/error-mapping proof and final I8 review.
