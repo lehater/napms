@@ -9,18 +9,21 @@ ACCESS_POLICY = NAPMS / "access_policy"
 AUTHORITY_MANAGEMENT = NAPMS / "authority_management"
 APPLICATION_CATALOGUE = NAPMS / "application_catalogue"
 RESOURCE_CATALOGUE = NAPMS / "resource_catalogue"
+CONNECTIVITY_REQUIREMENTS = NAPMS / "connectivity_requirements"
 
 DOMAIN_LAYERS = (
     ACCESS_POLICY / "domain",
     AUTHORITY_MANAGEMENT / "domain",
     APPLICATION_CATALOGUE / "domain",
     RESOURCE_CATALOGUE / "domain",
+    CONNECTIVITY_REQUIREMENTS / "domain",
 )
 APPLICATION_LAYERS = (
     ACCESS_POLICY / "application",
     AUTHORITY_MANAGEMENT / "application",
     APPLICATION_CATALOGUE / "application",
     RESOURCE_CATALOGUE / "application",
+    CONNECTIVITY_REQUIREMENTS / "application",
     NAPMS / "policy_export" / "application",
 )
 CORE_LAYERS = DOMAIN_LAYERS + APPLICATION_LAYERS
@@ -122,6 +125,10 @@ BOUNDED_CONTEXT_CORES = (
     (
         RESOURCE_CATALOGUE,
         "napms.resource_catalogue",
+    ),
+    (
+        CONNECTIVITY_REQUIREMENTS,
+        "napms.connectivity_requirements",
     ),
 )
 
