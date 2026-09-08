@@ -42,6 +42,18 @@ Port protocols are owned by the consuming application/module. Cross-bounded-cont
 
 This rule is executable in architecture tests.
 
+## I8 HTTP composition
+
+The first HTTP runtime composition owns:
+- validated `HttpRuntimeConfig`;
+- process-lifetime local authenticator and opaque in-memory session store;
+- request-lifetime greenfield PostgreSQL scope;
+- injected `ConnectivityDecisionPort`;
+- FastAPI transport attachment;
+- readiness probing.
+
+The concrete Connectivity Decision implementation remains an injected outer dependency. Runtime composition must not replace that unresolved domain seam with hidden business logic.
+
 ## Container policy
 
 No DI framework/container is required. If one is later useful, it remains confined to composition and must not become a service locator passed into use cases.
