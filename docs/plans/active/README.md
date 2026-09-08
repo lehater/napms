@@ -1,5 +1,5 @@
 # Active execution
 
-Current: `PLAN-006-i6-normalized-policy-export.md`
+Current: `PLAN-007-i7-controlled-integrations.md`
 
 Read the current plan before starting or resuming non-trivial implementation work.
