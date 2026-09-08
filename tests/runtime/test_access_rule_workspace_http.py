@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from fastapi.testclient import TestClient
@@ -17,6 +17,7 @@ from napms.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,
+    EffectiveWindow,
     OperationalState,
     ProposalProvenance,
     RuleSemanticIdentity,
@@ -398,3 +399,222 @@ def test_list_rejects_invalid_pagination_at_transport_boundary():
     assert too_small.json()["error"]["code"] == "ValidationError"
     assert too_large.status_code == 422
     assert too_large.json()["error"]["code"] == "ValidationError"
+
+
+
+def test_effective_window_set_uses_session_actor_runtime_time_and_rule_scope():
+    authority = FakeAuthority()
+    client, scope = build_client(authority=authority)
+    login(client)
+
+    start = NOW + timedelta(hours=1)
+    end = NOW + timedelta(hours=5)
+    response = client.patch(
+        f"/api/v1/access-rules/{UUID(int=1)}/effective-window",
+        json={
+            "window": {
+                "start": start.isoformat(),
+                "end": end.isoformat(),
+            }
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["outcome"] == "Updated"
+    assert response.json()["rule"]["effectiveWindow"] == {
+        "start": start.isoformat(),
+        "end": end.isoformat(),
+    }
+
+    updated = scope.access_rules.get_by_id(UUID(int=1))
+    change = updated.effective_window_history[-1]
+    assert change.actor_id == "actor-1"
+    assert change.effective_time == NOW
+    assert change.governance_scope == "scope-a"
+    assert change.authority_reference == "SetRuleEffectiveWindow-authority"
+
+    call = authority.calls[-1]
+    assert call["action"].value == "SetRuleEffectiveWindow"
+    assert call["actor_id"] == "actor-1"
+    assert call["scope"] == "scope-a"
+    assert call["effective_time"] == NOW
+
+
+def test_effective_window_clear_and_same_value_semantics():
+    client, scope = build_client()
+    login(client)
+    start = NOW + timedelta(hours=1)
+    end = NOW + timedelta(hours=5)
+    payload = {
+        "window": {
+            "start": start.isoformat(),
+            "end": end.isoformat(),
+        }
+    }
+
+    first = client.patch(
+        f"/api/v1/access-rules/{UUID(int=1)}/effective-window",
+        json=payload,
+    )
+    same = client.patch(
+        f"/api/v1/access-rules/{UUID(int=1)}/effective-window",
+        json=payload,
+    )
+    cleared = client.patch(
+        f"/api/v1/access-rules/{UUID(int=1)}/effective-window",
+        json={"window": None},
+    )
+
+    assert first.status_code == 200
+    assert first.json()["outcome"] == "Updated"
+    assert same.status_code == 200
+    assert same.json()["outcome"] == "AlreadyInRequestedWindow"
+    assert cleared.status_code == 200
+    assert cleared.json()["outcome"] == "Updated"
+    assert cleared.json()["rule"]["effectiveWindow"] is None
+
+    rule = scope.access_rules.get_by_id(UUID(int=1))
+    assert rule.effective_window is None
+    assert len(rule.effective_window_history) == 2
+    assert rule.effective_window_history[0].previous_window is None
+    assert rule.effective_window_history[0].new_window == EffectiveWindow(start, end)
+    assert rule.effective_window_history[1].previous_window == EffectiveWindow(start, end)
+    assert rule.effective_window_history[1].new_window is None
+
+
+def test_effective_window_rejects_invalid_or_spoofed_payload_before_authority():
+    authority = FakeAuthority()
+    client, scope = build_client(authority=authority)
+    login(client)
+
+    naive = client.patch(
+        f"/api/v1/access-rules/{UUID(int=1)}/effective-window",
+        json={
+            "window": {
+                "start": "2026-09-10T08:00:00",
+                "end": "2026-09-10T18:00:00",
+            }
+        },
+    )
+    reversed_window = client.patch(
+        f"/api/v1/access-rules/{UUID(int=1)}/effective-window",
+        json={
+            "window": {
+                "start": "2026-09-10T18:00:00+00:00",
+                "end": "2026-09-10T08:00:00+00:00",
+            }
+        },
+    )
+    spoofed = client.patch(
+        f"/api/v1/access-rules/{UUID(int=1)}/effective-window",
+        json={
+            "window": None,
+            "actorId": "attacker",
+            "scope": "scope-b",
+            "effectiveTime": "2030-01-01T00:00:00Z",
+        },
+    )
+
+    assert naive.status_code == 422
+    assert naive.json()["error"]["code"] == "InvalidEffectiveWindow"
+    assert reversed_window.status_code == 422
+    assert reversed_window.json()["error"]["code"] == "InvalidEffectiveWindow"
+    assert spoofed.status_code == 422
+    assert spoofed.json()["error"]["code"] == "ValidationError"
+    assert authority.calls == []
+    assert scope.access_rules.get_by_id(UUID(int=1)).effective_window is None
+
+
+def test_effective_window_authority_denied_fails_closed():
+    client, scope = build_client(
+        authority=FakeAuthority(mutate=TernaryOutcome.DENIED)
+    )
+    login(client)
+
+    response = client.patch(
+        f"/api/v1/access-rules/{UUID(int=1)}/effective-window",
+        json={
+            "window": {
+                "start": (NOW + timedelta(hours=1)).isoformat(),
+                "end": (NOW + timedelta(hours=2)).isoformat(),
+            }
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.json()["error"]["code"] == "AuthorityDenied"
+    assert scope.access_rules.get_by_id(UUID(int=1)).effective_window is None
+
+
+def test_policy_view_scope_discovery_is_fail_closed():
+    client, _ = build_client(
+        policy_scopes=FakePolicyScopes(
+            permitted=("scope-a",),
+            ambiguous=("scope-b",),
+        )
+    )
+    login(client)
+
+    response = client.get("/api/v1/policy-views/scopes")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "scopes": [{"scope": "scope-a"}],
+        "ambiguousScopes": [{"scope": "scope-b"}],
+    }
+
+
+def test_effective_policy_returns_only_rules_effective_at_explicit_as_of():
+    inside = NOW + timedelta(hours=2)
+    outside = NOW + timedelta(hours=8)
+    base = make_rule(1, "scope-a")
+    windowed = base.with_effective_window(
+        window=EffectiveWindow(
+            NOW + timedelta(hours=1),
+            NOW + timedelta(hours=4),
+        ),
+        actor_id="window-operator",
+        effective_time=NOW,
+        authority_reference="window-authority",
+    )
+    client, _ = build_client(rules=MemoryRules((windowed,)))
+    login(client)
+
+    selected = client.get(
+        "/api/v1/effective-desired-policy",
+        params={"scope": "scope-a", "asOf": inside.isoformat()},
+    )
+    empty = client.get(
+        "/api/v1/effective-desired-policy",
+        params={"scope": "scope-a", "asOf": outside.isoformat()},
+    )
+
+    assert selected.status_code == 200
+    assert selected.json()["authorityReference"] == "ReadEffectiveDesiredPolicy-authority"
+    assert [rule["ruleId"] for rule in selected.json()["rules"]] == [str(UUID(int=1))]
+    assert empty.status_code == 200
+    assert empty.json()["rules"] == []
+
+
+def test_effective_policy_denied_or_naive_as_of_returns_no_policy_data():
+    denied_client, _ = build_client(
+        authority=FakeAuthority(policy_read=TernaryOutcome.DENIED)
+    )
+    login(denied_client)
+
+    denied = denied_client.get(
+        "/api/v1/effective-desired-policy",
+        params={"scope": "scope-a", "asOf": NOW.isoformat()},
+    )
+    assert denied.status_code == 403
+    assert denied.json()["error"]["code"] == "AuthorityDenied"
+    assert "rules" not in denied.json()
+
+    client, _ = build_client()
+    login(client)
+    naive = client.get(
+        "/api/v1/effective-desired-policy",
+        params={"scope": "scope-a", "asOf": "2026-09-09T12:00:00"},
+    )
+    assert naive.status_code == 422
+    assert naive.json()["error"]["code"] == "InvalidAsOf"
