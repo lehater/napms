@@ -1,6 +1,6 @@
 # Dependency injection and composition model
 
-Status: `accepted through I11 Dockerized Local Runtime`.
+Status: `accepted and exercised through I11 Dockerized Local Runtime`.
 
 Date: 2026-09-09.
 
