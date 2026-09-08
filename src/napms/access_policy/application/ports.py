@@ -49,7 +49,15 @@ class ConnectivityDecision:
     decision_reference: str | None = None
 
 
-class RuleSemanticIdentityConflict(Exception):
+class AccessRulePersistenceError(Exception):
+    """Persistence execution failed without establishing application success."""
+
+
+class AccessRuleCommitOutcomeUnknown(AccessRulePersistenceError):
+    """Commit acknowledgement failed, so the authoritative outcome is uncertain."""
+
+
+class RuleSemanticIdentityConflict(AccessRulePersistenceError):
     """The authoritative uniqueness boundary selected another Rule for this identity."""
 
 
