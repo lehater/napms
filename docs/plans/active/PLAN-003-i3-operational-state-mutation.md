@@ -8,7 +8,7 @@ Implement authorized `AccessRule Active <-> Inactive` mutation as Access Policy 
 
 ## Current stage
 
-Refine the I3 Tactical DDD/application contract from the already accepted Wave-1 behavior before implementation. The architecture flow is `SetRuleOperationalState(ruleId, Active|Inactive)`, but exact same-state behavior, mutation authority action identity and minimum audit-record shape must be made explicit rather than invented in code.
+I3 semantic refinement reached one cross-context authority-scope decision gate before code. Existing canon already fixes the command `SetRuleOperationalState(ruleId, Active|Inactive)`, valid cross-state transitions and minimum attributable audit intent, but the Rule-to-Authority-Scope binding for later mutation is not explicit.
 
 ## Inputs
 
@@ -63,15 +63,35 @@ Canonical inputs for this plan:
 - no open P0/P1 semantic, audit, authority, transaction or architecture issue;
 - I3 result is recorded in canonical engineering state.
 
+## Refinement findings
+
+Evidence-supported I3 interpretation:
+
+1. `SetRuleOperationalState` is the stable semantic command/action name already accepted by F2.
+2. F2 permits only a valid `Active <-> Inactive` transition; requesting the already-current state therefore produces no accepted transition and no audit record. The application should expose this as an explicit expected non-success such as `AlreadyInRequestedState`, not manufacture a transition.
+3. QS-07 fixes the minimum audit meaning as who/when/what. Combined with QS-06 and F2, an accepted transition must retain RuleId, from/to state, actor, effective action time, evaluated authority scope and authority provenance/reference. A separate technical log timestamp is not domain truth.
+
+### P1 authority-scope binding
+
+F2 intentionally accepts only `ruleId + targetState` from the actor; it does not accept caller-supplied authority scope. T1 requires action/scope/effective-time authority at the use-case boundary.
+
+The current model stores the proposal's accepted `authority_scope` in Rule proposal provenance, but canon does not yet state whether that scope is also the stable governance scope for later Rule mutations.
+
+Rejected implementation shortcuts:
+
+- caller supplies mutation scope — P1 authorization-substitution risk because the application cannot prove it governs this Rule;
+- silently reinterpret a historical provenance field as current governance scope — unsupported semantic promotion;
+- dynamically derive scope from current resource/application ownership — adds unaccepted cross-context scope-resolution semantics.
+
+Recommended minimal decision:
+
+> The accepted proposal `authority_scope` becomes the stable governance scope of the materialized AccessRule. Later actions such as `SetRuleOperationalState` evaluate current/effective Authority Management assignments for the same Rule governance scope. Actor assignments may change over time; the governance-scope identity does not silently change with ownership/responsibility changes.
+
+This is non-identity Rule governance metadata: changing authority assignments does not change RuleId, RuleSemanticIdentity or Connectivity Decision coverage.
+
 ## Blockers
 
-Three bounded I3 details require explicit refinement before code:
-
-1. whether requesting the already-current operational state is an idempotent no-op or a rejected invalid transition;
-2. the stable AuthorityAction identity used for Rule operational-state mutation;
-3. the minimum domain audit-record fields/timestamp semantics for an accepted transition.
-
-These are I3 Tactical/Application details, not reasons to reopen I1/I2.
+P1 owner decision required: accept or reject the recommended stable Rule governance-scope semantics above before Tactical DDD/code implementation.
 
 ## Validation
 
