@@ -1,8 +1,8 @@
 # Web UI requirements — accepted I8 refinement
 
-Status: `accepted I8 Web UI product/UX baseline`.
+Status: `accepted through I9 Operational Web Workspace`.
 
-Date: 2026-09-08.
+Date: 2026-09-09.
 
 ## Purpose
 
@@ -20,7 +20,7 @@ Backend routes and DTOs must follow accepted application use cases and UI journe
 
 ## First persona and authority model
 
-The first UI persona is an authenticated actor with effective Authority Management permission to submit an `Access Rule Proposal` for a relevant scope/time.
+The Web UI serves authenticated actors through effective Authority Management permissions for each requested action. Proposal composition uses `ProposeConnectivity`; Access Rule workspace reads use `ReadAccessRule`; state mutation uses `SetRuleOperationalState`.
 
 The UI persona is defined by effective domain authority, not by a hard-coded UI role name. One authenticated actor may have different allowed actions across scopes and times.
 
@@ -102,13 +102,15 @@ This may be a result state of Compose Connectivity rather than a dedicated route
 
 ### 4. Access Rules
 
-Purpose: inspect authoritative Access Rules visible through admitted backend use cases.
+Purpose: inspect authoritative Access Rules visible through explicit `ReadAccessRule` authority. List results contain only Rules from unambiguously permitted governance scopes; read authority does not imply mutation authority.
 
 Initial useful data includes Rule ID, source deployment, destination deployment, DCS revision/reference, governance scope, operational state and effective-window summary where available.
 
 ### 5. Access Rule Details
 
 Purpose: inspect one authoritative Rule and supported management/provenance information.
+
+Before returning data, backend evaluates `ReadAccessRule` against the Rule's stored governance scope. State-change controls are shown only after a separate `SetRuleOperationalState` admission check.
 
 Show progressively:
 - Rule ID and immutable semantic identity;
