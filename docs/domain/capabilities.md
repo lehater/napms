@@ -42,13 +42,15 @@ Authority-to-declare != Requirement
 ConnectivityRequirement != AccessRequest/ticket
 ```
 
-Current identity hypothesis (not a Tactical DDD natural key):
+I13 Tactical DDD now accepts:
+- stable surrogate `ConnectivityRequirementId`;
+- active semantic uniqueness by Requirement Governance Scope + Dependent Component Deployment + exact Required Semantic Interaction;
+- exact interaction = Source Component Deployment + Destination Component Deployment + immutable DCS revision;
+- Applicability = Ongoing or absolute half-open window;
+- lifecycle = `Active -> Retired`;
+- justification/applicability mutable; dependent/interaction immutable.
 
-```text
-ConnectivityRequirement ~= Dependent x RequiredSemanticInteraction x Applicability
-```
-
-Exact aggregate identity/lifecycle and advanced alternative/conditional requirement semantics are intentionally left outside the Strategic DDD baseline.
+Advanced alternative/conditional requirement semantics remain deferred.
 
 ## Technical Access Evidence identity
 
