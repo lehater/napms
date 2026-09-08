@@ -8,7 +8,7 @@ Implement authorized `AccessRule Active <-> Inactive` mutation as Access Policy 
 
 ## Current stage
 
-I3 semantic refinement reached one cross-context authority-scope decision gate before code. Existing canon already fixes the command `SetRuleOperationalState(ruleId, Active|Inactive)`, valid cross-state transitions and minimum attributable audit intent, but the Rule-to-Authority-Scope binding for later mutation is not explicit.
+I3 semantic refinement is accepted. `RuleGovernanceScope` is explicit: the accepted proposal authority scope becomes stable non-identity governance metadata of the materialized Rule, and later state mutation authority is evaluated against that stored scope. Next stage is Domain/Application/Ports implementation and core proof.
 
 ## Inputs
 
@@ -28,34 +28,37 @@ Canonical inputs for this plan:
 - `docs/engineering/observability.md`;
 - current Access Policy core, PostgreSQL adapter and tests.
 
-## Accepted behavior already fixed
+## Accepted behavior
 
 - Access Rule operational state is exactly `Active | Inactive` in Wave 1;
 - first Allowed materialization starts `Active`;
-- state mutation preserves RuleId, RuleSemanticIdentity and Connectivity Decision coverage;
+- accepted proposal `authority_scope` becomes stable non-identity `RuleGovernanceScope`;
+- state mutation authority is evaluated against the Rule's stored governance scope, never caller-supplied scope;
+- current/effective Authority Management assignments may change over time without silently rebinding Rule governance scope;
+- state mutation preserves RuleId, RuleSemanticIdentity, RuleGovernanceScope and Connectivity Decision coverage;
 - `Inactive` preserves Rule/history but removes desired effect;
 - state mutation does not require a new Connectivity Decision solely because of the transition;
-- mutation requires effective Authority Management permission for action/scope/effective time;
+- same-state request is not an accepted transition and creates no transition audit;
 - every accepted state transition is attributable and auditable at business level;
+- minimum accepted transition audit is who/when/what plus evaluated governance scope and authority provenance;
 - business audit/provenance is domain truth, not an operational log.
 
 ## Work packages
 
-1. Refine Tactical DDD for the state transition, including valid transition semantics and minimum attributable temporal audit/provenance.
-2. Fix the application command/result and exact mutation-authority port action without inventing Authority Management internals.
-3. Implement Domain/Application/Ports behavior and exhaustive relevant core tests.
-4. Close all P0/P1 core/model/architecture findings and pass the core gate.
-5. Adapt PostgreSQL persistence for state mutation and durable audit/provenance.
-6. Add PostgreSQL integration proof for transactionality, identity/decision preservation and rollback/no-false-success behavior.
-7. Run the final repository gates and record I3 PASS only when all exit criteria are met.
+1. Implement Domain/Application/Ports behavior and exhaustive relevant core tests from the accepted refined Tactical DDD.
+2. Close all P0/P1 core/model/architecture findings and pass the core gate.
+3. Adapt PostgreSQL persistence for state mutation and durable audit/provenance.
+4. Add PostgreSQL integration proof for transactionality, identity/decision/governance-scope preservation and rollback/no-false-success behavior.
+5. Run the final repository gates and record I3 PASS only when all exit criteria are met.
 
 ## Exit criteria
 
-- accepted `Active -> Inactive` and `Inactive -> Active` behavior is explicit and executable;
-- same-state request behavior is explicitly decided and tested;
+- accepted `Active -> Inactive` and `Inactive -> Active` behavior is executable;
+- same-state request returns explicit no accepted transition/no audit;
 - denied/unknown mutation authority fails closed with no Rule/audit mutation;
-- successful mutation preserves RuleId, semantic identity and decision correlation;
+- successful mutation preserves RuleId, semantic identity, governance scope and decision correlation;
 - successful mutation produces attributable temporal business audit/provenance;
+- caller cannot substitute authorization scope;
 - failed persistence cannot report successful mutation;
 - core behavior remains infrastructure-independent;
 - PostgreSQL adapter preserves the accepted behavior transactionally;
@@ -63,35 +66,22 @@ Canonical inputs for this plan:
 - no open P0/P1 semantic, audit, authority, transaction or architecture issue;
 - I3 result is recorded in canonical engineering state.
 
-## Refinement findings
+## Refinement decisions
 
-Evidence-supported I3 interpretation:
+1. `SetRuleOperationalState` is the stable semantic command/action already accepted by F2.
+2. F2 permits only `Active <-> Inactive`; requesting the already-current state returns explicit `AlreadyInRequestedState`, is not an accepted transition and creates no audit record.
+3. QS-07 + QS-06 define minimum transition audit as RuleId, from/to state, actor, effective action time, evaluated RuleGovernanceScope and authority provenance/reference.
+4. The accepted proposal `authority_scope` becomes stable `RuleGovernanceScope` of the materialized AccessRule.
+5. Later actions evaluate current/effective Authority Management assignments for that stored governance scope. Actor assignments may change over time; governance scope does not silently change with ownership/responsibility changes.
 
-1. `SetRuleOperationalState` is the stable semantic command/action name already accepted by F2.
-2. F2 permits only a valid `Active <-> Inactive` transition; requesting the already-current state therefore produces no accepted transition and no audit record. The application should expose this as an explicit expected non-success such as `AlreadyInRequestedState`, not manufacture a transition.
-3. QS-07 fixes the minimum audit meaning as who/when/what. Combined with QS-06 and F2, an accepted transition must retain RuleId, from/to state, actor, effective action time, evaluated authority scope and authority provenance/reference. A separate technical log timestamp is not domain truth.
-
-### P1 authority-scope binding
-
-F2 intentionally accepts only `ruleId + targetState` from the actor; it does not accept caller-supplied authority scope. T1 requires action/scope/effective-time authority at the use-case boundary.
-
-The current model stores the proposal's accepted `authority_scope` in Rule proposal provenance, but canon does not yet state whether that scope is also the stable governance scope for later Rule mutations.
-
-Rejected implementation shortcuts:
-
-- caller supplies mutation scope — P1 authorization-substitution risk because the application cannot prove it governs this Rule;
-- silently reinterpret a historical provenance field as current governance scope — unsupported semantic promotion;
-- dynamically derive scope from current resource/application ownership — adds unaccepted cross-context scope-resolution semantics.
-
-Recommended minimal decision:
-
-> The accepted proposal `authority_scope` becomes the stable governance scope of the materialized AccessRule. Later actions such as `SetRuleOperationalState` evaluate current/effective Authority Management assignments for the same Rule governance scope. Actor assignments may change over time; the governance-scope identity does not silently change with ownership/responsibility changes.
-
-This is non-identity Rule governance metadata: changing authority assignments does not change RuleId, RuleSemanticIdentity or Connectivity Decision coverage.
+Rejected:
+- caller-supplied mutation scope;
+- implicit scope rebinding from current ownership/responsibility;
+- treating historical authority assignment as current permission.
 
 ## Blockers
 
-P1 owner decision required: accept or reject the recommended stable Rule governance-scope semantics above before Tactical DDD/code implementation.
+None currently known.
 
 ## Validation
 
