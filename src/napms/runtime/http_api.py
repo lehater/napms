@@ -7,7 +7,7 @@ from time import perf_counter
 from typing import Any, Callable, ContextManager
 from uuid import UUID, uuid4
 
-from fastapi import Depends, FastAPI, Request, Response
+from fastapi import Depends, FastAPI, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
@@ -27,13 +27,30 @@ from napms.access_policy.application.proposal_options import (
     DiscoverProposalScopes,
     ProposalInteractionDiscoveryOutcome,
 )
+from napms.access_policy.application.select_effective_policy import (
+    EffectivePolicySelectionOutcome,
+    SelectAccessPolicyEffectiveDesiredPolicy,
+    SelectEffectiveDesiredPolicy,
+)
 from napms.access_policy.domain.model import AccessRule
 from napms.application_catalogue.application.ports import CataloguePersistenceError
 from napms.authority_management.application.ports import AuthorityPersistenceError
+from napms.policy_export.application.export_snapshot import (
+    AssembleExportSnapshot,
+    SnapshotAssemblyOutcome,
+)
+from napms.policy_export.application.normalize_snapshot import NormalizeExportSnapshot
+from napms.policy_export.application.normalization_types import (
+    NormalizationInvariantError,
+)
 from napms.runtime.auth import (
     AuthenticatedActor,
     InMemorySessionStore,
     LocalPasswordAuthenticator,
+)
+from napms.runtime.normalized_policy_json import (
+    normalized_policy_export_json,
+    snapshot_diagnostic_json,
 )
 
 
@@ -77,11 +94,19 @@ class SubmitProposalRequest(BaseModel):
 
 
 class PublicApiError(Exception):
-    def __init__(self, *, status_code: int, code: str, message: str) -> None:
+    def __init__(
+        self,
+        *,
+        status_code: int,
+        code: str,
+        message: str,
+        details: dict[str, Any] | None = None,
+    ) -> None:
         super().__init__(code)
         self.status_code = status_code
         self.code = code
         self.message = message
+        self.details = details
 
 
 def configure_json_logging(*, level: int = logging.INFO) -> None:
@@ -113,17 +138,19 @@ def _error_response(
     status_code: int,
     code: str,
     message: str,
+    details: dict[str, Any] | None = None,
 ) -> JSONResponse:
     _set_outcome(request, code)
+    error = {
+        "code": code,
+        "message": message,
+        "correlationId": _correlation_id(request),
+    }
+    if details is not None:
+        error["details"] = details
     return JSONResponse(
         status_code=status_code,
-        content={
-            "error": {
-                "code": code,
-                "message": message,
-                "correlationId": _correlation_id(request),
-            }
-        },
+        content={"error": error},
     )
 
 
@@ -218,6 +245,7 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             status_code=exc.status_code,
             code=exc.code,
             message=exc.message,
+            details=exc.details,
         )
 
     @app.exception_handler(RequestValidationError)
@@ -266,6 +294,18 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             status_code=503,
             code="AuthorityUnavailable",
             message="Authority information is unavailable.",
+        )
+
+    @app.exception_handler(NormalizationInvariantError)
+    async def normalization_error_handler(
+        request: Request,
+        exc: NormalizationInvariantError,
+    ):
+        return _error_response(
+            request,
+            status_code=500,
+            code="NormalizationFailed",
+            message="The normalized policy could not be produced safely.",
         )
 
     @app.exception_handler(CataloguePersistenceError)
@@ -515,6 +555,72 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             code=code,
             message=message,
         )
+
+    @app.get("/api/v1/normalized-policy", name="GetNormalizedPolicy")
+    def get_normalized_policy(
+        request: Request,
+        scope: str,
+        as_of: datetime = Query(alias="asOf"),
+        actor: AuthenticatedActor = Depends(require_actor),
+    ):
+        request.state.operation = "GetNormalizedPolicy"
+        if as_of.tzinfo is None or as_of.utcoffset() is None:
+            raise PublicApiError(
+                status_code=422,
+                code="InvalidAsOf",
+                message="asOf must include an explicit timezone offset.",
+            )
+
+        with dependencies.open_scope() as runtime_scope:
+            selection = SelectAccessPolicyEffectiveDesiredPolicy(
+                authority=runtime_scope.authority,
+                rules=runtime_scope.access_rules,
+            ).execute(
+                SelectEffectiveDesiredPolicy(
+                    scope=scope,
+                    as_of=as_of,
+                    actor_id=actor.actor_id,
+                )
+            )
+
+            if selection.outcome is EffectivePolicySelectionOutcome.AUTHORITY_DENIED:
+                raise PublicApiError(
+                    status_code=403,
+                    code="AuthorityDenied",
+                    message="The requested operation is not permitted.",
+                )
+            if selection.outcome is EffectivePolicySelectionOutcome.AUTHORITY_UNKNOWN:
+                raise PublicApiError(
+                    status_code=409,
+                    code="AuthorityUnknown",
+                    message="Authority for the requested operation is ambiguous or unavailable.",
+                )
+
+            assembly = AssembleExportSnapshot(
+                application_catalogue=runtime_scope.application_projection,
+                resource_catalogue=runtime_scope.resource_projection,
+            ).execute(selection)
+
+            if assembly.outcome is not SnapshotAssemblyOutcome.SUCCESS:
+                raise PublicApiError(
+                    status_code=409,
+                    code="SnapshotIncomplete",
+                    message="A coherent normalized-policy snapshot cannot currently be produced.",
+                    details={
+                        "diagnostics": [
+                            snapshot_diagnostic_json(value)
+                            for value in assembly.diagnostics
+                        ]
+                    },
+                )
+
+            assert assembly.snapshot is not None
+            normalized = NormalizeExportSnapshot(
+                decoder=runtime_scope.dcs_decoder
+            ).execute(assembly.snapshot)
+
+        _set_outcome(request, "NormalizedPolicyExported")
+        return normalized_policy_export_json(normalized)
 
     @app.get("/health/live", name="Liveness")
     def liveness(request: Request):
