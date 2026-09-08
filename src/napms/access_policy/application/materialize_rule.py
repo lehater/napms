@@ -11,9 +11,16 @@ from napms.access_policy.application.ports import (
     ConnectivityDecisionPort,
     DecisionOutcome,
     InteractionOutcome,
+    RuleSemanticIdentityConflict,
     TernaryOutcome,
 )
-from napms.access_policy.domain.model import AccessRule, DecisionReference, RuleSemanticIdentity
+from napms.access_policy.domain.model import (
+    AccessRule,
+    ConnectivityDecisionResult,
+    DecisionReference,
+    ProposalProvenance,
+    RuleSemanticIdentity,
+)
 
 
 class MaterializationOutcome(str, Enum):
@@ -36,7 +43,6 @@ class SubmitAccessRuleProposal:
     source_component_deployment_id: UUID
     destination_component_deployment_id: UUID
     dcs_contract_revision_id: UUID
-    proposal_reference: str
 
     @property
     def semantic_identity(self) -> RuleSemanticIdentity:
@@ -51,6 +57,7 @@ class SubmitAccessRuleProposal:
 class MaterializationResult:
     outcome: MaterializationOutcome
     rule: AccessRule | None = None
+    created: bool | None = None
 
 
 class MaterializeAllowedAccessRule:
@@ -78,7 +85,7 @@ class MaterializeAllowedAccessRule:
         )
         if authority.outcome is TernaryOutcome.DENIED:
             return MaterializationResult(MaterializationOutcome.AUTHORITY_DENIED)
-        if authority.outcome is TernaryOutcome.UNKNOWN:
+        if authority.outcome is TernaryOutcome.UNKNOWN or authority.authority_reference is None:
             return MaterializationResult(MaterializationOutcome.AUTHORITY_UNKNOWN)
 
         identity = command.semantic_identity
@@ -88,6 +95,10 @@ class MaterializeAllowedAccessRule:
         if interaction.outcome is InteractionOutcome.INVALID:
             return MaterializationResult(MaterializationOutcome.INTERACTION_INVALID)
         if interaction.outcome is InteractionOutcome.UNKNOWN:
+            return MaterializationResult(MaterializationOutcome.INTERACTION_UNKNOWN)
+        if interaction.identity != identity:
+            return MaterializationResult(MaterializationOutcome.INTERACTION_INVALID)
+        if interaction.provenance_reference is None:
             return MaterializationResult(MaterializationOutcome.INTERACTION_UNKNOWN)
 
         decision = self._decisions.obtain(subject=identity)
@@ -100,20 +111,30 @@ class MaterializeAllowedAccessRule:
 
         existing = self._rules.find_by_identity(identity)
         if existing is not None:
-            return MaterializationResult(MaterializationOutcome.RESOLVED, existing)
-
-        if authority.authority_reference is None:
-            return MaterializationResult(MaterializationOutcome.AUTHORITY_UNKNOWN)
+            return MaterializationResult(MaterializationOutcome.RESOLVED, existing, False)
 
         rule = AccessRule.materialized_from_allowed_decision(
             rule_id=self._new_rule_id(),
             semantic_identity=identity,
             decision=DecisionReference(
                 subject=identity,
+                result=ConnectivityDecisionResult.ALLOWED,
                 decision_id=decision.decision_reference,
             ),
-            proposal_reference=command.proposal_reference,
-            authority_reference=authority.authority_reference,
+            proposal_provenance=ProposalProvenance(
+                actor_id=command.actor_id,
+                authority_scope=command.authority_scope,
+                effective_time=command.effective_time,
+                authority_reference=authority.authority_reference,
+                catalogue_reference=interaction.provenance_reference,
+            ),
         )
-        self._rules.add(rule)
-        return MaterializationResult(MaterializationOutcome.MATERIALIZED, rule)
+        try:
+            self._rules.add(rule)
+            self._rules.commit()
+        except RuleSemanticIdentityConflict:
+            winner = self._rules.find_by_identity(identity)
+            if winner is None:
+                raise
+            return MaterializationResult(MaterializationOutcome.RESOLVED, winner, False)
+        return MaterializationResult(MaterializationOutcome.MATERIALIZED, rule, True)
