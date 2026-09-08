@@ -48,6 +48,7 @@ def test_migration_registry_has_stable_unique_ids():
         "access-policy/0001",
         "access-policy/0002",
         "access-policy/0003",
+        "application-catalogue/0002",
         "authority-management/0001",
         "application-catalogue/0001",
         "resource-catalogue/0001",
