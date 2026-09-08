@@ -1104,6 +1104,14 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
                     actor_id=actor.actor_id,
                 )
             )
+            effective_policy_presentations = (
+                _describe_semantic_identities(
+                    runtime_scope,
+                    tuple(rule.semantic_identity for rule in selection.rules),
+                )
+                if selection.outcome is EffectivePolicySelectionOutcome.SELECTED
+                else {}
+            )
 
         if selection.outcome is EffectivePolicySelectionOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
@@ -1124,7 +1132,13 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             "scope": selection.scope,
             "asOf": selection.as_of.isoformat(),
             "authorityReference": selection.authority_reference,
-            "rules": [_rule_dto(rule) for rule in selection.rules],
+            "rules": [
+                _rule_dto(
+                    rule,
+                    effective_policy_presentations.get(rule.semantic_identity),
+                )
+                for rule in selection.rules
+            ],
         }
 
     @app.get("/api/v1/normalized-policy", name="GetNormalizedPolicy")
@@ -1189,10 +1203,22 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             normalized = NormalizeExportSnapshot(
                 decoder=runtime_scope.dcs_decoder
             ).execute(assembly.snapshot)
+            normalized_presentations = _describe_semantic_identities(
+                runtime_scope,
+                tuple(
+                    row.rule_semantic_identity
+                    for row in normalized.rows
+                ),
+            )
 
         request.state.authority_reference = normalized.authority_reference
         _set_outcome(request, "NormalizedPolicyExported")
-        return normalized_policy_export_json(normalized)
+        payload = normalized_policy_export_json(normalized)
+        for encoded, row in zip(payload["rows"], normalized.rows):
+            encoded["catalogue"] = normalized_presentations.get(
+                row.rule_semantic_identity
+            )
+        return payload
 
     @app.get("/health/live", name="Liveness")
     def liveness(request: Request):
