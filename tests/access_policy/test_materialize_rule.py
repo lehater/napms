@@ -427,3 +427,12 @@ def test_authority_check_uses_explicit_propose_connectivity_action():
     assert authority.last_check["actor_id"] == "actor-1"
     assert authority.last_check["scope"] == "scope-1"
     assert authority.last_check["effective_time"] == NOW
+
+
+def test_materialized_rule_establishes_governance_scope_from_proposal_authority_scope():
+    result = service().execute(command(authority_scope="governance-scope-1"))
+
+    assert result.outcome is MaterializationOutcome.MATERIALIZED
+    assert result.rule.governance_scope == "governance-scope-1"
+    assert result.rule.proposal_provenance.authority_scope == "governance-scope-1"
+    assert result.rule.operational_state_history == ()
