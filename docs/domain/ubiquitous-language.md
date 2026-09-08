@@ -18,11 +18,16 @@ Stable non-identity Scope under which Authority Management evaluates later domai
 
 It is established from the accepted proposal authority scope at Rule materialization. Actor assignments/delegations may change over time without silently changing Rule Governance Scope or Rule identity.
 
+### EffectiveWindow
+Optional absolute Rule condition `[start, end)` with offset-aware instants. It permits desired effect when `start <= asOf < end`. Absence means no time-window restriction.
+
+EffectiveWindow is declarative Rule data. It does not periodically mutate Active/Inactive and is not part of RuleSemanticIdentity.
+
 ### Global Policy
 Projection of authorized Access Rules.
 
 ### Effective Desired Policy
-Projection of authorized + Active Access Rules.
+For one authorized RuleGovernanceScope and logical `asOf`, the Access Policy projection of authoritative Rules that are Active and whose optional EffectiveWindow permits effect.
 
 ## Authority Management
 
