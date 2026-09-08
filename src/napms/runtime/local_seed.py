@@ -1,11 +1,10 @@
-import os
 from datetime import datetime, timezone
 from uuid import UUID
 
 import psycopg
 
 from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
-from napms.composition.config import load_application_config
+from napms.runtime.config import load_local_seed_config
 from napms.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
@@ -194,11 +193,7 @@ def seed_local_demo(connection, *, actor_id: str) -> None:
 
 
 def run() -> None:
-    config = load_application_config()
-    actor_id = os.environ.get("NAPMS_LOCAL_AUTH_ACTOR_ID")
-    if not actor_id:
-        raise RuntimeError("NAPMS_LOCAL_AUTH_ACTOR_ID is required for local demo seed")
-
-    with psycopg.connect(config.postgres.dsn) as connection:
-        seed_local_demo(connection, actor_id=actor_id)
+    config = load_local_seed_config()
+    with psycopg.connect(config.application.postgres.dsn) as connection:
+        seed_local_demo(connection, actor_id=config.actor_id)
     print("NAPMS local demo seed applied")
