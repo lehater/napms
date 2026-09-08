@@ -54,35 +54,23 @@ Required operations:
 - resolve uniqueness conflict/retry safely;
 - load by RuleId for later increments.
 
-## Initial transport
+## I1 transport boundary
 
-Expose the application command through a minimal HTTP API because the repository already contains a Python/FastAPI prototype/toolchain that can be reused as engineering scaffolding only, not business truth. The target API contract must be newly implemented from accepted G2/G3 semantics rather than extending historical `AccessRequest` API meaning.
+I1 has no required transport. The application command is exercised directly through Domain/Application tests with fake/in-memory ports.
 
-Recommended first endpoint shape (implementation surface, not domain identity):
+An HTTP adapter may be introduced only after the I1 core gate passes. If selected, it maps transport syntax/statuses to the stable application outcomes without redefining domain semantics.
 
-`POST /access-rule-proposals`
+## Post-I1 persistence contract
 
-Responses:
-- `200` existing Rule resolved idempotently;
-- `201` new Active Rule materialized;
-- `403` proposal authority denied;
-- `409` structural/subject invariant conflict;
-- `422` syntactically invalid command;
-- `503` required authority/catalogue/decision dependency unknown/unavailable or persistence outcome cannot be established.
-
-A `NotAllowed` decision should return a stable business non-materialization response distinct from infrastructure failure; exact HTTP status/body naming may be finalized during code implementation tests without changing domain semantics.
-
-## Persistence contract
-
-Use a relational transactional persistence mechanism for the first skeleton. Required schema semantics:
+I2 must implement the accepted repository semantics using a relational transactional persistence mechanism:
 - opaque/stable RuleId primary key;
-- sourceDeploymentId, destinationDeploymentId, dcsRevisionId stored as immutable identity references;
-- unique constraint on their tuple;
+- sourceDeploymentId, destinationDeploymentId and dcsRevisionId stored as immutable identity references;
+- authoritative unique constraint on their tuple;
 - state constrained to Active/Inactive;
-- decision reference/provenance;
-- created/materialization audit timestamps/source metadata sufficient for first-slice acceptance.
+- decision/provenance required by the accepted model;
+- concurrency/rollback behavior proven against the selected deployment engine.
 
-Database/vendor choice is an engineering decision; existing MSSQL prototype is not automatically target truth. Prefer the simplest repository-supported local/test path unless deployment constraints require MSSQL.
+Database/vendor choice remains an engineering decision. No Legacy schema/procedure is target truth.
 
 ## Versioning
 
