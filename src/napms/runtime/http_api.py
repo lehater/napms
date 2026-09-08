@@ -62,6 +62,48 @@ from napms.application_catalogue.application.describe_interactions import (
 from napms.application_catalogue.application.ports import CataloguePersistenceError
 from napms.application_catalogue.domain.model import DirectedInteractionIdentity
 from napms.authority_management.application.ports import AuthorityPersistenceError
+from napms.connectivity_requirements.application.declare import (
+    DeclarationOutcome,
+    DeclareConnectivityRequirement,
+    DeclareRequirement,
+)
+from napms.connectivity_requirements.application.options import (
+    DiscoverRequiredInteractions,
+    DiscoverRequirementScopes,
+    RequiredInteractionDiscoveryOutcome,
+)
+from napms.connectivity_requirements.application.ports import (
+    ActiveRequirementSemanticConflict,
+    RequirementCommitOutcomeUnknown,
+    RequirementPersistenceError,
+    RequirementVersionConflict,
+)
+from napms.connectivity_requirements.application.read import (
+    GetConnectivityRequirement,
+    ListConnectivityRequirements,
+    RequirementDetailOutcome,
+)
+from napms.connectivity_requirements.application.retire import (
+    RetireConnectivityRequirement,
+    RetireRequirement,
+    RetirementOutcome,
+)
+from napms.connectivity_requirements.application.set_applicability import (
+    ApplicabilityMutationOutcome,
+    SetConnectivityRequirementApplicability,
+    SetRequirementApplicability,
+)
+from napms.connectivity_requirements.application.set_justification import (
+    JustificationMutationOutcome,
+    SetConnectivityRequirementJustification,
+    SetRequirementJustification,
+)
+from napms.connectivity_requirements.domain.model import (
+    ConnectivityRequirement,
+    RequiredSemanticInteraction,
+    RequirementApplicability,
+    RequirementApplicabilityKind,
+)
 from napms.policy_export.application.export_snapshot import (
     AssembleExportSnapshot,
     SnapshotAssemblyOutcome,
@@ -153,6 +195,42 @@ class SetEffectiveWindowRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     window: EffectiveWindowValue | None
+
+
+class RequirementApplicabilityValue(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: RequirementApplicabilityKind
+    start: datetime | None = None
+    end: datetime | None = None
+
+
+class DeclareConnectivityRequirementRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    authority_scope: str = Field(alias="authorityScope", min_length=1, max_length=512)
+    dependent_component_deployment_id: UUID = Field(
+        alias="dependentComponentDeploymentId"
+    )
+    source_component_deployment_id: UUID = Field(alias="sourceComponentDeploymentId")
+    destination_component_deployment_id: UUID = Field(
+        alias="destinationComponentDeploymentId"
+    )
+    dcs_contract_revision_id: UUID = Field(alias="dcsContractRevisionId")
+    applicability: RequirementApplicabilityValue
+    justification: str = Field(min_length=1, max_length=4096)
+
+
+class SetRequirementApplicabilityRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    applicability: RequirementApplicabilityValue
+
+
+class SetRequirementJustificationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    justification: str = Field(min_length=1, max_length=4096)
 
 
 class PublicApiError(Exception):
@@ -298,6 +376,168 @@ def _describe_semantic_identities(
     }
 
 
+def _requirement_applicability_from_request(
+    value: RequirementApplicabilityValue,
+) -> RequirementApplicability:
+    if value.kind is RequirementApplicabilityKind.ONGOING:
+        if value.start is not None or value.end is not None:
+            raise PublicApiError(
+                status_code=422,
+                code="InvalidRequirementApplicability",
+                message="Ongoing applicability cannot include start/end.",
+            )
+        return RequirementApplicability.ongoing()
+
+    if value.start is None or value.end is None:
+        raise PublicApiError(
+            status_code=422,
+            code="InvalidRequirementApplicability",
+            message="AbsoluteWindow requires start and end.",
+        )
+    if (
+        value.start.tzinfo is None
+        or value.start.utcoffset() is None
+        or value.end.tzinfo is None
+        or value.end.utcoffset() is None
+        or value.start >= value.end
+    ):
+        raise PublicApiError(
+            status_code=422,
+            code="InvalidRequirementApplicability",
+            message="AbsoluteWindow requires offset-aware start < end.",
+        )
+    return RequirementApplicability.absolute_window(
+        start=value.start,
+        end=value.end,
+    )
+
+
+def _requirement_applicability_dto(
+    value: RequirementApplicability,
+) -> dict[str, Any]:
+    if value.kind is RequirementApplicabilityKind.ONGOING:
+        return {"kind": "Ongoing"}
+    assert value.start is not None
+    assert value.end is not None
+    return {
+        "kind": "AbsoluteWindow",
+        "start": value.start.isoformat(),
+        "end": value.end.isoformat(),
+    }
+
+
+def _required_interaction_to_acc(
+    identity: RequiredSemanticInteraction,
+) -> DirectedInteractionIdentity:
+    return DirectedInteractionIdentity(
+        source_component_deployment_id=identity.source_component_deployment_id,
+        destination_component_deployment_id=identity.destination_component_deployment_id,
+        dcs_contract_revision_id=identity.dcs_contract_revision_id,
+    )
+
+
+def _describe_required_interactions(
+    runtime_scope,
+    identities,
+) -> dict[RequiredSemanticInteraction, dict[str, Any]]:
+    values = tuple(dict.fromkeys(identities))
+    if not values:
+        return {}
+    try:
+        descriptions = runtime_scope.catalogue_describer.execute(
+            tuple(_required_interaction_to_acc(value) for value in values)
+        )
+    except CataloguePersistenceError:
+        return {}
+    return {
+        identity: _catalogue_presentation_dto(
+            description,
+            decoder=runtime_scope.dcs_decoder,
+        )
+        for identity, description in zip(values, descriptions)
+    }
+
+
+def _requirement_dto(
+    requirement: ConnectivityRequirement,
+    catalogue: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    return {
+        "requirementId": str(requirement.requirement_id),
+        "governanceScope": requirement.governance_scope,
+        "dependentComponentDeploymentId": str(
+            requirement.dependent_component_deployment_id
+        ),
+        "requiredInteraction": {
+            "sourceComponentDeploymentId": str(
+                requirement.required_interaction.source_component_deployment_id
+            ),
+            "destinationComponentDeploymentId": str(
+                requirement.required_interaction.destination_component_deployment_id
+            ),
+            "dcsContractRevisionId": str(
+                requirement.required_interaction.dcs_contract_revision_id
+            ),
+        },
+        "applicability": _requirement_applicability_dto(
+            requirement.applicability
+        ),
+        "justification": requirement.justification,
+        "lifecycleState": requirement.lifecycle_state.value,
+        "version": requirement.version,
+        "declarationProvenance": {
+            "actorId": requirement.declaration_provenance.actor_id,
+            "effectiveTime": (
+                requirement.declaration_provenance.effective_time.isoformat()
+            ),
+            "authorityReference": (
+                requirement.declaration_provenance.authority_reference
+            ),
+            "catalogueReference": (
+                requirement.declaration_provenance.catalogue_reference
+            ),
+        },
+        "applicabilityHistory": [
+            {
+                "previousApplicability": _requirement_applicability_dto(
+                    change.previous_applicability
+                ),
+                "newApplicability": _requirement_applicability_dto(
+                    change.new_applicability
+                ),
+                "actorId": change.actor_id,
+                "effectiveTime": change.effective_time.isoformat(),
+                "governanceScope": change.governance_scope,
+                "authorityReference": change.authority_reference,
+            }
+            for change in requirement.applicability_history
+        ],
+        "justificationHistory": [
+            {
+                "previousJustification": change.previous_justification,
+                "newJustification": change.new_justification,
+                "actorId": change.actor_id,
+                "effectiveTime": change.effective_time.isoformat(),
+                "governanceScope": change.governance_scope,
+                "authorityReference": change.authority_reference,
+            }
+            for change in requirement.justification_history
+        ],
+        "lifecycleHistory": [
+            {
+                "fromState": change.from_state.value,
+                "toState": change.to_state.value,
+                "actorId": change.actor_id,
+                "effectiveTime": change.effective_time.isoformat(),
+                "governanceScope": change.governance_scope,
+                "authorityReference": change.authority_reference,
+            }
+            for change in requirement.lifecycle_history
+        ],
+        "catalogue": catalogue,
+    }
+
+
 def _rule_dto(
     rule: AccessRule,
     catalogue: dict[str, Any] | None = None,
@@ -418,6 +658,7 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             event["actorId"] = actor_id
         for state_name, event_name in (
             ("rule_id", "ruleId"),
+            ("requirement_id", "requirementId"),
             ("authority_reference", "authorityReference"),
             ("decision_reference", "decisionReference"),
             ("dependency", "dependency"),
@@ -518,6 +759,58 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             status_code=503,
             code="PersistenceUnavailable",
             message="The authoritative persistence service is unavailable.",
+        )
+
+    @app.exception_handler(RequirementCommitOutcomeUnknown)
+    async def requirement_uncertain_commit_handler(
+        request: Request,
+        exc: RequirementCommitOutcomeUnknown,
+    ):
+        _set_dependency(request, "ConnectivityRequirementsPersistence")
+        return _error_response(
+            request,
+            status_code=503,
+            code="PersistenceOutcomeUnknown",
+            message="The authoritative persistence outcome is currently unknown.",
+        )
+
+    @app.exception_handler(RequirementVersionConflict)
+    async def requirement_version_conflict_handler(
+        request: Request,
+        exc: RequirementVersionConflict,
+    ):
+        _set_dependency(request, "ConnectivityRequirementsPersistence")
+        return _error_response(
+            request,
+            status_code=409,
+            code="RequirementVersionConflict",
+            message="The Connectivity Requirement changed concurrently.",
+        )
+
+    @app.exception_handler(ActiveRequirementSemanticConflict)
+    async def requirement_semantic_conflict_handler(
+        request: Request,
+        exc: ActiveRequirementSemanticConflict,
+    ):
+        _set_dependency(request, "ConnectivityRequirementsPersistence")
+        return _error_response(
+            request,
+            status_code=409,
+            code="RequirementSemanticConflict",
+            message="An Active Connectivity Requirement already owns this semantic need.",
+        )
+
+    @app.exception_handler(RequirementPersistenceError)
+    async def requirement_persistence_handler(
+        request: Request,
+        exc: RequirementPersistenceError,
+    ):
+        _set_dependency(request, "ConnectivityRequirementsPersistence")
+        return _error_response(
+            request,
+            status_code=503,
+            code="PersistenceUnavailable",
+            message="Connectivity Requirements persistence is unavailable.",
         )
 
     @app.exception_handler(AuthorityPersistenceError)
