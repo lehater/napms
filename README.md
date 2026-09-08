@@ -12,7 +12,7 @@ It intentionally does **not** contain Legacy implementation, reverse-engineering
 
 ## Current implementation state
 
-Wave 1 is implementation-ready. The current increment is I1: the Access Policy Domain/Application executable core. Real infrastructure is gated until the core test/architecture gate passes.
+Wave 1 is implementation-ready. I1, the Access Policy Domain/Application/Ports executable core, has passed its semantic and architecture gate. Infrastructure work may proceed only through the current active plan and must preserve the accepted core contracts.
 
 ## Layout
 
