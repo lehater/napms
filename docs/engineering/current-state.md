@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I9 PASS — Operational Web Workspace implemented`.
+Status: `I10 PASS — Policy Operations Workspace implemented`.
 
 Date: 2026-09-09.
 
@@ -61,6 +61,24 @@ Implemented:
 - final architecture/security review has no open P0/P1 findings;
 - core, PostgreSQL, Web, harness and knowledge gates passed.
 
+## I10 result
+
+`PASS` for the Policy Operations Web workspace.
+
+Implemented:
+- independent backend admission of `SetRuleEffectiveWindow` on Rule Details;
+- HTTP EffectiveWindow set/change/clear using authenticated actor, runtime mutation time and authoritative Rule governance scope;
+- explicit offset-aware `start < end` validation and half-open `[start, end)` semantics;
+- EffectiveWindow business-history presentation in the Web UI;
+- application-level `ReadEffectiveDesiredPolicy` scope discovery evaluated at the same explicit `asOf` as policy views;
+- Effective Desired Policy HTTP/Web view with authorized-empty result distinct from denied/unknown authority;
+- Normalized Policy Web view over the existing coherent snapshot/normalization chain;
+- normalized presentation preserves `Any`, `NotApplicable`, inclusive ranges, Rule/decision context and Authority/ACC/RC provenance;
+- PostgreSQL end-to-end proof from EffectiveWindow mutation through effective selection and normalized export;
+- request payload cannot establish actor, mutation time or Rule governance scope;
+- final architecture/security review has no open P0/P1 finding;
+- core, PostgreSQL, Web, harness and knowledge gates passed.
+
 ## I8 scope boundary
 
 I8 intentionally does **not** define Connectivity Decision Domain internals.
@@ -71,8 +89,7 @@ The following remain deferred:
 - external OIDC/OAuth2/corporate IdP;
 - production authentication/session topology;
 - dashboard and secondary aggregate UI;
-- EffectiveWindow editing UI and broader Access Rule workspace filtering/search;
-- Effective Desired Policy and Normalized Policy Web UI screens beyond the implemented HTTP handoff;
+- broader Access Rule workspace filtering/search;
 - generic IAM/CMDB administration;
 - CSV/XLSX serializers;
 - vendor rendering, configured-state reconciliation and device execution.
@@ -90,7 +107,7 @@ Implemented:
 - local-dev authentication/session boundary;
 - explicit local-dev Connectivity Decision adapter;
 - public normalized-policy JSON serializer;
-- React Web UI first vertical slice;
+- React Web UI through Operational Workspace and Policy Operations views;
 - structured runtime observability/correlation and health/readiness.
 
 The implementation remains greenfield: Legacy, MSSQL and vendor/device execution are not dependencies.
