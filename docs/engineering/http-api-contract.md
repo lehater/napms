@@ -1,6 +1,6 @@
 # HTTP API contract — Web UI boundary
 
-Status: `accepted through I9 Operational Web Workspace`.
+Status: `accepted through I10 Policy Operations Workspace`.
 
 Date: 2026-09-09.
 
@@ -303,6 +303,80 @@ Minimum mapping for the first slice:
 
 The semantic code remains the stable identity; HTTP status is transport behavior.
 
+## EffectiveWindow mutation
+
+### PATCH /api/v1/access-rules/{ruleId}/effective-window
+
+Purpose: execute the existing `SetRuleEffectiveWindow` application command.
+
+Request to set/change:
+
+```json
+{
+  "window": {
+    "start": "2026-09-10T08:00:00+00:00",
+    "end": "2026-09-10T18:00:00+00:00"
+  }
+}
+```
+
+Request to clear:
+
+```json
+{
+  "window": null
+}
+```
+
+Rules:
+- start/end must be offset-aware;
+- `start < end`;
+- backend supplies authenticated actor and mutation effective time;
+- backend loads the Rule and uses its stored governance scope for `SetRuleEffectiveWindow`;
+- request JSON cannot supply trusted actor, mutation time or governance scope;
+- `Updated` and `AlreadyInRequestedWindow` return `200`;
+- denied/unknown/not-found/persistence outcomes use existing safe mappings.
+
+## Policy view scope discovery
+
+### GET /api/v1/policy-views/scopes
+
+Purpose: discover governance scopes with unambiguous effective `ReadEffectiveDesiredPolicy` authority for the authenticated actor at runtime time.
+
+Success:
+
+```json
+{
+  "scopes": [{"scope": "scope-a"}],
+  "ambiguousScopes": [{"scope": "scope-b"}]
+}
+```
+
+Ambiguous scopes remain fail-closed and are never presented as permitted.
+
+## Effective Desired Policy JSON
+
+### GET /api/v1/effective-desired-policy
+
+Query:
+- `scope` — required RuleGovernanceScope;
+- `asOf` — required offset-aware RFC 3339 instant.
+
+Purpose: execute the existing authorized `SelectEffectiveDesiredPolicy` application query.
+
+Success:
+
+```json
+{
+  "scope": "scope-a",
+  "asOf": "2026-09-10T12:00:00+00:00",
+  "authorityReference": "authority-ref",
+  "rules": []
+}
+```
+
+An authorized empty selection is `200` with `rules: []`. Denied/unknown authority returns no policy data.
+
 ## Normalized policy JSON
 
 ### GET /api/v1/normalized-policy
@@ -410,7 +484,6 @@ Not part of the first vertical slice:
 - approval/review routes;
 - persistent Access Request CRUD;
 - generic ACC/RC/Authority administration;
-- EffectiveWindow mutation route until the corresponding UI slice is taken;
-- Effective Desired Policy and Normalized Policy routes until UI-3;
+
 - CSV/XLSX;
 - device/provider execution.
