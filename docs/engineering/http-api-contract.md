@@ -341,7 +341,10 @@ Rules:
 
 ### GET /api/v1/policy-views/scopes
 
-Purpose: discover governance scopes with unambiguous effective `ReadEffectiveDesiredPolicy` authority for the authenticated actor at runtime time.
+Purpose: discover governance scopes with unambiguous effective `ReadEffectiveDesiredPolicy` authority for the authenticated actor at the same explicit `asOf` used by policy views.
+
+Query:
+- `asOf` — required offset-aware RFC 3339 instant.
 
 Success:
 
