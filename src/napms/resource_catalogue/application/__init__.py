@@ -1,0 +1,1 @@
+# Resource Catalogue application layer.
