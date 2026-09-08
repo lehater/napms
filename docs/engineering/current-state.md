@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I8 PASS — first Web UI and HTTP runtime boundary implemented`.
+Status: `I9 PASS — Operational Web Workspace implemented`.
 
 Date: 2026-09-09.
 
@@ -41,6 +41,26 @@ Implemented:
 - final I8 architecture/security review has no open P0/P1 findings;
 - final core, PostgreSQL, Web, harness and knowledge gates passed.
 
+## I9 result
+
+`PASS` for the first operational Access Rule Web workspace.
+
+Implemented:
+- explicit Authority action `ReadAccessRule`;
+- authorized paginated Access Rule list across unambiguously permitted RuleGovernanceScopes;
+- authorized Rule Details using the Rule's stored governance scope;
+- independent backend admission of `SetRuleOperationalState`; read permission does not imply mutation permission;
+- HTTP routes for Access Rule list, details and Active/Inactive mutation;
+- mutation trust boundary: actor comes from session, effective time from runtime, governance scope from authoritative Rule; client-supplied actor/scope/time is rejected;
+- Rule Details expose semantic identity, state/effective window, decision correlation, proposal provenance and business state history;
+- React workspace navigation for Compose Connectivity and Access Rules, with bookmarkable list/details and server-side pagination;
+- Active/Inactive UI action only when backend reports mutation capability `Permitted`;
+- PostgreSQL paging and full workspace read -> mutate -> persisted audit proof;
+- fail-closed denied/unknown read and mutation authority;
+- explicit not-found, same-state and persistence-failure mappings;
+- final architecture/security review has no open P0/P1 findings;
+- core, PostgreSQL, Web, harness and knowledge gates passed.
+
 ## I8 scope boundary
 
 I8 intentionally does **not** define Connectivity Decision Domain internals.
@@ -51,7 +71,7 @@ The following remain deferred:
 - external OIDC/OAuth2/corporate IdP;
 - production authentication/session topology;
 - dashboard and secondary aggregate UI;
-- full Access Rule workspace/state-management UI;
+- EffectiveWindow editing UI and broader Access Rule workspace filtering/search;
 - Effective Desired Policy and Normalized Policy Web UI screens beyond the implemented HTTP handoff;
 - generic IAM/CMDB administration;
 - CSV/XLSX serializers;
