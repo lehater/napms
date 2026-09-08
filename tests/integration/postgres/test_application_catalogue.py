@@ -27,6 +27,7 @@ from napms.application_catalogue.application.resolve import (
     ResolveApplicationProjection,
     ValidateDirectedInteraction,
 )
+from napms.application_catalogue.domain.model import DirectedInteractionIdentity
 from napms.policy_export.application.ports import ApplicationProjectionOutcome
 
 
@@ -415,12 +416,7 @@ def test_postgres_acc_batch_describes_exact_interaction_labels(postgres_dsn):
         descriptions = DescribeDirectedInteractions(
             catalogue=repository(connection)
         ).execute(
-            (
-                __import__(
-                    "napms.application_catalogue.domain.model",
-                    fromlist=["DirectedInteractionIdentity"],
-                ).DirectedInteractionIdentity(SOURCE, DESTINATION, DCS),
-            )
+            (DirectedInteractionIdentity(SOURCE, DESTINATION, DCS),)
         )
 
     assert len(descriptions) == 1
