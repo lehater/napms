@@ -517,3 +517,25 @@ def test_selection_result_is_deterministic_by_rule_id():
         UUID(int=20),
         UUID(int=30),
     )
+
+
+def test_authoritative_rule_constructor_rejects_not_allowed_decision():
+    semantic_identity = identity(90)
+    with pytest.raises(DomainInvariantError):
+        AccessRule(
+            rule_id=UUID(int=90),
+            semantic_identity=semantic_identity,
+            operational_state=OperationalState.ACTIVE,
+            decision=DecisionReference(
+                semantic_identity,
+                ConnectivityDecisionResult.NOT_ALLOWED,
+                "decision-denied",
+            ),
+            proposal_provenance=ProposalProvenance(
+                "proposer",
+                "scope-1",
+                NOW,
+                "proposal-auth",
+                "catalogue-1",
+            ),
+        )
