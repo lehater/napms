@@ -35,6 +35,7 @@ class AccessRuleDetailResult:
     rule: AccessRule | None = None
     read_authority_reference: str | None = None
     state_mutation_admission: TernaryOutcome | None = None
+    effective_window_mutation_admission: TernaryOutcome | None = None
 
 
 class ListAuthorizedAccessRules:
@@ -114,22 +115,36 @@ class GetAuthorizedAccessRule:
         if read.outcome is TernaryOutcome.UNKNOWN or read.authority_reference is None:
             return AccessRuleDetailResult(AccessRuleDetailOutcome.AUTHORITY_UNKNOWN)
 
-        mutation = self._authority.check(
+        state_mutation = self._authority.check(
             actor_id=actor_id,
             action=AuthorityAction.SET_RULE_OPERATIONAL_STATE,
             scope=rule.governance_scope,
             effective_time=effective_time,
         )
-        mutation_admission = mutation.outcome
+        state_mutation_admission = state_mutation.outcome
         if (
-            mutation.outcome is TernaryOutcome.PERMITTED
-            and mutation.authority_reference is None
+            state_mutation.outcome is TernaryOutcome.PERMITTED
+            and state_mutation.authority_reference is None
         ):
-            mutation_admission = TernaryOutcome.UNKNOWN
+            state_mutation_admission = TernaryOutcome.UNKNOWN
+
+        window_mutation = self._authority.check(
+            actor_id=actor_id,
+            action=AuthorityAction.SET_RULE_EFFECTIVE_WINDOW,
+            scope=rule.governance_scope,
+            effective_time=effective_time,
+        )
+        window_mutation_admission = window_mutation.outcome
+        if (
+            window_mutation.outcome is TernaryOutcome.PERMITTED
+            and window_mutation.authority_reference is None
+        ):
+            window_mutation_admission = TernaryOutcome.UNKNOWN
 
         return AccessRuleDetailResult(
             AccessRuleDetailOutcome.FOUND,
             rule=rule,
             read_authority_reference=read.authority_reference,
-            state_mutation_admission=mutation_admission,
+            state_mutation_admission=state_mutation_admission,
+            effective_window_mutation_admission=window_mutation_admission,
         )

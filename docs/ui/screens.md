@@ -48,7 +48,9 @@ Sections:
 - immutable semantic identity;
 - Rule Governance Scope;
 - `Active | Inactive`;
-- EffectiveWindow;
+- EffectiveWindow with independent SetRuleEffectiveWindow admission;
+- set/change/clear EffectiveWindow controls when permitted;
+- EffectiveWindow business history;
 - Connectivity Decision correlation/reference;
 - proposal/authority/catalogue provenance;
 - business history;
@@ -62,13 +64,13 @@ Responsibility: run/view `SelectEffectiveDesiredPolicy(scope, asOf, actor)`.
 
 Inputs: one Rule Governance Scope + explicit offset-aware `asOf`.
 
-Denied/unknown authority returns no policy data and is presented distinctly from an empty authorized result.
+Scope discovery is evaluated for the same `asOf`; ambiguous scopes remain fail-closed. Denied/unknown authority returns no policy data and is presented distinctly from an authorized empty result.
 
 ## Normalized Policy
 
 Responsibility: present vendor-neutral normalized policy for an accepted export journey.
 
-Preserve Rule/decision correlation, technical realization, DCS traffic alternatives, export `asOf` and required provenance. Presentation must not silently flatten `Any`, `NotApplicable`, ranges or provenance distinctions.
+Preserve Rule/decision correlation, technical realization, DCS traffic alternatives, export `asOf` and required provenance. Presentation renders `Any`, `NotApplicable` and inclusive ranges distinctly and exposes Rule/Authority/ACC/RC provenance without flattening it.
 
 ## Deferred
 

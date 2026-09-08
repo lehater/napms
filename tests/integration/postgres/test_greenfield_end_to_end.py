@@ -25,6 +25,11 @@ from napms.access_policy.application.proposal_options import (
     DiscoverProposalScopes,
     ProposalInteractionDiscoveryOutcome,
 )
+from napms.access_policy.application.set_effective_window import (
+    EffectiveWindowMutationOutcome,
+    SetAccessRuleEffectiveWindow,
+    SetRuleEffectiveWindow,
+)
 from napms.access_policy.application.set_operational_state import (
     OperationalStateMutationOutcome,
     SetAccessRuleOperationalState,
@@ -35,7 +40,11 @@ from napms.access_policy.application.select_effective_policy import (
     SelectAccessPolicyEffectiveDesiredPolicy,
     SelectEffectiveDesiredPolicy,
 )
-from napms.access_policy.domain.model import OperationalState, RuleSemanticIdentity
+from napms.access_policy.domain.model import (
+    EffectiveWindow,
+    OperationalState,
+    RuleSemanticIdentity,
+)
 from napms.application_catalogue.adapters.dcs_json_codec import (
     JsonDcsProjectionCodec,
 )
@@ -164,6 +173,7 @@ def seed_authority(
     read=True,
     read_rule=True,
     mutate_rule=True,
+    mutate_window=True,
     overlap_propose=False,
 ):
     rows = []
@@ -225,6 +235,18 @@ def seed_authority(
                 VALID_FROM,
                 VALID_TO,
                 "authority-provenance-mutate-rule-1",
+            )
+        )
+    if mutate_window:
+        rows.append(
+            (
+                "authority-window-rule-1",
+                ACTOR,
+                "SetRuleEffectiveWindow",
+                SCOPE,
+                VALID_FROM,
+                VALID_TO,
+                "authority-provenance-window-rule-1",
             )
         )
     for row in rows:
@@ -429,6 +451,7 @@ def seed_greenfield(
     read=True,
     read_rule=True,
     mutate_rule=True,
+    mutate_window=True,
     overlap_propose=False,
     include_dcs=True,
     dcs_source=SOURCE,
@@ -443,6 +466,7 @@ def seed_greenfield(
             read=read,
             read_rule=read_rule,
             mutate_rule=mutate_rule,
+            mutate_window=mutate_window,
             overlap_propose=overlap_propose,
         )
         seed_acc(
@@ -560,6 +584,94 @@ def test_greenfield_access_rule_workspace_read_and_state_mutation(
     assert transition.actor_id == ACTOR
     assert transition.governance_scope == SCOPE
     assert transition.authority_reference == "authority-mutate-rule-1"
+
+
+def test_greenfield_policy_operations_effective_window_to_normalized_export(
+    postgres_dsn,
+    greenfield_config,
+):
+    seed_greenfield(postgres_dsn)
+    window = EffectiveWindow(
+        AS_OF - timedelta(hours=1),
+        AS_OF + timedelta(hours=1),
+    )
+
+    with open_greenfield_scope(greenfield_config) as scope:
+        assert materialize(scope).outcome is MaterializationOutcome.MATERIALIZED
+
+        policy_scopes = scope.effective_policy_scope_discovery.list_effective_policy_read_scopes(
+            actor_id=ACTOR,
+            effective_time=AS_OF,
+        )
+        assert policy_scopes.permitted_scopes == (SCOPE,)
+        assert policy_scopes.ambiguous_scopes == ()
+
+        mutation = SetAccessRuleEffectiveWindow(
+            authority=scope.authority,
+            rules=scope.access_rules,
+        ).execute(
+            SetRuleEffectiveWindow(
+                rule_id=RULE_ID,
+                window=window,
+                actor_id=ACTOR,
+                effective_time=AS_OF,
+            )
+        )
+        assert mutation.outcome is EffectiveWindowMutationOutcome.UPDATED
+
+        selected = SelectAccessPolicyEffectiveDesiredPolicy(
+            authority=scope.authority,
+            rules=scope.access_rules,
+        ).execute(
+            SelectEffectiveDesiredPolicy(
+                scope=SCOPE,
+                as_of=AS_OF,
+                actor_id=ACTOR,
+            )
+        )
+        assert selected.outcome is EffectivePolicySelectionOutcome.SELECTED
+        assert tuple(rule.rule_id for rule in selected.rules) == (RULE_ID,)
+
+        outside = SelectAccessPolicyEffectiveDesiredPolicy(
+            authority=scope.authority,
+            rules=scope.access_rules,
+        ).execute(
+            SelectEffectiveDesiredPolicy(
+                scope=SCOPE,
+                as_of=AS_OF + timedelta(hours=2),
+                actor_id=ACTOR,
+            )
+        )
+        assert outside.outcome is EffectivePolicySelectionOutcome.SELECTED
+        assert outside.rules == ()
+
+        assembled = snapshot(scope, selected)
+        assert assembled.outcome is SnapshotAssemblyOutcome.SUCCESS
+        normalized = NormalizeExportSnapshot(
+            decoder=scope.dcs_decoder
+        ).execute(assembled.snapshot)
+
+    assert len(normalized.rows) == 4
+    assert all(row.rule_effective_window == window for row in normalized.rows)
+
+    with open_greenfield_scope(greenfield_config) as scope:
+        persisted = GetAuthorizedAccessRule(
+            authority=scope.authority,
+            rules=scope.access_rules,
+        ).execute(
+            rule_id=RULE_ID,
+            actor_id=ACTOR,
+            effective_time=AS_OF,
+        )
+
+    assert persisted.outcome is AccessRuleDetailOutcome.FOUND
+    assert persisted.rule.effective_window == window
+    assert persisted.effective_window_mutation_admission.value == "Permitted"
+    assert len(persisted.rule.effective_window_history) == 1
+    change = persisted.rule.effective_window_history[0]
+    assert change.actor_id == ACTOR
+    assert change.governance_scope == SCOPE
+    assert change.authority_reference == "authority-window-rule-1"
 
 
 def test_greenfield_postgres_end_to_end_produces_complete_normalized_export(

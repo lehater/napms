@@ -1,9 +1,16 @@
-import { ListTree, LogOut, Network, PanelLeftClose } from "lucide-react"
+import {
+  Clock3,
+  ListTree,
+  LogOut,
+  Network,
+  PanelLeftClose,
+  TableProperties,
+} from "lucide-react"
 
 import type { Actor } from "@/api"
 import { Button } from "@/components/ui/Button"
 
-type NavKey = "compose" | "rules"
+type NavKey = "compose" | "rules" | "effective" | "normalized"
 
 export function AppShell({
   actor,
@@ -57,6 +64,28 @@ export function AppShell({
             <ListTree className="size-4" aria-hidden="true" />
             Access Rules
           </button>
+
+          <div className="px-3 pb-2 pt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
+            Policy Views
+          </div>
+          <button
+            type="button"
+            className={navClass("effective")}
+            aria-current={activeNav === "effective" ? "page" : undefined}
+            onClick={() => onNavigate("effective")}
+          >
+            <Clock3 className="size-4" aria-hidden="true" />
+            Effective Policy
+          </button>
+          <button
+            type="button"
+            className={navClass("normalized")}
+            aria-current={activeNav === "normalized" ? "page" : undefined}
+            onClick={() => onNavigate("normalized")}
+          >
+            <TableProperties className="size-4" aria-hidden="true" />
+            Normalized Policy
+          </button>
         </nav>
       </aside>
 
@@ -76,6 +105,20 @@ export function AppShell({
               onClick={() => onNavigate("rules")}
             >
               Rules
+            </button>
+            <button
+              type="button"
+              className="rounded-md px-2 py-1.5 text-xs font-semibold text-[#334155] hover:bg-[#F1F5F9]"
+              onClick={() => onNavigate("effective")}
+            >
+              Effective
+            </button>
+            <button
+              type="button"
+              className="rounded-md px-2 py-1.5 text-xs font-semibold text-[#334155] hover:bg-[#F1F5F9]"
+              onClick={() => onNavigate("normalized")}
+            >
+              Normalized
             </button>
           </div>
           <div className="ml-auto flex items-center gap-3">

@@ -39,11 +39,19 @@ Implemented:
 - independent read vs mutation authority;
 - server-side Rule pagination and fail-closed ambiguous-scope indication.
 
-EffectiveWindow editing remains a follow-on slice.
+I10 extension:
+- independent backend-admitted EffectiveWindow set/change/clear;
+- half-open interval guidance and offset-aware datetime controls;
+- EffectiveWindow business-history presentation.
 
-## UI-3 — policy views
+## UI-3 — policy views — implemented in I10
 
-Add Effective Desired Policy and Normalized Policy views when their HTTP contracts are available. Preserve explicit scope/asOf and provenance semantics.
+Implemented:
+- explicit asOf-bound ReadEffectiveDesiredPolicy scope discovery;
+- Effective Desired Policy screen with authorized-empty distinction;
+- Normalized Policy screen preserving Any / NotApplicable / inclusive ranges;
+- Rule/decision/Authority/ACC/RC provenance presentation;
+- fail-closed denied/unknown/stale/correlation errors from existing HTTP contracts.
 
 ## UI-4 — dashboard/secondary navigation
 

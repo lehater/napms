@@ -2,6 +2,6 @@
 
 Current: none.
 
-I9 Operational Web Workspace is complete and absorbed into canonical requirements/domain/engineering truth.
+I10 Policy Operations Workspace is complete and absorbed into canonical requirements/engineering/UI truth.
 
 Select the next product/increment priority before creating the next active plan.

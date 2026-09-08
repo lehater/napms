@@ -1,6 +1,6 @@
 # Web UI requirements — accepted I8 refinement
 
-Status: `accepted through I9 Operational Web Workspace`.
+Status: `accepted through I10 Policy Operations Workspace`.
 
 Date: 2026-09-09.
 
@@ -112,6 +112,8 @@ Purpose: inspect one authoritative Rule and supported management/provenance info
 
 Before returning data, backend evaluates `ReadAccessRule` against the Rule's stored governance scope. State-change controls are shown only after a separate `SetRuleOperationalState` admission check.
 
+State and EffectiveWindow mutation controls are admitted independently. `SetRuleOperationalState` permission does not imply `SetRuleEffectiveWindow` permission.
+
 Show progressively:
 - Rule ID and immutable semantic identity;
 - Rule Governance Scope;
@@ -123,11 +125,11 @@ Show progressively:
 
 ### 6. Effective Desired Policy
 
-Purpose: select and inspect the authorized effective desired-policy subset for one Rule Governance Scope and explicit `asOf`.
+Purpose: select and inspect the authorized effective desired-policy subset for one Rule Governance Scope and explicit `asOf`. Scope choices come from unambiguous effective `ReadEffectiveDesiredPolicy` authority.
 
 ### 7. Normalized Policy
 
-Purpose: present the vendor-neutral normalized policy JSON/view while preserving required row semantics and provenance.
+Purpose: present the vendor-neutral normalized policy JSON/view for the same explicit authorized scope/asOf context while preserving required row semantics and provenance.
 
 The UI presentation must not redefine or omit normalized export meaning.
 

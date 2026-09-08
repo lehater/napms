@@ -34,17 +34,23 @@ from napms.access_policy.application.proposal_options import (
     DiscoverProposalScopes,
     ProposalInteractionDiscoveryOutcome,
 )
+from napms.access_policy.application.set_effective_window import (
+    EffectiveWindowMutationOutcome,
+    SetAccessRuleEffectiveWindow,
+    SetRuleEffectiveWindow,
+)
 from napms.access_policy.application.set_operational_state import (
     OperationalStateMutationOutcome,
     SetAccessRuleOperationalState,
     SetRuleOperationalState,
 )
 from napms.access_policy.application.select_effective_policy import (
+    DiscoverEffectivePolicyScopes,
     EffectivePolicySelectionOutcome,
     SelectAccessPolicyEffectiveDesiredPolicy,
     SelectEffectiveDesiredPolicy,
 )
-from napms.access_policy.domain.model import AccessRule, OperationalState
+from napms.access_policy.domain.model import AccessRule, EffectiveWindow, OperationalState
 from napms.application_catalogue.application.ports import CataloguePersistenceError
 from napms.authority_management.application.ports import AuthorityPersistenceError
 from napms.policy_export.application.export_snapshot import (
@@ -123,6 +129,19 @@ class SetOperationalStateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
     target_state: OperationalState = Field(alias="targetState")
+
+
+class EffectiveWindowValue(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    start: datetime
+    end: datetime
+
+
+class SetEffectiveWindowRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    window: EffectiveWindowValue | None
 
 
 class PublicApiError(Exception):
@@ -762,6 +781,7 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
 
         assert result.rule is not None
         assert result.state_mutation_admission is not None
+        assert result.effective_window_mutation_admission is not None
         request.state.rule_id = str(result.rule.rule_id)
         request.state.authority_reference = result.read_authority_reference
         _set_outcome(request, "Found")
@@ -769,6 +789,7 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             "rule": _rule_detail_dto(result.rule),
             "capabilities": {
                 "setOperationalState": result.state_mutation_admission.value,
+                "setEffectiveWindow": result.effective_window_mutation_admission.value,
             },
         }
 
@@ -829,6 +850,164 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
         return {
             "outcome": result.outcome.value,
             "rule": _rule_dto(result.rule),
+        }
+
+    @app.patch(
+        "/api/v1/access-rules/{rule_id}/effective-window",
+        name="SetAccessRuleEffectiveWindow",
+    )
+    def set_access_rule_effective_window(
+        rule_id: UUID,
+        payload: SetEffectiveWindowRequest,
+        request: Request,
+        actor: AuthenticatedActor = Depends(require_actor),
+    ):
+        request.state.operation = "SetAccessRuleEffectiveWindow"
+        effective_time = dependencies.clock()
+
+        window = None
+        if payload.window is not None:
+            start = payload.window.start
+            end = payload.window.end
+            if (
+                start.tzinfo is None
+                or start.utcoffset() is None
+                or end.tzinfo is None
+                or end.utcoffset() is None
+                or start >= end
+            ):
+                raise PublicApiError(
+                    status_code=422,
+                    code="InvalidEffectiveWindow",
+                    message="EffectiveWindow requires offset-aware start < end.",
+                )
+            window = EffectiveWindow(start=start, end=end)
+
+        with dependencies.open_scope() as runtime_scope:
+            result = SetAccessRuleEffectiveWindow(
+                authority=runtime_scope.authority,
+                rules=runtime_scope.access_rules,
+            ).execute(
+                SetRuleEffectiveWindow(
+                    rule_id=rule_id,
+                    window=window,
+                    actor_id=actor.actor_id,
+                    effective_time=effective_time,
+                )
+            )
+
+        if result.outcome is EffectiveWindowMutationOutcome.RULE_NOT_FOUND:
+            raise PublicApiError(
+                status_code=404,
+                code="RuleNotFound",
+                message="The Access Rule was not found.",
+            )
+        if result.outcome is EffectiveWindowMutationOutcome.AUTHORITY_DENIED:
+            raise PublicApiError(
+                status_code=403,
+                code="AuthorityDenied",
+                message="The requested operation is not permitted.",
+            )
+        if result.outcome is EffectiveWindowMutationOutcome.AUTHORITY_UNKNOWN:
+            raise PublicApiError(
+                status_code=409,
+                code="AuthorityUnknown",
+                message="Authority for the requested operation is ambiguous or unavailable.",
+            )
+
+        assert result.rule is not None
+        request.state.rule_id = str(result.rule.rule_id)
+        if (
+            result.outcome is EffectiveWindowMutationOutcome.UPDATED
+            and result.rule.effective_window_history
+        ):
+            request.state.authority_reference = (
+                result.rule.effective_window_history[-1].authority_reference
+            )
+        _set_outcome(request, result.outcome.value)
+        return {
+            "outcome": result.outcome.value,
+            "rule": _rule_dto(result.rule),
+        }
+
+    @app.get("/api/v1/policy-views/scopes", name="DiscoverPolicyViewScopes")
+    def discover_policy_view_scopes(
+        request: Request,
+        as_of: datetime = Query(alias="asOf"),
+        actor: AuthenticatedActor = Depends(require_actor),
+    ):
+        request.state.operation = "DiscoverPolicyViewScopes"
+        if as_of.tzinfo is None or as_of.utcoffset() is None:
+            raise PublicApiError(
+                status_code=422,
+                code="InvalidAsOf",
+                message="asOf must include an explicit timezone offset.",
+            )
+        with dependencies.open_scope() as runtime_scope:
+            result = DiscoverEffectivePolicyScopes(
+                authority=runtime_scope.effective_policy_scope_discovery,
+            ).execute(
+                actor_id=actor.actor_id,
+                effective_time=as_of,
+            )
+        _set_outcome(
+            request,
+            "AuthorityUnknown" if result.ambiguous_scopes else "Available",
+        )
+        return {
+            "scopes": [{"scope": scope} for scope in result.permitted_scopes],
+            "ambiguousScopes": [
+                {"scope": scope} for scope in result.ambiguous_scopes
+            ],
+        }
+
+    @app.get("/api/v1/effective-desired-policy", name="GetEffectiveDesiredPolicy")
+    def get_effective_desired_policy(
+        request: Request,
+        scope: str,
+        as_of: datetime = Query(alias="asOf"),
+        actor: AuthenticatedActor = Depends(require_actor),
+    ):
+        request.state.operation = "GetEffectiveDesiredPolicy"
+        if as_of.tzinfo is None or as_of.utcoffset() is None:
+            raise PublicApiError(
+                status_code=422,
+                code="InvalidAsOf",
+                message="asOf must include an explicit timezone offset.",
+            )
+
+        with dependencies.open_scope() as runtime_scope:
+            selection = SelectAccessPolicyEffectiveDesiredPolicy(
+                authority=runtime_scope.authority,
+                rules=runtime_scope.access_rules,
+            ).execute(
+                SelectEffectiveDesiredPolicy(
+                    scope=scope,
+                    as_of=as_of,
+                    actor_id=actor.actor_id,
+                )
+            )
+
+        if selection.outcome is EffectivePolicySelectionOutcome.AUTHORITY_DENIED:
+            raise PublicApiError(
+                status_code=403,
+                code="AuthorityDenied",
+                message="The requested operation is not permitted.",
+            )
+        if selection.outcome is EffectivePolicySelectionOutcome.AUTHORITY_UNKNOWN:
+            raise PublicApiError(
+                status_code=409,
+                code="AuthorityUnknown",
+                message="Authority for the requested operation is ambiguous or unavailable.",
+            )
+
+        request.state.authority_reference = selection.authority_reference
+        _set_outcome(request, "Selected")
+        return {
+            "scope": selection.scope,
+            "asOf": selection.as_of.isoformat(),
+            "authorityReference": selection.authority_reference,
+            "rules": [_rule_dto(rule) for rule in selection.rules],
         }
 
     @app.get("/api/v1/normalized-policy", name="GetNormalizedPolicy")

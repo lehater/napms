@@ -5,6 +5,8 @@ from enum import Enum
 from napms.access_policy.application.ports import (
     AccessRulePersistenceError,
     AccessRuleRepository,
+    EffectivePolicyReadAuthorityDiscoveryPort,
+    EffectivePolicyReadScopeOptions,
     AuthorityAction,
     AuthorityPort,
     TernaryOutcome,
@@ -36,6 +38,26 @@ class EffectivePolicySelectionResult:
     as_of: datetime
     rules: tuple[AccessRule, ...] = ()
     authority_reference: str | None = None
+
+
+class DiscoverEffectivePolicyScopes:
+    def __init__(
+        self,
+        *,
+        authority: EffectivePolicyReadAuthorityDiscoveryPort,
+    ) -> None:
+        self._authority = authority
+
+    def execute(
+        self,
+        *,
+        actor_id: str,
+        effective_time: datetime,
+    ) -> EffectivePolicyReadScopeOptions:
+        return self._authority.list_effective_policy_read_scopes(
+            actor_id=actor_id,
+            effective_time=effective_time,
+        )
 
 
 class SelectAccessPolicyEffectiveDesiredPolicy:
