@@ -1,4 +1,5 @@
 from napms.access_policy.application.ports import (
+    AccessRuleReadScopeOptions,
     AuthorityAction,
     AuthorityCheck,
     ProposalScopeOptions,
@@ -66,6 +67,29 @@ class AccessPolicyProposalScopeAdapter:
             effective_time=effective_time,
         )
         return ProposalScopeOptions(
+            permitted_scopes=result.permitted_scopes,
+            ambiguous_scopes=result.ambiguous_scopes,
+        )
+
+
+class AccessPolicyRuleReadScopeAdapter:
+    """Translate ReadAccessRule scope discovery to the Access Policy consumer contract."""
+
+    def __init__(self, *, discovery: ListEffectiveAuthorityScopes) -> None:
+        self._discovery = discovery
+
+    def list_effective_read_rule_scopes(
+        self,
+        *,
+        actor_id: str,
+        effective_time,
+    ) -> AccessRuleReadScopeOptions:
+        result = self._discovery.execute(
+            actor_id=actor_id,
+            action=AuthorityAction.READ_ACCESS_RULE.value,
+            effective_time=effective_time,
+        )
+        return AccessRuleReadScopeOptions(
             permitted_scopes=result.permitted_scopes,
             ambiguous_scopes=result.ambiguous_scopes,
         )
