@@ -150,6 +150,32 @@ export function NormalizedPolicyPage() {
                           </summary>
                           <dl className="mt-2 grid gap-1 text-[#475569]">
                             <div>
+                              <dt className="inline font-semibold">Scope/state: </dt>
+                              <dd className="inline">
+                                {row.governanceScope} / {row.operationalState}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="inline font-semibold">Semantic identity: </dt>
+                              <dd className="inline font-mono">
+                                {row.semanticIdentity.sourceComponentDeploymentId} →{" "}
+                                {row.semanticIdentity.destinationComponentDeploymentId} /{" "}
+                                {row.semanticIdentity.dcsContractRevisionId}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="inline font-semibold">Effective window: </dt>
+                              <dd className="inline">
+                                {row.effectiveWindow
+                                  ? `${row.effectiveWindow.start} → ${row.effectiveWindow.end}`
+                                  : "No restriction"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="inline font-semibold">Snapshot asOf: </dt>
+                              <dd className="inline font-mono">{row.snapshotAsOf}</dd>
+                            </div>
+                            <div>
                               <dt className="inline font-semibold">Read authority: </dt>
                               <dd className="inline font-mono">
                                 {row.readAuthorityReference}
