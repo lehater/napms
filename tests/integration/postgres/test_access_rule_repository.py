@@ -296,3 +296,13 @@ def test_unknown_commit_acknowledgement_is_not_reported_as_success(postgres_dsn)
         authoritative = PostgresAccessRuleRepository(connection).find_by_identity(identity)
         assert authoritative is not None
         assert authoritative.rule_id == UUID(int=31)
+
+
+def test_postgres_commit_failure_maps_to_unknown_outcome():
+    class CommitFailureConnection:
+        def commit(self):
+            raise psycopg.OperationalError("lost commit acknowledgement")
+
+    repository = PostgresAccessRuleRepository(CommitFailureConnection())
+    with pytest.raises(AccessRuleCommitOutcomeUnknown):
+        repository.commit()
