@@ -269,17 +269,32 @@ def _catalogue_presentation_dto(
     }
 
 
-def _describe_semantic_identities(runtime_scope, identities) -> dict[RuleSemanticIdentity, dict[str, Any]]:
+def _describe_semantic_identities(
+    runtime_scope,
+    identities,
+) -> dict[RuleSemanticIdentity, dict[str, Any]]:
     semantic_identities = tuple(dict.fromkeys(identities))
-    descriptions = runtime_scope.catalogue_describer.execute(
-        tuple(_interaction_identity(identity) for identity in semantic_identities)
-    )
+    if not semantic_identities:
+        return {}
+    try:
+        descriptions = runtime_scope.catalogue_describer.execute(
+            tuple(
+                _interaction_identity(identity)
+                for identity in semantic_identities
+            )
+        )
+    except CataloguePersistenceError:
+        return {}
+
     return {
         semantic_identity: _catalogue_presentation_dto(
             description,
             decoder=runtime_scope.dcs_decoder,
         )
-        for semantic_identity, description in zip(semantic_identities, descriptions)
+        for semantic_identity, description in zip(
+            semantic_identities,
+            descriptions,
+        )
     }
 
 
