@@ -79,6 +79,9 @@ class RequirementDetailResult:
     outcome: RequirementDetailOutcome
     requirement: ConnectivityRequirement | None = None
     read_authority_reference: str | None = None
+    applicability_mutation_admission: TernaryOutcome | None = None
+    justification_mutation_admission: TernaryOutcome | None = None
+    retirement_admission: TernaryOutcome | None = None
 
 
 class GetConnectivityRequirement:
@@ -121,8 +124,31 @@ class GetConnectivityRequirement:
             return RequirementDetailResult(
                 RequirementDetailOutcome.AUTHORITY_UNKNOWN
             )
+        def admission(action: RequirementAuthorityAction) -> TernaryOutcome:
+            result = self._authority.check(
+                actor_id=actor_id,
+                action=action,
+                scope=requirement.governance_scope,
+                effective_time=effective_time,
+            )
+            if (
+                result.outcome is TernaryOutcome.PERMITTED
+                and result.authority_reference is None
+            ):
+                return TernaryOutcome.UNKNOWN
+            return result.outcome
+
         return RequirementDetailResult(
             RequirementDetailOutcome.FOUND,
             requirement=requirement,
             read_authority_reference=authority.authority_reference,
+            applicability_mutation_admission=admission(
+                RequirementAuthorityAction.SET_APPLICABILITY
+            ),
+            justification_mutation_admission=admission(
+                RequirementAuthorityAction.SET_JUSTIFICATION
+            ),
+            retirement_admission=admission(
+                RequirementAuthorityAction.RETIRE
+            ),
         )
