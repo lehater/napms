@@ -16,6 +16,8 @@ from napms.access_policy.application.materialize_rule import (
     SubmitAccessRuleProposal,
 )
 from napms.access_policy.application.ports import (
+    AccessRuleCommitOutcomeUnknown,
+    AccessRulePersistenceError,
     AuthorityCheck,
     ConnectivityDecision,
     DecisionOutcome,
@@ -112,7 +114,7 @@ class RollbackThenFailRepository:
 
     def commit(self):
         self._connection.rollback()
-        raise RuntimeError("simulated failed commit")
+        raise AccessRulePersistenceError()
 
 
 class CommitThenUnknownRepository:
@@ -130,7 +132,7 @@ class CommitThenUnknownRepository:
 
     def commit(self):
         self._delegate.commit()
-        raise RuntimeError("simulated unknown commit acknowledgement")
+        raise AccessRuleCommitOutcomeUnknown()
 
 
 def new_identity():
@@ -207,6 +209,25 @@ def test_unique_constraint_translates_to_semantic_identity_conflict(postgres_dsn
         assert second.find_by_identity(identity) == winner
 
 
+def test_rule_id_collision_is_not_misclassified_as_semantic_identity_conflict(postgres_dsn):
+    winner = new_rule(new_identity(), UUID(int=7))
+    other_identity = new_identity()
+    duplicate_rule_id = new_rule(other_identity, UUID(int=7))
+
+    with psycopg.connect(postgres_dsn) as first_connection:
+        first = PostgresAccessRuleRepository(first_connection)
+        first.add(winner)
+        first.commit()
+
+    with psycopg.connect(postgres_dsn) as second_connection:
+        second = PostgresAccessRuleRepository(second_connection)
+        with pytest.raises(AccessRulePersistenceError) as failure:
+            second.add(duplicate_rule_id)
+
+        assert not isinstance(failure.value, RuleSemanticIdentityConflict)
+        assert second.find_by_identity(other_identity) is None
+
+
 def test_concurrent_identical_materialization_resolves_one_authoritative_rule(postgres_dsn):
     identity = new_identity()
     barrier = Barrier(2)
@@ -255,7 +276,7 @@ def test_failed_commit_is_not_reported_as_materialization_success(postgres_dsn):
     with psycopg.connect(postgres_dsn) as connection:
         delegate = PostgresAccessRuleRepository(connection)
         repository = RollbackThenFailRepository(delegate, connection)
-        with pytest.raises(RuntimeError, match="failed commit"):
+        with pytest.raises(AccessRulePersistenceError):
             use_case(repository, UUID(int=21)).execute(command(identity))
 
     with psycopg.connect(postgres_dsn) as connection:
@@ -268,7 +289,7 @@ def test_unknown_commit_acknowledgement_is_not_reported_as_success(postgres_dsn)
     with psycopg.connect(postgres_dsn) as connection:
         delegate = PostgresAccessRuleRepository(connection)
         repository = CommitThenUnknownRepository(delegate)
-        with pytest.raises(RuntimeError, match="unknown commit acknowledgement"):
+        with pytest.raises(AccessRuleCommitOutcomeUnknown):
             use_case(repository, UUID(int=31)).execute(command(identity))
 
     with psycopg.connect(postgres_dsn) as connection:
