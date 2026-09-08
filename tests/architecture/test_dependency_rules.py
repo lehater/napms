@@ -104,3 +104,38 @@ def test_postgres_modules_do_not_read_or_reference_other_module_schemas():
                 if schema in text:
                     violations.append((path, owned_schema, schema))
     assert violations == []
+
+
+BOUNDED_CONTEXT_CORES = (
+    (
+        ACCESS_POLICY,
+        "napms.access_policy",
+    ),
+    (
+        AUTHORITY_MANAGEMENT,
+        "napms.authority_management",
+    ),
+    (
+        APPLICATION_CATALOGUE,
+        "napms.application_catalogue",
+    ),
+    (
+        RESOURCE_CATALOGUE,
+        "napms.resource_catalogue",
+    ),
+)
+
+
+def test_bounded_context_core_does_not_import_another_bounded_context():
+    violations = []
+    for context_path, owned_prefix in BOUNDED_CONTEXT_CORES:
+        for layer_name in ("domain", "application"):
+            layer = context_path / layer_name
+            for path in layer.rglob("*.py"):
+                for module in imported_modules(path):
+                    if (
+                        module.startswith("napms.")
+                        and not module.startswith(owned_prefix)
+                    ):
+                        violations.append((path, owned_prefix, module))
+    assert violations == []
