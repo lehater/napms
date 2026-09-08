@@ -69,6 +69,18 @@ Application structure used to identify the communicating domain participants rel
 ### Component Deployment
 Concrete deployment of a Component used as one side of an Access Rule / Domain Interaction.
 
+### Catalogue Display Name
+Optional Application Communication Catalogue-owned human-readable presentation metadata for a Component Deployment or immutable DCS revision.
+
+```text
+Catalogue Display Name
+!= Component Deployment identity
+!= DCS revision identity
+!= RuleSemanticIdentity
+```
+
+Changing or omitting a display name does not change proposal validity, Connectivity Decision subject, Access Rule identity, effective desired-policy membership or normalized-policy semantics. Consumers must retain the stable UUID/reference as technical identity and fall back to it when no display name exists.
+
 ### Deployment Resource Binding
 Application Communication Catalogue-owned, time-qualified relation from one Component Deployment to one-or-more stable Resource references used to obtain technical realization from Resource Catalogue.
 
