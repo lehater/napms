@@ -10,7 +10,7 @@ I8 must not redefine Access Policy, Authority, ACC, RC, Export Snapshot or norma
 
 ## Current stage
 
-Web UI refinement is accepted. The current stage is **WP2 — derive the minimum HTTP use-case contract** from the accepted UI journey and existing application semantics before implementing runtime or frontend code.
+Web UI refinement and the minimum HTTP use-case contract are accepted. The current stage is **WP3 — implement the replaceable local login/password authentication boundary** before attaching the HTTP framework.
 
 Accepted:
 - first human-facing consumer: Web UI;
@@ -107,8 +107,8 @@ The first runtime boundary implements:
 ## Work packages
 
 1. **DONE — Web UI refinement.** Accepted personas/authority model, first journey, initial screen inventory, navigation, design system, interaction states, accessibility baseline and implementation-oriented handoff under `docs/ui/`.
-2. **ACTIVE — Minimum HTTP use-case contract.** Derive only the operations/DTOs required by the accepted first UI journey and existing application use cases.
-3. Implement the replaceable local login/password authentication boundary and prove request-payload actor spoofing cannot establish identity.
+2. **DONE — Minimum HTTP use-case contract.** Accepted in `docs/engineering/http-api-contract.md`, including trusted actor/time boundary, proposal composition support, semantic outcome mapping and health/correlation conventions.
+3. **ACTIVE — Local authentication boundary.** Implement replaceable login/password authentication and server-side session identity; prove request-payload actor spoofing cannot establish identity.
 4. Implement the HTTP JSON runtime adapter and wire it through the existing typed configuration/composition root.
 5. Implement JSON representation for normalized policy where required by the accepted first UI/API journeys.
 6. Implement structured JSON logging, correlation/request ID, health/readiness and startup/configuration failure behavior.
@@ -129,7 +129,7 @@ The first runtime boundary implements:
 
 ## Blockers
 
-No current owner/product blocker for WP2.
+No current owner/product blocker for WP3.
 
 Approval/review workflow is explicitly deferred. Reopen the Connectivity Decision Domain before introducing approval actors, lifecycle/statuses or queue semantics.
 
@@ -137,4 +137,4 @@ External IdP integration remains deferred.
 
 ## Next
 
-Derive the minimum HTTP use-case contract for Login + Compose Connectivity + proposal result/Allowed Rule handoff. Then implement the local authentication boundary without expanding into deferred decision workflow.
+Implement the local authentication/session boundary as outer runtime code, with hashed-at-rest local credentials and opaque server-side sessions. Then attach the HTTP adapter to the accepted contract.
