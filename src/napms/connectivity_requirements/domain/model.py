@@ -141,6 +141,19 @@ class RequirementApplicabilityChange:
     governance_scope: str
     authority_reference: str
 
+    def __post_init__(self) -> None:
+        _require_non_empty(self.actor_id, field_name="actor_id")
+        _require_aware(self.effective_time, field_name="effective_time")
+        _require_non_empty(self.governance_scope, field_name="governance_scope")
+        _require_non_empty(
+            self.authority_reference,
+            field_name="authority_reference",
+        )
+        if self.previous_applicability == self.new_applicability:
+            raise RequirementInvariantError(
+                "applicability audit requires a changed value"
+            )
+
 
 @dataclass(frozen=True, slots=True)
 class RequirementJustificationChange:
@@ -152,6 +165,27 @@ class RequirementJustificationChange:
     governance_scope: str
     authority_reference: str
 
+    def __post_init__(self) -> None:
+        _require_non_empty(
+            self.previous_justification,
+            field_name="previous_justification",
+        )
+        _require_non_empty(
+            self.new_justification,
+            field_name="new_justification",
+        )
+        _require_non_empty(self.actor_id, field_name="actor_id")
+        _require_aware(self.effective_time, field_name="effective_time")
+        _require_non_empty(self.governance_scope, field_name="governance_scope")
+        _require_non_empty(
+            self.authority_reference,
+            field_name="authority_reference",
+        )
+        if self.previous_justification == self.new_justification:
+            raise RequirementInvariantError(
+                "justification audit requires a changed value"
+            )
+
 
 @dataclass(frozen=True, slots=True)
 class RequirementLifecycleTransition:
@@ -162,6 +196,22 @@ class RequirementLifecycleTransition:
     effective_time: datetime
     governance_scope: str
     authority_reference: str
+
+    def __post_init__(self) -> None:
+        _require_non_empty(self.actor_id, field_name="actor_id")
+        _require_aware(self.effective_time, field_name="effective_time")
+        _require_non_empty(self.governance_scope, field_name="governance_scope")
+        _require_non_empty(
+            self.authority_reference,
+            field_name="authority_reference",
+        )
+        if not (
+            self.from_state is RequirementLifecycleState.ACTIVE
+            and self.to_state is RequirementLifecycleState.RETIRED
+        ):
+            raise RequirementInvariantError(
+                "I13 lifecycle transition must be Active -> Retired"
+            )
 
 
 @dataclass(frozen=True, slots=True)
