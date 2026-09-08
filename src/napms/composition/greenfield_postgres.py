@@ -8,6 +8,7 @@ import psycopg
 from napms.access_policy.adapters.postgres import PostgresAccessRuleRepository
 from napms.application_catalogue.adapters.access_policy import (
     AccessPolicyCommunicationCatalogueAdapter,
+    AccessPolicyProposalInteractionCatalogueAdapter,
 )
 from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
 from napms.application_catalogue.adapters.policy_export import (
@@ -16,17 +17,24 @@ from napms.application_catalogue.adapters.policy_export import (
 from napms.application_catalogue.adapters.postgres import (
     PostgresApplicationCatalogueRepository,
 )
+from napms.application_catalogue.application.list_interactions import (
+    ListDirectedInteractions,
+)
 from napms.application_catalogue.application.resolve import (
     ResolveApplicationProjection,
     ValidateDirectedInteraction,
 )
 from napms.authority_management.adapters.access_policy import (
     AccessPolicyAuthorityAdapter,
+    AccessPolicyProposalScopeAdapter,
 )
 from napms.authority_management.adapters.postgres import (
     PostgresAuthorityAssignmentRepository,
 )
 from napms.authority_management.application.check_authority import CheckAuthority
+from napms.authority_management.application.list_scopes import (
+    ListEffectiveAuthorityScopes,
+)
 from napms.composition.config import ApplicationConfig
 from napms.resource_catalogue.adapters.policy_export import (
     PolicyExportResourceCatalogueAdapter,
@@ -48,7 +56,9 @@ _MIGRATION_PACKAGES = (
 @dataclass(slots=True)
 class GreenfieldPostgresScope:
     authority: AccessPolicyAuthorityAdapter
+    proposal_scope_discovery: AccessPolicyProposalScopeAdapter
     proposal_catalogue: AccessPolicyCommunicationCatalogueAdapter
+    proposal_interaction_catalogue: AccessPolicyProposalInteractionCatalogueAdapter
     application_projection: PolicyExportApplicationCatalogueAdapter
     resource_projection: PolicyExportResourceCatalogueAdapter
     access_rules: PostgresAccessRuleRepository
@@ -99,6 +109,9 @@ def open_greenfield_scope(
         authority = AccessPolicyAuthorityAdapter(
             checker=CheckAuthority(assignments=authority_repository)
         )
+        proposal_scope_discovery = AccessPolicyProposalScopeAdapter(
+            discovery=ListEffectiveAuthorityScopes(assignments=authority_repository)
+        )
 
         application_repository = PostgresApplicationCatalogueRepository(
             acc_connection
@@ -107,6 +120,9 @@ def open_greenfield_scope(
             validator=ValidateDirectedInteraction(
                 catalogue=application_repository
             )
+        )
+        proposal_interaction_catalogue = AccessPolicyProposalInteractionCatalogueAdapter(
+            discovery=ListDirectedInteractions(catalogue=application_repository)
         )
         application_projection = PolicyExportApplicationCatalogueAdapter(
             resolver=ResolveApplicationProjection(
@@ -123,7 +139,9 @@ def open_greenfield_scope(
 
         yield GreenfieldPostgresScope(
             authority=authority,
+            proposal_scope_discovery=proposal_scope_discovery,
             proposal_catalogue=proposal_catalogue,
+            proposal_interaction_catalogue=proposal_interaction_catalogue,
             application_projection=application_projection,
             resource_projection=resource_projection,
             access_rules=PostgresAccessRuleRepository(access_policy_connection),
