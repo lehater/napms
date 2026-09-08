@@ -1,17 +1,28 @@
-import { LogOut, Network, PanelLeftClose } from "lucide-react"
+import { ListTree, LogOut, Network, PanelLeftClose } from "lucide-react"
 
 import type { Actor } from "@/api"
 import { Button } from "@/components/ui/Button"
 
+type NavKey = "compose" | "rules"
+
 export function AppShell({
   actor,
+  activeNav,
+  onNavigate,
   onLogout,
   children,
 }: {
   actor: Actor
+  activeNav: NavKey
+  onNavigate: (target: NavKey) => void
   onLogout: () => Promise<void>
   children: React.ReactNode
 }) {
+  const navClass = (key: NavKey) =>
+    key === activeNav
+      ? "flex w-full items-center gap-3 rounded-md bg-[#172E50] px-3 py-2.5 text-left text-sm font-semibold text-white"
+      : "flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium text-[#D9E4F2] hover:bg-white/5"
+
   return (
     <div className="min-h-screen bg-[#F5F7FA] md:grid md:grid-cols-[232px_1fr]">
       <aside className="hidden min-h-screen bg-[#0B1628] text-[#D9E4F2] md:flex md:flex-col">
@@ -28,19 +39,45 @@ export function AppShell({
           <div className="px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
             Access Policy
           </div>
-          <div
-            className="flex items-center gap-3 rounded-md bg-[#172E50] px-3 py-2.5 text-sm font-semibold text-white"
-            aria-current="page"
+          <button
+            type="button"
+            className={navClass("compose")}
+            aria-current={activeNav === "compose" ? "page" : undefined}
+            onClick={() => onNavigate("compose")}
           >
             <PanelLeftClose className="size-4" aria-hidden="true" />
             Compose Connectivity
-          </div>
+          </button>
+          <button
+            type="button"
+            className={navClass("rules")}
+            aria-current={activeNav === "rules" ? "page" : undefined}
+            onClick={() => onNavigate("rules")}
+          >
+            <ListTree className="size-4" aria-hidden="true" />
+            Access Rules
+          </button>
         </nav>
       </aside>
 
       <div className="min-w-0">
-        <header className="flex h-16 items-center justify-between border-b border-[#E2E8F0] bg-white px-4 md:px-6">
-          <div className="md:hidden text-sm font-bold text-[#172033]">NAPMS</div>
+        <header className="flex min-h-16 items-center justify-between gap-3 border-b border-[#E2E8F0] bg-white px-4 md:px-6">
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              type="button"
+              className="rounded-md px-2 py-1.5 text-xs font-semibold text-[#334155] hover:bg-[#F1F5F9]"
+              onClick={() => onNavigate("compose")}
+            >
+              Compose
+            </button>
+            <button
+              type="button"
+              className="rounded-md px-2 py-1.5 text-xs font-semibold text-[#334155] hover:bg-[#F1F5F9]"
+              onClick={() => onNavigate("rules")}
+            >
+              Rules
+            </button>
+          </div>
           <div className="ml-auto flex items-center gap-3">
             <div className="hidden text-right sm:block">
               <div className="text-sm font-semibold text-[#172033]">{actor.login}</div>
