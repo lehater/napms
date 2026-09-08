@@ -1,6 +1,6 @@
 # Web UI requirements — accepted I8 refinement
 
-Status: `accepted through I12 Human-readable Catalogue UX`.
+Status: `accepted through I13 My Connectivity Needs workspace`.
 
 Date: 2026-09-09.
 
@@ -23,6 +23,8 @@ Backend routes and DTOs must follow accepted application use cases and UI journe
 The Web UI serves authenticated actors through effective Authority Management permissions for each requested action. Proposal composition uses `ProposeConnectivity`; Access Rule workspace reads use `ReadAccessRule`; state mutation uses `SetRuleOperationalState`.
 
 The UI persona is defined by effective domain authority, not by a hard-coded UI role name. One authenticated actor may have different allowed actions across scopes and times.
+
+I13 adds Connectivity Requirements actions independently from Access Policy actions: declaration/read/applicability/justification/retirement permissions are checked separately by the backend.
 
 The backend remains authoritative for both visibility and action admission. Client-side hiding/disabling is UX only.
 
@@ -140,6 +142,40 @@ Purpose: present the vendor-neutral normalized policy JSON/view for the same exp
 
 The UI presentation must not redefine or omit normalized export meaning. I12 may add catalogue display labels beside normalized rows, but the normalized technical addresses, traffic semantics and provenance remain authoritative.
 
+### 8. My Connectivity Needs
+
+Purpose: declare and manage authoritative Connectivity Requirements visible through explicit Connectivity Requirements authority.
+
+List:
+- readable Source/Destination/DCS labels first, stable IDs second;
+- Dependent Component Deployment;
+- Governance Scope;
+- Applicability;
+- lifecycle `Active | Retired`;
+- justification summary.
+
+Declaration:
+- select one admitted Requirement Governance Scope;
+- search/select one exact ACC-backed directed interaction;
+- select Dependent from the Source/Destination participants only;
+- choose `Ongoing` or absolute `[start,end)` applicability;
+- enter mandatory business justification;
+- submit only stable semantic IDs; actor/time/provenance are server-owned.
+
+Details:
+- immutable Dependent and Required Semantic Interaction;
+- stored Requirement Governance Scope;
+- current applicability and justification;
+- declaration provenance;
+- applicability/justification/lifecycle histories;
+- independent backend-admitted actions for Set Applicability, Set Justification and Retire.
+
+Important:
+- Requirement lifecycle shows only `Active | Retired`;
+- do not display `Pending/Approved/Rejected`;
+- do not claim Requirement is Allowed/Denied or covered/uncovered in I13;
+- Requirement-to-Policy Alignment is I14.
+
 ### Deferred screens
 
 - Dashboard: add after source screens expose real data/metrics.
@@ -152,6 +188,9 @@ The UI presentation must not redefine or omit normalized export meaning. I12 may
 Use a desktop-first enterprise application shell:
 
 ```text
+CONNECTIVITY NEEDS
+  My Connectivity Needs
+
 ACCESS POLICY
   Compose Connectivity
   Access Rules
