@@ -72,11 +72,19 @@ class FakeProposalCatalogue:
 
 
 class FakeDecision:
-    def __init__(self, outcome=DecisionOutcome.ALLOWED, subject_override=None):
+    def __init__(
+        self,
+        outcome=DecisionOutcome.ALLOWED,
+        subject_override=None,
+        error=None,
+    ):
         self.outcome = outcome
         self.subject_override = subject_override
+        self.error = error
 
     def obtain(self, *, subject):
+        if self.error is not None:
+            raise self.error
         return ConnectivityDecision(
             self.outcome,
             self.subject_override or subject,
@@ -208,6 +216,7 @@ def build_client(
     interaction=InteractionOutcome.VALID,
     decision=DecisionOutcome.ALLOWED,
     decision_subject_override=None,
+    decision_error=None,
     commit_error=None,
     application_mode="resolved",
     resource_mode="resolved",
@@ -239,7 +248,11 @@ def build_client(
             authenticator=LocalPasswordAuthenticator(credential),
             sessions=sessions,
             open_scope=open_scope,
-            decisions=FakeDecision(decision, decision_subject_override),
+            decisions=FakeDecision(
+                decision,
+                decision_subject_override,
+                decision_error,
+            ),
             readiness=lambda: readiness,
             clock=lambda: NOW,
         )
@@ -480,3 +493,35 @@ def test_degraded_completion_event_names_dependency(monkeypatch):
     assert response.status_code == 503
     assert events[-1]["outcome"] == "DecisionUnknown"
     assert events[-1]["dependency"] == "ConnectivityDecision"
+
+
+
+def test_unexpected_exception_is_generic_publicly_and_structured_internally(monkeypatch):
+    events = []
+
+    def capture(level, message):
+        events.append(json.loads(message))
+
+    monkeypatch.setattr(http_api_module._LOGGER, "log", capture)
+
+    client = build_client(
+        decision_error=RuntimeError("postgresql://user:secret@internal/db")
+    )
+    login(client)
+    response = client.post(
+        "/api/v1/access-rule-proposals",
+        json=proposal_payload(),
+        headers={"X-Correlation-ID": "request-exception"},
+    )
+
+    assert response.status_code == 500
+    assert response.json()["error"]["code"] == "InternalError"
+    assert "secret" not in response.text
+    assert "postgresql://" not in response.text
+
+    event = events[-1]
+    assert event["outcome"] == "InternalError"
+    assert event["exception"]["class"] == "RuntimeError"
+    serialized = json.dumps(event)
+    assert "secret" not in serialized
+    assert "postgresql://" not in serialized
