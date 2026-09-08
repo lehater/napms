@@ -1,9 +1,13 @@
 from uuid import UUID
 
-from psycopg import Connection
+from psycopg import Connection, Error as PsycopgError
 from psycopg.errors import UniqueViolation
 
-from napms.access_policy.application.ports import RuleSemanticIdentityConflict
+from napms.access_policy.application.ports import (
+    AccessRuleCommitOutcomeUnknown,
+    AccessRulePersistenceError,
+    RuleSemanticIdentityConflict,
+)
 from napms.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
@@ -28,6 +32,7 @@ _COLUMNS = """
     authority_reference,
     catalogue_reference
 """
+_SEMANTIC_IDENTITY_CONSTRAINT = "uq_access_rules_semantic_identity"
 
 
 class PostgresAccessRuleRepository:
@@ -37,31 +42,37 @@ class PostgresAccessRuleRepository:
         self._connection = connection
 
     def find_by_identity(self, identity: RuleSemanticIdentity) -> AccessRule | None:
-        row = self._connection.execute(
-            f"""
-            SELECT {_COLUMNS}
-            FROM napms_access_policy.access_rules
-            WHERE source_component_deployment_id = %s
-              AND destination_component_deployment_id = %s
-              AND dcs_contract_revision_id = %s
-            """,
-            (
-                identity.source_component_deployment_id,
-                identity.destination_component_deployment_id,
-                identity.dcs_contract_revision_id,
-            ),
-        ).fetchone()
+        try:
+            row = self._connection.execute(
+                f"""
+                SELECT {_COLUMNS}
+                FROM napms_access_policy.access_rules
+                WHERE source_component_deployment_id = %s
+                  AND destination_component_deployment_id = %s
+                  AND dcs_contract_revision_id = %s
+                """,
+                (
+                    identity.source_component_deployment_id,
+                    identity.destination_component_deployment_id,
+                    identity.dcs_contract_revision_id,
+                ),
+            ).fetchone()
+        except PsycopgError as exc:
+            raise AccessRulePersistenceError() from exc
         return _to_access_rule(row) if row is not None else None
 
     def get_by_id(self, rule_id: UUID) -> AccessRule | None:
-        row = self._connection.execute(
-            f"""
-            SELECT {_COLUMNS}
-            FROM napms_access_policy.access_rules
-            WHERE rule_id = %s
-            """,
-            (rule_id,),
-        ).fetchone()
+        try:
+            row = self._connection.execute(
+                f"""
+                SELECT {_COLUMNS}
+                FROM napms_access_policy.access_rules
+                WHERE rule_id = %s
+                """,
+                (rule_id,),
+            ).fetchone()
+        except PsycopgError as exc:
+            raise AccessRulePersistenceError() from exc
         return _to_access_rule(row) if row is not None else None
 
     def add(self, rule: AccessRule) -> None:
@@ -101,13 +112,20 @@ class PostgresAccessRuleRepository:
             )
         except UniqueViolation as exc:
             self._connection.rollback()
-            raise RuleSemanticIdentityConflict() from exc
+            if exc.diag.constraint_name == _SEMANTIC_IDENTITY_CONSTRAINT:
+                raise RuleSemanticIdentityConflict() from exc
+            raise AccessRulePersistenceError() from exc
+        except PsycopgError as exc:
+            self._connection.rollback()
+            raise AccessRulePersistenceError() from exc
 
     def commit(self) -> None:
-        # Do not translate an unknown/failed commit into success. The operation
-        # owner may discard the connection; application success is returned only
-        # after this method completes normally.
-        self._connection.commit()
+        try:
+            self._connection.commit()
+        except PsycopgError as exc:
+            # A client-side commit failure can be ambiguous: the server may have
+            # committed even when acknowledgement was lost. Never report success.
+            raise AccessRuleCommitOutcomeUnknown() from exc
 
 
 def _to_access_rule(row: tuple) -> AccessRule:
