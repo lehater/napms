@@ -1,0 +1,173 @@
+[
+  {
+    "id": "wp-resume",
+    "prompt": "Продолжай работу по текущему плану с того места, где остановились.",
+    "expected_skill": "execute-work-package",
+    "not_expected_skills": [
+      "implement-slice",
+      "agent-harness-design"
+    ]
+  },
+  {
+    "id": "wp-next",
+    "prompt": "Посмотри active plan и выполняй следующий незакрытый work package до его gate.",
+    "expected_skill": "execute-work-package",
+    "not_expected_skills": [
+      "resolve-decision"
+    ]
+  },
+  {
+    "id": "wp-status-execute",
+    "prompt": "Восстанови текущую точку проекта из репозитория и продолжи выполнение.",
+    "expected_skill": "execute-work-package",
+    "not_expected_skills": [
+      "skill-design"
+    ]
+  },
+  {
+    "id": "impl-core",
+    "prompt": "Реализуй следующий use case Access Policy по уже принятым контрактам и добавь тесты.",
+    "expected_skill": "implement-slice",
+    "not_expected_skills": [
+      "domain-model-change",
+      "agent-harness-design"
+    ]
+  },
+  {
+    "id": "impl-test-fix",
+    "prompt": "Исправь core implementation, чтобы принятый acceptance case проходил, не меняя семантику.",
+    "expected_skill": "implement-slice",
+    "not_expected_skills": [
+      "resolve-decision"
+    ]
+  },
+  {
+    "id": "impl-port",
+    "prompt": "Добавь реализацию application use case через существующие domain model и ports.",
+    "expected_skill": "implement-slice",
+    "not_expected_skills": [
+      "architecture-review"
+    ]
+  },
+  {
+    "id": "domain-identity",
+    "prompt": "Похоже, технический адрес должен входить в Rule identity. Проверь, не меняет ли это доменную модель.",
+    "expected_skill": "domain-model-change",
+    "not_expected_skills": [
+      "implement-slice"
+    ]
+  },
+  {
+    "id": "domain-bc",
+    "prompt": "Новая ответственность может принадлежать отдельному bounded context. Пересмотри DDD и последствия.",
+    "expected_skill": "domain-model-change",
+    "not_expected_skills": [
+      "architecture-review"
+    ]
+  },
+  {
+    "id": "domain-lifecycle",
+    "prompt": "Требование добавляет новый жизненный цикл Access Rule. Проведи изменение от доменной модели до кода.",
+    "expected_skill": "domain-model-change",
+    "not_expected_skills": [
+      "resolve-decision"
+    ]
+  },
+  {
+    "id": "arch-review",
+    "prompt": "Проведи архитектурное ревью текущего I1 и дай P0-P3 findings.",
+    "expected_skill": "architecture-review",
+    "not_expected_skills": [
+      "implement-slice"
+    ]
+  },
+  {
+    "id": "arch-dependency",
+    "prompt": "Проверь, не нарушает ли новый adapter Clean Architecture и ownership ports.",
+    "expected_skill": "architecture-review",
+    "not_expected_skills": [
+      "domain-model-change"
+    ]
+  },
+  {
+    "id": "arch-gate",
+    "prompt": "Перед закрытием инкремента проверь архитектуру против ADR, ownership и active gate.",
+    "expected_skill": "architecture-review",
+    "not_expected_skills": [
+      "execute-work-package"
+    ]
+  },
+  {
+    "id": "decision-choice",
+    "prompt": "Нужно решить, какой из двух вариантов поведения принять. Факты известны, решение ещё не принято.",
+    "expected_skill": "resolve-decision",
+    "not_expected_skills": [
+      "implement-slice"
+    ]
+  },
+  {
+    "id": "decision-tech",
+    "prompt": "Выбери и зафиксируй один из нескольких архитектурных вариантов с последствиями и ADR.",
+    "expected_skill": "resolve-decision",
+    "not_expected_skills": [
+      "architecture-review"
+    ]
+  },
+  {
+    "id": "decision-unknown",
+    "prompt": "Есть один конкретный To-Be вопрос без принятого ответа. Сравни варианты и вынеси на решение.",
+    "expected_skill": "resolve-decision",
+    "not_expected_skills": [
+      "domain-model-change"
+    ]
+  },
+  {
+    "id": "harness-audit",
+    "prompt": "Проведи аудит всего agent harness репозитория и предложи упрощения.",
+    "expected_skill": "agent-harness-design",
+    "not_expected_skills": [
+      "skill-design",
+      "architecture-review"
+    ]
+  },
+  {
+    "id": "harness-ci",
+    "prompt": "Проверь, правильно ли AGENTS, active plans, skills, validators и Actions образуют единый harness.",
+    "expected_skill": "agent-harness-design",
+    "not_expected_skills": [
+      "implement-slice"
+    ]
+  },
+  {
+    "id": "harness-drift",
+    "prompt": "Новый чат плохо восстанавливает состояние проекта. Найди дефект harness и исправь.",
+    "expected_skill": "agent-harness-design",
+    "not_expected_skills": [
+      "execute-work-package"
+    ]
+  },
+  {
+    "id": "skill-new",
+    "prompt": "Стоит ли этот повторяющийся workflow оформить новым Agent Skill? Проверь trigger boundary.",
+    "expected_skill": "skill-design",
+    "not_expected_skills": [
+      "agent-harness-design"
+    ]
+  },
+  {
+    "id": "skill-overlap",
+    "prompt": "Два Skills пересекаются по назначению. Проведи admission/refactor одного Skill.",
+    "expected_skill": "skill-design",
+    "not_expected_skills": [
+      "resolve-decision"
+    ]
+  },
+  {
+    "id": "skill-routing",
+    "prompt": "Измени описание Skill и обнови routing cases так, чтобы не было overlap.",
+    "expected_skill": "skill-design",
+    "not_expected_skills": [
+      "execute-work-package"
+    ]
+  }
+]
