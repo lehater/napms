@@ -11,6 +11,7 @@ from fastapi import Depends, FastAPI, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from napms.access_policy.application.materialize_rule import (
     MaterializationOutcome,
@@ -264,6 +265,32 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             exc_info=error if error is not None else None,
         )
         return response
+
+    @app.exception_handler(StarletteHTTPException)
+    async def starlette_http_error_handler(
+        request: Request,
+        exc: StarletteHTTPException,
+    ):
+        if exc.status_code == 404:
+            return _error_response(
+                request,
+                status_code=404,
+                code="NotFound",
+                message="The requested resource was not found.",
+            )
+        if exc.status_code == 405:
+            return _error_response(
+                request,
+                status_code=405,
+                code="MethodNotAllowed",
+                message="The requested method is not allowed.",
+            )
+        return _error_response(
+            request,
+            status_code=exc.status_code,
+            code="HttpError",
+            message="The request could not be completed.",
+        )
 
     @app.exception_handler(PublicApiError)
     async def public_api_error_handler(request: Request, exc: PublicApiError):
