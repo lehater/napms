@@ -13,6 +13,13 @@ def _require_aware(value: datetime, *, field_name: str) -> None:
 
 
 @dataclass(frozen=True, slots=True)
+class DirectedInteractionIdentity:
+    source_component_deployment_id: UUID
+    destination_component_deployment_id: UUID
+    dcs_contract_revision_id: UUID
+
+
+@dataclass(frozen=True, slots=True)
 class ComponentDeployment:
     deployment_id: UUID
     provenance_reference: str
