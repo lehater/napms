@@ -7,10 +7,11 @@ name = "napms"
 version = "0.1.0"
 description = "Network Access Policy Management System"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = ["fastapi>=0.141,<1"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0.0"]
+dev = ["pytest>=8.0.0", "httpx>=0.28,<1"]
+runtime = ["uvicorn>=0.52,<1"]
 postgres = ["psycopg[binary]>=3.2,<4"]
 
 [tool.setuptools]
