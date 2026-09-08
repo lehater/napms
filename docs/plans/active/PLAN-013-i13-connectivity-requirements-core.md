@@ -27,7 +27,7 @@ I13 deliberately stops before Requirement-to-Policy Alignment and before Connect
 
 ## Current stage
 
-**WP6 — HTTP contract/runtime.**
+**WP7 — Web UI: My Connectivity Needs.**
 
 Evidence synthesis is complete. Working packet:
 `docs/plans/active/I13-WP1-connectivity-requirements-decision-packet.md`.
@@ -161,7 +161,7 @@ Implement module-owned schema/migration/repository:
 
 ### WP6 — HTTP contract/runtime
 
-Status: `active`.
+Status: `done`.
 
 Add only use-case-oriented endpoints required by the first owner/responsible-user journey.
 
@@ -173,7 +173,7 @@ Trust boundary:
 
 ### WP7 — Web UI: My Connectivity Needs
 
-Status: `planned`.
+Status: `active`.
 
 First UI:
 - navigation entry for Connectivity Requirements;
@@ -243,8 +243,8 @@ I13 is complete only when:
 
 No current owner/product blocker.
 
-No current semantic blocker. WP5 PostgreSQL gate passed. Docker fresh-stack packaging gap was identified and fixed by including the new migration in package data.
+No current semantic blocker. WP6 core/PostgreSQL/Docker/harness/knowledge gates are green, including the fresh-stack migration packaging fix.
 
 ## Next
 
-Implement WP6 AM/ACC adapters, greenfield composition and the use-case-oriented HTTP contract/runtime tests. Preserve the server trust boundary.
+Implement WP7 My Connectivity Needs Web workspace over the accepted I13 HTTP contract; no approval/decision UI.
