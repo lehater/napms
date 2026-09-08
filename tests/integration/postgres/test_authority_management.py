@@ -9,11 +9,13 @@ psycopg = pytest.importorskip("psycopg")
 from napms.access_policy.application.ports import AuthorityAction, TernaryOutcome
 from napms.authority_management.adapters.access_policy import (
     AccessPolicyAuthorityAdapter,
+    AccessPolicyProposalScopeAdapter,
 )
 from napms.authority_management.adapters.postgres import (
     PostgresAuthorityAssignmentRepository,
 )
 from napms.authority_management.application.check_authority import CheckAuthority
+from napms.authority_management.application.list_scopes import ListEffectiveAuthorityScopes
 
 
 pytestmark = pytest.mark.postgres
@@ -183,3 +185,40 @@ def test_database_rejects_invalid_validity_interval(postgres_dsn):
                 valid_from=END,
                 valid_to=START,
             )
+
+
+
+def test_postgres_authority_discovers_only_unambiguous_proposal_scopes(postgres_dsn):
+    with psycopg.connect(postgres_dsn) as connection:
+        seed_assignment(
+            connection,
+            reference_id="proposal-a",
+            action=AuthorityAction.PROPOSE_CONNECTIVITY.value,
+            scope="scope-a",
+        )
+        seed_assignment(
+            connection,
+            reference_id="proposal-b1",
+            action=AuthorityAction.PROPOSE_CONNECTIVITY.value,
+            scope="scope-b",
+        )
+        seed_assignment(
+            connection,
+            reference_id="proposal-b2",
+            action=AuthorityAction.PROPOSE_CONNECTIVITY.value,
+            scope="scope-b",
+        )
+        connection.commit()
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAuthorityAssignmentRepository(connection)
+        adapter = AccessPolicyProposalScopeAdapter(
+            discovery=ListEffectiveAuthorityScopes(assignments=repository)
+        )
+        result = adapter.list_effective_proposal_scopes(
+            actor_id="actor-1",
+            effective_time=START,
+        )
+
+    assert result.permitted_scopes == ("scope-a",)
+    assert result.ambiguous_scopes == ("scope-b",)
