@@ -21,7 +21,7 @@ Effective / Normalized Policy
 
 ## Current stage
 
-**WP1 — catalogue display metadata and authorized presentation read model.**
+**WP7–WP8 — PostgreSQL/runtime/Docker evidence.**
 
 ## Accepted constraints
 
@@ -37,14 +37,14 @@ Effective / Normalized Policy
 
 ## Work packages
 
-1. **ACTIVE — Display metadata model/migration.** Add optional display names to Component Deployment and DCS revision, PostgreSQL migration and local-demo names.
-2. **Catalogue presentation use case.** Add batch description of exact Directed Interaction identities with no generic visibility semantics.
-3. **Proposal interaction search.** Add server-side search over authorized directed interactions and return labels + decoded traffic summaries.
-4. **Rule/API enrichment.** Add presentation descriptors to already-authorized Rule list/details and Effective Desired Policy responses.
-5. **Normalized-policy enrichment.** Add catalogue labels to already-authorized normalized rows without changing normalized traffic/provenance semantics.
-6. **Web UX.** Compose search + readable choices; Rules/Details/Policy views render name first and stable ID second.
-7. **PostgreSQL/runtime evidence.** Prove migration, search, fallback behavior and authorization-before-enrichment.
-8. **Docker demo evidence.** Update local seed and full-stack smoke to assert human-readable catalogue metadata is available.
+1. **DONE — Display metadata model/migration.** Optional Component Deployment/DCS display names, validation, tracked PostgreSQL migration and local-demo names are implemented.
+2. **DONE — Catalogue presentation use case.** Exact-identity batch descriptions preserve order and fail soft on missing labels while requiring exact DCS subject correlation.
+3. **DONE — Proposal interaction search.** Bounded server-side search is wired through the existing authority-first proposal use case.
+4. **DONE — Rule/API enrichment.** Already-authorized proposal/Rule/Effective Policy responses carry optional presentation descriptors.
+5. **DONE — Normalized-policy enrichment.** Authorized normalized rows carry catalogue labels without changing technical/provenance semantics.
+6. **DONE — Web UX.** Compose is searchable/label-first; Rules/Details/Policy views show names first and stable IDs second.
+7. **ACTIVE — PostgreSQL/runtime evidence.** Migration/search/fallback/authorization behavior is covered and being gated.
+8. **ACTIVE — Docker demo evidence.** Local seed and public smoke assert labels/traffic summary.
 9. **Final review/gates.** Run core, PostgreSQL, Web, Docker, harness and knowledge gates; close all P0/P1.
 
 ## Exit criteria
@@ -64,4 +64,4 @@ No current owner/product blocker.
 
 ## Next
 
-Add display metadata migration/domain fields and the exact-identity catalogue presentation read model before changing HTTP/Web DTOs.
+Run core/PostgreSQL/Web/Docker evidence, close P0/P1 findings, then absorb I12 into canonical current state.
