@@ -3,6 +3,8 @@ import { useEffect, useState } from "react"
 import { getSession, login, logout, type Actor } from "@/api"
 import { AppShell } from "@/components/layout/AppShell"
 import { LoginPage } from "@/features/auth/LoginPage"
+import { EffectivePolicyPage } from "@/features/policy/EffectivePolicyPage"
+import { NormalizedPolicyPage } from "@/features/policy/NormalizedPolicyPage"
 import { ComposeConnectivityPage } from "@/features/proposals/ComposeConnectivityPage"
 import { AccessRuleDetailsPage } from "@/features/rules/AccessRuleDetailsPage"
 import { AccessRulesPage } from "@/features/rules/AccessRulesPage"
@@ -11,9 +13,13 @@ type Route =
   | { kind: "compose" }
   | { kind: "rules"; page: number }
   | { kind: "rule"; ruleId: string }
+  | { kind: "effective" }
+  | { kind: "normalized" }
 
 function readRoute(): Route {
   const hash = window.location.hash.replace(/^#/, "")
+  if (hash.startsWith("effective-policy")) return { kind: "effective" }
+  if (hash.startsWith("normalized-policy")) return { kind: "normalized" }
   if (hash.startsWith("access-rules/")) {
     const ruleId = hash.slice("access-rules/".length).split("?")[0]
     if (ruleId) return { kind: "rule", ruleId: decodeURIComponent(ruleId) }
@@ -77,14 +83,29 @@ export function App() {
     )
   }
 
-  const activeNav = route.kind === "compose" ? "compose" : "rules"
+  const activeNav =
+    route.kind === "compose"
+      ? "compose"
+      : route.kind === "effective"
+        ? "effective"
+        : route.kind === "normalized"
+          ? "normalized"
+          : "rules"
 
   return (
     <AppShell
       actor={actor}
       activeNav={activeNav}
       onNavigate={(target) =>
-        navigate(target === "compose" ? "compose" : "access-rules?page=1")
+        navigate(
+          target === "compose"
+            ? "compose"
+            : target === "rules"
+              ? "access-rules?page=1"
+              : target === "effective"
+                ? "effective-policy"
+                : "normalized-policy",
+        )
       }
       onLogout={async () => {
         await logout()
@@ -93,6 +114,14 @@ export function App() {
     >
       {route.kind === "compose" ? (
         <ComposeConnectivityPage />
+      ) : route.kind === "effective" ? (
+        <EffectivePolicyPage
+          onOpenRule={(ruleId) =>
+            navigate(`access-rules/${encodeURIComponent(ruleId)}`)
+          }
+        />
+      ) : route.kind === "normalized" ? (
+        <NormalizedPolicyPage />
       ) : route.kind === "rules" ? (
         <AccessRulesPage
           page={route.page}
