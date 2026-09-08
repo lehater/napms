@@ -37,18 +37,36 @@ Failure semantics: identity mismatch, unknown decision subject or failed Access 
 
 Failure semantics: absent/unknown authority, unknown Rule, same-state request, invalid domain mutation or failed persistence produces no accepted state change. A caller cannot substitute another scope for authorization.
 
-## F3 — Produce Normalized Policy Export
+## F2b — Change Rule EffectiveWindow
 
-1. Actor requests export for an authorized domain-policy selection and logical `asOf`.
-2. Authority Management evaluates read/export authority for scope/time.
-3. Access Policy determines selected effective desired Rules at `asOf`: authoritative from Allowed AND Active AND declarative effective conditions permit.
-4. For every selected effective Rule, Resource Catalogue resolves source/destination technical realization valid for `asOf`.
-5. Application Communication Catalogue supplies referenced DCS protocol/service/port semantics and required valid projection facts.
-6. Export composition verifies temporal coherence and required provenance.
-7. Rules expand to one or more normalized rows as required; Rule/decision/source correlations remain traceable.
-8. Only if every selected effective Rule is truthfully projectable does the operation return `SuccessfulNormalizedPolicyExport(asOf, rows, provenance)`.
+1. Actor requests `SetRuleEffectiveWindow(ruleId, window|None)`; caller does not supply an authority scope.
+2. Access Policy loads the authoritative Rule and obtains its stored RuleGovernanceScope.
+3. Authority Management evaluates `SetRuleEffectiveWindow` authority for that scope/effective time.
+4. Denied/unknown/missing authority produces no property/audit mutation.
+5. Same window value produces explicit no accepted change and no property-change audit.
+6. Access Policy applies the new optional EffectiveWindow while preserving RuleId, semantic identity, governance scope, operational state and Connectivity Decision correlation.
+7. Access Policy records old/new window, actor, effective time, governance scope and authority provenance/reference.
+8. Property change and audit commit atomically.
 
-Failure semantics: missing/stale/unknown required realization or DCS fact for any selected effective Rule yields explicit non-success/degraded diagnostics. Partial diagnostic rows may be returned but are not a successful downstream-ready export.
+Failure semantics: absent/unknown authority, unknown Rule, same value, invalid EffectiveWindow or failed persistence produces no accepted property change.
+
+## F3 — Select effective desired policy and produce Normalized Policy Export
+
+1. Actor requests `SelectEffectiveDesiredPolicy(scope, asOf)`, where scope is one RuleGovernanceScope.
+2. Authority Management evaluates `ReadEffectiveDesiredPolicy` authority for that scope/asOf.
+3. Denied/unknown/missing authority produces no selected policy data.
+4. Access Policy selects authoritative Rules whose stored RuleGovernanceScope equals the authorized scope.
+5. Access Policy keeps only Rules that are Active and whose optional EffectiveWindow permits effect at `asOf` using `start <= asOf < end`.
+6. The resulting effective desired-policy selection is handed to later export composition.
+7. For every selected effective Rule, Resource Catalogue resolves source/destination technical realization valid for `asOf`.
+8. Application Communication Catalogue supplies referenced DCS protocol/service/port semantics and required valid projection facts.
+9. Export composition verifies temporal coherence and required provenance.
+10. Rules expand to one or more normalized rows as required; Rule/decision/source correlations remain traceable.
+11. Only if every selected effective Rule is truthfully projectable does the operation return `SuccessfulNormalizedPolicyExport(asOf, rows, provenance)`.
+
+Failure semantics: unauthorized selection returns no policy data. Missing/stale/unknown required realization or DCS fact for any selected effective Rule yields explicit non-success/degraded diagnostics. Partial diagnostic rows may be returned but are not a successful downstream-ready export.
+
+The first selection is one governance scope at a time. Arbitrary vendor/device/technical filters are not selection-membership authority.
 
 ## F4 — Technical realization changes without semantic Rule change
 
@@ -68,11 +86,13 @@ This flow is the key guardrail separating semantic policy identity from mutable 
 ## Temporal/consistency implications handed to architecture
 
 - Access Policy uniqueness/materialization requires an authoritative atomic consistency point.
-- Access Policy state mutation + audit require one authoritative transactional write boundary.
+- Access Policy state/property mutation + audit require one authoritative transactional write boundary.
 - Successful export requires a credible logical-as-of strategy across Access Policy + Resource Catalogue + Application Communication Catalogue facts; it does not require those facts to share one physical database.
 - Provenance must cross every semantic boundary used in export.
 - Authority checks are action-scoped inputs, not static UI role assumptions.
 - Rule action authorization uses the Rule's authoritative governance scope rather than caller-supplied scope.
+- Effective-policy membership uses the same stored RuleGovernanceScope after read authority is established; caller filters cannot manufacture membership.
+- EffectiveWindow is evaluated against the explicit logical `asOf`; no hidden wall-clock evaluation belongs in Domain/Application.
 - Connectivity Decision is a semantic dependency whose implementation/transport is intentionally unresolved.
 
 ## WP-02 result

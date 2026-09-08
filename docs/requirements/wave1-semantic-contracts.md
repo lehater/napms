@@ -1,6 +1,6 @@
 # Wave-1 semantic contracts — PLAN-026 WP-06
 
-Status: `accepted G2 semantic-contract baseline with I3 Rule-governance refinement`.
+Status: `accepted G2 semantic-contract baseline through I4 effective-policy refinement`.
 
 Date: 2026-09-08.
 
@@ -121,27 +121,45 @@ Rules:
 - `Active <-> Inactive` preserves Rule identity/governance scope/decision coverage and is auditable;
 - same-state request is not an accepted state transition and produces no transition audit;
 - accepted state transition audit must identify who/when/what plus authority provenance sufficient for explanation;
-- schedule/periodicity does not redefine identity/decision subject;
+- first Wave-1 declarative condition is optional `EffectiveWindow(start, end)` with offset-aware instants and half-open semantics `start <= as-of < end`;
+- `start < end` is required; no EffectiveWindow means no time-window restriction;
+- setting/changing/removing EffectiveWindow preserves Rule identity/governance scope/decision coverage and is an authorized, business-audited Rule mutation;
+- same EffectiveWindow value is not an accepted property change and produces no property-change audit;
+- recurring/calendar/cron/frequency-duration condition semantics are deferred;
 - technical realization is not copied into Rule identity.
 
 ## C6 — Access Policy -> Effective Desired Policy selection
 
-Purpose: determine which selected authoritative Rules contribute desired effect at one logical time.
+Purpose: determine which authoritative Rules in one authorized RuleGovernanceScope contribute desired effect at one logical time.
+
+Minimum request:
+
+```text
+SelectEffectiveDesiredPolicy
+    actor
+    scope = RuleGovernanceScope
+    as-of
+```
 
 Minimum rule:
 
 ```text
 contributes_effect =
     authoritative from Allowed
+    AND RuleGovernanceScope == selected scope
     AND Active
-    AND supported declarative effective conditions permit at as-of
+    AND (EffectiveWindow absent OR start <= as-of < end)
 ```
 
 Rules:
-- selected but non-effective Rules emit no export rows;
+- Authority Management must permit action `ReadEffectiveDesiredPolicy` for the requested scope/as-of before policy data is returned;
+- unknown/missing authority fails closed;
+- first implementation selects exactly one RuleGovernanceScope at a time;
+- selected but non-effective Rules emit no downstream projection rows;
 - `Inactive` is not deletion;
 - selection/filtering is domain-policy scoped, not vendor/device scoped;
-- read/export action requires effective Authority Management permission for scope/time.
+- arbitrary caller filters do not establish that a Rule belongs to an authorized selection;
+- evaluation uses the requested logical `as-of`, not hidden wall-clock time.
 
 ## C7 — Resource Catalogue -> Normalized Policy Export
 

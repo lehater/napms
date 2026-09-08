@@ -75,7 +75,7 @@ Active <-> Inactive
 
 First materialization from `Allowed` starts `Active`. `Inactive` is explicit operational suspension: Rule identity/history remain but desired network effect is removed. State transitions are auditable.
 
-Schedule/periodicity and supported frequency/duration semantics are declarative operational Rule data. They do not redefine Rule identity, do not require a new Connectivity Decision by themselves and do not periodically mutate stored `Active/Inactive` state.
+The first supported declarative time condition is optional `EffectiveWindow(start, end)` with half-open semantics `start <= as-of < end`. It does not redefine Rule identity, does not require a new Connectivity Decision by itself and never periodically mutates stored `Active/Inactive` state. Recurring/calendar/cron/frequency-duration semantics are deferred until a material accepted example requires them.
 
 ### Context contributions
 
@@ -98,7 +98,7 @@ Known outcomes:
 - first `Allowed` materialization -> one stable Rule ID, initial state `Active`;
 - repeated same `Allowed` identity -> same Rule ID, no duplicate;
 - identity-defining semantic change -> another Rule + another decision;
-- `Active/Inactive` or schedule change -> same Rule/decision coverage;
+- `Active/Inactive` or EffectiveWindow change -> same Rule/decision coverage;
 - technical realization change -> same Rule; later projection recalculated;
 - ownership/responsibility change -> same identity by itself; authority may change;
 - `Inactive` never deletes the Rule.

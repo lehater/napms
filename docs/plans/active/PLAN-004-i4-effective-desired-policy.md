@@ -8,7 +8,7 @@ Define and implement the minimum accepted Access Policy semantics for declarativ
 
 ## Current stage
 
-Tactical/application refinement before code.
+D1-D3 are accepted and propagated through requirements, acceptance examples, semantic contracts, Tactical DDD, Ubiquitous Language and message flows. Next stage: implement Domain/Application/Ports core for EffectiveWindow mutation/evaluation and authorized one-governance-scope effective-policy selection. No PostgreSQL adaptation is admitted until that core gate passes.
 
 Accepted Wave-1 truth establishes the predicate:
 
@@ -119,9 +119,67 @@ Guardrail:
 - no open P0/P1 semantic, authority, temporal or architecture issue;
 - I4 result is recorded in canonical engineering state.
 
+## Accepted bounded decision
+
+### R1 — First declarative condition: optional absolute EffectiveWindow
+
+Implement exactly one first condition shape:
+
+`EffectiveWindow(start, end)`
+
+Semantics:
+- both boundaries are explicit offset-aware instants;
+- interval is half-open: `start <= asOf < end`;
+- `start < end` is required;
+- no condition means always effective subject to Allowed + Active;
+- the condition does not mutate stored Active/Inactive state.
+
+Explicitly defer recurring/calendar/cron/frequency-duration schedules until a concrete material Wave-1 example requires them. This satisfies E8 with the smallest testable temporal model and avoids inventing timezone/calendar recurrence semantics.
+
+### R2 — Property mutation: SetRuleEffectiveWindow
+
+Add authorized command:
+
+`SetRuleEffectiveWindow(ruleId, window | None, actor, effectiveTime)`
+
+Rules:
+- use the Rule's stored RuleGovernanceScope for current Authority Management evaluation;
+- stable action identity: `SetRuleEffectiveWindow`;
+- changing/removing the window preserves RuleId, RuleSemanticIdentity, RuleGovernanceScope and Connectivity Decision;
+- same value is no accepted change;
+- accepted change is business-audited with RuleId, old/new window, actor, effective action time, governance scope and authority provenance/reference;
+- property state + audit commit atomically;
+- no new Connectivity Decision is required solely for this property change.
+
+This is required to make REQ-W1-006 operational rather than only fixture/test data, and REQ-W1-013 already requires relevant Rule property history.
+
+### R3 — First selection scope: RuleGovernanceScope
+
+First I4 selection command:
+
+`SelectEffectiveDesiredPolicy(scope, asOf, actor)`
+
+Rules:
+- stable authority action identity: `ReadEffectiveDesiredPolicy`;
+- the requested `scope` is a RuleGovernanceScope;
+- after permission is established for that scope/asOf, Access Policy selects authoritative Rules whose stored RuleGovernanceScope equals that scope;
+- include only Rules that are Active and whose EffectiveWindow is absent or true at `asOf`;
+- no arbitrary vendor/device/technical filters;
+- first implementation selects one governance scope at a time; multi-scope composition may combine separately authorized selections later.
+
+This reuses the already accepted stable Rule governance boundary and avoids inventing a second policy-scope taxonomy/mapping with no current evidence.
+
+## Alternatives rejected for first I4 increment
+
+- generic expression/cron/calendar rule engine — unsupported breadth;
+- fixed recurring-period model — forces frequency/timezone/calendar semantics with no accepted example;
+- declarative condition only in tests/fixtures — does not implement "maintain" property behavior or required property history;
+- separate PolicySelectionScope entity/relation — new domain concept without evidence;
+- arbitrary caller filters as selection membership — authorization-substitution risk.
+
 ## Blockers
 
-D1-D3 are explicit Tactical/application decision gates. No I4 product code should be written until they are resolved.
+None currently known.
 
 ## Validation
 

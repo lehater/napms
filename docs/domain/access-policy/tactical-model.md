@@ -1,12 +1,12 @@
 # Access Policy tactical model
 
-Status: `accepted D2 model through I3 operational-state behavior`.
+Status: `accepted D2 model through I4 effective-policy semantics`.
 
 Date: 2026-09-08.
 
 ## Scope
 
-This model defines the Access Policy consistency model required for proposal decision consumption, idempotent Rule materialization and authorized `Active <-> Inactive` operational-state mutation. Deferred Decision Domain, catalogue aggregates and later-wave declarative properties/export models are not designed here.
+This model defines the Access Policy consistency model required for proposal decision consumption, idempotent Rule materialization, authorized `Active <-> Inactive` mutation, the first declarative effective condition and effective desired-policy selection. Deferred Decision Domain, catalogue aggregates, recurring schedule semantics and normalized export projection are not designed here.
 
 ## Value objects
 
@@ -34,6 +34,21 @@ Rules:
 - ownership/responsibility changes do not silently rebind Rule governance scope;
 - a later operation cannot substitute caller-supplied scope for the Rule's stored governance scope.
 
+### EffectiveWindow
+
+Optional absolute time condition on one AccessRule:
+
+`EffectiveWindow(start, end)`
+
+Invariants:
+- `start` and `end` are offset-aware instants;
+- `start < end`;
+- it permits effect exactly when `start <= asOf < end`;
+- absence means no time-window restriction;
+- it does not mutate stored OperationalState.
+
+Recurring/calendar/cron/frequency-duration semantics are not part of the first I4 condition vocabulary.
+
 ## Entity / aggregate boundary
 
 ### AccessRule
@@ -46,12 +61,15 @@ Aggregate root and authoritative business identity:
 - Connectivity Decision correlation/provenance;
 - proposal/authority/catalogue provenance;
 - business audit/provenance required by accepted behavior;
-- later supported declarative operational properties.
+- optional `EffectiveWindow`;
+- EffectiveWindow property-change audit/history.
 
 Invariants:
 - semantic identity cannot change after materialization;
 - Rule governance scope does not silently change through actor/ownership/responsibility changes;
-- operational-state transition preserves RuleId, RuleSemanticIdentity, RuleGovernanceScope and Connectivity Decision correlation.
+- operational-state transition preserves RuleId, RuleSemanticIdentity, RuleGovernanceScope and Connectivity Decision correlation;
+- setting/changing/removing EffectiveWindow preserves the same identities/decision;
+- EffectiveWindow evaluation is pure for an explicit logical `asOf` and does not consult hidden wall-clock time.
 
 ## Materialization domain operation
 
@@ -86,12 +104,51 @@ Application/domain behavior:
 
 A technical log timestamp is not a substitute for the effective business action time/audit record.
 
+## EffectiveWindow mutation
+
+Semantic command:
+
+`SetRuleEffectiveWindow(ruleId, window|None, actor, effectiveTime)`
+
+Behavior:
+
+1. load authoritative Rule by RuleId;
+2. evaluate Authority Management action `SetRuleEffectiveWindow` using the stored RuleGovernanceScope and effective action time;
+3. denied/unknown/missing authority provenance fails closed;
+4. requested value equal to current value returns explicit no accepted change and creates no audit;
+5. accepted change preserves RuleId, RuleSemanticIdentity, RuleGovernanceScope, OperationalState and Connectivity Decision correlation;
+6. accepted change records RuleId, old/new window, actor, effective action time, governance scope and authority provenance/reference;
+7. property change and its audit commit atomically;
+8. no new Connectivity Decision is required solely for this property change.
+
+## Effective desired-policy selection
+
+Semantic query/application command:
+
+`SelectEffectiveDesiredPolicy(scope, asOf, actor)`
+
+where `scope` is one RuleGovernanceScope.
+
+Behavior:
+
+1. Authority Management evaluates action `ReadEffectiveDesiredPolicy` for the requested scope and `asOf`;
+2. denied/unknown/missing authority provenance returns no policy data;
+3. Access Policy considers only authoritative Rules whose stored RuleGovernanceScope equals the authorized requested scope;
+4. an `Inactive` Rule is excluded;
+5. an `Active` Rule with no EffectiveWindow is included;
+6. an `Active` Rule with EffectiveWindow is included exactly when `start <= asOf < end`;
+7. the first implementation selects one governance scope at a time and accepts no arbitrary vendor/device/technical membership filters.
+
+This is an Access Policy semantic selection only; Resource Catalogue/Application Communication Catalogue realization and normalized rows belong to later increments.
+
 ## Commands
 
 - `SubmitAccessRuleProposal(sourceDeploymentId, destinationDeploymentId, dcsRevisionId, actor, scope, effectiveTime)`;
 - internal application step `ConsumeConnectivityDecision(proposalSubject, decision)`;
 - `MaterializeOrResolveAllowedRule(subject, decisionRef)`;
-- `SetRuleOperationalState(ruleId, targetState, actor, effectiveTime)`.
+- `SetRuleOperationalState(ruleId, targetState, actor, effectiveTime)`;
+- `SetRuleEffectiveWindow(ruleId, window|None, actor, effectiveTime)`;
+- `SelectEffectiveDesiredPolicy(scope, asOf, actor)`.
 
 No domain event is required merely for ceremony. Event-driven topology is not implied.
 
@@ -99,7 +156,7 @@ No domain event is required merely for ceremony. Event-driven topology is not im
 
 Correctness requirement for materialization is linearizable enough at the Access Policy authoritative uniqueness boundary that concurrent/retried Allowed materializations for the same semantic identity yield one RuleId and no duplicate authoritative Rules.
 
-Operational-state mutation requires one authoritative transactional write boundary so the Rule state and accepted-transition audit are committed together. Detailed optimistic/pessimistic locking mechanics are infrastructure choices unless evidence requires stronger semantics.
+Operational-state and EffectiveWindow mutations each require one authoritative transactional write boundary so business property state and the corresponding accepted-change audit are committed together. Detailed optimistic/pessimistic locking mechanics are infrastructure choices unless evidence requires stronger semantics.
 
 ## Errors / non-results
 
@@ -109,8 +166,10 @@ Operational-state mutation requires one authoritative transactional write bounda
 - decision subject mismatch -> invariant violation/rejected operation;
 - unknown Rule for state mutation -> explicit not-found outcome, no audit;
 - same operational state requested -> explicit `AlreadyInRequestedState`, no audit;
-- persistence/transient failure -> no reported successful materialization or state mutation unless authoritative outcome is established consistently.
+- same EffectiveWindow requested -> explicit no accepted property change, no audit;
+- denied/unknown effective-policy read authority -> no selected policy data;
+- persistence/transient failure -> no reported successful materialization or mutation unless authoritative outcome is established consistently.
 
 ## Later model growth
 
-Declarative operational properties extend the same AccessRule aggregate when their implementation increment begins. Export reads Access Policy state but does not mutate Rule identity.
+Recurring schedule/periodicity semantics remain deferred until a material accepted example requires them. Normalized export reads effective Access Policy selection but does not mutate Rule identity.
