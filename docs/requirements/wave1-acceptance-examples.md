@@ -99,15 +99,19 @@ Then:
 
 When it is later changed back to `Active`, the same Rule and prior decision coverage remain, subject to current declarative conditions and any explicitly superseding decision contract.
 
-## E8 — Schedule/effective condition
+## E8 — EffectiveWindow condition
 
-Given an allowed `Active` Rule with a supported declarative time condition.
+Given an allowed `Active` Rule with `EffectiveWindow(start, end)`.
 
-At an export `as-of` outside that condition, the Rule contributes no effective desired-policy row.
+Then:
+- at `as-of == start`, the window permits effect;
+- at any `start < as-of < end`, the window permits effect;
+- at `as-of == end` or outside the interval, the window does not permit effect;
+- a Rule with no EffectiveWindow has no time-window restriction.
 
-At an export `as-of` inside that condition, the Rule may contribute rows.
+The interval is therefore `[start, end)`, with explicit offset-aware instants and `start < end`.
 
-The time condition does not periodically toggle the Rule's stored `Active/Inactive` operational state and does not by itself require a new Connectivity Decision.
+Setting, changing or removing the window preserves Rule ID and historical Connectivity Decision and is business-audited. The window never periodically toggles stored `Active/Inactive`.
 
 ## E9 — Complete normalized export
 
