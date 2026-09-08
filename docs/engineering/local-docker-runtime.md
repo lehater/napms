@@ -1,6 +1,6 @@
 # Local Docker runtime
 
-Status: `accepted I11 local-dev packaging contract`.
+Status: `accepted through I12 local-demo presentation refinement`.
 
 Date: 2026-09-09.
 
@@ -66,7 +66,9 @@ Existing module schema ownership is unchanged.
 
 Uses the backend image and runs `napms-seed-local`.
 
-It inserts deterministic local-demo catalogue/resource facts plus Authority assignments for the configured local actor. I12 gives the demo Source, Destination and DCS human-readable display labels so a fresh stack is usable without interpreting UUIDs:
+It inserts deterministic local-demo catalogue/resource facts plus Authority assignments for the configured local actor. I12 gives the demo Source, Destination and DCS human-readable display labels so a fresh stack is usable without interpreting UUIDs.
+
+Current Authority assignments:
 - `ProposeConnectivity`;
 - `ReadAccessRule`;
 - `SetRuleOperationalState`;
