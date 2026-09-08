@@ -1,12 +1,12 @@
 # Current implementation state
 
-Status: `I1 in progress — infrastructure gate closed`.
+Status: `I1 PASS — I2 infrastructure proof may begin under the active plan`.
 
 Date: 2026-09-08.
 
-Current execution is owned by `docs/plans/active/PLAN-001-i1-core-completion.md`; do not mirror its work-package status here.
+Current execution is owned by `docs/plans/active/README.md`; do not mirror its work-package status here.
 
-## Completed before infrastructure
+## Completed through I1
 
 - accepted Wave-1 product/quality/acceptance baseline;
 - accepted Strategic DDD baseline and Access Policy tactical model;
@@ -17,20 +17,23 @@ Current execution is owned by `docs/plans/active/PLAN-001-i1-core-completion.md`
 - logging/observability policy;
 - centralized configuration model;
 - dependency-injection/composition model;
-- migrated core gate executed successfully on a GitHub-hosted runner after the repository became public.
+- Authority port aligned with the accepted G4 action `ProposeConnectivity`;
+- exact catalogue-identity validation and fail-closed dependency behavior;
+- authoritative Rule preservation of decision and proposal/authority/catalogue provenance;
+- repository/UoW port semantics for commit, load-by-RuleId and uniqueness-conflict winner resolution;
+- final I1 model/port/architecture review with no open P0/P1 finding;
+- core and harness gates passed on the I1 closure candidate.
 
-During extraction into NAPMS, the Authority port was aligned with the accepted G4 contract by making the domain action explicit: `ProposeConnectivity`.
+## I1 result
 
-## Remaining I1 closure
+`PASS`.
 
-The final model/port/architecture review must confirm that no P0/P1 semantic/structural issue remains and that the complete candidate state still passes the core gate.
+The executable core now proves the accepted first-slice Domain/Application/Port semantics without claiming production database concurrency. No production framework, persistence implementation, transport adapter or external integration is required to establish I1.
 
-## Infrastructure prohibition
+## Infrastructure gate
 
-Until I1 PASS, do not add:
-- production database/ORM/schema/migrations;
-- production HTTP/FastAPI wiring;
-- real external Authority/Catalogue/Decision adapters;
-- infrastructure-specific mechanisms intended to compensate for unclear core semantics.
+The broad pre-I1 prohibition is lifted only to the scope admitted by the active I2 plan.
 
-After I1 PASS, a new active plan may open I2 infrastructure proof against the accepted ports and semantics.
+I2 may introduce the relational AccessRuleRepository/UoW, schema/migrations and integration tests needed to prove authoritative uniqueness, concurrent retry resolution and rollback/uncertain-outcome behavior. Infrastructure must continue to adapt to the accepted core semantics rather than redefine them.
+
+Production HTTP and external Authority/Catalogue/Decision adapters are introduced only when an active increment explicitly needs and admits them.
