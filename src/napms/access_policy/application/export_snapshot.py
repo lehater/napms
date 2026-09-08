@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
@@ -68,7 +69,7 @@ class ExportSnapshotItem:
 @dataclass(frozen=True, slots=True)
 class SuccessfulExportSnapshot:
     scope: str
-    as_of: object
+    as_of: datetime
     authority_reference: str
     items: tuple[ExportSnapshotItem, ...]
 
@@ -175,7 +176,7 @@ class AssembleExportSnapshot:
     ) -> list[SnapshotDiagnostic]:
         if (
             selection.outcome is not EffectivePolicySelectionOutcome.SELECTED
-            or selection.authority_reference is None
+            or not selection.authority_reference
         ):
             return [
                 SnapshotDiagnostic(
@@ -186,6 +187,27 @@ class AssembleExportSnapshot:
             ]
 
         diagnostics: list[SnapshotDiagnostic] = []
+        if selection.as_of.tzinfo is None or selection.as_of.utcoffset() is None:
+            diagnostics.append(
+                SnapshotDiagnostic(
+                    rule_id=None,
+                    source=SnapshotFactSource.EFFECTIVE_SELECTION,
+                    category=SnapshotFailureCategory.INVALID,
+                )
+            )
+            return diagnostics
+
+        rule_ids = [rule.rule_id for rule in selection.rules]
+        if len(set(rule_ids)) != len(rule_ids):
+            diagnostics.append(
+                SnapshotDiagnostic(
+                    rule_id=None,
+                    source=SnapshotFactSource.EFFECTIVE_SELECTION,
+                    category=SnapshotFailureCategory.INVALID,
+                )
+            )
+            return diagnostics
+
         for rule in selection.rules:
             if rule.governance_scope != selection.scope:
                 diagnostics.append(
