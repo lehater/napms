@@ -27,7 +27,7 @@ I13 deliberately stops before Requirement-to-Policy Alignment and before Connect
 
 ## Current stage
 
-**WP4 — Domain + Application executable core.**
+**WP5 — PostgreSQL persistence.**
 
 Evidence synthesis is complete. Working packet:
 `docs/plans/active/I13-WP1-connectivity-requirements-decision-packet.md`.
@@ -138,7 +138,7 @@ dependency direction and semantic ownership are explicit.
 
 ### WP4 — Domain + Application executable core
 
-Status: `active`.
+Status: `done`.
 
 Implement inside-out:
 - aggregate/value objects;
@@ -151,7 +151,7 @@ Core gate must pass before infrastructure.
 
 ### WP5 — PostgreSQL persistence
 
-Status: `planned`.
+Status: `active`.
 
 Implement module-owned schema/migration/repository:
 - authoritative uniqueness/idempotency from accepted identity;
@@ -243,8 +243,8 @@ I13 is complete only when:
 
 No current owner/product blocker.
 
-No current semantic blocker. WP1-WP3 are accepted; core implementation gate is open.
+No current semantic blocker. WP4 core/harness/knowledge gates passed; PostgreSQL gate is open.
 
 ## Next
 
-Implement WP4 inside-out: Connectivity Requirements Domain -> consumer-owned Application ports/use cases -> executable core tests. Do not add PostgreSQL/HTTP yet.
+Implement WP5 module-owned PostgreSQL schema/repository, tracked migration, active semantic uniqueness/version concurrency and integration evidence.
