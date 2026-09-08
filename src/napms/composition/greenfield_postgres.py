@@ -1,6 +1,5 @@
 from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass
-from importlib.resources import files
 from typing import Iterator
 
 import psycopg
@@ -38,6 +37,7 @@ from napms.authority_management.application.list_scopes import (
     ListEffectiveAuthorityScopes,
 )
 from napms.composition.config import ApplicationConfig
+from napms.composition.postgres_migrations import apply_greenfield_migrations
 from napms.resource_catalogue.adapters.policy_export import (
     PolicyExportResourceCatalogueAdapter,
 )
@@ -45,43 +45,6 @@ from napms.resource_catalogue.adapters.postgres import (
     PostgresResourceCatalogueRepository,
 )
 from napms.resource_catalogue.application.resolve import ResolveResourceRealization
-
-
-_MIGRATION_PACKAGES = (
-    "napms.access_policy.adapters.postgres",
-    "napms.authority_management.adapters.postgres",
-    "napms.application_catalogue.adapters.postgres",
-    "napms.resource_catalogue.adapters.postgres",
-)
-
-
-@dataclass(slots=True)
-class GreenfieldPostgresScope:
-    authority: AccessPolicyAuthorityAdapter
-    proposal_scope_discovery: AccessPolicyProposalScopeAdapter
-    rule_read_scope_discovery: AccessPolicyRuleReadScopeAdapter
-    effective_policy_scope_discovery: AccessPolicyEffectivePolicyReadScopeAdapter
-    proposal_catalogue: AccessPolicyCommunicationCatalogueAdapter
-    proposal_interaction_catalogue: AccessPolicyProposalInteractionCatalogueAdapter
-    application_projection: PolicyExportApplicationCatalogueAdapter
-    resource_projection: PolicyExportResourceCatalogueAdapter
-    access_rules: PostgresAccessRuleRepository
-    dcs_decoder: JsonDcsProjectionCodec
-
-
-def apply_greenfield_migrations(config: ApplicationConfig) -> None:
-    with psycopg.connect(config.postgres.dsn, autocommit=True) as connection:
-        for package in _MIGRATION_PACKAGES:
-            migrations = files(package).joinpath("migrations")
-            for migration in sorted(
-                (
-                    path
-                    for path in migrations.iterdir()
-                    if path.name.endswith(".sql")
-                ),
-                key=lambda path: path.name,
-            ):
-                connection.execute(migration.read_text(encoding="utf-8"))
 
 
 @contextmanager
