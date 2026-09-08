@@ -54,6 +54,15 @@ Required operations:
 - resolve uniqueness conflict/retry safely;
 - load by RuleId for later increments.
 
+## I1 core realization notes
+
+The executable core maps the accepted contracts as follows:
+
+- a permitted `AuthorityCheck.authority_reference` is the opaque reference to the authority evidence for the requested actor/action/scope/effective time; absence fails closed before catalogue or decision calls. Concrete Authority-provider validity payloads remain adapter-specific and are not invented in I1;
+- a valid catalogue answer carries the exact resolved `RuleSemanticIdentity` plus provenance; the application rejects a valid-labelled answer whose identity differs from the requested proposal subject;
+- the authoritative Rule preserves proposal authority/catalogue provenance and the explicit `Allowed` decision result/reference;
+- `AccessRuleRepository` exposes find, insert, load-by-RuleId and operation commit semantics; a typed semantic-identity conflict lets the application resolve the authoritative winner. I1 proves this port behavior with an in-memory fake, while I2 must prove the same guarantee under real relational concurrency/rollback semantics.
+
 ## I1 transport boundary
 
 I1 has no required transport. The application command is exercised directly through Domain/Application tests with fake/in-memory ports.
