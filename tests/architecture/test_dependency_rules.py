@@ -6,7 +6,8 @@ ROOT = Path(__file__).parents[2]
 ACCESS_POLICY = ROOT / "src" / "napms" / "access_policy"
 DOMAIN = ACCESS_POLICY / "domain"
 APPLICATION = ACCESS_POLICY / "application"
-CORE_LAYERS = (DOMAIN, APPLICATION)
+POLICY_EXPORT_APPLICATION = ROOT / "src" / "napms" / "policy_export" / "application"
+CORE_LAYERS = (DOMAIN, APPLICATION, POLICY_EXPORT_APPLICATION)
 FORBIDDEN_INFRASTRUCTURE_ROOTS = (
     "fastapi",
     "psycopg",
@@ -50,6 +51,6 @@ def test_core_does_not_depend_on_adapter_layer():
     for layer in CORE_LAYERS:
         for path in layer.rglob("*.py"):
             for module in imported_modules(path):
-                if module.startswith("napms.access_policy.adapters"):
+                if ".adapters" in module:
                     violations.append((path, module))
     assert violations == []
