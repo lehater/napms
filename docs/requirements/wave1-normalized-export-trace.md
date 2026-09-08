@@ -21,21 +21,24 @@ Configuration Rendering, configured-state reconciliation and provider/device exe
 
 ## Actor / authority
 
-Primary actor: user/operator with effective read/export authority for the selected policy scope.
+Primary actor: user/operator with effective `ReadEffectiveDesiredPolicy` authority for the selected RuleGovernanceScope.
 
-Detailed role naming is not a separate Wave-1 domain rule; Authority Management determines whether the actor may perform the read/export action for that scope/time.
+Detailed role naming is not a separate Wave-1 domain rule; Authority Management determines whether the actor may perform that action for the requested scope/as-of.
 
 ## Effective selection
 
-A selected Rule contributes desired effect only when:
+For the first implementation, Access Policy selects one authorized RuleGovernanceScope at a time.
+
+A Rule contributes desired effect only when:
 
 ```text
 authoritative Rule exists from an Allowed decision
+AND RuleGovernanceScope == selected scope
 AND operational state == Active
-AND supported declarative effective conditions permit effect at export as-of
+AND (EffectiveWindow absent OR start <= export as-of < end)
 ```
 
-`Inactive` or condition-false Rules remain authoritative but are outside the effective desired-policy subset and produce no normalized rows.
+`Inactive`, out-of-window or different-governance-scope Rules remain authoritative but are outside the effective desired-policy subset and produce no normalized rows.
 
 ## One logical export time
 
