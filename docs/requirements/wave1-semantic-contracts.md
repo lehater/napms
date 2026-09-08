@@ -1,8 +1,8 @@
 # Wave-1 semantic contracts — PLAN-026 WP-06
 
-Status: `accepted G2 semantic-contract baseline through I6 normalization refinement`.
+Status: `accepted through I9 Access Rule workspace read semantics`.
 
-Date: 2026-09-08.
+Date: 2026-09-09.
 
 ## Principle
 
@@ -127,6 +127,28 @@ Rules:
 - same EffectiveWindow value is not an accepted property change and produces no property-change audit;
 - recurring/calendar/cron/frequency-duration condition semantics are deferred;
 - technical realization is not copied into Rule identity.
+
+## C5b — Access Policy workspace read contract
+
+Purpose: inspect authoritative Access Rules, including inactive or currently out-of-window Rules, without conflating read and mutation authority.
+
+Minimum request:
+
+```text
+ListAccessRules / GetAccessRule
+    actor
+    effective time
+    Rule ID for detail
+```
+
+Rules:
+- Authority Management action is `ReadAccessRule`;
+- list includes only Rules whose stored RuleGovernanceScope is covered by one unambiguous effective `ReadAccessRule` assignment;
+- ambiguous/denied scopes expose no Rule rows;
+- detail evaluates `ReadAccessRule` against the authoritative Rule's stored governance scope before returning Rule data;
+- read permission does not imply `SetRuleOperationalState`, `SetRuleEffectiveWindow` or `ReadEffectiveDesiredPolicy`;
+- mutation/action admission must be checked separately;
+- workspace reads do not mutate Rule identity/state/properties/audit.
 
 ## C6 — Access Policy -> Effective Desired Policy selection
 
