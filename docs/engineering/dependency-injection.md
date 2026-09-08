@@ -1,12 +1,12 @@
 # Dependency injection and composition model
 
-Status: `accepted pre-infrastructure engineering decision`.
+Status: `accepted and exercised through I7 greenfield PostgreSQL composition`.
 
 Date: 2026-09-08.
 
 ## Purpose
 
-Define dependency direction and object composition before concrete infrastructure adapters are added.
+Define dependency direction and object composition without coupling core semantics to infrastructure/frameworks.
 
 ## Decision
 
@@ -14,56 +14,60 @@ Use **explicit constructor injection** for application dependencies. Domain obje
 
 There is one outer **composition root** for each executable process. It owns:
 1. validated application configuration;
-2. centralized logging/observability setup;
+2. centralized logging/observability setup when the runtime boundary is introduced;
 3. construction of concrete adapters;
 4. construction of application use cases with those adapters;
-5. attachment to transport/scheduler/CLI entrypoints.
+5. attachment to the selected transport/scheduler/CLI entrypoint.
 
-The composition root depends inward. Domain/Application never import the composition root, DI container, FastAPI dependency primitives or adapter implementations.
+The composition root depends inward. Domain/Application never import the composition root, DI container, HTTP framework primitives or adapter implementations.
+
+## I7 concrete composition
+
+The local-dev greenfield PostgreSQL composition constructs:
+- Authority Management PostgreSQL repository -> Authority application checker -> Access Policy authority adapter;
+- Application Communication Catalogue PostgreSQL repository -> proposal and policy-export consumer adapters;
+- Resource Catalogue PostgreSQL repository -> policy-export consumer adapter;
+- Access Policy PostgreSQL repository;
+- strict internal DCS projection codec/decoder.
+
+Each persisted bounded context uses its own repository/schema ownership. No application code performs cross-module SQL.
+
+ACC and RC use separate read-only `REPEATABLE READ` connections for one logical snapshot scope. Access Policy uses its own transactional connection. These are infrastructure mechanics and do not alter Domain/Application semantics.
+
+Connectivity Decision remains an explicit external port dependency in I7 and is supplied by a deterministic test adapter for the controlled end-to-end proof.
 
 ## Ports
 
-Port protocols are owned by the application/module that consumes them. Concrete adapters implement those protocols from the outside. Do not create a global service-locator or a generic `ports` dumping ground shared without ownership.
+Port protocols are owned by the consuming application/module. Cross-bounded-context translation belongs in outer adapters. A bounded context Domain/Application core does not import another bounded context core merely to share a convenient type.
 
-For the current I1 slice, `MaterializeAllowedAccessRule` receives:
-- AuthorityPort;
-- CommunicationCataloguePort;
-- ConnectivityDecisionPort;
-- AccessRuleRepository;
-- RuleId factory.
-
-This explicit dependency list is intentional and testable.
+This rule is executable in architecture tests.
 
 ## Container policy
 
-No DI framework/container is required by the core. If a framework container is later useful for runtime wiring, it is confined to the composition layer and must not become a service locator passed into use cases.
+No DI framework/container is required. If one is later useful, it remains confined to composition and must not become a service locator passed into use cases.
 
 Forbidden:
 - `container.resolve(...)` inside Domain/Application;
 - global mutable dependency registry;
-- hidden module-level adapter singleton accessed by use cases;
+- hidden module-level adapter singleton;
 - framework decorators/types required to instantiate core use cases.
 
 ## Lifetimes
 
-Default lifetime rules:
+Default rules:
 - immutable validated configuration: process lifetime;
 - logging configuration/factory: process lifetime;
-- stateless external clients/adapters: process lifetime when thread/task safe;
-- transaction/UnitOfWork/repository session: operation/request lifetime when persistence arrives;
-- application use case object: may be process lifetime only when dependencies are safe; otherwise operation lifetime;
-- domain aggregates/value objects: normal domain lifetime, never container-managed singletons.
-
-Concrete infrastructure can refine lifetime mechanics but not reverse dependency direction.
+- stateless safe adapters/clients: process lifetime when appropriate;
+- transaction/repository connection: operation/request lifetime;
+- application use case: lifetime follows dependency safety;
+- domain values/aggregates: normal domain lifetime.
 
 ## Tests
 
-Core tests construct use cases directly with fakes/in-memory implementations. They do not boot FastAPI, a DI container or production configuration. Composition tests later verify that the production root wires concrete adapters to the same port contracts.
+Core tests construct use cases directly with fakes/in-memory implementations. PostgreSQL integration tests prove concrete adapter contracts. Composition tests prove the outer root wires real adapters to the accepted ports without reversing dependencies.
 
 ## Cross-cutting concerns
 
-Logging, metrics, tracing, retries and authorization checks must not be injected as an all-purpose context/service locator. Where a cross-cutting behavior belongs at the runtime boundary, use boundary middleware/decorator/composition. Where a use case semantically requires a capability such as Authority, keep it an explicit port dependency.
+Logging, metrics, tracing, retries and authorization must not become an all-purpose context/service locator. Runtime observability belongs at the outer boundary. Business Authority remains an explicit semantic dependency.
 
-## I1 implementation consequence
-
-The existing constructor-injected I1 use case is the accepted direction. A concrete production composition root is intentionally not created until there are production adapters to compose. I1 architecture tests must continue to prevent Domain/Application from importing framework/container/infrastructure packages.
+The first public runtime boundary must implement the structured logging/correlation obligations in `docs/engineering/observability.md`; I7's direct integration harness does not itself select a public transport.
