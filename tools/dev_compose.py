@@ -93,7 +93,7 @@ def authenticated_smoke(
             raise RuntimeError("local demo authority seed is unavailable")
 
 
-def up() -> None:
+def up(*, print_credentials: bool = True) -> None:
     login = os.environ.get("NAPMS_LOCAL_AUTH_LOGIN", "local-admin")
     actor_id = os.environ.get("NAPMS_LOCAL_AUTH_ACTOR_ID", login)
     password = secrets.token_urlsafe(15)
@@ -123,18 +123,24 @@ def up() -> None:
         raise
 
     print(f"NAPMS ready: {base_url}")
-    print(f"Login: {login}")
-    print(f"Password: {password}")
-    print("Password was generated for this run and was not written to disk.")
+    if print_credentials:
+        print(f"Login: {login}")
+        print(f"Password: {password}")
+        print("Password was generated for this run and was not written to disk.")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("action", choices=("up",))
+    parser.add_argument(
+        "--no-print-credentials",
+        action="store_true",
+        help="run authenticated smoke without printing generated credentials",
+    )
     args = parser.parse_args()
 
     if args.action == "up":
-        up()
+        up(print_credentials=not args.no_print_credentials)
 
 
 if __name__ == "__main__":
