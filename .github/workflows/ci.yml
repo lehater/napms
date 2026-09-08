@@ -2,8 +2,14 @@ name: core gate
 
 on:
   pull_request:
-  push:
-    branches: [main]
+    types: [ready_for_review]
+    paths:
+      - "src/**"
+      - "tests/access_policy/**"
+      - "tests/architecture/**"
+      - "pyproject.toml"
+      - "Makefile"
+      - ".github/workflows/ci.yml"
   workflow_dispatch:
 
 jobs:
