@@ -27,9 +27,12 @@ I13 deliberately stops before Requirement-to-Policy Alignment and before Connect
 
 ## Current stage
 
-**WP1 — Tactical DDD evidence synthesis and decision closure.**
+**WP1 — Tactical DDD owner decision gate.**
 
-Implementation/infrastructure gate is closed until the material identity/lifecycle/authority questions below are accepted.
+Evidence synthesis is complete. Working packet:
+`docs/plans/active/I13-WP1-connectivity-requirements-decision-packet.md`.
+
+Implementation/infrastructure gate remains closed until the seven owner choices in that packet are accepted.
 
 ## Inputs
 
@@ -238,16 +241,20 @@ I13 is complete only when:
 
 ## Blockers
 
-Research/Tactical DDD work is unblocked.
+Research synthesis is complete.
 
-Implementation gate blockers:
-- exact aggregate identity is not yet accepted;
-- exact first-slice RequiredSemanticInteraction abstraction level is not yet accepted;
-- lifecycle/amend-vs-new-identity semantics are not yet accepted;
-- minimum Authority action set is not yet accepted.
+Implementation gate blockers are now the seven explicit owner choices in
+`I13-WP1-connectivity-requirements-decision-packet.md`:
+- first-slice Dependent kind;
+- exact interaction abstraction;
+- stable ID + active semantic uniqueness;
+- applicability shape;
+- lifecycle/property mutability;
+- mandatory justification;
+- explicit Authority action granularity.
 
-These are expected WP1 decision questions, not reasons to defer I13.
+No infrastructure/code implementation should begin before these are accepted.
 
 ## Next
 
-Execute WP1 only: synthesize the Connectivity Requirements Tactical model and present the smallest set of owner decisions needed to open the implementation gate.
+Obtain the seven owner decisions in the WP1 decision packet. Then canonicalize the accepted Tactical model/UL before entering WP2 acceptance examples.
