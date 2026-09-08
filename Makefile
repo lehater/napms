@@ -1,7 +1,10 @@
-.PHONY: test harness-check knowledge-check check
+.PHONY: test postgres-test harness-check knowledge-check check
 
 test:
-	python -m pytest -q
+	python -m pytest -q -m "not postgres"
+
+postgres-test:
+	python -m pytest -q -m postgres tests/integration/postgres
 
 harness-check:
 	python tools/validate_harness.py

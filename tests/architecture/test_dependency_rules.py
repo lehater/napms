@@ -3,9 +3,18 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).parents[2]
-CORE = ROOT / "src" / "napms" / "access_policy"
-DOMAIN = CORE / "domain"
-FORBIDDEN_FRAMEWORKS = ("fastapi", "pyodbc", "sqlalchemy", "pydantic", "uvicorn")
+ACCESS_POLICY = ROOT / "src" / "napms" / "access_policy"
+DOMAIN = ACCESS_POLICY / "domain"
+APPLICATION = ACCESS_POLICY / "application"
+CORE_LAYERS = (DOMAIN, APPLICATION)
+FORBIDDEN_INFRASTRUCTURE_ROOTS = (
+    "fastapi",
+    "psycopg",
+    "pyodbc",
+    "sqlalchemy",
+    "pydantic",
+    "uvicorn",
+)
 
 
 def imported_modules(path):
@@ -19,10 +28,11 @@ def imported_modules(path):
 
 def test_access_policy_core_has_no_infrastructure_framework_imports():
     violations = []
-    for path in CORE.rglob("*.py"):
-        for module in imported_modules(path):
-            if module.split(".")[0].lower() in FORBIDDEN_FRAMEWORKS:
-                violations.append((path, module))
+    for layer in CORE_LAYERS:
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if module.split(".")[0].lower() in FORBIDDEN_INFRASTRUCTURE_ROOTS:
+                    violations.append((path, module))
     assert violations == []
 
 
@@ -32,4 +42,14 @@ def test_domain_does_not_depend_on_application_layer():
         for module in imported_modules(path):
             if module.startswith("napms.access_policy.application"):
                 violations.append((path, module))
+    assert violations == []
+
+
+def test_core_does_not_depend_on_adapter_layer():
+    violations = []
+    for layer in CORE_LAYERS:
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if module.startswith("napms.access_policy.adapters"):
+                    violations.append((path, module))
     assert violations == []
