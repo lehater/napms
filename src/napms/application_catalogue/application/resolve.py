@@ -1,15 +1,15 @@
+import json
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from hashlib import sha256
 
-from napms.access_policy.domain.model import RuleSemanticIdentity
 from napms.application_catalogue.application.ports import (
     ApplicationCatalogueRepository,
 )
 from napms.application_catalogue.domain.model import (
     CatalogueInvariantError,
     DeploymentResourceBinding,
+    DirectedInteractionIdentity,
 )
 
 
@@ -23,14 +23,14 @@ class CatalogueResolutionOutcome(str, Enum):
 @dataclass(frozen=True, slots=True)
 class DirectedInteractionResolution:
     outcome: CatalogueResolutionOutcome
-    identity: RuleSemanticIdentity | None = None
+    identity: DirectedInteractionIdentity | None = None
     provenance_reference: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
 class ApplicationProjectionResolution:
     outcome: CatalogueResolutionOutcome
-    subject: RuleSemanticIdentity | None = None
+    subject: DirectedInteractionIdentity | None = None
     as_of: datetime | None = None
     source_resource_references: tuple[str, ...] = ()
     destination_resource_references: tuple[str, ...] = ()
@@ -52,7 +52,7 @@ class ValidateDirectedInteraction:
     def execute(
         self,
         *,
-        identity: RuleSemanticIdentity,
+        identity: DirectedInteractionIdentity,
         effective_time: datetime,
     ) -> DirectedInteractionResolution:
         _require_aware(effective_time)
@@ -81,7 +81,7 @@ class ResolveApplicationProjection:
     def execute(
         self,
         *,
-        subject: RuleSemanticIdentity,
+        subject: DirectedInteractionIdentity,
         as_of: datetime,
     ) -> ApplicationProjectionResolution:
         _require_aware(as_of)
@@ -118,18 +118,6 @@ class ResolveApplicationProjection:
                 key=lambda binding: binding.reference_id,
             )
         )
-        binding_ids = ",".join(binding.reference_id for binding in all_bindings)
-        validity_reference = f"acc-bindings:{binding_ids}"
-        fact_material = (
-            f"{dcs.revision_id}|{subject.source_component_deployment_id}|"
-            f"{subject.destination_component_deployment_id}|{binding_ids}"
-        ).encode("utf-8")
-        provenance_material = (
-            dcs.provenance_reference
-            + "|"
-            + "|".join(binding.provenance_reference for binding in all_bindings)
-        ).encode("utf-8")
-
         return ApplicationProjectionResolution(
             CatalogueResolutionOutcome.RESOLVED,
             subject=subject,
@@ -137,10 +125,49 @@ class ResolveApplicationProjection:
             source_resource_references=source_refs,
             destination_resource_references=destination_refs,
             projection_payload=dcs.projection_payload,
-            fact_reference=f"acc-projection:{sha256(fact_material).hexdigest()}",
-            validity_reference=validity_reference,
-            provenance_reference=(
-                f"acc-provenance:{sha256(provenance_material).hexdigest()}"
+            fact_reference=_canonical_evidence(
+                "acc-projection",
+                {
+                    "dcsRevisionId": str(dcs.revision_id),
+                    "sourceDeploymentId": str(subject.source_component_deployment_id),
+                    "destinationDeploymentId": str(
+                        subject.destination_component_deployment_id
+                    ),
+                    "bindingReferences": [
+                        binding.reference_id for binding in all_bindings
+                    ],
+                },
+            ),
+            validity_reference=_canonical_evidence(
+                "acc-validity",
+                {
+                    "bindings": [
+                        {
+                            "referenceId": binding.reference_id,
+                            "resourceReference": binding.resource_reference,
+                            "validFrom": binding.valid_from.isoformat(),
+                            "validTo": (
+                                binding.valid_to.isoformat()
+                                if binding.valid_to is not None
+                                else None
+                            ),
+                        }
+                        for binding in all_bindings
+                    ]
+                },
+            ),
+            provenance_reference=_canonical_evidence(
+                "acc-provenance",
+                {
+                    "dcsProvenance": dcs.provenance_reference,
+                    "bindings": [
+                        {
+                            "referenceId": binding.reference_id,
+                            "provenance": binding.provenance_reference,
+                        }
+                        for binding in all_bindings
+                    ],
+                },
             ),
         )
 
@@ -151,7 +178,10 @@ def _validated_resource_references(
 ) -> tuple[str, ...] | None:
     seen: set[str] = set()
     result: list[str] = []
-    for binding in sorted(bindings, key=lambda value: (value.resource_reference, value.reference_id)):
+    for binding in sorted(
+        bindings,
+        key=lambda value: (value.resource_reference, value.reference_id),
+    ):
         if not binding.is_effective_at(as_of):
             return None
         if binding.resource_reference in seen:
@@ -159,3 +189,15 @@ def _validated_resource_references(
         seen.add(binding.resource_reference)
         result.append(binding.resource_reference)
     return tuple(result)
+
+
+def _canonical_evidence(prefix: str, payload: dict) -> str:
+    return (
+        f"{prefix}:v1:"
+        + json.dumps(
+            payload,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        )
+    )
