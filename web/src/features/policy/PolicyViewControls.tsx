@@ -114,6 +114,7 @@ export function PolicyViewControls({
         >
           <input
             type="datetime-local"
+            step="1"
             value={asOf}
             onChange={(event) => setAsOf(event.target.value)}
             className="min-h-10 w-full rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm"
