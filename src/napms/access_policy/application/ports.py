@@ -11,6 +11,7 @@ class AuthorityAction(str, Enum):
     PROPOSE_CONNECTIVITY = "ProposeConnectivity"
     SET_RULE_OPERATIONAL_STATE = "SetRuleOperationalState"
     SET_RULE_EFFECTIVE_WINDOW = "SetRuleEffectiveWindow"
+    READ_ACCESS_RULE = "ReadAccessRule"
     READ_EFFECTIVE_DESIRED_POLICY = "ReadEffectiveDesiredPolicy"
 
 
@@ -87,6 +88,21 @@ class ProposalAuthorityDiscoveryPort(Protocol):
     ) -> ProposalScopeOptions: ...
 
 
+@dataclass(frozen=True, slots=True)
+class AccessRuleReadScopeOptions:
+    permitted_scopes: tuple[str, ...]
+    ambiguous_scopes: tuple[str, ...]
+
+
+class AccessRuleReadAuthorityDiscoveryPort(Protocol):
+    def list_effective_read_rule_scopes(
+        self,
+        *,
+        actor_id: str,
+        effective_time: datetime,
+    ) -> AccessRuleReadScopeOptions: ...
+
+
 class ProposalInteractionCataloguePort(Protocol):
     def list_directed_interactions(
         self,
@@ -121,6 +137,13 @@ class AccessRuleRepository(Protocol):
     def find_by_identity(self, identity: RuleSemanticIdentity) -> AccessRule | None: ...
     def get_by_id(self, rule_id: UUID) -> AccessRule | None: ...
     def list_by_governance_scope(self, scope: str) -> tuple[AccessRule, ...]: ...
+    def list_by_governance_scopes(
+        self,
+        scopes: tuple[str, ...],
+        *,
+        offset: int,
+        limit: int,
+    ) -> tuple[AccessRule, ...]: ...
     def add(self, rule: AccessRule) -> None: ...
     def save(self, rule: AccessRule) -> None: ...
     def commit(self) -> None: ...

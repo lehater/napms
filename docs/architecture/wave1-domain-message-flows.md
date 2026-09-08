@@ -23,6 +23,17 @@ Flows name semantic requests/results/queries and owners. They do not choose sync
 
 Failure semantics: identity mismatch, unknown decision subject or failed Access Policy invariants must not materialize a Rule. Retries/concurrency must not create duplicates.
 
+## F1b — Read Access Rule workspace
+
+1. Actor requests an Access Rule list or one Rule detail.
+2. For list, Authority Management resolves effective `ReadAccessRule` scopes for the actor/effective time.
+3. Access Policy returns only Rules whose stored RuleGovernanceScope is in the unambiguously permitted read-scope set.
+4. Ambiguous/denied scopes expose no Rules.
+5. For detail, Access Policy loads by RuleId and evaluates `ReadAccessRule` against the Rule's stored governance scope before returning Rule data.
+6. Mutation admission is independent: `SetRuleOperationalState` is evaluated separately when the UI needs to offer that action.
+
+Failure semantics: unknown Rule -> explicit not found; denied/unknown read authority -> no Rule data; read permission never implies mutation permission.
+
 ## F2 — Change Rule operational state
 
 1. Actor requests `SetRuleOperationalState(ruleId, Active|Inactive)`; caller does not supply an authority scope.
@@ -94,6 +105,7 @@ This flow is the key guardrail separating semantic policy identity from mutable 
 - Provenance must cross every semantic boundary used in export.
 - Authority checks are action-scoped inputs, not static UI role assumptions.
 - Rule action authorization uses the Rule's authoritative governance scope rather than caller-supplied scope.
+- Workspace Rule reads use explicit `ReadAccessRule`; read authority and mutation authority are independent.
 - Effective-policy membership uses the same stored RuleGovernanceScope after read authority is established; caller filters cannot manufacture membership.
 - EffectiveWindow is evaluated against the explicit logical `asOf`; no hidden wall-clock evaluation belongs in Domain/Application.
 - ComponentDeployment -> Resource-reference binding is owned by Application Communication Catalogue; Resource Catalogue resolves realization only for stable Resource references.

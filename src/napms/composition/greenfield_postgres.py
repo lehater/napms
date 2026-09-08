@@ -27,6 +27,7 @@ from napms.application_catalogue.application.resolve import (
 from napms.authority_management.adapters.access_policy import (
     AccessPolicyAuthorityAdapter,
     AccessPolicyProposalScopeAdapter,
+    AccessPolicyRuleReadScopeAdapter,
 )
 from napms.authority_management.adapters.postgres import (
     PostgresAuthorityAssignmentRepository,
@@ -57,6 +58,7 @@ _MIGRATION_PACKAGES = (
 class GreenfieldPostgresScope:
     authority: AccessPolicyAuthorityAdapter
     proposal_scope_discovery: AccessPolicyProposalScopeAdapter
+    rule_read_scope_discovery: AccessPolicyRuleReadScopeAdapter
     proposal_catalogue: AccessPolicyCommunicationCatalogueAdapter
     proposal_interaction_catalogue: AccessPolicyProposalInteractionCatalogueAdapter
     application_projection: PolicyExportApplicationCatalogueAdapter
@@ -112,6 +114,9 @@ def open_greenfield_scope(
         proposal_scope_discovery = AccessPolicyProposalScopeAdapter(
             discovery=ListEffectiveAuthorityScopes(assignments=authority_repository)
         )
+        rule_read_scope_discovery = AccessPolicyRuleReadScopeAdapter(
+            discovery=ListEffectiveAuthorityScopes(assignments=authority_repository)
+        )
 
         application_repository = PostgresApplicationCatalogueRepository(
             acc_connection
@@ -140,6 +145,7 @@ def open_greenfield_scope(
         yield GreenfieldPostgresScope(
             authority=authority,
             proposal_scope_discovery=proposal_scope_discovery,
+            rule_read_scope_discovery=rule_read_scope_discovery,
             proposal_catalogue=proposal_catalogue,
             proposal_interaction_catalogue=proposal_interaction_catalogue,
             application_projection=application_projection,

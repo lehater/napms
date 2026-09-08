@@ -1,8 +1,8 @@
 # Access Policy tactical model
 
-Status: `accepted D2 model through I4 effective-policy semantics`.
+Status: `accepted through I9 Access Rule workspace read semantics`.
 
-Date: 2026-09-08.
+Date: 2026-09-09.
 
 ## Scope
 
@@ -85,6 +85,28 @@ Invariants:
 
 The database uniqueness constraint is a persistence enforcement of the domain invariant, not the source of its meaning.
 
+## Access Rule workspace read
+
+Semantic queries:
+
+`ListAccessRules(actor, effectiveTime, page, pageSize)`
+
+`GetAccessRule(ruleId, actor, effectiveTime)`
+
+Authority action: `ReadAccessRule`.
+
+Behavior:
+1. workspace read authority is evaluated independently from mutation authority;
+2. list returns only authoritative Rules whose stored `RuleGovernanceScope` is covered by one unambiguous effective `ReadAccessRule` authority assignment for the actor/effective time;
+3. ambiguous read authority fails closed for that scope and does not expose Rules from it;
+4. detail loads the authoritative Rule by RuleId, then evaluates `ReadAccessRule` against that Rule's stored governance scope;
+5. denied/unknown/missing read authority returns no Rule data;
+6. read authority does not imply `SetRuleOperationalState` or `SetRuleEffectiveWindow`;
+7. a details response may separately expose admitted actions only after their own Authority Management checks;
+8. list paging is over the authorized Rule set and must not require the caller to supply a trusted governance scope.
+
+Reading a Rule does not change Rule identity, state, EffectiveWindow, decision correlation or business audit.
+
 ## Operational-state mutation
 
 Semantic command:
@@ -146,6 +168,8 @@ This is an Access Policy semantic selection only; Resource Catalogue/Application
 - `SubmitAccessRuleProposal(sourceDeploymentId, destinationDeploymentId, dcsRevisionId, actor, scope, effectiveTime)`;
 - internal application step `ConsumeConnectivityDecision(proposalSubject, decision)`;
 - `MaterializeOrResolveAllowedRule(subject, decisionRef)`;
+- `ListAccessRules(actor, effectiveTime, page, pageSize)`;
+- `GetAccessRule(ruleId, actor, effectiveTime)`;
 - `SetRuleOperationalState(ruleId, targetState, actor, effectiveTime)`;
 - `SetRuleEffectiveWindow(ruleId, window|None, actor, effectiveTime)`;
 - `SelectEffectiveDesiredPolicy(scope, asOf, actor)`.
@@ -164,6 +188,8 @@ Operational-state and EffectiveWindow mutations each require one authoritative t
 - structurally invalid/unknown interaction -> no valid proposal;
 - decision NotAllowed -> no Rule;
 - decision subject mismatch -> invariant violation/rejected operation;
+- unknown Rule for workspace detail -> explicit not-found outcome, no Rule data;
+- denied/unknown `ReadAccessRule` -> no Rule data;
 - unknown Rule for state mutation -> explicit not-found outcome, no audit;
 - same operational state requested -> explicit `AlreadyInRequestedState`, no audit;
 - same EffectiveWindow requested -> explicit no accepted property change, no audit;

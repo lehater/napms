@@ -570,6 +570,30 @@ def test_repository_lists_exact_governance_scope(postgres_dsn):
     assert rules == (scope_one,)
 
 
+def test_repository_pages_rules_across_authorized_governance_scopes(postgres_dsn):
+    scope_a = new_rule(rule_id=UUID(int=61), scope="scope-a")
+    scope_b = new_rule(rule_id=UUID(int=62), scope="scope-b")
+    scope_c = new_rule(rule_id=UUID(int=63), scope="scope-c")
+    for rule in (scope_a, scope_b, scope_c):
+        persist_rule(postgres_dsn, rule)
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAccessRuleRepository(connection)
+        first = repository.list_by_governance_scopes(
+            ("scope-a", "scope-c"),
+            offset=0,
+            limit=1,
+        )
+        second = repository.list_by_governance_scopes(
+            ("scope-a", "scope-c"),
+            offset=1,
+            limit=2,
+        )
+
+    assert first == (scope_a,)
+    assert second == (scope_c,)
+
+
 def test_effective_window_round_trip_preserves_identity_state_decision_and_audit(
     postgres_dsn,
 ):

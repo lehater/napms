@@ -1,8 +1,8 @@
-# HTTP API contract — I8 first Web UI boundary
+# HTTP API contract — Web UI boundary
 
-Status: `accepted I8 minimum use-case contract`.
+Status: `accepted through I9 Operational Web Workspace`.
 
-Date: 2026-09-08.
+Date: 2026-09-09.
 
 ## Purpose
 
@@ -24,7 +24,7 @@ Untrusted request data:
 - DCS revision ID;
 - filters/pagination.
 
-Neither `actorId` nor command `effectiveTime` is accepted from proposal request JSON.
+Neither `actorId` nor command `effectiveTime` is accepted from proposal or Rule-mutation request JSON. Rule mutation also never accepts caller-supplied governance scope; the authoritative Rule owns it.
 
 ## Public conventions
 
@@ -193,6 +193,81 @@ HTTP `200`.
 
 `NotAllowed` is a normal business result and never becomes `403`.
 
+## Access Rule workspace
+
+### GET /api/v1/access-rules
+
+Purpose: list authoritative Access Rules visible through explicit `ReadAccessRule` authority.
+
+Query:
+- `page` — optional, default 1;
+- `pageSize` — optional bounded page size.
+
+The runtime supplies actor identity and effective time. Authority Management discovers unambiguous effective `ReadAccessRule` scopes. Only Rules whose stored `RuleGovernanceScope` is in that permitted set are returned.
+
+Success: `200`.
+
+```json
+{
+  "items": [
+    {
+      "ruleId": "uuid",
+      "semanticIdentity": {
+        "sourceComponentDeploymentId": "uuid",
+        "destinationComponentDeploymentId": "uuid",
+        "dcsContractRevisionId": "uuid"
+      },
+      "governanceScope": "scope-a",
+      "operationalState": "Active",
+      "effectiveWindow": null,
+      "decisionReference": "decision-ref"
+    }
+  ],
+  "page": 1,
+  "pageSize": 50,
+  "hasMore": false,
+  "ambiguousScopes": []
+}
+```
+
+Ambiguous scopes are fail-closed and never contribute Rule rows.
+
+### GET /api/v1/access-rules/{ruleId}
+
+Purpose: inspect one authoritative Rule.
+
+Backend loads the Rule and evaluates `ReadAccessRule` against its stored governance scope before returning Rule data. It separately evaluates `SetRuleOperationalState` to expose action admission.
+
+Success: `200` with:
+- complete Rule identity/state/effective-window/decision data;
+- proposal provenance;
+- operational-state and EffectiveWindow business history;
+- `capabilities.setOperationalState = Permitted | Denied | Unknown`.
+
+Read permission does not imply mutation permission.
+
+### PATCH /api/v1/access-rules/{ruleId}/operational-state
+
+Purpose: execute the existing `SetRuleOperationalState` application command.
+
+Request:
+
+```json
+{
+  "targetState": "Inactive"
+}
+```
+
+The request does not accept `actorId`, governance scope or effective time. Backend uses authenticated session actor, runtime time and the Rule's stored governance scope.
+
+Outcomes:
+- `Updated` -> `200` with updated Rule;
+- `AlreadyInRequestedState` -> `200`, no accepted transition/audit;
+- Rule not found -> `404 RuleNotFound`;
+- authority denied -> `403 AuthorityDenied`;
+- authority unknown -> `409 AuthorityUnknown`;
+- persistence failure/uncertain commit -> existing `503` mappings.
+
 ## Error envelope and transport mapping
 
 Public errors use:
@@ -335,8 +410,7 @@ Not part of the first vertical slice:
 - approval/review routes;
 - persistent Access Request CRUD;
 - generic ACC/RC/Authority administration;
-- Access Rule list/details until an admitted read-authority use case is defined;
-- Active/Inactive and EffectiveWindow mutation routes until the corresponding UI slice is taken;
+- EffectiveWindow mutation route until the corresponding UI slice is taken;
 - Effective Desired Policy and Normalized Policy routes until UI-3;
 - CSV/XLSX;
 - device/provider execution.

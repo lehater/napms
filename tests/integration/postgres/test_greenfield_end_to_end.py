@@ -15,17 +15,27 @@ from napms.access_policy.application.ports import (
     ConnectivityDecision,
     DecisionOutcome,
 )
+from napms.access_policy.application.read_rules import (
+    AccessRuleDetailOutcome,
+    GetAuthorizedAccessRule,
+    ListAuthorizedAccessRules,
+)
 from napms.access_policy.application.proposal_options import (
     DiscoverProposalInteractions,
     DiscoverProposalScopes,
     ProposalInteractionDiscoveryOutcome,
+)
+from napms.access_policy.application.set_operational_state import (
+    OperationalStateMutationOutcome,
+    SetAccessRuleOperationalState,
+    SetRuleOperationalState,
 )
 from napms.access_policy.application.select_effective_policy import (
     EffectivePolicySelectionOutcome,
     SelectAccessPolicyEffectiveDesiredPolicy,
     SelectEffectiveDesiredPolicy,
 )
-from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.access_policy.domain.model import OperationalState, RuleSemanticIdentity
 from napms.application_catalogue.adapters.dcs_json_codec import (
     JsonDcsProjectionCodec,
 )
@@ -147,7 +157,15 @@ def dcs_payload():
     )
 
 
-def seed_authority(connection, *, propose=True, read=True, overlap_propose=False):
+def seed_authority(
+    connection,
+    *,
+    propose=True,
+    read=True,
+    read_rule=True,
+    mutate_rule=True,
+    overlap_propose=False,
+):
     rows = []
     if propose:
         rows.append(
@@ -183,6 +201,30 @@ def seed_authority(connection, *, propose=True, read=True, overlap_propose=False
                 VALID_FROM,
                 VALID_TO,
                 "authority-provenance-read-1",
+            )
+        )
+    if read_rule:
+        rows.append(
+            (
+                "authority-read-rule-1",
+                ACTOR,
+                "ReadAccessRule",
+                SCOPE,
+                VALID_FROM,
+                VALID_TO,
+                "authority-provenance-read-rule-1",
+            )
+        )
+    if mutate_rule:
+        rows.append(
+            (
+                "authority-mutate-rule-1",
+                ACTOR,
+                "SetRuleOperationalState",
+                SCOPE,
+                VALID_FROM,
+                VALID_TO,
+                "authority-provenance-mutate-rule-1",
             )
         )
     for row in rows:
@@ -385,6 +427,8 @@ def seed_greenfield(
     *,
     propose=True,
     read=True,
+    read_rule=True,
+    mutate_rule=True,
     overlap_propose=False,
     include_dcs=True,
     dcs_source=SOURCE,
@@ -397,6 +441,8 @@ def seed_greenfield(
             connection,
             propose=propose,
             read=read,
+            read_rule=read_rule,
+            mutate_rule=mutate_rule,
             overlap_propose=overlap_propose,
         )
         seed_acc(
@@ -452,6 +498,68 @@ def snapshot(scope, selection):
         application_catalogue=scope.application_projection,
         resource_catalogue=scope.resource_projection,
     ).execute(selection)
+
+
+def test_greenfield_access_rule_workspace_read_and_state_mutation(
+    postgres_dsn,
+    greenfield_config,
+):
+    seed_greenfield(postgres_dsn)
+
+    with open_greenfield_scope(greenfield_config) as scope:
+        assert materialize(scope).outcome is MaterializationOutcome.MATERIALIZED
+
+        page = ListAuthorizedAccessRules(
+            read_authority=scope.rule_read_scope_discovery,
+            rules=scope.access_rules,
+        ).execute(
+            actor_id=ACTOR,
+            effective_time=AS_OF,
+        )
+        assert tuple(rule.rule_id for rule in page.rules) == (RULE_ID,)
+        assert page.ambiguous_scopes == ()
+
+        detail = GetAuthorizedAccessRule(
+            authority=scope.authority,
+            rules=scope.access_rules,
+        ).execute(
+            rule_id=RULE_ID,
+            actor_id=ACTOR,
+            effective_time=AS_OF,
+        )
+        assert detail.outcome is AccessRuleDetailOutcome.FOUND
+        assert detail.state_mutation_admission.value == "Permitted"
+
+        mutation = SetAccessRuleOperationalState(
+            authority=scope.authority,
+            rules=scope.access_rules,
+        ).execute(
+            SetRuleOperationalState(
+                rule_id=RULE_ID,
+                target_state=OperationalState.INACTIVE,
+                actor_id=ACTOR,
+                effective_time=AS_OF,
+            )
+        )
+        assert mutation.outcome is OperationalStateMutationOutcome.UPDATED
+
+    with open_greenfield_scope(greenfield_config) as scope:
+        persisted = GetAuthorizedAccessRule(
+            authority=scope.authority,
+            rules=scope.access_rules,
+        ).execute(
+            rule_id=RULE_ID,
+            actor_id=ACTOR,
+            effective_time=AS_OF,
+        )
+
+    assert persisted.outcome is AccessRuleDetailOutcome.FOUND
+    assert persisted.rule.operational_state is OperationalState.INACTIVE
+    assert len(persisted.rule.operational_state_history) == 1
+    transition = persisted.rule.operational_state_history[0]
+    assert transition.actor_id == ACTOR
+    assert transition.governance_scope == SCOPE
+    assert transition.authority_reference == "authority-mutate-rule-1"
 
 
 def test_greenfield_postgres_end_to_end_produces_complete_normalized_export(

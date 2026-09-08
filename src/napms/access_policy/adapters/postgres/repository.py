@@ -94,6 +94,31 @@ class PostgresAccessRuleRepository:
         except PsycopgError as exc:
             raise AccessRulePersistenceError() from exc
 
+    def list_by_governance_scopes(
+        self,
+        scopes: tuple[str, ...],
+        *,
+        offset: int,
+        limit: int,
+    ) -> tuple[AccessRule, ...]:
+        if not scopes:
+            return ()
+        try:
+            rows = self._connection.execute(
+                f"""
+                SELECT {_COLUMNS}
+                FROM napms_access_policy.access_rules
+                WHERE proposal_authority_scope = ANY(%s)
+                ORDER BY rule_id
+                OFFSET %s
+                LIMIT %s
+                """,
+                (list(scopes), offset, limit),
+            ).fetchall()
+            return tuple(self._hydrate(row) for row in rows)
+        except PsycopgError as exc:
+            raise AccessRulePersistenceError() from exc
+
     def add(self, rule: AccessRule) -> None:
         if (
             rule.operational_state is not OperationalState.ACTIVE

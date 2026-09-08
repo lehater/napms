@@ -24,17 +24,27 @@ from napms.access_policy.application.ports import (
     AccessRulePersistenceError,
     ConnectivityDecisionPort,
 )
+from napms.access_policy.application.read_rules import (
+    AccessRuleDetailOutcome,
+    GetAuthorizedAccessRule,
+    ListAuthorizedAccessRules,
+)
 from napms.access_policy.application.proposal_options import (
     DiscoverProposalInteractions,
     DiscoverProposalScopes,
     ProposalInteractionDiscoveryOutcome,
+)
+from napms.access_policy.application.set_operational_state import (
+    OperationalStateMutationOutcome,
+    SetAccessRuleOperationalState,
+    SetRuleOperationalState,
 )
 from napms.access_policy.application.select_effective_policy import (
     EffectivePolicySelectionOutcome,
     SelectAccessPolicyEffectiveDesiredPolicy,
     SelectEffectiveDesiredPolicy,
 )
-from napms.access_policy.domain.model import AccessRule
+from napms.access_policy.domain.model import AccessRule, OperationalState
 from napms.application_catalogue.application.ports import CataloguePersistenceError
 from napms.authority_management.application.ports import AuthorityPersistenceError
 from napms.policy_export.application.export_snapshot import (
@@ -107,6 +117,12 @@ class SubmitProposalRequest(BaseModel):
         alias="destinationComponentDeploymentId"
     )
     dcs_contract_revision_id: UUID = Field(alias="dcsContractRevisionId")
+
+
+class SetOperationalStateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    target_state: OperationalState = Field(alias="targetState")
 
 
 class PublicApiError(Exception):
@@ -206,6 +222,53 @@ def _rule_dto(rule: AccessRule) -> dict[str, Any]:
         "effectiveWindow": window,
         "decisionReference": rule.decision.decision_id,
     }
+
+
+def _rule_detail_dto(rule: AccessRule) -> dict[str, Any]:
+    payload = _rule_dto(rule)
+    payload["proposalProvenance"] = {
+        "actorId": rule.proposal_provenance.actor_id,
+        "effectiveTime": rule.proposal_provenance.effective_time.isoformat(),
+        "authorityReference": rule.proposal_provenance.authority_reference,
+        "catalogueReference": rule.proposal_provenance.catalogue_reference,
+    }
+    payload["stateHistory"] = [
+        {
+            "fromState": transition.from_state.value,
+            "toState": transition.to_state.value,
+            "actorId": transition.actor_id,
+            "effectiveTime": transition.effective_time.isoformat(),
+            "governanceScope": transition.governance_scope,
+            "authorityReference": transition.authority_reference,
+        }
+        for transition in rule.operational_state_history
+    ]
+    payload["effectiveWindowHistory"] = [
+        {
+            "previousWindow": (
+                {
+                    "start": change.previous_window.start.isoformat(),
+                    "end": change.previous_window.end.isoformat(),
+                }
+                if change.previous_window is not None
+                else None
+            ),
+            "newWindow": (
+                {
+                    "start": change.new_window.start.isoformat(),
+                    "end": change.new_window.end.isoformat(),
+                }
+                if change.new_window is not None
+                else None
+            ),
+            "actorId": change.actor_id,
+            "effectiveTime": change.effective_time.isoformat(),
+            "governanceScope": change.governance_scope,
+            "authorityReference": change.authority_reference,
+        }
+        for change in rule.effective_window_history
+    ]
+    return payload
 
 
 def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
@@ -483,8 +546,8 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
     def discover_proposal_interactions(
         request: Request,
         scope: str,
-        page: int = 1,
-        pageSize: int = 50,
+        page: int = Query(1, ge=1),
+        pageSize: int = Query(50, ge=1, le=100),
         actor: AuthenticatedActor = Depends(require_actor),
     ):
         request.state.operation = "DiscoverProposalInteractions"
@@ -625,6 +688,148 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             code=code,
             message=message,
         )
+
+    @app.get("/api/v1/access-rules", name="ListAccessRules")
+    def list_access_rules(
+        request: Request,
+        page: int = Query(1, ge=1),
+        pageSize: int = Query(50, ge=1, le=100),
+        actor: AuthenticatedActor = Depends(require_actor),
+    ):
+        request.state.operation = "ListAccessRules"
+        effective_time = dependencies.clock()
+        with dependencies.open_scope() as runtime_scope:
+            result = ListAuthorizedAccessRules(
+                read_authority=runtime_scope.rule_read_scope_discovery,
+                rules=runtime_scope.access_rules,
+            ).execute(
+                actor_id=actor.actor_id,
+                effective_time=effective_time,
+                page=page,
+                page_size=pageSize,
+            )
+
+        _set_outcome(
+            request,
+            "AuthorityUnknown" if result.ambiguous_scopes else "Available",
+        )
+        return {
+            "items": [_rule_dto(rule) for rule in result.rules],
+            "page": result.page,
+            "pageSize": result.page_size,
+            "hasMore": result.has_more,
+            "ambiguousScopes": [
+                {"scope": scope} for scope in result.ambiguous_scopes
+            ],
+        }
+
+    @app.get("/api/v1/access-rules/{rule_id}", name="GetAccessRule")
+    def get_access_rule(
+        rule_id: UUID,
+        request: Request,
+        actor: AuthenticatedActor = Depends(require_actor),
+    ):
+        request.state.operation = "GetAccessRule"
+        effective_time = dependencies.clock()
+        with dependencies.open_scope() as runtime_scope:
+            result = GetAuthorizedAccessRule(
+                authority=runtime_scope.authority,
+                rules=runtime_scope.access_rules,
+            ).execute(
+                rule_id=rule_id,
+                actor_id=actor.actor_id,
+                effective_time=effective_time,
+            )
+
+        if result.outcome is AccessRuleDetailOutcome.RULE_NOT_FOUND:
+            raise PublicApiError(
+                status_code=404,
+                code="RuleNotFound",
+                message="The Access Rule was not found.",
+            )
+        if result.outcome is AccessRuleDetailOutcome.AUTHORITY_DENIED:
+            raise PublicApiError(
+                status_code=403,
+                code="AuthorityDenied",
+                message="The requested operation is not permitted.",
+            )
+        if result.outcome is AccessRuleDetailOutcome.AUTHORITY_UNKNOWN:
+            raise PublicApiError(
+                status_code=409,
+                code="AuthorityUnknown",
+                message="Authority for the requested operation is ambiguous or unavailable.",
+            )
+
+        assert result.rule is not None
+        assert result.state_mutation_admission is not None
+        request.state.rule_id = str(result.rule.rule_id)
+        request.state.authority_reference = result.read_authority_reference
+        _set_outcome(request, "Found")
+        return {
+            "rule": _rule_detail_dto(result.rule),
+            "capabilities": {
+                "setOperationalState": result.state_mutation_admission.value,
+            },
+        }
+
+    @app.patch(
+        "/api/v1/access-rules/{rule_id}/operational-state",
+        name="SetAccessRuleOperationalState",
+    )
+    def set_access_rule_operational_state(
+        rule_id: UUID,
+        payload: SetOperationalStateRequest,
+        request: Request,
+        actor: AuthenticatedActor = Depends(require_actor),
+    ):
+        request.state.operation = "SetAccessRuleOperationalState"
+        effective_time = dependencies.clock()
+        with dependencies.open_scope() as runtime_scope:
+            result = SetAccessRuleOperationalState(
+                authority=runtime_scope.authority,
+                rules=runtime_scope.access_rules,
+            ).execute(
+                SetRuleOperationalState(
+                    rule_id=rule_id,
+                    target_state=payload.target_state,
+                    actor_id=actor.actor_id,
+                    effective_time=effective_time,
+                )
+            )
+
+        if result.outcome is OperationalStateMutationOutcome.RULE_NOT_FOUND:
+            raise PublicApiError(
+                status_code=404,
+                code="RuleNotFound",
+                message="The Access Rule was not found.",
+            )
+        if result.outcome is OperationalStateMutationOutcome.AUTHORITY_DENIED:
+            raise PublicApiError(
+                status_code=403,
+                code="AuthorityDenied",
+                message="The requested operation is not permitted.",
+            )
+        if result.outcome is OperationalStateMutationOutcome.AUTHORITY_UNKNOWN:
+            raise PublicApiError(
+                status_code=409,
+                code="AuthorityUnknown",
+                message="Authority for the requested operation is ambiguous or unavailable.",
+            )
+
+        assert result.rule is not None
+        request.state.rule_id = str(result.rule.rule_id)
+        if (
+            result.outcome is OperationalStateMutationOutcome.UPDATED
+            and result.rule.operational_state_history
+        ):
+            request.state.authority_reference = (
+                result.rule.operational_state_history[-1].authority_reference
+            )
+        _set_outcome(request, result.outcome.value)
+        return {
+            "outcome": result.outcome.value,
+            "rule": _rule_dto(result.rule),
+        }
 
     @app.get("/api/v1/normalized-policy", name="GetNormalizedPolicy")
     def get_normalized_policy(
