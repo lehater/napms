@@ -18,6 +18,7 @@ from napms.access_policy.application.materialize_rule import (
 from napms.access_policy.application.ports import (
     AccessRuleCommitOutcomeUnknown,
     AccessRulePersistenceError,
+    AuthorityAction,
     AuthorityCheck,
     ConnectivityDecision,
     DecisionOutcome,
@@ -833,10 +834,7 @@ def test_effective_policy_selection_uses_postgres_scope_read_and_core_as_of_logi
     assert authority.calls == [
         {
             "actor_id": "reader-1",
-            "action": __import__(
-                "napms.access_policy.application.ports",
-                fromlist=["AuthorityAction"],
-            ).AuthorityAction.READ_EFFECTIVE_DESIRED_POLICY,
+            "action": AuthorityAction.READ_EFFECTIVE_DESIRED_POLICY,
             "scope": "scope-1",
             "effective_time": WINDOW_START,
         }
