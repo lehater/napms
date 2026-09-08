@@ -8,9 +8,7 @@ Define and implement the minimum accepted Access Policy semantics for declarativ
 
 ## Current stage
 
-Owner decision packet prepared for D1-D3 before code.
-
-Repository evidence does not define interval-boundary semantics, a concrete periodicity model, property-change command semantics, or a distinct policy-selection scope model. The smallest coherent Wave-1 option is documented below for acceptance.
+D1-D3 are accepted and propagated through requirements, acceptance examples, semantic contracts, Tactical DDD, Ubiquitous Language and message flows. Next stage: implement Domain/Application/Ports core for EffectiveWindow mutation/evaluation and authorized one-governance-scope effective-policy selection. No PostgreSQL adaptation is admitted until that core gate passes.
 
 Accepted Wave-1 truth establishes the predicate:
 
@@ -121,7 +119,7 @@ Guardrail:
 - no open P0/P1 semantic, authority, temporal or architecture issue;
 - I4 result is recorded in canonical engineering state.
 
-## Recommended bounded decision
+## Accepted bounded decision
 
 ### R1 — First declarative condition: optional absolute EffectiveWindow
 
@@ -181,7 +179,7 @@ This reuses the already accepted stable Rule governance boundary and avoids inve
 
 ## Blockers
 
-Owner acceptance required for R1-R3 before propagating them into Tactical DDD/semantic contracts and before I4 product code.
+None currently known.
 
 ## Validation
 
