@@ -10,7 +10,7 @@ I8 must not redefine Access Policy, Authority, ACC, RC, Export Snapshot or norma
 
 ## Current stage
 
-Web UI refinement, HTTP runtime, first Web UI slice and normalized-policy JSON handoff are implemented and green. The current stage is **WP6–WP7 — complete observability and runtime failure-mapping proof**.
+All I8 implementation work packages are complete. The current stage is **WP8 — final review and gates**.
 
 Accepted:
 - first human-facing consumer: Web UI;
@@ -111,9 +111,9 @@ The first runtime boundary implements:
 3. **DONE — Local authentication boundary.** Hashed local credentials, opaque server-side sessions and explicit logout are implemented; proposal payload uses `extra=forbid` and executable tests prove request-supplied `actorId` cannot establish identity.
 4. **DONE — HTTP JSON runtime adapter/composition + first Web UI slice.** FastAPI runtime, local-dev Decision adapter, React Login -> Compose Connectivity -> Rule-result slice and runtime/web gates are green.
 5. **DONE — Normalized-policy JSON handoff.** Authorized effective-policy selection -> coherent snapshot -> normalized rows is exposed through semantics-preserving JSON; incomplete snapshots return no partial rows.
-6. **ACTIVE — Observability/operability proof.** Structured completion events, correlation, health/readiness and startup/configuration failure behavior are being verified.
-7. **ACTIVE — Runtime failure mappings.** Denied/unknown/not-found/stale/correlation/persistence paths are being verified with safe public errors.
-8. Run core, PostgreSQL and runtime-specific gates; close all P0/P1 findings.
+6. **DONE — Observability/operability proof.** JSON-only structured completion events, bounded correlation IDs, health/readiness and explicit configuration/startup failures are covered by runtime tests.
+7. **DONE — Runtime failure mappings.** Denied/unknown/not-found/stale/correlation/persistence and unexpected-exception paths are covered with safe public errors and no partial normalized export.
+8. **ACTIVE — Final review/gates.** Re-run core, PostgreSQL, Web, harness and knowledge gates; close all P0/P1 findings.
 
 ## Exit criteria
 
@@ -137,4 +137,4 @@ External IdP integration remains deferred.
 
 ## Next
 
-Complete observability/error-mapping proof, then run final architecture/security review and all gates.
+Run final architecture/security review and all repository gates. If green with no open P0/P1, absorb I8 into canonical current state and close the active plan.
