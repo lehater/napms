@@ -12,7 +12,7 @@ It intentionally does **not** contain Legacy implementation, reverse-engineering
 
 ## Current implementation state
 
-Wave 1 is implementation-ready. I1 Access Policy materialization core, I2 PostgreSQL persistence proof and I3 authorized Active/Inactive mutation have passed their gates. The active plan owns the next inside-out behavior increment.
+Wave 1 is implementation-ready. I1 materialization, I2 PostgreSQL persistence proof, I3 authorized Active/Inactive mutation and I4 EffectiveWindow/effective desired-policy selection have passed their gates. The active plan owns the next inside-out increment.
 
 ## Layout
 
