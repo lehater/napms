@@ -1,5 +1,7 @@
 # Active execution
 
-Current: `PLAN-009-i9-operational-web-workspace.md`
+Current: none.
 
-Read the current plan before starting or resuming non-trivial implementation work.
+I9 Operational Web Workspace is complete and absorbed into canonical requirements/domain/engineering truth.
+
+Select the next product/increment priority before creating the next active plan.
