@@ -22,6 +22,9 @@ from napms.access_policy.domain.model import (
     ProposalProvenance,
     RuleSemanticIdentity,
 )
+from napms.application_catalogue.application.describe_interactions import (
+    DirectedInteractionDescription,
+)
 from napms.runtime.auth import (
     InMemorySessionStore,
     LocalCredential,
@@ -160,6 +163,26 @@ class MemoryRules:
             raise AccessRulePersistenceError()
 
 
+class FakeCatalogueDescriber:
+    def execute(self, identities):
+        return tuple(
+            DirectedInteractionDescription(
+                identity=identity,
+                source_display_name=None,
+                destination_display_name=None,
+                dcs_display_name=None,
+                dcs_projection_payload=None,
+                dcs_provenance_reference=None,
+            )
+            for identity in identities
+        )
+
+
+class FakeDecoder:
+    def decode(self, payload):
+        raise AssertionError("presentation decoder must not run without payload")
+
+
 class FakeDecisions:
     def obtain(self, *, subject):
         return ConnectivityDecision(
@@ -182,6 +205,8 @@ class Scope:
         self.authority = authority
         self.rule_read_scope_discovery = read_scopes or FakeReadScopes()
         self.effective_policy_scope_discovery = policy_scopes or FakePolicyScopes()
+        self.catalogue_describer = FakeCatalogueDescriber()
+        self.dcs_decoder = FakeDecoder()
 
 
 def build_client(
