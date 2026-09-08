@@ -17,6 +17,7 @@ from napms.application_catalogue.application.resolve import (
 from napms.application_catalogue.domain.model import (
     DcsRevision,
     DeploymentResourceBinding,
+    DirectedInteractionIdentity,
 )
 from napms.policy_export.application.ports import ApplicationProjectionOutcome
 
@@ -26,6 +27,7 @@ DESTINATION = UUID(int=2)
 DCS = UUID(int=3)
 AS_OF = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
 IDENTITY = RuleSemanticIdentity(SOURCE, DESTINATION, DCS)
+CATALOGUE_IDENTITY = DirectedInteractionIdentity(SOURCE, DESTINATION, DCS)
 
 
 def dcs(source=SOURCE, destination=DESTINATION):
@@ -83,7 +85,7 @@ def test_exact_dcs_identity_is_valid_for_proposal():
 def test_dcs_subject_mismatch_is_invalid():
     result = ValidateDirectedInteraction(
         catalogue=FakeCatalogue(dcs_revision=dcs(source=UUID(int=99)))
-    ).execute(identity=IDENTITY, effective_time=AS_OF)
+    ).execute(identity=CATALOGUE_IDENTITY, effective_time=AS_OF)
 
     assert result.outcome is CatalogueResolutionOutcome.INVALID
 
@@ -132,7 +134,10 @@ def test_projection_resolves_multiple_distinct_resources_deterministically():
     assert result.fact_reference.startswith("acc-projection:")
     assert "source-a" in result.validity_reference
     assert "destination-a" in result.validity_reference
-    assert result.provenance_reference.startswith("acc-provenance:")
+    assert result.provenance_reference.startswith("acc-provenance:v1:")
+    assert "dcs-provenance" in result.provenance_reference
+    assert "provenance-source-a" in result.provenance_reference
+    assert "provenance-destination-a" in result.provenance_reference
 
 
 def test_projection_missing_required_binding_fails_closed():
@@ -141,7 +146,7 @@ def test_projection_missing_required_binding_fails_closed():
             dcs_revision=dcs(),
             bindings={SOURCE: (binding("source-a", SOURCE, "resource-a"),)},
         )
-    ).execute(subject=IDENTITY, as_of=AS_OF)
+    ).execute(subject=CATALOGUE_IDENTITY, as_of=AS_OF)
 
     assert result.outcome is CatalogueResolutionOutcome.MISSING
 
