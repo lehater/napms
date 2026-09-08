@@ -8,6 +8,37 @@ Input: login + password. Output: authenticated session or generic authentication
 
 Compact centered form; no external identity controls in I8.
 
+## My Connectivity Needs
+
+Responsibility: list, declare and manage Connectivity Requirements for the authenticated actor's admitted scopes.
+
+List:
+- Source -> Destination label-first interaction;
+- DCS label;
+- Dependent participant;
+- Governance Scope;
+- Applicability;
+- `Active | Retired`;
+- justification summary.
+
+Declare:
+- server-backed declaration scope;
+- bounded ACC interaction search;
+- Dependent choice constrained to Source or Destination;
+- Ongoing or absolute half-open time window;
+- mandatory justification.
+
+Details:
+- stable Requirement ID;
+- immutable Dependent + Required Semantic Interaction;
+- stored Governance Scope;
+- Applicability and business history;
+- Justification and business history;
+- declaration provenance;
+- independent Set Applicability / Set Justification / Retire controls when backend capabilities are Permitted.
+
+No Allowed/NotAllowed, approval status or policy-coverage status is shown in I13.
+
 ## Compose Connectivity
 
 Responsibility: produce one structurally valid `Access Rule Proposal` from trusted references.
