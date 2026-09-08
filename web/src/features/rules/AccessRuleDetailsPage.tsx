@@ -8,6 +8,11 @@ import {
   setAccessRuleOperationalState,
   type RuleDetailResponse,
 } from "@/api"
+import {
+  CatalogueIdentity,
+  displayName,
+  trafficAlternativeText,
+} from "@/components/catalogue/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import { StatusBadge } from "@/components/ui/StatusBadge"
 import { toLocalDateTimeInput, toOffsetAwareIso } from "@/lib/datetime"
@@ -156,6 +161,24 @@ export function AccessRuleDetailsPage({
         <h1 className="break-all text-[28px] font-bold tracking-tight text-[#172033]">
           {ruleId}
         </h1>
+        {detail ? (
+          <p className="mt-2 text-sm text-[#64748B]">
+            {displayName(
+              detail.rule.catalogue?.sourceDisplayName,
+              detail.rule.semanticIdentity.sourceComponentDeploymentId,
+            )}{" "}
+            →{" "}
+            {displayName(
+              detail.rule.catalogue?.destinationDisplayName,
+              detail.rule.semanticIdentity.destinationComponentDeploymentId,
+            )}{" "}
+            ·{" "}
+            {displayName(
+              detail.rule.catalogue?.dcsDisplayName,
+              detail.rule.semanticIdentity.dcsContractRevisionId,
+            )}
+          </p>
+        ) : null}
       </header>
 
       {error ? (
@@ -283,24 +306,42 @@ export function AccessRuleDetailsPage({
                 <dt className="text-xs uppercase tracking-wide text-[#64748B]">
                   Source Component Deployment
                 </dt>
-                <dd className="mt-1 break-all font-mono">
-                  {detail.rule.semanticIdentity.sourceComponentDeploymentId}
+                <dd className="mt-1">
+                  <CatalogueIdentity
+                    name={detail.rule.catalogue?.sourceDisplayName}
+                    id={detail.rule.semanticIdentity.sourceComponentDeploymentId}
+                  />
                 </dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wide text-[#64748B]">
                   Destination Component Deployment
                 </dt>
-                <dd className="mt-1 break-all font-mono">
-                  {detail.rule.semanticIdentity.destinationComponentDeploymentId}
+                <dd className="mt-1">
+                  <CatalogueIdentity
+                    name={detail.rule.catalogue?.destinationDisplayName}
+                    id={detail.rule.semanticIdentity.destinationComponentDeploymentId}
+                  />
                 </dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wide text-[#64748B]">
                   DCS revision
                 </dt>
-                <dd className="mt-1 break-all font-mono">
-                  {detail.rule.semanticIdentity.dcsContractRevisionId}
+                <dd className="mt-1">
+                  <CatalogueIdentity
+                    name={detail.rule.catalogue?.dcsDisplayName}
+                    id={detail.rule.semanticIdentity.dcsContractRevisionId}
+                  />
+                  {(detail.rule.catalogue?.trafficAlternatives.length ?? 0) > 0 ? (
+                    <div className="mt-2 grid gap-1 text-xs text-[#64748B]">
+                      {detail.rule.catalogue?.trafficAlternatives.map(
+                        (alternative, index) => (
+                          <div key={index}>{trafficAlternativeText(alternative)}</div>
+                        ),
+                      )}
+                    </div>
+                  ) : null}
                 </dd>
               </div>
               <div>
