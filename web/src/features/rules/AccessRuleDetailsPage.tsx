@@ -233,6 +233,7 @@ export function AccessRuleDetailsPage({
                 Start
                 <input
                   type="datetime-local"
+                  step="1"
                   value={windowStart}
                   onChange={(event) => setWindowStart(event.target.value)}
                   disabled={detail.capabilities.setEffectiveWindow !== "Permitted"}
@@ -243,6 +244,7 @@ export function AccessRuleDetailsPage({
                 End
                 <input
                   type="datetime-local"
+                  step="1"
                   value={windowEnd}
                   onChange={(event) => setWindowEnd(event.target.value)}
                   disabled={detail.capabilities.setEffectiveWindow !== "Permitted"}
