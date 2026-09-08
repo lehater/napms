@@ -4,6 +4,7 @@ import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from hmac import compare_digest
+from threading import Lock
 from typing import Callable
 
 
@@ -139,29 +140,36 @@ class InMemorySessionStore:
         self._clock = clock or (lambda: datetime.now(timezone.utc))
         self._new_session_id = new_session_id or (lambda: secrets.token_urlsafe(32))
         self._sessions: dict[str, SessionRecord] = {}
+        self._lock = Lock()
 
     def create(self, actor: AuthenticatedActor) -> str:
         now = self._now()
         session_id = self._new_session_id()
         if not session_id:
             raise RuntimeError("session id generator returned an empty value")
-        self._sessions[session_id] = SessionRecord(actor=actor, expires_at=now + self._ttl)
+        with self._lock:
+            self._sessions[session_id] = SessionRecord(
+                actor=actor,
+                expires_at=now + self._ttl,
+            )
         return session_id
 
     def get(self, session_id: str | None) -> AuthenticatedActor | None:
         if not session_id:
             return None
-        record = self._sessions.get(session_id)
-        if record is None:
-            return None
-        if self._now() >= record.expires_at:
-            self._sessions.pop(session_id, None)
-            return None
-        return record.actor
+        with self._lock:
+            record = self._sessions.get(session_id)
+            if record is None:
+                return None
+            if self._now() >= record.expires_at:
+                self._sessions.pop(session_id, None)
+                return None
+            return record.actor
 
     def delete(self, session_id: str | None) -> None:
         if session_id:
-            self._sessions.pop(session_id, None)
+            with self._lock:
+                self._sessions.pop(session_id, None)
 
     def _now(self) -> datetime:
         value = self._clock()
