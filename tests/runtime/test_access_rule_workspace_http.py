@@ -555,7 +555,10 @@ def test_policy_view_scope_discovery_is_fail_closed():
     )
     login(client)
 
-    response = client.get("/api/v1/policy-views/scopes")
+    response = client.get(
+        "/api/v1/policy-views/scopes",
+        params={"asOf": NOW.isoformat()},
+    )
 
     assert response.status_code == 200
     assert response.json() == {
@@ -618,3 +621,17 @@ def test_effective_policy_denied_or_naive_as_of_returns_no_policy_data():
     )
     assert naive.status_code == 422
     assert naive.json()["error"]["code"] == "InvalidAsOf"
+
+
+
+def test_policy_view_scope_discovery_rejects_naive_as_of():
+    client, _ = build_client()
+    login(client)
+
+    response = client.get(
+        "/api/v1/policy-views/scopes",
+        params={"asOf": "2026-09-09T12:00:00"},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "InvalidAsOf"
