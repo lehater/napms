@@ -8,7 +8,7 @@ Implement authorized `AccessRule Active <-> Inactive` mutation as Access Policy 
 
 ## Current stage
 
-I3 semantic refinement is accepted. `RuleGovernanceScope` is explicit: the accepted proposal authority scope becomes stable non-identity governance metadata of the materialized Rule, and later state mutation authority is evaluated against that stored scope. Next stage is Domain/Application/Ports implementation and core proof.
+I3 Domain/Application/Ports core is implemented and the core-only candidate passed the hosted core gate. PostgreSQL adaptation is now admitted: persist operational state + immutable transition audit atomically, preserve governance/decision identity, and reject stale/concurrent state writes without false success.
 
 ## Inputs
 
