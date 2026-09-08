@@ -1,6 +1,6 @@
 # Ubiquitous Language
 
-Status: `accepted DDD-BDM-009 / DDD-REV-015 ubiquitous language`.
+Status: `accepted NAPMS-DDD-001 / source DDD-BDM-010 ubiquitous language`.
 
 ## Access Policy
 
