@@ -8,6 +8,7 @@ from napms.access_policy.application.ports import (
     AccessRulePersistenceError,
     AccessRuleReadScopeOptions,
     AuthorityCheck,
+    EffectivePolicyReadScopeOptions,
     ConnectivityDecision,
     DecisionOutcome,
     TernaryOutcome,
@@ -79,21 +80,38 @@ class FakeAuthority:
         *,
         read=TernaryOutcome.PERMITTED,
         mutate=TernaryOutcome.PERMITTED,
+        policy_read=TernaryOutcome.PERMITTED,
     ):
         self.read = read
         self.mutate = mutate
+        self.policy_read = policy_read
         self.calls = []
 
     def check(self, **kwargs):
         self.calls.append(kwargs)
         action = kwargs["action"].value
-        outcome = self.read if action == "ReadAccessRule" else self.mutate
+        outcome = (
+            self.read
+            if action == "ReadAccessRule"
+            else self.policy_read
+            if action == "ReadEffectiveDesiredPolicy"
+            else self.mutate
+        )
         reference = (
             f"{action}-authority"
             if outcome is TernaryOutcome.PERMITTED
             else None
         )
         return AuthorityCheck(outcome, reference)
+
+
+class FakePolicyScopes:
+    def __init__(self, permitted=("scope-a",), ambiguous=()):
+        self.permitted = permitted
+        self.ambiguous = ambiguous
+
+    def list_effective_policy_read_scopes(self, **kwargs):
+        return EffectivePolicyReadScopeOptions(self.permitted, self.ambiguous)
 
 
 class MemoryRules:
@@ -157,10 +175,12 @@ class Scope:
         rules,
         authority,
         read_scopes=None,
+        policy_scopes=None,
     ):
         self.access_rules = rules
         self.authority = authority
         self.rule_read_scope_discovery = read_scopes or FakeReadScopes()
+        self.effective_policy_scope_discovery = policy_scopes or FakePolicyScopes()
 
 
 def build_client(
@@ -168,6 +188,7 @@ def build_client(
     rules=None,
     authority=None,
     read_scopes=None,
+    policy_scopes=None,
 ):
     rules = rules or MemoryRules(
         (
@@ -180,6 +201,7 @@ def build_client(
         rules=rules,
         authority=authority,
         read_scopes=read_scopes,
+        policy_scopes=policy_scopes,
     )
     credential = LocalCredential(
         login="alexey",
@@ -241,9 +263,11 @@ def test_detail_returns_rule_and_independent_mutation_capability():
     assert payload["rule"]["ruleId"] == str(UUID(int=1))
     assert payload["rule"]["governanceScope"] == "scope-a"
     assert payload["capabilities"]["setOperationalState"] == "Denied"
+    assert payload["capabilities"]["setEffectiveWindow"] == "Denied"
     assert [call["action"].value for call in authority.calls] == [
         "ReadAccessRule",
         "SetRuleOperationalState",
+        "SetRuleEffectiveWindow",
     ]
 
 
