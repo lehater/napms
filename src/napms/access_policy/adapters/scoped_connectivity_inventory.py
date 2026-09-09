@@ -42,7 +42,7 @@ class AccessPolicyScopedConnectivityAdapter:
             for identity in unique
         )
         try:
-            rules = self._rules.find_by_identities(rule_identities)
+            rules = self._rules.find_inventory_summaries(rule_identities)
         except AccessRulePersistenceError:
             return PolicySummaryReadResult(DependencyAvailability.UNAVAILABLE)
 
