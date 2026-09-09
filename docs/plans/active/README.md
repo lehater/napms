@@ -11,9 +11,8 @@ Current task: WP4 — expose authorized durable Decision participant record/list
 Read first:
 - `docs/plans/active/PLAN-016B-i16b-connectivity-decision-runtime.md`
 - `docs/architecture/connectivity-decision-boundary.md`
-- `docs/engineering/http-api-contract.md`
 
-Expand only into current Decision application use cases, Authority/ACC adapters, FastAPI runtime/composition and Decision HTTP acceptance tests required by WP4.
+Expand only into `docs/engineering/http-api-contract.md`, current Decision application use cases, Authority/ACC adapters, FastAPI runtime/composition and Decision HTTP acceptance tests when a concrete WP4 question requires them.
 
 ## Blockers
 
