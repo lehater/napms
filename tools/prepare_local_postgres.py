@@ -18,23 +18,26 @@ def compose(*args: str, check: bool = True) -> subprocess.CompletedProcess[bytes
     )
 
 
-def wait_postgres_ready() -> None:
+def wait_napms_database_ready() -> None:
     for _ in range(60):
         result = compose(
             "exec",
             "-T",
             "postgres",
-            "pg_isready",
+            "psql",
             "-U",
             "napms",
             "-d",
             "napms",
+            "--set=ON_ERROR_STOP=1",
+            "-c",
+            "SELECT 1",
             check=False,
         )
         if result.returncode == 0:
             return
         time.sleep(1)
-    raise RuntimeError("local PostgreSQL did not become ready")
+    raise RuntimeError("local napms PostgreSQL database did not become ready")
 
 
 def main() -> int:
@@ -50,7 +53,7 @@ def main() -> int:
         return 2
 
     compose("up", "--detach", "postgres")
-    wait_postgres_ready()
+    wait_napms_database_ready()
 
     sql = f"ALTER ROLE napms PASSWORD '{password}'"
     result = subprocess.run(
