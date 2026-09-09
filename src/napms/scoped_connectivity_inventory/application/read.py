@@ -366,13 +366,12 @@ class ReadScopedConnectivityInventory:
 
         remote_component_ids = tuple(
             dict.fromkeys(
-                (
-                    interaction.identity.destination_component_deployment_id
-                    if interaction.identity.source_component_deployment_id
-                    in component_id_set
-                    else interaction.identity.source_component_deployment_id
-                )
+                component_id
                 for interaction in relevant_interactions
+                for component_id in (
+                    interaction.identity.source_component_deployment_id,
+                    interaction.identity.destination_component_deployment_id,
+                )
             )
         )
         remote_bindings_read = self._catalogue.list_resource_bindings_for_components(
