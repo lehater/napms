@@ -56,7 +56,7 @@ class ConnectivityRequirementsScopedConnectivityAdapter:
 
         requested = set(unique)
         try:
-            rows = self._requirements.list_by_scope_and_interactions(
+            rows = self._requirements.list_inventory_summaries(
                 governance_scope=responsibility_scope,
                 interactions=tuple(_to_required(identity) for identity in unique),
             )
