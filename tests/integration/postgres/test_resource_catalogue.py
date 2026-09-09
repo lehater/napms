@@ -425,3 +425,47 @@ def test_scoped_resource_adapter_preserves_resource_without_realization(
     assert result.page.resources[0].resource_reference == "resource-1"
     assert result.page.resources[0].realization_state is RealizationState.UNRESOLVED
     assert result.page.resources[0].endpoints == ()
+
+
+
+def test_batch_resource_realization_read_does_not_query_endpoints_per_resource(
+    postgres_dsn,
+):
+    with psycopg.connect(postgres_dsn) as connection:
+        for reference, fact, address in (
+            ("resource-a", "fact-a", "203.0.113.10"),
+            ("resource-b", "fact-b", "203.0.113.20"),
+        ):
+            seed_resource(connection, reference)
+            seed_realization(
+                connection,
+                fact=fact,
+                resource=reference,
+                endpoints=((f"endpoint-{reference}", address),),
+            )
+        connection.commit()
+
+    class CountingConnection:
+        def __init__(self, delegate):
+            self.delegate = delegate
+            self.statements = []
+
+        def execute(self, sql, params=None):
+            self.statements.append(sql)
+            return self.delegate.execute(sql, params)
+
+    with psycopg.connect(postgres_dsn) as connection:
+        counted = CountingConnection(connection)
+        repository = PostgresResourceCatalogueRepository(counted)
+        rows = repository.find_effective_realizations_for_resources(
+            resource_references=("resource-a", "resource-b"),
+            as_of=AS_OF,
+        )
+
+    assert len(rows) == 2
+    endpoint_queries = [
+        sql
+        for sql in counted.statements
+        if "FROM napms_resource_catalogue.resource_endpoints" in sql
+    ]
+    assert len(endpoint_queries) == 1
