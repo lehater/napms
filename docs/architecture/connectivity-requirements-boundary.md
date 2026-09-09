@@ -25,11 +25,15 @@ src/napms/connectivity_requirements/
         set_applicability.py
         set_justification.py
         retire.py
-        proposal_options.py
+        options.py
     adapters/
         postgres/
-        authority_management.py
-        application_catalogue.py
+
+src/napms/authority_management/adapters/
+    connectivity_requirements.py
+
+src/napms/application_catalogue/adapters/
+    connectivity_requirements.py
 ```
 
 Dependency direction:
@@ -119,7 +123,7 @@ No ACC type enters Connectivity Requirements Domain/Application.
 
 ### Interaction discovery
 
-For the future I13 Web declaration form, a separate consumer query port may list/search structurally valid exact interactions.
+I13 Web declaration uses a separate consumer query port to list/search structurally valid exact interactions.
 
 It can reuse the existing ACC list/search application capability through an adapter, but returns Connectivity Requirements-owned DTOs.
 
