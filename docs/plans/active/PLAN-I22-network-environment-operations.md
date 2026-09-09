@@ -1,6 +1,6 @@
 # PLAN — I22 Network Environment Operations
 
-Status: `S1-S4 implemented; S5 final gate next`.
+Status: `S1-S4 implemented; S5 final gate next`
 
 ## Goal
 
