@@ -4,7 +4,7 @@ Current: `PLAN-I22-network-environment-operations.md`
 
 Goal: prove I22 Network Environment Operations semantics through a deterministic stub because no real lab is available.
 
-Current task: S4 desired -> rendered -> stub-applied -> verified composition proof.
+Current task: S5 hosted final gate and absorption.
 
 ## Working set
 
@@ -15,7 +15,7 @@ Read first:
 - `docs/architecture/network-environment-operations-boundary.md`
 - `src/napms/network_environment_operations/application.py`
 
-Expand only when S4 composition requires an existing APR/I21 owner file.
+Expand only when a gate failure points to another owner or implementation file.
 
 ## Blockers
 
@@ -23,8 +23,8 @@ No real Cisco lab is available. This is accepted: the current proof uses a deter
 
 ## Gate
 
-S1 accepted; S2/S3 implemented. Hosted CI remains the executable gate after S4 composition proof and PR creation.
+S1-S4 are implemented. PR hosted checks are the final executable gate before absorption.
 
 ## Next
 
-Compose the existing APR desired-policy + Cisco ASA rendering flow into the deterministic target stub, prove Verified plus stale/concurrent/unknown adversarial outcomes, then open the I22 PR.
+Open the I22 PR, resolve any hosted gate failures, then absorb durable I22 outcomes, remove this PLAN, set `Current: none`, promote I23 without selecting it and squash-merge.
