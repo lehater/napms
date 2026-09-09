@@ -2,7 +2,7 @@
 
 Current: `PLAN-038-i24-local-deployment-hardening.md`
 
-Current task: local PostgreSQL backup and recovery contract.
+Current task: local upgrade and migration procedure.
 
 Goal: harden the supported local Docker Compose deployment without introducing enterprise infrastructure or changing product/domain semantics.
 
@@ -10,21 +10,21 @@ Goal: harden the supported local Docker Compose deployment without introducing e
 
 Read first:
 - `docs/plans/active/PLAN-038-i24-local-deployment-hardening.md`
+- `docs/engineering/local-upgrade-procedure.md`
+- `src/napms/composition/postgres_migrations.py`
 - `tools/local_postgres_backup.py`
-- `tools/local_start.py`
-- `compose.yaml`
 - `.github/workflows/docker.yml`
 
-Expand only as needed into `docs/engineering/local-docker-runtime.md`, `Makefile`, `.gitignore`, README and canonical engineering state.
+Expand only as needed into `compose.yaml`, `docs/engineering/local-docker-runtime.md`, Makefile and current engineering state.
 
 ## Blockers
 
-None. Restore is intentionally destructive and must require explicit confirmation plus backup validation before replacing the local PostgreSQL volume.
+None. Downgrade is intentionally not claimed; recovery from a failed forward upgrade uses the pre-upgrade logical backup rather than attempting arbitrary reverse migrations.
 
 ## Gate
 
-A logical backup must restore into a clean local PostgreSQL volume, preserve known durable application state created by the fresh journey, and allow restart-safe authenticated reads afterward. Backup does not claim to capture in-memory sessions, in-memory NEO operations, external device/provider state or local secret values.
+On a current restored database, replaying `napms-migrate` must succeed without changing the migration-journal count or durable application state. A migration checksum mismatch remains a hard failure.
 
 ## Next
 
-Implement custom-format `pg_dump` backup, validated explicit clean-volume restore and a Docker backup -> replace volume -> restore -> authenticated read round-trip proof.
+Document the local pre-upgrade/forward-migration/recovery sequence and extend the Docker gate with an explicit migration replay no-op proof.
