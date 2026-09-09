@@ -1,7 +1,7 @@
 # Active execution
 
-Current: none.
+Current: `PLAN-014-i14-requirement-policy-alignment.md`
 
 Roadmap: `docs/engineering/post-wave1-product-completion-roadmap.md`.
 
-I13 Connectivity Requirements Core is complete and absorbed into canonical truth. Create the I14 active plan only when Requirement-to-Policy Alignment execution begins.
+I14 Requirement-to-Policy Alignment is the current execution increment.
