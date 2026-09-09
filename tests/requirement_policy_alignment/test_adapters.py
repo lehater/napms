@@ -21,10 +21,12 @@ from napms.connectivity_requirements.application.ports import (
     RequirementAuthorityCheck,
     RequirementAuthorityAction,
     RequirementPersistenceError,
+    RequirementScopeOptions,
     TernaryOutcome,
 )
 from napms.connectivity_requirements.application.read import (
     GetAuthorizedRequirement,
+    ListConnectivityRequirements,
 )
 from napms.connectivity_requirements.domain.model import (
     ConnectivityRequirement,
@@ -40,6 +42,7 @@ from napms.requirement_policy_alignment.application.model import (
 )
 from napms.requirement_policy_alignment.application.ports import (
     PolicyCoverageOutcome,
+    RequirementAlignmentListOutcome,
     RequirementAlignmentReadOutcome,
 )
 
@@ -51,6 +54,18 @@ DCS = UUID(int=103)
 REQ_ID = UUID(int=104)
 RULE_ID = UUID(int=105)
 ALIGNMENT_IDENTITY = AlignmentSemanticIdentity(SOURCE, DESTINATION, DCS)
+
+
+class FakeReadScopes:
+    def __init__(self, permitted=("requirements-scope",), ambiguous=()):
+        self.permitted = permitted
+        self.ambiguous = ambiguous
+
+    def list_effective_read_scopes(self, **kwargs):
+        return RequirementScopeOptions(
+            permitted_scopes=self.permitted,
+            ambiguous_scopes=self.ambiguous,
+        )
 
 
 class FakeRequirementAuthority:
@@ -72,14 +87,26 @@ class FakeRequirementAuthority:
 
 
 class RequirementRepository:
-    def __init__(self, value=None, *, fail=False):
+    def __init__(self, value=None, *, fail=False, values=None):
         self.value = value
+        self.values = tuple(values or (() if value is None else (value,)))
         self.fail = fail
 
     def get_by_id(self, requirement_id):
         if self.fail:
             raise RequirementPersistenceError()
-        return self.value if self.value and self.value.requirement_id == requirement_id else None
+        return next(
+            (item for item in self.values if item.requirement_id == requirement_id),
+            None,
+        )
+
+    def list_by_governance_scopes(self, scopes, *, offset, limit):
+        if self.fail:
+            raise RequirementPersistenceError()
+        rows = tuple(
+            item for item in self.values if item.governance_scope in scopes
+        )
+        return rows[offset : offset + limit]
 
 
 class RuleRepository:
@@ -157,14 +184,19 @@ def rule(*, scope="policy-scope", window=None, inactive=False, identity=None):
     return value
 
 
-def cr_adapter(repository, authority=None):
+def cr_adapter(repository, authority=None, read_scopes=None):
     authority = authority or FakeRequirementAuthority()
+    read_scopes = read_scopes or FakeReadScopes()
     return (
         ConnectivityRequirementsAlignmentAdapter(
             reader=GetAuthorizedRequirement(
                 authority=authority,
                 requirements=repository,
-            )
+            ),
+            lister=ListConnectivityRequirements(
+                read_scopes=read_scopes,
+                requirements=repository,
+            ),
         ),
         authority,
     )
@@ -304,3 +336,50 @@ def test_policy_adapter_contract_violation_is_unknown():
     )
 
     assert result is PolicyCoverageOutcome.UNKNOWN
+
+
+
+def test_requirement_adapter_lists_only_authorized_scopes_for_alignment():
+    visible = requirement()
+    hidden_interaction = RequiredSemanticInteraction(
+        UUID(int=201),
+        UUID(int=202),
+        UUID(int=203),
+    )
+    hidden = ConnectivityRequirement.declared(
+        requirement_id=UUID(int=204),
+        semantic_key=RequirementSemanticKey(
+            governance_scope="hidden-scope",
+            dependent_component_deployment_id=UUID(int=201),
+            required_interaction=hidden_interaction,
+        ),
+        applicability=RequirementApplicability.ongoing(),
+        justification="Hidden need",
+        provenance=RequirementDeclarationProvenance(
+            actor_id="declarer",
+            effective_time=NOW,
+            governance_scope="hidden-scope",
+            authority_reference="declare-hidden",
+            catalogue_reference="catalogue-hidden",
+        ),
+    )
+    adapter, _ = cr_adapter(
+        RequirementRepository(values=(visible, hidden)),
+        read_scopes=FakeReadScopes(
+            permitted=("requirements-scope",),
+            ambiguous=("hidden-scope",),
+        ),
+    )
+
+    result = adapter.list_for_alignment(
+        actor_id="owner",
+        as_of=NOW,
+        page=1,
+        page_size=50,
+    )
+
+    assert result.outcome is RequirementAlignmentListOutcome.AVAILABLE
+    assert tuple(
+        item.requirement_id for item in result.page.snapshots
+    ) == (REQ_ID,)
+    assert result.page.ambiguous_scopes == ("hidden-scope",)
