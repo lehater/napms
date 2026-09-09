@@ -88,3 +88,14 @@ Add aggregate dashboard and any global audit/search features only after concrete
 - backend-admitted applicability/justification/retirement actions;
 - provenance/history presentation;
 - no approval/decision/policy-alignment status in I13.
+
+
+## UI-7 — Requirement-to-Policy Alignment — implemented in I14
+
+- explicit-asOf policy coverage on My Connectivity Needs list;
+- Requirement Details coverage panel;
+- statuses: Covered / Uncovered / NotCurrent / Unknown;
+- exact semantic interaction matching;
+- no Denied status;
+- no Rule detail leakage from derived coverage;
+- no configured/observed-access implication.
