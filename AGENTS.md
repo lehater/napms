@@ -8,14 +8,16 @@ Legacy/reconstruction evidence lives outside this repository and does not define
 
 ## Progressive startup
 
-Do not preload the whole repository.
+Do not preload the whole repository. Conversation history is execution history, not project state.
 
 For non-trivial work read, in order:
 1. this file;
-2. `docs/plans/active/README.md` and the current plan;
+2. `docs/plans/active/README.md` as the compact resume capsule;
 3. the nearest scoped `AGENTS.md`;
 4. the smallest applicable Skill under `.agents/skills/`;
-5. only the canonical artifacts required by the current plan/work package and selected Skill.
+5. only the canonical artifacts and code named by the capsule/current task.
+
+Read the full current `PLAN-*.md` only when the task concerns planning/coordination/stage transition, the resume capsule explicitly directs you there, or a material fact required for the current task is missing. Do not load future work packages by default.
 
 Do not scan `docs/baseline/` or completed historical Wave-1 material unless the task explicitly requires history or provenance.
 
