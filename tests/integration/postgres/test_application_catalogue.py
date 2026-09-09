@@ -13,11 +13,15 @@ from napms.application_catalogue.adapters.access_policy import (
     AccessPolicyCommunicationCatalogueAdapter,
     AccessPolicyProposalInteractionCatalogueAdapter,
 )
+from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
 from napms.application_catalogue.adapters.policy_export import (
     PolicyExportApplicationCatalogueAdapter,
 )
 from napms.application_catalogue.adapters.postgres import (
     PostgresApplicationCatalogueRepository,
+)
+from napms.application_catalogue.adapters.scoped_connectivity_inventory import (
+    ApplicationCatalogueScopedConnectivityAdapter,
 )
 from napms.application_catalogue.application.describe_interactions import (
     DescribeDirectedInteractions,
@@ -28,7 +32,15 @@ from napms.application_catalogue.application.resolve import (
     ValidateDirectedInteraction,
 )
 from napms.application_catalogue.domain.model import DirectedInteractionIdentity
+from napms.policy_export.application.normalization_types import (
+    DcsTrafficAlternative,
+    PortConstraint,
+    PortRange,
+)
 from napms.policy_export.application.ports import ApplicationProjectionOutcome
+from napms.scoped_connectivity_inventory.application.ports import (
+    DependencyAvailability,
+)
 
 
 pytestmark = pytest.mark.postgres
@@ -436,3 +448,86 @@ def test_database_rejects_blank_display_metadata(postgres_dsn):
                 "source-provenance",
                 "   ",
             )
+
+
+
+def test_scoped_connectivity_catalogue_adapter_batches_bindings_and_interactions(
+    postgres_dsn,
+):
+    payload = JsonDcsProjectionCodec().encode(
+        (
+            DcsTrafficAlternative(
+                protocol="tcp",
+                source_ports=PortConstraint.any(),
+                destination_ports=PortConstraint.ranged(PortRange(443, 443)),
+                service_reference="https",
+            ),
+        )
+    )
+    with psycopg.connect(postgres_dsn) as connection:
+        seed_deployment(
+            connection,
+            SOURCE,
+            "source-provenance",
+            display_name="Frontend",
+        )
+        seed_deployment(
+            connection,
+            DESTINATION,
+            "destination-provenance",
+            display_name="Orders API",
+        )
+        seed_dcs(
+            connection,
+            payload=payload,
+            display_name="HTTPS Orders",
+        )
+        seed_binding(
+            connection,
+            reference="source-binding",
+            deployment=SOURCE,
+            resource="resource-source",
+        )
+        seed_binding(
+            connection,
+            reference="destination-binding",
+            deployment=DESTINATION,
+            resource="resource-destination",
+        )
+        connection.commit()
+
+    with psycopg.connect(postgres_dsn) as connection:
+        adapter = ApplicationCatalogueScopedConnectivityAdapter(
+            catalogue=repository(connection),
+            decoder=JsonDcsProjectionCodec(),
+        )
+        components = adapter.list_bound_components(
+            resource_references=("resource-source",),
+            as_of=AS_OF,
+        )
+        interactions = adapter.list_interactions_for_components(
+            component_deployment_ids=(SOURCE,),
+        )
+        remote_bindings = adapter.list_resource_bindings_for_components(
+            component_deployment_ids=(DESTINATION,),
+            as_of=AS_OF,
+        )
+
+    assert components.availability is DependencyAvailability.AVAILABLE
+    assert len(components.items) == 1
+    assert components.items[0].component_deployment_id == SOURCE
+    assert components.items[0].display_name == "Frontend"
+
+    assert interactions.availability is DependencyAvailability.AVAILABLE
+    assert len(interactions.items) == 1
+    interaction = interactions.items[0]
+    assert interaction.source_display_name == "Frontend"
+    assert interaction.destination_display_name == "Orders API"
+    assert interaction.dcs_display_name == "HTTPS Orders"
+    assert interaction.access_summary == "tcp 443"
+
+    assert remote_bindings.availability is DependencyAvailability.AVAILABLE
+    assert tuple(
+        (item.component_deployment_id, item.resource_reference)
+        for item in remote_bindings.items
+    ) == ((DESTINATION, "resource-destination"),)
