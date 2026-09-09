@@ -1,7 +1,11 @@
 # Active execution
 
-Current: none.
+Current: `PLAN-029-i16a-scoped-connectivity-workspace.md`
 
 Roadmap: `docs/engineering/post-wave1-product-completion-roadmap.md`.
 
-I15 Connectivity Decision Domain Closure is complete and absorbed into canonical truth. Create the I16 active plan only when Connectivity Decision Runtime and Workflow execution begins.
+Goal: close the selected responsibility scope -> local Resource semantics and implement the first resource-centric Scoped Connectivity Inventory / Connectivity workspace.
+
+Current stage: WP-01 — Domain re-entry: responsibility scope and local Resources.
+
+Implementation is gated until the P0 scope-to-Resource semantic owner/relation is accepted.

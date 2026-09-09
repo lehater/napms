@@ -2,69 +2,100 @@
 
 ## App shell
 
-```text
-+-------------------------------------------------------------+
-| Sidebar | Topbar                                            |
-|         +---------------------------------------------------+
-|         | Breadcrumb / PageHeader                           |
-|         | Filters / Actions                                 |
-|         | Main content                                      |
-+---------+---------------------------------------------------+
-```
+    +-------------------------------------------------------------------+
+    | Sidebar | Topbar: Scope switcher / user menu                      |
+    |         +---------------------------------------------------------+
+    |         | Breadcrumb / PageHeader                                 |
+    |         | Filters / Actions                                       |
+    |         | Main workspace                                          |
+    +---------+---------------------------------------------------------+
 
 ## Sidebar
 
-Responsibility: primary application navigation.
+Responsibility: primary product navigation using short user-oriented labels.
 
-Expanded desktop width: 224-240px. Collapsed width: 64-72px. Collapse state may be stored locally because it is presentation preference, not business state.
+Expanded desktop width: 224-240px. Collapsed width: 64-72px.
 
-Initial navigation:
+Baseline navigation:
 
-```text
-ACCESS POLICY
-  Compose Connectivity
-  Access Rules
+    OVERVIEW
+      Connectivity
 
-POLICY VIEWS
-  Effective Policy
-  Normalized Policy
-```
+    POLICY
+      Needs
+      Decisions        Planned until implemented
+      Rules
+      Effective
 
-Dashboard is added only after real aggregate APIs/use cases exist. Do not add approval, user/role administration or other placeholder navigation.
+    TECHNICAL
+      Realization      Planned
+      Evidence         Planned
+      Enforcement      Planned
 
-## Topbar
+Catalogue/admin sections are added only when concrete user workflows exist.
 
-Responsibility: global UI context/actions.
+Compose Connectivity is not a primary navigation destination. It is an action flow launched from Connectivity or relevant details.
 
-Initial content:
-- current user menu;
-- logout;
-- optional breadcrumb below topbar.
+### Planned items
 
-Global search/notifications are added only with real use cases.
+Roadmap-backed future areas may be visible only when marked Planned and visually disabled/distinct. They do not navigate to fabricated working screens or fake data.
 
-## Page structure
+## Topbar / scope context
 
-```text
-PageHeader
-  title
-  optional description/breadcrumb
-  admitted primary/secondary actions
+The selected responsibility scope is a primary workspace context.
 
-FilterBar / Tabs when required
+Use a compact ScopeSwitcher in the topbar or page-context area so that:
 
-Content
-  Table / Details / Form
-```
+- the current scope is always discoverable;
+- changing scope is deliberate;
+- shareable routes may carry selected scope where appropriate;
+- the UI does not imply scope is merely a table filter.
 
-Enterprise tables use available viewport width rather than a narrow marketing-style container.
+Exact selectable-scope semantics come from the accepted I16A responsibility model.
 
-## Drawer/dialog
+The topbar also contains the current user menu and logout.
 
-Use Drawer for contextual read/light-edit detail that does not justify a separate route. Use a dedicated page for deep, multi-section or bookmarkable content. Use Dialog for confirmations and compact actions.
+## Connectivity page structure
+
+    PageHeader
+      Connectivity
+      selected scope context
+      admitted primary actions
+
+    FilterBar
+      search
+      status filters
+      direction
+      column chooser
+
+    Full-width ConnectivityTreeGrid
+
+The tree-grid uses available viewport width. Do not wrap it in a narrow marketing-style max-width container.
+
+## Tree-grid hierarchy
+
+    Resource group row
+      Component Deployment group row
+        Connectivity relationship row
+
+A Resource/Component with zero connectivity remains visible.
+
+Group rows should minimize repeated data while keeping scanning and keyboard navigation clear.
+
+## Focused forms/details
+
+Use:
+
+- Drawer for Add Connectivity and contextual relationship detail when the content is compact enough;
+- dedicated route for deep/bookmarkable details;
+- Dialog for confirmation/compact actions.
+
+Focused forms may use a bounded width around 720-900px. Deep detail pages may use a readable wider bound. Operational inventories use full workspace width.
 
 ## Responsive behavior
 
-- `>= 1280px`: full desktop shell;
-- `768..1279px`: sidebar collapsed by default; tables may scroll horizontally;
-- `< 768px`: sidebar becomes an overlay; forms/details remain functional.
+- >= 1280px: expanded desktop shell and full tree-grid;
+- 768..1279px: collapsed sidebar by default; tree-grid may scroll horizontally;
+- < 768px: sidebar overlay; forms/details remain functional; dense inventory may use progressive column reduction/scrolling.
+
+Mobile remains functional but is not the primary optimization target.

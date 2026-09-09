@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I15 PASS — Connectivity Decision domain semantics closed; runtime remains I16`.
+Status: `I15 PASS — Connectivity Decision domain semantics closed; I16A Scoped Connectivity Workspace Foundation selected next`.
 
 Date: 2026-09-09.
 
@@ -195,8 +195,9 @@ Accepted:
 - ADR-004 supersedes ADR-003 for current target architecture;
 - no PostgreSQL/HTTP/Web/runtime implementation was added in I15.
 
-Next executable increment:
-- I16 replaces `local-dev:allowed` with the accepted durable Connectivity Decision application/runtime slice.
+Next executable increments:
+- I16A closes selected responsibility scope -> local Resource semantics and implements the resource-centric Scoped Connectivity Inventory / Connectivity workspace;
+- I16B then replaces `local-dev:allowed` with the accepted durable Connectivity Decision application/runtime slice.
 
 ## I8 scope boundary
 
@@ -221,9 +222,9 @@ The ordered path toward the current strategic-model notion of product completion
 
 Next roadmap increment:
 
-`I16 — Connectivity Decision Runtime and Workflow`.
+`I16A — Scoped Connectivity Workspace Foundation`, followed by `I16B — Connectivity Decision Runtime and Workflow`.
 
-I15 is complete and its active plan is removed during canonical absorption. I16 becomes the next roadmap increment but is not pre-expanded into an active plan until execution starts.
+I15 is complete and absorbed. The product-owner UX decision selects I16A as the next roadmap increment; its active plan is created with domain re-entry as the first gate.
 
 Future roadmap increments are not pre-expanded into active plans; each is promoted into an active plan only when execution starts, so deferred domain unknowns are not accidentally represented as accepted implementation detail.
 
