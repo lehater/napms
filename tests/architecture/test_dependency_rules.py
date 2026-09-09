@@ -6,6 +6,7 @@ ROOT = Path(__file__).parents[2]
 NAPMS = ROOT / "src" / "napms"
 
 ACCESS_POLICY = NAPMS / "access_policy"
+ACCESS_POLICY_REALIZATION = NAPMS / "access_policy_realization"
 AUTHORITY_MANAGEMENT = NAPMS / "authority_management"
 APPLICATION_CATALOGUE = NAPMS / "application_catalogue"
 RESOURCE_CATALOGUE = NAPMS / "resource_catalogue"
@@ -16,6 +17,7 @@ REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
 
 DOMAIN_LAYERS = (
     ACCESS_POLICY / "domain",
+    ACCESS_POLICY_REALIZATION / "domain",
     AUTHORITY_MANAGEMENT / "domain",
     APPLICATION_CATALOGUE / "domain",
     RESOURCE_CATALOGUE / "domain",
@@ -25,6 +27,7 @@ DOMAIN_LAYERS = (
 )
 APPLICATION_LAYERS = (
     ACCESS_POLICY / "application",
+    ACCESS_POLICY_REALIZATION / "application",
     AUTHORITY_MANAGEMENT / "application",
     APPLICATION_CATALOGUE / "application",
     RESOURCE_CATALOGUE / "application",
@@ -133,6 +136,10 @@ BOUNDED_CONTEXT_CORES = (
     (
         ACCESS_POLICY,
         "napms.access_policy",
+    ),
+    (
+        ACCESS_POLICY_REALIZATION,
+        "napms.access_policy_realization",
     ),
     (
         AUTHORITY_MANAGEMENT,

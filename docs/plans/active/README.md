@@ -1,7 +1,11 @@
 # Active execution
 
-Current: none.
+Current: none
 
-I17 Technical Access Evidence Core is complete and absorbed into canonical truth.
+Next roadmap increment: `I19 — Network Enforcement Placement` (not selected).
 
-Roadmap next: I18 — Technical-to-Domain Access Resolution. It is not yet selected for execution; create a new active plan only when execution actually begins.
+No implementation plan is currently selected.
+
+I18 Technical-to-Domain Access Resolution is complete and absorbed into canonical truth.
+
+Start I19 only by creating a new active PLAN after re-reading the roadmap and resolving its Tactical DDD/architecture unknowns. Do not pull I20 reconciliation semantics forward.

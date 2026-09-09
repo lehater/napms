@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I17 Technical Access Evidence Core accepted and implemented; I18 Technical-to-Domain Access Resolution is the next roadmap increment`.
+Status: `I18 Technical-to-Domain Access Resolution accepted and implemented; I19 Network Enforcement Placement is the next roadmap increment`.
 
 Date: 2026-09-09.
 
@@ -23,7 +23,7 @@ This file is a capability snapshot, not an increment-by-increment changelog. Det
 | Scoped Connectivity Inventory | accepted owner-preserving product/application composition | framework-free read composition with module-owned PostgreSQL adapters, including durable coarse Decision enrichment; no independent persistence | primary post-login Connectivity workspace |
 | Technical Access Evidence | accepted Tactical DDD | framework-free Domain/Application/Ports + TAE-owned PostgreSQL + strict local JSON import adapter + dedicated composition record/readback; no public TAE transport | none |
 | Network Enforcement Placement | strategic future context | not implemented | none |
-| Access Policy Realization | strategic future context | not implemented | none |
+| Access Policy Realization | accepted I18 Technical-to-Domain Resolution slice | framework-free Domain/Application/Ports + predicate-aware RC/ACC adapter + one-way TAE projection; derived on demand, no APR persistence | none |
 
 ## Current runtime boundary
 
@@ -66,22 +66,22 @@ This remains a local/development topology, not a production deployment claim.
 
 No implementation plan is currently selected.
 
-I17 Technical Access Evidence Core is complete and absorbed into canonical product/domain/architecture/engineering truth. The implemented core now provides:
-- immutable source-qualified Technical Access Evidence Sets and duplicate-preserving entries;
-- accepted `Configured | TrafficDerived | Imported` evidence kinds without authorization semantics;
-- explicit source/scope/capture identity plus `Unknown | Instant | Window` Evidence Time distinct from `RecordedAt`;
-- source-neutral address/protocol/port normalization with fail-closed ambiguity handling;
-- source + capture retry/idempotency identity and explicit conflicting-capture / commit-unknown outcomes;
-- TAE-owned append-only PostgreSQL persistence with corrupt-state fail-closed hydration;
-- one strict local JSON import adapter and dedicated PostgreSQL composition record/readback path;
-- executable proof that evidence recording creates neither Access Rules nor Connectivity Decisions;
-- no current/fresh selection, technical-to-domain resolution, enforcement placement or reconciliation semantics.
+I18 Technical-to-Domain Access Resolution is complete and absorbed into canonical product/domain/architecture/engineering truth. The implemented slice provides:
+- one consumer-independent APR resolution capability for proposal/reconciliation consumers;
+- exact pairwise `Exact | Covers | CoveredBy | PartialOverlap | None` correspondence;
+- overall `Exact | Covered | Partial | Ambiguous | Unresolved | Unknown` resolution status;
+- exact unresolved technical remainder for supported exact-protocol predicates;
+- explicit `Protocol Any -> Unknown` instead of guessed cross-protocol semantics;
+- predicate-aware effective RC + ACC projection with fail-closed predicate-relevant unknowns;
+- one-way durable TAE -> APR projection preserving source/time/action provenance without authorization meaning;
+- ambiguity with no winner selection and explicit effective-time dependence;
+- framework-free Domain/Application/Ports plus outer adapters using owner repositories rather than peer SQL;
+- durable PostgreSQL proof with no Access Rule or Connectivity Decision side effect;
+- no APR persistence, public HTTP/Web workflow, Network Enforcement Placement or I20 reconciliation semantics.
 
-There is intentionally no public TAE HTTP/Web surface or human Authority Management workflow in I17.
+I17 Technical Access Evidence Core and I16B Connectivity Decision Runtime/Workflow remain complete and absorbed into canonical truth.
 
-I16B Connectivity Decision Runtime and Workflow, including the later accepted Decisions frontend workspace, is also complete and absorbed into canonical truth.
-
-The roadmap next increment is I18 — Technical-to-Domain Access Resolution. It is not yet selected for execution, so there is no active `PLAN-*.md`.
+The roadmap next increment is I19 — Network Enforcement Placement. It is not selected for execution, so there is no active `PLAN-*.md`.
 
 ## Canonical references
 

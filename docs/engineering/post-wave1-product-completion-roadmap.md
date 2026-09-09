@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline; I17 complete, I18 next`.
+Status: `accepted ordered sequencing baseline; I18 complete, I19 next`.
 
 Date: 2026-09-09.
 
@@ -28,7 +28,7 @@ The roadmap may be refined when new accepted domain evidence changes boundaries 
 ## Baseline
 
 Completed:
-- I1-I17;
+- I1-I18;
 - Wave 1 proposal -> Connectivity Decision seam -> Access Rule -> effective desired policy -> coherent normalized policy;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
@@ -40,14 +40,14 @@ Wave 1 intentionally stopped before Connectivity Requirements runtime participat
 
 Still deferred:
 - Network Enforcement Placement;
-- Access Policy Realization/reconciliation;
+- Access Policy Realization enforcement-policy derivation/reconciliation;
 - vendor rendering;
 - device/provider execution;
 - production identity/deployment/integration.
 
 ## Ordered increments
 
-### Completed increments — I13 through I17
+### Completed increments — I13 through I18
 
 Status: `done / absorbed into canonical truth`.
 
@@ -57,6 +57,7 @@ Status: `done / absorbed into canonical truth`.
 - I16A — Scoped Connectivity Workspace Foundation: Resource Scope Affiliation, `ReadScopedConnectivity`, owner-preserving inventory composition, authenticated HTTP read surface, resource-centric Web workspace and contextual Request access for existing exact ACC interactions.
 - I16B — Connectivity Decision Runtime and Workflow: durable immutable Decision persistence/selection, independent Decide/Read authority, Access Policy and Scoped Connectivity integration, authorized Decision Web/HTTP workspace, and local Docker runtime without deterministic allow plumbing.
 - I17 — Technical Access Evidence Core: accepted Tactical DDD, immutable source-qualified evidence identity/time/provenance, framework-free core, TAE-owned PostgreSQL persistence, strict local/import normalization and dedicated durable record/readback proof without authorization or realization leakage.
+- I18 — Technical-to-Domain Access Resolution: accepted consumer-independent APR correspondence algebra, exact remainder/ambiguity/Unknown semantics, predicate-aware RC/ACC + TAE adapters and durable PostgreSQL resolution proof without authorization, placement or reconciliation leakage.
 
 Detailed completed execution is not roadmap state. Durable outcomes live in current requirements/domain/architecture/engineering artifacts; Git history preserves the execution record.
 
@@ -80,23 +81,35 @@ NAPMS can persist/query technical evidence without treating evidence as authoriz
 
 ### I18 — Technical-to-Domain Access Resolution
 
-Status: `next; not yet selected for execution`.
+Status: `done / absorbed into canonical truth`.
 
 Goal:
 implement the shared resolution capability inside **Access Policy Realization**.
 
-Expected semantics:
-- map one normalized Technical Access Predicate against RC + ACC + effective time;
-- exact/coverage/partial/ambiguous/unresolved outcomes as accepted by Tactical DDD;
+Accepted/implemented semantics:
+- map one normalized Technical Access Predicate against effective RC + ACC knowledge at explicit `asOf`;
+- pairwise `Exact | Covers | CoveredBy | PartialOverlap | None`;
+- resolution `Exact | Covered | Partial | Ambiguous | Unresolved | Unknown`;
 - same resolution semantics for proposal/reconciliation consumers;
-- preserve unresolved technical remainder and provenance.
+- exact unresolved technical remainder for supported exact-protocol predicates;
+- ambiguity keeps all competing Domain Interactions and selects no winner;
+- predicate-relevant missing/untranslatable knowledge fails closed as Unknown;
+- Protocol Any remains Unknown until a protocol-wide applicability/difference model is accepted;
+- one-way TAE projection preserves source-qualified provenance without authorization meaning.
 
-Exit:
+Implemented:
+- framework-free APR Domain/Application/Ports;
+- predicate-aware RC/ACC outer adapter using owner repositories;
+- TAE -> APR outer projection adapter;
+- no APR persistence or public workflow;
+- durable PostgreSQL proof of exact resolution, effective-time change, ambiguity and zero Access Rule/Decision side effects.
+
+Exit achieved:
 technical evidence can be explained in domain interaction terms without consumer-specific meaning.
 
 ### I19 — Network Enforcement Placement
 
-Status: `planned after I18`.
+Status: `next; not yet selected for execution`.
 
 Goal:
 implement the **Network Enforcement Placement** context needed to answer where traffic is actually subject to enforcement.
