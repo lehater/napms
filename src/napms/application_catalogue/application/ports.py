@@ -40,3 +40,23 @@ class ApplicationCatalogueRepository(Protocol):
         component_deployment_id: UUID,
         as_of: datetime,
     ) -> tuple[DeploymentResourceBinding, ...]: ...
+
+    def find_effective_bindings_for_resources(
+        self,
+        *,
+        resource_references: tuple[str, ...],
+        as_of: datetime,
+    ) -> tuple[DeploymentResourceBinding, ...]: ...
+
+    def find_effective_bindings_for_components(
+        self,
+        *,
+        component_deployment_ids: tuple[UUID, ...],
+        as_of: datetime,
+    ) -> tuple[DeploymentResourceBinding, ...]: ...
+
+    def list_dcs_revisions_for_components(
+        self,
+        *,
+        component_deployment_ids: tuple[UUID, ...],
+    ) -> tuple[DcsRevision, ...]: ...
