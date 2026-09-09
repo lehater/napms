@@ -1,6 +1,6 @@
 # Wave-1 G4 — Implementation readiness
 
-Status: `G4 PASS`.
+Status: `G4 PASS — historical accepted snapshot`.
 
 Date: 2026-09-08.
 
@@ -10,47 +10,34 @@ Date: 2026-09-08.
 
 ## Historical G4 artifacts
 
-The detailed PLAN-028 walking-skeleton/readiness packets were absorbed into durable domain, requirements, architecture, code and executable evidence and are no longer retained as working-tree execution documents. Git history is the archive for those packets.
+Detailed PLAN-028 walking-skeleton/readiness packets and the later Wave-1 working requirement/architecture packets were absorbed into current product/domain/architecture truth, code and executable evidence. Git history is the archive for those packets.
 
-Durable successors include:
+Durable current successors include:
+- `docs/requirements/access-policy-core.md`;
+- `docs/requirements/policy-export-core.md`;
 - `docs/domain/access-policy/tactical-model.md`;
-- `docs/requirements/wave1-product-requirements.md`;
-- `docs/requirements/wave1-semantic-contracts.md`;
-- `docs/decisions/ADR-001-wave1-modular-application.md`;
-- `docs/decisions/ADR-002-wave1-coherent-export-snapshot.md`;
+- `docs/architecture/current-architecture.md`;
+- ADR-001 / ADR-002 / ADR-005;
 - current implementation and executable evidence under `src/` and `tests/`.
+
+The original G4 Decision-provider assumption was intentionally minimal; ADR-005 supersedes it for current target semantics.
 
 ## Readiness challenge
 
-| Finding | Severity | Result |
+| Finding | Severity | Historical result |
 |---|---|---|
-| Would code need to invent Rule identity/materialization semantics? | P1 | CLOSED — G2 + tactical model |
-| Would code need to invent architecture topology/module ownership? | P1 | CLOSED — G3/ADR-001 |
-| Would code need to invent decision-domain workflow? | P1 | CLOSED — external port/fake/manual adapter only |
-| Is concurrency/idempotency mechanism sufficiently constrained? | P1 | CLOSED — authoritative unique tuple + transaction/conflict resolution contract; exact SQL mechanism implementation-local |
-| Are first-slice acceptance/security behaviors explicit? | P1 | CLOSED — acceptance pack + threat model |
-| Is build/test/run path available? | P1 | CLOSED — existing Python/FastAPI scaffolding reused only as tooling; target package semantics replaced |
-| Would first deployment require Legacy migration/cutover? | P1 | NO — isolated coexistence skeleton first |
-| Exact deployment DB vendor not selected | P2 | NOT BLOCKING — relational transactional semantics fixed; choose simplest supported engine and validate concurrency against production engine |
-| Exact auth/catalogue/decision production providers unknown | P2 | NOT BLOCKING for skeleton — real ports + fake/manual adapters explicitly selected; real integration is later backlog I7 |
+| Would code need to invent Rule identity/materialization semantics? | P1 | CLOSED |
+| Would code need to invent architecture topology/module ownership? | P1 | CLOSED |
+| Would first slice require invented Decision workflow? | P1 | CLOSED by the then-selected minimal port |
+| Is concurrency/idempotency sufficiently constrained? | P1 | CLOSED |
+| Are first-slice acceptance/security behaviors explicit? | P1 | CLOSED |
+| Would first deployment require Legacy migration/cutover? | P1 | NO |
 | Numeric SLA/workload absent | P3 | accepted pending evidence |
-| Exact lint/type/secret/deploy platform choices | P3 | implementation-local; must be added before corresponding production environment, not semantic blockers |
 
-Open/unaccepted P0/P1 findings: `none`.
-
-## G4 completion check
-
-- Walking Skeleton selected: PASS;
-- actor outcome/examples clear: PASS;
-- Tactical DDD consistency rules defined: PASS;
-- implementation ports/data/error/concurrency contracts implementable: PASS;
-- acceptance/integration checks identified: PASS;
-- engineering build/test/run/observe path defined: PASS;
-- threat mitigations actionable: PASS;
-- transition/rollback explicit: PASS;
-- ordered vertical backlog established: PASS;
-- code would need to invent product/architecture semantics: NO.
+Open/unaccepted P0/P1 findings at G4: `none`.
 
 ## Decision
 
-`G4 PASS` — production code may begin with backlog increment I1. Any implementation discovery that contradicts accepted G2/G3 semantics must reopen the owning decision rather than silently changing behavior in code.
+`G4 PASS` — production code could begin with I1.
+
+Current implementation discoveries must follow current requirements/DDD/architecture rather than this historical readiness snapshot.
