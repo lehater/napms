@@ -6,20 +6,7 @@ Authoritative greenfield NAPMS product repository.
 
 ## Current implementation state
 
-NAPMS runtime and accepted current architecture are implemented through I16B:
-- Access Policy, Authority Management, Application Communication Catalogue and Resource Catalogue;
-- PostgreSQL persistence;
-- Web/HTTP runtime;
-- Access Rule operational workspace;
-- EffectiveWindow management;
-- Effective Desired Policy and normalized policy views;
-- human-readable catalogue labels and authorized interaction search across operator workflows;
-- Connectivity Requirements owner workspace;
-- Requirement-to-Policy Alignment with Covered / Uncovered / NotCurrent / Unknown status;
-- resource-centric Scoped Connectivity workspace with coarse Need / Decision / Policy truth;
-- durable Connectivity Decision runtime with independent Decide/Read authority, immutable supersession and authorized Decisions workspace.
-
-I11 adds and proves the reproducible local Docker runtime. I12 makes the existing workflows label-first while retaining stable technical IDs. I13 adds authoritative Connectivity Requirements. I14 derives current effective-policy coverage without exposing protected Rule details or adding Alignment persistence. I15 promotes Connectivity Decision to a first-class bounded context. I16A adds the owner-preserving resource-centric Connectivity workspace, and I16B completes durable Decision persistence/selection, Access Policy and Scoped Connectivity integration, participant HTTP/Web workflows, and a local Docker journey without deterministic allow plumbing.
+NAPMS includes the current local product chain through Network Environment Operations plus the optional external-integration seam absorbed in I23. Canonical capability status lives in `docs/engineering/current-state.md`; roadmap sequencing lives in `docs/engineering/post-wave1-product-completion-roadmap.md`.
 
 ## Local Docker start
 
@@ -29,7 +16,7 @@ Prerequisites: Docker Engine/Desktop with Docker Compose v2 and Python 3.
 make dev-up
 ```
 
-The command builds and starts PostgreSQL, tracked migrations, local demo seed, FastAPI and Web/nginx, runs an authenticated smoke check, then prints the local URL and generated login credentials.
+The command generates ephemeral local PostgreSQL and UI credentials in memory, builds and starts PostgreSQL, tracked migrations, local demo seed, FastAPI and Web/nginx, runs an authenticated product smoke check, verifies that PostgreSQL requires the configured password, then prints the local URL and generated UI login credentials.
 
 Open the printed URL (default `http://127.0.0.1:8080`).
 
@@ -43,7 +30,11 @@ make dev-reset
 
 `dev-down` preserves the database volume. `dev-reset` deletes local database state.
 
-See `docs/engineering/local-docker-runtime.md` for the topology and explicit non-production boundary.
+A PostgreSQL volume created by the older pre-I24 `trust` configuration may fail the new authentication verification even though the application can connect. Do not destroy needed data to fix that condition; first follow the local backup/restore procedure once available in I24 WP2, then recreate or explicitly migrate the volume.
+
+For raw `docker compose up`, provide `NAPMS_POSTGRES_PASSWORD` and `NAPMS_LOCAL_AUTH_PASSWORD_HASH` outside version control. `.env.example` lists the supported overrides but intentionally contains no usable credentials.
+
+See `docs/engineering/local-docker-runtime.md` for the topology, credential boundary and explicit non-enterprise scope.
 
 ## Native development
 
