@@ -132,6 +132,23 @@ class ConfiguredEvidenceProjectionAdapter:
         gaps: list[KnowledgeGap] = []
 
         if (
+            evidence_set.evidence_set_id
+            != evidence_set_id
+        ):
+            gaps.append(
+                _gap(
+                    "ConfiguredEvidenceSetIdMismatch",
+                    requested_reference,
+                    (
+                        "tae-returned-evidence-set:"
+                        + str(
+                            evidence_set.evidence_set_id
+                        )
+                    ),
+                )
+            )
+
+        if (
             contract.semantics
             is not ConfiguredPolicySemantics.EFFECTIVE_PERMIT_SET
         ):

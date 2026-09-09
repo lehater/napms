@@ -323,6 +323,27 @@ class EffectiveDesiredPolicyProjectionAdapter:
                 ),
             )
         )
+        selected_rules = {
+            rule.rule_id: _interaction(
+                rule.semantic_identity
+            )
+            for rule in selection.rules
+        }
+        normalized_interactions = {
+            _interaction(
+                row.rule_semantic_identity
+            )
+            for row in normalized.rows
+        }
+        if (
+            normalized_interactions
+            != set(desired_interactions)
+        ):
+            gaps.append(
+                _gap(
+                    "DesiredPolicyNormalizationRuleCoverageMismatch",
+                )
+            )
 
         if (
             normalized.scope
@@ -339,6 +360,24 @@ class EffectiveDesiredPolicyProjectionAdapter:
             interaction = _interaction(
                 row.rule_semantic_identity
             )
+            if (
+                row.rule_governance_scope
+                != governance_scope
+                or row.snapshot_as_of != as_of
+                or row.read_authority_reference
+                != authority_reference
+                or selected_rules.get(
+                    row.rule_id
+                ) != interaction
+            ):
+                gaps.append(
+                    _gap(
+                        "DesiredPolicyRowCorrelationMismatch",
+                        "access-rule:"
+                        + str(row.rule_id),
+                    )
+                )
+                continue
             protocol_number = (
                 _PROTOCOL_NUMBERS.get(
                     row.protocol

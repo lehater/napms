@@ -1,4 +1,5 @@
-from datetime import datetime, timezone
+from dataclasses import replace
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from napms.access_policy.application.select_effective_policy import (
@@ -286,6 +287,45 @@ def test_desired_adapter_projects_owner_snapshot_to_apr_types():
     )
 
 
+def test_desired_adapter_rejects_mis_correlated_normalized_row():
+    class BadNormalizer(Normalizer):
+        def execute(self, snapshot):
+            normalized = super().execute(
+                snapshot
+            )
+            row = replace(
+                normalized.rows[0],
+                rule_governance_scope=(
+                    "scope:other"
+                ),
+            )
+            return replace(
+                normalized,
+                rows=(row,),
+            )
+
+    result = (
+        EffectiveDesiredPolicyProjectionAdapter(
+            selector=Selector(),
+            snapshot_assembler=Assembler(),
+            normalizer=BadNormalizer(),
+            actor_id="actor:1",
+        ).load_effective(
+            governance_scope="scope:a",
+            as_of=NOW,
+        )
+    )
+
+    assert not result.complete
+    assert result.rows == ()
+    assert {
+        gap.reason
+        for gap in result.knowledge_gaps
+    } == {
+        "DesiredPolicyRowCorrelationMismatch"
+    }
+
+
 def test_desired_adapter_fails_closed_for_unsupported_protocol():
     result = desired_adapter(
         "vendor-proto"
@@ -363,6 +403,58 @@ class NepSelector:
             ),
             complete=True,
         )
+
+
+def test_nep_adapter_rejects_mis_correlated_selection():
+    class BadNepSelector(NepSelector):
+        def execute(
+            self,
+            *,
+            relation,
+            as_of,
+            input_provenance,
+        ):
+            value = super().execute(
+                relation=relation,
+                as_of=as_of,
+                input_provenance=(
+                    input_provenance
+                ),
+            )
+            return replace(
+                value,
+                as_of=as_of
+                - timedelta(minutes=1),
+            )
+
+    result = (
+        NetworkEnforcementPlacementProjectionAdapter(
+            select_enforcement=(
+                BadNepSelector()
+            )
+        ).select_for(
+            source_ip="10.0.0.1",
+            destination_ip="10.0.0.2",
+            as_of=NOW,
+            input_provenance=(
+                InputProvenance(
+                    ("desired:1",)
+                )
+            ),
+        )
+    )
+
+    assert (
+        result.status
+        is PlacementStatus.UNKNOWN
+    )
+    assert result.placements == ()
+    assert {
+        gap.reason
+        for gap in result.knowledge_gaps
+    } == {
+        "PlacementSelectionCorrelationMismatch"
+    }
 
 
 def test_nep_adapter_preserves_attachment_target_and_provenance():
@@ -542,6 +634,32 @@ def test_configured_adapter_requires_exact_source_scope_time_and_permit_semantic
         ].predicate.protocol.number
         == 6
     )
+
+
+def test_configured_adapter_rejects_mis_correlated_evidence_id():
+    wrong = replace(
+        evidence_set(),
+        evidence_set_id=UUID(int=999),
+    )
+    result = ConfiguredEvidenceProjectionAdapter(
+        get_evidence_set=(
+            GetEvidence(wrong)
+        )
+    ).load_configured(
+        evidence_set_id=UUID(int=100),
+        contract=contract(),
+        as_of=NOW,
+    )
+
+    assert (
+        not result.complete_for_managed_scope
+    )
+    assert {
+        gap.reason
+        for gap in result.knowledge_gaps
+    } == {
+        "ConfiguredEvidenceSetIdMismatch"
+    }
 
 
 def test_configured_adapter_block_entry_fails_closed():

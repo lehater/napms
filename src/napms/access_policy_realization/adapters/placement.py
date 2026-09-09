@@ -119,12 +119,13 @@ class NetworkEnforcementPlacementProjectionAdapter:
         as_of,
         input_provenance: InputProvenance,
     ) -> PlacementSelectionProjection:
+        relation = TrafficRelation(
+            source_ip,
+            destination_ip,
+        )
         selection = (
             self._select_enforcement.execute(
-                relation=TrafficRelation(
-                    source_ip,
-                    destination_ip,
-                ),
+                relation=relation,
                 as_of=as_of,
                 input_provenance=(
                     NepInputProvenance(
@@ -133,6 +134,27 @@ class NetworkEnforcementPlacementProjectionAdapter:
                 ),
             )
         )
+        if (
+            selection.relation != relation
+            or selection.as_of != as_of
+        ):
+            return PlacementSelectionProjection(
+                status=PlacementStatus.UNKNOWN,
+                provenance_references=(
+                    "nep-selection-correlation-mismatch",
+                ),
+                knowledge_gaps=(
+                    KnowledgeGap(
+                        owner=(
+                            "Access Policy Realization"
+                        ),
+                        reason=(
+                            "PlacementSelectionCorrelationMismatch"
+                        ),
+                        references=(),
+                    ),
+                ),
+            )
         placements = tuple(
             EnforcementPlacementProjection(
                 target=EnforcementTarget(
