@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I12 PASS — Human-readable Catalogue UX implemented`.
+Status: `I13 PASS — Connectivity Requirements Core implemented`.
 
 Date: 2026-09-09.
 
@@ -121,6 +121,32 @@ Implemented:
 - final architecture/security review has no open P0/P1 finding;
 - core, PostgreSQL, Web, Docker, harness and knowledge gates passed.
 
+## I13 result
+
+`PASS` for the first executable Connectivity Requirements bounded-context slice.
+
+Implemented:
+- accepted Tactical DDD for Connectivity Requirement identity, active semantic uniqueness, Dependent Component Deployment, exact Required Semantic Interaction, Applicability, Justification and terminal `Active -> Retired` lifecycle;
+- invariant `Required != Authorized` and zero implicit Connectivity Decision / Access Policy side effect;
+- distinct Authority Management actions for declare/read/applicability/justification/retire;
+- consumer-owned Authority/ACC ports with fail-closed denied/unknown semantics;
+- framework-free Domain/Application core with idempotent declaration, explicit no-op semantics and version-aware mutation;
+- module-owned PostgreSQL schema/repository with partial active semantic uniqueness, optimistic concurrency and atomic business audit;
+- tracked migration `connectivity-requirements/0001` included in packaged runtime images;
+- HTTP API for scope/interaction discovery, declaration, authorized list/detail, applicability, justification and retirement;
+- server trust boundary: authenticated actor and runtime business action time are not client-supplied; later actions use stored Requirement Governance Scope;
+- Web workspace `My Connectivity Needs` with label-first ACC interaction discovery, declaration, details, applicability/justification mutation and retirement;
+- no `Pending/Approved/Rejected`, approval queue or Allowed/Denied status introduced;
+- PostgreSQL greenfield E2E proving declaration/read/mutation/retirement, restart persistence, re-declaration after retirement and zero Access Rule creation;
+- Docker public-nginx smoke proving login -> Requirement declaration -> read/mutate/retire while Access Rules remain empty;
+- final architecture/security review has no open P0/P1 finding;
+- core, PostgreSQL, Web, Docker, harness and knowledge gates passed.
+
+Deferred to later increments:
+- Requirement-to-Policy Alignment;
+- Connectivity Decision internals/workflow;
+- configured/observed technical satisfaction and reconciliation.
+
 ## I8 scope boundary
 
 I8 intentionally does **not** define Connectivity Decision Domain internals.
@@ -142,15 +168,13 @@ The ordered path toward the current strategic-model notion of product completion
 
 `docs/engineering/post-wave1-product-completion-roadmap.md`.
 
-Current selected increment:
+Next roadmap increment:
 
-`I13 — Connectivity Requirements Core`.
+`I14 — Requirement-to-Policy Alignment`.
 
-The detailed mutable execution state lives only in:
+I13 is complete and its active plan is removed during canonical absorption. No new active plan is created in the I13 semantic stage.
 
-`docs/plans/active/PLAN-013-i13-connectivity-requirements-core.md`.
-
-Future roadmap increments are not pre-expanded into active plans; each is promoted only when selected, so deferred domain unknowns are not accidentally represented as accepted implementation detail.
+Future roadmap increments are not pre-expanded into active plans; each is promoted into an active plan only when execution starts, so deferred domain unknowns are not accidentally represented as accepted implementation detail.
 
 ## Current infrastructure boundary
 
@@ -159,14 +183,15 @@ Implemented:
 - Authority Management PostgreSQL;
 - Application Communication Catalogue PostgreSQL;
 - Resource Catalogue PostgreSQL;
+- Connectivity Requirements PostgreSQL;
 - strict internal DCS projection codec;
 - typed local-dev configuration/composition;
 - FastAPI HTTP runtime;
 - local-dev authentication/session boundary;
 - explicit local-dev Connectivity Decision adapter;
 - public normalized-policy JSON serializer;
-- React Web UI through Operational Workspace, Policy Operations and Human-readable Catalogue UX;
+- React Web UI through Connectivity Requirements, Operational Workspace, Policy Operations and Human-readable Catalogue UX;
 - structured runtime observability/correlation and health/readiness;
-- Dockerized local runtime with tracked migrations, demo seed and nginx same-origin entrypoint.
+- Dockerized local runtime with tracked migrations, demo seed, Connectivity Requirements public smoke and nginx same-origin entrypoint.
 
 The implementation remains greenfield: Legacy, MSSQL and vendor/device execution are not dependencies.
