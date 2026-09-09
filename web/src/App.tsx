@@ -60,6 +60,7 @@ function readRoute(): Route {
     const query = hash.includes("?") ? hash.split("?")[1] : ""
     const params = new URLSearchParams(query)
     const scope = params.get("scope")
+    const localResourceReference = params.get("localResource")
     const dependentComponentDeploymentId = params.get("dependent")
     const sourceComponentDeploymentId = params.get("source")
     const destinationComponentDeploymentId = params.get("destination")
@@ -68,6 +69,7 @@ function readRoute(): Route {
     const returnPageValue = Number(params.get("returnPage") ?? "1")
     if (
       scope &&
+      localResourceReference &&
       dependentComponentDeploymentId &&
       sourceComponentDeploymentId &&
       destinationComponentDeploymentId &&
@@ -78,6 +80,7 @@ function readRoute(): Route {
         kind: "request-access",
         context: {
           scope,
+          localResourceReference,
           dependentComponentDeploymentId,
           sourceComponentDeploymentId,
           destinationComponentDeploymentId,
@@ -200,6 +203,7 @@ export function App() {
           onRequestAccess={(context) => {
             const params = new URLSearchParams({
               scope: context.scope,
+              localResource: context.localResourceReference,
               dependent: context.dependentComponentDeploymentId,
               source: context.sourceComponentDeploymentId,
               destination: context.destinationComponentDeploymentId,
