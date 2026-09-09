@@ -225,7 +225,7 @@ The screen must not display a fabricated pending case lifecycle. It is rendered 
 - Dashboard: add after source screens expose real data/metrics.
 - Global audit log: add when a concrete cross-entity audit query/use case is required; Rule business history is sufficient for the first increment.
 - Resource/application portfolio administration: only when a concrete owner workflow requires it.
-- Approval/review queue: deferred with the Connectivity Decision Domain.
+- Approval/review queue: deferred unless later canonical Connectivity Decision requirements introduce an explicit case/workflow lifecycle.
 
 ## Product class and primary operating environment
 
@@ -368,7 +368,7 @@ Minimum implementation obligations:
 - statuses not encoded by color alone;
 - browser tests should prefer role/label-based interaction so missing accessible names fail quality gates rather than being hidden behind test-only selectors.
 
-## Non-goals for I8 UI
+## Current Web UI non-goals
 
 - persistent generic Access Request lifecycle;
 - approval/review workflow;
