@@ -1,4 +1,4 @@
-# ADR-004 — Connectivity Decision as a first-class bounded context
+# ADR-005 — Connectivity Decision as a first-class bounded context
 
 Status: `accepted`.
 
@@ -34,7 +34,7 @@ Access Policy consumes only one effective final Decision for exact subject/scope
 
 ## Consequences
 
-- I16 can implement a durable local Decision provider without inventing domain semantics in adapters;
+- I16B can implement a durable local Decision provider without inventing domain semantics in adapters;
 - `local-dev:allowed` is no longer a valid normal-product decision mechanism;
 - Connectivity Requirements can be referenced as evidence without becoming authorization;
 - decision history is explainable and immutable;

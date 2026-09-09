@@ -8,14 +8,20 @@ Legacy/reconstruction evidence lives outside this repository and does not define
 
 ## Progressive startup
 
-Do not preload the whole repository.
+Do not preload the whole repository. Conversation history is execution history, not project state.
 
 For non-trivial work read, in order:
 1. this file;
-2. `docs/plans/active/README.md` and the current plan;
+2. `docs/plans/active/README.md` as the compact resume capsule;
 3. the nearest scoped `AGENTS.md`;
-4. only the canonical domain/requirements/architecture/engineering artifacts needed by the current plan/work package;
-5. the smallest applicable Skill under `.agents/skills/`.
+4. the smallest applicable Skill under `.agents/skills/`;
+5. only the canonical artifacts and code named by the capsule/current task.
+
+Read the full current `PLAN-*.md` only when the task concerns planning/coordination/stage transition, the resume capsule explicitly directs you there, or a material fact required for the current task is missing. Do not load future work packages by default.
+
+The resume capsule is a non-authoritative recovery cache. If a capsule summary conflicts with its canonical domain/requirements/architecture/engineering owner, the canonical owner wins and the capsule must be refreshed.
+
+Do not scan `docs/baseline/` or completed historical Wave-1 material unless the task explicitly requires history or provenance.
 
 Use `docs/process/decision-protocol.md` when a material answer is missing or conflicting.
 
@@ -26,10 +32,12 @@ Use `docs/process/decision-protocol.md` when a material answer is missing or con
 - `docs/architecture/` — current target architecture and ownership constraints.
 - `docs/decisions/` — consequential ADRs.
 - `docs/engineering/` — implementation contracts/policies and engineering state.
+- `docs/ui/` — current implementation-oriented UI guidance derived from accepted requirements.
 - `docs/plans/active/` — current execution state only.
 - `docs/process/` — reusable repository working protocols.
 - `docs/baseline/` — accepted snapshots/provenance; not the normal edit target.
-- `src/` + `tests/` — current implementation and executable evidence.
+- `src/` + `tests/` — backend implementation and executable evidence.
+- `web/` — React outer adapter; apply `web/AGENTS.md` before Web UI work.
 
 When layers disagree materially, do not silently choose the code. Resolve the highest affected canonical truth first.
 
@@ -86,6 +94,7 @@ Use the check matching the touched area:
 - `make test` — product/core tests;
 - `make harness-check` — AGENTS/Skills/process/plans/routing;
 - `make knowledge-check` — living domain-model invariants;
-- `make check` — all repository-local checks.
+- `make check` — backend/core + harness + knowledge checks;
+- `make web-check` — Web TypeScript/build check.
 
 Hosted Actions are the final PR gate, not the branch editing loop.

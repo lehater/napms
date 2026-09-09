@@ -3,11 +3,14 @@
 ## Persistence model
 
 ```text
-active conversation / worktree
-    = mutable working state
+active conversation
+    = disposable execution context
 
-working branch
-    = durable checkpoints/WIP/fixups as needed
+docs/plans/active/README.md
+    = durable resume state for the current task
+
+working branch / worktree
+    = durable code checkpoints/WIP/fixups as needed
 
 main
     = curated semantic history through squash merge
@@ -26,8 +29,56 @@ Write a branch checkpoint when at least one is true:
 
 Do not checkpoint every wording/edit operation.
 
+## Context rollover
+
+Starting a fresh chat/session is a normal context-management operation, not a failure.
+
+Prefer rollover when:
+- the semantic phase changes (for example domain closure -> implementation or implementation -> review);
+- the conversation becomes costly, stale, repeatedly rereads old context, or has been compacted heavily;
+- large logs, diffs, research or rejected alternatives dominate the history;
+- the workstream is switching and the new task can be stated independently.
+
+Before rollover:
+1. absorb durable product/domain/architecture decisions into their canonical artifacts;
+2. update `docs/plans/active/README.md` with the current task, minimal working set, blockers, gate and next action;
+3. checkpoint coherent code on the working branch when losing it would be costly;
+4. preserve only durable constraints/results, not full reasoning trails, tool output or rejected exploration.
+
+A fresh session recovers in this order:
+
+```text
+root AGENTS.md
+  -> docs/plans/active/README.md
+  -> nearest scoped AGENTS.md
+  -> smallest applicable Skill
+  -> capsule working set
+```
+
+Read the full active plan only when planning/coordination/stage transition or missing material context requires it.
+
+## Side chats and parallel work
+
+A second chat opened for analysis, research or review is read-only by default. Its useful result should be returned as findings or absorbed by the write owner into canonical state.
+
+If two chats must write concurrently:
+- use separate branches/worktrees;
+- keep write scopes disjoint where practical;
+- only one writer updates `docs/plans/active/README.md`;
+- before integration, re-check current `main` and revalidate any canonical inputs that changed since the task base.
+
+Do not introduce multi-agent coordination machinery for ordinary sequential work.
+
 ## Integration
 
 One PR should represent one coherent semantic stage. Accumulate branch commits freely enough for safety/review, then squash merge.
 
-For expensive GitHub Actions, keep the PR draft while work is accumulating. Repository CI is triggered when the PR is marked ready for review, not on ordinary branch pushes. If material changes are needed after that gate, return the PR to draft, change it, then mark ready again for a fresh gate.
+For expensive GitHub Actions, keep the PR draft while work is accumulating. Repository CI is triggered when the PR is marked ready for review, not on ordinary branch pushes.
+
+Treat `Ready for review` as a request for the final hosted gate, not as a per-fix test button:
+- before marking ready, run the applicable repository-local checks and batch known fixes;
+- if a deterministic gate failure requires material changes, return the PR to draft once, batch the corrections, rerun the applicable local checks, then mark ready once for a fresh gate;
+- if an isolated hosted job fails for a transient/flaky infrastructure reason and no repository change is required, rerun the failed job/workflow instead of toggling Draft/Ready;
+- avoid repeated Draft -> Ready cycles for individual fixes: each cycle reevaluates the accumulated PR path diff and can restart every applicable hosted gate.
+
+Hosted gates validate the complete affected PR scope. Local editing may use the smallest applicable checks, but the final gate must not rely only on the last commit delta.

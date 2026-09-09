@@ -120,7 +120,7 @@ Implemented in I15:
 - immutable reconsideration through explicit same-subject/same-scope supersession;
 - at most one trustworthy effective Decision per subject/scope/asOf; ambiguity fails closed;
 - expiry/supersession does not silently mutate an already materialized Access Rule;
-- ADR-004 and the durable architecture boundary supersede the Wave-1 external/deferred seam.
+- ADR-005 and the durable architecture boundary supersede the Wave-1 external/deferred seam.
 
 Exit achieved:
 accepted Strategic/Tactical DDD + requirements + acceptance examples + ADR/architecture contract for I16.
