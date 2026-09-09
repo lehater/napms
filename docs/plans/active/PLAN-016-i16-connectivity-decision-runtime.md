@@ -10,7 +10,7 @@ Implement the I15 Connectivity Decision model end-to-end and remove the determin
 
 ## Current stage
 
-WP1 — Domain/Application/Ports core and executable specifications. Infrastructure gate is closed until the core contract is proven.
+WP2 — PostgreSQL persistence. WP1 core and harness gates passed; infrastructure gate is open.
 
 ## Inputs
 
@@ -22,8 +22,8 @@ WP1 — Domain/Application/Ports core and executable specifications. Infrastruct
 
 ## Work packages
 
-### WP1 — Decision core
-Implement framework-free Domain/Application/Ports:
+### WP1 — Decision core — done
+Implemented framework-free Domain/Application/Ports:
 - immutable Decision aggregate/value types;
 - DecideConnectivity / ReadConnectivityDecision authority;
 - record/supersede;
@@ -31,8 +31,8 @@ Implement framework-free Domain/Application/Ports:
 - exact subject/scope/time and fail-closed ambiguity;
 - core/architecture tests.
 
-### WP2 — PostgreSQL
-After core gate:
+### WP2 — PostgreSQL — active
+With core gate passed:
 - module-owned schema/migration/repository;
 - immutable history;
 - concurrency-safe supersession/current selection;
@@ -75,4 +75,4 @@ The execution sandbox cannot clone github.com directly. Core/infrastructure stag
 
 ## Next
 
-Implement WP1 only, run the core PR gate, then open the infrastructure gate.
+Implement WP2 Decision-owned PostgreSQL persistence and prove its concurrency/rollback/unknown-commit semantics before Access Policy integration.
