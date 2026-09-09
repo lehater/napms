@@ -37,7 +37,13 @@ Details:
 - declaration provenance;
 - independent Set Applicability / Set Justification / Retire controls when backend capabilities are Permitted.
 
-No Allowed/NotAllowed, approval status or policy-coverage status is shown in I13.
+I14 alignment:
+- list and details show `Covered | Uncovered | NotCurrent | Unknown`;
+- one explicit `asOf` controls Requirement applicability and Access Rule effective contribution;
+- current Retired lifecycle remains `NotCurrent`; I14 does not reconstruct historical aggregate lifecycle;
+- `Uncovered` explicitly does not mean `Denied`;
+- Rule details/provenance remain hidden in the first slice;
+- no configured/observed-access claim is shown.
 
 ## Compose Connectivity
 
