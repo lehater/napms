@@ -1,19 +1,23 @@
 # Active execution
 
-Current: `PLAN-037-i23-enterprise-identity-authoritative-sources.md`.
+Current: `PLAN-037-i23-enterprise-identity-authoritative-sources.md`
+
+Goal: keep local authentication and local Authority/ACC/Resource data as the supported product mode while retaining only minimal dormant extension seams for possible future external adapters.
 
 Current task: verify and close I23 Optional Integration Extension Skeleton.
 
-Goal: keep the current local authentication and local data sources as the supported product mode while retaining only minimal dormant seams for possible future external identity/source adapters.
+## Working set
 
-Working set:
-- `docs/plans/active/PLAN-037-i23-enterprise-identity-authoritative-sources.md`;
-- `docs/requirements/enterprise-identity-authoritative-sources.md`;
-- `docs/architecture/enterprise-identity-authoritative-sources-boundary.md`;
-- `src/napms/runtime/enterprise_identity.py`;
-- `tests/runtime/test_enterprise_identity.py`;
-- `docs/engineering/post-wave1-product-completion-roadmap.md`;
-- `docs/architecture/current-architecture.md`.
+Read first:
+- `docs/plans/active/PLAN-037-i23-enterprise-identity-authoritative-sources.md`
+- `docs/requirements/enterprise-identity-authoritative-sources.md`
+- `docs/architecture/enterprise-identity-authoritative-sources-boundary.md`
+- `src/napms/runtime/enterprise_identity.py`
+- `tests/runtime/test_enterprise_identity.py`
+
+Expand only if needed:
+- `docs/engineering/post-wave1-product-completion-roadmap.md`
+- `docs/architecture/current-architecture.md`
 
 Accepted direction:
 - `LocalPasswordAuthenticator` remains the primary authentication path;
@@ -31,6 +35,14 @@ Implemented skeleton:
 - explicit `Mapped | Unmapped | Ambiguous | Unknown` fail-closed outcomes;
 - focused unit tests.
 
-Gate: repository verification for the completed local-first skeleton. Real external integrations remain future optional work triggered only by a concrete accepted requirement.
+## Blockers
 
-Next action: obtain clean repository gates, absorb I23 as complete, remove the active plan, and promote I24 Local Deployment and Operational Hardening.
+Only clean repository gates remain. No product/domain blocker remains for I23.
+
+## Gate
+
+Run repository gates against the final local-first skeleton. Real external integrations are explicitly out of scope.
+
+## Next
+
+If gates pass, absorb I23 as complete, remove the active plan, set `Current: none`, and promote I24 Local Deployment and Operational Hardening in the roadmap.
