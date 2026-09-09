@@ -111,6 +111,149 @@ def authenticated_smoke(
         if not alternatives or alternatives[0].get("protocol") != "tcp":
             raise RuntimeError("local demo DCS traffic summary is unavailable")
 
+    with opener.open(
+        f"{base_url}/api/v1/access-rules?page=1&pageSize=50",
+        timeout=5,
+    ) as response:
+        before_rules = json.load(response)
+        if before_rules.get("items"):
+            raise RuntimeError(
+                "local demo must start without authoritative Access Rules"
+            )
+
+    with opener.open(
+        f"{base_url}/api/v1/connectivity-requirements/scopes",
+        timeout=5,
+    ) as response:
+        payload = json.load(response)
+        scopes = {item["scope"] for item in payload["scopes"]}
+        if "local-demo" not in scopes:
+            raise RuntimeError(
+                "local demo Connectivity Requirements authority seed is unavailable"
+            )
+
+    with opener.open(
+        f"{base_url}/api/v1/connectivity-requirements/interactions"
+        "?scope=local-demo&page=1&pageSize=50",
+        timeout=5,
+    ) as response:
+        payload = json.load(response)
+        items = payload.get("items") or []
+        if len(items) != 1:
+            raise RuntimeError(
+                "local demo Connectivity Requirements interaction is unavailable"
+            )
+        interaction = items[0]
+
+    declaration = urllib.request.Request(
+        f"{base_url}/api/v1/connectivity-requirements",
+        method="POST",
+        data=json.dumps(
+            {
+                "authorityScope": "local-demo",
+                "dependentComponentDeploymentId": interaction[
+                    "sourceComponentDeploymentId"
+                ],
+                "sourceComponentDeploymentId": interaction[
+                    "sourceComponentDeploymentId"
+                ],
+                "destinationComponentDeploymentId": interaction[
+                    "destinationComponentDeploymentId"
+                ],
+                "dcsContractRevisionId": interaction["dcsContractRevisionId"],
+                "applicability": {"kind": "Ongoing"},
+                "justification": "Local Docker smoke connectivity need.",
+            }
+        ).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    with opener.open(declaration, timeout=5) as response:
+        if response.status != 201:
+            raise RuntimeError("Connectivity Requirement declaration smoke failed")
+        declared = json.load(response)
+        requirement_id = declared["requirement"]["requirementId"]
+
+    with opener.open(
+        f"{base_url}/api/v1/connectivity-requirements?page=1&pageSize=50",
+        timeout=5,
+    ) as response:
+        payload = json.load(response)
+        visible_ids = {item["requirementId"] for item in payload["items"]}
+        if requirement_id not in visible_ids:
+            raise RuntimeError(
+                "declared Connectivity Requirement is not visible through public list"
+            )
+
+    justification_change = urllib.request.Request(
+        f"{base_url}/api/v1/connectivity-requirements/{requirement_id}/justification",
+        method="PATCH",
+        data=json.dumps(
+            {"justification": "Updated local Docker smoke connectivity need."}
+        ).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    with opener.open(justification_change, timeout=5) as response:
+        changed = json.load(response)
+        if changed.get("outcome") != "Updated":
+            raise RuntimeError(
+                "Connectivity Requirement justification mutation smoke failed"
+            )
+
+    applicability_change = urllib.request.Request(
+        f"{base_url}/api/v1/connectivity-requirements/{requirement_id}/applicability",
+        method="PATCH",
+        data=json.dumps(
+            {
+                "applicability": {
+                    "kind": "AbsoluteWindow",
+                    "start": "2030-01-01T08:00:00+00:00",
+                    "end": "2030-01-01T18:00:00+00:00",
+                }
+            }
+        ).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    with opener.open(applicability_change, timeout=5) as response:
+        changed = json.load(response)
+        if changed.get("outcome") != "Updated":
+            raise RuntimeError(
+                "Connectivity Requirement applicability mutation smoke failed"
+            )
+
+    retirement = urllib.request.Request(
+        f"{base_url}/api/v1/connectivity-requirements/{requirement_id}/retirement",
+        method="POST",
+    )
+    with opener.open(retirement, timeout=5) as response:
+        retired = json.load(response)
+        if retired.get("outcome") != "Retired":
+            raise RuntimeError("Connectivity Requirement retirement smoke failed")
+
+    with opener.open(
+        f"{base_url}/api/v1/connectivity-requirements/{requirement_id}",
+        timeout=5,
+    ) as response:
+        detail = json.load(response)
+        requirement = detail["requirement"]
+        if requirement.get("lifecycleState") != "Retired":
+            raise RuntimeError(
+                "Connectivity Requirement retirement did not persist publicly"
+            )
+        if requirement.get("version") != 4:
+            raise RuntimeError(
+                "Connectivity Requirement mutation history/version is inconsistent"
+            )
+
+    with opener.open(
+        f"{base_url}/api/v1/access-rules?page=1&pageSize=50",
+        timeout=5,
+    ) as response:
+        after_rules = json.load(response)
+        if after_rules.get("items"):
+            raise RuntimeError(
+                "Connectivity Requirement declaration created an Access Rule side effect"
+            )
+
 
 def up(*, print_credentials: bool = True) -> None:
     login = os.environ.get("NAPMS_LOCAL_AUTH_LOGIN", "local-admin")
