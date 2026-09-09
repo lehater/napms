@@ -25,10 +25,10 @@ RESUME_MARKERS = (
     "Current:",
     "Goal:",
     "Current task:",
-    "Working set:",
-    "Blockers:",
-    "Gate:",
-    "Next:",
+    "## Working set",
+    "## Blockers",
+    "## Gate",
+    "## Next",
 )
 
 
