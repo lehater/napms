@@ -176,27 +176,28 @@ def seed_local_demo(connection, *, actor_id: str) -> None:
             """,
             (resource_reference, f"{resource_reference}:provenance"),
         )
-        connection.execute(
-            """
-            INSERT INTO napms_resource_catalogue.resource_scope_affiliations (
-                affiliation_reference,
-                resource_reference,
-                responsibility_scope,
-                valid_from,
-                valid_to,
-                provenance_reference
+        if resource_reference == "local-demo-source":
+            connection.execute(
+                """
+                INSERT INTO napms_resource_catalogue.resource_scope_affiliations (
+                    affiliation_reference,
+                    resource_reference,
+                    responsibility_scope,
+                    valid_from,
+                    valid_to,
+                    provenance_reference
+                )
+                VALUES (%s, %s, %s, %s, NULL, %s)
+                ON CONFLICT (affiliation_reference) DO NOTHING
+                """,
+                (
+                    f"local-demo:scope-affiliation:{resource_reference}",
+                    resource_reference,
+                    _SCOPE,
+                    _VALID_FROM,
+                    f"local-demo:scope-affiliation:{resource_reference}:provenance",
+                ),
             )
-            VALUES (%s, %s, %s, %s, NULL, %s)
-            ON CONFLICT (affiliation_reference) DO NOTHING
-            """,
-            (
-                f"local-demo:scope-affiliation:{resource_reference}",
-                resource_reference,
-                _SCOPE,
-                _VALID_FROM,
-                f"local-demo:scope-affiliation:{resource_reference}:provenance",
-            ),
-        )
 
         connection.execute(
             """
