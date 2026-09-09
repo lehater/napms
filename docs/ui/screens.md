@@ -1,120 +1,205 @@
 # Web UI screen map
 
-Canonical product semantics: `docs/requirements/web-ui-requirements.md`.
+Canonical product semantics:
+- docs/requirements/web-ui-requirements.md
+- docs/requirements/scoped-connectivity-inventory.md
 
 ## Login
 
 Input: login + password. Output: authenticated session or generic authentication failure.
 
-Compact centered form; no external identity controls in I8.
+After successful login, default navigation goes to Connectivity.
 
-## My Connectivity Needs
+## Connectivity
 
-Responsibility: list, declare and manage Connectivity Requirements for the authenticated actor's admitted scopes.
+Primary product workspace.
+
+Purpose: show the selected responsibility scope as a resource-centric connectivity landscape.
+
+Hierarchy:
+
+    Resource
+      -> Component Deployment
+        -> Connectivity Relationship
+
+Primary row information:
+
+- My Resource;
+- current endpoint/address as secondary technical data;
+- Component;
+- direction relative to local side;
+- Access/DCS label;
+- optional protocol/ports;
+- Remote Component;
+- Remote Resource;
+- Need summary;
+- Decision summary;
+- Policy summary;
+- Realization later.
+
+Resources/Components with zero connectivity remain visible.
+
+The workspace does not use one generic status.
+
+### Empty/no-connectivity row
+
+Show an explicit state such as:
+
+    No connectivity declared
+    + Add connectivity
+
+when the local Component has no relationship.
+
+Do not confuse this with a known remote Component whose Resource realization is unresolved.
+
+### Relationship details
+
+Open in Drawer or bookmarkable route depending depth.
+
+Sections:
+
+- Need;
+- Decision;
+- Policy;
+- Local side;
+- Remote side;
+- Technical details;
+- provenance/history where separately admitted;
+- Realization later.
+
+Protected details remain subject to their own backend read contracts.
+
+## Add Connectivity
+
+Contextual workflow launched from a local Component/relationship, not primary navigation.
+
+Known context is prefilled and not re-requested:
+
+- selected scope;
+- local Resource;
+- local Component.
+
+User selects/supplies:
+
+- remote side;
+- structurally valid access/DCS;
+- applicability/validity where required;
+- business reason/justification.
+
+Trusted catalogue/backend discovery constrains remote/DCS choices.
+
+The user-level action may be Request access or Add connectivity.
+
+Do not show durable Waiting/Under review state until I16A/I16B accepts workflow semantics.
+
+## Needs
+
+Focused Connectivity Requirements workspace.
 
 List:
-- Source -> Destination label-first interaction;
-- DCS label;
-- Dependent participant;
-- Governance Scope;
-- Applicability;
-- `Active | Retired`;
-- justification summary.
 
-Declare:
-- server-backed declaration scope;
-- bounded ACC interaction search;
-- Dependent choice constrained to Source or Destination;
-- Ongoing or absolute half-open time window;
-- mandatory justification.
+- readable Source -> Destination;
+- access/DCS label;
+- dependent participant;
+- scope;
+- applicability;
+- Active | Retired;
+- justification summary;
+- Covered | Uncovered | NotCurrent | Unknown.
 
 Details:
+
 - stable Requirement ID;
-- immutable Dependent + Required Semantic Interaction;
-- stored Governance Scope;
-- Applicability and business history;
-- Justification and business history;
-- declaration provenance;
-- independent Set Applicability / Set Justification / Retire controls when backend capabilities are Permitted.
+- immutable semantic interaction/dependent;
+- scope;
+- applicability;
+- justification;
+- provenance/history;
+- independently admitted mutations.
 
-I14 alignment:
-- list and details show `Covered | Uncovered | NotCurrent | Unknown`;
-- one explicit `asOf` controls Requirement applicability and Access Rule effective contribution;
-- current Retired lifecycle remains `NotCurrent`; I14 does not reconstruct historical aggregate lifecycle;
-- `Uncovered` explicitly does not mean `Denied`;
-- Rule details/provenance remain hidden in the first slice;
-- no configured/observed-access claim is shown.
+Uncovered does not mean Denied.
 
-## Compose Connectivity
+## Decisions
 
-Responsibility: produce one structurally valid `Access Rule Proposal` from trusted references.
+Focused final Connectivity Decision workspace.
 
-Inputs:
-- authorized scope/context;
-- Source Component Deployment;
-- Destination Component Deployment;
-- compatible immutable DCS contract/revision.
+Purpose:
 
-The UI should progressively constrain destination/DCS choices using backend-provided valid options. Users do not enter firewall addresses/protocol/ports/vendor syntax.
+- inspect final Allowed | NotAllowed Decisions;
+- later support decision-participant work only after I16B workflow semantics are accepted.
 
-I12 presentation:
-- Source/Destination/DCS display labels are primary when available;
-- stable UUIDs remain visible/fallback;
-- bounded search is server-side;
-- DCS options show decoded immutable protocol/service/port summary.
+Decision reason/provenance/detail requires corresponding read authority.
 
-Submit result:
-- `Allowed` -> authoritative Access Rule summary/link;
-- `NotAllowed` -> explicit no-Rule business outcome;
-- other semantic/transport failures -> dedicated error presentation.
+Until implemented, sidebar entry is Planned.
 
-## Access Rules
+## Rules
 
-Responsibility: list authoritative Rules admitted for the authenticated actor/context.
+Focused Access Policy workspace.
 
-Useful columns when available:
-- Rule ID;
-- source deployment;
-- destination deployment;
-- DCS revision/reference;
+Useful columns:
+
+- readable source deployment;
+- readable destination deployment;
+- access/DCS;
 - governance scope;
-- operational state;
-- EffectiveWindow summary.
+- Active | Inactive;
+- effective-window summary;
+- Rule ID as secondary technical information.
 
-Source/Destination/DCS cells render optional catalogue labels first and stable technical IDs second. Row opens Rule Details.
+Row opens Rule Details.
 
 ## Access Rule Details
 
-Responsibility: inspect identity, operational properties and traceability.
-
 Sections:
-- immutable semantic identity;
+
+- readable semantic identity first;
+- canonical stable identity second;
 - Rule Governance Scope;
-- `Active | Inactive`;
-- EffectiveWindow with independent SetRuleEffectiveWindow admission;
-- set/change/clear EffectiveWindow controls when permitted;
-- EffectiveWindow business history;
-- Connectivity Decision correlation/reference;
+- Active | Inactive;
+- EffectiveWindow;
+- Connectivity Decision correlation;
 - proposal/authority/catalogue provenance;
 - business history;
-- admitted mutation actions.
+- independently admitted mutation actions.
 
-Use progressive disclosure for low-frequency provenance detail. Semantic identity fields show catalogue labels first and stable IDs second; labels never replace identity.
+## Effective
 
-## Effective Policy
+Purpose: inspect effective desired policy for one authorized scope and explicit asOf.
 
-Responsibility: run/view `SelectEffectiveDesiredPolicy(scope, asOf, actor)`.
+Show the user-facing meaning "what desired policy applies for this scope/time".
 
-Inputs: one Rule Governance Scope + explicit offset-aware `asOf`.
+Authorized empty, denied/unknown and technical failure are distinct.
 
-Scope discovery is evaluated for the same `asOf`; ambiguous scopes remain fail-closed. Denied/unknown authority returns no policy data and is presented distinctly from an authorized empty result. Rule rows use the same label-first catalogue presentation as Access Rules.
+## Export / normalized policy
 
-## Normalized Policy
+Technical/export view over the accepted normalized policy semantics.
 
-Responsibility: present vendor-neutral normalized policy for an accepted export journey.
+Preserve:
 
-Preserve Rule/decision correlation, technical realization, DCS traffic alternatives, export `asOf` and required provenance. Presentation renders `Any`, `NotApplicable` and inclusive ranges distinctly and exposes Rule/Authority/ACC/RC provenance without flattening it. Optional catalogue labels supplement, but never replace, technical addresses and semantic IDs.
+- Rule/decision correlation;
+- technical realization;
+- DCS traffic alternatives;
+- asOf;
+- provenance.
 
-## Deferred
+This need not be a top-level sidebar item.
 
-Dashboard, cross-entity Audit Log, portfolio administration and approval/review screens are not part of the first I8 UI increment.
+## Planned technical workspaces
+
+The following may appear only as disabled Planned navigation until backed by implemented use cases:
+
+- Realization;
+- Evidence;
+- Enforcement.
+
+They must not show fabricated product data.
+
+## Future presentation modes over Connectivity
+
+Architecturally reserve:
+
+    Resources | Services | Graph
+
+Resources is the first implementation.
+
+Services and Graph must reuse the same accepted composition semantics rather than create separate domain truth or incompatible APIs.
