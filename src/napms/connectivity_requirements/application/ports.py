@@ -4,6 +4,9 @@ from enum import Enum
 from typing import Protocol
 from uuid import UUID
 
+from napms.connectivity_requirements.application.inventory_summary import (
+    ConnectivityRequirementInventorySnapshot,
+)
 from napms.connectivity_requirements.domain.model import (
     ConnectivityRequirement,
     RequiredSemanticInteraction,
@@ -141,12 +144,12 @@ class ConnectivityRequirementRepository(Protocol):
         limit: int,
     ) -> tuple[ConnectivityRequirement, ...]: ...
 
-    def list_by_scope_and_interactions(
+    def list_inventory_summaries(
         self,
         *,
         governance_scope: str,
         interactions: tuple[RequiredSemanticInteraction, ...],
-    ) -> tuple[ConnectivityRequirement, ...]: ...
+    ) -> tuple[ConnectivityRequirementInventorySnapshot, ...]: ...
 
     def add(self, requirement: ConnectivityRequirement) -> None: ...
 
