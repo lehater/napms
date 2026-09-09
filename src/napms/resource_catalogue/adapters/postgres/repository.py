@@ -40,7 +40,7 @@ class PostgresResourceCatalogueRepository:
                 """,
                 (resource_reference, as_of, as_of),
             ).fetchall()
-            return tuple(self._hydrate(row) for row in rows)
+            return self._hydrate_many(rows)
         except ResourceCataloguePersistenceError:
             raise
         except (PsycopgError, ResourceCatalogueInvariantError) as exc:
@@ -158,7 +158,7 @@ class PostgresResourceCatalogueRepository:
                 """,
                 (list(resource_references), as_of, as_of),
             ).fetchall()
-            return tuple(self._hydrate(row) for row in rows)
+            return self._hydrate_many(rows)
         except ResourceCataloguePersistenceError:
             raise
         except (PsycopgError, ResourceCatalogueInvariantError) as exc:
@@ -185,30 +185,50 @@ class PostgresResourceCatalogueRepository:
         except PsycopgError as exc:
             raise ResourceCataloguePersistenceError() from exc
 
-    def _hydrate(self, row: tuple) -> ResourceRealizationVersion:
+    def _hydrate_many(
+        self,
+        rows: list[tuple] | tuple[tuple, ...],
+    ) -> tuple[ResourceRealizationVersion, ...]:
+        if not rows:
+            return ()
+
+        fact_references = [row[0] for row in rows]
         endpoint_rows = self._connection.execute(
             """
-            SELECT endpoint_reference, technical_address
+            SELECT fact_reference, endpoint_reference, technical_address
             FROM napms_resource_catalogue.resource_endpoints
-            WHERE fact_reference = %s
-            ORDER BY endpoint_reference, technical_address
+            WHERE fact_reference = ANY(%s)
+            ORDER BY fact_reference, endpoint_reference, technical_address
             """,
-            (row[0],),
+            (fact_references,),
         ).fetchall()
+
+        endpoints_by_fact: dict[str, list[EndpointAddress]] = {
+            reference: [] for reference in fact_references
+        }
+        for fact_reference, endpoint_reference, technical_address in endpoint_rows:
+            if fact_reference not in endpoints_by_fact:
+                raise ResourceCataloguePersistenceError(
+                    "endpoint references an unexpected Resource realization fact"
+                )
+            endpoints_by_fact[fact_reference].append(
+                EndpointAddress(
+                    endpoint_reference=endpoint_reference,
+                    technical_address=technical_address,
+                )
+            )
+
         try:
-            return ResourceRealizationVersion(
-                fact_reference=row[0],
-                resource_reference=row[1],
-                endpoint_realizations=tuple(
-                    EndpointAddress(
-                        endpoint_reference=endpoint_row[0],
-                        technical_address=endpoint_row[1],
-                    )
-                    for endpoint_row in endpoint_rows
-                ),
-                valid_from=row[2],
-                valid_to=row[3],
-                provenance_reference=row[4],
+            return tuple(
+                ResourceRealizationVersion(
+                    fact_reference=row[0],
+                    resource_reference=row[1],
+                    endpoint_realizations=tuple(endpoints_by_fact[row[0]]),
+                    valid_from=row[2],
+                    valid_to=row[3],
+                    provenance_reference=row[4],
+                )
+                for row in rows
             )
         except ResourceCatalogueInvariantError as exc:
             raise ResourceCataloguePersistenceError(
