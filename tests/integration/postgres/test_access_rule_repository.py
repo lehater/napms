@@ -863,3 +863,44 @@ def test_effective_policy_selection_uses_postgres_scope_read_and_core_as_of_logi
             "effective_time": WINDOW_START,
         }
     ]
+
+
+
+def test_batch_inventory_summary_reads_exact_rules_without_audit_hydration(
+    postgres_dsn,
+):
+    first = new_rule(rule_id=UUID(int=9001))
+    second = new_rule(rule_id=UUID(int=9002))
+    missing = new_identity()
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAccessRuleRepository(connection)
+        repository.add(first)
+        repository.add(second)
+        repository.commit()
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAccessRuleRepository(connection)
+        summaries = repository.find_inventory_summaries(
+            (
+                first.semantic_identity,
+                missing,
+                second.semantic_identity,
+            )
+        )
+
+    assert tuple(item.semantic_identity for item in summaries) == tuple(
+        sorted(
+            (first.semantic_identity, second.semantic_identity),
+            key=lambda value: (
+                str(value.source_component_deployment_id),
+                str(value.destination_component_deployment_id),
+                str(value.dcs_contract_revision_id),
+            ),
+        )
+    )
+    assert all(
+        item.operational_state is OperationalState.ACTIVE
+        for item in summaries
+    )
+    assert all(item.effective_window is None for item in summaries)
