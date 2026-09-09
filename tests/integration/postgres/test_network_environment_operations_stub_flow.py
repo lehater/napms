@@ -111,11 +111,11 @@ def _derive_and_render(config):
     return artifact
 
 
-def _command(artifact, operation_id="op-i22-success"):
+def _command(artifact, operation_target, operation_id="op-i22-success"):
     digest = hashlib.sha256(artifact.content.encode("utf-8")).hexdigest()
     return ExecuteNetworkOperationCommand(
         operation_id=operation_id,
-        target=artifact.target,
+        target=operation_target,
         renderer_name=artifact.renderer_name,
         renderer_contract_version=artifact.renderer_contract_version,
         artifact_content=artifact.content,
@@ -147,7 +147,7 @@ def test_desired_rendered_stub_applied_and_verified_without_owner_mutation(
     artifact = _derive_and_render(config)
     stub = open_network_environment_operations_stub_scope(target=artifact.target)
 
-    result = stub.execute.execute(_command(artifact))
+    result = stub.execute.execute(_command(artifact, stub.target))
 
     assert result.outcome is OperationOutcome.VERIFIED
     assert result.pre_state is not None
@@ -165,7 +165,7 @@ def test_unknown_apply_is_not_reported_verified_or_blindly_retried(config, postg
         target=artifact.target,
         scenario=StubScenario.UNKNOWN_APPLY,
     )
-    command = _command(artifact, operation_id="op-i22-unknown")
+    command = _command(artifact, stub.target, operation_id="op-i22-unknown")
 
     first = stub.execute.execute(command)
     second = stub.execute.execute(command)
@@ -183,8 +183,10 @@ def test_concurrent_target_change_fails_without_verified_success(config, postgre
         scenario=StubScenario.CONCURRENT_CHANGE,
     )
 
-    result = stub.execute.execute(_command(artifact, operation_id="op-i22-concurrent"))
+    result = stub.execute.execute(
+        _command(artifact, stub.target, operation_id="op-i22-concurrent")
+    )
 
-    assert result.outcome is OperationOutcome.REJECTED
+    assert result.outcome is OperationOutcome.PRECONDITION_FAILED
     assert result.apply_result is not None
     assert result.post_state is None
