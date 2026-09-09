@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I18 Technical-to-Domain Access Resolution closure candidate implemented; I19 Network Enforcement Placement remains next after I18 closure`.
+Status: `I18 Technical-to-Domain Access Resolution accepted and implemented; I19 Network Enforcement Placement is the next roadmap increment`.
 
 Date: 2026-09-09.
 
@@ -64,36 +64,24 @@ This remains a local/development topology, not a production deployment claim.
 
 ## Current execution
 
-I18 Technical-to-Domain Access Resolution is selected and is in WP4 closure review under `PLAN-018-i18-technical-domain-access-resolution.md`.
+No implementation plan is currently selected.
 
-The I18 closure candidate provides:
+I18 Technical-to-Domain Access Resolution is complete and absorbed into canonical product/domain/architecture/engineering truth. The implemented slice provides:
 - one consumer-independent APR resolution capability for proposal/reconciliation consumers;
 - exact pairwise `Exact | Covers | CoveredBy | PartialOverlap | None` correspondence;
 - overall `Exact | Covered | Partial | Ambiguous | Unresolved | Unknown` resolution status;
 - exact unresolved technical remainder for supported exact-protocol predicates;
 - explicit `Protocol Any -> Unknown` instead of guessed cross-protocol semantics;
-- predicate-aware effective RC + ACC knowledge projection with fail-closed relevant unknowns;
-- one-way durable TAE -> APR projection preserving evidence/source/time/action provenance without turning it into authorization;
-- executable ambiguity-without-winner and effective-time change semantics;
-- PostgreSQL-backed proof with no Access Rule or Connectivity Decision side effect;
-- no APR persistence, public HTTP/Web workflow, Network Enforcement Placement or reconciliation semantics.
+- predicate-aware effective RC + ACC projection with fail-closed predicate-relevant unknowns;
+- one-way durable TAE -> APR projection preserving source/time/action provenance without authorization meaning;
+- ambiguity with no winner selection and explicit effective-time dependence;
+- framework-free Domain/Application/Ports plus outer adapters using owner repositories rather than peer SQL;
+- durable PostgreSQL proof with no Access Rule or Connectivity Decision side effect;
+- no APR persistence, public HTTP/Web workflow, Network Enforcement Placement or I20 reconciliation semantics.
 
-I17 Technical Access Evidence Core remains complete and absorbed into canonical product/domain/architecture/engineering truth. The implemented core provides:
-- immutable source-qualified Technical Access Evidence Sets and duplicate-preserving entries;
-- accepted `Configured | TrafficDerived | Imported` evidence kinds without authorization semantics;
-- explicit source/scope/capture identity plus `Unknown | Instant | Window` Evidence Time distinct from `RecordedAt`;
-- source-neutral address/protocol/port normalization with fail-closed ambiguity handling;
-- source + capture retry/idempotency identity and explicit conflicting-capture / commit-unknown outcomes;
-- TAE-owned append-only PostgreSQL persistence with corrupt-state fail-closed hydration;
-- one strict local JSON import adapter and dedicated PostgreSQL composition record/readback path;
-- executable proof that evidence recording creates neither Access Rules nor Connectivity Decisions;
-- no current/fresh selection, technical-to-domain resolution, enforcement placement or reconciliation semantics.
+I17 Technical Access Evidence Core and I16B Connectivity Decision Runtime/Workflow remain complete and absorbed into canonical truth.
 
-There is intentionally no public TAE HTTP/Web surface or human Authority Management workflow in I17.
-
-I16B Connectivity Decision Runtime and Workflow, including the later accepted Decisions frontend workspace, is also complete and absorbed into canonical truth.
-
-After I18 final gates and closure, the roadmap next increment is I19 — Network Enforcement Placement. I19 is not selected for execution yet.
+The roadmap next increment is I19 — Network Enforcement Placement. It is not selected for execution, so there is no active `PLAN-*.md`.
 
 ## Canonical references
 
