@@ -87,6 +87,37 @@ def _unknown_policy(identity: InteractionIdentity) -> PolicySummary:
     )
 
 
+def _with_coverage(
+    requirement: RequirementSummary,
+    policy: PolicySummary,
+) -> RequirementSummary:
+    if requirement.current is RequirementCurrent.UNKNOWN:
+        coverage = CoverageSummary.UNKNOWN
+    elif requirement.current is RequirementCurrent.NONE:
+        coverage = (
+            CoverageSummary.NOT_CURRENT
+            if requirement.historical_only is True
+            else CoverageSummary.NOT_APPLICABLE
+        )
+    elif policy.rule_exists is RuleExists.UNKNOWN:
+        coverage = CoverageSummary.UNKNOWN
+    elif policy.rule_exists is RuleExists.NO:
+        coverage = CoverageSummary.UNCOVERED
+    elif policy.effective_at_as_of is EffectiveAtAsOf.YES:
+        coverage = CoverageSummary.COVERED
+    elif policy.effective_at_as_of is EffectiveAtAsOf.NO:
+        coverage = CoverageSummary.UNCOVERED
+    else:
+        coverage = CoverageSummary.UNKNOWN
+
+    return RequirementSummary(
+        identity=requirement.identity,
+        current=requirement.current,
+        historical_only=requirement.historical_only,
+        coverage=coverage,
+    )
+
+
 class DiscoverScopedConnectivityScopes:
     def __init__(self, *, authority: ScopedConnectivityAuthorityPort) -> None:
         self._authority = authority
@@ -518,6 +549,8 @@ class ReadScopedConnectivityInventory:
                         policy = _unknown_policy(identity)
                         if policy_read is not None:
                             partial = True
+
+                    requirement = _with_coverage(requirement, policy)
 
                     relationship_items.append(
                         ConnectivityRelationshipItem(
