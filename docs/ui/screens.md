@@ -1,6 +1,8 @@
 # Web UI screen map
 
-Canonical product semantics: `docs/requirements/web-ui-requirements.md`.
+Canonical product semantics and desktop-first viewport contract: `docs/requirements/web-ui-requirements.md`.
+
+Operational collection screens are table-first at desktop widths. Narrow-screen compatibility preserves the same IA and may use bounded table overflow; it does not require card-per-object redesign.
 
 ## Login
 
@@ -115,6 +117,38 @@ Responsibility: present vendor-neutral normalized policy for an accepted export 
 
 Preserve Rule/decision correlation, technical realization, DCS traffic alternatives, export `asOf` and required provenance. Presentation renders `Any`, `NotApplicable` and inclusive ranges distinctly and exposes Rule/Authority/ACC/RC provenance without flattening it. Optional catalogue labels supplement, but never replace, technical addresses and semantic IDs.
 
+## Connectivity Decisions — planned in I16 after UI quality gate
+
+Responsibility: list/read and directly record final durable Connectivity Decisions admitted for the authenticated actor.
+
+List:
+- readable Source -> Destination + DCS subject;
+- Decision Governance Scope;
+- `Allowed | NotAllowed`;
+- validity;
+- reason summary;
+- deciding principal/time;
+- stable Decision ID.
+
+Details:
+- immutable Decision identity;
+- exact subject and Governance Scope;
+- final outcome;
+- validity;
+- reason/evidence references;
+- deciding provenance;
+- superseded/superseding Decision relationship where present.
+
+Record:
+- admitted Decision Governance Scope;
+- exact admitted subject;
+- final `Allowed | NotAllowed`;
+- required reason and validity;
+- optional accepted evidence references;
+- backend-owned actor/time/Authority provenance.
+
+No Pending/Approved/Rejected state, approval queue or generic Access Request is shown.
+
 ## Deferred
 
-Dashboard, cross-entity Audit Log, portfolio administration and approval/review screens are not part of the first I8 UI increment.
+Dashboard, cross-entity Audit Log, portfolio administration and approval/review queue screens remain deferred until concrete product use cases/canonical semantics require them.
