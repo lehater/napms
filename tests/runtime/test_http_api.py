@@ -293,7 +293,13 @@ def test_proposal_uses_authenticated_actor_and_runtime_time():
     assert response.json()["rule"]["operationalState"] == "Active"
     assert authority.calls[0]["actor_id"] == "actor-1"
     assert authority.calls[0]["effective_time"] == NOW
-    assert decisions.calls == [_identity()]
+    assert decisions.calls == [
+        {
+            "subject": _identity(),
+            "governance_scope": "scope-a",
+            "as_of": NOW,
+        }
+    ]
 
 
 def test_not_allowed_is_normal_business_result_not_forbidden():
