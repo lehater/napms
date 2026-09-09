@@ -202,6 +202,7 @@ class PostgresConnectivityDecisionRepository:
                 ),
             )
         except DecisionCurrentConflict:
+            self._connection.rollback()
             raise
         except DecisionPersistenceError:
             raise
