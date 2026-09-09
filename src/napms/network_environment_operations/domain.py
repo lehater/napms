@@ -11,6 +11,7 @@ class OperationTarget:
 
 class ApplyStatus(str, Enum):
     APPLIED = "Applied"
+    PRECONDITION_FAILED = "PreconditionFailed"
     REJECTED = "Rejected"
     UNKNOWN = "Unknown"
 
