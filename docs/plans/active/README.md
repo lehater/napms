@@ -1,7 +1,7 @@
 # Active execution
 
-Current: none.
+Current: `PLAN-015 — I15 Connectivity Decision Domain Closure`.
 
 Roadmap: `docs/engineering/post-wave1-product-completion-roadmap.md`.
 
-I14 Requirement-to-Policy Alignment is complete and absorbed into canonical truth. Create the I15 active plan only when Connectivity Decision Domain Closure execution begins.
+I15 closes the deferred Connectivity Decision semantic owner/model/contracts. Runtime replacement of `local-dev:allowed` remains I16.
