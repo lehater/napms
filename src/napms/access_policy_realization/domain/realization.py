@@ -597,6 +597,7 @@ def derive_desired_enforcement_policy(
     as_of: datetime,
     desired_interactions: tuple[DomainInteractionIdentity, ...],
     contributions: tuple[DesiredPolicyContribution, ...],
+    knowledge_gaps: tuple[KnowledgeGap, ...] = (),
 ) -> DesiredEnforcementPolicy:
     require_aware(as_of)
     governance_scope = _non_empty(
@@ -609,7 +610,9 @@ def derive_desired_enforcement_policy(
     no_forwarding_path: list[str] = []
     ambiguous: list[str] = []
     unknown: list[str] = []
-    gaps: list[KnowledgeGap] = []
+    gaps: list[KnowledgeGap] = list(
+        knowledge_gaps
+    )
 
     for contribution in contributions:
         if contribution.resolution.as_of != as_of:
@@ -722,7 +725,7 @@ def derive_desired_enforcement_policy(
                 )
             )
 
-    if unknown:
+    if unknown or gaps:
         status = DesiredDerivationStatus.UNKNOWN
     elif ambiguous:
         status = DesiredDerivationStatus.AMBIGUOUS
