@@ -11,7 +11,7 @@ Current accepted Connectivity Decision truth is defined by:
 - `docs/requirements/connectivity-decision-core.md`;
 - `docs/requirements/connectivity-decision-acceptance-examples.md`;
 - `docs/architecture/connectivity-decision-boundary.md`;
-- `docs/decisions/ADR-004-connectivity-decision-bounded-context.md`.
+- `docs/decisions/ADR-005-connectivity-decision-bounded-context.md`.
 
 The former external/deferred seam has been promoted to a first-class Connectivity Decision Bounded Context.
 
