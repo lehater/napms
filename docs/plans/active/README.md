@@ -1,6 +1,6 @@
 # Active execution
 
-Current: `PLAN-015 — I15 Connectivity Decision Domain Closure`.
+Current: `PLAN-015-i15-connectivity-decision-domain-closure.md`.
 
 Roadmap: `docs/engineering/post-wave1-product-completion-roadmap.md`.
 
