@@ -371,13 +371,13 @@ export function ConnectivityRequirementsPage({
   return (
     <div className="mx-auto max-w-[1380px]">
       <header className="mb-6">
-        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
+        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#5F6B7D]">
           Connectivity Needs
         </div>
         <h1 className="text-[28px] font-bold tracking-tight text-[#172033]">
           My Connectivity Needs
         </h1>
-        <p className="mt-2 max-w-4xl text-sm text-[#64748B]">
+        <p className="mt-2 max-w-4xl text-sm text-[#5F6B7D]">
           Declare semantic connectivity that is required. A Requirement records need only:
           it does not mean the connection is Allowed, authorized by Access Policy, or configured.
         </p>
@@ -390,7 +390,7 @@ export function ConnectivityRequirementsPage({
               <h2 className="text-base font-semibold text-[#172033]">
                 Visible Connectivity Requirements
               </h2>
-              <p className="mt-1 text-xs text-[#64748B]">Page {page}</p>
+              <p className="mt-1 text-xs text-[#5F6B7D]">Page {page}</p>
             </div>
             <Field
               label="Policy coverage as of"
@@ -428,20 +428,20 @@ export function ConnectivityRequirementsPage({
           ) : null}
 
           {loadingList ? (
-            <div className="p-8 text-sm text-[#64748B]">Loading Requirements…</div>
+            <div className="p-8 text-sm text-[#5F6B7D]">Loading Requirements…</div>
           ) : requirements.length === 0 ? (
             <div className="p-10 text-center">
               <div className="text-sm font-semibold text-[#334155]">
                 No visible Connectivity Requirements
               </div>
-              <div className="mt-2 text-sm text-[#64748B]">
+              <div className="mt-2 text-sm text-[#5F6B7D]">
                 Declare the first semantic connectivity need from the form.
               </div>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[980px] text-left text-sm">
-                <thead className="bg-[#F8FAFC] text-xs uppercase tracking-wide text-[#64748B]">
+                <thead className="bg-[#F8FAFC] text-xs uppercase tracking-wide text-[#5F6B7D]">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Interaction</th>
                     <th className="px-4 py-3 font-semibold">Dependent</th>
@@ -483,7 +483,7 @@ export function ConnectivityRequirementsPage({
                               interaction.destinationComponentDeploymentId,
                             )}
                           </div>
-                          <div className="mt-1 text-xs text-[#64748B]">
+                          <div className="mt-1 text-xs text-[#5F6B7D]">
                             {displayName(
                               item.catalogue?.dcsDisplayName,
                               interaction.dcsContractRevisionId,
@@ -508,9 +508,9 @@ export function ConnectivityRequirementsPage({
                               {alignmentById[item.requirementId]}
                             </span>
                           ) : loadingAlignment ? (
-                            <span className="text-xs text-[#64748B]">Loading…</span>
+                            <span className="text-xs text-[#5F6B7D]">Loading…</span>
                           ) : (
-                            <span className="text-xs text-[#64748B]">—</span>
+                            <span className="text-xs text-[#5F6B7D]">—</span>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -524,7 +524,7 @@ export function ConnectivityRequirementsPage({
                           <button
                             type="button"
                             aria-label={`Open Requirement ${item.requirementId}`}
-                            className="grid size-8 place-items-center rounded-md text-[#64748B] hover:bg-[#E2E8F0]"
+                            className="grid size-8 place-items-center rounded-md text-[#5F6B7D] hover:bg-[#E2E8F0]"
                             onClick={() => onOpenRequirement(item.requirementId)}
                           >
                             <ChevronRight className="size-4" aria-hidden="true" />
@@ -761,7 +761,7 @@ export function ConnectivityRequirementsPage({
             </Field>
 
             <div className="flex items-center justify-between rounded-md border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2">
-              <span className="text-xs text-[#64748B]">
+              <span className="text-xs text-[#5F6B7D]">
                 Interaction page {interactionPage}
               </span>
               <div className="flex gap-2">
