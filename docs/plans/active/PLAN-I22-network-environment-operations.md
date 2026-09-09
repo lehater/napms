@@ -1,29 +1,36 @@
 # PLAN — I22 Network Environment Operations
 
-Status: `selected; domain/requirements/architecture re-entry first`.
+Status: `S1 accepted; S2/S3 stub implementation in progress`.
 
 ## Goal
 
 Complete one controlled target operation loop from accepted I21 rendered configuration through provider/device-facing pre-check, apply and post-check to an explicit verified or uncertain execution result, without redefining Access Policy, APR rendering, NEP placement or TAE evidence semantics.
 
-## Input baseline
+## Inputs
 
-I21 provides a deterministic, provenance-preserving Cisco Secure Firewall ASA CLI extended ACL representation for its accepted supported subset and independently proves semantic equivalence to desired enforcement intent.
+- accepted I21 `RenderedConfiguration` semantics and Cisco ASA renderer contract;
+- accepted Enforcement Target identity from APR/NEP;
+- user-selected constraint: no real lab is available, so I22 first executable transport is a deterministic in-process stub;
+- Authority Management remains owner of mutation eligibility.
 
-I22 starts downstream of that artifact. It owns no authorization, desired-policy derivation, enforcement placement or rendering meaning.
+## Accepted S1 decisions
 
-## P0 unknowns to resolve before mutation code
+1. **Semantic ownership:** Network Environment Operations is a separate semantic module because operation identity/lifecycle, mutation authority, concurrency, failure/recovery and execution audit form a distinct responsibility. It does not own desired policy, placement or rendering semantics.
+2. **First transport:** deterministic in-process target stub. It proves execution semantics only and is explicitly not a Cisco integration claim.
+3. **Operation identity:** `operation_id` binds exactly one Enforcement Target + artifact digest. Identical retry is idempotent; conflicting reuse fails closed.
+4. **Precondition:** acquire current target revision before mutation; optional caller-expected revision and adapter-side conditional apply both fail closed on mismatch.
+5. **Apply:** explicit `Applied | PreconditionFailed | Rejected | Unknown`; transport acceptance is not verification.
+6. **Final outcome:** `Verified | PreconditionFailed | Rejected | Drift | Unknown`.
+7. **Post-check:** `Verified` requires reacquisition proving requested artifact digest is current target state.
+8. **Concurrency:** optimistic target revision is the first-slice concurrency token.
+9. **Recovery:** Unknown is never blindly retried/rolled back; generic rollback is not claimed in the stub slice.
+10. **Audit:** operation result preserves target, actor/scope, artifact digest, pre/apply/post evidence and provenance. First slice uses in-memory repository and does not claim crash-durable audit.
+11. **Authority:** mutation admission is an explicit consumer-owned port; read access does not imply mutation authority.
 
-1. **Semantic ownership.** Decide whether Network Environment Operations is a first-class Bounded Context, an application/operations capability, or another accepted boundary. Device API/CLI code alone is not BC evidence.
-2. **First execution transport.** Select the concrete Cisco ASA interaction contract supported by actual product/environment evidence; do not invent SSH/API/FMC mechanics merely to complete the loop.
-3. **Operation identity.** Define command/change identity and idempotency key so retry cannot silently duplicate mutation.
-4. **Precondition contract.** Define what current-state evidence must match before an I21 render may be applied and how stale/ambiguous state fails closed.
-5. **Outcome model.** Define explicit `Applied/Verified`, rejected/not-applied, partial, timeout and unknown outcomes; transport success alone is not semantic success.
-6. **Post-check semantics.** Define how post-change state is reacquired and compared with intended rendered/desired semantics, including timing and completeness requirements.
-7. **Concurrency.** Define conflict detection for another actor/device change between pre-check and apply/post-check.
-8. **Recovery/rollback.** Define when retry is safe, when rollback is representable, and when the only correct result is Unknown requiring operator reconciliation.
-9. **Audit/provenance.** Define durable execution evidence: target, renderer contract/artifact reference, pre-state, attempted mutation, device/provider response, post-state, actor/authority where applicable, timestamps and correlation.
-10. **Authority boundary.** Determine the action-specific authority required to execute network mutation; read/acquisition authority must not imply mutation authority.
+Canonical owners:
+- `docs/requirements/network-environment-operations.md`;
+- `docs/domain/network-environment-operations/tactical-model.md`;
+- `docs/architecture/network-environment-operations-boundary.md`.
 
 ## Guardrails
 
@@ -31,49 +38,75 @@ I22 starts downstream of that artifact. It owns no authorization, desired-policy
 - Rendering remains I21/APR truth; I22 must not silently rewrite unsupported render semantics.
 - Provider/device acquisition and mutation are outer adapters behind consumer-owned ports.
 - Unknown/partial outcomes fail closed and remain distinguishable from confirmed absence or success.
-- Retry must be tied to accepted operation identity/idempotency semantics.
+- Retry is tied to accepted operation identity/idempotency semantics.
 - No credentials/secrets are committed to the repository.
-- No enterprise identity/source work from I23 is pulled forward except the minimum authority contract required by I22 semantics.
+- Stub success is not real-device compatibility evidence.
 
 ## Execution stages
 
 ### S1 — Domain/requirements/architecture re-entry
 
-Inspect canonical ownership, Authority Management, APR rendering, TAE evidence and runtime contracts. Classify each P0 item as accepted / hypothesis / unknown / conflict using the repository decision protocol. Update the highest owning canonical artifacts first.
+Status: `done`.
 
-Exit: ownership, first execution transport, operation identity, pre/post-check, outcome, concurrency, recovery and audit contracts are accepted.
+Accepted stub-first ownership, operation identity, pre/post-check, outcome, concurrency/recovery, authority and audit contracts.
 
 ### S2 — Framework-free operation core
 
-Implement only accepted operation vocabulary and use cases/ports: operation request/identity, precondition result, mutation result, verification result and durable audit contract where justified.
+Status: `implemented; final gate pending`.
 
-Exit: core tests prove fail-closed state transitions, idempotency semantics and no infrastructure dependency.
+Implemented:
+- operation command/result value model;
+- apply/final outcome vocabulary;
+- consumer-owned authority/target/repository ports;
+- `ExecuteNetworkOperation` use case;
+- fail-closed authority, stale revision, concurrent revision, rejection, uncertain apply and post-check drift handling;
+- operation-id idempotency/conflict semantics.
 
-### S3 — First Cisco ASA outer adapter
+### S3 — Deterministic target stub
 
-Implement the selected concrete device/provider acquisition and mutation adapter. Parsing and transport mechanics stay outside Domain/Application. Unsupported or ambiguous device responses map explicitly to Unknown/Partial rather than guessed success.
+Status: `implemented; final gate pending`.
 
-Exit: adapter contract tests cover acquisition, apply, rejection, timeout/uncertainty and deterministic correlation.
+Implemented:
+- in-memory operation repository;
+- allow/deny deterministic authority adapters for tests;
+- deterministic target stub with success/reject/unknown-apply/concurrent-change/post-apply-drift scenarios;
+- scenario tests for Verified, PreconditionFailed, Rejected, Unknown, Drift and idempotent retry.
+
+No real Cisco transport is implemented or implied.
 
 ### S4 — Controlled desired -> rendered -> applied -> verified proof
 
-Compose existing I20/I21 owner-preserving flow into I22. Require accepted pre-check, execute one mutation, reacquire post-state and prove semantic satisfaction through the accepted comparison boundary. Persist execution audit only according to S1 ownership/lifecycle decisions.
+Status: `next`.
 
-Exit: one integration proof completes desired -> rendered -> applied -> verified and adversarial proofs cover stale pre-state, concurrent drift and unknown apply outcome.
+Compose existing I20/I21 flow into the deterministic I22 stub. Derive desired policy, render the accepted Cisco ASA artifact, calculate the execution artifact digest, execute it against the target stub and prove `Verified`. Add adversarial integration cases for stale revision, concurrent change and unknown apply outcome without owner-side semantic mutation.
 
 ### S5 — Final gate and absorption
 
 Run applicable repository and hosted gates. Absorb durable outcomes into canonical domain/requirements/architecture/engineering artifacts, remove this completed PLAN, update the active capsule, mark I22 complete and promote I23 without selecting it. Squash-merge only after final gates are green.
 
+## Exit criteria
+
+- stub-first domain/requirements/architecture contracts are accepted;
+- framework-free operation core has explicit fail-closed outcome semantics;
+- deterministic stub proves success/rejection/uncertainty/concurrency/drift/idempotency behavior;
+- one integration proof completes desired -> rendered -> stub-applied -> verified;
+- all final hosted gates are green;
+- canonical state clearly says no real Cisco lab/transport has been proven.
+
+## Blockers
+
+No real lab is available. This is an accepted product/environment constraint, not a blocker for the stub-first I22 semantic proof. Real Cisco transport remains deferred until a lab/provider contract exists.
+
 ## Explicitly out of scope
 
-- broad multi-vendor orchestration/platform abstractions;
-- production credential/secret management beyond interfaces needed to keep secrets outside domain/repo;
+- real Cisco SSH/REST/FMC connectivity;
+- production credential/secret management;
+- production-grade rollback;
+- multi-vendor orchestration platform;
 - enterprise IdP/source replacement from I23;
 - production deployment/SLO/DR hardening from I24;
-- operator UX beyond an accepted I22 requirement;
-- changing I21 Cisco ASA rendering semantics for execution convenience.
+- operator UX beyond an accepted I22 requirement.
 
-## Immediate next action
+## Next
 
-Execute S1. Do not write device mutation code until the concrete transport and fail-closed operation contracts are accepted.
+Execute S4 composition proof with the deterministic target stub, then open the I22 PR and use hosted CI as the executable gate.
