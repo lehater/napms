@@ -1,6 +1,6 @@
-# Scoped Connectivity Inventory acceptance examples — I16A
+# Scoped Connectivity Inventory acceptance examples
 
-Status: `accepted I16A WP-02 specification-by-example baseline`.
+Status: `accepted current specification-by-example`.
 
 Date: 2026-09-09.
 
@@ -74,7 +74,7 @@ Then R1 appears with an explicit no-components/no-connectivity child state.
 
 The empty child state is not a technical failure.
 
-## SCI-EX-07 — Component with no interactions exposes Add Connectivity context
+## SCI-EX-07 — Component with no exact interaction has no authoring action
 
 Given:
 - Component Deployment C1 is effectively bound to local R1;
@@ -82,8 +82,10 @@ Given:
 
 Then:
 - R1 -> C1 appears;
-- the workspace may show `No connectivity declared`;
-- `Add connectivity` may be shown only when its downstream actions are independently admitted.
+- the workspace states that no catalogued communication interaction is known;
+- Add Connectivity / Request access is not shown from that row because no trusted remote Component/DCS subject exists.
+
+This may change only after an accepted ACC/application capability can author or select a new exact interaction without arbitrary client-created identifiers.
 
 ## SCI-EX-08 — outgoing relationship relative to local side
 
@@ -292,3 +294,20 @@ Given more local Resources exist than one page,
 Then pagination is over the effective local Resource set.
 
 A Resource group is not split across top-level pages. If a child collection is separately bounded, truncation/continuation is explicit.
+
+## SCI-EX-26 — Request access reuses an existing exact interaction
+
+Given:
+- local C1 has ACC-known exact interaction C1 -> C2 / DCS-Https;
+- the row has no current Rule;
+- its coarse Need/Decision state does not make Request access unsafe;
+- the actor is separately admitted for the downstream actions.
+
+When the actor starts Request access from that row,
+
+Then:
+- selected scope, local Resource/Component and exact source/destination/DCS identity are reused;
+- if no current Requirement exists, the flow may declare one from supplied applicability/justification;
+- an existing current Requirement is reused rather than rewritten;
+- the exact proposal flow is invoked;
+- no persistent Access Request identity is created merely for this orchestration.
