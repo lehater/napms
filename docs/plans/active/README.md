@@ -1,40 +1,41 @@
 # Active execution
 
 Current: `PLAN-034-i20-realization-reconciliation.md`
-Goal: Complete I20 desired-vs-configured reconciliation and enforcement-policy derivation without pulling I21 rendering or I22 execution forward.
-Current task: WP-1 — implement the framework-free APR desired-enforcement/reconciliation core.
+Goal: Close I20 desired-vs-configured reconciliation and promote I21 without pulling rendering or device execution into APR.
+Current task: WP-4 — final review and hosted repository gates.
 
-Working mode: implementation slice; primary Skill `implement-slice`.
+Working mode: architecture review / closure; primary Skill `architecture-review`.
 
 ## Working set
 
 Read first:
-- `docs/domain/access-policy-realization/reconciliation-tactical-model.md`
+- `docs/plans/active/PLAN-034-i20-realization-reconciliation.md`
 - `docs/architecture/access-policy-realization-reconciliation-boundary.md`
 
 Expand only if needed:
-- `docs/requirements/access-policy-realization-reconciliation.md`
-- `docs/requirements/access-policy-realization-reconciliation-acceptance-examples.md`
-- `src/napms/access_policy_realization/domain/`
-- `src/napms/access_policy_realization/application/`
+- `src/napms/access_policy_realization/`
+- `src/napms/composition/access_policy_realization_postgres.py`
 - `tests/access_policy_realization/`
+- `tests/integration/postgres/test_access_policy_realization_reconciliation.py`
+- `docs/domain/access-policy-realization/reconciliation-tactical-model.md`
 
 Recovery facts:
-- WP-0 is accepted; I20 stays inside Access Policy Realization.
-- Complete configured comparison requires one explicit same-governance-scope + Logical Firewall + Enforcement Attachment managed-scope/source contract.
-- First complete configured slice requires an explicitly selected TAE Configured set with `EvidenceTime.Instant == asOf` and exact effective-Permit semantics/completeness.
-- TAE itself does not gain global current/complete state; raw Block/order/default/vendor evaluation remains source-adapter work and fails closed when unsupported.
-- Shared I18 domain resolution must be reused for desired quality/configured attribution.
-- Exact `common | missing | extra` drives `No-op | Add | Remove | Replace`; Replace is not a device command.
+- WP-0..WP-3 are implemented in PR #44.
+- I20 remains inside Access Policy Realization; no APR persistence was added.
+- Enforcement Target is Logical Firewall + Enforcement Attachment.
+- Configured comparison requires explicit EvidenceSet + same-managed-scope effective-Permit completeness contract at exact `asOf`.
+- Shared I18 resolution is reused for both desired quality and configured attribution.
+- P1 findings found during implementation review were closed fail-closed before WP-4.
+- Local checkout/test execution is unavailable in this environment because GitHub DNS resolution fails; hosted Ready-for-review gates are the required executable proof.
 
 ## Blockers
 
-None for WP-1 under the accepted first-slice contracts.
+Hosted core/knowledge/harness gates have not run yet because PR #44 is still draft.
 
 ## Gate
 
-WP-1 passes when framework-free APR Domain/Application implement exact desired/configured policy semantics with deterministic Unknown/Ambiguous precedence, no peer/infrastructure imports and unchanged I18 behavior.
+WP-4 passes only when all applicable hosted checks are green, no P0/P1 review finding remains, canonical current state marks I20 complete and I21 next, and the active plan is cleared.
 
 ## Next
 
-Implement I20 core + architecture tests, then advance to WP-2 owner-preserving adapters only after the core gate is coherent.
+Mark PR #44 ready, inspect every hosted check, fix failures, then perform canonical absorption and squash merge.

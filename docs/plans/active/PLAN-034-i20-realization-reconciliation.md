@@ -4,6 +4,14 @@ Status: `active`
 
 Date: 2026-09-09.
 
+## Execution progress
+
+- WP-0 complete: Tactical DDD, requirements and architecture boundary accepted.
+- WP-1 complete in branch: framework-free derivation/reconciliation core and executable specification added; discovered P1 attribution/target-local ambiguity gaps are closed.
+- WP-2 complete in branch: APR-owned ports plus owner-preserving Access Policy/Policy Export, NEP and TAE anti-corruption adapters added; projection-correlation P1 findings are closed fail-closed.
+- WP-3 complete in branch: PostgreSQL owner composition and durable acceptance proof added without APR persistence or public HTTP/Web surface.
+- WP-4 active: final architecture review, hosted gates, canonical completion/promotion and squash merge remain.
+
 ## Goal
 
 Complete the first coherent Access Policy Realization (APR) outcome so NAPMS can derive vendor-neutral desired enforcement semantics from effective Access Policy + Network Enforcement Placement and reconcile them against explicitly selected configured evidence without inventing source completeness, policy-scope ownership, currentness, vendor evaluation or device-execution semantics.
@@ -139,8 +147,16 @@ I20 is complete only when:
 
 ## Blockers
 
-WP-0 semantic choices are accepted in the I20 Tactical DDD/requirements/architecture contract. No plan-level blocker remains for WP-1. Source-specific configured evaluation beyond the accepted effective-Permit contract remains fail-closed/deferred rather than blocking the core.
+No semantic or architecture blocker remains.
+
+The final executable proof is pending because repository workflows intentionally run on `ready_for_review`, while the PR remained draft through WP-0..WP-3. Direct local checkout from the current execution environment is unavailable because `github.com` DNS resolution fails, so local `make test` cannot be claimed.
+
+Source-specific configured evaluation beyond the accepted effective-Permit contract remains fail-closed/deferred and is not an I20 blocker.
 
 ## Next
 
-Execute WP-1: implement framework-free APR desired-enforcement values, exact policy algebra, derivation/reconciliation decisions and executable core/architecture tests from the accepted WP-0 contract.
+Execute WP-4:
+1. mark PR #44 ready for review to trigger the hosted core/knowledge/harness gates;
+2. inspect and close every resulting P0/P1 finding;
+3. absorb the verified I20 implementation state into canonical engineering/roadmap truth and promote I21;
+4. clear the active plan/resume capsule and squash merge the coherent I20 stage.
