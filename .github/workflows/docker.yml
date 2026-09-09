@@ -16,6 +16,7 @@ on:
       - "src/napms/application_catalogue/adapters/postgres/migrations/**"
       - "src/napms/resource_catalogue/adapters/postgres/migrations/**"
       - "tools/dev_compose.py"
+      - "tools/prepare_local_postgres.py"
       - "tools/verify_local_postgres_auth.py"
       - "pyproject.toml"
       - "Makefile"
@@ -30,12 +31,22 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     env:
-      NAPMS_POSTGRES_PASSWORD: ci-local-postgres-password
+      NAPMS_POSTGRES_PASSWORD: ci-compose-interpolation-placeholder
     steps:
       - uses: actions/checkout@v4
       - run: docker compose version
-      - run: python tools/dev_compose.py up --no-print-credentials
-      - run: python tools/verify_local_postgres_auth.py
+      - name: Start fresh password-authenticated stack
+        run: |
+          export NAPMS_POSTGRES_PASSWORD="$(python -c 'import secrets; print(secrets.token_urlsafe(24))')"
+          python tools/prepare_local_postgres.py
+          python tools/dev_compose.py up --no-print-credentials
+          python tools/verify_local_postgres_auth.py
+      - name: Rotate database credential on preserved volume
+        run: |
+          export NAPMS_POSTGRES_PASSWORD="$(python -c 'import secrets; print(secrets.token_urlsafe(24))')"
+          python tools/prepare_local_postgres.py
+          python tools/dev_compose.py up --no-print-credentials
+          python tools/verify_local_postgres_auth.py
       - run: docker compose ps
       - if: failure()
         run: docker compose logs --no-color
