@@ -75,6 +75,60 @@ class RequirementDetailOutcome(str, Enum):
 
 
 @dataclass(frozen=True, slots=True)
+class AuthorizedRequirementReadResult:
+    outcome: RequirementDetailOutcome
+    requirement: ConnectivityRequirement | None = None
+    read_authority_reference: str | None = None
+
+
+class GetAuthorizedRequirement:
+    def __init__(
+        self,
+        *,
+        authority: RequirementAuthorityPort,
+        requirements: ConnectivityRequirementRepository,
+    ) -> None:
+        self._authority = authority
+        self._requirements = requirements
+
+    def execute(
+        self,
+        *,
+        requirement_id: UUID,
+        actor_id: str,
+        effective_time: datetime,
+    ) -> AuthorizedRequirementReadResult:
+        requirement = self._requirements.get_by_id(requirement_id)
+        if requirement is None:
+            return AuthorizedRequirementReadResult(
+                RequirementDetailOutcome.REQUIREMENT_NOT_FOUND
+            )
+
+        authority = self._authority.check(
+            actor_id=actor_id,
+            action=RequirementAuthorityAction.READ,
+            scope=requirement.governance_scope,
+            effective_time=effective_time,
+        )
+        if authority.outcome is TernaryOutcome.DENIED:
+            return AuthorizedRequirementReadResult(
+                RequirementDetailOutcome.AUTHORITY_DENIED
+            )
+        if (
+            authority.outcome is not TernaryOutcome.PERMITTED
+            or authority.authority_reference is None
+        ):
+            return AuthorizedRequirementReadResult(
+                RequirementDetailOutcome.AUTHORITY_UNKNOWN
+            )
+        return AuthorizedRequirementReadResult(
+            RequirementDetailOutcome.FOUND,
+            requirement=requirement,
+            read_authority_reference=authority.authority_reference,
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class RequirementDetailResult:
     outcome: RequirementDetailOutcome
     requirement: ConnectivityRequirement | None = None
@@ -92,7 +146,10 @@ class GetConnectivityRequirement:
         requirements: ConnectivityRequirementRepository,
     ) -> None:
         self._authority = authority
-        self._requirements = requirements
+        self._authorized_reader = GetAuthorizedRequirement(
+            authority=authority,
+            requirements=requirements,
+        )
 
     def execute(
         self,
@@ -101,29 +158,17 @@ class GetConnectivityRequirement:
         actor_id: str,
         effective_time: datetime,
     ) -> RequirementDetailResult:
-        requirement = self._requirements.get_by_id(requirement_id)
-        if requirement is None:
-            return RequirementDetailResult(
-                RequirementDetailOutcome.REQUIREMENT_NOT_FOUND
-            )
-
-        authority = self._authority.check(
+        authorized = self._authorized_reader.execute(
+            requirement_id=requirement_id,
             actor_id=actor_id,
-            action=RequirementAuthorityAction.READ,
-            scope=requirement.governance_scope,
             effective_time=effective_time,
         )
-        if authority.outcome is TernaryOutcome.DENIED:
-            return RequirementDetailResult(
-                RequirementDetailOutcome.AUTHORITY_DENIED
-            )
-        if (
-            authority.outcome is not TernaryOutcome.PERMITTED
-            or authority.authority_reference is None
-        ):
-            return RequirementDetailResult(
-                RequirementDetailOutcome.AUTHORITY_UNKNOWN
-            )
+        if authorized.outcome is not RequirementDetailOutcome.FOUND:
+            return RequirementDetailResult(authorized.outcome)
+
+        assert authorized.requirement is not None
+        assert authorized.read_authority_reference is not None
+        requirement = authorized.requirement
         def admission(action: RequirementAuthorityAction) -> TernaryOutcome:
             result = self._authority.check(
                 actor_id=actor_id,
@@ -141,7 +186,7 @@ class GetConnectivityRequirement:
         return RequirementDetailResult(
             RequirementDetailOutcome.FOUND,
             requirement=requirement,
-            read_authority_reference=authority.authority_reference,
+            read_authority_reference=authorized.read_authority_reference,
             applicability_mutation_admission=admission(
                 RequirementAuthorityAction.SET_APPLICABILITY
             ),
