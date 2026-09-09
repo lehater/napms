@@ -1,6 +1,6 @@
 # Semantic Ownership
 
-Status: `accepted NAPMS-DDD-001 / I20 WP-0 current semantic ownership`.
+Status: `accepted NAPMS-DDD-001 / I20 current semantic ownership`.
 
 This file defines semantic ownership, not runtime/service ownership.
 
@@ -140,7 +140,7 @@ The same Technical Access Predicate against the same authoritative catalogue/res
 
 I18 makes that invariant executable. Domain Access Resolution owns exact overlap witnesses, ambiguity, predicate-relevant Unknown and unresolved technical remainder.
 
-I20 adds a policy-level interpretation without changing I18 meaning:
+I20 implements a policy-level interpretation without changing I18 meaning:
 - desired enforcement is derived from effective desired Access Policy and NEP placement at one explicit `asOf`;
 - the first Enforcement Target is Logical Firewall + Enforcement Attachment;
 - configured TAE material is not directly “current configured policy”;

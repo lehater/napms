@@ -49,7 +49,7 @@ Access Policy Realization now has the I18 Technical-to-Domain Access Resolution 
 
 Network Enforcement Placement has the implemented I19 Tactical DDD/runtime slice: exact endpoint-pair Traffic Relation, normalized ordered path Traversal Points, stable Logical Firewall identity, temporal provider correspondence, temporal Enforcement Attachments and fail-closed Enforcement Selection.
 
-Access Policy Realization now also has the accepted I20 WP-0 derivation/reconciliation boundary. I20 keeps the existing BC ownership: effective desired Access Policy + shared I18 domain resolution + NEP placement are correlated with explicitly selected configured evidence only through an exact managed reconciliation-scope/source contract. Complete Add/Remove/Replace/No-op claims require same-target/same-managed-partition correlation, exact time and trustworthy configured effective-policy completeness; I21 rendering and I22 execution remain downstream.
+Access Policy Realization now also has the implemented I20 derivation/reconciliation slice. Effective desired Access Policy + shared I18 domain resolution + NEP placement are correlated with explicitly selected configured evidence only through an exact managed reconciliation-scope/source contract. Complete Add/Remove/Replace/No-op claims require same-target/same-managed-partition correlation, exact time and trustworthy configured effective-policy completeness. The implementation remains derived on demand through owner-preserving adapters/owner-backed PostgreSQL composition with no APR persistence; I21 rendering and I22 execution remain downstream.
 
 ## I16A responsibility-scope relationship
 

@@ -1,6 +1,6 @@
 # Current target architecture
 
-Status: `accepted current target through I19 plus I20 WP-0 Desired-vs-Configured Reconciliation and Enforcement Policy Derivation boundary`.
+Status: `accepted current target through I20; I21 Configuration Rendering is next`.
 
 Date: 2026-09-09.
 
@@ -76,7 +76,7 @@ Current non-peer application/read compositions include:
 
 Scoped Connectivity Inventory is implemented as an owner-preserving application composition with Resource Scope Affiliation, `ReadScopedConnectivity`, module-owned adapters and no independent persistence.
 
-I20 extends Access Policy Realization with the accepted managed-scope desired/configured reconciliation boundary. I21 rendering and I22 execution remain downstream. Runtime/deployment decomposition remains evidence-driven.
+I20 implements Access Policy Realization managed-scope desired/configured reconciliation through owner-preserving adapters and a PostgreSQL-backed owner composition, with no APR persistence. I21 rendering and I22 execution remain downstream. Runtime/deployment decomposition remains evidence-driven.
 
 ## Current runtime boundary
 
@@ -178,7 +178,7 @@ APR may consume NEP later through an APR-owned projection/port. NEP must not dep
 
 ## Access Policy Realization — I20 derivation/reconciliation
 
-The accepted first I20 boundary remains framework-free APR Domain/Application with outer owner adapters.
+The implemented I20 boundary remains framework-free APR Domain/Application with APR-owned ports and outer owner-preserving adapters.
 
 ```text
 effective Access Policy + RC/ACC
@@ -207,6 +207,7 @@ Architecture rules:
 - raw vendor Block/order/default/zone semantics are interpreted only by source-specific outer adapters capable of producing exact effective Permit regions;
 - I18 correspondence algebra is reused unchanged;
 - desired/configured reconciliation remains derived on demand with no APR persistence requirement;
+- the durable PostgreSQL proof composes existing Access Policy, RC/ACC, NEP and TAE owners through their repositories/use cases without cross-context SQL or copied APR truth;
 - I21 owns rendering and I22 owns device/provider operations.
 
 Feature contract: `docs/architecture/access-policy-realization-reconciliation-boundary.md`.

@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I19 Network Enforcement Placement accepted and implemented; I20 Desired-vs-Configured Reconciliation and Enforcement Policy Derivation selected for execution`.
+Status: `I20 Desired-vs-Configured Reconciliation and Enforcement Policy Derivation accepted and implemented; I21 Configuration Rendering is next`.
 
 Date: 2026-09-09.
 
@@ -23,7 +23,7 @@ This file is a capability snapshot, not an increment-by-increment changelog. Det
 | Scoped Connectivity Inventory | accepted owner-preserving product/application composition | framework-free read composition with module-owned PostgreSQL adapters, including durable coarse Decision enrichment; no independent persistence | primary post-login Connectivity workspace |
 | Technical Access Evidence | accepted Tactical DDD | framework-free Domain/Application/Ports + TAE-owned PostgreSQL + strict local JSON import adapter + dedicated composition record/readback; no public TAE transport | none |
 | Network Enforcement Placement | accepted I19 Tactical DDD | framework-free Domain/Application/Ports + strict knowledge import + NEP-owned PostgreSQL immutable captures + time-qualified placement selection | none |
-| Access Policy Realization | accepted I18 Technical-to-Domain Resolution slice | framework-free Domain/Application/Ports + predicate-aware RC/ACC adapter + one-way TAE projection; derived on demand, no APR persistence | none |
+| Access Policy Realization | accepted I18 resolution + I20 enforcement derivation/reconciliation | framework-free Domain/Application/Ports + owner-preserving Access Policy/Policy Export, RC/ACC, NEP and TAE adapters + PostgreSQL-backed owner composition; derived on demand, no APR persistence | none |
 
 ## Current runtime boundary
 
@@ -66,24 +66,22 @@ This remains a local/development topology, not a production deployment claim.
 
 ## Current execution
 
-I20 is the selected roadmap increment. Mutable task/gate state is owned only by `docs/plans/active/README.md`; no I20 runtime capability is claimed by this implementation snapshot yet.
+No implementation plan is currently selected.
 
-I19 Network Enforcement Placement is complete and absorbed into canonical product/domain/architecture/engineering truth. The implemented slice provides:
-- one exact source/destination IP Traffic Relation as the first executable query shape;
-- normalized ordered Forwarding Path knowledge plus positive temporal/provenance-bearing `NoForwardingPath`;
-- stable Logical Firewall identity independent from provider/device realization;
-- temporal Logical Firewall Correspondence and Enforcement Attachment semantics;
-- `Placed | NoEnforcement | NoForwardingPath | Ambiguous | Unknown` with no ambiguity winner;
-- explicit offset-aware logical time and attributable path/firewall/correspondence/attachment provenance;
-- fail-closed explicit source knowledge gaps, unsupported forwarding dimensions and overlapping effective capture knowledge;
-- framework-free NEP Domain/Application/Ports with strict adapter boundaries;
-- immutable relation-scoped NEP-owned PostgreSQL persistence and operation-scoped composition;
-- durable effective-time switching/domain-attributable placement proof with no Access Rule, Connectivity Decision or TAE side effect;
-- no I20 desired-vs-configured reconciliation/policy derivation, vendor rendering, provider mutation or public operator workflow.
+I20 Desired-vs-Configured Reconciliation and Enforcement Policy Derivation is complete and absorbed into canonical product/domain/architecture/engineering truth. The implemented APR slice provides:
+- vendor-neutral desired Enforcement Intent derived from effective Access Policy + shared I18 domain resolution + NEP placement at one explicit `asOf`;
+- Enforcement Target identity = Logical Firewall + Enforcement Attachment;
+- explicit configured Evidence Set selection with same-managed-scope/source contract, exact evidence time and trustworthy effective-Permit completeness;
+- exact canonical `common | missing | extra` technical witnesses and complete-only `No-op | Add | Remove | Replace` semantic delta;
+- `Satisfied | Drift | Ambiguous | Unknown` with fail-closed Unknown/Ambiguous precedence and no ambiguity winner;
+- target-local configured-domain attribution through the unchanged shared I18 matcher;
+- owner-preserving anti-corruption adapters with explicit correlation checks for desired-policy, placement and configured-evidence projections;
+- PostgreSQL-backed composition over existing owner contexts proving No-op/Add/Remove/Replace, incomplete-contract Unknown and temporal target movement;
+- no APR-owned persistence, public HTTP/Web workflow, vendor rendering or provider/device execution.
 
-I18 Technical-to-Domain Access Resolution, I17 Technical Access Evidence Core and I16B Connectivity Decision Runtime/Workflow remain complete and absorbed into canonical truth.
+I19 Network Enforcement Placement, I18 Technical-to-Domain Access Resolution, I17 Technical Access Evidence Core and I16B Connectivity Decision Runtime/Workflow remain complete and absorbed into canonical truth.
 
-The active roadmap increment is I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation. Execution coordination is owned by `docs/plans/active/PLAN-034-i20-realization-reconciliation.md` and the resume capsule.
+The next roadmap increment is I21 — Configuration Rendering. It is not selected for execution, so there is no active `PLAN-*.md`.
 
 ## Canonical references
 
