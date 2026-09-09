@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I16A Scoped Connectivity Workspace Foundation accepted and implemented; I16B Connectivity Decision Runtime and Workflow is next`.
+Status: `I16A Scoped Connectivity Workspace Foundation accepted and implemented; I16B Connectivity Decision Runtime and Workflow active`.
 
 Date: 2026-09-09.
 
@@ -11,14 +11,14 @@ This file is a capability snapshot, not an increment-by-increment changelog. Det
 ## Capability snapshot
 
 | Capability | Semantic state | Runtime / persistence | Human-facing surface |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Access Policy | accepted | PostgreSQL-backed Domain/Application implementation with materialization, Active/Inactive, EffectiveWindow and effective-policy selection | Access Rules, Rule Details, Effective Desired Policy |
 | Authority Management | accepted | PostgreSQL-backed scoped action admission | consumed by authenticated use cases; no generic IAM admin surface |
 | Application Communication Catalogue | accepted | PostgreSQL-backed catalogue, immutable DCS projection semantics, authorized interaction discovery and presentation metadata | label-first interaction selection/presentation |
 | Resource Catalogue | accepted | PostgreSQL-backed Resource/Endpoint realization plus time-qualified Resource Scope Affiliation | supports policy/export and the resource-centric Connectivity workspace |
 | Connectivity Requirements | accepted | PostgreSQL-backed declaration/read/change/retire lifecycle | Needs plus coarse Need state in Connectivity |
 | Requirement-to-Policy Alignment | accepted application composition | no independent aggregate/table; derives `Covered | Uncovered | NotCurrent | Unknown` from authoritative Requirements + Access Policy | Needs and coarse coverage in Connectivity |
-| Connectivity Decision | accepted first-class bounded context through I15 | durable runtime not yet on main; current local-dev composition uses the explicit transitional `local-dev:allowed` adapter | no durable Decision workflow/workspace yet |
+| Connectivity Decision | accepted first-class bounded context through I15 | durable runtime not yet on main; I16B is actively replacing the explicit transitional `local-dev:allowed` composition | no durable Decision workflow/workspace yet |
 | Policy export / normalization | accepted | coherent snapshot + vendor-neutral normalized policy JSON | Normalized Policy |
 | Scoped Connectivity Inventory | accepted I16A product/application composition | framework-free read composition with module-owned PostgreSQL adapters and authenticated HTTP contract; no independent persistence | primary post-login Connectivity workspace |
 | Technical Access Evidence | strategic future context | not implemented | none |
@@ -62,11 +62,13 @@ This remains a local/development topology, not a production deployment claim.
 
 ## Current execution
 
-No execution plan is active after I16A closure.
+I16B Connectivity Decision Runtime and Workflow is active.
 
-I16A establishes the responsibility-scope/resource-centric Connectivity workspace, including Resource Scope Affiliation, `ReadScopedConnectivity`, the Scoped Connectivity Inventory read composition, authenticated HTTP endpoints, resource-centric Web workspace and contextual Request access for an existing exact ACC interaction.
+Active plan: `docs/plans/active/PLAN-016B-i16b-connectivity-decision-runtime.md`.
 
-The roadmap next sequences I16B Connectivity Decision Runtime and Workflow, which replaces the transitional local Decision provider with the accepted durable Decision application/runtime slice.
+The increment starts from current I16A architecture. Historical PR #26 is used only as an implementation donor for Decision core/persistence and narrow adapters; its pre-I16A composition, Web IA and working docs are not the merge baseline.
+
+The first target is a minimal durable exact Decision record/select path integrated into Access Policy and Scoped Connectivity before participant UI expansion.
 
 ## Canonical references
 

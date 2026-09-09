@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline after I16A`.
+Status: `accepted ordered sequencing baseline; I16B selected`.
 
 Date: 2026-09-09.
 
@@ -61,7 +61,9 @@ Detailed completed execution is not roadmap state. Durable outcomes live in curr
 
 ### I16B — Connectivity Decision Runtime and Workflow
 
-Status: `next`.
+Status: `active`.
+
+Active plan: `docs/plans/active/PLAN-016B-i16b-connectivity-decision-runtime.md`.
 
 Goal:
 replace the `local-dev:allowed` provider with the accepted real Decision-domain application/runtime slice and integrate it into the new Connectivity workspace.
