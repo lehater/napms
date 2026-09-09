@@ -1,6 +1,6 @@
 # PLAN-038 — I24 Local Deployment and Operational Hardening
 
-Status: `active — WP3 upgrade and migration`
+Status: `active — final verification`
 
 Date: 2026-09-10.
 
@@ -40,51 +40,55 @@ Closed findings:
 
 Status: `done`.
 
-Implemented and verified:
+Verified outcomes:
 - PostgreSQL custom-format logical backup through `pg_dump`;
 - temporary-file write plus `pg_restore --list` validation before publishing a backup artifact;
 - ignored local backup artifacts under `backups/` / `*.napms.dump`;
 - destructive restore requires explicit `restore-clean` semantics and `CONFIRM_RESET=yes` in the Make target;
 - archive validation occurs before the existing volume is deleted;
 - clean-volume restore runs through normal password preparation and restart-safe startup;
-- recovery boundary explicitly excludes in-memory sessions, in-memory NEO operation records, external device/provider state, logs outside PostgreSQL and plaintext local secrets;
-- Docker round-trip proved durable Access Rule count survives backup -> volume replacement -> restore -> authenticated restart, with password-authentication still enforced.
+- recovery boundary excludes in-memory sessions/NEO operation records, external provider state, non-PostgreSQL logs and plaintext local secrets;
+- Docker round-trip proved durable Access Rule count survives backup -> volume replacement -> restore -> authenticated restart, with password authentication still enforced.
 
 ## WP3 — Upgrade and migration procedure
 
-Status: `active`.
+Status: `done`.
 
-Scope:
-- document safe pre-upgrade backup and startup/migration ordering;
-- make failure/recovery behavior explicit;
-- prove replay of the migration runner against a current database is a no-op and preserves the migration journal;
-- treat checksum mismatch as a hard failure;
-- avoid claiming arbitrary database/application downgrade support.
+Verified outcomes:
+- supported local forward-upgrade order and pre-upgrade backup requirement documented;
+- failed upgrade recovery uses a validated pre-upgrade backup and matching application revision rather than arbitrary reverse migrations;
+- migration checksum mismatch remains fail-closed;
+- Docker gate runs `napms-migrate` twice against current restored state and proves migration-journal count and durable Rule count remain unchanged;
+- arbitrary application/database downgrade compatibility is explicitly not claimed.
 
 ## WP4 — Local observability and runtime diagnostics
 
-Status: `queued`.
+Status: `implemented; final verification pending`.
 
-Scope:
-- retain structured application logging/correlation;
-- expose/document the smallest useful local health/readiness diagnostics;
-- make Compose service state and failure diagnosis straightforward;
-- add metrics only if a concrete local operator use-case justifies them.
+Implemented:
+- existing structured JSON logging/correlation retained as the runtime diagnostic source;
+- existing `/health/live` and PostgreSQL-backed `/health/ready` retained;
+- `make dev-status` prints Compose state and requires public live/ready plus a real PostgreSQL `SELECT 1`;
+- `make dev-logs` remains the follow-up diagnostic path;
+- no metrics backend is added because no concrete local operator use-case currently requires one.
 
-## WP5 — Container/dependency hardening and workload envelope
+## WP5 — Container/dependency hardening and workload boundary
 
-Status: `queued`.
+Status: `implemented/reviewed; final verification pending`.
 
-Scope:
-- review container privileges, image/runtime defaults and dependency hygiene;
-- harden reversible low-risk defaults where evidence supports it;
-- define a modest accepted local workload envelope from executable measurements rather than invented SLA/SLO claims.
+Implemented/reviewed:
+- backend runtime remains dedicated non-root uid 10001;
+- backend-derived and Web services use `init: true` and `no-new-privileges:true`;
+- PostgreSQL privilege/entrypoint model is left on the official image rather than speculatively overridden;
+- public ingress remains loopback-only and PostgreSQL/API remain un-published;
+- Web dependency lockfile absence is recorded as P2 reproducibility debt rather than hidden or hand-authored;
+- no performance/SLA envelope is invented because no accepted workload/user-count/dataset/latency target exists; capacity claims remain explicitly deferred until such a target is accepted.
 
 ## WP6 — Verification and absorption
 
-Status: `blocked on WP3-WP5`.
+Status: `active`.
 
-Run repository gates and local runtime recovery/hardening proofs, absorb durable outcomes into canonical engineering/architecture truth, remove this active plan and promote I25.
+Run core, PostgreSQL persistence, harness, knowledge and Docker local-runtime gates on the complete hardening branch. If green, update canonical current-state/roadmap, remove this active plan and promote I25 Product Completion, Operator UX and Acceptance.
 
 ## Exit criteria
 
@@ -95,13 +99,13 @@ I24 exits when:
 - migration/upgrade procedure is documented and proven for the supported local path;
 - useful local operational diagnostics are documented/proven;
 - low-risk container/dependency hardening is applied where justified;
-- a measured local workload envelope exists or an explicit documented reason explains why further performance claims remain deferred;
+- performance/capacity claims are either measured against an accepted target or explicitly deferred because no target exists;
 - core, PostgreSQL persistence, harness, knowledge and Docker local-runtime gates pass on the final merge candidate.
 
 ## Blockers
 
-No external infrastructure is required. Real TLS certificates, enterprise secret stores, HA, corporate identity and multi-node topology remain out of scope unless a concrete accepted local target requirement later selects them.
+No product/domain blocker remains. Final closure is blocked only on complete-branch verification and absorption. Enterprise TLS/secret stores/HA/corporate identity/multi-node topology remain out of scope for the selected local target.
 
 ## Next
 
-Document the supported local upgrade sequence and add a Docker proof that repeated `napms-migrate` execution preserves the existing migration-journal count and current restored state.
+Run final complete-branch gates. If green, absorb I24 into canonical engineering/architecture/roadmap state, remove PLAN-038 from active execution and promote I25.
