@@ -1,7 +1,7 @@
 # Active execution
 
-Current: none.
+Current: `PLAN-016-i16-connectivity-decision-runtime.md`.
 
 Roadmap: `docs/engineering/post-wave1-product-completion-roadmap.md`.
 
-I15 Connectivity Decision Domain Closure is complete and absorbed into canonical truth. Create the I16 active plan only when Connectivity Decision Runtime and Workflow execution begins.
+I16 replaces the normal-product `local-dev:allowed` seam with the accepted durable Connectivity Decision application/runtime slice.
