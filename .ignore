@@ -1,0 +1,12 @@
+# Generated dependency/build trees excluded from repo-wide search/indexing.
+web/node_modules/
+web/dist/
+web/playwright-report/
+web/test-results/
+
+.venv/
+venv/
+dist/
+build/
+.pytest_cache/
+__pycache__/
