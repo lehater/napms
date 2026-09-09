@@ -16,7 +16,7 @@ Prerequisites: Docker Engine/Desktop with Docker Compose v2 and Python 3.
 make dev-up
 ```
 
-The command generates ephemeral local PostgreSQL and UI credentials in memory, builds and starts PostgreSQL, tracked migrations, local demo seed, FastAPI and Web/nginx, runs an authenticated product smoke check, verifies that PostgreSQL requires the configured password, then prints the local URL and generated UI login credentials.
+The command generates ephemeral local PostgreSQL and UI credentials in memory, prepares/rotates the local database role password, builds and starts PostgreSQL, tracked migrations, local demo seed, FastAPI and Web/nginx, runs only restart-safe authenticated readiness/session/read probes, verifies that PostgreSQL rejects an incorrect password, then prints the local URL and generated UI login credentials.
 
 Open the printed URL (default `http://127.0.0.1:8080`).
 
@@ -28,9 +28,25 @@ make dev-down
 make dev-reset
 ```
 
-`dev-down` preserves the database volume. `dev-reset` deletes local database state.
+`dev-down` preserves the database volume. `dev-reset` deletes local database state. Re-running `make dev-up` against preserved state does not create or mutate application domain objects as part of its startup probe.
 
-A PostgreSQL volume created by the older pre-I24 `trust` configuration may fail the new authentication verification even though the application can connect. Do not destroy needed data to fix that condition; first follow the local backup/restore procedure once available in I24 WP2, then recreate or explicitly migrate the volume.
+A PostgreSQL volume created by the older pre-I24 host-`trust` configuration may fail the new authentication verification even though the application can connect. Back up needed data before recreating or explicitly migrating such a volume.
+
+## Local backup and recovery
+
+Create a validated PostgreSQL custom-format logical backup:
+
+```bash
+make dev-backup BACKUP=backups/napms.napms.dump
+```
+
+Restore into a clean replacement PostgreSQL volume:
+
+```bash
+make dev-restore BACKUP=backups/napms.napms.dump CONFIRM_RESET=yes
+```
+
+Restore is deliberately destructive and refuses to replace the volume without explicit confirmation. The archive is validated before volume deletion. See `docs/engineering/local-backup-recovery.md` for the exact recovery boundary and exclusions.
 
 For raw `docker compose up`, provide `NAPMS_POSTGRES_PASSWORD` and `NAPMS_LOCAL_AUTH_PASSWORD_HASH` outside version control. `.env.example` lists the supported overrides but intentionally contains no usable credentials.
 
