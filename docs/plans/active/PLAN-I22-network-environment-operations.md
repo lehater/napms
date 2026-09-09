@@ -1,6 +1,6 @@
 # PLAN — I22 Network Environment Operations
 
-Status: `S1 accepted; S2/S3 stub implementation in progress`.
+Status: `S1-S4 implemented; S5 final gate next`.
 
 ## Goal
 
@@ -9,7 +9,7 @@ Complete one controlled target operation loop from accepted I21 rendered configu
 ## Inputs
 
 - accepted I21 `RenderedConfiguration` semantics and Cisco ASA renderer contract;
-- accepted Enforcement Target identity from APR/NEP;
+- accepted Enforcement Target identity from APR/NEP, projected at composition into NEO-owned `OperationTarget`;
 - user-selected constraint: no real lab is available, so I22 first executable transport is a deterministic in-process stub;
 - Authority Management remains owner of mutation eligibility.
 
@@ -17,15 +17,16 @@ Complete one controlled target operation loop from accepted I21 rendered configu
 
 1. **Semantic ownership:** Network Environment Operations is a separate semantic module because operation identity/lifecycle, mutation authority, concurrency, failure/recovery and execution audit form a distinct responsibility. It does not own desired policy, placement or rendering semantics.
 2. **First transport:** deterministic in-process target stub. It proves execution semantics only and is explicitly not a Cisco integration claim.
-3. **Operation identity:** `operation_id` binds exactly one Enforcement Target + artifact digest. Identical retry is idempotent; conflicting reuse fails closed.
-4. **Precondition:** acquire current target revision before mutation; optional caller-expected revision and adapter-side conditional apply both fail closed on mismatch.
-5. **Apply:** explicit `Applied | PreconditionFailed | Rejected | Unknown`; transport acceptance is not verification.
-6. **Final outcome:** `Verified | PreconditionFailed | Rejected | Drift | Unknown`.
-7. **Post-check:** `Verified` requires reacquisition proving requested artifact digest is current target state.
-8. **Concurrency:** optimistic target revision is the first-slice concurrency token.
-9. **Recovery:** Unknown is never blindly retried/rolled back; generic rollback is not claimed in the stub slice.
-10. **Audit:** operation result preserves target, actor/scope, artifact digest, pre/apply/post evidence and provenance. First slice uses in-memory repository and does not claim crash-durable audit.
-11. **Authority:** mutation admission is an explicit consumer-owned port; read access does not imply mutation authority.
+3. **Target boundary:** NEO Domain imports no APR domain type. Composition projects APR `EnforcementTarget` identity into NEO-owned `OperationTarget` without redefining the upstream identity.
+4. **Operation identity:** `operation_id` binds exactly one Operation Target + artifact digest. Identical retry is idempotent; conflicting reuse fails closed.
+5. **Precondition:** acquire current target revision before mutation; optional caller-expected revision and adapter-side conditional apply both fail closed on mismatch.
+6. **Apply:** explicit `Applied | PreconditionFailed | Rejected | Unknown`; transport acceptance is not verification.
+7. **Final outcome:** `Verified | PreconditionFailed | Rejected | Drift | Unknown`.
+8. **Post-check:** `Verified` requires reacquisition proving requested artifact digest is current target state.
+9. **Concurrency:** optimistic target revision is the first-slice concurrency token.
+10. **Recovery:** Unknown is never blindly retried/rolled back; generic rollback is not claimed in the stub slice.
+11. **Audit:** operation result preserves target, actor/scope, artifact digest, pre/apply/post evidence and provenance. First slice uses in-memory repository and does not claim crash-durable audit.
+12. **Authority:** mutation admission is an explicit consumer-owned port; read access does not imply mutation authority.
 
 Canonical owners:
 - `docs/requirements/network-environment-operations.md`;
@@ -48,13 +49,14 @@ Canonical owners:
 
 Status: `done`.
 
-Accepted stub-first ownership, operation identity, pre/post-check, outcome, concurrency/recovery, authority and audit contracts.
+Accepted stub-first ownership, target projection, operation identity, pre/post-check, outcome, concurrency/recovery, authority and audit contracts.
 
 ### S2 — Framework-free operation core
 
 Status: `implemented; final gate pending`.
 
 Implemented:
+- NEO-owned `OperationTarget` projection value;
 - operation command/result value model;
 - apply/final outcome vocabulary;
 - consumer-owned authority/target/repository ports;
@@ -76,13 +78,21 @@ No real Cisco transport is implemented or implied.
 
 ### S4 — Controlled desired -> rendered -> applied -> verified proof
 
-Status: `next`.
+Status: `implemented; final gate pending`.
 
-Compose existing I20/I21 flow into the deterministic I22 stub. Derive desired policy, render the accepted Cisco ASA artifact, calculate the execution artifact digest, execute it against the target stub and prove `Verified`. Add adversarial integration cases for stale revision, concurrent change and unknown apply outcome without owner-side semantic mutation.
+Implemented:
+- existing PostgreSQL-backed APR owner composition derives desired enforcement and renders the accepted Cisco ASA artifact;
+- composition projects APR `EnforcementTarget` into NEO `OperationTarget`;
+- execution artifact digest is calculated from rendered bytes and bound to `operation_id`;
+- deterministic target stub proves pre-check -> conditional apply -> post-check -> `Verified`;
+- integration proof verifies Access Policy, NEP and TAE owner counts do not change;
+- adversarial integration proofs cover Unknown apply with no blind retry and concurrent target change with no false Verified result.
 
 ### S5 — Final gate and absorption
 
-Run applicable repository and hosted gates. Absorb durable outcomes into canonical domain/requirements/architecture/engineering artifacts, remove this completed PLAN, update the active capsule, mark I22 complete and promote I23 without selecting it. Squash-merge only after final gates are green.
+Status: `next`.
+
+Open the I22 PR and run hosted gates. On green, absorb durable outcomes into canonical semantic ownership/current architecture/current engineering state/roadmap, remove this completed PLAN, set active execution to none, promote I23 without selecting it and squash-merge.
 
 ## Exit criteria
 
@@ -90,6 +100,7 @@ Run applicable repository and hosted gates. Absorb durable outcomes into canonic
 - framework-free operation core has explicit fail-closed outcome semantics;
 - deterministic stub proves success/rejection/uncertainty/concurrency/drift/idempotency behavior;
 - one integration proof completes desired -> rendered -> stub-applied -> verified;
+- NEO Domain has no peer-domain dependency on APR;
 - all final hosted gates are green;
 - canonical state clearly says no real Cisco lab/transport has been proven.
 
@@ -109,4 +120,4 @@ No real lab is available. This is an accepted product/environment constraint, no
 
 ## Next
 
-Execute S4 composition proof with the deterministic target stub, then open the I22 PR and use hosted CI as the executable gate.
+Open the I22 PR, run hosted final gates, resolve failures, then perform S5 absorption and squash merge.
