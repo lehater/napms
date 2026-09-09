@@ -1,7 +1,7 @@
 # Active execution
 
-Current: `PLAN-015-i15-connectivity-decision-domain-closure.md`.
+Current: none.
 
 Roadmap: `docs/engineering/post-wave1-product-completion-roadmap.md`.
 
-I15 closes the deferred Connectivity Decision semantic owner/model/contracts. Runtime replacement of `local-dev:allowed` remains I16.
+I15 Connectivity Decision Domain Closure is complete and absorbed into canonical truth. Create the I16 active plan only when Connectivity Decision Runtime and Workflow execution begins.
