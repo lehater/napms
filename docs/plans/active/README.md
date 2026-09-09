@@ -2,44 +2,50 @@
 
 Current: `PLAN-018-i18-technical-domain-access-resolution.md`
 
-Goal: implement I18 Technical-to-Domain Access Resolution as one consumer-independent APR capability over effective RC + ACC knowledge.
+Goal: close I18 Technical-to-Domain Access Resolution with final architecture review, canonical truth absorption and exact-head hosted gates.
 
-Current task: WP3 — integration proof.
+Current task: WP4 — architecture review and closure.
 
-Working mode: implement-slice + architecture-review + execute-work-package.
+Working mode: architecture-review + execute-work-package.
 
 ## Working set
 
 Read first:
+- `docs/plans/active/PLAN-018-i18-technical-domain-access-resolution.md`
+- `docs/domain/access-policy-realization/tactical-model.md`
 - `docs/requirements/technical-domain-access-resolution-acceptance-examples.md`
-- APR Domain/Application/adapters;
-- existing PostgreSQL integration fixture patterns for TAE, ACC and RC.
+- `docs/architecture/access-policy-realization-resolution-boundary.md`
+
+Expand only if needed into:
+- APR Domain/Application/adapters and their tests;
+- PostgreSQL greenfield I18 proof;
+- current-state/roadmap/strategic ownership;
+- hosted workflow results.
 
 ## Recovery facts
 
-- WP0 accepted semantics are closed.
-- WP1 shared resolution core is implemented.
-- WP2 RC/ACC and TAE adapters are implemented without peer SQL bypass from APR.
-- Exact/Covered/Partial/Ambiguous/Unresolved/Unknown have core/adapter-level executable cases.
-- Predicate-disjoint unsupported DCS material does not poison a result.
-- Relevant missing RC realization and unsupported ACC transport produce Unknown.
-- TAE action/time facts stay provenance; asOf is explicit.
+- WP0 Tactical DDD/requirements/architecture are accepted.
+- WP1 framework-free shared APR resolution core is implemented.
+- WP2 predicate-aware RC/ACC + one-way TAE projection adapters are implemented without peer SQL bypass.
+- WP3 durable PostgreSQL proof covers Exact, effective-time change, Ambiguous and zero Access Rule/Decision side effects; unit/adapter proofs cover Covered/Partial/Unresolved/Unknown.
+- Protocol Any remains explicit Unknown by accepted first-slice boundary.
+- No APR persistence, HTTP/Web, Authority Management workflow, NEP placement or I20 reconciliation semantics exist.
+- Branch is based on current main and is not behind.
 
 ## Blockers
 
-None for WP3.
+None before hosted closure gates.
 
 ## Gate
 
-WP3 passes only when PostgreSQL-backed proof demonstrates:
-- durable TAE record/readback projects into APR;
-- current effective ACC bindings + RC realizations produce Exact;
-- effective-time change changes resolution through RC/ACC truth rather than stale reuse;
-- a second distinct DCS with the same technical region produces Ambiguous with no winner;
-- resolution creates no Access Rule or Connectivity Decision;
-- evidence remains durable and unchanged;
-- existing unit examples collectively cover Covered/Partial/Unresolved/Unknown.
+WP4 must:
+- close all P0/P1 architecture findings;
+- keep consumer-independent resolution and exact remainder semantics intact;
+- verify canonical current-state/roadmap/ownership agree with implementation;
+- run core/postgres/harness/knowledge hosted gates on one exact closure candidate;
+- only after green gates remove completed PLAN-018, set active execution to Current: none and promote I19 as next;
+- rerun final gates on the final exact head before squash merge.
 
 ## Next
 
-Add and review the durable integration proof. Open WP4 only after no P0/P1 integration finding remains.
+Run the first hosted closure-candidate gates. Fix only demonstrated P0/P1 issues, then finalize I18 closure.

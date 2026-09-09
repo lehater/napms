@@ -1,6 +1,6 @@
 # Domain capability ownership map
 
-Status: `accepted NAPMS-DDD-001 living capability map; source DDD-BDM-010 extended through I16A`.
+Status: `accepted NAPMS-DDD-001 living capability map; source DDD-BDM-010 extended through I18`.
 
 A capability is not automatically a Bounded Context, service or deployment unit.
 
@@ -105,6 +105,17 @@ Proposal remains useful but non-peer while it has no independent identity, lifec
 ## Access Policy Realization
 
 This BC combines Technical-to-Domain Access Resolution, Enforcement Policy Derivation / Quality / Optimization and Desired-vs-Configured Reconciliation because one exact technical/domain coverage algebra must be used consistently in both directions.
+
+I18 accepts and implements the first shared resolution slice:
+- pairwise `Exact | Covers | CoveredBy | PartialOverlap | None`;
+- overall `Exact | Covered | Partial | Ambiguous | Unresolved | Unknown`;
+- exact unresolved technical remainder for supported exact-protocol predicates;
+- no winner selection under ambiguity;
+- explicit predicate-relevant Unknown;
+- exact `asOf` and attributable TAE/RC/ACC provenance;
+- one resolution meaning independent of proposal/reconciliation consumer.
+
+Protocol Any remains an explicit first-slice Unknown until a protocol-wide port-applicability/difference model is accepted.
 
 Requirement-to-Policy Alignment is deliberately outside APR: it compares `NEEDED` with effective `AUTHORIZED`; APR compares authorized/desired policy with technical realization/evidence.
 

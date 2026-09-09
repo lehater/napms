@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline; I17 complete, I18 next`.
+Status: `accepted ordered sequencing baseline; I18 closure candidate active, I19 next after closure`.
 
 Date: 2026-09-09.
 
@@ -80,19 +80,31 @@ NAPMS can persist/query technical evidence without treating evidence as authoriz
 
 ### I18 — Technical-to-Domain Access Resolution
 
-Status: `next; not yet selected for execution`.
+Status: `active closure candidate; WP0-WP3 complete, WP4 final gates`.
 
 Goal:
 implement the shared resolution capability inside **Access Policy Realization**.
 
-Expected semantics:
-- map one normalized Technical Access Predicate against RC + ACC + effective time;
-- exact/coverage/partial/ambiguous/unresolved outcomes as accepted by Tactical DDD;
+Accepted/implemented semantics:
+- map one normalized Technical Access Predicate against effective RC + ACC knowledge at explicit `asOf`;
+- pairwise `Exact | Covers | CoveredBy | PartialOverlap | None`;
+- resolution `Exact | Covered | Partial | Ambiguous | Unresolved | Unknown`;
 - same resolution semantics for proposal/reconciliation consumers;
-- preserve unresolved technical remainder and provenance.
+- exact unresolved technical remainder for supported exact-protocol predicates;
+- ambiguity keeps all competing Domain Interactions and selects no winner;
+- predicate-relevant missing/untranslatable knowledge fails closed as Unknown;
+- Protocol Any remains Unknown until a protocol-wide applicability/difference model is accepted;
+- one-way TAE projection preserves source-qualified provenance without authorization meaning.
+
+Implementation closure candidate:
+- framework-free APR Domain/Application/Ports;
+- predicate-aware RC/ACC outer adapter using owner repositories;
+- TAE -> APR outer projection adapter;
+- no APR persistence or public workflow;
+- durable PostgreSQL proof of exact resolution, effective-time change, ambiguity and zero Access Rule/Decision side effects.
 
 Exit:
-technical evidence can be explained in domain interaction terms without consumer-specific meaning.
+technical evidence can be explained in domain interaction terms without consumer-specific meaning. Final hosted gates and canonical closure remain before promotion to done.
 
 ### I19 — Network Enforcement Placement
 

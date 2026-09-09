@@ -2,7 +2,7 @@
 
 Status: `accepted living baseline`.
 
-Source baseline: DDD-BDM-010, extended by I13-I17 accepted domain closure.
+Source baseline: DDD-BDM-010, extended by I13-I18 accepted domain closure.
 
 This document defines model/language/responsibility boundaries. It does not define services, databases, teams or deployment units.
 
@@ -31,7 +31,7 @@ Wave 1 directly used:
 
 That seam was intentionally deferred during Wave 1 and is superseded by the I15 first-class Connectivity Decision context.
 
-## Current product participation through I17
+## Current product participation through I18
 
 Current accepted semantic owners participating in implemented product flow include:
 - Connectivity Requirements;
@@ -40,11 +40,14 @@ Current accepted semantic owners participating in implemented product flow inclu
 - Authority Management;
 - Application Communication Catalogue;
 - Resource Catalogue;
-- Technical Access Evidence.
+- Technical Access Evidence;
+- Access Policy Realization.
 
-Technical Access Evidence now has an I17 Tactical DDD, framework-free core, module-owned PostgreSQL persistence and one strict local/import adapter proof. It remains independent from authorization and from technical-to-domain interpretation.
+Technical Access Evidence has the I17 Tactical DDD, framework-free core, module-owned PostgreSQL persistence and strict local/import proof. It remains independent from authorization and from technical-to-domain interpretation.
 
-Network Enforcement Placement and Access Policy Realization remain strategic product contexts for later roadmap increments.
+Access Policy Realization now has the I18 Technical-to-Domain Access Resolution slice: one framework-free consumer-independent coverage algebra over explicit TAE/RC/ACC projections, with exact remainder, ambiguity and predicate-relevant Unknown semantics and no independent persistence.
+
+Network Enforcement Placement remains a strategic future context for I19; APR enforcement-policy derivation/reconciliation remains later I20 scope.
 
 ## I16A responsibility-scope relationship
 

@@ -1,6 +1,6 @@
 # Semantic Ownership
 
-Status: `accepted NAPMS-DDD-001 / I15 current semantic ownership`.
+Status: `accepted NAPMS-DDD-001 / I18 current semantic ownership`.
 
 This file defines semantic ownership, not runtime/service ownership.
 
@@ -19,7 +19,7 @@ This file defines semantic ownership, not runtime/service ownership.
 | application/component communication contract | **Application Communication Catalogue** | authorized catalogue sources | Application/Component/DCS/Deployment |
 | forwarding and enforcement relevance | **Network Enforcement Placement** | provider/network observations + corrections | path/Logical Firewall/Enforcement Attachment semantics |
 | normalized source-qualified technical access evidence | **Technical Access Evidence** | device/traffic/import adapters and external sources | Technical Access Evidence Set / Entry |
-| technical↔domain access correspondence and enforcement realization | **Access Policy Realization** | TAE + AP + RC + Application Communication Catalogue + NEP | Domain Access Resolution / business-optimal enforcement policy / reconciliation result |
+| technical↔domain access correspondence and enforcement realization | **Access Policy Realization** | I18 resolution: TAE + RC + Application Communication Catalogue; later enforcement/reconciliation: Access Policy + NEP + TAE | Domain Access Resolution / business-optimal enforcement policy / reconciliation result |
 
 ## Responsibility Scope / Resource affiliation ownership
 
@@ -115,6 +115,8 @@ configured evidence + required semantics
 ### Consistency invariant
 
 The same Technical Access Predicate against the same authoritative catalogue/resource knowledge and effective time must not resolve to different Domain Interactions because one consumer is Proposal derivation and another is Reconciliation.
+
+I18 makes that invariant executable. Domain Access Resolution owns exact overlap witnesses, ambiguity, predicate-relevant Unknown and unresolved technical remainder. Resolution is derived on demand; it does not authorize access, persist new peer truth, select enforcement placement or compute reconciliation delta.
 
 ## Proposal ownership
 

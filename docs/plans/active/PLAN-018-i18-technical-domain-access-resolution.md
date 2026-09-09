@@ -100,7 +100,7 @@ After WP1 gate:
 Exit:
 one durable TAE entry can be projected through current RC/ACC knowledge into the same APR core used by any future consumer.
 
-### WP3 — Integration proof
+### WP3 — Integration proof — done
 
 - prove Exact, Covered, Partial, Ambiguous, Unresolved and Unknown outcomes;
 - prove exact unresolved remainder for supported predicates;
@@ -112,7 +112,7 @@ one durable TAE entry can be projected through current RC/ACC knowledge into the
 Exit:
 repository integration demonstrates technical evidence -> domain resolution with traceable source + catalogue/resource provenance.
 
-### WP4 — Architecture review and closure
+### WP4 — Architecture review and closure — active
 
 - run P0-P3 architecture review and close all P0/P1 findings;
 - run applicable core/harness/knowledge and hosted final PR gates;
@@ -161,10 +161,10 @@ repository integration demonstrates technical evidence -> domain resolution with
 
 ## Blockers
 
-None for WP3.
+None for WP4.
 
-WP2 provides predicate-aware RC + ACC composition through owner repositories, explicit tcp/udp -> IP protocol number translation, fail-closed relevant unknowns, disjoint-unsupported isolation, and one-way TAE -> APR projection with source/time/action provenance. Architecture guards prohibit peer PostgreSQL bypass and TAE -> APR dependency reversal.
+WP3 now proves durable TAE record/readback -> APR projection -> PostgreSQL-backed RC/ACC resolution, exact resolution at one as-of, effective-time realization change, ambiguity across distinct DCS revisions, and zero Access Rule / Connectivity Decision side effects.
 
 ## Next
 
-Execute WP3 integration proof: durable TAE readback -> APR projection -> PostgreSQL-backed RC/ACC adapter -> shared resolution core, including effective-time, ambiguity and no Access Rule/Decision side effects.
+Execute WP4 only: run P0-P3 architecture review, publish canonical closure-candidate truth, run hosted core/postgres/harness/knowledge gates on the exact head, close all P0/P1 findings, then finalize active-plan removal and promote I19.
