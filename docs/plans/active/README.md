@@ -15,24 +15,26 @@ Primary workflow: `.agents/skills/domain-model-change/SKILL.md`.
 ## Working set
 
 Read first:
-- `docs/domain/resource-role-model.md`
-- `docs/domain/semantic-ownership.md`
-- `docs/domain/capabilities.md`
-- `docs/requirements/scoped-connectivity-inventory.md`
+- `docs/domain/resource-role-model.md` — ownership, organizational relations and lifecycle consequences.
+- `docs/domain/semantic-ownership.md` — ownership map.
+- `docs/domain/capabilities.md` — current capability ownership.
 
-Expand only if the current decision crosses those boundaries:
+Expand only if the current decision requires more evidence:
+- `docs/requirements/scoped-connectivity-inventory.md`
 - `docs/domain/ubiquitous-language.md`
 - `docs/domain/strategic-model.md`
 - `docs/architecture/scoped-connectivity-inventory.md`
 
-Do not read the full PLAN-029 by default. Use it for coordination, stage transition, or when this capsule lacks a material fact required by the current task.
+Do not read the full PLAN-029 by default. Use it for coordination, task transition, or when this capsule lacks a material fact required by the current task.
 
-## Known / accepted
+## Recovery facts — non-authoritative
 
-- The selected responsibility scope defines the local/responsibility side of the workspace.
-- Resource identity must remain independent from changing responsibility relations.
-- Responsibility, Authority Management admission and catalogue visibility are separate concerns.
-- Do not introduce `Resource.owner_id` / `Resource.scope_id` as an implementation shortcut.
+These are compact recovery summaries; their canonical owners win if they conflict.
+
+- The selected responsibility scope defines the local/responsibility side of the workspace. Source: `docs/requirements/scoped-connectivity-inventory.md`.
+- Resource identity must remain independent from changing responsibility relations. Source: `docs/domain/resource-role-model.md`.
+- Responsibility, Authority Management admission and catalogue visibility are separate concerns. Sources: `docs/domain/resource-role-model.md`, `docs/requirements/scoped-connectivity-inventory.md`.
+- Do not introduce `Resource.owner_id` / `Resource.scope_id` as an implementation shortcut. Source: `docs/requirements/scoped-connectivity-inventory.md`.
 
 ## Blockers
 
