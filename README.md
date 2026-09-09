@@ -6,7 +6,7 @@ Authoritative greenfield NAPMS product repository.
 
 ## Current implementation state
 
-NAPMS runtime is implemented through I14; accepted domain/architecture semantics are closed through I15:
+NAPMS runtime and accepted current architecture are implemented through I16B:
 - Access Policy, Authority Management, Application Communication Catalogue and Resource Catalogue;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
@@ -15,9 +15,11 @@ NAPMS runtime is implemented through I14; accepted domain/architecture semantics
 - Effective Desired Policy and normalized policy views;
 - human-readable catalogue labels and authorized interaction search across operator workflows;
 - Connectivity Requirements owner workspace;
-- Requirement-to-Policy Alignment with Covered / Uncovered / NotCurrent / Unknown status.
+- Requirement-to-Policy Alignment with Covered / Uncovered / NotCurrent / Unknown status;
+- resource-centric Scoped Connectivity workspace with coarse Need / Decision / Policy truth;
+- durable Connectivity Decision runtime with independent Decide/Read authority, immutable supersession and authorized Decisions workspace.
 
-I11 adds and proves the reproducible local Docker runtime. I12 makes the existing workflows label-first while retaining stable technical IDs. I13 adds authoritative Connectivity Requirements. I14 derives current effective-policy coverage without exposing protected Rule details or adding Alignment persistence. I15 promotes Connectivity Decision to a first-class bounded context with accepted identity, authority, validity, reason/provenance and supersession semantics; its durable runtime is I16.
+I11 adds and proves the reproducible local Docker runtime. I12 makes the existing workflows label-first while retaining stable technical IDs. I13 adds authoritative Connectivity Requirements. I14 derives current effective-policy coverage without exposing protected Rule details or adding Alignment persistence. I15 promotes Connectivity Decision to a first-class bounded context. I16A adds the owner-preserving resource-centric Connectivity workspace, and I16B completes durable Decision persistence/selection, Access Policy and Scoped Connectivity integration, participant HTTP/Web workflows, and a local Docker journey without deterministic allow plumbing.
 
 ## Local Docker start
 
@@ -70,7 +72,7 @@ docs/domain/               living DDD model
 docs/requirements/         accepted product requirements
 docs/architecture/         architecture contracts
 docs/engineering/          engineering/runtime policies
-docs/plans/active/         current execution plan
+docs/plans/active/         current execution resume state / active plan when selected
 ```
 
 See `AGENTS.md` and `docs/README.md` before changing domain or architecture semantics.

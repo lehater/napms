@@ -52,11 +52,13 @@ IDENTITY = InteractionIdentity(SOURCE, DESTINATION, DCS)
 
 
 class FakeDecisions:
-    def obtain(self, *, subject: RuleSemanticIdentity):
+    def obtain(self, *, subject: RuleSemanticIdentity, governance_scope, as_of):
         return ConnectivityDecision(
-            DecisionOutcome.ALLOWED,
-            subject,
-            "unused",
+            outcome=DecisionOutcome.ALLOWED,
+            subject=subject,
+            governance_scope=governance_scope,
+            valid_from=as_of,
+            decision_reference="unused",
         )
 
 

@@ -23,7 +23,7 @@ Baseline navigation:
 
     POLICY
       Needs
-      Decisions        Planned until implemented
+      Decisions
       Rules
       Effective
 

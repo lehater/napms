@@ -85,13 +85,15 @@ class FakeDecision:
         self.subject_override = subject_override
         self.error = error
 
-    def obtain(self, *, subject):
+    def obtain(self, *, subject, governance_scope, as_of):
         if self.error is not None:
             raise self.error
         return ConnectivityDecision(
-            self.outcome,
-            self.subject_override or subject,
-            "decision-1",
+            outcome=self.outcome,
+            subject=self.subject_override or subject,
+            governance_scope=governance_scope,
+            valid_from=as_of,
+            decision_reference="decision-1",
         )
 
 

@@ -15,6 +15,10 @@ from napms.application_catalogue.adapters.access_policy import (
     AccessPolicyCommunicationCatalogueAdapter,
     AccessPolicyProposalInteractionCatalogueAdapter,
 )
+from napms.application_catalogue.adapters.connectivity_decision import (
+    ConnectivityDecisionCatalogueAdapter,
+    ConnectivityDecisionInteractionDiscoveryAdapter,
+)
 from napms.application_catalogue.adapters.connectivity_requirements import (
     ConnectivityRequirementsCatalogueAdapter,
     ConnectivityRequirementsInteractionDiscoveryAdapter,
@@ -45,6 +49,11 @@ from napms.authority_management.adapters.access_policy import (
     AccessPolicyProposalScopeAdapter,
     AccessPolicyRuleReadScopeAdapter,
 )
+from napms.authority_management.adapters.connectivity_decision import (
+    ConnectivityDecisionAuthorityAdapter,
+    ConnectivityDecisionReadScopeAdapter,
+    ConnectivityDecisionScopeAdapter,
+)
 from napms.authority_management.adapters.connectivity_requirements import (
     ConnectivityRequirementsAuthorityAdapter,
     ConnectivityRequirementsDeclarationScopeAdapter,
@@ -61,6 +70,12 @@ from napms.authority_management.application.list_scopes import (
     ListEffectiveAuthorityScopes,
 )
 from napms.composition.config import ApplicationConfig
+from napms.connectivity_decision.adapters.postgres import (
+    PostgresConnectivityDecisionRepository,
+)
+from napms.connectivity_decision.adapters.scoped_connectivity_inventory import (
+    ConnectivityDecisionScopedConnectivityAdapter,
+)
 from napms.connectivity_requirements.adapters.postgres import (
     PostgresConnectivityRequirementRepository,
 )
@@ -88,9 +103,6 @@ from napms.resource_catalogue.application.list_scope_resources import (
     ListResourcesInResponsibilityScope,
 )
 from napms.resource_catalogue.application.resolve import ResolveResourceRealization
-from napms.scoped_connectivity_inventory.adapters.deferred_decision import (
-    DeferredConnectivityDecisionSummaryAdapter,
-)
 from napms.scoped_connectivity_inventory.application.read import (
     DiscoverScopedConnectivityScopes,
     ReadScopedConnectivityInventory,
@@ -111,6 +123,12 @@ class GreenfieldPostgresScope:
     resource_projection: PolicyExportResourceCatalogueAdapter
     access_rules: PostgresAccessRuleRepository
     dcs_decoder: JsonDcsProjectionCodec
+    decision_authority: ConnectivityDecisionAuthorityAdapter
+    decision_scopes: ConnectivityDecisionScopeAdapter
+    decision_read_scopes: ConnectivityDecisionReadScopeAdapter
+    decision_catalogue: ConnectivityDecisionCatalogueAdapter
+    decision_interaction_catalogue: ConnectivityDecisionInteractionDiscoveryAdapter
+    connectivity_decisions: PostgresConnectivityDecisionRepository
     requirement_authority: ConnectivityRequirementsAuthorityAdapter
     requirement_declaration_scopes: ConnectivityRequirementsDeclarationScopeAdapter
     requirement_read_scopes: ConnectivityRequirementsReadScopeAdapter
@@ -139,6 +157,9 @@ def open_greenfield_scope(
         connectivity_requirements_connection = stack.enter_context(
             psycopg.connect(config.postgres.dsn)
         )
+        connectivity_decision_connection = stack.enter_context(
+            psycopg.connect(config.postgres.dsn)
+        )
 
         # Catalogue reads participating in one logical snapshot attempt must
         # remain stable even if another transaction appends newer fact versions.
@@ -162,6 +183,16 @@ def open_greenfield_scope(
             discovery=ListEffectiveAuthorityScopes(assignments=authority_repository)
         )
         effective_policy_scope_discovery = AccessPolicyEffectivePolicyReadScopeAdapter(
+            discovery=ListEffectiveAuthorityScopes(assignments=authority_repository)
+        )
+
+        decision_authority = ConnectivityDecisionAuthorityAdapter(
+            checker=CheckAuthority(assignments=authority_repository)
+        )
+        decision_scopes = ConnectivityDecisionScopeAdapter(
+            discovery=ListEffectiveAuthorityScopes(assignments=authority_repository)
+        )
+        decision_read_scopes = ConnectivityDecisionReadScopeAdapter(
             discovery=ListEffectiveAuthorityScopes(assignments=authority_repository)
         )
 
@@ -195,6 +226,18 @@ def open_greenfield_scope(
         catalogue_describer = DescribeDirectedInteractions(
             catalogue=application_repository
         )
+        decision_catalogue = ConnectivityDecisionCatalogueAdapter(
+            validator=ValidateDirectedInteraction(
+                catalogue=application_repository
+            )
+        )
+        decision_interaction_catalogue = (
+            ConnectivityDecisionInteractionDiscoveryAdapter(
+                discovery=ListDirectedInteractions(
+                    catalogue=application_repository
+                )
+            )
+        )
         requirement_catalogue = ConnectivityRequirementsCatalogueAdapter(
             validator=ValidateDirectedInteraction(
                 catalogue=application_repository
@@ -223,6 +266,9 @@ def open_greenfield_scope(
         access_rules = PostgresAccessRuleRepository(access_policy_connection)
         connectivity_requirements = PostgresConnectivityRequirementRepository(
             connectivity_requirements_connection
+        )
+        connectivity_decisions = PostgresConnectivityDecisionRepository(
+            connectivity_decision_connection
         )
         requirement_alignment = ConnectivityRequirementsAlignmentAdapter(
             reader=GetAuthorizedRequirement(
@@ -258,7 +304,9 @@ def open_greenfield_scope(
         scoped_policy = AccessPolicyScopedConnectivityAdapter(
             rules=access_rules,
         )
-        scoped_decisions = DeferredConnectivityDecisionSummaryAdapter()
+        scoped_decisions = ConnectivityDecisionScopedConnectivityAdapter(
+            decisions=connectivity_decisions,
+        )
         scoped_connectivity_scopes = DiscoverScopedConnectivityScopes(
             authority=scoped_authority,
         )
@@ -283,6 +331,12 @@ def open_greenfield_scope(
             resource_projection=resource_projection,
             access_rules=access_rules,
             dcs_decoder=JsonDcsProjectionCodec(),
+            decision_authority=decision_authority,
+            decision_scopes=decision_scopes,
+            decision_read_scopes=decision_read_scopes,
+            decision_catalogue=decision_catalogue,
+            decision_interaction_catalogue=decision_interaction_catalogue,
+            connectivity_decisions=connectivity_decisions,
             requirement_authority=requirement_authority,
             requirement_declaration_scopes=requirement_declaration_scopes,
             requirement_read_scopes=requirement_read_scopes,

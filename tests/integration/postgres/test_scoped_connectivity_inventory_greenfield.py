@@ -19,6 +19,16 @@ from napms.composition.greenfield_postgres import (
     apply_greenfield_migrations,
     open_greenfield_scope,
 )
+from napms.connectivity_decision.adapters.postgres import (
+    PostgresConnectivityDecisionRepository,
+)
+from napms.connectivity_decision.domain.model import (
+    ConnectivityDecision,
+    DecisionOutcome,
+    DecisionProvenance,
+    DecisionSubject,
+    DecisionValidity,
+)
 from napms.connectivity_requirements.domain.model import (
     ConnectivityRequirement,
     RequiredSemanticInteraction,
@@ -55,6 +65,7 @@ DESTINATION = UUID(int=9702)
 DCS = UUID(int=9703)
 REQUIREMENT_ID = UUID(int=9704)
 RULE_ID = UUID(int=9705)
+DECISION_ID = UUID(int=9706)
 LOCAL_RESOURCE = "resource-local"
 REMOTE_RESOURCE = "resource-remote"
 NOW = datetime(2026, 9, 9, 12, 0, tzinfo=timezone.utc)
@@ -92,6 +103,9 @@ def clean(postgres_dsn, greenfield_config):
                 napms_connectivity_requirements.connectivity_requirements
             CASCADE
             """
+        )
+        connection.execute(
+            "TRUNCATE TABLE napms_connectivity_decision.connectivity_decisions CASCADE"
         )
         connection.execute(
             """
@@ -312,6 +326,29 @@ def seed_catalogues_and_authority(postgres_dsn):
         connection.commit()
 
 
+def seed_decision(postgres_dsn, *, scope=SCOPE, outcome=DecisionOutcome.ALLOWED):
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresConnectivityDecisionRepository(connection)
+        repository.add(
+            ConnectivityDecision(
+                decision_id=DECISION_ID,
+                subject=DecisionSubject(SOURCE, DESTINATION, DCS),
+                governance_scope=scope,
+                outcome=outcome,
+                validity=DecisionValidity(VALID_FROM, VALID_TO),
+                reason_code="SCOPED_TEST",
+                reason_text="Protected Decision detail for scoped inventory test.",
+                evidence_references=(),
+                provenance=DecisionProvenance(
+                    actor_id="decision-operator",
+                    decided_at=NOW - timedelta(hours=1),
+                    authority_reference="decision-authority",
+                ),
+            )
+        )
+        repository.commit()
+
+
 def seed_requirement_and_rule(scope):
     interaction = RequiredSemanticInteraction(SOURCE, DESTINATION, DCS)
     requirement = ConnectivityRequirement.declared(
@@ -360,6 +397,7 @@ def test_greenfield_scoped_inventory_correlates_resource_component_need_and_poli
     greenfield_config,
 ):
     seed_catalogues_and_authority(postgres_dsn)
+    seed_decision(postgres_dsn)
 
     with open_greenfield_scope(greenfield_config) as scope:
         seed_requirement_and_rule(scope)
@@ -373,7 +411,7 @@ def test_greenfield_scoped_inventory_correlates_resource_component_need_and_poli
 
     assert result.outcome is InventoryQueryOutcome.AVAILABLE
     assert result.page is not None
-    assert result.page.partial is True
+    assert result.page.partial is False
     assert len(result.page.items) == 1
 
     resource = result.page.items[0]
@@ -398,8 +436,7 @@ def test_greenfield_scoped_inventory_correlates_resource_component_need_and_poli
     assert relationship.requirement.current is RequirementCurrent.REQUIRED
     assert relationship.requirement.coverage is CoverageSummary.COVERED
 
-    # I16A intentionally has no durable Decision provider yet.
-    assert relationship.decision.state is DecisionSummaryState.UNKNOWN
+    assert relationship.decision.state is DecisionSummaryState.ALLOWED
 
     assert relationship.policy.rule_exists is RuleExists.YES
     assert (
@@ -407,3 +444,29 @@ def test_greenfield_scoped_inventory_correlates_resource_component_need_and_poli
         is PolicyOperationalState.ACTIVE
     )
     assert relationship.policy.effective_at_as_of is EffectiveAtAsOf.YES
+
+
+def test_greenfield_scoped_inventory_keeps_decision_scope_exact(
+    postgres_dsn,
+    greenfield_config,
+):
+    seed_catalogues_and_authority(postgres_dsn)
+    seed_decision(postgres_dsn, scope="other-scope")
+
+    with open_greenfield_scope(greenfield_config) as scope:
+        result = scope.scoped_connectivity_inventory.execute(
+            actor_id=ACTOR,
+            responsibility_scope=SCOPE,
+            as_of=NOW,
+            page=1,
+            page_size=50,
+        )
+
+    assert result.outcome is InventoryQueryOutcome.AVAILABLE
+    assert result.page is not None
+    assert result.page.partial is False
+    relationship = result.page.items[0].components[0].relationships[0]
+    assert (
+        relationship.decision.state
+        is DecisionSummaryState.NO_FINAL_DECISION
+    )

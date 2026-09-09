@@ -200,13 +200,13 @@ def authenticated_smoke(
             raise RuntimeError(
                 "initial Scoped Connectivity Policy must have no Rule"
             )
-        if relationship["decision"].get("state") != "Unknown":
+        if relationship["decision"].get("state") != "NoFinalDecision":
             raise RuntimeError(
-                "I16A deferred Decision summary must remain Unknown"
+                "Scoped Connectivity must report authoritative no-final-Decision absence"
             )
-        if connectivity.get("partial") is not True:
+        if connectivity.get("partial") is not False:
             raise RuntimeError(
-                "I16A inventory must remain partial while Decision read is deferred"
+                "Scoped Connectivity must not be partial when all enrichments are available"
             )
 
     declaration = urllib.request.Request(

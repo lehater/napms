@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline after I16A`.
+Status: `accepted ordered sequencing baseline; I16B complete, I17 next`.
 
 Date: 2026-09-09.
 
@@ -28,7 +28,7 @@ The roadmap may be refined when new accepted domain evidence changes boundaries 
 ## Baseline
 
 Completed:
-- I1-I16A;
+- I1-I16B;
 - Wave 1 proposal -> Connectivity Decision seam -> Access Rule -> effective desired policy -> coherent normalized policy;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
@@ -38,7 +38,6 @@ Completed:
 Wave 1 intentionally stopped before Connectivity Requirements runtime participation; I13 now closes the first Connectivity Requirements core/runtime/workspace slice.
 
 Still deferred:
-- Connectivity Decision runtime/workflow;
 - Network Enforcement Placement;
 - Technical Access Evidence;
 - Access Policy Realization/reconciliation;
@@ -48,7 +47,7 @@ Still deferred:
 
 ## Ordered increments
 
-### Completed increments — I13 through I16A
+### Completed increments — I13 through I16B
 
 Status: `done / absorbed into canonical truth`.
 
@@ -56,32 +55,13 @@ Status: `done / absorbed into canonical truth`.
 - I14 — Requirement-to-Policy Alignment: derived `Covered | Uncovered | NotCurrent | Unknown` composition without peer persistence.
 - I15 — Connectivity Decision Domain Closure: first-class final Decision semantics, authority, validity, reason/provenance and supersession; ADR-005 supersedes the historical deferred port.
 - I16A — Scoped Connectivity Workspace Foundation: Resource Scope Affiliation, `ReadScopedConnectivity`, owner-preserving inventory composition, authenticated HTTP read surface, resource-centric Web workspace and contextual Request access for existing exact ACC interactions.
+- I16B — Connectivity Decision Runtime and Workflow: durable immutable Decision persistence/selection, independent Decide/Read authority, Access Policy and Scoped Connectivity integration, authorized Decision Web/HTTP workspace, and local Docker runtime without deterministic allow plumbing.
 
 Detailed completed execution is not roadmap state. Durable outcomes live in current requirements/domain/architecture/engineering artifacts; Git history preserves the execution record.
 
-### I16B — Connectivity Decision Runtime and Workflow
-
-Status: `next`.
-
-Goal:
-replace the `local-dev:allowed` provider with the accepted real Decision-domain application/runtime slice and integrate it into the new Connectivity workspace.
-
-Expected scope:
-- submit/obtain final Decision for an exact proposal subject;
-- authorized `DecideConnectivity` and `ReadConnectivityDecision` runtime boundaries;
-- durable Decision persistence, idempotency/concurrency/audit;
-- Allowed/NotAllowed reason/provenance presentation;
-- decision participant workspace where applicable;
-- work queue or persistent waiting/process state only if its semantics are explicitly accepted before implementation;
-- Docker demo using the real Decision mechanism;
-- integration with contextual Add Connectivity.
-
-Exit:
-the normal product journey no longer requires the deterministic `local-dev:allowed` provider and any exposed decision-process state has an explicit semantic owner.
-
 ### I17 — Technical Access Evidence Core
 
-Status: `planned after I16B Decision runtime`.
+Status: `next; not yet selected for execution`.
 
 Goal:
 implement the accepted **Technical Access Evidence** bounded context.

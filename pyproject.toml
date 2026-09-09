@@ -31,6 +31,7 @@ where = ["src"]
 "napms.application_catalogue.adapters.postgres" = ["migrations/*.sql"]
 "napms.resource_catalogue.adapters.postgres" = ["migrations/*.sql"]
 "napms.connectivity_requirements.adapters.postgres" = ["migrations/*.sql"]
+"napms.connectivity_decision.adapters.postgres" = ["migrations/*.sql"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

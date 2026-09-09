@@ -10,6 +10,7 @@ AUTHORITY_MANAGEMENT = NAPMS / "authority_management"
 APPLICATION_CATALOGUE = NAPMS / "application_catalogue"
 RESOURCE_CATALOGUE = NAPMS / "resource_catalogue"
 CONNECTIVITY_REQUIREMENTS = NAPMS / "connectivity_requirements"
+CONNECTIVITY_DECISION = NAPMS / "connectivity_decision"
 REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
 
 DOMAIN_LAYERS = (
@@ -18,6 +19,7 @@ DOMAIN_LAYERS = (
     APPLICATION_CATALOGUE / "domain",
     RESOURCE_CATALOGUE / "domain",
     CONNECTIVITY_REQUIREMENTS / "domain",
+    CONNECTIVITY_DECISION / "domain",
 )
 APPLICATION_LAYERS = (
     ACCESS_POLICY / "application",
@@ -25,6 +27,7 @@ APPLICATION_LAYERS = (
     APPLICATION_CATALOGUE / "application",
     RESOURCE_CATALOGUE / "application",
     CONNECTIVITY_REQUIREMENTS / "application",
+    CONNECTIVITY_DECISION / "application",
     REQUIREMENT_POLICY_ALIGNMENT / "application",
     NAPMS / "policy_export" / "application",
 )
@@ -100,6 +103,10 @@ POSTGRES_SCHEMA_OWNERS = (
         NAPMS / "connectivity_requirements" / "adapters" / "postgres",
         "napms_connectivity_requirements",
     ),
+    (
+        NAPMS / "connectivity_decision" / "adapters" / "postgres",
+        "napms_connectivity_decision",
+    ),
 )
 
 
@@ -135,6 +142,10 @@ BOUNDED_CONTEXT_CORES = (
     (
         CONNECTIVITY_REQUIREMENTS,
         "napms.connectivity_requirements",
+    ),
+    (
+        CONNECTIVITY_DECISION,
+        "napms.connectivity_decision",
     ),
 )
 

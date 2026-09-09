@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I16A Scoped Connectivity Workspace Foundation accepted and implemented; I16B Connectivity Decision Runtime and Workflow is next`.
+Status: `I16B Connectivity Decision Runtime and Workflow accepted and implemented; I17 Technical Access Evidence is the next roadmap increment`.
 
 Date: 2026-09-09.
 
@@ -11,16 +11,16 @@ This file is a capability snapshot, not an increment-by-increment changelog. Det
 ## Capability snapshot
 
 | Capability | Semantic state | Runtime / persistence | Human-facing surface |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Access Policy | accepted | PostgreSQL-backed Domain/Application implementation with materialization, Active/Inactive, EffectiveWindow and effective-policy selection | Access Rules, Rule Details, Effective Desired Policy |
 | Authority Management | accepted | PostgreSQL-backed scoped action admission | consumed by authenticated use cases; no generic IAM admin surface |
 | Application Communication Catalogue | accepted | PostgreSQL-backed catalogue, immutable DCS projection semantics, authorized interaction discovery and presentation metadata | label-first interaction selection/presentation |
 | Resource Catalogue | accepted | PostgreSQL-backed Resource/Endpoint realization plus time-qualified Resource Scope Affiliation | supports policy/export and the resource-centric Connectivity workspace |
 | Connectivity Requirements | accepted | PostgreSQL-backed declaration/read/change/retire lifecycle | Needs plus coarse Need state in Connectivity |
 | Requirement-to-Policy Alignment | accepted application composition | no independent aggregate/table; derives `Covered | Uncovered | NotCurrent | Unknown` from authoritative Requirements + Access Policy | Needs and coarse coverage in Connectivity |
-| Connectivity Decision | accepted first-class bounded context through I15 | durable runtime not yet on main; current local-dev composition uses the explicit transitional `local-dev:allowed` adapter | no durable Decision workflow/workspace yet |
+| Connectivity Decision | accepted first-class bounded context | PostgreSQL-backed immutable final Decision runtime with exact subject/scope/time selection, supersession and fail-closed persistence semantics | Decisions workspace plus coarse Decision state in Connectivity |
 | Policy export / normalization | accepted | coherent snapshot + vendor-neutral normalized policy JSON | Normalized Policy |
-| Scoped Connectivity Inventory | accepted I16A product/application composition | framework-free read composition with module-owned PostgreSQL adapters and authenticated HTTP contract; no independent persistence | primary post-login Connectivity workspace |
+| Scoped Connectivity Inventory | accepted owner-preserving product/application composition | framework-free read composition with module-owned PostgreSQL adapters, including durable coarse Decision enrichment; no independent persistence | primary post-login Connectivity workspace |
 | Technical Access Evidence | strategic future context | not implemented | none |
 | Network Enforcement Placement | strategic future context | not implemented | none |
 | Access Policy Realization | strategic future context | not implemented | none |
@@ -53,7 +53,7 @@ This remains a local/development topology, not a production deployment claim.
 - `Required != Authorized`: a Connectivity Requirement never creates or permits an Access Rule by itself.
 - Connectivity Decision owns final `Allowed | NotAllowed` reason/validity/supersession semantics; Access Policy owns Access Rule identity/state.
 - Proposal authority does not imply decision authority.
-- The `local-dev:allowed` adapter is transitional runtime plumbing and is not the accepted durable Decision mechanism.
+- Normal product composition consumes durable Connectivity Decision truth; there is no deterministic allow fallback in the local runtime.
 - Requirement-to-Policy Alignment is derived composition, not peer persisted business truth.
 - authenticated actor identity comes from the server/session boundary; request payloads do not establish actor identity.
 - business authority and catalogue visibility are distinct concerns.
@@ -62,11 +62,17 @@ This remains a local/development topology, not a production deployment claim.
 
 ## Current execution
 
-No execution plan is active after I16A closure.
+No implementation plan is currently selected.
 
-I16A establishes the responsibility-scope/resource-centric Connectivity workspace, including Resource Scope Affiliation, `ReadScopedConnectivity`, the Scoped Connectivity Inventory read composition, authenticated HTTP endpoints, resource-centric Web workspace and contextual Request access for an existing exact ACC interaction.
+I16B Connectivity Decision Runtime and Workflow is complete and absorbed into canonical product, architecture and engineering truth. The implemented runtime now provides:
+- durable immutable final `Allowed | NotAllowed` Decisions with validity, reason/evidence, provenance and supersession;
+- independent `DecideConnectivity` and `ReadConnectivityDecision` authority;
+- Access Policy selection by exact subject + governance scope + logical time;
+- coarse Decision enrichment in Scoped Connectivity without protected-detail leakage;
+- authenticated Decision record/list/detail Web/HTTP workflows;
+- a local Docker journey using real durable Decisions rather than deterministic allow plumbing.
 
-The roadmap next sequences I16B Connectivity Decision Runtime and Workflow, which replaces the transitional local Decision provider with the accepted durable Decision application/runtime slice.
+The roadmap next increment is I17 Technical Access Evidence Core. It has not yet been selected for execution, so there is no active `PLAN-*.md`.
 
 ## Canonical references
 

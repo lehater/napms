@@ -1,6 +1,6 @@
 # Web UI requirements — connectivity workspace direction
 
-Status: `accepted product/UX direction through I16A WP-02`.
+Status: `accepted product/UX direction through I16B`.
 
 Date: 2026-09-09.
 
@@ -152,9 +152,14 @@ Connectivity Decision remains an immutable final business result:
 
 Do not add Pending, Approved, Rejected, UnderReview or Revoked to Connectivity Decision.
 
-There is now a product need to represent submitted connectivity that may be awaiting a final decision. Before such a state becomes durable UI semantics, I16A/I16B must decide whether it belongs to an application workflow without independent business identity or a distinct domain process/entity with its own lifecycle.
+The specialized Decisions workspace supports direct authorized recording of one final outcome for an exact subject/scope, inspection of protected reason/evidence/provenance/validity, and immutable replacement through explicit supersession. Actor, decision action time and authority provenance remain server-owned.
 
-Until that decision is accepted, the UI must not invent a persistent waiting lifecycle.
+Connectivity uses only the coarse Decision summary:
+- `NoFinalDecision` may offer a contextual route to Record decision; actual recording remains enabled only under unambiguous `DecideConnectivity` authority;
+- `Allowed` may offer Request access when the remaining Request-access preconditions hold;
+- `NotAllowed` and `Unknown` must not expose a misleading Request access action.
+
+The UI introduces no persistent waiting/access-request lifecycle. If such process semantics are needed later, they require an explicit owner and accepted lifecycle rather than a frontend-only state.
 
 ## Specialized workspaces
 
@@ -180,11 +185,16 @@ Primary page title/navigation label is Needs; canonical domain term Connectivity
 
 ### Decisions
 
-Purpose: inspect final Connectivity Decisions and, after I16B, support real decision-participant work if accepted by workflow semantics.
+Purpose: inspect and record authoritative final Connectivity Decisions for admitted scopes.
 
-Decision details require corresponding backend read authority.
+The workspace:
+- discovers unambiguous `DecideConnectivity` scopes and exact ACC subjects;
+- records direct final `Allowed | NotAllowed` outcomes with reason/validity/evidence;
+- lists only Decisions admitted by `ReadConnectivityDecision`;
+- exposes protected detail/provenance only under the corresponding read authority;
+- represents reconsideration as immutable replacement with explicit supersession.
 
-Before I16B implementation this navigation item may be shown only as a clearly disabled Planned item.
+It does not own or display a Pending/approval lifecycle.
 
 ### Rules
 
@@ -215,7 +225,7 @@ Baseline sidebar:
 
     POLICY
       Needs
-      Decisions        Planned until implemented
+      Decisions
       Rules
       Effective
 
