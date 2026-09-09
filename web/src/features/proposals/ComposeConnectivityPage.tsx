@@ -212,13 +212,13 @@ export function ComposeConnectivityPage() {
   return (
     <div className="mx-auto max-w-[1180px]">
       <header className="mb-6">
-        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
+        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#5F6B7D]">
           Access Policy
         </div>
         <h1 className="text-[28px] font-bold tracking-tight text-[#172033]">
           Compose Connectivity
         </h1>
-        <p className="mt-2 max-w-3xl text-sm text-[#64748B]">
+        <p className="mt-2 max-w-3xl text-sm text-[#5F6B7D]">
           Select a valid application-backed interaction. Human-readable catalogue
           labels are presentation metadata; stable deployment and DCS IDs remain the
           proposal identity.
@@ -235,7 +235,7 @@ export function ComposeConnectivityPage() {
               <h2 className="text-base font-semibold text-[#172033]">
                 Proposal identity
               </h2>
-              <p className="mt-1 text-sm text-[#64748B]">
+              <p className="mt-1 text-sm text-[#5F6B7D]">
                 Only authorized catalogue-backed directed interactions are selectable.
               </p>
             </div>
@@ -380,7 +380,7 @@ export function ComposeConnectivityPage() {
                   )}
                 </div>
                 {(selectedInteraction.catalogue?.trafficAlternatives.length ?? 0) > 0 ? (
-                  <div className="mt-2 grid gap-1 text-xs text-[#64748B]">
+                  <div className="mt-2 grid gap-1 text-xs text-[#5F6B7D]">
                     {selectedInteraction.catalogue?.trafficAlternatives.map(
                       (alternative, index) => (
                         <div key={index}>{trafficAlternativeText(alternative)}</div>
@@ -392,7 +392,7 @@ export function ComposeConnectivityPage() {
             ) : null}
 
             {!loadingInteractions && scope && interactions.length === 0 ? (
-              <div className="rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-4 text-sm text-[#64748B]">
+              <div className="rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-4 text-sm text-[#5F6B7D]">
                 {search
                   ? "No authorized interactions match this search."
                   : "No authorized interactions are available in this scope."}
@@ -400,7 +400,7 @@ export function ComposeConnectivityPage() {
             ) : null}
 
             <div className="flex items-center justify-between rounded-md border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2">
-              <span className="text-xs text-[#64748B]">
+              <span className="text-xs text-[#5F6B7D]">
                 Interaction page {interactionPage}
                 {search ? ` · search: ${search}` : ""}
               </span>
@@ -463,7 +463,7 @@ export function ComposeConnectivityPage() {
               <ShieldCheck className="size-4 text-[#2563EB]" aria-hidden="true" />
               Decision boundary
             </div>
-            <p className="mt-2 text-sm leading-6 text-[#64748B]">
+            <p className="mt-2 text-sm leading-6 text-[#5F6B7D]">
               In local-dev, structurally valid and authorized proposals use the explicit
               <code className="mx-1 rounded bg-[#F1F5F9] px-1 py-0.5 text-xs">
                 local-dev:allowed
