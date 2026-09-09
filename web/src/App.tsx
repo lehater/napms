@@ -87,7 +87,7 @@ export function App() {
 
   if (bootstrapping) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#F5F7FA] text-sm text-[#64748B]">
+      <main className="grid min-h-screen place-items-center bg-[#F5F7FA] text-sm text-[#5F6B7D]">
         Loading NAPMS…
       </main>
     )
