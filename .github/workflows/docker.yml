@@ -17,6 +17,7 @@ on:
       - "src/napms/resource_catalogue/adapters/postgres/migrations/**"
       - "tools/dev_compose.py"
       - "tools/local_start.py"
+      - "tools/local_status.py"
       - "tools/local_postgres_backup.py"
       - "tools/prepare_local_postgres.py"
       - "tools/verify_local_postgres_auth.py"
@@ -71,7 +72,8 @@ jobs:
           test "$rules_before" = "$rules_after"
           python tools/local_start.py up --no-print-credentials
           python tools/verify_local_postgres_auth.py
-      - run: docker compose ps
+      - name: Prove local operator status diagnostics
+        run: python tools/local_status.py
       - if: failure()
         run: docker compose logs --no-color
       - if: always()
