@@ -290,6 +290,26 @@ class DesiredEnforcementPolicy:
             )
         )
 
+    def interactions_for(
+        self,
+        target: EnforcementTarget,
+    ) -> tuple[DomainInteractionIdentity, ...]:
+        return tuple(
+            sorted(
+                {
+                    interaction
+                    for item in self.intents
+                    if item.target == target
+                    for interaction in item.interactions
+                },
+                key=lambda item: (
+                    str(item.source_component_deployment_id),
+                    str(item.destination_component_deployment_id),
+                    str(item.dcs_contract_revision_id),
+                ),
+            )
+        )
+
 
 @dataclass(frozen=True, slots=True)
 class ManagedReconciliationScope:
@@ -810,7 +830,9 @@ def reconcile_enforcement_policy(
         )
 
     desired_interactions = set(
-        desired.desired_interactions
+        desired.interactions_for(
+            scope.target
+        )
     )
     for resolution in configured.domain_resolutions:
         if resolution.as_of != desired.as_of:

@@ -621,6 +621,51 @@ def test_material_configured_domain_ambiguity_blocks_satisfied():
     assert result.required_change is None
 
 
+def test_configured_ambiguity_is_target_local():
+    desired = desired_policy(
+        contribution(
+            1,
+            resolved_values=(
+                1,
+                2,
+            ),
+            targets=(TARGET,),
+        ),
+        contribution(
+            2,
+            resolved_values=(
+                1,
+                2,
+            ),
+            targets=(OTHER_TARGET,),
+        ),
+        desired_values=(
+            1,
+            2,
+        ),
+    )
+
+    result = reconcile(
+        desired,
+        configured(
+            (fragment(),),
+            target=TARGET,
+            resolutions=(
+                resolution(
+                    1,
+                    2,
+                ),
+            ),
+        ),
+    )
+
+    assert (
+        result.status
+        is ReconciliationStatus.AMBIGUOUS
+    )
+    assert result.required_change is None
+
+
 def test_configured_ambiguity_is_not_material_when_all_meanings_desired():
     desired = desired_policy(
         contribution(
