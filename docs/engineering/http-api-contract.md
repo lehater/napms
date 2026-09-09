@@ -1,6 +1,6 @@
 # HTTP API contract — Web UI boundary
 
-Status: `accepted through I13 Connectivity Requirements HTTP boundary`.
+Status: `accepted through I14 Requirement-to-Policy Alignment`.
 
 Date: 2026-09-09.
 
@@ -316,6 +316,89 @@ Minimum authoritative fields:
 - optional catalogue presentation block.
 
 Aggregate version is concurrency metadata, not domain identity/lifecycle and not caller authority.
+
+## Requirement-to-Policy Alignment
+
+I14 adds read-only Requirement-centric coverage queries. Alignment is recomputed and has no persistence/API mutation surface.
+
+### GET /api/v1/connectivity-requirements/alignment
+
+Query:
+- `asOf` — required offset-aware RFC 3339 instant;
+- `page`, `pageSize`.
+
+Returns statuses for the same authorized Requirement page admitted by `ReadConnectivityRequirement`.
+
+Success:
+```json
+{
+  "asOf": "2026-09-09T12:00:00+00:00",
+  "items": [
+    {
+      "requirementId": "uuid",
+      "status": "Covered",
+      "semanticIdentity": {
+        "sourceComponentDeploymentId": "uuid",
+        "destinationComponentDeploymentId": "uuid",
+        "dcsContractRevisionId": "uuid"
+      }
+    }
+  ],
+  "page": 1,
+  "pageSize": 50,
+  "hasMore": false,
+  "ambiguousScopes": []
+}
+```
+
+Status vocabulary:
+- `Covered`;
+- `Uncovered`;
+- `NotCurrent`;
+- `Unknown`.
+
+`Denied` is not an I14 alignment status.
+
+Rules:
+- one explicit `asOf` is used for Requirement applicability and Access Rule effective contribution;
+- exact semantic identity equality is required;
+- Requirement/Rule governance scopes need not match;
+- Requirement read authority admits the derived status;
+- response exposes no Rule ID, Rule scope, decision/proposal provenance, Rule state/window or Rule audit;
+- ambiguous Requirement read scopes remain fail-closed;
+- AP persistence/dependency uncertainty returns per-item `Unknown`, not false `Uncovered`.
+
+### GET /api/v1/connectivity-requirements/{requirementId}/alignment
+
+Query:
+- `asOf` — required offset-aware RFC 3339 instant.
+
+Loads/authorizes the Requirement, then derives exact effective-policy coverage.
+
+Success:
+```json
+{
+  "requirementId": "uuid",
+  "asOf": "2026-09-09T12:00:00+00:00",
+  "status": "Uncovered",
+  "semanticIdentity": {
+    "sourceComponentDeploymentId": "uuid",
+    "destinationComponentDeploymentId": "uuid",
+    "dcsContractRevisionId": "uuid"
+  },
+  "requirementReadAuthorityReference": "authority-ref"
+}
+```
+
+Mappings:
+- Requirement not found -> 404;
+- Requirement read denied -> 403;
+- Requirement read unknown -> 409;
+- invalid/naive `asOf` -> 422 `InvalidAsOf`;
+- Requirement-side alignment dependency unavailable -> 503 `AlignmentUnavailable`;
+- Access Policy coverage uncertainty after authorized Requirement read -> 200 with `status = Unknown`.
+
+No Rule-level evidence is included in the first I14 slice.
 
 ## Catalogue presentation metadata
 

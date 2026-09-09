@@ -9,6 +9,7 @@ This file defines semantic ownership, not runtime/service ownership.
 | Knowledge / decision | Semantic owner | Upstream authority / source | Primary result |
 |---|---|---|---|
 | semantic connectivity need identity/lifecycle/applicability/justification | **Connectivity Requirements** | AM-authorized responsible actor + ACC interaction facts | Connectivity Requirement |
+| requirement-to-policy coverage status | **non-peer application composition** | Connectivity Requirements + effective Access Policy | Covered / Uncovered / NotCurrent / Unknown |
 | Access Rule identity/properties/state/authorization | **Access Policy** | catalogue facts + AM-authorized operation | Access Rule + desired projections |
 | scoped actor authority/eligibility | **Authority Management** | assignment/delegation/transfer/revocation decisions | Effective Authority / Responsibility Assignment |
 | Resource/Endpoint/current address realization | **Resource Catalogue** | trusted inventory/network facts | Resource/Endpoint/current realization |

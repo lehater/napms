@@ -11,6 +11,9 @@ from napms.access_policy.application.ports import (
 from napms.application_catalogue.application.describe_interactions import (
     DirectedInteractionDescription,
 )
+from napms.connectivity_requirements.adapters.requirement_policy_alignment import (
+    ConnectivityRequirementsAlignmentAdapter,
+)
 from napms.connectivity_requirements.application.ports import (
     InteractionOutcome,
     RequirementAuthorityCheck,
@@ -19,9 +22,16 @@ from napms.connectivity_requirements.application.ports import (
     RequirementScopeOptions,
     TernaryOutcome,
 )
+from napms.connectivity_requirements.application.read import (
+    GetAuthorizedRequirement,
+    ListConnectivityRequirements,
+)
 from napms.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementLifecycleState,
+)
+from napms.requirement_policy_alignment.application.ports import (
+    PolicyCoverageOutcome,
 )
 from napms.runtime.auth import (
     InMemorySessionStore,
@@ -168,6 +178,16 @@ class FakeDecoder:
         raise AssertionError("decoder must not run when presentation payload is absent")
 
 
+class FakePolicyAlignment:
+    def __init__(self, outcome=PolicyCoverageOutcome.COVERED):
+        self.outcome = outcome
+        self.calls = []
+
+    def check_exact_coverage(self, **kwargs):
+        self.calls.append(kwargs)
+        return self.outcome
+
+
 class FakeDecisions:
     def __init__(self):
         self.calls = []
@@ -188,6 +208,7 @@ class Scope:
         authority=None,
         catalogue=None,
         requirements=None,
+        policy_alignment=None,
     ):
         self.requirement_authority = authority or FakeAuthority()
         self.requirement_declaration_scopes = FakeDeclarationScopes()
@@ -195,15 +216,33 @@ class Scope:
         self.requirement_catalogue = catalogue or FakeCatalogue()
         self.requirement_interaction_catalogue = FakeInteractionDiscovery()
         self.connectivity_requirements = requirements or MemoryRequirements()
+        self.requirement_alignment = ConnectivityRequirementsAlignmentAdapter(
+            reader=GetAuthorizedRequirement(
+                authority=self.requirement_authority,
+                requirements=self.connectivity_requirements,
+            ),
+            lister=ListConnectivityRequirements(
+                read_scopes=self.requirement_read_scopes,
+                requirements=self.connectivity_requirements,
+            ),
+        )
+        self.policy_alignment = policy_alignment or FakePolicyAlignment()
         self.catalogue_describer = FakeCatalogueDescriber()
         self.dcs_decoder = FakeDecoder()
 
 
-def build_client(*, authority=None, catalogue=None, requirements=None):
+def build_client(
+    *,
+    authority=None,
+    catalogue=None,
+    requirements=None,
+    policy_alignment=None,
+):
     scope = Scope(
         authority=authority,
         catalogue=catalogue,
         requirements=requirements,
+        policy_alignment=policy_alignment,
     )
     decisions = FakeDecisions()
     credential = LocalCredential(
@@ -507,3 +546,115 @@ def test_unknown_requirement_is_not_found():
 
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "RequirementNotFound"
+
+
+
+def test_alignment_detail_exposes_covered_status_without_rule_details():
+    policy = FakePolicyAlignment(PolicyCoverageOutcome.COVERED)
+    client, scope, _ = build_client(policy_alignment=policy)
+    login(client)
+    created = declare(client)
+
+    response = client.get(
+        f"/api/v1/connectivity-requirements/{created['requirementId']}/alignment",
+        params={"asOf": NOW.isoformat()},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "Covered"
+    assert body["requirementId"] == created["requirementId"]
+    assert body["requirementReadAuthorityReference"] == (
+        "ReadConnectivityRequirement-authority"
+    )
+    assert "ruleId" not in body
+    assert "governanceScope" not in body
+    assert len(policy.calls) == 1
+    assert policy.calls[0]["as_of"] == NOW
+
+
+def test_alignment_unknown_is_normal_200_result_not_false_uncovered():
+    client, _, _ = build_client(
+        policy_alignment=FakePolicyAlignment(PolicyCoverageOutcome.UNKNOWN)
+    )
+    login(client)
+    created = declare(client)
+
+    response = client.get(
+        f"/api/v1/connectivity-requirements/{created['requirementId']}/alignment",
+        params={"asOf": NOW.isoformat()},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "Unknown"
+
+
+def test_alignment_requirement_read_denied_returns_no_status_and_skips_policy():
+    authority = FakeAuthority()
+    policy = FakePolicyAlignment()
+    client, scope, _ = build_client(
+        authority=authority,
+        policy_alignment=policy,
+    )
+    login(client)
+    created = declare(client)
+    authority.outcomes["ReadConnectivityRequirement"] = TernaryOutcome.DENIED
+    policy.calls.clear()
+
+    response = client.get(
+        f"/api/v1/connectivity-requirements/{created['requirementId']}/alignment",
+        params={"asOf": NOW.isoformat()},
+    )
+
+    assert response.status_code == 403
+    assert response.json()["error"]["code"] == "AuthorityDenied"
+    assert policy.calls == []
+
+
+def test_alignment_page_marks_retired_requirement_not_current_without_policy_read():
+    policy = FakePolicyAlignment()
+    client, _, _ = build_client(policy_alignment=policy)
+    login(client)
+    created = declare(client)
+    assert client.post(
+        f"/api/v1/connectivity-requirements/{created['requirementId']}/retirement"
+    ).status_code == 200
+    policy.calls.clear()
+
+    response = client.get(
+        "/api/v1/connectivity-requirements/alignment",
+        params={"asOf": NOW.isoformat(), "page": 1, "pageSize": 50},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["items"] == [
+        {
+            "requirementId": created["requirementId"],
+            "status": "NotCurrent",
+            "semanticIdentity": {
+                "sourceComponentDeploymentId": str(SOURCE),
+                "destinationComponentDeploymentId": str(DESTINATION),
+                "dcsContractRevisionId": str(DCS),
+            },
+        }
+    ]
+    assert body["ambiguousScopes"] == [{"scope": "scope-b"}]
+    assert policy.calls == []
+
+
+def test_alignment_requires_explicit_offset_before_alignment_ports():
+    policy = FakePolicyAlignment()
+    client, _, _ = build_client(policy_alignment=policy)
+    login(client)
+    created = declare(client)
+    policy.calls.clear()
+
+    response = client.get(
+        f"/api/v1/connectivity-requirements/{created['requirementId']}/alignment",
+        params={"asOf": "2026-09-09T09:00:00"},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "InvalidAsOf"
+    assert policy.calls == []

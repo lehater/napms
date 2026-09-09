@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I13 PASS — Connectivity Requirements Core implemented`.
+Status: `I14 PASS — Requirement-to-Policy Alignment implemented`.
 
 Date: 2026-09-09.
 
@@ -143,8 +143,35 @@ Implemented:
 - core, PostgreSQL, Web, Docker, harness and knowledge gates passed.
 
 Deferred to later increments:
-- Requirement-to-Policy Alignment;
 - Connectivity Decision internals/workflow;
+- configured/observed technical satisfaction and reconciliation.
+
+## I14 result
+
+`PASS` for the first Requirement-to-Policy Alignment composition.
+
+Implemented:
+- non-peer, framework-free application composition over authoritative Connectivity Requirements + Access Policy; no Alignment aggregate, lifecycle, table or migration;
+- exact matching by Source Component Deployment + Destination Component Deployment + immutable DCS revision;
+- one explicit offset-aware `asOf` for Requirement applicability and Access Rule effective contribution;
+- Requirement-centric outcomes `Covered | Uncovered | NotCurrent | Unknown`;
+- `Denied` remains deferred because current Access Policy does not persist durable NotAllowed decision truth;
+- policy-centric orphan detection remains deferred until a selected operator view has accepted cross-scope authority semantics;
+- accepted Option A visibility: `ReadConnectivityRequirement` admits derived coverage status even when Requirement and Rule governance scopes differ;
+- derived coverage exposes no Rule ID, Rule governance scope, Decision/proposal provenance, Rule properties or Rule audit;
+- Access Policy persistence/contract uncertainty produces `Unknown`, never false `Uncovered`;
+- Retired or currently non-applicable Requirements produce `NotCurrent`; I14 does not invent historical lifecycle reconstruction;
+- authorized Requirement detail read was factored from mutation-capability checks so Alignment does not invoke unrelated mutation authority;
+- HTTP page/detail Alignment reads with mandatory explicit `asOf`;
+- My Connectivity Needs list/details show policy coverage without implying approval/denial or configured/observed access;
+- PostgreSQL greenfield E2E proves `Uncovered -> Covered -> Uncovered -> NotCurrent` while the owner has no Access Rule read authority and while Requirement/Rule governance scopes differ;
+- Docker public-nginx smoke proves the same semantic transition and separately proves Requirement declaration itself does not create an Access Rule;
+- final architecture/security review has no open P0/P1 finding;
+- core, PostgreSQL, Web, Docker, harness and knowledge gates passed.
+
+Deferred to later increments:
+- durable Connectivity Decision / NotAllowed truth and workflow;
+- policy-centric orphan-policy operator view;
 - configured/observed technical satisfaction and reconciliation.
 
 ## I8 scope boundary
@@ -170,9 +197,9 @@ The ordered path toward the current strategic-model notion of product completion
 
 Next roadmap increment:
 
-`I14 — Requirement-to-Policy Alignment`.
+`I15 — Connectivity Decision Domain Closure`.
 
-I13 is complete and its active plan is removed during canonical absorption. No new active plan is created in the I13 semantic stage.
+I14 is complete and its active plan is removed during canonical absorption. No new active plan is created in the I14 semantic stage.
 
 Future roadmap increments are not pre-expanded into active plans; each is promoted into an active plan only when execution starts, so deferred domain unknowns are not accidentally represented as accepted implementation detail.
 
@@ -190,8 +217,9 @@ Implemented:
 - local-dev authentication/session boundary;
 - explicit local-dev Connectivity Decision adapter;
 - public normalized-policy JSON serializer;
-- React Web UI through Connectivity Requirements, Operational Workspace, Policy Operations and Human-readable Catalogue UX;
+- Requirement-to-Policy Alignment application composition with no dedicated persistence;
+- React Web UI through Connectivity Requirements, Requirement-to-Policy Alignment, Operational Workspace, Policy Operations and Human-readable Catalogue UX;
 - structured runtime observability/correlation and health/readiness;
-- Dockerized local runtime with tracked migrations, demo seed, Connectivity Requirements public smoke and nginx same-origin entrypoint.
+- Dockerized local runtime with tracked migrations, demo seed, Connectivity Requirements + Alignment public smoke and nginx same-origin entrypoint.
 
 The implementation remains greenfield: Legacy, MSSQL and vendor/device execution are not dependencies.

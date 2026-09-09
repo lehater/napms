@@ -1,6 +1,6 @@
 # Web UI requirements — accepted I8 refinement
 
-Status: `accepted through I13 My Connectivity Needs workspace`.
+Status: `accepted through I14 Requirement-to-Policy Alignment UX`.
 
 Date: 2026-09-09.
 
@@ -170,11 +170,18 @@ Details:
 - applicability/justification/lifecycle histories;
 - independent backend-admitted actions for Set Applicability, Set Justification and Retire.
 
+I14 alignment:
+- the list shows derived `Covered | Uncovered | NotCurrent | Unknown` for an explicit `asOf`;
+- details expose the same alignment query and explanation time;
+- `Uncovered` is never labelled `Denied`;
+- status visibility follows Requirement read authority;
+- Rule-level evidence remains hidden in the first I14 slice;
+- no configured/observed state is implied.
+
 Important:
 - Requirement lifecycle shows only `Active | Retired`;
 - do not display `Pending/Approved/Rejected`;
-- do not claim Requirement is Allowed/Denied or covered/uncovered in I13;
-- Requirement-to-Policy Alignment is I14.
+- alignment status is a recomputed composition result, not Requirement lifecycle.
 
 ### Deferred screens
 

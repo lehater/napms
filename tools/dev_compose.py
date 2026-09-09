@@ -9,6 +9,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 
@@ -184,6 +185,78 @@ def authenticated_smoke(
                 "declared Connectivity Requirement is not visible through public list"
             )
 
+    with opener.open(
+        f"{base_url}/api/v1/access-rules?page=1&pageSize=50",
+        timeout=5,
+    ) as response:
+        after_requirement = json.load(response)
+        if after_requirement.get("items"):
+            raise RuntimeError(
+                "Connectivity Requirement declaration created an Access Rule side effect"
+            )
+
+    alignment_query = urllib.parse.urlencode(
+        {"asOf": "2026-09-09T12:00:00+00:00"}
+    )
+    alignment_url = (
+        f"{base_url}/api/v1/connectivity-requirements/"
+        f"{requirement_id}/alignment?{alignment_query}"
+    )
+    with opener.open(alignment_url, timeout=5) as response:
+        alignment = json.load(response)
+        if alignment.get("status") != "Uncovered":
+            raise RuntimeError(
+                "Requirement without effective Access Rule must be Uncovered"
+            )
+
+    proposal = urllib.request.Request(
+        f"{base_url}/api/v1/access-rule-proposals",
+        method="POST",
+        data=json.dumps(
+            {
+                "authorityScope": "local-demo",
+                "sourceComponentDeploymentId": interaction[
+                    "sourceComponentDeploymentId"
+                ],
+                "destinationComponentDeploymentId": interaction[
+                    "destinationComponentDeploymentId"
+                ],
+                "dcsContractRevisionId": interaction["dcsContractRevisionId"],
+            }
+        ).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    with opener.open(proposal, timeout=5) as response:
+        materialized = json.load(response)
+        if materialized.get("outcome") not in {"Materialized", "Resolved"}:
+            raise RuntimeError("explicit Access Rule proposal smoke failed")
+        rule_id = materialized["rule"]["ruleId"]
+
+    with opener.open(alignment_url, timeout=5) as response:
+        alignment = json.load(response)
+        if alignment.get("status") != "Covered":
+            raise RuntimeError(
+                "effective exact Access Rule must cover Connectivity Requirement"
+            )
+
+    state_change = urllib.request.Request(
+        f"{base_url}/api/v1/access-rules/{rule_id}/operational-state",
+        method="PATCH",
+        data=json.dumps({"targetState": "Inactive"}).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    with opener.open(state_change, timeout=5) as response:
+        changed_rule = json.load(response)
+        if changed_rule.get("outcome") != "Updated":
+            raise RuntimeError("Access Rule state mutation smoke failed")
+
+    with opener.open(alignment_url, timeout=5) as response:
+        alignment = json.load(response)
+        if alignment.get("status") != "Uncovered":
+            raise RuntimeError(
+                "Inactive exact Access Rule must not cover Connectivity Requirement"
+            )
+
     justification_change = urllib.request.Request(
         f"{base_url}/api/v1/connectivity-requirements/{requirement_id}/justification",
         method="PATCH",
@@ -220,6 +293,13 @@ def authenticated_smoke(
                 "Connectivity Requirement applicability mutation smoke failed"
             )
 
+    with opener.open(alignment_url, timeout=5) as response:
+        alignment = json.load(response)
+        if alignment.get("status") != "NotCurrent":
+            raise RuntimeError(
+                "Requirement outside applicability must be NotCurrent"
+            )
+
     retirement = urllib.request.Request(
         f"{base_url}/api/v1/connectivity-requirements/{requirement_id}/retirement",
         method="POST",
@@ -249,9 +329,10 @@ def authenticated_smoke(
         timeout=5,
     ) as response:
         after_rules = json.load(response)
-        if after_rules.get("items"):
+        items = after_rules.get("items") or []
+        if len(items) != 1 or items[0].get("operationalState") != "Inactive":
             raise RuntimeError(
-                "Connectivity Requirement declaration created an Access Rule side effect"
+                "explicitly materialized Access Rule state did not persist"
             )
 
 

@@ -4,12 +4,14 @@ import { ChevronRight, CircleAlert, Plus, Search } from "lucide-react"
 import {
   ApiError,
   declareConnectivityRequirement,
+  listConnectivityRequirementAlignment,
   listConnectivityRequirementInteractions,
   listConnectivityRequirements,
   listConnectivityRequirementScopes,
   type ConnectivityRequirementDto,
   type ProposalInteraction,
   type RequirementApplicability,
+  type RequirementPolicyAlignmentStatus,
 } from "@/api"
 import {
   displayName,
@@ -18,12 +20,28 @@ import {
 } from "@/components/catalogue/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import { Field, Select } from "@/components/ui/Field"
-import { toOffsetAwareIso } from "@/lib/datetime"
+import {
+  nowLocalDateTimeInput,
+  toOffsetAwareIso,
+} from "@/lib/datetime"
 
 function applicabilityText(value: RequirementApplicability) {
   return value.kind === "Ongoing"
     ? "Ongoing"
     : `${value.start} → ${value.end}`
+}
+
+function alignmentClasses(status: RequirementPolicyAlignmentStatus) {
+  switch (status) {
+    case "Covered":
+      return "border-green-200 bg-green-50 text-green-800"
+    case "Uncovered":
+      return "border-amber-200 bg-amber-50 text-amber-900"
+    case "NotCurrent":
+      return "border-slate-200 bg-slate-100 text-slate-700"
+    case "Unknown":
+      return "border-red-200 bg-red-50 text-red-800"
+  }
 }
 
 function lifecycleClasses(state: "Active" | "Retired") {
@@ -62,6 +80,15 @@ export function ConnectivityRequirementsPage({
   const [ambiguousReadScopes, setAmbiguousReadScopes] = useState<string[]>([])
   const [loadingList, setLoadingList] = useState(true)
   const [listError, setListError] = useState<ApiError | null>(null)
+
+  const [alignmentAsOf, setAlignmentAsOf] = useState(
+    nowLocalDateTimeInput(),
+  )
+  const [alignmentById, setAlignmentById] = useState<
+    Record<string, RequirementPolicyAlignmentStatus>
+  >({})
+  const [loadingAlignment, setLoadingAlignment] = useState(true)
+  const [alignmentError, setAlignmentError] = useState<ApiError | null>(null)
 
   const [scopes, setScopes] = useState<string[]>([])
   const [ambiguousDeclareScopes, setAmbiguousDeclareScopes] = useState<string[]>([])
@@ -111,9 +138,40 @@ export function ConnectivityRequirementsPage({
     }
   }
 
+  async function loadAlignment() {
+    setLoadingAlignment(true)
+    setAlignmentError(null)
+    try {
+      const asOf = toOffsetAwareIso(alignmentAsOf)
+      const result = await listConnectivityRequirementAlignment(asOf, page)
+      setAlignmentById(
+        Object.fromEntries(
+          result.items.map((item) => [item.requirementId, item.status]),
+        ),
+      )
+    } catch (caught) {
+      setAlignmentById({})
+      setAlignmentError(
+        caught instanceof ApiError
+          ? caught
+          : new ApiError(
+              422,
+              "InvalidAsOf",
+              "Select a valid alignment date and time.",
+            ),
+      )
+    } finally {
+      setLoadingAlignment(false)
+    }
+  }
+
   useEffect(() => {
     void loadList()
   }, [page])
+
+  useEffect(() => {
+    void loadAlignment()
+  }, [page, alignmentAsOf])
 
   useEffect(() => {
     let active = true
@@ -294,7 +352,7 @@ export function ConnectivityRequirementsPage({
           : "The same Active connectivity need already exists; existing Requirement resolved.",
       )
       resetDeclaration()
-      await loadList()
+      await Promise.all([loadList(), loadAlignment()])
     } catch (caught) {
       setDeclareError(
         caught instanceof ApiError
@@ -327,11 +385,25 @@ export function ConnectivityRequirementsPage({
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_430px]">
         <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
-          <div className="border-b border-[#E2E8F0] px-5 py-4">
-            <h2 className="text-base font-semibold text-[#172033]">
-              Visible Connectivity Requirements
-            </h2>
-            <p className="mt-1 text-xs text-[#64748B]">Page {page}</p>
+          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#E2E8F0] px-5 py-4">
+            <div>
+              <h2 className="text-base font-semibold text-[#172033]">
+                Visible Connectivity Requirements
+              </h2>
+              <p className="mt-1 text-xs text-[#64748B]">Page {page}</p>
+            </div>
+            <Field
+              label="Policy coverage as of"
+              hint="Same logical time is used for Requirement applicability and Rule effectiveness."
+            >
+              <input
+                type="datetime-local"
+                step="1"
+                value={alignmentAsOf}
+                onChange={(event) => setAlignmentAsOf(event.target.value)}
+                className="min-h-10 rounded-md border border-[#CBD5E1] px-3 py-2 text-sm"
+              />
+            </Field>
           </div>
 
           {ambiguousReadScopes.length > 0 ? (
@@ -345,6 +417,13 @@ export function ConnectivityRequirementsPage({
             <div className="m-4 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800">
               <div className="font-semibold">{listError.code}</div>
               <div className="mt-1">{listError.message}</div>
+            </div>
+          ) : null}
+
+          {alignmentError ? (
+            <div className="m-4 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+              <div className="font-semibold">{alignmentError.code}</div>
+              <div className="mt-1">{alignmentError.message}</div>
             </div>
           ) : null}
 
@@ -368,6 +447,7 @@ export function ConnectivityRequirementsPage({
                     <th className="px-4 py-3 font-semibold">Dependent</th>
                     <th className="px-4 py-3 font-semibold">Scope</th>
                     <th className="px-4 py-3 font-semibold">Applicability</th>
+                    <th className="px-4 py-3 font-semibold">Policy coverage</th>
                     <th className="px-4 py-3 font-semibold">Lifecycle</th>
                     <th className="w-12 px-4 py-3" aria-label="Open" />
                   </tr>
@@ -414,6 +494,24 @@ export function ConnectivityRequirementsPage({
                         <td className="px-4 py-3">{item.governanceScope}</td>
                         <td className="px-4 py-3 text-xs text-[#475569]">
                           {applicabilityText(item.applicability)}
+                        </td>
+                        <td className="px-4 py-3">
+                          {alignmentById[item.requirementId] ? (
+                            <span
+                              className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${alignmentClasses(alignmentById[item.requirementId])}`}
+                              title={
+                                alignmentById[item.requirementId] === "Uncovered"
+                                  ? "No exact matching Access Rule contributes effective desired policy at the selected time. This does not mean Denied."
+                                  : undefined
+                              }
+                            >
+                              {alignmentById[item.requirementId]}
+                            </span>
+                          ) : loadingAlignment ? (
+                            <span className="text-xs text-[#64748B]">Loading…</span>
+                          ) : (
+                            <span className="text-xs text-[#64748B]">—</span>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <span

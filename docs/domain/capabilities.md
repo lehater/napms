@@ -20,7 +20,7 @@ A capability is not automatically a Bounded Context, service or deployment unit.
 | Technical-to-Domain Access Resolution | what domain interaction(s) does a technical predicate represent/cover? | Access Policy Realization |
 | Enforcement Policy Derivation / Quality / Optimization | what enforcement policy does the domain consider correct/preferred? | Access Policy Realization |
 | Desired-vs-Configured Reconciliation | does configured evidence realize desired access and what semantic delta remains? | Access Policy Realization |
-| Requirement-to-Policy Alignment | is required connectivity authorized, denied, uncovered or orphaned relative to current policy? | non-peer composition over Connectivity Requirements + AP (+ AM for command authority) |
+| Requirement-to-Policy Alignment | is current required connectivity covered by effective authorized policy? | non-peer composition over Connectivity Requirements + Access Policy |
 | Access Rule Proposal Derivation | which resolved interactions not already represented should be surfaced as proposals? | non-peer application composition over APR + AP |
 | Connectivity Impact Analysis | what depends on connectivity and what is the consequence of loss under a scenario? | cross-context analysis; no peer BC accepted |
 | Source acquisition/parsing | obtain/parse traffic/device/file sources | adapter/mechanism |
@@ -72,7 +72,17 @@ Proposal remains useful but non-peer while it has no independent identity, lifec
 
 This BC combines Technical-to-Domain Access Resolution, Enforcement Policy Derivation / Quality / Optimization and Desired-vs-Configured Reconciliation because one exact technical/domain coverage algebra must be used consistently in both directions.
 
-Requirement-to-Policy Alignment is deliberately outside APR: it compares `NEEDED` with `AUTHORIZED`; APR compares authorized/desired policy with technical realization/evidence.
+Requirement-to-Policy Alignment is deliberately outside APR: it compares `NEEDED` with effective `AUTHORIZED`; APR compares authorized/desired policy with technical realization/evidence.
+
+I14 accepted Requirement-centric outcomes:
+- `Covered`;
+- `Uncovered`;
+- `NotCurrent`;
+- `Unknown`.
+
+`Denied` remains deferred because current Access Policy truth does not persist a durable NotAllowed decision. Policy-centric orphan detection remains deferred until an operator view with accepted cross-scope authority semantics requires it.
+
+An actor admitted to `ReadConnectivityRequirement` may see the derived alignment status for that Requirement. Rule-level evidence/details remain separately protected by Access Policy read authority.
 
 ## Source acquisition and firewall semantics
 
