@@ -1,6 +1,6 @@
 # Active execution
 
-Current: `none`
+Current: none
 
 Next roadmap increment: `I19 — Network Enforcement Placement` (not selected).
 
