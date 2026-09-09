@@ -53,6 +53,8 @@ Resource Scope Affiliation
 
 The relation is not Resource identity. One Resource may be effectively affiliated with more than one Responsibility Scope at the same logical time when the business organization genuinely overlaps.
 
+For one Resource + one Responsibility Scope + one logical time, at most one effective Resource Scope Affiliation is authoritative. Overlapping effective records for the same pair are an integrity ambiguity and fail closed until corrected.
+
 Changing or ending an affiliation does not create another Resource.
 
 ### Network Enforcement Placement
