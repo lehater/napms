@@ -192,12 +192,20 @@ class FakeDecisions:
     def __init__(self):
         self.calls = []
 
-    def obtain(self, *, subject):
-        self.calls.append(subject)
+    def obtain(self, *, subject, governance_scope, as_of):
+        self.calls.append(
+            {
+                "subject": subject,
+                "governance_scope": governance_scope,
+                "as_of": as_of,
+            }
+        )
         return ConnectivityDecision(
-            DecisionOutcome.ALLOWED,
-            subject,
-            "unexpected-decision",
+            outcome=DecisionOutcome.ALLOWED,
+            subject=subject,
+            governance_scope=governance_scope,
+            valid_from=as_of,
+            decision_reference="unexpected-decision",
         )
 
 
