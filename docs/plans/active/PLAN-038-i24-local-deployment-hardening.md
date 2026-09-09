@@ -37,15 +37,21 @@ Implemented:
 - new PostgreSQL volumes initialize host authentication as SCRAM-SHA-256;
 - Compose requires explicit `NAPMS_POSTGRES_PASSWORD` and application DSN carries it;
 - `make dev-up` generates an ephemeral database password in process memory;
-- raw Compose startup requires an explicit non-committed database password override;
+- `tools/prepare_local_postgres.py` starts PostgreSQL first and rotates the persistent `napms` role password to the generated value through the container-local database socket before migrations/application startup;
+- preserved hardened volumes therefore survive `dev-down` and subsequent `dev-up` despite per-run generated credentials;
+- raw Compose startup requires an explicit non-committed database password matching the existing role when reusing a volume;
 - `tools/verify_local_postgres_auth.py` proves the configured password succeeds and a deliberately wrong password fails;
 - the verifier treats a legacy pre-I24 trust-auth volume as insecure instead of silently accepting it;
+- Docker gate performs startup twice on the same preserved volume with two distinct generated database credentials, proving credential rotation and continued product smoke behavior;
 - local runtime documentation records the legacy-volume recovery boundary;
 - existing local UI login/session behavior and loopback-only Web ingress are unchanged.
 
+Review finding closed during WP1:
+- P0: per-run random database credentials would have broken restart of a preserved volume if the stored PostgreSQL role password were not rotated. The preparation step above closes this before merge.
+
 Exit:
-- Docker local-runtime gate passes on a fresh SCRAM-authenticated volume;
-- harness/core/knowledge gates remain green for the WP1 branch state;
+- Docker local-runtime gate passes on a fresh SCRAM-authenticated volume and a second startup on the same volume with a rotated credential;
+- PostgreSQL persistence, harness, core and knowledge gates remain green for the WP1 branch state;
 - no committed plaintext credential or fixed supported database password is introduced.
 
 ## WP2 — Backup, restore and recovery contract
@@ -103,7 +109,7 @@ I24 exits when:
 - useful local operational diagnostics are documented/proven;
 - low-risk container/dependency hardening is applied where justified;
 - a measured local workload envelope exists or an explicit documented reason explains why further performance claims remain deferred;
-- core, harness, knowledge and Docker local-runtime gates pass on the final merge candidate.
+- core, PostgreSQL persistence, harness, knowledge and Docker local-runtime gates pass on the final merge candidate.
 
 ## Blockers
 
@@ -111,4 +117,4 @@ No external infrastructure is required. Real TLS certificates, enterprise secret
 
 ## Next
 
-Verify WP1 through repository gates. If green, close WP1 and implement WP2 logical backup/restore and recovery tooling before touching further hardening areas.
+Verify WP1 on the branch state that includes persistent-volume credential rotation. If green, close WP1 and implement WP2 logical PostgreSQL backup/restore and recovery tooling before touching further hardening areas.
