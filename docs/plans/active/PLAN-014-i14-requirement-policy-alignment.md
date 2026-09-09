@@ -26,7 +26,7 @@ I14 must not invent approval workflow, persist a peer Alignment aggregate, or tu
 
 ## Current stage
 
-**WP4 — Executable core.**
+**WP7 — Final review/gates/canonical absorption.**
 
 I13 is complete and absorbed. I14 starts from accepted Connectivity Requirement and Access Policy semantics. Working packet: `docs/plans/active/I14-WP1-alignment-decision-packet.md`.
 
@@ -129,7 +129,7 @@ Define a non-peer alignment application composition:
 
 ### WP4 — Executable core
 
-Status: `active`.
+Status: `done`.
 
 Implement the smallest framework-free alignment use case/read model and exhaustive authority/temporal tests.
 
@@ -137,7 +137,7 @@ Core/architecture gate must pass before HTTP/Web changes.
 
 ### WP5 — HTTP + Web owner view
 
-Status: `planned`.
+Status: `done`.
 
 Extend `My Connectivity Needs` with current policy-coverage presentation using backend-derived alignment only.
 
@@ -148,7 +148,7 @@ UI must:
 
 ### WP6 — PostgreSQL/Docker E2E
 
-Status: `planned`.
+Status: `done`.
 
 Prove through real composition/public runtime:
 - declared need + effective matching Rule -> Covered;
@@ -159,7 +159,7 @@ Prove through real composition/public runtime:
 
 ### WP7 — Final review/gates/canonical absorption
 
-Status: `planned`.
+Status: `active`.
 
 Run:
 - core;
@@ -186,8 +186,8 @@ I14 is complete only when:
 
 ## Blockers
 
-No current owner/product blocker. Option A is accepted: Requirement read authority admits derived alignment status; Rule evidence remains separately protected.
+No current blocker. Option A is implemented: Requirement read authority admits derived status while Rule details remain protected. Architecture/security review has no open P0/P1 before final CI.
 
 ## Next
 
-Implement WP4 application-only alignment model/ports/use case and executable core/architecture tests; no HTTP/Web yet.
+Run the final six repository gates on the complete I14 head. Close any P0/P1, then absorb I14 into current state/roadmap and squash merge.
