@@ -9,6 +9,10 @@ Start with the smallest relevant artifact:
 - `requirement-policy-alignment.md` — Requirement-to-Policy Alignment composition.
 - `connectivity-decision-boundary.md` — Connectivity Decision boundary.
 - `scoped-connectivity-inventory.md` — Scoped Connectivity Inventory composition.
+- `technical-access-evidence-boundary.md` — Technical Access Evidence boundary.
+- `access-policy-realization-resolution-boundary.md` — I18 Technical-to-Domain Access Resolution boundary.
+- `network-enforcement-placement-boundary.md` — I19 Network Enforcement Placement boundary.
+- `access-policy-realization-reconciliation-boundary.md` — I20 desired enforcement derivation/reconciliation boundary.
 
 Consequential choices are recorded in `docs/decisions/`. Product behavior belongs in `docs/requirements/`; architecture should reference those contracts rather than restate them.
 

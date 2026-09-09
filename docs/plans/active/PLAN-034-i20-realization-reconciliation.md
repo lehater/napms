@@ -139,8 +139,8 @@ I20 is complete only when:
 
 ## Blockers
 
-WP-0 is active. The material risks are managed-scope equivalence, configured-capture completeness/effective-policy semantics, enforcement-target granularity and temporal evidence selection. These must be resolved before implementation.
+WP-0 semantic choices are accepted in the I20 Tactical DDD/requirements/architecture contract. No plan-level blocker remains for WP-1. Source-specific configured evaluation beyond the accepted effective-Permit contract remains fail-closed/deferred rather than blocking the core.
 
 ## Next
 
-Execute WP-0: accept the I20 Tactical DDD/requirements/architecture contract, repair the stale I19 strategic-model wording, then advance to WP-1 only when the semantic gate is closed.
+Execute WP-1: implement framework-free APR desired-enforcement values, exact policy algebra, derivation/reconciliation decisions and executable core/architecture tests from the accepted WP-0 contract.

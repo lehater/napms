@@ -1,6 +1,6 @@
 # Semantic Ownership
 
-Status: `accepted NAPMS-DDD-001 / I19 current semantic ownership`.
+Status: `accepted NAPMS-DDD-001 / I20 WP-0 current semantic ownership`.
 
 This file defines semantic ownership, not runtime/service ownership.
 
@@ -19,7 +19,7 @@ This file defines semantic ownership, not runtime/service ownership.
 | application/component communication contract | **Application Communication Catalogue** | authorized catalogue sources | Application/Component/DCS/Deployment |
 | forwarding and enforcement relevance | **Network Enforcement Placement** | provider/network observations + corrections | path/Logical Firewall/Enforcement Attachment semantics |
 | normalized source-qualified technical access evidence | **Technical Access Evidence** | device/traffic/import adapters and external sources | Technical Access Evidence Set / Entry |
-| technical↔domain access correspondence and enforcement realization | **Access Policy Realization** | I18 resolution: TAE + RC + Application Communication Catalogue; later enforcement/reconciliation: Access Policy + NEP + TAE | Domain Access Resolution / business-optimal enforcement policy / reconciliation result |
+| technical↔domain access correspondence and enforcement realization | **Access Policy Realization** | I18 resolution: TAE + RC + Application Communication Catalogue; I20 derivation/reconciliation: Access Policy + NEP + explicitly selected/configured TAE projection + source/scope contract | Domain Access Resolution / desired enforcement policy / Policy Reconciliation |
 
 ## Responsibility Scope / Resource affiliation ownership
 
@@ -128,17 +128,29 @@ Technical Access Evidence
     -> what domain interactions does it represent?
 
 Access Policy + NEP
-    -> what technical/enforcement policy should be considered correct?
+    -> what vendor-neutral enforcement policy is technically capable of expressing the effective desired access?
 
-configured evidence + required semantics
-    -> does reality satisfy desired policy and what semantic delta remains?
+configured effective-policy evidence + same managed scope
+    -> does configured enforcement satisfy that desired policy and what exact semantic delta remains?
 ```
 
 ### Consistency invariant
 
 The same Technical Access Predicate against the same authoritative catalogue/resource knowledge and effective time must not resolve to different Domain Interactions because one consumer is Proposal derivation and another is Reconciliation.
 
-I18 makes that invariant executable. Domain Access Resolution owns exact overlap witnesses, ambiguity, predicate-relevant Unknown and unresolved technical remainder. Resolution is derived on demand; it does not authorize access, persist new peer truth, select enforcement placement or compute reconciliation delta.
+I18 makes that invariant executable. Domain Access Resolution owns exact overlap witnesses, ambiguity, predicate-relevant Unknown and unresolved technical remainder.
+
+I20 adds a policy-level interpretation without changing I18 meaning:
+- desired enforcement is derived from effective desired Access Policy and NEP placement at one explicit `asOf`;
+- the first Enforcement Target is Logical Firewall + Enforcement Attachment;
+- configured TAE material is not directly “current configured policy”;
+- a complete comparison requires an explicit managed reconciliation-scope/source contract proving the selected TAE source/scope represents the same target and policy partition;
+- configured absence is meaningful only when that contract proves a complete effective Permit set at the same instant;
+- raw Block/order/default/vendor evaluation is not interpreted generically;
+- exact common/missing/extra regions are APR truth;
+- `Add | Remove | Replace | No-op` is semantic delta only and grants no device-mutation authority.
+
+Desired Enforcement Policy and Policy Reconciliation remain derived on demand in the first I20 slice; no APR persistence lifecycle is implied.
 
 ## Proposal ownership
 

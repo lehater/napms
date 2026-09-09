@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline; I19 complete, I20 next`.
+Status: `accepted ordered sequencing baseline; I19 complete, I20 active`.
 
 Date: 2026-09-09.
 
@@ -136,7 +136,7 @@ NAPMS can derive/explain enforcement placement for domain-attributable traffic w
 
 ### I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation
 
-Status: `next; not yet selected for execution`.
+Status: `active; WP-0 Tactical DDD/requirements/architecture accepted, implementation follows`.
 
 Goal:
 complete the central **Access Policy Realization** outcome.

@@ -1,6 +1,6 @@
 # Domain capability ownership map
 
-Status: `accepted NAPMS-DDD-001 living capability map; source DDD-BDM-010 extended through I19`.
+Status: `accepted NAPMS-DDD-001 living capability map; source DDD-BDM-010 extended through I20 WP-0`.
 
 A capability is not automatically a Bounded Context, service or deployment unit.
 
@@ -129,6 +129,18 @@ I18 accepts and implements the first shared resolution slice:
 - one resolution meaning independent of proposal/reconciliation consumer.
 
 Protocol Any remains an explicit first-slice Unknown until a protocol-wide port-applicability/difference model is accepted.
+
+I20 WP-0 accepts the first enforcement derivation/reconciliation semantics:
+- one explicit `asOf` across desired policy, domain interpretation and NEP placement;
+- Enforcement Target = Logical Firewall + Enforcement Attachment;
+- desired technical fragments are business-correct only when shared I18 resolution shows they do not necessarily enable non-desired Domain Interactions;
+- configured reconciliation uses one explicitly selected TAE Configured capture, never an automatic latest/current winner;
+- complete configured comparison requires a trusted managed-scope/source contract establishing the same policy partition, effective Permit-set semantics and completeness;
+- exact `common | missing | extra` technical witnesses drive `No-op | Add | Remove | Replace`;
+- Unknown/Ambiguous precedence blocks confident delta when scope/time/source/evaluation/domain/placement meaning is incomplete;
+- “Replace” remains semantic delta, not vendor/device operation mechanics.
+
+TAE keeps generic evidence ownership: I20 completeness/currentness is a consumer/source contract, not a new universal TAE state.
 
 Requirement-to-Policy Alignment is deliberately outside APR: it compares `NEEDED` with effective `AUTHORIZED`; APR compares authorized/desired policy with technical realization/evidence.
 

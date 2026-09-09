@@ -2,40 +2,39 @@
 
 Current: `PLAN-034-i20-realization-reconciliation.md`
 Goal: Complete I20 desired-vs-configured reconciliation and enforcement-policy derivation without pulling I21 rendering or I22 execution forward.
-Current task: WP-0 — Tactical DDD, managed-scope/evidence semantics and architecture closure.
+Current task: WP-1 — implement the framework-free APR desired-enforcement/reconciliation core.
 
-Working mode: domain re-entry; primary Skill `domain-model-change`.
+Working mode: implementation slice; primary Skill `implement-slice`.
 
 ## Working set
 
 Read first:
-- `docs/plans/active/PLAN-034-i20-realization-reconciliation.md`
-- `docs/domain/access-policy-realization/tactical-model.md`
+- `docs/domain/access-policy-realization/reconciliation-tactical-model.md`
+- `docs/architecture/access-policy-realization-reconciliation-boundary.md`
 
 Expand only if needed:
-- `docs/domain/technical-access-evidence/tactical-model.md`
-- `docs/domain/network-enforcement-placement/tactical-model.md`
-- `docs/domain/semantic-ownership.md`
-- `docs/domain/ubiquitous-language.md`
-- `docs/requirements/policy-export-core.md`
-- `src/napms/access_policy_realization/`
-- `src/napms/policy_export/`
+- `docs/requirements/access-policy-realization-reconciliation.md`
+- `docs/requirements/access-policy-realization-reconciliation-acceptance-examples.md`
+- `src/napms/access_policy_realization/domain/`
+- `src/napms/access_policy_realization/application/`
+- `tests/access_policy_realization/`
 
 Recovery facts:
-- I19 is complete; I20 remains inside Access Policy Realization rather than creating a new Bounded Context.
-- Comparing all TAE `Configured` entries directly with desired policy is unsafe: TAE does not itself claim currentness, coverage completeness or Logical Firewall correspondence.
-- `Remove`/complete `No-op` additionally require proof that desired policy and configured evidence cover the same managed enforcement-policy partition.
-- I18 Technical-to-Domain Resolution remains the shared matcher for configured-domain attribution.
-- I21 rendering and I22 provider/device execution remain downstream.
+- WP-0 is accepted; I20 stays inside Access Policy Realization.
+- Complete configured comparison requires one explicit same-governance-scope + Logical Firewall + Enforcement Attachment managed-scope/source contract.
+- First complete configured slice requires an explicitly selected TAE Configured set with `EvidenceTime.Instant == asOf` and exact effective-Permit semantics/completeness.
+- TAE itself does not gain global current/complete state; raw Block/order/default/vendor evaluation remains source-adapter work and fails closed when unsupported.
+- Shared I18 domain resolution must be reused for desired quality/configured attribution.
+- Exact `common | missing | extra` drives `No-op | Add | Remove | Replace`; Replace is not a device command.
 
 ## Blockers
 
-WP-0 must resolve managed-scope equivalence, configured source completeness/effective-policy semantics, enforcement-target granularity and explicit evidence-time selection before core implementation.
+None for WP-1 under the accepted first-slice contracts.
 
 ## Gate
 
-WP-0 passes when those semantic choices are accepted with fail-closed Unknown/ambiguity behavior and encoded in Tactical DDD, requirements and architecture.
+WP-1 passes when framework-free APR Domain/Application implement exact desired/configured policy semantics with deterministic Unknown/Ambiguous precedence, no peer/infrastructure imports and unchanged I18 behavior.
 
 ## Next
 
-Complete I20 WP-0, including the stale I19 strategic-model repair; only then implement the framework-free APR core.
+Implement I20 core + architecture tests, then advance to WP-2 owner-preserving adapters only after the core gate is coherent.

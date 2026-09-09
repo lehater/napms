@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I19 Network Enforcement Placement accepted and implemented; I20 Desired-vs-Configured Reconciliation and Enforcement Policy Derivation is the next roadmap increment`.
+Status: `I19 Network Enforcement Placement accepted and implemented; I20 Desired-vs-Configured Reconciliation and Enforcement Policy Derivation selected for execution`.
 
 Date: 2026-09-09.
 
@@ -66,7 +66,7 @@ This remains a local/development topology, not a production deployment claim.
 
 ## Current execution
 
-No implementation plan is currently selected.
+I20 is the selected roadmap increment. Mutable task/gate state is owned only by `docs/plans/active/README.md`; no I20 runtime capability is claimed by this implementation snapshot yet.
 
 I19 Network Enforcement Placement is complete and absorbed into canonical product/domain/architecture/engineering truth. The implemented slice provides:
 - one exact source/destination IP Traffic Relation as the first executable query shape;
@@ -83,7 +83,7 @@ I19 Network Enforcement Placement is complete and absorbed into canonical produc
 
 I18 Technical-to-Domain Access Resolution, I17 Technical Access Evidence Core and I16B Connectivity Decision Runtime/Workflow remain complete and absorbed into canonical truth.
 
-The roadmap next increment is I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation. It is not selected for execution, so there is no active `PLAN-*.md`.
+The active roadmap increment is I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation. Execution coordination is owned by `docs/plans/active/PLAN-034-i20-realization-reconciliation.md` and the resume capsule.
 
 ## Canonical references
 
