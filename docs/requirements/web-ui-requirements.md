@@ -1,6 +1,6 @@
 # Web UI requirements — accepted I8 refinement
 
-Status: `accepted through I16 desktop-first operational UI refinement`.
+Status: `accepted through I16 desktop-first operational UI and planned-capability preview refinement`.
 
 Date: 2026-09-09.
 
@@ -271,6 +271,44 @@ Quality targets are ordered:
 
 Responsive changes must preserve domain meaning and action availability. Presentation may change; semantic status, identity and admitted capabilities may not.
 
+## Planned-capability preview policy
+
+NAPMS may expose accepted **future user-facing roadmap capabilities** in the Web UI before their backend/runtime implementation exists so the product shell, navigation, information architecture and screen composition can be reviewed early.
+
+This is allowed only as an explicit preview contract.
+
+Rules:
+- every preview surface must map to an accepted roadmap increment or canonical requirement; do not invent speculative product capabilities;
+- navigation to a preview surface is functional: selecting it opens a real preview route/page rather than a dead navigation control;
+- every preview page and preview-only action is visibly labelled `Preview` / `Planned Ixx` and must not be visually indistinguishable from executable product behavior;
+- preview screens may show layout, section headings, known fields/columns, filters and action placement only where those concepts are already accepted;
+- unknown domain semantics remain visibly unspecified; do not invent statuses, workflow states, mutation semantics, metrics or authoritative data merely to make the mock look complete;
+- existing demo/read-only illustrative values may be used only when clearly marked non-authoritative and when they do not create new domain meaning;
+- a future mutation control must not appear enabled unless it actually invokes an implemented backend capability; use disabled controls with adjacent explanation, or a non-interactive action preview;
+- disabled state alone is insufficient communication: the screen must state why the capability is unavailable and identify the planned increment;
+- preview surfaces are excluded from authority claims: their visibility does not imply the authenticated actor is or will be authorized for the future capability;
+- when a real feature ships, its preview marker is removed only after browser tests prove the executable route and relevant actions;
+- preview pages participate in desktop visual-regression testing because one purpose is to validate the future product shell before implementation;
+- infrastructure-only roadmap work is not forced into product navigation. Production hardening, deployment, backup/restore, observability plumbing and similar non-user-facing work remain outside the UI unless a concrete operator use case later requires a surface.
+
+This preview policy supersedes the earlier blanket prohibition on inactive navigation decoration. Dead controls remain prohibited; **explicit functional preview routes are allowed**.
+
+### Current accepted preview candidates
+
+Based on the accepted I16-I25 roadmap, the current user-facing preview set may include:
+
+- I16 — Connectivity Decisions;
+- I17 — Technical Access Evidence;
+- I18 — Technical-to-Domain Access Resolution;
+- I19 — Network Enforcement Placement;
+- I20 — Desired-vs-Configured Reconciliation / Enforcement Policy;
+- I21 — Configuration Rendering;
+- I22 — Network Environment Operations;
+- I23 — Enterprise Identity / Authoritative Sources only to the extent a concrete human/operator surface is later accepted;
+- I25 — global explainability/audit navigation, mature search/filter/bulk surfaces and Dashboard only where accepted read models exist.
+
+I24 Production Deployment and Operational Hardening is not a product-navigation preview target by default.
+
 ## Information architecture
 
 Use a desktop-first enterprise application shell:
@@ -293,7 +331,7 @@ POLICY VIEWS
 
 Dashboard may be added above these groups only after real aggregate use cases exist.
 
-Do not add inactive navigation controls as decoration; the Connectivity Decisions item appears only when its executable backend/UI slice exists.
+Do not add dead navigation controls as decoration. Executable product routes and explicit planned-capability preview routes are both allowed; preview entries must carry a visible Preview/Planned marker and open a real preview page.
 
 ## Operational list/detail conventions
 
