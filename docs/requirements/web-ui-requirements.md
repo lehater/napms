@@ -51,21 +51,27 @@ Rules:
 - repeated Allowed materialization may resolve the existing Rule and must be presented as the same authoritative outcome, not a duplicate request;
 - `NotAllowed` is a valid business outcome, distinct from transport/security failure.
 
-## Connectivity Decision deferral
+## Connectivity Decision UI boundary
 
-I8 does not implement or expose an approval workflow.
+I15 promoted Connectivity Decision to a first-class Bounded Context. I16 may expose direct authorized final-decision operations over that accepted model.
 
-The current stable seam remains:
+The stable semantic chain is:
 
 ```text
 Access Rule Proposal
-    -> ConnectivityDecision(Allowed | NotAllowed)
+    -> effective ConnectivityDecision(Allowed | NotAllowed)
     -> Access Policy
 ```
 
-Do not introduce UI/domain concepts such as persistent `Access Request`, `Pending`, `Approved`, `Rejected`, approval queue, approver, human approval lifecycle or self-approval.
+Accepted UI consequences:
+- a Connectivity Decision workspace may list/read final Decisions admitted through `ReadConnectivityDecision`;
+- an actor admitted through `DecideConnectivity` may record a direct final `Allowed | NotAllowed` Decision with required reason/validity/evidence inputs accepted by backend use cases;
+- Decision identity, subject, governance scope, outcome, validity, reason and provenance are inspectable without exposing persistence mechanics;
+- proposal authority does not imply decision authority;
+- absence/expiry/ambiguity of a Decision is not displayed as a third business outcome;
+- a later superseding Decision is a new immutable Decision and historical records remain inspectable.
 
-If a future product increment must manage the Connectivity Decision process, first reopen the deferred Connectivity Decision Domain and define its semantics before adding workflow UI.
+Do not introduce persistent generic `Access Request`, `Pending`, `Approved`, `Rejected`, approval queue, quorum/SoD UI or automatic Rule-revocation controls unless later canonical Decision requirements explicitly add those semantics.
 
 ## Initial screen set
 
@@ -183,6 +189,37 @@ Important:
 - do not display `Pending/Approved/Rejected`;
 - alignment status is a recomputed composition result, not Requirement lifecycle.
 
+### 9. Connectivity Decisions — planned for I16 after the Web UI Quality Gate
+
+Purpose: inspect and record durable final Connectivity Decisions through the accepted I15 domain boundary.
+
+List/read:
+- admitted Decision Governance Scope;
+- exact Source/Destination/DCS subject;
+- `Allowed | NotAllowed`;
+- validity;
+- reason summary;
+- deciding principal/time and Decision ID.
+
+Record:
+- select one admitted Decision Governance Scope;
+- select an exact admitted subject;
+- choose final `Allowed | NotAllowed`;
+- provide required reason and validity inputs;
+- optionally preserve accepted evidence references;
+- submit through backend-owned actor/time/authority provenance.
+
+Details:
+- immutable Decision identity and exact subject;
+- Governance Scope;
+- final outcome;
+- validity;
+- reason/evidence references;
+- deciding provenance;
+- supersession relationship/history where present.
+
+The screen must not display a fabricated pending case lifecycle. It is rendered in navigation only when the backend route/use cases exist.
+
 ### Deferred screens
 
 - Dashboard: add after source screens expose real data/metrics.
@@ -242,6 +279,9 @@ Use a desktop-first enterprise application shell:
 CONNECTIVITY NEEDS
   My Connectivity Needs
 
+CONNECTIVITY GOVERNANCE
+  Connectivity Decisions   # only when the I16 route is executable
+
 ACCESS POLICY
   Compose Connectivity
   Access Rules
@@ -253,7 +293,7 @@ POLICY VIEWS
 
 Dashboard may be added above these groups only after real aggregate use cases exist.
 
-Do not add inactive navigation controls as decoration.
+Do not add inactive navigation controls as decoration; the Connectivity Decisions item appears only when its executable backend/UI slice exists.
 
 ## Operational list/detail conventions
 
