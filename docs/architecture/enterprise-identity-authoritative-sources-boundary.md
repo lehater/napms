@@ -1,133 +1,120 @@
-# Enterprise Identity and Authoritative Source Integration architecture boundary
+# Optional External Identity and Source Extension boundary
 
-Status: `accepted I23 boundary`.
+Status: `accepted I23 optional-extension boundary`.
 
 Date: 2026-09-10.
 
 ## Responsibility
 
-Define the infrastructure/application boundary for enterprise authentication and authoritative source ingestion while preserving existing NAPMS semantic ownership.
+Keep future external identity/source integration architecturally possible without changing the current local-first runtime or promoting external systems to a product dependency.
 
-## Identity flow
+## Current operating model
+
+The supported runtime remains:
 
 ```text
-external IdP / authentication mechanism
-    -> outer authentication adapter verifies protocol/credential mechanics
-    -> VerifiedExternalIdentity
-    -> ActorIdentityResolver
-    -> MappedActor | Unmapped | Ambiguous | Unknown
-    -> server-side session / request actor
+local username/password
+    -> LocalPasswordAuthenticator
+    -> authenticated NAPMS actor
+    -> server-side session/request actor
     -> application use case
     -> Authority Management action/scope admission
 ```
 
-The authentication adapter owns protocol mechanics. Actor mapping owns external-subject to NAPMS-actor correlation. Authority Management owns business permission. These responsibilities remain separate.
+Local authentication is not a temporary test-only mechanism. It is the primary current authentication path.
 
-### Core contracts
+Authority Management, ACC and Resource Catalogue continue to use NAPMS-owned local state for the current product.
 
-The runtime/application-facing authentication seam uses source-neutral values equivalent to:
-- `ExternalIdentityProviderId` / issuer identity;
-- `ExternalSubjectId`;
-- optional display/login metadata that is non-authoritative;
-- verification provenance/time when relevant;
-- `ActorId` after mapping.
+## Optional external identity seam
 
-Protocol-specific token/claim/library types remain in outer adapters.
-
-Actor mapping is deterministic and fail-closed. Exactly one effective mapping is required. The mapping repository may be persisted later in I23; its schema is NAPMS-owned and independent from Authority Management grants.
-
-## Session boundary
-
-Server-side sessions contain authenticated actor identity and authentication/session metadata only. They do not snapshot business authority as durable permission truth.
-
-Application authority remains evaluated through existing Authority Management ports at the use-case boundary. This preserves revocation/change semantics independently from authentication session lifetime.
-
-The current local-password authenticator is retained only as a local/test outer adapter behind the same runtime seam.
-
-## Authoritative source flow
-
-For each source-owning NAPMS context:
+A future external adapter may terminate at the following dormant seam:
 
 ```text
-enterprise source
-    -> source-specific transport/parser adapter
-    -> context-owned import projection
-    -> validation/correlation/completeness decision
+external authentication mechanism
+    -> outer adapter verifies provider/protocol mechanics
+    -> VerifiedExternalIdentity
+    -> ActorIdentityResolver
+    -> Mapped | Unmapped | Ambiguous | Unknown
+    -> authenticated NAPMS actor
+    -> existing session/application boundary
+```
+
+The seam is intentionally source-neutral. Domain/application modules shall not depend on OIDC/OAuth2/JWT/vendor SDK types.
+
+Exactly one effective actor mapping is required. `Unmapped`, `Ambiguous` and `Unknown` fail closed.
+
+The optional seam does not require a concrete IdP, HTTP callback route, persistent actor-mapping repository or provider configuration in I23.
+
+## Authority boundary
+
+Authentication establishes actor identity only. Authority Management remains the owner of business permission.
+
+No local or future external authentication adapter may answer business authorization itself.
+
+If a future IdP exposes groups/roles/claims, those values remain authentication-source facts until an explicit Authority-owned mapping/import requirement is accepted.
+
+## Optional source-adapter seams
+
+For any future external source, the boundary is:
+
+```text
+external source
+    -> source-specific adapter
+    -> context-owned import/projection contract
     -> context application service
     -> context-owned repository/state
 ```
 
-Authority Management, ACC and Resource Catalogue each own their import projection contract. There is no shared generic enterprise-record domain model that becomes authoritative across contexts.
+Authority Management, ACC and Resource Catalogue each retain semantic ownership. There is no shared enterprise-source domain model and no direct cross-context source-table ownership.
 
-Composition may schedule/coordinate imports, but it does not interpret source semantics or write another context's tables directly.
+I23 does not implement synchronization engines, schedulers, transport protocols, external schemas, completeness/deletion semantics or production source adapters.
 
-## Provenance and synchronization
+## Deterministic proof
 
-Every import-capable context preserves source provenance sufficient for deterministic correlation and diagnosis.
+The only executable external-integration proof required by I23 is a deterministic in-process stub where useful.
 
-Idempotency is keyed by source identity plus source revision/version when the accepted source contract provides a meaningful revision. When no source revision exists, the adapter must derive an explicit stable observation/correlation key from accepted source semantics rather than transport ordering.
+For identity, the existing skeleton proves:
+- provider-qualified external subject identity;
+- deterministic mapping;
+- `Mapped | Unmapped | Ambiguous | Unknown` outcomes;
+- fail-closed behavior.
 
-Deletion/retirement requires positive evidence of authoritative scope completeness or explicit tombstone semantics. Partial fetch absence is not deletion evidence.
-
-Ambiguous correlation, conflicting same-revision content, invalid projection and unknown source completeness fail closed.
-
-## Authority source boundary
-
-Identity-provider groups/roles/claims are authentication-source facts. They become Authority Management facts only through an explicit Authority-owned mapping/import contract.
-
-No HTTP middleware, session object or OIDC adapter may answer business authorization from IdP claims directly.
-
-## Catalogue source boundaries
-
-ACC source adapters project source interactions/components into ACC-owned catalogue semantics. Resource source adapters project source resources/endpoints/affiliations into Resource Catalogue-owned semantics.
-
-Source IDs remain provenance/correlation identities unless the owning context explicitly defines them as its domain identity. Cross-context joins continue through existing owner/application projections rather than shared source tables.
-
-## First executable I23 slice
-
-Because no concrete enterprise IdP/source products or endpoints are selected in repository truth, the first executable slice shall use deterministic in-process adapters for:
-- verified external identity input;
-- actor mapping success/unmapped/ambiguous/unknown;
-- representative source import success/conflict/incomplete-scope cases.
-
-This opens source-neutral core/runtime integration without falsely claiming vendor compatibility.
-
-A real OIDC/provider adapter or real Authority/ACC/Resource transport is admitted only after concrete issuer/source configuration, schema/correlation and completeness semantics are accepted.
+This proves an extension point only. It does not prove a real provider integration.
 
 ## Dependency direction
 
 ```text
 Domain
-  <- context Application / consuming ports
-      <- enterprise-source and authentication adapters
+  <- Application / consuming ports
+      <- optional outer adapters
           <- runtime/composition
 ```
 
-Domain imports no OIDC/OAuth2/JWT/HTTP/SDK/vendor types.
-
-Authority Management, ACC and Resource Catalogue do not depend on runtime authentication implementation.
+The default runtime need not instantiate optional external adapters at all.
 
 ## Consequences
 
 Positive:
-- production identity can replace local password mechanics without rewriting use cases;
-- business authority remains independently revocable and explainable;
-- source products can vary without transferring semantic ownership;
-- deterministic stubs can prove I23 contracts before enterprise endpoints exist.
+- the current local product stays simple and self-contained;
+- future external integration has an explicit place to attach if ever required;
+- no speculative enterprise infrastructure or domain semantics are introduced;
+- business authorization remains independent from authentication mechanics.
 
 Trade-off:
-- I23 requires explicit actor/source correlation state instead of treating external claims as application-native identities/permissions;
-- real integration closure remains impossible until source-specific completeness, correlation and transport evidence exists.
+- real enterprise/provider compatibility is deliberately unimplemented and unproven;
+- any future concrete integration will require its own accepted requirements and adapter work.
 
-## Deferred environment choices
+## Deferred until explicitly required
 
-Deferred until selected evidence exists:
 - IdP vendor and OIDC/OAuth2 details;
-- actor provisioning administration workflow beyond deterministic mapping contract;
-- Authority source product/schema;
-- ACC/Resource source product/schema/transport;
+- external actor provisioning/mapping persistence;
+- external Authority source;
+- external ACC/Resource sources;
+- CMDB/directory integration;
 - Legacy/MSSQL bridge;
-- secret/TLS/HA/production token-storage hardening, which belongs to I24 except where required for a concrete I23 protocol proof.
+- source synchronization/freshness/completeness/deletion behavior.
+
+None of these is a prerequisite for the current local NAPMS product.
 
 ## References
 
