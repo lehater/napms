@@ -16,16 +16,8 @@ import {
 } from "@/components/catalogue/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import { Field, Select } from "@/components/ui/Field"
+import type { RequestConnectivityContext } from "@/features/connectivity/model"
 import { toOffsetAwareIso } from "@/lib/datetime"
-
-export type RequestConnectivityContext = {
-  scope: string
-  dependentComponentDeploymentId: string
-  sourceComponentDeploymentId: string
-  destinationComponentDeploymentId: string
-  dcsContractRevisionId: string
-  needCurrent: "Required" | "None"
-}
 
 function exactMatch(
   item: ProposalInteraction,
