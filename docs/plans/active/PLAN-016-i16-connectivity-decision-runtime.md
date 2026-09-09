@@ -1,6 +1,6 @@
 # PLAN-016 — I16 Connectivity Decision Runtime and Workflow
 
-Status: `active`.
+Status: `active`
 
 Date: 2026-09-09.
 
