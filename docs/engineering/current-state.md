@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I14 PASS — Requirement-to-Policy Alignment implemented`.
+Status: `I15 PASS — Connectivity Decision domain semantics closed; runtime remains I16`.
 
 Date: 2026-09-09.
 
@@ -174,6 +174,30 @@ Deferred to later increments:
 - policy-centric orphan-policy operator view;
 - configured/observed technical satisfaction and reconciliation.
 
+## I15 result
+
+`PASS` for Connectivity Decision Domain Closure.
+
+Accepted:
+- Connectivity Decision is a first-class Bounded Context rather than an external/deferred semantic seam;
+- immutable Decision records have stable DecisionId, exact RuleSemanticIdentity subject and stable Decision Governance Scope;
+- the first model uses the accepted proposal authority scope as Decision Governance Scope;
+- final business outcome remains exactly `Allowed | NotAllowed`; absence/expiry/ambiguity is not a third business outcome;
+- Authority Management independently admits `DecideConnectivity` and `ReadConnectivityDecision`; `ProposeConnectivity` implies neither;
+- human and trusted service principals share identical Decision semantics;
+- first model uses one unambiguous effective deciding authority; quorum/SoD remain deferred without an accepted need;
+- Decision validity is offset-aware half-open `[validFrom, validUntil)` and controls consumption at proposal logical time;
+- every Decision has mandatory reason code/text, deciding provenance and Authority reference; external evidence remains source-owned;
+- Connectivity Requirements may be referenced as evidence while preserving `Required != Allowed`;
+- reconsideration creates an immutable same-subject/same-scope superseding Decision and never rewrites history;
+- multiple current effective Decisions for one subject/scope/asOf are an explicit fail-closed ambiguity;
+- Decision expiry/supersession does not silently mutate an existing Access Rule; automatic revocation/change management remains a separate future behavior;
+- ADR-004 supersedes ADR-003 for current target architecture;
+- no PostgreSQL/HTTP/Web/runtime implementation was added in I15.
+
+Next executable increment:
+- I16 replaces `local-dev:allowed` with the accepted durable Connectivity Decision application/runtime slice.
+
 ## I8 scope boundary
 
 I8 intentionally does **not** define Connectivity Decision Domain internals.
@@ -197,9 +221,9 @@ The ordered path toward the current strategic-model notion of product completion
 
 Next roadmap increment:
 
-`I15 — Connectivity Decision Domain Closure`.
+`I16 — Connectivity Decision Runtime and Workflow`.
 
-I14 is complete and its active plan is removed during canonical absorption. No new active plan is created in the I14 semantic stage.
+I15 is complete and its active plan is removed during canonical absorption. I16 becomes the next roadmap increment but is not pre-expanded into an active plan until execution starts.
 
 Future roadmap increments are not pre-expanded into active plans; each is promoted into an active plan only when execution starts, so deferred domain unknowns are not accidentally represented as accepted implementation detail.
 
