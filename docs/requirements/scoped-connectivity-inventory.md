@@ -544,6 +544,8 @@ One explicit offset-aware `asOf` is used for:
 
 Top-level paging is over the effective local Resource set so Resource group rows are not split across pages. Child collections may be independently bounded, but any truncation must be explicit; silently dropping Component/interaction children is prohibited.
 
+The first I16A implementation uses a bounded ACC enrichment batch. If the child-set safety bound is exceeded, that enrichment is returned as unavailable/partial rather than returning a silently incomplete child list.
+
 ## Conceptual composition output
 
 ```text
