@@ -25,6 +25,9 @@ from napms.scoped_connectivity_inventory.application.ports import (
 )
 
 
+_MAX_SCOPED_CHILD_ROWS = 2000
+
+
 def _constraint_text(value) -> str:
     if value.kind is PortConstraintKind.ANY:
         return "any"
@@ -73,7 +76,12 @@ class ApplicationCatalogueScopedConnectivityAdapter:
             bindings = self._catalogue.find_effective_bindings_for_resources(
                 resource_references=unique_refs,
                 as_of=as_of,
+                limit=_MAX_SCOPED_CHILD_ROWS + 1,
             )
+            if len(bindings) > _MAX_SCOPED_CHILD_ROWS:
+                return BoundComponentReadResult(
+                    DependencyAvailability.UNAVAILABLE
+                )
             component_ids = tuple(
                 dict.fromkeys(
                     binding.component_deployment_id for binding in bindings
@@ -106,7 +114,12 @@ class ApplicationCatalogueScopedConnectivityAdapter:
         try:
             revisions = self._catalogue.list_dcs_revisions_for_components(
                 component_deployment_ids=unique_ids,
+                limit=_MAX_SCOPED_CHILD_ROWS + 1,
             )
+            if len(revisions) > _MAX_SCOPED_CHILD_ROWS:
+                return InteractionReadResult(
+                    DependencyAvailability.UNAVAILABLE
+                )
             all_deployment_ids = tuple(
                 dict.fromkeys(
                     deployment_id
@@ -163,7 +176,12 @@ class ApplicationCatalogueScopedConnectivityAdapter:
             bindings = self._catalogue.find_effective_bindings_for_components(
                 component_deployment_ids=unique_ids,
                 as_of=as_of,
+                limit=_MAX_SCOPED_CHILD_ROWS + 1,
             )
+            if len(bindings) > _MAX_SCOPED_CHILD_ROWS:
+                return ComponentResourceBindingReadResult(
+                    DependencyAvailability.UNAVAILABLE
+                )
         except CataloguePersistenceError:
             return ComponentResourceBindingReadResult(
                 DependencyAvailability.UNAVAILABLE
