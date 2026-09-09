@@ -126,8 +126,8 @@ I19 is complete only when:
 
 ## Blockers
 
-WP-0 is accepted. WP-1 framework-free core is complete, including the P1 correction that makes NoForwardingPath a temporal/provenance-bearing fact. WP-2 adds the accepted immutable relation-scoped capture persistence.
+WP-0 and WP-1 are accepted/implemented. WP-2 durable capture/import persistence is implemented and architecture-hardened. WP-3 composition proof is implemented; hosted PostgreSQL validation remains part of the final WP-4 gate.
 
 ## Next
 
-Execute WP-2: add NEP-owned PostgreSQL persistence/migration plus one strict local import adapter and durable record/readback selection proof.
+Execute WP-4: run architecture review, close P0/P1, promote the PR to Ready for the hosted core/PostgreSQL/knowledge gates, then absorb I19 and promote I20 only after green validation.
