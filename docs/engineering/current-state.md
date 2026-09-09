@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I18 Technical-to-Domain Access Resolution accepted and implemented; I19 Network Enforcement Placement is the next roadmap increment`.
+Status: `I19 Network Enforcement Placement accepted and implemented; I20 Desired-vs-Configured Reconciliation and Enforcement Policy Derivation is the next roadmap increment`.
 
 Date: 2026-09-09.
 
@@ -22,7 +22,7 @@ This file is a capability snapshot, not an increment-by-increment changelog. Det
 | Policy export / normalization | accepted | coherent snapshot + vendor-neutral normalized policy JSON | Normalized Policy |
 | Scoped Connectivity Inventory | accepted owner-preserving product/application composition | framework-free read composition with module-owned PostgreSQL adapters, including durable coarse Decision enrichment; no independent persistence | primary post-login Connectivity workspace |
 | Technical Access Evidence | accepted Tactical DDD | framework-free Domain/Application/Ports + TAE-owned PostgreSQL + strict local JSON import adapter + dedicated composition record/readback; no public TAE transport | none |
-| Network Enforcement Placement | strategic future context | not implemented | none |
+| Network Enforcement Placement | accepted I19 Tactical DDD | framework-free Domain/Application/Ports + strict knowledge import + NEP-owned PostgreSQL immutable captures + time-qualified placement selection | none |
 | Access Policy Realization | accepted I18 Technical-to-Domain Resolution slice | framework-free Domain/Application/Ports + predicate-aware RC/ACC adapter + one-way TAE projection; derived on demand, no APR persistence | none |
 
 ## Current runtime boundary
@@ -59,29 +59,31 @@ This remains a local/development topology, not a production deployment claim.
 - business authority and catalogue visibility are distinct concerns.
 - technical evidence is not authorization, desired policy, current/fresh truth or domain-resolution truth;
 - source-qualified evidence time remains distinct from NAPMS recording time;
-- technical realization changes do not silently redefine domain identity.
+- technical realization changes do not silently redefine domain identity;
+- Logical Firewall identity is independent from provider/device realization, Resource identity and Enforcement Attachment identity;
+- enforcement placement is independent from authorization/configured-policy satisfaction and fails closed on material path/correspondence/attachment uncertainty.
 - Legacy/MSSQL and vendor/device execution are not current product dependencies.
 
 ## Current execution
 
 No implementation plan is currently selected.
 
-I18 Technical-to-Domain Access Resolution is complete and absorbed into canonical product/domain/architecture/engineering truth. The implemented slice provides:
-- one consumer-independent APR resolution capability for proposal/reconciliation consumers;
-- exact pairwise `Exact | Covers | CoveredBy | PartialOverlap | None` correspondence;
-- overall `Exact | Covered | Partial | Ambiguous | Unresolved | Unknown` resolution status;
-- exact unresolved technical remainder for supported exact-protocol predicates;
-- explicit `Protocol Any -> Unknown` instead of guessed cross-protocol semantics;
-- predicate-aware effective RC + ACC projection with fail-closed predicate-relevant unknowns;
-- one-way durable TAE -> APR projection preserving source/time/action provenance without authorization meaning;
-- ambiguity with no winner selection and explicit effective-time dependence;
-- framework-free Domain/Application/Ports plus outer adapters using owner repositories rather than peer SQL;
-- durable PostgreSQL proof with no Access Rule or Connectivity Decision side effect;
-- no APR persistence, public HTTP/Web workflow, Network Enforcement Placement or I20 reconciliation semantics.
+I19 Network Enforcement Placement is complete and absorbed into canonical product/domain/architecture/engineering truth. The implemented slice provides:
+- one exact source/destination IP Traffic Relation as the first executable query shape;
+- normalized ordered Forwarding Path knowledge plus positive temporal/provenance-bearing `NoForwardingPath`;
+- stable Logical Firewall identity independent from provider/device realization;
+- temporal Logical Firewall Correspondence and Enforcement Attachment semantics;
+- `Placed | NoEnforcement | NoForwardingPath | Ambiguous | Unknown` with no ambiguity winner;
+- explicit offset-aware logical time and attributable path/firewall/correspondence/attachment provenance;
+- fail-closed explicit source knowledge gaps, unsupported forwarding dimensions and overlapping effective capture knowledge;
+- framework-free NEP Domain/Application/Ports with strict adapter boundaries;
+- immutable relation-scoped NEP-owned PostgreSQL persistence and operation-scoped composition;
+- durable effective-time switching/domain-attributable placement proof with no Access Rule, Connectivity Decision or TAE side effect;
+- no I20 desired-vs-configured reconciliation/policy derivation, vendor rendering, provider mutation or public operator workflow.
 
-I17 Technical Access Evidence Core and I16B Connectivity Decision Runtime/Workflow remain complete and absorbed into canonical truth.
+I18 Technical-to-Domain Access Resolution, I17 Technical Access Evidence Core and I16B Connectivity Decision Runtime/Workflow remain complete and absorbed into canonical truth.
 
-The roadmap next increment is I19 — Network Enforcement Placement. It is not selected for execution, so there is no active `PLAN-*.md`.
+The roadmap next increment is I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation. It is not selected for execution, so there is no active `PLAN-*.md`.
 
 ## Canonical references
 

@@ -1,6 +1,6 @@
 # Current target architecture
 
-Status: `accepted current target through I18; I19 Network Enforcement Placement Tactical DDD selected for execution`.
+Status: `accepted current target through I19; I20 Desired-vs-Configured Reconciliation and Enforcement Policy Derivation is next`.
 
 Date: 2026-09-09.
 
@@ -66,9 +66,8 @@ Current first-class contexts include:
 - Connectivity Requirements;
 - Connectivity Decision;
 - Technical Access Evidence;
-- Access Policy Realization.
-
-Network Enforcement Placement is a first-class strategic context with the I19 Tactical DDD/architecture boundary accepted and implementation currently selected.
+- Access Policy Realization;
+- Network Enforcement Placement.
 
 Current non-peer application/read compositions include:
 - Requirement-to-Policy Alignment;
@@ -153,7 +152,7 @@ Access Policy Realization consumes TAE in I18 through a consumer-owned projectio
 
 ## Network Enforcement Placement
 
-The accepted I19 boundary is a first-class NEP module with framework-free Domain/Application/Ports and outer source/persistence adapters.
+The implemented I19 boundary is a first-class NEP module with framework-free Domain/Application/Ports and outer source/persistence adapters.
 
 First-slice architecture:
 
