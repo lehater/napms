@@ -24,6 +24,11 @@ _AUTHORITY_ACTIONS = (
     "SetRuleOperationalState",
     "SetRuleEffectiveWindow",
     "ReadEffectiveDesiredPolicy",
+    "DeclareConnectivityRequirement",
+    "ReadConnectivityRequirement",
+    "SetConnectivityRequirementApplicability",
+    "SetConnectivityRequirementJustification",
+    "RetireConnectivityRequirement",
 )
 
 
