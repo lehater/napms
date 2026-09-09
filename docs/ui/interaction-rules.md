@@ -81,6 +81,19 @@ Transport/authentication presentation must not collapse domain outcomes:
 - `5xx`/network -> retryable technical failure;
 - `ConnectivityDecision.NotAllowed` -> valid business result, not an HTTP/security error.
 
+## Planned-capability previews
+
+Preview navigation is a real interaction state, not a disabled decoration.
+
+- preview nav items open real routes;
+- each page carries a visible `Preview · Planned Ixx` marker;
+- preview pages use structural empty states instead of pretending runtime data exists;
+- future mutation buttons remain disabled/non-interactive and have adjacent explanatory text;
+- do not use preview visibility as an authority/capability claim;
+- known future fields/columns may be positioned for layout review; unknown semantics stay unspecified;
+- visual regression includes representative preview pages so future IA changes are reviewed before implementation;
+- when a feature becomes executable, browser tests must replace preview-only assertions with real workflow assertions before the Preview marker is removed.
+
 ## Responsive compatibility
 
 - desktop layout is authoritative for information architecture;
