@@ -4,42 +4,42 @@ Current: `PLAN-018-i18-technical-domain-access-resolution.md`
 
 Goal: implement I18 Technical-to-Domain Access Resolution as one consumer-independent APR capability over effective RC + ACC knowledge.
 
-Current task: WP2 — RC + ACC + TAE outer adapters.
+Current task: WP3 — integration proof.
 
 Working mode: implement-slice + architecture-review + execute-work-package.
 
 ## Working set
 
 Read first:
-- `docs/architecture/access-policy-realization-resolution-boundary.md`
-- `src/napms/access_policy_realization/domain/model.py`
-- `src/napms/access_policy_realization/application/ports.py`
-- current RC/ACC/TAE Domain/Application contracts needed by adapters only.
+- `docs/requirements/technical-domain-access-resolution-acceptance-examples.md`
+- APR Domain/Application/adapters;
+- existing PostgreSQL integration fixture patterns for TAE, ACC and RC.
 
 ## Recovery facts
 
-- WP0 semantic gate is closed.
-- WP1 pure APR core is implemented and locally exercised across Exact/Covered/Partial/Ambiguous/Unresolved/Unknown scenarios.
-- APR Domain/Application import no RC/ACC/TAE peer contexts.
-- DomainKnowledgePort is predicate-aware.
-- Current ACC projection protocol tokens are representation facts; APR Domain uses exact IP protocol numbers.
-- Unsupported address-relevant ACC transport must become explicit Unknown; unrelated disjoint facts must not poison the result.
-- TAE adapter direction is TAE -> APR projection only; RecordedAt never supplies asOf.
+- WP0 accepted semantics are closed.
+- WP1 shared resolution core is implemented.
+- WP2 RC/ACC and TAE adapters are implemented without peer SQL bypass from APR.
+- Exact/Covered/Partial/Ambiguous/Unresolved/Unknown have core/adapter-level executable cases.
+- Predicate-disjoint unsupported DCS material does not poison a result.
+- Relevant missing RC realization and unsupported ACC transport produce Unknown.
+- TAE action/time facts stay provenance; asOf is explicit.
 
 ## Blockers
 
-None for WP2.
+None for WP3.
 
 ## Gate
 
-WP2 passes only when:
-- RC + ACC adapter consumes owner APIs/repositories rather than peer SQL;
-- effective bindings/realizations are evaluated at explicit asOf;
-- tcp/udp exact translation is explicit and unsupported relevant tokens fail closed;
-- predicate-disjoint unsupported DCS facts do not create global Unknown;
-- TAE projection preserves evidence provenance without importing APR into TAE;
-- no APR persistence/public workflow/I19/I20 leakage appears.
+WP3 passes only when PostgreSQL-backed proof demonstrates:
+- durable TAE record/readback projects into APR;
+- current effective ACC bindings + RC realizations produce Exact;
+- effective-time change changes resolution through RC/ACC truth rather than stale reuse;
+- a second distinct DCS with the same technical region produces Ambiguous with no winner;
+- resolution creates no Access Rule or Connectivity Decision;
+- evidence remains durable and unchanged;
+- existing unit examples collectively cover Covered/Partial/Unresolved/Unknown.
 
 ## Next
 
-Implement and review WP2, then open WP3 integration proof only if adapter tests are green.
+Add and review the durable integration proof. Open WP4 only after no P0/P1 integration finding remains.

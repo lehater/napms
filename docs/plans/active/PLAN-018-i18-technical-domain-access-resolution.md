@@ -87,7 +87,7 @@ Infrastructure gate remains closed.
 Exit:
 a supplied complete domain-candidate snapshot can resolve one technical predicate deterministically without peer-context/framework imports in APR Domain/Application.
 
-### WP2 — RC + ACC + TAE outer adapters
+### WP2 — RC + ACC + TAE outer adapters — done
 
 After WP1 gate:
 - implement the APR domain-knowledge adapter over existing RC + ACC authoritative repositories/application semantics;
@@ -161,10 +161,10 @@ repository integration demonstrates technical evidence -> domain resolution with
 
 ## Blockers
 
-None for WP2.
+None for WP3.
 
-WP0 review closed with no P0/P1 semantic blockers. WP1 now provides the framework-free APR Domain/Application/Ports core, exact region intersection/difference, ambiguity-without-winner behavior, explicit Protocol Any -> Unknown and bounded-context architecture guards.
+WP2 provides predicate-aware RC + ACC composition through owner repositories, explicit tcp/udp -> IP protocol number translation, fail-closed relevant unknowns, disjoint-unsupported isolation, and one-way TAE -> APR projection with source/time/action provenance. Architecture guards prohibit peer PostgreSQL bypass and TAE -> APR dependency reversal.
 
 ## Next
 
-Execute WP2 only: RC + ACC domain-knowledge adapter and TAE input projection adapter. Keep APR persistence, HTTP/Web, Authority Management, Access Policy, NEP and reconciliation out of scope.
+Execute WP3 integration proof: durable TAE readback -> APR projection -> PostgreSQL-backed RC/ACC adapter -> shared resolution core, including effective-time, ambiguity and no Access Rule/Decision side effects.
