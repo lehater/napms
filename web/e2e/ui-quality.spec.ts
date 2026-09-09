@@ -123,19 +123,143 @@ test("planned roadmap workspaces are navigable, explicit previews and non-execut
   await login(page)
 
   const previews = [
-    ["Connectivity Decisions", "I16"],
-    ["Technical Evidence", "I17"],
-    ["Access Resolution", "I18"],
-    ["Enforcement Placement", "I19"],
-    ["Reconciliation", "I20"],
-    ["Configuration Rendering", "I21"],
-    ["Network Operations", "I22"],
-    ["Explainability & Audit", "I25"],
+    ["Connectivity Decisions", "Connectivity Decisions", "I16"],
+    ["Technical Evidence", "Technical Access Evidence", "I17"],
+    ["Access Resolution", "Technical-to-Domain Resolution", "I18"],
+    ["Enforcement Placement", "Network Enforcement Placement", "I19"],
+    ["Reconciliation", "Desired vs Configured Reconciliation", "I20"],
+    ["Configuration Rendering", "Configuration Rendering", "I21"],
+    ["Network Operations", "Network Environment Operations", "I22"],
+    ["Explainability & Audit", "Explainability & Audit", "I25"],
   ] as const
 
-  for (const [label, increment] of previews) {
-    await page.getByRole("button", { name: new RegExp(`^${label} Preview ${increment}$`) }).click()
-    await expect(page.getByRole("heading", { name: label })).toBeVisible()
+  for (const [navLabel, heading, increment] of previews) {
+    await page.getByRole("button", { name: new RegExp(`^${navLabel} Preview ${increment}import AxeBuilder from "@axe-core/playwright"
+import { expect, test, type Page, type TestInfo } from "@playwright/test"
+
+const loginName = process.env.NAPMS_E2E_LOGIN ?? "ui-test"
+const password = process.env.NAPMS_E2E_PASSWORD ?? "ui-test-password"
+
+async function login(page: Page) {
+  await page.goto("/")
+  await expect(page.getByRole("heading", { name: "Sign in to NAPMS" })).toBeVisible()
+  await page.getByLabel("Login").fill(loginName)
+  await page.getByLabel("Password").fill(password)
+  await page.getByRole("button", { name: "Sign in" }).click()
+  await expect(
+    page.getByRole("heading", { name: "Compose Connectivity" }),
+  ).toBeVisible()
+}
+
+async function selectByText(page: Page, label: string, text: string) {
+  const select = page.getByLabel(label)
+  await expect(select).toBeEnabled()
+  const option = select.locator("option").filter({ hasText: text }).first()
+  await expect(option).toHaveCount(1)
+  const value = await option.getAttribute("value")
+  expect(value, `option ${text} must have a value`).toBeTruthy()
+  await select.selectOption(value!)
+}
+
+async function expectNoSeriousAccessibilityViolations(page: Page) {
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze()
+  const blocking = results.violations.filter(
+    (violation) =>
+      violation.impact === "critical" || violation.impact === "serious",
+  )
+  expect(
+    blocking,
+    blocking
+      .map(
+        (violation) =>
+          `${violation.impact}: ${violation.id} — ${violation.help}; targets: ${violation.nodes
+            .flatMap((node) => node.target)
+            .join(", ")}`,
+      )
+      .join("\n"),
+  ).toEqual([])
+}
+
+async function expectNoDocumentHorizontalOverflow(page: Page) {
+  const dimensions = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }))
+  expect(
+    dimensions.scrollWidth,
+    `document overflows horizontally: ${JSON.stringify(dimensions)}`,
+  ).toBeLessThanOrEqual(dimensions.clientWidth)
+}
+
+async function attachScreenshot(
+  page: Page,
+  testInfo: TestInfo,
+  name: string,
+) {
+  await testInfo.attach(name, {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  })
+}
+
+test("login handles failure, success and logout through visible controls", async ({
+  page,
+}, testInfo) => {
+  await page.goto("/")
+  await expect(page.getByRole("heading", { name: "Sign in to NAPMS" })).toBeVisible()
+  await expectNoSeriousAccessibilityViolations(page)
+
+  await page.getByLabel("Login").fill(loginName)
+  await page.getByLabel("Password").fill("definitely-wrong")
+  await page.getByRole("button", { name: "Sign in" }).click()
+  await expect(page.getByRole("alert")).toBeVisible()
+
+  await page.getByLabel("Password").fill(password)
+  await page.getByRole("button", { name: "Sign in" }).click()
+  await expect(
+    page.getByRole("heading", { name: "Compose Connectivity" }),
+  ).toBeVisible()
+
+  await attachScreenshot(page, testInfo, "compose-after-login")
+  await page.getByRole("button", { name: "Logout" }).click()
+  await expect(page.getByRole("heading", { name: "Sign in to NAPMS" })).toBeVisible()
+})
+
+test("desktop navigation exposes every implemented workspace without layout overflow", async ({
+  page,
+}, testInfo) => {
+  await login(page)
+
+  const destinations = [
+    ["My Connectivity Needs", "My Connectivity Needs"],
+    ["Compose Connectivity", "Compose Connectivity"],
+    ["Access Rules", "Access Rules"],
+    ["Effective Policy", "Effective Desired Policy"],
+    ["Normalized Policy", "Normalized Policy"],
+  ] as const
+
+  for (const [buttonName, headingName] of destinations) {
+    await page.getByRole("button", { name: buttonName, exact: true }).click()
+    await expect(page.getByRole("heading", { name: headingName })).toBeVisible()
+    await expectNoDocumentHorizontalOverflow(page)
+    await expectNoSeriousAccessibilityViolations(page)
+    await attachScreenshot(
+      page,
+      testInfo,
+      `desktop-${buttonName.toLowerCase().replaceAll(" ", "-")}`,
+    )
+  }
+})
+
+test("planned roadmap workspaces are navigable, explicit previews and non-executable", async ({
+  page,
+}) => {
+  await login(page)
+
+) }).click()
+    await expect(page.getByRole("heading", { name: heading })).toBeVisible()
     await expect(page.getByText(`Preview · Planned ${increment}`, { exact: true })).toBeVisible()
     await expect(page.getByText("Structural product preview", { exact: true })).toBeVisible()
     await expect(page.getByText("No runtime data — preview structure only.", { exact: true })).toBeVisible()
