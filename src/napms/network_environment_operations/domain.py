@@ -6,6 +6,7 @@ from napms.access_policy_realization.domain.realization import EnforcementTarget
 
 class ApplyStatus(str, Enum):
     APPLIED = "Applied"
+    PRECONDITION_FAILED = "PreconditionFailed"
     REJECTED = "Rejected"
     UNKNOWN = "Unknown"
 
