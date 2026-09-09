@@ -127,6 +127,51 @@ class PostgresConnectivityRequirementRepository:
         except (PsycopgError, ValueError, RequirementInvariantError) as exc:
             raise RequirementPersistenceError() from exc
 
+    def list_by_scope_and_interactions(
+        self,
+        *,
+        governance_scope: str,
+        interactions: tuple[RequiredSemanticInteraction, ...],
+    ) -> tuple[ConnectivityRequirement, ...]:
+        if not interactions:
+            return ()
+        try:
+            sources = [
+                value.source_component_deployment_id for value in interactions
+            ]
+            destinations = [
+                value.destination_component_deployment_id for value in interactions
+            ]
+            revisions = [
+                value.dcs_contract_revision_id for value in interactions
+            ]
+            rows = self._connection.execute(
+                f"""
+                WITH wanted AS (
+                    SELECT *
+                    FROM unnest(
+                        %s::uuid[],
+                        %s::uuid[],
+                        %s::uuid[]
+                    ) AS value(source_id, destination_id, dcs_id)
+                )
+                SELECT {_COLUMNS}
+                FROM napms_connectivity_requirements.connectivity_requirements AS r
+                JOIN wanted AS w
+                  ON w.source_id = r.source_component_deployment_id
+                 AND w.destination_id = r.destination_component_deployment_id
+                 AND w.dcs_id = r.dcs_contract_revision_id
+                WHERE r.governance_scope = %s
+                ORDER BY r.requirement_id
+                """,
+                (sources, destinations, revisions, governance_scope),
+            ).fetchall()
+            return tuple(self._hydrate(row) for row in rows)
+        except RequirementPersistenceError:
+            raise
+        except (PsycopgError, ValueError, RequirementInvariantError) as exc:
+            raise RequirementPersistenceError() from exc
+
     def add(self, requirement: ConnectivityRequirement) -> None:
         if (
             requirement.version != 1
