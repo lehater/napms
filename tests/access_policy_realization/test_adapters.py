@@ -245,6 +245,7 @@ def catalogues(
     source_address="10.0.0.1",
     destination_address="10.0.0.2",
     decoder=None,
+    source_realizations=None,
     destination_realizations=None,
 ):
     source_binding = binding(
@@ -274,7 +275,10 @@ def catalogues(
                     resource="resource:source",
                     address=source_address,
                 ),
-            ),
+            )
+            if source_realizations
+            is None
+            else source_realizations,
             "resource:destination": (
                 realization(
                     reference="fact:destination",
@@ -438,6 +442,48 @@ def test_effective_binding_without_resource_realization_is_unknown():
         for value
         in result.knowledge_gaps
     )
+
+
+def test_missing_source_realization_is_ignored_when_destination_is_disjoint():
+    adapter, decoder = catalogues(
+        source_realizations=(),
+        destination_address="192.0.2.2",
+    )
+
+    result = ResolveTechnicalAccess(
+        domain_knowledge=adapter
+    ).execute(
+        predicate=predicate(),
+        as_of=NOW,
+    )
+
+    assert (
+        result.status
+        is ResolutionStatus.UNRESOLVED
+    )
+    assert result.knowledge_gaps == ()
+    assert decoder.calls == 0
+
+
+def test_missing_destination_realization_is_ignored_when_source_is_disjoint():
+    adapter, decoder = catalogues(
+        source_address="192.0.2.1",
+        destination_realizations=(),
+    )
+
+    result = ResolveTechnicalAccess(
+        domain_knowledge=adapter
+    ).execute(
+        predicate=predicate(),
+        as_of=NOW,
+    )
+
+    assert (
+        result.status
+        is ResolutionStatus.UNRESOLVED
+    )
+    assert result.knowledge_gaps == ()
+    assert decoder.calls == 0
 
 
 def test_tae_projection_preserves_source_qualified_provenance():

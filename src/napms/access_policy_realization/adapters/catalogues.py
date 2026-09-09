@@ -97,78 +97,43 @@ class CatalogueDomainKnowledgeAdapter:
         gaps: list[KnowledgeGap] = []
 
         for dcs in self._list_dcs_revisions():
-            source_bindings = self._load_bindings(
+            (
+                relevant_sources,
+                source_gaps,
+            ) = self._resolve_relevant_side(
                 dcs=dcs,
                 component_deployment_id=(
                     dcs.source_component_deployment_id
                 ),
+                constraint=predicate.source_addresses,
                 as_of=as_of,
                 side="source",
-                gaps=gaps,
             )
-            destination_bindings = self._load_bindings(
+            (
+                relevant_destinations,
+                destination_gaps,
+            ) = self._resolve_relevant_side(
                 dcs=dcs,
                 component_deployment_id=(
                     dcs.destination_component_deployment_id
                 ),
+                constraint=predicate.destination_addresses,
                 as_of=as_of,
                 side="destination",
-                gaps=gaps,
             )
-            if (
-                source_bindings is None
-                or destination_bindings is None
-            ):
-                continue
-            if (
-                not source_bindings
-                or not destination_bindings
-            ):
+
+            # A completely known disjoint side proves the whole
+            # directed candidate disjoint, so uncertainty on the
+            # opposite side is predicate-irrelevant.
+            if relevant_sources == () or relevant_destinations == ():
                 continue
 
-            source_endpoints = self._resolve_bindings(
-                dcs=dcs,
-                bindings=source_bindings,
-                as_of=as_of,
-                side="source",
-                gaps=gaps,
-            )
-            destination_endpoints = self._resolve_bindings(
-                dcs=dcs,
-                bindings=destination_bindings,
-                as_of=as_of,
-                side="destination",
-                gaps=gaps,
-            )
-            if (
-                source_endpoints is None
-                or destination_endpoints is None
-            ):
-                continue
-
-            relevant_sources = self._relevant_endpoints(
-                predicate.source_addresses,
-                source_endpoints,
-                dcs=dcs,
-                side="source",
-                gaps=gaps,
-            )
-            relevant_destinations = self._relevant_endpoints(
-                predicate.destination_addresses,
-                destination_endpoints,
-                dcs=dcs,
-                side="destination",
-                gaps=gaps,
-            )
             if (
                 relevant_sources is None
                 or relevant_destinations is None
             ):
-                continue
-            if (
-                not relevant_sources
-                or not relevant_destinations
-            ):
+                gaps.extend(source_gaps)
+                gaps.extend(destination_gaps)
                 continue
 
             try:
@@ -309,6 +274,52 @@ class CatalogueDomainKnowledgeAdapter:
             if len(page) < self._page_size:
                 return tuple(result)
             offset += len(page)
+
+    def _resolve_relevant_side(
+        self,
+        *,
+        dcs: DcsRevision,
+        component_deployment_id,
+        constraint: AddressConstraint,
+        as_of,
+        side: str,
+    ) -> tuple[
+        tuple[_ResolvedEndpoint, ...] | None,
+        tuple[KnowledgeGap, ...],
+    ]:
+        local_gaps: list[KnowledgeGap] = []
+        bindings = self._load_bindings(
+            dcs=dcs,
+            component_deployment_id=component_deployment_id,
+            as_of=as_of,
+            side=side,
+            gaps=local_gaps,
+        )
+        if bindings is None:
+            return None, tuple(local_gaps)
+        if not bindings:
+            return (), ()
+
+        endpoints = self._resolve_bindings(
+            dcs=dcs,
+            bindings=bindings,
+            as_of=as_of,
+            side=side,
+            gaps=local_gaps,
+        )
+        if endpoints is None:
+            return None, tuple(local_gaps)
+
+        relevant = self._relevant_endpoints(
+            constraint,
+            endpoints,
+            dcs=dcs,
+            side=side,
+            gaps=local_gaps,
+        )
+        if relevant is None:
+            return None, tuple(local_gaps)
+        return relevant, ()
 
     def _load_bindings(
         self,
