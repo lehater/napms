@@ -1,6 +1,6 @@
 # PLAN-029 — I16A Scoped Connectivity Workspace Foundation
 
-Status: `ready / selected current execution`.
+Status: `ready / selected current execution`
 
 Date: 2026-09-09.
 
