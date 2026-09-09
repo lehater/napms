@@ -1,6 +1,6 @@
 # PLAN-037 — I23 Optional Integration Extension Skeleton
 
-Status: `active — lightweight skeleton closure`.
+Status: `active — verification`.
 
 Date: 2026-09-10.
 
@@ -10,8 +10,9 @@ Keep the current local NAPMS runtime as the primary supported operating mode and
 
 I23 does **not** replace local authentication, local catalogue data or local Authority data. It does **not** select, implement or require any enterprise IdP, directory, CMDB, catalogue, MSSQL bridge or other external system.
 
-## Accepted baseline
+## Inputs
 
+Accepted baseline:
 - local username/password authentication is the primary runtime path;
 - server-side actor identity remains authoritative for request execution;
 - Authority Management remains the owner of business authorization;
@@ -20,21 +21,23 @@ I23 does **not** replace local authentication, local catalogue data or local Aut
 - no real external transport/provider compatibility is claimed or required;
 - external integration is optional future work and is not a prerequisite for continued product development.
 
-## Scope
+Canonical inputs:
+- `docs/requirements/enterprise-identity-authoritative-sources.md`;
+- `docs/architecture/enterprise-identity-authoritative-sources-boundary.md`;
+- `docs/architecture/current-architecture.md`;
+- `docs/engineering/post-wave1-product-completion-roadmap.md`.
+
+## Work packages
 
 ### WP1 — Extension boundary documentation
 
 Status: `done`.
 
-Keep a small source-neutral contract documenting:
+Documented:
 - identity != authority;
 - optional external subject -> NAPMS actor mapping;
-- external source adapters, if ever added, must preserve bounded-context ownership;
+- external source adapters, if ever added, preserve bounded-context ownership;
 - vendor/protocol types stay outside Domain.
-
-Artifacts:
-- `docs/requirements/enterprise-identity-authoritative-sources.md`;
-- `docs/architecture/enterprise-identity-authoritative-sources-boundary.md`.
 
 ### WP2 — Deterministic identity skeleton
 
@@ -47,30 +50,31 @@ Implemented:
 - explicit `Mapped | Unmapped | Ambiguous | Unknown` fail-closed outcomes;
 - focused unit tests.
 
-This seam is dormant extension infrastructure. It is not wired as the primary login path and must not displace `LocalPasswordAuthenticator`.
-
-Exit:
-- local authentication remains unchanged and primary;
-- optional future external authentication can terminate at a source-neutral mapping seam;
-- no HTTP/OIDC/provider route is added;
-- no business authority is inferred from external identity data.
+The seam is dormant extension infrastructure. It is not wired as the primary login path and does not displace `LocalPasswordAuthenticator`.
 
 ### WP3 — Optional source-adapter skeleton
 
-Status: `minimal documentation only; no implementation required`.
+Status: `done as documentation-only scope`.
 
-For Authority Management, ACC and Resource Catalogue, the architecture only records where a future source adapter would terminate. No synchronization engine, external schema, transport, scheduler or production source is required.
-
-Exit:
-- context ownership is documented;
-- deterministic stubs remain sufficient if an executable proof is useful later;
-- local data remains the supported source of truth for the current product.
+Authority Management, ACC and Resource Catalogue retain context-owned import/projection boundaries for any future adapter. No synchronization engine, external schema, transport, scheduler or production source is implemented or required.
 
 ### WP4 — Verification and absorption
 
-Status: `blocked only on repository gates for the existing skeleton`.
+Status: `active`.
 
-Run the relevant tests/gates for the small extension seam, absorb the reduced scope into roadmap/current architecture, and close I23 without introducing real enterprise dependencies.
+Run repository gates for the small extension seam, then absorb the reduced scope into canonical state and remove this plan from `docs/plans/active/`.
+
+## Exit criteria
+
+I23 exits when all of the following are true:
+- local username/password authentication remains unchanged and primary;
+- local Authority/ACC/Resource state remains the supported current source of truth;
+- optional external identity can terminate at a source-neutral provider-qualified actor-mapping seam;
+- unmapped, ambiguous and unknown external identities fail closed;
+- no HTTP/OIDC/provider route or real external source integration is introduced;
+- Authority Management remains independent from authentication mechanics;
+- canonical architecture and roadmap state external integrations are optional future work;
+- relevant repository gates pass.
 
 ## Explicit non-goals
 
@@ -83,10 +87,10 @@ Run the relevant tests/gates for the small extension seam, absorb the reduced sc
 - production external-source availability/freshness/deletion semantics;
 - making external integration a prerequisite for I24/I25 or other product work.
 
-## Current gate
+## Blockers
 
-Only framework-level seams and deterministic stubs are open. Real external adapters remain deferred until a concrete future requirement explicitly selects them.
+No product/domain blocker remains. Closure is blocked only on clean repository verification for the final branch state.
 
-## Next action
+## Next
 
-Align canonical requirements, architecture and roadmap with local-first operation, then verify the already implemented deterministic identity skeleton. Do not generalize the existing HTTP login away from `LocalPasswordAuthenticator` as part of I23.
+Obtain clean repository gates. If they pass, mark I23 complete in roadmap/current state, promote I24 Local Deployment and Operational Hardening, delete this active plan, and return `docs/plans/active/README.md` to `Current: none`.
