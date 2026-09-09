@@ -3,6 +3,9 @@ from uuid import UUID
 from psycopg import Connection, Error as PsycopgError
 from psycopg.errors import UniqueViolation
 
+from napms.connectivity_requirements.application.inventory_summary import (
+    ConnectivityRequirementInventorySnapshot,
+)
 from napms.connectivity_requirements.application.ports import (
     ActiveRequirementSemanticConflict,
     RequirementCommitOutcomeUnknown,
@@ -127,12 +130,12 @@ class PostgresConnectivityRequirementRepository:
         except (PsycopgError, ValueError, RequirementInvariantError) as exc:
             raise RequirementPersistenceError() from exc
 
-    def list_by_scope_and_interactions(
+    def list_inventory_summaries(
         self,
         *,
         governance_scope: str,
         interactions: tuple[RequiredSemanticInteraction, ...],
-    ) -> tuple[ConnectivityRequirement, ...]:
+    ) -> tuple[ConnectivityRequirementInventorySnapshot, ...]:
         if not interactions:
             return ()
         try:
@@ -146,7 +149,7 @@ class PostgresConnectivityRequirementRepository:
                 value.dcs_contract_revision_id for value in interactions
             ]
             rows = self._connection.execute(
-                f"""
+                """
                 WITH wanted AS (
                     SELECT *
                     FROM unnest(
@@ -155,18 +158,46 @@ class PostgresConnectivityRequirementRepository:
                         %s::uuid[]
                     ) AS value(source_id, destination_id, dcs_id)
                 )
-                SELECT {_COLUMNS}
+                SELECT
+                    r.governance_scope,
+                    r.source_component_deployment_id,
+                    r.destination_component_deployment_id,
+                    r.dcs_contract_revision_id,
+                    r.applicability_kind,
+                    r.applicability_start,
+                    r.applicability_end,
+                    r.lifecycle_state
                 FROM napms_connectivity_requirements.connectivity_requirements AS r
-                JOIN wanted AS w
-                  ON w.source_id = r.source_component_deployment_id
-                 AND w.destination_id = r.destination_component_deployment_id
-                 AND w.dcs_id = r.dcs_contract_revision_id
+                JOIN wanted AS wanted
+                  ON wanted.source_id = r.source_component_deployment_id
+                 AND wanted.destination_id = r.destination_component_deployment_id
+                 AND wanted.dcs_id = r.dcs_contract_revision_id
                 WHERE r.governance_scope = %s
-                ORDER BY r.requirement_id
+                ORDER BY
+                    r.source_component_deployment_id,
+                    r.destination_component_deployment_id,
+                    r.dcs_contract_revision_id,
+                    r.requirement_id
                 """,
                 (sources, destinations, revisions, governance_scope),
             ).fetchall()
-            return tuple(self._hydrate(row) for row in rows)
+            return tuple(
+                ConnectivityRequirementInventorySnapshot(
+                    governance_scope=row[0],
+                    required_interaction=RequiredSemanticInteraction(
+                        source_component_deployment_id=row[1],
+                        destination_component_deployment_id=row[2],
+                        dcs_contract_revision_id=row[3],
+                    ),
+                    applicability=_applicability_from_columns(
+                        row[4],
+                        row[5],
+                        row[6],
+                    ),
+                    lifecycle_state=RequirementLifecycleState(row[7]),
+                )
+                for row in rows
+            )
         except RequirementPersistenceError:
             raise
         except (PsycopgError, ValueError, RequirementInvariantError) as exc:
