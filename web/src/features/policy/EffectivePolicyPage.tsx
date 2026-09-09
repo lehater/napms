@@ -41,13 +41,13 @@ export function EffectivePolicyPage({
   return (
     <div className="mx-auto max-w-[1280px]">
       <header className="mb-6">
-        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
+        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#5F6B7D]">
           Policy Views
         </div>
         <h1 className="text-[28px] font-bold tracking-tight text-[#172033]">
           Effective Desired Policy
         </h1>
-        <p className="mt-2 max-w-3xl text-sm text-[#64748B]">
+        <p className="mt-2 max-w-3xl text-sm text-[#5F6B7D]">
           Authoritative Rules that contribute desired effect for one governance scope
           at one explicit instant.
         </p>
@@ -72,19 +72,19 @@ export function EffectivePolicyPage({
         <section className="mt-5 overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
           <div className="border-b border-[#E2E8F0] px-5 py-4">
             <div className="font-semibold text-[#172033]">{result.scope}</div>
-            <div className="mt-1 text-xs text-[#64748B]">
+            <div className="mt-1 text-xs text-[#5F6B7D]">
               asOf {result.asOf} · authority {result.authorityReference}
             </div>
           </div>
 
           {result.rules.length === 0 ? (
-            <div className="p-10 text-center text-sm text-[#64748B]">
+            <div className="p-10 text-center text-sm text-[#5F6B7D]">
               Authorized selection is empty at this instant.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[980px] text-left text-sm">
-                <thead className="bg-[#F8FAFC] text-xs uppercase tracking-wide text-[#64748B]">
+                <thead className="bg-[#F8FAFC] text-xs uppercase tracking-wide text-[#5F6B7D]">
                   <tr>
                     <th className="px-5 py-3 font-semibold">Rule</th>
                     <th className="px-5 py-3 font-semibold">Source</th>
