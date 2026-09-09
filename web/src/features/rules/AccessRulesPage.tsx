@@ -56,13 +56,13 @@ export function AccessRulesPage({
   return (
     <div className="mx-auto max-w-[1280px]">
       <header className="mb-6">
-        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
+        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#5F6B7D]">
           Access Policy
         </div>
         <h1 className="text-[28px] font-bold tracking-tight text-[#172033]">
           Access Rules
         </h1>
-        <p className="mt-2 max-w-3xl text-sm text-[#64748B]">
+        <p className="mt-2 max-w-3xl text-sm text-[#5F6B7D]">
           Authoritative Rules visible through your effective ReadAccessRule authority.
         </p>
       </header>
@@ -99,25 +99,25 @@ export function AccessRulesPage({
         <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
           <div>
             <h2 className="text-base font-semibold text-[#172033]">Authorized Rules</h2>
-            <p className="mt-1 text-xs text-[#64748B]">Page {page}</p>
+            <p className="mt-1 text-xs text-[#5F6B7D]">Page {page}</p>
           </div>
         </div>
 
         {loading ? (
-          <div className="p-8 text-sm text-[#64748B]">Loading Access Rules…</div>
+          <div className="p-8 text-sm text-[#5F6B7D]">Loading Access Rules…</div>
         ) : rules.length === 0 ? (
           <div className="p-10 text-center">
             <div className="text-sm font-semibold text-[#334155]">
               No visible Access Rules
             </div>
-            <div className="mt-2 text-sm text-[#64748B]">
+            <div className="mt-2 text-sm text-[#5F6B7D]">
               No authoritative Rules are currently visible through your read authority.
             </div>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[920px] border-collapse text-left text-sm">
-              <thead className="bg-[#F8FAFC] text-xs uppercase tracking-wide text-[#64748B]">
+              <thead className="bg-[#F8FAFC] text-xs uppercase tracking-wide text-[#5F6B7D]">
                 <tr>
                   <th className="px-5 py-3 font-semibold">Rule ID</th>
                   <th className="px-5 py-3 font-semibold">Source</th>
@@ -163,7 +163,7 @@ export function AccessRulesPage({
                       <button
                         type="button"
                         aria-label={`Open Rule ${rule.ruleId}`}
-                        className="grid size-8 place-items-center rounded-md text-[#64748B] hover:bg-[#E2E8F0] hover:text-[#172033]"
+                        className="grid size-8 place-items-center rounded-md text-[#5F6B7D] hover:bg-[#E2E8F0] hover:text-[#172033]"
                         onClick={() => onOpenRule(rule.ruleId)}
                       >
                         <ChevronRight className="size-4" aria-hidden="true" />
