@@ -1,7 +1,10 @@
 from datetime import datetime
 from typing import Protocol
 
-from napms.resource_catalogue.domain.model import ResourceRealizationVersion
+from napms.resource_catalogue.domain.model import (
+    ResourceRealizationVersion,
+    ResourceScopeAffiliation,
+)
 
 
 class ResourceCataloguePersistenceError(Exception):
@@ -17,3 +20,16 @@ class ResourceCatalogueRepository(Protocol):
     ) -> tuple[ResourceRealizationVersion, ...]: ...
 
     def has_realization_facts(self, *, resource_reference: str) -> bool: ...
+
+
+
+class ResourceScopeAffiliationRepository(Protocol):
+    def list_effective_for_scope(
+        self,
+        *,
+        responsibility_scope: str,
+        as_of: datetime,
+        offset: int,
+        limit: int,
+        search: str | None = None,
+    ) -> tuple[ResourceScopeAffiliation, ...]: ...
