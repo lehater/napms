@@ -12,9 +12,9 @@ This plan deliberately precedes the real Connectivity Decision runtime replaceme
 
 ## Current stage
 
-WP-03 — Application/ports core.
+WP-07 — Contextual Add Connectivity / Request access.
 
-WP-01 and WP-02 semantic gates are closed on the current branch. Implementation must follow the accepted Resource Scope Affiliation / ReadScopedConnectivity contracts and the Scoped Connectivity Inventory requirements.
+WP-01 through WP-05 are implemented on the current branch. WP-06 resource-centric Web workspace is implemented and awaits the repository Web/final gates. WP-07 now uses the first executable exact-interaction cut; full zero-interaction authoring remains gated by ACC semantics rather than a UI placeholder.
 
 ## Inputs
 
@@ -224,12 +224,18 @@ Goal:
 start new connectivity work from a local Component in the inventory.
 
 Deliverables:
-- Add Connectivity action;
-- prefilled selected scope/local Resource/local Component;
-- remote-side search;
-- structurally valid DCS selection;
-- applicability/justification input;
-- integration with existing accepted Requirement/proposal/Decision/Rule flow.
+- contextual Request access action from an existing exact ACC interaction;
+- prefilled selected scope/local Component/exact source-destination-DCS;
+- applicability/justification input only when a new current Requirement is needed;
+- reuse of an existing current Requirement without rewriting it;
+- integration with existing accepted Requirement/proposal/Decision/Rule flow;
+- explicit partial outcome when Requirement declaration succeeds but a later proposal step fails.
+
+Deferred from the first executable cut:
+- starting from a Component with zero ACC-known interactions;
+- arbitrary remote/DCS authoring or selection.
+
+Those require an accepted ACC capability and must not be simulated in the Web client.
 
 Guardrail:
 the user-level action may be Request access, but no persistent Access Request entity is invented.
