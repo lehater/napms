@@ -234,3 +234,131 @@ class PostgresApplicationCatalogueRepository:
             raise
         except (PsycopgError, CatalogueInvariantError) as exc:
             raise CataloguePersistenceError() from exc
+
+
+    def find_effective_bindings_for_resources(
+        self,
+        *,
+        resource_references: tuple[str, ...],
+        as_of: datetime,
+    ) -> tuple[DeploymentResourceBinding, ...]:
+        if not resource_references:
+            return ()
+        try:
+            rows = self._connection.execute(
+                """
+                SELECT
+                    reference_id,
+                    component_deployment_id,
+                    resource_reference,
+                    valid_from,
+                    valid_to,
+                    provenance_reference
+                FROM napms_application_catalogue.deployment_resource_bindings
+                WHERE resource_reference = ANY(%s)
+                  AND valid_from <= %s
+                  AND (valid_to IS NULL OR %s < valid_to)
+                ORDER BY resource_reference, component_deployment_id, reference_id
+                """,
+                (list(resource_references), as_of, as_of),
+            ).fetchall()
+            return tuple(
+                DeploymentResourceBinding(
+                    reference_id=row[0],
+                    component_deployment_id=row[1],
+                    resource_reference=row[2],
+                    valid_from=row[3],
+                    valid_to=row[4],
+                    provenance_reference=row[5],
+                )
+                for row in rows
+            )
+        except CataloguePersistenceError:
+            raise
+        except (PsycopgError, CatalogueInvariantError) as exc:
+            raise CataloguePersistenceError() from exc
+
+    def find_effective_bindings_for_components(
+        self,
+        *,
+        component_deployment_ids: tuple[UUID, ...],
+        as_of: datetime,
+    ) -> tuple[DeploymentResourceBinding, ...]:
+        if not component_deployment_ids:
+            return ()
+        try:
+            rows = self._connection.execute(
+                """
+                SELECT
+                    reference_id,
+                    component_deployment_id,
+                    resource_reference,
+                    valid_from,
+                    valid_to,
+                    provenance_reference
+                FROM napms_application_catalogue.deployment_resource_bindings
+                WHERE component_deployment_id = ANY(%s)
+                  AND valid_from <= %s
+                  AND (valid_to IS NULL OR %s < valid_to)
+                ORDER BY component_deployment_id, resource_reference, reference_id
+                """,
+                (list(component_deployment_ids), as_of, as_of),
+            ).fetchall()
+            return tuple(
+                DeploymentResourceBinding(
+                    reference_id=row[0],
+                    component_deployment_id=row[1],
+                    resource_reference=row[2],
+                    valid_from=row[3],
+                    valid_to=row[4],
+                    provenance_reference=row[5],
+                )
+                for row in rows
+            )
+        except CataloguePersistenceError:
+            raise
+        except (PsycopgError, CatalogueInvariantError) as exc:
+            raise CataloguePersistenceError() from exc
+
+    def list_dcs_revisions_for_components(
+        self,
+        *,
+        component_deployment_ids: tuple[UUID, ...],
+    ) -> tuple[DcsRevision, ...]:
+        if not component_deployment_ids:
+            return ()
+        try:
+            rows = self._connection.execute(
+                """
+                SELECT
+                    revision_id,
+                    source_component_deployment_id,
+                    destination_component_deployment_id,
+                    projection_payload,
+                    provenance_reference,
+                    display_name
+                FROM napms_application_catalogue.dcs_revisions
+                WHERE source_component_deployment_id = ANY(%s)
+                   OR destination_component_deployment_id = ANY(%s)
+                ORDER BY revision_id
+                """,
+                (
+                    list(component_deployment_ids),
+                    list(component_deployment_ids),
+                ),
+            ).fetchall()
+            return tuple(
+                DcsRevision(
+                    revision_id=row[0],
+                    source_component_deployment_id=row[1],
+                    destination_component_deployment_id=row[2],
+                    projection_payload=bytes(row[3]),
+                    provenance_reference=row[4],
+                    display_name=row[5],
+                )
+                for row in rows
+            )
+        except CataloguePersistenceError:
+            raise
+        except (PsycopgError, CatalogueInvariantError) as exc:
+            raise CataloguePersistenceError() from exc
