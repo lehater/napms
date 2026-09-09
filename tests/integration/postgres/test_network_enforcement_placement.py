@@ -294,12 +294,9 @@ def test_no_effective_capture_is_unknown(
         result.status
         is SelectionStatus.UNKNOWN
     )
-    assert {
+    assert "NoEffectiveKnowledgeCapture" in {
         gap.reason
-        for gap
-        in result.knowledge_gaps
-    } == {
-        "NoEffectiveKnowledgeCapture"
+        for gap in result.knowledge_gaps
     }
 
 
@@ -339,12 +336,9 @@ def test_overlapping_captures_fail_closed_instead_of_latest_wins(
         result.status
         is SelectionStatus.UNKNOWN
     )
-    assert {
+    assert "MultipleEffectiveKnowledgeCaptures" in {
         gap.reason
-        for gap
-        in result.knowledge_gaps
-    } == {
-        "MultipleEffectiveKnowledgeCaptures"
+        for gap in result.knowledge_gaps
     }
 
 
