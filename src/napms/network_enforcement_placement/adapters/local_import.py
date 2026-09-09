@@ -11,6 +11,7 @@ from napms.network_enforcement_placement.domain.model import (
     EffectiveWindow,
     EnforcementAttachment,
     ForwardingPath,
+    KnowledgeGap,
     LogicalFirewall,
     LogicalFirewallCorrespondence,
     NoForwardingPath,
@@ -59,6 +60,7 @@ class LocalPlacementKnowledgeImportAdapter:
                     "attachments",
                     "complete_for_pair",
                     "complete_for_attachments",
+                    "knowledge_gaps",
                 },
                 "document",
             )
@@ -106,10 +108,38 @@ class LocalPlacementKnowledgeImportAdapter:
                         root.get("complete_for_attachments"),
                         "complete_for_attachments",
                     ),
+                    knowledge_gaps=tuple(
+                        self._knowledge_gap(value, index)
+                        for index, value in enumerate(
+                            self._array(
+                                root.get("knowledge_gaps", []),
+                                "knowledge_gaps",
+                            )
+                        )
+                    ),
                 ),
             )
         except PlacementInvariantError as exc:
             raise LocalPlacementKnowledgeImportError(str(exc)) from exc
+
+    def _knowledge_gap(self, raw, index: int) -> KnowledgeGap:
+        name = f"knowledge_gaps[{index}]"
+        value = self._object(raw, name)
+        self._fields(
+            value,
+            {"owner", "reason", "references"},
+            name,
+        )
+        return KnowledgeGap(
+            self._string(value.get("owner"), f"{name}.owner"),
+            self._string(value.get("reason"), f"{name}.reason"),
+            tuple(
+                self._string(item, f"{name}.references[{ref_index}]")
+                for ref_index, item in enumerate(
+                    self._array(value.get("references", []), f"{name}.references")
+                )
+            ),
+        )
 
     def _relation(self, raw) -> TrafficRelation:
         value = self._object(raw, "relation")

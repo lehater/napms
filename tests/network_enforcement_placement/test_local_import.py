@@ -208,3 +208,33 @@ def test_empty_fact_provenance_is_rejected():
                 json.dumps(value)
             )
         )
+
+
+def test_explicit_forwarding_gap_is_preserved():
+    value = document()
+    value["path"] = None
+    value["complete_for_pair"] = False
+    value["complete_for_attachments"] = False
+    value["knowledge_gaps"] = [
+        {
+            "owner": "Network Source",
+            "reason": "MultiplePathSemanticsUnsupported",
+            "references": ["route-query:1"],
+        }
+    ]
+
+    capture = (
+        LocalPlacementKnowledgeImportAdapter()
+        .normalize(
+            json.dumps(value)
+        )
+    )
+
+    assert (
+        capture.knowledge.knowledge_gaps[0].reason
+        == "MultiplePathSemanticsUnsupported"
+    )
+    assert (
+        capture.knowledge.knowledge_gaps[0].references
+        == ("route-query:1",)
+    )
