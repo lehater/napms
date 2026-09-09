@@ -61,11 +61,19 @@ def select_enforcement(
 
     gaps = list(knowledge.knowledge_gaps)
 
-    if knowledge.no_forwarding_path:
+    if knowledge.no_forwarding_path is not None:
+        no_path = knowledge.no_forwarding_path
         if not knowledge.complete_for_pair:
             gaps.append(
                 _gap(
                     "ForwardingKnowledgeIncomplete"
+                )
+            )
+        if not no_path.validity.contains(as_of):
+            gaps.append(
+                _gap(
+                    "NoForwardingPathNotEffective",
+                    *no_path.provenance.references,
                 )
             )
         if gaps:

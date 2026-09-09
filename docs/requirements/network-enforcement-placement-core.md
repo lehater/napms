@@ -29,7 +29,7 @@ Missing path knowledge, an unrepresented forwarding discriminator, or unsupporte
 ## REQ-NEP-004 — Distinguish no path from no enforcement
 
 NAPMS shall distinguish:
-- `NoForwardingPath`: a source positively establishes that no forwarding path exists;
+- `NoForwardingPath`: a source positively establishes that no forwarding path exists for an explicit effective validity interval and attributable provenance;
 - `NoEnforcement`: a complete path exists and complete attachment/correspondence knowledge proves no enforcement attachment applies.
 
 Absence of evidence shall not produce either state.

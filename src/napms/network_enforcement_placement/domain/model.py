@@ -226,6 +226,12 @@ class ForwardingPath:
 
 
 @dataclass(frozen=True, slots=True)
+class NoForwardingPath:
+    validity: EffectiveWindow
+    provenance: Provenance
+
+
+@dataclass(frozen=True, slots=True)
 class KnowledgeGap:
     owner: str
     reason: str
@@ -261,7 +267,7 @@ class KnowledgeGap:
 @dataclass(frozen=True, slots=True)
 class PlacementKnowledgeSnapshot:
     path: ForwardingPath | None = None
-    no_forwarding_path: bool = False
+    no_forwarding_path: NoForwardingPath | None = None
     logical_firewalls: tuple[LogicalFirewall, ...] = ()
     correspondences: tuple[LogicalFirewallCorrespondence, ...] = ()
     attachments: tuple[EnforcementAttachment, ...] = ()
@@ -293,13 +299,13 @@ class PlacementKnowledgeSnapshot:
 
         if (
             self.path is not None
-            and self.no_forwarding_path
+            and self.no_forwarding_path is not None
         ):
             raise PlacementInvariantError(
                 "path and no_forwarding_path are mutually exclusive"
             )
         if (
-            self.no_forwarding_path
+            self.no_forwarding_path is not None
             and not self.complete_for_pair
         ):
             raise PlacementInvariantError(
@@ -307,7 +313,7 @@ class PlacementKnowledgeSnapshot:
             )
         if (
             self.path is None
-            and not self.no_forwarding_path
+            and self.no_forwarding_path is None
             and self.complete_for_pair
         ):
             raise PlacementInvariantError(

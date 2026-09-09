@@ -13,6 +13,7 @@ from napms.network_enforcement_placement.domain.model import (
     InputProvenance,
     LogicalFirewall,
     LogicalFirewallCorrespondence,
+    NoForwardingPath,
     PathAttachmentReference,
     PlacementInvariantError,
     PlacementKnowledgeSnapshot,
@@ -288,7 +289,10 @@ def test_complete_path_without_attachments_is_no_enforcement():
 def test_positive_no_route_is_distinct_from_no_enforcement():
     result = execute(
         PlacementKnowledgeSnapshot(
-            no_forwarding_path=True,
+            no_forwarding_path=NoForwardingPath(
+                window(),
+                provenance("no-route:1"),
+            ),
         )
     )
 
@@ -582,7 +586,10 @@ def test_input_iteration_order_does_not_change_selection():
 def test_naive_as_of_is_rejected_before_knowledge_lookup():
     knowledge = MemoryKnowledge(
         PlacementKnowledgeSnapshot(
-            no_forwarding_path=True,
+            no_forwarding_path=NoForwardingPath(
+                window(),
+                provenance("no-route:1"),
+            ),
         )
     )
     use_case = SelectEnforcement(

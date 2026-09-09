@@ -54,7 +54,7 @@ The references are correspondence values, not Logical Firewall identity, Resourc
 
 The first executable slice supports:
 - exactly one complete effective path; or
-- an explicit complete `NoForwardingPath` fact.
+- an explicit complete `NoForwardingPath` fact carrying its own effective validity and source-qualified provenance.
 
 Multiple simultaneous path alternatives/ECMP are not interpreted by the first slice. A source that reports more than one effective path returns `Unknown` with a `MultiplePathSemanticsUnsupported` gap instead of choosing one.
 
