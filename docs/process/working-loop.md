@@ -30,4 +30,12 @@ Do not checkpoint every wording/edit operation.
 
 One PR should represent one coherent semantic stage. Accumulate branch commits freely enough for safety/review, then squash merge.
 
-For expensive GitHub Actions, keep the PR draft while work is accumulating. Repository CI is triggered when the PR is marked ready for review, not on ordinary branch pushes. If material changes are needed after that gate, return the PR to draft, change it, then mark ready again for a fresh gate.
+For expensive GitHub Actions, keep the PR draft while work is accumulating. Repository CI is triggered when the PR is marked ready for review, not on ordinary branch pushes.
+
+Treat `Ready for review` as a request for the final hosted gate, not as a per-fix test button:
+- before marking ready, run the applicable repository-local checks and batch known fixes;
+- if a deterministic gate failure requires material changes, return the PR to draft once, batch the corrections, rerun the applicable local checks, then mark ready once for a fresh gate;
+- if an isolated hosted job fails for a transient/flaky infrastructure reason and no repository change is required, rerun the failed job/workflow instead of toggling Draft/Ready;
+- avoid repeated Draft -> Ready cycles for individual fixes: each cycle reevaluates the accumulated PR path diff and can restart every applicable hosted gate.
+
+Hosted gates validate the complete affected PR scope. Local editing may use the smallest applicable checks, but the final gate must not rely only on the last commit delta.
