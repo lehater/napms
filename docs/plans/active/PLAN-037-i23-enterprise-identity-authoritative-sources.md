@@ -1,126 +1,92 @@
-# PLAN-037 — I23 Enterprise Identity and Authoritative Source Integration
+# PLAN-037 — I23 Optional Integration Extension Skeleton
 
-Status: `active — WP2 enterprise authentication seam`.
+Status: `active — lightweight skeleton closure`.
 
 Date: 2026-09-10.
 
 ## Goal
 
-Replace I8-era local/demo identity and seed-only source dependencies with explicit enterprise-facing integration boundaries while preserving the semantic ownership established by Authority Management, Application Communication Catalogue and Resource Catalogue.
+Keep the current local NAPMS runtime as the primary supported operating mode and add only minimal extension seams for possible future external identity/source integration.
 
-I23 must not invent a corporate IdP, directory, catalogue product, endpoint, schema or Legacy/MSSQL dependency that is not selected by accepted evidence.
+I23 does **not** replace local authentication, local catalogue data or local Authority data. It does **not** select, implement or require any enterprise IdP, directory, CMDB, catalogue, MSSQL bridge or other external system.
 
-## Current baseline
+## Accepted baseline
 
-Accepted/known:
-- runtime authentication is currently a replaceable local/test username/password authenticator with opaque in-memory server-side sessions;
-- application authorization is already independent from authentication and is owned by Authority Management action/scope admission semantics;
-- ACC and Resource Catalogue are first-class bounded contexts with NAPMS-owned models and PostgreSQL persistence;
-- local seed data currently supplies development identities/authority/catalogue records;
-- the roadmap requires enterprise identity/source integration before production hardening;
-- Legacy/MSSQL is not selected by default.
+- local username/password authentication is the primary runtime path;
+- server-side actor identity remains authoritative for request execution;
+- Authority Management remains the owner of business authorization;
+- ACC and Resource Catalogue remain NAPMS-owned contexts populated locally for the current product;
+- deterministic stubs are sufficient to prove that future adapters have a place to attach;
+- no real external transport/provider compatibility is claimed or required;
+- external integration is optional future work and is not a prerequisite for continued product development.
 
-Unknown and therefore not to be invented:
-- concrete corporate IdP/vendor and issuer metadata;
-- exact OAuth2/OIDC client registration, redirect URIs, claims and group mappings;
-- authoritative Authority administration system and external schema;
-- authoritative ACC/Resource source products, APIs, delivery modes and freshness/SLA contracts;
-- external Decision/provider integration endpoints.
+## Scope
 
-## Architectural intent
-
-Authentication proves an external subject and establishes a NAPMS actor identity. Authority Management decides what that actor may do. Enterprise identity claims must not become implicit business authority.
-
-Authoritative source adapters translate source-owned records into explicit import/projection contracts. They must preserve source identity, observation/import time and provenance and must fail closed on ambiguous or incomplete mappings. Source integration must not move domain semantics into runtime/composition code.
-
-## Work packages
-
-### WP1 — Re-enter identity/source boundaries
+### WP1 — Extension boundary documentation
 
 Status: `done`.
+
+Keep a small source-neutral contract documenting:
+- identity != authority;
+- optional external subject -> NAPMS actor mapping;
+- external source adapters, if ever added, must preserve bounded-context ownership;
+- vendor/protocol types stay outside Domain.
 
 Artifacts:
 - `docs/requirements/enterprise-identity-authoritative-sources.md`;
 - `docs/architecture/enterprise-identity-authoritative-sources-boundary.md`.
 
-Exit achieved:
-- identity != authority is explicit;
-- NAPMS actor mapping responsibility is explicit;
-- source import vs domain ownership is explicit;
-- unknown concrete enterprise systems remain named unknowns rather than guessed implementations.
+### WP2 — Deterministic identity skeleton
 
-### WP2 — Enterprise authentication seam
+Status: `implemented; verification pending`.
 
-Status: `active`.
+Implemented:
+- `VerifiedExternalIdentity` value;
+- `ActorIdentityResolver` port;
+- deterministic mapping stub;
+- explicit `Mapped | Unmapped | Ambiguous | Unknown` fail-closed outcomes;
+- focused unit tests.
 
-Implement a protocol-facing authentication boundary that can consume a verified external identity result without coupling domain/application modules to OIDC libraries or token formats. Preserve the local authenticator only as an explicitly local/test adapter.
-
-First executable proof may use a deterministic in-process verified-identity stub when no concrete IdP configuration is available.
-
-Exit:
-- HTTP/runtime composition can consume an authentication abstraction rather than depending semantically on local-password behavior;
-- external subject -> NAPMS actor mapping is explicit and deterministic;
-- unmapped/ambiguous/unknown identity fails closed;
-- authority remains a separate Authority Management query.
-
-### WP3 — Authority source integration contract
-
-Status: `unblocked after WP1; queued behind WP2`.
-
-Define source-neutral ingestion/synchronization semantics for Authority Management without converting IdP claims/groups directly into authorization decisions.
+This seam is dormant extension infrastructure. It is not wired as the primary login path and must not displace `LocalPasswordAuthenticator`.
 
 Exit:
-- external source records can be projected into Authority-owned state with source/provenance identity;
-- duplicate/ambiguous/stale input has explicit fail-closed behavior;
-- local seed remains dev-only.
+- local authentication remains unchanged and primary;
+- optional future external authentication can terminate at a source-neutral mapping seam;
+- no HTTP/OIDC/provider route is added;
+- no business authority is inferred from external identity data.
 
-### WP4 — ACC and Resource Catalogue source integration contracts
+### WP3 — Optional source-adapter skeleton
 
-Status: `unblocked after WP1; queued behind WP2/WP3`.
+Status: `minimal documentation only; no implementation required`.
 
-Define owner-preserving import/synchronization adapters for ACC and Resource Catalogue.
-
-Exit:
-- import contracts preserve canonical external identities and source provenance;
-- invalid partial mappings cannot silently create authoritative catalogue facts;
-- ingestion does not create cross-context ownership.
-
-### WP5 — Runtime composition
-
-Status: `blocked on WP2-WP4`.
-
-Wire selected enterprise adapters when concrete source evidence exists. Where source products are unavailable, wire deterministic source stubs only for semantic integration proof and mark real transport unproven.
+For Authority Management, ACC and Resource Catalogue, the architecture only records where a future source adapter would terminate. No synchronization engine, external schema, transport, scheduler or production source is required.
 
 Exit:
-- runtime no longer requires demo credentials/seeded source data for the I23 integration path;
-- local development path remains explicit and isolated.
+- context ownership is documented;
+- deterministic stubs remain sufficient if an executable proof is useful later;
+- local data remains the supported source of truth for the current product.
 
-### WP6 — End-to-end acceptance proof
+### WP4 — Verification and absorption
 
-Status: `blocked on WP5`.
+Status: `blocked only on repository gates for the existing skeleton`.
 
-Prove:
+Run the relevant tests/gates for the small extension seam, absorb the reduced scope into roadmap/current architecture, and close I23 without introducing real enterprise dependencies.
 
-```text
-verified external identity
-    -> mapped NAPMS actor
-    -> Authority Management admission
-    -> authoritative ACC/RC source projection
-    -> existing connectivity/policy use case
-```
+## Explicit non-goals
 
-Adversarial cases must cover unmapped identity, ambiguous actor mapping, unknown source state and incomplete catalogue projection.
-
-### WP7 — Final gates and absorption
-
-Status: `blocked on WP6`.
-
-Run relevant repository/Web/PostgreSQL gates, absorb durable truth into requirements/domain/architecture/engineering state, remove the completed active plan and promote I24 only if I23 closure is truthful.
+- replacing local username/password authentication;
+- OIDC/OAuth2 implementation;
+- corporate IdP integration;
+- external Authority administration;
+- CMDB/application catalogue/resource inventory synchronization;
+- Legacy/MSSQL integration;
+- production external-source availability/freshness/deletion semantics;
+- making external integration a prerequisite for I24/I25 or other product work.
 
 ## Current gate
 
-WP2 is open for source-neutral authentication and deterministic identity mapping. Concrete provider adapters remain closed because the repository contains no accepted concrete enterprise IdP/source selection.
+Only framework-level seams and deterministic stubs are open. Real external adapters remain deferred until a concrete future requirement explicitly selects them.
 
 ## Next action
 
-Implement the verified-external-identity + actor-resolution seam and deterministic fail-closed proof, then review whether the existing HTTP dependency type can be generalized without changing the local UI contract.
+Align canonical requirements, architecture and roadmap with local-first operation, then verify the already implemented deterministic identity skeleton. Do not generalize the existing HTTP login away from `LocalPasswordAuthenticator` as part of I23.
