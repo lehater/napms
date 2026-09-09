@@ -92,13 +92,22 @@ It is not a public human API and does not imply Authority Management semantics.
 
 ## PostgreSQL ownership
 
-I19 may add one NEP-owned schema, expected `napms_network_enforcement_placement`.
+I19 uses one NEP-owned schema: `napms_network_enforcement_placement`.
 
-Persistence owns only NEP facts:
-- Logical Firewall identity/lifecycle;
-- temporal provider correspondences;
-- temporal Enforcement Attachments;
-- normalized forwarding-path facts/source provenance.
+The first durable shape is an immutable **relation-scoped knowledge capture envelope**:
+- source + capture identity;
+- exact source/destination endpoint pair;
+- explicit capture validity;
+- normalized Forwarding Path or positive NoForwardingPath fact;
+- Logical Firewall, correspondence and Enforcement Attachment facts;
+- completeness/provenance.
+
+The envelope is persistence/source-acquisition mechanics, not a new peer aggregate or replacement for Logical Firewall identity.
+
+The first adapter deliberately requires at most one effective capture for one exact endpoint pair/time. Zero effective captures or overlapping effective captures fail closed as `Unknown`; it never chooses the latest by RecordedAt. This is sufficient for the trusted local I19 proof and remains reversible.
+
+Revisit trigger:
+- the first real integration requiring independent multi-source path/firewall/attachment knowledge composition. At that point introduce source-specific merge/authority semantics before combining facts; do not silently broaden this capture adapter.
 
 No Access Policy, APR, RC, ACC or TAE tables are read directly.
 

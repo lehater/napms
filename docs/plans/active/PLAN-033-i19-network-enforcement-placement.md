@@ -126,7 +126,7 @@ I19 is complete only when:
 
 ## Blockers
 
-WP-0 is accepted. WP-1 framework-free Domain/Application/Ports and isolated executable core tests are complete. No plan-level blocker remains for WP-2.
+WP-0 is accepted. WP-1 framework-free core is complete, including the P1 correction that makes NoForwardingPath a temporal/provenance-bearing fact. WP-2 adds the accepted immutable relation-scoped capture persistence.
 
 ## Next
 

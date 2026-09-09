@@ -22,7 +22,7 @@ Expand only if needed:
 
 Recovery facts:
 - WP-0 accepted the first-slice semantics.
-- WP-1 core is implemented; isolated NEP tests pass 11/11 in the available execution environment.
+- WP-1 core is implemented; isolated NEP tests passed 11/11 before persistence work. A P1 review correction made NoForwardingPath a validity/provenance-bearing fact before WP-2.
 - full repository-local `make test` remains unavailable because the tool environment cannot clone GitHub; final repository validation will use the PR hosted gate.
 - PostgreSQL/schema/import code must preserve NEP ownership and fail closed; no peer SQL.
 
