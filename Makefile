@@ -10,19 +10,19 @@ web-check:
 	cd web && npm run build
 
 docker-build:
-	docker compose build
+	NAPMS_POSTGRES_PASSWORD=local-build-placeholder docker compose build
 
 dev-up:
-	python tools/dev_compose.py up
+	@NAPMS_POSTGRES_PASSWORD="$$(python -c 'import secrets; print(secrets.token_urlsafe(24))')" sh -c 'python tools/dev_compose.py up && python tools/verify_local_postgres_auth.py'
 
 dev-down:
-	docker compose down --remove-orphans
+	NAPMS_POSTGRES_PASSWORD=local-command-placeholder docker compose down --remove-orphans
 
 dev-logs:
-	docker compose logs --follow --tail=200
+	NAPMS_POSTGRES_PASSWORD=local-command-placeholder docker compose logs --follow --tail=200
 
 dev-reset:
-	docker compose down --volumes --remove-orphans
+	NAPMS_POSTGRES_PASSWORD=local-command-placeholder docker compose down --volumes --remove-orphans
 
 harness-check:
 	python tools/validate_harness.py
