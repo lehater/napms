@@ -1,11 +1,28 @@
 # Active execution
 
-Current: I16B — Connectivity Decision Runtime and Workflow.
+Current: `PLAN-016B-i16b-connectivity-decision-runtime.md`
 
-Plan: `docs/plans/active/PLAN-016B-i16b-connectivity-decision-runtime.md`.
+Goal: replace the transitional local Decision provider with the accepted durable Connectivity Decision runtime while preserving the completed I16A architecture.
 
-Roadmap: `docs/engineering/post-wave1-product-completion-roadmap.md`.
+Current task: WP1 — make the ported Decision core and PostgreSQL record/select slice green on the current main baseline.
 
-I16A Scoped Connectivity Workspace Foundation is complete and absorbed into canonical truth. I16B is now selected to replace the transitional local Decision provider with the accepted durable Decision runtime and integrate it into the existing resource-centric Connectivity workspace.
+## Working set
 
-Historical PR #26 is retained only as an implementation donor; it is not the merge baseline for I16B.
+Read first:
+- `docs/plans/active/PLAN-016B-i16b-connectivity-decision-runtime.md`
+- `docs/requirements/connectivity-decision-core.md`
+- `docs/architecture/connectivity-decision-boundary.md`
+
+Expand only when a failing gate or implementation dependency requires another file.
+
+## Blockers
+
+None. PR #26 is historical implementation evidence only and must not be merged/rebased into this branch.
+
+## Gate
+
+For the current slice, core, PostgreSQL persistence, Docker local runtime and harness gates must pass. A failing gate is fixed before advancing to Access Policy or Web integration.
+
+## Next
+
+Fix any current WP0/WP1 gate failures, confirm durable record/select is green, update the resume capsule, then stop for review before WP2.

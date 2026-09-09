@@ -19,7 +19,7 @@ exact proposal subject + governance scope + logical time
 
 Only after that path is trustworthy should participant HTTP/Web workflow be expanded.
 
-## Canonical inputs
+## Inputs
 
 - `docs/domain/connectivity-decision-model.md`;
 - `docs/requirements/connectivity-decision-core.md`;
@@ -185,6 +185,10 @@ the normal local product no longer depends on deterministic allow plumbing.
 9. Canonical docs are updated and this active plan is removed at closure.
 10. I17 is promoted only after the above is complete.
 
+## Blockers
+
+None at the semantic/design level. Gate failures discovered during implementation must be fixed on this branch before advancing beyond the durable record/select slice.
+
 ## Next
 
-Execute WP0 and WP1 by porting the Decision core/persistence donor onto this branch, then stop at the first green durable record/select slice before adding participant UI.
+Complete WP0/WP1 gates for the ported Decision core and PostgreSQL persistence. Stop at the first green durable record/select slice before Access Policy, Scoped Connectivity or participant UI integration.
