@@ -100,6 +100,10 @@ POSTGRES_SCHEMA_OWNERS = (
         NAPMS / "connectivity_requirements" / "adapters" / "postgres",
         "napms_connectivity_requirements",
     ),
+    (
+        NAPMS / "connectivity_decision" / "adapters" / "postgres",
+        "napms_connectivity_decision",
+    ),
 )
 
 
