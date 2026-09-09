@@ -10,7 +10,7 @@ Implement the I15 Connectivity Decision model end-to-end and remove the determin
 
 ## Current stage
 
-WP3 — Access Policy integration remains active. WP4 Web UI Quality Gate is active; before locking visual baselines the accepted I16-I22/I25 user-facing roadmap is being exposed as explicit preview routes so the complete future desktop shell can be reviewed. WP1 core and WP2 PostgreSQL gates passed.
+WP3 — Access Policy integration is active. WP4 Web UI Quality Gate is done: committed visual baselines, full roadmap preview shell, accessibility checks and permanent browser gate all pass. WP1 core and WP2 PostgreSQL gates passed.
 
 ## Inputs
 
@@ -42,7 +42,7 @@ With core gate passed:
 ### WP3 — Access Policy integration — active
 Evolve the consumer port from subject-only lookup to exact subject + governance scope + logical proposal time. Preserve Access Policy ownership and existing materialization semantics.
 
-### WP4 — Web UI Quality Gate — active
+### WP4 — Web UI Quality Gate — done
 Before adding new Decision UI:
 - use the accepted desktop-first operational UI contract in `docs/requirements/web-ui-requirements.md`;
 - treat NetBox only as a class-of-product UX reference: dense professional desktop operations, not a visual/IA clone;
@@ -60,11 +60,12 @@ Before adding new Decision UI:
 - classify discovered defects P0/P1/P2/P3 and fix P0/P1 before WP5.
 
 Current evidence:
-- functional/accessibility browser suite reached 5/5 PASS after fixing real contrast and accessible-name defects;
-- narrow-screen shell has been replaced with same-IA off-canvas navigation;
+- permanent browser suite passes 7/7 on the real Docker public endpoint;
+- functional mutation/reload, error-state, accessibility and mobile off-canvas scenarios pass;
 - preview routes are implemented for I16 Connectivity Decisions, I17 Technical Evidence, I18 Access Resolution, I19 Enforcement Placement, I20 Reconciliation, I21 Configuration Rendering, I22 Network Operations and I25 Explainability/Audit;
 - I23/I24 are intentionally not fabricated as product pages without an accepted human workflow;
-- visual-regression test is present; baselines must be generated only after this future shell passes functional/accessibility regression.
+- committed Playwright pixel baselines cover Login, Compose desktop, Access Rules desktop and Compose mobile;
+- baseline creation bootstrap was removed; the normal read-only browser gate verifies the committed images.
 
 ### WP5 — HTTP/Web participant workspace
 Only after WP4 passes:
@@ -101,4 +102,4 @@ The execution sandbox cannot clone github.com directly. Core/infrastructure stag
 
 ## Next
 
-Re-run Web/browser gates against the full roadmap preview shell, fix any P0/P1 regressions, then generate and commit the final visual baselines. After WP4 is green, resume WP3 backend integration and replace the I16 Connectivity Decisions preview with its executable workspace.
+Evolve the Access Policy ConnectivityDecision consumer port and materialization call to exact subject + governance scope + proposal logical time, add a Decision-context adapter/projection, and prove fail-closed subject/scope/time correlation before WP5.
