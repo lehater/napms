@@ -168,6 +168,7 @@ Requirements:
 - top-level paging is over effective local Resources;
 - Resource group rows are never split across top-level pages;
 - child collections may be separately bounded only with explicit truncation/continuation metadata;
+- the first I16A adapter applies a hard safety bound of 2000 rows to each ACC child-enrichment batch; exceeding the bound returns that enrichment as unavailable/partial rather than silently truncating it;
 - server-side search/filter for potentially unbounded catalogues;
 - stable paging semantics at one asOf;
 - no N+1 remote owner calls where a bounded batch port can preserve the same semantics;
