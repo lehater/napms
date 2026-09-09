@@ -10,11 +10,7 @@ Prepare and implement the first resource-centric owner workspace so an authentic
 
 This plan deliberately precedes the real Connectivity Decision runtime replacement. Its purpose is to make the product understandable and operational from the user's mental model before adding more workflow complexity.
 
-## Current stage
-
-WP-07 — Contextual Add Connectivity / Request access.
-
-WP-01 through WP-05 are implemented on the current branch. WP-06 resource-centric Web workspace is implemented and awaits the repository Web/final gates. WP-07 now uses the first executable exact-interaction cut; full zero-interaction authoring remains gated by ACC semantics rather than a UI placeholder.
+Current task selection is owned only by `docs/plans/active/README.md`; this plan defines coordination and work-package boundaries.
 
 ## Inputs
 
