@@ -34,7 +34,7 @@ Each persisted bounded context uses its own repository/schema ownership. No appl
 
 ACC and RC use separate read-only `REPEATABLE READ` connections for one logical snapshot scope. Access Policy uses its own transactional connection. These are infrastructure mechanics and do not alter Domain/Application semantics.
 
-Connectivity Decision remains an explicit external port dependency. I8 additionally admits an explicit deterministic `local-dev` Allowed adapter at outer composition only; this does not define Decision Domain semantics.
+Connectivity Decision is a first-class bounded context after I15. The current runtime still injects a transitional deterministic `local-dev` Allowed adapter at outer composition only; it does not replace the accepted Decision-domain model. I16B replaces this normal-product adapter with the durable Decision application/runtime slice.
 
 ## Ports
 
@@ -52,7 +52,7 @@ The first HTTP runtime composition owns:
 - FastAPI transport attachment;
 - readiness probing.
 
-The concrete Connectivity Decision implementation remains an injected outer dependency. Runtime composition must not replace that unresolved domain seam with hidden business logic.
+The concrete Connectivity Decision implementation remains injected at the consuming Access Policy boundary. Until I16B, runtime composition must not turn the transitional local adapter into hidden Decision-domain business logic or treat it as the accepted durable provider.
 
 ## I11 local executable process roots
 

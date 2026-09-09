@@ -192,7 +192,7 @@ Accepted:
 - reconsideration creates an immutable same-subject/same-scope superseding Decision and never rewrites history;
 - multiple current effective Decisions for one subject/scope/asOf are an explicit fail-closed ambiguity;
 - Decision expiry/supersession does not silently mutate an existing Access Rule; automatic revocation/change management remains a separate future behavior;
-- ADR-004 supersedes ADR-003 for current target architecture;
+- ADR-005 supersedes ADR-003 for current target architecture;
 - no PostgreSQL/HTTP/Web/runtime implementation was added in I15.
 
 Next executable increments:

@@ -9,6 +9,7 @@ The harness is intentionally small: one agent follows the applicable `AGENTS.md`
 - `docs/process/` — reusable protocols shared by several Skills.
 - `docs/domain|requirements|architecture|engineering|decisions/` — project truth.
 - `docs/plans/active/` — current execution state.
+- `src/AGENTS.md` and `web/AGENTS.md` — scoped implementation routing.
 - `tools/` and `tests/evals/` — deterministic harness regressions.
 
 Do not add dispatchers, role state machines or multi-agent runtime unless a demonstrated workflow requires them.
