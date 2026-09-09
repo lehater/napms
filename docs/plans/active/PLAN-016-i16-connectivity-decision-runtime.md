@@ -10,7 +10,7 @@ Implement the I15 Connectivity Decision model end-to-end and remove the determin
 
 ## Current stage
 
-WP2 — PostgreSQL persistence. WP1 core and harness gates passed; infrastructure gate is open.
+WP3 — Access Policy integration. WP1 core and WP2 PostgreSQL gates passed.
 
 ## Inputs
 
@@ -31,7 +31,7 @@ Implemented framework-free Domain/Application/Ports:
 - exact subject/scope/time and fail-closed ambiguity;
 - core/architecture tests.
 
-### WP2 — PostgreSQL — active
+### WP2 — PostgreSQL — done
 With core gate passed:
 - module-owned schema/migration/repository;
 - immutable history;
@@ -39,7 +39,7 @@ With core gate passed:
 - unknown commit/non-success semantics;
 - PostgreSQL integration tests.
 
-### WP3 — Access Policy integration
+### WP3 — Access Policy integration — active
 Evolve the consumer port from subject-only lookup to exact subject + governance scope + logical proposal time. Preserve Access Policy ownership and existing materialization semantics.
 
 ### WP4 — HTTP/Web participant workspace
@@ -75,4 +75,4 @@ The execution sandbox cannot clone github.com directly. Core/infrastructure stag
 
 ## Next
 
-Implement WP2 Decision-owned PostgreSQL persistence and prove its concurrency/rollback/unknown-commit semantics before Access Policy integration.
+Evolve the Access Policy decision consumer port to exact subject + governance scope + proposal logical time and prove compatibility before exposing HTTP/Web decision workflows.
