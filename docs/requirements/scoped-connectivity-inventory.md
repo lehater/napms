@@ -461,6 +461,49 @@ Decision != Access Rule
 
 The UI must not force the user to navigate manually through Needs -> Compose Connectivity -> Rules merely because backend ownership is split.
 
+## First executable Request access cut
+
+I16A implements the contextual user-level operation only when the inventory already has one exact ACC-known interaction.
+
+The first executable path is:
+
+```text
+local Resource
+  -> bound local Component Deployment
+  -> existing exact ACC interaction
+  -> Request access
+```
+
+Behavior:
+- selected Responsibility Scope is reused;
+- local Component Deployment becomes the dependent concern when a new Requirement is needed;
+- exact source/destination/DCS identity is reused from the inventory row;
+- if no current Requirement exists and no historical/non-current Requirement blocks the simple path, the UI collects applicability + justification and declares the Requirement first;
+- if a current Requirement already exists, it is reused and is not rewritten;
+- the existing Access Rule Proposal flow is then invoked;
+- Allowed may materialize/resolve a Rule; NotAllowed creates no Rule;
+- if Requirement declaration succeeds but a later proposal step fails, the Requirement remains authoritative and the UI must state that partial outcome explicitly.
+
+This is an application orchestration over existing commands. It does not create a persistent Access Request identity/lifecycle.
+
+### Zero-interaction Components
+
+A Component with no ACC-known exact interaction has no trusted remote/DCS subject that NAPMS can currently propose.
+
+Therefore I16A does **not** show a fake Add Connectivity action for such a Component.
+
+Revisit trigger:
+- an accepted Application Communication Catalogue capability for authoring/selecting a new communication contract involving that Component; or
+- another trusted application-owned source of exact remote/DCS semantics.
+
+Until then:
+
+```text
+no ACC exact interaction
+!= missing Access Rule
+!= user-selectable arbitrary UUID/port combination
+```
+
 ## Interaction details
 
 Opening one relationship should provide progressively disclosed sections:
