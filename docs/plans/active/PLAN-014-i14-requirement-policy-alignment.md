@@ -26,7 +26,7 @@ I14 must not invent approval workflow, persist a peer Alignment aggregate, or tu
 
 ## Current stage
 
-**WP1 — Semantic/authority closure.**
+**WP2 — Requirements and acceptance examples.**
 
 I13 is complete and absorbed. I14 starts from accepted Connectivity Requirement and Access Policy semantics. Working packet: `docs/plans/active/I14-WP1-alignment-decision-packet.md`.
 
@@ -88,7 +88,7 @@ Resolve before executable alignment code:
 
 ### WP1 — Semantic/authority closure
 
-Status: `active`.
+Status: `done`.
 
 Method:
 - synthesize canonical CR/AP semantics;
@@ -101,7 +101,7 @@ an explicit, testable alignment truth table exists, including authority and fail
 
 ### WP2 — Requirements and acceptance examples
 
-Status: `planned`.
+Status: `active`.
 
 Add executable examples for:
 - current applicable Requirement + effective matching Rule;
@@ -186,12 +186,8 @@ I14 is complete only when:
 
 ## Blockers
 
-Current semantic blocker:
-- authority semantics for policy coverage when RequirementGovernanceScope and matching RuleGovernanceScope differ are not yet accepted.
-
-Secondary decision:
-- whether non-current Requirements are omitted or shown as explicit `NotApplicable`.
+No current owner/product blocker. Option A is accepted: Requirement read authority admits derived alignment status; Rule evidence remains separately protected.
 
 ## Next
 
-Resolve WP1 authority/outcome/time semantics, record them canonically, then write the acceptance truth table before implementation.
+Complete WP2 requirements/truth-table acceptance examples, then define WP3 composition boundary and ports.
