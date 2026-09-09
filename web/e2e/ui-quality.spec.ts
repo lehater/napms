@@ -135,7 +135,7 @@ test("critical user journey persists Requirement and Access Rule mutations after
   await selectByText(page, "Destination Component Deployment", "Demo Orders API")
   await selectByText(
     page,
-    "Directed Communication Specification revision",
+    "Directed Communication Specification",
     "HTTPS Orders API",
   )
   await selectByText(
