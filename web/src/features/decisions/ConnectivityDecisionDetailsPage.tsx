@@ -279,7 +279,7 @@ export function ConnectivityDecisionDetailsPage({
           <div className="font-semibold">{error.code}</div>
           <div className="mt-1">{error.message}</div>
         </div>
-      ) : decision ? (
+      ) : detail && decision ? (
         <div className="grid gap-6">
           <header>
             <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
