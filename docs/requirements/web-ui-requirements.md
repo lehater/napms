@@ -1,6 +1,6 @@
 # Web UI requirements — accepted I8 refinement
 
-Status: `accepted through I14 Requirement-to-Policy Alignment UX`.
+Status: `accepted through I16 desktop-first operational UI refinement`.
 
 Date: 2026-09-09.
 
@@ -190,6 +190,50 @@ Important:
 - Resource/application portfolio administration: only when a concrete owner workflow requires it.
 - Approval/review queue: deferred with the Connectivity Decision Domain.
 
+## Product class and primary operating environment
+
+NAPMS Web UI is a professional network/infrastructure operations application in the same broad interaction class as tools such as NetBox: technically skilled authenticated users work with structured objects, policy state, provenance and repeated operational workflows over sustained desktop sessions.
+
+This comparison is a **product-class reference**, not a visual/theme or information-architecture dependency. NAPMS keeps its own domain/workflow structure:
+
+```text
+Requirement -> Decision -> Access Rule -> Effective Policy -> realization/evidence
+```
+
+Accepted consequences:
+- primary optimization target is a desktop/laptop workstation, not a phone-sized application;
+- information density and direct comparability take priority over decorative whitespace/cards;
+- entity collections with multiple comparable attributes are table-first;
+- deep objects/workflows use bookmarkable detail pages rather than mobile-style stacked navigation;
+- filters, search, sorting, pagination and current view state should remain visible and URL-shareable where practical;
+- stable technical identity/provenance stay available without displacing readable labels;
+- keyboard use and repeated operator actions are first-class desktop concerns;
+- mobile compatibility must prevent broken/inaccessible UI, but mobile does not redefine the desktop information architecture.
+
+The UI must not be redesigned into a card-per-object/mobile-dashboard model merely to avoid horizontal density.
+
+## Desktop-first viewport contract
+
+Quality targets are ordered:
+
+1. **Primary desktop baseline — 1440 x 900/1000-class viewport**
+   - full navigation shell;
+   - full operational table/detail density;
+   - primary visual-regression baseline.
+2. **Minimum supported desktop workspace — 1280 x 800**
+   - all normal single-object workflows are fully usable;
+   - no critical action requires horizontal page scrolling outside an explicitly scrollable dense table/technical region.
+3. **Tablet compatibility — around 768px**
+   - same information architecture;
+   - navigation may collapse/off-canvas;
+   - dense tables may use explicit horizontal scrolling or selectively hide non-critical presentation-only columns.
+4. **Mobile compatibility — around 390px**
+   - authentication, navigation, reading details and safe single-object actions remain reachable;
+   - no clipped controls, inaccessible actions or document-level horizontal overflow;
+   - complex dense analysis/bulk workflows may remain desktop-optimized and are not required to become card-first/mobile-native experiences.
+
+Responsive changes must preserve domain meaning and action availability. Presentation may change; semantic status, identity and admitted capabilities may not.
+
 ## Information architecture
 
 Use a desktop-first enterprise application shell:
@@ -210,6 +254,18 @@ POLICY VIEWS
 Dashboard may be added above these groups only after real aggregate use cases exist.
 
 Do not add inactive navigation controls as decoration.
+
+## Operational list/detail conventions
+
+For NetBox-class operational data:
+- default list representation is a dense table when users compare multiple objects/attributes;
+- row identity/link opens a bookmarkable detail view;
+- one dominant row navigation target is preferred; secondary row actions use explicit controls/menus;
+- potentially unbounded collections remain server-paginated and server-filtered/sorted where supported;
+- empty/filtered-empty/authority-limited/error states remain distinct;
+- wide tables are allowed to scroll inside their own content region rather than force the entire application shell wider;
+- card grids are reserved for genuinely summary/aggregate content, not as the default responsive replacement for operational tables;
+- per-user column/order preferences may be added only after a concrete operator need exists; they are not required merely because the reference class supports them.
 
 ## Visual/design-system baseline
 
@@ -251,9 +307,13 @@ For I8 local/test runtime:
 
 ## Responsive baseline
 
-- `>= 1280px`: full desktop shell;
-- `768..1279px`: collapsed sidebar by default; dense tables may scroll horizontally;
-- `< 768px`: functional overlay navigation and usable forms/details, without making mobile the primary optimization target.
+The detailed viewport contract above is authoritative.
+
+Implementation summary:
+- `>= 1280px`: desktop shell and desktop information density;
+- `768..1279px`: same IA with collapsible/off-canvas navigation and bounded table overflow;
+- `< 768px`: compatibility mode, not a separate mobile product;
+- narrow-screen navigation should preserve the desktop IA via an overlay/off-canvas navigation model rather than create a second shortened mobile-only navigation taxonomy.
 
 ## Accessibility target
 
@@ -264,8 +324,9 @@ Minimum implementation obligations:
 - visible focus states;
 - semantic labels;
 - accessible dialogs/drawers;
-- sufficient contrast;
-- statuses not encoded by color alone.
+- sufficient contrast in default, hover, focus, active, disabled-where-applicable and animated/intermediate visual states;
+- statuses not encoded by color alone;
+- browser tests should prefer role/label-based interaction so missing accessible names fail quality gates rather than being hidden behind test-only selectors.
 
 ## Non-goals for I8 UI
 
