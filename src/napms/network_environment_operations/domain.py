@@ -1,12 +1,16 @@
 from dataclasses import dataclass
 from enum import Enum
+from uuid import UUID
 
-from napms.access_policy_realization.domain.realization import EnforcementTarget
+
+@dataclass(frozen=True, slots=True)
+class OperationTarget:
+    logical_firewall_id: UUID
+    enforcement_attachment_id: UUID
 
 
 class ApplyStatus(str, Enum):
     APPLIED = "Applied"
-    PRECONDITION_FAILED = "PreconditionFailed"
     REJECTED = "Rejected"
     UNKNOWN = "Unknown"
 
@@ -44,7 +48,7 @@ class ApplyResult:
 @dataclass(frozen=True, slots=True)
 class ExecuteNetworkOperationCommand:
     operation_id: str
-    target: EnforcementTarget
+    target: OperationTarget
     renderer_name: str
     renderer_contract_version: str
     artifact_content: str
@@ -71,7 +75,7 @@ class ExecuteNetworkOperationCommand:
 @dataclass(frozen=True, slots=True)
 class NetworkOperationResult:
     operation_id: str
-    target: EnforcementTarget
+    target: OperationTarget
     artifact_digest: str
     outcome: OperationOutcome
     pre_state: TargetState | None
