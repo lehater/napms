@@ -36,6 +36,7 @@ def test_local_demo_seed_uses_actor_for_all_current_authority_actions():
         "SetConnectivityRequirementApplicability",
         "SetConnectivityRequirementJustification",
         "RetireConnectivityRequirement",
+        "ReadScopedConnectivity",
     }
     assert all(row[1] == "local-admin" for row in authority_rows)
     assert all(row[3] == "local-demo" for row in authority_rows)
@@ -89,3 +90,19 @@ def test_local_demo_seed_contains_human_readable_deployment_labels():
             "Demo Orders API",
         ),
     }
+
+
+
+def test_local_demo_seed_affiliates_only_local_resource_with_scope():
+    connection = FakeConnection()
+
+    seed_local_demo(connection, actor_id="local-admin")
+
+    affiliation_rows = [
+        params
+        for sql, params in connection.calls
+        if "INSERT INTO napms_resource_catalogue.resource_scope_affiliations" in sql
+    ]
+    assert len(affiliation_rows) == 1
+    assert affiliation_rows[0][1] == "local-demo-source"
+    assert affiliation_rows[0][2] == "local-demo"

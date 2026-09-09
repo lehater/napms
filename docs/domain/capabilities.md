@@ -1,6 +1,6 @@
 # Domain capability ownership map
 
-Status: `accepted DDD-BDM-010 eight-BC Strategic DDD baseline`.
+Status: `accepted NAPMS-DDD-001 living capability map; source DDD-BDM-010 extended through I16A`.
 
 A capability is not automatically a Bounded Context, service or deployment unit.
 
@@ -12,6 +12,7 @@ A capability is not automatically a Bounded Context, service or deployment unit.
 | Access Rule governance | what concrete Access Rule exists, with what state/authorization? | Access Policy |
 | Desired-policy projections | which Rules are authorized/effective? | Access Policy |
 | Domain Responsibility Assignment | who may perform which access-domain responsibility? | AM |
+| Resource Scope Affiliation | which access-domain Resources belong to responsibility scope S at time T? | RC |
 | Resource knowledge | what access-domain Resource/Endpoint/current realization exists? | RC |
 | Application communication contract | what application/component/deployment/DCS semantics exist? | Application Communication Catalogue |
 | Network / Forwarding State | where can traffic traverse? | NEP |
@@ -21,9 +22,42 @@ A capability is not automatically a Bounded Context, service or deployment unit.
 | Enforcement Policy Derivation / Quality / Optimization | what enforcement policy does the domain consider correct/preferred? | Access Policy Realization |
 | Desired-vs-Configured Reconciliation | does configured evidence realize desired access and what semantic delta remains? | Access Policy Realization |
 | Requirement-to-Policy Alignment | is current required connectivity covered by effective authorized policy? | non-peer composition over Connectivity Requirements + Access Policy |
+| Scoped Connectivity Inventory | what Resources are local to one admitted responsibility scope and how do their component interactions relate to need/decision/policy truth? | non-peer application composition over AM + RC + ACC + Connectivity Requirements + Connectivity Decision + Access Policy |
 | Access Rule Proposal Derivation | which resolved interactions not already represented should be surfaced as proposals? | non-peer application composition over APR + AP |
 | Connectivity Impact Analysis | what depends on connectivity and what is the consequence of loss under a scenario? | cross-context analysis; no peer BC accepted |
 | Source acquisition/parsing | obtain/parse traffic/device/file sources | adapter/mechanism |
+
+## Responsibility scope and Resource affiliation
+
+I16A accepts two independent capabilities around one stable scope reference:
+
+```text
+Resource Scope Affiliation
+    Resource Catalogue
+    -> which Resources belong to scope S at time T?
+
+Domain Responsibility Assignment
+    Authority Management
+    -> which actions may actor A perform for scope S at time T?
+```
+
+Resource Scope Affiliation is time-qualified and non-identity. One Resource may be effectively affiliated with more than one Responsibility Scope when overlapping responsibility is real.
+
+The relation does not itself grant authority and does not define catalogue visibility.
+
+Authority Management adds independent action `ReadScopedConnectivity` for selecting/reading one responsibility scope as the local context of the owner workspace. Other reads/mutations remain independently admitted.
+
+The first I16A model introduces no standalone Scope aggregate, hierarchy or lifecycle. A Responsibility Scope is a stable scope reference shared for correlation; Resource Catalogue owns Resource membership, while Authority Management owns actor/action eligibility.
+
+## Scoped Connectivity Inventory
+
+Scoped Connectivity Inventory is a non-peer application/read composition.
+
+It answers:
+
+> for one actor-admitted Responsibility Scope and logical time, which Resources are local, what Component Deployments are bound to them, with whom do they interact, and what independent Need/Decision/Policy truth can be safely summarized?
+
+It creates no authoritative `ConnectivityStatus`, does not duplicate source-context truth and is not a new Bounded Context.
 
 ## Connectivity Requirement Management
 
@@ -90,7 +124,7 @@ NetFlow/syslog capture, vendor polling/parsers, CSV/XLSX import and raw config s
 
 ## Strategic DDD closure
 
-`DDD-BDM-010 / P-010-EIGHT-BC` is the accepted current Strategic DDD baseline. `docs/ddd/connectivity-requirements-evidence.md` records the eighth-context evidence and `docs/ddd/bdm-010-delta.json` records the accepted delta.
+`DDD-BDM-010` remains the source Strategic DDD baseline. The living `NAPMS-DDD-001` model has since been extended by accepted Connectivity Requirements, Connectivity Decision and I16A responsibility-scope semantics. Historical DDD-BDM-010 evidence remains provenance rather than the count/name of the current living context set.
 
 The legacy-reconstruction scorer was not rerun for the accepted DDD-BDM-010 baseline. No scorer metrics are claimed by the NAPMS living model; historical scoring evidence remains in the source reconstruction repository.
 

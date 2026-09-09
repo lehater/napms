@@ -1,6 +1,6 @@
 {
   "model_id": "NAPMS-DDD-001",
-  "source_baseline": "DDD-BDM-010 + I13-I15 accepted extensions",
+  "source_baseline": "DDD-BDM-010 + I13-I16A accepted extensions",
   "status": "accepted",
   "bounded_contexts": [
     {
@@ -17,11 +17,11 @@
     },
     {
       "name": "Authority Management",
-      "responsibility": "Scoped authority for domain actions by scope/effective time, including assignment, delegation, transfer/revocation and accountability."
+      "responsibility": "Scoped actor/action authority for domain actions by scope/effective time, including Responsibility Assignment, delegation, transfer/revocation and accountability."
     },
     {
       "name": "Resource Catalogue",
-      "responsibility": "Access-domain Resource/Endpoint identity and current/historical technical realization."
+      "responsibility": "Access-domain Resource/Endpoint identity, time-qualified Resource Scope Affiliation, access-relevant lifecycle/affiliation facts and current/historical technical realization."
     },
     {
       "name": "Application Communication Catalogue",
@@ -59,6 +59,7 @@
     "Bounded Context is not a deployment unit.",
     "Connectivity need does not authorize access.",
     "Proposal authority does not imply decision authority.",
+    "Resource Scope Affiliation does not imply actor authority, and actor authority for a scope does not imply Resource membership.",
     "Connectivity Decision owns final decision reason, validity and supersession.",
     "Decision expiry or supersession does not silently mutate an existing Access Rule.",
     "Technical evidence does not authorize access.",

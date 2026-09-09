@@ -14,8 +14,15 @@ from napms.authority_management.adapters.access_policy import (
 from napms.authority_management.adapters.postgres import (
     PostgresAuthorityAssignmentRepository,
 )
+from napms.authority_management.adapters.scoped_connectivity_inventory import (
+    AuthorityManagementScopedConnectivityAdapter,
+)
 from napms.authority_management.application.check_authority import CheckAuthority
 from napms.authority_management.application.list_scopes import ListEffectiveAuthorityScopes
+from napms.scoped_connectivity_inventory.application.ports import (
+    DependencyAvailability,
+    ScopeAdmissionOutcome,
+)
 
 
 pytestmark = pytest.mark.postgres
@@ -222,3 +229,57 @@ def test_postgres_authority_discovers_only_unambiguous_proposal_scopes(postgres_
 
     assert result.permitted_scopes == ("scope-a",)
     assert result.ambiguous_scopes == ("scope-b",)
+
+
+
+def test_scoped_connectivity_authority_discovers_and_checks_read_scope(
+    postgres_dsn,
+):
+    with psycopg.connect(postgres_dsn) as connection:
+        seed_assignment(
+            connection,
+            reference_id="scoped-a",
+            action="ReadScopedConnectivity",
+            scope="scope-a",
+        )
+        seed_assignment(
+            connection,
+            reference_id="scoped-b1",
+            action="ReadScopedConnectivity",
+            scope="scope-b",
+        )
+        seed_assignment(
+            connection,
+            reference_id="scoped-b2",
+            action="ReadScopedConnectivity",
+            scope="scope-b",
+        )
+        connection.commit()
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresAuthorityAssignmentRepository(connection)
+        adapter = AuthorityManagementScopedConnectivityAdapter(
+            checker=CheckAuthority(assignments=repository),
+            scope_lister=ListEffectiveAuthorityScopes(assignments=repository),
+        )
+        discovered = adapter.discover_scopes(
+            actor_id="actor-1",
+            as_of=START,
+        )
+        permitted = adapter.check_scope(
+            actor_id="actor-1",
+            scope="scope-a",
+            as_of=START,
+        )
+        ambiguous = adapter.check_scope(
+            actor_id="actor-1",
+            scope="scope-b",
+            as_of=START,
+        )
+
+    assert discovered.availability is DependencyAvailability.AVAILABLE
+    assert discovered.permitted_scopes == ("scope-a",)
+    assert discovered.ambiguous_scopes == ("scope-b",)
+    assert permitted.outcome is ScopeAdmissionOutcome.PERMITTED
+    assert permitted.authority_reference == "scoped-a"
+    assert ambiguous.outcome is ScopeAdmissionOutcome.AMBIGUOUS

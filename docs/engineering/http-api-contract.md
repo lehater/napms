@@ -193,6 +193,144 @@ HTTP `200`.
 
 `NotAllowed` is a normal business result and never becomes `403`.
 
+## Scoped Connectivity Inventory
+
+I16A adds the resource-centric owner workspace API.
+
+The API is a read/application composition. It does not create a Connectivity aggregate or duplicate Requirement/Decision/Rule truth.
+
+### GET /api/v1/connectivity/scopes
+
+Purpose: discover Responsibility Scopes the authenticated actor may use as local workspace context through `ReadScopedConnectivity`.
+
+Query:
+- `asOf` — required offset-aware RFC 3339 instant.
+
+Success:
+
+```json
+{
+  "asOf": "2026-09-09T12:00:00+00:00",
+  "scopes": [{"scope": "payments-prod"}],
+  "ambiguousScopes": []
+}
+```
+
+Rules:
+- actor identity comes from the authenticated session;
+- the same explicit `asOf` is used by Authority Management;
+- ambiguous scopes are fail-closed and are not selectable;
+- unavailable authority dependency -> `503 ScopedConnectivityUnavailable`.
+
+### GET /api/v1/connectivity
+
+Purpose: return the resource-centric Scoped Connectivity Inventory for one selected Responsibility Scope.
+
+Query:
+- `scope` — required selected Responsibility Scope;
+- `asOf` — required offset-aware RFC 3339 instant;
+- `page` — Resource page, default 1;
+- `pageSize` — bounded Resource page size, default 50, maximum 100;
+- optional bounded `search`.
+
+Top-level paging is over local Resources. Resource groups are not split across top-level pages.
+
+Success:
+
+```json
+{
+  "scope": "payments-prod",
+  "asOf": "2026-09-09T12:00:00+00:00",
+  "items": [
+    {
+      "resource": {
+        "resourceReference": "resource-local",
+        "realizationState": "Resolved",
+        "endpoints": [
+          {
+            "endpointReference": "resource-local:endpoint",
+            "technicalAddress": "10.10.10.10"
+          }
+        ]
+      },
+      "componentsKnown": true,
+      "components": [
+        {
+          "componentDeploymentId": "uuid",
+          "displayName": "Checkout Frontend",
+          "relationshipsKnown": true,
+          "relationships": [
+            {
+              "semanticIdentity": {
+                "sourceComponentDeploymentId": "uuid",
+                "destinationComponentDeploymentId": "uuid",
+                "dcsContractRevisionId": "uuid"
+              },
+              "direction": "Outgoing",
+              "remoteComponent": {
+                "componentDeploymentId": "uuid",
+                "displayName": "Orders API"
+              },
+              "dcsDisplayName": "HTTPS Orders",
+              "accessSummary": "tcp 443",
+              "remoteResourcesKnown": true,
+              "remoteResources": [
+                {
+                  "resourceReference": "resource-remote",
+                  "realizationState": "Resolved",
+                  "endpoints": []
+                }
+              ],
+              "need": {
+                "current": "Required",
+                "historicalOnly": false,
+                "coverage": "Covered"
+              },
+              "decision": {
+                "state": "Unknown"
+              },
+              "policy": {
+                "ruleExists": "Yes",
+                "operationalState": "Active",
+                "effectiveAtAsOf": "Yes"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "page": 1,
+  "pageSize": 50,
+  "hasMore": false,
+  "partial": true
+}
+```
+
+The overview exposes only the accepted coarse contract:
+- no Requirement ID/justification/history/provenance;
+- no Decision ID/reason/evidence/provenance;
+- no Rule ID/governance scope/window/provenance/audit;
+- protected details remain behind their independent read authorities.
+
+`Decision.state` uses:
+- `Allowed`;
+- `NotAllowed`;
+- `NoFinalDecision`;
+- `Unknown`.
+
+Only Allowed/NotAllowed are Connectivity Decision business outcomes. `NoFinalDecision` and `Unknown` are read/application results.
+
+I16A currently has no durable Decision provider in runtime composition, so that dimension is safely returned as `Unknown` and the page is marked `partial=true` until I16B supplies the accepted Decision read provider.
+
+Authority mappings:
+- selected scope denied -> `403 AuthorityDenied`;
+- selected scope unknown/ambiguous -> `409 AuthorityUnknown`;
+- base inventory dependency unavailable -> `503 ScopedConnectivityUnavailable`;
+- enrichment uncertainty that can be isolated to one dimension -> `200` with that dimension `Unknown` and `partial=true`.
+
+One logical `asOf` is used for scope authority, Resource Scope Affiliation, Resource realization, DeploymentResourceBinding, Requirement currentness/coverage, Decision and Rule effectiveness.
+
 ## Connectivity Requirements
 
 I13 adds a dedicated use-case API. Connectivity Requirement existence is not connectivity authorization and has no implicit Access Policy side effect.

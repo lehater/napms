@@ -8,6 +8,9 @@ from napms.access_policy.adapters.postgres import PostgresAccessRuleRepository
 from napms.access_policy.adapters.requirement_policy_alignment import (
     AccessPolicyAlignmentAdapter,
 )
+from napms.access_policy.adapters.scoped_connectivity_inventory import (
+    AccessPolicyScopedConnectivityAdapter,
+)
 from napms.application_catalogue.adapters.access_policy import (
     AccessPolicyCommunicationCatalogueAdapter,
     AccessPolicyProposalInteractionCatalogueAdapter,
@@ -22,6 +25,9 @@ from napms.application_catalogue.adapters.policy_export import (
 )
 from napms.application_catalogue.adapters.postgres import (
     PostgresApplicationCatalogueRepository,
+)
+from napms.application_catalogue.adapters.scoped_connectivity_inventory import (
+    ApplicationCatalogueScopedConnectivityAdapter,
 )
 from napms.application_catalogue.application.describe_interactions import (
     DescribeDirectedInteractions,
@@ -47,6 +53,9 @@ from napms.authority_management.adapters.connectivity_requirements import (
 from napms.authority_management.adapters.postgres import (
     PostgresAuthorityAssignmentRepository,
 )
+from napms.authority_management.adapters.scoped_connectivity_inventory import (
+    AuthorityManagementScopedConnectivityAdapter,
+)
 from napms.authority_management.application.check_authority import CheckAuthority
 from napms.authority_management.application.list_scopes import (
     ListEffectiveAuthorityScopes,
@@ -57,6 +66,9 @@ from napms.connectivity_requirements.adapters.postgres import (
 )
 from napms.connectivity_requirements.adapters.requirement_policy_alignment import (
     ConnectivityRequirementsAlignmentAdapter,
+)
+from napms.connectivity_requirements.adapters.scoped_connectivity_inventory import (
+    ConnectivityRequirementsScopedConnectivityAdapter,
 )
 from napms.connectivity_requirements.application.read import (
     GetAuthorizedRequirement,
@@ -69,7 +81,20 @@ from napms.resource_catalogue.adapters.policy_export import (
 from napms.resource_catalogue.adapters.postgres import (
     PostgresResourceCatalogueRepository,
 )
+from napms.resource_catalogue.adapters.scoped_connectivity_inventory import (
+    ResourceCatalogueScopedConnectivityAdapter,
+)
+from napms.resource_catalogue.application.list_scope_resources import (
+    ListResourcesInResponsibilityScope,
+)
 from napms.resource_catalogue.application.resolve import ResolveResourceRealization
+from napms.scoped_connectivity_inventory.adapters.deferred_decision import (
+    DeferredConnectivityDecisionSummaryAdapter,
+)
+from napms.scoped_connectivity_inventory.application.read import (
+    DiscoverScopedConnectivityScopes,
+    ReadScopedConnectivityInventory,
+)
 
 
 
@@ -94,6 +119,8 @@ class GreenfieldPostgresScope:
     connectivity_requirements: PostgresConnectivityRequirementRepository
     requirement_alignment: ConnectivityRequirementsAlignmentAdapter
     policy_alignment: AccessPolicyAlignmentAdapter
+    scoped_connectivity_scopes: DiscoverScopedConnectivityScopes
+    scoped_connectivity_inventory: ReadScopedConnectivityInventory
 
 
 @contextmanager
@@ -209,6 +236,41 @@ def open_greenfield_scope(
         )
         policy_alignment = AccessPolicyAlignmentAdapter(rules=access_rules)
 
+        scoped_authority = AuthorityManagementScopedConnectivityAdapter(
+            checker=CheckAuthority(assignments=authority_repository),
+            scope_lister=ListEffectiveAuthorityScopes(
+                assignments=authority_repository
+            ),
+        )
+        scoped_resources = ResourceCatalogueScopedConnectivityAdapter(
+            lister=ListResourcesInResponsibilityScope(
+                affiliations=resource_repository
+            ),
+            catalogue=resource_repository,
+        )
+        scoped_catalogue = ApplicationCatalogueScopedConnectivityAdapter(
+            catalogue=application_repository,
+            decoder=JsonDcsProjectionCodec(),
+        )
+        scoped_requirements = ConnectivityRequirementsScopedConnectivityAdapter(
+            requirements=connectivity_requirements,
+        )
+        scoped_policy = AccessPolicyScopedConnectivityAdapter(
+            rules=access_rules,
+        )
+        scoped_decisions = DeferredConnectivityDecisionSummaryAdapter()
+        scoped_connectivity_scopes = DiscoverScopedConnectivityScopes(
+            authority=scoped_authority,
+        )
+        scoped_connectivity_inventory = ReadScopedConnectivityInventory(
+            authority=scoped_authority,
+            resources=scoped_resources,
+            catalogue=scoped_catalogue,
+            requirements=scoped_requirements,
+            decisions=scoped_decisions,
+            policy=scoped_policy,
+        )
+
         yield GreenfieldPostgresScope(
             authority=authority,
             proposal_scope_discovery=proposal_scope_discovery,
@@ -229,4 +291,6 @@ def open_greenfield_scope(
             connectivity_requirements=connectivity_requirements,
             requirement_alignment=requirement_alignment,
             policy_alignment=policy_alignment,
+            scoped_connectivity_scopes=scoped_connectivity_scopes,
+            scoped_connectivity_inventory=scoped_connectivity_inventory,
         )

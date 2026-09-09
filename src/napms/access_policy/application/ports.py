@@ -4,6 +4,9 @@ from enum import Enum
 from typing import Protocol
 from uuid import UUID
 
+from napms.access_policy.application.inventory_summary import (
+    AccessRuleInventorySnapshot,
+)
 from napms.access_policy.domain.model import AccessRule, RuleSemanticIdentity
 
 
@@ -151,6 +154,10 @@ class ConnectivityDecisionPort(Protocol):
 
 class AccessRuleRepository(Protocol):
     def find_by_identity(self, identity: RuleSemanticIdentity) -> AccessRule | None: ...
+    def find_inventory_summaries(
+        self,
+        identities: tuple[RuleSemanticIdentity, ...],
+    ) -> tuple[AccessRuleInventorySnapshot, ...]: ...
     def get_by_id(self, rule_id: UUID) -> AccessRule | None: ...
     def list_by_governance_scope(self, scope: str) -> tuple[AccessRule, ...]: ...
     def list_by_governance_scopes(

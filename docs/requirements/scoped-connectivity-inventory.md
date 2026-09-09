@@ -1,6 +1,6 @@
 # Scoped Connectivity Inventory requirements
 
-Status: `accepted product direction; I16A semantic closure required before implementation`.
+Status: `accepted I16A WP-02 semantic contract baseline`.
 
 Date: 2026-09-09.
 
@@ -43,11 +43,49 @@ selected responsibility scope
     -> derive local Resources
 ```
 
-The exact domain relation and semantic owner that derive local Resources from a scope are not yet accepted in the executable model. I16A must close that question before implementation.
+I16A closes the relation as:
 
-Do not solve the gap by adding `owner_id` or `scope_id` to Resource identity without DDD closure.
+```text
+Resource Catalogue:
+Resource --Resource Scope Affiliation--> Responsibility Scope
 
-A Resource may remain the same Resource when ownership, responsibility, custody, authority or scope relations change.
+Authority Management:
+Actor --Responsibility Assignment(action,time)--> Responsibility Scope
+```
+
+Resource Catalogue owns effective Resource membership in the selected Responsibility Scope. Authority Management independently owns actor/action authority for the same stable scope reference.
+
+The inventory-specific authority action is `ReadScopedConnectivity`.
+
+Rules:
+- scope selection is admitted only by one unambiguous effective `ReadScopedConnectivity` authority at the same logical `asOf`;
+- local Resources are those with an effective Resource Scope Affiliation to the selected scope at `asOf`;
+- one Resource may be local to multiple responsibility scopes;
+- Resource Scope Affiliation is temporal and non-identity;
+- Resource membership does not imply mutation authority;
+- actor authority for a scope does not imply that every Resource belongs to that scope;
+- catalogue visibility is independent from both;
+- existing Requirement/Decision/Rule governance scopes are not silently rebound when Resource affiliation changes.
+
+Do not model this as `Resource.owner_id` or an identity-defining `Resource.scope_id`.
+
+## Scope discovery and admission
+
+Semantic queries:
+
+```text
+DiscoverScopedConnectivityScopes(actor, asOf)
+ReadScopedConnectivityInventory(actor, selectedScope, asOf, ...)
+```
+
+`DiscoverScopedConnectivityScopes` uses Authority Management action `ReadScopedConnectivity`.
+
+- unambiguous effective assignments produce selectable Responsibility Scopes;
+- ambiguous scopes are not selectable and expose no local inventory data;
+- absence of a selectable scope is distinct from technical failure;
+- `ReadScopedConnectivity` does not imply any mutation or protected business-detail read.
+
+`ReadScopedConnectivityInventory` re-checks the selected scope at the same explicit `asOf`. Caller-supplied actor identity is never trusted.
 
 ## Current catalogue visibility baseline
 
@@ -113,6 +151,12 @@ Resource
 
 Resources and Components with zero declared/current connectivity must still appear.
 
+Top-level completeness is defined over Resource Catalogue membership: every Resource effectively affiliated with the selected scope at `asOf` is eligible for the inventory even when it has no current endpoint realization, no Component Deployment binding or no interaction.
+
+Component Deployment membership under a Resource is derived from effective ACC DeploymentResourceBinding at the same `asOf`.
+
+A Component Deployment bound to multiple local Resources may appear under each Resource. This is presentation of the same Component Deployment identity, not duplicated domain identity.
+
 The workspace must therefore distinguish:
 
 1. Resource with no bound Component Deployment;
@@ -121,6 +165,21 @@ The workspace must therefore distinguish:
 4. known requirement with no current policy coverage;
 5. policy interaction without a current requirement;
 6. complete covered interaction.
+
+## Local Component interaction expansion
+
+For each local Resource -> Component Deployment binding, the inventory expands ACC-known exact directed interactions involving that Component Deployment.
+
+Projection rule:
+
+```text
+local component == Source      -> outgoing; remote = Destination
+local component == Destination -> incoming; remote = Source
+```
+
+If both participants are local to the selected scope, the same exact interaction may legitimately appear under both local component paths: outgoing under the source side and incoming under the destination side. The underlying interaction identity remains one exact ACC subject.
+
+Self-interaction or other direction semantics not covered by this rule remain deferred until accepted evidence requires them.
 
 ## Connectivity Relationship
 
@@ -199,6 +258,69 @@ One Component Deployment may resolve to one or more Resource references. The UI 
 
 If the remote Component is known but its Resource binding/realization is unknown, show an explicit unresolved technical realization state. Do not present that condition as "no connectivity".
 
+## Safe coarse summary contract
+
+`ReadScopedConnectivity` independently admits the coarse overview needed for the workspace. It does not admit protected details.
+
+For each exact interaction row, the composition may return:
+
+### Requirement summary for selected scope
+
+Scope: exact interaction + selected Responsibility Scope + `asOf`.
+
+Structured meaning:
+
+```text
+current = Required | None | Unknown
+historicalOnly = true | false | unknown
+coverage = Covered | Uncovered | NotCurrent | Unknown | NotApplicable
+```
+
+Rules:
+- `Required` means at least one Active Requirement stored under the selected scope is applicable at `asOf` for the exact interaction;
+- `None` means the authoritative query establishes no current Requirement under the selected scope;
+- historical/non-current Requirements may cause `historicalOnly=true`;
+- coverage uses the accepted I14 exact interaction matching and `asOf` semantics;
+- `NotApplicable` means there is no Requirement for which alignment is meaningful;
+- no Requirement ID, justification, audit, dependent detail or provenance is exposed by this coarse contract.
+
+### Decision summary for selected scope
+
+Scope: exact RuleSemanticIdentity + selected Responsibility Scope + `asOf`.
+
+```text
+Allowed
+NotAllowed
+NoFinalDecision
+Unknown
+```
+
+`NoFinalDecision` is an application/read absence result, not a third Connectivity Decision business outcome.
+
+No Decision ID, reason, evidence reference, deciding actor or provenance is exposed without `ReadConnectivityDecision`.
+
+### Policy summary
+
+Scope: exact RuleSemanticIdentity + `asOf`.
+
+Return structured fields rather than inventing one new policy status:
+
+```text
+ruleExists = Yes | No | Unknown
+operationalState = Active | Inactive | Unavailable
+effectiveAtAsOf = Yes | No | Unknown
+```
+
+When `ruleExists=No`, operational/effective fields are unavailable rather than fabricated.
+
+No Rule ID, Rule Governance Scope, EffectiveWindow value, decision correlation, properties or Rule audit is exposed without `ReadAccessRule`.
+
+### Detail authority
+
+Detailed Requirement, Decision and Rule sections continue to use their existing independent read authorities.
+
+This coarse contract exists specifically so a resource owner/responsible user can understand the connectivity landscape without being granted policy/security detail access.
+
 ## Independent truth/status dimensions
 
 Do not introduce one generic `Status` for a connectivity relationship.
@@ -216,14 +338,15 @@ Realization
 
 Source: Connectivity Requirements.
 
-Relevant facts may include:
+The table-level Need presentation is derived from the safe Requirement summary for the selected responsibility scope.
 
-- no current Requirement;
-- Required/current;
-- NotCurrent;
-- Unknown.
+Primary user labels may render:
+- `Required` when current=Required;
+- `—` / `No current need` when current=None and no historical-only fact is useful;
+- `Not current` when only non-current matching Requirements exist;
+- `Unknown` when authoritative Requirement state cannot be established.
 
-Requirement lifecycle remains `Active | Retired`; derived applicability/alignment is not lifecycle.
+Requirement lifecycle remains `Active | Retired`; these labels are a read projection, not a new Requirement lifecycle.
 
 ### Decision
 
@@ -235,7 +358,7 @@ Final business outcome remains exactly:
 Allowed | NotAllowed
 ```
 
-Absence, inaccessible data, ambiguity and runtime uncertainty are not third business outcomes.
+The overview may also show `No final decision` or `Unknown` as read/application results. Neither is a Connectivity Decision outcome.
 
 ### Decision process
 
@@ -260,6 +383,8 @@ Keep distinct:
 - Rule operational state `Active | Inactive`;
 - effective contribution at explicit `asOf`;
 - Requirement coverage `Covered | Uncovered | NotCurrent | Unknown`.
+
+The overview uses the structured safe Policy summary and may render compact text such as `Active / effective`, `Active / not effective`, `Inactive`, `No rule` or `Unknown`. These are presentation combinations of existing facts, not a new authoritative policy lifecycle.
 
 `Uncovered` must never be relabelled `Denied`.
 
@@ -336,6 +461,49 @@ Decision != Access Rule
 
 The UI must not force the user to navigate manually through Needs -> Compose Connectivity -> Rules merely because backend ownership is split.
 
+## First executable Request access cut
+
+I16A implements the contextual user-level operation only when the inventory already has one exact ACC-known interaction.
+
+The first executable path is:
+
+```text
+local Resource
+  -> bound local Component Deployment
+  -> existing exact ACC interaction
+  -> Request access
+```
+
+Behavior:
+- selected Responsibility Scope is reused;
+- local Component Deployment becomes the dependent concern when a new Requirement is needed;
+- exact source/destination/DCS identity is reused from the inventory row;
+- if no current Requirement exists and no historical/non-current Requirement blocks the simple path, the UI collects applicability + justification and declares the Requirement first;
+- if a current Requirement already exists, it is reused and is not rewritten;
+- the existing Access Rule Proposal flow is then invoked;
+- Allowed may materialize/resolve a Rule; NotAllowed creates no Rule;
+- if Requirement declaration succeeds but a later proposal step fails, the Requirement remains authoritative and the UI must state that partial outcome explicitly.
+
+This is an application orchestration over existing commands. It does not create a persistent Access Request identity/lifecycle.
+
+### Zero-interaction Components
+
+A Component with no ACC-known exact interaction has no trusted remote/DCS subject that NAPMS can currently propose.
+
+Therefore I16A does **not** show a fake Add Connectivity action for such a Component.
+
+Revisit trigger:
+- an accepted Application Communication Catalogue capability for authoring/selecting a new communication contract involving that Component; or
+- another trusted application-owned source of exact remote/DCS semantics.
+
+Until then:
+
+```text
+no ACC exact interaction
+!= missing Access Rule
+!= user-selectable arbitrary UUID/port combination
+```
+
 ## Interaction details
 
 Opening one relationship should provide progressively disclosed sections:
@@ -359,12 +527,24 @@ The inventory query is conceptually:
 actor from authenticated session
 selected responsibility scope
 explicit asOf
-page/search/filter/sort as needed
+resource page/pageSize
+search/filter/sort as needed
 ```
 
 The UI never supplies trusted actor identity.
 
-`asOf` is explicit at the composition boundary when temporal facts are evaluated.
+One explicit offset-aware `asOf` is used for:
+- `ReadScopedConnectivity` authority;
+- Resource Scope Affiliation;
+- Resource realization;
+- DeploymentResourceBinding;
+- Requirement currentness/alignment;
+- Decision effectiveness;
+- Rule effective-state evaluation.
+
+Top-level paging is over the effective local Resource set so Resource group rows are not split across pages. Child collections may be independently bounded, but any truncation must be explicit; silently dropping Component/interaction children is prohibited.
+
+The first I16A implementation uses a bounded ACC enrichment batch. If the child-set safety bound is exceeded, that enrichment is returned as unavailable/partial rather than returning a silently incomplete child list.
 
 ## Conceptual composition output
 
@@ -393,8 +573,8 @@ This shape is conceptual product meaning, not an API/DTO/database contract.
 
 ## Semantic contributors
 
-- Authority Management: scope/action authority and the future accepted local-resource responsibility relation.
-- Resource Catalogue: Resource/Endpoint identity and realization.
+- Authority Management: `ReadScopedConnectivity` scope admission and all other independent action authority.
+- Resource Catalogue: Resource Scope Affiliation plus Resource/Endpoint identity and realization.
 - Application Communication Catalogue: Component Deployment, DeploymentResourceBinding, DCS interaction/traffic semantics.
 - Connectivity Requirements: need truth.
 - Requirement-to-Policy Alignment: safe requirement-centric coverage.
@@ -404,28 +584,17 @@ This shape is conceptual product meaning, not an API/DTO/database contract.
 
 The composition owns no copied business truth.
 
-## Unknowns blocking implementation
-
-### P0 — responsibility scope -> Resource relation
-
-Must decide:
-
-- semantic owner;
-- relation identity;
-- temporal semantics;
-- cardinality;
-- whether one Resource may participate in multiple responsibility scopes;
-- how changes affect authority without changing Resource identity.
+## Remaining semantic gates
 
 ### P0 — asynchronous decision-process semantics
 
-Required only if the real I16 decision flow can remain pending across user interactions.
+Required only if the I16A Add Connectivity flow must persist across user interactions before a final Decision exists.
 
-Do not introduce a durable waiting state until this is closed.
+Do not introduce a durable waiting state until this is closed. It does not block the read-only inventory.
 
-### P1 — coarse status exposure
+### P1 — later fine-grained catalogue visibility
 
-Define which cross-context summaries are safe to expose when the actor lacks detailed read authority for the underlying Requirement/Decision/Rule.
+Current global foreign-catalogue read visibility is accepted. Fine-grained visibility remains deferred and does not block I16A.
 
 ## Non-goals
 
@@ -440,9 +609,15 @@ Define which cross-context summaries are safe to expose when the actor lacks det
 
 ## Acceptance examples
 
-### A — resource with no connectivity
+### A — resource with no catalogued interaction
 
-Given a selected responsibility scope contains Resource R and ACC binds Component Deployment A to R, and A has no known required/policy interactions, the inventory still shows R -> A with `No connectivity declared` and an admitted `Add connectivity` action.
+Given a selected responsibility scope contains Resource R and ACC binds Component Deployment A to R, but ACC has no exact directed interaction involving A, the inventory still shows R -> A and states that no catalogued communication interaction is known.
+
+I16A does not expose Add connectivity from this row because no trusted remote Component/DCS subject exists yet. That action remains gated by a future accepted ACC authoring/selection capability.
+
+### A2 — exact interaction without policy
+
+Given local Component A has an ACC-known exact interaction A -> B / HTTPS, but no current matching Rule exists, the inventory exposes contextual `Request access` when the coarse Need/Decision state does not make that action unsafe. The action reuses the selected scope and exact source/destination/DCS subject.
 
 ### B — outgoing covered access
 
@@ -467,3 +642,9 @@ Given a coarse decision summary is allowed by an accepted inventory contract but
 ### G — no invented waiting state
 
 Given proposal submission has no final Decision and no accepted persistent workflow model exists, the UI must not persist/display `Pending`, `Approved`, `Rejected` or `Under review` as business state.
+
+## Trace
+
+- Strategic ownership: `docs/domain/semantic-ownership.md`, `docs/domain/resource-role-model.md`, `docs/domain/capabilities.md`.
+- Architecture: `docs/architecture/scoped-connectivity-inventory.md`.
+- Executable examples: `docs/requirements/scoped-connectivity-inventory-acceptance-examples.md`.

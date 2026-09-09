@@ -1,6 +1,6 @@
 # Web UI requirements — connectivity workspace direction
 
-Status: accepted product/UX direction through I15; I16A semantics required before implementation.
+Status: `accepted product/UX direction through I16A WP-02`.
 
 Date: 2026-09-09.
 
@@ -45,7 +45,15 @@ Existing action-specific authority remains independent, including Connectivity R
 
 Ownership/responsibility must not be treated as implicit permission. Authority Management remains authoritative.
 
-The exact domain relation selected responsibility scope -> local Resources is a P0 semantic closure item for I16A and must be accepted before implementation.
+I16A accepts the local-side relation:
+
+    Resource Catalogue:
+    Resource -> Resource Scope Affiliation -> selected Responsibility Scope
+
+    Authority Management:
+    Actor -> ReadScopedConnectivity -> selected Responsibility Scope
+
+Resource membership and actor authority remain independent. `ReadScopedConnectivity` admits the coarse owner workspace but does not imply protected Requirement/Decision/Rule details or mutation actions.
 
 ## Current catalogue visibility baseline
 

@@ -1,6 +1,6 @@
 # Scoped Connectivity Inventory architecture boundary
 
-Status: accepted application-composition direction; responsibility-scope -> Resource semantic owner remains an I16A blocker.
+Status: `accepted I16A WP-02 application-composition boundary`.
 
 Date: 2026-09-09.
 
@@ -39,30 +39,32 @@ Later contributors:
 1. Every contributing fact is obtained through an application/consumer-owned port or an accepted composition boundary.
 2. The composition must not read another module's persistence tables directly to bypass semantic ownership.
 3. The composition owns no copied business truth and does not create a new lifecycle.
-4. A selected responsibility scope must be resolved to local Resources through the semantic owner accepted by I16A WP-01.
-5. Until that owner is accepted, implementation of local-resource derivation is gated.
+4. A selected responsibility scope is admitted by Authority Management action `ReadScopedConnectivity`.
+5. Resource Catalogue owns effective `Resource Scope Affiliation` and therefore resolves local Resources for the admitted scope.
 6. Remote Resource/Component catalogue data is readable under the current product visibility baseline.
 7. Protected Requirement/Decision/Rule details remain governed by their existing read semantics.
 8. Coarse cross-context statuses require an explicit safe-read rule and must not be obtained by accidental data leakage.
 9. Temporal facts are correlated for one explicit logical asOf.
 10. Missing/stale/ambiguous contributor data produces explicit partial/unknown presentation semantics; it must not be silently converted to false absence.
 
-## Local-side derivation seam
+## Local-side derivation
 
-Accepted product need:
+Accepted I16A model:
 
-    selected responsibility scope
-        -> local Resources
+    actor
+      -> Authority Management: ReadScopedConnectivity(scope, asOf)
+      -> Resource Catalogue: effective Resource Scope Affiliations(scope, asOf)
+      -> local Resources
 
-Unknown before I16A WP-01:
+Rules:
+- ambiguous/unknown scope authority fails closed before local inventory data is returned;
+- Resource Scope Affiliation is temporal, non-identity and may be many-to-many;
+- actor authority does not manufacture Resource membership;
+- Resource membership does not manufacture actor authority;
+- catalogue visibility is independent;
+- stored Requirement/Decision/Rule governance scopes are not rewritten when Resource affiliation changes.
 
-- semantic owner of the relation;
-- relation identity/cardinality;
-- temporal semantics;
-- relationship to Authority Management assignments;
-- whether one Resource may participate in multiple responsibility scopes.
-
-Do not encode this unknown as Resource.owner_id, Resource.scope_id or an equivalent persistence shortcut before domain closure.
+No standalone Scope aggregate/hierarchy is required by I16A. The stable Responsibility Scope reference is the correlation value shared across owner contracts.
 
 ## Catalogue correlation
 
@@ -85,15 +87,50 @@ The UI-local direction is a projection relative to the selected local side and d
 
 ## Protected-status composition
 
-Requirement-to-Policy Alignment already demonstrates the preferred pattern: a composition may expose a safe derived result without exposing protected Rule details.
+The composition has one explicit coarse-read authority boundary: `ReadScopedConnectivity`.
 
-I16A must define equivalent rules for any inventory summary that includes:
+After scope admission, consumer-owned ports may return only the safe summaries accepted by `docs/requirements/scoped-connectivity-inventory.md`:
 
-- Requirement presence/currentness;
-- Connectivity Decision outcome;
-- Rule presence/state/effectiveness.
+- selected-scope Requirement currentness/alignment without Requirement identity/reason/history;
+- selected-scope final Decision outcome/absence without Decision identity/reason/provenance;
+- exact-interaction Rule existence/state/effectiveness without Rule identity/governance scope/provenance.
 
-If the actor lacks the detailed read authority, the composition either returns an explicitly admitted coarse result or withholds/marks the dimension unavailable. It must never infer permission from catalogue visibility.
+Detailed reads remain independently protected by `ReadConnectivityRequirement`, `ReadConnectivityDecision` and `ReadAccessRule`.
+
+Catalogue global visibility is never used as a substitute for those protected read contracts.
+
+## Consumer-owned ports
+
+The application composition should depend on narrow consumer-owned ports with semantics equivalent to:
+
+- scope admission/discovery: list/check effective `ReadScopedConnectivity` scopes;
+- Resource membership: page effective Resource Scope Affiliations for one scope/asOf and batch resolve Resource presentation/realization;
+- ACC correlation: batch resolve Component Deployments bound to returned Resources and list exact DCS interactions involving those deployments;
+- Requirement summary: batch coarse selected-scope need/alignment by exact interaction/asOf;
+- Decision summary: batch coarse selected-scope effective Decision by exact subject/asOf;
+- Policy summary: batch coarse Rule existence/operational/effective facts by exact subject/asOf.
+
+Names above describe responsibilities, not mandatory class/API names.
+
+No composition adapter may bypass these contracts with cross-module SQL joins.
+
+## Evaluation order
+
+Recommended read order:
+
+1. authenticate actor outside the composition;
+2. validate offset-aware `asOf`;
+3. admit selected scope through `ReadScopedConnectivity`;
+4. page local Resources from Resource Catalogue scope affiliation;
+5. enrich local Resource realization;
+6. correlate effective ACC deployment bindings;
+7. expand exact ACC interactions for local Component Deployments;
+8. resolve remote Resource bindings/realization;
+9. enrich Need / Decision / Policy summaries independently.
+
+Failure before step 4 returns no local inventory data.
+
+Failures in later independent enrichments should preserve trustworthy base rows and mark only affected dimensions unresolved/unknown where the requirement contract permits partial results.
 
 ## Query shape
 
@@ -101,8 +138,9 @@ Conceptual query:
 
     actor from authenticated session
     selected responsibility scope
-    asOf
-    paging/search/filter/sort
+    explicit offset-aware asOf
+    top-level Resource paging
+    search/filter/sort
 
 Conceptual result:
 
@@ -127,8 +165,12 @@ The first implementation should optimize for a minimal useful owner workspace, n
 Requirements:
 
 - server-bounded result size;
+- top-level paging is over effective local Resources;
+- Resource group rows are never split across top-level pages;
+- child collections may be separately bounded only with explicit truncation/continuation metadata;
+- the first I16A adapter applies a hard safety bound of 2000 rows to each ACC child-enrichment batch; exceeding the bound returns that enrichment as unavailable/partial rather than silently truncating it;
 - server-side search/filter for potentially unbounded catalogues;
-- stable paging semantics;
+- stable paging semantics at one asOf;
 - no N+1 remote owner calls where a bounded batch port can preserve the same semantics;
 - fail-soft presentation enrichment may fall back to stable IDs only where the underlying authorized business result is already known;
 - no persistent read-store/cache is required by this document. Introduce one only if measured workload or consistency requirements justify it.
@@ -151,7 +193,7 @@ If decision acquisition is asynchronous, the persistent/process semantics must b
 
 Recommended I16A cut:
 
-1. close responsibility scope -> Resource semantics;
+1. implement Resource Scope Affiliation + ReadScopedConnectivity core contracts from accepted WP-01 semantics;
 2. implement read-only Scoped Connectivity Inventory;
 3. expose HTTP read contract;
 4. build Connectivity tree-grid;

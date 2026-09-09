@@ -3,6 +3,9 @@ from uuid import UUID
 from psycopg import Connection, Error as PsycopgError
 from psycopg.errors import UniqueViolation
 
+from napms.access_policy.application.inventory_summary import (
+    AccessRuleInventorySnapshot,
+)
 from napms.access_policy.application.ports import (
     AccessRuleCommitOutcomeUnknown,
     AccessRulePersistenceError,
@@ -63,6 +66,75 @@ class PostgresAccessRuleRepository:
             ).fetchone()
             return self._hydrate(row) if row is not None else None
         except PsycopgError as exc:
+            raise AccessRulePersistenceError() from exc
+
+    def find_inventory_summaries(
+        self,
+        identities: tuple[RuleSemanticIdentity, ...],
+    ) -> tuple[AccessRuleInventorySnapshot, ...]:
+        if not identities:
+            return ()
+        try:
+            sources = [
+                value.source_component_deployment_id for value in identities
+            ]
+            destinations = [
+                value.destination_component_deployment_id for value in identities
+            ]
+            revisions = [
+                value.dcs_contract_revision_id for value in identities
+            ]
+            rows = self._connection.execute(
+                """
+                WITH wanted AS (
+                    SELECT *
+                    FROM unnest(
+                        %s::uuid[],
+                        %s::uuid[],
+                        %s::uuid[]
+                    ) AS value(source_id, destination_id, dcs_id)
+                )
+                SELECT
+                    r.source_component_deployment_id,
+                    r.destination_component_deployment_id,
+                    r.dcs_contract_revision_id,
+                    r.operational_state,
+                    w.start_at,
+                    w.end_at
+                FROM napms_access_policy.access_rules AS r
+                JOIN wanted AS wanted
+                  ON wanted.source_id = r.source_component_deployment_id
+                 AND wanted.destination_id = r.destination_component_deployment_id
+                 AND wanted.dcs_id = r.dcs_contract_revision_id
+                LEFT JOIN napms_access_policy.access_rule_effective_windows AS w
+                  ON w.rule_id = r.rule_id
+                ORDER BY
+                    r.source_component_deployment_id,
+                    r.destination_component_deployment_id,
+                    r.dcs_contract_revision_id
+                """,
+                (sources, destinations, revisions),
+            ).fetchall()
+            snapshots = []
+            for row in rows:
+                window = (
+                    None
+                    if row[4] is None and row[5] is None
+                    else EffectiveWindow(row[4], row[5])
+                )
+                snapshots.append(
+                    AccessRuleInventorySnapshot(
+                        semantic_identity=RuleSemanticIdentity(
+                            source_component_deployment_id=row[0],
+                            destination_component_deployment_id=row[1],
+                            dcs_contract_revision_id=row[2],
+                        ),
+                        operational_state=OperationalState(row[3]),
+                        effective_window=window,
+                    )
+                )
+            return tuple(snapshots)
+        except (PsycopgError, ValueError, DomainInvariantError) as exc:
             raise AccessRulePersistenceError() from exc
 
     def get_by_id(self, rule_id: UUID) -> AccessRule | None:

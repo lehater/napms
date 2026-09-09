@@ -376,3 +376,37 @@ def test_postgres_commit_failure_maps_to_unknown_outcome():
 
     with pytest.raises(RequirementCommitOutcomeUnknown):
         repository.commit()
+
+
+
+def test_batch_inventory_summary_filters_scope_and_exact_interaction(
+    postgres_dsn,
+):
+    selected = requirement(UUID(int=9101), scope="scope-a")
+    other_scope = requirement(UUID(int=9102), scope="scope-b")
+    other_interaction = RequiredSemanticInteraction(
+        UUID(int=201),
+        UUID(int=202),
+        UUID(int=203),
+    )
+    other = requirement(
+        UUID(int=9103),
+        scope="scope-a",
+        dependent=other_interaction.source_component_deployment_id,
+        interaction=other_interaction,
+    )
+    for value in (selected, other_scope, other):
+        persist(postgres_dsn, value)
+
+    with psycopg.connect(postgres_dsn) as connection:
+        repository = PostgresConnectivityRequirementRepository(connection)
+        summaries = repository.list_inventory_summaries(
+            governance_scope="scope-a",
+            interactions=(INTERACTION,),
+        )
+
+    assert len(summaries) == 1
+    assert summaries[0].governance_scope == "scope-a"
+    assert summaries[0].required_interaction == INTERACTION
+    assert summaries[0].lifecycle_state is RequirementLifecycleState.ACTIVE
+    assert summaries[0].applicability == RequirementApplicability.ongoing()

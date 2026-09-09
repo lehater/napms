@@ -144,6 +144,19 @@ For one authorized RuleGovernanceScope and logical `asOf`, the Access Policy pro
 
 ## Authority Management
 
+### Responsibility Scope
+Stable scope reference used to correlate domain responsibility/authority with Resource affiliation.
+
+In the first I16A model it is a reference value, not a standalone aggregate with its own hierarchy/lifecycle.
+
+```text
+same Responsibility Scope reference
+    Resource Catalogue -> Resource membership
+    Authority Management -> Actor/action authority
+```
+
+The shared reference does not merge semantic ownership between those contexts.
+
 ### Authority
 Effective domain eligibility/power of an Actor to perform a domain action for a Scope at an effective time.
 
@@ -159,6 +172,17 @@ Authority
 ### Responsibility Assignment
 The scoped, time-qualified assignment that establishes or explains an Actor's domain responsibility and resulting authority.
 
+It connects an Actor/action to a Responsibility Scope. It does not state which Resources belong to that scope.
+
+### ReadScopedConnectivity
+Independent Authority Management action permitting an Actor to use one Responsibility Scope as the local context of the Scoped Connectivity Inventory at an effective time.
+
+It does not imply:
+- catalogue mutation;
+- Requirement read/mutation;
+- Connectivity Decision read/decision authority;
+- Access Rule read/mutation.
+
 ## Resource Catalogue
 
 ### Resource
@@ -173,6 +197,24 @@ Resource
 
 ### Resource Endpoint
 Current/effective network-address realization through which a Resource participates in governed communication.
+
+### Resource Scope Affiliation
+Resource Catalogue-owned, time-qualified relation stating that one existing Resource belongs to one Responsibility Scope for an effective interval.
+
+```text
+Resource
++ Responsibility Scope reference
++ [validFrom, validUntil)
++ provenance
+```
+
+Properties:
+- not part of Resource identity;
+- may change/end without replacing the Resource;
+- one Resource may be affiliated with multiple Responsibility Scopes at the same time;
+- does not grant actor authority;
+- does not define catalogue visibility;
+- does not silently rewrite stored Requirement/Decision/Rule governance scopes.
 
 ## Application Communication Catalogue
 
@@ -315,6 +357,30 @@ No-op
 
 ### Policy Algebra
 Internal APR semantics for overlap, containment, coverage, equivalence, ordered effective regions, semantic difference and witnesses.
+
+## Scoped Connectivity Inventory
+
+### Scoped Connectivity Inventory
+Non-peer application/read composition for one actor-admitted Responsibility Scope and logical time.
+
+It derives local Resources from effective Resource Scope Affiliations, correlates bound Component Deployments/interactions, and presents independently owned Need/Decision/Policy summaries.
+
+```text
+Scoped Connectivity Inventory
+!= Bounded Context
+!= aggregate
+!= authoritative Connectivity Status
+```
+
+### Local Resource
+UI/application projection term for a Resource effectively affiliated with the selected Responsibility Scope.
+
+It is not a new Resource subtype or ownership field.
+
+### Remote Resource
+UI/application projection term for a Resource on the opposite side of a displayed Component interaction relative to one Local Resource.
+
+Under the current product baseline foreign catalogue Resources remain readable; Remote Resource does not imply foreign authority.
 
 ## Proposal use case
 
