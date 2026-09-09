@@ -141,6 +141,13 @@ class ConnectivityRequirementRepository(Protocol):
         limit: int,
     ) -> tuple[ConnectivityRequirement, ...]: ...
 
+    def list_by_scope_and_interactions(
+        self,
+        *,
+        governance_scope: str,
+        interactions: tuple[RequiredSemanticInteraction, ...],
+    ) -> tuple[ConnectivityRequirement, ...]: ...
+
     def add(self, requirement: ConnectivityRequirement) -> None: ...
 
     def save(
