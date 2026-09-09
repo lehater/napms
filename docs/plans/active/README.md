@@ -1,8 +1,8 @@
 # Active execution
 
-Current: `PLAN-037 — I23 Optional Integration Extension Skeleton`.
+Current: `PLAN-037-i23-enterprise-identity-authoritative-sources.md`.
 
-Current task: align I23 to local-first operation and close the lightweight extension skeleton.
+Current task: verify and close I23 Optional Integration Extension Skeleton.
 
 Goal: keep the current local authentication and local data sources as the supported product mode while retaining only minimal dormant seams for possible future external identity/source adapters.
 
@@ -12,7 +12,8 @@ Working set:
 - `docs/architecture/enterprise-identity-authoritative-sources-boundary.md`;
 - `src/napms/runtime/enterprise_identity.py`;
 - `tests/runtime/test_enterprise_identity.py`;
-- `docs/engineering/post-wave1-product-completion-roadmap.md`.
+- `docs/engineering/post-wave1-product-completion-roadmap.md`;
+- `docs/architecture/current-architecture.md`.
 
 Accepted direction:
 - `LocalPasswordAuthenticator` remains the primary authentication path;
@@ -30,6 +31,6 @@ Implemented skeleton:
 - explicit `Mapped | Unmapped | Ambiguous | Unknown` fail-closed outcomes;
 - focused unit tests.
 
-Gate: verify the small skeleton, update roadmap/current architecture if needed, then close I23. Real external integrations remain future optional work triggered only by a concrete accepted requirement.
+Gate: repository verification for the completed local-first skeleton. Real external integrations remain future optional work triggered only by a concrete accepted requirement.
 
-Next action: correct the roadmap so external integration is no longer a mandatory predecessor to later product work, then run/obtain the relevant verification gate for the existing skeleton.
+Next action: obtain clean repository gates, absorb I23 as complete, remove the active plan, and promote I24 Local Deployment and Operational Hardening.
