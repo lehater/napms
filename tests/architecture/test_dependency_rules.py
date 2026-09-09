@@ -10,6 +10,7 @@ AUTHORITY_MANAGEMENT = NAPMS / "authority_management"
 APPLICATION_CATALOGUE = NAPMS / "application_catalogue"
 RESOURCE_CATALOGUE = NAPMS / "resource_catalogue"
 CONNECTIVITY_REQUIREMENTS = NAPMS / "connectivity_requirements"
+REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
 
 DOMAIN_LAYERS = (
     ACCESS_POLICY / "domain",
@@ -24,6 +25,7 @@ APPLICATION_LAYERS = (
     APPLICATION_CATALOGUE / "application",
     RESOURCE_CATALOGUE / "application",
     CONNECTIVITY_REQUIREMENTS / "application",
+    REQUIREMENT_POLICY_ALIGNMENT / "application",
     NAPMS / "policy_export" / "application",
 )
 CORE_LAYERS = DOMAIN_LAYERS + APPLICATION_LAYERS
@@ -149,4 +151,20 @@ def test_bounded_context_core_does_not_import_another_bounded_context():
                         and not module.startswith(owned_prefix)
                     ):
                         violations.append((path, owned_prefix, module))
+    assert violations == []
+
+
+
+def test_alignment_application_does_not_import_source_bounded_contexts():
+    violations = []
+    layer = REQUIREMENT_POLICY_ALIGNMENT / "application"
+    for path in layer.rglob("*.py"):
+        for module in imported_modules(path):
+            if module.startswith(
+                (
+                    "napms.connectivity_requirements",
+                    "napms.access_policy",
+                )
+            ):
+                violations.append((path, module))
     assert violations == []
