@@ -65,6 +65,48 @@ class PostgresAccessRuleRepository:
         except PsycopgError as exc:
             raise AccessRulePersistenceError() from exc
 
+    def find_by_identities(
+        self,
+        identities: tuple[RuleSemanticIdentity, ...],
+    ) -> tuple[AccessRule, ...]:
+        if not identities:
+            return ()
+        try:
+            sources = [
+                value.source_component_deployment_id for value in identities
+            ]
+            destinations = [
+                value.destination_component_deployment_id for value in identities
+            ]
+            revisions = [
+                value.dcs_contract_revision_id for value in identities
+            ]
+            rows = self._connection.execute(
+                f"""
+                WITH wanted AS (
+                    SELECT *
+                    FROM unnest(
+                        %s::uuid[],
+                        %s::uuid[],
+                        %s::uuid[]
+                    ) AS value(source_id, destination_id, dcs_id)
+                )
+                SELECT {_COLUMNS}
+                FROM napms_access_policy.access_rules AS r
+                JOIN wanted AS w
+                  ON w.source_id = r.source_component_deployment_id
+                 AND w.destination_id = r.destination_component_deployment_id
+                 AND w.dcs_id = r.dcs_contract_revision_id
+                ORDER BY r.rule_id
+                """,
+                (sources, destinations, revisions),
+            ).fetchall()
+            return tuple(self._hydrate(row) for row in rows)
+        except AccessRulePersistenceError:
+            raise
+        except (PsycopgError, ValueError, DomainInvariantError) as exc:
+            raise AccessRulePersistenceError() from exc
+
     def get_by_id(self, rule_id: UUID) -> AccessRule | None:
         try:
             row = self._connection.execute(
