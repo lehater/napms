@@ -2,7 +2,7 @@
 
 Current: `PLAN-038-i24-local-deployment-hardening.md`
 
-Current task: WP-1 local runtime security baseline.
+Current task: WP-1 local runtime security baseline verification.
 
 Goal: harden the supported local Docker Compose deployment without introducing enterprise infrastructure or changing product/domain semantics.
 
@@ -11,20 +11,20 @@ Goal: harden the supported local Docker Compose deployment without introducing e
 Read first:
 - `docs/plans/active/PLAN-038-i24-local-deployment-hardening.md`
 - `compose.yaml`
-- `.env.example`
-- `tools/dev_compose.py`
-- `docs/engineering/post-wave1-product-completion-roadmap.md`
+- `tools/verify_local_postgres_auth.py`
+- `.github/workflows/docker.yml`
+- `docs/engineering/local-docker-runtime.md`
 
-Expand only as needed into `README.md`, Dockerfiles, workflow smoke gates and current engineering/architecture state.
+Expand only as needed into `.env.example`, `Makefile`, `README.md` and canonical current engineering/architecture state.
 
 ## Blockers
 
-None for WP-1. External secret stores, enterprise TLS/HA and corporate identity remain explicitly out of scope.
+None for WP-1 verification. A pre-I24 database volume may legitimately fail the new check because PostgreSQL initialization settings persist in the volume; needed data must be backed up before recreation/migration.
 
 ## Gate
 
-Preserve the current local login/session behavior and loopback-only public ingress. Replace only the avoidable PostgreSQL trust boundary, with deterministic Docker smoke evidence before moving to backup/restore.
+Fresh local Compose must initialize PostgreSQL with SCRAM host authentication, accept the generated/configured password, reject a deliberately wrong password, preserve local UI login/session behavior and keep public ingress loopback-only.
 
 ## Next
 
-Change Compose/database credential handling so `make dev-up` injects an ephemeral PostgreSQL password and raw Compose requires an explicit non-committed override; update operator documentation and tests/gates accordingly.
+Run repository gates for WP1. If green, mark WP1 done and implement WP2 logical PostgreSQL backup/restore tooling and recovery proof.
