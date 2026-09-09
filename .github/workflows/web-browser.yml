@@ -1,0 +1,96 @@
+name: web browser quality gate
+
+on:
+  pull_request:
+    types: [ready_for_review]
+    paths:
+      - "web/**"
+      - "compose.yaml"
+      - "Dockerfile"
+      - "src/napms/runtime/**"
+      - "src/napms/composition/**"
+      - "src/napms/access_policy/adapters/postgres/migrations/**"
+      - "src/napms/authority_management/adapters/postgres/migrations/**"
+      - "src/napms/application_catalogue/adapters/postgres/migrations/**"
+      - "src/napms/resource_catalogue/adapters/postgres/migrations/**"
+      - "src/napms/connectivity_requirements/adapters/postgres/migrations/**"
+      - "src/napms/connectivity_decision/adapters/postgres/migrations/**"
+      - ".github/workflows/web-browser.yml"
+  workflow_dispatch:
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    env:
+      NAPMS_LOCAL_AUTH_LOGIN: ui-test
+      NAPMS_LOCAL_AUTH_ACTOR_ID: ui-test
+      NAPMS_E2E_LOGIN: ui-test
+      NAPMS_E2E_PASSWORD: ui-test-password
+      NAPMS_E2E_BASE_URL: http://127.0.0.1:8080
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Prepare ephemeral browser-test credentials
+        run: |
+          python - <<'PY'
+          import os
+          from tools.dev_compose import hash_password
+
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env:
+              env.write(
+                  "NAPMS_LOCAL_AUTH_PASSWORD_HASH="
+                  + hash_password(os.environ["NAPMS_E2E_PASSWORD"])
+                  + "\n"
+              )
+          PY
+
+      - name: Start real local Docker stack
+        run: |
+          docker compose down --volumes --remove-orphans || true
+          docker compose up --build --detach --remove-orphans
+
+      - name: Wait for public UI
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:8080/health/ready >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose ps
+          exit 1
+
+      - name: Install browser test tooling
+        working-directory: web
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Run browser UI quality suite
+        working-directory: web
+        run: npm run test:e2e
+
+      - name: Upload browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-browser-quality
+          path: |
+            web/playwright-report
+            web/test-results
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Docker diagnostics
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Stop local stack
+        if: always()
+        run: docker compose down --volumes --remove-orphans
