@@ -109,13 +109,18 @@ class Provenance:
     references: tuple[str, ...]
 
     def __post_init__(self) -> None:
+        normalized = _normalize_references(
+            self.references,
+            field_name="provenance reference",
+        )
+        if not normalized:
+            raise PlacementInvariantError(
+                "provenance must contain at least one reference"
+            )
         object.__setattr__(
             self,
             "references",
-            _normalize_references(
-                self.references,
-                field_name="provenance reference",
-            ),
+            normalized,
         )
 
     def merged(

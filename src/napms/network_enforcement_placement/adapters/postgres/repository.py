@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from psycopg import Connection, Error as PsycopgError
@@ -410,10 +411,24 @@ class PostgresPlacementKnowledgeRepository:
     @staticmethod
     def _datetime(
         value: str,
-    ):
-        return __import__(
-            "datetime"
-        ).datetime.fromisoformat(value)
+    ) -> datetime:
+        if not isinstance(value, str):
+            raise PlacementPersistenceError(
+                "persisted datetime must be an ISO-8601 string"
+            )
+        return datetime.fromisoformat(value)
+
+    @staticmethod
+    def _boolean(
+        value,
+        *,
+        field_name: str,
+    ) -> bool:
+        if not isinstance(value, bool):
+            raise PlacementPersistenceError(
+                f"persisted {field_name} must be a boolean"
+            )
+        return value
 
     @classmethod
     def _hydrate_window(
@@ -603,13 +618,15 @@ class PostgresPlacementKnowledgeRepository:
                 for item
                 in value["attachments"]
             ),
-            complete_for_pair=bool(
-                value["complete_for_pair"]
+            complete_for_pair=cls._boolean(
+                value["complete_for_pair"],
+                field_name="complete_for_pair",
             ),
-            complete_for_attachments=bool(
+            complete_for_attachments=cls._boolean(
                 value[
                     "complete_for_attachments"
-                ]
+                ],
+                field_name="complete_for_attachments",
             ),
             knowledge_gaps=tuple(
                 KnowledgeGap(

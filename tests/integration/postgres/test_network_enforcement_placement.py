@@ -20,6 +20,9 @@ from napms.network_enforcement_placement.adapters.local_import import (
 from napms.network_enforcement_placement.adapters.postgres import (
     PostgresPlacementKnowledgeRepository,
 )
+from napms.network_enforcement_placement.application.ports import (
+    PlacementPersistenceError,
+)
 from napms.network_enforcement_placement.application.record import (
     RecordPlacementKnowledge,
     RecordPlacementKnowledgeOutcome,
@@ -373,4 +376,77 @@ def test_database_rejects_capture_mutation(
                 UPDATE napms_network_enforcement_placement.knowledge_captures
                 SET source_reference = 'rewritten'
                 """
+            )
+
+
+def test_corrupt_persisted_completeness_fails_closed(
+    postgres_dsn,
+    greenfield_config,
+):
+    command = normalize()
+    with psycopg.connect(
+        postgres_dsn
+    ) as connection:
+        repository = (
+            PostgresPlacementKnowledgeRepository(
+                connection
+            )
+        )
+        RecordPlacementKnowledge(
+            captures=repository
+        ).execute(command)
+
+    with psycopg.connect(
+        postgres_dsn,
+        autocommit=True,
+    ) as connection:
+        connection.execute(
+            """
+            DROP TRIGGER trg_nep_capture_immutable
+            ON napms_network_enforcement_placement.knowledge_captures
+            """
+        )
+        connection.execute(
+            """
+            UPDATE napms_network_enforcement_placement.knowledge_captures
+            SET payload = jsonb_set(
+                payload,
+                '{complete_for_pair}',
+                '"true"'::jsonb
+            )
+            """
+        )
+
+    try:
+        with psycopg.connect(
+            postgres_dsn
+        ) as connection:
+            repository = (
+                PostgresPlacementKnowledgeRepository(
+                    connection
+                )
+            )
+            with pytest.raises(
+                PlacementPersistenceError
+            ):
+                repository.load_for(
+                    relation=command.relation,
+                    as_of=AS_OF,
+                )
+    finally:
+        from importlib.resources import files
+
+        migration = files(
+            "napms.network_enforcement_placement.adapters.postgres"
+        ).joinpath(
+            "migrations/0001_knowledge_captures.sql"
+        )
+        with psycopg.connect(
+            postgres_dsn,
+            autocommit=True,
+        ) as connection:
+            connection.execute(
+                migration.read_text(
+                    encoding="utf-8"
+                )
             )

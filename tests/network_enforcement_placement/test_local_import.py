@@ -193,3 +193,18 @@ def test_multiple_paths_shape_is_rejected_in_first_slice():
                 json.dumps(value)
             )
         )
+
+
+def test_empty_fact_provenance_is_rejected():
+    value = document()
+    value["path"]["provenance"] = []
+
+    with pytest.raises(
+        LocalPlacementKnowledgeImportError
+    ):
+        (
+            LocalPlacementKnowledgeImportAdapter()
+            .normalize(
+                json.dumps(value)
+            )
+        )
