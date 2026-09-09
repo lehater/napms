@@ -4,38 +4,36 @@ Current: `PLAN-016B-i16b-connectivity-decision-runtime.md`
 
 Goal: replace the transitional local Decision provider with the accepted durable Connectivity Decision runtime while preserving the completed I16A architecture.
 
-Current task: WP4 — expose authorized durable Decision participant record/list/detail runtime without introducing a pending workflow state.
+Current task: WP5 — integrate authorized final Decision behavior into the current I16A Web information architecture.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-016B-i16b-connectivity-decision-runtime.md`
-- `docs/architecture/connectivity-decision-boundary.md`
 
-Expand only into `docs/engineering/http-api-contract.md`, current Decision application use cases, Authority/ACC adapters, FastAPI runtime/composition and Decision HTTP acceptance tests when a concrete WP4 question requires them.
+Expand only into `docs/requirements/web-ui-requirements.md`, current Web connectivity/navigation/API files and Decision HTTP tests when a concrete WP5 question requires them.
 
 ## Blockers
 
-None. The accepted model owns only final `Allowed | NotAllowed`; no pending/approval queue state may be introduced for UI convenience.
+None. The accepted UI must preserve Connectivity as the primary resource-centric workspace and must not invent Pending/approval lifecycle semantics.
 
 ## Gate
 
-WP3 green evidence on commit `da9fd0036412e7419b2a61c2dacb871c1e85efb3`:
-- core gate #85 — success;
-- postgres persistence gate #70 — success;
-- docker local runtime gate #44 — success;
-- harness gate #90 — success.
+WP4 green evidence on commit `89d73515b52c2ec12d4734cf8f6bab2c4f0324b6`:
+- core gate #87 — success;
+- postgres persistence gate #72 — success;
+- docker local runtime gate #46 — success;
+- harness gate #92 — success.
 
-WP3 now proves:
-- Scoped Connectivity obtains Decision summaries from the durable Decision BC;
-- exact subjects are batch-read under selected responsibility scope + logical asOf;
-- Allowed/NotAllowed are projected as coarse final outcomes;
-- authoritative absence is NoFinalDecision;
-- ambiguity is Unknown;
-- persistence failure marks only the Decision enrichment unavailable/partial;
-- protected Decision ID/reason/evidence/actor/provenance do not cross the coarse inventory contract;
-- the I16A deferred Decision adapter has been removed.
+WP4 now proves:
+- independent DecideConnectivity and ReadConnectivityDecision authority;
+- authorized Decision scope and exact ACC subject discovery;
+- direct final Allowed/NotAllowed recording;
+- durable authorized list/detail with reason, evidence, validity, supersession and provenance;
+- authenticated actor, decision time and authority reference are server-owned;
+- Decision persistence uncertainty has explicit 503 handling;
+- no pending/work-queue lifecycle was introduced.
 
 ## Next
 
-Execute WP4 only: wire Decision authority and ACC subject adapters into current composition, expose authorized final record/list/detail HTTP contracts, preserve server-owned actor/time/provenance, and keep Web/participant workspace out of scope until runtime gates are green.
+Execute WP5 only: add the specialized Decisions Web workspace and connect existing contextual product flows to the real Decision runtime where semantics are already accepted. Preserve current Connectivity-first IA; do not start WP6 local-seed/removal work until Web behavior is green.

@@ -108,7 +108,7 @@ proposal -> durable Decision -> Access Rule works on current main without `local
 Exit:
 the primary Connectivity workspace receives real `Allowed | NotAllowed | NoFinalDecision | Unknown` summary truth.
 
-### WP4 — Decision participant HTTP/runtime boundary
+### WP4 — Decision participant HTTP/runtime boundary — done
 
 - add authorized scope discovery for `DecideConnectivity` and `ReadConnectivityDecision`;
 - add exact subject discovery/validation through ACC;
@@ -191,4 +191,4 @@ None at the semantic/design level. Gate failures discovered during implementatio
 
 ## Next
 
-Execute WP4 Decision participant HTTP/runtime boundary. Keep Web work out of scope until the authorized record/list/detail runtime is green.
+Execute WP5 Current Web integration against the green Decision participant runtime. Preserve Connectivity as the primary post-login workspace and do not resurrect the historical Compose-first shell.
