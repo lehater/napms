@@ -70,6 +70,15 @@ class ExecuteNetworkOperation:
             operation_id=command.operation_id,
         )
         provenance.append(applied.operation_reference)
+        if applied.status is ApplyStatus.PRECONDITION_FAILED:
+            return self._finish(
+                command,
+                outcome=OperationOutcome.PRECONDITION_FAILED,
+                pre_state=pre,
+                apply_result=applied,
+                reason=applied.reason or "target revision changed before apply",
+                provenance=tuple(provenance),
+            )
         if applied.status is ApplyStatus.REJECTED:
             return self._finish(
                 command,
