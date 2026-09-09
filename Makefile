@@ -13,7 +13,7 @@ docker-build:
 	NAPMS_POSTGRES_PASSWORD=local-build-placeholder docker compose build
 
 dev-up:
-	@NAPMS_POSTGRES_PASSWORD="$$(python -c 'import secrets; print(secrets.token_urlsafe(24))')" sh -c 'python tools/prepare_local_postgres.py && python tools/dev_compose.py up && python tools/verify_local_postgres_auth.py'
+	@NAPMS_POSTGRES_PASSWORD="$$(python -c 'import secrets; print(secrets.token_urlsafe(24))')" sh -c 'python tools/prepare_local_postgres.py && python tools/local_start.py up && python tools/verify_local_postgres_auth.py'
 
 dev-down:
 	NAPMS_POSTGRES_PASSWORD=local-command-placeholder docker compose down --remove-orphans
