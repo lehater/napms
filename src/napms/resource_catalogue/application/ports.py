@@ -21,6 +21,19 @@ class ResourceCatalogueRepository(Protocol):
 
     def has_realization_facts(self, *, resource_reference: str) -> bool: ...
 
+    def find_effective_realizations_for_resources(
+        self,
+        *,
+        resource_references: tuple[str, ...],
+        as_of: datetime,
+    ) -> tuple[ResourceRealizationVersion, ...]: ...
+
+    def find_resources_with_realization_facts(
+        self,
+        *,
+        resource_references: tuple[str, ...],
+    ) -> tuple[str, ...]: ...
+
 
 
 class ResourceScopeAffiliationRepository(Protocol):
