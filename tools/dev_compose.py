@@ -49,7 +49,7 @@ def wait_ready(base_url: str) -> None:
             ) as response:
                 if response.status == 200:
                     return
-        except (urllib.error.URLError, TimeoutError) as exc:
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
             last_error = exc
         time.sleep(1)
     raise RuntimeError(f"NAPMS public readiness did not become healthy: {last_error}")
