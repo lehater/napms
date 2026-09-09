@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline; I22 complete, I23 next`.
+Status: `accepted ordered sequencing baseline; I22 complete, I23 lightweight extension skeleton active`.
 
 Date: 2026-09-10.
 
@@ -33,15 +33,22 @@ Completed:
 - PostgreSQL persistence;
 - Web/HTTP runtime;
 - Dockerized local runtime;
+- local username/password authentication with server-side sessions;
 - human-readable catalogue UX;
 - Technical Access Evidence Tactical DDD, durable source-qualified persistence and strict local/import proof;
 - Access Policy Realization through technical-to-domain resolution, enforcement placement consumption, desired-vs-configured reconciliation and first target-specific configuration rendering;
 - Network Environment Operations stub-first execution semantics through controlled pre-check, conditional apply and post-check verification.
 
-Still deferred:
+Current product direction:
+- local deployment and local data remain the supported operating model;
+- real provider/device transport and lab validation remain optional future integrations;
+- external identity/source integrations are optional extension work, not a prerequisite for product completion;
+- deterministic stubs are sufficient where an extension seam needs executable proof.
+
+Still deferred unless explicitly selected by a future requirement:
 - real provider/device transport and lab validation;
 - crash-durable execution audit and production rollback;
-- production identity/deployment/integration.
+- external identity providers, directories, CMDB/catalogue sources and Legacy/MSSQL bridges.
 
 ## Ordered increments
 
@@ -133,50 +140,61 @@ Implemented:
 Exit achieved:
 NAPMS has an executable, fail-closed network-operation semantic loop through a deterministic stub, while explicitly deferring real Cisco transport validation until a lab/provider contract exists.
 
-### I23 — Enterprise Identity and Authoritative Source Integration
+### I23 — Optional Integration Extension Skeleton
 
-Status: `next; not yet selected for execution`.
+Status: `active; lightweight scope`.
 
 Goal:
-replace local/demo runtime dependencies with selected enterprise sources.
+keep the local-first product unchanged while establishing only minimal dormant extension seams for possible future external identity/source adapters.
 
-Expected areas:
-- OIDC/OAuth2/corporate IdP;
-- production session/authentication topology;
-- real Authority source/administration;
-- real Application Communication Catalogue source;
-- real Resource Catalogue source;
-- Decision/provider integrations accepted by prior increments;
-- optional Legacy bridge only if an explicit transition requirement selects it.
+Required scope:
+- retain local username/password authentication as the primary runtime path;
+- retain local Authority/ACC/Resource data as the supported current source of truth;
+- keep a source-neutral optional external-identity -> NAPMS-actor mapping seam;
+- keep identity separate from Authority Management authorization;
+- document where future source adapters would terminate at context-owned import/projection boundaries;
+- use deterministic in-process stubs only where an executable seam proof is useful.
+
+Explicitly not required:
+- OIDC/OAuth2;
+- corporate IdP or directory integration;
+- external Authority administration;
+- real ACC/Resource/CMDB synchronization;
+- Legacy/MSSQL;
+- external-source schedulers, transports, freshness/completeness/deletion protocols;
+- replacing the current local login/session path.
+
+Exit:
+NAPMS remains fully usable in local mode, while future integrations have bounded extension points that do not pollute Domain or alter semantic ownership.
 
 Guardrail:
-Legacy/MSSQL is not introduced by default.
+real external integration is future optional work triggered only by a concrete accepted requirement. It is not a mandatory predecessor for later roadmap increments.
 
-### I24 — Production Deployment and Operational Hardening
+### I24 — Local Deployment and Operational Hardening
 
-Status: `planned after I23`.
+Status: `planned after I23 skeleton`.
 
 Goal:
-make the selected production topology supportable.
+make the supported local deployment more robust and supportable without assuming an enterprise production topology.
 
-Expected scope:
-- TLS;
-- secret management;
-- hardened PostgreSQL authentication;
-- backup/restore and migration/upgrade procedure;
-- metrics/monitoring/alerts;
-- log retention/correlation;
-- vulnerability/dependency/container hardening;
-- disaster/recovery procedure;
-- accepted workload/SLA/SLO envelope and performance validation;
-- capacity/availability topology only from accepted evidence.
+Expected scope, selected only where useful for the local target environment:
+- local TLS/secure ingress options where required;
+- secret/configuration handling;
+- PostgreSQL authentication and migration/upgrade procedure;
+- backup/restore;
+- metrics/monitoring/logging appropriate to the local deployment;
+- dependency/container hardening;
+- recovery procedure;
+- accepted workload envelope and performance validation.
 
-### I25 — Product Completion, Operator UX and Acceptance/Cutover
+External HA, enterprise secret stores, corporate identity, multi-node capacity topology and similar infrastructure remain deferred until a concrete target environment requires them.
+
+### I25 — Product Completion, Operator UX and Acceptance
 
 Status: `planned final integration increment`.
 
 Goal:
-close the remaining product-operability surface and prove the complete NAPMS chain.
+close the remaining product-operability surface and prove the complete local NAPMS chain.
 
 Expected scope:
 - role-appropriate workspaces for requirement owner, decision participant, security/network operator;
@@ -185,9 +203,8 @@ Expected scope:
 - global explainability/audit navigation;
 - export serializers such as CSV/XLSX only if a real consumer needs them;
 - end-to-end acceptance from Connectivity Requirement through decision, Access Rule, realization, rendering, execution and post-check evidence;
-- operational/runbook documentation;
-- cutover/rollback criteria for the selected environment;
-- explicit closure of remaining deferrals or documented exclusions.
+- operational/runbook documentation for the selected local environment;
+- explicit closure of remaining local-product deferrals or documented exclusions.
 
 ## Dependency sequence
 
@@ -203,23 +220,25 @@ I13 Connectivity Requirements Core
   -> I20 Reconciliation / Enforcement Policy
   -> I21 Configuration Rendering
   -> I22 Network Environment Operations
-  -> I23 Enterprise Identity / Sources
-  -> I24 Production Hardening
-  -> I25 Product Completion / Acceptance / Cutover
+  -> I23 Optional Integration Skeleton
+  -> I24 Local Deployment Hardening
+  -> I25 Product Completion / Acceptance
 ```
+
+External provider/identity/source integrations are not part of this mandatory dependency chain. If selected later, they receive their own increment/plan based on concrete requirements.
 
 ## Tracking rules
 
 - Only the selected current increment gets a detailed `PLAN-*.md` under `docs/plans/active/`.
 - This roadmap carries future ordering/status; it does not duplicate dynamic work-package state.
-- When an increment completes, update this file in the same semantic stage: mark it `done`, record any accepted split/resequence, and promote the next increment.
+- When an increment completes, update this file in the same semantic stage: mark it `done`, record any accepted split/resequence, and promote the next roadmap increment.
 - If a future increment becomes too large, split it before implementation and update the sequence here.
 - Domain unknowns remain unknown until their owning canonical artifacts accept them.
 - No future stage may be pulled forward merely to make a current implementation convenient.
 
 ## Product-completion criterion
 
-For this roadmap, “product complete” means the selected target environment can demonstrate, with accepted semantics and operational evidence:
+For this roadmap, “product complete” means the supported local target environment can demonstrate, with accepted semantics and operational evidence:
 
 ```text
 declared connectivity need
@@ -234,4 +253,6 @@ declared connectivity need
     -> explainable end-to-end provenance
 ```
 
-plus the production identity, deployment, recovery, observability and acceptance controls required for that selected environment.
+plus the local authentication, deployment, recovery, observability and acceptance controls required for that selected local environment.
+
+Real external identity, authoritative enterprise sources and provider/device transports are optional extensions and are not part of the current product-completion criterion unless a future accepted target environment explicitly selects them.
