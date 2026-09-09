@@ -298,14 +298,14 @@ export function ConnectivityRequirementDetailsPage({
       </div>
 
       <header className="mb-6">
-        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
+        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#5F6B7D]">
           Connectivity Needs / Requirement Details
         </div>
         <h1 className="break-all text-[28px] font-bold tracking-tight text-[#172033]">
           {requirementId}
         </h1>
         {requirement && interaction ? (
-          <p className="mt-2 text-sm text-[#64748B]">
+          <p className="mt-2 text-sm text-[#5F6B7D]">
             {displayName(
               requirement.catalogue?.sourceDisplayName,
               interaction.sourceComponentDeploymentId,
@@ -354,7 +354,7 @@ export function ConnectivityRequirementDetailsPage({
       ) : null}
 
       {loading && !detail ? (
-        <div className="rounded-lg border border-[#E2E8F0] bg-white p-8 text-sm text-[#64748B]">
+        <div className="rounded-lg border border-[#E2E8F0] bg-white p-8 text-sm text-[#5F6B7D]">
           Loading Connectivity Requirement…
         </div>
       ) : requirement && detail && interaction ? (
@@ -365,7 +365,7 @@ export function ConnectivityRequirementDetailsPage({
                 <h2 className="text-base font-semibold text-[#172033]">
                   Policy coverage
                 </h2>
-                <p className="mt-1 max-w-3xl text-sm text-[#64748B]">
+                <p className="mt-1 max-w-3xl text-sm text-[#5F6B7D]">
                   Derived from this Requirement and effective Access Policy at one explicit logical time. It does not report configured/observed access.
                 </p>
               </div>
@@ -386,7 +386,7 @@ export function ConnectivityRequirementDetailsPage({
                 <div className="mt-1">{alignmentError.message}</div>
               </div>
             ) : loadingAlignment ? (
-              <div className="mt-4 text-sm text-[#64748B]">
+              <div className="mt-4 text-sm text-[#5F6B7D]">
                 Loading policy coverage…
               </div>
             ) : alignment ? (
@@ -399,7 +399,7 @@ export function ConnectivityRequirementDetailsPage({
                 <p className="mt-3 text-sm text-[#475569]">
                   {alignmentExplanation(alignment.status)}
                 </p>
-                <div className="mt-2 text-xs text-[#64748B]">
+                <div className="mt-2 text-xs text-[#5F6B7D]">
                   asOf {alignment.asOf}
                 </div>
               </div>
@@ -422,11 +422,11 @@ export function ConnectivityRequirementDetailsPage({
                   >
                     {requirement.lifecycleState}
                   </span>
-                  <span className="text-xs text-[#64748B]">
+                  <span className="text-xs text-[#5F6B7D]">
                     aggregate version {requirement.version}
                   </span>
                 </div>
-                <p className="mt-3 max-w-3xl text-sm text-[#64748B]">
+                <p className="mt-3 max-w-3xl text-sm text-[#5F6B7D]">
                   This lifecycle records whether the need remains current. It is not an
                   approval or connectivity-decision status.
                 </p>
@@ -450,7 +450,7 @@ export function ConnectivityRequirementDetailsPage({
             </h2>
             <dl className="mt-4 grid gap-5 lg:grid-cols-2">
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Source Component Deployment
                 </dt>
                 <dd className="mt-1">
@@ -461,7 +461,7 @@ export function ConnectivityRequirementDetailsPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Destination Component Deployment
                 </dt>
                 <dd className="mt-1">
@@ -472,7 +472,7 @@ export function ConnectivityRequirementDetailsPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   DCS revision
                 </dt>
                 <dd className="mt-1">
@@ -481,7 +481,7 @@ export function ConnectivityRequirementDetailsPage({
                     id={interaction.dcsContractRevisionId}
                   />
                   {(requirement.catalogue?.trafficAlternatives.length ?? 0) > 0 ? (
-                    <div className="mt-2 grid gap-1 text-xs text-[#64748B]">
+                    <div className="mt-2 grid gap-1 text-xs text-[#5F6B7D]">
                       {requirement.catalogue?.trafficAlternatives.map(
                         (alternative, index) => (
                           <div key={index}>
@@ -494,7 +494,7 @@ export function ConnectivityRequirementDetailsPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Dependent Component Deployment
                 </dt>
                 <dd className="mt-1">
@@ -513,7 +513,7 @@ export function ConnectivityRequirementDetailsPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Requirement Governance Scope
                 </dt>
                 <dd className="mt-1 text-sm">{requirement.governanceScope}</dd>
@@ -527,10 +527,10 @@ export function ConnectivityRequirementDetailsPage({
                 <h2 className="text-base font-semibold text-[#172033]">
                   Applicability
                 </h2>
-                <p className="mt-1 text-sm text-[#64748B]">
+                <p className="mt-1 text-sm text-[#5F6B7D]">
                   Current: {applicabilityText(requirement.applicability)}
                 </p>
-                <div className="mt-1 text-xs text-[#64748B]">
+                <div className="mt-1 text-xs text-[#5F6B7D]">
                   mutation: {detail.capabilities.setApplicability}
                 </div>
               </div>
@@ -608,7 +608,7 @@ export function ConnectivityRequirementDetailsPage({
             <h2 className="text-base font-semibold text-[#172033]">
               Business justification
             </h2>
-            <p className="mt-1 text-xs text-[#64748B]">
+            <p className="mt-1 text-xs text-[#5F6B7D]">
               mutation: {detail.capabilities.setJustification}
             </p>
             <textarea
@@ -642,7 +642,7 @@ export function ConnectivityRequirementDetailsPage({
             </h2>
             <dl className="mt-4 grid gap-4 text-sm lg:grid-cols-2">
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Actor
                 </dt>
                 <dd className="mt-1">
@@ -650,7 +650,7 @@ export function ConnectivityRequirementDetailsPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Effective time
                 </dt>
                 <dd className="mt-1">
@@ -658,7 +658,7 @@ export function ConnectivityRequirementDetailsPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Authority reference
                 </dt>
                 <dd className="mt-1 break-all font-mono text-xs">
@@ -666,7 +666,7 @@ export function ConnectivityRequirementDetailsPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Catalogue reference
                 </dt>
                 <dd className="mt-1 break-all font-mono text-xs">
@@ -681,7 +681,7 @@ export function ConnectivityRequirementDetailsPage({
               Applicability history
             </h2>
             {requirement.applicabilityHistory.length === 0 ? (
-              <p className="mt-3 text-sm text-[#64748B]">
+              <p className="mt-3 text-sm text-[#5F6B7D]">
                 No applicability changes have been recorded.
               </p>
             ) : (
@@ -695,7 +695,7 @@ export function ConnectivityRequirementDetailsPage({
                       {applicabilityText(change.previousApplicability)} →{" "}
                       {applicabilityText(change.newApplicability)}
                     </div>
-                    <div className="mt-1 text-xs text-[#64748B]">
+                    <div className="mt-1 text-xs text-[#5F6B7D]">
                       {change.actorId} · {change.effectiveTime} ·{" "}
                       {change.authorityReference}
                     </div>
@@ -710,7 +710,7 @@ export function ConnectivityRequirementDetailsPage({
               Justification history
             </h2>
             {requirement.justificationHistory.length === 0 ? (
-              <p className="mt-3 text-sm text-[#64748B]">
+              <p className="mt-3 text-sm text-[#5F6B7D]">
                 No justification changes have been recorded.
               </p>
             ) : (
@@ -721,12 +721,12 @@ export function ConnectivityRequirementDetailsPage({
                     className="rounded-md border border-[#E2E8F0] p-3 text-sm"
                   >
                     <div>
-                      <span className="text-[#64748B]">
+                      <span className="text-[#5F6B7D]">
                         {change.previousJustification}
                       </span>{" "}
                       → {change.newJustification}
                     </div>
-                    <div className="mt-1 text-xs text-[#64748B]">
+                    <div className="mt-1 text-xs text-[#5F6B7D]">
                       {change.actorId} · {change.effectiveTime} ·{" "}
                       {change.authorityReference}
                     </div>
@@ -741,7 +741,7 @@ export function ConnectivityRequirementDetailsPage({
               Lifecycle history
             </h2>
             {requirement.lifecycleHistory.length === 0 ? (
-              <p className="mt-3 text-sm text-[#64748B]">
+              <p className="mt-3 text-sm text-[#5F6B7D]">
                 Requirement has not been retired.
               </p>
             ) : (
@@ -754,7 +754,7 @@ export function ConnectivityRequirementDetailsPage({
                     <div>
                       {change.fromState} → {change.toState}
                     </div>
-                    <div className="mt-1 text-xs text-[#64748B]">
+                    <div className="mt-1 text-xs text-[#5F6B7D]">
                       {change.actorId} · {change.effectiveTime} ·{" "}
                       {change.authorityReference}
                     </div>
