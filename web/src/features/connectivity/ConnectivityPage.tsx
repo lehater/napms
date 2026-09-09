@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { Fragment, useEffect, useMemo, useState } from "react"
 import {
   ArrowLeft,
   ArrowRight,
@@ -573,6 +573,9 @@ function ResourceRows({
 }) {
   const resource = item.resource
   const endpointSummary = endpointText(resource)
+  const [expandedRelationship, setExpandedRelationship] = useState<string | null>(
+    null,
+  )
 
   return (
     <>
@@ -658,92 +661,168 @@ function ResourceRows({
             ]
           }
 
-          return component.relationships.map((relationship, index) => (
-            <tr
-              key={`${resource.resourceReference}:${component.componentDeploymentId}:${relationship.semanticIdentity.dcsContractRevisionId}:${relationship.direction}:${index}`}
-              className="border-t border-[#E2E8F0] align-top hover:bg-[#FCFDFE]"
-            >
-              <td className="px-4 py-3 pl-8">
-                {index === 0 ? componentCell : null}
-              </td>
-              <td className="px-4 py-3">
-                <span className="inline-flex items-center gap-1.5 font-medium text-[#334155]">
-                  {relationship.direction === "Outgoing" ? (
-                    <>
-                      <ArrowRight className="size-4" aria-hidden="true" />
-                      Out
-                    </>
-                  ) : (
-                    <>
-                      <ArrowLeft className="size-4" aria-hidden="true" />
-                      In
-                    </>
-                  )}
-                </span>
-              </td>
-              <td className="px-4 py-3">
-                <div className="font-medium text-[#172033]">
-                  {relationship.dcsDisplayName?.trim() || "Communication"}
-                </div>
-                <div className="mt-1 font-mono text-xs text-[#64748B]">
-                  {relationship.accessSummary || "Technical details unavailable"}
-                </div>
-              </td>
-              <td className="px-4 py-3">
-                <RemoteSide
-                  resourcesKnown={relationship.remoteResourcesKnown}
-                  resources={relationship.remoteResources}
-                  componentName={relationship.remoteComponent.displayName}
-                  componentId={relationship.remoteComponent.componentDeploymentId}
-                />
-              </td>
-              <td className="px-4 py-3">
-                <NeedCell value={relationship.need} />
-              </td>
-              <td className="px-4 py-3">
-                <DecisionCell value={relationship.decision} />
-              </td>
-              <td className="px-4 py-3">
-                <PolicyCell value={relationship.policy} />
-              </td>
-              <td className="px-4 py-3">
-                {relationship.policy.ruleExists === "No" &&
-                relationship.need.current !== "Unknown" &&
-                relationship.need.historicalOnly !== true &&
-                relationship.decision.state !== "NotAllowed" ? (
-                  <button
-                    type="button"
-                    className="text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8]"
-                    onClick={() =>
-                      onRequestAccess({
-                        scope,
-                        localResourceReference: resource.resourceReference,
-                        dependentComponentDeploymentId:
-                          component.componentDeploymentId,
-                        sourceComponentDeploymentId:
-                          relationship.semanticIdentity
-                            .sourceComponentDeploymentId,
-                        destinationComponentDeploymentId:
-                          relationship.semanticIdentity
-                            .destinationComponentDeploymentId,
-                        dcsContractRevisionId:
-                          relationship.semanticIdentity
-                            .dcsContractRevisionId,
-                        needCurrent:
-                          relationship.need.current === "Required"
-                            ? "Required"
-                            : "None",
-                      })
-                    }
-                  >
-                    Request access
-                  </button>
-                ) : (
-                  <span className="text-xs text-[#94A3B8]">—</span>
-                )}
-              </td>
-            </tr>
-          ))
+          return component.relationships.map((relationship, index) => {
+            const relationshipKey =
+              `${resource.resourceReference}:${component.componentDeploymentId}:${relationship.semanticIdentity.sourceComponentDeploymentId}:${relationship.semanticIdentity.destinationComponentDeploymentId}:${relationship.semanticIdentity.dcsContractRevisionId}:${relationship.direction}`
+            const detailsOpen = expandedRelationship === relationshipKey
+
+            return (
+              <Fragment key={relationshipKey}>
+                <tr className="border-t border-[#E2E8F0] align-top hover:bg-[#FCFDFE]">
+                  <td className="px-4 py-3 pl-8">
+                    {index === 0 ? componentCell : null}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center gap-1.5 font-medium text-[#334155]">
+                      {relationship.direction === "Outgoing" ? (
+                        <>
+                          <ArrowRight className="size-4" aria-hidden="true" />
+                          Out
+                        </>
+                      ) : (
+                        <>
+                          <ArrowLeft className="size-4" aria-hidden="true" />
+                          In
+                        </>
+                      )}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-[#172033]">
+                      {relationship.dcsDisplayName?.trim() || "Communication"}
+                    </div>
+                    <div className="mt-1 font-mono text-xs text-[#64748B]">
+                      {relationship.accessSummary ||
+                        "Technical details unavailable"}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <RemoteSide
+                      resourcesKnown={relationship.remoteResourcesKnown}
+                      resources={relationship.remoteResources}
+                      componentName={relationship.remoteComponent.displayName}
+                      componentId={
+                        relationship.remoteComponent.componentDeploymentId
+                      }
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <NeedCell value={relationship.need} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <DecisionCell value={relationship.decision} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <PolicyCell value={relationship.policy} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col items-start gap-2">
+                      <button
+                        type="button"
+                        aria-expanded={detailsOpen}
+                        className="text-xs font-semibold text-[#475569] hover:text-[#172033]"
+                        onClick={() =>
+                          setExpandedRelationship(
+                            detailsOpen ? null : relationshipKey,
+                          )
+                        }
+                      >
+                        {detailsOpen ? "Hide details" : "Details"}
+                      </button>
+                      {relationship.policy.ruleExists === "No" &&
+                      relationship.need.current !== "Unknown" &&
+                      relationship.need.historicalOnly !== true &&
+                      relationship.decision.state !== "NotAllowed" ? (
+                        <button
+                          type="button"
+                          className="text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8]"
+                          onClick={() =>
+                            onRequestAccess({
+                              scope,
+                              localResourceReference:
+                                resource.resourceReference,
+                              dependentComponentDeploymentId:
+                                component.componentDeploymentId,
+                              sourceComponentDeploymentId:
+                                relationship.semanticIdentity
+                                  .sourceComponentDeploymentId,
+                              destinationComponentDeploymentId:
+                                relationship.semanticIdentity
+                                  .destinationComponentDeploymentId,
+                              dcsContractRevisionId:
+                                relationship.semanticIdentity
+                                  .dcsContractRevisionId,
+                              needCurrent:
+                                relationship.need.current === "Required"
+                                  ? "Required"
+                                  : "None",
+                            })
+                          }
+                        >
+                          Request access
+                        </button>
+                      ) : null}
+                    </div>
+                  </td>
+                </tr>
+                {detailsOpen ? (
+                  <tr className="border-t border-[#E2E8F0] bg-[#F8FAFC]">
+                    <td colSpan={8} className="px-8 py-4">
+                      <div className="grid gap-4 text-xs md:grid-cols-2 xl:grid-cols-4">
+                        <div>
+                          <div className="font-semibold uppercase tracking-wide text-[#64748B]">
+                            Source deployment
+                          </div>
+                          <div className="mt-1 break-all font-mono text-[#334155]">
+                            {
+                              relationship.semanticIdentity
+                                .sourceComponentDeploymentId
+                            }
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-semibold uppercase tracking-wide text-[#64748B]">
+                            Destination deployment
+                          </div>
+                          <div className="mt-1 break-all font-mono text-[#334155]">
+                            {
+                              relationship.semanticIdentity
+                                .destinationComponentDeploymentId
+                            }
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-semibold uppercase tracking-wide text-[#64748B]">
+                            DCS revision
+                          </div>
+                          <div className="mt-1 break-all font-mono text-[#334155]">
+                            {relationship.semanticIdentity.dcsContractRevisionId}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-semibold uppercase tracking-wide text-[#64748B]">
+                            Remote resources
+                          </div>
+                          <div className="mt-1 text-[#334155]">
+                            {!relationship.remoteResourcesKnown
+                              ? "Unavailable"
+                              : relationship.remoteResources.length === 0
+                                ? "Unresolved"
+                                : relationship.remoteResources
+                                    .map(
+                                      (remote) =>
+                                        `${remote.resourceReference} · ${endpointText(remote)}`,
+                                    )
+                                    .join(" | ")}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ) : null}
+              </Fragment>
+            )
+          })
         })
       )}
     </>
