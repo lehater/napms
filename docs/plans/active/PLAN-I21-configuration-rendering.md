@@ -1,6 +1,6 @@
 # PLAN — I21 Configuration Rendering
 
-Status: `S1-S4 implemented; S5 final gate next`.
+Status: `S1-S4 implemented; S5 final gate next`
 
 ## Goal
 
