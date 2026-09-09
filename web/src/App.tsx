@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react"
 
 import { getSession, login, logout, type Actor } from "@/api"
-import { AppShell } from "@/components/layout/AppShell"
+import { AppShell, type NavKey } from "@/components/layout/AppShell"
 import { LoginPage } from "@/features/auth/LoginPage"
 import { EffectivePolicyPage } from "@/features/policy/EffectivePolicyPage"
 import { NormalizedPolicyPage } from "@/features/policy/NormalizedPolicyPage"
+import {
+  plannedFeatureBySlug,
+  PlannedFeaturePage,
+} from "@/features/preview/PlannedFeaturePage"
 import { ComposeConnectivityPage } from "@/features/proposals/ComposeConnectivityPage"
 import { ConnectivityRequirementDetailsPage } from "@/features/requirements/ConnectivityRequirementDetailsPage"
 import { ConnectivityRequirementsPage } from "@/features/requirements/ConnectivityRequirementsPage"
@@ -19,9 +23,30 @@ type Route =
   | { kind: "rule"; ruleId: string }
   | { kind: "effective" }
   | { kind: "normalized" }
+  | { kind: "preview"; slug: string }
+
+const previewRouteByNav: Partial<Record<NavKey, string>> = {
+  decisions: "connectivity-decisions",
+  "technical-evidence": "technical-evidence",
+  "access-resolution": "access-resolution",
+  "enforcement-placement": "enforcement-placement",
+  reconciliation: "reconciliation",
+  "configuration-rendering": "configuration-rendering",
+  "network-operations": "network-operations",
+  "explainability-audit": "explainability-audit",
+}
+
+const previewNavBySlug = Object.fromEntries(
+  Object.entries(previewRouteByNav).map(([nav, slug]) => [slug, nav]),
+) as Record<string, NavKey>
 
 function readRoute(): Route {
   const hash = window.location.hash.replace(/^#/, "")
+
+  if (plannedFeatureBySlug(hash)) {
+    return { kind: "preview", slug: hash }
+  }
+
   if (hash.startsWith("connectivity-needs/")) {
     const requirementId = hash.slice("connectivity-needs/".length).split("?")[0]
     if (requirementId) {
@@ -104,34 +129,42 @@ export function App() {
     )
   }
 
-  const activeNav =
+  const activeNav: NavKey =
     route.kind === "requirements" || route.kind === "requirement"
       ? "requirements"
       : route.kind === "compose"
         ? "compose"
-      : route.kind === "effective"
-        ? "effective"
-        : route.kind === "normalized"
-          ? "normalized"
-          : "rules"
+        : route.kind === "effective"
+          ? "effective"
+          : route.kind === "normalized"
+            ? "normalized"
+            : route.kind === "rules" || route.kind === "rule"
+              ? "rules"
+              : previewNavBySlug[route.slug] ?? "compose"
 
   return (
     <AppShell
       actor={actor}
       activeNav={activeNav}
-      onNavigate={(target) =>
+      onNavigate={(target) => {
+        const previewRoute = previewRouteByNav[target]
+        if (previewRoute) {
+          navigate(previewRoute)
+          return
+        }
+
         navigate(
           target === "requirements"
             ? "connectivity-needs?page=1"
             : target === "compose"
               ? "compose"
-            : target === "rules"
-              ? "access-rules?page=1"
-              : target === "effective"
-                ? "effective-policy"
-                : "normalized-policy",
+              : target === "rules"
+                ? "access-rules?page=1"
+                : target === "effective"
+                  ? "effective-policy"
+                  : "normalized-policy",
         )
-      }
+      }}
       onLogout={async () => {
         await logout()
         setActor(null)
@@ -172,10 +205,17 @@ export function App() {
             navigate(`access-rules/${encodeURIComponent(ruleId)}`)
           }
         />
-      ) : (
+      ) : route.kind === "rule" ? (
         <AccessRuleDetailsPage
           ruleId={route.ruleId}
           onBack={() => navigate("access-rules?page=1")}
+        />
+      ) : (
+        <PlannedFeaturePage
+          feature={
+            plannedFeatureBySlug(route.slug) ??
+            plannedFeatureBySlug("connectivity-decisions")!
+          }
         />
       )}
     </AppShell>
