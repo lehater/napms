@@ -65,7 +65,7 @@ Rules:
 
 ## Work packages
 
-### WP0 — Donor extraction and contract revalidation
+### WP0 — Donor extraction and contract revalidation — done
 
 - port the Decision package and narrow cross-context adapters into this branch;
 - reconcile names/types with current main without pulling old composition/UI;
@@ -76,7 +76,7 @@ Rules:
 Exit:
 Decision Domain/Application compiles and its accepted semantic examples pass on current main structure.
 
-### WP1 — Durable Decision persistence and selection
+### WP1 — Durable Decision persistence and selection — done
 
 - register Decision-owned PostgreSQL migration after current main migrations;
 - port append-only repository;
@@ -191,4 +191,4 @@ None at the semantic/design level. Gate failures discovered during implementatio
 
 ## Next
 
-Complete WP0/WP1 gates for the ported Decision core and PostgreSQL persistence. Stop at the first green durable record/select slice before Access Policy, Scoped Connectivity or participant UI integration.
+After review of the green WP0/WP1 durable record/select slice, execute WP2 Minimal end-to-end Access Policy integration. Do not start Scoped Connectivity, participant HTTP or Web integration before WP2 is green.

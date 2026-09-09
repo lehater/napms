@@ -4,7 +4,7 @@ Current: `PLAN-016B-i16b-connectivity-decision-runtime.md`
 
 Goal: replace the transitional local Decision provider with the accepted durable Connectivity Decision runtime while preserving the completed I16A architecture.
 
-Current task: WP1 — make the ported Decision core and PostgreSQL record/select slice green on the current main baseline.
+Current task: WP2 — deliberate review boundary after green WP0/WP1; next implementation is minimal Access Policy integration.
 
 ## Working set
 
@@ -13,16 +13,20 @@ Read first:
 - `docs/requirements/connectivity-decision-core.md`
 - `docs/architecture/connectivity-decision-boundary.md`
 
-Expand only when a failing gate or implementation dependency requires another file.
+Expand only when WP2 requires a current Access Policy port/materialization file.
 
 ## Blockers
 
-None. PR #26 is historical implementation evidence only and must not be merged/rebased into this branch.
+None. PR #26 remains historical implementation evidence only; its pre-I16A composition/UI must not be merged or rebased.
 
 ## Gate
 
-For the current slice, core, PostgreSQL persistence, Docker local runtime and harness gates must pass. A failing gate is fixed before advancing to Access Policy or Web integration.
+WP0/WP1 green evidence on commit `ebea4aec5306d2cd8c9f02aff44e8af4225ed09a`:
+- core gate #81 — success;
+- postgres persistence gate #66 — success;
+- docker local runtime gate #40 — success;
+- harness gate #86 — success.
 
 ## Next
 
-Fix any current WP0/WP1 gate failures, confirm durable record/select is green, update the resume capsule, then stop for review before WP2.
+Review the durable Decision record/select slice. Then execute WP2 only: evolve the Access Policy Decision consumer projection to exact subject + governance scope + asOf, integrate the Decision adapter, and prove Allowed/NotAllowed/missing/expired fail-closed materialization before touching Scoped Connectivity or Web.
