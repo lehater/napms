@@ -53,6 +53,9 @@ class InteractionCheck:
 class ConnectivityDecision:
     outcome: DecisionOutcome
     subject: RuleSemanticIdentity
+    governance_scope: str
+    valid_from: datetime | None
+    valid_until: datetime | None = None
     decision_reference: str | None = None
 
 
@@ -149,7 +152,13 @@ class CommunicationCataloguePort(Protocol):
 
 
 class ConnectivityDecisionPort(Protocol):
-    def obtain(self, *, subject: RuleSemanticIdentity) -> ConnectivityDecision: ...
+    def obtain(
+        self,
+        *,
+        subject: RuleSemanticIdentity,
+        governance_scope: str,
+        as_of: datetime,
+    ) -> ConnectivityDecision: ...
 
 
 class AccessRuleRepository(Protocol):

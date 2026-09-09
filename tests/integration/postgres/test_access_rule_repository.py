@@ -107,8 +107,14 @@ class ExactCatalogue:
 
 
 class AllowedDecisions:
-    def obtain(self, *, subject):
-        return ConnectivityDecision(DecisionOutcome.ALLOWED, subject, "decision-1")
+    def obtain(self, *, subject, governance_scope, as_of):
+        return ConnectivityDecision(
+            outcome=DecisionOutcome.ALLOWED,
+            subject=subject,
+            governance_scope=governance_scope,
+            valid_from=as_of,
+            decision_reference="decision-1",
+        )
 
 
 class BarrierRepository:

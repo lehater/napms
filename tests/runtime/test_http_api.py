@@ -144,12 +144,14 @@ class FakeDecisions:
         self.outcome = outcome
         self.calls = []
 
-    def obtain(self, *, subject):
+    def obtain(self, *, subject, governance_scope, as_of):
         self.calls.append(subject)
         return ConnectivityDecision(
-            self.outcome,
-            subject,
-            "decision-1",
+            outcome=self.outcome,
+            subject=subject,
+            governance_scope=governance_scope,
+            valid_from=as_of,
+            decision_reference="decision-1",
         )
 
 

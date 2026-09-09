@@ -87,11 +87,13 @@ class AllowedDecisionAdapter:
     def __init__(self, *, subject_override=None):
         self.subject_override = subject_override
 
-    def obtain(self, *, subject):
+    def obtain(self, *, subject, governance_scope, as_of):
         return ConnectivityDecision(
-            DecisionOutcome.ALLOWED,
-            self.subject_override or subject,
-            "decision-e2e-1",
+            outcome=DecisionOutcome.ALLOWED,
+            subject=self.subject_override or subject,
+            governance_scope=governance_scope,
+            valid_from=as_of,
+            decision_reference="decision-e2e-1",
         )
 
 
@@ -808,7 +810,7 @@ def test_missing_dcs_fails_closed_before_decision_and_rule(
     seed_greenfield(postgres_dsn, include_dcs=False)
 
     class DecisionMustNotBeCalled:
-        def obtain(self, *, subject):
+        def obtain(self, *, subject, governance_scope, as_of):
             raise AssertionError("decision must not be called without valid DCS")
 
     with open_greenfield_scope(greenfield_config) as scope:

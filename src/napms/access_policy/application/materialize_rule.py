@@ -101,13 +101,22 @@ class MaterializeAllowedAccessRule:
         if interaction.provenance_reference is None:
             return MaterializationResult(MaterializationOutcome.INTERACTION_UNKNOWN)
 
-        decision = self._decisions.obtain(subject=identity)
-        if decision.subject != identity:
+        decision = self._decisions.obtain(
+            subject=identity,
+            governance_scope=command.authority_scope,
+            as_of=command.effective_time,
+        )
+        if (
+            decision.subject != identity
+            or decision.governance_scope != command.authority_scope
+        ):
             return MaterializationResult(MaterializationOutcome.DECISION_SUBJECT_MISMATCH)
-        if decision.outcome is DecisionOutcome.NOT_ALLOWED:
-            return MaterializationResult(MaterializationOutcome.NOT_ALLOWED)
         if decision.outcome is DecisionOutcome.UNKNOWN:
             return MaterializationResult(MaterializationOutcome.DECISION_UNKNOWN)
+        if not _decision_is_effective_at(decision, command.effective_time):
+            return MaterializationResult(MaterializationOutcome.DECISION_UNKNOWN)
+        if decision.outcome is DecisionOutcome.NOT_ALLOWED:
+            return MaterializationResult(MaterializationOutcome.NOT_ALLOWED)
 
         existing = self._rules.find_by_identity(identity)
         if existing is not None:
@@ -138,3 +147,20 @@ class MaterializeAllowedAccessRule:
                 raise
             return MaterializationResult(MaterializationOutcome.RESOLVED, winner, False)
         return MaterializationResult(MaterializationOutcome.MATERIALIZED, rule, True)
+
+
+def _decision_is_effective_at(decision, as_of: datetime) -> bool:
+    if decision.valid_from is None:
+        return False
+    if decision.valid_from.tzinfo is None or decision.valid_from.utcoffset() is None:
+        return False
+    if as_of.tzinfo is None or as_of.utcoffset() is None:
+        return False
+    if decision.valid_until is not None:
+        if (
+            decision.valid_until.tzinfo is None
+            or decision.valid_until.utcoffset() is None
+        ):
+            return False
+        return decision.valid_from <= as_of < decision.valid_until
+    return decision.valid_from <= as_of

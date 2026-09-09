@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from uuid import UUID
 
 from napms.access_policy.application.ports import DecisionOutcome
@@ -12,8 +13,15 @@ def test_local_dev_decision_adapter_allows_exact_subject_with_explicit_provenanc
         dcs_contract_revision_id=UUID(int=3),
     )
 
-    result = LocalDevAllowedConnectivityDecisionAdapter().obtain(subject=subject)
+    as_of = datetime(2026, 9, 9, 12, 0, tzinfo=timezone.utc)
+    result = LocalDevAllowedConnectivityDecisionAdapter().obtain(
+        subject=subject,
+        governance_scope="scope-1",
+        as_of=as_of,
+    )
 
     assert result.outcome is DecisionOutcome.ALLOWED
     assert result.subject == subject
+    assert result.governance_scope == "scope-1"
+    assert result.valid_from == as_of
     assert result.decision_reference == "local-dev:allowed"

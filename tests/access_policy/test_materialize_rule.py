@@ -131,19 +131,34 @@ class FakeDecisions:
         self,
         outcome=DecisionOutcome.ALLOWED,
         subject=None,
+        governance_scope=None,
+        valid_from=None,
+        valid_until=None,
         reference="decision-1",
     ):
         self.outcome = outcome
         self.subject = subject
+        self.governance_scope = governance_scope
+        self.valid_from = valid_from
+        self.valid_until = valid_until
         self.reference = reference
         self.calls = 0
+        self.last_obtain = None
 
-    def obtain(self, *, subject):
+    def obtain(self, *, subject, governance_scope, as_of):
         self.calls += 1
+        self.last_obtain = {
+            "subject": subject,
+            "governance_scope": governance_scope,
+            "as_of": as_of,
+        }
         return ConnectivityDecision(
-            self.outcome,
-            self.subject or subject,
-            self.reference,
+            outcome=self.outcome,
+            subject=self.subject or subject,
+            governance_scope=self.governance_scope or governance_scope,
+            valid_from=self.valid_from if self.valid_from is not None else as_of,
+            valid_until=self.valid_until,
+            decision_reference=self.reference,
         )
 
 
@@ -427,6 +442,57 @@ def test_authority_check_uses_explicit_propose_connectivity_action():
     assert authority.last_check["actor_id"] == "actor-1"
     assert authority.last_check["scope"] == "scope-1"
     assert authority.last_check["effective_time"] == NOW
+
+
+def test_decision_lookup_uses_exact_subject_scope_and_logical_time():
+    decisions = FakeDecisions()
+    proposal = command(authority_scope="decision-scope-1")
+
+    result = service(decisions=decisions).execute(proposal)
+
+    assert result.outcome is MaterializationOutcome.MATERIALIZED
+    assert decisions.last_obtain == {
+        "subject": proposal.semantic_identity,
+        "governance_scope": "decision-scope-1",
+        "as_of": NOW,
+    }
+
+
+def test_decision_scope_mismatch_fails_closed():
+    rules = MemoryRules()
+    result = service(
+        decisions=FakeDecisions(governance_scope="other-scope"),
+        rules=rules,
+    ).execute(command())
+
+    assert result.outcome is MaterializationOutcome.DECISION_SUBJECT_MISMATCH
+    assert rules.add_calls == 0
+    assert rules.commit_calls == 0
+
+
+@pytest.mark.parametrize(
+    "valid_from,valid_until",
+    [
+        (datetime(2026, 9, 8, 0, 0, 1, tzinfo=timezone.utc), None),
+        (
+            datetime(2026, 9, 7, tzinfo=timezone.utc),
+            datetime(2026, 9, 8, tzinfo=timezone.utc),
+        ),
+    ],
+)
+def test_non_effective_decision_fails_closed_as_unknown(valid_from, valid_until):
+    rules = MemoryRules()
+    result = service(
+        decisions=FakeDecisions(
+            valid_from=valid_from,
+            valid_until=valid_until,
+        ),
+        rules=rules,
+    ).execute(command())
+
+    assert result.outcome is MaterializationOutcome.DECISION_UNKNOWN
+    assert rules.add_calls == 0
+    assert rules.commit_calls == 0
 
 
 def test_materialized_rule_establishes_governance_scope_from_proposal_authority_scope():
