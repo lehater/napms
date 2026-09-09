@@ -6,6 +6,13 @@ Status: `S1-S4 implemented; S5 final gate next`.
 
 Translate accepted vendor-neutral `DesiredEnforcementIntent` into a target-specific configuration representation while preserving the exact desired traffic semantics and provenance established by Access Policy Realization.
 
+## Inputs
+
+- accepted I20 `DesiredEnforcementPolicy` / `DesiredEnforcementIntent` semantics;
+- `EnforcementTarget = Logical Firewall + Enforcement Attachment`;
+- accepted Access Rule / Domain Interaction / placement provenance carried by desired intent;
+- Cisco Secure Firewall ASA CLI extended ACL as the selected first renderer contract.
+
 ## Accepted S1 decisions
 
 1. **Semantic ownership:** rendering remains a downstream capability inside Access Policy Realization; no new Bounded Context is justified.
@@ -70,13 +77,24 @@ Implemented:
 - PostgreSQL integration proof derives desired intent from Access Policy/RC/ACC/NEP owner state, renders Cisco ASA ACL, projects the result back into normalized regions and requires exact equality;
 - integration proof requires statement-level rule/interaction/placement provenance and verifies Access Rule, NEP capture and TAE evidence counts remain unchanged by derive+render.
 
-Local test execution is not available from the current connector environment; hosted PR CI remains the executable gate.
-
 ### S5 — Final gate and absorption
 
 Status: `next`.
 
 Run hosted final PR gate. If green, absorb durable outcomes into canonical engineering/roadmap state, remove this completed PLAN, update the active capsule, mark I21 complete and promote I22 without selecting it.
+
+## Exit criteria
+
+- canonical domain/requirements/architecture rendering contracts are accepted;
+- Cisco ASA first-slice renderer is deterministic and fail-closed;
+- independent projection proves exact supported Permit-region equivalence, including adversarial broadening/narrowing/omission detection;
+- PostgreSQL owner composition proves desired -> rendered flow with provenance and no Access Policy/NEP/TAE mutation side effects;
+- all final hosted gates are green;
+- durable outcomes are absorbed, the active PLAN is removed and I22 is promoted without being selected.
+
+## Blockers
+
+No known semantic blocker. Hosted final gates are the current execution blocker; any failing gate must be resolved on this branch before absorption.
 
 ## Explicitly out of scope
 
@@ -87,6 +105,6 @@ Run hosted final PR gate. If green, absorb durable outcomes into canonical engin
 - multi-vendor abstraction beyond the smallest stable port needed by the Cisco ASA first slice;
 - operator UI unless an accepted I21 requirement specifically needs a render preview.
 
-## Immediate next action
+## Next
 
-Open the I21 PR, mark it ready for the hosted final gate, resolve any gate failures on the branch, then perform S5 absorption and squash merge.
+Resolve PR #45 hosted gate failures. When all checks are green, perform S5 absorption and squash merge.
