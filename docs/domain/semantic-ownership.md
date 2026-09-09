@@ -1,6 +1,6 @@
 # Semantic Ownership
 
-Status: `accepted NAPMS-DDD-001 / I20 current semantic ownership`.
+Status: `accepted NAPMS-DDD-001 / I21 current semantic ownership`.
 
 This file defines semantic ownership, not runtime/service ownership.
 
@@ -19,7 +19,7 @@ This file defines semantic ownership, not runtime/service ownership.
 | application/component communication contract | **Application Communication Catalogue** | authorized catalogue sources | Application/Component/DCS/Deployment |
 | forwarding and enforcement relevance | **Network Enforcement Placement** | provider/network observations + corrections | path/Logical Firewall/Enforcement Attachment semantics |
 | normalized source-qualified technical access evidence | **Technical Access Evidence** | device/traffic/import adapters and external sources | Technical Access Evidence Set / Entry |
-| technical↔domain access correspondence and enforcement realization | **Access Policy Realization** | I18 resolution: TAE + RC + Application Communication Catalogue; I20 derivation/reconciliation: Access Policy + NEP + explicitly selected/configured TAE projection + source/scope contract | Domain Access Resolution / desired enforcement policy / Policy Reconciliation |
+| technical↔domain access correspondence, enforcement realization and target representation equivalence | **Access Policy Realization** | I18 resolution: TAE + RC + Application Communication Catalogue; I20 derivation/reconciliation: Access Policy + NEP + explicitly selected/configured TAE projection + source/scope contract; I21 rendering: accepted desired enforcement intent + renderer contract | Domain Access Resolution / desired enforcement policy / Policy Reconciliation / Rendered Configuration |
 
 ## Responsibility Scope / Resource affiliation ownership
 
@@ -132,6 +132,9 @@ Access Policy + NEP
 
 configured effective-policy evidence + same managed scope
     -> does configured enforcement satisfy that desired policy and what exact semantic delta remains?
+
+accepted desired enforcement intent + renderer contract
+    -> what target-specific representation is exactly equivalent to that desired intent?
 ```
 
 ### Consistency invariant
@@ -150,7 +153,16 @@ I20 implements a policy-level interpretation without changing I18 meaning:
 - exact common/missing/extra regions are APR truth;
 - `Add | Remove | Replace | No-op` is semantic delta only and grants no device-mutation authority.
 
-Desired Enforcement Policy and Policy Reconciliation remain derived on demand in the first I20 slice; no APR persistence lifecycle is implied.
+I21 adds target representation equivalence without changing I18/I20 meaning:
+- Configuration Rendering remains inside Access Policy Realization; vendor syntax is adapter knowledge, not a new semantic owner;
+- the first renderer contract is Cisco Secure Firewall ASA CLI extended ACL, version `1`;
+- rendering consumes already-derived desired enforcement intent and must not recompute authorization, domain resolution, placement or reconciliation;
+- `Rendered` means the target-specific representation is proven semantically equivalent to the supported desired Permit regions;
+- `Unsupported | Unknown` fail closed and expose no successful-looking partial artifact;
+- statement provenance preserves the target, contributing Access Rules, Domain Interactions, placement evidence and renderer contract;
+- Rendered Configuration is derived on demand in I21 and has no independent durable identity/lifecycle.
+
+Desired Enforcement Policy, Policy Reconciliation and Rendered Configuration remain derived on demand in the current APR slices; no APR persistence lifecycle is implied.
 
 ## Proposal ownership
 
@@ -173,6 +185,8 @@ Domain resolution known / ambiguous / unresolved
 Enforcement policy derived
 Configured evidence observed
 Satisfied
+Rendered representation exists
+Applied/verified on device
 ```
 
-No Requirement, evidence or proposal silently becomes authorization.
+A rendered representation does not imply provider/device application or verification. No Requirement, evidence or proposal silently becomes authorization.
