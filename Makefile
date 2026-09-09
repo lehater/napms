@@ -1,4 +1,4 @@
-.PHONY: test postgres-test web-check docker-build dev-up dev-down dev-logs dev-reset dev-backup dev-restore harness-check knowledge-check check
+.PHONY: test postgres-test web-check docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-check knowledge-check check
 
 test:
 	python -m pytest -q -m "not postgres"
@@ -14,6 +14,9 @@ docker-build:
 
 dev-up:
 	@NAPMS_POSTGRES_PASSWORD="$$(python -c 'import secrets; print(secrets.token_urlsafe(24))')" sh -c 'python tools/prepare_local_postgres.py && python tools/local_start.py up && python tools/verify_local_postgres_auth.py'
+
+dev-status:
+	NAPMS_POSTGRES_PASSWORD=local-status-placeholder python tools/local_status.py
 
 dev-down:
 	NAPMS_POSTGRES_PASSWORD=local-command-placeholder docker compose down --remove-orphans
