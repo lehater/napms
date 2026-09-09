@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline; I16B complete, I17 next`.
+Status: `accepted ordered sequencing baseline; I17 selected and active`.
 
 Date: 2026-09-09.
 
@@ -39,7 +39,6 @@ Wave 1 intentionally stopped before Connectivity Requirements runtime participat
 
 Still deferred:
 - Network Enforcement Placement;
-- Technical Access Evidence;
 - Access Policy Realization/reconciliation;
 - vendor rendering;
 - device/provider execution;
@@ -61,7 +60,7 @@ Detailed completed execution is not roadmap state. Durable outcomes live in curr
 
 ### I17 — Technical Access Evidence Core
 
-Status: `next; not yet selected for execution`.
+Status: `active; WP3 durable source proof complete, WP4 closure active`.
 
 Goal:
 implement the accepted **Technical Access Evidence** bounded context.

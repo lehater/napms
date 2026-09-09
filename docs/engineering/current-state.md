@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I16B Connectivity Decision Runtime and Workflow accepted and implemented; I17 Technical Access Evidence is the next roadmap increment`.
+Status: `I16B implemented; I17 Technical Access Evidence WP3 durable source proof complete, WP4 closure active`.
 
 Date: 2026-09-09.
 
@@ -21,7 +21,7 @@ This file is a capability snapshot, not an increment-by-increment changelog. Det
 | Connectivity Decision | accepted first-class bounded context | PostgreSQL-backed immutable final Decision runtime with exact subject/scope/time selection, supersession and fail-closed persistence semantics | Decisions workspace plus coarse Decision state in Connectivity |
 | Policy export / normalization | accepted | coherent snapshot + vendor-neutral normalized policy JSON | Normalized Policy |
 | Scoped Connectivity Inventory | accepted owner-preserving product/application composition | framework-free read composition with module-owned PostgreSQL adapters, including durable coarse Decision enrichment; no independent persistence | primary post-login Connectivity workspace |
-| Technical Access Evidence | strategic future context | not implemented | none |
+| Technical Access Evidence | accepted Tactical DDD through I17 WP0 | Domain/Application/Ports + TAE-owned PostgreSQL + strict local/import normalization and durable composition readback implemented on active branch | none |
 | Network Enforcement Placement | strategic future context | not implemented | none |
 | Access Policy Realization | strategic future context | not implemented | none |
 
@@ -62,7 +62,7 @@ This remains a local/development topology, not a production deployment claim.
 
 ## Current execution
 
-No implementation plan is currently selected.
+I17 Technical Access Evidence Core is selected. WP0-WP3 are complete on the active branch; WP4 final proof/closure is active.
 
 I16B Connectivity Decision Runtime and Workflow is complete and absorbed into canonical product, architecture and engineering truth. The implemented runtime now provides:
 - durable immutable final `Allowed | NotAllowed` Decisions with validity, reason/evidence, provenance and supersession;
@@ -72,7 +72,7 @@ I16B Connectivity Decision Runtime and Workflow is complete and absorbed into ca
 - authenticated Decision record/list/detail Web/HTTP workflows;
 - a local Docker journey using real durable Decisions rather than deterministic allow plumbing.
 
-The roadmap next increment is I17 Technical Access Evidence Core. It has not yet been selected for execution, so there is no active `PLAN-*.md`.
+The active execution plan is `docs/plans/active/PLAN-017-i17-technical-access-evidence-core.md`. Current task is WP4 final proof/closure. No public TAE HTTP/Web, human authority workflow or provider/device integration has been introduced.
 
 ## Canonical references
 

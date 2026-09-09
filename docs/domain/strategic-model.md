@@ -2,7 +2,7 @@
 
 Status: `accepted living baseline`.
 
-Source baseline: DDD-BDM-010, extended by I13-I15 accepted domain closure.
+Source baseline: DDD-BDM-010, extended by I13-I17 accepted domain closure.
 
 This document defines model/language/responsibility boundaries. It does not define services, databases, teams or deployment units.
 
@@ -17,7 +17,7 @@ This document defines model/language/responsibility boundaries. It does not defi
 | **Resource Catalogue** | what access-domain resources exist, to which responsibility scopes do they belong, and how are they realized? | Resource/Endpoint identity, time-qualified Resource Scope Affiliation, current/historical realization and access-relevant lifecycle facts |
 | **Application Communication Catalogue** | which application/component interactions are structurally valid? | Application/Component/Deployment/DCS identities and protocol/port contracts |
 | **Network Enforcement Placement** | where is traffic subject to enforcement? | forwarding/path knowledge, Logical Firewall correspondence and enforcement attachments |
-| **Technical Access Evidence** | what technical access material did a source report? | normalized source-qualified technical evidence with provenance/time/freshness/coverage |
+| **Technical Access Evidence** | what technical access material did a source report? | immutable source-qualified normalized technical evidence with source/scope/time/provenance; no authorization/currentness claim |
 | **Access Policy Realization** | how does authorized/domain access correspond to technical enforcement? | technical↔domain resolution, enforcement-policy derivation/optimization and desired-vs-configured reconciliation |
 
 ## Historical Wave-1 participation
@@ -31,17 +31,20 @@ Wave 1 directly used:
 
 That seam was intentionally deferred during Wave 1 and is superseded by the I15 first-class Connectivity Decision context.
 
-## Current product participation through I15
+## Current product participation through I17
 
-Current accepted semantic owners participating in implemented/planned product flow include:
+Current accepted semantic owners participating in implemented product flow include:
 - Connectivity Requirements;
 - Connectivity Decision;
 - Access Policy;
 - Authority Management;
 - Application Communication Catalogue;
-- Resource Catalogue.
+- Resource Catalogue;
+- Technical Access Evidence.
 
-Network Enforcement Placement, Technical Access Evidence and Access Policy Realization remain strategic product contexts for later roadmap increments.
+Technical Access Evidence now has an I17 Tactical DDD, framework-free core, module-owned PostgreSQL persistence and one strict local/import adapter proof. It remains independent from authorization and from technical-to-domain interpretation.
+
+Network Enforcement Placement and Access Policy Realization remain strategic product contexts for later roadmap increments.
 
 ## I16A responsibility-scope relationship
 

@@ -88,7 +88,7 @@ Advanced alternative/conditional requirement semantics remain deferred.
 
 ## Technical Access Evidence identity
 
-Configured, TrafficDerived and Imported evidence are `SAME_CAPABILITY` at the normalized evidence level. They share normalized predicate semantics, provenance, effective time/window, scope and freshness/coverage/confidence vocabulary. Evidence does not authorize desired access.
+Configured, TrafficDerived and Imported evidence are `SAME_CAPABILITY` at the normalized evidence level. They share source-qualified normalized predicate semantics, provenance, source scope and explicit evidence-time representation. Evidence does not authorize desired access. Universal freshness/coverage/confidence semantics are not part of the I17 core; they remain deferred until a concrete source/consumer contract gives them trustworthy meaning.
 
 ## Technical-to-Domain Access Resolution identity
 

@@ -8,6 +8,7 @@ on:
       - "src/napms/authority_management/**"
       - "src/napms/application_catalogue/**"
       - "src/napms/resource_catalogue/**"
+      - "src/napms/technical_access_evidence/**"
       - "src/napms/composition/**"
       - "tests/integration/postgres/**"
       - "pyproject.toml"

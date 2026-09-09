@@ -288,20 +288,21 @@ Imported
 ```
 
 ### Technical Access Entry
-Normalized technical predicate facts:
+Immutable child evidence item carrying normalized technical predicate facts:
 
 - source address/range;
 - destination address/range;
-- protocol/service/ports;
+- protocol/ports;
 - action where meaningful;
-- source position/order where source semantics make it factual;
-- evidence source/scope/time/provenance.
+- source entry reference and position/order where source semantics make them factual.
+
+The enclosing Technical Access Evidence Set supplies the source/scope/capture/time/recording provenance shared by its entries. Source-native service/object names are not silently promoted into source-neutral predicate semantics.
 
 ### Configured Evidence
 Technical Access Evidence asserting what a device/controller source reported as configured for a scope/time.
 
 ### Traffic-Derived Evidence
-Technical Access Evidence derived from observed communication. It normally represents permit-like communication material rather than a complete firewall policy.
+Technical Access Evidence derived from observed communication. It represents observed technical communication material, not a complete firewall policy and not an inferred Permit/Block action unless a concrete source contract can support that fact without semantic invention.
 
 ### Imported Evidence
 Technical access-list evidence obtained from a file/external source.
