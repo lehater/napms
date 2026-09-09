@@ -4,14 +4,18 @@ import {
   ListTree,
   LogOut,
   Network,
-  PanelLeftClose,
   TableProperties,
 } from "lucide-react"
 
 import type { Actor } from "@/api"
 import { Button } from "@/components/ui/Button"
 
-type NavKey = "requirements" | "compose" | "rules" | "effective" | "normalized"
+export type NavKey =
+  | "connectivity"
+  | "requirements"
+  | "rules"
+  | "effective"
+  | "normalized"
 
 export function AppShell({
   actor,
@@ -43,10 +47,20 @@ export function AppShell({
             <div className="text-xs text-[#8FA6C2]">Policy Management</div>
           </div>
         </div>
+
         <nav className="flex-1 p-3" aria-label="Primary navigation">
           <div className="px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
-            Connectivity Needs
+            Connectivity
           </div>
+          <button
+            type="button"
+            className={navClass("connectivity")}
+            aria-current={activeNav === "connectivity" ? "page" : undefined}
+            onClick={() => onNavigate("connectivity")}
+          >
+            <Network className="size-4" aria-hidden="true" />
+            Connectivity
+          </button>
           <button
             type="button"
             className={navClass("requirements")}
@@ -54,21 +68,12 @@ export function AppShell({
             onClick={() => onNavigate("requirements")}
           >
             <ClipboardList className="size-4" aria-hidden="true" />
-            My Connectivity Needs
+            Needs
           </button>
 
           <div className="px-3 pb-2 pt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
-            Access Policy
+            Policy
           </div>
-          <button
-            type="button"
-            className={navClass("compose")}
-            aria-current={activeNav === "compose" ? "page" : undefined}
-            onClick={() => onNavigate("compose")}
-          >
-            <PanelLeftClose className="size-4" aria-hidden="true" />
-            Compose Connectivity
-          </button>
           <button
             type="button"
             className={navClass("rules")}
@@ -76,12 +81,8 @@ export function AppShell({
             onClick={() => onNavigate("rules")}
           >
             <ListTree className="size-4" aria-hidden="true" />
-            Access Rules
+            Rules
           </button>
-
-          <div className="px-3 pb-2 pt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
-            Policy Views
-          </div>
           <button
             type="button"
             className={navClass("effective")}
@@ -89,7 +90,7 @@ export function AppShell({
             onClick={() => onNavigate("effective")}
           >
             <Clock3 className="size-4" aria-hidden="true" />
-            Effective Policy
+            Effective
           </button>
           <button
             type="button"
@@ -98,53 +99,47 @@ export function AppShell({
             onClick={() => onNavigate("normalized")}
           >
             <TableProperties className="size-4" aria-hidden="true" />
-            Normalized Policy
+            Export
           </button>
         </nav>
       </aside>
 
       <div className="min-w-0">
         <header className="flex min-h-16 items-center justify-between gap-3 border-b border-[#E2E8F0] bg-white px-4 md:px-6">
-          <div className="flex items-center gap-2 md:hidden">
-            <button
-              type="button"
-              className="rounded-md px-2 py-1.5 text-xs font-semibold text-[#334155] hover:bg-[#F1F5F9]"
-              onClick={() => onNavigate("requirements")}
-            >
-              Needs
-            </button>
-            <button
-              type="button"
-              className="rounded-md px-2 py-1.5 text-xs font-semibold text-[#334155] hover:bg-[#F1F5F9]"
-              onClick={() => onNavigate("compose")}
-            >
-              Compose
-            </button>
-            <button
-              type="button"
-              className="rounded-md px-2 py-1.5 text-xs font-semibold text-[#334155] hover:bg-[#F1F5F9]"
-              onClick={() => onNavigate("rules")}
-            >
-              Rules
-            </button>
-            <button
-              type="button"
-              className="rounded-md px-2 py-1.5 text-xs font-semibold text-[#334155] hover:bg-[#F1F5F9]"
-              onClick={() => onNavigate("effective")}
-            >
-              Effective
-            </button>
-            <button
-              type="button"
-              className="rounded-md px-2 py-1.5 text-xs font-semibold text-[#334155] hover:bg-[#F1F5F9]"
-              onClick={() => onNavigate("normalized")}
-            >
-              Normalized
-            </button>
-          </div>
+          <nav
+            className="flex min-w-0 items-center gap-1 overflow-x-auto md:hidden"
+            aria-label="Primary navigation"
+          >
+            {(
+              [
+                ["connectivity", "Connectivity"],
+                ["requirements", "Needs"],
+                ["rules", "Rules"],
+                ["effective", "Effective"],
+                ["normalized", "Export"],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                className={
+                  key === activeNav
+                    ? "shrink-0 rounded-md bg-[#E8EEF8] px-2 py-1.5 text-xs font-semibold text-[#172033]"
+                    : "shrink-0 rounded-md px-2 py-1.5 text-xs font-semibold text-[#64748B] hover:bg-[#F1F5F9]"
+                }
+                aria-current={key === activeNav ? "page" : undefined}
+                onClick={() => onNavigate(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+
           <div className="ml-auto flex items-center gap-3">
             <div className="hidden text-right sm:block">
-              <div className="text-sm font-semibold text-[#172033]">{actor.login}</div>
+              <div className="text-sm font-semibold text-[#172033]">
+                {actor.login}
+              </div>
               <div className="text-xs text-[#64748B]">{actor.actorId}</div>
             </div>
             <Button variant="ghost" onClick={() => void onLogout()}>
