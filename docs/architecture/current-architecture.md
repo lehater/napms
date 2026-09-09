@@ -1,6 +1,6 @@
 # Current target architecture
 
-Status: `accepted current target through I22; I23 Enterprise Identity and Authoritative Source Integration is next`.
+Status: `accepted current target through I23 optional integration skeleton; I24 local deployment hardening is next`.
 
 Date: 2026-09-10.
 
@@ -59,11 +59,11 @@ Current first-class semantic modules include:
 
 Current non-peer application/read compositions include Requirement-to-Policy Alignment, policy export/snapshot normalization and Scoped Connectivity Inventory.
 
-I20 implements APR managed-scope desired/configured reconciliation. I21 adds target-specific rendering inside APR. I22 adds a separate downstream Network Environment Operations boundary for operation identity, authority admission, concurrency, mutation outcomes and verification. Runtime/deployment decomposition remains evidence-driven.
+I20 implements APR managed-scope desired/configured reconciliation. I21 adds target-specific rendering inside APR. I22 adds a separate downstream Network Environment Operations boundary for operation identity, authority admission, concurrency, mutation outcomes and verification. I23 adds only a dormant source-neutral external identity/source extension seam while preserving local-first runtime behavior. Runtime/deployment decomposition remains evidence-driven.
 
 ## Current runtime boundary
 
-Implemented local/development topology:
+Implemented local topology:
 
 ```text
 browser
@@ -73,11 +73,17 @@ browser
   -> module-owned PostgreSQL repositories
 ```
 
-The normal local topology exposes one public nginx endpoint. This is a development/runtime boundary, not a production deployment/SLA claim.
+Local username/password authentication with server-side sessions is the primary supported authentication path. Authority/ACC/Resource data remain locally owned and populated for the current product. No external IdP, directory, CMDB, catalogue or MSSQL dependency is required for normal operation.
+
+The normal local topology exposes one public nginx endpoint. It is the current supported deployment shape, not a claim of enterprise HA/SLA topology.
 
 ## Authority and trust boundaries
 
 Authenticated actor identity originates from the server/session boundary, not request payloads. Application use cases evaluate action-specific Authority Management admission. Read authority and mutation authority remain independent. Unknown/ambiguous required authority fails closed.
+
+A dormant optional external-authentication seam may provide a verified provider-qualified external subject to an `ActorIdentityResolver`, which resolves only to `Mapped | Unmapped | Ambiguous | Unknown`; only `Mapped` exposes a NAPMS actor. This seam is not wired as the default login path and introduces no OIDC/OAuth2/provider dependency.
+
+Authentication identity does not grant business authority. Authority Management remains the owner of application permission for both local actors and any future externally mapped actor.
 
 ## Technical Access Evidence
 
@@ -146,9 +152,17 @@ Feature contract: `docs/architecture/network-environment-operations-boundary.md`
 
 A composition consumes explicit owner/application ports, owns orchestration only, does not create copied business truth, and represents missing/ambiguous contributors explicitly. APR EnforcementTarget -> NEO OperationTarget mapping follows this rule.
 
-## Transition and external sources
+## Optional external extensions — I23
 
-Legacy/MSSQL and real provider/device transport are not target dependencies by default. Vendor rendering is an APR outer-adapter capability. When concrete enterprise/provider integration is selected, adapt it at the infrastructure boundary, preserve provenance and fail closed when required identity/validity cannot be established.
+External identity and source integrations are optional future extensions, not current target dependencies.
+
+If a future external authentication mechanism is selected, provider/protocol handling stays in an outer adapter and terminates at the source-neutral verified-identity/actor-resolution seam.
+
+If a future external Authority, ACC or Resource source is selected, its adapter terminates at a context-owned import/projection boundary. External transport/vendor models do not enter Domain and do not create shared mutable cross-context source state.
+
+Deterministic stubs are sufficient to prove dormant seams. Real provider/source compatibility is not part of the current product-completion criterion and requires its own accepted future requirement.
+
+Legacy/MSSQL and real provider/device transport are not target dependencies by default.
 
 ## Security/integrity guardrails
 
@@ -160,11 +174,12 @@ Architecture must preserve:
 - no silent semantic broadening/narrowing in normalization or rendering;
 - no false Verified outcome from transport acceptance alone;
 - operation idempotency and optimistic concurrency for mutation;
+- authentication identity separate from business authority;
 - explicit degraded/error outcomes instead of convenient permission, absence or success.
 
 ## Revisit triggers
 
-Revisit topology or add infrastructure only when accepted evidence requires it, such as concrete enterprise/provider source mechanics, a real Cisco lab/transport contract, production identity/deployment requirements, measured performance needs, or independent scale/security/availability constraints.
+Revisit topology or add infrastructure only when accepted evidence requires it, such as a concrete external identity/source requirement, a real Cisco lab/transport contract, measured performance needs, or independent scale/security/availability constraints.
 
 ## Canonical references
 
