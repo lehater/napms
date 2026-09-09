@@ -1,6 +1,6 @@
 # Current target architecture
 
-Status: `accepted current target through I17; I18 is the next roadmap increment`.
+Status: `accepted current target through I18; I19 Network Enforcement Placement Tactical DDD selected for execution`.
 
 Date: 2026-09-09.
 
@@ -65,7 +65,10 @@ Current first-class contexts include:
 - Resource Catalogue;
 - Connectivity Requirements;
 - Connectivity Decision;
-- Technical Access Evidence.
+- Technical Access Evidence;
+- Access Policy Realization.
+
+Network Enforcement Placement is a first-class strategic context with the I19 Tactical DDD/architecture boundary accepted and implementation currently selected.
 
 Current non-peer application/read compositions include:
 - Requirement-to-Policy Alignment;
@@ -74,9 +77,7 @@ Current non-peer application/read compositions include:
 
 Scoped Connectivity Inventory is implemented as an owner-preserving application composition with Resource Scope Affiliation, `ReadScopedConnectivity`, module-owned adapters and no independent persistence.
 
-Later roadmap contexts include Access Policy Realization and Network Enforcement Placement.
-
-Their exact runtime/deployment decomposition remains evidence-driven.
+Later roadmap stages extend Access Policy Realization with I20 reconciliation/policy derivation and then rendering/execution concerns. Runtime/deployment decomposition remains evidence-driven.
 
 ## Current runtime boundary
 
@@ -148,7 +149,33 @@ Architecture rules:
 - TAE uses a dedicated PostgreSQL composition scope so ordinary HTTP requests do not allocate an unused TAE connection;
 - strict local JSON parsing rejects duplicate object fields and unsupported fields rather than accepting ambiguous last-write-wins source syntax.
 
-Access Policy Realization may consume TAE in I18 through a consumer-owned projection/port; TAE must not depend on that future consumer.
+Access Policy Realization consumes TAE in I18 through a consumer-owned projection/port; TAE does not depend on that consumer.
+
+## Network Enforcement Placement
+
+The accepted I19 boundary is a first-class NEP module with framework-free Domain/Application/Ports and outer source/persistence adapters.
+
+First-slice architecture:
+
+```text
+provider/network path source
+    -> strict outer adapter
+    -> NEP-owned normalized forwarding/path + correspondence + attachment facts
+    -> NEP-owned PostgreSQL
+    -> SelectEnforcement(exact source/destination pair, asOf)
+```
+
+Architecture rules:
+- NEP Domain/Application import no peer bounded context;
+- Logical Firewall identity is independent from provider/device realization and Resource identity;
+- provider/path references are opaque normalized correspondence/provenance values;
+- one complete path or positive no-route fact is required for a complete first-slice result;
+- unsupported forwarding dimensions or multipath fail closed as `Unknown`;
+- an Enforcement Attachment supports placement only with a matching effective Logical Firewall/provider correspondence;
+- no cross-context SQL;
+- no I20 desired-vs-configured semantics, vendor rendering or execution enter I19.
+
+APR may consume NEP later through an APR-owned projection/port. NEP must not depend on APR to make that consumer work.
 
 ## Coherent policy export
 

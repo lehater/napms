@@ -1,6 +1,6 @@
 # Domain capability ownership map
 
-Status: `accepted NAPMS-DDD-001 living capability map; source DDD-BDM-010 extended through I18`.
+Status: `accepted NAPMS-DDD-001 living capability map; source DDD-BDM-010 extended through I19`.
 
 A capability is not automatically a Bounded Context, service or deployment unit.
 
@@ -85,6 +85,19 @@ I13 Tactical DDD now accepts:
 - justification/applicability mutable; dependent/interaction immutable.
 
 Advanced alternative/conditional requirement semantics remain deferred.
+
+## Network Enforcement Placement identity
+
+Network / Forwarding State and Enforcement Selection are one NEP capability boundary for I19.
+
+The first executable slice accepts:
+- one exact source/destination IP pair as an ephemeral Traffic Relation;
+- zero/one complete normalized Forwarding Path with ordered provider/path Traversal Points;
+- stable Logical Firewall identity independent from provider realization;
+- temporal Logical Firewall Correspondence and Enforcement Attachment;
+- selection `Placed | NoEnforcement | NoForwardingPath | Ambiguous | Unknown`.
+
+Multipath/ECMP and unrepresented forwarding discriminators remain explicit `Unknown` until a concrete environment requires and defines their semantics.
 
 ## Technical Access Evidence identity
 

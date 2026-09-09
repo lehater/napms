@@ -2,38 +2,38 @@
 
 Current: `PLAN-033-i19-network-enforcement-placement.md`
 Goal: Complete I19 Network Enforcement Placement without pulling I20 reconciliation or vendor/device mechanics forward.
-Current task: WP-0 — close Tactical DDD, requirements and architecture semantics for path knowledge, Logical Firewall correspondence, Enforcement Attachment and Enforcement Selection.
+Current task: WP-1 — implement framework-free NEP Domain/Application/Ports and executable core semantics.
 
-Working mode: domain re-entry; primary Skill `domain-model-change`.
+Working mode: implementation slice; primary Skill `implement-slice`.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-033-i19-network-enforcement-placement.md`
-- `docs/engineering/post-wave1-product-completion-roadmap.md`
-- `docs/domain/resource-role-model.md`
+- `docs/domain/network-enforcement-placement/tactical-model.md`
+- `docs/architecture/network-enforcement-placement-boundary.md`
 
 Expand only if needed:
-- `docs/domain/semantic-ownership.md`
-- `docs/domain/ubiquitous-language.md`
-- `docs/domain/strategic-model.md`
-- `docs/architecture/current-architecture.md`
-- `docs/process/decision-protocol.md`
+- `docs/requirements/network-enforcement-placement-core.md`
+- `src/AGENTS.md`
+- `tests/architecture/test_dependency_rules.py`
+- `src/napms/access_policy_realization/`
+- `src/napms/technical_access_evidence/`
 
 Recovery facts:
-- I18 is complete in `main`; I19 is the selected next increment.
-- NEP owns path/forwarding meaning and placement; it does not own authorization, configured evidence or I20 reconciliation.
-- Logical Firewall, provider/device realization, Resource and Enforcement Attachment are distinct identities.
-- current `docs/architecture/current-architecture.md` has a stale status line referring to I18 as next; repair it during WP-0 propagation.
+- WP-0 is accepted: exact endpoint-pair first slice, zero/one complete path, unsupported multipath/discriminators -> Unknown.
+- Logical Firewall identity is independent from provider realization; attachments require matching effective correspondence.
+- Selection states are `Placed | NoEnforcement | NoForwardingPath | Ambiguous | Unknown`.
+- I20 reconciliation/policy derivation and vendor/provider execution remain out of scope.
 
 ## Blockers
 
-Implementation gate is closed until WP-0 accepts exact selection/unknown/temporal/correspondence semantics.
+None for WP-1.
 
 ## Gate
 
-WP-0 passes when canonical domain + requirements + architecture can specify an executable NEP core without inventing I20 or provider-specific meaning.
+WP-1 passes when Domain/Application/Ports implement the accepted selection semantics with deterministic fail-closed tests and no peer/infrastructure dependency.
 
 ## Next
 
-Inspect the smallest current NEP evidence set, resolve the WP-0 semantic choices, persist the accepted contract, then open WP-1 only if no blocking unknown remains.
+Implement NEP core + architecture tests, then advance to WP-2 durable PostgreSQL/import proof only after the core gate is coherent.

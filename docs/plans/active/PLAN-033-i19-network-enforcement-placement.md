@@ -126,8 +126,8 @@ I19 is complete only when:
 
 ## Blockers
 
-WP-0 semantic choices are intentionally unresolved until the current canonical evidence is reconciled. No implementation blocker is allowed to be solved silently in code.
+WP-0 semantic choices are accepted in the I19 Tactical DDD/requirements/architecture contract. No plan-level blocker remains for WP-1.
 
 ## Next
 
-Execute WP-0 with `domain-model-change`: write the smallest accepted NEP Tactical DDD/requirements/architecture contract, then re-evaluate the implementation gate.
+Execute WP-1: implement the framework-free NEP Domain/Application/Ports and executable core/architecture tests from the accepted WP-0 contract.
