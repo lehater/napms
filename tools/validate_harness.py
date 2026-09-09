@@ -58,6 +58,7 @@ def main() -> int:
     required = [
         ROOT / "AGENTS.md",
         ROOT / "src" / "AGENTS.md",
+        ROOT / "web" / "AGENTS.md",
         ROOT / "docs" / "AGENTS.md",
         ROOT / ".agents" / "README.md",
         ROOT / ".agents" / "skills" / "AGENTS.md",
@@ -72,7 +73,7 @@ def main() -> int:
     root_agents = ROOT / "AGENTS.md"
     if root_agents.is_file():
         text = root_agents.read_text(encoding="utf-8-sig")
-        for marker in [".agents/skills/", "docs/plans/active/README.md", "squash merge", "must not commit directly to `main`"]:
+        for marker in [".agents/skills/", "docs/plans/active/README.md", "web/AGENTS.md", "squash merge", "must not commit directly to `main`"]:
             if marker not in text:
                 errors.append(f"AGENTS.md missing guardrail marker: {marker}")
         if len(text.encode("utf-8")) > 12 * 1024:
