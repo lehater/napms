@@ -1,6 +1,6 @@
 # Active execution
 
-Current: `PLAN-016-i16-connectivity-decision-runtime.md`.
+Current: `PLAN-016-i16-connectivity-decision-runtime.md`
 
 Roadmap: `docs/engineering/post-wave1-product-completion-roadmap.md`.
 
