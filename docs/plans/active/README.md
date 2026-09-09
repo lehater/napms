@@ -1,13 +1,30 @@
 # Active execution
 
-Current: `I22 — Network Environment Operations`, selected on branch `i22-network-environment-operations`.
+Current: `PLAN-I22-network-environment-operations.md`
 
-Active plan: `docs/plans/active/PLAN-I22-network-environment-operations.md`.
+Goal: prove I22 Network Environment Operations semantics through a deterministic stub because no real lab is available.
 
-Current stage: `S1 — Domain/requirements/architecture re-entry`.
+Current task: S4 desired -> rendered -> stub-applied -> verified composition proof.
 
-I21 Configuration Rendering is complete and absorbed into canonical truth.
+## Working set
 
-I22 starts downstream of the accepted Cisco ASA rendering artifact. Before any device mutation code, resolve semantic ownership, the concrete execution transport, operation identity/idempotency, pre/post-check semantics, explicit partial/unknown outcomes, concurrency/recovery and durable execution provenance.
+Read first:
+- `docs/plans/active/PLAN-I22-network-environment-operations.md`
+- `docs/requirements/network-environment-operations.md`
+- `docs/domain/network-environment-operations/tactical-model.md`
+- `docs/architecture/network-environment-operations-boundary.md`
+- `src/napms/network_environment_operations/application.py`
 
-I23 Enterprise Identity and Authoritative Source Integration remains downstream and must not be pulled into I22.
+Expand only when S4 composition requires an existing APR/I21 owner file.
+
+## Blockers
+
+No real Cisco lab is available. This is accepted: the current proof uses a deterministic in-process target stub and must not be described as real Cisco integration.
+
+## Gate
+
+S1 accepted; S2/S3 implemented. Hosted CI remains the executable gate after S4 composition proof and PR creation.
+
+## Next
+
+Compose the existing APR desired-policy + Cisco ASA rendering flow into the deterministic target stub, prove Verified plus stale/concurrent/unknown adversarial outcomes, then open the I22 PR.
