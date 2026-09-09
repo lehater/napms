@@ -84,7 +84,7 @@ class DeterministicTargetStub:
             self.revision += 1
         if str(self.revision) != expected_revision:
             return ApplyResult(
-                status=ApplyStatus.REJECTED,
+                status=ApplyStatus.PRECONDITION_FAILED,
                 operation_reference=f"stub:apply:{operation_id}:revision-conflict",
                 reason="target revision changed before apply",
             )
