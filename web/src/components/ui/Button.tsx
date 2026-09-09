@@ -19,7 +19,7 @@ export function Button({
     secondary:
       "bg-white text-[#172033] hover:bg-[#F8FAFC] border-[#CBD5E1]",
     ghost:
-      "bg-transparent text-[#64748B] hover:bg-[#F1F5F9] border-transparent",
+      "bg-transparent text-[#5F6B7D] hover:bg-[#F1F5F9] border-transparent",
   }
 
   return (
