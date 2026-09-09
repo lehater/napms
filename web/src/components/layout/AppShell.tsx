@@ -105,7 +105,7 @@ export function AppShell({
 
       <div className="min-w-0">
         <header className="flex min-h-16 items-center justify-between gap-3 border-b border-[#E2E8F0] bg-white px-4 md:px-6">
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1 md:hidden">
             <button
               type="button"
               className="rounded-md px-2 py-1.5 text-xs font-semibold text-[#334155] hover:bg-[#F1F5F9]"
