@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { getSession, login, logout, type Actor } from "@/api"
 import { AppShell } from "@/components/layout/AppShell"
 import { LoginPage } from "@/features/auth/LoginPage"
+import { ConnectivityPage } from "@/features/connectivity/ConnectivityPage"
 import { EffectivePolicyPage } from "@/features/policy/EffectivePolicyPage"
 import { NormalizedPolicyPage } from "@/features/policy/NormalizedPolicyPage"
 import { ComposeConnectivityPage } from "@/features/proposals/ComposeConnectivityPage"
@@ -12,6 +13,7 @@ import { AccessRuleDetailsPage } from "@/features/rules/AccessRuleDetailsPage"
 import { AccessRulesPage } from "@/features/rules/AccessRulesPage"
 
 type Route =
+  | { kind: "connectivity"; page: number }
   | { kind: "requirements"; page: number }
   | { kind: "requirement"; requirementId: string }
   | { kind: "compose" }
@@ -39,6 +41,15 @@ function readRoute(): Route {
       page: Number.isInteger(page) && page > 0 ? page : 1,
     }
   }
+  if (hash.startsWith("connectivity")) {
+    const query = hash.includes("?") ? hash.split("?")[1] : ""
+    const page = Number(new URLSearchParams(query).get("page") ?? "1")
+    return {
+      kind: "connectivity",
+      page: Number.isInteger(page) && page > 0 ? page : 1,
+    }
+  }
+  if (hash.startsWith("compose")) return { kind: "compose" }
   if (hash.startsWith("effective-policy")) return { kind: "effective" }
   if (hash.startsWith("normalized-policy")) return { kind: "normalized" }
   if (hash.startsWith("access-rules/")) {
@@ -53,7 +64,7 @@ function readRoute(): Route {
       page: Number.isInteger(page) && page > 0 ? page : 1,
     }
   }
-  return { kind: "compose" }
+  return { kind: "connectivity", page: 1 }
 }
 
 function navigate(hash: string) {
@@ -105,15 +116,15 @@ export function App() {
   }
 
   const activeNav =
-    route.kind === "requirements" || route.kind === "requirement"
-      ? "requirements"
-      : route.kind === "compose"
-        ? "compose"
-      : route.kind === "effective"
-        ? "effective"
-        : route.kind === "normalized"
-          ? "normalized"
-          : "rules"
+    route.kind === "connectivity" || route.kind === "compose"
+      ? "connectivity"
+      : route.kind === "requirements" || route.kind === "requirement"
+        ? "requirements"
+        : route.kind === "effective"
+          ? "effective"
+          : route.kind === "normalized"
+            ? "normalized"
+            : "rules"
 
   return (
     <AppShell
@@ -121,15 +132,15 @@ export function App() {
       activeNav={activeNav}
       onNavigate={(target) =>
         navigate(
-          target === "requirements"
-            ? "connectivity-needs?page=1"
-            : target === "compose"
-              ? "compose"
-            : target === "rules"
-              ? "access-rules?page=1"
-              : target === "effective"
-                ? "effective-policy"
-                : "normalized-policy",
+          target === "connectivity"
+            ? "connectivity?page=1"
+            : target === "requirements"
+              ? "connectivity-needs?page=1"
+              : target === "rules"
+                ? "access-rules?page=1"
+                : target === "effective"
+                  ? "effective-policy"
+                  : "normalized-policy",
         )
       }
       onLogout={async () => {
@@ -137,7 +148,12 @@ export function App() {
         setActor(null)
       }}
     >
-      {route.kind === "requirements" ? (
+      {route.kind === "connectivity" ? (
+        <ConnectivityPage
+          page={route.page}
+          onPageChange={(page) => navigate(`connectivity?page=${page}`)}
+        />
+      ) : route.kind === "requirements" ? (
         <ConnectivityRequirementsPage
           page={route.page}
           onPageChange={(page) =>
