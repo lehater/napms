@@ -251,11 +251,13 @@ export function ConnectivityDecisionDetailsPage({
   }
 
   const decision = detail?.decision ?? null
-  const canReplace =
-    decision !== null && decideScopes.includes(decision.governanceScope)
   const scopeAmbiguous =
     decision !== null &&
     ambiguousDecideScopes.includes(decision.governanceScope)
+  const canReplace =
+    decision !== null &&
+    decideScopes.includes(decision.governanceScope) &&
+    !scopeAmbiguous
 
   return (
     <div className="mx-auto max-w-[1180px]">
