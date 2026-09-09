@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline after I13`.
+Status: `accepted ordered sequencing baseline after I14`.
 
 Date: 2026-09-09.
 
@@ -28,7 +28,7 @@ The roadmap may be refined when new accepted domain evidence changes boundaries 
 ## Baseline
 
 Completed:
-- I1-I13;
+- I1-I14;
 - Wave 1 proposal -> Connectivity Decision seam -> Access Rule -> effective desired policy -> coherent normalized policy;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
@@ -38,7 +38,6 @@ Completed:
 Wave 1 intentionally stopped before Connectivity Requirements runtime participation; I13 now closes the first Connectivity Requirements core/runtime/workspace slice.
 
 Still deferred:
-- Requirement-to-Policy Alignment;
 - Connectivity Decision internals/workflow;
 - Network Enforcement Placement;
 - Technical Access Evidence;
@@ -73,7 +72,7 @@ Detailed execution was completed and absorbed into canonical truth; the active I
 
 ### I14 — Requirement-to-Policy Alignment
 
-Status: `current`.
+Status: `done`.
 
 Goal:
 compare accepted Connectivity Requirements with current Access Policy without making either context own the other.
@@ -92,9 +91,17 @@ Guardrails:
 Primary product surface:
 owner/responsible-user view showing each declared need and its current policy-coverage state.
 
+Implemented in I14:
+- exact Requirement↔Rule semantic matching;
+- Covered / Uncovered / NotCurrent / Unknown;
+- Requirement-read-authorized derived status with Rule details still protected;
+- explicit asOf;
+- pure read composition with no Alignment persistence;
+- no Denied/orphan-policy semantics in the first slice.
+
 ### I15 — Connectivity Decision Domain Closure
 
-Status: `planned after I14`.
+Status: `next after I14`.
 
 Goal:
 promote the currently deferred Connectivity Decision research only when Requirement and current-policy semantics are concrete enough to answer why/how a proposal becomes `Allowed | NotAllowed`.
