@@ -108,7 +108,23 @@ Accepted baseline:
 
 Exit: browser/visual quality gate is green and becomes a required regression gate for later UI increments.
 
-## UI-9 — Connectivity Decisions — planned in I16 after UI-8
+## UI-8A — Full roadmap preview shell — active in I16 before visual baseline lock
+
+Goal: make the planned product shape reviewable before backend implementation.
+
+Scope:
+- expose user-facing roadmap surfaces from I16-I22 and accepted I25 operator/explainability work in the intended desktop navigation;
+- every planned item opens a real preview route;
+- every preview is visibly marked `Preview · Planned Ixx`;
+- use structural empty states and only already-accepted fields/sections;
+- keep all unimplemented actions disabled/non-interactive with explicit explanation;
+- exclude I24 hardening and any I23 admin/source screen whose human workflow is not yet accepted;
+- use the same off-canvas navigation taxonomy on narrow screens;
+- cover preview route reachability, non-executable actions, accessibility and visual layout in Playwright.
+
+Exit: the full accepted future shell is visible and reviewable without misleading the user about implementation state.
+
+## UI-9 — Connectivity Decisions — planned in I16 after UI-8/UI-8A
 
 - authorized Decision list/details;
 - direct final `Allowed | NotAllowed` recording;
