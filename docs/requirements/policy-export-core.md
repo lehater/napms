@@ -17,7 +17,7 @@ An export is evaluated for:
 - one Rule Governance Scope;
 - explicit offset-aware `asOf`.
 
-Authority Management must admit the effective-policy/export read for that scope/time. Caller input does not establish trusted actor identity.
+Authority Management must admit the current effective-policy read contract for that scope/time; the current action is `ReadEffectiveDesiredPolicy`. Caller input does not establish trusted actor identity.
 
 ## Effective policy input
 
@@ -35,7 +35,7 @@ For every selected Rule the snapshot must correlate:
 - time-qualified Deployment -> Resource binding facts;
 - Resource Catalogue endpoint/address realization for the referenced Resources;
 - immutable DCS projection semantics;
-- authority/provenance required for the export read.
+- authority/provenance required for the selected effective-policy read.
 
 Each contributing fact must provide enough identity/version/effective-validity evidence to establish that it is valid for the same logical `asOf`.
 
