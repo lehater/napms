@@ -2,7 +2,7 @@
 
 Current: `PLAN-038-i24-local-deployment-hardening.md`
 
-Current task: local runtime security baseline verification.
+Current task: local PostgreSQL backup and recovery contract.
 
 Goal: harden the supported local Docker Compose deployment without introducing enterprise infrastructure or changing product/domain semantics.
 
@@ -10,21 +10,21 @@ Goal: harden the supported local Docker Compose deployment without introducing e
 
 Read first:
 - `docs/plans/active/PLAN-038-i24-local-deployment-hardening.md`
+- `tools/local_postgres_backup.py`
+- `tools/local_start.py`
 - `compose.yaml`
-- `tools/prepare_local_postgres.py`
-- `tools/verify_local_postgres_auth.py`
 - `.github/workflows/docker.yml`
 
-Expand only as needed into `docs/engineering/local-docker-runtime.md`, `.env.example`, `Makefile`, `README.md` and canonical current engineering/architecture state.
+Expand only as needed into `docs/engineering/local-docker-runtime.md`, `Makefile`, `.gitignore`, README and canonical engineering state.
 
 ## Blockers
 
-None for WP1 verification. A pre-I24 database volume may legitimately fail the new wrong-password check because PostgreSQL host-authentication rules persist in the volume; needed data must be backed up before recreation/migration.
+None. Restore is intentionally destructive and must require explicit confirmation plus backup validation before replacing the local PostgreSQL volume.
 
 ## Gate
 
-Fresh local Compose must initialize PostgreSQL with SCRAM host authentication. A second startup on the same preserved volume must rotate to a new generated database credential. Both runs must accept the configured password, reject a deliberately wrong password, preserve local UI login/session behavior and keep public ingress loopback-only.
+A logical backup must restore into a clean local PostgreSQL volume, preserve known durable application state created by the fresh journey, and allow restart-safe authenticated reads afterward. Backup does not claim to capture in-memory sessions, in-memory NEO operations, external device/provider state or local secret values.
 
 ## Next
 
-Run repository gates on the credential-rotation head. If green, mark WP1 done and implement WP2 logical PostgreSQL backup/restore tooling and recovery proof.
+Implement custom-format `pg_dump` backup, validated explicit clean-volume restore and a Docker backup -> replace volume -> restore -> authenticated read round-trip proof.
