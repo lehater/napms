@@ -27,7 +27,7 @@ I13 deliberately stops before Requirement-to-Policy Alignment and before Connect
 
 ## Current stage
 
-**WP7 — Web UI: My Connectivity Needs.**
+**WP8 — PostgreSQL/Docker public E2E.**
 
 Evidence synthesis is complete. Working packet:
 `docs/plans/active/I13-WP1-connectivity-requirements-decision-packet.md`.
@@ -173,7 +173,7 @@ Trust boundary:
 
 ### WP7 — Web UI: My Connectivity Needs
 
-Status: `active`.
+Status: `done`.
 
 First UI:
 - navigation entry for Connectivity Requirements;
@@ -243,8 +243,8 @@ I13 is complete only when:
 
 No current owner/product blocker.
 
-No current semantic blocker. WP6 core/PostgreSQL/Docker/harness/knowledge gates are green, including the fresh-stack migration packaging fix.
+No current semantic blocker. WP7 Web build gate is green; core/harness/knowledge also remain green.
 
 ## Next
 
-Implement WP7 My Connectivity Needs Web workspace over the accepted I13 HTTP contract; no approval/decision UI.
+Add WP8 public PostgreSQL/Docker E2E evidence for declaration/read/mutation/retirement and restart persistence, including the invariant that Requirement creation has zero Access Policy side effect.
