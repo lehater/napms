@@ -1,282 +1,343 @@
-# Web UI requirements — accepted I8 refinement
+# Web UI requirements — connectivity workspace direction
 
-Status: `accepted through I14 Requirement-to-Policy Alignment UX`.
+Status: accepted product/UX direction through I15; I16A semantics required before implementation.
 
 Date: 2026-09-09.
 
 ## Purpose
 
-Define the accepted first NAPMS Web UI increment and the product/UX constraints from which the HTTP runtime contract is derived.
+Define the current NAPMS Web UI product/UX requirements.
 
-This document owns Web UI product/UX requirements. `docs/ui/` owns the implementation-oriented visual handoff. Runtime/API mechanics remain engineering concerns.
+This file owns product-facing Web UI behavior and information architecture. Detailed cross-context overview semantics are owned by docs/requirements/scoped-connectivity-inventory.md. docs/ui/ owns implementation-oriented visual handoff. Runtime/API mechanics remain engineering concerns.
 
 ## Product boundary
 
-The Web UI is the first human-facing consumer of the NAPMS HTTP JSON API.
+The Web UI is a human-facing outer adapter over accepted NAPMS application/domain capabilities. It is not a second source of business truth.
 
-The UI is an outer adapter, not a second source of business truth. Access Policy, Authority Management, Application Communication Catalogue, Resource Catalogue and normalized export semantics remain owned by backend Domain/Application modules.
+The UI may compose read models across bounded contexts when that composition has an explicit accepted contract. It must not duplicate or redefine Resource Catalogue, Application Communication Catalogue, Connectivity Requirements, Connectivity Decision, Access Policy, or later realization-context truth.
 
-Backend routes and DTOs must follow accepted application use cases and UI journeys rather than generic database CRUD.
+Backend routes/DTOs follow accepted application use cases and read compositions rather than generic database CRUD.
 
-## First persona and authority model
+## Primary user model
 
-The Web UI serves authenticated actors through effective Authority Management permissions for each requested action. Proposal composition uses `ProposeConnectivity`; Access Rule workspace reads use `ReadAccessRule`; state mutation uses `SetRuleOperationalState`.
+The default user experience is responsibility- and resource-centric:
 
-The UI persona is defined by effective domain authority, not by a hard-coded UI role name. One authenticated actor may have different allowed actions across scopes and times.
+    Login
+      -> Connectivity
+      -> selected responsibility scope
+      -> local Resources
+      -> bound Component Deployments
+      -> connectivity relationships
+      -> Need / Decision / Policy
+      -> Realization later
 
-I13 adds Connectivity Requirements actions independently from Access Policy actions: declaration/read/applicability/justification/retirement permissions are checked separately by the backend.
+The user must understand the landscape without learning NAPMS bounded-context names or manually reconstructing one relationship across several pages.
 
-The backend remains authoritative for both visibility and action admission. Client-side hiding/disabling is UX only.
+## Authority and scope
 
-## First end-to-end journey
+The authenticated session supplies actor identity. The client never supplies trusted actor_id.
 
-The first useful UI journey is:
+The selected scope is the workspace responsibility context. It determines the local/my side and is an input to admitted actions.
 
-```text
-Login
-    -> Compose Connectivity
-    -> select Source Component Deployment
-    -> select Destination Component Deployment
-    -> select one compatible immutable DCS contract/revision
-    -> Submit Access Rule Proposal
-    -> consume ConnectivityDecision(Allowed | NotAllowed)
-    -> Allowed: show created/resolved authoritative Access Rule
-    -> NotAllowed: show the business result; no Access Rule exists
-```
+The backend remains authoritative for every domain action. UI hiding/disabling is presentation only.
 
-Rules:
-- the user chooses trusted catalogue/domain references rather than entering firewall addresses, protocol/ports or vendor syntax;
-- composition must expose only references/interactions admitted by backend use cases for the authenticated actor/scope;
-- the UI never supplies a trusted `actor_id`; authenticated backend identity feeds Authority Management;
-- repeated Allowed materialization may resolve the existing Rule and must be presented as the same authoritative outcome, not a duplicate request;
-- `NotAllowed` is a valid business outcome, distinct from transport/security failure.
+Existing action-specific authority remains independent, including Connectivity Requirements actions, ProposeConnectivity, DecideConnectivity / ReadConnectivityDecision, ReadAccessRule, Rule state/effective-window mutation and ReadEffectiveDesiredPolicy.
 
-## Connectivity Decision deferral
+Ownership/responsibility must not be treated as implicit permission. Authority Management remains authoritative.
 
-I8 does not implement or expose an approval workflow.
+The exact domain relation selected responsibility scope -> local Resources is a P0 semantic closure item for I16A and must be accepted before implementation.
 
-The current stable seam remains:
+## Current catalogue visibility baseline
 
-```text
-Access Rule Proposal
-    -> ConnectivityDecision(Allowed | NotAllowed)
-    -> Access Policy
-```
+For the current increment, authenticated users may read catalogue information needed to understand both sides of connectivity:
 
-Do not introduce UI/domain concepts such as persistent `Access Request`, `Pending`, `Approved`, `Rejected`, approval queue, approver, human approval lifecycle or self-approval.
+- Resource Catalogue Resources/Endpoints;
+- ACC Applications/Components/Component Deployments;
+- DCS labels/traffic semantics;
+- DeploymentResourceBindings.
 
-If a future product increment must manage the Connectivity Decision process, first reopen the deferred Connectivity Decision Domain and define its semantics before adding workflow UI.
+Foreign catalogue objects are therefore visible as remote-side context and are read-only unless a separately admitted action exists.
 
-## Initial screen set
+This global catalogue visibility does not grant global read access to protected Requirement, Decision or Access Rule details.
 
-### 1. Login
+Fine-grained discover/read visibility for foreign catalogue objects is deferred. Future visibility policy remains independent from domain-action authority and object identity.
 
-Purpose: authenticate into the controlled/test environment.
+## Primary workspace — Connectivity
 
-Inputs: login, password.
+After Login, the primary route is Connectivity.
 
-Output: authenticated application session or explicit authentication failure.
+Purpose:
 
-### 2. Compose Connectivity
+> Show all local Resources in the selected responsibility scope, the application Component Deployments bound to them, their incoming/outgoing connectivity relationships, the remote side, access semantics and independent Need/Decision/Policy states.
 
-Purpose: create one structurally valid Access Rule Proposal from trusted application-catalogue references.
+Canonical detailed requirements: docs/requirements/scoped-connectivity-inventory.md.
 
-Inputs:
-- current authorized scope/context;
-- Source Component Deployment;
-- Destination Component Deployment;
-- compatible immutable DCS contract/revision.
+### Primary presentation
 
-Output: proposal submission result.
+The first implementation is a full-width resource-centric hierarchical table/tree-grid:
 
-The composition UX should constrain later choices using backend-provided valid options rather than let the user assemble arbitrary identifier combinations.
+    Resource
+      -> Component Deployment
+        -> Connectivity Relationship
 
-I12 presentation rules:
-- Component Deployment and DCS display names are shown as primary text when available;
-- the stable UUID remains visible as secondary technical identity;
-- missing display metadata falls back to the stable ID without changing semantics;
-- DCS traffic summary is decoded from the existing immutable projection payload;
-- interaction search is server-side and bounded, searching admitted catalogue labels and stable IDs only after the proposal-authority gate.
+It must show Resources/Components even when they have zero connectivity.
 
-### 3. Proposal Result
+Useful columns:
 
-Purpose: present the semantic result of proposal submission.
+- My Resource;
+- Component;
+- Direction;
+- Access;
+- Remote Component;
+- Remote Resource;
+- Need;
+- Decision;
+- Policy;
+- later Realization.
 
-Outcomes:
-- `Allowed` -> created/resolved Access Rule summary and navigation to Rule Details;
-- `NotAllowed` -> explicit business outcome with no Rule;
-- denied/unknown authority, invalid interaction, not-found, stale/conflict or dependency failure -> distinct recoverable/error presentation where applicable.
+Do not collapse Need/Decision/Policy/Realization into one generic status.
 
-This may be a result state of Compose Connectivity rather than a dedicated route.
+### Direction
 
-### 4. Access Rules
+Direction is shown relative to local/my side: outgoing or incoming.
 
-Purpose: inspect authoritative Access Rules visible through explicit `ReadAccessRule` authority. List results contain only Rules from unambiguously permitted governance scopes; read authority does not imply mutation authority.
+Canonical source/destination identities remain available in technical details.
 
-Initial useful data includes Rule ID, source deployment, destination deployment, DCS revision/reference, governance scope, operational state and effective-window summary where available. Source/destination/DCS display names are primary presentation when available; stable IDs remain visible and authoritative.
+### Access presentation
 
-### 5. Access Rule Details
+Use readable DCS/service meaning as primary text.
 
-Purpose: inspect one authoritative Rule and supported management/provenance information.
+Protocol/ports are secondary/optional technical information and may be exposed through a second line, details or column chooser.
 
-Before returning data, backend evaluates `ReadAccessRule` against the Rule's stored governance scope. State-change controls are shown only after a separate `SetRuleOperationalState` admission check.
+### Remote side
 
-State and EffectiveWindow mutation controls are admitted independently. `SetRuleOperationalState` permission does not imply `SetRuleEffectiveWindow` permission.
+Remote Component and Resource data are visible under the current catalogue visibility baseline even when they belong to another responsibility scope.
 
-Show progressively:
-- Rule ID and immutable semantic identity;
-- Rule Governance Scope;
-- `Active | Inactive` state;
-- optional EffectiveWindow;
-- Connectivity Decision correlation/reference where available;
-- business audit/provenance;
-- admitted state/property actions only when backend use cases allow them.
+### Empty resources/components
 
-### 6. Effective Desired Policy
+A local Resource/Component with no connectivity must still be visible and may expose Add connectivity when the backend admits the operation.
 
-Purpose: select and inspect the authorized effective desired-policy subset for one Rule Governance Scope and explicit `asOf`. Scope choices come from unambiguous effective `ReadEffectiveDesiredPolicy` authority.
+## Add Connectivity
 
-### 7. Normalized Policy
+Compose Connectivity is no longer a primary sidebar destination. Proposal composition becomes a contextual action started from the Connectivity workspace or another relevant detail page.
 
-Purpose: present the vendor-neutral normalized policy JSON/view for the same explicit authorized scope/asOf context while preserving required row semantics and provenance.
+Typical flow:
 
-The UI presentation must not redefine or omit normalized export meaning. I12 may add catalogue display labels beside normalized rows, but the normalized technical addresses, traffic semantics and provenance remain authoritative.
+    local Resource/Component already known
+      -> Add connectivity
+      -> select remote side
+      -> select structurally valid DCS/access
+      -> applicability/justification where required
+      -> Request access
 
-### 8. My Connectivity Needs
+The UI reuses known context and does not ask the user to re-enter selected scope/local Resource/local Component.
 
-Purpose: declare and manage authoritative Connectivity Requirements visible through explicit Connectivity Requirements authority.
+Remote/DCS options come from trusted backend catalogue/use-case discovery. The UI must not assemble arbitrary stable-ID combinations.
 
-List:
-- readable Source/Destination/DCS labels first, stable IDs second;
-- Dependent Component Deployment;
-- Governance Scope;
-- Applicability;
-- lifecycle `Active | Retired`;
-- justification summary.
+At product level, Request access may compose accepted backend stages such as Requirement declaration/resolution, proposal, Decision and Allowed Rule materialization. Backend ownership boundaries do not become mandatory user navigation.
 
-Declaration:
-- select one admitted Requirement Governance Scope;
-- search/select one exact ACC-backed directed interaction;
-- select Dependent from the Source/Destination participants only;
-- choose `Ongoing` or absolute `[start,end)` applicability;
-- enter mandatory business justification;
-- submit only stable semantic IDs; actor/time/provenance are server-owned.
+## Connectivity Decision workflow
 
-Details:
-- immutable Dependent and Required Semantic Interaction;
-- stored Requirement Governance Scope;
-- current applicability and justification;
-- declaration provenance;
-- applicability/justification/lifecycle histories;
-- independent backend-admitted actions for Set Applicability, Set Justification and Retire.
+Connectivity Decision remains an immutable final business result:
 
-I14 alignment:
-- the list shows derived `Covered | Uncovered | NotCurrent | Unknown` for an explicit `asOf`;
-- details expose the same alignment query and explanation time;
-- `Uncovered` is never labelled `Denied`;
-- status visibility follows Requirement read authority;
-- Rule-level evidence remains hidden in the first I14 slice;
-- no configured/observed state is implied.
+    Allowed | NotAllowed
 
-Important:
-- Requirement lifecycle shows only `Active | Retired`;
-- do not display `Pending/Approved/Rejected`;
-- alignment status is a recomputed composition result, not Requirement lifecycle.
+Do not add Pending, Approved, Rejected, UnderReview or Revoked to Connectivity Decision.
 
-### Deferred screens
+There is now a product need to represent submitted connectivity that may be awaiting a final decision. Before such a state becomes durable UI semantics, I16A/I16B must decide whether it belongs to an application workflow without independent business identity or a distinct domain process/entity with its own lifecycle.
 
-- Dashboard: add after source screens expose real data/metrics.
-- Global audit log: add when a concrete cross-entity audit query/use case is required; Rule business history is sufficient for the first increment.
-- Resource/application portfolio administration: only when a concrete owner workflow requires it.
-- Approval/review queue: deferred with the Connectivity Decision Domain.
+Until that decision is accepted, the UI must not invent a persistent waiting lifecycle.
+
+## Specialized workspaces
+
+The resource-centric Connectivity workspace is the normal entry point. Specialized workspaces remain available for focused work and explainability.
+
+### Needs
+
+Purpose: inspect and manage authoritative Connectivity Requirements admitted for the actor.
+
+Presentation rules:
+
+- readable Source/Destination/DCS labels first;
+- stable IDs secondary;
+- applicability;
+- lifecycle Active | Retired;
+- justification;
+- derived alignment Covered | Uncovered | NotCurrent | Unknown;
+- independent admitted mutations.
+
+Uncovered is never labelled Denied.
+
+Primary page title/navigation label is Needs; canonical domain term Connectivity Requirement remains available in details/help.
+
+### Decisions
+
+Purpose: inspect final Connectivity Decisions and, after I16B, support real decision-participant work if accepted by workflow semantics.
+
+Decision details require corresponding backend read authority.
+
+Before I16B implementation this navigation item may be shown only as a clearly disabled Planned item.
+
+### Rules
+
+Purpose: inspect authoritative Access Rules admitted through ReadAccessRule.
+
+Show readable source/destination/access labels first; technical IDs, Rule Governance Scope, Decision correlation and provenance progressively.
+
+Rule state remains Active | Inactive. Read authority does not imply mutation authority.
+
+### Effective
+
+Purpose: inspect SelectEffectiveDesiredPolicy(scope, asOf, actor).
+
+The page must communicate what desired policy applies for this scope/time rather than expose application-method naming.
+
+### Export / normalized technical view
+
+Normalized Policy remains a valid technical/export representation, but it is not required to be a top-level primary navigation label.
+
+When exposed, present it as an export/technical view while preserving all normalized semantics and provenance.
 
 ## Information architecture
 
-Use a desktop-first enterprise application shell:
+Baseline sidebar:
 
-```text
-CONNECTIVITY NEEDS
-  My Connectivity Needs
+    OVERVIEW
+      Connectivity
 
-ACCESS POLICY
-  Compose Connectivity
-  Access Rules
+    POLICY
+      Needs
+      Decisions        Planned until implemented
+      Rules
+      Effective
 
-POLICY VIEWS
-  Effective Policy
-  Normalized Policy
-```
+    TECHNICAL
+      Realization      Planned
+      Evidence         Planned
+      Enforcement      Planned
 
-Dashboard may be added above these groups only after real aggregate use cases exist.
+Add catalogue/admin workspaces only after concrete user workflows exist:
 
-Do not add inactive navigation controls as decoration.
+    CATALOGS
+      Applications
+      Resources
 
-## Visual/design-system baseline
+    ADMINISTRATION
+      Authorities
 
-Accepted implementation direction:
-- React + TypeScript;
-- Tailwind CSS;
-- shadcn/ui as the component foundation;
-- Tabler-like enterprise/control-plane visual language without adopting a heavyweight admin theme;
+### Planned navigation rule
+
+Roadmap-backed future areas may be visible to validate the complete information architecture only when:
+
+- explicitly marked Planned;
+- visually distinct from active workspaces;
+- unable to perform fake actions or show fabricated data;
+- not mistaken for implemented functionality;
+- backed by accepted roadmap/product scope.
+
+Do not add arbitrary placeholder navigation outside accepted product direction.
+
+## Labels and language
+
+Navigation and primary table labels should be short and user-oriented.
+
+Prefer Connectivity, Needs, Decisions, Rules, Effective, Resources, Component, Access and Remote.
+
+Avoid internal use-case/navigation labels such as Compose Connectivity, Policy Views, Requirement-to-Policy Alignment and Normalized Policy.
+
+Canonical DDD terminology and stable UUIDs remain visible in technical details, help and explainability views.
+
+## Interaction details
+
+Opening one connectivity relationship should progressively expose:
+
+- Need;
+- Decision;
+- Policy;
+- Local side;
+- Remote side;
+- technical identifiers/DCS;
+- provenance/history where separately admitted;
+- Realization later.
+
+Protected Decision/Rule/Requirement details must not be leaked by the overview merely because underlying catalogue objects are globally visible.
+
+## Existing business-state requirements
+
+### Connectivity Requirements
+
+Lifecycle remains Active -> Retired. No Requirement Pending/Approved/Rejected.
+
+### Requirement-to-Policy Alignment
+
+Status remains Covered | Uncovered | NotCurrent | Unknown. No configured/observed claim.
+
+### Connectivity Decision
+
+Outcome remains Allowed | NotAllowed. NotAllowed is a valid business result, not an HTTP/security error.
+
+### Access Rule
+
+Operational state remains Active | Inactive. EffectiveWindow semantics remain explicit half-open [start,end).
+
+## Layout and density
+
+The UI remains desktop-first enterprise/control-plane software.
+
+Accepted baseline:
+
 - dark navy collapsible sidebar;
 - light working area;
-- blue primary accent;
-- information-dense tables/forms;
-- borders and restrained elevation rather than decorative cards.
+- restrained blue accent;
+- dense operational tables/forms;
+- borders/restrained elevation;
+- React + TypeScript + Tailwind + shadcn/ui;
+- WCAG 2.2 AA target.
 
-The visual reference under `docs/ui/references/` defines composition/style direction only; its sample IAM/resource/request data is not NAPMS domain truth and is not a pixel-perfect contract.
+Operational inventories/tables use available viewport width. Do not place the primary Connectivity tree-grid inside a narrow marketing-style max-width container.
 
-Detailed tokens/layout/components are owned by `docs/ui/`.
+Focused forms/details may use bounded readable widths.
 
-## Interaction and state requirements
+## Table/tree-grid requirements
 
-- list view state should be URL-shareable where reasonable (`page`, `sort`, `filters`, `search`);
-- potentially unbounded lists use server-side pagination/filtering/sorting;
-- forms validate obvious constraints client-side while the server remains authoritative;
-- duplicate mutation submission is prevented while a request is pending;
-- initial loading, background refresh, empty, filtered-empty, unauthorized-empty and retryable error states are distinct;
-- semantic statuses use one central UI mapping and never rely on color alone;
-- domain/business outcomes remain distinct from transport/authentication failures;
-- provenance/audit details use progressive disclosure rather than overwhelming the primary workflow.
+- potentially unbounded data uses server-side paging/filter/search where required;
+- shareable query state belongs in URL where reasonable;
+- tree expansion/collapse is keyboard accessible;
+- statuses never rely on color alone;
+- loading, genuine empty, filtered-empty, authorization-limited and retryable failures are distinct;
+- Resource/Component group rows are not duplicated merely to fit a flat-table abstraction;
+- technical column selection may expose protocol/ports/IDs without changing semantic truth.
+
+## Forms and mutations
+
+- server/domain remains authoritative;
+- obvious structural validation may happen client-side;
+- prevent duplicate mutation submission;
+- field errors appear near fields;
+- request/domain errors are distinct from transport errors;
+- destructive/security-significant actions require confirmation when accidental execution is plausible.
 
 ## Authentication/session UX
 
-For I8 local/test runtime:
-- login + password only;
-- no social login, OIDC/OAuth2 or corporate IdP controls;
-- explicit logout is available from the user menu;
-- an expired/invalid session returns the user to Login and may preserve the intended route for post-login navigation;
-- failed login must not reveal whether a login or password component was incorrect;
-- exact cookie/token/session-storage mechanics and timeout values remain runtime engineering choices, subject to the security constraints in the active plan.
+Current local/test runtime remains login + password with explicit logout.
+
+No public/anonymous access or enterprise SSO is implied by this UI revision.
 
 ## Responsive baseline
 
-- `>= 1280px`: full desktop shell;
-- `768..1279px`: collapsed sidebar by default; dense tables may scroll horizontally;
-- `< 768px`: functional overlay navigation and usable forms/details, without making mobile the primary optimization target.
+- >= 1280px: full desktop shell;
+- 768..1279px: collapsed sidebar by default; dense tree-grid may scroll horizontally;
+- < 768px: functional overlay navigation and usable forms/details; mobile is not the primary optimization target.
 
-## Accessibility target
+## Non-goals of the next UI slice
 
-Applicable Web UI behavior targets WCAG 2.2 AA.
-
-Minimum implementation obligations:
-- keyboard operation;
-- visible focus states;
-- semantic labels;
-- accessible dialogs/drawers;
-- sufficient contrast;
-- statuses not encoded by color alone.
-
-## Non-goals for I8 UI
-
-- persistent generic Access Request lifecycle;
-- approval/review workflow;
-- mobile/native applications;
-- public/anonymous access;
-- external enterprise SSO;
-- generic IAM administration;
-- generic CMDB/application-portfolio administration;
-- device/firewall execution UI;
-- configured-state reconciliation UI;
-- vendor-specific policy rendering;
-- CSV/XLSX export.
+- generic CMDB/application portfolio CRUD;
+- new Connectivity Overview bounded context;
+- fine-grained foreign catalogue visibility;
+- invented persistent Access Request lifecycle;
+- adding waiting states to Connectivity Decision;
+- graph as the first implementation;
+- configured/reconciliation UI before I17-I20;
+- vendor-specific rendering/device execution;
+- fake metrics/dashboard cards;
+- duplicating business truth in frontend state.
