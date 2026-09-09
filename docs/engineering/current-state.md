@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I15 semantic baseline accepted; I16A Scoped Connectivity Workspace Foundation is current execution`.
+Status: `I16A Scoped Connectivity Workspace Foundation accepted and implemented; I16B Connectivity Decision Runtime and Workflow is next`.
 
 Date: 2026-09-09.
 
@@ -15,12 +15,12 @@ This file is a capability snapshot, not an increment-by-increment changelog. Det
 | Access Policy | accepted | PostgreSQL-backed Domain/Application implementation with materialization, Active/Inactive, EffectiveWindow and effective-policy selection | Access Rules, Rule Details, Effective Desired Policy |
 | Authority Management | accepted | PostgreSQL-backed scoped action admission | consumed by authenticated use cases; no generic IAM admin surface |
 | Application Communication Catalogue | accepted | PostgreSQL-backed catalogue, immutable DCS projection semantics, authorized interaction discovery and presentation metadata | label-first interaction selection/presentation |
-| Resource Catalogue | accepted | PostgreSQL-backed Resource/Endpoint realization | currently supporting policy/export and I16A resource-centric work |
-| Connectivity Requirements | accepted | PostgreSQL-backed declaration/read/change/retire lifecycle | My Connectivity Needs |
-| Requirement-to-Policy Alignment | accepted application composition | no independent aggregate/table; derives `Covered | Uncovered | NotCurrent | Unknown` from authoritative Requirements + Access Policy | shown from Requirement views |
+| Resource Catalogue | accepted | PostgreSQL-backed Resource/Endpoint realization plus time-qualified Resource Scope Affiliation | supports policy/export and the resource-centric Connectivity workspace |
+| Connectivity Requirements | accepted | PostgreSQL-backed declaration/read/change/retire lifecycle | Needs plus coarse Need state in Connectivity |
+| Requirement-to-Policy Alignment | accepted application composition | no independent aggregate/table; derives `Covered | Uncovered | NotCurrent | Unknown` from authoritative Requirements + Access Policy | Needs and coarse coverage in Connectivity |
 | Connectivity Decision | accepted first-class bounded context through I15 | durable runtime not yet on main; current local-dev composition uses the explicit transitional `local-dev:allowed` adapter | no durable Decision workflow/workspace yet |
 | Policy export / normalization | accepted | coherent snapshot + vendor-neutral normalized policy JSON | Normalized Policy |
-| Scoped Connectivity Inventory | selected I16A product/application composition | current main remains gated by PLAN-029 semantic/application stages | target primary Connectivity workspace after I16A |
+| Scoped Connectivity Inventory | accepted I16A product/application composition | framework-free read composition with module-owned PostgreSQL adapters and authenticated HTTP contract; no independent persistence | primary post-login Connectivity workspace |
 | Technical Access Evidence | strategic future context | not implemented | none |
 | Network Enforcement Placement | strategic future context | not implemented | none |
 | Access Policy Realization | strategic future context | not implemented | none |
@@ -62,11 +62,11 @@ This remains a local/development topology, not a production deployment claim.
 
 ## Current execution
 
-I16A is owned by `docs/plans/active/PLAN-029-i16a-scoped-connectivity-workspace.md`.
+No execution plan is active after I16A closure.
 
-The selected product direction is a responsibility-scope/resource-centric Connectivity workspace. The active plan owns its current gate, blockers and write-set; this snapshot deliberately does not mirror mutable work-package state.
+I16A establishes the responsibility-scope/resource-centric Connectivity workspace, including Resource Scope Affiliation, `ReadScopedConnectivity`, the Scoped Connectivity Inventory read composition, authenticated HTTP endpoints, resource-centric Web workspace and contextual Request access for an existing exact ACC interaction.
 
-After I16A completes, the roadmap currently sequences I16B Connectivity Decision Runtime and Workflow, which replaces the transitional local Decision provider with the accepted durable Decision application/runtime slice.
+The roadmap next sequences I16B Connectivity Decision Runtime and Workflow, which replaces the transitional local Decision provider with the accepted durable Decision application/runtime slice.
 
 ## Canonical references
 
