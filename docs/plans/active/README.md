@@ -12,12 +12,12 @@ Working mode: architecture-review + execute-work-package.
 
 Read first:
 - `docs/plans/active/PLAN-017-i17-technical-access-evidence-core.md`
-- `docs/domain/technical-access-evidence/tactical-model.md`
 - `docs/requirements/technical-access-evidence-acceptance-examples.md`
 
 Expand only if needed into:
+- `docs/domain/technical-access-evidence/tactical-model.md`;
 - TAE Domain/Application/adapters;
-- greenfield/PostgreSQL integration tests;
+- dedicated TAE/PostgreSQL integration tests;
 - current-state/roadmap canonical truth;
 - final architecture and workflow gates.
 
