@@ -23,15 +23,20 @@
 
 ### Text/action
 
-| Token | Value |
-|---|---|
-| `text.primary` | `#172033` |
-| `text.secondary` | `#64748B` |
-| `text.muted` | `#94A3B8` |
-| `primary` | `#2563EB` |
-| `primary.hover` | `#1D4ED8` |
-| `primary.active` | `#1E40AF` |
-| `focus.ring` | `#93C5FD` |
+| Token | Value | Usage |
+|---|---|---|
+| `text.primary` | `#172033` | primary readable text |
+| `text.secondary` | `#5F6B7D` | secondary readable text; AA on page/card surfaces |
+| `text.muted` | `#667085` | lower-emphasis informative text; still readable |
+| `text.disabled/decorative` | `#94A3B8` | disabled/decorative non-essential presentation only |
+| `primary` | `#2563EB` | primary action |
+| `primary.hover` | `#1D4ED8` | primary action hover |
+| `primary.active` | `#1E40AF` | primary action active |
+| `focus.ring` | `#93C5FD` | focus indication |
+
+Do not use `text.disabled/decorative` for required explanatory text, metadata or status meaning.
+
+Broad CSS color transitions are discouraged for text/background pairs whose interpolated colors can momentarily fail contrast. Prefer immediate state changes or transitions limited to non-contrast-affecting properties.
 
 ### Semantic status
 
@@ -63,11 +68,11 @@ Default line-height: `1.4-1.5`.
 4px base grid: `4, 8, 12, 16, 24, 32, 48`.
 
 Typical:
-- page horizontal padding: 24px;
+- page horizontal padding: 24px desktop;
 - card/section padding: 16-24px;
 - control gap: 8px;
 - section gap: 24px;
-- table-row vertical padding: 10-12px.
+- table-row vertical padding: 8-12px.
 
 ## Radius/elevation
 
@@ -78,4 +83,11 @@ Typical:
 
 ## Density
 
-Primary mode is information-dense enterprise UI. Avoid oversized cards and whitespace that reduce useful operational data density.
+Primary mode is information-dense enterprise/operations UI.
+
+Rules:
+- avoid oversized cards/hero whitespace;
+- keep table/body text near 14px unless a specific readability need requires otherwise;
+- keep controls compact but keyboard/accessibility usable;
+- use available desktop width for comparison-heavy data;
+- density must not reduce WCAG contrast, focus visibility or semantic clarity.
