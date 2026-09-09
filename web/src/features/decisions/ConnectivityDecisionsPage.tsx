@@ -428,7 +428,9 @@ export function ConnectivityDecisionsPage({
                 No visible Connectivity Decisions
               </div>
               <div className="mt-2 text-sm text-[#64748B]">
-                The authorized collection is empty. Decide authority is evaluated
+                No Decisions are visible through the current read-authority result.
+                This may mean there are no admitted read scopes, or that admitted
+                scopes contain no Decisions. Decide authority is evaluated
                 separately in the record form.
               </div>
             </div>
