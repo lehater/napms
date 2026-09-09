@@ -131,7 +131,7 @@ an authorized participant can record and inspect durable final Decisions through
 Exit:
 the current product journey can reach and explain real Decision behavior without exposing BC mechanics as mandatory navigation.
 
-### WP6 — Local composition and demo closure
+### WP6 — Local composition and demo closure — done
 
 - seed usable Decide/Read authority for the local demo;
 - seed or drive at least one durable Allowed and one NotAllowed journey;
@@ -191,4 +191,4 @@ None at the semantic/design level. Gate failures discovered during implementatio
 
 ## Next
 
-Execute WP6 Local composition and demo closure: seed usable Decide/Read authority and durable Decision journeys, then remove `local-dev:allowed` from the normal local product composition.
+Execute WP7 closure: run final architecture/security/knowledge checks, absorb I16B into canonical current-state/roadmap/API/UI docs, remove this active plan and promote I17.
