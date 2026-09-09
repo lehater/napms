@@ -5,6 +5,9 @@ from typing import Iterator
 import psycopg
 
 from napms.access_policy.adapters.postgres import PostgresAccessRuleRepository
+from napms.access_policy.adapters.requirement_policy_alignment import (
+    AccessPolicyAlignmentAdapter,
+)
 from napms.application_catalogue.adapters.access_policy import (
     AccessPolicyCommunicationCatalogueAdapter,
     AccessPolicyProposalInteractionCatalogueAdapter,
@@ -52,6 +55,13 @@ from napms.composition.config import ApplicationConfig
 from napms.connectivity_requirements.adapters.postgres import (
     PostgresConnectivityRequirementRepository,
 )
+from napms.connectivity_requirements.adapters.requirement_policy_alignment import (
+    ConnectivityRequirementsAlignmentAdapter,
+)
+from napms.connectivity_requirements.application.read import (
+    GetAuthorizedRequirement,
+    ListConnectivityRequirements,
+)
 from napms.composition.postgres_migrations import apply_greenfield_migrations
 from napms.resource_catalogue.adapters.policy_export import (
     PolicyExportResourceCatalogueAdapter,
@@ -82,6 +92,8 @@ class GreenfieldPostgresScope:
     requirement_catalogue: ConnectivityRequirementsCatalogueAdapter
     requirement_interaction_catalogue: ConnectivityRequirementsInteractionDiscoveryAdapter
     connectivity_requirements: PostgresConnectivityRequirementRepository
+    requirement_alignment: ConnectivityRequirementsAlignmentAdapter
+    policy_alignment: AccessPolicyAlignmentAdapter
 
 
 @contextmanager
@@ -181,6 +193,22 @@ def open_greenfield_scope(
             )
         )
 
+        access_rules = PostgresAccessRuleRepository(access_policy_connection)
+        connectivity_requirements = PostgresConnectivityRequirementRepository(
+            connectivity_requirements_connection
+        )
+        requirement_alignment = ConnectivityRequirementsAlignmentAdapter(
+            reader=GetAuthorizedRequirement(
+                authority=requirement_authority,
+                requirements=connectivity_requirements,
+            ),
+            lister=ListConnectivityRequirements(
+                read_scopes=requirement_read_scopes,
+                requirements=connectivity_requirements,
+            ),
+        )
+        policy_alignment = AccessPolicyAlignmentAdapter(rules=access_rules)
+
         yield GreenfieldPostgresScope(
             authority=authority,
             proposal_scope_discovery=proposal_scope_discovery,
@@ -191,14 +219,14 @@ def open_greenfield_scope(
             catalogue_describer=catalogue_describer,
             application_projection=application_projection,
             resource_projection=resource_projection,
-            access_rules=PostgresAccessRuleRepository(access_policy_connection),
+            access_rules=access_rules,
             dcs_decoder=JsonDcsProjectionCodec(),
             requirement_authority=requirement_authority,
             requirement_declaration_scopes=requirement_declaration_scopes,
             requirement_read_scopes=requirement_read_scopes,
             requirement_catalogue=requirement_catalogue,
             requirement_interaction_catalogue=requirement_interaction_catalogue,
-            connectivity_requirements=PostgresConnectivityRequirementRepository(
-                connectivity_requirements_connection
-            ),
+            connectivity_requirements=connectivity_requirements,
+            requirement_alignment=requirement_alignment,
+            policy_alignment=policy_alignment,
         )
