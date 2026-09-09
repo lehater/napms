@@ -16,6 +16,7 @@ on:
       - "src/napms/application_catalogue/adapters/postgres/migrations/**"
       - "src/napms/resource_catalogue/adapters/postgres/migrations/**"
       - "tools/dev_compose.py"
+      - "tools/local_start.py"
       - "tools/prepare_local_postgres.py"
       - "tools/verify_local_postgres_auth.py"
       - "pyproject.toml"
@@ -35,17 +36,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker compose version
-      - name: Start fresh password-authenticated stack
+      - name: Prove fresh password-authenticated product journey
         run: |
           export NAPMS_POSTGRES_PASSWORD="$(python -c 'import secrets; print(secrets.token_urlsafe(24))')"
           python tools/prepare_local_postgres.py
           python tools/dev_compose.py up --no-print-credentials
           python tools/verify_local_postgres_auth.py
-      - name: Rotate database credential on preserved volume
+      - name: Prove restart on preserved volume with rotated database credential
         run: |
           export NAPMS_POSTGRES_PASSWORD="$(python -c 'import secrets; print(secrets.token_urlsafe(24))')"
           python tools/prepare_local_postgres.py
-          python tools/dev_compose.py up --no-print-credentials
+          python tools/local_start.py up --no-print-credentials
           python tools/verify_local_postgres_auth.py
       - run: docker compose ps
       - if: failure()
