@@ -612,6 +612,7 @@ export function ConnectivityRequirementDetailsPage({
               mutation: {detail.capabilities.setJustification}
             </p>
             <textarea
+              aria-label="Business justification"
               value={justification}
               onChange={(event) => setJustification(event.target.value)}
               rows={4}
