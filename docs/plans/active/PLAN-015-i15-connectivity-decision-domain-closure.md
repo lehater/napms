@@ -8,6 +8,17 @@ Date: 2026-09-09.
 
 Close the deferred Connectivity Decision domain so I16 can implement a durable non-local decision provider without inventing business semantics in runtime code.
 
+## Current stage
+
+WP1-WP4 semantic work is accepted on the branch. WP5 closure is active: consistency validation, canonical current-state/roadmap absorption and final PR gate.
+
+## Inputs
+
+- `docs/domain/deferred-connectivity-decision.md`;
+- `docs/decisions/ADR-003-connectivity-decision-port.md`;
+- current Connectivity Requirements and Access Policy canonical truth;
+- I15 roadmap questions in `docs/engineering/post-wave1-product-completion-roadmap.md`.
+
 ## Scope
 
 In scope:
@@ -25,52 +36,24 @@ Out of scope:
 - enterprise IdP/source integration;
 - automatic Access Rule revocation/change management.
 
-## Inputs
-
-- `docs/domain/deferred-connectivity-decision.md`;
-- `docs/decisions/ADR-003-connectivity-decision-port.md`;
-- current Connectivity Requirements and Access Policy canonical truth;
-- I15 roadmap questions in `docs/engineering/post-wave1-product-completion-roadmap.md`.
-
 ## Work packages
 
-### WP1 — Semantic closure
-Resolve:
-- whether Connectivity Decision is a first-class Bounded Context;
-- stable decision identity vs decision subject;
-- governance scope;
-- final outcome vocabulary;
-- human/automatic/mixed participation;
-- quorum/SoD disposition.
+### WP1 — Semantic closure — done
+Connectivity Decision is a first-class Bounded Context with distinct DecisionId, exact RuleSemanticIdentity subject, proposal-derived governance scope, binary final outcome and independent decision/read authority.
 
-Exit: no unresolved strategic blocker for Tactical DDD.
+### WP2 — Tactical model — done
+Immutable Decision validity, mandatory reason/provenance, evidence references, supersession and fail-closed selection semantics are accepted.
 
-### WP2 — Tactical model
-Define:
-- immutable Decision record;
-- validity/effective-time semantics;
-- reason and evidence references;
-- decision provenance;
-- reconsideration/supersession invariants;
-- selection/consumption rules.
+### WP3 — Product requirements — done
+Core requirements and acceptance examples cover authority separation, Allowed/NotAllowed, missing/ambiguous decisions, Requirement evidence and immutable reconsideration.
 
-Exit: model is precise enough for executable specifications without persistence assumptions.
+### WP4 — Architecture contract — done
+ADR-004 and the durable boundary define the I16-compatible context relationship while keeping Access Policy independent of Decision internals.
 
-### WP3 — Product requirements
-Record testable behavior and acceptance examples, including:
-- authority separation from proposal authority;
-- Allowed/NotAllowed handling;
-- missing/ambiguous decision behavior;
-- requirement evidence without `Required == Authorized`;
-- historical immutability and supersession.
-
-### WP4 — Architecture contract
-Replace the temporary external/deferred semantic disposition with a durable owner boundary and consumer port contract while keeping Access Policy independent of Decision internals.
-
-### WP5 — Closure
+### WP5 — Closure — active
 - consistency review across domain/requirements/architecture;
 - update roadmap/current-state;
-- run repository-local harness/knowledge gates;
+- repository harness/knowledge validation;
 - remove absorbed active-plan artifacts;
 - final PR gate.
 
@@ -84,3 +67,11 @@ I15 is complete when:
 5. no I15 runtime behavior is invented in Access Policy;
 6. repository gates pass;
 7. I16 is promoted as next roadmap increment.
+
+## Blockers
+
+None known. Local network access is unavailable in the execution sandbox, so repository-local checks are verified against validator rules and the hosted PR CI is the authoritative final gate.
+
+## Next
+
+Absorb I15 into roadmap/current-state, remove active-plan artifacts, mark PR ready and require final CI before squash merge.
