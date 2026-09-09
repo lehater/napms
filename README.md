@@ -6,16 +6,18 @@ Authoritative greenfield NAPMS product repository.
 
 ## Current implementation state
 
-NAPMS is implemented through I12:
+NAPMS is implemented through I14:
 - Access Policy, Authority Management, Application Communication Catalogue and Resource Catalogue;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
 - Access Rule operational workspace;
 - EffectiveWindow management;
 - Effective Desired Policy and normalized policy views;
-- human-readable catalogue labels and authorized interaction search across operator workflows.
+- human-readable catalogue labels and authorized interaction search across operator workflows;
+- Connectivity Requirements owner workspace;
+- Requirement-to-Policy Alignment with Covered / Uncovered / NotCurrent / Unknown status.
 
-I11 adds and proves the reproducible local Docker runtime. I12 makes the existing workflows label-first while retaining stable technical IDs.
+I11 adds and proves the reproducible local Docker runtime. I12 makes the existing workflows label-first while retaining stable technical IDs. I13 adds authoritative Connectivity Requirements. I14 derives current effective-policy coverage without exposing protected Rule details or adding Alignment persistence.
 
 ## Local Docker start
 
