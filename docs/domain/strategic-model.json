@@ -1,11 +1,15 @@
 {
   "model_id": "NAPMS-DDD-001",
-  "source_baseline": "DDD-BDM-010",
+  "source_baseline": "DDD-BDM-010 + I13-I15 accepted extensions",
   "status": "accepted",
   "bounded_contexts": [
     {
       "name": "Connectivity Requirements",
       "responsibility": "Connectivity-need identity/lifecycle, required semantic interaction, applicability and justification/provenance."
+    },
+    {
+      "name": "Connectivity Decision",
+      "responsibility": "Immutable final Allowed/NotAllowed decision identity, governance scope, validity, reason/provenance and supersession for exact proposed Rule semantic identity."
     },
     {
       "name": "Access Policy",
@@ -42,12 +46,21 @@
     "Application Communication Catalogue",
     "Resource Catalogue"
   ],
-  "external_seams": [
-    "Connectivity Decision"
+  "current_direct_participants": [
+    "Connectivity Requirements",
+    "Connectivity Decision",
+    "Access Policy",
+    "Authority Management",
+    "Application Communication Catalogue",
+    "Resource Catalogue"
   ],
+  "external_seams": [],
   "invariants": [
     "Bounded Context is not a deployment unit.",
     "Connectivity need does not authorize access.",
+    "Proposal authority does not imply decision authority.",
+    "Connectivity Decision owns final decision reason, validity and supersession.",
+    "Decision expiry or supersession does not silently mutate an existing Access Rule.",
     "Technical evidence does not authorize access.",
     "Access Policy owns authoritative Access Rule identity and operational state.",
     "Technical realization changes do not redefine Rule semantic identity."

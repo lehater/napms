@@ -1,28 +1,25 @@
 # ADR-003 — Connectivity Decision as an external semantic port
 
-Status: `accepted`.
+Status: `superseded by ADR-004`.
 
 Date: 2026-09-08.
 
-## Context
+## Historical context
 
-Wave 1 requires `ConnectivityDecision(Allowed|NotAllowed)` for an exact proposed Rule semantic identity, but the internal decision reasons, policies, workflow, actors, exceptions and lifecycle are deliberately deferred and do not justify a current Bounded Context.
+Wave 1 required `ConnectivityDecision(Allowed|NotAllowed)` for an exact proposed Rule semantic identity while internal decision reasons, policies, workflow, actors, exceptions and lifecycle were deliberately unknown.
 
-## Decision
+## Historical decision
 
-Represent Connectivity Decision in the target architecture as an external semantic port owned by the application boundary, with the minimum G2 contract only:
+Wave 1 represented Connectivity Decision as an external semantic port with the minimum contract:
 
-`decide/exchange exact proposal subject -> Allowed|NotAllowed + opaque decision/provenance reference where available`.
+`exact proposal subject -> Allowed|NotAllowed + opaque reference`.
 
-Access Policy consumes the result but contains no decision-domain policy/workflow. The port may initially be backed by an external system, manual bridge, Legacy adapter or later dedicated capability without changing Access Policy semantics.
+Access Policy consumed the result and did not own decision reasons/process.
 
-## Consequences
+## Supersession
 
-- no invented approval/policy engine is embedded in Wave 1;
-- adapters translate external representations to the stable semantic contract;
-- exact subject correlation is mandatory; mismatches fail closed;
-- transport and whether invocation is synchronous/asynchronous remain implementation/transition decisions.
+The ADR revisit trigger was met by I15.
 
-## Revisit trigger
+ADR-004 promotes Connectivity Decision to a first-class Bounded Context with accepted decision identity, governance scope, validity, reason/provenance, Authority actions and supersession semantics.
 
-Reopen domain/architecture ownership when research establishes independent decision-domain language/model/lifecycle/authority or when Wave 1 must itself execute/manage that decision process.
+This ADR remains historical evidence of the deliberate Wave-1 deferral.

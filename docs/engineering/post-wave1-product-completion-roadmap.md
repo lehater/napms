@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline after I14`.
+Status: `accepted ordered sequencing baseline after I15`.
 
 Date: 2026-09-09.
 
@@ -28,7 +28,7 @@ The roadmap may be refined when new accepted domain evidence changes boundaries 
 ## Baseline
 
 Completed:
-- I1-I14;
+- I1-I15;
 - Wave 1 proposal -> Connectivity Decision seam -> Access Rule -> effective desired policy -> coherent normalized policy;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
@@ -38,7 +38,7 @@ Completed:
 Wave 1 intentionally stopped before Connectivity Requirements runtime participation; I13 now closes the first Connectivity Requirements core/runtime/workspace slice.
 
 Still deferred:
-- Connectivity Decision internals/workflow;
+- Connectivity Decision runtime/workflow;
 - Network Enforcement Placement;
 - Technical Access Evidence;
 - Access Policy Realization/reconciliation;
@@ -101,29 +101,33 @@ Implemented in I14:
 
 ### I15 — Connectivity Decision Domain Closure
 
-Status: `next after I14`.
+Status: `done`.
 
 Goal:
-promote the currently deferred Connectivity Decision research only when Requirement and current-policy semantics are concrete enough to answer why/how a proposal becomes `Allowed | NotAllowed`.
+close the deferred Connectivity Decision semantic owner/model so runtime can implement a durable non-local provider without inventing approval semantics.
 
-Must resolve:
-- semantic owner/bounded-context disposition;
-- decision identity and subject;
-- reasons/policies/facts used;
-- human/automatic/mixed mechanism;
-- participating roles and Authority actions;
-- SoD/quorum if actually required;
-- decision validity/effective time;
-- reconsideration/supersession;
-- reason/provenance model;
-- exact relationship to Connectivity Requirement and Access Rule Proposal.
+Implemented in I15:
+- Connectivity Decision promoted to a first-class Bounded Context;
+- stable DecisionId distinct from exact RuleSemanticIdentity subject;
+- Decision Governance Scope equal to accepted proposal authority scope in the first model;
+- final business outcome remains exactly `Allowed | NotAllowed`;
+- independent Authority actions `DecideConnectivity` and `ReadConnectivityDecision`;
+- deciding principal may be human or trusted service principal without changing Decision meaning;
+- one unambiguous effective deciding authority in the first model; quorum/SoD remain deferred without a concrete rule;
+- offset-aware half-open Decision validity used for consumption;
+- mandatory reason/provenance plus optional source-qualified evidence references;
+- Connectivity Requirement may be evidence while `Required != Allowed`;
+- immutable reconsideration through explicit same-subject/same-scope supersession;
+- at most one trustworthy effective Decision per subject/scope/asOf; ambiguity fails closed;
+- expiry/supersession does not silently mutate an already materialized Access Rule;
+- ADR-004 and the durable architecture boundary supersede the Wave-1 external/deferred seam.
 
-Exit:
-accepted Strategic/Tactical DDD + requirements + ADR/architecture contract for a durable non-local Decision provider.
+Exit achieved:
+accepted Strategic/Tactical DDD + requirements + acceptance examples + ADR/architecture contract for I16.
 
 ### I16 — Connectivity Decision Runtime and Workflow
 
-Status: `planned after I15`.
+Status: `next after I15`.
 
 Goal:
 replace the `local-dev:allowed` provider with the accepted real Decision-domain application/runtime slice.
