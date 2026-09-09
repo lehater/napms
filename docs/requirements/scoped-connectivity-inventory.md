@@ -607,9 +607,15 @@ Current global foreign-catalogue read visibility is accepted. Fine-grained visib
 
 ## Acceptance examples
 
-### A — resource with no connectivity
+### A — resource with no catalogued interaction
 
-Given a selected responsibility scope contains Resource R and ACC binds Component Deployment A to R, and A has no known required/policy interactions, the inventory still shows R -> A with `No connectivity declared` and an admitted `Add connectivity` action.
+Given a selected responsibility scope contains Resource R and ACC binds Component Deployment A to R, but ACC has no exact directed interaction involving A, the inventory still shows R -> A and states that no catalogued communication interaction is known.
+
+I16A does not expose Add connectivity from this row because no trusted remote Component/DCS subject exists yet. That action remains gated by a future accepted ACC authoring/selection capability.
+
+### A2 — exact interaction without policy
+
+Given local Component A has an ACC-known exact interaction A -> B / HTTPS, but no current matching Rule exists, the inventory exposes contextual `Request access` when the coarse Need/Decision state does not make that action unsafe. The action reuses the selected scope and exact source/destination/DCS subject.
 
 ### B — outgoing covered access
 
