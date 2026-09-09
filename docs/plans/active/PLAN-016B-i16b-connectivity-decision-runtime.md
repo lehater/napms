@@ -87,7 +87,7 @@ Decision Domain/Application compiles and its accepted semantic examples pass on 
 Exit:
 one durable effective Decision can be recorded and selected without Access Policy or Web involvement.
 
-### WP2 — Minimal end-to-end Access Policy integration
+### WP2 — Minimal end-to-end Access Policy integration — done
 
 - evolve the Access Policy consumer port to request Decision by exact subject + proposal governance scope + proposal logical time;
 - translate Decision BC output through the Access Policy-owned projection;
@@ -191,4 +191,4 @@ None at the semantic/design level. Gate failures discovered during implementatio
 
 ## Next
 
-After review of the green WP0/WP1 durable record/select slice, execute WP2 Minimal end-to-end Access Policy integration. Do not start Scoped Connectivity, participant HTTP or Web integration before WP2 is green.
+Execute WP3 I16A Scoped Connectivity integration: replace the deferred Decision summary with a Decision-BC adapter that exposes only the coarse inventory contract. Do not start participant HTTP or Web workflow before WP3 is green.
