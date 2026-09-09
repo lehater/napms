@@ -59,20 +59,23 @@ class ListResourcesInResponsibilityScope:
             search=normalized_search,
         )
 
-        unique_refs = tuple(
-            dict.fromkeys(
-                row.resource_reference
-                for row in rows
-                if (
-                    row.responsibility_scope == responsibility_scope
-                    and row.is_effective_at(as_of)
-                )
+        effective_refs = tuple(
+            row.resource_reference
+            for row in rows
+            if (
+                row.responsibility_scope == responsibility_scope
+                and row.is_effective_at(as_of)
             )
         )
-        visible = unique_refs[:page_size]
+        if len(effective_refs) != len(set(effective_refs)):
+            raise ResourceCatalogueInvariantError(
+                "multiple effective Resource Scope Affiliations for one resource/scope"
+            )
+
+        visible = effective_refs[:page_size]
         return ResourceScopePage(
             resource_references=visible,
             page=page,
             page_size=page_size,
-            has_more=len(unique_refs) > page_size,
+            has_more=len(effective_refs) > page_size,
         )
