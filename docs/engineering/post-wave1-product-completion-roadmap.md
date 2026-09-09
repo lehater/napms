@@ -125,28 +125,67 @@ Implemented in I15:
 Exit achieved:
 accepted Strategic/Tactical DDD + requirements + acceptance examples + ADR/architecture contract for I16.
 
-### I16 — Connectivity Decision Runtime and Workflow
+### I16A — Scoped Connectivity Workspace Foundation
 
 Status: `next after I15`.
 
 Goal:
-replace the `local-dev:allowed` provider with the accepted real Decision-domain application/runtime slice.
+establish the owner/responsibility-facing product workspace before replacing the Decision provider, so the product exposes a coherent resource/connectivity landscape rather than forcing users to navigate bounded-context-specific screens.
+
+Semantic closure before implementation:
+- define the accepted relation from selected responsibility scope to local Resources;
+- identify the semantic owner, temporal semantics and cardinality of that relation;
+- preserve Resource identity when responsibility/ownership changes;
+- keep catalogue visibility separate from domain-action authority;
+- accept the safe cross-context summary semantics for Scoped Connectivity Inventory.
 
 Expected scope:
-- submit/obtain decision for exact proposal subject;
-- decision work queue only if I15 accepts one;
-- Allowed/NotAllowed reason/provenance presentation;
-- authorized actor/action boundaries;
-- idempotency/concurrency/audit;
-- Web UI for decision participants where applicable;
-- Docker demo using the real accepted decision mechanism.
+- canonical requirements in `docs/requirements/scoped-connectivity-inventory.md`;
+- application/architecture composition over Authority Management, Resource Catalogue, Application Communication Catalogue, Connectivity Requirements, Connectivity Decision and Access Policy;
+- current global read visibility for foreign Resource/Component/Deployment catalogue data;
+- HTTP read contract for the inventory;
+- Web UI information architecture with Connectivity as the primary post-login workspace;
+- resource-centric tree-grid showing local Resource -> Component Deployment -> connectivity -> remote Component/Resource;
+- independent Need / Decision / Policy dimensions;
+- local Resources/Components with zero connectivity;
+- relationship details;
+- contextual Add Connectivity entry point using trusted catalogue semantics;
+- no durable Waiting/Under review state unless its owner/lifecycle is separately accepted.
+
+Guardrails:
+- Scoped Connectivity Inventory is a non-peer application/read composition, not a new Bounded Context;
+- no direct cross-module persistence joins;
+- catalogue visibility does not grant protected Requirement/Decision/Rule detail access;
+- `Required != Authorized`;
+- no `Pending` is added to Connectivity Decision;
+- no generic CMDB/portfolio CRUD is introduced.
 
 Exit:
-no local deterministic allow adapter is required for the normal product journey.
+an authenticated actor can select a responsibility scope, inspect the local resource/component connectivity landscape and start connectivity work from that context, while all business truth remains owned by existing contexts.
+
+### I16B — Connectivity Decision Runtime and Workflow
+
+Status: `planned after I16A`.
+
+Goal:
+replace the `local-dev:allowed` provider with the accepted real Decision-domain application/runtime slice and integrate it into the new Connectivity workspace.
+
+Expected scope:
+- submit/obtain final Decision for an exact proposal subject;
+- authorized `DecideConnectivity` and `ReadConnectivityDecision` runtime boundaries;
+- durable Decision persistence, idempotency/concurrency/audit;
+- Allowed/NotAllowed reason/provenance presentation;
+- decision participant workspace where applicable;
+- work queue or persistent waiting/process state only if its semantics are explicitly accepted before implementation;
+- Docker demo using the real Decision mechanism;
+- integration with contextual Add Connectivity.
+
+Exit:
+the normal product journey no longer requires the deterministic `local-dev:allowed` provider and any exposed decision-process state has an explicit semantic owner.
 
 ### I17 — Technical Access Evidence Core
 
-Status: `planned after Decision runtime`.
+Status: `planned after I16B Decision runtime`.
 
 Goal:
 implement the accepted **Technical Access Evidence** bounded context.
@@ -314,7 +353,8 @@ Expected scope:
 I13 Connectivity Requirements Core
   -> I14 Requirement-to-Policy Alignment
   -> I15 Connectivity Decision Domain Closure
-  -> I16 Connectivity Decision Runtime
+  -> I16A Scoped Connectivity Workspace Foundation
+  -> I16B Connectivity Decision Runtime
   -> I17 Technical Access Evidence
   -> I18 Technical-to-Domain Resolution
   -> I19 Network Enforcement Placement
