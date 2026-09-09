@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from napms.access_policy_realization.domain.realization import EnforcementTarget
 from napms.network_environment_operations.domain import (
     ApplyResult,
     ApplyStatus,
     NetworkOperationResult,
+    OperationTarget,
     TargetState,
 )
 
@@ -24,7 +24,7 @@ class AllowAllMutationAuthority:
         *,
         actor_id: str,
         authority_scope: str,
-        target: EnforcementTarget,
+        target: OperationTarget,
     ) -> bool:
         return bool(actor_id and authority_scope and target)
 
@@ -35,7 +35,7 @@ class DenyAllMutationAuthority:
         *,
         actor_id: str,
         authority_scope: str,
-        target: EnforcementTarget,
+        target: OperationTarget,
     ) -> bool:
         return False
 
@@ -53,14 +53,14 @@ class InMemoryOperationRepository:
 
 @dataclass(slots=True)
 class DeterministicTargetStub:
-    target: EnforcementTarget
+    target: OperationTarget
     scenario: StubScenario = StubScenario.SUCCESS
     revision: int = 1
     artifact_digest: str | None = None
     apply_calls: int = 0
     acquire_calls: int = 0
 
-    def acquire(self, *, target: EnforcementTarget) -> TargetState:
+    def acquire(self, *, target: OperationTarget) -> TargetState:
         self._require_target(target)
         self.acquire_calls += 1
         return TargetState(
@@ -72,7 +72,7 @@ class DeterministicTargetStub:
     def apply(
         self,
         *,
-        target: EnforcementTarget,
+        target: OperationTarget,
         artifact_content: str,
         artifact_digest: str,
         expected_revision: str,
@@ -110,6 +110,6 @@ class DeterministicTargetStub:
             operation_reference=f"stub:apply:{operation_id}:applied",
         )
 
-    def _require_target(self, target: EnforcementTarget) -> None:
+    def _require_target(self, target: OperationTarget) -> None:
         if target != self.target:
             raise ValueError("stub target mismatch")
