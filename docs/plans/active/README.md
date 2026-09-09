@@ -2,7 +2,7 @@
 
 Current: `PLAN-038-i24-local-deployment-hardening.md`
 
-Current task: WP-1 local runtime security baseline verification.
+Current task: local runtime security baseline verification.
 
 Goal: harden the supported local Docker Compose deployment without introducing enterprise infrastructure or changing product/domain semantics.
 
@@ -19,7 +19,7 @@ Expand only as needed into `.env.example`, `Makefile`, `README.md` and canonical
 
 ## Blockers
 
-None for WP-1 verification. A pre-I24 database volume may legitimately fail the new check because PostgreSQL initialization settings persist in the volume; needed data must be backed up before recreation/migration.
+None for WP1 verification. A pre-I24 database volume may legitimately fail the new check because PostgreSQL initialization settings persist in the volume; needed data must be backed up before recreation/migration.
 
 ## Gate
 
