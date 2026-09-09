@@ -30,6 +30,16 @@ type EvidenceDraft = {
   reference: string
 }
 
+type DecisionListState = {
+  page: number
+  refreshGeneration: number
+  loading: boolean
+  decisions: ConnectivityDecisionDto[]
+  hasMore: boolean
+  ambiguousReadScopes: string[]
+  error: ApiError | null
+}
+
 function outcomeClasses(outcome: ConnectivityDecisionOutcome) {
   return outcome === "Allowed"
     ? "border-green-200 bg-green-50 text-green-800"
@@ -86,12 +96,16 @@ export function ConnectivityDecisionsPage({
   onPageChange: (page: number) => void
   onOpenDecision: (decisionId: string) => void
 }) {
-  const [decisions, setDecisions] = useState<ConnectivityDecisionDto[]>([])
-  const [hasMore, setHasMore] = useState(false)
-  const [ambiguousReadScopes, setAmbiguousReadScopes] = useState<string[]>([])
-  const [loadingList, setLoadingList] = useState(true)
-  const [listError, setListError] = useState<ApiError | null>(null)
   const [listRefreshGeneration, setListRefreshGeneration] = useState(0)
+  const [listState, setListState] = useState<DecisionListState>(() => ({
+    page,
+    refreshGeneration: 0,
+    loading: true,
+    decisions: [],
+    hasMore: false,
+    ambiguousReadScopes: [],
+    error: null,
+  }))
 
   const [scopes, setScopes] = useState<string[]>([])
   const [ambiguousDecideScopes, setAmbiguousDecideScopes] = useState<string[]>([])
@@ -122,42 +136,70 @@ export function ConnectivityDecisionsPage({
   const [recordMessage, setRecordMessage] = useState<string | null>(null)
 
   useEffect(() => {
+    const requestPage = page
+    const requestRefreshGeneration = listRefreshGeneration
     let active = true
-    setLoadingList(true)
-    setListError(null)
-    setDecisions([])
-    setHasMore(false)
-    setAmbiguousReadScopes([])
 
-    void listConnectivityDecisions(page)
+    setListState({
+      page: requestPage,
+      refreshGeneration: requestRefreshGeneration,
+      loading: true,
+      decisions: [],
+      hasMore: false,
+      ambiguousReadScopes: [],
+      error: null,
+    })
+
+    void listConnectivityDecisions(requestPage)
       .then((result) => {
         if (!active) return
-        setDecisions(result.items)
-        setHasMore(result.hasMore)
-        setAmbiguousReadScopes(
-          result.ambiguousScopes.map((item) => item.scope),
-        )
+        setListState({
+          page: requestPage,
+          refreshGeneration: requestRefreshGeneration,
+          loading: false,
+          decisions: result.items,
+          hasMore: result.hasMore,
+          ambiguousReadScopes: result.ambiguousScopes.map(
+            (item) => item.scope,
+          ),
+          error: null,
+        })
       })
       .catch((caught) => {
         if (!active) return
-        setListError(
-          caught instanceof ApiError
-            ? caught
-            : new ApiError(
-                500,
-                "InternalError",
-                "Connectivity Decisions could not be loaded.",
-              ),
-        )
-      })
-      .finally(() => {
-        if (active) setLoadingList(false)
+        setListState({
+          page: requestPage,
+          refreshGeneration: requestRefreshGeneration,
+          loading: false,
+          decisions: [],
+          hasMore: false,
+          ambiguousReadScopes: [],
+          error:
+            caught instanceof ApiError
+              ? caught
+              : new ApiError(
+                  500,
+                  "InternalError",
+                  "Connectivity Decisions could not be loaded.",
+                ),
+        })
       })
 
     return () => {
       active = false
     }
   }, [page, listRefreshGeneration])
+
+  const listStateIsCurrent =
+    listState.page === page &&
+    listState.refreshGeneration === listRefreshGeneration
+  const visibleDecisions = listStateIsCurrent ? listState.decisions : []
+  const visibleHasMore = listStateIsCurrent ? listState.hasMore : false
+  const visibleAmbiguousReadScopes = listStateIsCurrent
+    ? listState.ambiguousReadScopes
+    : []
+  const visibleListError = listStateIsCurrent ? listState.error : null
+  const visibleLoadingList = !listStateIsCurrent || listState.loading
 
   useEffect(() => {
     let active = true
@@ -414,25 +456,25 @@ export function ConnectivityDecisionsPage({
             </div>
           </div>
 
-          {ambiguousReadScopes.length > 0 ? (
+          {visibleAmbiguousReadScopes.length > 0 ? (
             <div className="m-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-              {ambiguousReadScopes.length} read scope(s) are ambiguous and remain
+              {visibleAmbiguousReadScopes.length} read scope(s) are ambiguous and remain
               fail-closed. Decisions from those scopes are not exposed.
             </div>
           ) : null}
 
-          {listError ? (
+          {visibleListError ? (
             <div className="m-4 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-              <div className="font-semibold">{listError.code}</div>
-              <div className="mt-1">{listError.message}</div>
+              <div className="font-semibold">{visibleListError.code}</div>
+              <div className="mt-1">{visibleListError.message}</div>
             </div>
           ) : null}
 
-          {loadingList ? (
+          {visibleLoadingList ? (
             <div className="p-8 text-sm text-[#64748B]">
               Loading Decisions…
             </div>
-          ) : decisions.length === 0 ? (
+          ) : visibleDecisions.length === 0 ? (
             <div className="p-10 text-center">
               <div className="text-sm font-semibold text-[#334155]">
                 No visible Connectivity Decisions
@@ -458,7 +500,7 @@ export function ConnectivityDecisionsPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {decisions.map((decision) => (
+                  {visibleDecisions.map((decision) => (
                     <tr
                       key={decision.decisionId}
                       className="border-t border-[#E2E8F0] align-top hover:bg-[#F8FAFC]"
@@ -521,14 +563,14 @@ export function ConnectivityDecisionsPage({
           <div className="flex justify-end gap-2 border-t border-[#E2E8F0] px-5 py-4">
             <Button
               variant="secondary"
-              disabled={page === 1 || loadingList}
+              disabled={page === 1 || visibleLoadingList}
               onClick={() => onPageChange(Math.max(1, page - 1))}
             >
               Previous
             </Button>
             <Button
               variant="secondary"
-              disabled={!hasMore || loadingList}
+              disabled={!visibleHasMore || visibleLoadingList}
               onClick={() => onPageChange(page + 1)}
             >
               Next
