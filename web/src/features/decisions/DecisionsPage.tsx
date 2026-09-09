@@ -510,7 +510,7 @@ export function DecisionsPage({
                     </dd>
                   </div>
                 </dl>
-                {context.supersedesDecisionId ? (
+                {context?.supersedesDecisionId ? (
                   <div className="mt-3 text-xs text-[#64748B]">
                     Supersedes{" "}
                     <span className="font-mono">
