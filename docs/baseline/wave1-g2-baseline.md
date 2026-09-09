@@ -1,14 +1,16 @@
 # Wave-1 G2 — Greenfield Product Baseline
 
-Status: `G2 PASS`.
+Status: `G2 PASS — historical accepted snapshot`.
 
 Date: 2026-09-08.
 
-## Outcome
+## Purpose
 
-Wave 1 is sufficiently specified for architecture work without using Legacy implementation as domain meaning.
+Record the G2 product-readiness decision that allowed architecture work to begin.
 
-Selected end-to-end outcome:
+This is historical provenance, not current product truth. Detailed Wave-1 working requirement/trace/example packets were later absorbed and removed from the living requirements surface. Git history preserves their exact content.
+
+## Accepted outcome at G2
 
 ```text
 compose/request valid application-backed Access Rule Proposal(s)
@@ -21,62 +23,35 @@ compose/request valid application-backed Access Rule Proposal(s)
     -> STOP
 ```
 
-## Canonical G2 inputs
+## Durable current successors
 
-- functional requirements: `docs/target/wave1-product-requirements.md`;
-- behavior trace: `docs/target/wave1-story-use-case-trace.md`;
-- normalized export trace: `docs/target/wave1-normalized-export-trace.md`;
-- acceptance examples: `docs/target/wave1-acceptance-examples.md`;
-- quality scenarios / ASRs: `docs/target/wave1-quality-scenarios.md`;
-- semantic contracts: `docs/target/wave1-semantic-contracts.md`;
-- deferred behavior: `docs/target/wave1-deferrals.md`;
-- accepted D1 decisions/provenance: `docs/requirements-audit/wave1-d1-decision-packets.md`;
-- deferred Connectivity Decision research: `docs/requirements-audit/connectivity-decision-domain-deferred.md`;
-- Strategic DDD authority: `docs/ddd/readiness.md` (`DDD-BDM-010`).
+Current accepted behavior is now owned by:
+- `docs/requirements/access-policy-core.md`;
+- `docs/requirements/policy-export-core.md`;
+- `docs/domain/access-policy/tactical-model.md`;
+- `docs/requirements/connectivity-decision-core.md`;
+- current feature-specific requirements;
+- executable implementation/evidence under `src/` and `tests/`.
 
-## G2 challenge
+Connectivity Decision was intentionally deferred at G2; ADR-005 and current Decision requirements supersede that historical deferral.
 
-| Criterion | Result | Evidence |
-|---|---|---|
-| every Wave-1 behavior through normalized export accepted/testable | PASS | requirements + traces |
-| material rules have examples/counterexamples/degraded cases | PASS | acceptance examples E1-E14 |
-| identity/decision/state semantics explicit | PASS | D1 decisions + requirements |
-| structural proposal validity explicit | PASS | DCS-described interaction; no invented blanket same-Application invariant |
-| missing/stale data behavior explicit | PASS | fail-closed successful export semantics |
-| provenance/effective-time semantics explicit | PASS | D1 decisions + QS-03/QS-05 + contracts |
-| ASRs concrete enough to compare architecture options | PASS | P1/P2 quality scenarios; unsupported numeric SLA deliberately not invented |
-| participating contexts elaborated only as needed | PASS | semantic contracts; no BC=service inference |
-| deferred domains have safe seams/revisit triggers | PASS | deferral register + Decision Domain artifact |
-| Strategic DDD contradiction discovered | NONE | accepted behavior remains within DDD-BDM-010 ownership seams |
-| architecture decision used to fill product gap | NONE | topology/API/storage/technology remain unchosen |
-| Legacy mechanisms copied as product truth | NONE | Word/Excel/XUIT/firewall split/render/execution explicitly dispositioned/deferred |
+## G2 challenge result
 
-## Architecture-significant drivers handed to G3
+G2 established that:
+- proposal/Rule semantic identity and Allowed/NotAllowed materialization behavior were testable;
+- retries/concurrency must not create duplicate authoritative Rules;
+- technical realization must not redefine Rule identity;
+- successful export must be coherent for one logical time and fail closed on incomplete required facts;
+- provenance must survive normalization;
+- action authority and business audit are explicit;
+- Bounded Context does not imply service/database/deployment unit;
+- unsupported numeric SLA/workload values must not be invented;
+- rendering, provider execution and configured-state reconciliation were outside the selected slice.
 
-Priority order:
+No Legacy mechanism was accepted as target domain truth.
 
-1. authoritative semantic correctness and idempotent Rule materialization;
-2. coherent temporal export and fail-closed completeness;
-3. end-to-end provenance/explainability;
-4. action-scoped authority and auditability;
-5. semantics-preserving vendor-neutral normalization/interoperability.
+## Decision
 
-Numeric scale/performance/availability targets are not established by current evidence and are not invented at G2. PLAN-027 may revisit them if architecture feasibility or transition workload requires a concrete envelope.
+`PASS` — the product baseline was sufficiently specified to enter target-architecture work.
 
-## Boundaries that architecture must preserve
-
-```text
-Bounded Context != service != database != deployment unit
-```
-
-Architecture must not:
-- invent Connectivity Decision internals;
-- collapse immutable Rule semantic identity with mutable technical realization;
-- make best-effort incomplete output look successful;
-- lose Rule/decision provenance through normalization;
-- infer permanent target topology from Legacy modules/tables/apps;
-- promote deferred rendering/execution semantics into Wave 1.
-
-## G2 decision
-
-`PASS` — PLAN-027 Target and Transition Architecture may start.
+For exact historical G2 packet wording, use Git history rather than current requirements.

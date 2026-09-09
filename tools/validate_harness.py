@@ -76,6 +76,11 @@ def main() -> int:
         ROOT / "docs" / "process" / "plan-lifecycle.md",
         ROOT / "docs" / "process" / "working-loop.md",
         ROOT / "docs" / "plans" / "active" / "README.md",
+        ROOT / "docs" / "requirements" / "README.md",
+        ROOT / "docs" / "requirements" / "access-policy-core.md",
+        ROOT / "docs" / "requirements" / "policy-export-core.md",
+        ROOT / "docs" / "architecture" / "README.md",
+        ROOT / "docs" / "architecture" / "current-architecture.md",
         ROOT / "tests" / "evals" / "skill-routing-cases.json",
     ]
     for path in required:
@@ -171,6 +176,23 @@ def main() -> int:
         )
     if ROOT.joinpath("agent", "skills").exists():
         errors.append("deprecated agent/skills path exists")
+
+    for directory in [
+        ROOT / "docs" / "requirements",
+        ROOT / "docs" / "architecture",
+    ]:
+        for path in sorted(directory.glob("wave1-*.md")):
+            errors.append(
+                "historical Wave-1 packet must not remain in living "
+                f"knowledge surface: {path.relative_to(ROOT)}"
+            )
+
+    historical_ui_plan = ROOT / "docs" / "ui" / "implementation-plan.md"
+    if historical_ui_plan.exists():
+        errors.append(
+            "historical UI execution plan must not remain under docs/ui; "
+            "use active plan/roadmap and Git history"
+        )
 
     if errors:
         print("Harness validation failed:", file=sys.stderr)
