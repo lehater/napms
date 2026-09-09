@@ -519,6 +519,7 @@ export function ConnectivityPage({
                     Decision
                   </th>
                   <th className="w-[170px] px-4 py-3 font-semibold">Policy</th>
+                  <th className="w-[140px] px-4 py-3 font-semibold">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -651,7 +652,7 @@ function ResourceRows({
               >
                 <td className="px-4 py-3 pl-8">{componentCell}</td>
                 <td colSpan={7} className="px-4 py-3 text-[#64748B]">
-                  No connectivity is declared for this Component.
+                  No catalogued communication interaction is known for this Component.
                 </td>
               </tr>,
             ]
@@ -709,8 +710,7 @@ function ResourceRows({
                 {relationship.policy.ruleExists === "No" &&
                 relationship.need.current !== "Unknown" &&
                 relationship.need.historicalOnly !== true &&
-                relationship.decision.state !== "NotAllowed" &&
-                relationship.decision.state !== "NoFinalDecision" ? (
+                relationship.decision.state !== "NotAllowed" ? (
                   <button
                     type="button"
                     className="text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8]"
