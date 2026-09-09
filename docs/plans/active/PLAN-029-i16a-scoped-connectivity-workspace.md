@@ -10,11 +10,7 @@ Prepare and implement the first resource-centric owner workspace so an authentic
 
 This plan deliberately precedes the real Connectivity Decision runtime replacement. Its purpose is to make the product understandable and operational from the user's mental model before adding more workflow complexity.
 
-## Current stage
-
-WP-01 — Domain re-entry: selected responsibility scope -> local Resources.
-
-Implementation remains gated until WP-01 closes the semantic owner/relation.
+Current task selection is owned only by `docs/plans/active/README.md`; this plan defines coordination and work-package boundaries.
 
 ## Inputs
 

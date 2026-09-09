@@ -19,6 +19,8 @@ For non-trivial work read, in order:
 
 Read the full current `PLAN-*.md` only when the task concerns planning/coordination/stage transition, the resume capsule explicitly directs you there, or a material fact required for the current task is missing. Do not load future work packages by default.
 
+The resume capsule is a non-authoritative recovery cache. If a capsule summary conflicts with its canonical domain/requirements/architecture/engineering owner, the canonical owner wins and the capsule must be refreshed.
+
 Do not scan `docs/baseline/` or completed historical Wave-1 material unless the task explicitly requires history or provenance.
 
 Use `docs/process/decision-protocol.md` when a material answer is missing or conflicting.

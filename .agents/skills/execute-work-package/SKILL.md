@@ -11,20 +11,21 @@ Answer: what are we doing now, what owns closure, what artifact changes, and wha
 
 ## Procedure
 
-1. Read root/scoped `AGENTS.md`, then `docs/plans/active/README.md`.
+1. Recover in one order: root `AGENTS.md` -> `docs/plans/active/README.md` -> nearest scoped `AGENTS.md`.
 2. Recover current task, goal, working set, blockers, gate and next action from the resume capsule.
 3. Read the full current plan only for planning/coordination/stage transition, when the capsule explicitly points to it, or when a material fact required for the current task is missing.
 4. Read only the canonical truth/code in the current working set; expand deliberately when evidence requires it.
-5. Route content work:
+5. Treat capsule facts as recovery summaries only. If they conflict with a canonical owner, use the canonical truth and refresh the capsule.
+6. Route content work:
    - implementation slice -> `implement-slice`;
    - domain semantic/boundary change -> `domain-model-change`;
    - architecture challenge/review -> `architecture-review`;
    - one material unresolved To-Be choice -> `resolve-decision`.
-6. Apply `docs/process/decision-protocol.md`; never invent a blocking answer.
-7. Work against the named artifact/code and re-evaluate the local exit after each semantic increment.
-8. Use `docs/process/working-loop.md` for checkpoints and context rollover.
-9. Update the resume capsule whenever current task, working set, blocker, gate or next action materially changes. Update the full plan only when coordination state or plan structure changes.
-10. Stop at the gate; do not start the next stage merely because it is planned.
+7. Apply `docs/process/decision-protocol.md`; never invent a blocking answer.
+8. Work against the named artifact/code and re-evaluate the local exit after each semantic increment.
+9. Use `docs/process/working-loop.md` for checkpoints and context rollover.
+10. Update the resume capsule whenever current task, working set, blocker, gate or next action materially changes. Update the full plan only when coordination state or plan structure changes.
+11. Stop at the gate; do not start the next stage merely because it is planned.
 
 ## Output state
 
