@@ -2,7 +2,6 @@ from uuid import UUID
 
 import pytest
 
-from napms.access_policy_realization.domain.realization import EnforcementTarget
 from napms.network_environment_operations.adapters import (
     AllowAllMutationAuthority,
     DenyAllMutationAuthority,
@@ -14,10 +13,11 @@ from napms.network_environment_operations.application import ExecuteNetworkOpera
 from napms.network_environment_operations.domain import (
     ExecuteNetworkOperationCommand,
     OperationOutcome,
+    OperationTarget,
 )
 
 
-TARGET = EnforcementTarget(UUID(int=22001), UUID(int=22002))
+TARGET = OperationTarget(UUID(int=22001), UUID(int=22002))
 CONTENT = "access-list NAPMS extended permit tcp host 10.0.0.1 host 192.0.2.1 eq 443\n"
 DIGEST = "sha256:artifact-a"
 
