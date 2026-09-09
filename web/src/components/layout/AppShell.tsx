@@ -4,6 +4,7 @@ import {
   ListTree,
   LogOut,
   Network,
+  Scale,
   TableProperties,
 } from "lucide-react"
 
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/Button"
 export type NavKey =
   | "connectivity"
   | "requirements"
+  | "decisions"
   | "rules"
   | "effective"
   | "normalized"
@@ -76,6 +78,15 @@ export function AppShell({
           </div>
           <button
             type="button"
+            className={navClass("decisions")}
+            aria-current={activeNav === "decisions" ? "page" : undefined}
+            onClick={() => onNavigate("decisions")}
+          >
+            <Scale className="size-4" aria-hidden="true" />
+            Decisions
+          </button>
+          <button
+            type="button"
             className={navClass("rules")}
             aria-current={activeNav === "rules" ? "page" : undefined}
             onClick={() => onNavigate("rules")}
@@ -114,6 +125,7 @@ export function AppShell({
               [
                 ["connectivity", "Connectivity"],
                 ["requirements", "Needs"],
+                ["decisions", "Decisions"],
                 ["rules", "Rules"],
                 ["effective", "Effective"],
                 ["normalized", "Export"],
