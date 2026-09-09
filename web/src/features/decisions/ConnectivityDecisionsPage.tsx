@@ -91,6 +91,7 @@ export function ConnectivityDecisionsPage({
   const [ambiguousReadScopes, setAmbiguousReadScopes] = useState<string[]>([])
   const [loadingList, setLoadingList] = useState(true)
   const [listError, setListError] = useState<ApiError | null>(null)
+  const [listRefreshGeneration, setListRefreshGeneration] = useState(0)
 
   const [scopes, setScopes] = useState<string[]>([])
   const [ambiguousDecideScopes, setAmbiguousDecideScopes] = useState<string[]>([])
@@ -120,34 +121,43 @@ export function ConnectivityDecisionsPage({
   const [recordError, setRecordError] = useState<ApiError | null>(null)
   const [recordMessage, setRecordMessage] = useState<string | null>(null)
 
-  async function loadList() {
+  useEffect(() => {
+    let active = true
     setLoadingList(true)
     setListError(null)
-    try {
-      const result = await listConnectivityDecisions(page)
-      setDecisions(result.items)
-      setHasMore(result.hasMore)
-      setAmbiguousReadScopes(
-        result.ambiguousScopes.map((item) => item.scope),
-      )
-    } catch (caught) {
-      setListError(
-        caught instanceof ApiError
-          ? caught
-          : new ApiError(
-              500,
-              "InternalError",
-              "Connectivity Decisions could not be loaded.",
-            ),
-      )
-    } finally {
-      setLoadingList(false)
-    }
-  }
+    setDecisions([])
+    setHasMore(false)
+    setAmbiguousReadScopes([])
 
-  useEffect(() => {
-    void loadList()
-  }, [page])
+    void listConnectivityDecisions(page)
+      .then((result) => {
+        if (!active) return
+        setDecisions(result.items)
+        setHasMore(result.hasMore)
+        setAmbiguousReadScopes(
+          result.ambiguousScopes.map((item) => item.scope),
+        )
+      })
+      .catch((caught) => {
+        if (!active) return
+        setListError(
+          caught instanceof ApiError
+            ? caught
+            : new ApiError(
+                500,
+                "InternalError",
+                "Connectivity Decisions could not be loaded.",
+              ),
+        )
+      })
+      .finally(() => {
+        if (active) setLoadingList(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [page, listRefreshGeneration])
 
   useEffect(() => {
     let active = true
@@ -361,7 +371,7 @@ export function ConnectivityDecisionsPage({
           : `Equivalent current Decision ${shortId(result.decision.decisionId)} resolved.`,
       )
       resetRecordForm()
-      await loadList()
+      setListRefreshGeneration((current) => current + 1)
     } catch (caught) {
       setRecordError(
         caught instanceof ApiError
