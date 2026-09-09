@@ -4,50 +4,50 @@ Current: `PLAN-018-i18-technical-domain-access-resolution.md`
 
 Goal: implement I18 Technical-to-Domain Access Resolution as one consumer-independent APR capability over effective RC + ACC knowledge.
 
-Current task: WP0 — Tactical DDD and observable-contract closure.
+Current task: WP1 — Domain/Application/Ports core.
 
-Working mode: domain-model-change + execute-work-package.
+Working mode: implement-slice + execute-work-package.
 
 ## Working set
 
 Read first:
+- `docs/domain/access-policy-realization/tactical-model.md`
+- `docs/requirements/technical-domain-access-resolution-acceptance-examples.md`
+- `docs/architecture/access-policy-realization-resolution-boundary.md`
 - `docs/plans/active/PLAN-018-i18-technical-domain-access-resolution.md`
-- `docs/domain/ubiquitous-language.md`
-- `docs/domain/technical-access-evidence/tactical-model.md`
-- `docs/domain/semantic-ownership.md`
 
 Expand only if needed into:
-- current RC/ACC Domain/Application contracts;
-- TAE core model;
-- architecture/current-state/roadmap;
-- implementation after the WP0 semantic gate.
+- current TAE normalized predicate model for adapter compatibility only;
+- architecture tests and package patterns;
+- RC/ACC contracts after the WP1 core gate.
 
 ## Recovery facts
 
-- I17 is complete; TAE stores normalized source-qualified evidence and owns no domain-resolution truth.
-- I18 belongs to Access Policy Realization.
-- Proposal-side and Reconciliation-side matching are SAME_CAPABILITY.
-- Domain Interaction identity is Source Component Deployment + Destination Component Deployment + immutable DCS revision.
-- RC owns effective endpoint realization; ACC owns DCS + effective DeploymentResourceBinding.
-- I19 placement and I20 reconciliation remain downstream.
-- No APR implementation/persistence/runtime currently exists.
+- WP0 Tactical DDD + requirements/examples + architecture boundary are accepted.
+- Pairwise correspondence is Exact | Covers | CoveredBy | PartialOverlap | None.
+- Resolution status is Exact | Covered | Partial | Ambiguous | Unresolved | Unknown.
+- Supported complete first algebra requires an exact IP protocol number.
+- Protocol Any remains explicit Unknown; no guessed protocol expansion is permitted.
+- Remainder is exact set difference for supported complete knowledge.
+- APR Domain/Application own consumer ports and import no RC/ACC/TAE peer types.
+- No APR persistence/runtime, I19 placement or I20 reconciliation is in scope.
 
 ## Blockers
 
-None identified before WP0. Any unresolved protocol/port or remainder semantics must remain explicit and keep the implementation gate closed.
+None for WP1.
 
 ## Gate
 
-WP0 passes only when Tactical DDD + requirements/examples + architecture define:
-- shared resolution result and correspondence algebra;
-- Exact/Covered/Partial/Ambiguous/Unresolved/Unknown behavior;
-- supported predicate/remainder semantics;
-- effective-time/provenance rules;
-- consumer-owned RC/ACC and TAE adapter boundaries;
-- explicit fail-closed treatment for unsupported meaning.
+WP1 passes only when:
+- pure region intersection/containment/difference is executable;
+- ambiguity has no winner path;
+- exact remainder is preserved;
+- ResolveTechnicalAccess is deterministic for a supplied APR-owned DomainKnowledgeSnapshot;
+- core/architecture tests prove framework/peer-context independence;
+- all P0/P1 core findings are closed.
 
-Infrastructure and implementation remain closed until this gate passes.
+Peer-context adapters and infrastructure remain closed until this gate passes.
 
 ## Next
 
-Complete and review WP0. Stop before code if any P0/P1 semantic unknown remains.
+Implement and review WP1. Stop before RC/ACC/TAE adapters if the core gate is not green.

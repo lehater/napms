@@ -48,7 +48,7 @@ I19 Network Enforcement Placement and I20 reconciliation/enforcement-policy deri
 
 ## Work packages
 
-### WP0 — Tactical DDD and observable-contract closure
+### WP0 — Tactical DDD and observable-contract closure — done
 
 Create/accept together:
 - `docs/domain/access-policy-realization/tactical-model.md`;
@@ -161,8 +161,10 @@ repository integration demonstrates technical evidence -> domain resolution with
 
 ## Blockers
 
-None before WP0.
+None for WP1.
+
+WP0 review closed with no P0/P1 semantic blockers. The accepted first algebra is intentionally exact-protocol-number scoped; Protocol Any remains explicit Unknown until a protocol-wide port-applicability/difference model is accepted.
 
 ## Next
 
-Execute WP0 only. Accept the Tactical DDD + requirements/examples + architecture boundary together, then open WP1 only if the semantic gate is closed.
+Execute WP1 only: framework-free APR Domain/Application/Ports core plus core/architecture tests. Keep peer-context adapters and infrastructure closed until the WP1 gate passes.

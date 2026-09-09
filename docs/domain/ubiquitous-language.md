@@ -327,7 +327,7 @@ Contains:
 A resolved concrete domain interaction identified by Source Component Deployment + Destination Component Deployment + matching DCS. It is not automatically an Access Rule.
 
 ### Access Correspondence
-Relation between technical and domain access spaces, for example:
+Exact relation between one technical region fragment and one Domain Interaction technical region fragment:
 
 ```text
 Exact
@@ -335,11 +335,24 @@ Covers
 CoveredBy
 PartialOverlap
 None
+```
+
+### Resolution Status
+Overall Domain Access Resolution classification:
+
+```text
+Exact
+Covered
+Partial
+Ambiguous
+Unresolved
 Unknown
 ```
 
+`Ambiguous` means one technical overlap maps to more than one distinct Domain Interaction and no winner is selected. `Unknown` means predicate-relevant RC/ACC knowledge or accepted technical algebra is insufficient for a complete conclusion.
+
 ### Unresolved Technical Remainder
-Part of a technical predicate that cannot currently be mapped to known domain interactions.
+Canonical technical region not resolved by known Domain Interaction overlap. With complete supported knowledge it is the exact set difference between the input predicate and all overlap witnesses. Under `Unknown`, remainder completeness is not claimed.
 
 ### Business-Optimal Enforcement Policy
 The enforcement-policy semantics that the domain considers correct/preferred for relevant enforcement points. "Optimal" is a business judgement, not mathematical global optimality.
