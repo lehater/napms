@@ -20,6 +20,7 @@ import {
 } from "@/api"
 import { Button } from "@/components/ui/Button"
 import { Field, Select } from "@/components/ui/Field"
+import type { RequestConnectivityContext } from "@/features/connectivity/model"
 
 function badgeClasses(
   tone: "good" | "warn" | "bad" | "muted" | "unknown",
@@ -186,15 +187,6 @@ function RemoteSide({
   )
 }
 
-export type ConnectivityRequestContext = {
-  scope: string
-  dependentComponentDeploymentId: string
-  sourceComponentDeploymentId: string
-  destinationComponentDeploymentId: string
-  dcsContractRevisionId: string
-  needCurrent: "Required" | "None"
-}
-
 export function ConnectivityPage({
   page,
   onPageChange,
@@ -202,7 +194,7 @@ export function ConnectivityPage({
 }: {
   page: number
   onPageChange: (page: number) => void
-  onRequestAccess: (context: ConnectivityRequestContext) => void
+  onRequestAccess: (context: RequestConnectivityContext) => void
 }) {
   const [asOf, setAsOf] = useState(() => new Date().toISOString())
   const [scopes, setScopes] = useState<string[]>([])
@@ -576,7 +568,7 @@ function ResourceRows({
 }: {
   item: ScopedConnectivityInventoryPage["items"][number]
   scope: string
-  onRequestAccess: (context: ConnectivityRequestContext) => void
+  onRequestAccess: (context: RequestConnectivityContext) => void
 }) {
   const resource = item.resource
   const endpointSummary = endpointText(resource)
