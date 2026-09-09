@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline after I12`.
+Status: `accepted ordered sequencing baseline after I13`.
 
 Date: 2026-09-09.
 
@@ -28,15 +28,17 @@ The roadmap may be refined when new accepted domain evidence changes boundaries 
 ## Baseline
 
 Completed:
-- I1-I12;
+- I1-I13;
 - Wave 1 proposal -> Connectivity Decision seam -> Access Rule -> effective desired policy -> coherent normalized policy;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
 - Dockerized local runtime;
 - human-readable catalogue UX.
 
-Wave 1 intentionally stops before:
-- Connectivity Requirements runtime participation;
+Wave 1 intentionally stopped before Connectivity Requirements runtime participation; I13 now closes the first Connectivity Requirements core/runtime/workspace slice.
+
+Still deferred:
+- Requirement-to-Policy Alignment;
 - Connectivity Decision internals/workflow;
 - Network Enforcement Placement;
 - Technical Access Evidence;
@@ -49,7 +51,7 @@ Wave 1 intentionally stops before:
 
 ### I13 — Connectivity Requirements Core
 
-Status: `current`.
+Status: `done`.
 
 Goal:
 establish the Tactical DDD and first executable core for the already-accepted **Connectivity Requirements** bounded context.
@@ -67,11 +69,11 @@ Must establish before infrastructure:
 Exit direction:
 an authorized responsible actor can persist and inspect a connectivity need without creating, allowing or changing an Access Rule.
 
-Detailed execution: `docs/plans/active/PLAN-013-i13-connectivity-requirements-core.md`.
+Detailed execution was completed and absorbed into canonical truth; the active I13 plan is removed after merge.
 
 ### I14 — Requirement-to-Policy Alignment
 
-Status: `planned after I13`.
+Status: `next after I13`.
 
 Goal:
 compare accepted Connectivity Requirements with current Access Policy without making either context own the other.

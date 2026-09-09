@@ -2,6 +2,62 @@
 
 Status: `accepted NAPMS-DDD-001 / source DDD-BDM-010 ubiquitous language`.
 
+## Connectivity Requirements
+
+### Connectivity Requirement
+Authoritative statement that one semantic connectivity need exists for one dependent concern.
+
+It has a stable `ConnectivityRequirementId`, a stable Requirement Governance Scope, one immutable Dependent Component Deployment, one immutable Required Semantic Interaction, mutable Applicability/Justification and lifecycle `Active | Retired`.
+
+```text
+Connectivity Requirement
+!= Access Request / ticket
+!= Connectivity Decision
+!= Access Rule
+!= configured/observed access
+```
+
+### Requirement Governance Scope
+Stable non-identity scope stored on one Connectivity Requirement and used by Authority Management for later read/mutation actions. Later callers cannot substitute another scope.
+
+### Dependent Component Deployment
+The participating Component Deployment whose operational/business concern requires the interaction.
+
+It must be either the Source or Destination Component Deployment of the Required Semantic Interaction.
+
+It is not an actor-owner field and does not grant authority.
+
+### Required Semantic Interaction
+Exact immutable required application interaction:
+
+```text
+Source Component Deployment
++ Destination Component Deployment
++ immutable DCS revision
+```
+
+It uses ACC-owned structural communication semantics but remains distinct from Access Rule / Access Rule Proposal identity ownership.
+
+### Requirement Applicability
+
+```text
+Ongoing
+| AbsoluteWindow(start, end)
+```
+
+Absolute windows use offset-aware half-open `[start,end)` semantics. Applicability is mutable and not identity-defining.
+
+### Requirement Justification
+Mandatory non-empty business explanation of why the connectivity is required. It is mutable and is not a Decision/approval reason.
+
+### Requirement Lifecycle
+
+```text
+Active -> Retired
+```
+
+Retired is terminal in I13. No Pending/Approved/Rejected states belong to Connectivity Requirements.
+
 ## Access Policy
 
 ### Access Rule

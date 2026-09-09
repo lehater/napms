@@ -1,6 +1,6 @@
 # HTTP API contract — Web UI boundary
 
-Status: `accepted through I12 Human-readable Catalogue UX`.
+Status: `accepted through I13 Connectivity Requirements HTTP boundary`.
 
 Date: 2026-09-09.
 
@@ -192,6 +192,130 @@ HTTP `200`.
 ```
 
 `NotAllowed` is a normal business result and never becomes `403`.
+
+## Connectivity Requirements
+
+I13 adds a dedicated use-case API. Connectivity Requirement existence is not connectivity authorization and has no implicit Access Policy side effect.
+
+### GET /api/v1/connectivity-requirements/scopes
+
+Discovers unambiguous effective `DeclareConnectivityRequirement` scopes for the authenticated actor at runtime time.
+
+Success:
+```json
+{
+  "scopes": [{"scope": "scope-a"}],
+  "ambiguousScopes": []
+}
+```
+
+### GET /api/v1/connectivity-requirements/interactions
+
+Query:
+- `scope` required;
+- `page`, `pageSize`;
+- optional bounded `search`.
+
+The backend evaluates `DeclareConnectivityRequirement` for the requested scope/time before returning ACC-backed exact interactions.
+
+Returned identity remains Source Deployment + Destination Deployment + immutable DCS revision. Optional I12 catalogue presentation metadata may accompany each item.
+
+### POST /api/v1/connectivity-requirements
+
+Request:
+```json
+{
+  "authorityScope": "scope-a",
+  "dependentComponentDeploymentId": "uuid",
+  "sourceComponentDeploymentId": "uuid",
+  "destinationComponentDeploymentId": "uuid",
+  "dcsContractRevisionId": "uuid",
+  "applicability": {"kind": "Ongoing"},
+  "justification": "Orders are required for checkout."
+}
+```
+
+Absolute applicability:
+```json
+{
+  "kind": "AbsoluteWindow",
+  "start": "2026-09-10T08:00:00+00:00",
+  "end": "2026-09-10T18:00:00+00:00"
+}
+```
+
+Request JSON cannot supply actor ID, effective business action time, Requirement ID, lifecycle state, version, authority reference or catalogue provenance.
+
+Outcomes:
+- `Declared` -> 201;
+- `Resolved` existing Active semantic need -> 200;
+- authority denied -> 403;
+- authority unknown -> 409;
+- invalid interaction/dependent/input -> 422;
+- interaction unknown -> 409;
+- persistence/commit uncertainty -> existing safe 503 class.
+
+Declaration does not call Connectivity Decision and does not create an Access Rule.
+
+### GET /api/v1/connectivity-requirements
+
+Authorized paged workspace list.
+
+The backend discovers effective `ReadConnectivityRequirement` scopes and returns only Requirements from unambiguous permitted stored governance scopes.
+
+### GET /api/v1/connectivity-requirements/{requirementId}
+
+Loads the authoritative Requirement then checks `ReadConnectivityRequirement` against its stored governance scope.
+
+Success may expose independent capabilities:
+- `setApplicability`;
+- `setJustification`;
+- `retire`;
+
+each as `Permitted | Denied | Unknown`. Read authority does not imply mutation authority.
+
+### PATCH /api/v1/connectivity-requirements/{requirementId}/applicability
+
+Request:
+```json
+{"applicability": {"kind": "Ongoing"}}
+```
+
+or the AbsoluteWindow shape above.
+
+Backend supplies session actor/runtime time and evaluates `SetConnectivityRequirementApplicability` against the stored Requirement governance scope.
+
+### PATCH /api/v1/connectivity-requirements/{requirementId}/justification
+
+Request:
+```json
+{"justification": "Updated business reason."}
+```
+
+Backend evaluates `SetConnectivityRequirementJustification` against stored scope.
+
+### POST /api/v1/connectivity-requirements/{requirementId}/retirement
+
+No business fields are accepted from the client.
+
+Backend evaluates `RetireConnectivityRequirement` against stored scope and performs only `Active -> Retired`.
+
+### Requirement DTO
+
+Minimum authoritative fields:
+- `requirementId`;
+- `governanceScope`;
+- `dependentComponentDeploymentId`;
+- exact `requiredInteraction`;
+- `applicability`;
+- `justification`;
+- `lifecycleState`;
+- declaration provenance;
+- accepted applicability/justification/lifecycle histories;
+- aggregate `version`;
+- optional catalogue presentation block.
+
+Aggregate version is concurrency metadata, not domain identity/lifecycle and not caller authority.
 
 ## Catalogue presentation metadata
 

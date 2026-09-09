@@ -31,6 +31,11 @@ def test_local_demo_seed_uses_actor_for_all_current_authority_actions():
         "SetRuleOperationalState",
         "SetRuleEffectiveWindow",
         "ReadEffectiveDesiredPolicy",
+        "DeclareConnectivityRequirement",
+        "ReadConnectivityRequirement",
+        "SetConnectivityRequirementApplicability",
+        "SetConnectivityRequirementJustification",
+        "RetireConnectivityRequirement",
     }
     assert all(row[1] == "local-admin" for row in authority_rows)
     assert all(row[3] == "local-demo" for row in authority_rows)

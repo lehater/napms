@@ -75,3 +75,16 @@ Add aggregate dashboard and any global audit/search features only after concrete
 - DCS traffic summary decoded from immutable projection semantics;
 - Access Rules, Rule Details, Effective Policy and Normalized Policy render catalogue labels without changing business meaning;
 - no generic catalogue CRUD/browse surface is introduced.
+
+
+## UI-6 — My Connectivity Needs — implemented in I13
+
+- Connectivity Requirements navigation/workspace;
+- authorized paged list and details;
+- declaration using I12 label-first ACC search;
+- Dependent constrained to one interaction participant;
+- Ongoing / absolute-window applicability;
+- mandatory business justification;
+- backend-admitted applicability/justification/retirement actions;
+- provenance/history presentation;
+- no approval/decision/policy-alignment status in I13.
