@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline; I22 complete, I23 lightweight extension skeleton active`.
+Status: `accepted ordered sequencing baseline; I23 complete, I24 next`.
 
 Date: 2026-09-10.
 
@@ -28,7 +28,7 @@ The roadmap may be refined when new accepted domain evidence changes boundaries 
 ## Baseline
 
 Completed:
-- I1-I22;
+- I1-I23;
 - Wave 1 proposal -> Connectivity Decision seam -> Access Rule -> effective desired policy -> coherent normalized policy;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
@@ -37,7 +37,8 @@ Completed:
 - human-readable catalogue UX;
 - Technical Access Evidence Tactical DDD, durable source-qualified persistence and strict local/import proof;
 - Access Policy Realization through technical-to-domain resolution, enforcement placement consumption, desired-vs-configured reconciliation and first target-specific configuration rendering;
-- Network Environment Operations stub-first execution semantics through controlled pre-check, conditional apply and post-check verification.
+- Network Environment Operations stub-first execution semantics through controlled pre-check, conditional apply and post-check verification;
+- optional source-neutral external identity/source extension boundaries without changing the local-first runtime.
 
 Current product direction:
 - local deployment and local data remain the supported operating model;
@@ -52,7 +53,7 @@ Still deferred unless explicitly selected by a future requirement:
 
 ## Ordered increments
 
-### Completed increments — I13 through I22
+### Completed increments — I13 through I23
 
 Status: `done / absorbed into canonical truth`.
 
@@ -67,15 +68,13 @@ Status: `done / absorbed into canonical truth`.
 - I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation: accepted APR-managed-scope/effective-Permit contract, exact desired/configured policy algebra, owner-preserving AP/RC/ACC/NEP/TAE adapters and durable PostgreSQL proof of No-op/Add/Remove/Replace with fail-closed uncertainty.
 - I21 — Configuration Rendering: accepted APR-owned rendering semantics, first Cisco Secure Firewall ASA CLI extended ACL renderer, deterministic fail-closed output, statement provenance, independent semantic projection/equivalence proof and PostgreSQL owner-preserving derive -> render integration without provider/device mutation.
 - I22 — Network Environment Operations: separate NEO semantic module, NEO-owned `OperationTarget`, mutation authority port, operation-id idempotency, optimistic target-revision concurrency, explicit apply/final outcomes, post-check verification, deterministic target stub and end-to-end desired -> rendered -> stub-applied -> verified composition proof. No real Cisco transport is claimed.
+- I23 — Optional Integration Extension Skeleton: local login and local Authority/ACC/Resource state remain primary; a dormant provider-qualified external identity -> actor resolution seam and context-owned future source-adapter boundaries are defined; deterministic tests prove fail-closed mapping without OIDC, IdP, CMDB, MSSQL or external synchronization dependencies.
 
 Detailed completed execution is not roadmap state. Durable outcomes live in current requirements/domain/architecture/engineering artifacts; Git history preserves the execution record.
 
 ### I17 — Technical Access Evidence Core
 
 Status: `done / absorbed into canonical truth`.
-
-Goal:
-implement the accepted **Technical Access Evidence** bounded context.
 
 Exit achieved:
 NAPMS can persist/query technical evidence without treating evidence as authorization.
@@ -112,67 +111,30 @@ NAPMS can produce a deterministic, provenance-preserving Cisco ASA representatio
 
 Status: `done / absorbed into canonical truth`.
 
-Goal achieved:
-model controlled provider/device-facing operation semantics downstream of rendering without inventing unavailable real-lab integration details.
-
-Accepted/implemented semantics:
-- Network Environment Operations is a separate semantic module with its own operation identity/outcome/concurrency/provenance responsibility;
-- NEO Domain owns `OperationTarget` and has no APR domain dependency; APR Enforcement Target is projected only at composition;
-- `operation_id` binds one target + artifact digest; identical retry is idempotent and conflicting reuse fails closed;
-- mutation admission is an explicit authority port;
-- pre-check/current revision plus conditional apply provide optimistic concurrency;
-- apply result is distinct from final verification;
-- apply states are `Applied | PreconditionFailed | Rejected | Unknown`;
-- final outcomes are `Verified | PreconditionFailed | Rejected | Drift | Unknown`;
-- `Verified` requires post-check evidence whose artifact digest matches the requested artifact;
-- Unknown apply is never converted into success and is not blindly retried;
-- first executable target adapter is a deterministic in-process stub because no real Cisco lab is available;
-- first operation repository is in-memory and therefore does not claim crash-durable audit.
-
-Implemented:
-- framework-free NEO Domain/Application/consumer-owned ports;
-- deterministic target stub scenarios for success/reject/unknown-apply/concurrent-change/post-apply-drift;
-- unit proofs for authority denial, stale revision, concurrency, rejection, uncertainty, drift, idempotent retry and operation-id conflict;
-- PostgreSQL-backed integration from desired policy -> Cisco ASA rendering -> NEO target projection -> stub apply -> post-check Verified;
-- adversarial integration proving no blind retry after Unknown and no false Verified under concurrent target change;
-- no Access Policy, NEP or TAE owner-state mutation from the execution flow.
-
 Exit achieved:
 NAPMS has an executable, fail-closed network-operation semantic loop through a deterministic stub, while explicitly deferring real Cisco transport validation until a lab/provider contract exists.
 
 ### I23 — Optional Integration Extension Skeleton
 
-Status: `active; lightweight scope`.
+Status: `done / absorbed into canonical truth`.
 
-Goal:
-keep the local-first product unchanged while establishing only minimal dormant extension seams for possible future external identity/source adapters.
+Accepted outcome:
+- local username/password authentication remains the primary runtime path;
+- local Authority/ACC/Resource state remains the supported current source of truth;
+- `VerifiedExternalIdentity` provides a source-neutral provider-qualified optional identity value;
+- `ActorIdentityResolver` maps optional external subjects to NAPMS actors with explicit `Mapped | Unmapped | Ambiguous | Unknown` outcomes;
+- only `Mapped` exposes an actor; all other outcomes fail closed;
+- authentication identity remains separate from Authority Management business authorization;
+- future external Authority/ACC/Resource adapters terminate at context-owned import/projection boundaries;
+- no OIDC/OAuth2, corporate IdP, directory, CMDB, Legacy/MSSQL, source synchronization engine or HTTP login migration is introduced;
+- deterministic in-process tests prove only the dormant seam, not provider compatibility.
 
-Required scope:
-- retain local username/password authentication as the primary runtime path;
-- retain local Authority/ACC/Resource data as the supported current source of truth;
-- keep a source-neutral optional external-identity -> NAPMS-actor mapping seam;
-- keep identity separate from Authority Management authorization;
-- document where future source adapters would terminate at context-owned import/projection boundaries;
-- use deterministic in-process stubs only where an executable seam proof is useful.
-
-Explicitly not required:
-- OIDC/OAuth2;
-- corporate IdP or directory integration;
-- external Authority administration;
-- real ACC/Resource/CMDB synchronization;
-- Legacy/MSSQL;
-- external-source schedulers, transports, freshness/completeness/deletion protocols;
-- replacing the current local login/session path.
-
-Exit:
-NAPMS remains fully usable in local mode, while future integrations have bounded extension points that do not pollute Domain or alter semantic ownership.
-
-Guardrail:
-real external integration is future optional work triggered only by a concrete accepted requirement. It is not a mandatory predecessor for later roadmap increments.
+Exit achieved:
+NAPMS remains fully usable in local mode while future integrations have bounded extension points that do not pollute Domain or alter semantic ownership. External integration is not a mandatory predecessor for later roadmap work.
 
 ### I24 — Local Deployment and Operational Hardening
 
-Status: `planned after I23 skeleton`.
+Status: `next; not yet selected for execution`.
 
 Goal:
 make the supported local deployment more robust and supportable without assuming an enterprise production topology.
