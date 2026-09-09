@@ -4,6 +4,8 @@ import { getSession, login, logout, type Actor } from "@/api"
 import { AppShell } from "@/components/layout/AppShell"
 import { LoginPage } from "@/features/auth/LoginPage"
 import { ConnectivityPage } from "@/features/connectivity/ConnectivityPage"
+import type { RequestConnectivityContext } from "@/features/connectivity/model"
+import { RequestConnectivityPage } from "@/features/connectivity/RequestConnectivityPage"
 import { EffectivePolicyPage } from "@/features/policy/EffectivePolicyPage"
 import { NormalizedPolicyPage } from "@/features/policy/NormalizedPolicyPage"
 import { ComposeConnectivityPage } from "@/features/proposals/ComposeConnectivityPage"
@@ -14,6 +16,11 @@ import { AccessRulesPage } from "@/features/rules/AccessRulesPage"
 
 type Route =
   | { kind: "connectivity"; page: number }
+  | {
+      kind: "request-access"
+      context: RequestConnectivityContext
+      returnPage: number
+    }
   | { kind: "requirements"; page: number }
   | { kind: "requirement"; requirementId: string }
   | { kind: "compose" }
@@ -48,6 +55,42 @@ function readRoute(): Route {
       kind: "connectivity",
       page: Number.isInteger(page) && page > 0 ? page : 1,
     }
+  }
+  if (hash.startsWith("request-access")) {
+    const query = hash.includes("?") ? hash.split("?")[1] : ""
+    const params = new URLSearchParams(query)
+    const scope = params.get("scope")
+    const dependentComponentDeploymentId = params.get("dependent")
+    const sourceComponentDeploymentId = params.get("source")
+    const destinationComponentDeploymentId = params.get("destination")
+    const dcsContractRevisionId = params.get("dcs")
+    const needCurrent = params.get("need")
+    const returnPageValue = Number(params.get("returnPage") ?? "1")
+    if (
+      scope &&
+      dependentComponentDeploymentId &&
+      sourceComponentDeploymentId &&
+      destinationComponentDeploymentId &&
+      dcsContractRevisionId &&
+      (needCurrent === "Required" || needCurrent === "None")
+    ) {
+      return {
+        kind: "request-access",
+        context: {
+          scope,
+          dependentComponentDeploymentId,
+          sourceComponentDeploymentId,
+          destinationComponentDeploymentId,
+          dcsContractRevisionId,
+          needCurrent,
+        },
+        returnPage:
+          Number.isInteger(returnPageValue) && returnPageValue > 0
+            ? returnPageValue
+            : 1,
+      }
+    }
+    return { kind: "connectivity", page: 1 }
   }
   if (hash.startsWith("compose")) return { kind: "compose" }
   if (hash.startsWith("effective-policy")) return { kind: "effective" }
@@ -116,7 +159,9 @@ export function App() {
   }
 
   const activeNav =
-    route.kind === "connectivity" || route.kind === "compose"
+    route.kind === "connectivity" ||
+    route.kind === "request-access" ||
+    route.kind === "compose"
       ? "connectivity"
       : route.kind === "requirements" || route.kind === "requirement"
         ? "requirements"
@@ -152,6 +197,25 @@ export function App() {
         <ConnectivityPage
           page={route.page}
           onPageChange={(page) => navigate(`connectivity?page=${page}`)}
+          onRequestAccess={(context) => {
+            const params = new URLSearchParams({
+              scope: context.scope,
+              dependent: context.dependentComponentDeploymentId,
+              source: context.sourceComponentDeploymentId,
+              destination: context.destinationComponentDeploymentId,
+              dcs: context.dcsContractRevisionId,
+              need: context.needCurrent,
+              returnPage: String(route.page),
+            })
+            navigate(`request-access?${params}`)
+          }}
+        />
+      ) : route.kind === "request-access" ? (
+        <RequestConnectivityPage
+          context={route.context}
+          onBack={() =>
+            navigate(`connectivity?page=${route.returnPage}`)
+          }
         />
       ) : route.kind === "requirements" ? (
         <ConnectivityRequirementsPage
