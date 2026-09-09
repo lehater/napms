@@ -127,7 +127,7 @@ accepted Strategic/Tactical DDD + requirements + acceptance examples + ADR/archi
 
 ### I16A — Scoped Connectivity Workspace Foundation
 
-Status: `next after I15`.
+Status: `complete / accepted`.
 
 Goal:
 establish the owner/responsibility-facing product workspace before replacing the Decision provider, so the product exposes a coherent resource/connectivity landscape rather than forcing users to navigate bounded-context-specific screens.
@@ -165,7 +165,7 @@ an authenticated actor can select a responsibility scope, inspect the local reso
 
 ### I16B — Connectivity Decision Runtime and Workflow
 
-Status: `planned after I16A`.
+Status: `next`.
 
 Goal:
 replace the `local-dev:allowed` provider with the accepted real Decision-domain application/runtime slice and integrate it into the new Connectivity workspace.
