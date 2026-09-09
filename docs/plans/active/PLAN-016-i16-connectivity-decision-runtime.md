@@ -10,7 +10,7 @@ Implement the I15 Connectivity Decision model end-to-end and remove the determin
 
 ## Current stage
 
-WP3 — Access Policy integration is active. WP4 Web UI Quality Gate is done: committed visual baselines, full roadmap preview shell, accessibility checks and permanent browser gate all pass. WP1 core and WP2 PostgreSQL gates passed.
+WP5 — HTTP/Web participant workspace is active. WP1 Decision core, WP2 PostgreSQL, WP3 Access Policy integration and WP4 Web UI Quality Gate are done and gated.
 
 ## Inputs
 
@@ -39,8 +39,14 @@ With core gate passed:
 - unknown commit/non-success semantics;
 - PostgreSQL integration tests.
 
-### WP3 — Access Policy integration — active
-Evolve the consumer port from subject-only lookup to exact subject + governance scope + logical proposal time. Preserve Access Policy ownership and existing materialization semantics.
+### WP3 — Access Policy integration — done
+Implemented:
+- Access Policy-owned Decision projection includes governance scope and validity;
+- Decision lookup is exact subject + proposal governance scope + logical proposal time;
+- Access Policy defensively fails closed on subject/scope mismatch and non-effective Decision;
+- Decision BC selection is translated through an outer adapter, with no cross-BC import in Access Policy core;
+- NotFound/Ambiguous selection remains explicit non-success through the existing DecisionUnknown materialization outcome;
+- core/postgres/web/browser/docker/harness/knowledge gates pass.
 
 ### WP4 — Web UI Quality Gate — done
 Before adding new Decision UI:
@@ -102,4 +108,4 @@ The execution sandbox cannot clone github.com directly. Core/infrastructure stag
 
 ## Next
 
-Evolve the Access Policy ConnectivityDecision consumer port and materialization call to exact subject + governance scope + proposal logical time, add a Decision-context adapter/projection, and prove fail-closed subject/scope/time correlation before WP5.
+Implement WP5 Decision scope/interaction discovery, direct final Allowed/NotAllowed recording, authorized read/list/detail HTTP contracts and the executable desktop-first Decision workspace; keep the existing preview guardrails until each real action is wired.
