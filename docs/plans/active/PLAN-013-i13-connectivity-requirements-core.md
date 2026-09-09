@@ -27,7 +27,7 @@ I13 deliberately stops before Requirement-to-Policy Alignment and before Connect
 
 ## Current stage
 
-**WP8 — PostgreSQL/Docker public E2E.**
+**WP9 — Final review/gates/canonical absorption.**
 
 Evidence synthesis is complete. Working packet:
 `docs/plans/active/I13-WP1-connectivity-requirements-decision-packet.md`.
@@ -187,7 +187,7 @@ No approval queue is introduced in I13.
 
 ### WP8 — PostgreSQL/Docker end-to-end evidence
 
-Status: `planned`.
+Status: `done`.
 
 Extend local demo with one actor/responsibility/requirement scenario.
 
@@ -204,7 +204,7 @@ Include denied/unknown authority and persistence failure evidence.
 
 ### WP9 — Final review/gates/canonical absorption
 
-Status: `planned`.
+Status: `done`.
 
 Run:
 - core;
@@ -243,8 +243,8 @@ I13 is complete only when:
 
 No current owner/product blocker.
 
-No current semantic blocker. WP7 Web build gate is green; core/harness/knowledge also remain green.
+No current blocker. WP8 public Docker and PostgreSQL E2E evidence is green. Final review found no open P0/P1; P2 documentation-layout mismatches were corrected during absorption.
 
 ## Next
 
-Add WP8 public PostgreSQL/Docker E2E evidence for declaration/read/mutation/retirement and restart persistence, including the invariant that Requirement creation has zero Access Policy side effect.
+I13 is complete. Canonical truth is absorbed; remove this active plan and leave the next roadmap increment I14 unplanned until execution begins.
