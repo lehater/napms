@@ -1,9 +1,9 @@
 from typing import Protocol
 
-from napms.access_policy_realization.domain.realization import EnforcementTarget
 from napms.network_environment_operations.domain import (
     ApplyResult,
     NetworkOperationResult,
+    OperationTarget,
     TargetState,
 )
 
@@ -14,17 +14,17 @@ class MutationAuthorityPort(Protocol):
         *,
         actor_id: str,
         authority_scope: str,
-        target: EnforcementTarget,
+        target: OperationTarget,
     ) -> bool: ...
 
 
 class TargetExecutionPort(Protocol):
-    def acquire(self, *, target: EnforcementTarget) -> TargetState: ...
+    def acquire(self, *, target: OperationTarget) -> TargetState: ...
 
     def apply(
         self,
         *,
-        target: EnforcementTarget,
+        target: OperationTarget,
         artifact_content: str,
         artifact_digest: str,
         expected_revision: str,
