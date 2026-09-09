@@ -206,19 +206,20 @@ class PostgresResourceCatalogueRepository:
         endpoints_by_fact: dict[str, list[EndpointAddress]] = {
             reference: [] for reference in fact_references
         }
-        for fact_reference, endpoint_reference, technical_address in endpoint_rows:
-            if fact_reference not in endpoints_by_fact:
-                raise ResourceCataloguePersistenceError(
-                    "endpoint references an unexpected Resource realization fact"
-                )
-            endpoints_by_fact[fact_reference].append(
-                EndpointAddress(
-                    endpoint_reference=endpoint_reference,
-                    technical_address=technical_address,
-                )
-            )
 
         try:
+            for fact_reference, endpoint_reference, technical_address in endpoint_rows:
+                if fact_reference not in endpoints_by_fact:
+                    raise ResourceCataloguePersistenceError(
+                        "endpoint references an unexpected Resource realization fact"
+                    )
+                endpoints_by_fact[fact_reference].append(
+                    EndpointAddress(
+                        endpoint_reference=endpoint_reference,
+                        technical_address=technical_address,
+                    )
+                )
+
             return tuple(
                 ResourceRealizationVersion(
                     fact_reference=row[0],
