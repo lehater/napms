@@ -1,6 +1,6 @@
 # Active execution
 
-Current: `PLAN-029-i16a-scoped-connectivity-workspace.md`.
+Current: `PLAN-029-i16a-scoped-connectivity-workspace.md`
 
 Roadmap: `docs/engineering/post-wave1-product-completion-roadmap.md`.
 
