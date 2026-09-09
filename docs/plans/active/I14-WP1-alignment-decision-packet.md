@@ -1,6 +1,6 @@
 # I14 WP1 — Requirement-to-Policy Alignment decision packet
 
-Status: `working decision packet`
+Status: `accepted owner decision; canonicalized for I14`
 
 Date: 2026-09-09.
 
@@ -127,7 +127,7 @@ Consequences:
 - `Uncovered` is meaningful for the Requirement owner;
 - requires canonically accepting that coverage status is part of the Requirement-facing composition read surface.
 
-**Recommendation: Option A.**
+**Accepted: Option A.**
 
 ### Option B — Require both Requirement read and matching policy read
 
