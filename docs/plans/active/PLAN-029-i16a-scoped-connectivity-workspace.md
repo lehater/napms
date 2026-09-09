@@ -12,9 +12,9 @@ This plan deliberately precedes the real Connectivity Decision runtime replaceme
 
 ## Current stage
 
-WP-01 — Domain re-entry: selected responsibility scope -> local Resources.
+WP-03 — Application/ports core.
 
-Implementation remains gated until WP-01 closes the semantic owner/relation.
+WP-01 and WP-02 semantic gates are closed on the current branch. Implementation must follow the accepted Resource Scope Affiliation / ReadScopedConnectivity contracts and the Scoped Connectivity Inventory requirements.
 
 ## Inputs
 
@@ -54,27 +54,15 @@ Product-owner decisions accepted for this plan:
 
 ## Blockers
 
-### P0 — responsibility scope -> Resource semantics
+### P0 — waiting/process semantics, conditional
 
-Unknown:
-- semantic owner of the relation;
-- exact relation identity;
-- temporal semantics;
-- cardinality;
-- whether one Resource may participate in multiple responsibility scopes;
-- relationship between responsibility and Authority Management assignments.
-
-Do not implement Resource.owner_id / Resource.scope_id as a shortcut.
-
-### P0 — waiting/process semantics, only if required by I16A flow
-
-If Add Connectivity cannot complete synchronously against the current decision seam and the UI needs durable Waiting/Under review state, execution is gated until the process owner/lifecycle is accepted.
+Only blocks WP-07 if Add Connectivity requires durable cross-request Waiting/Under review state before I16B.
 
 Do not add Pending to Connectivity Decision.
 
-### P1 — safe coarse status exposure
+### P1 — fine-grained catalogue visibility
 
-Need an explicit rule for inventory summaries when the actor can read catalogue data but lacks detailed Requirement/Decision/Rule read authority.
+Deferred by accepted product decision. Current I16A baseline keeps foreign Resource/Component/Deployment catalogue data globally readable.
 
 ## Work packages
 
@@ -101,9 +89,14 @@ Working artifacts:
 - update ubiquitous language only if a new accepted term is required;
 - update strategic-model only if context ownership/relationship actually changes.
 
-Local exit:
-- selected responsibility scope -> local Resources is unambiguous enough for an application query;
-- Resource identity is unchanged by responsibility relation changes;
+Result: CLOSED.
+
+Accepted:
+- Resource Catalogue owns time-qualified Resource Scope Affiliation;
+- Authority Management owns actor/action authority for the same Responsibility Scope reference;
+- ReadScopedConnectivity independently admits the owner workspace scope;
+- Resource may belong to multiple responsibility scopes;
+- affiliation changes do not change Resource identity or stored Requirement/Decision/Rule governance scopes;
 - authority and catalogue visibility remain separate.
 
 ## WP-02 — Scoped Connectivity Inventory semantic contract closure
@@ -128,8 +121,17 @@ Update:
 - docs/architecture/scoped-connectivity-inventory.md;
 - acceptance examples if useful.
 
-Local exit:
-no material semantic unknown remains for the read-only inventory.
+Result: CLOSED.
+
+Accepted:
+- one explicit asOf across authority, affiliations, bindings, requirements, decisions and policy;
+- top-level paging over local Resources;
+- local-relative incoming/outgoing projection;
+- one-to-many Resource/Component bindings;
+- zero-connectivity and unresolved-realization semantics;
+- safe coarse Requirement/Decision/Policy summaries under ReadScopedConnectivity;
+- dimension-specific Unknown/partial-enrichment behavior;
+- specification-by-example in scoped-connectivity-inventory-acceptance-examples.md.
 
 ## WP-03 — Application/ports core
 
