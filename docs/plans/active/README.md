@@ -4,14 +4,14 @@ Current: `I21 — Configuration Rendering`, selected on branch `i21-configuratio
 
 Active plan: `docs/plans/active/PLAN-I21-configuration-rendering.md`.
 
-Current stage: `S4 — Provenance/composition proof`.
+Current stage: `S5 — Final gate and absorption`.
 
 I20 Desired-vs-Configured Reconciliation and Enforcement Policy Derivation is complete and absorbed into canonical truth.
 
-I21 S1 is accepted: Configuration Rendering remains inside Access Policy Realization; the first target is Cisco Secure Firewall ASA CLI extended ACL; rendered configuration is derived on demand; exact semantic equivalence is required; failed rendering exposes no partial artifact.
+I21 S1-S4 are implemented on the branch. Accepted semantics: Configuration Rendering remains inside Access Policy Realization; the first target is Cisco Secure Firewall ASA CLI extended ACL; rendered configuration is derived on demand; exact semantic equivalence is required; failed rendering exposes no partial artifact.
 
-S2/S3 are implemented on the branch: framework-free render contracts/use case, Cisco ASA renderer, independent semantic projector and exact/fail-closed tests. Hosted CI remains the executable gate because this connector environment cannot run the repository locally.
+Implemented proof: existing PostgreSQL APR composition derives `DesiredEnforcementPolicy`, renders it through the Cisco ASA adapter, independently projects rendered Permit statements back into normalized technical regions, requires exact equality, preserves rule/interaction/placement provenance and verifies no Access Rule/NEP/TAE owner state is mutated by derive+render.
 
-Next: compose existing I20 desired derivation into I21 rendering and prove provenance/no-side-effects, then final PR gate and absorption.
+Next: hosted PR final gate. On green, absorb I21 into engineering/roadmap truth, remove the completed active PLAN, set active execution to none and promote I22 without selecting it.
 
 I22 Network Environment Operations remains downstream and must not be pulled into I21.
