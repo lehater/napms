@@ -121,4 +121,4 @@ None of these is a prerequisite for the current local NAPMS product.
 - requirements: `docs/requirements/enterprise-identity-authoritative-sources.md`;
 - cross-cutting architecture: `docs/architecture/current-architecture.md`;
 - semantic ownership: `docs/domain/semantic-ownership.md`;
-- active execution: `docs/plans/active/PLAN-037-i23-enterprise-identity-authoritative-sources.md`.
+- execution pointer: `docs/plans/active/README.md`.
