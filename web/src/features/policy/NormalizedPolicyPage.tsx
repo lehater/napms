@@ -47,13 +47,13 @@ export function NormalizedPolicyPage() {
   return (
     <div className="mx-auto max-w-[1460px]">
       <header className="mb-6">
-        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
+        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#5F6B7D]">
           Policy Views
         </div>
         <h1 className="text-[28px] font-bold tracking-tight text-[#172033]">
           Normalized Policy
         </h1>
-        <p className="mt-2 max-w-3xl text-sm text-[#64748B]">
+        <p className="mt-2 max-w-3xl text-sm text-[#5F6B7D]">
           Vendor-neutral effective policy projection with Rule, Authority, ACC and RC
           provenance preserved.
         </p>
@@ -78,20 +78,20 @@ export function NormalizedPolicyPage() {
         <section className="mt-5 overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
           <div className="border-b border-[#E2E8F0] px-5 py-4">
             <div className="font-semibold text-[#172033]">{result.scope}</div>
-            <div className="mt-1 text-xs text-[#64748B]">
+            <div className="mt-1 text-xs text-[#5F6B7D]">
               asOf {result.asOf} · authority {result.authorityReference} ·{" "}
               {result.rows.length} row(s)
             </div>
           </div>
 
           {result.rows.length === 0 ? (
-            <div className="p-10 text-center text-sm text-[#64748B]">
+            <div className="p-10 text-center text-sm text-[#5F6B7D]">
               Authorized normalized policy is empty at this instant.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1420px] text-left text-sm">
-                <thead className="bg-[#F8FAFC] text-xs uppercase tracking-wide text-[#64748B]">
+                <thead className="bg-[#F8FAFC] text-xs uppercase tracking-wide text-[#5F6B7D]">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Rule</th>
                     <th className="px-4 py-3 font-semibold">Source</th>
@@ -117,7 +117,7 @@ export function NormalizedPolicyPage() {
                             row.semanticIdentity.dcsContractRevisionId,
                           )}
                         </div>
-                        <div className="mt-1 text-xs text-[#64748B]">
+                        <div className="mt-1 text-xs text-[#5F6B7D]">
                           decision {row.decisionReference ?? "—"}
                         </div>
                       </td>
@@ -131,7 +131,7 @@ export function NormalizedPolicyPage() {
                         <div className="mt-1 font-mono text-xs">
                           {row.source.technicalAddress}
                         </div>
-                        <div className="mt-1 text-xs text-[#64748B]">
+                        <div className="mt-1 text-xs text-[#5F6B7D]">
                           {row.source.resourceReference} / {row.source.endpointReference}
                         </div>
                       </td>
@@ -145,7 +145,7 @@ export function NormalizedPolicyPage() {
                         <div className="mt-1 font-mono text-xs">
                           {row.destination.technicalAddress}
                         </div>
-                        <div className="mt-1 text-xs text-[#64748B]">
+                        <div className="mt-1 text-xs text-[#5F6B7D]">
                           {row.destination.resourceReference} /{" "}
                           {row.destination.endpointReference}
                         </div>
