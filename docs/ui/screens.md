@@ -149,6 +149,80 @@ Record:
 
 No Pending/Approved/Rejected state, approval queue or generic Access Request is shown.
 
+## Planned capability previews
+
+These screens are structural previews only until their owning increments become executable. Every page shows `Preview · Planned Ixx`; unknown semantics remain unspecified.
+
+### Technical Access Evidence — I17
+
+Preview may show:
+- evidence collection table;
+- source/provenance/time columns;
+- accepted evidence kind labels only when already canonical;
+- evidence details region.
+
+No ingestion/mutation action is enabled before I17 runtime exists.
+
+### Technical-to-Domain Access Resolution — I18
+
+Preview may show:
+- technical predicate input/evidence context;
+- resolved domain-interaction result area;
+- unresolved/ambiguous explanation region only using statuses accepted by I18 semantics.
+
+Do not pre-invent the resolution algebra.
+
+### Network Enforcement Placement — I19
+
+Preview may show:
+- domain traffic context;
+- logical firewall/enforcement placement result region;
+- path/placement provenance sections whose exact content follows I19 semantics.
+
+No vendor/device identity is substituted for Logical Firewall meaning.
+
+### Reconciliation / Enforcement Policy — I20
+
+Preview may show a desktop comparison workspace:
+- desired policy region;
+- configured technical evidence region;
+- reconciliation result/delta region;
+- provenance/explanation region.
+
+Do not invent add/remove/replace classifications before I20 accepts them.
+
+### Configuration Rendering — I21
+
+Preview may show:
+- accepted vendor-neutral enforcement intent input;
+- target selection area;
+- rendered artifact/code region;
+- provenance/equivalence result region.
+
+Render/apply actions remain unavailable before concrete adapters exist.
+
+### Network Operations — I22
+
+Preview may show:
+- target/current-state context;
+- pre-check/apply/post-check execution structure;
+- execution result/audit area.
+
+No fake successful execution or rollback semantics are displayed.
+
+### Enterprise Sources — I23
+
+Do not expose a generic administration screen merely because I23 exists. Add a preview only when the concrete enterprise identity/catalogue/source integration produces an accepted human/operator workflow.
+
+### Product completion surfaces — I25
+
+Potential preview targets:
+- global explainability/audit navigation;
+- mature search/filtering;
+- bounded bulk operations;
+- role-appropriate workspaces;
+- Dashboard only after real aggregate/read-model semantics exist.
+
 ## Deferred
 
 Dashboard, cross-entity Audit Log, portfolio administration and approval/review queue screens remain deferred until concrete product use cases/canonical semantics require them.
