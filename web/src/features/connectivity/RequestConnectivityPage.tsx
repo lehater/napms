@@ -290,7 +290,7 @@ export function RequestConnectivityPage({
             Connectivity context
           </h2>
           <p className="mt-1 text-xs text-[#64748B]">
-            Scope {context.scope}
+            Scope {context.scope} · Resource {context.localResourceReference}
           </p>
         </div>
 
