@@ -51,7 +51,9 @@ Only Web/nginx is published to the host by default. PostgreSQL and FastAPI remai
 
 `POSTGRES_HOST_AUTH_METHOD=trust` is not part of the supported I24 local runtime.
 
-Important upgrade boundary: PostgreSQL initialization authentication settings are stored in the database volume. A volume created by a pre-I24 runtime may still contain legacy `trust` host rules even after the Compose file changes. The supported `make dev-up` path verifies both that the configured password succeeds and that a deliberately wrong password fails. If the wrong password succeeds, startup verification fails and the volume must be backed up and recreated or explicitly migrated before it can be considered hardened.
+`make dev-up` intentionally generates a fresh database password for each startup. Before migration/API services start, `tools/prepare_local_postgres.py` starts only PostgreSQL, waits for readiness and rotates the `napms` role password through the container-local database socket. This keeps the generated database password ephemeral while allowing the named PostgreSQL volume to survive `dev-down` and subsequent startups.
+
+Important upgrade boundary: PostgreSQL host-authentication rules are stored in the database volume. A volume created by a pre-I24 runtime may still contain legacy `trust` host rules even after the Compose file changes. The supported startup path verifies both that the configured password succeeds and that a deliberately wrong password fails. If the wrong password succeeds, startup verification fails and the volume must be backed up and recreated or explicitly migrated before it can be considered hardened.
 
 Do not delete a legacy volume containing needed data merely to satisfy this check; WP2 defines the supported backup/restore recovery path.
 
@@ -104,10 +106,10 @@ make dev-up
 
 The helper path:
 1. generates a random local PostgreSQL password in process memory;
-2. generates a random local UI password in process memory;
-3. derives the supported local UI scrypt hash;
-4. passes credentials only through the process/Compose environment;
-5. builds/starts the stack;
+2. starts PostgreSQL only and initializes a fresh volume when needed;
+3. rotates the `napms` role to the generated password through the container-local socket, including on a preserved hardened volume;
+4. generates a random local UI password in process memory and derives the supported scrypt hash;
+5. starts/reconciles the full stack with the generated database password;
 6. checks public readiness through nginx;
 7. performs authenticated product smoke checks;
 8. verifies PostgreSQL accepts the configured password;
@@ -135,12 +137,12 @@ Changing deterministic demo seed contents may require `dev-reset` because seed i
 ## Raw Compose
 
 `compose.yaml` can be used directly, but startup requires both:
-- `NAPMS_POSTGRES_PASSWORD` with a non-empty local database password;
+- `NAPMS_POSTGRES_PASSWORD` with a non-empty local database password matching the current `napms` role password for an existing volume;
 - `NAPMS_LOCAL_AUTH_PASSWORD_HASH` with a supported scrypt-v1 UI password hash.
 
 `.env.example` documents the override names but intentionally contains no usable plaintext credentials. Keep local secret values outside version control.
 
-The supported ergonomic path is `make dev-up`.
+The supported ergonomic path is `make dev-up`, because it safely prepares/rotates the persistent local database credential before bringing up dependent services.
 
 ## Security boundary
 
