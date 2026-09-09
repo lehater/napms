@@ -43,7 +43,7 @@ export function LoginPage({
           </div>
           <div>
             <h1 className="text-xl font-bold text-[#172033]">Sign in to NAPMS</h1>
-            <p className="text-sm text-[#64748B]">Local development access</p>
+            <p className="text-sm text-[#5F6B7D]">Local development access</p>
           </div>
         </div>
 
