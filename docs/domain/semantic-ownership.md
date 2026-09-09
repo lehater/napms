@@ -1,6 +1,6 @@
 # Semantic Ownership
 
-Status: `accepted NAPMS-DDD-001 / I18 current semantic ownership`.
+Status: `accepted NAPMS-DDD-001 / I19 current semantic ownership`.
 
 This file defines semantic ownership, not runtime/service ownership.
 
@@ -96,6 +96,28 @@ Imported
 ```
 
 Source-specific parsing/collection is outside the BC.
+
+## Network Enforcement Placement authority
+
+Network Enforcement Placement owns the claim:
+
+> for exact endpoint-pair traffic relation R at logical time T, normalized forwarding knowledge places traffic through path P, whose provider/path attachment points correspond to Logical Firewall enforcement placements E.
+
+It owns:
+- normalized forwarding/path meaning used for placement;
+- Logical Firewall identity;
+- temporal provider-realization correspondence;
+- Enforcement Attachment;
+- Enforcement Selection.
+
+It does not own:
+- Resource/Endpoint identity;
+- authorization or Access Rule lifecycle;
+- configured technical access evidence;
+- desired-vs-configured satisfaction/change;
+- vendor configuration or provider execution.
+
+The first I19 slice is fail-closed when endpoint-pair semantics are insufficient for routing truth (for example unsupported forwarding discriminators or multipath).
 
 ## Access Policy Realization authority
 

@@ -13,6 +13,7 @@ RESOURCE_CATALOGUE = NAPMS / "resource_catalogue"
 CONNECTIVITY_REQUIREMENTS = NAPMS / "connectivity_requirements"
 CONNECTIVITY_DECISION = NAPMS / "connectivity_decision"
 TECHNICAL_ACCESS_EVIDENCE = NAPMS / "technical_access_evidence"
+NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "network_enforcement_placement"
 REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
 
 DOMAIN_LAYERS = (
@@ -24,6 +25,7 @@ DOMAIN_LAYERS = (
     CONNECTIVITY_REQUIREMENTS / "domain",
     CONNECTIVITY_DECISION / "domain",
     TECHNICAL_ACCESS_EVIDENCE / "domain",
+    NETWORK_ENFORCEMENT_PLACEMENT / "domain",
 )
 APPLICATION_LAYERS = (
     ACCESS_POLICY / "application",
@@ -34,6 +36,7 @@ APPLICATION_LAYERS = (
     CONNECTIVITY_REQUIREMENTS / "application",
     CONNECTIVITY_DECISION / "application",
     TECHNICAL_ACCESS_EVIDENCE / "application",
+    NETWORK_ENFORCEMENT_PLACEMENT / "application",
     REQUIREMENT_POLICY_ALIGNMENT / "application",
     NAPMS / "policy_export" / "application",
 )
@@ -117,6 +120,10 @@ POSTGRES_SCHEMA_OWNERS = (
         NAPMS / "technical_access_evidence" / "adapters" / "postgres",
         "napms_technical_access_evidence",
     ),
+    (
+        NAPMS / "network_enforcement_placement" / "adapters" / "postgres",
+        "napms_network_enforcement_placement",
+    ),
 )
 
 
@@ -164,6 +171,10 @@ BOUNDED_CONTEXT_CORES = (
     (
         TECHNICAL_ACCESS_EVIDENCE,
         "napms.technical_access_evidence",
+    ),
+    (
+        NETWORK_ENFORCEMENT_PLACEMENT,
+        "napms.network_enforcement_placement",
     ),
 )
 

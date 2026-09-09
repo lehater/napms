@@ -2,7 +2,7 @@
 
 Status: `accepted living baseline`.
 
-Source baseline: DDD-BDM-010, extended by I13-I18 accepted domain closure.
+Source baseline: DDD-BDM-010, extended by I13-I19 accepted domain closure.
 
 This document defines model/language/responsibility boundaries. It does not define services, databases, teams or deployment units.
 
@@ -31,7 +31,7 @@ Wave 1 directly used:
 
 That seam was intentionally deferred during Wave 1 and is superseded by the I15 first-class Connectivity Decision context.
 
-## Current product participation through I18
+## Current semantic participation through I19
 
 Current accepted semantic owners participating in implemented product flow include:
 - Connectivity Requirements;
@@ -47,7 +47,7 @@ Technical Access Evidence has the I17 Tactical DDD, framework-free core, module-
 
 Access Policy Realization now has the I18 Technical-to-Domain Access Resolution slice: one framework-free consumer-independent coverage algebra over explicit TAE/RC/ACC projections, with exact remainder, ambiguity and predicate-relevant Unknown semantics and no independent persistence.
 
-Network Enforcement Placement remains a strategic future context for I19; APR enforcement-policy derivation/reconciliation remains later I20 scope.
+Network Enforcement Placement now has the accepted I19 Tactical DDD baseline: exact endpoint-pair Traffic Relation, normalized ordered path Traversal Points, stable Logical Firewall identity, temporal provider correspondence, temporal Enforcement Attachments and fail-closed Enforcement Selection. I19 implementation is in progress; APR enforcement-policy derivation/reconciliation remains later I20 scope.
 
 ## I16A responsibility-scope relationship
 

@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline; I18 complete, I19 next`.
+Status: `accepted ordered sequencing baseline; I19 complete, I20 next`.
 
 Date: 2026-09-09.
 
@@ -28,7 +28,7 @@ The roadmap may be refined when new accepted domain evidence changes boundaries 
 ## Baseline
 
 Completed:
-- I1-I18;
+- I1-I19;
 - Wave 1 proposal -> Connectivity Decision seam -> Access Rule -> effective desired policy -> coherent normalized policy;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
@@ -39,7 +39,6 @@ Completed:
 Wave 1 intentionally stopped before Connectivity Requirements runtime participation; I13 now closes the first Connectivity Requirements core/runtime/workspace slice.
 
 Still deferred:
-- Network Enforcement Placement;
 - Access Policy Realization enforcement-policy derivation/reconciliation;
 - vendor rendering;
 - device/provider execution;
@@ -47,7 +46,7 @@ Still deferred:
 
 ## Ordered increments
 
-### Completed increments — I13 through I18
+### Completed increments — I13 through I19
 
 Status: `done / absorbed into canonical truth`.
 
@@ -58,6 +57,7 @@ Status: `done / absorbed into canonical truth`.
 - I16B — Connectivity Decision Runtime and Workflow: durable immutable Decision persistence/selection, independent Decide/Read authority, Access Policy and Scoped Connectivity integration, authorized Decision Web/HTTP workspace, and local Docker runtime without deterministic allow plumbing.
 - I17 — Technical Access Evidence Core: accepted Tactical DDD, immutable source-qualified evidence identity/time/provenance, framework-free core, TAE-owned PostgreSQL persistence, strict local/import normalization and dedicated durable record/readback proof without authorization or realization leakage.
 - I18 — Technical-to-Domain Access Resolution: accepted consumer-independent APR correspondence algebra, exact remainder/ambiguity/Unknown semantics, predicate-aware RC/ACC + TAE adapters and durable PostgreSQL resolution proof without authorization, placement or reconciliation leakage.
+- I19 — Network Enforcement Placement: accepted exact endpoint-pair first slice, normalized forwarding/path knowledge, stable Logical Firewall identity, temporal provider correspondence/Enforcement Attachments, fail-closed placement selection and NEP-owned durable PostgreSQL proof without I20 reconciliation or vendor execution.
 
 Detailed completed execution is not roadmap state. Durable outcomes live in current requirements/domain/architecture/engineering artifacts; Git history preserves the execution record.
 
@@ -109,25 +109,34 @@ technical evidence can be explained in domain interaction terms without consumer
 
 ### I19 — Network Enforcement Placement
 
-Status: `next; not yet selected for execution`.
+Status: `done / absorbed into canonical truth`.
 
-Goal:
+Goal achieved:
 implement the **Network Enforcement Placement** context needed to answer where traffic is actually subject to enforcement.
 
-Must establish:
-- normalized forwarding/path knowledge;
-- Logical Firewall identity/correspondence;
-- Enforcement Selection;
-- Enforcement Attachment;
-- temporal/provider-realization relationships;
-- separation of Logical Firewall from provider/device identity.
+Accepted/implemented semantics:
+- exact source/destination IP Traffic Relation for the first executable slice;
+- normalized ordered Forwarding Path or positive temporal NoForwardingPath fact;
+- stable Logical Firewall identity independent from provider/device realization and Resource identity;
+- temporal Logical Firewall Correspondence and Enforcement Attachment;
+- `Placed | NoEnforcement | NoForwardingPath | Ambiguous | Unknown` selection;
+- explicit offset-aware `asOf`, path/attachment/correspondence provenance and fail-closed material uncertainty;
+- unsupported forwarding dimensions/multipath remain explicit Unknown rather than guessed.
 
-Exit:
-NAPMS can derive/explain enforcement placement for domain traffic without embedding vendor syntax.
+Implemented:
+- framework-free NEP Domain/Application/Ports;
+- strict local knowledge import preserving explicit source knowledge gaps;
+- immutable relation-scoped NEP-owned PostgreSQL captures and tracked migration;
+- deterministic ordered placement with no ambiguity winner;
+- operation-scoped PostgreSQL composition;
+- durable temporal-switch/domain-attributable proof with no Access Rule, Connectivity Decision or TAE side effects.
+
+Exit achieved:
+NAPMS can derive/explain enforcement placement for domain-attributable traffic without embedding vendor syntax or I20 realization semantics.
 
 ### I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation
 
-Status: `planned after I19`.
+Status: `next; not yet selected for execution`.
 
 Goal:
 complete the central **Access Policy Realization** outcome.

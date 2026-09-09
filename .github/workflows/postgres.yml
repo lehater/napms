@@ -9,6 +9,7 @@ on:
       - "src/napms/application_catalogue/**"
       - "src/napms/resource_catalogue/**"
       - "src/napms/technical_access_evidence/**"
+      - "src/napms/network_enforcement_placement/adapters/postgres/**"
       - "src/napms/composition/**"
       - "tests/integration/postgres/**"
       - "pyproject.toml"

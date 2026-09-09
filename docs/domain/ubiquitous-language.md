@@ -412,24 +412,68 @@ Technical Access Evidence
 
 ## Network Enforcement Placement
 
-### Enforcement Placement
-The relation stating that a given traffic relation is subject to enforcement at a particular Logical Firewall / Enforcement Attachment / policy location, based on forwarding knowledge plus accepted corrections.
+### Traffic Relation
+Ephemeral NEP query value for traffic whose placement is being selected. The first I19 slice uses one exact source IP + one exact destination IP and explicit logical time.
 
-Placement relevance is independent from whether equivalent policy is already configured.
+```text
+Traffic Relation
+!= Access Rule identity
+!= Domain Interaction identity
+!= persisted aggregate
+```
+
+If truthful forwarding depends on dimensions absent from this first value, placement is `Unknown` until the model is extended.
+
+### Forwarding Path
+Normalized ordered path knowledge for one Traffic Relation. The first slice contains ordered Traversal Points and supports zero/one complete path; unsupported multipath is `Unknown`.
+
+### Traversal Point
+One ordered path occurrence carrying a provider-realization correspondence reference and normalized Path Attachment reference.
+
+### Logical Firewall
+Stable independently configurable enforcement identity.
+
+```text
+Logical Firewall
+!= provider/device realization
+!= Resource
+!= Enforcement Attachment
+```
+
+Provider replacement does not automatically replace the Logical Firewall.
+
+### Logical Firewall Correspondence
+Time-qualified relation between one Logical Firewall and one provider-realization reference. It is many-to-many across the model and preserves provenance.
+
+### Enforcement Attachment
+Time-qualified NEP relation connecting one Logical Firewall to one normalized Path Attachment on one provider realization.
+
+The attachment has its own identity and must have a matching effective Logical Firewall Correspondence before it can support placement.
+
+### Enforcement Placement
+One selected occurrence stating that traffic traverses a particular effective Logical Firewall through a particular Enforcement Attachment at a path position.
 
 ```text
 Enforcement Placement
 != physical equipment placement
 != current-policy duplication
+!= authorization
 ```
 
-### Logical Firewall
-Independently configurable enforcement identity.
+### Enforcement Selection
+Derived NEP result for one Traffic Relation + `asOf`.
 
-### Enforcement Attachment
-Network/firewall placement semantics connecting traffic relevance to an enforcement point.
+```text
+Placed
+NoEnforcement
+NoForwardingPath
+Ambiguous
+Unknown
+```
 
-Zone/interface/default deny/evaluation behavior belong to NEP/enforcement semantics, not Technical Access Evidence.
+`NoEnforcement` requires complete path + attachment knowledge and is stronger than “none found”. `NoForwardingPath` requires positive complete no-route knowledge. `Ambiguous` selects no Logical Firewall winner. Missing/unsupported relevant knowledge is `Unknown`.
+
+Zone/interface/default deny/evaluation behavior belong to NEP/enforcement semantics when a later accepted slice models them; they do not belong to Technical Access Evidence.
 
 ## Independent truths
 
