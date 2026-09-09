@@ -717,6 +717,7 @@ function ResourceRows({
                     onClick={() =>
                       onRequestAccess({
                         scope,
+                        localResourceReference: resource.resourceReference,
                         dependentComponentDeploymentId:
                           component.componentDeploymentId,
                         sourceComponentDeploymentId:
