@@ -10,7 +10,7 @@ Implement the I15 Connectivity Decision model end-to-end and remove the determin
 
 ## Current stage
 
-WP3 — Access Policy integration remains active. WP4 Web UI Quality Gate is active and its functional/accessibility browser suite has passed; visual-regression baselines are being established before any new Decision UI. WP1 core and WP2 PostgreSQL gates passed.
+WP3 — Access Policy integration remains active. WP4 Web UI Quality Gate is active; before locking visual baselines the accepted I16-I22/I25 user-facing roadmap is being exposed as explicit preview routes so the complete future desktop shell can be reviewed. WP1 core and WP2 PostgreSQL gates passed.
 
 ## Inputs
 
@@ -54,13 +54,17 @@ Before adding new Decision UI:
 - use role/label-based selectors so missing accessible names are treated as defects rather than hidden by test IDs;
 - add automated WCAG 2.2 AA checks for critical screens/states;
 - capture screenshots/traces/videos on failure;
-- establish committed pixel visual-regression baselines for stable desktop states plus selected narrow-screen compatibility states;
+- expose accepted future user-facing roadmap capabilities as explicit `Preview · Planned Ixx` routes before baseline lock;
+- preview routes must be navigable but must not fake runtime data, authority or successful mutations;
+- establish committed pixel visual-regression baselines for the resulting full future shell, stable live desktop states and selected narrow-screen compatibility states;
 - classify discovered defects P0/P1/P2/P3 and fix P0/P1 before WP5.
 
 Current evidence:
-- functional/accessibility browser suite reached 5/5 PASS after fixing real contrast, accessible-name and mobile-navigation defects;
-- visual-regression test is present;
-- first baseline generation run intentionally fails until generated reference PNGs are committed and re-gated.
+- functional/accessibility browser suite reached 5/5 PASS after fixing real contrast and accessible-name defects;
+- narrow-screen shell has been replaced with same-IA off-canvas navigation;
+- preview routes are implemented for I16 Connectivity Decisions, I17 Technical Evidence, I18 Access Resolution, I19 Enforcement Placement, I20 Reconciliation, I21 Configuration Rendering, I22 Network Operations and I25 Explainability/Audit;
+- I23/I24 are intentionally not fabricated as product pages without an accepted human workflow;
+- visual-regression test is present; baselines must be generated only after this future shell passes functional/accessibility regression.
 
 ### WP5 — HTTP/Web participant workspace
 Only after WP4 passes:
@@ -97,4 +101,4 @@ The execution sandbox cannot clone github.com directly. Core/infrastructure stag
 
 ## Next
 
-Finish WP4 by committing the generated stable visual baselines and obtaining a green browser/visual gate. Then resume WP3 backend integration and proceed to new Decision UI only with the desktop-first quality contract continuously enforced.
+Re-run Web/browser gates against the full roadmap preview shell, fix any P0/P1 regressions, then generate and commit the final visual baselines. After WP4 is green, resume WP3 backend integration and replace the I16 Connectivity Decisions preview with its executable workspace.
