@@ -1,6 +1,6 @@
 # PLAN-038 — I24 Local Deployment and Operational Hardening
 
-Status: `active — WP2 backup and recovery`
+Status: `active — WP3 upgrade and migration`
 
 Date: 2026-09-10.
 
@@ -15,59 +15,51 @@ Canonical inputs:
 - `docs/engineering/current-state.md`;
 - `docs/architecture/current-architecture.md`;
 - `compose.yaml`;
-- `.env.example`;
 - `tools/local_start.py`;
+- `tools/local_postgres_backup.py`;
 - `docs/engineering/local-docker-runtime.md`.
-
-Observed starting baseline:
-- local Docker Compose is the supported deployment shape;
-- local username/password authentication is primary;
-- one nginx endpoint is published on loopback by default;
-- pre-I24 Compose used PostgreSQL network trust authentication and a passwordless application DSN;
-- migrations and local seed run as one-shot Compose services;
-- readiness and an authenticated fresh end-to-end Docker journey already exist.
 
 ## WP1 — Local runtime security baseline
 
 Status: `done`.
 
-Implemented and verified:
+Verified outcomes:
 - PostgreSQL network `trust` removed from the supported Compose path;
-- fresh volumes initialize host authentication as SCRAM-SHA-256;
-- application/migration/seed DSNs require `NAPMS_POSTGRES_PASSWORD`;
-- `make dev-up` generates an ephemeral DB credential and rotates the persistent `napms` role before dependent services start;
+- fresh volumes use SCRAM host authentication;
+- all application database DSNs require an explicit password;
+- supported startup rotates an ephemeral database credential even on a preserved volume;
 - correct-password acceptance and wrong-password rejection are executable gates;
-- legacy pre-I24 host-trust volumes fail closed as not hardened;
-- supported `make dev-up` uses non-mutating readiness/login/session/read probes and is repeatable on preserved state;
-- the stateful `dev_compose.py` journey remains a separate fresh-volume CI proof;
-- Docker gate proved the fresh mutation journey followed by a restart on the same preserved volume with a distinct rotated DB credential;
-- local UI login/session behavior and loopback-only public ingress remain unchanged.
+- supported startup is non-mutating and repeatable on preserved state;
+- loopback-only public ingress and local UI login/session behavior remain unchanged.
 
-Findings closed:
-- P0: per-run DB credentials initially broke the preserved-volume model until role rotation was introduced;
-- P1: the old stateful Docker journey was unsuitable as a normal restart probe because it creates durable Rules/Requirements. Supported startup is now non-mutating.
+Closed findings:
+- P0: per-run DB credentials initially conflicted with persistent volume reuse; role rotation fixed it;
+- P1: the old stateful Docker journey could not serve as a restart probe; a separate read-only startup helper fixed it.
 
 ## WP2 — Backup, restore and recovery contract
+
+Status: `done`.
+
+Implemented and verified:
+- PostgreSQL custom-format logical backup through `pg_dump`;
+- temporary-file write plus `pg_restore --list` validation before publishing a backup artifact;
+- ignored local backup artifacts under `backups/` / `*.napms.dump`;
+- destructive restore requires explicit `restore-clean` semantics and `CONFIRM_RESET=yes` in the Make target;
+- archive validation occurs before the existing volume is deleted;
+- clean-volume restore runs through normal password preparation and restart-safe startup;
+- recovery boundary explicitly excludes in-memory sessions, in-memory NEO operation records, external device/provider state, logs outside PostgreSQL and plaintext local secrets;
+- Docker round-trip proved durable Access Rule count survives backup -> volume replacement -> restore -> authenticated restart, with password-authentication still enforced.
+
+## WP3 — Upgrade and migration procedure
 
 Status: `active`.
 
 Scope:
-- define supported logical PostgreSQL backup/restore commands for the local Compose deployment;
-- add deterministic operator tooling around PostgreSQL custom-format `pg_dump`/`pg_restore`;
-- require an explicit destructive confirmation before replacing a local database volume;
-- validate a backup before destructive restore begins;
-- prove restore into a clean local database preserves durable PostgreSQL state and remains startable through the normal restart-safe helper;
-- document recovery boundaries and state not captured by the database backup.
-
-## WP3 — Upgrade and migration procedure
-
-Status: `queued`.
-
-Scope:
-- document safe startup/migration ordering;
-- define pre-upgrade backup and failure recovery procedure;
-- prove migrations are idempotently applied by the existing migration runner;
-- avoid claiming arbitrary downgrade support unless executable evidence exists.
+- document safe pre-upgrade backup and startup/migration ordering;
+- make failure/recovery behavior explicit;
+- prove replay of the migration runner against a current database is a no-op and preserves the migration journal;
+- treat checksum mismatch as a hard failure;
+- avoid claiming arbitrary database/application downgrade support.
 
 ## WP4 — Local observability and runtime diagnostics
 
@@ -90,7 +82,7 @@ Scope:
 
 ## WP6 — Verification and absorption
 
-Status: `blocked on WP2-WP5`.
+Status: `blocked on WP3-WP5`.
 
 Run repository gates and local runtime recovery/hardening proofs, absorb durable outcomes into canonical engineering/architecture truth, remove this active plan and promote I25.
 
@@ -112,4 +104,4 @@ No external infrastructure is required. Real TLS certificates, enterprise secret
 
 ## Next
 
-Implement WP2 logical PostgreSQL backup and explicit clean-volume restore tooling, then add a Docker round-trip proof that durable state survives backup -> volume replacement -> restore -> restart-safe startup.
+Document the supported local upgrade sequence and add a Docker proof that repeated `napms-migrate` execution preserves the existing migration-journal count and current restored state.
