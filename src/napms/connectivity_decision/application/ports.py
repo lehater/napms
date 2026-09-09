@@ -125,6 +125,14 @@ class ConnectivityDecisionRepository(Protocol):
         as_of: datetime,
     ) -> tuple[ConnectivityDecision, ...]: ...
 
+    def find_current_for_subjects(
+        self,
+        *,
+        subjects: tuple[DecisionSubject, ...],
+        governance_scope: str,
+        as_of: datetime,
+    ) -> tuple[ConnectivityDecision, ...]: ...
+
     def list_by_governance_scopes(
         self,
         scopes: tuple[str, ...],

@@ -61,6 +61,12 @@ from napms.authority_management.application.list_scopes import (
     ListEffectiveAuthorityScopes,
 )
 from napms.composition.config import ApplicationConfig
+from napms.connectivity_decision.adapters.postgres import (
+    PostgresConnectivityDecisionRepository,
+)
+from napms.connectivity_decision.adapters.scoped_connectivity_inventory import (
+    ConnectivityDecisionScopedConnectivityAdapter,
+)
 from napms.connectivity_requirements.adapters.postgres import (
     PostgresConnectivityRequirementRepository,
 )
@@ -88,9 +94,6 @@ from napms.resource_catalogue.application.list_scope_resources import (
     ListResourcesInResponsibilityScope,
 )
 from napms.resource_catalogue.application.resolve import ResolveResourceRealization
-from napms.scoped_connectivity_inventory.adapters.deferred_decision import (
-    DeferredConnectivityDecisionSummaryAdapter,
-)
 from napms.scoped_connectivity_inventory.application.read import (
     DiscoverScopedConnectivityScopes,
     ReadScopedConnectivityInventory,
@@ -137,6 +140,9 @@ def open_greenfield_scope(
             psycopg.connect(config.postgres.dsn)
         )
         connectivity_requirements_connection = stack.enter_context(
+            psycopg.connect(config.postgres.dsn)
+        )
+        connectivity_decision_connection = stack.enter_context(
             psycopg.connect(config.postgres.dsn)
         )
 
@@ -224,6 +230,9 @@ def open_greenfield_scope(
         connectivity_requirements = PostgresConnectivityRequirementRepository(
             connectivity_requirements_connection
         )
+        connectivity_decisions = PostgresConnectivityDecisionRepository(
+            connectivity_decision_connection
+        )
         requirement_alignment = ConnectivityRequirementsAlignmentAdapter(
             reader=GetAuthorizedRequirement(
                 authority=requirement_authority,
@@ -258,7 +267,9 @@ def open_greenfield_scope(
         scoped_policy = AccessPolicyScopedConnectivityAdapter(
             rules=access_rules,
         )
-        scoped_decisions = DeferredConnectivityDecisionSummaryAdapter()
+        scoped_decisions = ConnectivityDecisionScopedConnectivityAdapter(
+            decisions=connectivity_decisions,
+        )
         scoped_connectivity_scopes = DiscoverScopedConnectivityScopes(
             authority=scoped_authority,
         )

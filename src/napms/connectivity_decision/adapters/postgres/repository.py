@@ -38,6 +38,24 @@ _COLUMNS = """
 """
 
 
+_QUALIFIED_COLUMNS = """
+    d.decision_id,
+    d.governance_scope,
+    d.source_component_deployment_id,
+    d.destination_component_deployment_id,
+    d.dcs_contract_revision_id,
+    d.outcome,
+    d.valid_from,
+    d.valid_until,
+    d.reason_code,
+    d.reason_text,
+    d.evidence_references,
+    d.deciding_actor_id,
+    d.decided_at,
+    d.authority_reference,
+    d.supersedes_decision_id
+"""
+
 class PostgresConnectivityDecisionRepository:
     """Operation-scoped append-only PostgreSQL repository/UoW."""
 
@@ -95,6 +113,73 @@ class PostgresConnectivityDecisionRepository:
                     as_of,
                     as_of,
                 ),
+            ).fetchall()
+            return tuple(self._hydrate(row) for row in rows)
+        except DecisionPersistenceError:
+            raise
+        except (PsycopgError, ValueError, TypeError, DecisionInvariantError) as exc:
+            raise DecisionPersistenceError() from exc
+
+    def find_current_for_subjects(
+        self,
+        *,
+        subjects: tuple[DecisionSubject, ...],
+        governance_scope: str,
+        as_of,
+    ) -> tuple[ConnectivityDecision, ...]:
+        unique = tuple(dict.fromkeys(subjects))
+        if not unique:
+            return ()
+
+        requested_values = ", ".join(
+            "(%s::uuid, %s::uuid, %s::uuid)" for _ in unique
+        )
+        params = []
+        for subject in unique:
+            params.extend(
+                (
+                    subject.source_component_deployment_id,
+                    subject.destination_component_deployment_id,
+                    subject.dcs_contract_revision_id,
+                )
+            )
+        params.extend((governance_scope, as_of, as_of, as_of))
+
+        try:
+            rows = self._connection.execute(
+                f"""
+                WITH requested (
+                    source_component_deployment_id,
+                    destination_component_deployment_id,
+                    dcs_contract_revision_id
+                ) AS (
+                    VALUES {requested_values}
+                )
+                SELECT {_QUALIFIED_COLUMNS}
+                FROM napms_connectivity_decision.connectivity_decisions d
+                JOIN requested r
+                  ON r.source_component_deployment_id =
+                     d.source_component_deployment_id
+                 AND r.destination_component_deployment_id =
+                     d.destination_component_deployment_id
+                 AND r.dcs_contract_revision_id = d.dcs_contract_revision_id
+                WHERE d.governance_scope = %s
+                  AND d.valid_from <= %s
+                  AND (d.valid_until IS NULL OR %s < d.valid_until)
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM napms_connectivity_decision.connectivity_decisions successor
+                      WHERE successor.supersedes_decision_id = d.decision_id
+                        AND successor.valid_from <= %s
+                  )
+                ORDER BY
+                    d.source_component_deployment_id,
+                    d.destination_component_deployment_id,
+                    d.dcs_contract_revision_id,
+                    d.valid_from DESC,
+                    d.decision_id
+                """,
+                tuple(params),
             ).fetchall()
             return tuple(self._hydrate(row) for row in rows)
         except DecisionPersistenceError:
