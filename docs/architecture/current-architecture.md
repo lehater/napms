@@ -1,8 +1,8 @@
 # Current target architecture
 
-Status: `accepted current target through I20; I21 Configuration Rendering is next`.
+Status: `accepted current target through I21; I22 Network Environment Operations is next`.
 
-Date: 2026-09-09.
+Date: 2026-09-10.
 
 ## Purpose
 
@@ -76,7 +76,7 @@ Current non-peer application/read compositions include:
 
 Scoped Connectivity Inventory is implemented as an owner-preserving application composition with Resource Scope Affiliation, `ReadScopedConnectivity`, module-owned adapters and no independent persistence.
 
-I20 implements Access Policy Realization managed-scope desired/configured reconciliation through owner-preserving adapters and a PostgreSQL-backed owner composition, with no APR persistence. I21 rendering and I22 execution remain downstream. Runtime/deployment decomposition remains evidence-driven.
+I20 implements Access Policy Realization managed-scope desired/configured reconciliation through owner-preserving adapters and a PostgreSQL-backed owner composition, with no APR persistence. I21 adds downstream target-specific rendering inside APR through an application-owned renderer port, with vendor syntax isolated in outer adapters and no provider/device mutation. I22 operations remain downstream. Runtime/deployment decomposition remains evidence-driven.
 
 ## Current runtime boundary
 
@@ -174,11 +174,11 @@ Architecture rules:
 - no cross-context SQL;
 - no I20 desired-vs-configured semantics, vendor rendering or execution enter I19.
 
-APR may consume NEP later through an APR-owned projection/port. NEP must not depend on APR to make that consumer work.
+APR consumes NEP through an APR-owned projection/port. NEP does not depend on APR to make that consumer work.
 
-## Access Policy Realization — I20 derivation/reconciliation
+## Access Policy Realization — I20 derivation/reconciliation and I21 rendering
 
-The implemented I20 boundary remains framework-free APR Domain/Application with APR-owned ports and outer owner-preserving adapters.
+The implemented APR boundary remains framework-free Domain/Application with APR-owned ports and outer owner-preserving/vendor adapters.
 
 ```text
 effective Access Policy + RC/ACC
@@ -197,6 +197,13 @@ desired vs configured
     -> exact common/missing/extra
     -> Satisfied | Drift | Ambiguous | Unknown
     -> No-op | Add | Remove | Replace only when complete
+
+Desired Enforcement Policy
+    -> APR RenderConfiguration use case
+    -> application-owned ConfigurationRenderer port
+    -> Cisco ASA outer adapter
+    -> Rendered | Unsupported | Unknown
+    -> independent semantic projection back to normalized Permit regions
 ```
 
 Architecture rules:
@@ -206,11 +213,17 @@ Architecture rules:
 - Enforcement Target preserves Logical Firewall + Enforcement Attachment granularity;
 - raw vendor Block/order/default/zone semantics are interpreted only by source-specific outer adapters capable of producing exact effective Permit regions;
 - I18 correspondence algebra is reused unchanged;
-- desired/configured reconciliation remains derived on demand with no APR persistence requirement;
+- desired/configured reconciliation and rendered configuration remain derived on demand with no APR persistence requirement;
 - the durable PostgreSQL proof composes existing Access Policy, RC/ACC, NEP and TAE owners through their repositories/use cases without cross-context SQL or copied APR truth;
-- I21 owns rendering and I22 owns device/provider operations.
+- renderer ports are application-owned; Cisco ASA syntax is adapter knowledge and does not become domain language;
+- first renderer contract is Cisco Secure Firewall ASA CLI extended ACL version `1`, limited to IPv4 Permit TCP/UDP with numeric port ranges and exact host/CIDR decomposition;
+- successful rendering requires exact normalized semantic equivalence; unsupported/unproven representation fails closed and exposes no partial executable-looking artifact;
+- rendering carries target, rule, interaction, placement and renderer-contract provenance;
+- I22 owns device/provider acquisition, mutation, retry/recovery/rollback, concurrency/idempotency and execution audit.
 
-Feature contract: `docs/architecture/access-policy-realization-reconciliation-boundary.md`.
+Feature contracts:
+- `docs/architecture/access-policy-realization-reconciliation-boundary.md`;
+- `docs/architecture/configuration-rendering-boundary.md`.
 
 ## Coherent policy export
 
@@ -235,7 +248,7 @@ Requirement-to-Policy Alignment, policy export and Scoped Connectivity Inventory
 
 ## Transition and external sources
 
-Legacy/MSSQL, Word/Excel request structures, vendor rendering and provider/device execution are not target semantic dependencies by default.
+Legacy/MSSQL, Word/Excel request structures and provider/device execution are not target semantic dependencies by default. Vendor rendering is now an explicit APR outer-adapter capability and still does not redefine target domain identity.
 
 If a selected integration requires a legacy/enterprise source:
 - adapt it at the infrastructure boundary;
@@ -253,7 +266,7 @@ Architecture must preserve:
 - module-owned persistence boundaries;
 - trusted catalogue/source correlation;
 - explicit logical-time validity where required;
-- no silent semantic broadening/narrowing in normalization;
+- no silent semantic broadening/narrowing in normalization or rendering;
 - no protected business-detail leakage through a broader catalogue/read composition;
 - explicit degraded/error outcomes instead of convenient permission or absence.
 
@@ -264,7 +277,7 @@ Revisit topology or add infrastructure only when accepted evidence requires it, 
 - concrete source integration mechanics;
 - measured read-model performance needs;
 - production identity/deployment requirements;
-- later roadmap execution/rendering/realization semantics.
+- later roadmap execution/realization semantics.
 
 Do not add distribution or generic platforms merely to anticipate future complexity.
 

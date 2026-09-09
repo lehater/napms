@@ -8,6 +8,9 @@ from napms.access_policy.application.select_effective_policy import (
 from napms.access_policy_realization.adapters.catalogues import (
     CatalogueDomainKnowledgeAdapter,
 )
+from napms.access_policy_realization.adapters.cisco_asa import (
+    CiscoAsaAclRenderer,
+)
 from napms.access_policy_realization.adapters.configured_evidence import (
     ConfiguredEvidenceProjectionAdapter,
 )
@@ -23,6 +26,9 @@ from napms.access_policy_realization.application.realize import (
 )
 from napms.access_policy_realization.application.reconcile import (
     ReconcileEnforcementPolicy,
+)
+from napms.access_policy_realization.application.render import (
+    RenderConfiguration,
 )
 from napms.composition.config import ApplicationConfig
 from napms.composition.greenfield_postgres import (
@@ -47,6 +53,7 @@ class AccessPolicyRealizationPostgresScope:
     derive_desired: DeriveDesiredEnforcementFromOwners
     build_configured: BuildConfiguredEnforcementSnapshot
     reconcile: ReconcileEnforcementPolicy
+    render: RenderConfiguration
 
 
 @contextmanager
@@ -146,5 +153,10 @@ def open_access_policy_realization_scope(
             ),
             reconcile=(
                 ReconcileEnforcementPolicy()
+            ),
+            render=(
+                RenderConfiguration(
+                    CiscoAsaAclRenderer()
+                )
             ),
         )

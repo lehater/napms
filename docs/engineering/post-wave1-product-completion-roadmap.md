@@ -1,8 +1,8 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline; I20 complete, I21 next`.
+Status: `accepted ordered sequencing baseline; I21 complete, I22 next`.
 
-Date: 2026-09-09.
+Date: 2026-09-10.
 
 ## Purpose
 
@@ -28,24 +28,24 @@ The roadmap may be refined when new accepted domain evidence changes boundaries 
 ## Baseline
 
 Completed:
-- I1-I20;
+- I1-I21;
 - Wave 1 proposal -> Connectivity Decision seam -> Access Rule -> effective desired policy -> coherent normalized policy;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
 - Dockerized local runtime;
 - human-readable catalogue UX;
-- Technical Access Evidence Tactical DDD, durable source-qualified persistence and strict local/import proof.
+- Technical Access Evidence Tactical DDD, durable source-qualified persistence and strict local/import proof;
+- Access Policy Realization through technical-to-domain resolution, enforcement placement consumption, desired-vs-configured reconciliation and first target-specific configuration rendering.
 
 Wave 1 intentionally stopped before Connectivity Requirements runtime participation; I13 now closes the first Connectivity Requirements core/runtime/workspace slice.
 
 Still deferred:
-- vendor rendering;
 - device/provider execution;
 - production identity/deployment/integration.
 
 ## Ordered increments
 
-### Completed increments — I13 through I20
+### Completed increments — I13 through I21
 
 Status: `done / absorbed into canonical truth`.
 
@@ -58,6 +58,7 @@ Status: `done / absorbed into canonical truth`.
 - I18 — Technical-to-Domain Access Resolution: accepted consumer-independent APR correspondence algebra, exact remainder/ambiguity/Unknown semantics, predicate-aware RC/ACC + TAE adapters and durable PostgreSQL resolution proof without authorization, placement or reconciliation leakage.
 - I19 — Network Enforcement Placement: accepted exact endpoint-pair first slice, normalized forwarding/path knowledge, stable Logical Firewall identity, temporal provider correspondence/Enforcement Attachments, fail-closed placement selection and NEP-owned durable PostgreSQL proof without I20 reconciliation or vendor execution.
 - I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation: accepted APR-managed-scope/effective-Permit contract, exact desired/configured policy algebra, owner-preserving AP/RC/ACC/NEP/TAE adapters and durable PostgreSQL proof of No-op/Add/Remove/Replace with fail-closed uncertainty.
+- I21 — Configuration Rendering: accepted APR-owned rendering semantics, first Cisco Secure Firewall ASA CLI extended ACL renderer, deterministic fail-closed output, statement provenance, independent semantic projection/equivalence proof and PostgreSQL owner-preserving derive -> render integration without provider/device mutation.
 
 Detailed completed execution is not roadmap state. Durable outcomes live in current requirements/domain/architecture/engineering artifacts; Git history preserves the execution record.
 
@@ -163,26 +164,36 @@ NAPMS can truthfully answer whether complete configured effective-Permit evidenc
 
 ### I21 — Configuration Rendering
 
-Status: `next; not yet selected for execution`.
+Status: `done / absorbed into canonical truth`.
 
-Goal:
-translate accepted vendor-neutral enforcement intent into target-specific configuration representation.
+Goal achieved:
+translate accepted vendor-neutral enforcement intent into target-specific configuration representation without changing desired traffic semantics.
 
-Guardrails:
-- rendering is downstream of normalized/realization semantics;
-- renderer must not broaden/narrow desired traffic;
-- target grouping/order/objects are technical representation, not Access Rule identity;
-- target-specific disable/remove/recreate mechanics are introduced only here when required.
+Accepted/implemented semantics:
+- rendering remains a downstream capability inside Access Policy Realization, not a separate Bounded Context;
+- rendered configuration is derived on demand and has no independent persistence lifecycle;
+- first renderer contract is Cisco Secure Firewall ASA CLI extended ACL version `1`;
+- supported first slice is IPv4 Permit TCP/UDP with numeric exact/inclusive source/destination ports and exact address-range decomposition into host/CIDR statements;
+- deterministic output for identical semantic input and renderer contract;
+- `Rendered | Unsupported | Unknown`; failed rendering exposes no partial executable-looking artifact;
+- statement provenance preserves Enforcement Target, contributing Access Rules, Domain Interactions, placement provenance and renderer contract;
+- successful output requires independent semantic projection back to normalized Permit regions with exact equality to desired regions.
 
-Expected deliverables:
-- renderer port/contracts;
-- at least one concrete target/vendor adapter selected by product need;
-- rendered-artifact provenance;
-- semantics-equivalence tests.
+Implemented:
+- framework-free APR rendering value/result model and application-owned `ConfigurationRenderer` port;
+- `RenderConfiguration` application use case;
+- Cisco ASA extended ACL outer adapter;
+- independent ASA supported-subset semantic projector;
+- positive and adversarial equivalence tests detecting broadening, narrowing and omission;
+- PostgreSQL APR composition proof deriving desired policy from owner contexts, rendering ASA ACL, proving exact equivalence and verifying no Access Policy/NEP/TAE state mutation;
+- no device/provider acquisition, apply, retry, rollback, concurrency or execution audit.
+
+Exit achieved:
+NAPMS can produce a deterministic, provenance-preserving Cisco ASA representation for the supported desired enforcement subset and prove that the representation is semantically exact.
 
 ### I22 — Network Environment Operations
 
-Status: `planned after I21`.
+Status: `next; not yet selected for execution`.
 
 Goal:
 manage provider/device-facing acquisition and mutation.
