@@ -29,7 +29,7 @@ CONNECTIVITY NEEDS
   My Connectivity Needs
 
 CONNECTIVITY GOVERNANCE
-  Connectivity Decisions   # only after executable I16 UI exists
+  Connectivity Decisions   [Preview until I16 executable]
 
 ACCESS POLICY
   Compose Connectivity
@@ -42,7 +42,17 @@ POLICY VIEWS
 
 At desktop width the sidebar should remain persistently available unless the user explicitly collapses it.
 
-Dashboard is added only after real aggregate APIs/use cases exist. Do not add approval, user/role administration or other placeholder navigation.
+Future user-facing capabilities may appear in their intended groups as explicit `Preview · Ixx` destinations according to the canonical preview policy. Each item must open a real preview route.
+
+The future full shell may additionally contain:
+- TECHNICAL ACCESS — Technical Evidence, Access Resolution;
+- ENFORCEMENT — Enforcement Placement, Reconciliation, Configuration Rendering;
+- NETWORK OPERATIONS — Network Operations;
+- later operator/admin surfaces only after their roadmap semantics are concrete.
+
+Dashboard remains special: show it in preview only after the intended aggregate read models are sufficiently defined to review a meaningful layout. Do not manufacture metrics.
+
+Do not add approval, user/role administration or other non-roadmap placeholder navigation.
 
 ## Narrow-screen navigation
 
