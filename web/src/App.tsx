@@ -6,9 +6,6 @@ import { LoginPage } from "@/features/auth/LoginPage"
 import { ConnectivityPage } from "@/features/connectivity/ConnectivityPage"
 import type { RequestConnectivityContext } from "@/features/connectivity/model"
 import { RequestConnectivityPage } from "@/features/connectivity/RequestConnectivityPage"
-import { DecisionDetailsPage } from "@/features/decisions/DecisionDetailsPage"
-import { DecisionsPage } from "@/features/decisions/DecisionsPage"
-import type { DecisionDraftContext } from "@/features/decisions/model"
 import { EffectivePolicyPage } from "@/features/policy/EffectivePolicyPage"
 import { NormalizedPolicyPage } from "@/features/policy/NormalizedPolicyPage"
 import { ComposeConnectivityPage } from "@/features/proposals/ComposeConnectivityPage"
@@ -26,8 +23,6 @@ type Route =
     }
   | { kind: "requirements"; page: number }
   | { kind: "requirement"; requirementId: string }
-  | { kind: "decisions"; page: number; context?: DecisionDraftContext }
-  | { kind: "decision"; decisionId: string }
   | { kind: "compose" }
   | { kind: "rules"; page: number }
   | { kind: "rule"; ruleId: string }
@@ -100,40 +95,6 @@ function readRoute(): Route {
     }
     return { kind: "connectivity", page: 1 }
   }
-  if (hash.startsWith("decisions/")) {
-    const decisionId = hash.slice("decisions/".length).split("?")[0]
-    if (decisionId) {
-      return { kind: "decision", decisionId: decodeURIComponent(decisionId) }
-    }
-  }
-  if (hash.startsWith("decisions")) {
-    const query = hash.includes("?") ? hash.split("?")[1] : ""
-    const params = new URLSearchParams(query)
-    const page = Number(params.get("page") ?? "1")
-    const scope = params.get("scope")
-    const sourceComponentDeploymentId = params.get("source")
-    const destinationComponentDeploymentId = params.get("destination")
-    const dcsContractRevisionId = params.get("dcs")
-    const supersedesDecisionId = params.get("supersedes") ?? undefined
-    const context =
-      scope &&
-      sourceComponentDeploymentId &&
-      destinationComponentDeploymentId &&
-      dcsContractRevisionId
-        ? {
-            scope,
-            sourceComponentDeploymentId,
-            destinationComponentDeploymentId,
-            dcsContractRevisionId,
-            supersedesDecisionId,
-          }
-        : undefined
-    return {
-      kind: "decisions",
-      page: Number.isInteger(page) && page > 0 ? page : 1,
-      context,
-    }
-  }
   if (hash.startsWith("compose")) return { kind: "compose" }
   if (hash.startsWith("effective-policy")) return { kind: "effective" }
   if (hash.startsWith("normalized-policy")) return { kind: "normalized" }
@@ -154,20 +115,6 @@ function readRoute(): Route {
 
 function navigate(hash: string) {
   window.location.hash = hash
-}
-
-function decisionDraftHash(context: DecisionDraftContext) {
-  const params = new URLSearchParams({
-    page: "1",
-    scope: context.scope,
-    source: context.sourceComponentDeploymentId,
-    destination: context.destinationComponentDeploymentId,
-    dcs: context.dcsContractRevisionId,
-  })
-  if (context.supersedesDecisionId) {
-    params.set("supersedes", context.supersedesDecisionId)
-  }
-  return `decisions?${params}`
 }
 
 export function App() {
@@ -221,9 +168,7 @@ export function App() {
       ? "connectivity"
       : route.kind === "requirements" || route.kind === "requirement"
         ? "requirements"
-        : route.kind === "decisions" || route.kind === "decision"
-          ? "decisions"
-          : route.kind === "effective"
+        : route.kind === "effective"
           ? "effective"
           : route.kind === "normalized"
             ? "normalized"
@@ -239,11 +184,9 @@ export function App() {
             ? "connectivity?page=1"
             : target === "requirements"
               ? "connectivity-needs?page=1"
-              : target === "decisions"
-                ? "decisions?page=1"
-                : target === "rules"
-                  ? "access-rules?page=1"
-                  : target === "effective"
+              : target === "rules"
+                ? "access-rules?page=1"
+                : target === "effective"
                   ? "effective-policy"
                   : "normalized-policy",
         )
@@ -257,9 +200,6 @@ export function App() {
         <ConnectivityPage
           page={route.page}
           onPageChange={(page) => navigate(`connectivity?page=${page}`)}
-          onRecordDecision={(context) =>
-            navigate(decisionDraftHash(context))
-          }
           onRequestAccess={(context) => {
             const params = new URLSearchParams({
               scope: context.scope,
@@ -297,24 +237,6 @@ export function App() {
         <ConnectivityRequirementDetailsPage
           requirementId={route.requirementId}
           onBack={() => navigate("connectivity-needs?page=1")}
-        />
-      ) : route.kind === "decisions" ? (
-        <DecisionsPage
-          page={route.page}
-          context={route.context}
-          onPageChange={(page) => navigate(`decisions?page=${page}`)}
-          onOpenDecision={(decisionId) =>
-            navigate(`decisions/${encodeURIComponent(decisionId)}`)
-          }
-        />
-      ) : route.kind === "decision" ? (
-        <DecisionDetailsPage
-          decisionId={route.decisionId}
-          onBack={() => navigate("decisions?page=1")}
-          onOpenDecision={(decisionId) =>
-            navigate(`decisions/${encodeURIComponent(decisionId)}`)
-          }
-          onReplace={(context) => navigate(decisionDraftHash(context))}
         />
       ) : route.kind === "compose" ? (
         <ComposeConnectivityPage />

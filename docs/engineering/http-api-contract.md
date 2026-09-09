@@ -1,6 +1,6 @@
 # HTTP API contract — Web UI boundary
 
-Status: `accepted through I14 Requirement-to-Policy Alignment`.
+Status: `accepted through I16B Connectivity Decision Runtime and Workflow`.
 
 Date: 2026-09-09.
 
@@ -321,7 +321,7 @@ The overview exposes only the accepted coarse contract:
 
 Only Allowed/NotAllowed are Connectivity Decision business outcomes. `NoFinalDecision` and `Unknown` are read/application results.
 
-I16A currently has no durable Decision provider in runtime composition, so that dimension is safely returned as `Unknown` and the page is marked `partial=true` until I16B supplies the accepted Decision read provider.
+The runtime obtains this dimension from the durable Connectivity Decision bounded context. Authoritative absence is `NoFinalDecision`; ambiguous effective truth is `Unknown`. If Decision enrichment alone is unavailable, the base inventory may remain available with Decision `Unknown` and `partial=true`; protected Decision detail is never inferred from the coarse summary.
 
 Authority mappings:
 - selected scope denied -> `403 AuthorityDenied`;
@@ -330,6 +330,63 @@ Authority mappings:
 - enrichment uncertainty that can be isolated to one dimension -> `200` with that dimension `Unknown` and `partial=true`.
 
 One logical `asOf` is used for scope authority, Resource Scope Affiliation, Resource realization, DeploymentResourceBinding, Requirement currentness/coverage, Decision and Rule effectiveness.
+
+## Connectivity Decision
+
+I16B exposes direct authorized final-Decision operations. These are use-case APIs, not Decision-table CRUD, and they introduce no Pending/approval lifecycle.
+
+### GET /api/v1/connectivity-decisions/scopes
+
+Discovers unambiguous effective `DecideConnectivity` scopes for the authenticated actor at runtime time.
+
+Success returns `scopes` plus fail-closed `ambiguousScopes`.
+
+### GET /api/v1/connectivity-decisions/interactions
+
+Query:
+- `scope` required;
+- `page`, `pageSize`;
+- optional bounded `search`.
+
+The backend re-checks `DecideConnectivity` for the selected scope/time before returning ACC-backed exact directed interaction subjects.
+
+### POST /api/v1/connectivity-decisions
+
+Records one final immutable `Allowed | NotAllowed` Decision.
+
+Request supplies:
+- `authorityScope`;
+- exact Source/Destination Component Deployment IDs;
+- immutable DCS revision ID;
+- final outcome;
+- `validFrom` and optional `validUntil`;
+- non-empty reason code/text;
+- optional evidence references;
+- optional `supersedesDecisionId`.
+
+The request cannot establish actor ID, decision action time or authority provenance. Those are resolved by the authenticated runtime.
+
+Outcomes:
+- `Recorded` -> 201;
+- idempotently equivalent current Decision `Resolved` -> 200;
+- authority denied -> 403;
+- authority unknown/ambiguous -> 409;
+- invalid subject -> 422;
+- unknown subject -> 409;
+- current ambiguity, required/invalid supersession or concurrent current conflict -> 409;
+- persistence unavailable/commit-outcome unknown -> safe 503 class.
+
+A differing current Decision must be explicitly superseded; an existing Decision is never edited in place.
+
+### GET /api/v1/connectivity-decisions
+
+Returns a paged list only from unambiguous effective `ReadConnectivityDecision` scopes. Ambiguous read scopes are reported separately and do not grant visibility.
+
+### GET /api/v1/connectivity-decisions/{decisionId}
+
+Returns the authoritative Decision plus read-authority reference when independently admitted by `ReadConnectivityDecision` for the Decision's stored governance scope.
+
+Decision detail may expose final outcome, exact subject, reason, evidence, validity, deciding provenance and supersession history. These protected details are not implied by `ReadScopedConnectivity`.
 
 ## Connectivity Requirements
 
@@ -870,7 +927,7 @@ Correlation identity never replaces Rule/domain identity.
 
 The I8 HTTP adapter uses FastAPI as an outer transport framework. FastAPI/Pydantic types remain confined to `napms.runtime`; Domain/Application stay framework-independent.
 
-For the explicitly bounded `local-dev` runtime, the concrete Connectivity Decision adapter returns `Allowed` for every proposal that has already passed Authority and ACC structural validation, with decision reference `local-dev:allowed`. This is a test/development seam only; it does not model approval/policy logic and is rejected outside `local-dev` composition.
+Normal local composition uses the durable PostgreSQL-backed Connectivity Decision runtime. Access Policy consumes it through its own exact subject/scope/time projection. Explicit injected Decision-port fakes remain a focused test seam only and are not selected by the normal product composition.
 
 ## Deferred HTTP surfaces
 

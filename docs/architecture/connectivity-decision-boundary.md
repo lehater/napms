@@ -1,12 +1,12 @@
 # Connectivity Decision Boundary
 
-Status: `accepted I15 architecture contract`.
+Status: `accepted and implemented through I16B`.
 
 Date: 2026-09-09.
 
 ## Purpose
 
-Define the durable boundary needed by I16 while preserving Clean Architecture and bounded-context ownership.
+Define the current durable Connectivity Decision boundary while preserving Clean Architecture and bounded-context ownership.
 
 ## Ownership
 
@@ -37,17 +37,20 @@ Connectivity Requirements --evidence reference--> Connectivity Decision
 Application composition --proposal subject/scope--> Connectivity Decision
 Authority Management --decision/read authority--> Connectivity Decision
 Connectivity Decision --effective final decision--> Access Policy
+Connectivity Decision --coarse final summary--> Scoped Connectivity Inventory
 ```
 
 All relationships use semantic contracts/ports. No consumer reads Decision persistence directly.
 
-## Application boundary for I16
+## Application boundary
 
-The Decision-domain application layer should expose use cases equivalent to:
+The Decision-domain application layer exposes use cases equivalent to:
 
 ```text
 RecordConnectivityDecision
 GetConnectivityDecision
+ListConnectivityDecisions
+DiscoverDecisionScopes / DiscoverDecisionInteractions
 SelectEffectiveConnectivityDecision
 ```
 
@@ -84,7 +87,7 @@ Consumer output:
 
 Connectivity Decision owns consumer-specific Authority ports.
 
-I16 must check `DecideConnectivity` before recording/superseding and `ReadConnectivityDecision` before exposing protected Decision data.
+The runtime checks `DecideConnectivity` before recording/superseding and `ReadConnectivityDecision` before exposing protected Decision data.
 
 Authority Management remains owner of assignment/effectiveness semantics.
 
@@ -117,13 +120,13 @@ EffectiveConnectivityDecision
 
 Access Policy does not consume Decision workflow internals, reason policy algebra or persistence model.
 
-The current `ConnectivityDecisionPort.obtain(subject)` is a transitional Wave-1 shape. I16 must evolve composition so selection is also bound to proposal governance scope and logical time.
+The current Access Policy consumer port selects by exact subject, proposal governance scope and logical `asOf`, and receives only the minimal effective Decision projection above.
 
 ## Runtime transition
 
-I16 replaces the `local-dev:allowed` adapter in the normal product journey.
+The normal product journey uses the durable Connectivity Decision runtime.
 
-The local adapter may remain only as explicit test plumbing if useful, but must not be selectable as the non-local Decision provider.
+The historical deterministic `local-dev:allowed` adapter is not selected by normal local composition and has been removed from the runtime path. Focused tests may still supply explicit consumer-port fakes without redefining Decision-domain truth.
 
 ## Workflow disposition
 

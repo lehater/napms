@@ -8,15 +8,16 @@ from napms.composition.greenfield_postgres import open_greenfield_scope
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
 from napms.runtime.config import HttpRuntimeConfig
 from napms.runtime.http_api import HttpApiDependencies, create_http_api
+from napms.runtime.local_decision import LocalDevAllowedConnectivityDecisionAdapter
 
 
 def build_http_api(
     *,
     config: HttpRuntimeConfig,
-    decisions: ConnectivityDecisionPort | None = None,
+    decisions: ConnectivityDecisionPort,
     readiness_probe: Callable[[], bool] | None = None,
 ) -> FastAPI:
-    """Compose the HTTP process with durable Decision as the normal runtime default."""
+    """Compose the I8 HTTP process while keeping Decision Domain behind its port."""
 
     authenticator = LocalPasswordAuthenticator(config.local_credential)
     sessions = InMemorySessionStore()
@@ -37,8 +38,8 @@ def build_http_api(
             authenticator=authenticator,
             sessions=sessions,
             open_scope=open_scope,
-            readiness=readiness_probe or default_readiness,
             decisions=decisions,
+            readiness=readiness_probe or default_readiness,
             secure_cookie=False,
         )
     )
@@ -50,8 +51,9 @@ def build_local_dev_http_api(
     readiness_probe: Callable[[], bool] | None = None,
 ) -> FastAPI:
     if config.application.environment != "local-dev":
-        raise ValueError("local-dev HTTP composition is admitted only for local-dev")
+        raise ValueError("local-dev decision adapter is admitted only for local-dev")
     return build_http_api(
         config=config,
+        decisions=LocalDevAllowedConnectivityDecisionAdapter(),
         readiness_probe=readiness_probe,
     )

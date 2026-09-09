@@ -21,7 +21,6 @@ import {
 import { Button } from "@/components/ui/Button"
 import { Field, Select } from "@/components/ui/Field"
 import type { RequestConnectivityContext } from "@/features/connectivity/model"
-import type { DecisionDraftContext } from "@/features/decisions/model"
 
 function badgeClasses(
   tone: "good" | "warn" | "bad" | "muted" | "unknown",
@@ -192,12 +191,10 @@ export function ConnectivityPage({
   page,
   onPageChange,
   onRequestAccess,
-  onRecordDecision,
 }: {
   page: number
   onPageChange: (page: number) => void
   onRequestAccess: (context: RequestConnectivityContext) => void
-  onRecordDecision: (context: DecisionDraftContext) => void
 }) {
   const [asOf, setAsOf] = useState(() => new Date().toISOString())
   const [scopes, setScopes] = useState<string[]>([])
@@ -532,7 +529,6 @@ export function ConnectivityPage({
                     item={resourceItem}
                     scope={scope}
                     onRequestAccess={onRequestAccess}
-                    onRecordDecision={onRecordDecision}
                   />
                 ))}
               </tbody>
@@ -570,12 +566,10 @@ function ResourceRows({
   item,
   scope,
   onRequestAccess,
-  onRecordDecision,
 }: {
   item: ScopedConnectivityInventoryPage["items"][number]
   scope: string
   onRequestAccess: (context: RequestConnectivityContext) => void
-  onRecordDecision: (context: DecisionDraftContext) => void
 }) {
   const resource = item.resource
   const endpointSummary = endpointText(resource)
@@ -738,7 +732,7 @@ function ResourceRows({
                       {relationship.policy.ruleExists === "No" &&
                       relationship.need.current !== "Unknown" &&
                       relationship.need.historicalOnly !== true &&
-                      relationship.decision.state === "Allowed" ? (
+                      relationship.decision.state !== "NotAllowed" ? (
                         <button
                           type="button"
                           className="text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8]"
@@ -766,28 +760,6 @@ function ResourceRows({
                           }
                         >
                           Request access
-                        </button>
-                      ) : null}
-                      {relationship.decision.state === "NoFinalDecision" ? (
-                        <button
-                          type="button"
-                          className="text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8]"
-                          onClick={() =>
-                            onRecordDecision({
-                              scope,
-                              sourceComponentDeploymentId:
-                                relationship.semanticIdentity
-                                  .sourceComponentDeploymentId,
-                              destinationComponentDeploymentId:
-                                relationship.semanticIdentity
-                                  .destinationComponentDeploymentId,
-                              dcsContractRevisionId:
-                                relationship.semanticIdentity
-                                  .dcsContractRevisionId,
-                            })
-                          }
-                        >
-                          Record decision
                         </button>
                       ) : null}
                     </div>

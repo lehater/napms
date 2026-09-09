@@ -146,29 +146,6 @@ def authenticated_smoke(
             )
         interaction = items[0]
 
-    with opener.open(
-        f"{base_url}/api/v1/connectivity-decisions/scopes",
-        timeout=5,
-    ) as response:
-        payload = json.load(response)
-        scopes = {item["scope"] for item in payload["scopes"]}
-        if "local-demo" not in scopes:
-            raise RuntimeError(
-                "local demo DecideConnectivity authority seed is unavailable"
-            )
-
-    with opener.open(
-        f"{base_url}/api/v1/connectivity-decisions/interactions"
-        "?scope=local-demo&page=1&pageSize=50",
-        timeout=5,
-    ) as response:
-        payload = json.load(response)
-        decision_interactions = payload.get("items") or []
-        if len(decision_interactions) != 1:
-            raise RuntimeError(
-                "local demo Decision interaction discovery is unavailable"
-            )
-
     connectivity_query = urllib.parse.urlencode(
         {
             "scope": "local-demo",
@@ -295,75 +272,6 @@ def authenticated_smoke(
                 "Requirement without effective Access Rule must be Uncovered"
             )
 
-    allowed_decision = urllib.request.Request(
-        f"{base_url}/api/v1/connectivity-decisions",
-        method="POST",
-        data=json.dumps(
-            {
-                "authorityScope": "local-demo",
-                "sourceComponentDeploymentId": interaction[
-                    "sourceComponentDeploymentId"
-                ],
-                "destinationComponentDeploymentId": interaction[
-                    "destinationComponentDeploymentId"
-                ],
-                "dcsContractRevisionId": interaction["dcsContractRevisionId"],
-                "outcome": "Allowed",
-                "validFrom": "2020-01-01T00:00:00+00:00",
-                "validUntil": None,
-                "reasonCode": "LOCAL_DEMO_ALLOWED",
-                "reasonText": "Local demo durable Allowed Decision.",
-                "evidenceReferences": [
-                    {
-                        "kind": "ConnectivityRequirement",
-                        "reference": requirement_id,
-                    }
-                ],
-            }
-        ).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-    )
-    with opener.open(allowed_decision, timeout=5) as response:
-        if response.status != 201:
-            raise RuntimeError("durable Allowed Decision smoke failed")
-        allowed = json.load(response)
-        if allowed["decision"].get("outcome") != "Allowed":
-            raise RuntimeError("durable Allowed Decision outcome is incorrect")
-        allowed_decision_id = allowed["decision"]["decisionId"]
-
-    with opener.open(
-        f"{base_url}/api/v1/connectivity-decisions?page=1&pageSize=50",
-        timeout=5,
-    ) as response:
-        payload = json.load(response)
-        visible_ids = {item["decisionId"] for item in payload.get("items") or []}
-        if allowed_decision_id not in visible_ids:
-            raise RuntimeError(
-                "durable Allowed Decision is not visible through Decision list"
-            )
-
-    with opener.open(
-        f"{base_url}/api/v1/connectivity-decisions/{allowed_decision_id}",
-        timeout=5,
-    ) as response:
-        detail = json.load(response)
-        if detail["decision"].get("decisionId") != allowed_decision_id:
-            raise RuntimeError("durable Allowed Decision detail is unavailable")
-        if not detail.get("readAuthorityReference"):
-            raise RuntimeError(
-                "Decision detail must expose server-resolved read authority provenance"
-            )
-
-    with opener.open(connectivity_url, timeout=5) as response:
-        connectivity = json.load(response)
-        relationship = (
-            connectivity["items"][0]["components"][0]["relationships"][0]
-        )
-        if relationship["decision"].get("state") != "Allowed":
-            raise RuntimeError(
-                "Scoped Connectivity must reflect durable Allowed Decision"
-            )
-
     proposal = urllib.request.Request(
         f"{base_url}/api/v1/access-rule-proposals",
         method="POST",
@@ -416,89 +324,6 @@ def authenticated_smoke(
         ):
             raise RuntimeError(
                 "Scoped Connectivity must reflect effective Access Policy"
-            )
-
-    not_allowed_decision = urllib.request.Request(
-        f"{base_url}/api/v1/connectivity-decisions",
-        method="POST",
-        data=json.dumps(
-            {
-                "authorityScope": "local-demo",
-                "sourceComponentDeploymentId": interaction[
-                    "sourceComponentDeploymentId"
-                ],
-                "destinationComponentDeploymentId": interaction[
-                    "destinationComponentDeploymentId"
-                ],
-                "dcsContractRevisionId": interaction["dcsContractRevisionId"],
-                "outcome": "NotAllowed",
-                "validFrom": "2020-01-01T00:00:00+00:00",
-                "validUntil": None,
-                "reasonCode": "LOCAL_DEMO_NOT_ALLOWED",
-                "reasonText": "Local demo durable replacement NotAllowed Decision.",
-                "evidenceReferences": [
-                    {
-                        "kind": "ConnectivityRequirement",
-                        "reference": requirement_id,
-                    }
-                ],
-                "supersedesDecisionId": allowed_decision_id,
-            }
-        ).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-    )
-    with opener.open(not_allowed_decision, timeout=5) as response:
-        if response.status != 201:
-            raise RuntimeError("durable NotAllowed replacement Decision smoke failed")
-        not_allowed = json.load(response)
-        if not_allowed["decision"].get("outcome") != "NotAllowed":
-            raise RuntimeError("durable NotAllowed Decision outcome is incorrect")
-        if (
-            not_allowed["decision"].get("supersedesDecisionId")
-            != allowed_decision_id
-        ):
-            raise RuntimeError("Decision supersession history is incorrect")
-
-    denied_proposal = urllib.request.Request(
-        f"{base_url}/api/v1/access-rule-proposals",
-        method="POST",
-        data=json.dumps(
-            {
-                "authorityScope": "local-demo",
-                "sourceComponentDeploymentId": interaction[
-                    "sourceComponentDeploymentId"
-                ],
-                "destinationComponentDeploymentId": interaction[
-                    "destinationComponentDeploymentId"
-                ],
-                "dcsContractRevisionId": interaction["dcsContractRevisionId"],
-            }
-        ).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-    )
-    with opener.open(denied_proposal, timeout=5) as response:
-        denied = json.load(response)
-        if denied.get("outcome") != "NotAllowed" or denied.get("rule") is not None:
-            raise RuntimeError(
-                "durable NotAllowed Decision must produce business non-materialization"
-            )
-
-    with opener.open(connectivity_url, timeout=5) as response:
-        connectivity = json.load(response)
-        relationship = (
-            connectivity["items"][0]["components"][0]["relationships"][0]
-        )
-        if relationship["decision"].get("state") != "NotAllowed":
-            raise RuntimeError(
-                "Scoped Connectivity must reflect replacement NotAllowed Decision"
-            )
-        policy = relationship["policy"]
-        if (
-            policy.get("ruleExists") != "Yes"
-            or policy.get("operationalState") != "Active"
-        ):
-            raise RuntimeError(
-                "Decision supersession must not silently mutate existing Access Rule"
             )
 
     state_change = urllib.request.Request(

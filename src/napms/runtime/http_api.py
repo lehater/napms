@@ -194,8 +194,8 @@ class HttpApiDependencies:
     authenticator: LocalPasswordAuthenticator
     sessions: InMemorySessionStore
     open_scope: Callable[[], ContextManager[Any]]
+    decisions: ConnectivityDecisionPort
     readiness: Callable[[], bool]
-    decisions: ConnectivityDecisionPort | None = None
     clock: Callable[[], datetime] = _utc_now
     secure_cookie: bool = False
 
@@ -2500,15 +2500,10 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
             dcs_contract_revision_id=payload.dcs_contract_revision_id,
         )
         with dependencies.open_scope() as scope:
-            decision_reader = (
-                dependencies.decisions
-                if dependencies.decisions is not None
-                else scope.access_policy_decisions
-            )
             result = MaterializeAllowedAccessRule(
                 authority=scope.authority,
                 catalogue=scope.proposal_catalogue,
-                decisions=decision_reader,
+                decisions=dependencies.decisions,
                 rules=scope.access_rules,
             ).execute(command)
             proposal_rule_presentation = (

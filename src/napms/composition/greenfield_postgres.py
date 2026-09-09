@@ -4,9 +4,6 @@ from typing import Iterator
 
 import psycopg
 
-from napms.access_policy.adapters.connectivity_decision import (
-    ConnectivityDecisionConsumerAdapter,
-)
 from napms.access_policy.adapters.postgres import PostgresAccessRuleRepository
 from napms.access_policy.adapters.requirement_policy_alignment import (
     AccessPolicyAlignmentAdapter,
@@ -79,9 +76,6 @@ from napms.connectivity_decision.adapters.postgres import (
 from napms.connectivity_decision.adapters.scoped_connectivity_inventory import (
     ConnectivityDecisionScopedConnectivityAdapter,
 )
-from napms.connectivity_decision.application.select import (
-    SelectEffectiveConnectivityDecision,
-)
 from napms.connectivity_requirements.adapters.postgres import (
     PostgresConnectivityRequirementRepository,
 )
@@ -128,7 +122,6 @@ class GreenfieldPostgresScope:
     application_projection: PolicyExportApplicationCatalogueAdapter
     resource_projection: PolicyExportResourceCatalogueAdapter
     access_rules: PostgresAccessRuleRepository
-    access_policy_decisions: ConnectivityDecisionConsumerAdapter
     dcs_decoder: JsonDcsProjectionCodec
     decision_authority: ConnectivityDecisionAuthorityAdapter
     decision_scopes: ConnectivityDecisionScopeAdapter
@@ -277,11 +270,6 @@ def open_greenfield_scope(
         connectivity_decisions = PostgresConnectivityDecisionRepository(
             connectivity_decision_connection
         )
-        access_policy_decisions = ConnectivityDecisionConsumerAdapter(
-            select_effective_decision=SelectEffectiveConnectivityDecision(
-                decisions=connectivity_decisions
-            )
-        )
         requirement_alignment = ConnectivityRequirementsAlignmentAdapter(
             reader=GetAuthorizedRequirement(
                 authority=requirement_authority,
@@ -342,7 +330,6 @@ def open_greenfield_scope(
             application_projection=application_projection,
             resource_projection=resource_projection,
             access_rules=access_rules,
-            access_policy_decisions=access_policy_decisions,
             dcs_decoder=JsonDcsProjectionCodec(),
             decision_authority=decision_authority,
             decision_scopes=decision_scopes,

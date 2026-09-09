@@ -1,6 +1,6 @@
 # Dependency injection and composition model
 
-Status: `accepted and exercised through I11 Dockerized Local Runtime`.
+Status: `accepted and exercised through I16B Connectivity Decision Runtime`.
 
 Date: 2026-09-09.
 
@@ -24,17 +24,19 @@ The composition root depends inward. Domain/Application never import the composi
 ## Greenfield PostgreSQL composition
 
 The local-dev greenfield PostgreSQL composition constructs:
-- Authority Management PostgreSQL repository -> Authority application checker -> Access Policy authority adapter;
-- Application Communication Catalogue PostgreSQL repository -> proposal and policy-export consumer adapters;
-- Resource Catalogue PostgreSQL repository -> policy-export consumer adapter;
+- Authority Management PostgreSQL repository -> action-specific consumer adapters, including independent Decision Decide/Read authority;
+- Application Communication Catalogue PostgreSQL repository -> proposal, Decision, Requirements and policy-export consumer adapters;
+- Resource Catalogue PostgreSQL repository -> policy-export and Scoped Connectivity consumer adapters;
 - Access Policy PostgreSQL repository;
+- Connectivity Requirements PostgreSQL repository;
+- Connectivity Decision PostgreSQL repository -> Decision application use cases, Access Policy consumer projection and Scoped Connectivity coarse summary;
 - strict internal DCS projection codec/decoder.
 
 Each persisted bounded context uses its own repository/schema ownership. No application code performs cross-module SQL.
 
 ACC and RC use separate read-only `REPEATABLE READ` connections for one logical snapshot scope. Access Policy uses its own transactional connection. These are infrastructure mechanics and do not alter Domain/Application semantics.
 
-Connectivity Decision is a first-class bounded context after I15. The current runtime still injects a transitional deterministic `local-dev` Allowed adapter at outer composition only; it does not replace the accepted Decision-domain model. I16B replaces this normal-product adapter with the durable Decision application/runtime slice.
+Connectivity Decision is a first-class bounded context with Decision-owned PostgreSQL persistence. The normal local runtime composes its durable repository and consumer adapters directly; it does not inject a deterministic Allowed provider.
 
 ## Ports
 
@@ -42,17 +44,17 @@ Port protocols are owned by the consuming application/module. Cross-bounded-cont
 
 This rule is executable in architecture tests.
 
-## I8 HTTP composition
+## HTTP composition
 
-The first HTTP runtime composition owns:
+The HTTP runtime composition owns:
 - validated `HttpRuntimeConfig`;
 - process-lifetime local authenticator and opaque in-memory session store;
 - request-lifetime greenfield PostgreSQL scope;
-- injected `ConnectivityDecisionPort`;
+- durable Decision participant and consumer dependencies supplied by that scope;
 - FastAPI transport attachment;
 - readiness probing.
 
-The concrete Connectivity Decision implementation remains injected at the consuming Access Policy boundary. Until I16B, runtime composition must not turn the transitional local adapter into hidden Decision-domain business logic or treat it as the accepted durable provider.
+Access Policy receives the Decision consumer through its own port. The normal runtime obtains that consumer from the greenfield scope. An explicit injected `ConnectivityDecisionPort` remains available only as focused composition/test plumbing and is not the normal local product path.
 
 ## I11 local executable process roots
 

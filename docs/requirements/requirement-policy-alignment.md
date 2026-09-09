@@ -101,13 +101,13 @@ Without Rule-level read authority:
 - `Covered` may still be returned;
 - no Rule ID, Rule governance scope, decision reference, proposal provenance, EffectiveWindow or Rule audit is leaked.
 
-## ALN-009 — No Denied result in I14
+## ALN-009 — No Denied result
 
-I14 exposes no `Denied` alignment status.
+Requirement-to-Policy Alignment exposes no `Denied` status.
 
-Current Access Policy truth contains authorized/materialized Rules, not a durable NotAllowed decision record.
+Connectivity Decision now owns durable final `NotAllowed` truth, but Alignment remains a Requirement-to-effective-Access-Policy composition and does not consume Decision as an additional semantic input. Therefore `Uncovered` still does not mean `Denied`.
 
-Durable denial semantics remain I15/I16.
+Adding a Denied alignment result requires an explicit accepted cross-context semantic change; it is not inferred merely because durable NotAllowed Decisions exist.
 
 ## ALN-010 — No orphan-policy result in first slice
 

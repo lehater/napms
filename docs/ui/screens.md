@@ -67,6 +67,11 @@ Sections:
 - provenance/history where separately admitted;
 - Realization later.
 
+Contextual action behavior:
+- `NoFinalDecision` -> Record decision;
+- `Allowed` with no Rule and otherwise eligible context -> Request access;
+- `NotAllowed` or `Unknown` -> no misleading Request access action.
+
 Protected details remain subject to their own backend read contracts.
 
 ## Add Connectivity
@@ -124,13 +129,15 @@ Uncovered does not mean Denied.
 Focused final Connectivity Decision workspace.
 
 Purpose:
+- inspect authorized final `Allowed | NotAllowed` Decisions;
+- record a direct final Decision for an exact admitted scope/ACC subject;
+- present reason, validity, evidence and deciding provenance;
+- inspect immutable supersession history;
+- record a replacement Decision by explicitly superseding the current Decision.
 
-- inspect final Allowed | NotAllowed Decisions;
-- later support decision-participant work only after I16B workflow semantics are accepted.
+Decision detail requires corresponding `ReadConnectivityDecision` authority. Recording requires independent `DecideConnectivity` authority.
 
-Decision reason/provenance/detail requires corresponding read authority.
-
-Until implemented, sidebar entry is Planned.
+No Pending/approval lifecycle is displayed or persisted.
 
 ## Rules
 

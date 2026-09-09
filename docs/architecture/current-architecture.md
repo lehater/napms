@@ -1,6 +1,6 @@
 # Current target architecture
 
-Status: `accepted current target through I16A; I16B is the next runtime increment`.
+Status: `accepted current target through I16B; I17 is the next roadmap increment`.
 
 Date: 2026-09-09.
 
@@ -109,13 +109,17 @@ Business audit/provenance is authoritative business evidence; operational loggin
 
 ## Connectivity Decision
 
-ADR-005 is current: Connectivity Decision is a first-class Bounded Context owning immutable final `Allowed | NotAllowed` Decisions, validity, reasons/provenance and supersession semantics.
+ADR-005 is current: Connectivity Decision is a first-class Bounded Context owning immutable final `Allowed | NotAllowed` Decisions, validity, reasons/evidence/provenance and supersession semantics.
 
-ADR-003 is historical and superseded. The former external/deferred Decision seam must not be treated as current target architecture.
+ADR-003 is historical and superseded. The former external/deferred Decision seam is not current target architecture.
 
-Access Policy consumes effective final Decision truth but continues to own Access Rule identity/state.
+The implemented runtime persists Decision history in Decision-owned PostgreSQL storage. Selection is exact by RuleSemanticIdentity + governance scope + logical `asOf` and fails closed on absence, expiry, ambiguity or persistence uncertainty.
 
-The current main runtime still uses a transitional deterministic Decision adapter; I16B is sequenced to replace that runtime seam with the accepted durable Decision implementation.
+Access Policy consumes a consumer-owned effective Decision projection and continues to own Access Rule identity/state. Decision expiry or supersession does not silently mutate an existing Access Rule.
+
+Scoped Connectivity consumes only the accepted coarse `Allowed | NotAllowed | NoFinalDecision | Unknown` Decision summary. Detailed reason/evidence/provenance remains behind independent `ReadConnectivityDecision` authority.
+
+Normal local composition uses the durable Decision runtime; no deterministic allow adapter is selected by the product journey.
 
 ## Coherent policy export
 
