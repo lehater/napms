@@ -13,11 +13,55 @@ This file defines semantic ownership, not runtime/service ownership.
 | requirement-to-policy coverage status | **non-peer application composition** | Connectivity Requirements + effective Access Policy | Covered / Uncovered / NotCurrent / Unknown |
 | Access Rule identity/properties/state/authorization | **Access Policy** | effective Allowed Connectivity Decision + catalogue facts + AM-authorized operation | Access Rule + desired projections |
 | scoped actor authority/eligibility | **Authority Management** | assignment/delegation/transfer/revocation decisions | Effective Authority / Responsibility Assignment |
+| Resource membership in one responsibility scope/time | **Resource Catalogue** | authoritative organizational/resource affiliation facts | Resource Scope Affiliation |
 | Resource/Endpoint/current address realization | **Resource Catalogue** | trusted inventory/network facts | Resource/Endpoint/current realization |
+| scoped resource-centric connectivity inventory | **non-peer application composition** | AM + RC + ACC + Connectivity Requirements + Connectivity Decision + Access Policy | Scoped Connectivity Inventory |
 | application/component communication contract | **Application Communication Catalogue** | authorized catalogue sources | Application/Component/DCS/Deployment |
 | forwarding and enforcement relevance | **Network Enforcement Placement** | provider/network observations + corrections | path/Logical Firewall/Enforcement Attachment semantics |
 | normalized source-qualified technical access evidence | **Technical Access Evidence** | device/traffic/import adapters and external sources | Technical Access Evidence Set / Entry |
 | technical↔domain access correspondence and enforcement realization | **Access Policy Realization** | TAE + AP + RC + Application Communication Catalogue + NEP | Domain Access Resolution / business-optimal enforcement policy / reconciliation result |
+
+## Responsibility Scope / Resource affiliation ownership
+
+I16A separates two truths that share the same stable scope reference:
+
+```text
+Resource Catalogue:
+Resource --Resource Scope Affiliation--> Responsibility Scope
+
+Authority Management:
+Actor --Responsibility Assignment(action,time)--> Responsibility Scope
+```
+
+Resource Catalogue owns whether Resource R belongs to Responsibility Scope S at logical time T.
+
+Authority Management owns whether Actor A may perform action X for Scope S at logical time T.
+
+Neither truth implies the other:
+
+```text
+Resource in scope
+!= actor authorized
+
+actor authorized for scope
+!= Resource in scope
+```
+
+Current global catalogue visibility is a third independent concern. A foreign Resource may be readable without being local to the actor's selected responsibility scope.
+
+The first workspace-specific Authority action is `ReadScopedConnectivity`. It admits use of one scope as local workspace context only. It does not imply any Requirement/Decision/Rule detail read or mutation action.
+
+## Scoped Connectivity Inventory ownership
+
+Scoped Connectivity Inventory is a non-peer application/read composition.
+
+It correlates:
+- `ReadScopedConnectivity` scope admission from Authority Management;
+- effective Resource Scope Affiliations and Resource realization from Resource Catalogue;
+- Component Deployment / DeploymentResourceBinding / DCS from Application Communication Catalogue;
+- accepted safe summaries from Connectivity Requirements, Connectivity Decision and Access Policy.
+
+It owns no new business identity, lifecycle, status or persistence truth.
 
 ## Connectivity Decision authority
 
