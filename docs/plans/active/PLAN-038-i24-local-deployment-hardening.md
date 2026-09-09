@@ -1,6 +1,6 @@
 # PLAN-038 — I24 Local Deployment and Operational Hardening
 
-Status: `active — WP1 local runtime security baseline`
+Status: `active — WP1 verification`
 
 Date: 2026-09-10.
 
@@ -19,31 +19,38 @@ Canonical inputs:
 - `tools/dev_compose.py`;
 - `README.md`.
 
-Observed baseline:
+Observed starting baseline:
 - local Docker Compose is the supported deployment shape;
 - local username/password authentication is primary;
 - one nginx endpoint is published on loopback by default;
-- PostgreSQL currently uses `POSTGRES_HOST_AUTH_METHOD=trust` inside the Compose network;
-- application database DSN currently has no password;
+- pre-I24 Compose used `POSTGRES_HOST_AUTH_METHOD=trust` inside the Compose network;
+- pre-I24 application database DSN had no password;
 - migrations and local seed run as one-shot Compose services;
 - readiness and authenticated end-to-end Docker smoke already exist.
 
 ## WP1 — Local runtime security baseline
 
-Status: `active`.
+Status: `implemented; verification pending`.
 
-Close avoidable local-runtime trust shortcuts without introducing an enterprise secret platform.
+Implemented:
+- removed `POSTGRES_HOST_AUTH_METHOD=trust` from the supported Compose configuration;
+- new PostgreSQL volumes initialize host authentication as SCRAM-SHA-256;
+- Compose requires explicit `NAPMS_POSTGRES_PASSWORD` and application DSN carries it;
+- `make dev-up` generates an ephemeral database password in process memory;
+- raw Compose startup requires an explicit non-committed database password override;
+- `tools/verify_local_postgres_auth.py` proves the configured password succeeds and a deliberately wrong password fails;
+- the verifier treats a legacy pre-I24 trust-auth volume as insecure instead of silently accepting it;
+- local runtime documentation records the legacy-volume recovery boundary;
+- existing local UI login/session behavior and loopback-only Web ingress are unchanged.
 
-Scope:
-- remove PostgreSQL `trust` authentication from the supported Compose path;
-- use an explicit local database password injected through the Compose environment;
-- keep generated credentials ephemeral for `make dev-up`;
-- document raw `docker compose` overrides without committing plaintext secrets;
-- preserve the existing local login/session flow and loopback-only public ingress.
+Exit:
+- Docker local-runtime gate passes on a fresh SCRAM-authenticated volume;
+- harness/core/knowledge gates remain green for the WP1 branch state;
+- no committed plaintext credential or fixed supported database password is introduced.
 
 ## WP2 — Backup, restore and recovery contract
 
-Status: `queued`.
+Status: `queued after WP1 verification`.
 
 Scope:
 - define supported logical PostgreSQL backup/restore commands for the local Compose deployment;
@@ -104,4 +111,4 @@ No external infrastructure is required. Real TLS certificates, enterprise secret
 
 ## Next
 
-Complete WP1 by replacing Compose PostgreSQL trust authentication with explicit generated/override credentials while preserving `make dev-up`, raw Compose configurability and the existing Docker smoke.
+Verify WP1 through repository gates. If green, close WP1 and implement WP2 logical backup/restore and recovery tooling before touching further hardening areas.
