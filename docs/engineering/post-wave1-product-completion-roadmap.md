@@ -73,7 +73,7 @@ Detailed execution was completed and absorbed into canonical truth; the active I
 
 ### I14 — Requirement-to-Policy Alignment
 
-Status: `next after I13`.
+Status: `current`.
 
 Goal:
 compare accepted Connectivity Requirements with current Access Policy without making either context own the other.
