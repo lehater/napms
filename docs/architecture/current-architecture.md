@@ -1,6 +1,6 @@
 # Current target architecture
 
-Status: `accepted current target through I15; evolves through active roadmap increments`.
+Status: `accepted current target through I16A; I16B is the next runtime increment`.
 
 Date: 2026-09-09.
 
@@ -66,10 +66,12 @@ Current first-class contexts include:
 - Connectivity Requirements;
 - Connectivity Decision.
 
-Current non-peer application compositions include:
+Current non-peer application/read compositions include:
 - Requirement-to-Policy Alignment;
 - policy export/snapshot normalization;
-- Scoped Connectivity Inventory as selected I16A work.
+- Scoped Connectivity Inventory.
+
+Scoped Connectivity Inventory is implemented as an owner-preserving application composition with Resource Scope Affiliation, `ReadScopedConnectivity`, module-owned adapters and no independent persistence.
 
 Later roadmap contexts include Technical Access Evidence, Access Policy Realization and Network Enforcement Placement.
 
@@ -113,6 +115,8 @@ ADR-003 is historical and superseded. The former external/deferred Decision seam
 
 Access Policy consumes effective final Decision truth but continues to own Access Rule identity/state.
 
+The current main runtime still uses a transitional deterministic Decision adapter; I16B is sequenced to replace that runtime seam with the accepted durable Decision implementation.
+
 ## Coherent policy export
 
 ADR-002 owns the logical export snapshot consistency boundary.
@@ -132,7 +136,7 @@ A composition:
 - uses one explicit logical time when correlating temporal facts;
 - represents missing/ambiguous contributors explicitly rather than converting uncertainty into false absence.
 
-Requirement-to-Policy Alignment and Scoped Connectivity Inventory follow this pattern.
+Requirement-to-Policy Alignment, policy export and Scoped Connectivity Inventory follow this pattern.
 
 ## Transition and external sources
 
@@ -174,6 +178,7 @@ Do not add distribution or generic platforms merely to anticipate future complex
 - semantic ownership: `docs/domain/semantic-ownership.md`;
 - Access Policy tactical model: `docs/domain/access-policy/tactical-model.md`;
 - current product requirements: `docs/requirements/`;
+- feature architecture: `docs/architecture/`;
 - ADRs: `docs/decisions/`;
 - runtime/engineering state: `docs/engineering/current-state.md`;
 - current execution only: `docs/plans/active/README.md`.

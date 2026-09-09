@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline after I15`.
+Status: `accepted ordered sequencing baseline after I16A`.
 
 Date: 2026-09-09.
 
@@ -28,7 +28,7 @@ The roadmap may be refined when new accepted domain evidence changes boundaries 
 ## Baseline
 
 Completed:
-- I1-I15;
+- I1-I16A;
 - Wave 1 proposal -> Connectivity Decision seam -> Access Rule -> effective desired policy -> coherent normalized policy;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
@@ -48,120 +48,16 @@ Still deferred:
 
 ## Ordered increments
 
-### I13 — Connectivity Requirements Core
+### Completed increments — I13 through I16A
 
-Status: `done`.
+Status: `done / absorbed into canonical truth`.
 
-Goal:
-establish the Tactical DDD and first executable core for the already-accepted **Connectivity Requirements** bounded context.
+- I13 — Connectivity Requirements Core: durable Requirement identity/lifecycle/authority with `Required != Authorized`.
+- I14 — Requirement-to-Policy Alignment: derived `Covered | Uncovered | NotCurrent | Unknown` composition without peer persistence.
+- I15 — Connectivity Decision Domain Closure: first-class final Decision semantics, authority, validity, reason/provenance and supersession; ADR-005 supersedes the historical deferred port.
+- I16A — Scoped Connectivity Workspace Foundation: Resource Scope Affiliation, `ReadScopedConnectivity`, owner-preserving inventory composition, authenticated HTTP read surface, resource-centric Web workspace and contextual Request access for existing exact ACC interactions.
 
-Must establish before infrastructure:
-- exact ConnectivityRequirement identity;
-- RequiredSemanticInteraction representation;
-- Dependent/reference semantics;
-- applicability and temporal semantics;
-- justification/provenance;
-- create/change/retire lifecycle;
-- authority actions for declaring/reading/changing requirements;
-- invariant that `Required != Authorized`.
-
-Exit direction:
-an authorized responsible actor can persist and inspect a connectivity need without creating, allowing or changing an Access Rule.
-
-Detailed execution was completed and absorbed into canonical truth; the active I13 plan is removed after merge.
-
-### I14 — Requirement-to-Policy Alignment
-
-Status: `done`.
-
-Goal:
-compare accepted Connectivity Requirements with current Access Policy without making either context own the other.
-
-Expected outcomes:
-- requirement is covered by current authorized/effective policy;
-- requirement is not covered;
-- policy exists without a corresponding current requirement where the selected view needs to expose that fact;
-- exact correlation/evidence remains explainable.
-
-Guardrails:
-- `Required != Authorized`;
-- alignment is composition, not a new peer semantic owner unless evidence later proves otherwise;
-- no Connectivity Decision workflow is invented here.
-
-Primary product surface:
-owner/responsible-user view showing each declared need and its current policy-coverage state.
-
-Implemented in I14:
-- exact Requirement↔Rule semantic matching;
-- Covered / Uncovered / NotCurrent / Unknown;
-- Requirement-read-authorized derived status with Rule details still protected;
-- explicit asOf;
-- pure read composition with no Alignment persistence;
-- no Denied/orphan-policy semantics in the first slice.
-
-### I15 — Connectivity Decision Domain Closure
-
-Status: `done`.
-
-Goal:
-close the deferred Connectivity Decision semantic owner/model so runtime can implement a durable non-local provider without inventing approval semantics.
-
-Implemented in I15:
-- Connectivity Decision promoted to a first-class Bounded Context;
-- stable DecisionId distinct from exact RuleSemanticIdentity subject;
-- Decision Governance Scope equal to accepted proposal authority scope in the first model;
-- final business outcome remains exactly `Allowed | NotAllowed`;
-- independent Authority actions `DecideConnectivity` and `ReadConnectivityDecision`;
-- deciding principal may be human or trusted service principal without changing Decision meaning;
-- one unambiguous effective deciding authority in the first model; quorum/SoD remain deferred without a concrete rule;
-- offset-aware half-open Decision validity used for consumption;
-- mandatory reason/provenance plus optional source-qualified evidence references;
-- Connectivity Requirement may be evidence while `Required != Allowed`;
-- immutable reconsideration through explicit same-subject/same-scope supersession;
-- at most one trustworthy effective Decision per subject/scope/asOf; ambiguity fails closed;
-- expiry/supersession does not silently mutate an already materialized Access Rule;
-- ADR-005 and the durable architecture boundary supersede the Wave-1 external/deferred seam.
-
-Exit achieved:
-accepted Strategic/Tactical DDD + requirements + acceptance examples + ADR/architecture contract for I16.
-
-### I16A — Scoped Connectivity Workspace Foundation
-
-Status: `complete / accepted`.
-
-Goal:
-establish the owner/responsibility-facing product workspace before replacing the Decision provider, so the product exposes a coherent resource/connectivity landscape rather than forcing users to navigate bounded-context-specific screens.
-
-Semantic closure before implementation:
-- define the accepted relation from selected responsibility scope to local Resources;
-- identify the semantic owner, temporal semantics and cardinality of that relation;
-- preserve Resource identity when responsibility/ownership changes;
-- keep catalogue visibility separate from domain-action authority;
-- accept the safe cross-context summary semantics for Scoped Connectivity Inventory.
-
-Expected scope:
-- canonical requirements in `docs/requirements/scoped-connectivity-inventory.md`;
-- application/architecture composition over Authority Management, Resource Catalogue, Application Communication Catalogue, Connectivity Requirements, Connectivity Decision and Access Policy;
-- current global read visibility for foreign Resource/Component/Deployment catalogue data;
-- HTTP read contract for the inventory;
-- Web UI information architecture with Connectivity as the primary post-login workspace;
-- resource-centric tree-grid showing local Resource -> Component Deployment -> connectivity -> remote Component/Resource;
-- independent Need / Decision / Policy dimensions;
-- local Resources/Components with zero connectivity;
-- relationship details;
-- contextual Add Connectivity entry point using trusted catalogue semantics;
-- no durable Waiting/Under review state unless its owner/lifecycle is separately accepted.
-
-Guardrails:
-- Scoped Connectivity Inventory is a non-peer application/read composition, not a new Bounded Context;
-- no direct cross-module persistence joins;
-- catalogue visibility does not grant protected Requirement/Decision/Rule detail access;
-- `Required != Authorized`;
-- no `Pending` is added to Connectivity Decision;
-- no generic CMDB/portfolio CRUD is introduced.
-
-Exit:
-an authenticated actor can select a responsibility scope, inspect the local resource/component connectivity landscape and start connectivity work from that context, while all business truth remains owned by existing contexts.
+Detailed completed execution is not roadmap state. Durable outcomes live in current requirements/domain/architecture/engineering artifacts; Git history preserves the execution record.
 
 ### I16B — Connectivity Decision Runtime and Workflow
 

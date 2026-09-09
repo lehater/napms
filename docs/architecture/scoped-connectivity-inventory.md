@@ -1,211 +1,161 @@
 # Scoped Connectivity Inventory architecture boundary
 
-Status: `accepted I16A WP-02 application-composition boundary`.
+Status: `accepted current application-composition boundary`.
 
 Date: 2026-09-09.
 
 ## Purpose
 
-Define the architectural boundary for the resource-centric Connectivity workspace required by docs/requirements/scoped-connectivity-inventory.md.
+Define how the resource-centric Connectivity workspace composes existing semantic owners while preserving their ownership, authority and failure boundaries.
 
-This boundary is a read/application composition. It is not a new Bounded Context, aggregate, database owner or source of business truth.
+Product behavior is owned by `docs/requirements/scoped-connectivity-inventory.md`. This document owns composition, consuming ports, evaluation order, batching and read-model constraints.
+
+Scoped Connectivity Inventory is not a Bounded Context, aggregate, database owner or source of copied business truth.
 
 ## Composition
 
-Conceptual contributors:
+```text
+Authority Management
+Resource Catalogue
+Application Communication Catalogue
+Connectivity Requirements
+Requirement-to-Policy Alignment
+Connectivity Decision
+Access Policy
+        |
+        v
+Scoped Connectivity Inventory application/read composition
+        |
+        v
+HTTP / Web outer adapters
+```
 
-    Authority Management
-          |
-          | responsibility scope / admitted actions
-          v
-    Scoped Connectivity Inventory
-          ^
-          |
-    Resource Catalogue
-    Application Communication Catalogue
-    Connectivity Requirements
-    Requirement-to-Policy Alignment
-    Connectivity Decision
-    Access Policy
-
-Later contributors:
-
-    Technical Access Evidence
-    Access Policy Realization
-    Network Enforcement Placement
+Later dimensions may add Technical Access Evidence, Access Policy Realization and Network Enforcement Placement through the same owner-preserving pattern.
 
 ## Architectural rules
 
-1. Every contributing fact is obtained through an application/consumer-owned port or an accepted composition boundary.
-2. The composition must not read another module's persistence tables directly to bypass semantic ownership.
-3. The composition owns no copied business truth and does not create a new lifecycle.
-4. A selected responsibility scope is admitted by Authority Management action `ReadScopedConnectivity`.
-5. Resource Catalogue owns effective `Resource Scope Affiliation` and therefore resolves local Resources for the admitted scope.
-6. Remote Resource/Component catalogue data is readable under the current product visibility baseline.
-7. Protected Requirement/Decision/Rule details remain governed by their existing read semantics.
-8. Coarse cross-context statuses require an explicit safe-read rule and must not be obtained by accidental data leakage.
-9. Temporal facts are correlated for one explicit logical asOf.
-10. Missing/stale/ambiguous contributor data produces explicit partial/unknown presentation semantics; it must not be silently converted to false absence.
-
-## Local-side derivation
-
-Accepted I16A model:
-
-    actor
-      -> Authority Management: ReadScopedConnectivity(scope, asOf)
-      -> Resource Catalogue: effective Resource Scope Affiliations(scope, asOf)
-      -> local Resources
-
-Rules:
-- ambiguous/unknown scope authority fails closed before local inventory data is returned;
-- Resource Scope Affiliation is temporal, non-identity and may be many-to-many;
-- actor authority does not manufacture Resource membership;
-- Resource membership does not manufacture actor authority;
-- catalogue visibility is independent;
-- stored Requirement/Decision/Rule governance scopes are not rewritten when Resource affiliation changes.
-
-No standalone Scope aggregate/hierarchy is required by I16A. The stable Responsibility Scope reference is the correlation value shared across owner contracts.
-
-## Catalogue correlation
-
-Existing accepted relationships are reused:
-
-    Component Deployment
-        -> effective DeploymentResourceBinding
-        -> stable Resource reference
-        -> Resource Catalogue realization
-
-The composition must not assume one Component Deployment maps to exactly one Resource.
-
-Exact connectivity remains identified by:
-
-    Source Component Deployment
-    + Destination Component Deployment
-    + immutable DCS revision
-
-The UI-local direction is a projection relative to the selected local side and does not alter canonical interaction identity.
-
-## Protected-status composition
-
-The composition has one explicit coarse-read authority boundary: `ReadScopedConnectivity`.
-
-After scope admission, consumer-owned ports may return only the safe summaries accepted by `docs/requirements/scoped-connectivity-inventory.md`:
-
-- selected-scope Requirement currentness/alignment without Requirement identity/reason/history;
-- selected-scope final Decision outcome/absence without Decision identity/reason/provenance;
-- exact-interaction Rule existence/state/effectiveness without Rule identity/governance scope/provenance.
-
-Detailed reads remain independently protected by `ReadConnectivityRequirement`, `ReadConnectivityDecision` and `ReadAccessRule`.
-
-Catalogue global visibility is never used as a substitute for those protected read contracts.
+1. Every contributing fact is obtained through an owner/application contract or a consumer-owned port.
+2. The composition does not read peer persistence tables directly.
+3. The composition owns orchestration/query semantics only; it creates no copied business truth or lifecycle.
+4. One explicit logical `asOf` is propagated to every temporal contributor.
+5. Scope admission happens before local inventory data is returned.
+6. Independent enrichment failures preserve trustworthy base topology when the product contract permits partial results.
+7. Unknown/ambiguous contributor truth is represented explicitly, never converted into false absence.
+8. Catalogue visibility never substitutes for protected Requirement/Decision/Rule read contracts.
+9. A persistent composite read store/cache is not required by default; add one only from measured workload/consistency evidence.
 
 ## Consumer-owned ports
 
-The application composition should depend on narrow consumer-owned ports with semantics equivalent to:
+The composition depends on narrow ports equivalent to:
 
-- scope admission/discovery: list/check effective `ReadScopedConnectivity` scopes;
-- Resource membership: page effective Resource Scope Affiliations for one scope/asOf and batch resolve Resource presentation/realization;
-- ACC correlation: batch resolve Component Deployments bound to returned Resources and list exact DCS interactions involving those deployments;
-- Requirement summary: batch coarse selected-scope need/alignment by exact interaction/asOf;
-- Decision summary: batch coarse selected-scope effective Decision by exact subject/asOf;
-- Policy summary: batch coarse Rule existence/operational/effective facts by exact subject/asOf.
+| Need | Semantic provider |
+|---|---|
+| discover/admit `ReadScopedConnectivity` scopes | Authority Management |
+| page effective local Resource references by scope/asOf | Resource Catalogue |
+| batch Resource presentation/endpoint realization | Resource Catalogue |
+| batch Component Deployments bound to local Resources | Application Communication Catalogue |
+| batch exact DCS interactions for those deployments | Application Communication Catalogue |
+| coarse Requirement/currentness/alignment by exact interaction | Connectivity Requirements / Alignment composition |
+| coarse effective final Decision by exact subject/scope/asOf | Connectivity Decision |
+| coarse Rule existence/state/effectiveness by exact subject/asOf | Access Policy |
 
-Names above describe responsibilities, not mandatory class/API names.
+Port names are implementation-local. Their responsibilities and ownership boundaries are not.
 
-No composition adapter may bypass these contracts with cross-module SQL joins.
+No adapter may replace these contracts with cross-module SQL joins.
 
 ## Evaluation order
 
-Recommended read order:
+Recommended read flow:
 
 1. authenticate actor outside the composition;
 2. validate offset-aware `asOf`;
-3. admit selected scope through `ReadScopedConnectivity`;
-4. page local Resources from Resource Catalogue scope affiliation;
-5. enrich local Resource realization;
+3. admit the selected scope through `ReadScopedConnectivity`;
+4. page local Resources through Resource Catalogue scope affiliation;
+5. batch-enrich local Resource presentation/realization;
 6. correlate effective ACC deployment bindings;
 7. expand exact ACC interactions for local Component Deployments;
 8. resolve remote Resource bindings/realization;
-9. enrich Need / Decision / Policy summaries independently.
+9. enrich Need, Decision and Policy summaries independently.
 
-Failure before step 4 returns no local inventory data.
+Failure before local Resource admission returns no local inventory data.
 
-Failures in later independent enrichments should preserve trustworthy base rows and mark only affected dimensions unresolved/unknown where the requirement contract permits partial results.
+Failure in a later independent enrichment may keep trustworthy Resource/Component/interaction rows and mark only the affected dimension unavailable/unknown when allowed by the requirement contract.
 
-## Query shape
+## Paging and batching
 
-Conceptual query:
+Top-level paging is over effective local Resources so a Resource group is not split across pages.
 
-    actor from authenticated session
-    selected responsibility scope
-    explicit offset-aware asOf
-    top-level Resource paging
-    search/filter/sort
+Potentially unbounded child/enrichment operations must be server-bounded and batch-oriented.
 
-Conceptual result:
+The current ACC adapter applies a hard safety bound of 2000 rows to each child-enrichment batch. Exceeding that bound yields explicit partial/unavailable enrichment rather than silent truncation.
 
-    local Resources
-      -> endpoints
-      -> Component Deployments
-          -> connectivity relationships
-              -> remote Component
-              -> remote Resources
-              -> access summary
-              -> Need summary
-              -> Decision summary
-              -> Policy summary
-              -> Realization summary later
+Avoid N+1 owner calls where a bounded batch contract preserves the same semantics.
 
-This is architecture meaning, not a transport DTO contract.
+Search/filter/sort must not change semantic ownership or silently exclude required child data without an explicit product contract.
 
-## Pagination and read-model strategy
+## Read-model strategy
 
-The first implementation should optimize for a minimal useful owner workspace, not for a generic graph query engine.
+The first implementation computes the inventory from owner facts at read time.
 
-Requirements:
+A dedicated persisted read model may be introduced only when evidence establishes a material need such as:
+- measured query latency/volume;
+- source availability isolation;
+- repeatable snapshot needs not satisfied by current ports.
 
-- server-bounded result size;
-- top-level paging is over effective local Resources;
-- Resource group rows are never split across top-level pages;
-- child collections may be separately bounded only with explicit truncation/continuation metadata;
-- the first I16A adapter applies a hard safety bound of 2000 rows to each ACC child-enrichment batch; exceeding the bound returns that enrichment as unavailable/partial rather than silently truncating it;
-- server-side search/filter for potentially unbounded catalogues;
-- stable paging semantics at one asOf;
-- no N+1 remote owner calls where a bounded batch port can preserve the same semantics;
-- fail-soft presentation enrichment may fall back to stable IDs only where the underlying authorized business result is already known;
-- no persistent read-store/cache is required by this document. Introduce one only if measured workload or consistency requirements justify it.
+If introduced, it remains derived projection state with explicit freshness/provenance; it does not become authoritative peer business truth.
 
-## Add Connectivity command boundary
+## Request access orchestration boundary
 
-The Connectivity workspace may start Add Connectivity with local scope/Resource/Component already fixed.
+The current executable action starts only from an existing exact ACC-known interaction.
 
-The command path must reuse existing accepted application/domain semantics instead of writing directly to Requirements/Decision/Access Policy persistence.
+The Web/application layer may orchestrate:
 
-The exact orchestration may evolve, but it must preserve:
+```text
+reuse selected scope + exact interaction
+    -> declare/reuse Connectivity Requirement
+    -> submit exact Access Rule Proposal
+    -> consume Decision
+    -> materialize/resolve Allowed Rule
+```
 
-    Required != Authorized
-    Proposal != Decision
-    Decision != Access Rule
+The orchestration must call existing application/domain commands. It must not write directly to Requirement, Decision or Access Policy persistence.
 
-If decision acquisition is asynchronous, the persistent/process semantics must be accepted before a waiting state is represented.
+It preserves:
+- `Required != Authorized`;
+- Proposal != Decision;
+- Decision != Access Rule.
 
-## First implementation cut
+No persistent Access Request/process state is introduced by this composition.
 
-Recommended I16A cut:
+A Component with no ACC-known exact interaction cannot enter this command path until an accepted ACC/application capability supplies a trusted exact remote/DCS subject.
 
-1. implement Resource Scope Affiliation + ReadScopedConnectivity core contracts from accepted WP-01 semantics;
-2. implement read-only Scoped Connectivity Inventory;
-3. expose HTTP read contract;
-4. build Connectivity tree-grid;
-5. add relationship details;
-6. add contextual Add Connectivity using accepted existing flows;
-7. defer durable waiting workflow to I16B unless semantic closure is completed earlier.
+## Runtime boundary
+
+Current runtime realization is:
+
+```text
+Web
+  -> authenticated FastAPI outer adapter
+  -> Scoped Connectivity Inventory application composition
+  -> module-owned adapters/ports
+  -> module-owned PostgreSQL repositories
+```
+
+Transport DTOs, SQL schema and React state do not define the composition's semantic contract.
 
 ## Non-goals
 
-- cross-context repository joins;
-- new Connectivity bounded context;
-- generic CMDB graph;
-- fine-grained catalogue visibility;
-- device/provider execution;
-- realization claims before later roadmap contexts.
+- new Connectivity Bounded Context;
+- cross-module persistence joins;
+- generic graph/CMDB engine;
+- duplicated Requirement/Decision/Rule details;
+- generic distributed query platform;
+- persistent read store without evidence;
+- vendor/device execution semantics.
+
+## Canonical references
+
+- product contract: `docs/requirements/scoped-connectivity-inventory.md`;
+- owner semantics: `docs/domain/semantic-ownership.md`, `docs/domain/resource-role-model.md`;
+- cross-cutting architecture: `docs/architecture/current-architecture.md`;
+- runtime/API details: `docs/engineering/http-api-contract.md`.
