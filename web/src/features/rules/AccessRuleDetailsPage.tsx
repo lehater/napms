@@ -155,14 +155,14 @@ export function AccessRuleDetailsPage({
       </div>
 
       <header className="mb-6">
-        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
+        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#5F6B7D]">
           Access Policy / Rule Details
         </div>
         <h1 className="break-all text-[28px] font-bold tracking-tight text-[#172033]">
           {ruleId}
         </h1>
         {detail ? (
-          <p className="mt-2 text-sm text-[#64748B]">
+          <p className="mt-2 text-sm text-[#5F6B7D]">
             {displayName(
               detail.rule.catalogue?.sourceDisplayName,
               detail.rule.semanticIdentity.sourceComponentDeploymentId,
@@ -209,7 +209,7 @@ export function AccessRuleDetailsPage({
       ) : null}
 
       {loading && !detail ? (
-        <div className="rounded-lg border border-[#E2E8F0] bg-white p-8 text-sm text-[#64748B]">
+        <div className="rounded-lg border border-[#E2E8F0] bg-white p-8 text-sm text-[#5F6B7D]">
           Loading Access Rule…
         </div>
       ) : detail ? (
@@ -222,7 +222,7 @@ export function AccessRuleDetailsPage({
                 </h2>
                 <div className="mt-3 flex items-center gap-3">
                   <StatusBadge value={detail.rule.operationalState} />
-                  <span className="text-xs text-[#64748B]">
+                  <span className="text-xs text-[#5F6B7D]">
                     mutation: {detail.capabilities.setOperationalState}
                   </span>
                 </div>
@@ -241,11 +241,11 @@ export function AccessRuleDetailsPage({
                 <h2 className="text-base font-semibold text-[#172033]">
                   EffectiveWindow
                 </h2>
-                <p className="mt-1 text-sm text-[#64748B]">
+                <p className="mt-1 text-sm text-[#5F6B7D]">
                   Half-open interval: start ≤ asOf &lt; end. No window means no
                   time-window restriction.
                 </p>
-                <div className="mt-2 text-xs text-[#64748B]">
+                <div className="mt-2 text-xs text-[#5F6B7D]">
                   mutation: {detail.capabilities.setEffectiveWindow}
                 </div>
               </div>
@@ -303,7 +303,7 @@ export function AccessRuleDetailsPage({
             </h2>
             <dl className="mt-4 grid gap-4 text-sm lg:grid-cols-2">
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Source Component Deployment
                 </dt>
                 <dd className="mt-1">
@@ -314,7 +314,7 @@ export function AccessRuleDetailsPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Destination Component Deployment
                 </dt>
                 <dd className="mt-1">
@@ -325,7 +325,7 @@ export function AccessRuleDetailsPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   DCS revision
                 </dt>
                 <dd className="mt-1">
@@ -334,7 +334,7 @@ export function AccessRuleDetailsPage({
                     id={detail.rule.semanticIdentity.dcsContractRevisionId}
                   />
                   {(detail.rule.catalogue?.trafficAlternatives.length ?? 0) > 0 ? (
-                    <div className="mt-2 grid gap-1 text-xs text-[#64748B]">
+                    <div className="mt-2 grid gap-1 text-xs text-[#5F6B7D]">
                       {detail.rule.catalogue?.trafficAlternatives.map(
                         (alternative, index) => (
                           <div key={index}>{trafficAlternativeText(alternative)}</div>
@@ -345,13 +345,13 @@ export function AccessRuleDetailsPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Governance scope
                 </dt>
                 <dd className="mt-1">{detail.rule.governanceScope}</dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Decision reference
                 </dt>
                 <dd className="mt-1 break-all font-mono">
@@ -359,7 +359,7 @@ export function AccessRuleDetailsPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Effective window
                 </dt>
                 <dd className="mt-1">
@@ -377,19 +377,19 @@ export function AccessRuleDetailsPage({
             </h2>
             <dl className="mt-4 grid gap-4 text-sm lg:grid-cols-2">
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Actor
                 </dt>
                 <dd className="mt-1">{detail.rule.proposalProvenance.actorId}</dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Effective time
                 </dt>
                 <dd className="mt-1">{detail.rule.proposalProvenance.effectiveTime}</dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Authority reference
                 </dt>
                 <dd className="mt-1 break-all font-mono">
@@ -397,7 +397,7 @@ export function AccessRuleDetailsPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+                <dt className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                   Catalogue reference
                 </dt>
                 <dd className="mt-1 break-all font-mono">
@@ -410,13 +410,13 @@ export function AccessRuleDetailsPage({
           <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 md:p-6">
             <h2 className="text-base font-semibold text-[#172033]">State history</h2>
             {detail.rule.stateHistory.length === 0 ? (
-              <p className="mt-3 text-sm text-[#64748B]">
+              <p className="mt-3 text-sm text-[#5F6B7D]">
                 No operational-state transitions have been recorded.
               </p>
             ) : (
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full min-w-[760px] text-left text-sm">
-                  <thead className="text-xs uppercase tracking-wide text-[#64748B]">
+                  <thead className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                     <tr>
                       <th className="pb-3 font-semibold">Transition</th>
                       <th className="pb-3 font-semibold">Actor</th>
@@ -451,13 +451,13 @@ export function AccessRuleDetailsPage({
               EffectiveWindow history
             </h2>
             {detail.rule.effectiveWindowHistory.length === 0 ? (
-              <p className="mt-3 text-sm text-[#64748B]">
+              <p className="mt-3 text-sm text-[#5F6B7D]">
                 No EffectiveWindow changes have been recorded.
               </p>
             ) : (
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full min-w-[880px] text-left text-sm">
-                  <thead className="text-xs uppercase tracking-wide text-[#64748B]">
+                  <thead className="text-xs uppercase tracking-wide text-[#5F6B7D]">
                     <tr>
                       <th className="pb-3 font-semibold">Previous</th>
                       <th className="pb-3 font-semibold">New</th>
