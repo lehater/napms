@@ -21,7 +21,7 @@ def _config(environment="local-dev"):
     )
 
 
-def test_local_dev_http_composition_builds_without_decision_domain_model():
+def test_local_dev_http_composition_builds_without_deterministic_decision_adapter():
     app = build_local_dev_http_api(config=_config(), readiness_probe=lambda: True)
 
     assert app.title == "NAPMS API"

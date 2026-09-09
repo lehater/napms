@@ -27,6 +27,8 @@ def test_local_demo_seed_uses_actor_for_all_current_authority_actions():
     ]
     assert {row[2] for row in authority_rows} == {
         "ProposeConnectivity",
+        "DecideConnectivity",
+        "ReadConnectivityDecision",
         "ReadAccessRule",
         "SetRuleOperationalState",
         "SetRuleEffectiveWindow",

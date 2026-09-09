@@ -464,11 +464,10 @@ export function ComposeConnectivityPage() {
               Decision boundary
             </div>
             <p className="mt-2 text-sm leading-6 text-[#64748B]">
-              In local-dev, structurally valid and authorized proposals use the explicit
-              <code className="mx-1 rounded bg-[#F1F5F9] px-1 py-0.5 text-xs">
-                local-dev:allowed
-              </code>
-              decision adapter.
+              Access proposals consume one durable final Connectivity Decision
+              selected by exact interaction, governance scope, and proposal time.
+              Record the final Decision in Decisions first; missing, expired, or
+              ambiguous Decision truth remains fail-closed.
             </p>
           </section>
 

@@ -20,6 +20,8 @@ _VALID_FROM = datetime(2020, 1, 1, tzinfo=timezone.utc)
 
 _AUTHORITY_ACTIONS = (
     "ProposeConnectivity",
+    "DecideConnectivity",
+    "ReadConnectivityDecision",
     "ReadAccessRule",
     "SetRuleOperationalState",
     "SetRuleEffectiveWindow",
