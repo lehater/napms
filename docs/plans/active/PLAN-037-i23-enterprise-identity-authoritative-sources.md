@@ -1,6 +1,6 @@
 # PLAN-037 — I23 Optional Integration Extension Skeleton
 
-Status: `active — verification`.
+Status: `active — verification`
 
 Date: 2026-09-10.
 
