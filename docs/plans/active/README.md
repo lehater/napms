@@ -10,11 +10,10 @@ Current task: WP3 — integrate durable Decision summary into the existing I16A 
 
 Read first:
 - `docs/plans/active/PLAN-016B-i16b-connectivity-decision-runtime.md`
-- `docs/requirements/scoped-connectivity-inventory.md`
 - `docs/architecture/scoped-connectivity-inventory.md`
 - `docs/architecture/connectivity-decision-boundary.md`
 
-Expand only into current Scoped Connectivity ports/adapters/composition and Decision selection code required by WP3.
+Expand only into `docs/requirements/scoped-connectivity-inventory.md`, current Scoped Connectivity ports/adapters/composition and Decision persistence code when a concrete WP3 question requires it.
 
 ## Blockers
 
