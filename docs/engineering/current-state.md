@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I16B Connectivity Decision Runtime and Workflow accepted and implemented; I17 Technical Access Evidence is the next roadmap increment`.
+Status: `I17 Technical Access Evidence Core accepted and implemented; I18 Technical-to-Domain Access Resolution is the next roadmap increment`.
 
 Date: 2026-09-09.
 
@@ -21,7 +21,7 @@ This file is a capability snapshot, not an increment-by-increment changelog. Det
 | Connectivity Decision | accepted first-class bounded context | PostgreSQL-backed immutable final Decision runtime with exact subject/scope/time selection, supersession and fail-closed persistence semantics | Decisions workspace plus coarse Decision state in Connectivity |
 | Policy export / normalization | accepted | coherent snapshot + vendor-neutral normalized policy JSON | Normalized Policy |
 | Scoped Connectivity Inventory | accepted owner-preserving product/application composition | framework-free read composition with module-owned PostgreSQL adapters, including durable coarse Decision enrichment; no independent persistence | primary post-login Connectivity workspace |
-| Technical Access Evidence | strategic future context | not implemented | none |
+| Technical Access Evidence | accepted Tactical DDD | framework-free Domain/Application/Ports + TAE-owned PostgreSQL + strict local JSON import adapter + dedicated composition record/readback; no public TAE transport | none |
 | Network Enforcement Placement | strategic future context | not implemented | none |
 | Access Policy Realization | strategic future context | not implemented | none |
 
@@ -57,6 +57,8 @@ This remains a local/development topology, not a production deployment claim.
 - Requirement-to-Policy Alignment is derived composition, not peer persisted business truth.
 - authenticated actor identity comes from the server/session boundary; request payloads do not establish actor identity.
 - business authority and catalogue visibility are distinct concerns.
+- technical evidence is not authorization, desired policy, current/fresh truth or domain-resolution truth;
+- source-qualified evidence time remains distinct from NAPMS recording time;
 - technical realization changes do not silently redefine domain identity.
 - Legacy/MSSQL and vendor/device execution are not current product dependencies.
 
@@ -64,15 +66,22 @@ This remains a local/development topology, not a production deployment claim.
 
 No implementation plan is currently selected.
 
-I16B Connectivity Decision Runtime and Workflow is complete and absorbed into canonical product, architecture and engineering truth. The implemented runtime now provides:
-- durable immutable final `Allowed | NotAllowed` Decisions with validity, reason/evidence, provenance and supersession;
-- independent `DecideConnectivity` and `ReadConnectivityDecision` authority;
-- Access Policy selection by exact subject + governance scope + logical time;
-- coarse Decision enrichment in Scoped Connectivity without protected-detail leakage;
-- authenticated Decision record/list/detail Web/HTTP workflows;
-- a local Docker journey using real durable Decisions rather than deterministic allow plumbing.
+I17 Technical Access Evidence Core is complete and absorbed into canonical product/domain/architecture/engineering truth. The implemented core now provides:
+- immutable source-qualified Technical Access Evidence Sets and duplicate-preserving entries;
+- accepted `Configured | TrafficDerived | Imported` evidence kinds without authorization semantics;
+- explicit source/scope/capture identity plus `Unknown | Instant | Window` Evidence Time distinct from `RecordedAt`;
+- source-neutral address/protocol/port normalization with fail-closed ambiguity handling;
+- source + capture retry/idempotency identity and explicit conflicting-capture / commit-unknown outcomes;
+- TAE-owned append-only PostgreSQL persistence with corrupt-state fail-closed hydration;
+- one strict local JSON import adapter and dedicated PostgreSQL composition record/readback path;
+- executable proof that evidence recording creates neither Access Rules nor Connectivity Decisions;
+- no current/fresh selection, technical-to-domain resolution, enforcement placement or reconciliation semantics.
 
-The roadmap next increment is I17 Technical Access Evidence Core. It has not yet been selected for execution, so there is no active `PLAN-*.md`.
+There is intentionally no public TAE HTTP/Web surface or human Authority Management workflow in I17.
+
+I16B Connectivity Decision Runtime and Workflow, including the later accepted Decisions frontend workspace, is also complete and absorbed into canonical truth.
+
+The roadmap next increment is I18 — Technical-to-Domain Access Resolution. It is not yet selected for execution, so there is no active `PLAN-*.md`.
 
 ## Canonical references
 

@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline; I16B complete, I17 next`.
+Status: `accepted ordered sequencing baseline; I17 complete, I18 next`.
 
 Date: 2026-09-09.
 
@@ -28,18 +28,18 @@ The roadmap may be refined when new accepted domain evidence changes boundaries 
 ## Baseline
 
 Completed:
-- I1-I16B;
+- I1-I17;
 - Wave 1 proposal -> Connectivity Decision seam -> Access Rule -> effective desired policy -> coherent normalized policy;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
 - Dockerized local runtime;
-- human-readable catalogue UX.
+- human-readable catalogue UX;
+- Technical Access Evidence Tactical DDD, durable source-qualified persistence and strict local/import proof.
 
 Wave 1 intentionally stopped before Connectivity Requirements runtime participation; I13 now closes the first Connectivity Requirements core/runtime/workspace slice.
 
 Still deferred:
 - Network Enforcement Placement;
-- Technical Access Evidence;
 - Access Policy Realization/reconciliation;
 - vendor rendering;
 - device/provider execution;
@@ -47,7 +47,7 @@ Still deferred:
 
 ## Ordered increments
 
-### Completed increments — I13 through I16B
+### Completed increments — I13 through I17
 
 Status: `done / absorbed into canonical truth`.
 
@@ -56,12 +56,13 @@ Status: `done / absorbed into canonical truth`.
 - I15 — Connectivity Decision Domain Closure: first-class final Decision semantics, authority, validity, reason/provenance and supersession; ADR-005 supersedes the historical deferred port.
 - I16A — Scoped Connectivity Workspace Foundation: Resource Scope Affiliation, `ReadScopedConnectivity`, owner-preserving inventory composition, authenticated HTTP read surface, resource-centric Web workspace and contextual Request access for existing exact ACC interactions.
 - I16B — Connectivity Decision Runtime and Workflow: durable immutable Decision persistence/selection, independent Decide/Read authority, Access Policy and Scoped Connectivity integration, authorized Decision Web/HTTP workspace, and local Docker runtime without deterministic allow plumbing.
+- I17 — Technical Access Evidence Core: accepted Tactical DDD, immutable source-qualified evidence identity/time/provenance, framework-free core, TAE-owned PostgreSQL persistence, strict local/import normalization and dedicated durable record/readback proof without authorization or realization leakage.
 
 Detailed completed execution is not roadmap state. Durable outcomes live in current requirements/domain/architecture/engineering artifacts; Git history preserves the execution record.
 
 ### I17 — Technical Access Evidence Core
 
-Status: `next; not yet selected for execution`.
+Status: `done / absorbed into canonical truth`.
 
 Goal:
 implement the accepted **Technical Access Evidence** bounded context.
@@ -79,7 +80,7 @@ NAPMS can persist/query technical evidence without treating evidence as authoriz
 
 ### I18 — Technical-to-Domain Access Resolution
 
-Status: `planned after I17`.
+Status: `next; not yet selected for execution`.
 
 Goal:
 implement the shared resolution capability inside **Access Policy Realization**.

@@ -1,6 +1,6 @@
 # Current target architecture
 
-Status: `accepted current target through I16B; I17 is the next roadmap increment`.
+Status: `accepted current target through I17; I18 is the next roadmap increment`.
 
 Date: 2026-09-09.
 
@@ -64,7 +64,8 @@ Current first-class contexts include:
 - Application Communication Catalogue;
 - Resource Catalogue;
 - Connectivity Requirements;
-- Connectivity Decision.
+- Connectivity Decision;
+- Technical Access Evidence.
 
 Current non-peer application/read compositions include:
 - Requirement-to-Policy Alignment;
@@ -73,7 +74,7 @@ Current non-peer application/read compositions include:
 
 Scoped Connectivity Inventory is implemented as an owner-preserving application composition with Resource Scope Affiliation, `ReadScopedConnectivity`, module-owned adapters and no independent persistence.
 
-Later roadmap contexts include Technical Access Evidence, Access Policy Realization and Network Enforcement Placement.
+Later roadmap contexts include Access Policy Realization and Network Enforcement Placement.
 
 Their exact runtime/deployment decomposition remains evidence-driven.
 
@@ -120,6 +121,34 @@ Access Policy consumes a consumer-owned effective Decision projection and contin
 Scoped Connectivity consumes only the accepted coarse `Allowed | NotAllowed | NoFinalDecision | Unknown` Decision summary. Detailed reason/evidence/provenance remains behind independent `ReadConnectivityDecision` authority.
 
 Normal local composition uses the durable Decision runtime; no deterministic allow adapter is selected by the product journey.
+
+## Technical Access Evidence
+
+Technical Access Evidence is a first-class bounded context owning immutable source-qualified technical evidence, not authorization or realization truth.
+
+The implemented I17 boundary is:
+
+```text
+strict source/import adapter
+  -> source-neutral RecordEvidenceSet
+  -> framework-free TAE Application/Domain
+  -> TAE-owned PostgreSQL repository/schema
+```
+
+Architecture rules:
+- TAE Domain/Application imports no peer bounded context and no infrastructure framework;
+- one Evidence Set represents one immutable source capture/import episode;
+- source + capture reference is retry/idempotency identity;
+- source evidence time is distinct from NAPMS RecordedAt;
+- duplicate source entries remain evidence and are not content-deduplicated;
+- persistence is append-only and fails closed on corrupt/uncertain state;
+- source-specific syntax/parser/provider mechanics remain adapters;
+- no current/fresh winner, authorization, domain interaction mapping, enforcement placement or desired-vs-configured reconciliation is computed by TAE;
+- the first local JSON import path is trusted composition plumbing, not a public human API or Authority Management workflow;
+- TAE uses a dedicated PostgreSQL composition scope so ordinary HTTP requests do not allocate an unused TAE connection;
+- strict local JSON parsing rejects duplicate object fields and unsupported fields rather than accepting ambiguous last-write-wins source syntax.
+
+Access Policy Realization may consume TAE in I18 through a consumer-owned projection/port; TAE must not depend on that future consumer.
 
 ## Coherent policy export
 
