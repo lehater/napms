@@ -34,10 +34,10 @@ When `Current` is not `none`, `docs/plans/active/README.md` must make these fiel
 - `Current:`
 - `Goal:`
 - `Current task:`
-- `Working set:`
-- `Blockers:`
-- `Gate:`
-- `Next:`
+- `## Working set`
+- `## Blockers`
+- `## Gate`
+- `## Next`
 
 Working mode / primary Skill and a compact accepted-facts section are encouraged when they reduce rediscovery.
 
