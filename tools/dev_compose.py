@@ -146,6 +146,69 @@ def authenticated_smoke(
             )
         interaction = items[0]
 
+    connectivity_query = urllib.parse.urlencode(
+        {
+            "scope": "local-demo",
+            "asOf": "2026-09-09T12:00:00+00:00",
+            "page": 1,
+            "pageSize": 50,
+        }
+    )
+    connectivity_url = f"{base_url}/api/v1/connectivity?{connectivity_query}"
+
+    with opener.open(connectivity_url, timeout=5) as response:
+        connectivity = json.load(response)
+        items = connectivity.get("items") or []
+        if len(items) != 1:
+            raise RuntimeError(
+                "Scoped Connectivity must expose exactly the local demo Resource"
+            )
+        local = items[0]
+        if local["resource"].get("resourceReference") != "local-demo-source":
+            raise RuntimeError(
+                "Scoped Connectivity local Resource derivation is incorrect"
+            )
+        components = local.get("components") or []
+        if len(components) != 1:
+            raise RuntimeError(
+                "Scoped Connectivity local Component binding is unavailable"
+            )
+        relationships = components[0].get("relationships") or []
+        if len(relationships) != 1:
+            raise RuntimeError(
+                "Scoped Connectivity exact interaction is unavailable"
+            )
+        relationship = relationships[0]
+        if relationship.get("direction") != "Outgoing":
+            raise RuntimeError(
+                "Scoped Connectivity local-relative direction is incorrect"
+            )
+        remote_resources = relationship.get("remoteResources") or []
+        if (
+            len(remote_resources) != 1
+            or remote_resources[0].get("resourceReference")
+            != "local-demo-destination"
+        ):
+            raise RuntimeError(
+                "Scoped Connectivity foreign remote Resource is unavailable"
+            )
+        if relationship["need"].get("current") != "None":
+            raise RuntimeError(
+                "initial Scoped Connectivity Need must be absent"
+            )
+        if relationship["policy"].get("ruleExists") != "No":
+            raise RuntimeError(
+                "initial Scoped Connectivity Policy must have no Rule"
+            )
+        if relationship["decision"].get("state") != "Unknown":
+            raise RuntimeError(
+                "I16A deferred Decision summary must remain Unknown"
+            )
+        if connectivity.get("partial") is not True:
+            raise RuntimeError(
+                "I16A inventory must remain partial while Decision read is deferred"
+            )
+
     declaration = urllib.request.Request(
         f"{base_url}/api/v1/connectivity-requirements",
         method="POST",
@@ -237,6 +300,30 @@ def authenticated_smoke(
         if alignment.get("status") != "Covered":
             raise RuntimeError(
                 "effective exact Access Rule must cover Connectivity Requirement"
+            )
+
+
+    with opener.open(connectivity_url, timeout=5) as response:
+        connectivity = json.load(response)
+        relationship = (
+            connectivity["items"][0]["components"][0]["relationships"][0]
+        )
+        if relationship["need"].get("current") != "Required":
+            raise RuntimeError(
+                "Scoped Connectivity must reflect the current Requirement"
+            )
+        if relationship["need"].get("coverage") != "Covered":
+            raise RuntimeError(
+                "Scoped Connectivity must reflect Requirement policy coverage"
+            )
+        policy = relationship["policy"]
+        if (
+            policy.get("ruleExists") != "Yes"
+            or policy.get("operationalState") != "Active"
+            or policy.get("effectiveAtAsOf") != "Yes"
+        ):
+            raise RuntimeError(
+                "Scoped Connectivity must reflect effective Access Policy"
             )
 
     state_change = urllib.request.Request(
