@@ -8,15 +8,17 @@ Date: 2026-09-08.
 
 `Submit valid proposal -> authority/catalogue ports -> exact Allowed decision port -> Access Policy materialize-or-resolve -> transactional unique Rule -> return RuleId + Active`, with idempotent/concurrent duplicate proof.
 
-## Canonical G4 artifacts
+## Historical G4 artifacts
 
-- `wave1-walking-skeleton.md`;
-- `wave1-access-policy-tactical-model.md`;
-- `walking-skeleton-implementation-contracts.md`;
-- `walking-skeleton-acceptance-pack.md`;
-- `walking-skeleton-engineering-readiness.md`;
-- `walking-skeleton-transition.md`;
-- `wave1-first-implementation-backlog.md`.
+The detailed PLAN-028 walking-skeleton/readiness packets were absorbed into durable domain, requirements, architecture, code and executable evidence and are no longer retained as working-tree execution documents. Git history is the archive for those packets.
+
+Durable successors include:
+- `docs/domain/access-policy/tactical-model.md`;
+- `docs/requirements/wave1-product-requirements.md`;
+- `docs/requirements/wave1-semantic-contracts.md`;
+- `docs/decisions/ADR-001-wave1-modular-application.md`;
+- `docs/decisions/ADR-002-wave1-coherent-export-snapshot.md`;
+- current implementation and executable evidence under `src/` and `tests/`.
 
 ## Readiness challenge
 
