@@ -4,37 +4,39 @@ Current: `PLAN-016B-i16b-connectivity-decision-runtime.md`
 
 Goal: replace the transitional local Decision provider with the accepted durable Connectivity Decision runtime while preserving the completed I16A architecture.
 
-Current task: WP3 — integrate durable Decision summary into the existing I16A Scoped Connectivity Inventory without leaking protected Decision detail.
+Current task: WP4 — expose authorized durable Decision participant record/list/detail runtime without introducing a pending workflow state.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-016B-i16b-connectivity-decision-runtime.md`
-- `docs/architecture/scoped-connectivity-inventory.md`
 - `docs/architecture/connectivity-decision-boundary.md`
+- `docs/engineering/http-api-contract.md`
 
-Expand only into `docs/requirements/scoped-connectivity-inventory.md`, current Scoped Connectivity ports/adapters/composition and Decision persistence code when a concrete WP3 question requires it.
+Expand only into current Decision application use cases, Authority/ACC adapters, FastAPI runtime/composition and Decision HTTP acceptance tests required by WP4.
 
 ## Blockers
 
-None. PR #26 remains historical implementation evidence only; it has no I16A Scoped Connectivity integration to copy.
+None. The accepted model owns only final `Allowed | NotAllowed`; no pending/approval queue state may be introduced for UI convenience.
 
 ## Gate
 
-WP2 green evidence on commit `d3d70b0ad4bcd65adf4333dcb381ba8e011072c2`:
-- core gate #83 — success;
-- postgres persistence gate #68 — success;
-- docker local runtime gate #42 — success;
-- harness gate #88 — success.
+WP3 green evidence on commit `da9fd0036412e7419b2a61c2dacb871c1e85efb3`:
+- core gate #85 — success;
+- postgres persistence gate #70 — success;
+- docker local runtime gate #44 — success;
+- harness gate #90 — success.
 
-WP2 now proves:
-- exact Access Policy Decision lookup by subject + governance scope + logical time;
-- durable Allowed Decision materializes an Access Rule;
-- durable NotAllowed creates no Rule;
-- missing/expired Decision fails closed as DecisionUnknown;
-- ambiguous/not-found Decision selection maps to the consumer-owned Unknown projection;
-- the transitional local adapter conforms to the same exact consumer contract without becoming durable truth.
+WP3 now proves:
+- Scoped Connectivity obtains Decision summaries from the durable Decision BC;
+- exact subjects are batch-read under selected responsibility scope + logical asOf;
+- Allowed/NotAllowed are projected as coarse final outcomes;
+- authoritative absence is NoFinalDecision;
+- ambiguity is Unknown;
+- persistence failure marks only the Decision enrichment unavailable/partial;
+- protected Decision ID/reason/evidence/actor/provenance do not cross the coarse inventory contract;
+- the I16A deferred Decision adapter has been removed.
 
 ## Next
 
-Execute WP3 only: replace `DeferredConnectivityDecisionSummaryAdapter` with a real Decision summary adapter in current I16A composition, preserve coarse `Allowed | NotAllowed | NoFinalDecision | Unknown` semantics, and prove no protected reason/provenance detail crosses the inventory boundary.
+Execute WP4 only: wire Decision authority and ACC subject adapters into current composition, expose authorized final record/list/detail HTTP contracts, preserve server-owned actor/time/provenance, and keep Web/participant workspace out of scope until runtime gates are green.

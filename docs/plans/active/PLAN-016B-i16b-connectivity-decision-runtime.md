@@ -98,7 +98,7 @@ one durable effective Decision can be recorded and selected without Access Polic
 Exit:
 proposal -> durable Decision -> Access Rule works on current main without `local-dev:allowed` for that path.
 
-### WP3 — I16A Scoped Connectivity integration
+### WP3 — I16A Scoped Connectivity integration — done
 
 - replace `DeferredConnectivityDecisionSummaryAdapter` with a real Decision summary adapter;
 - preserve independent protected Decision detail authority;
@@ -191,4 +191,4 @@ None at the semantic/design level. Gate failures discovered during implementatio
 
 ## Next
 
-Execute WP3 I16A Scoped Connectivity integration: replace the deferred Decision summary with a Decision-BC adapter that exposes only the coarse inventory contract. Do not start participant HTTP or Web workflow before WP3 is green.
+Execute WP4 Decision participant HTTP/runtime boundary. Keep Web work out of scope until the authorized record/list/detail runtime is green.
