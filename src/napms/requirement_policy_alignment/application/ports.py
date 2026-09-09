@@ -31,6 +31,26 @@ class PolicyCoverageOutcome(str, Enum):
     UNKNOWN = "Unknown"
 
 
+@dataclass(frozen=True, slots=True)
+class RequirementAlignmentSnapshotPage:
+    snapshots: tuple[RequirementAlignmentSnapshot, ...]
+    page: int
+    page_size: int
+    has_more: bool
+    ambiguous_scopes: tuple[str, ...] = ()
+
+
+class RequirementAlignmentListOutcome(str, Enum):
+    AVAILABLE = "Available"
+    UNAVAILABLE = "Unavailable"
+
+
+@dataclass(frozen=True, slots=True)
+class RequirementAlignmentListResult:
+    outcome: RequirementAlignmentListOutcome
+    page: RequirementAlignmentSnapshotPage | None = None
+
+
 class AuthorizedRequirementAlignmentPort(Protocol):
     def get_for_alignment(
         self,
@@ -48,3 +68,15 @@ class EffectivePolicyCoveragePort(Protocol):
         semantic_identity: AlignmentSemanticIdentity,
         as_of: datetime,
     ) -> PolicyCoverageOutcome: ...
+
+
+
+class AuthorizedRequirementAlignmentListPort(Protocol):
+    def list_for_alignment(
+        self,
+        *,
+        actor_id: str,
+        as_of: datetime,
+        page: int,
+        page_size: int,
+    ) -> RequirementAlignmentListResult: ...
