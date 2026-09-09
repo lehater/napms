@@ -1,6 +1,7 @@
 import {
   ClipboardList,
   Clock3,
+  Gavel,
   ListTree,
   LogOut,
   Network,
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/Button"
 export type NavKey =
   | "connectivity"
   | "requirements"
+  | "decisions"
   | "rules"
   | "effective"
   | "normalized"
@@ -50,7 +52,7 @@ export function AppShell({
 
         <nav className="flex-1 p-3" aria-label="Primary navigation">
           <div className="px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
-            Connectivity
+            Overview
           </div>
           <button
             type="button"
@@ -61,6 +63,9 @@ export function AppShell({
             <Network className="size-4" aria-hidden="true" />
             Connectivity
           </button>
+          <div className="px-3 pb-2 pt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
+            Policy
+          </div>
           <button
             type="button"
             className={navClass("requirements")}
@@ -70,10 +75,15 @@ export function AppShell({
             <ClipboardList className="size-4" aria-hidden="true" />
             Needs
           </button>
-
-          <div className="px-3 pb-2 pt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
-            Policy
-          </div>
+          <button
+            type="button"
+            className={navClass("decisions")}
+            aria-current={activeNav === "decisions" ? "page" : undefined}
+            onClick={() => onNavigate("decisions")}
+          >
+            <Gavel className="size-4" aria-hidden="true" />
+            Decisions
+          </button>
           <button
             type="button"
             className={navClass("rules")}
@@ -114,6 +124,7 @@ export function AppShell({
               [
                 ["connectivity", "Connectivity"],
                 ["requirements", "Needs"],
+                ["decisions", "Decisions"],
                 ["rules", "Rules"],
                 ["effective", "Effective"],
                 ["normalized", "Export"],

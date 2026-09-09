@@ -5,6 +5,8 @@ import { AppShell } from "@/components/layout/AppShell"
 import { LoginPage } from "@/features/auth/LoginPage"
 import { ConnectivityPage } from "@/features/connectivity/ConnectivityPage"
 import type { RequestConnectivityContext } from "@/features/connectivity/model"
+import { ConnectivityDecisionDetailsPage } from "@/features/decisions/ConnectivityDecisionDetailsPage"
+import { ConnectivityDecisionsPage } from "@/features/decisions/ConnectivityDecisionsPage"
 import { RequestConnectivityPage } from "@/features/connectivity/RequestConnectivityPage"
 import { EffectivePolicyPage } from "@/features/policy/EffectivePolicyPage"
 import { NormalizedPolicyPage } from "@/features/policy/NormalizedPolicyPage"
@@ -23,6 +25,8 @@ type Route =
     }
   | { kind: "requirements"; page: number }
   | { kind: "requirement"; requirementId: string }
+  | { kind: "decisions"; page: number }
+  | { kind: "decision"; decisionId: string }
   | { kind: "compose" }
   | { kind: "rules"; page: number }
   | { kind: "rule"; ruleId: string }
@@ -31,6 +35,23 @@ type Route =
 
 function readRoute(): Route {
   const hash = window.location.hash.replace(/^#/, "")
+  if (hash.startsWith("connectivity-decisions/")) {
+    const decisionId = hash.slice("connectivity-decisions/".length).split("?")[0]
+    if (decisionId) {
+      return {
+        kind: "decision",
+        decisionId: decodeURIComponent(decisionId),
+      }
+    }
+  }
+  if (hash.startsWith("connectivity-decisions")) {
+    const query = hash.includes("?") ? hash.split("?")[1] : ""
+    const page = Number(new URLSearchParams(query).get("page") ?? "1")
+    return {
+      kind: "decisions",
+      page: Number.isInteger(page) && page > 0 ? page : 1,
+    }
+  }
   if (hash.startsWith("connectivity-needs/")) {
     const requirementId = hash.slice("connectivity-needs/".length).split("?")[0]
     if (requirementId) {
@@ -168,7 +189,9 @@ export function App() {
       ? "connectivity"
       : route.kind === "requirements" || route.kind === "requirement"
         ? "requirements"
-        : route.kind === "effective"
+        : route.kind === "decisions" || route.kind === "decision"
+          ? "decisions"
+          : route.kind === "effective"
           ? "effective"
           : route.kind === "normalized"
             ? "normalized"
@@ -184,8 +207,10 @@ export function App() {
             ? "connectivity?page=1"
             : target === "requirements"
               ? "connectivity-needs?page=1"
-              : target === "rules"
-                ? "access-rules?page=1"
+              : target === "decisions"
+                ? "connectivity-decisions?page=1"
+                : target === "rules"
+                  ? "access-rules?page=1"
                 : target === "effective"
                   ? "effective-policy"
                   : "normalized-policy",
@@ -237,6 +262,28 @@ export function App() {
         <ConnectivityRequirementDetailsPage
           requirementId={route.requirementId}
           onBack={() => navigate("connectivity-needs?page=1")}
+        />
+      ) : route.kind === "decisions" ? (
+        <ConnectivityDecisionsPage
+          page={route.page}
+          onPageChange={(page) =>
+            navigate(`connectivity-decisions?page=${page}`)
+          }
+          onOpenDecision={(decisionId) =>
+            navigate(
+              `connectivity-decisions/${encodeURIComponent(decisionId)}`,
+            )
+          }
+        />
+      ) : route.kind === "decision" ? (
+        <ConnectivityDecisionDetailsPage
+          decisionId={route.decisionId}
+          onBack={() => navigate("connectivity-decisions?page=1")}
+          onOpenDecision={(decisionId) =>
+            navigate(
+              `connectivity-decisions/${encodeURIComponent(decisionId)}`,
+            )
+          }
         />
       ) : route.kind === "compose" ? (
         <ComposeConnectivityPage />
