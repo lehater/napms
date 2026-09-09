@@ -728,7 +728,10 @@ function ResourceRows({
                         dcsContractRevisionId:
                           relationship.semanticIdentity
                             .dcsContractRevisionId,
-                        needCurrent: relationship.need.current,
+                        needCurrent:
+                          relationship.need.current === "Required"
+                            ? "Required"
+                            : "None",
                       })
                     }
                   >
