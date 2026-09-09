@@ -40,7 +40,7 @@ export function CatalogueIdentity({
         {readable || shortId(id)}
       </div>
       {readable ? (
-        <div className="mt-0.5 font-mono text-[11px] text-[#64748B]">
+        <div className="mt-0.5 font-mono text-[11px] text-[#5F6B7D]">
           {shortId(id)}
         </div>
       ) : null}
