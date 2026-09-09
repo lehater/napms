@@ -16,9 +16,9 @@ Primary workflow: `.agents/skills/execute-work-package/SKILL.md`.
 
 Read first:
 - `docs/requirements/scoped-connectivity-inventory.md` — accepted inventory and contextual Request access semantics.
-- `web/AGENTS.md` — Web adapter constraints and validation command.
 
 Expand only if the current gate requires it:
+- `web/AGENTS.md`
 - `docs/plans/active/PLAN-029-i16a-scoped-connectivity-workspace.md`
 - `docs/engineering/http-api-contract.md`
 - `docs/architecture/scoped-connectivity-inventory.md`
