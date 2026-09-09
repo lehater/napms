@@ -496,3 +496,60 @@ export async function retireConnectivityRequirement(
     { method: "POST" },
   )
 }
+
+
+export type RequirementPolicyAlignmentStatus =
+  | "Covered"
+  | "Uncovered"
+  | "NotCurrent"
+  | "Unknown"
+
+export type RequirementPolicyAlignmentItem = {
+  requirementId: string
+  asOf?: string
+  status: RequirementPolicyAlignmentStatus
+  semanticIdentity: {
+    sourceComponentDeploymentId: string
+    destinationComponentDeploymentId: string
+    dcsContractRevisionId: string
+  }
+}
+
+export type RequirementPolicyAlignmentPage = {
+  asOf: string
+  items: RequirementPolicyAlignmentItem[]
+  page: number
+  pageSize: number
+  hasMore: boolean
+  ambiguousScopes: ProposalScope[]
+}
+
+export type RequirementPolicyAlignmentDetail =
+  RequirementPolicyAlignmentItem & {
+    asOf: string
+    requirementReadAuthorityReference: string | null
+  }
+
+export async function listConnectivityRequirementAlignment(
+  asOf: string,
+  page: number,
+): Promise<RequirementPolicyAlignmentPage> {
+  const params = new URLSearchParams({
+    asOf,
+    page: String(page),
+    pageSize: "50",
+  })
+  return request(
+    `/api/v1/connectivity-requirements/alignment?${params}`,
+  )
+}
+
+export async function getConnectivityRequirementAlignment(
+  requirementId: string,
+  asOf: string,
+): Promise<RequirementPolicyAlignmentDetail> {
+  const params = new URLSearchParams({ asOf })
+  return request(
+    `/api/v1/connectivity-requirements/${encodeURIComponent(requirementId)}/alignment?${params}`,
+  )
+}
