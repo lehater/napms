@@ -68,8 +68,6 @@ async function attachScreenshot(
   })
 }
 
-test.describe.configure({ mode: "serial" })
-
 test("login handles failure, success and logout through visible controls", async ({
   page,
 }, testInfo) => {
@@ -117,6 +115,45 @@ test("desktop navigation exposes every implemented workspace without layout over
       `desktop-${buttonName.toLowerCase().replaceAll(" ", "-")}`,
     )
   }
+})
+
+test("stable shell states match visual regression baselines", async ({
+  page,
+}) => {
+  await page.goto("/")
+  await expect(page.getByRole("heading", { name: "Sign in to NAPMS" })).toBeVisible()
+  await expect(page).toHaveScreenshot("login-desktop.png", {
+    animations: "disabled",
+    maxDiffPixelRatio: 0.001,
+  })
+
+  await page.getByLabel("Login").fill(loginName)
+  await page.getByLabel("Password").fill(password)
+  await page.getByRole("button", { name: "Sign in" }).click()
+  await expect(
+    page.getByRole("heading", { name: "Compose Connectivity" }),
+  ).toBeVisible()
+  await expect(page).toHaveScreenshot("compose-desktop.png", {
+    animations: "disabled",
+    maxDiffPixelRatio: 0.001,
+  })
+
+  await page.getByRole("button", { name: "Access Rules", exact: true }).click()
+  await expect(page.getByRole("heading", { name: "Access Rules" })).toBeVisible()
+  await expect(page).toHaveScreenshot("access-rules-empty-desktop.png", {
+    animations: "disabled",
+    maxDiffPixelRatio: 0.001,
+  })
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.getByRole("button", { name: "Compose", exact: true }).click()
+  await expect(
+    page.getByRole("heading", { name: "Compose Connectivity" }),
+  ).toBeVisible()
+  await expect(page).toHaveScreenshot("compose-mobile.png", {
+    animations: "disabled",
+    maxDiffPixelRatio: 0.001,
+  })
 })
 
 test("critical user journey persists Requirement and Access Rule mutations after reload", async ({
