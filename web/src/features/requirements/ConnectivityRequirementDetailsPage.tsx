@@ -4,11 +4,14 @@ import { ArrowLeft, CircleAlert } from "lucide-react"
 import {
   ApiError,
   getConnectivityRequirement,
+  getConnectivityRequirementAlignment,
   retireConnectivityRequirement,
   setConnectivityRequirementApplicability,
   setConnectivityRequirementJustification,
   type ConnectivityRequirementDetailResponse,
   type RequirementApplicability,
+  type RequirementPolicyAlignmentDetail,
+  type RequirementPolicyAlignmentStatus,
 } from "@/api"
 import {
   CatalogueIdentity,
@@ -18,9 +21,36 @@ import {
 import { Button } from "@/components/ui/Button"
 import { Field, Select } from "@/components/ui/Field"
 import {
+  nowLocalDateTimeInput,
   toLocalDateTimeInput,
   toOffsetAwareIso,
 } from "@/lib/datetime"
+
+function alignmentClasses(status: RequirementPolicyAlignmentStatus) {
+  switch (status) {
+    case "Covered":
+      return "border-green-200 bg-green-50 text-green-800"
+    case "Uncovered":
+      return "border-amber-200 bg-amber-50 text-amber-900"
+    case "NotCurrent":
+      return "border-slate-200 bg-slate-100 text-slate-700"
+    case "Unknown":
+      return "border-red-200 bg-red-50 text-red-800"
+  }
+}
+
+function alignmentExplanation(status: RequirementPolicyAlignmentStatus) {
+  switch (status) {
+    case "Covered":
+      return "An exact matching Access Rule contributes effective desired policy at this time."
+    case "Uncovered":
+      return "No exact matching Access Rule contributes effective desired policy at this time. This does not mean Denied."
+    case "NotCurrent":
+      return "The Requirement is retired or outside its applicability at this time."
+    case "Unknown":
+      return "Authoritative policy coverage cannot be established safely at this time."
+  }
+}
 
 function applicabilityText(value: RequirementApplicability) {
   return value.kind === "Ongoing"
@@ -41,6 +71,14 @@ export function ConnectivityRequirementDetailsPage({
   const [mutating, setMutating] = useState(false)
   const [error, setError] = useState<ApiError | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+
+  const [alignmentAsOf, setAlignmentAsOf] = useState(
+    nowLocalDateTimeInput(),
+  )
+  const [alignment, setAlignment] =
+    useState<RequirementPolicyAlignmentDetail | null>(null)
+  const [loadingAlignment, setLoadingAlignment] = useState(true)
+  const [alignmentError, setAlignmentError] = useState<ApiError | null>(null)
 
   const [applicabilityKind, setApplicabilityKind] =
     useState<"Ongoing" | "AbsoluteWindow">("Ongoing")
@@ -83,9 +121,37 @@ export function ConnectivityRequirementDetailsPage({
     }
   }
 
+  async function loadAlignment() {
+    setLoadingAlignment(true)
+    setAlignmentError(null)
+    try {
+      const asOf = toOffsetAwareIso(alignmentAsOf)
+      setAlignment(
+        await getConnectivityRequirementAlignment(requirementId, asOf),
+      )
+    } catch (caught) {
+      setAlignment(null)
+      setAlignmentError(
+        caught instanceof ApiError
+          ? caught
+          : new ApiError(
+              422,
+              "InvalidAsOf",
+              "Select a valid alignment date and time.",
+            ),
+      )
+    } finally {
+      setLoadingAlignment(false)
+    }
+  }
+
   useEffect(() => {
     void load()
   }, [requirementId])
+
+  useEffect(() => {
+    void loadAlignment()
+  }, [requirementId, alignmentAsOf])
 
   async function saveApplicability() {
     if (
@@ -130,7 +196,7 @@ export function ConnectivityRequirementDetailsPage({
           ? "Requirement applicability updated."
           : "Requirement already has this applicability.",
       )
-      await load()
+      await Promise.all([load(), loadAlignment()])
     } catch (caught) {
       setError(
         caught instanceof ApiError
@@ -168,7 +234,7 @@ export function ConnectivityRequirementDetailsPage({
           ? "Requirement justification updated."
           : "Requirement already has this justification.",
       )
-      await load()
+      await Promise.all([load(), loadAlignment()])
     } catch (caught) {
       setError(
         caught instanceof ApiError
@@ -203,7 +269,7 @@ export function ConnectivityRequirementDetailsPage({
           ? "Connectivity Requirement retired."
           : "Connectivity Requirement is already retired.",
       )
-      await load()
+      await Promise.all([load(), loadAlignment()])
     } catch (caught) {
       setError(
         caught instanceof ApiError
@@ -293,6 +359,53 @@ export function ConnectivityRequirementDetailsPage({
         </div>
       ) : requirement && detail && interaction ? (
         <div className="grid gap-6">
+          <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 md:p-6">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 className="text-base font-semibold text-[#172033]">
+                  Policy coverage
+                </h2>
+                <p className="mt-1 max-w-3xl text-sm text-[#64748B]">
+                  Derived from this Requirement and effective Access Policy at one explicit logical time. It does not report configured/observed access.
+                </p>
+              </div>
+              <Field label="Alignment as of">
+                <input
+                  type="datetime-local"
+                  step="1"
+                  value={alignmentAsOf}
+                  onChange={(event) => setAlignmentAsOf(event.target.value)}
+                  className="min-h-10 rounded-md border border-[#CBD5E1] px-3 py-2 text-sm"
+                />
+              </Field>
+            </div>
+
+            {alignmentError ? (
+              <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+                <div className="font-semibold">{alignmentError.code}</div>
+                <div className="mt-1">{alignmentError.message}</div>
+              </div>
+            ) : loadingAlignment ? (
+              <div className="mt-4 text-sm text-[#64748B]">
+                Loading policy coverage…
+              </div>
+            ) : alignment ? (
+              <div className="mt-4">
+                <span
+                  className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${alignmentClasses(alignment.status)}`}
+                >
+                  {alignment.status}
+                </span>
+                <p className="mt-3 text-sm text-[#475569]">
+                  {alignmentExplanation(alignment.status)}
+                </p>
+                <div className="mt-2 text-xs text-[#64748B]">
+                  asOf {alignment.asOf}
+                </div>
+              </div>
+            ) : null}
+          </section>
+
           <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 md:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
