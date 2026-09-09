@@ -591,3 +591,9 @@ Given a coarse decision summary is allowed by an accepted inventory contract but
 ### G — no invented waiting state
 
 Given proposal submission has no final Decision and no accepted persistent workflow model exists, the UI must not persist/display `Pending`, `Approved`, `Rejected` or `Under review` as business state.
+
+## Trace
+
+- Strategic ownership: `docs/domain/semantic-ownership.md`, `docs/domain/resource-role-model.md`, `docs/domain/capabilities.md`.
+- Architecture: `docs/architecture/scoped-connectivity-inventory.md`.
+- Executable examples: `docs/requirements/scoped-connectivity-inventory-acceptance-examples.md`.
