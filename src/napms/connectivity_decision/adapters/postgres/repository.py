@@ -234,8 +234,20 @@ class PostgresConnectivityDecisionRepository:
         self,
         decision: ConnectivityDecision,
     ) -> bool:
+        upper_bound_clause = ""
+        params = [
+            decision.governance_scope,
+            decision.subject.source_component_deployment_id,
+            decision.subject.destination_component_deployment_id,
+            decision.subject.dcs_contract_revision_id,
+            decision.validity.valid_from,
+        ]
+        if decision.validity.valid_until is not None:
+            upper_bound_clause = "AND future.valid_from < %s"
+            params.append(decision.validity.valid_until)
+
         row = self._connection.execute(
-            """
+            f"""
             SELECT future.decision_id
             FROM napms_connectivity_decision.connectivity_decisions future
             WHERE future.governance_scope = %s
@@ -243,7 +255,7 @@ class PostgresConnectivityDecisionRepository:
               AND future.destination_component_deployment_id = %s
               AND future.dcs_contract_revision_id = %s
               AND future.valid_from > %s
-              AND (%s IS NULL OR future.valid_from < %s)
+              {upper_bound_clause}
               AND NOT EXISTS (
                   SELECT 1
                   FROM napms_connectivity_decision.connectivity_decisions successor
@@ -252,15 +264,7 @@ class PostgresConnectivityDecisionRepository:
               )
             LIMIT 1
             """,
-            (
-                decision.governance_scope,
-                decision.subject.source_component_deployment_id,
-                decision.subject.destination_component_deployment_id,
-                decision.subject.dcs_contract_revision_id,
-                decision.validity.valid_from,
-                decision.validity.valid_until,
-                decision.validity.valid_until,
-            ),
+            tuple(params),
         ).fetchone()
         return row is not None
 
