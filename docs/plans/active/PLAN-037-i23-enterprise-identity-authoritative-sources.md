@@ -1,6 +1,6 @@
 # PLAN-037 — I23 Enterprise Identity and Authoritative Source Integration
 
-Status: `active — WP1 domain/architecture re-entry`.
+Status: `active — WP2 enterprise authentication seam`.
 
 Date: 2026-09-10.
 
@@ -37,12 +37,13 @@ Authoritative source adapters translate source-owned records into explicit impor
 
 ### WP1 — Re-enter identity/source boundaries
 
-Status: `active`.
+Status: `done`.
 
-Artifact:
-- accepted I23 requirements/architecture boundary describing authentication, actor mapping, Authority/ACC/RC source ownership and fail-closed source semantics.
+Artifacts:
+- `docs/requirements/enterprise-identity-authoritative-sources.md`;
+- `docs/architecture/enterprise-identity-authoritative-sources-boundary.md`.
 
-Exit:
+Exit achieved:
 - identity != authority is explicit;
 - NAPMS actor mapping responsibility is explicit;
 - source import vs domain ownership is explicit;
@@ -50,21 +51,21 @@ Exit:
 
 ### WP2 — Enterprise authentication seam
 
-Status: `blocked on WP1`.
+Status: `active`.
 
 Implement a protocol-facing authentication boundary that can consume a verified external identity result without coupling domain/application modules to OIDC libraries or token formats. Preserve the local authenticator only as an explicitly local/test adapter.
 
 First executable proof may use a deterministic in-process verified-identity stub when no concrete IdP configuration is available.
 
 Exit:
-- HTTP runtime consumes an authentication/session port rather than local-password-specific behavior;
+- HTTP/runtime composition can consume an authentication abstraction rather than depending semantically on local-password behavior;
 - external subject -> NAPMS actor mapping is explicit and deterministic;
-- unmapped/ambiguous identity fails closed;
+- unmapped/ambiguous/unknown identity fails closed;
 - authority remains a separate Authority Management query.
 
 ### WP3 — Authority source integration contract
 
-Status: `blocked on WP1`.
+Status: `unblocked after WP1; queued behind WP2`.
 
 Define source-neutral ingestion/synchronization semantics for Authority Management without converting IdP claims/groups directly into authorization decisions.
 
@@ -75,7 +76,7 @@ Exit:
 
 ### WP4 — ACC and Resource Catalogue source integration contracts
 
-Status: `blocked on WP1`.
+Status: `unblocked after WP1; queued behind WP2/WP3`.
 
 Define owner-preserving import/synchronization adapters for ACC and Resource Catalogue.
 
@@ -118,8 +119,8 @@ Run relevant repository/Web/PostgreSQL gates, absorb durable truth into requirem
 
 ## Current gate
 
-WP1 is open. Concrete provider adapters are closed because the repository contains no accepted concrete enterprise IdP/source selection.
+WP2 is open for source-neutral authentication and deterministic identity mapping. Concrete provider adapters remain closed because the repository contains no accepted concrete enterprise IdP/source selection.
 
 ## Next action
 
-Create the canonical I23 identity/source integration requirements and architecture boundary, then review it against current runtime authentication and Authority/ACC/RC ownership before opening WP2.
+Implement the verified-external-identity + actor-resolution seam and deterministic fail-closed proof, then review whether the existing HTTP dependency type can be generalized without changing the local UI contract.
