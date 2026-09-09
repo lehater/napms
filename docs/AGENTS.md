@@ -9,6 +9,7 @@ Apply root `AGENTS.md` first.
 - `architecture/` — current target architecture.
 - `decisions/` — consequential ADRs.
 - `engineering/` — engineering contracts/policies and implementation snapshots.
+- `ui/` — implementation-oriented UI guidance; product/domain semantics remain owned by requirements/domain.
 - `plans/active/` — current execution state only.
 - `baseline/` — accepted snapshots/provenance, not the primary place to edit current truth.
 - `process/` — reusable repository working protocols.
