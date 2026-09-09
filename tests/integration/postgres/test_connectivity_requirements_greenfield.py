@@ -189,10 +189,6 @@ def seed_greenfield(postgres_dsn):
         connection.commit()
 
 
-def declaration(id_factory):
-    return DeclareConnectivityRequirement
-
-
 def test_greenfield_connectivity_requirement_public_core_lifecycle_persists_restart(
     postgres_dsn,
     greenfield_config,
