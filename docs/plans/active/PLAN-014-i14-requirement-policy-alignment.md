@@ -26,7 +26,7 @@ I14 must not invent approval workflow, persist a peer Alignment aggregate, or tu
 
 ## Current stage
 
-**WP2 — Requirements and acceptance examples.**
+**WP4 — Executable core.**
 
 I13 is complete and absorbed. I14 starts from accepted Connectivity Requirement and Access Policy semantics. Working packet: `docs/plans/active/I14-WP1-alignment-decision-packet.md`.
 
@@ -101,7 +101,7 @@ an explicit, testable alignment truth table exists, including authority and fail
 
 ### WP2 — Requirements and acceptance examples
 
-Status: `active`.
+Status: `done`.
 
 Add executable examples for:
 - current applicable Requirement + effective matching Rule;
@@ -118,7 +118,7 @@ Add executable examples for:
 
 ### WP3 — Architecture and application ports
 
-Status: `planned`.
+Status: `done`.
 
 Define a non-peer alignment application composition:
 - CR read input remains CR-owned;
@@ -129,7 +129,7 @@ Define a non-peer alignment application composition:
 
 ### WP4 — Executable core
 
-Status: `planned`.
+Status: `active`.
 
 Implement the smallest framework-free alignment use case/read model and exhaustive authority/temporal tests.
 
@@ -190,4 +190,4 @@ No current owner/product blocker. Option A is accepted: Requirement read authori
 
 ## Next
 
-Complete WP2 requirements/truth-table acceptance examples, then define WP3 composition boundary and ports.
+Implement WP4 application-only alignment model/ports/use case and executable core/architecture tests; no HTTP/Web yet.
