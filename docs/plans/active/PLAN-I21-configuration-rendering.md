@@ -1,6 +1,6 @@
 # PLAN — I21 Configuration Rendering
 
-Status: `S1 accepted; S2/S3 implemented; S4 next`.
+Status: `S1-S4 implemented; S5 final gate next`.
 
 ## Goal
 
@@ -60,19 +60,23 @@ Implemented:
 - adversarial broadening detection;
 - unsupported-protocol no-partial-artifact proof.
 
-Local test execution is not available from the current connector environment; hosted PR CI remains the executable gate.
-
 ### S4 — Provenance/composition proof
 
-Status: `next`.
+Status: `implemented; final gate pending`.
 
-Compose existing I20 desired-policy derivation into I21 rendering through owner-preserving application composition. Carry accepted target, intent and renderer provenance into the result. No persistence is added.
+Implemented:
+- existing PostgreSQL-backed APR owner composition now exposes `RenderConfiguration` wired to the Cisco ASA renderer;
+- rendering consumes the already-derived I20 `DesiredEnforcementPolicy` and adds no peer-owner persistence access;
+- PostgreSQL integration proof derives desired intent from Access Policy/RC/ACC/NEP owner state, renders Cisco ASA ACL, projects the result back into normalized regions and requires exact equality;
+- integration proof requires statement-level rule/interaction/placement provenance and verifies Access Rule, NEP capture and TAE evidence counts remain unchanged by derive+render.
 
-Exit: one executable integration proof derives desired intent and renders it without Access Rule/Decision/TAE/NEP side effects.
+Local test execution is not available from the current connector environment; hosted PR CI remains the executable gate.
 
 ### S5 — Final gate and absorption
 
-Run applicable repository checks and hosted final PR gate. Absorb durable outcomes into canonical domain/requirements/architecture/engineering artifacts, remove this completed PLAN, update the active capsule, mark I21 complete in the roadmap and promote I22 without selecting it.
+Status: `next`.
+
+Run hosted final PR gate. If green, absorb durable outcomes into canonical engineering/roadmap state, remove this completed PLAN, update the active capsule, mark I21 complete and promote I22 without selecting it.
 
 ## Explicitly out of scope
 
@@ -85,4 +89,4 @@ Run applicable repository checks and hosted final PR gate. Absorb durable outcom
 
 ## Immediate next action
 
-Execute S4 composition proof, then open/finalize the PR and use hosted CI as the final gate.
+Open the I21 PR, mark it ready for the hosted final gate, resolve any gate failures on the branch, then perform S5 absorption and squash merge.
