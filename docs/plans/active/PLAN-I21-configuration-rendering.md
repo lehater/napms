@@ -1,31 +1,25 @@
 # PLAN — I21 Configuration Rendering
 
-Status: `selected; domain re-entry first`.
+Status: `S1 accepted; S2/S3 implemented; S4 next`.
 
 ## Goal
 
 Translate accepted vendor-neutral `DesiredEnforcementIntent` into a target-specific configuration representation while preserving the exact desired traffic semantics and provenance established by Access Policy Realization.
 
-## Input baseline
+## Accepted S1 decisions
 
-I20 provides derived-on-demand desired enforcement intent with:
-- `EnforcementTarget = Logical Firewall + Enforcement Attachment`;
-- normalized technical region fragments;
-- Access Rule and Domain Interaction provenance;
-- placement provenance;
-- fail-closed derivation when material realization knowledge is incomplete.
+1. **Semantic ownership:** rendering remains a downstream capability inside Access Policy Realization; no new Bounded Context is justified.
+2. **First concrete target:** Cisco Secure Firewall ASA CLI extended ACL, renderer contract version `1`.
+3. **Artifact lifecycle:** rendered configuration is derived on demand in I21; no independent persistence/aggregate lifecycle.
+4. **Equivalence:** correctness is proven by independent projection of rendered ASA Permit statements back into normalized technical regions and comparison with desired regions.
+5. **First representation slice:** IPv4 + Permit + TCP/UDP + numeric exact/inclusive source/destination port ranges + exact CIDR/host decomposition.
+6. **Failure:** `Rendered | Unsupported | Unknown`; failed rendering exposes no partial executable-looking artifact.
+7. **Provenance:** statement output preserves target, rule, interaction, placement and renderer-contract references.
 
-I21 consumes this accepted output. It does not recompute authorization, domain resolution, placement or reconciliation.
-
-## P0 unknowns to resolve before implementation
-
-1. **Semantic ownership.** Decide whether rendering is a downstream capability inside Access Policy Realization or evidence requires a distinct Bounded Context. A renderer class/module alone is not evidence for a new context.
-2. **First concrete target.** Select one target/vendor representation from actual product need. Do not invent a production vendor contract merely to exercise the architecture.
-3. **Rendered artifact identity/lifecycle.** Decide whether a render is a value/result derived on demand or a durable artifact with independent identity/version/lifecycle.
-4. **Equivalence contract.** Define the normalized semantic projection used to prove that rendered configuration neither broadens nor narrows each desired technical region.
-5. **Representation constraints.** Establish accepted behavior for target limits, grouping, ordering, object naming/reuse and unsupported constructs.
-6. **Failure semantics.** Define fail-closed outcomes for unsupported/unrepresentable intent and partial rendering; no executable-looking artifact may be emitted as if complete when equivalence is unproven.
-7. **Provenance boundary.** Define the minimum provenance carried from desired intent through rendered output so I22 can execute/audit without reconstructing semantic ownership.
+Canonical owners:
+- `docs/domain/access-policy-realization/rendering-tactical-model.md`;
+- `docs/requirements/configuration-rendering.md`;
+- `docs/architecture/configuration-rendering-boundary.md`.
 
 ## Guardrails
 
@@ -40,30 +34,39 @@ I21 consumes this accepted output. It does not recompute authorization, domain r
 
 ### S1 — Domain/requirements/architecture re-entry
 
-Read the smallest canonical set for Access Policy Realization and I21. Classify each P0 item as accepted / hypothesis / unknown / conflict. Resolve material unknowns through the repository decision protocol. Update the highest owning canonical artifacts first.
+Status: `done`.
 
-Exit: rendering ownership, first target, artifact semantics, equivalence and failure/provenance contracts are accepted.
+Accepted rendering ownership, Cisco ASA first target, derived artifact lifecycle, equivalence, failure and provenance contracts.
 
 ### S2 — Framework-free contracts and core
 
-Implement only the accepted semantic core:
-- consumer-facing render use case/port;
-- target-independent render request/result vocabulary where justified;
-- concrete target renderer behind the port;
-- explicit unsupported/unrepresentable result;
-- deterministic output for identical semantic input and renderer contract/version.
+Status: `implemented; final gate pending`.
 
-Exit: core tests prove deterministic rendering and fail-closed unsupported behavior without infrastructure or execution.
+Implemented:
+- APR `RenderStatus` / `RenderedConfiguration` / statement provenance model;
+- application-owned `ConfigurationRenderer` port;
+- `RenderConfiguration` use case;
+- Cisco ASA extended ACL outer adapter;
+- deterministic target/intents ordering;
+- fail-closed unsupported protocol/representation behavior.
 
 ### S3 — Semantics-equivalence proof
 
-Add an independent semantic projection/parser for the selected rendered representation where feasible; compare its normalized meaning with the I20 desired technical regions. The proof must detect broadening, narrowing and omitted intent.
+Status: `implemented; final gate pending`.
 
-Exit: positive and adversarial tests establish exact semantic equivalence for the supported first slice.
+Implemented:
+- independent ASA supported-subset semantic projector;
+- positive exact-region test;
+- adversarial broadening detection;
+- unsupported-protocol no-partial-artifact proof.
+
+Local test execution is not available from the current connector environment; hosted PR CI remains the executable gate.
 
 ### S4 — Provenance/composition proof
 
-Compose I20 desired-policy derivation into I21 rendering through owner-preserving application adapters. Carry accepted target, intent and renderer provenance into the result. Persistence is added only if S1 establishes an independent durable lifecycle.
+Status: `next`.
+
+Compose existing I20 desired-policy derivation into I21 rendering through owner-preserving application composition. Carry accepted target, intent and renderer provenance into the result. No persistence is added.
 
 Exit: one executable integration proof derives desired intent and renders it without Access Rule/Decision/TAE/NEP side effects.
 
@@ -76,9 +79,10 @@ Run applicable repository checks and hosted final PR gate. Absorb durable outcom
 - device/provider login, fetch, apply or post-check;
 - retry, rollback, idempotent mutation or concurrency control;
 - production credentials/secrets;
-- multi-vendor abstraction beyond evidence from the first concrete target;
+- FMC/FTD rendering in this first slice;
+- multi-vendor abstraction beyond the smallest stable port needed by the Cisco ASA first slice;
 - operator UI unless an accepted I21 requirement specifically needs a render preview.
 
 ## Immediate next action
 
-Execute S1. Do not start renderer code until the first concrete target and equivalence/failure contracts are accepted.
+Execute S4 composition proof, then open/finalize the PR and use hosted CI as the final gate.
