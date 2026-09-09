@@ -1,6 +1,6 @@
 # Current target architecture
 
-Status: `accepted current target through I19; I20 Desired-vs-Configured Reconciliation and Enforcement Policy Derivation is next`.
+Status: `accepted current target through I20; I21 Configuration Rendering is next`.
 
 Date: 2026-09-09.
 
@@ -76,7 +76,7 @@ Current non-peer application/read compositions include:
 
 Scoped Connectivity Inventory is implemented as an owner-preserving application composition with Resource Scope Affiliation, `ReadScopedConnectivity`, module-owned adapters and no independent persistence.
 
-Later roadmap stages extend Access Policy Realization with I20 reconciliation/policy derivation and then rendering/execution concerns. Runtime/deployment decomposition remains evidence-driven.
+I20 implements Access Policy Realization managed-scope desired/configured reconciliation through owner-preserving adapters and a PostgreSQL-backed owner composition, with no APR persistence. I21 rendering and I22 execution remain downstream. Runtime/deployment decomposition remains evidence-driven.
 
 ## Current runtime boundary
 
@@ -175,6 +175,42 @@ Architecture rules:
 - no I20 desired-vs-configured semantics, vendor rendering or execution enter I19.
 
 APR may consume NEP later through an APR-owned projection/port. NEP must not depend on APR to make that consumer work.
+
+## Access Policy Realization — I20 derivation/reconciliation
+
+The implemented I20 boundary remains framework-free APR Domain/Application with APR-owned ports and outer owner-preserving adapters.
+
+```text
+effective Access Policy + RC/ACC
+    -> APR-owned desired technical projection
+    -> shared I18 domain-resolution quality check
+    -> NEP placement projection
+    -> Desired Enforcement Intent by Logical Firewall + Enforcement Attachment
+
+explicit TAE Configured Evidence Set
+    + trusted same-managed-scope/source contract
+    -> source-specific effective-Permit projection
+    -> shared I18 configured-domain attribution
+    -> Configured Enforcement Snapshot
+
+desired vs configured
+    -> exact common/missing/extra
+    -> Satisfied | Drift | Ambiguous | Unknown
+    -> No-op | Add | Remove | Replace only when complete
+```
+
+Architecture rules:
+- one explicit `asOf`; first complete configured slice requires `EvidenceTime.Instant == asOf`;
+- TAE does not become a current/complete-policy service;
+- configured completeness and target/policy-partition equivalence come from an explicit consumer/source contract;
+- Enforcement Target preserves Logical Firewall + Enforcement Attachment granularity;
+- raw vendor Block/order/default/zone semantics are interpreted only by source-specific outer adapters capable of producing exact effective Permit regions;
+- I18 correspondence algebra is reused unchanged;
+- desired/configured reconciliation remains derived on demand with no APR persistence requirement;
+- the durable PostgreSQL proof composes existing Access Policy, RC/ACC, NEP and TAE owners through their repositories/use cases without cross-context SQL or copied APR truth;
+- I21 owns rendering and I22 owns device/provider operations.
+
+Feature contract: `docs/architecture/access-policy-realization-reconciliation-boundary.md`.
 
 ## Coherent policy export
 

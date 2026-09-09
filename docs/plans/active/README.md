@@ -1,11 +1,7 @@
 # Active execution
 
-Current: none
+Current: none.
 
-Next roadmap increment: `I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation` (not selected).
+I20 Desired-vs-Configured Reconciliation and Enforcement Policy Derivation is complete and absorbed into canonical truth.
 
-No implementation plan is currently selected.
-
-I19 Network Enforcement Placement is complete and absorbed into canonical truth.
-
-Start I20 only by creating a new active PLAN after re-reading the roadmap and resolving its Tactical DDD/realization/reconciliation unknowns. Do not pull I21 rendering or I22 execution semantics forward.
+Next roadmap increment: I21 — Configuration Rendering. It is not selected for execution.

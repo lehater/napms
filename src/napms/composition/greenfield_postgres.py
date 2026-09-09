@@ -121,6 +121,8 @@ class GreenfieldPostgresScope:
     catalogue_describer: DescribeDirectedInteractions
     application_projection: PolicyExportApplicationCatalogueAdapter
     resource_projection: PolicyExportResourceCatalogueAdapter
+    application_catalogue: PostgresApplicationCatalogueRepository
+    resource_catalogue: PostgresResourceCatalogueRepository
     access_rules: PostgresAccessRuleRepository
     dcs_decoder: JsonDcsProjectionCodec
     decision_authority: ConnectivityDecisionAuthorityAdapter
@@ -329,6 +331,8 @@ def open_greenfield_scope(
             catalogue_describer=catalogue_describer,
             application_projection=application_projection,
             resource_projection=resource_projection,
+            application_catalogue=application_repository,
+            resource_catalogue=resource_repository,
             access_rules=access_rules,
             dcs_decoder=JsonDcsProjectionCodec(),
             decision_authority=decision_authority,

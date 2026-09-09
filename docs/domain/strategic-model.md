@@ -2,7 +2,7 @@
 
 Status: `accepted living baseline`.
 
-Source baseline: DDD-BDM-010, extended by I13-I19 accepted domain closure.
+Source baseline: DDD-BDM-010, extended by I13-I20 accepted domain closure.
 
 This document defines model/language/responsibility boundaries. It does not define services, databases, teams or deployment units.
 
@@ -31,7 +31,7 @@ Wave 1 directly used:
 
 That seam was intentionally deferred during Wave 1 and is superseded by the I15 first-class Connectivity Decision context.
 
-## Current semantic participation through I19
+## Current semantic participation through I20
 
 Current accepted semantic owners participating in implemented product flow include:
 - Connectivity Requirements;
@@ -47,7 +47,9 @@ Technical Access Evidence has the I17 Tactical DDD, framework-free core, module-
 
 Access Policy Realization now has the I18 Technical-to-Domain Access Resolution slice: one framework-free consumer-independent coverage algebra over explicit TAE/RC/ACC projections, with exact remainder, ambiguity and predicate-relevant Unknown semantics and no independent persistence.
 
-Network Enforcement Placement now has the accepted I19 Tactical DDD baseline: exact endpoint-pair Traffic Relation, normalized ordered path Traversal Points, stable Logical Firewall identity, temporal provider correspondence, temporal Enforcement Attachments and fail-closed Enforcement Selection. I19 implementation is in progress; APR enforcement-policy derivation/reconciliation remains later I20 scope.
+Network Enforcement Placement has the implemented I19 Tactical DDD/runtime slice: exact endpoint-pair Traffic Relation, normalized ordered path Traversal Points, stable Logical Firewall identity, temporal provider correspondence, temporal Enforcement Attachments and fail-closed Enforcement Selection.
+
+Access Policy Realization now also has the implemented I20 derivation/reconciliation slice. Effective desired Access Policy + shared I18 domain resolution + NEP placement are correlated with explicitly selected configured evidence only through an exact managed reconciliation-scope/source contract. Complete Add/Remove/Replace/No-op claims require same-target/same-managed-partition correlation, exact time and trustworthy configured effective-policy completeness. The implementation remains derived on demand through owner-preserving adapters/owner-backed PostgreSQL composition with no APR persistence; I21 rendering and I22 execution remain downstream.
 
 ## I16A responsibility-scope relationship
 

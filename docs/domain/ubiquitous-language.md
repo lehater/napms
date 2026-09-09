@@ -355,22 +355,65 @@ Unknown
 Canonical technical region not resolved by known Domain Interaction overlap. With complete supported knowledge it is the exact set difference between the input predicate and all overlap witnesses. Under `Unknown`, remainder completeness is not claimed.
 
 ### Business-Optimal Enforcement Policy
-The enforcement-policy semantics that the domain considers correct/preferred for relevant enforcement points. "Optimal" is a business judgement, not mathematical global optimality.
+The enforcement-policy semantics that the domain considers correct/preferred for relevant enforcement points.
+
+For the first I20 slice, “optimal” means exact business-correct technical coverage with no silent broadening/narrowing plus canonical union/deduplication. It does not claim globally minimum rule count, vendor-object efficiency or execution ordering.
+
+### Enforcement Target
+I20 target at which desired/configured enforcement semantics are compared:
+
+```text
+Logical Firewall
++ Enforcement Attachment
+```
+
+Provider realization/path/traversal data is provenance, not target identity.
+
+### Managed Reconciliation Scope
+APR correlation value proving one Access Policy governance scope and one Enforcement Target are being compared with configured evidence from the same managed policy partition.
+
+It is not a TAE Source Scope, Authority Management scope or persisted aggregate. Complete comparison requires an explicit trusted source/scope contract; matching names or “same firewall” is insufficient.
+
+### Configured Enforcement Snapshot
+APR-owned projection of one explicitly selected TAE Configured capture plus its managed-scope/source contract.
+
+For a complete first-slice comparison it represents exact effective Permit regions for the same managed scope at `EvidenceTime.Instant(asOf)` and carries explicit completeness/evaluation provenance.
+
+TAE evidence alone does not imply this snapshot is current or complete.
 
 ### Policy Reconciliation
-Capability inside Access Policy Realization that determines satisfaction/uncertainty and required semantic change between desired enforcement semantics and configured evidence.
+Capability inside Access Policy Realization that compares canonical desired and configured effective Permit regions for one Managed Reconciliation Scope.
+
+Status:
+
+```text
+Satisfied
+Drift
+Ambiguous
+Unknown
+```
+
+Exact witnesses:
+
+```text
+common  = desired ∩ configured
+missing = desired - configured
+extra   = configured - desired
+```
 
 ### Required Semantic Change
 
 ```text
-Add
-Remove
-Replace
-No-op
+No-op    # missing empty, extra empty
+Add      # missing non-empty, extra empty
+Remove   # missing empty, extra non-empty
+Replace  # missing non-empty, extra non-empty
 ```
 
+The classification is vendor-neutral semantic delta. `Replace` does not promise one device/vendor replace operation; I21/I22 own rendering/execution mechanics.
+
 ### Policy Algebra
-Internal APR semantics for overlap, containment, coverage, equivalence, ordered effective regions, semantic difference and witnesses.
+Internal APR semantics for exact overlap, containment, coverage, equivalence, canonical union, semantic difference and witnesses.
 
 ## Scoped Connectivity Inventory
 

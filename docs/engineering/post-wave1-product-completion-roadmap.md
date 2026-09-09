@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline; I19 complete, I20 next`.
+Status: `accepted ordered sequencing baseline; I20 complete, I21 next`.
 
 Date: 2026-09-09.
 
@@ -28,7 +28,7 @@ The roadmap may be refined when new accepted domain evidence changes boundaries 
 ## Baseline
 
 Completed:
-- I1-I19;
+- I1-I20;
 - Wave 1 proposal -> Connectivity Decision seam -> Access Rule -> effective desired policy -> coherent normalized policy;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
@@ -39,14 +39,13 @@ Completed:
 Wave 1 intentionally stopped before Connectivity Requirements runtime participation; I13 now closes the first Connectivity Requirements core/runtime/workspace slice.
 
 Still deferred:
-- Access Policy Realization enforcement-policy derivation/reconciliation;
 - vendor rendering;
 - device/provider execution;
 - production identity/deployment/integration.
 
 ## Ordered increments
 
-### Completed increments — I13 through I19
+### Completed increments — I13 through I20
 
 Status: `done / absorbed into canonical truth`.
 
@@ -58,6 +57,7 @@ Status: `done / absorbed into canonical truth`.
 - I17 — Technical Access Evidence Core: accepted Tactical DDD, immutable source-qualified evidence identity/time/provenance, framework-free core, TAE-owned PostgreSQL persistence, strict local/import normalization and dedicated durable record/readback proof without authorization or realization leakage.
 - I18 — Technical-to-Domain Access Resolution: accepted consumer-independent APR correspondence algebra, exact remainder/ambiguity/Unknown semantics, predicate-aware RC/ACC + TAE adapters and durable PostgreSQL resolution proof without authorization, placement or reconciliation leakage.
 - I19 — Network Enforcement Placement: accepted exact endpoint-pair first slice, normalized forwarding/path knowledge, stable Logical Firewall identity, temporal provider correspondence/Enforcement Attachments, fail-closed placement selection and NEP-owned durable PostgreSQL proof without I20 reconciliation or vendor execution.
+- I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation: accepted APR-managed-scope/effective-Permit contract, exact desired/configured policy algebra, owner-preserving AP/RC/ACC/NEP/TAE adapters and durable PostgreSQL proof of No-op/Add/Remove/Replace with fail-closed uncertainty.
 
 Detailed completed execution is not roadmap state. Durable outcomes live in current requirements/domain/architecture/engineering artifacts; Git history preserves the execution record.
 
@@ -136,24 +136,34 @@ NAPMS can derive/explain enforcement placement for domain-attributable traffic w
 
 ### I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation
 
-Status: `next; not yet selected for execution`.
+Status: `done / absorbed into canonical truth`.
 
-Goal:
+Goal achieved:
 complete the central **Access Policy Realization** outcome.
 
-Expected outcomes:
-- derive the business-correct/preferred enforcement policy from desired Access Policy + placement;
-- compare desired realization against Technical Access Evidence;
-- classify semantic delta such as add/remove/replace/no-op only after Tactical DDD accepts the exact algebra;
-- expose extra/missing/partial/ambiguous configured access;
-- preserve exact domain/evidence/placement provenance.
+Accepted/implemented semantics:
+- derive vendor-neutral desired enforcement intent only from effective Access Policy + shared I18 domain resolution + complete NEP placement at explicit `asOf`;
+- preserve Enforcement Target identity as Logical Firewall + Enforcement Attachment;
+- compare only one explicitly selected TAE Configured capture whose source contract proves the same managed policy partition, effective Permit-set meaning, exact evidence time and completeness;
+- preserve exact canonical `common = D ∩ C`, `missing = D - C`, `extra = C - D` witnesses;
+- classify complete semantic delta as `No-op | Add | Remove | Replace`;
+- preserve `Satisfied | Drift | Ambiguous | Unknown` and fail closed on incomplete scope/time/source/evaluation/domain/placement knowledge;
+- reuse I18 Technical-to-Domain Resolution unchanged for desired quality and configured attribution.
 
-Exit:
-NAPMS can truthfully answer whether configured enforcement realizes desired policy and what semantic delta remains.
+Implemented:
+- framework-free APR Domain/Application/consumer-owned ports;
+- owner-preserving Access Policy/Policy Export, RC/ACC, NEP and TAE outer adapters with explicit correlation checks;
+- derived-on-demand desired/configured/reconciliation results with no APR persistence;
+- PostgreSQL composition over existing owner repositories/use cases;
+- hosted executable proof of No-op/Add/Remove/Replace, incomplete-contract Unknown and temporal NEP target movement;
+- no vendor rendering, provider/device mutation or public operator workflow.
+
+Exit achieved:
+NAPMS can truthfully answer whether complete configured effective-Permit evidence realizes desired policy for one proven managed enforcement scope and what exact semantic delta remains.
 
 ### I21 — Configuration Rendering
 
-Status: `planned after I20`.
+Status: `next; not yet selected for execution`.
 
 Goal:
 translate accepted vendor-neutral enforcement intent into target-specific configuration representation.

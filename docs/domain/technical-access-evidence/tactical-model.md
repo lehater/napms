@@ -338,26 +338,25 @@ Raw source payload persistence is not mandatory domain state. A source/provenanc
 
 ## Freshness, coverage and confidence disposition
 
-### Freshness — deferred
+### Freshness/currentness — consumer/source contract, not universal TAE state
 
-I17 first slice introduces no universal `Fresh | Stale` state and no TTL.
+TAE introduces no universal `Fresh | Stale` state, TTL or automatic current winner.
 
-Reason:
-freshness requires a consumer/source-specific policy about acceptable age. No such canonical threshold or policy currently exists.
+I20 resolves its first reconciliation need without changing that ownership: the consumer explicitly selects one Configured Evidence Set and a complete first-slice comparison requires `EvidenceTime.Instant == reconciliation asOf`.
 
-Revisit:
-- when I18 needs evidence selection for resolution; or
-- when the first concrete production source has an accepted freshness contract.
+`RecordedAt`, latest/nearest capture and age heuristics do not establish currentness.
 
-### Coverage — deferred as a quality conclusion
+Revisit TAE only when a concrete production source has an accepted source-qualified validity/currentness fact that must itself be preserved as evidence rather than interpreted by one consumer.
+
+### Coverage — consumer/source contract for I20, not universal TAE state
 
 `SourceScopeReference` records the boundary for which material was collected/reported.
 
-I17 does not infer `Complete | Partial` merely from having a scope reference or an empty/non-empty set.
+TAE still does not infer `Complete | Partial` merely from a scope reference or empty/non-empty set.
 
-Revisit:
-- when a source can authoritatively state capture completeness; or
-- when I20 reconciliation requires a trustworthy completeness claim.
+I20 requires a separate trusted Managed Reconciliation Scope/source contract before it can claim a selected configured capture is a complete **effective Permit set** for the exact target/policy partition. That completeness belongs to the reconciliation/source interpretation unless a future evidence source exposes an authoritative capture-completeness fact that TAE itself must preserve.
+
+An empty TAE set therefore remains only an empty evidence capture outside such an accepted consumer/source contract.
 
 ### Confidence — deferred
 
