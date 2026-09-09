@@ -12,11 +12,11 @@ Working mode: architecture-review + execute-work-package.
 
 Read first:
 - `docs/plans/active/PLAN-018-i18-technical-domain-access-resolution.md`
-- `docs/domain/access-policy-realization/tactical-model.md`
-- `docs/requirements/technical-domain-access-resolution-acceptance-examples.md`
 - `docs/architecture/access-policy-realization-resolution-boundary.md`
 
 Expand only if needed into:
+- `docs/domain/access-policy-realization/tactical-model.md`;
+- `docs/requirements/technical-domain-access-resolution-acceptance-examples.md`;
 - APR Domain/Application/adapters and their tests;
 - PostgreSQL greenfield I18 proof;
 - current-state/roadmap/strategic ownership;
