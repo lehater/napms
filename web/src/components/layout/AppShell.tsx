@@ -145,7 +145,7 @@ export function AppShell({
           <div className="ml-auto flex items-center gap-3">
             <div className="hidden text-right sm:block">
               <div className="text-sm font-semibold text-[#172033]">{actor.login}</div>
-              <div className="text-xs text-[#64748B]">{actor.actorId}</div>
+              <div className="text-xs text-[#5F6B7D]">{actor.actorId}</div>
             </div>
             <Button variant="ghost" onClick={() => void onLogout()}>
               <LogOut className="size-4" aria-hidden="true" />
