@@ -186,12 +186,23 @@ function RemoteSide({
   )
 }
 
+export type ConnectivityRequestContext = {
+  scope: string
+  dependentComponentDeploymentId: string
+  sourceComponentDeploymentId: string
+  destinationComponentDeploymentId: string
+  dcsContractRevisionId: string
+  needCurrent: "Required" | "None"
+}
+
 export function ConnectivityPage({
   page,
   onPageChange,
+  onRequestAccess,
 }: {
   page: number
   onPageChange: (page: number) => void
+  onRequestAccess: (context: ConnectivityRequestContext) => void
 }) {
   const [asOf, setAsOf] = useState(() => new Date().toISOString())
   const [scopes, setScopes] = useState<string[]>([])
@@ -523,6 +534,8 @@ export function ConnectivityPage({
                   <ResourceRows
                     key={resourceItem.resource.resourceReference}
                     item={resourceItem}
+                    scope={scope}
+                    onRequestAccess={onRequestAccess}
                   />
                 ))}
               </tbody>
@@ -558,8 +571,12 @@ export function ConnectivityPage({
 
 function ResourceRows({
   item,
+  scope,
+  onRequestAccess,
 }: {
   item: ScopedConnectivityInventoryPage["items"][number]
+  scope: string
+  onRequestAccess: (context: ConnectivityRequestContext) => void
 }) {
   const resource = item.resource
   const endpointSummary = endpointText(resource)
@@ -567,7 +584,7 @@ function ResourceRows({
   return (
     <>
       <tr className="border-t border-[#CBD5E1] bg-[#F8FAFC]">
-        <td colSpan={7} className="px-4 py-3">
+        <td colSpan={8} className="px-4 py-3">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <div className="font-semibold text-[#172033]">
               {resource.resourceReference}
@@ -594,13 +611,13 @@ function ResourceRows({
 
       {!item.componentsKnown ? (
         <tr className="border-t border-[#E2E8F0]">
-          <td colSpan={7} className="px-8 py-4 text-sm text-[#64748B]">
+          <td colSpan={8} className="px-8 py-4 text-sm text-[#64748B]">
             Component binding information is unavailable.
           </td>
         </tr>
       ) : item.components.length === 0 ? (
         <tr className="border-t border-[#E2E8F0]">
-          <td colSpan={7} className="px-8 py-4 text-sm text-[#64748B]">
+          <td colSpan={8} className="px-8 py-4 text-sm text-[#64748B]">
             No Component Deployment is currently bound to this Resource.
           </td>
         </tr>
@@ -627,7 +644,7 @@ function ResourceRows({
                 className="border-t border-[#E2E8F0] align-top"
               >
                 <td className="px-4 py-3 pl-8">{componentCell}</td>
-                <td colSpan={6} className="px-4 py-3 text-[#64748B]">
+                <td colSpan={7} className="px-4 py-3 text-[#64748B]">
                   Connectivity relationship data is unavailable.
                 </td>
               </tr>,
@@ -641,7 +658,7 @@ function ResourceRows({
                 className="border-t border-[#E2E8F0] align-top"
               >
                 <td className="px-4 py-3 pl-8">{componentCell}</td>
-                <td colSpan={6} className="px-4 py-3 text-[#64748B]">
+                <td colSpan={7} className="px-4 py-3 text-[#64748B]">
                   No connectivity is declared for this Component.
                 </td>
               </tr>,
@@ -695,6 +712,39 @@ function ResourceRows({
               </td>
               <td className="px-4 py-3">
                 <PolicyCell value={relationship.policy} />
+              </td>
+              <td className="px-4 py-3">
+                {relationship.policy.ruleExists === "No" &&
+                relationship.need.current !== "Unknown" &&
+                relationship.need.historicalOnly !== true &&
+                relationship.decision.state !== "NotAllowed" &&
+                relationship.decision.state !== "NoFinalDecision" ? (
+                  <button
+                    type="button"
+                    className="text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8]"
+                    onClick={() =>
+                      onRequestAccess({
+                        scope,
+                        dependentComponentDeploymentId:
+                          component.componentDeploymentId,
+                        sourceComponentDeploymentId:
+                          relationship.semanticIdentity
+                            .sourceComponentDeploymentId,
+                        destinationComponentDeploymentId:
+                          relationship.semanticIdentity
+                            .destinationComponentDeploymentId,
+                        dcsContractRevisionId:
+                          relationship.semanticIdentity
+                            .dcsContractRevisionId,
+                        needCurrent: relationship.need.current,
+                      })
+                    }
+                  >
+                    Request access
+                  </button>
+                ) : (
+                  <span className="text-xs text-[#94A3B8]">—</span>
+                )}
               </td>
             </tr>
           ))
