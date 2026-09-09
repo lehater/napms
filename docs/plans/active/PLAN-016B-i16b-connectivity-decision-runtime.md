@@ -120,7 +120,7 @@ the primary Connectivity workspace receives real `Allowed | NotAllowed | NoFinal
 Exit:
 an authorized participant can record and inspect durable final Decisions through the current authenticated runtime.
 
-### WP5 — Current Web integration
+### WP5 — Current Web integration — done
 
 - implement Decisions as a specialized workspace under the current I16A information architecture;
 - present final outcome, reason/provenance, validity and history;
@@ -191,4 +191,4 @@ None at the semantic/design level. Gate failures discovered during implementatio
 
 ## Next
 
-Execute WP5 Current Web integration against the green Decision participant runtime. Preserve Connectivity as the primary post-login workspace and do not resurrect the historical Compose-first shell.
+Execute WP6 Local composition and demo closure: seed usable Decide/Read authority and durable Decision journeys, then remove `local-dev:allowed` from the normal local product composition.
