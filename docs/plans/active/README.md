@@ -4,50 +4,42 @@ Current: `PLAN-018-i18-technical-domain-access-resolution.md`
 
 Goal: implement I18 Technical-to-Domain Access Resolution as one consumer-independent APR capability over effective RC + ACC knowledge.
 
-Current task: WP1 — Domain/Application/Ports core.
+Current task: WP2 — RC + ACC + TAE outer adapters.
 
-Working mode: implement-slice + execute-work-package.
+Working mode: implement-slice + architecture-review + execute-work-package.
 
 ## Working set
 
 Read first:
-- `docs/domain/access-policy-realization/tactical-model.md`
-- `docs/requirements/technical-domain-access-resolution-acceptance-examples.md`
 - `docs/architecture/access-policy-realization-resolution-boundary.md`
-- `docs/plans/active/PLAN-018-i18-technical-domain-access-resolution.md`
-
-Expand only if needed into:
-- current TAE normalized predicate model for adapter compatibility only;
-- architecture tests and package patterns;
-- RC/ACC contracts after the WP1 core gate.
+- `src/napms/access_policy_realization/domain/model.py`
+- `src/napms/access_policy_realization/application/ports.py`
+- current RC/ACC/TAE Domain/Application contracts needed by adapters only.
 
 ## Recovery facts
 
-- WP0 Tactical DDD + requirements/examples + architecture boundary are accepted.
-- Pairwise correspondence is Exact | Covers | CoveredBy | PartialOverlap | None.
-- Resolution status is Exact | Covered | Partial | Ambiguous | Unresolved | Unknown.
-- Supported complete first algebra requires an exact IP protocol number.
-- Protocol Any remains explicit Unknown; no guessed protocol expansion is permitted.
-- Remainder is exact set difference for supported complete knowledge.
-- APR Domain/Application own consumer ports and import no RC/ACC/TAE peer types.
-- No APR persistence/runtime, I19 placement or I20 reconciliation is in scope.
+- WP0 semantic gate is closed.
+- WP1 pure APR core is implemented and locally exercised across Exact/Covered/Partial/Ambiguous/Unresolved/Unknown scenarios.
+- APR Domain/Application import no RC/ACC/TAE peer contexts.
+- DomainKnowledgePort is predicate-aware.
+- Current ACC projection protocol tokens are representation facts; APR Domain uses exact IP protocol numbers.
+- Unsupported address-relevant ACC transport must become explicit Unknown; unrelated disjoint facts must not poison the result.
+- TAE adapter direction is TAE -> APR projection only; RecordedAt never supplies asOf.
 
 ## Blockers
 
-None for WP1.
+None for WP2.
 
 ## Gate
 
-WP1 passes only when:
-- pure region intersection/containment/difference is executable;
-- ambiguity has no winner path;
-- exact remainder is preserved;
-- ResolveTechnicalAccess is deterministic for a supplied APR-owned DomainKnowledgeSnapshot;
-- core/architecture tests prove framework/peer-context independence;
-- all P0/P1 core findings are closed.
-
-Peer-context adapters and infrastructure remain closed until this gate passes.
+WP2 passes only when:
+- RC + ACC adapter consumes owner APIs/repositories rather than peer SQL;
+- effective bindings/realizations are evaluated at explicit asOf;
+- tcp/udp exact translation is explicit and unsupported relevant tokens fail closed;
+- predicate-disjoint unsupported DCS facts do not create global Unknown;
+- TAE projection preserves evidence provenance without importing APR into TAE;
+- no APR persistence/public workflow/I19/I20 leakage appears.
 
 ## Next
 
-Implement and review WP1. Stop before RC/ACC/TAE adapters if the core gate is not green.
+Implement and review WP2, then open WP3 integration proof only if adapter tests are green.

@@ -73,7 +73,7 @@ Infrastructure gate: closed.
 Exit:
 no blocking semantic unknown remains for the first resolution core and no I19/I20 meaning is required to implement it.
 
-### WP1 — Domain/Application/Ports core
+### WP1 — Domain/Application/Ports core — done
 
 - add framework-free `access_policy_realization` Domain/Application packages;
 - implement normalized region intersection/containment/difference for the accepted first algebra;
@@ -161,10 +161,10 @@ repository integration demonstrates technical evidence -> domain resolution with
 
 ## Blockers
 
-None for WP1.
+None for WP2.
 
-WP0 review closed with no P0/P1 semantic blockers. The accepted first algebra is intentionally exact-protocol-number scoped; Protocol Any remains explicit Unknown until a protocol-wide port-applicability/difference model is accepted.
+WP0 review closed with no P0/P1 semantic blockers. WP1 now provides the framework-free APR Domain/Application/Ports core, exact region intersection/difference, ambiguity-without-winner behavior, explicit Protocol Any -> Unknown and bounded-context architecture guards.
 
 ## Next
 
-Execute WP1 only: framework-free APR Domain/Application/Ports core plus core/architecture tests. Keep peer-context adapters and infrastructure closed until the WP1 gate passes.
+Execute WP2 only: RC + ACC domain-knowledge adapter and TAE input projection adapter. Keep APR persistence, HTTP/Web, Authority Management, Access Policy, NEP and reconciliation out of scope.
