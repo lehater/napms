@@ -10,7 +10,7 @@ Implement the I15 Connectivity Decision model end-to-end and remove the determin
 
 ## Current stage
 
-WP3 — Access Policy integration remains active. In parallel, WP4 Web UI Quality Gate is being established now as a mandatory precondition for any new Decision UI. WP1 core and WP2 PostgreSQL gates passed.
+WP3 — Access Policy integration remains active. WP4 Web UI Quality Gate is active and its functional/accessibility browser suite has passed; visual-regression baselines are being established before any new Decision UI. WP1 core and WP2 PostgreSQL gates passed.
 
 ## Inputs
 
@@ -44,13 +44,23 @@ Evolve the consumer port from subject-only lookup to exact subject + governance 
 
 ### WP4 — Web UI Quality Gate — active
 Before adding new Decision UI:
+- use the accepted desktop-first operational UI contract in `docs/requirements/web-ui-requirements.md`;
+- treat NetBox only as a class-of-product UX reference: dense professional desktop operations, not a visual/IA clone;
+- primary browser/visual target: 1440 x 900/1000 class;
+- minimum desktop target: 1280 x 800;
+- tablet/mobile are compatibility targets preserving the same IA through collapsed/off-canvas navigation;
 - add Playwright browser E2E against the real Docker public endpoint;
 - test real login, navigation, form controls, buttons, mutations, reload/persisted state and error states;
 - use role/label-based selectors so missing accessible names are treated as defects rather than hidden by test IDs;
-- add automated accessibility checks for critical screens;
-- capture screenshots/traces/videos on failure and deterministic visual evidence for key desktop/mobile states;
-- establish a visual-regression baseline after the current UI defect set is understood and corrected;
+- add automated WCAG 2.2 AA checks for critical screens/states;
+- capture screenshots/traces/videos on failure;
+- establish committed pixel visual-regression baselines for stable desktop states plus selected narrow-screen compatibility states;
 - classify discovered defects P0/P1/P2/P3 and fix P0/P1 before WP5.
+
+Current evidence:
+- functional/accessibility browser suite reached 5/5 PASS after fixing real contrast, accessible-name and mobile-navigation defects;
+- visual-regression test is present;
+- first baseline generation run intentionally fails until generated reference PNGs are committed and re-gated.
 
 ### WP5 — HTTP/Web participant workspace
 Only after WP4 passes:
@@ -87,4 +97,4 @@ The execution sandbox cannot clone github.com directly. Core/infrastructure stag
 
 ## Next
 
-Establish WP4 browser quality harness now while WP3 remains backend-only. Run it against the current UI, classify real failures, fix P0/P1, then complete WP3 and proceed to new Decision UI only with the browser gate in place.
+Finish WP4 by committing the generated stable visual baselines and obtaining a green browser/visual gate. Then resume WP3 backend integration and proceed to new Decision UI only with the desktop-first quality contract continuously enforced.
