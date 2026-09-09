@@ -1,26 +1,23 @@
 # Current target architecture
 
-Status: `accepted current target through I21; I22 Network Environment Operations is next`.
+Status: `accepted current target through I22; I23 Enterprise Identity and Authoritative Source Integration is next`.
 
 Date: 2026-09-10.
 
 ## Purpose
 
-Define the cross-cutting architecture that current feature boundaries must preserve.
-
-This file owns target structural/runtime constraints. Product behavior is owned by requirements; domain identity/ownership is owned by DDD; consequential architecture choices are owned by ADRs.
+Define the cross-cutting architecture that current feature boundaries must preserve. Product behavior is owned by requirements; domain identity/ownership is owned by DDD; consequential choices are owned by ADRs.
 
 ## Architecture drivers
 
 Priority order:
-
 1. semantic correctness of authoritative domain state, including idempotency/concurrency invariants;
-2. coherent logical-time reads and fail-closed handling when required facts cannot be established;
+2. coherent logical-time reads and fail-closed handling;
 3. end-to-end provenance/explainability;
 4. explicit semantic ownership and action-scoped authority;
 5. simplest reversible topology consistent with current evidence.
 
-No accepted workload/SLA currently justifies service-per-context distribution or arbitrary numeric latency/availability targets.
+No accepted workload/SLA currently justifies service-per-context distribution.
 
 ## Structural style
 
@@ -33,32 +30,22 @@ Domain
 ```
 
 Rules:
-- Domain depends only on language/runtime primitives and domain code;
+- Domain depends only on language/runtime primitives and its own domain code;
 - Application depends inward on Domain and consumer-owned ports;
-- adapters translate persistence, HTTP, external source and runtime mechanics;
+- adapters translate persistence, HTTP, external source, target transport and runtime mechanics;
 - composition wires modules without becoming a semantic owner;
 - framework/database/transport/configuration/logging/DI-container types do not enter Domain;
 - constructor injection is the default; no service locator/global mutable dependency registry.
 
 A Bounded Context is a semantic boundary, not automatically a service, database, team or deployment unit.
 
-ADR-001 owns the selected modular-application decision.
-
 ## Semantic and persistence ownership
 
-Each module owns access to its authoritative data and exposes application/port contracts to consumers.
-
-A shared physical PostgreSQL instance may host several module-owned schemas/datasets. Physical colocation does not transfer semantic ownership.
-
-Cross-module direct table reads/writes are prohibited when they bypass an owning application/port contract.
-
-Persistence constraints enforce domain invariants but do not define their meaning.
-
-Cross-context read compositions may correlate owner facts without creating copied peer business truth. Persist a composite read model only when measured workload/consistency evidence justifies it.
+Each module owns access to its authoritative data and exposes application/port contracts to consumers. Cross-module direct table reads/writes are prohibited when they bypass owning contracts. Physical PostgreSQL colocation does not transfer semantic ownership.
 
 ## Current semantic modules and compositions
 
-Current first-class contexts include:
+Current first-class semantic modules include:
 - Access Policy;
 - Authority Management;
 - Application Communication Catalogue;
@@ -67,16 +54,12 @@ Current first-class contexts include:
 - Connectivity Decision;
 - Technical Access Evidence;
 - Access Policy Realization;
-- Network Enforcement Placement.
+- Network Enforcement Placement;
+- Network Environment Operations.
 
-Current non-peer application/read compositions include:
-- Requirement-to-Policy Alignment;
-- policy export/snapshot normalization;
-- Scoped Connectivity Inventory.
+Current non-peer application/read compositions include Requirement-to-Policy Alignment, policy export/snapshot normalization and Scoped Connectivity Inventory.
 
-Scoped Connectivity Inventory is implemented as an owner-preserving application composition with Resource Scope Affiliation, `ReadScopedConnectivity`, module-owned adapters and no independent persistence.
-
-I20 implements Access Policy Realization managed-scope desired/configured reconciliation through owner-preserving adapters and a PostgreSQL-backed owner composition, with no APR persistence. I21 adds downstream target-specific rendering inside APR through an application-owned renderer port, with vendor syntax isolated in outer adapters and no provider/device mutation. I22 operations remain downstream. Runtime/deployment decomposition remains evidence-driven.
+I20 implements APR managed-scope desired/configured reconciliation. I21 adds target-specific rendering inside APR. I22 adds a separate downstream Network Environment Operations boundary for operation identity, authority admission, concurrency, mutation outcomes and verification. Runtime/deployment decomposition remains evidence-driven.
 
 ## Current runtime boundary
 
@@ -90,173 +73,82 @@ browser
   -> module-owned PostgreSQL repositories
 ```
 
-The normal local topology exposes one public nginx endpoint. PostgreSQL and FastAPI remain internal to the local Compose topology.
-
-This is a development/runtime boundary, not a production deployment/SLA claim.
-
-Web is an outer adapter. It presents backend-owned truth and must not create alternate authority, lifecycle or domain state.
+The normal local topology exposes one public nginx endpoint. This is a development/runtime boundary, not a production deployment/SLA claim.
 
 ## Authority and trust boundaries
 
-Authenticated actor identity originates from the server/session boundary, not request payloads.
-
-Application use cases evaluate action-specific Authority Management admission. Read authority and mutation authority remain independent.
-
-Unknown/ambiguous required authority fails closed.
-
-Client-side hidden/disabled controls are presentation only.
-
-Business audit/provenance is authoritative business evidence; operational logging/correlation supports runtime diagnosis and does not replace it.
-
-## Connectivity Decision
-
-ADR-005 is current: Connectivity Decision is a first-class Bounded Context owning immutable final `Allowed | NotAllowed` Decisions, validity, reasons/evidence/provenance and supersession semantics.
-
-ADR-003 is historical and superseded. The former external/deferred Decision seam is not current target architecture.
-
-The implemented runtime persists Decision history in Decision-owned PostgreSQL storage. Selection is exact by RuleSemanticIdentity + governance scope + logical `asOf` and fails closed on absence, expiry, ambiguity or persistence uncertainty.
-
-Access Policy consumes a consumer-owned effective Decision projection and continues to own Access Rule identity/state. Decision expiry or supersession does not silently mutate an existing Access Rule.
-
-Scoped Connectivity consumes only the accepted coarse `Allowed | NotAllowed | NoFinalDecision | Unknown` Decision summary. Detailed reason/evidence/provenance remains behind independent `ReadConnectivityDecision` authority.
-
-Normal local composition uses the durable Decision runtime; no deterministic allow adapter is selected by the product journey.
+Authenticated actor identity originates from the server/session boundary, not request payloads. Application use cases evaluate action-specific Authority Management admission. Read authority and mutation authority remain independent. Unknown/ambiguous required authority fails closed.
 
 ## Technical Access Evidence
 
-Technical Access Evidence is a first-class bounded context owning immutable source-qualified technical evidence, not authorization or realization truth.
-
-The implemented I17 boundary is:
-
-```text
-strict source/import adapter
-  -> source-neutral RecordEvidenceSet
-  -> framework-free TAE Application/Domain
-  -> TAE-owned PostgreSQL repository/schema
-```
-
-Architecture rules:
-- TAE Domain/Application imports no peer bounded context and no infrastructure framework;
-- one Evidence Set represents one immutable source capture/import episode;
-- source + capture reference is retry/idempotency identity;
-- source evidence time is distinct from NAPMS RecordedAt;
-- duplicate source entries remain evidence and are not content-deduplicated;
-- persistence is append-only and fails closed on corrupt/uncertain state;
-- source-specific syntax/parser/provider mechanics remain adapters;
-- no current/fresh winner, authorization, domain interaction mapping, enforcement placement or desired-vs-configured reconciliation is computed by TAE;
-- the first local JSON import path is trusted composition plumbing, not a public human API or Authority Management workflow;
-- TAE uses a dedicated PostgreSQL composition scope so ordinary HTTP requests do not allocate an unused TAE connection;
-- strict local JSON parsing rejects duplicate object fields and unsupported fields rather than accepting ambiguous last-write-wins source syntax.
-
-Access Policy Realization consumes TAE in I18 through a consumer-owned projection/port; TAE does not depend on that consumer.
+TAE owns immutable source-qualified technical evidence, not authorization or realization truth. Source-specific parsing/collection remains adapters. APR consumes TAE through consumer-owned projections; TAE does not depend on APR.
 
 ## Network Enforcement Placement
 
-The implemented I19 boundary is a first-class NEP module with framework-free Domain/Application/Ports and outer source/persistence adapters.
+NEP owns normalized forwarding/path meaning, Logical Firewall identity, temporal provider correspondence, Enforcement Attachment and placement selection. It does not own authorization, vendor rendering or execution. APR consumes NEP through an APR-owned projection.
 
-First-slice architecture:
+## Access Policy Realization — I18/I20/I21
 
-```text
-provider/network path source
-    -> strict outer adapter
-    -> NEP-owned normalized forwarding/path + correspondence + attachment facts
-    -> NEP-owned PostgreSQL
-    -> SelectEnforcement(exact source/destination pair, asOf)
-```
-
-Architecture rules:
-- NEP Domain/Application import no peer bounded context;
-- Logical Firewall identity is independent from provider/device realization and Resource identity;
-- provider/path references are opaque normalized correspondence/provenance values;
-- one complete path or positive no-route fact is required for a complete first-slice result;
-- unsupported forwarding dimensions or multipath fail closed as `Unknown`;
-- an Enforcement Attachment supports placement only with a matching effective Logical Firewall/provider correspondence;
-- no cross-context SQL;
-- no I20 desired-vs-configured semantics, vendor rendering or execution enter I19.
-
-APR consumes NEP through an APR-owned projection/port. NEP does not depend on APR to make that consumer work.
-
-## Access Policy Realization — I20 derivation/reconciliation and I21 rendering
-
-The implemented APR boundary remains framework-free Domain/Application with APR-owned ports and outer owner-preserving/vendor adapters.
+APR remains framework-free Domain/Application with APR-owned ports and outer owner-preserving/vendor adapters.
 
 ```text
-effective Access Policy + RC/ACC
-    -> APR-owned desired technical projection
-    -> shared I18 domain-resolution quality check
-    -> NEP placement projection
-    -> Desired Enforcement Intent by Logical Firewall + Enforcement Attachment
+effective Access Policy + RC/ACC + NEP
+    -> Desired Enforcement Policy
 
-explicit TAE Configured Evidence Set
-    + trusted same-managed-scope/source contract
-    -> source-specific effective-Permit projection
-    -> shared I18 configured-domain attribution
+configured TAE + trusted managed-scope contract
     -> Configured Enforcement Snapshot
-
-desired vs configured
-    -> exact common/missing/extra
-    -> Satisfied | Drift | Ambiguous | Unknown
-    -> No-op | Add | Remove | Replace only when complete
+    -> Policy Reconciliation
 
 Desired Enforcement Policy
-    -> APR RenderConfiguration use case
+    -> RenderConfiguration
     -> application-owned ConfigurationRenderer port
     -> Cisco ASA outer adapter
     -> Rendered | Unsupported | Unknown
-    -> independent semantic projection back to normalized Permit regions
+    -> independent semantic projection/equivalence proof
+```
+
+Rendering remains derived on demand and does not prove provider/device application.
+
+## Network Environment Operations — I22
+
+I22 introduces a separate framework-free Network Environment Operations module downstream of rendering.
+
+```text
+APR Rendered Configuration
+    -> composition projects EnforcementTarget identity
+    -> NEO OperationTarget
+    -> mutation-authority admission
+    -> acquire current target revision
+    -> conditional apply
+    -> reacquire post-state
+    -> Verified | PreconditionFailed | Rejected | Drift | Unknown
 ```
 
 Architecture rules:
-- one explicit `asOf`; first complete configured slice requires `EvidenceTime.Instant == asOf`;
-- TAE does not become a current/complete-policy service;
-- configured completeness and target/policy-partition equivalence come from an explicit consumer/source contract;
-- Enforcement Target preserves Logical Firewall + Enforcement Attachment granularity;
-- raw vendor Block/order/default/zone semantics are interpreted only by source-specific outer adapters capable of producing exact effective Permit regions;
-- I18 correspondence algebra is reused unchanged;
-- desired/configured reconciliation and rendered configuration remain derived on demand with no APR persistence requirement;
-- the durable PostgreSQL proof composes existing Access Policy, RC/ACC, NEP and TAE owners through their repositories/use cases without cross-context SQL or copied APR truth;
-- renderer ports are application-owned; Cisco ASA syntax is adapter knowledge and does not become domain language;
-- first renderer contract is Cisco Secure Firewall ASA CLI extended ACL version `1`, limited to IPv4 Permit TCP/UDP with numeric port ranges and exact host/CIDR decomposition;
-- successful rendering requires exact normalized semantic equivalence; unsupported/unproven representation fails closed and exposes no partial executable-looking artifact;
-- rendering carries target, rule, interaction, placement and renderer-contract provenance;
-- I22 owns device/provider acquisition, mutation, retry/recovery/rollback, concurrency/idempotency and execution audit.
+- NEO Domain imports no APR/NEP/TAE domain types;
+- `OperationTarget` is NEO-owned projection data; composition maps upstream target identity into it without redefining Logical Firewall/Enforcement Attachment meaning;
+- `operation_id` binds exactly one Operation Target + artifact digest and is the first-slice idempotency key;
+- identical retry returns the recorded operation result; conflicting reuse fails closed;
+- mutation authority is an explicit consumer-owned port and is independent from read authority;
+- current target revision is the first-slice optimistic concurrency token;
+- apply acceptance and semantic verification are distinct;
+- `Verified` requires post-check evidence matching the requested artifact digest;
+- Unknown apply is not blindly retried or reclassified as success;
+- target/provider interaction remains behind a consumer-owned execution port;
+- the current adapter is a deterministic in-process target stub because no real Cisco lab is available;
+- stub success is only evidence of orchestration semantics, not Cisco transport compatibility;
+- the current operation repository is in-memory and does not claim crash-durable audit;
+- real transport, credential handling, production rollback and durable operation persistence require later concrete environment evidence.
 
-Feature contracts:
-- `docs/architecture/access-policy-realization-reconciliation-boundary.md`;
-- `docs/architecture/configuration-rendering-boundary.md`.
-
-## Coherent policy export
-
-ADR-002 owns the logical export snapshot consistency boundary.
-
-For one export `asOf`, the application must establish complete correlated Access Policy, ACC and Resource Catalogue facts before normalization succeeds.
-
-The architecture does not require one global database transaction across all semantic owners. Source-specific adapters may use temporal queries, version tokens, immutable captures or equivalent evidence-preserving mechanisms.
-
-Best-effort incomplete data is not a successful normalized export.
+Feature contract: `docs/architecture/network-environment-operations-boundary.md`.
 
 ## Cross-context application compositions
 
-A composition:
-- consumes explicit owner/application ports;
-- owns orchestration/query semantics only;
-- does not create copied business truth or a new lifecycle by convenience;
-- uses one explicit logical time when correlating temporal facts;
-- represents missing/ambiguous contributors explicitly rather than converting uncertainty into false absence.
-
-Requirement-to-Policy Alignment, policy export and Scoped Connectivity Inventory follow this pattern.
+A composition consumes explicit owner/application ports, owns orchestration only, does not create copied business truth, and represents missing/ambiguous contributors explicitly. APR EnforcementTarget -> NEO OperationTarget mapping follows this rule.
 
 ## Transition and external sources
 
-Legacy/MSSQL, Word/Excel request structures and provider/device execution are not target semantic dependencies by default. Vendor rendering is now an explicit APR outer-adapter capability and still does not redefine target domain identity.
-
-If a selected integration requires a legacy/enterprise source:
-- adapt it at the infrastructure boundary;
-- preserve source/provenance;
-- fail closed when target-required identity/validity cannot be established;
-- keep a concrete retirement/replacement trigger.
-
-Do not let a transition schema redefine target domain identity or ownership.
+Legacy/MSSQL and real provider/device transport are not target dependencies by default. Vendor rendering is an APR outer-adapter capability. When concrete enterprise/provider integration is selected, adapt it at the infrastructure boundary, preserve provenance and fail closed when required identity/validity cannot be established.
 
 ## Security/integrity guardrails
 
@@ -264,27 +156,19 @@ Architecture must preserve:
 - exact proposal/Decision/Rule subject correlation;
 - authoritative Rule uniqueness/idempotency;
 - module-owned persistence boundaries;
-- trusted catalogue/source correlation;
 - explicit logical-time validity where required;
 - no silent semantic broadening/narrowing in normalization or rendering;
-- no protected business-detail leakage through a broader catalogue/read composition;
-- explicit degraded/error outcomes instead of convenient permission or absence.
+- no false Verified outcome from transport acceptance alone;
+- operation idempotency and optimistic concurrency for mutation;
+- explicit degraded/error outcomes instead of convenient permission, absence or success.
 
 ## Revisit triggers
 
-Revisit topology or add infrastructure only when accepted evidence requires it, such as:
-- independent scale/release/security/trust/availability constraints;
-- concrete source integration mechanics;
-- measured read-model performance needs;
-- production identity/deployment requirements;
-- later roadmap execution/realization semantics.
-
-Do not add distribution or generic platforms merely to anticipate future complexity.
+Revisit topology or add infrastructure only when accepted evidence requires it, such as concrete enterprise/provider source mechanics, a real Cisco lab/transport contract, production identity/deployment requirements, measured performance needs, or independent scale/security/availability constraints.
 
 ## Canonical references
 
 - semantic ownership: `docs/domain/semantic-ownership.md`;
-- Access Policy tactical model: `docs/domain/access-policy/tactical-model.md`;
 - current product requirements: `docs/requirements/`;
 - feature architecture: `docs/architecture/`;
 - ADRs: `docs/decisions/`;
