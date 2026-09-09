@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   ArrowLeft,
   ArrowRight,
@@ -297,7 +297,7 @@ export function ConnectivityPage({
     [asOf],
   )
 
-  function submitSearch(event: FormEvent) {
+  function submitSearch(event: React.FormEvent) {
     event.preventDefault()
     const normalized = searchInput.trim()
     setSearch(normalized)
