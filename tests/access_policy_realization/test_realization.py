@@ -35,6 +35,7 @@ from napms.access_policy_realization.domain.realization import (
     EnforcementTarget,
     ManagedReconciliationScope,
     PlacementStatus,
+    RealizationInvariantError,
     ReconciliationStatus,
     RequiredSemanticChange,
 )
@@ -219,9 +220,17 @@ def configured(
     complete: bool = True,
     target: EnforcementTarget = TARGET,
     governance_scope: str = "scope:a",
-    resolutions=(),
+    resolutions=None,
     as_of: datetime = NOW,
 ):
+    if resolutions is None:
+        resolutions = tuple(
+            resolution(
+                first=value.destination_ports.first,
+                last=value.destination_ports.last,
+            )
+            for value in regions
+        )
     return ConfiguredEnforcementSnapshot(
         managed_scope=ManagedReconciliationScope(
             governance_scope,
@@ -392,6 +401,17 @@ def test_partial_overlap_preserves_exact_common_missing_extra():
         result.required_change
         is RequiredSemanticChange.REPLACE
     )
+
+
+def test_complete_configured_snapshot_requires_i18_attribution():
+    with pytest.raises(
+        RealizationInvariantError,
+        match="I18 attribution",
+    ):
+        configured(
+            (fragment(),),
+            resolutions=(),
+        )
 
 
 def test_incomplete_configured_snapshot_cannot_infer_add():

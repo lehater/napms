@@ -361,6 +361,23 @@ class ConfiguredEnforcementSnapshot:
             raise RealizationInvariantError(
                 "complete configured snapshot cannot carry knowledge gaps"
             )
+        if self.complete_for_managed_scope:
+            attributed_regions: list[
+                TechnicalRegionFragment
+            ] = []
+            for resolution in self.domain_resolutions:
+                attributed_regions.extend(
+                    expand_predicate(
+                        resolution.predicate
+                    )
+                )
+            if canonical_union(
+                tuple(attributed_regions)
+            ) != self.permit_regions:
+                raise RealizationInvariantError(
+                    "complete configured snapshot requires "
+                    "I18 attribution for every permit region"
+                )
 
 
 class ReconciliationStatus(str, Enum):
@@ -597,11 +614,12 @@ def derive_desired_enforcement_policy(
                 )
             )
             continue
-        if contribution.fragment not in expand_predicate(
+        if expand_predicate(
             contribution.resolution.predicate
-        ):
+        ) != (contribution.fragment,):
             raise RealizationInvariantError(
-                "desired fragment must belong to resolution predicate"
+                "first-slice desired contribution requires "
+                "one exact resolution fragment"
             )
 
         disposition = _desired_resolution_disposition(
