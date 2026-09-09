@@ -241,6 +241,7 @@ class PostgresApplicationCatalogueRepository:
         *,
         resource_references: tuple[str, ...],
         as_of: datetime,
+        limit: int | None = None,
     ) -> tuple[DeploymentResourceBinding, ...]:
         if not resource_references:
             return ()
@@ -259,8 +260,14 @@ class PostgresApplicationCatalogueRepository:
                   AND valid_from <= %s
                   AND (valid_to IS NULL OR %s < valid_to)
                 ORDER BY resource_reference, component_deployment_id, reference_id
+                LIMIT %s
                 """,
-                (list(resource_references), as_of, as_of),
+                (
+                    list(resource_references),
+                    as_of,
+                    as_of,
+                    limit if limit is not None else 2147483647,
+                ),
             ).fetchall()
             return tuple(
                 DeploymentResourceBinding(
@@ -283,6 +290,7 @@ class PostgresApplicationCatalogueRepository:
         *,
         component_deployment_ids: tuple[UUID, ...],
         as_of: datetime,
+        limit: int | None = None,
     ) -> tuple[DeploymentResourceBinding, ...]:
         if not component_deployment_ids:
             return ()
@@ -301,8 +309,14 @@ class PostgresApplicationCatalogueRepository:
                   AND valid_from <= %s
                   AND (valid_to IS NULL OR %s < valid_to)
                 ORDER BY component_deployment_id, resource_reference, reference_id
+                LIMIT %s
                 """,
-                (list(component_deployment_ids), as_of, as_of),
+                (
+                    list(component_deployment_ids),
+                    as_of,
+                    as_of,
+                    limit if limit is not None else 2147483647,
+                ),
             ).fetchall()
             return tuple(
                 DeploymentResourceBinding(
@@ -324,6 +338,7 @@ class PostgresApplicationCatalogueRepository:
         self,
         *,
         component_deployment_ids: tuple[UUID, ...],
+        limit: int | None = None,
     ) -> tuple[DcsRevision, ...]:
         if not component_deployment_ids:
             return ()
@@ -341,10 +356,12 @@ class PostgresApplicationCatalogueRepository:
                 WHERE source_component_deployment_id = ANY(%s)
                    OR destination_component_deployment_id = ANY(%s)
                 ORDER BY revision_id
+                LIMIT %s
                 """,
                 (
                     list(component_deployment_ids),
                     list(component_deployment_ids),
+                    limit if limit is not None else 2147483647,
                 ),
             ).fetchall()
             return tuple(
