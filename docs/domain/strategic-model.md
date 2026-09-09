@@ -13,8 +13,8 @@ This document defines model/language/responsibility boundaries. It does not defi
 | **Connectivity Requirements** | what semantic connectivity is needed? | connectivity-need identity/lifecycle, required interaction, applicability and justification/provenance |
 | **Connectivity Decision** | may this exact proposed semantic connectivity be used as permission for Access Policy materialization? | immutable final Allowed/NotAllowed decision identity, scope, validity, reason/provenance and supersession |
 | **Access Policy** | what network access is authorized to exist? | authoritative Access Rule identity, uniqueness/idempotency, properties, Active/Inactive, decision consumption and desired-policy projections |
-| **Authority Management** | who may perform a domain action for scope/time? | scoped authority, assignment/delegation/transfer/revocation and accountability |
-| **Resource Catalogue** | what access-domain resources exist and how are they realized? | Resource/Endpoint identity, current/historical realization and access-relevant lifecycle facts |
+| **Authority Management** | who may perform a domain action for scope/time? | scoped actor/action authority, Responsibility Assignment, delegation/transfer/revocation and accountability |
+| **Resource Catalogue** | what access-domain resources exist, to which responsibility scopes do they belong, and how are they realized? | Resource/Endpoint identity, time-qualified Resource Scope Affiliation, current/historical realization and access-relevant lifecycle facts |
 | **Application Communication Catalogue** | which application/component interactions are structurally valid? | Application/Component/Deployment/DCS identities and protocol/port contracts |
 | **Network Enforcement Placement** | where is traffic subject to enforcement? | forwarding/path knowledge, Logical Firewall correspondence and enforcement attachments |
 | **Technical Access Evidence** | what technical access material did a source report? | normalized source-qualified technical evidence with provenance/time/freshness/coverage |
@@ -42,6 +42,28 @@ Current accepted semantic owners participating in implemented/planned product fl
 - Resource Catalogue.
 
 Network Enforcement Placement, Technical Access Evidence and Access Policy Realization remain strategic product contexts for later roadmap increments.
+
+## I16A responsibility-scope relationship
+
+I16A makes an existing responsibility boundary explicit without adding a Bounded Context.
+
+```text
+Resource Catalogue
+    Resource --Resource Scope Affiliation--> Responsibility Scope reference
+
+Authority Management
+    Actor --Responsibility Assignment(action,time)--> Responsibility Scope reference
+```
+
+The shared Responsibility Scope reference correlates the facts; it does not merge ownership.
+
+- Resource Catalogue owns which Resources belong to scope S at time T.
+- Authority Management owns whether actor A may perform action X for scope S at time T.
+- current catalogue visibility is independent from both.
+- one Resource may belong to multiple responsibility scopes without changing Resource identity.
+- changing Resource Scope Affiliation does not silently rewrite Requirement, Decision or Rule governance scope.
+
+`Scoped Connectivity Inventory` is a non-peer application/read composition over these owners plus ACC, Connectivity Requirements, Connectivity Decision and Access Policy.
 
 ## Core dependency map
 
@@ -76,6 +98,7 @@ Technical Access Evidence ---> Access Policy Realization <--- Access Policy
 - Declared connectivity need is not authorization.
 - Connectivity Decision owns final decision reason/validity/supersession; Access Policy does not.
 - Proposal authority does not imply decision authority.
+- Resource Scope Affiliation does not imply actor authority; actor authority for a scope does not imply Resource membership.
 - A Decision may reference a Connectivity Requirement as evidence; `Required != Allowed`.
 - Access Policy owns authoritative Access Rule identity/state.
 - Decision expiry/supersession does not silently mutate an existing Access Rule.
