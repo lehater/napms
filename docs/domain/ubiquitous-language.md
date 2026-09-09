@@ -58,6 +58,63 @@ Active -> Retired
 
 Retired is terminal in I13. No Pending/Approved/Rejected states belong to Connectivity Requirements.
 
+## Connectivity Decision
+
+### Connectivity Decision
+Immutable final business decision for one exact proposed Access Rule semantic identity and governance scope.
+
+```text
+Connectivity Decision
+    DecisionId
+    RuleSemanticIdentity subject
+    Decision Governance Scope
+    Allowed | NotAllowed
+    Validity
+    Reason
+    Evidence References
+    Decision Provenance
+    supersedes DecisionId?
+```
+
+A Decision is not an Access Rule and does not own Rule lifecycle.
+
+### Decision Governance Scope
+Stable scope used by Authority Management for decision/read actions. In the first accepted model it is the accepted proposal authority scope.
+
+It is not part of RuleSemanticIdentity and cannot be caller-substituted after Decision creation.
+
+### Decision Validity
+Offset-aware half-open interval `[validFrom, validUntil)`; `validUntil` may be absent.
+
+Validity controls whether a Decision may be consumed at one logical time. Expiry does not silently mutate a Rule already materialized from that Decision.
+
+### Decision Reason
+Mandatory stable reason code plus human-readable explanation of why the final outcome is Allowed or NotAllowed.
+
+External policy/requirement/catalogue facts remain owned by their source contexts and are referenced rather than copied as Decision-owned truth.
+
+### Decision Evidence Reference
+Opaque source-qualified reference to an authoritative fact used in deciding.
+
+A Connectivity Requirement may be evidence, but:
+
+```text
+Required != Allowed
+```
+
+### Decision Supersession
+Reconsideration creates a new immutable Decision for the same subject/scope and explicitly references the immediately superseded Decision.
+
+Historical Decisions are never rewritten.
+
+### DecideConnectivity
+Authority Management domain action permitting one principal to record or supersede a final Connectivity Decision for a scope/time.
+
+`ProposeConnectivity` does not imply `DecideConnectivity`.
+
+### ReadConnectivityDecision
+Independent Authority Management action permitting protected Decision reads.
+
 ## Access Policy
 
 ### Access Rule
