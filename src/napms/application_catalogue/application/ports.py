@@ -46,6 +46,7 @@ class ApplicationCatalogueRepository(Protocol):
         *,
         resource_references: tuple[str, ...],
         as_of: datetime,
+        limit: int | None = None,
     ) -> tuple[DeploymentResourceBinding, ...]: ...
 
     def find_effective_bindings_for_components(
@@ -53,10 +54,12 @@ class ApplicationCatalogueRepository(Protocol):
         *,
         component_deployment_ids: tuple[UUID, ...],
         as_of: datetime,
+        limit: int | None = None,
     ) -> tuple[DeploymentResourceBinding, ...]: ...
 
     def list_dcs_revisions_for_components(
         self,
         *,
         component_deployment_ids: tuple[UUID, ...],
+        limit: int | None = None,
     ) -> tuple[DcsRevision, ...]: ...
