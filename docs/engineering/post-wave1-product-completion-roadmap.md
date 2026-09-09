@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline; I21 complete, I22 next`.
+Status: `accepted ordered sequencing baseline; I22 complete, I23 next`.
 
 Date: 2026-09-10.
 
@@ -28,24 +28,24 @@ The roadmap may be refined when new accepted domain evidence changes boundaries 
 ## Baseline
 
 Completed:
-- I1-I21;
+- I1-I22;
 - Wave 1 proposal -> Connectivity Decision seam -> Access Rule -> effective desired policy -> coherent normalized policy;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
 - Dockerized local runtime;
 - human-readable catalogue UX;
 - Technical Access Evidence Tactical DDD, durable source-qualified persistence and strict local/import proof;
-- Access Policy Realization through technical-to-domain resolution, enforcement placement consumption, desired-vs-configured reconciliation and first target-specific configuration rendering.
-
-Wave 1 intentionally stopped before Connectivity Requirements runtime participation; I13 now closes the first Connectivity Requirements core/runtime/workspace slice.
+- Access Policy Realization through technical-to-domain resolution, enforcement placement consumption, desired-vs-configured reconciliation and first target-specific configuration rendering;
+- Network Environment Operations stub-first execution semantics through controlled pre-check, conditional apply and post-check verification.
 
 Still deferred:
-- device/provider execution;
+- real provider/device transport and lab validation;
+- crash-durable execution audit and production rollback;
 - production identity/deployment/integration.
 
 ## Ordered increments
 
-### Completed increments — I13 through I21
+### Completed increments — I13 through I22
 
 Status: `done / absorbed into canonical truth`.
 
@@ -59,6 +59,7 @@ Status: `done / absorbed into canonical truth`.
 - I19 — Network Enforcement Placement: accepted exact endpoint-pair first slice, normalized forwarding/path knowledge, stable Logical Firewall identity, temporal provider correspondence/Enforcement Attachments, fail-closed placement selection and NEP-owned durable PostgreSQL proof without I20 reconciliation or vendor execution.
 - I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation: accepted APR-managed-scope/effective-Permit contract, exact desired/configured policy algebra, owner-preserving AP/RC/ACC/NEP/TAE adapters and durable PostgreSQL proof of No-op/Add/Remove/Replace with fail-closed uncertainty.
 - I21 — Configuration Rendering: accepted APR-owned rendering semantics, first Cisco Secure Firewall ASA CLI extended ACL renderer, deterministic fail-closed output, statement provenance, independent semantic projection/equivalence proof and PostgreSQL owner-preserving derive -> render integration without provider/device mutation.
+- I22 — Network Environment Operations: separate NEO semantic module, NEO-owned `OperationTarget`, mutation authority port, operation-id idempotency, optimistic target-revision concurrency, explicit apply/final outcomes, post-check verification, deterministic target stub and end-to-end desired -> rendered -> stub-applied -> verified composition proof. No real Cisco transport is claimed.
 
 Detailed completed execution is not roadmap state. Durable outcomes live in current requirements/domain/architecture/engineering artifacts; Git history preserves the execution record.
 
@@ -69,41 +70,12 @@ Status: `done / absorbed into canonical truth`.
 Goal:
 implement the accepted **Technical Access Evidence** bounded context.
 
-First scope:
-- source-qualified evidence identity;
-- `Configured | TrafficDerived | Imported`;
-- normalized technical predicate semantics;
-- provenance/source/time;
-- freshness/coverage/confidence vocabulary where accepted;
-- ingestion adapters kept outside domain meaning.
-
-Exit:
+Exit achieved:
 NAPMS can persist/query technical evidence without treating evidence as authorization.
 
 ### I18 — Technical-to-Domain Access Resolution
 
 Status: `done / absorbed into canonical truth`.
-
-Goal:
-implement the shared resolution capability inside **Access Policy Realization**.
-
-Accepted/implemented semantics:
-- map one normalized Technical Access Predicate against effective RC + ACC knowledge at explicit `asOf`;
-- pairwise `Exact | Covers | CoveredBy | PartialOverlap | None`;
-- resolution `Exact | Covered | Partial | Ambiguous | Unresolved | Unknown`;
-- same resolution semantics for proposal/reconciliation consumers;
-- exact unresolved technical remainder for supported exact-protocol predicates;
-- ambiguity keeps all competing Domain Interactions and selects no winner;
-- predicate-relevant missing/untranslatable knowledge fails closed as Unknown;
-- Protocol Any remains Unknown until a protocol-wide applicability/difference model is accepted;
-- one-way TAE projection preserves source-qualified provenance without authorization meaning.
-
-Implemented:
-- framework-free APR Domain/Application/Ports;
-- predicate-aware RC/ACC outer adapter using owner repositories;
-- TAE -> APR outer projection adapter;
-- no APR persistence or public workflow;
-- durable PostgreSQL proof of exact resolution, effective-time change, ambiguity and zero Access Rule/Decision side effects.
 
 Exit achieved:
 technical evidence can be explained in domain interaction terms without consumer-specific meaning.
@@ -112,52 +84,12 @@ technical evidence can be explained in domain interaction terms without consumer
 
 Status: `done / absorbed into canonical truth`.
 
-Goal achieved:
-implement the **Network Enforcement Placement** context needed to answer where traffic is actually subject to enforcement.
-
-Accepted/implemented semantics:
-- exact source/destination IP Traffic Relation for the first executable slice;
-- normalized ordered Forwarding Path or positive temporal NoForwardingPath fact;
-- stable Logical Firewall identity independent from provider/device realization and Resource identity;
-- temporal Logical Firewall Correspondence and Enforcement Attachment;
-- `Placed | NoEnforcement | NoForwardingPath | Ambiguous | Unknown` selection;
-- explicit offset-aware `asOf`, path/attachment/correspondence provenance and fail-closed material uncertainty;
-- unsupported forwarding dimensions/multipath remain explicit Unknown rather than guessed.
-
-Implemented:
-- framework-free NEP Domain/Application/Ports;
-- strict local knowledge import preserving explicit source knowledge gaps;
-- immutable relation-scoped NEP-owned PostgreSQL captures and tracked migration;
-- deterministic ordered placement with no ambiguity winner;
-- operation-scoped PostgreSQL composition;
-- durable temporal-switch/domain-attributable proof with no Access Rule, Connectivity Decision or TAE side effects.
-
 Exit achieved:
-NAPMS can derive/explain enforcement placement for domain-attributable traffic without embedding vendor syntax or I20 realization semantics.
+NAPMS can derive/explain enforcement placement for domain-attributable traffic without embedding vendor syntax or realization semantics.
 
 ### I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation
 
 Status: `done / absorbed into canonical truth`.
-
-Goal achieved:
-complete the central **Access Policy Realization** outcome.
-
-Accepted/implemented semantics:
-- derive vendor-neutral desired enforcement intent only from effective Access Policy + shared I18 domain resolution + complete NEP placement at explicit `asOf`;
-- preserve Enforcement Target identity as Logical Firewall + Enforcement Attachment;
-- compare only one explicitly selected TAE Configured capture whose source contract proves the same managed policy partition, effective Permit-set meaning, exact evidence time and completeness;
-- preserve exact canonical `common = D ∩ C`, `missing = D - C`, `extra = C - D` witnesses;
-- classify complete semantic delta as `No-op | Add | Remove | Replace`;
-- preserve `Satisfied | Drift | Ambiguous | Unknown` and fail closed on incomplete scope/time/source/evaluation/domain/placement knowledge;
-- reuse I18 Technical-to-Domain Resolution unchanged for desired quality and configured attribution.
-
-Implemented:
-- framework-free APR Domain/Application/consumer-owned ports;
-- owner-preserving Access Policy/Policy Export, RC/ACC, NEP and TAE outer adapters with explicit correlation checks;
-- derived-on-demand desired/configured/reconciliation results with no APR persistence;
-- PostgreSQL composition over existing owner repositories/use cases;
-- hosted executable proof of No-op/Add/Remove/Replace, incomplete-contract Unknown and temporal NEP target movement;
-- no vendor rendering, provider/device mutation or public operator workflow.
 
 Exit achieved:
 NAPMS can truthfully answer whether complete configured effective-Permit evidence realizes desired policy for one proven managed enforcement scope and what exact semantic delta remains.
@@ -166,54 +98,44 @@ NAPMS can truthfully answer whether complete configured effective-Permit evidenc
 
 Status: `done / absorbed into canonical truth`.
 
-Goal achieved:
-translate accepted vendor-neutral enforcement intent into target-specific configuration representation without changing desired traffic semantics.
-
-Accepted/implemented semantics:
-- rendering remains a downstream capability inside Access Policy Realization, not a separate Bounded Context;
-- rendered configuration is derived on demand and has no independent persistence lifecycle;
-- first renderer contract is Cisco Secure Firewall ASA CLI extended ACL version `1`;
-- supported first slice is IPv4 Permit TCP/UDP with numeric exact/inclusive source/destination ports and exact address-range decomposition into host/CIDR statements;
-- deterministic output for identical semantic input and renderer contract;
-- `Rendered | Unsupported | Unknown`; failed rendering exposes no partial executable-looking artifact;
-- statement provenance preserves Enforcement Target, contributing Access Rules, Domain Interactions, placement provenance and renderer contract;
-- successful output requires independent semantic projection back to normalized Permit regions with exact equality to desired regions.
-
-Implemented:
-- framework-free APR rendering value/result model and application-owned `ConfigurationRenderer` port;
-- `RenderConfiguration` application use case;
-- Cisco ASA extended ACL outer adapter;
-- independent ASA supported-subset semantic projector;
-- positive and adversarial equivalence tests detecting broadening, narrowing and omission;
-- PostgreSQL APR composition proof deriving desired policy from owner contexts, rendering ASA ACL, proving exact equivalence and verifying no Access Policy/NEP/TAE state mutation;
-- no device/provider acquisition, apply, retry, rollback, concurrency or execution audit.
-
 Exit achieved:
 NAPMS can produce a deterministic, provenance-preserving Cisco ASA representation for the supported desired enforcement subset and prove that the representation is semantically exact.
 
 ### I22 — Network Environment Operations
 
-Status: `next; not yet selected for execution`.
+Status: `done / absorbed into canonical truth`.
 
-Goal:
-manage provider/device-facing acquisition and mutation.
+Goal achieved:
+model controlled provider/device-facing operation semantics downstream of rendering without inventing unavailable real-lab integration details.
 
-Expected scope:
-- fetch/current-state acquisition adapters;
-- pre-check;
-- apply change;
-- post-check;
-- execution result/audit;
-- partial/unknown outcomes;
-- retry/recovery/rollback semantics;
-- safe concurrency/idempotency.
+Accepted/implemented semantics:
+- Network Environment Operations is a separate semantic module with its own operation identity/outcome/concurrency/provenance responsibility;
+- NEO Domain owns `OperationTarget` and has no APR domain dependency; APR Enforcement Target is projected only at composition;
+- `operation_id` binds one target + artifact digest; identical retry is idempotent and conflicting reuse fails closed;
+- mutation admission is an explicit authority port;
+- pre-check/current revision plus conditional apply provide optimistic concurrency;
+- apply result is distinct from final verification;
+- apply states are `Applied | PreconditionFailed | Rejected | Unknown`;
+- final outcomes are `Verified | PreconditionFailed | Rejected | Drift | Unknown`;
+- `Verified` requires post-check evidence whose artifact digest matches the requested artifact;
+- Unknown apply is never converted into success and is not blindly retried;
+- first executable target adapter is a deterministic in-process stub because no real Cisco lab is available;
+- first operation repository is in-memory and therefore does not claim crash-durable audit.
 
-Exit:
-one supported enforcement target can complete desired -> rendered -> applied -> verified flow with explicit failure semantics.
+Implemented:
+- framework-free NEO Domain/Application/consumer-owned ports;
+- deterministic target stub scenarios for success/reject/unknown-apply/concurrent-change/post-apply-drift;
+- unit proofs for authority denial, stale revision, concurrency, rejection, uncertainty, drift, idempotent retry and operation-id conflict;
+- PostgreSQL-backed integration from desired policy -> Cisco ASA rendering -> NEO target projection -> stub apply -> post-check Verified;
+- adversarial integration proving no blind retry after Unknown and no false Verified under concurrent target change;
+- no Access Policy, NEP or TAE owner-state mutation from the execution flow.
+
+Exit achieved:
+NAPMS has an executable, fail-closed network-operation semantic loop through a deterministic stub, while explicitly deferring real Cisco transport validation until a lab/provider contract exists.
 
 ### I23 — Enterprise Identity and Authoritative Source Integration
 
-Status: `planned after executable network loop`.
+Status: `next; not yet selected for execution`.
 
 Goal:
 replace local/demo runtime dependencies with selected enterprise sources.
@@ -290,10 +212,7 @@ I13 Connectivity Requirements Core
 
 - Only the selected current increment gets a detailed `PLAN-*.md` under `docs/plans/active/`.
 - This roadmap carries future ordering/status; it does not duplicate dynamic work-package state.
-- When an increment completes, update this file in the same semantic stage:
-  - mark it `done`;
-  - record any accepted split/resequence;
-  - promote the next selected increment.
+- When an increment completes, update this file in the same semantic stage: mark it `done`, record any accepted split/resequence, and promote the next increment.
 - If a future increment becomes too large, split it before implementation and update the sequence here.
 - Domain unknowns remain unknown until their owning canonical artifacts accept them.
 - No future stage may be pulled forward merely to make a current implementation convenient.
