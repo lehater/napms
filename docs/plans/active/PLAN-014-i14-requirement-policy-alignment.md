@@ -28,7 +28,7 @@ I14 must not invent approval workflow, persist a peer Alignment aggregate, or tu
 
 **WP1 — Semantic/authority closure.**
 
-I13 is complete and absorbed. I14 starts from accepted Connectivity Requirement and Access Policy semantics.
+I13 is complete and absorbed. I14 starts from accepted Connectivity Requirement and Access Policy semantics. Working packet: `docs/plans/active/I14-WP1-alignment-decision-packet.md`.
 
 ## Inputs
 
