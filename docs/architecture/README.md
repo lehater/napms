@@ -13,7 +13,7 @@ Start with the smallest relevant artifact:
 - `access-policy-realization-resolution-boundary.md` — I18 Technical-to-Domain Access Resolution boundary.
 - `network-enforcement-placement-boundary.md` — I19 Network Enforcement Placement boundary.
 - `access-policy-realization-reconciliation-boundary.md` — I20 desired enforcement derivation/reconciliation boundary.
-- `enterprise-identity-authoritative-sources-boundary.md` — I23 authentication/actor mapping and owner-preserving enterprise source integration boundary.
+- `enterprise-identity-authoritative-sources-boundary.md` — I23 local-first runtime with dormant external identity/source extension seams.
 
 Consequential choices are recorded in `docs/decisions/`. Product behavior belongs in `docs/requirements/`; architecture should reference those contracts rather than restate them.
 
