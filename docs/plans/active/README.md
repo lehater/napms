@@ -2,7 +2,7 @@
 
 Current: `PLAN-033-i19-network-enforcement-placement.md`
 Goal: Complete I19 Network Enforcement Placement without pulling I20 reconciliation or vendor/device mechanics forward.
-Current task: WP-1 — implement framework-free NEP Domain/Application/Ports and executable core semantics.
+Current task: WP-2 — add durable NEP-owned PostgreSQL knowledge and one strict local import adapter.
 
 Working mode: implementation slice; primary Skill `implement-slice`.
 
@@ -10,30 +10,30 @@ Working mode: implementation slice; primary Skill `implement-slice`.
 
 Read first:
 - `docs/plans/active/PLAN-033-i19-network-enforcement-placement.md`
-- `docs/domain/network-enforcement-placement/tactical-model.md`
 - `docs/architecture/network-enforcement-placement-boundary.md`
+- `src/napms/network_enforcement_placement/domain/model.py`
 
 Expand only if needed:
-- `docs/requirements/network-enforcement-placement-core.md`
-- `src/AGENTS.md`
-- `tests/architecture/test_dependency_rules.py`
-- `src/napms/access_policy_realization/`
-- `src/napms/technical_access_evidence/`
+- `src/napms/technical_access_evidence/adapters/postgres/`
+- `src/napms/technical_access_evidence/adapters/local_import.py`
+- `src/napms/runtime/migrations.py`
+- `tests/integration/`
+- `pyproject.toml`
 
 Recovery facts:
-- WP-0 is accepted: exact endpoint-pair first slice, zero/one complete path, unsupported multipath/discriminators -> Unknown.
-- Logical Firewall identity is independent from provider realization; attachments require matching effective correspondence.
-- Selection states are `Placed | NoEnforcement | NoForwardingPath | Ambiguous | Unknown`.
-- I20 reconciliation/policy derivation and vendor/provider execution remain out of scope.
+- WP-0 accepted the first-slice semantics.
+- WP-1 core is implemented; isolated NEP tests pass 11/11 in the available execution environment.
+- full repository-local `make test` remains unavailable because the tool environment cannot clone GitHub; final repository validation will use the PR hosted gate.
+- PostgreSQL/schema/import code must preserve NEP ownership and fail closed; no peer SQL.
 
 ## Blockers
 
-None for WP-1.
+None for WP-2.
 
 ## Gate
 
-WP-1 passes when Domain/Application/Ports implement the accepted selection semantics with deterministic fail-closed tests and no peer/infrastructure dependency.
+WP-2 passes when strict source input persists/reloads NEP facts through a module-owned PostgreSQL schema and produces the same time-qualified selection semantics without cross-context persistence access.
 
 ## Next
 
-Implement NEP core + architecture tests, then advance to WP-2 durable PostgreSQL/import proof only after the core gate is coherent.
+Implement migration, repository/read adapter, strict local JSON import and PostgreSQL integration proof; then advance to WP-3 composition only after the durable path is coherent.

@@ -126,8 +126,8 @@ I19 is complete only when:
 
 ## Blockers
 
-WP-0 semantic choices are accepted in the I19 Tactical DDD/requirements/architecture contract. No plan-level blocker remains for WP-1.
+WP-0 is accepted. WP-1 framework-free Domain/Application/Ports and isolated executable core tests are complete. No plan-level blocker remains for WP-2.
 
 ## Next
 
-Execute WP-1: implement the framework-free NEP Domain/Application/Ports and executable core/architecture tests from the accepted WP-0 contract.
+Execute WP-2: add NEP-owned PostgreSQL persistence/migration plus one strict local import adapter and durable record/readback selection proof.
