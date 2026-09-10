@@ -14,6 +14,7 @@ The pilot journey is J01: an authorized catalogue curator creates a new Applicat
 - accepted Web UI product requirements and `docs/ui/` guidance;
 - current Applications catalogue Web implementation and its backend boundary;
 - repository Harness rules and the admitted `user-journey-validation` Skill;
+- existing GitHub Actions workflows as deterministic hosted execution surfaces;
 - pilot fixture kept intentionally small: one application with a few components/deployments and two directed communications.
 
 ## Non-goals
@@ -23,18 +24,23 @@ The pilot journey is J01: an authorized catalogue curator creates a new Applicat
 - no permanent duplicate journey documentation when accepted requirements or executable tests can own the result;
 - no automated E2E suite before the pilot path is semantically and interactively stable.
 
-## WP-1 — Harness admission and routing
+## WP-1 — Harness admission, routing and CI discoverability
 
-Purpose: make end-to-end journey validation a first-class reusable agent workflow without changing the Harness architecture.
+Purpose: make end-to-end journey validation a first-class reusable agent workflow without changing the Harness architecture, and make existing hosted CI discoverable as an execution surface to fresh agents.
 
 Deliverables:
 - `.agents/skills/user-journey-validation/SKILL.md`;
 - positive/confusable-negative routing coverage in `tests/evals/skill-routing-cases.json`;
-- no new dispatcher, role state machine, runtime coordinator or validator unless demonstrated evidence requires one.
+- root `AGENTS.md` explicitly routes agents to `.github/workflows/` when deterministic execution is needed;
+- `docs/process/working-loop.md` defines local checks vs hosted `workflow_dispatch` fallback and final Ready-for-review gate;
+- `tools/validate_harness.py` guards the CI discoverability contract;
+- no new dispatcher, role state machine, runtime coordinator or generic QA framework.
 
 Local exit:
 - the Skill boundary is distinct from `implement-slice`, `domain-model-change`, `resolve-decision` and `agent-harness-design`;
-- `make harness-check` passes.
+- a fresh agent can discover which hosted workflow owns a gate, its trigger/command, and whether manual dispatch is available without scanning the repository blindly;
+- inability of the current connector/runtime to dispatch Actions is reported as a capability limitation, not mistaken for absence of CI;
+- `make harness-check` passes locally or through the equivalent hosted Harness workflow.
 
 ## WP-2 — J01 baseline and gap classification
 
@@ -99,7 +105,7 @@ Deliverables:
 - keep test fixtures isolated and reproducible.
 
 Local exit:
-- the automated journey regression passes locally;
+- the automated journey regression passes locally or in its applicable hosted CI workflow;
 - manual/judgement evidence and automated evidence make distinct claims.
 
 ## WP-5 — Pilot review and absorption
@@ -110,6 +116,7 @@ Review:
 - whether `user-journey-validation` remained useful and distinct in real execution;
 - whether any shared process belongs in `docs/process/` after demonstrated reuse;
 - whether routing/eval coverage needs refinement;
+- whether CI discoverability/dispatch guidance was sufficient for fresh agents;
 - which J01 truths belong in accepted requirements and which evidence belongs only in executable tests/Git history.
 
 Local exit:
@@ -119,7 +126,8 @@ Local exit:
 
 ## Exit criteria
 
-- `make harness-check` passes with the journey-validation routing boundary;
+- `make harness-check` passes with the journey-validation routing boundary and CI discoverability guardrails;
+- fresh agents can discover and correctly interpret the repository CI execution model;
 - J01 passes end-to-end through the supported UI with no P0/P1 findings;
 - accepted requirements and UI guidance do not conflict on behavior required by J01;
 - deterministic high-value J01 behavior has executable regression evidence where justified;
@@ -127,8 +135,8 @@ Local exit:
 
 ## Blockers
 
-None known at plan creation. Runtime/browser execution constraints discovered during WP-2 must be recorded as evidence rather than silently replaced with code inspection.
+The currently connected GitHub capability can inspect Actions runs/jobs/logs and rerun existing jobs, but does not expose creation of a new `workflow_dispatch` run. This is a tool-capability limitation, not a repository CI limitation. Runtime/browser execution constraints discovered during WP-2 must likewise be recorded as evidence rather than silently replaced with code inspection.
 
 ## Next
 
-Finish WP-1 validation, then execute WP-2 using `user-journey-validation`. Do not begin implementation fixes until the baseline findings identify their owning semantic/UI layer.
+Finish WP-1 validation using the available execution surface, then execute WP-2 using `user-journey-validation`. Do not begin implementation fixes until the baseline findings identify their owning semantic/UI layer.
