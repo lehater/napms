@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from napms.application_catalogue.domain.model import CatalogueInvariantError
+from .model import CatalogueInvariantError
 
 
 @dataclass(frozen=True, slots=True, order=True)
