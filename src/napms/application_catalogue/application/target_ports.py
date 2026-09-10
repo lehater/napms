@@ -27,31 +27,73 @@ class ActiveDependencyReference:
     display_name: str | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class ActiveDependencySummary:
+    total: int
+    references: tuple[ActiveDependencyReference, ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.total < 0:
+            raise ValueError("dependency total must be >= 0")
+        if len(self.references) > self.total:
+            raise ValueError("dependency preview cannot exceed total")
+
+
 class ConnectivityRequirementDependencyPort(Protocol):
-    def find_active_references(
+    def summarize_active_references(
         self,
         *,
-        subject: DirectedInteractionIdentity,
+        subjects: tuple[DirectedInteractionIdentity, ...],
         as_of: datetime,
-    ) -> tuple[ActiveDependencyReference, ...]: ...
+        preview_limit: int,
+    ) -> ActiveDependencySummary: ...
+
+    def list_active_references(
+        self,
+        *,
+        subjects: tuple[DirectedInteractionIdentity, ...],
+        as_of: datetime,
+        offset: int,
+        limit: int,
+    ) -> ActiveDependencySummary: ...
 
 
 class ConnectivityDecisionDependencyPort(Protocol):
-    def find_active_references(
+    def summarize_active_references(
         self,
         *,
-        subject: DirectedInteractionIdentity,
+        subjects: tuple[DirectedInteractionIdentity, ...],
         as_of: datetime,
-    ) -> tuple[ActiveDependencyReference, ...]: ...
+        preview_limit: int,
+    ) -> ActiveDependencySummary: ...
+
+    def list_active_references(
+        self,
+        *,
+        subjects: tuple[DirectedInteractionIdentity, ...],
+        as_of: datetime,
+        offset: int,
+        limit: int,
+    ) -> ActiveDependencySummary: ...
 
 
 class AccessRuleDependencyPort(Protocol):
-    def find_active_references(
+    def summarize_active_references(
         self,
         *,
-        subject: DirectedInteractionIdentity,
+        subjects: tuple[DirectedInteractionIdentity, ...],
         as_of: datetime,
-    ) -> tuple[ActiveDependencyReference, ...]: ...
+        preview_limit: int,
+    ) -> ActiveDependencySummary: ...
+
+    def list_active_references(
+        self,
+        *,
+        subjects: tuple[DirectedInteractionIdentity, ...],
+        as_of: datetime,
+        offset: int,
+        limit: int,
+    ) -> ActiveDependencySummary: ...
 
 
 class TargetApplicationCatalogueIdentityFactory(ApplicationCatalogueIdentityFactory, Protocol):
