@@ -274,9 +274,18 @@ def test_requirement_to_verified_operation_full_local_product_chain(config, post
     rule = materialize_rule_from_real_decision(config)
 
     assert decision.evidence_references[0].reference == str(requirement.requirement_id)
-    assert decision.subject.source_component_deployment_id == requirement.required_interaction.source_component_deployment_id
-    assert decision.subject.destination_component_deployment_id == requirement.required_interaction.destination_component_deployment_id
-    assert decision.subject.dcs_contract_revision_id == requirement.required_interaction.dcs_contract_revision_id
+    assert (
+        decision.subject.source_component_deployment_id
+        == requirement.required_interaction.source_component_deployment_id
+    )
+    assert (
+        decision.subject.destination_component_deployment_id
+        == requirement.required_interaction.destination_component_deployment_id
+    )
+    assert (
+        decision.subject.dcs_contract_revision_id
+        == requirement.required_interaction.dcs_contract_revision_id
+    )
     assert rule.rule_id == RULE_ID
     assert rule.decision.decision_id == str(decision.decision_id)
 
@@ -302,7 +311,7 @@ def test_requirement_to_verified_operation_full_local_product_chain(config, post
             as_of=realization.AS_OF,
         )
         assert len(desired.intents) == 1
-        assert desired.intents[0].rule_id == RULE_ID
+        assert desired.intents[0].rule_references == (str(RULE_ID),)
         assert desired.regions_for(realization.TARGET_A)
 
         configured = scope.build_configured.execute(
@@ -360,4 +369,4 @@ def test_requirement_to_verified_operation_full_local_product_chain(config, post
     assert operation.outcome is OperationOutcome.VERIFIED
     assert operation.post_state is not None
     assert operation.post_state.artifact_digest == digest
-    assert operation.rule_ids == (str(RULE_ID),) if hasattr(operation, "rule_ids") else True
+    assert operation.provenance_references
