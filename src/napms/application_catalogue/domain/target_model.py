@@ -3,11 +3,11 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from napms.application_catalogue.domain.communication import (
+from .communication import (
     AuthoredDcsTrafficAlternative,
     canonical_dcs_alternatives,
 )
-from napms.application_catalogue.domain.model import (
+from .model import (
     CatalogueInvariantError,
     CatalogueLifecycleState,
 )
