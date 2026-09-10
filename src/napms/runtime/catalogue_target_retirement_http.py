@@ -43,6 +43,23 @@ def create_catalogue_target_retirement_router(
 ) -> APIRouter:
     router = APIRouter()
 
+    @router.get("/api/v1/catalogues/deployment-interactions/{subject_id}")
+    def read_deployment_interaction(subject_id: UUID, request: Request):
+        _require_actor(sessions, request)
+        with open_scope() as scope:
+            value = scope.applications.deployment_interaction_read.get(subject_id)
+        if value is None:
+            _not_found()
+        return {
+            "deploymentInteraction": {
+                "deploymentInteractionId": str(value.deployment_interaction_id),
+                "applicationDeploymentId": str(value.application_deployment_id),
+                "interactionDefinitionId": str(value.interaction_definition_id),
+                "lifecycleState": value.lifecycle_state.value,
+                "version": value.version,
+            }
+        }
+
     @router.get(
         "/api/v1/catalogues/retirement-dependencies/{subject_kind}/{subject_id}"
     )
