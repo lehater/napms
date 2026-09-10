@@ -291,6 +291,9 @@ export function App() {
               `connectivity-decisions/${encodeURIComponent(decisionId)}`,
             )
           }
+          onOpenRequirement={(requirementId) =>
+            navigate(`connectivity-needs/${encodeURIComponent(requirementId)}`)
+          }
         />
       ) : route.kind === "compose" ? (
         <ComposeConnectivityPage />
@@ -320,6 +323,9 @@ export function App() {
         <AccessRuleDetailsPage
           ruleId={route.ruleId}
           onBack={() => navigate("access-rules?page=1")}
+          onOpenDecision={(decisionId) =>
+            navigate(`connectivity-decisions/${encodeURIComponent(decisionId)}`)
+          }
         />
       )}
     </AppShell>
