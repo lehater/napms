@@ -5,14 +5,14 @@ Goal: Validate J03 from connectivity need through final Decision to authoritativ
 Current task: WP-1 — executable browser baseline against accepted Request access / Requirement / Decision / Access Policy semantics.
 Working mode: `user-journey-validation`.
 
-## Read first
+## Working set
 
+Read first:
 - `.agents/skills/user-journey-validation/SKILL.md`
 - `docs/requirements/scoped-connectivity-inventory.md`
 - `docs/requirements/connectivity-decision-core.md`
 
-## Expand only if needed
-
+Expand only if needed:
 - `docs/requirements/connectivity-requirements-core.md`
 - `docs/requirements/access-policy-core.md`
 - `web/src/features/connectivity/RequestConnectivityPage.tsx`
@@ -25,8 +25,12 @@ Working mode: `user-journey-validation`.
 - Current accepted Request access orchestration may declare/reuse a Requirement and then immediately submit an Access Rule Proposal.
 - Connectivity Decision has only final `Allowed | NotAllowed`; no persistent Pending/Approved request lifecycle is accepted.
 - Seeded `local-demo` contains one ACC interaction `Demo Web Frontend -> Demo Orders API`, DCS `HTTPS Orders API`, TCP/443.
-- Static candidate: local demo seed currently lacks `DecideConnectivity` and `ReadConnectivityDecision` authority actions.
-- Static candidate: first Request access attempt without an effective Decision may leave an authoritative Requirement but fail the later proposal step.
+- Static candidate: local runtime feeds Access Policy a local always-Allowed Decision stub instead of PostgreSQL Connectivity Decision truth.
+- Static candidate: local demo seed lacks `DecideConnectivity` and `ReadConnectivityDecision` authority actions.
+
+## Blockers
+
+None at plan start. Hosted browser execution is used because this connector cannot render the local product UI.
 
 ## Gate
 
@@ -34,4 +38,4 @@ WP-1 closes only with executable evidence. Do not fix static candidates before p
 
 ## Next
 
-Create the smallest J03 Playwright baseline using only visible UI and the seeded local-demo fixture.
+Inspect the J03 browser baseline result, classify confirmed findings, then route only P0/P1 closure work.
