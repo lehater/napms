@@ -55,6 +55,7 @@ def test_migration_registry_has_stable_unique_ids():
         "application-catalogue/0004",
         "resource-catalogue/0001",
         "resource-catalogue/0002",
+        "resource-catalogue/0003",
         "connectivity-requirements/0001",
         "connectivity-decision/0001",
         "technical-access-evidence/0001",
