@@ -40,6 +40,8 @@ Active -> Retired
 
 Retirement is terminal in the I27 slice. Normal product commands do not hard-delete these identities.
 
+A retirement transition records a separate server-owned `retirementProvenanceReference`. Creation provenance remains unchanged; the retirement source is not represented by overwriting the original provenance reference. New persisted `Retired` state without retirement provenance is invalid.
+
 Parent retirement is rejected while active children exist:
 
 - Application with Active Components cannot be retired;
@@ -65,7 +67,7 @@ existing deployment -> its compatibility Component
 
 Compatibility Component identity is derived deterministically from the existing deployment UUID using a repository-defined namespace/algorithm. Migration does not group by equal display names and does not infer ownership or business structure.
 
-Migration provenance identifies the I27 compatibility migration explicitly.
+Migration provenance identifies the I27 compatibility migration explicitly. Existing deployments are migrated as `Active`; therefore the migration does not manufacture retirement provenance for them.
 
 ## Alternatives rejected
 
@@ -85,10 +87,14 @@ Rejected because moving Component/Deployment parents in place silently changes s
 
 Rejected because downstream historical references and provenance are product truth even when a physical cascade could be made technically possible.
 
+### Overwrite creation provenance on retirement
+
+Rejected because creation and lifecycle transition are distinct facts. Overwriting creation provenance would make historical explanation weaker and would destroy the source of the original catalogue identity.
+
 ## Consequences
 
 - ACC gains a complete structural write model without changing existing policy subject identities.
-- User-facing deletion semantics become explicit retirement.
+- User-facing deletion semantics become explicit, auditable retirement.
 - Legacy data remains valid and receives conservative compatibility parents rather than guessed business grouping.
 - PostgreSQL schema, repository ports, commands, HTTP and Web work may implement this decision after the remaining I27 Stage 0 authority, DCS-authoring and command-concurrency decisions are accepted.
 
