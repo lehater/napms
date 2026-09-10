@@ -339,6 +339,27 @@ export async function createCatalogueResourceRealization(
   return response.realization
 }
 
+export async function replaceCatalogueResourceRealization(
+  realization: ResourceRealizationDto,
+  technicalAddresses: string[],
+  validFrom: string,
+): Promise<ResourceRealizationDto> {
+  const response = await request<{ realization: ResourceRealizationDto }>(
+    `/api/v1/catalogues/resource-realizations/${encodeURIComponent(realization.factReference)}/replacement`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({
+        technicalAddresses,
+        validFrom,
+        validTo: null,
+        expectedVersion: realization.version,
+      }),
+    },
+  )
+  return response.realization
+}
+
 export async function createCatalogueResourceScopeAffiliation(
   resourceReference: string,
   responsibilityScope: string,
@@ -350,6 +371,21 @@ export async function createCatalogueResourceScopeAffiliation(
       method: "POST",
       headers: mutationHeaders(),
       body: JSON.stringify({ responsibilityScope, validFrom, validTo: null }),
+    },
+  )
+  return response.scopeAffiliation
+}
+
+export async function endCatalogueResourceScopeAffiliation(
+  affiliation: ResourceScopeAffiliationDto,
+  validTo: string,
+): Promise<ResourceScopeAffiliationDto> {
+  const response = await request<{ scopeAffiliation: ResourceScopeAffiliationDto }>(
+    `/api/v1/catalogues/resource-scope-affiliations/${encodeURIComponent(affiliation.affiliationReference)}/end`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ validTo, expectedVersion: affiliation.version }),
     },
   )
   return response.scopeAffiliation
@@ -372,6 +408,21 @@ export async function createCatalogueResourceResponsibility(
       method: "POST",
       headers: mutationHeaders(),
       body: JSON.stringify({ ...input, validTo: null }),
+    },
+  )
+  return response.responsibility
+}
+
+export async function endCatalogueResourceResponsibility(
+  responsibility: ResourceResponsibilityDto,
+  validTo: string,
+): Promise<ResourceResponsibilityDto> {
+  const response = await request<{ responsibility: ResourceResponsibilityDto }>(
+    `/api/v1/catalogues/resource-responsibilities/${encodeURIComponent(responsibility.assignmentReference)}/end`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ validTo, expectedVersion: responsibility.version }),
     },
   )
   return response.responsibility
