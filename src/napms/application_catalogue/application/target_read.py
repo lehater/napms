@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
@@ -66,6 +67,8 @@ class DeploymentConnectivityRow:
 @dataclass(frozen=True, slots=True)
 class ResourceSetMember:
     resource_reference: str
+    display_name: str | None = None
+    scope_references: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -96,12 +99,14 @@ class ApplicationDeploymentPage:
 class DeploymentConnectivityPage:
     items: tuple[DeploymentConnectivityRow, ...]
     page: TargetPage
+    as_of: datetime
 
 
 @dataclass(frozen=True, slots=True)
 class ResourceSetPage:
     items: tuple[ResourceSetMember, ...]
     page: TargetPage
+    as_of: datetime
 
 
 class TargetApplicationCatalogueReadPort(Protocol):
@@ -165,13 +170,13 @@ class TargetApplicationCatalogueReadPort(Protocol):
         self,
         *,
         application_deployment_id: UUID,
+        as_of: datetime,
         offset: int,
         limit: int,
         search: str | None,
         source_component_id: UUID | None,
         destination_component_id: UUID | None,
         protocol: str | None,
-        binding_state: str | None,
         sort: str,
     ) -> DeploymentConnectivityPage: ...
 
@@ -180,10 +185,10 @@ class TargetApplicationCatalogueReadPort(Protocol):
         *,
         deployment_interaction_id: UUID,
         side: DeploymentInteractionSide,
+        as_of: datetime,
         offset: int,
         limit: int,
         search: str | None,
-        resource_type: str | None,
         scope_reference: str | None,
         sort: str,
     ) -> ResourceSetPage: ...
@@ -223,3 +228,9 @@ def normalize_bounded_query(
     if sort_key not in _ALLOWED_SORTS:
         raise CatalogueInvariantError("unsupported target catalogue sort")
     return offset, limit, normalized_search, ("-" if descending else "") + sort_key
+
+
+def require_as_of(as_of: datetime) -> datetime:
+    if as_of.tzinfo is None or as_of.utcoffset() is None:
+        raise CatalogueInvariantError("as_of must be offset-aware")
+    return as_of
