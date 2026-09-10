@@ -1,6 +1,6 @@
 # NAPMS Web UI
 
-First I8 browser-facing vertical slice.
+Browser-facing operator UI for the supported local NAPMS product path.
 
 ## Local development
 
@@ -20,10 +20,12 @@ Frontend:
 
 ```bash
 cd web
-npm install
+npm ci
 npm run dev
 ```
 
+`package-lock.json` is repository-owned and CI/Docker use `npm ci`, so dependency resolution is reproducible for a source revision.
+
 Vite proxies `/api` and `/health` to `127.0.0.1:8000`.
 
-The first slice contains only Login and Compose Connectivity. Additional navigation is added only with real backend use cases.
+Current authenticated workspaces cover Connectivity, Needs, Decisions, Rules, Effective Desired Policy, Normalized Policy export and the read-only network-operator Realization view. Authority remains enforced by backend owner use cases; navigation does not grant business authority.

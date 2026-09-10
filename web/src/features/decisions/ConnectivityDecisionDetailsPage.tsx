@@ -56,10 +56,12 @@ export function ConnectivityDecisionDetailsPage({
   decisionId,
   onBack,
   onOpenDecision,
+  onOpenRequirement,
 }: {
   decisionId: string
   onBack: () => void
   onOpenDecision: (decisionId: string) => void
+  onOpenRequirement: (requirementId: string) => void
 }) {
   const [detail, setDetail] =
     useState<ConnectivityDecisionDetailResponse | null>(null)
@@ -405,7 +407,19 @@ export function ConnectivityDecisionDetailsPage({
                       <dt className="text-xs uppercase tracking-wide text-[#64748B]">
                         {item.kind}
                       </dt>
-                      <dd className="mt-1 break-all">{item.reference}</dd>
+                      <dd className="mt-1 break-all">
+                        {item.kind === "ConnectivityRequirement" ? (
+                          <button
+                            type="button"
+                            className="font-mono text-xs font-semibold text-[#2563EB] hover:underline"
+                            onClick={() => onOpenRequirement(item.reference)}
+                          >
+                            {item.reference}
+                          </button>
+                        ) : (
+                          item.reference
+                        )}
+                      </dd>
                     </div>
                   ))}
                 </dl>

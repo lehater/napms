@@ -68,7 +68,7 @@ Web build:
 
 ```bash
 cd web
-npm install
+npm ci
 npm run build
 ```
 

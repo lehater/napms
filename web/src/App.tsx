@@ -11,6 +11,7 @@ import { RequestConnectivityPage } from "@/features/connectivity/RequestConnecti
 import { EffectivePolicyPage } from "@/features/policy/EffectivePolicyPage"
 import { NormalizedPolicyPage } from "@/features/policy/NormalizedPolicyPage"
 import { ComposeConnectivityPage } from "@/features/proposals/ComposeConnectivityPage"
+import { NetworkOperatorRealizationPage } from "@/features/realization/NetworkOperatorRealizationPage"
 import { ConnectivityRequirementDetailsPage } from "@/features/requirements/ConnectivityRequirementDetailsPage"
 import { ConnectivityRequirementsPage } from "@/features/requirements/ConnectivityRequirementsPage"
 import { AccessRuleDetailsPage } from "@/features/rules/AccessRuleDetailsPage"
@@ -32,6 +33,7 @@ type Route =
   | { kind: "rule"; ruleId: string }
   | { kind: "effective" }
   | { kind: "normalized" }
+  | { kind: "realization" }
 
 function readRoute(): Route {
   const hash = window.location.hash.replace(/^#/, "")
@@ -119,6 +121,7 @@ function readRoute(): Route {
   if (hash.startsWith("compose")) return { kind: "compose" }
   if (hash.startsWith("effective-policy")) return { kind: "effective" }
   if (hash.startsWith("normalized-policy")) return { kind: "normalized" }
+  if (hash.startsWith("realization")) return { kind: "realization" }
   if (hash.startsWith("access-rules/")) {
     const ruleId = hash.slice("access-rules/".length).split("?")[0]
     if (ruleId) return { kind: "rule", ruleId: decodeURIComponent(ruleId) }
@@ -192,10 +195,12 @@ export function App() {
         : route.kind === "decisions" || route.kind === "decision"
           ? "decisions"
           : route.kind === "effective"
-          ? "effective"
-          : route.kind === "normalized"
-            ? "normalized"
-            : "rules"
+            ? "effective"
+            : route.kind === "normalized"
+              ? "normalized"
+              : route.kind === "realization"
+                ? "realization"
+                : "rules"
 
   return (
     <AppShell
@@ -211,9 +216,11 @@ export function App() {
                 ? "connectivity-decisions?page=1"
                 : target === "rules"
                   ? "access-rules?page=1"
-                : target === "effective"
-                  ? "effective-policy"
-                  : "normalized-policy",
+                  : target === "effective"
+                    ? "effective-policy"
+                    : target === "normalized"
+                      ? "normalized-policy"
+                      : "realization",
         )
       }
       onLogout={async () => {
@@ -284,6 +291,9 @@ export function App() {
               `connectivity-decisions/${encodeURIComponent(decisionId)}`,
             )
           }
+          onOpenRequirement={(requirementId) =>
+            navigate(`connectivity-needs/${encodeURIComponent(requirementId)}`)
+          }
         />
       ) : route.kind === "compose" ? (
         <ComposeConnectivityPage />
@@ -295,6 +305,12 @@ export function App() {
         />
       ) : route.kind === "normalized" ? (
         <NormalizedPolicyPage />
+      ) : route.kind === "realization" ? (
+        <NetworkOperatorRealizationPage
+          onOpenRule={(ruleId) =>
+            navigate(`access-rules/${encodeURIComponent(ruleId)}`)
+          }
+        />
       ) : route.kind === "rules" ? (
         <AccessRulesPage
           page={route.page}
@@ -307,6 +323,9 @@ export function App() {
         <AccessRuleDetailsPage
           ruleId={route.ruleId}
           onBack={() => navigate("access-rules?page=1")}
+          onOpenDecision={(decisionId) =>
+            navigate(`connectivity-decisions/${encodeURIComponent(decisionId)}`)
+          }
         />
       )}
     </AppShell>

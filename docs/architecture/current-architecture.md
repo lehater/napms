@@ -1,6 +1,6 @@
 # Current target architecture
 
-Status: `accepted current target through I24 local deployment hardening; I25 product completion and acceptance is next`.
+Status: `accepted current target through I25 product completion for the supported local deployment`.
 
 Date: 2026-09-10.
 
@@ -57,9 +57,9 @@ Current first-class semantic modules include:
 - Network Enforcement Placement;
 - Network Environment Operations.
 
-Current non-peer application/read compositions include Requirement-to-Policy Alignment, policy export/snapshot normalization and Scoped Connectivity Inventory.
+Current non-peer application/read compositions include Requirement-to-Policy Alignment, policy export/snapshot normalization, Scoped Connectivity Inventory and the I25 Network Operator Realization View.
 
-I20 implements APR managed-scope desired/configured reconciliation. I21 adds target-specific rendering inside APR. I22 adds a separate downstream Network Environment Operations boundary for operation identity, authority admission, concurrency, mutation outcomes and verification. I23 adds only a dormant source-neutral external identity/source extension seam while preserving local-first runtime behavior. I24 hardens the selected local deployment/operations boundary without changing semantic ownership or introducing enterprise infrastructure.
+I20 implements APR managed-scope desired/configured reconciliation. I21 adds target-specific rendering inside APR. I22 adds a separate downstream Network Environment Operations boundary for operation identity, authority admission, concurrency, mutation outcomes and verification. I23 adds only a dormant source-neutral external identity/source extension seam while preserving local-first runtime behavior. I24 hardens the selected local deployment/operations boundary. I25 closes the supported-local product chain with executable full-chain acceptance plus an owner-preserving operator read composition and Web explainability journey.
 
 ## Current runtime boundary
 
@@ -77,17 +77,17 @@ Local username/password authentication with server-side sessions is the primary 
 
 Only nginx/Web is host-published by the supported Compose topology. API and PostgreSQL remain internal to the Compose network.
 
-PostgreSQL host access on that network is password-authenticated; fresh local volumes initialize host authentication with SCRAM-SHA-256. The supported startup path prepares an ephemeral database credential, rotates the local role before dependent services start, and verifies that incorrect credentials are rejected. Credential preparation uses the container-local PostgreSQL socket and is an outer operational concern, not an application/domain responsibility.
+PostgreSQL host access is password-authenticated; fresh local volumes initialize host authentication with SCRAM-SHA-256. The supported startup path prepares an ephemeral database credential, rotates the local role before dependent services start, and verifies that incorrect credentials are rejected. Credential preparation is an outer operational concern, not an application/domain responsibility.
 
-The supported local startup probe is intentionally non-mutating. A separate fresh-volume CI journey exercises state-changing product behavior. This separation prevents operational readiness checks from manufacturing domain state.
+The supported local startup probe is intentionally non-mutating. A separate fresh-volume CI journey exercises state-changing product behavior. Local backup/recovery uses validated PostgreSQL custom-format logical backup plus explicit destructive clean-volume restore, then normal migration/startup. Failed forward upgrades recover from pre-upgrade backup and matching application revision; arbitrary reverse migrations are not promised.
 
-Local backup/recovery is PostgreSQL logical recovery: validated custom-format backup, explicit destructive clean-volume restore, then normal migration/startup. It is not physical replication, PITR or HA. Failed forward upgrades recover from a pre-upgrade backup and matching application revision; arbitrary reverse migrations are not an architectural promise.
+Runtime diagnostics use structured logs, `/health/live`, PostgreSQL-backed `/health/ready`, Compose state and an explicit PostgreSQL query probe. A separate metrics platform is not part of the selected local architecture because no accepted requirement demands one.
 
-Runtime diagnostics use boundary-owned structured logs, `/health/live`, PostgreSQL-backed `/health/ready`, Compose state and an explicit PostgreSQL query probe. A separate metrics platform is not part of the selected local architecture because no accepted operator/use-load requirement currently demands one.
+Backend application containers remain non-root and NAPMS backend/Web Compose services use init/reaping plus `no-new-privileges`. PostgreSQL keeps the official image entrypoint/privilege model.
 
-Backend application containers remain non-root and NAPMS backend/Web Compose services use init/reaping plus `no-new-privileges`. PostgreSQL keeps the official image entrypoint/privilege model rather than a custom security rewrite without evidence.
+Web dependency resolution is repository-owned through `web/package-lock.json`; supported CI and Docker build paths use `npm ci`.
 
-This is the current supported local deployment shape, not a claim of enterprise HA/SLA topology. Performance/capacity claims require an accepted workload target before further topology or instrumentation is justified.
+This is the current supported local deployment shape, not a claim of enterprise HA/SLA topology. Performance/capacity claims require an accepted workload target.
 
 ## Authority and trust boundaries
 
@@ -131,8 +131,6 @@ Rendering remains derived on demand and does not prove provider/device applicati
 
 ## Network Environment Operations — I22
 
-I22 introduces a separate framework-free Network Environment Operations module downstream of rendering.
-
 ```text
 APR Rendered Configuration
     -> composition projects EnforcementTarget identity
@@ -146,37 +144,75 @@ APR Rendered Configuration
 
 Architecture rules:
 - NEO Domain imports no APR/NEP/TAE domain types;
-- `OperationTarget` is NEO-owned projection data; composition maps upstream target identity into it without redefining Logical Firewall/Enforcement Attachment meaning;
+- `OperationTarget` is NEO-owned projection data;
 - `operation_id` binds exactly one Operation Target + artifact digest and is the first-slice idempotency key;
 - identical retry returns the recorded operation result; conflicting reuse fails closed;
-- mutation authority is an explicit consumer-owned port and is independent from read authority;
+- mutation authority is independent from read authority;
 - current target revision is the first-slice optimistic concurrency token;
 - apply acceptance and semantic verification are distinct;
 - `Verified` requires post-check evidence matching the requested artifact digest;
 - Unknown apply is not blindly retried or reclassified as success;
 - target/provider interaction remains behind a consumer-owned execution port;
 - the current adapter is a deterministic in-process target stub because no real Cisco lab is available;
-- stub success is only evidence of orchestration semantics, not Cisco transport compatibility;
+- stub success proves orchestration semantics only;
 - the current operation repository is in-memory and does not claim crash-durable audit;
 - real transport, credential handling, production rollback and durable operation persistence require later concrete environment evidence.
 
 Feature contract: `docs/architecture/network-environment-operations-boundary.md`.
 
+## Network Operator Realization View — I25
+
+I25 adds a non-peer, read-only application composition for network/security operator inspection. It owns no authoritative business state.
+
+```text
+server-authenticated actor + scope + asOf
+    -> ReadNetworkOperatorRealization authority admission
+    -> owner-preserving APR / NEP / TAE / NEO projections
+    -> stage availability + references/artifacts/evidence
+    -> HTTP transport DTO
+    -> Realization Web workspace
+```
+
+Rules:
+- composition consumes owning application/port contracts and does not read peer tables directly;
+- no independent realization-view persistence is introduced;
+- authority is checked before cross-context composition;
+- stage availability is `Available | NotAvailable | Unknown`;
+- missing configured-evidence/managed-scope input is `NotAvailable`, not `Satisfied` or `Drift`;
+- missing actual NEO operation result is `NotAvailable`, not `Verified`;
+- ambiguous/incomplete semantic input remains `Unknown`;
+- HTTP maps transport only and performs no reconciliation/execution inference;
+- Web preserves backend availability and adds no mutation controls;
+- contributing Access Rule references link to the existing Rule owner page;
+- cross-chain explainability continues through existing Rule -> Decision -> Connectivity Requirement references, with each owner page enforcing its own read authority.
+
+Feature contract: `docs/architecture/network-operator-realization-view.md`.
+
+## I25 full-chain acceptance composition
+
+The PostgreSQL acceptance suite composes existing owner APIs/repositories to prove:
+
+```text
+Connectivity Requirement
+    -> Connectivity Decision
+    -> Access Rule
+    -> NEP placement + configured TAE evidence
+    -> APR desired/reconciliation/rendering
+    -> deterministic NEO controlled execution
+    -> post-check Verified
+```
+
+This is executable acceptance evidence, not a new aggregate and not a claim that every runtime installation always has configured inputs or operation history. The interactive Realization view reports only current owning inputs/results.
+
 ## Cross-context application compositions
 
-A composition consumes explicit owner/application ports, owns orchestration only, does not create copied business truth, and represents missing/ambiguous contributors explicitly. APR EnforcementTarget -> NEO OperationTarget mapping follows this rule.
+A composition consumes explicit owner/application ports, owns orchestration only, does not create copied business truth, and represents missing/ambiguous contributors explicitly. APR EnforcementTarget -> NEO OperationTarget mapping and the I25 realization view follow this rule.
 
 Operational tooling may inspect/start/backup/restore the selected local runtime but does not acquire semantic ownership of module data. Database backup/restore preserves storage state as a whole; it is not a cross-context business API.
 
 ## Optional external extensions — I23
 
-External identity and source integrations are optional future extensions, not current target dependencies.
-
-If a future external authentication mechanism is selected, provider/protocol handling stays in an outer adapter and terminates at the source-neutral verified-identity/actor-resolution seam.
-
-If a future external Authority, ACC or Resource source is selected, its adapter terminates at a context-owned import/projection boundary. External transport/vendor models do not enter Domain and do not create shared mutable cross-context source state.
-
-Deterministic stubs are sufficient to prove dormant seams. Real provider/source compatibility is not part of the current product-completion criterion and requires its own accepted future requirement.
+External identity and source integrations are optional future extensions, not current target dependencies. Future adapters terminate at source-neutral/context-owned boundaries. Deterministic stubs are sufficient to prove dormant seams. Real provider/source compatibility requires its own accepted future requirement.
 
 Legacy/MSSQL and real provider/device transport are not target dependencies by default.
 
@@ -194,11 +230,13 @@ Architecture must preserve:
 - explicit degraded/error outcomes instead of convenient permission, absence or success;
 - no PostgreSQL network trust in the supported local Compose path;
 - operational startup/status probes do not mutate business state;
-- destructive local recovery requires explicit operator intent and a validated backup artifact.
+- destructive local recovery requires explicit operator intent and a validated backup artifact;
+- the realization read model never promotes missing/ambiguous owner evidence to success;
+- Web dependency changes keep package intent and lockfile consistent.
 
 ## Revisit triggers
 
-Revisit topology or add infrastructure only when accepted evidence requires it, such as a concrete external identity/source requirement, a real Cisco lab/transport contract, measured workload/performance needs, independent scale/security/availability constraints, or a target environment requiring public TLS/HA/external secret management.
+Revisit topology or add infrastructure only when accepted evidence requires it, such as a concrete external identity/source requirement, a real Cisco lab/transport contract, a requirement for durable NEO audit/rollback, measured workload/performance needs, independent scale/security/availability constraints, or a target environment requiring public TLS/HA/external secret management.
 
 ## Canonical references
 
@@ -206,5 +244,6 @@ Revisit topology or add infrastructure only when accepted evidence requires it, 
 - current product requirements: `docs/requirements/`;
 - feature architecture: `docs/architecture/`;
 - ADRs: `docs/decisions/`;
-- runtime/engineering state: `docs/engineering/current-state.md`;
+- runtime/product state: `docs/engineering/current-state.md`;
+- local operator workflow: `docs/engineering/local-product-operator-runbook.md`;
 - current execution only: `docs/plans/active/README.md`.

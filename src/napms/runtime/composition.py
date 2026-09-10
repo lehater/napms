@@ -5,10 +5,16 @@ from fastapi import FastAPI
 
 from napms.access_policy.application.ports import ConnectivityDecisionPort
 from napms.composition.greenfield_postgres import open_greenfield_scope
+from napms.composition.network_operator_view_postgres import (
+    open_network_operator_view_scope,
+)
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
 from napms.runtime.config import HttpRuntimeConfig
 from napms.runtime.http_api import HttpApiDependencies, create_http_api
 from napms.runtime.local_decision import LocalDevAllowedConnectivityDecisionAdapter
+from napms.runtime.network_operator_view_http import (
+    create_network_operator_view_router,
+)
 
 
 def build_http_api(
@@ -25,6 +31,12 @@ def build_http_api(
     def open_scope():
         return open_greenfield_scope(config.application)
 
+    def open_operator_scope(actor_id: str):
+        return open_network_operator_view_scope(
+            config.application,
+            actor_id=actor_id,
+        )
+
     def default_readiness() -> bool:
         try:
             with psycopg.connect(config.application.postgres.dsn) as connection:
@@ -33,7 +45,7 @@ def build_http_api(
         except psycopg.Error:
             return False
 
-    return create_http_api(
+    app = create_http_api(
         HttpApiDependencies(
             authenticator=authenticator,
             sessions=sessions,
@@ -43,6 +55,13 @@ def build_http_api(
             secure_cookie=False,
         )
     )
+    app.include_router(
+        create_network_operator_view_router(
+            sessions=sessions,
+            open_scope=open_operator_scope,
+        )
+    )
+    return app
 
 
 def build_local_dev_http_api(

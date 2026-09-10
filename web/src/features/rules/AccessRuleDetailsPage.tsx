@@ -24,9 +24,11 @@ function valueOrDash(value: string | null | undefined) {
 export function AccessRuleDetailsPage({
   ruleId,
   onBack,
+  onOpenDecision,
 }: {
   ruleId: string
   onBack: () => void
+  onOpenDecision: (decisionId: string) => void
 }) {
   const [detail, setDetail] = useState<RuleDetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -355,7 +357,17 @@ export function AccessRuleDetailsPage({
                   Decision reference
                 </dt>
                 <dd className="mt-1 break-all font-mono">
-                  {valueOrDash(detail.rule.decisionReference)}
+                  {detail.rule.decisionReference ? (
+                    <button
+                      type="button"
+                      className="text-[#2563EB] hover:underline"
+                      onClick={() => onOpenDecision(detail.rule.decisionReference as string)}
+                    >
+                      {detail.rule.decisionReference}
+                    </button>
+                  ) : (
+                    valueOrDash(detail.rule.decisionReference)
+                  )}
                 </dd>
               </div>
               <div>
