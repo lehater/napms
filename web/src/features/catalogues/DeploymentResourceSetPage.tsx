@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react"
-import { ArrowLeft, Search } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { ArrowLeft, Plus, Search } from "lucide-react"
 
 import { ApiError } from "@/api"
 import { Button } from "@/components/ui/Button"
 import { CataloguePager } from "@/features/catalogues/CataloguePager"
+import { ResourceMembershipPanel } from "@/features/catalogues/ResourceMembershipPanel"
+import { endDeploymentResourceBinding } from "@/features/catalogues/targetCatalogueCommands"
 import {
   listDeploymentInteractionResources,
   type DeploymentInteractionSide,
@@ -40,10 +42,20 @@ export function DeploymentResourceSetPage({
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<ApiError | null>(null)
+  const [mutationError, setMutationError] = useState<ApiError | null>(null)
   const [draftSearch, setDraftSearch] = useState("")
   const [draftScope, setDraftScope] = useState("")
   const [search, setSearch] = useState("")
   const [scope, setScope] = useState("")
+  const [addOpen, setAddOpen] = useState(false)
+  const [endingReference, setEndingReference] = useState<string | null>(null)
+  const [ending, setEnding] = useState(false)
+  const [reloadToken, setReloadToken] = useState(0)
+
+  const visibleResourceReferences = useMemo(
+    () => new Set(items.map((item) => item.resourceReference)),
+    [items],
+  )
 
   useEffect(() => {
     let active = true
@@ -71,7 +83,33 @@ export function DeploymentResourceSetPage({
     return () => {
       active = false
     }
-  }, [deploymentInteractionId, side, page, search, scope])
+  }, [deploymentInteractionId, side, page, search, scope, reloadToken])
+
+  function refreshMembership() {
+    setMutationError(null)
+    setEndingReference(null)
+    setPage(1)
+    setReloadToken((value) => value + 1)
+  }
+
+  async function endMembership(item: ResourceSetMemberDto) {
+    setEnding(true)
+    setMutationError(null)
+    try {
+      await endDeploymentResourceBinding({
+        deploymentInteractionId,
+        side,
+        bindingReference: item.bindingReference,
+        validTo: new Date().toISOString(),
+        expectedVersion: item.bindingVersion,
+      })
+      refreshMembership()
+    } catch (caught) {
+      setMutationError(errorFrom(caught))
+    } finally {
+      setEnding(false)
+    }
+  }
 
   return (
     <div className="mx-auto grid max-w-6xl gap-5">
@@ -82,15 +120,31 @@ export function DeploymentResourceSetPage({
         </Button>
       </div>
 
-      <header>
-        <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#64748B]">
-          Application Deployment
+      <header className="flex items-end justify-between gap-4">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#64748B]">
+            Application Deployment
+          </div>
+          <h1 className="mt-1 text-2xl font-bold text-[#172033]">{side} resources</h1>
+          <p className="mt-2 text-sm text-[#64748B]">{total} effective resources</p>
         </div>
-        <h1 className="mt-1 text-2xl font-bold text-[#172033]">{side} resources</h1>
-        <p className="mt-2 text-sm text-[#64748B]">{total} effective resources</p>
+        <Button onClick={() => setAddOpen((value) => !value)}>
+          <Plus className="size-4" aria-hidden="true" />
+          Add resource
+        </Button>
       </header>
 
       <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
+        {addOpen ? (
+          <ResourceMembershipPanel
+            deploymentInteractionId={deploymentInteractionId}
+            side={side}
+            activeResourceReferences={visibleResourceReferences}
+            onChanged={refreshMembership}
+            onCancel={() => setAddOpen(false)}
+          />
+        ) : null}
+
         <form
           className="grid gap-2 border-b border-[#E2E8F0] p-4 md:grid-cols-[minmax(16rem,1fr)_minmax(10rem,16rem)_auto]"
           onSubmit={(event) => {
@@ -120,6 +174,12 @@ export function DeploymentResourceSetPage({
           <Button type="submit" variant="secondary">Apply</Button>
         </form>
 
+        {mutationError ? (
+          <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">
+            {mutationError.message}
+          </div>
+        ) : null}
+
         {loading ? (
           <div className="p-6 text-sm text-[#64748B]">Loading resources…</div>
         ) : error ? (
@@ -128,9 +188,9 @@ export function DeploymentResourceSetPage({
           <div className="p-6 text-sm text-[#64748B]">No resources match the current view.</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
+            <table className="w-full min-w-[760px] text-left text-sm">
               <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                <tr><th className="px-5 py-3">Resource</th><th className="px-5 py-3">Scope</th></tr>
+                <tr><th className="px-5 py-3">Resource</th><th className="px-5 py-3">Scope</th><th className="w-44 px-5 py-3 text-right">Membership</th></tr>
               </thead>
               <tbody className="divide-y divide-[#E2E8F0]">
                 {items.map((item) => (
@@ -140,6 +200,16 @@ export function DeploymentResourceSetPage({
                       {item.displayName ? <div className="mt-0.5 text-xs text-[#94A3B8]">{item.resourceReference}</div> : null}
                     </td>
                     <td className="px-5 py-3 text-[#475569]">{scopesSummary(item.scopeReferences)}</td>
+                    <td className="px-5 py-3 text-right">
+                      {endingReference === item.bindingReference ? (
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" disabled={ending} onClick={() => setEndingReference(null)}>Cancel</Button>
+                          <Button variant="secondary" loading={ending} onClick={() => void endMembership(item)}>Confirm end</Button>
+                        </div>
+                      ) : (
+                        <Button variant="ghost" onClick={() => setEndingReference(item.bindingReference)}>End membership</Button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
