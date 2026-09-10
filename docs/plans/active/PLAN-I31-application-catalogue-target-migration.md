@@ -6,14 +6,18 @@ Date: 2026-09-10.
 
 ## Goal
 
-Implement the accepted PR #57 Application Definition / Application Deployment target from domain model through HTTP and Web while preserving existing downstream semantic identities, historical references and repository execution discipline.
+Implement the accepted Application Definition / Application Deployment target from domain model through HTTP and Web while preserving existing downstream semantic identities, historical references and repository execution discipline.
 
-The implementation is intentionally staged. Domain/contract uncertainty is resolved before infrastructure or Web work, and each coherent semantic stage is integrated through its own squash PR.
+The implementation is staged. Domain/contract uncertainty is resolved before infrastructure or Web work, and each coherent semantic stage is integrated through its own squash PR.
 
 ## Inputs
 
-Canonical target:
+Canonical target and M0 closure:
 - `docs/decisions/ADR-012-application-definition-deployment-model.md`;
+- `docs/decisions/ADR-013-i31-application-catalogue-compatibility-and-reference-semantics.md`;
+- `docs/domain/application-communication-catalogue/target-tactical-model.md`;
+- `docs/requirements/application-catalogue-target.md`;
+- `docs/architecture/application-catalogue-target-boundary.md`;
 - `docs/ui/application-catalogue-target.md`;
 - `docs/ui/application-catalogue-wireframes.md`.
 
@@ -22,10 +26,6 @@ Current runtime truth and constraints:
 - `docs/architecture/current-architecture.md`;
 - `docs/decisions/ADR-011-i27-external-correlation-reference-input.md`;
 - `src/napms/application_catalogue/`;
-- `src/napms/runtime/catalogue_curation_http.py`;
-- `src/napms/runtime/catalogue_application_workspace_http.py`;
-- `web/src/features/catalogues/`;
-- `e2e/test_j01_application_authoring.py`;
 - downstream users of `DirectedInteractionIdentity` / `RuleSemanticIdentity`.
 
 Execution roadmap:
@@ -36,14 +36,14 @@ Execution roadmap:
 Responsibility: remove blocking semantic ambiguity before code migration.
 
 Outputs:
-- accepted compatibility projection from target Deployment Interaction to downstream stable interaction identity;
-- canonical edit semantics for Interaction Definitions already used by active Deployments;
-- canonical ownership/value semantics for Application `description/domain/owner`, Component `type/description`, and Deployment `company/environment/scope` fields required by the accepted UI;
-- canonical active-reference retirement dependency rules and dependency projection;
-- updated Tactical DDD / requirements / architecture / ADR / engineering API contract where each decision is owned;
-- roadmap/capsule refreshed with the selected implementation boundary.
+- accepted per-Deployment-Interaction compatibility projection to the existing downstream stable interaction triple;
+- accepted Interaction Definition endpoint/traffic edit semantics preserving immutable downstream snapshots;
+- accepted ownership/value semantics for Application metadata, Component metadata and Deployment Company/Environment/Scope context;
+- accepted active-reference retirement and traffic-edit dependency rules plus grouped dependency projection;
+- target Tactical DDD, product requirement and architecture boundary;
+- legacy I27 coexistence rule without fabricated target migration semantics.
 
-Local exit: no P0 unknown/conflict from the roadmap remains necessary to design domain/application code.
+Local exit: satisfied. No P0 unknown/conflict remains necessary to design domain/application code. PR #58 remains at the final M0 validation/integration gate.
 
 ## WP-1 — domain, application and ports
 
@@ -53,8 +53,8 @@ Outputs:
 - target entities/value types/invariants for Interaction Definition, Application Deployment and Deployment Interaction;
 - interaction-scoped source/destination Resource-binding semantics;
 - task-oriented commands and bounded query ports;
-- retirement dependency semantics;
-- ACC-owned compatibility-projection port preserving downstream stable identity;
+- retirement/traffic-edit dependency ports and semantics;
+- ACC-owned compatibility-projection contracts preserving downstream stable identity;
 - domain/application/architecture tests.
 
 Local exit: target use cases and compatibility identity are executable in memory and existing downstream contracts require no rewrite.
@@ -65,6 +65,7 @@ Responsibility: persist target truth additively and realize the selected downstr
 
 Outputs:
 - additive migrations and repository adapters;
+- explicit Deployment Interaction -> compatibility side/DCS mapping;
 - preserved legacy Component Deployment, DCS revision and binding IDs/facts;
 - no inference of Company/Environment/Scope or target interaction ownership from legacy display names;
 - deterministic persistence/concurrency/idempotency behavior;
@@ -82,7 +83,7 @@ Outputs:
 - paged Deployment connectivity rows and Resource-set drill-downs;
 - server search/filter/stable sort/paging and totals required by the wireframes;
 - task commands for target creation/edit/selection/binding flows;
-- structured blocked-retirement dependencies;
+- structured blocked-retirement/traffic-edit dependencies;
 - new product API does not expose compatibility Component Deployment IDs as authoring concepts;
 - HTTP contract/security/integration tests.
 
@@ -98,7 +99,7 @@ Outputs:
 - compact component and interaction authoring/edit surfaces;
 - Application Deployment connectivity table with Resource counts;
 - Resource-set drill-down and Add interaction flow;
-- blocked-retirement dependency UX;
+- blocked dependency UX;
 - normal working views exclude Retired entities and omit internal version/UUID noise;
 - no hard-delete action;
 - `make web-check` evidence.
@@ -107,7 +108,7 @@ Local exit: representative target user flow matches the accepted wireframes sema
 
 ## WP-5 — journeys, screenshots and absorption
 
-Responsibility: prove the new authoring projection and the unchanged downstream behavior end to end.
+Responsibility: prove the new authoring projection and unchanged downstream behavior end to end.
 
 Outputs:
 - J01 rewritten around Definition -> Components -> Interaction Definitions -> Application Deployment -> selected interactions -> Resource sets;
@@ -132,8 +133,8 @@ Local exit: the I31 completion criterion in the roadmap is executable and green.
 
 ## Blockers
 
-- WP-0 contains blocking semantic To-Be choices listed in the migration roadmap. They must be resolved through canonical project truth rather than implementation convenience.
+No semantic blocker remains for M1. M0 integration is pending repository final gates on PR #58.
 
 ## Next
 
-Execute WP-0 only. Resolve the downstream compatibility projection and the missing target field/context ownership semantics first; update canonical artifacts and keep the implementation gate closed until those decisions are accepted.
+Run the final M0 harness/knowledge gates for PR #58. If green, squash-merge M0. Start WP-1 only from a new branch/PR based on the resulting `main`; do not add M1 code to PR #58.
