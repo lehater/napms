@@ -97,6 +97,8 @@ def test_j03_requirement_decision_and_rule_remain_independent_authoritative_stat
         expect(page.get_by_text("Required", exact=True)).to_be_visible()
         expect(page.get_by_text("Allowed", exact=True)).to_be_visible()
         expect(page.get_by_text("Covered", exact=True)).to_be_visible()
-        expect(page.get_by_text("Active", exact=True)).to_be_visible()
+        expect(
+            page.get_by_role("cell", name="Active · effective", exact=True)
+        ).to_be_visible()
 
         browser.close()
