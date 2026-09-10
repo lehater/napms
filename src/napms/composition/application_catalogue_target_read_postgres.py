@@ -38,11 +38,11 @@ from napms.policy_export.application.normalization_ports import DcsProjectionDec
 
 
 class PostgresApplicationCatalogueTargetReadModel:
-    """Query-only I31 projection over ACC truth plus RC-owned display/scope facts.
+    """Query-only I31 projection over ACC truth plus RC display/scope facts.
 
-    The projection owns no business state and performs no writes. Cross-schema reads live
-    here, at composition, so neither bounded context's persistence adapter reads another
-    context's schema.
+    This composition projection owns no business state and performs no writes. The
+    cross-schema Resource-set join is deliberately outside both bounded-context
+    persistence adapters; lifecycle and mutation decisions remain owner-specific.
     """
 
     def __init__(self, connection) -> None:
@@ -64,16 +64,7 @@ class PostgresApplicationCatalogueTargetReadModel:
         )
         domain = _optional(domain)
         owner_reference = _optional(owner_reference)
-        order = _order(
-            sort,
-            {
-                "name": "a.display_name",
-                "domain": "a.domain NULLS LAST",
-                "owner": "a.owner_reference NULLS LAST",
-            },
-            default="a.display_name",
-            tie="a.application_id",
-        )
+        pattern = _pattern(search)
         where = """
             a.lifecycle_state = 'Active'
             AND (%s::text IS NULL OR a.domain = %s)
@@ -86,7 +77,6 @@ class PostgresApplicationCatalogueTargetReadModel:
                 OR a.owner_reference ILIKE %s
             )
         """
-        pattern = f"%{search}%" if search else None
         params = (
             domain,
             domain,
@@ -98,6 +88,16 @@ class PostgresApplicationCatalogueTargetReadModel:
             pattern,
             pattern,
         )
+        order = _order(
+            sort,
+            {
+                "name": ("a.display_name",),
+                "domain": ("COALESCE(a.domain, '')", "a.display_name"),
+                "owner": ("COALESCE(a.owner_reference, '')", "a.display_name"),
+            },
+            default=("a.display_name",),
+            tie="a.application_id",
+        )
         try:
             total = self._scalar(
                 f"SELECT count(*) FROM napms_application_catalogue.applications a WHERE {where}",
@@ -108,19 +108,22 @@ class PostgresApplicationCatalogueTargetReadModel:
                 SELECT a.application_id, a.display_name, a.provenance_reference,
                        a.lifecycle_state, a.retirement_provenance_reference, a.version,
                        a.description, a.domain, a.owner_reference,
-                       (SELECT count(*) FROM napms_application_catalogue.components c
-                        WHERE c.application_id = a.application_id
-                          AND c.lifecycle_state = 'Active') AS component_count,
-                       (SELECT count(*) FROM napms_application_catalogue.interaction_definitions i
-                        WHERE i.application_id = a.application_id
-                          AND i.lifecycle_state = 'Active') AS interaction_count,
-                       (SELECT count(*) FROM napms_application_catalogue.application_deployments d
-                        WHERE d.application_id = a.application_id
-                          AND d.lifecycle_state = 'Active') AS deployment_count
-                FROM napms_application_catalogue.applications a
-                WHERE {where}
-                ORDER BY {order}
-                OFFSET %s LIMIT %s
+                       (SELECT count(*)
+                          FROM napms_application_catalogue.components c
+                         WHERE c.application_id = a.application_id
+                           AND c.lifecycle_state = 'Active') AS component_count,
+                       (SELECT count(*)
+                          FROM napms_application_catalogue.interaction_definitions i
+                         WHERE i.application_id = a.application_id
+                           AND i.lifecycle_state = 'Active') AS interaction_count,
+                       (SELECT count(*)
+                          FROM napms_application_catalogue.application_deployments d
+                         WHERE d.application_id = a.application_id
+                           AND d.lifecycle_state = 'Active') AS deployment_count
+                  FROM napms_application_catalogue.applications a
+                 WHERE {where}
+                 ORDER BY {order}
+                 OFFSET %s LIMIT %s
                 """,
                 params + (offset, limit),
             )
@@ -146,8 +149,8 @@ class PostgresApplicationCatalogueTargetReadModel:
                 SELECT application_id, display_name, provenance_reference,
                        lifecycle_state, retirement_provenance_reference, version,
                        description, domain, owner_reference
-                FROM napms_application_catalogue.applications
-                WHERE application_id = %s
+                  FROM napms_application_catalogue.applications
+                 WHERE application_id = %s
                 """,
                 (application_id,),
             )
@@ -169,13 +172,7 @@ class PostgresApplicationCatalogueTargetReadModel:
             offset=offset, limit=limit, search=search, sort=sort
         )
         component_type = _optional(component_type)
-        order = _order(
-            sort,
-            {"name": "c.display_name", "type": "c.component_type NULLS LAST"},
-            default="c.display_name",
-            tie="c.component_id",
-        )
-        pattern = f"%{search}%" if search else None
+        pattern = _pattern(search)
         where = """
             c.application_id = %s
             AND c.lifecycle_state = 'Active'
@@ -198,6 +195,15 @@ class PostgresApplicationCatalogueTargetReadModel:
             pattern,
             pattern,
         )
+        order = _order(
+            sort,
+            {
+                "name": ("c.display_name",),
+                "type": ("COALESCE(c.component_type, '')", "c.display_name"),
+            },
+            default=("c.display_name",),
+            tie="c.component_id",
+        )
         try:
             total = self._scalar(
                 f"SELECT count(*) FROM napms_application_catalogue.components c WHERE {where}",
@@ -209,10 +215,10 @@ class PostgresApplicationCatalogueTargetReadModel:
                        c.provenance_reference, c.lifecycle_state,
                        c.retirement_provenance_reference, c.version,
                        c.component_type, c.description
-                FROM napms_application_catalogue.components c
-                WHERE {where}
-                ORDER BY {order}
-                OFFSET %s LIMIT %s
+                  FROM napms_application_catalogue.components c
+                 WHERE {where}
+                 ORDER BY {order}
+                 OFFSET %s LIMIT %s
                 """,
                 params + (offset, limit),
             )
@@ -235,33 +241,95 @@ class PostgresApplicationCatalogueTargetReadModel:
         protocol: str | None,
         sort: str,
     ) -> InteractionDefinitionPage:
+        return self._list_interactions(
+            application_id=application_id,
+            application_deployment_id=None,
+            only_unselected=False,
+            offset=offset,
+            limit=limit,
+            search=search,
+            source_component_id=source_component_id,
+            destination_component_id=destination_component_id,
+            protocol=protocol,
+            sort=sort,
+        )
+
+    def list_available_interactions_for_deployment(
+        self,
+        *,
+        application_deployment_id: UUID,
+        offset: int,
+        limit: int,
+        search: str | None,
+        source_component_id: UUID | None,
+        destination_component_id: UUID | None,
+        protocol: str | None,
+        sort: str,
+    ) -> InteractionDefinitionPage:
+        deployment = self.get_application_deployment(
+            application_deployment_id=application_deployment_id
+        )
+        if deployment is None or deployment.lifecycle_state is not CatalogueLifecycleState.ACTIVE:
+            return InteractionDefinitionPage(items=(), page=TargetPage(offset, limit, 0))
+        return self._list_interactions(
+            application_id=deployment.application_id,
+            application_deployment_id=application_deployment_id,
+            only_unselected=True,
+            offset=offset,
+            limit=limit,
+            search=search,
+            source_component_id=source_component_id,
+            destination_component_id=destination_component_id,
+            protocol=protocol,
+            sort=sort,
+        )
+
+    def _list_interactions(
+        self,
+        *,
+        application_id: UUID,
+        application_deployment_id: UUID | None,
+        only_unselected: bool,
+        offset: int,
+        limit: int,
+        search: str | None,
+        source_component_id: UUID | None,
+        destination_component_id: UUID | None,
+        protocol: str | None,
+        sort: str,
+    ) -> InteractionDefinitionPage:
         offset, limit, search, sort = normalize_bounded_query(
             offset=offset, limit=limit, search=search, sort=sort
         )
         protocol = _optional(protocol)
-        order = _order(
-            sort,
-            {
-                "source": "source.display_name",
-                "destination": "destination.display_name",
-                "traffic": "convert_from(i.traffic_payload, 'UTF8')",
-            },
-            default="source.display_name, destination.display_name",
-            tie="i.interaction_definition_id",
-        )
-        pattern = f"%{search}%" if search else None
-        where = """
+        pattern = _pattern(search)
+        unselected_clause = ""
+        unselected_params: tuple[object, ...] = ()
+        if only_unselected:
+            unselected_clause = """
+                AND NOT EXISTS (
+                    SELECT 1
+                      FROM napms_application_catalogue.deployment_interactions selected
+                     WHERE selected.application_deployment_id = %s
+                       AND selected.interaction_definition_id = i.interaction_definition_id
+                       AND selected.lifecycle_state = 'Active'
+                )
+            """
+            unselected_params = (application_deployment_id,)
+        where = f"""
             i.application_id = %s
             AND i.lifecycle_state = 'Active'
+            AND source.lifecycle_state = 'Active'
+            AND destination.lifecycle_state = 'Active'
             AND (%s::uuid IS NULL OR i.source_component_id = %s)
             AND (%s::uuid IS NULL OR i.destination_component_id = %s)
             AND (
                 %s::text IS NULL OR EXISTS (
                     SELECT 1
-                    FROM jsonb_array_elements(
-                        (convert_from(i.traffic_payload, 'UTF8')::jsonb)->'alternatives'
-                    ) AS alternative
-                    WHERE lower(alternative->>'protocol') = lower(%s)
+                      FROM jsonb_array_elements(
+                          (convert_from(i.traffic_payload, 'UTF8')::jsonb)->'alternatives'
+                      ) AS alternative
+                     WHERE lower(alternative->>'protocol') = lower(%s)
                 )
             )
             AND (
@@ -270,6 +338,7 @@ class PostgresApplicationCatalogueTargetReadModel:
                 OR destination.display_name ILIKE %s
                 OR i.interaction_definition_id::text ILIKE %s
             )
+            {unselected_clause}
         """
         params = (
             application_id,
@@ -283,7 +352,7 @@ class PostgresApplicationCatalogueTargetReadModel:
             pattern,
             pattern,
             pattern,
-        )
+        ) + unselected_params
         joins = """
             FROM napms_application_catalogue.interaction_definitions i
             JOIN napms_application_catalogue.components source
@@ -291,6 +360,16 @@ class PostgresApplicationCatalogueTargetReadModel:
             JOIN napms_application_catalogue.components destination
               ON destination.component_id = i.destination_component_id
         """
+        order = _order(
+            sort,
+            {
+                "source": ("source.display_name", "destination.display_name"),
+                "destination": ("destination.display_name", "source.display_name"),
+                "traffic": ("convert_from(i.traffic_payload, 'UTF8')",),
+            },
+            default=("source.display_name", "destination.display_name"),
+            tie="i.interaction_definition_id",
+        )
         try:
             total = self._scalar(f"SELECT count(*) {joins} WHERE {where}", params)
             rows = self._fetchall(
@@ -301,13 +380,13 @@ class PostgresApplicationCatalogueTargetReadModel:
                        i.retirement_provenance_reference, i.version,
                        source.display_name, destination.display_name,
                        (SELECT count(*)
-                        FROM napms_application_catalogue.deployment_interactions di
-                        WHERE di.interaction_definition_id = i.interaction_definition_id
-                          AND di.lifecycle_state = 'Active') AS active_deployment_count
-                {joins}
-                WHERE {where}
-                ORDER BY {order}
-                OFFSET %s LIMIT %s
+                          FROM napms_application_catalogue.deployment_interactions di
+                         WHERE di.interaction_definition_id = i.interaction_definition_id
+                           AND di.lifecycle_state = 'Active') AS active_deployment_count
+                  {joins}
+                 WHERE {where}
+                 ORDER BY {order}
+                 OFFSET %s LIMIT %s
                 """,
                 params + (offset, limit),
             )
@@ -344,20 +423,10 @@ class PostgresApplicationCatalogueTargetReadModel:
         company_reference = _optional(company_reference)
         environment = _optional(environment)
         scope_reference = _optional(scope_reference)
-        order = _order(
-            sort,
-            {
-                "application": "a.display_name",
-                "company": "d.company_reference",
-                "environment": "d.environment",
-                "scope": "d.scope_reference",
-            },
-            default="a.display_name, d.company_reference, d.environment, d.scope_reference",
-            tie="d.application_deployment_id",
-        )
-        pattern = f"%{search}%" if search else None
+        pattern = _pattern(search)
         where = """
             d.lifecycle_state = 'Active'
+            AND a.lifecycle_state = 'Active'
             AND (%s::uuid IS NULL OR d.application_id = %s)
             AND (%s::text IS NULL OR d.company_reference = %s)
             AND (%s::text IS NULL OR d.environment = %s)
@@ -392,6 +461,22 @@ class PostgresApplicationCatalogueTargetReadModel:
             JOIN napms_application_catalogue.applications a
               ON a.application_id = d.application_id
         """
+        order = _order(
+            sort,
+            {
+                "application": ("a.display_name",),
+                "company": ("d.company_reference", "a.display_name"),
+                "environment": ("d.environment", "a.display_name"),
+                "scope": ("d.scope_reference", "a.display_name"),
+            },
+            default=(
+                "a.display_name",
+                "d.company_reference",
+                "d.environment",
+                "d.scope_reference",
+            ),
+            tie="d.application_deployment_id",
+        )
         try:
             total = self._scalar(f"SELECT count(*) {joins} WHERE {where}", params)
             rows = self._fetchall(
@@ -402,17 +487,17 @@ class PostgresApplicationCatalogueTargetReadModel:
                        d.retirement_provenance_reference, d.version,
                        a.display_name,
                        (SELECT count(*)
-                        FROM napms_application_catalogue.deployment_interactions di
-                        WHERE di.application_deployment_id = d.application_deployment_id
-                          AND di.lifecycle_state = 'Active') AS selected_count,
+                          FROM napms_application_catalogue.deployment_interactions di
+                         WHERE di.application_deployment_id = d.application_deployment_id
+                           AND di.lifecycle_state = 'Active') AS selected_count,
                        (SELECT count(*)
-                        FROM napms_application_catalogue.interaction_definitions i
-                        WHERE i.application_id = d.application_id
-                          AND i.lifecycle_state = 'Active') AS available_count
-                {joins}
-                WHERE {where}
-                ORDER BY {order}
-                OFFSET %s LIMIT %s
+                          FROM napms_application_catalogue.interaction_definitions i
+                         WHERE i.application_id = d.application_id
+                           AND i.lifecycle_state = 'Active') AS defined_count
+                  {joins}
+                 WHERE {where}
+                 ORDER BY {order}
+                 OFFSET %s LIMIT %s
                 """,
                 params + (offset, limit),
             )
@@ -443,8 +528,8 @@ class PostgresApplicationCatalogueTargetReadModel:
                        company_reference, environment, scope_reference,
                        provenance_reference, lifecycle_state,
                        retirement_provenance_reference, version
-                FROM napms_application_catalogue.application_deployments
-                WHERE application_deployment_id = %s
+                  FROM napms_application_catalogue.application_deployments
+                 WHERE application_deployment_id = %s
                 """,
                 (application_deployment_id,),
             )
@@ -470,30 +555,22 @@ class PostgresApplicationCatalogueTargetReadModel:
             offset=offset, limit=limit, search=search, sort=sort
         )
         protocol = _optional(protocol)
-        order = _order(
-            sort,
-            {
-                "source": "source.display_name",
-                "destination": "destination.display_name",
-                "traffic": "convert_from(i.traffic_payload, 'UTF8')",
-            },
-            default="source.display_name, destination.display_name",
-            tie="di.deployment_interaction_id",
-        )
-        pattern = f"%{search}%" if search else None
+        pattern = _pattern(search)
         where = """
             di.application_deployment_id = %s
             AND di.lifecycle_state = 'Active'
             AND i.lifecycle_state = 'Active'
+            AND source.lifecycle_state = 'Active'
+            AND destination.lifecycle_state = 'Active'
             AND (%s::uuid IS NULL OR i.source_component_id = %s)
             AND (%s::uuid IS NULL OR i.destination_component_id = %s)
             AND (
                 %s::text IS NULL OR EXISTS (
                     SELECT 1
-                    FROM jsonb_array_elements(
-                        (convert_from(i.traffic_payload, 'UTF8')::jsonb)->'alternatives'
-                    ) AS alternative
-                    WHERE lower(alternative->>'protocol') = lower(%s)
+                      FROM jsonb_array_elements(
+                          (convert_from(i.traffic_payload, 'UTF8')::jsonb)->'alternatives'
+                      ) AS alternative
+                     WHERE lower(alternative->>'protocol') = lower(%s)
                 )
             )
             AND (
@@ -531,6 +608,16 @@ class PostgresApplicationCatalogueTargetReadModel:
               ON destination_side.deployment_interaction_id = di.deployment_interaction_id
              AND destination_side.side = 'Destination'
         """
+        order = _order(
+            sort,
+            {
+                "source": ("source.display_name", "destination.display_name"),
+                "destination": ("destination.display_name", "source.display_name"),
+                "traffic": ("convert_from(i.traffic_payload, 'UTF8')",),
+            },
+            default=("source.display_name", "destination.display_name"),
+            tie="di.deployment_interaction_id",
+        )
         try:
             total = self._scalar(f"SELECT count(*) {joins} WHERE {where}", params)
             rows = self._fetchall(
@@ -538,21 +625,21 @@ class PostgresApplicationCatalogueTargetReadModel:
                 SELECT di.deployment_interaction_id, i.interaction_definition_id,
                        i.source_component_id, source.display_name,
                        (SELECT count(*)
-                        FROM napms_application_catalogue.deployment_resource_bindings b
-                        WHERE b.component_deployment_id = source_side.component_deployment_id
-                          AND b.valid_from <= %s
-                          AND (b.valid_to IS NULL OR %s < b.valid_to)) AS source_resource_count,
+                          FROM napms_application_catalogue.deployment_resource_bindings b
+                         WHERE b.component_deployment_id = source_side.component_deployment_id
+                           AND b.valid_from <= %s
+                           AND (b.valid_to IS NULL OR %s < b.valid_to)) AS source_resource_count,
                        i.destination_component_id, destination.display_name,
                        (SELECT count(*)
-                        FROM napms_application_catalogue.deployment_resource_bindings b
-                        WHERE b.component_deployment_id = destination_side.component_deployment_id
-                          AND b.valid_from <= %s
-                          AND (b.valid_to IS NULL OR %s < b.valid_to)) AS destination_resource_count,
+                          FROM napms_application_catalogue.deployment_resource_bindings b
+                         WHERE b.component_deployment_id = destination_side.component_deployment_id
+                           AND b.valid_from <= %s
+                           AND (b.valid_to IS NULL OR %s < b.valid_to)) AS destination_resource_count,
                        i.traffic_payload
-                {joins}
-                WHERE {where}
-                ORDER BY {order}
-                OFFSET %s LIMIT %s
+                  {joins}
+                 WHERE {where}
+                 ORDER BY {order}
+                 OFFSET %s LIMIT %s
                 """,
                 (as_of, as_of, as_of, as_of) + params + (offset, limit),
             )
@@ -594,16 +681,7 @@ class PostgresApplicationCatalogueTargetReadModel:
             offset=offset, limit=limit, search=search, sort=sort
         )
         scope_reference = _optional(scope_reference)
-        order = _order(
-            sort,
-            {
-                "resource": "COALESCE(r.display_name, r.resource_reference)",
-                "scope": "scope_sort.scope_reference NULLS LAST",
-            },
-            default="COALESCE(r.display_name, r.resource_reference)",
-            tie="r.resource_reference",
-        )
-        pattern = f"%{search}%" if search else None
+        pattern = _pattern(search)
         where = """
             s.deployment_interaction_id = %s
             AND s.side = %s
@@ -617,11 +695,11 @@ class PostgresApplicationCatalogueTargetReadModel:
             AND (
                 %s::text IS NULL OR EXISTS (
                     SELECT 1
-                    FROM napms_resource_catalogue.resource_scope_affiliations rsa
-                    WHERE rsa.resource_reference = r.resource_reference
-                      AND rsa.responsibility_scope = %s
-                      AND rsa.valid_from <= %s
-                      AND (rsa.valid_to IS NULL OR %s < rsa.valid_to)
+                      FROM napms_resource_catalogue.resource_scope_affiliations rsa
+                     WHERE rsa.resource_reference = r.resource_reference
+                       AND rsa.responsibility_scope = %s
+                       AND rsa.valid_from <= %s
+                       AND (rsa.valid_to IS NULL OR %s < rsa.valid_to)
                 )
             )
         """
@@ -644,41 +722,57 @@ class PostgresApplicationCatalogueTargetReadModel:
               ON b.component_deployment_id = s.component_deployment_id
             JOIN napms_resource_catalogue.resources r
               ON r.resource_reference = b.resource_reference
-            LEFT JOIN LATERAL (
-                SELECT min(rsa.responsibility_scope) AS scope_reference
-                FROM napms_resource_catalogue.resource_scope_affiliations rsa
-                WHERE rsa.resource_reference = r.resource_reference
-                  AND rsa.valid_from <= %s
-                  AND (rsa.valid_to IS NULL OR %s < rsa.valid_to)
-            ) scope_sort ON TRUE
         """
-        join_params = (as_of, as_of)
+        scope_sort = """
+            COALESCE((
+                SELECT min(rsa.responsibility_scope)
+                  FROM napms_resource_catalogue.resource_scope_affiliations rsa
+                 WHERE rsa.resource_reference = r.resource_reference
+                   AND rsa.valid_from <= %s
+                   AND (rsa.valid_to IS NULL OR %s < rsa.valid_to)
+            ), '')
+        """
+        if sort.lstrip("-") == "scope":
+            # Sort parameters are appended only for the ORDER expression; no user text
+            # is interpolated into SQL identifiers or expressions.
+            order = _order(
+                sort,
+                {"scope": (scope_sort,)},
+                default=("COALESCE(r.display_name, r.resource_reference)",),
+                tie="r.resource_reference",
+            )
+            order_params: tuple[object, ...] = (as_of, as_of)
+        else:
+            order = _order(
+                sort,
+                {"resource": ("COALESCE(r.display_name, r.resource_reference)",)},
+                default=("COALESCE(r.display_name, r.resource_reference)",),
+                tie="r.resource_reference",
+            )
+            order_params = ()
         try:
             total = self._scalar(
                 f"SELECT count(DISTINCT r.resource_reference) {joins} WHERE {where}",
-                join_params + params,
+                params,
             )
             rows = self._fetchall(
                 f"""
                 SELECT r.resource_reference, r.display_name,
-                       COALESCE(
-                           ARRAY(
-                               SELECT DISTINCT rsa.responsibility_scope
-                               FROM napms_resource_catalogue.resource_scope_affiliations rsa
-                               WHERE rsa.resource_reference = r.resource_reference
-                                 AND rsa.valid_from <= %s
-                                 AND (rsa.valid_to IS NULL OR %s < rsa.valid_to)
-                               ORDER BY rsa.responsibility_scope
-                           ),
-                           ARRAY[]::text[]
+                       ARRAY(
+                           SELECT DISTINCT rsa.responsibility_scope
+                             FROM napms_resource_catalogue.resource_scope_affiliations rsa
+                            WHERE rsa.resource_reference = r.resource_reference
+                              AND rsa.valid_from <= %s
+                              AND (rsa.valid_to IS NULL OR %s < rsa.valid_to)
+                            ORDER BY rsa.responsibility_scope
                        ) AS scope_references
-                {joins}
-                WHERE {where}
-                GROUP BY r.resource_reference, r.display_name, scope_sort.scope_reference
-                ORDER BY {order}
-                OFFSET %s LIMIT %s
+                  {joins}
+                 WHERE {where}
+                 GROUP BY r.resource_reference, r.display_name
+                 ORDER BY {order}
+                 OFFSET %s LIMIT %s
                 """,
-                (as_of, as_of) + join_params + params + (offset, limit),
+                (as_of, as_of) + params + order_params + (offset, limit),
             )
             return ResourceSetPage(
                 items=tuple(
@@ -725,18 +819,23 @@ def _optional(value: str | None) -> str | None:
     return normalized or None
 
 
+def _pattern(value: str | None) -> str | None:
+    return f"%{value}%" if value else None
+
+
 def _order(
     sort: str,
-    columns: dict[str, str],
+    columns: dict[str, tuple[str, ...]],
     *,
-    default: str,
+    default: tuple[str, ...],
     tie: str,
 ) -> str:
     descending = sort.startswith("-")
     key = sort[1:] if descending else sort
-    column = columns.get(key, default)
+    expressions = columns.get(key, default)
     direction = "DESC" if descending else "ASC"
-    return f"{column} {direction}, {tie} {direction}"
+    ordered = tuple(f"{expression} {direction}" for expression in expressions)
+    return ", ".join(ordered + (f"{tie} {direction}",))
 
 
 def _application(row) -> Application:
