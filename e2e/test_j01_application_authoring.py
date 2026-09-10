@@ -36,7 +36,7 @@ def _select_component(page: Page, picker_label: str, name: str) -> None:
     search = root.get_by_label(f"Search {picker_label}")
     search.fill(name)
     root.get_by_role("button", name="Search", exact=True).click()
-    root.get_by_role("button", name=re.compile(rf"^{re.escape(name)}(?:\s|$)")).click()
+    root.get_by_role("button", name=name, exact=True).click()
 
 
 def _add_interaction(
@@ -122,7 +122,13 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
 
         _add_deployment(page)
         page.get_by_role("row", name=re.compile(r"Company A.*Production.*local-demo")).click()
-        expect(page.get_by_role("heading", name=re.compile(r"Order Management — Company A / Production"))).to_be_visible()
+        expect(
+            page.get_by_role(
+                "heading",
+                name="Order Management — Company A / Production",
+                exact=True,
+            )
+        ).to_be_visible()
         expect(page.get_by_role("heading", name="Connectivity 0 / 2", exact=True)).to_be_visible()
 
         page.get_by_role("button", name="Add interaction").click()
