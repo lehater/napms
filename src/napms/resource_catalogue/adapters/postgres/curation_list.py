@@ -29,10 +29,56 @@ class PostgresResourceCatalogueListQuery:
         responsibility_scope: str | None,
         as_of: datetime,
     ) -> tuple[ResourceCatalogueListItem, ...]:
-        pattern = f"%{search}%" if search else None
+        conditions = ["(%(include_retired)s OR r.lifecycle_state = 'Active')"]
+        params = {
+            "as_of": as_of,
+            "include_retired": include_retired,
+            "offset": offset,
+            "limit": limit,
+        }
+
+        if responsibility_scope is not None:
+            conditions.append(
+                """
+                EXISTS (
+                    SELECT 1
+                    FROM napms_resource_catalogue.resource_scope_affiliations rsa
+                    WHERE rsa.resource_reference = r.resource_reference
+                      AND rsa.responsibility_scope = %(scope)s
+                      AND rsa.valid_from <= %(as_of)s
+                      AND (rsa.valid_to IS NULL OR %(as_of)s < rsa.valid_to)
+                )
+                """
+            )
+            params["scope"] = responsibility_scope
+
+        if search is not None:
+            conditions.append(
+                """
+                (
+                    r.resource_reference ILIKE %(pattern)s
+                    OR r.display_name ILIKE %(pattern)s
+                    OR EXISTS (
+                        SELECT 1
+                        FROM napms_resource_catalogue.resource_responsibilities rsp
+                        WHERE rsp.resource_reference = r.resource_reference
+                          AND rsp.valid_from <= %(as_of)s
+                          AND (rsp.valid_to IS NULL OR %(as_of)s < rsp.valid_to)
+                          AND (
+                              rsp.party_reference ILIKE %(pattern)s
+                              OR rsp.display_name ILIKE %(pattern)s
+                              OR rsp.contact ILIKE %(pattern)s
+                          )
+                    )
+                )
+                """
+            )
+            params["pattern"] = f"%{search}%"
+
+        where_sql = " AND ".join(conditions)
         try:
             rows = self._connection.execute(
-                """
+                f"""
                 SELECT
                     r.resource_reference,
                     r.provenance_reference,
@@ -71,46 +117,11 @@ class PostgresResourceCatalogueListQuery:
                           AND btrim(rsp.contact) <> ''
                     ) AS has_effective_contact
                 FROM napms_resource_catalogue.resources r
-                WHERE (%(include_retired)s OR r.lifecycle_state = 'Active')
-                  AND (
-                      %(scope)s IS NULL
-                      OR EXISTS (
-                          SELECT 1
-                          FROM napms_resource_catalogue.resource_scope_affiliations rsa
-                          WHERE rsa.resource_reference = r.resource_reference
-                            AND rsa.responsibility_scope = %(scope)s
-                            AND rsa.valid_from <= %(as_of)s
-                            AND (rsa.valid_to IS NULL OR %(as_of)s < rsa.valid_to)
-                      )
-                  )
-                  AND (
-                      %(pattern)s IS NULL
-                      OR r.resource_reference ILIKE %(pattern)s
-                      OR r.display_name ILIKE %(pattern)s
-                      OR EXISTS (
-                          SELECT 1
-                          FROM napms_resource_catalogue.resource_responsibilities rsp
-                          WHERE rsp.resource_reference = r.resource_reference
-                            AND rsp.valid_from <= %(as_of)s
-                            AND (rsp.valid_to IS NULL OR %(as_of)s < rsp.valid_to)
-                            AND (
-                                rsp.party_reference ILIKE %(pattern)s
-                                OR rsp.display_name ILIKE %(pattern)s
-                                OR rsp.contact ILIKE %(pattern)s
-                            )
-                      )
-                  )
+                WHERE {where_sql}
                 ORDER BY r.display_name NULLS LAST, r.resource_reference
                 OFFSET %(offset)s LIMIT %(limit)s
                 """,
-                {
-                    "as_of": as_of,
-                    "include_retired": include_retired,
-                    "scope": responsibility_scope,
-                    "pattern": pattern,
-                    "offset": offset,
-                    "limit": limit,
-                },
+                params,
             ).fetchall()
         except PsycopgError as exc:
             raise ResourceCataloguePersistenceError() from exc
