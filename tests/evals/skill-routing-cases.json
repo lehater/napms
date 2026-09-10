@@ -38,7 +38,8 @@
     "prompt": "Исправь core implementation, чтобы принятый acceptance case проходил, не меняя семантику.",
     "expected_skill": "implement-slice",
     "not_expected_skills": [
-      "resolve-decision"
+      "resolve-decision",
+      "user-journey-validation"
     ]
   },
   {
@@ -168,6 +169,33 @@
     "expected_skill": "skill-design",
     "not_expected_skills": [
       "execute-work-package"
+    ]
+  },
+  {
+    "id": "journey-ui-acceptance",
+    "prompt": "Пройди J01 целиком глазами пользователя через UI: создать приложение, описать компоненты и связи, проверить исправление ошибок и повторное открытие. Найди P0-P3 пробелы и скажи, готов ли journey.",
+    "expected_skill": "user-journey-validation",
+    "not_expected_skills": [
+      "implement-slice",
+      "architecture-review"
+    ]
+  },
+  {
+    "id": "journey-usability",
+    "prompt": "Проверь end-to-end пользовательский сценарий через интерфейс, включая понятность следующего действия, validation/retry и сохранение результата после reload. Реализацию пока не исправляй.",
+    "expected_skill": "user-journey-validation",
+    "not_expected_skills": [
+      "implement-slice",
+      "agent-harness-design"
+    ]
+  },
+  {
+    "id": "journey-versus-screen-test",
+    "prompt": "Оцени, может ли оператор выполнить одну бизнес-задачу от начального состояния до сохраненного результата только через поддерживаемый UI, и зафиксируй блокирующие journey gaps.",
+    "expected_skill": "user-journey-validation",
+    "not_expected_skills": [
+      "skill-design",
+      "resolve-decision"
     ]
   }
 ]
