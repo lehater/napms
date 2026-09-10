@@ -40,8 +40,13 @@ CREATE TABLE IF NOT EXISTS napms_application_catalogue.components (
     )
 );
 
+-- Add the new parent reference before backfill so rerunning this additive migration
+-- can distinguish genuine legacy/orphan rows from already curated deployments.
+ALTER TABLE napms_application_catalogue.component_deployments
+ADD COLUMN IF NOT EXISTS component_id uuid NULL;
+
 -- Stable repository-defined identity for the conservative legacy parent.
--- It is inserted only when legacy deployments actually exist.
+-- It is inserted only while deployments without an explicit Component parent exist.
 INSERT INTO napms_application_catalogue.applications (
     application_id,
     display_name,
@@ -56,12 +61,15 @@ SELECT
     'Active',
     1
 WHERE EXISTS (
-    SELECT 1 FROM napms_application_catalogue.component_deployments
+    SELECT 1
+    FROM napms_application_catalogue.component_deployments
+    WHERE component_id IS NULL
 )
 ON CONFLICT (application_id) DO NOTHING;
 
--- One deterministic compatibility Component per pre-I27 deployment. Equal display
--- names are deliberately not grouped because display metadata is not identity evidence.
+-- One deterministic compatibility Component per legacy/orphan deployment. Equal
+-- display names are deliberately not grouped because display metadata is not
+-- identity evidence. Already parented deployments are never synthesized again.
 INSERT INTO napms_application_catalogue.components (
     component_id,
     application_id,
@@ -84,10 +92,8 @@ SELECT
     'Active',
     1
 FROM napms_application_catalogue.component_deployments AS d
+WHERE d.component_id IS NULL
 ON CONFLICT (component_id) DO NOTHING;
-
-ALTER TABLE napms_application_catalogue.component_deployments
-ADD COLUMN IF NOT EXISTS component_id uuid NULL;
 
 UPDATE napms_application_catalogue.component_deployments AS d
 SET component_id = (
