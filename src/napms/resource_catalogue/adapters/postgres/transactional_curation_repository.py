@@ -1,8 +1,16 @@
+from datetime import datetime
+
 from psycopg import Error as PsycopgError
 from psycopg.errors import UniqueViolation
 
+from napms.resource_catalogue.adapters.postgres.curation_list import (
+    PostgresResourceCatalogueListQuery,
+)
 from napms.resource_catalogue.adapters.postgres.curation_repository import (
     PostgresResourceCatalogueCurationRepository,
+)
+from napms.resource_catalogue.application.curation_read import (
+    ResourceCatalogueListItem,
 )
 from napms.resource_catalogue.application.ports import (
     ResourceCatalogueIdempotencyConflict,
@@ -15,6 +23,25 @@ class TransactionalPostgresResourceCatalogueCurationRepository(
     PostgresResourceCatalogueCurationRepository
 ):
     """RC curation repository with explicit pre-commit vs commit failure semantics."""
+
+    def list_resources(
+        self,
+        *,
+        offset: int,
+        limit: int,
+        search: str | None,
+        include_retired: bool,
+        responsibility_scope: str | None,
+        as_of: datetime,
+    ) -> tuple[ResourceCatalogueListItem, ...]:
+        return PostgresResourceCatalogueListQuery(self._connection).list_resources(
+            offset=offset,
+            limit=limit,
+            search=search,
+            include_retired=include_retired,
+            responsibility_scope=responsibility_scope,
+            as_of=as_of,
+        )
 
     def commit(self) -> None:
         if self._pending_receipt is not None:
