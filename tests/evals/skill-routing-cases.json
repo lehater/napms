@@ -38,8 +38,7 @@
     "prompt": "Исправь core implementation, чтобы принятый acceptance case проходил, не меняя семантику.",
     "expected_skill": "implement-slice",
     "not_expected_skills": [
-      "resolve-decision",
-      "user-journey-validation"
+      "resolve-decision"
     ]
   },
   {
@@ -148,6 +147,15 @@
     ]
   },
   {
+    "id": "harness-ci-discovery",
+    "prompt": "Агент считает, что не может выполнить проверку, хотя в GitHub Actions уже есть workflow с тем же gate. Исправь discoverability CI в harness.",
+    "expected_skill": "agent-harness-design",
+    "not_expected_skills": [
+      "implement-slice",
+      "user-journey-validation"
+    ]
+  },
+  {
     "id": "skill-new",
     "prompt": "Стоит ли этот повторяющийся workflow оформить новым Agent Skill? Проверь trigger boundary.",
     "expected_skill": "skill-design",
@@ -172,17 +180,8 @@
     ]
   },
   {
-    "id": "journey-ui-acceptance",
-    "prompt": "Пройди J01 целиком глазами пользователя через UI: создать приложение, описать компоненты и связи, проверить исправление ошибок и повторное открытие. Найди P0-P3 пробелы и скажи, готов ли journey.",
-    "expected_skill": "user-journey-validation",
-    "not_expected_skills": [
-      "implement-slice",
-      "architecture-review"
-    ]
-  },
-  {
-    "id": "journey-usability",
-    "prompt": "Проверь end-to-end пользовательский сценарий через интерфейс, включая понятность следующего действия, validation/retry и сохранение результата после reload. Реализацию пока не исправляй.",
+    "id": "journey-baseline",
+    "prompt": "Пройди J01 глазами пользователя через UI, проверь, может ли он завершить цель, и классифицируй найденные gaps P0-P3. Пока ничего не реализуй.",
     "expected_skill": "user-journey-validation",
     "not_expected_skills": [
       "implement-slice",
@@ -190,12 +189,21 @@
     ]
   },
   {
-    "id": "journey-versus-screen-test",
-    "prompt": "Оцени, может ли оператор выполнить одну бизнес-задачу от начального состояния до сохраненного результата только через поддерживаемый UI, и зафиксируй блокирующие journey gaps.",
+    "id": "journey-usability",
+    "prompt": "Проверь полный пользовательский путь создания приложения, компонентов и связей: полноту возможностей, понятность интерфейса и сохранение результата. Выдай PASS/FAIL и findings.",
     "expected_skill": "user-journey-validation",
     "not_expected_skills": [
-      "skill-design",
-      "resolve-decision"
+      "implement-slice",
+      "architecture-review"
+    ]
+  },
+  {
+    "id": "journey-accepted-gap-implementation",
+    "prompt": "Baseline journey уже показал, что принятая операция rename отсутствует в Web UI. Реализуй её по существующим контрактам и добавь тесты.",
+    "expected_skill": "implement-slice",
+    "not_expected_skills": [
+      "user-journey-validation",
+      "domain-model-change"
     ]
   }
 ]
