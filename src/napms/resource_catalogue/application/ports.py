@@ -175,11 +175,12 @@ class ResourceCatalogueCurationRepository(Protocol):
         fact_reference: str,
     ) -> ResourceRealizationVersion | None: ...
 
-    def find_effective_realizations(
+    def find_overlapping_realizations(
         self,
         *,
         resource_reference: str,
-        as_of: datetime,
+        valid_from: datetime,
+        valid_to: datetime | None,
     ) -> tuple[ResourceRealizationVersion, ...]: ...
 
     def add_realization(self, realization: ResourceRealizationVersion) -> None: ...
@@ -196,12 +197,13 @@ class ResourceCatalogueCurationRepository(Protocol):
         affiliation_reference: str,
     ) -> ResourceScopeAffiliation | None: ...
 
-    def find_effective_scope_affiliations_for_resource(
+    def find_overlapping_scope_affiliations(
         self,
         *,
         resource_reference: str,
         responsibility_scope: str,
-        as_of: datetime,
+        valid_from: datetime,
+        valid_to: datetime | None,
     ) -> tuple[ResourceScopeAffiliation, ...]: ...
 
     def add_scope_affiliation(self, affiliation: ResourceScopeAffiliation) -> None: ...
