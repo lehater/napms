@@ -1,12 +1,14 @@
 # PLAN-I26 — Traffic Analysis Checker
 
-Status: `active / planning baseline`.
+Status: `active / final gate`.
 
 Date: 2026-09-10.
 
 ## Goal
 
-Deliver the first complete Checker/Traffic Analysis slice for the supported local target, starting with UI information architecture and then adding only the backend composition/domain seams required by accepted behavior.
+Deliver the first complete Checker/Traffic Analysis slice for the supported local target, starting from a technical traffic tuple and composing owner-preserving domain, policy, Network Context, evidence and resource-responsibility information without introducing a new source of business truth.
+
+## Inputs
 
 Canonical requirement owner:
 - `docs/requirements/traffic-analysis-checker.md`
@@ -14,129 +16,114 @@ Canonical requirement owner:
 Durable ordered roadmap:
 - `docs/engineering/traffic-analysis-checker-roadmap.md`
 
-## Current semantic blocker
+Related semantic owners:
+- `docs/requirements/network-enforcement-placement-core.md`
+- `docs/domain/network-enforcement-placement/network-context.md`
+- `docs/domain/resource-role-model.md`
+- `docs/architecture/network-context-candidate-boundary.md`
 
-The current I19 NEP model assumes a proven `ForwardingPath` with ordered traversal positions for successful placement. The accepted Checker requirement states that the available Network Context only provides a set of relevant network/enforcement candidates, may be incomplete, may contain false positives and does not establish a trustworthy sequence.
+## Exit criteria
 
-Per `docs/process/domain-change-protocol.md`, this conflict must be resolved at the highest affected canonical layer before Checker backend code depends on the old ordered-path guarantee.
+I26 is complete when:
+- Checker accepts source/destination/protocol/port/as-of and renders the complete information architecture;
+- reverse technical-to-domain resolution preserves resolved, ambiguous, historical and unknown states;
+- policy composition reuses existing domain/read owners rather than creating Checker-owned truth;
+- Network Context returns unordered relevant enforcement/device candidates and never fabricates path/order;
+- configured rules come only from stored Technical Access Evidence snapshots with capture/record/provenance information;
+- technical predicate matching supports exact, containment and overlap semantics in backend code;
+- Resource Responsibility/contact information remains separate from Authority Management;
+- the supported local demo exercises multiple candidates, missing evidence and deterministic responsibility data;
+- core, harness, knowledge, web, PostgreSQL persistence and Docker local runtime gates are green;
+- canonical current-state/roadmap documentation is updated and the active plan is removed before merge.
 
-## Execution stages
+## Blockers
 
-### WP0 — Network Context semantic re-entry
+No product/domain blocker is currently known. Remaining blockers are only failures discovered by repository gates.
 
-- Re-read current NEP requirements/domain/application contracts only as needed.
-- Decide which proven-path semantics remain valid as an optional stronger capability and which baseline selection semantics must be generalized to candidate-set knowledge.
-- Update requirements/domain/architecture truth before implementation.
-- Define candidate relevance/quality, provenance, completeness/knowledge-gap and ambiguity contracts without inventing unsupported probability.
-- Add/adjust knowledge tests for the corrected semantics.
+## WP0 — Network Context semantic re-entry
 
-Exit: Checker can consume Network Context terminology without claiming a route/path that the source cannot prove.
+- Reconcile the stronger proven `ForwardingPath` capability with the baseline unordered candidate-set Network Context contract.
+- Preserve proven-path semantics only where a source can actually prove traversal/order.
+- Define candidate provenance, source relevance, completeness and knowledge-gap semantics without fabricated probability.
 
-### WP1 — Checker Web fixture slice
+Exit: complete. Checker can consume Network Context without claiming a route/path that the source cannot prove.
 
-- Apply `web/AGENTS.md` and nearest Web skill.
-- Add dedicated Checker/Traffic Analysis route/workspace.
-- Implement query controls: source, destination, protocol, port/range, as-of.
-- Implement tabs: Overview, Network Context, Policy, Ownership, Evidence.
-- Use typed deterministic fixtures.
-- Cover accepted uncertainty and negative states from REQ-CHK-012.
-- Run `make web-check` plus applicable harness/knowledge checks for touched docs/contracts.
+## WP1 — Checker Web fixture slice
 
-Exit: the complete information architecture is inspectable locally without waiting for backend integration.
+- Add dedicated Checker route/workspace.
+- Implement source, destination, protocol, port/range and as-of controls.
+- Implement Overview, Network Context, Policy, Ownership and Evidence tabs.
+- Use typed deterministic fixtures only during UI-first construction.
 
-### WP2 — Traffic Analysis application contract
+Exit: complete; the product read path has since been switched from fixtures to the real API.
 
-- Define consuming-module ports and owner-preserving `TrafficAnalysisQuery`/`TrafficAnalysisResult`.
+## WP2 — Traffic Analysis application contract
+
+- Define consuming-module ports and owner-preserving `TrafficAnalysisQuery` / `TrafficAnalysisResult`.
 - Define authenticated HTTP transport DTO.
-- No independent Checker persistence.
-- Core/architecture tests first.
+- Keep Checker persistence-free.
 
-Exit: stable composition seam exists for incremental owner integrations.
+Exit: complete.
 
-### WP3 — Domain resolution and policy composition
+## WP3 — Domain resolution and policy composition
 
 - Integrate Resource Catalogue endpoint/address history.
 - Integrate ACC semantic connectivity context where resolvable.
-- Integrate Requirement, Decision, Access Rule and Effective Policy reads.
-- Preserve unknown/ambiguous/historical states and owner references.
+- Reuse scoped connectivity composition for Requirement, Decision, Access Rule and Effective Policy summaries.
+- Preserve unknown/ambiguous/historical states and multiple matches.
 
-Exit: Checker can explain what the queried traffic means administratively/policy-wise when domain resolution is available.
+Exit: complete for the supported local target.
 
-### WP4 — Network candidate integration
+## WP4 — Network candidate integration
 
-- Consume corrected Network Context candidate-set contract.
-- Return relevant candidates without fabricated ordering.
-- Expose source-supported relevance/quality, provenance, ambiguity and knowledge gaps.
+- Consume the corrected Network Context candidate-set contract.
+- Return candidates without fabricated ordering.
+- Expose source relevance, provenance and knowledge gaps.
 
-Exit: Network Context tab is backed by owner data rather than fixtures.
+Exit: complete with deterministic local Network Context adapter.
 
-### WP5 — Evidence-backed technical rules
+## WP5 — Evidence-backed technical rules
 
 - Query stored Technical Access Evidence by candidate and requested `asOf`.
 - Select the latest applicable snapshot; never perform synchronous live firewall/device reads.
-- Expose captured-at/source/provenance/completeness.
+- Expose capture/record/source/provenance information.
 - Return matching/overlapping technical entries per candidate.
-- Preserve original vendor representation only when already stored by evidence.
 
-Exit: network engineers can see last-known imported device rules and exactly when that evidence was captured.
+Exit: complete for stored Configured evidence snapshots.
 
-### WP6 — Traffic predicate matching
+## WP6 — Traffic predicate matching
 
-- Implement backend-owned source/destination/protocol/port set matching.
-- Cover exact, containment, overlap, no-match and unknown/ambiguous states as supported by accepted contracts.
-- Add focused unit/property-style boundary tests for CIDR/host and port/range cases.
+- Implement backend source/destination/protocol/port set matching.
+- Cover exact, containment, overlap and no-match semantics.
+- Add focused boundary tests.
 
-Exit: UI does not perform independent technical rule matching.
+Exit: complete.
 
-### WP7 — Resource responsibility/contact seam
+## WP7 — Resource responsibility/contact seam
 
-- Re-enter Resource Catalogue tactical/requirements ownership as needed.
-- Add minimum Resource Responsibility / Contact Assignment capability with local deterministic stub/persistence appropriate to the current plan.
-- Allow person or team reference.
-- Support service owner, technical owner and operations/support contact at minimum.
+- Add minimum Resource Responsibility capability owned by Resource Catalogue.
+- Allow person/team references and service owner, technical owner, operations/support and business owner roles.
 - Keep responsibility/contact separate from Authority Management action authority.
 
-Exit: Ownership tab can answer who owns/supports both resolved sides when data exists.
+Exit: complete with temporal domain model/read contract and deterministic local adapter.
 
-### WP8 — Integration and acceptance
+## WP8 — Integration and acceptance
 
-Prove at least:
-- fully resolved/in-sync traffic;
-- ambiguous/unknown IP mapping;
-- several relevant network candidates including weak/possible relevance;
-- evidence snapshot timestamps and missing evidence;
-- broader/overlapping technical rule match;
-- configured evidence without matching authorization;
-- missing ownership data;
-- maintenance/contact-discovery journey from traffic tuple to affected service owners/support contacts.
+Prove:
+- fully resolved local traffic;
+- ambiguous/unknown resolution behavior;
+- several relevant Network Context candidates;
+- evidence timestamps and missing evidence;
+- broader/overlapping technical rule matching;
+- ownership/contact discovery;
+- no live device query path.
 
-Run the final relevant local gates. Keep PR draft while stages accumulate; mark ready only for the final gate.
+Current state: implementation and focused tests are present. Hosted repository gates are running; any remaining failures must be fixed before absorption.
 
-### WP9 — Optional presentation refinement
+## WP9 — Optional presentation refinement
 
-After the full slice works, adjust default expansion/visibility for network, security/governance, application-owner and assurance perspectives without creating separate truth models or incompatible APIs.
+Presentation refinement is deferred unless a gate or acceptance review exposes a concrete usability defect. No separate role-specific truth/API is introduced.
 
-## Non-goals
+## Next
 
-- Live firewall queries from Checker.
-- Real Cisco/provider transport or lab validation.
-- Automatic device remediation.
-- A guaranteed network path/order from current Network Context.
-- Enterprise identity/CMDB integration.
-- Hard-coded role/job-title domain semantics.
-- Automatic snapshot freshness trust decisions without a separate accepted policy.
-
-## Validation policy
-
-Use the smallest matching checks during each WP and final repository gates appropriate to all touched areas. Expected checks include:
-- `make test`;
-- `make harness-check`;
-- `make knowledge-check`;
-- `make web-check`;
-- `make check` for the final integrated candidate.
-
-Hosted Actions remain the final PR gate only.
-
-## Current next action
-
-Execute WP0: reconcile the I19 proven-path model with the accepted candidate-set Network Context behavior, then begin the UI fixture slice.
+Complete all hosted repository gates. Then absorb I26 into canonical `current-state` / architecture / roadmap truth, remove this completed plan from `docs/plans/active`, set the active capsule to `Current: none`, refresh PR metadata, and squash-merge into `main`.
