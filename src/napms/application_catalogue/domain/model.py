@@ -36,12 +36,35 @@ class CatalogueLifecycleState(str, Enum):
     RETIRED = "Retired"
 
 
+def _validate_retirement_provenance(
+    *,
+    lifecycle_state: CatalogueLifecycleState,
+    retirement_provenance_reference: str | None,
+    entity_name: str,
+) -> None:
+    if lifecycle_state is CatalogueLifecycleState.ACTIVE:
+        if retirement_provenance_reference is not None:
+            raise CatalogueInvariantError(
+                f"Active {entity_name} cannot have retirement provenance"
+            )
+        return
+    if retirement_provenance_reference is None:
+        raise CatalogueInvariantError(
+            f"Retired {entity_name} requires retirement provenance"
+        )
+    _require_non_empty(
+        retirement_provenance_reference,
+        field_name="retirement_provenance_reference",
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class Application:
     application_id: UUID
     display_name: str
     provenance_reference: str
     lifecycle_state: CatalogueLifecycleState = CatalogueLifecycleState.ACTIVE
+    retirement_provenance_reference: str | None = None
     version: int = 1
 
     def __post_init__(self) -> None:
@@ -53,6 +76,11 @@ class Application:
         _require_non_empty(
             self.provenance_reference,
             field_name="provenance_reference",
+        )
+        _validate_retirement_provenance(
+            lifecycle_state=self.lifecycle_state,
+            retirement_provenance_reference=self.retirement_provenance_reference,
+            entity_name="Application",
         )
         if self.version < 1:
             raise CatalogueInvariantError("version must be >= 1")
@@ -68,11 +96,20 @@ class Application:
             raise CatalogueInvariantError("rename requires a different display name")
         return replace(self, display_name=normalized, version=self.version + 1)
 
-    def retired(self) -> "Application":
+    def retired(
+        self,
+        *,
+        retirement_provenance_reference: str,
+    ) -> "Application":
         self._require_active()
+        normalized = _require_non_empty(
+            retirement_provenance_reference,
+            field_name="retirement_provenance_reference",
+        )
         return replace(
             self,
             lifecycle_state=CatalogueLifecycleState.RETIRED,
+            retirement_provenance_reference=normalized,
             version=self.version + 1,
         )
 
@@ -84,6 +121,7 @@ class Component:
     display_name: str
     provenance_reference: str
     lifecycle_state: CatalogueLifecycleState = CatalogueLifecycleState.ACTIVE
+    retirement_provenance_reference: str | None = None
     version: int = 1
 
     def __post_init__(self) -> None:
@@ -95,6 +133,11 @@ class Component:
         _require_non_empty(
             self.provenance_reference,
             field_name="provenance_reference",
+        )
+        _validate_retirement_provenance(
+            lifecycle_state=self.lifecycle_state,
+            retirement_provenance_reference=self.retirement_provenance_reference,
+            entity_name="Component",
         )
         if self.version < 1:
             raise CatalogueInvariantError("version must be >= 1")
@@ -110,11 +153,20 @@ class Component:
             raise CatalogueInvariantError("rename requires a different display name")
         return replace(self, display_name=normalized, version=self.version + 1)
 
-    def retired(self) -> "Component":
+    def retired(
+        self,
+        *,
+        retirement_provenance_reference: str,
+    ) -> "Component":
         self._require_active()
+        normalized = _require_non_empty(
+            retirement_provenance_reference,
+            field_name="retirement_provenance_reference",
+        )
         return replace(
             self,
             lifecycle_state=CatalogueLifecycleState.RETIRED,
+            retirement_provenance_reference=normalized,
             version=self.version + 1,
         )
 
