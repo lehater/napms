@@ -1,6 +1,6 @@
 # PLAN-039 — I25 Product Completion, Operator UX and Acceptance
 
-Status: `active — WP1 completion audit and acceptance map`
+Status: `active — WP2A full-chain acceptance proof`
 
 Date: 2026-09-10.
 
@@ -14,60 +14,77 @@ Canonical inputs:
 - `docs/engineering/post-wave1-product-completion-roadmap.md`;
 - `docs/engineering/current-state.md`;
 - `docs/architecture/current-architecture.md`;
-- current Web/HTTP workspaces and product read models;
+- `docs/engineering/product-completion-gap-matrix.md`;
 - accepted requirements and domain ownership contracts for the existing I1-I24 chain.
 
 ## WP1 — Product completion audit and acceptance map
 
+Status: `done`.
+
+Accepted outcome:
+- current Web/HTTP product surface is complete through Connectivity, Needs, Decisions, Rules, Effective Desired Policy and Normalized Policy;
+- NEP/TAE/APR/NEO are executable internally but have no human-facing operator surface;
+- upstream product/runtime and downstream realization/execution proofs are separated by fixture/seed boundaries;
+- P0 is the absence of one executable Requirement -> Decision -> Rule -> realization -> rendering -> execution -> verification acceptance proof;
+- P1 gaps are downstream operator visibility and cross-chain explainability;
+- P2 gaps include role/task navigation, uneven search/filtering and Web dependency lockfile reproducibility debt;
+- speculative dashboards, exports and bulk operations remain unjustified.
+
+Evidence: `docs/engineering/product-completion-gap-matrix.md`.
+
+## WP2A — Full-chain acceptance composition/test
+
 Status: `active`.
 
 Purpose:
-- inventory current human-facing workspaces, HTTP surfaces and executable end-to-end proofs;
-- map the roadmap product-completion criterion from declared connectivity need through decision, Access Rule, realization, rendering, controlled execution, post-check evidence and explainability;
-- identify gaps by operator role and stage without promoting optional enterprise/provider integrations to mandatory scope;
-- classify findings P0/P1/P2/P3 and distinguish semantic gaps from presentation/acceptance gaps.
+close the P0 evidence gap before adding UI.
+
+Required chain:
+```text
+real Connectivity Requirement declaration
+    -> real Connectivity Decision persistence/selection
+    -> Access Rule proposal/materialization using the real decision seam
+    -> effective desired policy
+    -> NEP placement + TAE configured evidence
+    -> APR desired-vs-configured conclusion
+    -> APR target rendering
+    -> NEO deterministic controlled execution
+    -> post-check Verified evidence
+```
+
+Rules:
+- use existing application/domain APIs and context-owned repositories;
+- no copied cross-context truth or new persistence;
+- no `AllowedDecision` test stub at the Decision -> Access Policy handoff;
+- assert exact subject/reference continuity at semantic handoffs;
+- deterministic NEO target stub is accepted execution evidence and does not claim real Cisco transport.
 
 Exit:
-- one repository-owned completion matrix names every mandatory local-chain stage, its current evidence and remaining gap;
-- each proposed I25 implementation item has a concrete user/operator need and owning semantic source;
-- no dashboard, bulk operation, export or new persistence is added without a demonstrated gap.
+- one PostgreSQL integration acceptance test proves the complete supported local chain and fail-closed ownership boundaries without direct application-table mutation for lifecycle facts that already have owning APIs.
 
-## WP2 — Role-appropriate workflow closure
+## WP2B — Network-operator realization/execution read model and HTTP surface
 
-Status: `blocked on WP1`.
+Status: `blocked on WP2A`.
 
-Scope candidate, selected only from WP1 evidence:
-- requirement owner workflow;
-- decision participant workflow;
-- security/network operator workflow;
-- bounded navigation/actions needed to move between existing authoritative stages.
+Define the smallest read-only owner-preserving projection needed to inspect placement, reconciliation, rendering and execution evidence. Prefer one operator composition over generic CRUD surfaces per bounded context.
 
-Do not create generic role models or IAM semantics; use existing Authority actions and accepted read/mutation surfaces.
+## WP3 — Explainability and operator Web journey
 
-## WP3 — Explainability and audit navigation
+Status: `blocked on WP2B`.
 
-Status: `blocked on WP1`.
-
-Scope candidate:
-- connect existing provenance/decision/Rule/realization/execution evidence into navigable explanations;
-- expose only evidence already authoritative or derivable through owner-preserving composition;
-- keep operational logs separate from business provenance/audit truth.
+Connect existing Requirement/Decision/Rule provenance to the downstream operator projection and provide bounded role/task navigation without inventing new IAM semantics.
 
 ## WP4 — Search/filter/bounded operator productivity
 
-Status: `blocked on WP1-WP2`.
+Status: `blocked on WP3 evidence`.
 
-Scope candidate:
-- improve search/filtering where current result sets make operator work materially difficult;
-- add bounded bulk operations only where semantics and authority are already explicit;
-- add CSV/XLSX or similar serializers only if WP1 identifies a concrete consumer need.
+Improve only concrete task bottlenecks. Bulk actions and extra serializers remain closed unless the operator journey demonstrates a consumer need.
 
 ## WP5 — End-to-end local acceptance chain
 
-Status: `blocked on WP1-WP3`.
+Status: `partly advanced by WP2A; final product acceptance blocked on WP3`.
 
-Build executable acceptance evidence for the supported local product criterion:
-
+The final accepted local product criterion remains:
 ```text
 declared connectivity need
     -> connectivity decision
@@ -81,31 +98,22 @@ declared connectivity need
     -> explainable end-to-end provenance
 ```
 
-The accepted local NEO deterministic target stub may satisfy controlled-execution semantics; no real Cisco transport claim is required.
-
 ## WP6 — Operator runbook and explicit exclusions
 
-Status: `blocked on WP2-WP5`.
+Status: `blocked on WP3-WP5`.
 
-Scope:
-- consolidate the supported local operating journey across startup, recovery, upgrade and product workflows;
-- record remaining product exclusions/deferred integrations explicitly;
-- keep enterprise IdP/source integrations, real provider transport, HA and external secret infrastructure optional unless a concrete accepted requirement selects them.
+Consolidate supported local startup/recovery/upgrade/product workflows and explicit remaining exclusions.
 
 ## WP7 — Final product verification and roadmap closure
 
-Status: `blocked on WP1-WP6`.
+Status: `blocked on WP2A-WP6`.
 
-Run repository gates and end-to-end acceptance evidence, absorb durable outcomes into canonical current-state/architecture/roadmap truth, retire PLAN-039 and mark the current post-Wave-1 product-completion roadmap complete for the supported local target.
-
-## Gate
-
-WP1 is analysis/documentation only. No implementation work beyond completion evidence may begin until the audit identifies a concrete gap, its owning semantic source and the smallest user-facing closure.
+Run repository gates and acceptance evidence, absorb durable outcomes into canonical truth, retire PLAN-039 and mark the current post-Wave-1 roadmap complete for the supported local target.
 
 ## Blockers
 
-None for WP1. Real Cisco/device access, corporate identity, external authoritative sources and enterprise infrastructure remain explicitly non-blocking optional extensions.
+None for WP2A. Real Cisco/device access, corporate identity, external authoritative sources and enterprise infrastructure remain optional and non-blocking.
 
 ## Next
 
-Audit current Web/HTTP surfaces and existing executable proofs against the product-completion chain and role needs. Produce the completion matrix and ranked gap list before selecting WP2/WP3 implementation slices.
+Build the real PostgreSQL-backed Requirement -> Decision -> Rule handoff, then extend the existing APR/NEP/TAE/NEO proof through reconciliation, rendering and Verified execution without using the historical `AllowedDecision` stub.
