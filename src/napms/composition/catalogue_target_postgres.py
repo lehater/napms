@@ -59,6 +59,9 @@ from napms.application_catalogue.application.target_retirement import (
     RetirementSubjectKind,
     TargetRetirementDependencyReader,
 )
+from napms.application_catalogue.application.target_selection_read import (
+    ReadDeploymentInteraction,
+)
 from napms.application_catalogue.application.target_structure_curation import (
     CreateTargetComponent,
 )
@@ -92,6 +95,7 @@ from napms.resource_catalogue.adapters.postgres.transactional_curation_repositor
 @dataclass(slots=True)
 class TargetApplicationCatalogueServices:
     read: PostgresApplicationCatalogueTargetReadModel
+    deployment_interaction_read: ReadDeploymentInteraction
     retirement_dependencies: TargetRetirementDependencyReader
     create_definition: CreateApplication
     update_definition_metadata: UpdateApplicationDefinitionMetadata
@@ -219,6 +223,9 @@ def open_catalogue_target_scope(
 
         services = TargetApplicationCatalogueServices(
             read=PostgresApplicationCatalogueTargetReadModel(application_connection),
+            deployment_interaction_read=ReadDeploymentInteraction(
+                catalogue=application_repository
+            ),
             retirement_dependencies=retirement_dependencies,
             create_definition=CreateApplication(
                 authority=application_authority,

@@ -3,16 +3,22 @@ import { useEffect, useState } from "react"
 import { getSession, login, logout, type Actor } from "@/api"
 import { AppShell } from "@/components/layout/AppShell"
 import { LoginPage } from "@/features/auth/LoginPage"
-import { ApplicationDetailsPage } from "@/features/catalogues/ApplicationDetailsPage"
-import { ApplicationsPage } from "@/features/catalogues/ApplicationsPage"
+import {
+  ApplicationCataloguePage,
+  type ApplicationCatalogueView,
+} from "@/features/catalogues/ApplicationCataloguePage"
+import { ApplicationDefinitionPage } from "@/features/catalogues/ApplicationDefinitionPage"
+import { ApplicationDeploymentPage } from "@/features/catalogues/ApplicationDeploymentPage"
+import { DeploymentResourceSetPage } from "@/features/catalogues/DeploymentResourceSetPage"
 import { ResourceDetailsPage } from "@/features/catalogues/ResourceDetailsPage"
 import { ResourcesPage } from "@/features/catalogues/ResourcesPage"
+import type { DeploymentInteractionSide } from "@/features/catalogues/targetCatalogueApi"
 import { CheckerPage } from "@/features/checker/CheckerPage"
 import { ConnectivityPage } from "@/features/connectivity/ConnectivityPage"
+import { RequestConnectivityPage } from "@/features/connectivity/RequestConnectivityPage"
 import type { RequestConnectivityContext } from "@/features/connectivity/model"
 import { ConnectivityDecisionDetailsPage } from "@/features/decisions/ConnectivityDecisionDetailsPage"
 import { ConnectivityDecisionsPage } from "@/features/decisions/ConnectivityDecisionsPage"
-import { RequestConnectivityPage } from "@/features/connectivity/RequestConnectivityPage"
 import { EffectivePolicyPage } from "@/features/policy/EffectivePolicyPage"
 import { NormalizedPolicyPage } from "@/features/policy/NormalizedPolicyPage"
 import { ComposeConnectivityPage } from "@/features/proposals/ComposeConnectivityPage"
@@ -25,8 +31,15 @@ import { AccessRulesPage } from "@/features/rules/AccessRulesPage"
 type Route =
   | { kind: "connectivity"; page: number }
   | { kind: "checker" }
-  | { kind: "applications"; page: number }
-  | { kind: "application"; applicationId: string }
+  | { kind: "applications"; page: number; view: ApplicationCatalogueView }
+  | { kind: "application-definition"; applicationId: string }
+  | { kind: "application-deployment"; deploymentId: string }
+  | {
+      kind: "deployment-resources"
+      deploymentId: string
+      deploymentInteractionId: string
+      side: DeploymentInteractionSide
+    }
   | { kind: "resources"; page: number }
   | { kind: "resource"; resourceReference: string }
   | {
@@ -45,27 +58,65 @@ type Route =
   | { kind: "normalized" }
   | { kind: "realization" }
 
+function queryFromHash(hash: string) {
+  return hash.includes("?") ? hash.split("?")[1] : ""
+}
+
 function pageFromHash(hash: string) {
-  const query = hash.includes("?") ? hash.split("?")[1] : ""
-  const page = Number(new URLSearchParams(query).get("page") ?? "1")
+  const page = Number(new URLSearchParams(queryFromHash(hash)).get("page") ?? "1")
   return Number.isInteger(page) && page > 0 ? page : 1
+}
+
+function catalogueViewFromHash(hash: string): ApplicationCatalogueView {
+  return new URLSearchParams(queryFromHash(hash)).get("view") === "deployments"
+    ? "deployments"
+    : "definitions"
 }
 
 function readRoute(): Route {
   const hash = window.location.hash.replace(/^#/, "")
   if (hash.startsWith("checker")) return { kind: "checker" }
 
-  if (hash.startsWith("applications/")) {
-    const applicationId = hash.slice("applications/".length).split("?")[0]
+  if (hash.startsWith("applications/definitions/")) {
+    const applicationId = hash.slice("applications/definitions/".length).split("?")[0]
     if (applicationId) {
       return {
-        kind: "application",
+        kind: "application-definition",
         applicationId: decodeURIComponent(applicationId),
       }
     }
   }
+  if (hash.startsWith("applications/deployments/")) {
+    const tail = hash.slice("applications/deployments/".length).split("?")[0]
+    const parts = tail.split("/").map(decodeURIComponent)
+    if (
+      parts.length === 5 &&
+      parts[0] &&
+      parts[1] === "interactions" &&
+      parts[2] &&
+      parts[3] === "resources" &&
+      (parts[4] === "Source" || parts[4] === "Destination")
+    ) {
+      return {
+        kind: "deployment-resources",
+        deploymentId: parts[0],
+        deploymentInteractionId: parts[2],
+        side: parts[4],
+      }
+    }
+    if (parts[0]) {
+      return {
+        kind: "application-deployment",
+        deploymentId: parts[0],
+      }
+    }
+  }
   if (hash.startsWith("applications")) {
-    return { kind: "applications", page: pageFromHash(hash) }
+    return {
+      kind: "applications",
+      page: pageFromHash(hash),
+      view: catalogueViewFromHash(hash),
+    }
   }
 
   if (hash.startsWith("resources/")) {
@@ -109,8 +160,7 @@ function readRoute(): Route {
     return { kind: "connectivity", page: pageFromHash(hash) }
   }
   if (hash.startsWith("request-access")) {
-    const query = hash.includes("?") ? hash.split("?")[1] : ""
-    const params = new URLSearchParams(query)
+    const params = new URLSearchParams(queryFromHash(hash))
     const scope = params.get("scope")
     const localResourceReference = params.get("localResource")
     const dependentComponentDeploymentId = params.get("dependent")
@@ -212,7 +262,10 @@ export function App() {
   const activeNav =
     route.kind === "checker"
       ? "checker"
-      : route.kind === "applications" || route.kind === "application"
+      : route.kind === "applications" ||
+          route.kind === "application-definition" ||
+          route.kind === "application-deployment" ||
+          route.kind === "deployment-resources"
         ? "applications"
         : route.kind === "resources" || route.kind === "resource"
           ? "resources"
@@ -243,7 +296,7 @@ export function App() {
             : target === "checker"
               ? "checker"
               : target === "applications"
-                ? "applications?page=1"
+                ? "applications?view=definitions&page=1"
                 : target === "resources"
                   ? "resources?page=1"
                   : target === "requirements"
@@ -267,17 +320,45 @@ export function App() {
       {route.kind === "checker" ? (
         <CheckerPage />
       ) : route.kind === "applications" ? (
-        <ApplicationsPage
+        <ApplicationCataloguePage
+          view={route.view}
           page={route.page}
-          onPageChange={(page) => navigate(`applications?page=${page}`)}
-          onOpenApplication={(applicationId) =>
-            navigate(`applications/${encodeURIComponent(applicationId)}`)
+          onViewChange={(view) => navigate(`applications?view=${view}&page=1`)}
+          onPageChange={(page) =>
+            navigate(`applications?view=${route.view}&page=${page}`)
+          }
+          onOpenDefinition={(applicationId) =>
+            navigate(`applications/definitions/${encodeURIComponent(applicationId)}`)
+          }
+          onOpenDeployment={(deploymentId) =>
+            navigate(`applications/deployments/${encodeURIComponent(deploymentId)}`)
           }
         />
-      ) : route.kind === "application" ? (
-        <ApplicationDetailsPage
+      ) : route.kind === "application-definition" ? (
+        <ApplicationDefinitionPage
           applicationId={route.applicationId}
-          onBack={() => navigate("applications?page=1")}
+          onBack={() => navigate("applications?view=definitions&page=1")}
+          onOpenDeployment={(deploymentId) =>
+            navigate(`applications/deployments/${encodeURIComponent(deploymentId)}`)
+          }
+        />
+      ) : route.kind === "application-deployment" ? (
+        <ApplicationDeploymentPage
+          deploymentId={route.deploymentId}
+          onBack={() => navigate("applications?view=deployments&page=1")}
+          onOpenResources={(interactionId, side) =>
+            navigate(
+              `applications/deployments/${encodeURIComponent(route.deploymentId)}/interactions/${encodeURIComponent(interactionId)}/resources/${side}`,
+            )
+          }
+        />
+      ) : route.kind === "deployment-resources" ? (
+        <DeploymentResourceSetPage
+          deploymentInteractionId={route.deploymentInteractionId}
+          side={route.side}
+          onBack={() =>
+            navigate(`applications/deployments/${encodeURIComponent(route.deploymentId)}`)
+          }
         />
       ) : route.kind === "resources" ? (
         <ResourcesPage

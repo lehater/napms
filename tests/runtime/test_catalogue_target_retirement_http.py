@@ -16,6 +16,7 @@ from napms.application_catalogue.application.target_retirement import (
     TargetRetirementMutationResult,
 )
 from napms.application_catalogue.domain.model import Application, CatalogueLifecycleState
+from napms.application_catalogue.domain.target_model import DeploymentInteraction
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
 from napms.runtime.catalogue_target_retirement_http import (
     create_catalogue_target_retirement_router,
@@ -25,6 +26,9 @@ from napms.runtime.http_api import PublicApiError
 
 NOW = datetime(2026, 9, 11, 0, 0, tzinfo=timezone.utc)
 APP = UUID("00000000-0000-0000-0000-000000009101")
+DEPLOYMENT_INTERACTION = UUID("00000000-0000-0000-0000-000000009102")
+APPLICATION_DEPLOYMENT = UUID("00000000-0000-0000-0000-000000009103")
+INTERACTION_DEFINITION = UUID("00000000-0000-0000-0000-000000009104")
 
 
 class DependencyReader:
@@ -63,11 +67,22 @@ class ExecuteRecorder:
         return self.result
 
 
-def _client(*, dependencies=None, retire_definition=None):
+class DeploymentInteractionReader:
+    def __init__(self, value=None):
+        self.value = value
+        self.calls = []
+
+    def get(self, deployment_interaction_id):
+        self.calls.append(deployment_interaction_id)
+        return self.value
+
+
+def _client(*, dependencies=None, retire_definition=None, deployment_interaction_read=None):
     sessions = InMemorySessionStore(new_session_id=lambda: "session-1")
     sessions.create(AuthenticatedActor(actor_id="actor-1", login="local-admin"))
     applications = SimpleNamespace(
         retirement_dependencies=dependencies or DependencyReader(),
+        deployment_interaction_read=deployment_interaction_read or DeploymentInteractionReader(),
         retire_definition=retire_definition,
     )
     scope = SimpleNamespace(applications=applications)
@@ -93,6 +108,37 @@ def _client(*, dependencies=None, retire_definition=None):
         )
     )
     return TestClient(app), applications
+
+
+def test_deployment_interaction_lifecycle_read_exposes_target_identity_and_version():
+    value = DeploymentInteraction(
+        deployment_interaction_id=DEPLOYMENT_INTERACTION,
+        application_deployment_id=APPLICATION_DEPLOYMENT,
+        interaction_definition_id=INTERACTION_DEFINITION,
+        provenance_reference="prov:deployment-interaction",
+        version=3,
+    )
+    reader = DeploymentInteractionReader(value)
+    client, _ = _client(deployment_interaction_read=reader)
+
+    response = client.get(
+        f"/api/v1/catalogues/deployment-interactions/{DEPLOYMENT_INTERACTION}",
+        cookies={"napms_session": "session-1"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "deploymentInteraction": {
+            "deploymentInteractionId": str(DEPLOYMENT_INTERACTION),
+            "applicationDeploymentId": str(APPLICATION_DEPLOYMENT),
+            "interactionDefinitionId": str(INTERACTION_DEFINITION),
+            "lifecycleState": "Active",
+            "version": 3,
+        }
+    }
+    assert reader.calls == [DEPLOYMENT_INTERACTION]
+    assert "componentDeploymentId" not in response.text
+    assert "dcsContractRevisionId" not in response.text
 
 
 def test_retirement_dependency_summary_is_exact_and_uses_server_time():

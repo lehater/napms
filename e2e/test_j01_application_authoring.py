@@ -9,48 +9,75 @@ LOGIN = os.environ.get("NAPMS_E2E_LOGIN", "local-admin")
 PASSWORD = os.environ.get("NAPMS_E2E_PASSWORD", "local-e2e-password")
 
 
-def _component_section(page: Page, name: str):
-    return page.get_by_role("heading", name=name, exact=True).locator(
-        "xpath=ancestor::section[1]"
+def _create_form(page: Page):
+    return page.get_by_role("button", name="Create", exact=True).locator(
+        "xpath=ancestor::form[1]"
     )
 
 
-def _add_component(page: Page, name: str) -> None:
-    field = page.get_by_placeholder("Component name, e.g. Orders API")
-    field.fill(name)
-    page.get_by_role("button", name="Create component").click()
-    expect(page.get_by_role("heading", name=name, exact=True)).to_be_visible()
+def _component_row(page: Page, name: str, component_type: str):
+    return page.get_by_role(
+        "row",
+        name=re.compile(rf"^{re.escape(name)}\s+{re.escape(component_type)}(?:\s|$)"),
+    )
 
 
-def _add_deployment(page: Page, component_name: str) -> None:
-    section = _component_section(page, component_name)
-    section.get_by_placeholder(
-        "Deployment name (optional), e.g. production"
-    ).fill("production")
-    section.get_by_role("button", name="Add deployment").click()
-    expect(section.get_by_text("production", exact=True)).to_be_visible()
+def _deployment_row(page: Page):
+    return page.get_by_role("cell", name="Company A", exact=True).locator("xpath=..")
 
 
-def _create_communication(
+def _add_component(page: Page, name: str, component_type: str = "Service") -> None:
+    page.get_by_role("button", name="Add component").click()
+    form = _create_form(page)
+    form.get_by_label("Name").fill(name)
+    form.get_by_label("Type").fill(component_type)
+    form.get_by_role("button", name="Create", exact=True).click()
+    expect(_component_row(page, name, component_type)).to_have_count(1)
+
+
+def _select_component(page: Page, picker_label: str, name: str) -> None:
+    root = page.get_by_role("group", name=picker_label, exact=True)
+    search = root.get_by_label(f"Search {picker_label}")
+    search.fill(name)
+    root.get_by_role("button", name="Search", exact=True).click()
+    root.get_by_role("button", name=name, exact=True).click()
+
+
+def _add_interaction(
     page: Page,
     *,
     source: str,
     destination: str,
-    label: str,
-    port: int,
+    destination_port: int,
 ) -> None:
-    page.get_by_label("Source deployment").select_option(label=source)
-    page.get_by_label("Destination deployment").select_option(label=destination)
-    page.get_by_label("Label").fill(label)
-    page.get_by_label("Protocol").select_option("tcp")
-    page.get_by_label("Destination port").fill(str(port))
-    page.get_by_role("button", name="Create specification").click()
-    expect(
-        page.get_by_text(f"Communication specification {label} created.", exact=True)
-    ).to_be_visible()
+    page.get_by_role("button", name="Add interaction").click()
+    _select_component(page, "Source Component", source)
+    _select_component(page, "Destination Component", destination)
+    traffic_row = page.get_by_label("Destination ports").locator("xpath=..")
+    traffic_row.get_by_label("Protocol").fill("tcp")
+    traffic_row.get_by_label("Source ports").fill("any")
+    traffic_row.get_by_label("Destination ports").fill(str(destination_port))
+    page.get_by_role("button", name="Save interaction").click()
+    expect(page.get_by_role("cell", name=source, exact=True)).to_be_visible()
+    expect(page.get_by_role("cell", name=destination, exact=True)).to_be_visible()
+    expect(page.get_by_role("cell", name=f"TCP ({destination_port})", exact=True)).to_be_visible()
 
 
-def test_j01_application_authoring_survives_correction_and_reopen() -> None:
+def _add_deployment(page: Page) -> None:
+    page.get_by_role("button", name="Deployments", exact=True).click()
+    page.get_by_role("button", name="Add deployment").click()
+    form = _create_form(page)
+    form.get_by_label("Company").fill("Company A")
+    form.get_by_label("Environment").fill("Production")
+    form.get_by_label("Scope").fill("local-demo")
+    form.get_by_role("button", name="Create", exact=True).click()
+    deployment_row = _deployment_row(page)
+    expect(deployment_row).to_have_count(1)
+    expect(deployment_row.get_by_role("cell", name="Production", exact=True)).to_be_visible()
+    expect(deployment_row.get_by_role("cell", name="local-demo", exact=True)).to_be_visible()
+
+
+def test_j01_target_application_authoring_survives_correction_and_reopen() -> None:
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch()
         page = browser.new_page(viewport={"width": 1440, "height": 1000})
@@ -66,110 +93,98 @@ def test_j01_application_authoring_survives_correction_and_reopen() -> None:
         )
         desktop_nav.get_by_role("button", name="Applications").click()
         expect(page.get_by_role("heading", name="Applications", exact=True)).to_be_visible()
+        expect(page.get_by_role("button", name="Definitions", exact=True)).to_be_visible()
+        expect(page.get_by_role("button", name="Deployments", exact=True)).to_be_visible()
 
-        page.get_by_label("Application name").fill("Order Management")
-        page.get_by_role("button", name="Create", exact=True).click()
+        page.get_by_role("button", name="Add application").click()
+        create_application = page.get_by_role(
+            "heading", name="New application", exact=True
+        ).locator("xpath=ancestor::form[1]")
+        create_application.get_by_label("Name").fill("Order Management")
+        create_application.get_by_label("Domain").fill("Commerce")
+        create_application.get_by_label("Owner").fill("team:orders")
+        create_application.get_by_role("button", name="Create", exact=True).click()
         expect(
             page.get_by_role("heading", name="Order Management", exact=True)
         ).to_be_visible()
 
-        for component in ("Web UI", "Orders API", "Database"):
-            _add_component(page, component)
-            _add_deployment(page, component)
+        page.get_by_role("button", name="Components", exact=True).click()
+        _add_component(page, "Web UI")
+        _add_component(page, "Orders API")
+        _add_component(page, "Database", component_type="Database")
 
-        # Participant discovery is backend-owned. Searching after structure creation
-        # refreshes the selectable Active deployment projection without using IDs.
-        page.get_by_placeholder("Application, component or deployment").fill(
-            "Order Management"
-        )
-
-        _create_communication(
+        page.get_by_role("button", name="Interactions", exact=True).click()
+        _add_interaction(
             page,
-            source="Order Management / Web UI / production",
-            destination="Order Management / Orders API / production",
-            label="Web to Orders",
-            port=443,
+            source="Web UI",
+            destination="Orders API",
+            destination_port=443,
         )
-        _create_communication(
+        _add_interaction(
             page,
-            source="Order Management / Orders API / production",
-            destination="Order Management / Database / production",
-            label="Orders to Database",
-            port=5432,
+            source="Orders API",
+            destination="Database",
+            destination_port=5432,
         )
 
-        # Exercise an ordinary correction through the accepted stable-identity rename path.
-        page.locator("main").get_by_role("button", name="Rename").first.click()
-        page.get_by_label("New display name").fill("Order Management Platform")
+        _add_deployment(page)
+        _deployment_row(page).click()
+        expect(
+            page.get_by_role(
+                "heading",
+                name="Order Management — Company A / Production",
+                exact=True,
+            )
+        ).to_be_visible()
+        expect(page.get_by_role("heading", name="Connectivity 0 / 2", exact=True)).to_be_visible()
+
+        page.get_by_role("button", name="Add interaction").click()
+        page.get_by_label("Select Web UI to Orders API").check()
+        page.get_by_label("Select Orders API to Database").check()
+        page.get_by_role("button", name="Add selected").click()
+        expect(page.get_by_role("heading", name="Connectivity 2 / 2", exact=True)).to_be_visible()
+        expect(page.get_by_role("cell", name="TCP (443)", exact=True)).to_be_visible()
+        expect(page.get_by_role("cell", name="TCP (5432)", exact=True)).to_be_visible()
+
+        page.get_by_role("button", name="Deployments", exact=True).first.click()
+        desktop_nav.get_by_role("button", name="Applications").click()
+        page.get_by_placeholder("Search definitions").fill("Order Management")
+        page.get_by_role("button", name="Apply", exact=True).click()
+        page.get_by_role("cell", name="Order Management", exact=True).click()
+
+        page.get_by_role("button", name="Edit", exact=True).click()
+        page.get_by_label("Application name").fill("Order Management Platform")
         page.get_by_role("button", name="Save", exact=True).click()
         expect(
             page.get_by_role("heading", name="Order Management Platform", exact=True)
         ).to_be_visible()
 
-        # A history-ending lifecycle action must be deliberate; dismissing confirmation
-        # must leave the active Component untouched.
-        confirmation_messages: list[str] = []
-
-        def dismiss_retirement(dialog) -> None:
-            confirmation_messages.append(dialog.message)
-            dialog.dismiss()
-
-        web_section = _component_section(page, "Web UI")
-        page.once("dialog", dismiss_retirement)
-        web_section.get_by_role("button", name="Retire").first.click()
-        assert confirmation_messages == [
-            "Retire Web UI? Active deployments must be retired first. Historical references will be preserved."
-        ]
-        expect(page.get_by_role("heading", name="Web UI", exact=True)).to_be_visible()
-
-        # Reopen from another workspace. The durable model must remain understandable
-        # through names and traffic semantics, not implementation UUIDs.
         desktop_nav.get_by_role("button", name="Connectivity").click()
         expect(page).to_have_url(re.compile(r"#connectivity"))
         desktop_nav.get_by_role("button", name="Applications").click()
-        expect(page.get_by_role("heading", name="Applications", exact=True)).to_be_visible()
+        page.get_by_placeholder("Search definitions").fill("Order Management Platform")
+        page.get_by_role("button", name="Apply", exact=True).click()
+        expect(page.get_by_role("cell", name="Order Management Platform", exact=True)).to_be_visible()
+        row = page.get_by_role("row", name=re.compile(r"Order Management Platform.*Commerce.*3.*2.*1"))
+        expect(row).to_have_count(1)
+        row.click()
 
-        page.get_by_label("Search applications").fill("Order Management Platform")
-        page.get_by_role("button", name="Search").click()
-        result = page.locator("main").get_by_role("button").filter(
-            has_text="Order Management Platform"
-        )
-        expect(result).to_have_count(1)
-        result.click()
+        page.get_by_role("button", name="Components", exact=True).click()
+        expect(_component_row(page, "Web UI", "Service")).to_have_count(1)
+        expect(_component_row(page, "Orders API", "Service")).to_have_count(1)
+        expect(_component_row(page, "Database", "Database")).to_have_count(1)
 
-        expect(
-            page.get_by_role("heading", name="Order Management Platform", exact=True)
-        ).to_be_visible()
-        for component in ("Web UI", "Orders API", "Database"):
-            expect(page.get_by_role("heading", name=component, exact=True)).to_be_visible()
-        expect(page.get_by_text("production", exact=True)).to_have_count(3)
+        page.get_by_role("button", name="Interactions", exact=True).click()
+        expect(page.get_by_role("cell", name="TCP (443)", exact=True)).to_be_visible()
+        expect(page.get_by_role("cell", name="TCP (5432)", exact=True)).to_be_visible()
 
-        web_section = _component_section(page, "Web UI")
-        expect(web_section.get_by_text("Web to Orders", exact=True)).to_be_visible()
-        expect(
-            web_section.get_by_text(
-                "Web UI / production → Orders API / production", exact=True
-            )
-        ).to_be_visible()
-        expect(
-            web_section.get_by_text(
-                "TCP · source any port → destination 443", exact=True
-            )
-        ).to_be_visible()
-
-        database_section = _component_section(page, "Database")
-        expect(
-            database_section.get_by_text("Orders to Database", exact=True)
-        ).to_be_visible()
-        expect(
-            database_section.get_by_text(
-                "Orders API / production → Database / production", exact=True
-            )
-        ).to_be_visible()
-        expect(
-            database_section.get_by_text(
-                "TCP · source any port → destination 5432", exact=True
-            )
-        ).to_be_visible()
+        page.get_by_role("button", name="Deployments", exact=True).click()
+        deployment_row = _deployment_row(page)
+        expect(deployment_row).to_have_count(1)
+        expect(deployment_row.get_by_role("cell", name="Production", exact=True)).to_be_visible()
+        expect(deployment_row.get_by_role("cell", name="local-demo", exact=True)).to_be_visible()
+        expect(deployment_row.get_by_role("cell", name="2 / 2", exact=True)).to_be_visible()
+        deployment_row.click()
+        expect(page.get_by_role("heading", name="Connectivity 2 / 2", exact=True)).to_be_visible()
 
         browser.close()
