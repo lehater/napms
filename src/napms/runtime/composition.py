@@ -1,11 +1,17 @@
-from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Callable
 
 import psycopg
 from fastapi import FastAPI
 
-from napms.access_policy.application.ports import ConnectivityDecisionPort
+from napms.access_policy.adapters.connectivity_decision import (
+    ConnectivityDecisionConsumerAdapter,
+)
+from napms.access_policy.application.ports import (
+    ConnectivityDecision as AccessPolicyConnectivityDecision,
+    ConnectivityDecisionPort,
+    DecisionOutcome as AccessPolicyDecisionOutcome,
+)
 from napms.application_catalogue.domain.model import CatalogueInvariantError
 from napms.composition.catalogue_curation_postgres import (
     open_catalogue_curation_scope,
@@ -15,13 +21,13 @@ from napms.composition.network_operator_view_postgres import (
     open_network_operator_view_scope,
 )
 from napms.composition.traffic_analysis_postgres import open_traffic_analysis_scope
-from napms.connectivity_decision.adapters.access_policy import (
-    ConnectivityDecisionAccessPolicyAdapter,
-)
 from napms.connectivity_decision.adapters.postgres import (
     PostgresConnectivityDecisionRepository,
 )
 from napms.connectivity_decision.application.ports import DecisionPersistenceError
+from napms.connectivity_decision.application.select import (
+    SelectEffectiveConnectivityDecision,
+)
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
 from napms.runtime.catalogue_application_workspace_http import (
     create_catalogue_application_workspace_router,
@@ -45,6 +51,33 @@ from napms.runtime.traffic_analysis_http import create_traffic_analysis_router
 
 def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+class _PostgresConnectivityDecisionPort:
+    """Open Decision persistence per Access Policy selection in local HTTP runtime."""
+
+    def __init__(self, dsn: str) -> None:
+        self._dsn = dsn
+
+    def obtain(self, *, subject, governance_scope, as_of):
+        try:
+            with psycopg.connect(self._dsn) as connection:
+                return ConnectivityDecisionConsumerAdapter(
+                    select_effective_decision=SelectEffectiveConnectivityDecision(
+                        decisions=PostgresConnectivityDecisionRepository(connection),
+                    )
+                ).obtain(
+                    subject=subject,
+                    governance_scope=governance_scope,
+                    as_of=as_of,
+                )
+        except (psycopg.Error, DecisionPersistenceError):
+            return AccessPolicyConnectivityDecision(
+                outcome=AccessPolicyDecisionOutcome.UNKNOWN,
+                subject=subject,
+                governance_scope=governance_scope,
+                valid_from=None,
+            )
 
 
 def build_http_api(
@@ -151,19 +184,8 @@ def build_local_dev_http_api(
 ) -> FastAPI:
     if config.application.environment != "local-dev":
         raise ValueError("local-dev HTTP composition requires local-dev environment")
-
-    @contextmanager
-    def open_decision_repository():
-        try:
-            with psycopg.connect(config.application.postgres.dsn) as connection:
-                yield PostgresConnectivityDecisionRepository(connection)
-        except psycopg.Error as exc:
-            raise DecisionPersistenceError() from exc
-
     return build_http_api(
         config=config,
-        decisions=ConnectivityDecisionAccessPolicyAdapter(
-            open_repository=open_decision_repository,
-        ),
+        decisions=_PostgresConnectivityDecisionPort(config.application.postgres.dsn),
         readiness_probe=readiness_probe,
     )
