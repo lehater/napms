@@ -7,7 +7,6 @@ from napms.application_catalogue.application.ports import (
     ApplicationCatalogueCurationRepository,
     ApplicationCatalogueIdentityFactory,
     ApplicationCatalogueProvenanceFactory,
-    ApplicationCatalogueRepository,
 )
 from napms.application_catalogue.domain.model import DirectedInteractionIdentity
 from napms.application_catalogue.domain.target_model import (
@@ -132,7 +131,6 @@ class TargetApplicationCatalogueProvenanceFactory(
 
 class TargetApplicationCatalogueRepository(
     ApplicationCatalogueCurationRepository,
-    ApplicationCatalogueRepository,
     Protocol,
 ):
     def get_interaction_definition(
