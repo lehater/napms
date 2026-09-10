@@ -2,27 +2,29 @@
 
 Current: `PLAN-I31-application-catalogue-target-migration.md`
 
-Goal: migrate the accepted Application Catalogue target end to end without rewriting existing downstream semantic identities or historical policy truth.
+Goal: complete I31 by proving the accepted Application Catalogue target through unchanged downstream semantics and absorbing the resulting current-state documentation.
 
-Current task: WP-4 final validation of the target Applications Web projection in Draft PR #62.
+Current task: WP-5 compatibility acceptance, deterministic screenshot evidence and final absorption.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-I31-application-catalogue-target-migration.md`
-- `docs/ui/application-catalogue-target.md`
-- `docs/engineering/application-catalogue-target-http-contract.md`
+- `docs/engineering/application-catalogue-target-migration-roadmap.md`
+- `docs/ui/application-catalogue-wireframes.md`
+- `e2e/test_j01_application_authoring.py`
+- `e2e/test_j03_connectivity_request_decision.py`
 
-Expand only when required into the target Web catalogue feature, target lifecycle composition/HTTP adapter and focused browser/runtime tests.
+Expand only when required into downstream Connectivity / Decision / Access Policy Web flows, browser-gate infrastructure and current-state/canonical documentation touched by I31.
 
 ## Blockers
 
-None known. M0-M3 are squash-merged. WP-4 keeps compatibility Component Deployment/DCS identities out of the Applications UI and preserves server-owned lifecycle/concurrency semantics.
+None known. M0-M4 are squash-merged. M4 is integrated as `64bd709b5f29db7bd59b09cc4447aa9141e9556f` after all six applicable hosted gates passed.
 
 ## Gate
 
-WP-4 exits when `Definitions | Deployments`, Definition tabs, target create/edit/retire flows, Deployment connectivity/selection, Resource-set membership and blocked-dependency UX are server-bounded and pass all applicable core/PostgreSQL/Web/harness/Docker/browser gates.
+WP-5 exits when target-authored Application data is proven through existing downstream Connectivity / final Decision / Access Policy semantics, representative accepted Application Catalogue layouts have deterministic screenshot regression evidence, and current-state/canonical documentation is absorbed with the active I31 plan removed.
 
 ## Next
 
-Run the final hosted gates on the documentation-final PR #62 head, fix concrete failures only, complete diff/review-thread inspection, then mark Ready and squash-merge M4 before starting WP-5 from the resulting `main`.
+Extend J01 from target authoring into downstream semantics without duplicating J03, add the smallest deterministic screenshot regression set for representative accepted layouts, run Docker/hosted gates, then absorb documentation and close I31.
