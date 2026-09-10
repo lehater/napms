@@ -23,7 +23,7 @@ Status: `done`.
 
 Accepted outcome:
 - current Web/HTTP product surface is complete through Connectivity, Needs, Decisions, Rules, Effective Desired Policy and Normalized Policy;
-- NEP/TAE/APR/NEO are executable internally but have no human-facing operator surface;
+- NEP/TAE/APR/NEO are executable internally but had no human-facing operator surface;
 - upstream product/runtime and downstream realization/execution proofs were separated by fixture/seed boundaries;
 - P0 was the absence of one executable Requirement -> Decision -> Rule -> realization -> rendering -> execution -> verification acceptance proof;
 - P1 gaps are downstream operator visibility and cross-chain explainability;
@@ -52,33 +52,42 @@ Verification:
 
 ## WP2B — Network-operator realization/execution read model and HTTP surface
 
-Status: `active`.
+Status: `active — HTTP verification`.
 
 Purpose:
 provide the smallest truthful read surface for placement, reconciliation, rendering and operation evidence without turning NEP/TAE/APR/NEO into generic CRUD workspaces.
 
 Discovered runtime constraint:
 - the current HTTP runtime has no selected source for a `ManagedReconciliationScopeContract` or configured TAE evidence selection;
-- NEO is not wired to HTTP and its current operation repository is process-local/in-memory;
+- NEO is not wired to durable HTTP operation history and its current operation repository is process-local/in-memory;
 - therefore an operator view must not manufacture `Satisfied/Drift`, configured-state or execution history when those inputs are unavailable.
 
-Required semantics:
-- owner-preserving composition only;
-- distinguish `Available`, `NotAvailable` and `Unknown/Ambiguous` rather than interpreting absence as a fact;
-- desired policy/placement/rendering may be shown when their owning inputs are available;
-- reconciliation is shown only when an explicit configured-evidence selection and managed-scope contract are available;
-- operation result is shown only from an actual NEO operation record/result, never inferred from rendering;
-- local deterministic technical fixtures may make the demo executable but remain bootstrap/demo facts, not production truth.
+Implemented:
+- accepted requirement `docs/requirements/network-operator-realization-view.md` and architecture boundary `docs/architecture/network-operator-realization-view.md`;
+- framework-free `src/napms/network_operator_view/application.py` with authority-first admission and stage availability `Available | NotAvailable | Unknown`;
+- dedicated Authority Management adapter/action `ReadNetworkOperatorRealization`;
+- PostgreSQL composition reusing APR owner-preserving services rather than cross-context table reads;
+- PostgreSQL integration proof that desired/placement/rendering can be available while unselected configured/operation inputs remain explicitly `NotAvailable`;
+- separate runtime router `src/napms/runtime/network_operator_view_http.py` to avoid enlarging the existing monolithic handler file;
+- local-demo authority seed includes the explicit operator-view read action;
+- HTTP DTO preserves owner references/target/render metadata and never infers reconciliation or operation success.
+
+Verification completed before HTTP wiring:
+- core gate passed;
+- PostgreSQL persistence gate passed;
+- harness gate passed;
+- knowledge gate passed.
 
 Exit:
 - accepted requirement/architecture contract for the operator projection;
 - framework-free read composition with tests for available and fail-closed unavailable/unknown inputs;
 - authenticated HTTP read surface over that projection;
-- no new authoritative cross-context table.
+- no new authoritative cross-context table;
+- current HTTP/backend head passes core/PostgreSQL/harness/knowledge and local-runtime gates.
 
 ## WP3 — Explainability and operator Web journey
 
-Status: `blocked on WP2B`.
+Status: `blocked on WP2B HTTP verification`.
 
 Connect existing Requirement/Decision/Rule provenance to the downstream operator projection and provide bounded role/task navigation without inventing new IAM semantics.
 
@@ -135,4 +144,4 @@ No external infrastructure blocks WP2B. The main semantic constraint is internal
 
 ## Next
 
-Define and accept the owner-preserving network-operator projection contract, including explicit unavailable/unknown states for missing configured evidence/managed-scope contract/operation result, then implement its framework-free read composition before adding HTTP or Web presentation.
+Run the full gate cycle on the HTTP-wired WP2B head. If green, mark WP2B done and implement the smallest Web operator workspace over this DTO, preserving explicit unavailable/unknown states and linking only to already-authoritative upstream workspaces.
