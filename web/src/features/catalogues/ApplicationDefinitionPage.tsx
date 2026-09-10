@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Plus } from "lucide-react"
 
 import { ApiError } from "@/api"
 import { Button } from "@/components/ui/Button"
 import { CataloguePager } from "@/features/catalogues/CataloguePager"
+import {
+  CreateComponentPanel,
+  CreateDeploymentPanel,
+} from "@/features/catalogues/TargetCatalogueForms"
 import {
   listApplicationComponents,
   listApplicationDeployments,
@@ -51,6 +55,8 @@ export function ApplicationDefinitionPage({
   const [tabLoading, setTabLoading] = useState(false)
   const [error, setError] = useState<ApiError | null>(null)
   const [tabError, setTabError] = useState<ApiError | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
     let active = true
@@ -110,12 +116,19 @@ export function ApplicationDefinitionPage({
     return () => {
       active = false
     }
-  }, [applicationId, tab, tabPage])
+  }, [applicationId, tab, tabPage, reloadToken])
 
   function selectTab(next: Tab) {
     setTabPage(1)
     setTabTotal(0)
+    setCreateOpen(false)
     setTab(next)
+  }
+
+  function refreshTab() {
+    setCreateOpen(false)
+    setTabPage(1)
+    setReloadToken((value) => value + 1)
   }
 
   return (
@@ -164,44 +177,27 @@ export function ApplicationDefinitionPage({
           <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
             {tab === "overview" ? (
               <dl className="grid gap-x-8 gap-y-5 p-6 md:grid-cols-2">
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Name</dt>
-                  <dd className="mt-1 text-sm font-medium text-[#172033]">{definition.displayName}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Domain</dt>
-                  <dd className="mt-1 text-sm text-[#172033]">{definition.domain ?? "—"}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Owner</dt>
-                  <dd className="mt-1 text-sm text-[#172033]">{definition.ownerReference ?? "—"}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Description</dt>
-                  <dd className="mt-1 text-sm text-[#172033]">{definition.description ?? "—"}</dd>
-                </div>
+                <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Name</dt><dd className="mt-1 text-sm font-medium text-[#172033]">{definition.displayName}</dd></div>
+                <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Domain</dt><dd className="mt-1 text-sm text-[#172033]">{definition.domain ?? "—"}</dd></div>
+                <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Owner</dt><dd className="mt-1 text-sm text-[#172033]">{definition.ownerReference ?? "—"}</dd></div>
+                <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Description</dt><dd className="mt-1 text-sm text-[#172033]">{definition.description ?? "—"}</dd></div>
               </dl>
             ) : tabLoading || tabError ? (
               <LoadingOrError loading={tabLoading} error={tabError} />
             ) : tab === "components" ? (
               <>
+                <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
+                  <h2 className="font-semibold text-[#172033]">Components</h2>
+                  <Button onClick={() => setCreateOpen((value) => !value)}><Plus className="size-4" aria-hidden="true" />Add component</Button>
+                </div>
+                {createOpen ? <CreateComponentPanel applicationId={applicationId} onCancel={() => setCreateOpen(false)} onCreated={refreshTab} /> : null}
                 {components.length === 0 ? (
                   <div className="p-6 text-sm text-[#64748B]">No active components.</div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[720px] text-left text-sm">
-                      <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                        <tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Type</th><th className="px-5 py-3">Description</th></tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#E2E8F0]">
-                        {components.map((item) => (
-                          <tr key={item.componentId}>
-                            <td className="px-5 py-3 font-semibold text-[#172033]">{item.displayName}</td>
-                            <td className="px-5 py-3 text-[#475569]">{item.componentType ?? "—"}</td>
-                            <td className="px-5 py-3 text-[#475569]">{item.description ?? "—"}</td>
-                          </tr>
-                        ))}
-                      </tbody>
+                      <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]"><tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Type</th><th className="px-5 py-3">Description</th></tr></thead>
+                      <tbody className="divide-y divide-[#E2E8F0]">{components.map((item) => (<tr key={item.componentId}><td className="px-5 py-3 font-semibold text-[#172033]">{item.displayName}</td><td className="px-5 py-3 text-[#475569]">{item.componentType ?? "—"}</td><td className="px-5 py-3 text-[#475569]">{item.description ?? "—"}</td></tr>))}</tbody>
                     </table>
                   </div>
                 )}
@@ -209,24 +205,14 @@ export function ApplicationDefinitionPage({
               </>
             ) : tab === "interactions" ? (
               <>
+                <div className="border-b border-[#E2E8F0] px-5 py-4"><h2 className="font-semibold text-[#172033]">Interactions</h2></div>
                 {interactions.length === 0 ? (
                   <div className="p-6 text-sm text-[#64748B]">No active interactions.</div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[760px] text-left text-sm">
-                      <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                        <tr><th className="px-5 py-3">Source</th><th className="px-5 py-3">Destination</th><th className="px-5 py-3">Traffic</th><th className="px-5 py-3 text-right">Deployments</th></tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#E2E8F0]">
-                        {interactions.map((item) => (
-                          <tr key={item.interactionDefinitionId}>
-                            <td className="px-5 py-3 font-semibold text-[#172033]">{item.sourceComponentName}</td>
-                            <td className="px-5 py-3 font-semibold text-[#172033]">{item.destinationComponentName}</td>
-                            <td className="px-5 py-3 text-[#475569]">{trafficSummary(item.trafficAlternatives)}</td>
-                            <td className="px-5 py-3 text-right tabular-nums">{item.activeDeploymentCount}</td>
-                          </tr>
-                        ))}
-                      </tbody>
+                      <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]"><tr><th className="px-5 py-3">Source</th><th className="px-5 py-3">Destination</th><th className="px-5 py-3">Traffic</th><th className="px-5 py-3 text-right">Deployments</th></tr></thead>
+                      <tbody className="divide-y divide-[#E2E8F0]">{interactions.map((item) => (<tr key={item.interactionDefinitionId}><td className="px-5 py-3 font-semibold text-[#172033]">{item.sourceComponentName}</td><td className="px-5 py-3 font-semibold text-[#172033]">{item.destinationComponentName}</td><td className="px-5 py-3 text-[#475569]">{trafficSummary(item.trafficAlternatives)}</td><td className="px-5 py-3 text-right tabular-nums">{item.activeDeploymentCount}</td></tr>))}</tbody>
                     </table>
                   </div>
                 )}
@@ -234,28 +220,18 @@ export function ApplicationDefinitionPage({
               </>
             ) : (
               <>
+                <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
+                  <h2 className="font-semibold text-[#172033]">Deployments</h2>
+                  <Button onClick={() => setCreateOpen((value) => !value)}><Plus className="size-4" aria-hidden="true" />Add deployment</Button>
+                </div>
+                {createOpen ? <CreateDeploymentPanel applicationId={applicationId} onCancel={() => setCreateOpen(false)} onCreated={refreshTab} /> : null}
                 {deployments.length === 0 ? (
                   <div className="p-6 text-sm text-[#64748B]">No active deployments.</div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[760px] text-left text-sm">
-                      <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                        <tr><th className="px-5 py-3">Company</th><th className="px-5 py-3">Environment</th><th className="px-5 py-3">Scope</th><th className="px-5 py-3 text-right">Interactions</th></tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#E2E8F0]">
-                        {deployments.map((item) => (
-                          <tr
-                            key={item.applicationDeploymentId}
-                            className="cursor-pointer hover:bg-[#F8FAFC]"
-                            onClick={() => onOpenDeployment(item.applicationDeploymentId)}
-                          >
-                            <td className="px-5 py-3 font-semibold text-[#172033]">{item.companyReference}</td>
-                            <td className="px-5 py-3 text-[#475569]">{item.environment}</td>
-                            <td className="px-5 py-3 text-[#475569]">{item.scopeReference}</td>
-                            <td className="px-5 py-3 text-right tabular-nums">{item.selectedInteractionCount} / {item.definedInteractionCount}</td>
-                          </tr>
-                        ))}
-                      </tbody>
+                      <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]"><tr><th className="px-5 py-3">Company</th><th className="px-5 py-3">Environment</th><th className="px-5 py-3">Scope</th><th className="px-5 py-3 text-right">Interactions</th></tr></thead>
+                      <tbody className="divide-y divide-[#E2E8F0]">{deployments.map((item) => (<tr key={item.applicationDeploymentId} className="cursor-pointer hover:bg-[#F8FAFC]" onClick={() => onOpenDeployment(item.applicationDeploymentId)}><td className="px-5 py-3 font-semibold text-[#172033]">{item.companyReference}</td><td className="px-5 py-3 text-[#475569]">{item.environment}</td><td className="px-5 py-3 text-[#475569]">{item.scopeReference}</td><td className="px-5 py-3 text-right tabular-nums">{item.selectedInteractionCount} / {item.definedInteractionCount}</td></tr>))}</tbody>
                     </table>
                   </div>
                 )}
