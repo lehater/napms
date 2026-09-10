@@ -36,16 +36,18 @@ export function AddDeploymentInteractionPanel({
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<ApiError | null>(null)
+  const [loadError, setLoadError] = useState<ApiError | null>(null)
+  const [actionError, setActionError] = useState<ApiError | null>(null)
   const [draftSearch, setDraftSearch] = useState("")
   const [draftProtocol, setDraftProtocol] = useState("")
   const [search, setSearch] = useState("")
   const [protocol, setProtocol] = useState("")
+  const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
     let active = true
     setLoading(true)
-    setError(null)
+    setLoadError(null)
     void listAvailableInteractions({
       applicationDeploymentId: deploymentId,
       page,
@@ -59,7 +61,7 @@ export function AddDeploymentInteractionPanel({
         setTotal(result.total)
       })
       .catch((caught) => {
-        if (active) setError(errorFrom(caught))
+        if (active) setLoadError(errorFrom(caught))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -67,7 +69,7 @@ export function AddDeploymentInteractionPanel({
     return () => {
       active = false
     }
-  }, [deploymentId, page, search, protocol])
+  }, [deploymentId, page, search, protocol, reloadToken])
 
   function toggle(interactionId: string) {
     setSelected((current) => {
@@ -81,14 +83,17 @@ export function AddDeploymentInteractionPanel({
   async function addSelected() {
     if (selected.size === 0) return
     setSaving(true)
-    setError(null)
+    setActionError(null)
     try {
       for (const interactionId of selected) {
         await selectDeploymentInteraction(deploymentId, interactionId)
       }
       onChanged()
+      onCancel()
     } catch (caught) {
-      setError(errorFrom(caught))
+      setActionError(errorFrom(caught))
+      setSelected(new Set())
+      setReloadToken((value) => value + 1)
       onChanged()
     } finally {
       setSaving(false)
@@ -111,6 +116,7 @@ export function AddDeploymentInteractionPanel({
           event.preventDefault()
           setPage(1)
           setSelected(new Set())
+          setActionError(null)
           setSearch(draftSearch.trim())
           setProtocol(draftProtocol.trim())
         }}
@@ -123,10 +129,16 @@ export function AddDeploymentInteractionPanel({
         <Button type="submit" variant="secondary">Apply</Button>
       </form>
 
+      {actionError ? (
+        <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">
+          {actionError.message} Server state has been refreshed; already completed selections remain applied.
+        </div>
+      ) : null}
+
       {loading ? (
         <div className="p-6 text-sm text-[#64748B]">Loading available interactions…</div>
-      ) : error ? (
-        <div className="p-6 text-sm text-red-700">{error.message}</div>
+      ) : loadError ? (
+        <div className="p-6 text-sm text-red-700">{loadError.message}</div>
       ) : items.length === 0 ? (
         <div className="p-6 text-sm text-[#64748B]">No additional interactions are available.</div>
       ) : (
@@ -149,7 +161,7 @@ export function AddDeploymentInteractionPanel({
         </div>
       )}
 
-      {!loading && !error ? <CataloguePager page={page} pageSize={pageSize} total={total} onPageChange={(next) => { setSelected(new Set()); setPage(next) }} /> : null}
+      {!loading && !loadError ? <CataloguePager page={page} pageSize={pageSize} total={total} onPageChange={(next) => { setSelected(new Set()); setPage(next) }} /> : null}
       <div className="flex justify-end gap-2 border-t border-[#E2E8F0] px-5 py-4">
         <Button variant="secondary" onClick={onCancel}>Cancel</Button>
         <Button loading={saving} disabled={selected.size === 0} onClick={() => void addSelected()}>Add selected</Button>
