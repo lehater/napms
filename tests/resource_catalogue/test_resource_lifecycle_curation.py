@@ -32,6 +32,15 @@ class FakeAuthority:
         )
 
 
+class FakeProvenance:
+    def __init__(self):
+        self.calls = []
+
+    def for_resource_retirement(self, **kwargs):
+        self.calls.append(kwargs)
+        return "prov:resource:retirement"
+
+
 class FakeResources:
     def __init__(self, resource, *, affiliations=False, responsibilities=False):
         self.items = {resource.resource_reference: resource}
@@ -147,28 +156,42 @@ def test_retire_resource_is_blocked_by_current_scope_or_responsibility_facts():
             affiliations=affiliations,
             responsibilities=responsibilities,
         )
+        provenance = FakeProvenance()
 
         result = RetireResource(
             authority=FakeAuthority(),
             resources=repo,
+            provenance=provenance,
         ).execute(retire_command(key=f"retire-{affiliations}-{responsibilities}"))
 
         assert result.outcome is ResourceMutationOutcome.RETIREMENT_BLOCKED
         assert repo.save_calls == []
         assert repo.commit_count == 0
+        assert provenance.calls == []
 
 
-def test_retire_resource_preserves_historical_identity():
+def test_retire_resource_preserves_identity_and_records_transition_provenance():
     repo = FakeResources(resource())
+    provenance = FakeProvenance()
 
     result = RetireResource(
         authority=FakeAuthority(),
         resources=repo,
+        provenance=provenance,
     ).execute(retire_command())
 
     assert result.outcome is ResourceMutationOutcome.UPDATED
     assert result.resource is not None
     assert result.resource.resource_reference == "res-1"
     assert result.resource.lifecycle_state is ResourceLifecycleState.RETIRED
+    assert result.resource.retirement_provenance_reference == "prov:resource:retirement"
     assert result.resource.version == 2
     assert repo.save_calls == [(result.resource, 1)]
+    assert provenance.calls == [
+        {
+            "resource_reference": "res-1",
+            "actor_id": "actor-1",
+            "authority_reference": "auth-rc",
+            "effective_time": NOW,
+        }
+    ]
