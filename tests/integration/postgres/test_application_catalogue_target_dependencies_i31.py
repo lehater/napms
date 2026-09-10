@@ -97,45 +97,46 @@ def _rule_subject() -> RuleSemanticIdentity:
 
 def test_requirement_dependency_query_uses_lifecycle_and_applicability(postgres_dsn):
     with psycopg.connect(postgres_dsn) as connection:
-        connection.executemany(
-            """
-            INSERT INTO napms_connectivity_requirements.connectivity_requirements (
-                requirement_id, governance_scope, dependent_component_deployment_id,
-                source_component_deployment_id, destination_component_deployment_id,
-                dcs_contract_revision_id, applicability_kind, applicability_start,
-                applicability_end, justification, lifecycle_state, declaration_actor_id,
-                declaration_effective_time, declaration_authority_reference,
-                declaration_catalogue_reference, version
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,
-                      'test', 'Active', 'actor', %s, 'authority', 'catalogue', 1)
-            """,
-            (
+        with connection.cursor() as cursor:
+            cursor.executemany(
+                """
+                INSERT INTO napms_connectivity_requirements.connectivity_requirements (
+                    requirement_id, governance_scope, dependent_component_deployment_id,
+                    source_component_deployment_id, destination_component_deployment_id,
+                    dcs_contract_revision_id, applicability_kind, applicability_start,
+                    applicability_end, justification, lifecycle_state, declaration_actor_id,
+                    declaration_effective_time, declaration_authority_reference,
+                    declaration_catalogue_reference, version
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,
+                          'test', 'Active', 'actor', %s, 'authority', 'catalogue', 1)
+                """,
                 (
-                    REQUIREMENT_CURRENT,
-                    "scope:current",
-                    SOURCE,
-                    SOURCE,
-                    DESTINATION,
-                    DCS,
-                    "Ongoing",
-                    None,
-                    None,
-                    NOW - timedelta(days=10),
+                    (
+                        REQUIREMENT_CURRENT,
+                        "scope:current",
+                        SOURCE,
+                        SOURCE,
+                        DESTINATION,
+                        DCS,
+                        "Ongoing",
+                        None,
+                        None,
+                        NOW - timedelta(days=10),
+                    ),
+                    (
+                        REQUIREMENT_EXPIRED,
+                        "scope:expired",
+                        SOURCE,
+                        SOURCE,
+                        DESTINATION,
+                        DCS,
+                        "AbsoluteWindow",
+                        NOW - timedelta(days=10),
+                        NOW - timedelta(days=1),
+                        NOW - timedelta(days=10),
+                    ),
                 ),
-                (
-                    REQUIREMENT_EXPIRED,
-                    "scope:expired",
-                    SOURCE,
-                    SOURCE,
-                    DESTINATION,
-                    DCS,
-                    "AbsoluteWindow",
-                    NOW - timedelta(days=10),
-                    NOW - timedelta(days=1),
-                    NOW - timedelta(days=10),
-                ),
-            ),
-        )
+            )
         connection.commit()
 
         total, references = PostgresConnectivityRequirementDependencyQuery(connection).page(
