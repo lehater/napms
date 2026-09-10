@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Protocol
 from uuid import UUID
 
+from napms.application_catalogue.application.ports import CataloguePersistenceError
 from napms.application_catalogue.application.target_curation import TargetMutationOutcome
 from napms.application_catalogue.application.target_lifecycle import (
     RetirementDependencyKind,
@@ -213,7 +214,7 @@ class TargetRetirementDependencyReader:
     def _compatibility_subject(self, deployment_interaction_id: UUID) -> DirectedInteractionIdentity:
         compatibility = self._catalogue.get_compatibility_projection(deployment_interaction_id)
         if compatibility is None:
-            raise CatalogueInvariantError(
+            raise CataloguePersistenceError(
                 "Deployment Interaction compatibility projection is unavailable"
             )
         return DirectedInteractionIdentity(
