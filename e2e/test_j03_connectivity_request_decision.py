@@ -89,7 +89,10 @@ def test_j03_requirement_decision_and_rule_remain_independent_authoritative_stat
         page.get_by_role("button", name="Request access", exact=True).click()
         expect(page.get_by_text("Access authorized", exact=True)).to_be_visible()
 
-        page.get_by_role("button", name="Back to Connectivity", exact=True).click()
+        result_section = page.locator("section").filter(has_text="Access authorized")
+        result_section.get_by_role(
+            "button", name="Back to Connectivity", exact=True
+        ).click()
         expect(page.get_by_role("heading", name="Connectivity", exact=True)).to_be_visible()
         expect(page.get_by_text("Required", exact=True)).to_be_visible()
         expect(page.get_by_text("Allowed", exact=True)).to_be_visible()
