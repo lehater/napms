@@ -9,14 +9,14 @@ Working mode: `execute-work-package` with `agent-harness-design` / `skill-design
 
 Read first:
 - `.agents/skills/user-journey-validation/SKILL.md`
-- `AGENTS.md`
-- `docs/process/working-loop.md`
 - `tests/evals/skill-routing-cases.json`
-- `tools/validate_harness.py`
 
 Expand only if needed:
+- `AGENTS.md`
+- `docs/process/working-loop.md`
 - `.agents/skills/skill-design/SKILL.md`
 - `.github/workflows/harness.yml`
+- `tools/validate_harness.py`
 - `tools/validate_skill_routing.py`
 - `docs/process/plan-lifecycle.md`
 
@@ -28,11 +28,12 @@ Expand only if needed:
 - Repository GitHub Actions are part of the Harness execution surface: agents must inspect applicable workflows before declaring a deterministic gate unexecutable.
 - `Ready for review` is the final hosted PR gate; `workflow_dispatch` may be used for intermediate equivalent checks when local execution is unavailable and the connected capability can dispatch it.
 - The current GitHub connector can inspect Actions but does not expose creation of a new workflow-dispatch run; this is a tool limitation, not absence of CI.
+- Hosted Harness run 34500361821 executed `make harness-check` and exposed two plan/capsule validation defects: active-plan Status syntax and an oversized `Read first` working set. Both corrections are now applied and require rerun evidence.
 - No new dispatcher, role runtime or generic QA framework is justified by the pilot.
 
 ## Blockers
 
-The current connector cannot create a new `workflow_dispatch` run. WP-1 executable evidence therefore still requires either a checkout-capable environment, a manual workflow dispatch, or the final Ready-for-review hosted gate.
+None beyond obtaining rerun evidence for the corrected WP-1 gate.
 
 ## Gate
 
@@ -40,4 +41,4 @@ WP-1 closes when the new Skill has a distinct trigger/responsibility boundary, r
 
 ## Next
 
-Obtain executable Harness-gate evidence. If it passes, advance the capsule to WP-2 and validate J01 against accepted Catalogue Curation/Web UI behavior before implementing any discovered gaps.
+Rerun the Harness gate on the corrected branch. If it passes, advance the capsule to WP-2 and validate J01 against accepted Catalogue Curation/Web UI behavior before implementing any discovered gaps.
