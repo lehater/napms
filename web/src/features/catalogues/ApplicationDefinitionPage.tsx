@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react"
 
 import { ApiError } from "@/api"
 import { Button } from "@/components/ui/Button"
+import { CataloguePager } from "@/features/catalogues/CataloguePager"
 import {
   listApplicationComponents,
   listApplicationDeployments,
@@ -40,6 +41,9 @@ export function ApplicationDefinitionPage({
 }) {
   const [definition, setDefinition] = useState<ApplicationDefinitionDto | null>(null)
   const [tab, setTab] = useState<Tab>("overview")
+  const [tabPage, setTabPage] = useState(1)
+  const [tabPageSize, setTabPageSize] = useState(50)
+  const [tabTotal, setTabTotal] = useState(0)
   const [components, setComponents] = useState<ApplicationComponentDto[]>([])
   const [interactions, setInteractions] = useState<InteractionDefinitionSummaryDto[]>([])
   const [deployments, setDeployments] = useState<ApplicationDeploymentSummaryDto[]>([])
@@ -72,21 +76,29 @@ export function ApplicationDefinitionPage({
     let active = true
     setTabLoading(true)
     setTabError(null)
+    const acceptPage = (result: { total: number; pageSize: number }) => {
+      if (!active) return
+      setTabTotal(result.total)
+      setTabPageSize(result.pageSize)
+    }
     const pending =
       tab === "components"
-        ? listApplicationComponents({ applicationId, page: 1 }).then((result) => {
+        ? listApplicationComponents({ applicationId, page: tabPage }).then((result) => {
             if (active) setComponents(result.items)
+            acceptPage(result)
           })
         : tab === "interactions"
-          ? listInteractionDefinitions({ applicationId, page: 1 }).then((result) => {
+          ? listInteractionDefinitions({ applicationId, page: tabPage }).then((result) => {
               if (active) setInteractions(result.items)
+              acceptPage(result)
             })
           : listApplicationDeployments({
               applicationId,
-              page: 1,
+              page: tabPage,
               sort: "company",
             }).then((result) => {
               if (active) setDeployments(result.items)
+              acceptPage(result)
             })
     void pending
       .catch((caught) => {
@@ -98,7 +110,13 @@ export function ApplicationDefinitionPage({
     return () => {
       active = false
     }
-  }, [applicationId, tab])
+  }, [applicationId, tab, tabPage])
+
+  function selectTab(next: Tab) {
+    setTabPage(1)
+    setTabTotal(0)
+    setTab(next)
+  }
 
   return (
     <div className="mx-auto grid max-w-7xl gap-5">
@@ -136,7 +154,7 @@ export function ApplicationDefinitionPage({
                     ? "border-[#2563EB] text-[#1D4ED8]"
                     : "border-transparent text-[#64748B] hover:text-[#172033]"
                 }`}
-                onClick={() => setTab(item)}
+                onClick={() => selectTab(item)}
               >
                 {item}
               </button>
@@ -166,72 +184,83 @@ export function ApplicationDefinitionPage({
             ) : tabLoading || tabError ? (
               <LoadingOrError loading={tabLoading} error={tabError} />
             ) : tab === "components" ? (
-              components.length === 0 ? (
-                <div className="p-6 text-sm text-[#64748B]">No active components.</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[720px] text-left text-sm">
-                    <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                      <tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Type</th><th className="px-5 py-3">Description</th></tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#E2E8F0]">
-                      {components.map((item) => (
-                        <tr key={item.componentId}>
-                          <td className="px-5 py-3 font-semibold text-[#172033]">{item.displayName}</td>
-                          <td className="px-5 py-3 text-[#475569]">{item.componentType ?? "—"}</td>
-                          <td className="px-5 py-3 text-[#475569]">{item.description ?? "—"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )
+              <>
+                {components.length === 0 ? (
+                  <div className="p-6 text-sm text-[#64748B]">No active components.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[720px] text-left text-sm">
+                      <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
+                        <tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Type</th><th className="px-5 py-3">Description</th></tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#E2E8F0]">
+                        {components.map((item) => (
+                          <tr key={item.componentId}>
+                            <td className="px-5 py-3 font-semibold text-[#172033]">{item.displayName}</td>
+                            <td className="px-5 py-3 text-[#475569]">{item.componentType ?? "—"}</td>
+                            <td className="px-5 py-3 text-[#475569]">{item.description ?? "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                <CataloguePager page={tabPage} pageSize={tabPageSize} total={tabTotal} onPageChange={setTabPage} />
+              </>
             ) : tab === "interactions" ? (
-              interactions.length === 0 ? (
-                <div className="p-6 text-sm text-[#64748B]">No active interactions.</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[760px] text-left text-sm">
-                    <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                      <tr><th className="px-5 py-3">Source</th><th className="px-5 py-3">Destination</th><th className="px-5 py-3">Traffic</th><th className="px-5 py-3 text-right">Deployments</th></tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#E2E8F0]">
-                      {interactions.map((item) => (
-                        <tr key={item.interactionDefinitionId}>
-                          <td className="px-5 py-3 font-semibold text-[#172033]">{item.sourceComponentName}</td>
-                          <td className="px-5 py-3 font-semibold text-[#172033]">{item.destinationComponentName}</td>
-                          <td className="px-5 py-3 text-[#475569]">{trafficSummary(item.trafficAlternatives)}</td>
-                          <td className="px-5 py-3 text-right tabular-nums">{item.activeDeploymentCount}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )
-            ) : deployments.length === 0 ? (
-              <div className="p-6 text-sm text-[#64748B]">No active deployments.</div>
+              <>
+                {interactions.length === 0 ? (
+                  <div className="p-6 text-sm text-[#64748B]">No active interactions.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[760px] text-left text-sm">
+                      <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
+                        <tr><th className="px-5 py-3">Source</th><th className="px-5 py-3">Destination</th><th className="px-5 py-3">Traffic</th><th className="px-5 py-3 text-right">Deployments</th></tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#E2E8F0]">
+                        {interactions.map((item) => (
+                          <tr key={item.interactionDefinitionId}>
+                            <td className="px-5 py-3 font-semibold text-[#172033]">{item.sourceComponentName}</td>
+                            <td className="px-5 py-3 font-semibold text-[#172033]">{item.destinationComponentName}</td>
+                            <td className="px-5 py-3 text-[#475569]">{trafficSummary(item.trafficAlternatives)}</td>
+                            <td className="px-5 py-3 text-right tabular-nums">{item.activeDeploymentCount}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                <CataloguePager page={tabPage} pageSize={tabPageSize} total={tabTotal} onPageChange={setTabPage} />
+              </>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[760px] text-left text-sm">
-                  <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                    <tr><th className="px-5 py-3">Company</th><th className="px-5 py-3">Environment</th><th className="px-5 py-3">Scope</th><th className="px-5 py-3 text-right">Interactions</th></tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#E2E8F0]">
-                    {deployments.map((item) => (
-                      <tr
-                        key={item.applicationDeploymentId}
-                        className="cursor-pointer hover:bg-[#F8FAFC]"
-                        onClick={() => onOpenDeployment(item.applicationDeploymentId)}
-                      >
-                        <td className="px-5 py-3 font-semibold text-[#172033]">{item.companyReference}</td>
-                        <td className="px-5 py-3 text-[#475569]">{item.environment}</td>
-                        <td className="px-5 py-3 text-[#475569]">{item.scopeReference}</td>
-                        <td className="px-5 py-3 text-right tabular-nums">{item.selectedInteractionCount} / {item.definedInteractionCount}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                {deployments.length === 0 ? (
+                  <div className="p-6 text-sm text-[#64748B]">No active deployments.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[760px] text-left text-sm">
+                      <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
+                        <tr><th className="px-5 py-3">Company</th><th className="px-5 py-3">Environment</th><th className="px-5 py-3">Scope</th><th className="px-5 py-3 text-right">Interactions</th></tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#E2E8F0]">
+                        {deployments.map((item) => (
+                          <tr
+                            key={item.applicationDeploymentId}
+                            className="cursor-pointer hover:bg-[#F8FAFC]"
+                            onClick={() => onOpenDeployment(item.applicationDeploymentId)}
+                          >
+                            <td className="px-5 py-3 font-semibold text-[#172033]">{item.companyReference}</td>
+                            <td className="px-5 py-3 text-[#475569]">{item.environment}</td>
+                            <td className="px-5 py-3 text-[#475569]">{item.scopeReference}</td>
+                            <td className="px-5 py-3 text-right tabular-nums">{item.selectedInteractionCount} / {item.definedInteractionCount}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                <CataloguePager page={tabPage} pageSize={tabPageSize} total={tabTotal} onPageChange={setTabPage} />
+              </>
             )}
           </section>
         </>
