@@ -82,7 +82,25 @@ class ApplicationCatalogueProvenanceFactory(Protocol):
         effective_time: datetime,
     ) -> str: ...
 
+    def for_application_retirement(
+        self,
+        *,
+        application_id: UUID,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
     def for_component(
+        self,
+        *,
+        component_id: UUID,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
+    def for_component_retirement(
         self,
         *,
         component_id: UUID,
