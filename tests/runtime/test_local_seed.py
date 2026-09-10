@@ -39,6 +39,8 @@ def test_local_demo_seed_uses_actor_and_correct_authority_scopes():
         "SetConnectivityRequirementApplicability",
         "SetConnectivityRequirementJustification",
         "RetireConnectivityRequirement",
+        "DecideConnectivity",
+        "ReadConnectivityDecision",
         "ReadScopedConnectivity",
         "ReadNetworkOperatorRealization",
         "CurateApplicationCatalogue",
