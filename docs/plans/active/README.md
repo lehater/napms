@@ -2,31 +2,33 @@
 
 Current: `PLAN-039-i25-product-completion-acceptance.md`
 
-Current task: WP3 explainability and network-operator Web journey.
+Current task: WP3 cross-chain explainability navigation.
 
-Goal: expose the proven owner-preserving realization projection through one bounded Web workspace without inventing configured or executed state.
+Goal: complete the bounded operator journey by making existing authoritative provenance references navigable, without adding new semantic data or authority.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-039-i25-product-completion-acceptance.md`
-- `web/src/features/realization/NetworkOperatorRealizationPage.tsx`
-- `src/napms/runtime/network_operator_view_http.py`
+- `web/src/features/rules/AccessRuleDetailsPage.tsx`
+- `web/src/features/decisions/ConnectivityDecisionDetailsPage.tsx`
 
-Expand only as needed into App routing/navigation, existing Rule detail navigation and Web/runtime gate diagnostics.
+Expand only as needed into App callback wiring and existing Requirement detail routing.
 
 ## Current result
 
-WP2B is done: framework-free operator view, dedicated Authority action, PostgreSQL composition and authenticated HTTP surface passed core, PostgreSQL, harness, knowledge and Docker gates. WP3 now adds one read-only `Realization` workspace that renders backend availability unchanged and links contributing Rule references back to authoritative Rule detail.
+WP2B is done and the first WP3 `Realization` workspace is also gate-proven: core, PostgreSQL, Web, harness, knowledge and Docker local-runtime gates all passed on head `e63450cb81ca7dab900e03969e01d29464836a61`. Realization preserves backend `Available | NotAvailable | Unknown` and links contributing Rules to authoritative Rule detail.
+
+Audit found one remaining P1 explainability gap: Rule detail exposes its Decision reference only as text, and Decision detail exposes `ConnectivityRequirement` evidence only as text. The underlying authoritative IDs already exist; only navigation is missing.
 
 ## Blockers
 
-No external blocker. Runtime still has no selected configured-evidence/managed-scope-contract source and no durable HTTP-wired NEO history, so the Web must show those stages as unavailable until actual inputs/results exist.
+No external blocker. Runtime still has no selected configured-evidence/managed-scope-contract source and no durable HTTP-wired NEO history, so those stages remain unavailable until actual owning inputs/results exist.
 
 ## Gate
 
-Web is presentation only: no reconciliation calculation, execution inference, generic IAM roles or mutation controls. Preserve `Available | NotAvailable | Unknown` exactly from HTTP.
+Add navigation only. Do not copy Decision/Requirement state into another view, infer semantics, broaden authority, or add mutation controls.
 
 ## Next
 
-Run the repository gates on the Web-wired head. If green, inspect the remaining Requirement -> Decision -> Rule explainability links and add only the smallest missing navigation.
+Add the two owner-preserving links `Rule -> Decision` and `Decision evidence -> Connectivity Requirement`, wire them through App routing, then rerun the Web/runtime gates.
