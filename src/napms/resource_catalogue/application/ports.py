@@ -86,6 +86,27 @@ class ResourceCatalogueCurationRepository(Protocol):
 
     def add_resource(self, resource: Resource) -> None: ...
 
+    def save_resource(
+        self,
+        resource: Resource,
+        *,
+        expected_version: int,
+    ) -> None: ...
+
+    def has_effective_scope_affiliations(
+        self,
+        *,
+        resource_reference: str,
+        as_of: datetime,
+    ) -> bool: ...
+
+    def has_effective_responsibilities(
+        self,
+        *,
+        resource_reference: str,
+        as_of: datetime,
+    ) -> bool: ...
+
     def record_command_receipt(
         self,
         *,
