@@ -176,6 +176,26 @@ class ApplicationCatalogueCurationRepository(Protocol):
     def commit(self) -> None: ...
 
 
+class ApplicationCatalogueCurationReadRepository(Protocol):
+    def list_applications(
+        self,
+        *,
+        offset: int,
+        limit: int,
+        search: str | None,
+        include_retired: bool,
+    ) -> tuple[Application, ...]: ...
+
+    def get_application(self, application_id: UUID) -> Application | None: ...
+
+    def list_components(
+        self,
+        *,
+        application_id: UUID,
+        include_retired: bool,
+    ) -> tuple[Component, ...]: ...
+
+
 class ApplicationCatalogueRepository(Protocol):
     def get_dcs_revision(self, revision_id: UUID) -> DcsRevision | None: ...
 
