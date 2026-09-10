@@ -166,6 +166,19 @@ class TargetApplicationCatalogueReadPort(Protocol):
         application_deployment_id: UUID,
     ) -> ApplicationDeployment | None: ...
 
+    def list_available_interactions_for_deployment(
+        self,
+        *,
+        application_deployment_id: UUID,
+        offset: int,
+        limit: int,
+        search: str | None,
+        source_component_id: UUID | None,
+        destination_component_id: UUID | None,
+        protocol: str | None,
+        sort: str,
+    ) -> InteractionDefinitionPage: ...
+
     def list_deployment_connectivity(
         self,
         *,
