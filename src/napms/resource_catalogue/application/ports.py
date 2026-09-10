@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Protocol
 
 from napms.resource_catalogue.domain.model import (
+    Resource,
     ResourceRealizationVersion,
     ResourceScopeAffiliation,
 )
@@ -15,6 +16,14 @@ RESOURCE_CATALOGUE_AUTHORITY_SCOPE = "resource-catalogue"
 
 class ResourceCataloguePersistenceError(Exception):
     """Resource Catalogue persistence failed without a trustworthy result."""
+
+
+class ResourceCataloguePersistenceOutcomeUnknown(ResourceCataloguePersistenceError):
+    """Commit acknowledgement failed, so authoritative outcome is uncertain."""
+
+
+class ResourceCatalogueConcurrencyConflict(ResourceCataloguePersistenceError):
+    """Optimistic concurrency precondition did not match authoritative state."""
 
 
 class ResourceCatalogueAuthorityOutcome(str, Enum):
@@ -36,6 +45,52 @@ class ResourceCatalogueCurationAuthorityPort(Protocol):
         actor_id: str,
         effective_time: datetime,
     ) -> ResourceCatalogueAuthorityCheck: ...
+
+
+@dataclass(frozen=True, slots=True)
+class ResourceCatalogueCommandReceipt:
+    command_kind: str
+    request_fingerprint: str
+    result_reference: str
+    result_version: int
+
+
+class ResourceCatalogueIdentityFactory(Protocol):
+    def new_resource_reference(self) -> str: ...
+
+
+class ResourceCatalogueProvenanceFactory(Protocol):
+    def for_resource(
+        self,
+        *,
+        resource_reference: str,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
+
+class ResourceCatalogueCurationRepository(Protocol):
+    def get_resource(self, resource_reference: str) -> Resource | None: ...
+
+    def find_command_receipt(
+        self,
+        *,
+        actor_id: str,
+        idempotency_key: str,
+    ) -> ResourceCatalogueCommandReceipt | None: ...
+
+    def add_resource(self, resource: Resource) -> None: ...
+
+    def record_command_receipt(
+        self,
+        *,
+        actor_id: str,
+        idempotency_key: str,
+        receipt: ResourceCatalogueCommandReceipt,
+    ) -> None: ...
+
+    def commit(self) -> None: ...
 
 
 class ResourceCatalogueRepository(Protocol):
