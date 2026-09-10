@@ -1,6 +1,6 @@
 # Current implementation state
 
-Status: `I23 Optional Integration Extension Skeleton accepted and implemented; I24 Local Deployment and Operational Hardening is next`.
+Status: `I24 Local Deployment and Operational Hardening accepted and implemented; I25 Product Completion, Operator UX and Acceptance is next`.
 
 Date: 2026-09-10.
 
@@ -26,6 +26,7 @@ This file is a capability snapshot, not an increment-by-increment changelog. Det
 | Access Policy Realization | accepted I18 resolution + I20 derivation/reconciliation + I21 configuration rendering | framework-free Domain/Application/Ports + owner-preserving Access Policy/Policy Export, RC/ACC, NEP and TAE adapters + PostgreSQL-backed owner composition; derived on demand, no APR persistence; Cisco ASA renderer outer adapter with semantic equivalence proof | none |
 | Network Environment Operations | accepted I22 stub-first Tactical DDD | framework-free Domain/Application/consumer-owned ports + deterministic in-process target stub + in-memory operation repository; no real Cisco transport or crash-durable audit claim | none |
 | Optional external identity/source extension | accepted I23 dormant seam | source-neutral `VerifiedExternalIdentity` + `ActorIdentityResolver` deterministic mapping proof; no runtime wiring, provider transport, external source synchronization or persistence requirement | none |
+| Local deployment and operations | accepted I24 local target | password/SCRAM PostgreSQL, repeatable non-mutating startup, logical backup/clean restore, forward migration procedure, structured diagnostics and low-risk container hardening | Make targets and operator documentation |
 
 ## Current runtime boundary
 
@@ -33,17 +34,25 @@ Implemented local runtime:
 
 ```text
 browser
-  -> nginx / React Web UI
+  -> loopback-published nginx / React Web UI
   -> FastAPI HTTP outer adapter
   -> framework-free application/domain modules
   -> module-owned PostgreSQL repositories
 ```
 
-Current operational support includes tracked PostgreSQL migrations, local login/password authentication, server-owned sessions/actor identity, structured logging/correlation, Docker Compose startup and one public nginx endpoint.
+Current operational support includes tracked PostgreSQL migrations, local login/password authentication, server-owned sessions/actor identity, structured logging/correlation, Docker Compose startup, one public nginx endpoint, PostgreSQL password authentication, logical backup/restore and local diagnostic helpers.
+
+The supported Compose path no longer uses PostgreSQL network `trust`. Fresh volumes initialize host authentication with SCRAM-SHA-256. `make dev-up` generates an ephemeral local database credential, rotates the `napms` role before dependent services start, and verifies that the configured credential succeeds while a deliberately wrong credential fails. The normal startup probe is non-mutating and can be repeated on preserved local state.
+
+Local PostgreSQL recovery uses validated custom-format logical backups. Clean restore is explicitly destructive, requires confirmation, restores into a new local volume, then re-enters the normal migration/startup path. Forward upgrade requires a pre-upgrade backup; arbitrary reverse-migration/downgrade compatibility is not claimed.
+
+`make dev-status` exposes the supported local diagnostic path: Compose state plus public liveness/readiness and a PostgreSQL query probe. Structured application logs remain the detailed diagnostic source. A dedicated metrics backend is not required by the current local target.
+
+Backend-derived and Web Compose services use init/reaping plus `no-new-privileges`; the backend runtime remains non-root. PostgreSQL retains the official image privilege/entrypoint model rather than a speculative override.
 
 Local username/password authentication is the primary supported authentication path. Local Authority/ACC/Resource state remains the supported current source of truth. No external IdP, directory, CMDB, catalogue or MSSQL dependency is required for normal operation.
 
-This remains a local deployment topology, not a claim of enterprise HA/SLA topology.
+This remains a local deployment topology, not a claim of enterprise HA/SLA topology. No accepted workload target currently supports a throughput/latency/SLA claim; capacity validation remains deferred until such a target is accepted.
 
 ## Critical accepted boundaries
 
@@ -62,27 +71,30 @@ This remains a local deployment topology, not a claim of enterprise HA/SLA topol
 - optional external identity mapping fails closed for `Unmapped | Ambiguous | Unknown` and is not wired as the primary login path.
 - future external Authority/ACC/Resource adapters must terminate at context-owned boundaries; external integration remains optional.
 - Legacy/MSSQL and real provider/device transport remain non-current product dependencies.
+- local deployment hardening does not imply enterprise TLS, external secret management, HA or multi-node topology.
 
 ## Current execution
 
-No implementation plan is currently selected.
+No implementation plan is currently selected after I24 absorption.
 
-I23 Optional Integration Extension Skeleton is complete and absorbed into canonical requirements/architecture/engineering truth. The implemented capability provides:
-- local username/password authentication unchanged as the primary runtime path;
-- local Authority/ACC/Resource data unchanged as the supported product data model;
-- source-neutral `VerifiedExternalIdentity` for a future trusted external authentication adapter;
-- provider-qualified subject identity and deterministic `ActorIdentityResolver` mapping;
-- explicit `Mapped | Unmapped | Ambiguous | Unknown` outcomes, with only `Mapped` exposing a NAPMS actor;
-- proof that login/display hints do not manufacture actor mappings;
-- clear separation between authentication identity and Authority Management business authorization;
-- documented context-owned extension boundaries for future Authority/ACC/Resource source adapters;
-- no OIDC/OAuth2, corporate IdP, directory, CMDB, Legacy/MSSQL, source scheduler/synchronization engine or HTTP login migration.
+I24 Local Deployment and Operational Hardening is complete and absorbed into canonical engineering/runtime truth. Verified outcomes include:
+- PostgreSQL network `trust` removed from the supported Compose path and replaced by password/SCRAM host authentication;
+- ephemeral per-start database credentials with role rotation that remains compatible with preserved local volumes;
+- correct-password and wrong-password executable verification;
+- non-mutating repeatable local startup separated from the stateful fresh-product CI journey;
+- validated PostgreSQL custom-format logical backup and explicit destructive clean-volume restore;
+- Docker proof that durable Access Rule state survives backup -> volume replacement -> restore -> authenticated restart;
+- documented forward-upgrade/recovery ordering with migration checksum fail-closed behavior;
+- executable proof that migration replay leaves migration journal and durable Rule state unchanged;
+- `make dev-status` for Compose/live/ready/PostgreSQL diagnostics;
+- low-risk container hardening through non-root backend execution, init/reaping and `no-new-privileges` for NAPMS application containers;
+- explicit deferral of enterprise HA/TLS/secret-store topology and performance claims that lack an accepted target.
 
-Repository verification for the final I23 implementation stage passed core, harness, knowledge and Docker local-runtime gates before absorption.
+The final I24 candidate passed core, PostgreSQL persistence, harness, knowledge and Docker local-runtime gates. The Docker gate covered fresh authenticated product execution, preserved-volume restart with credential rotation, logical backup/clean restore, migration replay no-op and operator status diagnostics.
 
-I22 Network Environment Operations remains complete with deterministic stub-first execution semantics and no real Cisco transport claim. I21 Configuration Rendering, I20 Desired-vs-Configured Reconciliation and Enforcement Policy Derivation, I19 Network Enforcement Placement, I18 Technical-to-Domain Access Resolution, I17 Technical Access Evidence Core and I16B Connectivity Decision Runtime/Workflow remain complete and absorbed into canonical truth.
+I23 Optional Integration Extension Skeleton remains complete and dormant. I22 Network Environment Operations remains complete with deterministic stub-first execution semantics and no real Cisco transport claim. I21 Configuration Rendering, I20 Desired-vs-Configured Reconciliation and Enforcement Policy Derivation, I19 Network Enforcement Placement, I18 Technical-to-Domain Access Resolution, I17 Technical Access Evidence Core and I16B Connectivity Decision Runtime/Workflow remain complete and absorbed into canonical truth.
 
-The next roadmap increment is I24 — Local Deployment and Operational Hardening. It is not yet selected for execution, so there is no active `PLAN-*.md`.
+The next roadmap increment is I25 — Product Completion, Operator UX and Acceptance. It is not yet selected for execution, so there is no active `PLAN-*.md`.
 
 ## Canonical references
 
