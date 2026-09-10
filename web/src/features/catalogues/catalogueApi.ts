@@ -131,12 +131,12 @@ type Page<T> = {
 
 async function request<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, {
+    ...init,
     credentials: "same-origin",
     headers: {
       "Content-Type": "application/json",
       ...(init?.headers ?? {}),
     },
-    ...init,
   })
   const payload = await response.json()
   if (!response.ok) {
