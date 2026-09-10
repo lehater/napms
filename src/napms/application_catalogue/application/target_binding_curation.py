@@ -23,7 +23,10 @@ from napms.application_catalogue.domain.model import (
     CatalogueLifecycleState,
     DeploymentResourceBinding,
 )
-from napms.application_catalogue.domain.target_model import DeploymentInteractionSide
+from napms.application_catalogue.domain.target_model import (
+    DeploymentInteractionResourceBinding,
+    DeploymentInteractionSide,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,9 +56,7 @@ class EndDeploymentInteractionResourceBindingCommand:
 @dataclass(frozen=True, slots=True)
 class DeploymentInteractionBindingMutationResult:
     outcome: TargetMutationOutcome
-    deployment_interaction_id: UUID | None = None
-    side: DeploymentInteractionSide | None = None
-    binding: DeploymentResourceBinding | None = None
+    binding: DeploymentInteractionResourceBinding | None = None
 
 
 def _target_outcome(value: CatalogueMutationOutcome) -> TargetMutationOutcome:
@@ -80,6 +81,27 @@ def _compatibility_side_id(*, compatibility, side: DeploymentInteractionSide) ->
     if side is DeploymentInteractionSide.SOURCE:
         return compatibility.source_component_deployment_id
     return compatibility.destination_component_deployment_id
+
+
+def _target_binding(
+    *,
+    binding: DeploymentResourceBinding | None,
+    deployment_interaction_id: UUID,
+    side: DeploymentInteractionSide,
+) -> DeploymentInteractionResourceBinding | None:
+    if binding is None:
+        return None
+    return DeploymentInteractionResourceBinding(
+        reference_id=binding.reference_id,
+        deployment_interaction_id=deployment_interaction_id,
+        side=side,
+        resource_reference=binding.resource_reference,
+        valid_from=binding.valid_from,
+        valid_to=binding.valid_to,
+        provenance_reference=binding.provenance_reference,
+        end_provenance_reference=binding.end_provenance_reference,
+        version=binding.version,
+    )
 
 
 class CreateDeploymentInteractionResourceBinding:
@@ -131,9 +153,11 @@ class CreateDeploymentInteractionResourceBinding:
         )
         return DeploymentInteractionBindingMutationResult(
             _target_outcome(result.outcome),
-            deployment_interaction_id=command.deployment_interaction_id,
-            side=command.side,
-            binding=result.binding,
+            binding=_target_binding(
+                binding=result.binding,
+                deployment_interaction_id=command.deployment_interaction_id,
+                side=command.side,
+            ),
         )
 
 
@@ -160,6 +184,10 @@ class EndDeploymentInteractionResourceBinding:
         )
         if interaction is None:
             return DeploymentInteractionBindingMutationResult(TargetMutationOutcome.NOT_FOUND)
+        if interaction.lifecycle_state is not CatalogueLifecycleState.ACTIVE:
+            return DeploymentInteractionBindingMutationResult(
+                TargetMutationOutcome.PARENT_INACTIVE
+            )
         compatibility = self._catalogue.get_compatibility_projection(
             command.deployment_interaction_id
         )
@@ -167,7 +195,10 @@ class EndDeploymentInteractionResourceBinding:
             return DeploymentInteractionBindingMutationResult(
                 TargetMutationOutcome.PERSISTENCE_UNKNOWN
             )
-        binding = self._bindings.get_binding(command.binding_reference.strip())
+        binding_reference = command.binding_reference.strip()
+        if not binding_reference:
+            return DeploymentInteractionBindingMutationResult(TargetMutationOutcome.INPUT_INVALID)
+        binding = self._bindings.get_binding(binding_reference)
         if binding is None:
             return DeploymentInteractionBindingMutationResult(TargetMutationOutcome.NOT_FOUND)
         expected_component_deployment_id = _compatibility_side_id(
@@ -181,7 +212,7 @@ class EndDeploymentInteractionResourceBinding:
 
         result: DeploymentBindingMutationResult = self._end_binding.execute(
             EndDeploymentResourceBindingCommand(
-                binding_reference=command.binding_reference,
+                binding_reference=binding_reference,
                 valid_to=command.valid_to,
                 expected_version=command.expected_version,
                 actor_id=command.actor_id,
@@ -191,7 +222,9 @@ class EndDeploymentInteractionResourceBinding:
         )
         return DeploymentInteractionBindingMutationResult(
             _target_outcome(result.outcome),
-            deployment_interaction_id=command.deployment_interaction_id,
-            side=command.side,
-            binding=result.binding,
+            binding=_target_binding(
+                binding=result.binding,
+                deployment_interaction_id=command.deployment_interaction_id,
+                side=command.side,
+            ),
         )
