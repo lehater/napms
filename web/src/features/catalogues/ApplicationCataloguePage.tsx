@@ -130,14 +130,14 @@ export function ApplicationCataloguePage({
           <button
             key={item}
             type="button"
-            className={`border-b-2 px-4 py-3 text-sm font-semibold capitalize ${
+            className={`border-b-2 px-4 py-3 text-sm font-semibold ${
               view === item
                 ? "border-[#2563EB] text-[#1D4ED8]"
                 : "border-transparent text-[#64748B] hover:text-[#172033]"
             }`}
             onClick={() => switchView(item)}
           >
-            {item}
+            {item === "definitions" ? "Definitions" : "Deployments"}
           </button>
         ))}
       </div>
