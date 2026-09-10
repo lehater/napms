@@ -6,6 +6,7 @@ from psycopg import Connection, Error as PsycopgError
 from napms.application_catalogue.application.ports import CataloguePersistenceError
 from napms.application_catalogue.domain.model import (
     CatalogueInvariantError,
+    CatalogueLifecycleState,
     ComponentDeployment,
     DcsRevision,
     DeploymentResourceBinding,
@@ -96,8 +97,12 @@ class PostgresApplicationCatalogueRepository:
                 """
                 SELECT
                     component_deployment_id,
+                    component_id,
                     provenance_reference,
-                    display_name
+                    display_name,
+                    lifecycle_state,
+                    retirement_provenance_reference,
+                    version
                 FROM napms_application_catalogue.component_deployments
                 WHERE component_deployment_id = ANY(%s)
                 ORDER BY component_deployment_id
@@ -107,14 +112,18 @@ class PostgresApplicationCatalogueRepository:
             return tuple(
                 ComponentDeployment(
                     deployment_id=row[0],
-                    provenance_reference=row[1],
-                    display_name=row[2],
+                    component_id=row[1],
+                    provenance_reference=row[2],
+                    display_name=row[3],
+                    lifecycle_state=CatalogueLifecycleState(row[4]),
+                    retirement_provenance_reference=row[5],
+                    version=row[6],
                 )
                 for row in rows
             )
         except CataloguePersistenceError:
             raise
-        except (PsycopgError, CatalogueInvariantError) as exc:
+        except (PsycopgError, CatalogueInvariantError, ValueError) as exc:
             raise CataloguePersistenceError() from exc
 
     def list_dcs_revisions(
@@ -234,7 +243,6 @@ class PostgresApplicationCatalogueRepository:
             raise
         except (PsycopgError, CatalogueInvariantError) as exc:
             raise CataloguePersistenceError() from exc
-
 
     def find_effective_bindings_for_resources(
         self,
