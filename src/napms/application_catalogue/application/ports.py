@@ -6,6 +6,7 @@ from uuid import UUID
 
 from napms.application_catalogue.domain.model import (
     Application,
+    Component,
     ComponentDeployment,
     DcsRevision,
     DeploymentResourceBinding,
@@ -64,6 +65,12 @@ class ApplicationCatalogueCommandReceipt:
 class ApplicationCatalogueIdentityFactory(Protocol):
     def new_application_id(self) -> UUID: ...
 
+    def new_component_id(self) -> UUID: ...
+
+    def new_component_deployment_id(self) -> UUID: ...
+
+    def new_dcs_revision_id(self) -> UUID: ...
+
 
 class ApplicationCatalogueProvenanceFactory(Protocol):
     def for_application(
@@ -75,9 +82,60 @@ class ApplicationCatalogueProvenanceFactory(Protocol):
         effective_time: datetime,
     ) -> str: ...
 
+    def for_component(
+        self,
+        *,
+        component_id: UUID,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
+    def for_component_deployment(
+        self,
+        *,
+        deployment_id: UUID,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
+    def for_dcs_revision(
+        self,
+        *,
+        revision_id: UUID,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
 
 class ApplicationCatalogueCurationRepository(Protocol):
     def get_application(self, application_id: UUID) -> Application | None: ...
+
+    def add_application(self, application: Application) -> None: ...
+
+    def save_application(
+        self,
+        application: Application,
+        *,
+        expected_version: int,
+    ) -> None: ...
+
+    def has_active_components(self, *, application_id: UUID) -> bool: ...
+
+    def get_component(self, component_id: UUID) -> Component | None: ...
+
+    def add_component(self, component: Component) -> None: ...
+
+    def save_component(
+        self,
+        component: Component,
+        *,
+        expected_version: int,
+    ) -> None: ...
+
+    def has_active_component_deployments(self, *, component_id: UUID) -> bool: ...
 
     def find_command_receipt(
         self,
@@ -85,8 +143,6 @@ class ApplicationCatalogueCurationRepository(Protocol):
         actor_id: str,
         idempotency_key: str,
     ) -> ApplicationCatalogueCommandReceipt | None: ...
-
-    def add_application(self, application: Application) -> None: ...
 
     def record_command_receipt(
         self,
