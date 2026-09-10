@@ -36,6 +36,9 @@ class CreateApplicationCommand:
     actor_id: str
     effective_time: datetime
     idempotency_key: str
+    description: str | None = None
+    domain: str | None = None
+    owner_reference: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,9 +52,31 @@ def _normalize_required(value: str) -> str | None:
     return normalized or None
 
 
-def _fingerprint(*, display_name: str) -> str:
+def _normalize_optional(value: str | None) -> tuple[str | None, bool]:
+    if value is None:
+        return None, True
+    normalized = value.strip()
+    return (normalized or None), bool(normalized)
+
+
+def _fingerprint(
+    *,
+    display_name: str,
+    description: str | None,
+    domain: str | None,
+    owner_reference: str | None,
+) -> str:
+    # Keep the pre-I31 fingerprint byte-for-byte compatible when target metadata
+    # is absent so an old create retry still resolves its persisted receipt.
+    document: dict[str, object] = {"displayName": display_name}
+    if description is not None:
+        document["description"] = description
+    if domain is not None:
+        document["domain"] = domain
+    if owner_reference is not None:
+        document["ownerReference"] = owner_reference
     payload = json.dumps(
-        {"displayName": display_name},
+        document,
         sort_keys=True,
         separators=(",", ":"),
         ensure_ascii=False,
@@ -114,10 +139,24 @@ class CreateApplication:
 
         display_name = _normalize_required(command.display_name)
         idempotency_key = _normalize_required(command.idempotency_key)
-        if display_name is None or idempotency_key is None:
+        description, description_valid = _normalize_optional(command.description)
+        domain, domain_valid = _normalize_optional(command.domain)
+        owner_reference, owner_valid = _normalize_optional(command.owner_reference)
+        if (
+            display_name is None
+            or idempotency_key is None
+            or not description_valid
+            or not domain_valid
+            or not owner_valid
+        ):
             return CreateApplicationResult(CreateApplicationOutcome.INPUT_INVALID)
 
-        fingerprint = _fingerprint(display_name=display_name)
+        fingerprint = _fingerprint(
+            display_name=display_name,
+            description=description,
+            domain=domain,
+            owner_reference=owner_reference,
+        )
         replay = self._resolve_receipt(
             actor_id=command.actor_id,
             idempotency_key=idempotency_key,
@@ -138,6 +177,9 @@ class CreateApplication:
                 application_id=application_id,
                 display_name=display_name,
                 provenance_reference=provenance_reference,
+                description=description,
+                domain=domain,
+                owner_reference=owner_reference,
             )
         except CatalogueInvariantError:
             return CreateApplicationResult(CreateApplicationOutcome.INPUT_INVALID)
