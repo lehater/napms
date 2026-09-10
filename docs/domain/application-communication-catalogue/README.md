@@ -6,10 +6,13 @@ Canonical Tactical DDD for the current implemented catalogue write model:
 
 Accepted target evolution, not yet implemented:
 
-- `../../decisions/ADR-012-application-definition-deployment-model.md` — Application Definition / Application Deployment boundary, selectable interaction subset and interaction-scoped Resource bindings.
+- `target-tactical-model.md` — I31 Application Definition / Application Deployment / Deployment Interaction target entities, invariants, edit semantics, lifecycle and compatibility boundary.
+- `../../decisions/ADR-012-application-definition-deployment-model.md` — target product/deployment boundary, selectable interaction subset and interaction-scoped Resource bindings.
+- `../../decisions/ADR-013-i31-application-catalogue-compatibility-and-reference-semantics.md` — implementation compatibility projection, reference/metadata semantics and active-dependency rules.
+- `../../requirements/application-catalogue-target.md` — accepted I31 observable product behavior.
 - `../../ui/application-catalogue-target.md` — target catalogue UX and scaling rules.
 
-The current tactical model remains implementation truth until ADR-012 is implemented and absorbed into canonical current-state domain documentation.
+The current I27 tactical model remains runtime truth until the I31 target model is implemented and absorbed into canonical current-state documentation.
 
 Strategic ownership remains in:
 
