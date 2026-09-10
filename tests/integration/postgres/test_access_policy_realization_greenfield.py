@@ -66,6 +66,9 @@ AS_OF = datetime(
 REALIZATION_CHANGE = AS_OF + timedelta(
     hours=2
 )
+APPLICATION = UUID(int=1800)
+SOURCE_COMPONENT = UUID(int=1811)
+DESTINATION_COMPONENT = UUID(int=1812)
 SOURCE = UUID(int=1801)
 DESTINATION = UUID(int=1802)
 DCS = UUID(int=1803)
@@ -115,6 +118,8 @@ def clean_i18(
                 napms_application_catalogue.deployment_resource_bindings,
                 napms_application_catalogue.dcs_revisions,
                 napms_application_catalogue.component_deployments,
+                napms_application_catalogue.components,
+                napms_application_catalogue.applications,
                 napms_resource_catalogue.resource_endpoints,
                 napms_resource_catalogue.resource_realization_versions,
                 napms_resource_catalogue.resources,
@@ -151,13 +156,49 @@ def _seed_domain(
     *,
     ambiguous=False,
 ):
-    for deployment, provenance in (
+    connection.execute(
+        """
+        INSERT INTO napms_application_catalogue.applications (
+            application_id,
+            display_name,
+            provenance_reference
+        )
+        VALUES (%s, %s, %s)
+        """,
+        (APPLICATION, "I18 test application", "acc:test-application"),
+    )
+
+    for component_id, display_name in (
+        (SOURCE_COMPONENT, "Source component"),
+        (DESTINATION_COMPONENT, "Destination component"),
+    ):
+        connection.execute(
+            """
+            INSERT INTO napms_application_catalogue.components (
+                component_id,
+                application_id,
+                display_name,
+                provenance_reference
+            )
+            VALUES (%s, %s, %s, %s)
+            """,
+            (
+                component_id,
+                APPLICATION,
+                display_name,
+                "acc:component:" + str(component_id),
+            ),
+        )
+
+    for deployment, component_id, provenance in (
         (
             SOURCE,
+            SOURCE_COMPONENT,
             "acc:source-deployment",
         ),
         (
             DESTINATION,
+            DESTINATION_COMPONENT,
             "acc:destination-deployment",
         ),
     ):
@@ -165,12 +206,14 @@ def _seed_domain(
             """
             INSERT INTO napms_application_catalogue.component_deployments (
                 component_deployment_id,
+                component_id,
                 provenance_reference
             )
-            VALUES (%s, %s)
+            VALUES (%s, %s, %s)
             """,
             (
                 deployment,
+                component_id,
                 provenance,
             ),
         )
