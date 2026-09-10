@@ -1,4 +1,4 @@
-.PHONY: test postgres-test web-check docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-check knowledge-check check
+.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-check knowledge-check check
 
 test:
 	python -m pytest -q -m "not postgres"
@@ -8,6 +8,9 @@ postgres-test:
 
 web-check:
 	cd web && npm run build
+
+journey-e2e:
+	python -m pytest -q e2e/test_j01_application_authoring.py
 
 docker-build:
 	NAPMS_POSTGRES_PASSWORD=local-build-placeholder docker compose build
