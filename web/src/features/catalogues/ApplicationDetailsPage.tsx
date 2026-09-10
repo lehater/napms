@@ -4,6 +4,7 @@ import { ArrowLeft, Boxes, Link2, Plus, RefreshCw } from "lucide-react"
 import { ApiError } from "@/api"
 import { shortId } from "@/components/catalogue/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
+import { DcsAuthoringPanel } from "@/features/catalogues/DcsAuthoringPanel"
 import {
   createCatalogueComponent,
   createCatalogueDeployment,
@@ -54,24 +55,21 @@ export function ApplicationDetailsPage({
     }
   }
 
+  async function loadResources() {
+    try {
+      const result = await listCatalogueResources(1)
+      setResources(result.items.filter((item) => item.lifecycle === "Active"))
+    } catch (caught) {
+      setMutationError(errorFrom(caught, "Resource discovery could not be loaded."))
+    }
+  }
+
   useEffect(() => {
     void load()
   }, [applicationId])
 
   useEffect(() => {
-    let active = true
-    void listCatalogueResources(1)
-      .then((result) => {
-        if (active) setResources(result.items.filter((item) => item.lifecycle === "Active"))
-      })
-      .catch((caught) => {
-        if (active) {
-          setMutationError(errorFrom(caught, "Resource discovery could not be loaded."))
-        }
-      })
-    return () => {
-      active = false
-    }
+    void loadResources()
   }, [])
 
   async function addComponent(event: React.FormEvent) {
@@ -156,8 +154,12 @@ export function ApplicationDetailsPage({
             <ArrowLeft className="size-4" aria-hidden="true" />
             Applications
           </button>
-          <h1 className="text-2xl font-bold text-[#172033]">{detail.application.displayName}</h1>
-          <div className="mt-1 font-mono text-xs text-[#64748B]">{detail.application.applicationId}</div>
+          <h1 className="text-2xl font-bold text-[#172033]">
+            {detail.application.displayName}
+          </h1>
+          <div className="mt-1 font-mono text-xs text-[#64748B]">
+            {detail.application.applicationId}
+          </div>
         </div>
         <Button variant="secondary" loading={loading} onClick={() => void load()}>
           <RefreshCw className="size-4" aria-hidden="true" />
@@ -186,6 +188,11 @@ export function ApplicationDetailsPage({
           <p className="mt-3 text-sm text-red-700">{mutationError.message}</p>
         ) : null}
       </section>
+
+      <DcsAuthoringPanel
+        currentApplicationId={applicationId}
+        onCreated={load}
+      />
 
       {detail.components.length === 0 ? (
         <section className="rounded-lg border border-dashed border-[#CBD5E1] bg-white p-8 text-center text-sm text-[#64748B]">
@@ -247,7 +254,8 @@ export function ApplicationDetailsPage({
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <div className="font-semibold text-[#172033]">
-                            {deployment.displayName || `Deployment ${shortId(deployment.componentDeploymentId)}`}
+                            {deployment.displayName ||
+                              `Deployment ${shortId(deployment.componentDeploymentId)}`}
                           </div>
                           <div className="mt-1 font-mono text-[11px] text-[#64748B]">
                             {deployment.componentDeploymentId}
@@ -265,12 +273,19 @@ export function ApplicationDetailsPage({
                             Resource bindings
                           </div>
                           {deployment.effectiveResourceBindings.length === 0 ? (
-                            <p className="text-sm text-[#64748B]">No effective resource bindings.</p>
+                            <p className="text-sm text-[#64748B]">
+                              No effective resource bindings.
+                            </p>
                           ) : (
                             <div className="grid gap-2">
                               {deployment.effectiveResourceBindings.map((binding) => (
-                                <div key={binding.bindingReference} className="text-sm text-[#172033]">
-                                  <span className="font-medium">{binding.resourceReference}</span>
+                                <div
+                                  key={binding.bindingReference}
+                                  className="text-sm text-[#172033]"
+                                >
+                                  <span className="font-medium">
+                                    {binding.resourceReference}
+                                  </span>
                                   <span className="ml-2 text-xs text-[#64748B]">
                                     since {new Date(binding.validFrom).toLocaleString()}
                                   </span>
@@ -292,7 +307,10 @@ export function ApplicationDetailsPage({
                             >
                               <option value="">Select Resource…</option>
                               {resources.map((resource) => (
-                                <option key={resource.resourceReference} value={resource.resourceReference}>
+                                <option
+                                  key={resource.resourceReference}
+                                  value={resource.resourceReference}
+                                >
                                   {resource.displayName || shortId(resource.resourceReference)}
                                 </option>
                               ))}
@@ -323,15 +341,13 @@ export function ApplicationDetailsPage({
                                     {revision.displayName || shortId(revision.revisionId)}
                                   </div>
                                   <div className="text-xs text-[#64748B]">
-                                    {shortId(revision.sourceComponentDeploymentId)} → {shortId(revision.destinationComponentDeploymentId)}
+                                    {shortId(revision.sourceComponentDeploymentId)} →{" "}
+                                    {shortId(revision.destinationComponentDeploymentId)}
                                   </div>
                                 </div>
                               ))}
                             </div>
                           )}
-                          <p className="mt-3 text-xs text-[#64748B]">
-                            DCS creation remains read-only here until participant discovery can prevent arbitrary UUID combinations.
-                          </p>
                         </div>
                       </div>
                     </div>
