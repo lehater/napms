@@ -1,6 +1,6 @@
 # ADR-008 — I27 Catalogue Mutation Authority
 
-Status: `accepted`.
+Status: `accepted; corrected during Stage 0 implementation re-entry`.
 
 Date: 2026-09-10.
 
@@ -9,6 +9,8 @@ Date: 2026-09-10.
 I27 adds user-facing mutations to Application Communication Catalogue and Resource Catalogue. Existing catalogue visibility is intentionally broader than mutation authority, and Resource Responsibility / Resource Scope Affiliation are not permissions.
 
 The mutation model needs enough granularity to separate application-communication curation from resource curation without creating a large matrix of field-level permissions before a concrete need exists.
+
+During implementation re-entry, the initial idea of evaluating catalogue curation against a caller-selected Responsibility Scope was found unsafe/underspecified: ACC structural identities do not belong to a Responsibility Scope, and RC Resource Scope Affiliation is explicitly membership data rather than catalogue stewardship. A caller-selected arbitrary scope therefore could not be authoritatively correlated to the mutated catalogue object.
 
 ## Decision
 
@@ -19,9 +21,18 @@ CurateApplicationCatalogue
 CurateResourceCatalogue
 ```
 
+The first I27 slice evaluates them against server-owned fixed administrative scope references:
+
+```text
+CurateApplicationCatalogue -> application-catalogue
+CurateResourceCatalogue    -> resource-catalogue
+```
+
+These are Authority Management scope correlation values only. They are not Responsibility Scope membership, Application/Resource identity, organization hierarchy or ownership facts.
+
 ### CurateApplicationCatalogue
 
-Admits ACC-owned curation for the selected Responsibility Scope context, including:
+Admits ACC-owned curation, including:
 
 - Application create/rename/retire;
 - Component create/rename/retire;
@@ -29,36 +40,55 @@ Admits ACC-owned curation for the selected Responsibility Scope context, includi
 - DCS revision authoring;
 - Deployment Resource Binding create/end.
 
+The application command chooses `application-catalogue` as the authority scope. The client does not select or substitute this value.
+
 This action does not imply `ProposeConnectivity`, `DecideConnectivity`, Access Rule mutation or Resource Catalogue mutation.
 
 ### CurateResourceCatalogue
 
-Admits Resource Catalogue curation for the selected Responsibility Scope context, including:
+Admits Resource Catalogue curation, including:
 
 - Resource create/rename/retire;
 - endpoint/realization authoring;
-- Resource Scope Affiliation create/end where the command is scoped to the admitted Responsibility Scope;
+- Resource Scope Affiliation create/end;
 - Resource Responsibility create/end.
+
+The application command chooses `resource-catalogue` as the authority scope. The client does not select or substitute this value.
 
 This action does not imply ACC mutation, Connectivity Requirement/Decision/Rule authority or network operation authority.
 
-## Scope model
+## Why fixed catalogue administration scopes
 
-Both actions are evaluated by Authority Management using the existing stable Responsibility Scope reference.
+The current domain contains no accepted catalogue-stewardship relation that maps an ACC Application/Component/Deployment or RC Resource to one mutation-governance Responsibility Scope.
 
-For commands affecting an existing scoped object, the backend derives/validates the applicable scope from authoritative catalogue relations rather than trusting a caller-provided object owner field.
+Using Resource Scope Affiliation as implicit Resource-catalogue stewardship would change its accepted meaning. Using an arbitrary UI-selected scope for ACC would provide no object-to-scope invariant at all.
 
-For creation commands that need an initial Responsibility Scope, the HTTP request selects a scope from actor-admitted `Curate*Catalogue` scopes. The server treats it as command context, not as trusted actor identity.
+The fixed scopes therefore provide the smallest fail-closed first slice:
 
-ACC structural identities are not themselves owned by a Responsibility Scope in I27. ACC curation authority uses the selected curation scope as an administrative action boundary; it does not add scope into Application/Component/Deployment identity. A later requirement may introduce more precise catalogue stewardship without changing those identities.
+```text
+catalogue curator authority
+!= Resource Scope Affiliation
+!= Resource Responsibility
+!= application/resource ownership
+```
 
-Deployment Resource Binding requires `CurateApplicationCatalogue` in the selected curation scope. Referencing a Resource does not grant or require Resource Catalogue mutation because the command mutates only the ACC-owned binding.
+If later product requirements need delegated per-company/per-team catalogue curation, that requires an explicit stewardship/governance relation and a domain re-entry rather than overloading current membership/contact facts.
 
-Resource Scope Affiliation creation/end for scope `S` requires `CurateResourceCatalogue` for `S`.
+## Deployment Resource Binding
+
+A Deployment Resource Binding mutation requires `CurateApplicationCatalogue` on `application-catalogue`, because the binding is ACC-owned.
+
+Referencing a Resource does not grant Resource Catalogue mutation and does not require `CurateResourceCatalogue` merely to create/end the ACC relation. The command still validates that the Resource reference exists through the accepted consuming port.
+
+## Resource Scope Affiliation
+
+Creating or ending a Resource Scope Affiliation requires `CurateResourceCatalogue` on `resource-catalogue`.
+
+The target Responsibility Scope is semantic data of the affiliation command, not the authority scope used to admit the catalogue mutation.
 
 ## Why two actions
 
-One generic `CurateCatalogue` action is rejected because ACC and RC are independent semantic owners and are likely to have different operational custodians.
+One generic `CurateCatalogue` action is rejected because ACC and RC are independent semantic owners and may have different operational custodians.
 
 Fine-grained actions such as `RenameComponent`, `RetireComponent`, `SetResourceEndpoint` are deferred because no current user scenario requires that administrative complexity. The two-context split is the smallest useful separation.
 
@@ -66,18 +96,25 @@ Fine-grained actions such as `RenameComponent`, `RetireComponent`, `SetResourceE
 
 Existing catalogue read/discovery visibility remains independent. Having `CurateApplicationCatalogue` or `CurateResourceCatalogue` does not widen protected Requirement/Decision/Rule reads.
 
-UI may expose curation workspaces only for admitted scopes/actions for usability, but HTTP commands always re-check Authority Management.
+UI may expose curation actions based on the two server-known authority capabilities for usability, but HTTP commands always re-check Authority Management.
 
 ## Local demo
 
-The local demo actor may receive both new actions for `local-demo` so the supported single-account local product can exercise the full curation workflow.
+The local demo actor receives:
+
+```text
+CurateApplicationCatalogue @ application-catalogue
+CurateResourceCatalogue    @ resource-catalogue
+```
+
+so the supported single-account local product can exercise the full curation workflow.
 
 This is demo authority data, not a rule that authenticated users universally receive catalogue mutation rights.
 
 ## Consequences
 
 - ACC and RC mutation authority remain independently assignable;
-- the first slice avoids field-level RBAC complexity;
-- Resource responsibility/contact remains operational metadata, not permission;
-- the shared Responsibility Scope is used as an authority correlation value without becoming Application/Component identity;
-- application/backend implementation can introduce the two actions without changing existing authorization semantics.
+- the client cannot authorize a catalogue mutation by substituting an unrelated Responsibility Scope;
+- Resource scope membership and operational responsibility/contact remain data, not permission;
+- the first slice avoids inventing catalogue stewardship relations before they are required;
+- delegated scope-specific catalogue curation remains explicit future domain work rather than an accidental interpretation of current relations.
