@@ -52,7 +52,15 @@ Application
       DCS revisions
 ```
 
-Supported actions include Component/Deployment creation, backend Resource discovery, bind/unbind through temporal end semantics and immutable DCS authoring using Active participant discovery.
+Supported actions include:
+- Application/Component/Deployment rename without changing stable identity;
+- leaf-to-parent retirement rather than hard delete, with blocked parent retirement surfaced explicitly;
+- Component/Deployment creation;
+- backend Resource discovery and bind/unbind through temporal end semantics;
+- immutable DCS authoring using Active participant discovery;
+- saved DCS inspection after reload/reopen with readable source/destination and protocol/port/service alternatives.
+
+Communication correction creates another immutable DCS revision; the UI does not rewrite historical revisions or downstream references.
 
 Readable names lead; stable IDs, versions and provenance are available in technical detail.
 
