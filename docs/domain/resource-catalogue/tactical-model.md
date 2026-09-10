@@ -48,6 +48,26 @@ Retirement is terminal for the first curation slice and preserves historical rea
 
 Normal product workflows do not hard-delete Resource identity.
 
+## Temporal fact provenance
+
+Resource realization, scope affiliation and responsibility are historical facts. Their creation provenance and a later explicit end action are different business events and must remain distinguishable.
+
+For those fact types I27 therefore preserves:
+
+```text
+provenanceReference
+    source/provenance of the fact as created
+
+endProvenanceReference: optional
+    provenance of a later explicit End/Replace action that established validUntil
+```
+
+When a fact is created with a finite validity interval already known, `validUntil` may be present while `endProvenanceReference` is absent: the end instant is part of the original declaration.
+
+When an open-ended fact is ended later by a curation command, the command must set both `validUntil` and `endProvenanceReference` in one semantic mutation. The original `provenanceReference` is not overwritten.
+
+This distinction preserves business auditability without turning operational logs or command receipts into the source of domain provenance.
+
 ## Resource realization
 
 The existing temporal `ResourceRealizationVersion` remains the owner of effective endpoint/address facts:
@@ -59,6 +79,7 @@ Resource Realization Version
     EndpointAddress+
     [validFrom, validUntil)
     provenanceReference
+    optional endProvenanceReference
 ```
 
 A realization version contains at least one Endpoint Address.
@@ -66,6 +87,8 @@ A realization version contains at least one Endpoint Address.
 Changing the effective endpoint/address set is represented by ending the previous effective realization when applicable and creating another version. Historical rows are not rewritten merely to reflect current state.
 
 For one Resource at one logical time, the application layer must not accept overlapping authoritative realization versions that would make the current endpoint set ambiguous unless a later requirement explicitly models multiple simultaneous authoritative realizations.
+
+An explicit replacement that ends an existing open realization and creates its successor is one Resource Catalogue use case and must preserve the previous fact identity/provenance while recording the end provenance of the previous fact.
 
 ## Endpoint Address
 
@@ -90,6 +113,7 @@ Resource Scope Affiliation
     responsibilityScope
     [validFrom, validUntil)
     provenanceReference
+    optional endProvenanceReference
 ```
 
 The relation controls which Resources belong to a responsibility-oriented workspace. It does not grant actor authority.
@@ -97,6 +121,8 @@ The relation controls which Resources belong to a responsibility-oriented worksp
 For the same Resource + Responsibility Scope + logical time, at most one effective affiliation is accepted.
 
 Curation may create an affiliation or end an effective affiliation. Historical affiliations are not hard-deleted.
+
+An explicit end preserves the affiliation's creation provenance and records separate end provenance.
 
 ## Resource Responsibility
 
@@ -112,11 +138,14 @@ Resource Responsibility
     optional contactPoint
     [validFrom, validUntil)
     provenanceReference
+    optional endProvenanceReference
 ```
 
 I27 curation may create responsibility assignments and end current assignments. It does not invent a mandatory single primary owner.
 
 Resource Responsibility does not place the Resource into a Responsibility Scope and does not grant NAPMS mutation permission.
+
+An explicit end preserves the assignment's creation provenance and records separate end provenance.
 
 ## Lifecycle and mutation consequences
 
@@ -131,13 +160,29 @@ Retirement:
 - does not rewrite existing Requirement, Decision, Rule or realization history;
 - does not silently end Authority Management assignments because those belong to another context.
 
-The application layer should require explicit handling of currently effective Resource Scope Affiliations and current Resource Responsibilities before retirement if leaving them active would create misleading current projections.
+Before Resource retirement, currently effective Resource Scope Affiliations and current Resource Responsibilities must be explicitly ended. I27 does not silently cascade those cross-record changes.
 
-Exact retirement preconditions are closed together with I27 lifecycle command semantics before persistence mutation is opened.
+A currently effective realization does not block retirement in I27. It remains historical/technical realization truth and downstream current projections that require an Active Resource must apply the Resource lifecycle contract explicitly.
 
 ### Hard deletion
 
 Hard deletion is outside normal I27 product commands. Database/operator repair remains outside the product contract.
+
+## Temporal mutation/version consequences
+
+Resource identity and temporal relation rows use optimistic versioning for user-facing mutation.
+
+For an explicit end operation:
+
+```text
+open fact version N
+    -> validate expectedVersion == N
+    -> set validUntil
+    -> set endProvenanceReference
+    -> version N + 1
+```
+
+An already ended fact is not ended again under another command identity. Equivalent retry is handled by the application idempotency contract; a different later command attempting another end fails its state/concurrency precondition.
 
 ## Command responsibility
 
@@ -196,16 +241,19 @@ I27 must preserve every existing `resource_reference`, realization fact referenc
 
 Schema extensions for display metadata/lifecycle/version control must use conservative defaults for existing rows and explicit migration provenance where a new fact is manufactured by migration.
 
+`endProvenanceReference` is nullable for migrated/pre-I27 rows. A historical finite `validUntil` without end provenance means the repository has no accepted evidence that the end was established by a later explicit I27 end command; migration must not manufacture an actor or authority source.
+
 The migration must not infer Resource responsibility, ownership, company, organization or scope membership from addresses or naming conventions.
 
 ## Concurrency
 
-Concurrent mutation must not silently overwrite Resource catalogue facts. The exact version/ETag/idempotency contract is decided in the I27 Stage 0 command semantics and then applied consistently to ACC and Resource Catalogue write APIs.
+Concurrent mutation must not silently overwrite Resource catalogue facts. The I27 command/ETag/idempotency contract applies consistently to Resource identity and mutable temporal relation state.
 
 ## Consequences
 
 - Resources gain a safe user-facing write model without becoming generic CMDB assets;
-- temporal realization/affiliation/responsibility remain historical facts rather than mutable columns;
+- temporal realization/affiliation/responsibility remain historical facts rather than mutable current-state columns;
+- creation provenance is not destroyed when a temporal fact is explicitly ended later;
 - resource identity remains stable when addresses, scope membership or responsible people change;
 - policy and authority boundaries remain independent;
-- HTTP/Web mutation remains blocked until the shared I27 authority and command-concurrency decisions are closed.
+- HTTP/Web mutation remains downstream of owner-domain/application contracts.
