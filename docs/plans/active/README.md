@@ -13,12 +13,26 @@ Owner requirement:
 Ordered roadmap:
 - `docs/engineering/catalogue-curation-roadmap.md`.
 
-Current gate: **Stage 0 / semantic closure**. Infrastructure, HTTP mutation routes and Web mutation forms remain closed until the P0 catalogue decisions in the active plan are accepted.
+Current gate: **Stage 2 / Resource Catalogue core write-side in progress**.
+
+Completed current-increment closure:
+- Stage 0 P0 semantic decisions are accepted in Tactical DDD / ADR / architecture / command-contract owners;
+- Stage 1 catalogue authority actions and owner-specific consuming adapters are implemented with fail-closed tests;
+- the first `CreateResource` and `CreateApplication` application slices establish server-owned identity/provenance and idempotent command semantics, including concurrent-winner recovery.
+
+Still closed:
+- PostgreSQL schema/write repositories and migration;
+- HTTP mutation routes;
+- Web `Resources` / `Applications` mutation workspaces.
+
+Next execution target:
+- complete Resource Catalogue Domain/Application/Ports commands and invariants for rename/retire plus temporal realization, scope affiliation and responsibility maintenance;
+- then complete the corresponding ACC core hierarchy/write commands before opening PostgreSQL Stage 4.
 
 Primary restart points:
-- `docs/domain/strategic-model.md`;
-- `docs/domain/ubiquitous-language.md`;
-- `docs/domain/resource-role-model.md`;
-- `docs/requirements/catalogue-curation.md`;
-- `docs/engineering/current-state.md`;
+- `docs/domain/resource-catalogue/tactical-model.md`;
+- `docs/domain/application-communication-catalogue/tactical-model.md`;
+- `docs/engineering/catalogue-curation-command-contract.md`;
+- `src/napms/resource_catalogue/application/curation.py`;
+- `src/napms/application_catalogue/application/curation.py`;
 - `docs/plans/active/PLAN-I27-catalogue-curation.md`.
