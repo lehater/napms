@@ -4,6 +4,9 @@ from enum import Enum
 from typing import Protocol
 from uuid import UUID
 
+from napms.application_catalogue.domain.communication import (
+    AuthoredDcsTrafficAlternative,
+)
 from napms.application_catalogue.domain.model import (
     Application,
     Component,
@@ -141,6 +144,13 @@ class ApplicationCatalogueProvenanceFactory(Protocol):
     ) -> str: ...
 
 
+class DcsProjectionAuthoringEncoder(Protocol):
+    def encode(
+        self,
+        alternatives: tuple[AuthoredDcsTrafficAlternative, ...],
+    ) -> bytes: ...
+
+
 class ApplicationCatalogueCurationRepository(Protocol):
     def get_application(self, application_id: UUID) -> Application | None: ...
 
@@ -181,6 +191,10 @@ class ApplicationCatalogueCurationRepository(Protocol):
         *,
         expected_version: int,
     ) -> None: ...
+
+    def get_dcs_revision(self, revision_id: UUID) -> DcsRevision | None: ...
+
+    def add_dcs_revision(self, revision: DcsRevision) -> None: ...
 
     def find_command_receipt(
         self,
