@@ -62,6 +62,56 @@ class PostgresResourceCatalogueRepository:
         except PsycopgError as exc:
             raise ResourceCataloguePersistenceError() from exc
 
+    def find_effective_realizations_by_address(
+        self,
+        *,
+        technical_address: str,
+        as_of: datetime,
+    ) -> tuple[ResourceRealizationVersion, ...]:
+        try:
+            rows = self._connection.execute(
+                """
+                SELECT DISTINCT
+                    realization.fact_reference,
+                    realization.resource_reference,
+                    realization.valid_from,
+                    realization.valid_to,
+                    realization.provenance_reference
+                FROM napms_resource_catalogue.resource_realization_versions AS realization
+                JOIN napms_resource_catalogue.resource_endpoints AS endpoint
+                  ON endpoint.fact_reference = realization.fact_reference
+                WHERE endpoint.technical_address = %s
+                  AND realization.valid_from <= %s
+                  AND (realization.valid_to IS NULL OR %s < realization.valid_to)
+                ORDER BY realization.resource_reference, realization.fact_reference
+                """,
+                (technical_address, as_of, as_of),
+            ).fetchall()
+            return self._hydrate_many(rows)
+        except ResourceCataloguePersistenceError:
+            raise
+        except (PsycopgError, ResourceCatalogueInvariantError) as exc:
+            raise ResourceCataloguePersistenceError() from exc
+
+    def has_realization_facts_for_address(
+        self,
+        *,
+        technical_address: str,
+    ) -> bool:
+        try:
+            row = self._connection.execute(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM napms_resource_catalogue.resource_endpoints
+                    WHERE technical_address = %s
+                )
+                """,
+                (technical_address,),
+            ).fetchone()
+            return bool(row[0])
+        except PsycopgError as exc:
+            raise ResourceCataloguePersistenceError() from exc
 
     def list_effective_for_scope(
         self,
