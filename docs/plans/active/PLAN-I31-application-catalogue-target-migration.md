@@ -106,17 +106,18 @@ Outputs:
 - no hard-delete action;
 - `make web-check` evidence.
 
-Implementation state: started on `i31/m4-web-target`. First slice is the target working-set/navigation shell consuming M3 server-bounded APIs; subsequent slices add authoring, Deployment connectivity/Resource-set drill-down and dependency-blocked flows only after the shell is validated.
+Implementation state: implemented in Draft PR #62. The Applications entry point now uses the target Definition/Deployment information architecture and server-bounded projections. Definition metadata, Components, Interaction Definitions and Application Deployments have target create/edit/retire surfaces. Interaction endpoint and traffic edits are separate operations so the Web does not invent transactional atomicity across distinct backend commands. Deployment connectivity supports Add interaction, Resource-count drill-down, Resource Catalogue-backed membership add/end, and removal of a selected Deployment Interaction through a current lifecycle/version read followed by optimistic-concurrency retirement. Retirement/traffic blockers preserve structured dependency counts and bounded drill-down. Legacy I27 Web code remains only as compatibility implementation and is no longer the Applications authoring entry point.
 
-Local exit: pending. Representative target user flow must match the accepted wireframes semantically and remain bounded for large datasets.
+J01 has been rewritten to the target authoring model for WP-4-level browser validation. Full downstream absorption and deterministic screenshots remain WP-5 responsibilities.
+
+Local exit: pending final PR #62 self-review and hosted gates. Core, PostgreSQL, Web, harness and Docker gates have already passed on the code-complete WP-4 head; the browser journey is being revalidated after target J01/accessibility corrections.
 
 ## WP-5 — journeys, screenshots and absorption
 
 Responsibility: prove the new authoring projection and unchanged downstream behavior end to end.
 
 Outputs:
-- J01 rewritten around Definition -> Components -> Interaction Definitions -> Application Deployment -> selected interactions -> Resource sets;
-- target-authored interaction proven through existing Connectivity / final Decision / Access Policy paths as applicable;
+- extend J01 from target authoring into unchanged downstream Connectivity / final Decision / Access Policy paths as applicable;
 - representative deterministic screenshot regressions for accepted Application Catalogue screens;
 - Docker/local journey evidence;
 - applicable hosted gates inspected and passed before final integration;
@@ -137,8 +138,8 @@ Local exit: the I31 completion criterion in the roadmap is executable and green.
 
 ## Blockers
 
-None known. M0-M3 are integrated. WP-4 is active on a new branch from the M3 squash commit.
+None known. M0-M3 are integrated. WP-4 is code-complete in Draft PR #62 pending final hosted validation.
 
 ## Next
 
-Open the WP-4 Draft PR, inspect the existing Web Applications surface against the accepted target wireframes, implement the smallest `Definitions | Deployments` end-to-end slice against the M3 HTTP API, and run the focused Web gate before expanding the flow.
+Complete the final PR #62 gate run on the documentation-final head, fix any concrete failure, perform the final diff/review-thread check, then mark Ready and squash-merge M4 only when every applicable gate is green. Start WP-5 from the resulting `main`.
