@@ -28,6 +28,10 @@ class CatalogueConcurrencyConflict(CataloguePersistenceError):
     """Optimistic concurrency precondition did not match authoritative state."""
 
 
+class CatalogueIdempotencyConflict(CataloguePersistenceError):
+    """Another command won the same idempotency-key uniqueness boundary."""
+
+
 class ApplicationCatalogueAuthorityOutcome(str, Enum):
     PERMITTED = "Permitted"
     DENIED = "Denied"
