@@ -24,7 +24,7 @@ class TransactionalPostgresResourceCatalogueCurationRepository(
 ):
     """RC curation repository with explicit pre-commit vs commit failure semantics."""
 
-    def list_resources(
+    def list_workspace_resources(
         self,
         *,
         offset: int,
