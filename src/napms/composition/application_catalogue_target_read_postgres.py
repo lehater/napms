@@ -733,8 +733,6 @@ class PostgresApplicationCatalogueTargetReadModel:
             ), '')
         """
         if sort.lstrip("-") == "scope":
-            # Sort parameters are appended only for the ORDER expression; no user text
-            # is interpolated into SQL identifiers or expressions.
             order = _order(
                 sort,
                 {"scope": (scope_sort,)},
@@ -757,7 +755,8 @@ class PostgresApplicationCatalogueTargetReadModel:
             )
             rows = self._fetchall(
                 f"""
-                SELECT r.resource_reference, r.display_name,
+                SELECT b.reference_id, b.version, r.resource_reference,
+                       b.valid_from, b.valid_to, r.display_name,
                        ARRAY(
                            SELECT DISTINCT rsa.responsibility_scope
                              FROM napms_resource_catalogue.resource_scope_affiliations rsa
@@ -768,7 +767,8 @@ class PostgresApplicationCatalogueTargetReadModel:
                        ) AS scope_references
                   {joins}
                  WHERE {where}
-                 GROUP BY r.resource_reference, r.display_name
+                 GROUP BY b.reference_id, b.version, r.resource_reference,
+                          b.valid_from, b.valid_to, r.display_name
                  ORDER BY {order}
                  OFFSET %s LIMIT %s
                 """,
@@ -777,9 +777,13 @@ class PostgresApplicationCatalogueTargetReadModel:
             return ResourceSetPage(
                 items=tuple(
                     ResourceSetMember(
-                        resource_reference=row[0],
-                        display_name=row[1],
-                        scope_references=tuple(row[2]),
+                        binding_reference=row[0],
+                        binding_version=row[1],
+                        resource_reference=row[2],
+                        valid_from=row[3],
+                        valid_to=row[4],
+                        display_name=row[5],
+                        scope_references=tuple(row[6]),
                     )
                     for row in rows
                 ),
