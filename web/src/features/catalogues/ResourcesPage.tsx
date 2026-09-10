@@ -6,9 +6,11 @@ import { CatalogueIdentity } from "@/components/catalogue/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import {
   createCatalogueResource,
-  listCatalogueResources,
-  type ResourceDto,
 } from "@/features/catalogues/catalogueApi"
+import {
+  listCatalogueResourceWorkspace,
+  type ResourceWorkspaceItemDto,
+} from "@/features/catalogues/resourceWorkspaceApi"
 
 const inputClass =
   "min-h-10 w-full rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
@@ -17,6 +19,36 @@ function errorFrom(caught: unknown, fallback: string) {
   return caught instanceof ApiError
     ? caught
     : new ApiError(500, "InternalError", fallback)
+}
+
+function MissingFacts({ item }: { item: ResourceWorkspaceItemDto }) {
+  const missing: string[] = []
+  if (!item.currentFacts.hasRealization) missing.push("No addresses")
+  if (!item.currentFacts.hasScopeAffiliation) missing.push("No scope")
+  if (!item.currentFacts.hasResponsibility) {
+    missing.push("No responsibility")
+  } else if (!item.currentFacts.hasContact) {
+    missing.push("No contact")
+  }
+
+  if (missing.length === 0) {
+    return (
+      <span className="text-xs font-medium text-[#64748B]">Current facts complete</span>
+    )
+  }
+
+  return (
+    <div className="flex flex-wrap justify-end gap-1.5">
+      {missing.map((value) => (
+        <span
+          key={value}
+          className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800"
+        >
+          {value}
+        </span>
+      ))}
+    </div>
+  )
 }
 
 export function ResourcesPage({
@@ -28,12 +60,14 @@ export function ResourcesPage({
   onPageChange: (page: number) => void
   onOpenResource: (resourceReference: string) => void
 }) {
-  const [items, setItems] = useState<ResourceDto[]>([])
+  const [items, setItems] = useState<ResourceWorkspaceItemDto[]>([])
   const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<ApiError | null>(null)
   const [searchInput, setSearchInput] = useState("")
   const [search, setSearch] = useState("")
+  const [scopeInput, setScopeInput] = useState("")
+  const [scopeFilter, setScopeFilter] = useState("")
   const [displayName, setDisplayName] = useState("")
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<ApiError | null>(null)
@@ -42,7 +76,11 @@ export function ResourcesPage({
     setLoading(true)
     setError(null)
     try {
-      const result = await listCatalogueResources(page, search)
+      const result = await listCatalogueResourceWorkspace(
+        page,
+        search,
+        scopeFilter,
+      )
       setItems(result.items)
       setHasMore(result.hasMore)
     } catch (caught) {
@@ -54,7 +92,7 @@ export function ResourcesPage({
 
   useEffect(() => {
     void load()
-  }, [page, search])
+  }, [page, search, scopeFilter])
 
   async function create(event: React.FormEvent) {
     event.preventDefault()
@@ -69,6 +107,13 @@ export function ResourcesPage({
     } finally {
       setCreating(false)
     }
+  }
+
+  function applyFilters(event: React.FormEvent) {
+    event.preventDefault()
+    if (page !== 1) onPageChange(1)
+    setSearch(searchInput.trim())
+    setScopeFilter(scopeInput.trim())
   }
 
   return (
@@ -108,25 +153,34 @@ export function ResourcesPage({
       </section>
 
       <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-[#E2E8F0] p-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="font-semibold text-[#172033]">Resource catalogue</h2>
+        <div className="grid gap-3 border-b border-[#E2E8F0] p-4 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div>
+            <h2 className="font-semibold text-[#172033]">Resource catalogue</h2>
+            <p className="mt-1 text-xs text-[#64748B]">
+              Scope filtering uses the effective external Responsibility Scope reference; it does not change catalogue read permission.
+            </p>
+          </div>
           <form
-            className="flex min-w-0 gap-2 sm:w-80"
-            onSubmit={(event) => {
-              event.preventDefault()
-              if (page !== 1) onPageChange(1)
-              setSearch(searchInput.trim())
-            }}
+            className="grid min-w-0 gap-2 sm:grid-cols-[minmax(12rem,1fr)_minmax(12rem,1fr)_auto] lg:w-[42rem]"
+            onSubmit={applyFilters}
           >
             <input
               className={inputClass}
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search resources"
+              placeholder="Resource, owner or contact"
               aria-label="Search resources"
             />
-            <Button type="submit" variant="secondary" aria-label="Search">
+            <input
+              className={inputClass}
+              value={scopeInput}
+              onChange={(event) => setScopeInput(event.target.value)}
+              placeholder="Responsibility scope (optional)"
+              aria-label="Responsibility scope filter"
+            />
+            <Button type="submit" variant="secondary" aria-label="Apply resource filters">
               <Search className="size-4" aria-hidden="true" />
+              Filter
             </Button>
           </form>
         </div>
@@ -148,11 +202,12 @@ export function ResourcesPage({
               <button
                 key={item.resourceReference}
                 type="button"
-                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left hover:bg-[#F8FAFC]"
+                className="grid w-full gap-3 px-5 py-4 text-left hover:bg-[#F8FAFC] sm:grid-cols-[minmax(0,1fr)_minmax(14rem,auto)_auto] sm:items-center"
                 onClick={() => onOpenResource(item.resourceReference)}
               >
                 <CatalogueIdentity name={item.displayName} id={item.resourceReference} />
-                <div className="flex items-center gap-3">
+                <MissingFacts item={item} />
+                <div className="flex items-center justify-end gap-3">
                   <span className="rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-800">
                     {item.lifecycle}
                   </span>
