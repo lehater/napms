@@ -4,6 +4,7 @@ import { ArrowLeft, Plus } from "lucide-react"
 import { ApiError } from "@/api"
 import { Button } from "@/components/ui/Button"
 import { CataloguePager } from "@/features/catalogues/CataloguePager"
+import { InteractionDefinitionCreatePanel } from "@/features/catalogues/InteractionDefinitionCreatePanel"
 import {
   CreateComponentPanel,
   CreateDeploymentPanel,
@@ -205,7 +206,17 @@ export function ApplicationDefinitionPage({
               </>
             ) : tab === "interactions" ? (
               <>
-                <div className="border-b border-[#E2E8F0] px-5 py-4"><h2 className="font-semibold text-[#172033]">Interactions</h2></div>
+                <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
+                  <h2 className="font-semibold text-[#172033]">Interactions</h2>
+                  <Button onClick={() => setCreateOpen((value) => !value)}><Plus className="size-4" aria-hidden="true" />Add interaction</Button>
+                </div>
+                {createOpen ? (
+                  <InteractionDefinitionCreatePanel
+                    applicationId={applicationId}
+                    onCancel={() => setCreateOpen(false)}
+                    onCreated={refreshTab}
+                  />
+                ) : null}
                 {interactions.length === 0 ? (
                   <div className="p-6 text-sm text-[#64748B]">No active interactions.</div>
                 ) : (
