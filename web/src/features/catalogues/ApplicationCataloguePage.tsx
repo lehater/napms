@@ -12,6 +12,14 @@ import {
 
 export type ApplicationCatalogueView = "definitions" | "deployments"
 
+type Filters = {
+  search: string
+  first: string
+  second: string
+  third: string
+}
+
+const EMPTY_FILTERS: Filters = { search: "", first: "", second: "", third: "" }
 const inputClass =
   "min-h-10 min-w-0 rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
 
@@ -80,12 +88,8 @@ export function ApplicationCataloguePage({
   const [pageSize, setPageSize] = useState(50)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<ApiError | null>(null)
-  const [searchInput, setSearchInput] = useState("")
-  const [search, setSearch] = useState("")
-  const [filterA, setFilterA] = useState("")
-  const [filterB, setFilterB] = useState("")
-  const [filterC, setFilterC] = useState("")
-  const [filterD, setFilterD] = useState("")
+  const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS)
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
 
   async function load() {
     setLoading(true)
@@ -94,9 +98,9 @@ export function ApplicationCataloguePage({
       if (view === "definitions") {
         const result = await listApplicationDefinitions({
           page,
-          search,
-          domain: filterA,
-          ownerReference: filterB,
+          search: filters.search,
+          domain: filters.first,
+          ownerReference: filters.second,
           sort: "name",
         })
         setDefinitions(result.items)
@@ -106,11 +110,10 @@ export function ApplicationCataloguePage({
       } else {
         const result = await listApplicationDeployments({
           page,
-          search,
-          applicationId: filterA,
-          companyReference: filterB,
-          environment: filterC,
-          scopeReference: filterD,
+          search: filters.search,
+          companyReference: filters.first,
+          environment: filters.second,
+          scopeReference: filters.third,
           sort: "application",
         })
         setDefinitions([])
@@ -127,16 +130,16 @@ export function ApplicationCataloguePage({
 
   useEffect(() => {
     void load()
-  }, [view, page, search, filterA, filterB, filterC, filterD])
+  }, [view, page, filters])
 
   function switchView(next: ApplicationCatalogueView) {
-    setSearchInput("")
-    setSearch("")
-    setFilterA("")
-    setFilterB("")
-    setFilterC("")
-    setFilterD("")
+    setDraft(EMPTY_FILTERS)
+    setFilters(EMPTY_FILTERS)
     onViewChange(next)
+  }
+
+  function changeDraft(field: keyof Filters, value: string) {
+    setDraft((current) => ({ ...current, [field]: value }))
   }
 
   return (
@@ -167,11 +170,16 @@ export function ApplicationCataloguePage({
 
       <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
         <form
-          className="grid gap-2 border-b border-[#E2E8F0] p-4 lg:grid-cols-[minmax(16rem,1fr)_repeat(4,minmax(8rem,12rem))_auto]"
+          className="grid gap-2 border-b border-[#E2E8F0] p-4 lg:grid-cols-[minmax(16rem,1fr)_repeat(3,minmax(8rem,12rem))_auto]"
           onSubmit={(event) => {
             event.preventDefault()
             if (page !== 1) onPageChange(1)
-            setSearch(searchInput.trim())
+            setFilters({
+              search: draft.search.trim(),
+              first: draft.first.trim(),
+              second: draft.second.trim(),
+              third: draft.third.trim(),
+            })
           }}
         >
           <div className="relative min-w-0">
@@ -181,8 +189,8 @@ export function ApplicationCataloguePage({
             />
             <input
               className={`${inputClass} w-full pl-9`}
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
+              value={draft.search}
+              onChange={(event) => changeDraft("search", event.target.value)}
               placeholder={view === "definitions" ? "Search definitions" : "Search deployments"}
               aria-label="Search"
             />
@@ -191,48 +199,40 @@ export function ApplicationCataloguePage({
             <>
               <input
                 className={inputClass}
-                value={filterA}
-                onChange={(event) => setFilterA(event.target.value)}
+                value={draft.first}
+                onChange={(event) => changeDraft("first", event.target.value)}
                 placeholder="Domain"
                 aria-label="Domain"
               />
               <input
                 className={inputClass}
-                value={filterB}
-                onChange={(event) => setFilterB(event.target.value)}
+                value={draft.second}
+                onChange={(event) => changeDraft("second", event.target.value)}
                 placeholder="Owner"
                 aria-label="Owner"
               />
-              <div className="hidden lg:block" />
               <div className="hidden lg:block" />
             </>
           ) : (
             <>
               <input
                 className={inputClass}
-                value={filterA}
-                onChange={(event) => setFilterA(event.target.value)}
-                placeholder="Application ID"
-                aria-label="Application"
-              />
-              <input
-                className={inputClass}
-                value={filterB}
-                onChange={(event) => setFilterB(event.target.value)}
+                value={draft.first}
+                onChange={(event) => changeDraft("first", event.target.value)}
                 placeholder="Company"
                 aria-label="Company"
               />
               <input
                 className={inputClass}
-                value={filterC}
-                onChange={(event) => setFilterC(event.target.value)}
+                value={draft.second}
+                onChange={(event) => changeDraft("second", event.target.value)}
                 placeholder="Environment"
                 aria-label="Environment"
               />
               <input
                 className={inputClass}
-                value={filterD}
-                onChange={(event) => setFilterD(event.target.value)}
+                value={draft.third}
+                onChange={(event) => changeDraft("third", event.target.value)}
                 placeholder="Scope"
                 aria-label="Scope"
               />
