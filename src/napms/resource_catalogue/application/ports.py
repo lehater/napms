@@ -8,6 +8,7 @@ from napms.resource_catalogue.domain.model import (
     ResourceRealizationVersion,
     ResourceScopeAffiliation,
 )
+from napms.resource_catalogue.domain.responsibility import ResourceResponsibility
 
 
 RESOURCE_CATALOGUE_CURATION_ACTION = "CurateResourceCatalogue"
@@ -62,12 +63,74 @@ class ResourceCatalogueCommandReceipt:
 class ResourceCatalogueIdentityFactory(Protocol):
     def new_resource_reference(self) -> str: ...
 
+    def new_realization_reference(self) -> str: ...
+
+    def new_endpoint_reference(self) -> str: ...
+
+    def new_scope_affiliation_reference(self) -> str: ...
+
+    def new_responsibility_reference(self) -> str: ...
+
 
 class ResourceCatalogueProvenanceFactory(Protocol):
     def for_resource(
         self,
         *,
         resource_reference: str,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
+    def for_realization(
+        self,
+        *,
+        fact_reference: str,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
+    def for_realization_end(
+        self,
+        *,
+        fact_reference: str,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
+    def for_scope_affiliation(
+        self,
+        *,
+        affiliation_reference: str,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
+    def for_scope_affiliation_end(
+        self,
+        *,
+        affiliation_reference: str,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
+    def for_responsibility(
+        self,
+        *,
+        assignment_reference: str,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
+    def for_responsibility_end(
+        self,
+        *,
+        assignment_reference: str,
         actor_id: str,
         authority_reference: str,
         effective_time: datetime,
@@ -106,6 +169,63 @@ class ResourceCatalogueCurationRepository(Protocol):
         resource_reference: str,
         as_of: datetime,
     ) -> bool: ...
+
+    def get_realization(
+        self,
+        fact_reference: str,
+    ) -> ResourceRealizationVersion | None: ...
+
+    def find_effective_realizations(
+        self,
+        *,
+        resource_reference: str,
+        as_of: datetime,
+    ) -> tuple[ResourceRealizationVersion, ...]: ...
+
+    def add_realization(self, realization: ResourceRealizationVersion) -> None: ...
+
+    def save_realization(
+        self,
+        realization: ResourceRealizationVersion,
+        *,
+        expected_version: int,
+    ) -> None: ...
+
+    def get_scope_affiliation(
+        self,
+        affiliation_reference: str,
+    ) -> ResourceScopeAffiliation | None: ...
+
+    def find_effective_scope_affiliations_for_resource(
+        self,
+        *,
+        resource_reference: str,
+        responsibility_scope: str,
+        as_of: datetime,
+    ) -> tuple[ResourceScopeAffiliation, ...]: ...
+
+    def add_scope_affiliation(self, affiliation: ResourceScopeAffiliation) -> None: ...
+
+    def save_scope_affiliation(
+        self,
+        affiliation: ResourceScopeAffiliation,
+        *,
+        expected_version: int,
+    ) -> None: ...
+
+    def get_responsibility(
+        self,
+        assignment_reference: str,
+    ) -> ResourceResponsibility | None: ...
+
+    def add_responsibility(self, responsibility: ResourceResponsibility) -> None: ...
+
+    def save_responsibility(
+        self,
+        responsibility: ResourceResponsibility,
+        *,
+        expected_version: int,
+    ) -> None: ...
 
     def record_command_receipt(
         self,
