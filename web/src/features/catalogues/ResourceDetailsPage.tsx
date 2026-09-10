@@ -6,6 +6,8 @@ import { shortId } from "@/components/catalogue/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import {
   createCatalogueResourceRealization,
+  createCatalogueResourceResponsibility,
+  createCatalogueResourceScopeAffiliation,
   readCatalogueResource,
   type ResourceDetailDto,
 } from "@/features/catalogues/catalogueApi"
@@ -29,9 +31,24 @@ export function ResourceDetailsPage({
   const [detail, setDetail] = useState<ResourceDetailDto | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<ApiError | null>(null)
+
   const [addresses, setAddresses] = useState("")
   const [creatingRealization, setCreatingRealization] = useState(false)
-  const [mutationError, setMutationError] = useState<ApiError | null>(null)
+  const [realizationError, setRealizationError] = useState<ApiError | null>(null)
+
+  const [responsibilityScope, setResponsibilityScope] = useState("")
+  const [creatingAffiliation, setCreatingAffiliation] = useState(false)
+  const [affiliationError, setAffiliationError] = useState<ApiError | null>(null)
+
+  const [partyReference, setPartyReference] = useState("")
+  const [partyKind, setPartyKind] = useState<"Person" | "Team">("Team")
+  const [responsibilityRole, setResponsibilityRole] = useState<
+    "ServiceOwner" | "TechnicalOwner" | "OperationsContact" | "BusinessOwner"
+  >("TechnicalOwner")
+  const [responsibilityDisplayName, setResponsibilityDisplayName] = useState("")
+  const [responsibilityContact, setResponsibilityContact] = useState("")
+  const [creatingResponsibility, setCreatingResponsibility] = useState(false)
+  const [responsibilityError, setResponsibilityError] = useState<ApiError | null>(null)
 
   async function load() {
     setLoading(true)
@@ -57,7 +74,7 @@ export function ResourceDetailsPage({
       .filter(Boolean)
     if (values.length === 0) return
     setCreatingRealization(true)
-    setMutationError(null)
+    setRealizationError(null)
     try {
       await createCatalogueResourceRealization(
         resourceReference,
@@ -67,9 +84,59 @@ export function ResourceDetailsPage({
       setAddresses("")
       await load()
     } catch (caught) {
-      setMutationError(errorFrom(caught, "Resource realization could not be created."))
+      setRealizationError(errorFrom(caught, "Resource realization could not be created."))
     } finally {
       setCreatingRealization(false)
+    }
+  }
+
+  async function addScopeAffiliation(event: React.FormEvent) {
+    event.preventDefault()
+    const reference = responsibilityScope.trim()
+    if (!reference) return
+    setCreatingAffiliation(true)
+    setAffiliationError(null)
+    try {
+      await createCatalogueResourceScopeAffiliation(
+        resourceReference,
+        reference,
+        new Date().toISOString(),
+      )
+      setResponsibilityScope("")
+      await load()
+    } catch (caught) {
+      setAffiliationError(errorFrom(caught, "Scope affiliation could not be created."))
+    } finally {
+      setCreatingAffiliation(false)
+    }
+  }
+
+  async function addResponsibility(event: React.FormEvent) {
+    event.preventDefault()
+    const reference = partyReference.trim()
+    const displayName = responsibilityDisplayName.trim()
+    if (!reference || !displayName) return
+    setCreatingResponsibility(true)
+    setResponsibilityError(null)
+    try {
+      await createCatalogueResourceResponsibility(resourceReference, {
+        partyReference: reference,
+        partyKind,
+        role: responsibilityRole,
+        displayName,
+        contact: responsibilityContact.trim() || null,
+        validFrom: new Date().toISOString(),
+      })
+      setPartyReference("")
+      setResponsibilityDisplayName("")
+      setResponsibilityContact("")
+      await load()
+    } catch (caught) {
+      setResponsibilityError(
+        errorFrom(caught, "Resource responsibility could not be created."),
+      )
+    } finally {
+      setCreatingResponsibility(false)
     }
   }
 
@@ -138,8 +205,8 @@ export function ResourceDetailsPage({
             </Button>
           </div>
         </form>
-        {mutationError ? (
-          <p className="mt-3 text-sm text-red-700">{mutationError.message}</p>
+        {realizationError ? (
+          <p className="mt-3 text-sm text-red-700">{realizationError.message}</p>
         ) : null}
       </section>
 
@@ -178,10 +245,38 @@ export function ResourceDetailsPage({
 
         <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
           <h2 className="font-semibold text-[#172033]">Responsibility scopes</h2>
+          <form className="mt-4 grid gap-3" onSubmit={addScopeAffiliation}>
+            <label className="grid gap-1 text-sm font-medium text-[#172033]">
+              External scope reference
+              <input
+                className={inputClass}
+                value={responsibilityScope}
+                onChange={(event) => setResponsibilityScope(event.target.value)}
+                placeholder="payments-team"
+                autoComplete="off"
+              />
+            </label>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="max-w-xl text-xs text-[#64748B]">
+                Correlation reference from the scope naming source used by your environment. NAPMS does not create that scope or derive curation authority from it.
+              </p>
+              <Button
+                type="submit"
+                loading={creatingAffiliation}
+                disabled={!responsibilityScope.trim()}
+              >
+                Add affiliation
+              </Button>
+            </div>
+          </form>
+          {affiliationError ? (
+            <p className="mt-3 text-sm text-red-700">{affiliationError.message}</p>
+          ) : null}
+
           {detail.effectiveScopeAffiliations.length === 0 ? (
-            <p className="mt-4 text-sm text-[#64748B]">No current scope affiliations.</p>
+            <p className="mt-5 text-sm text-[#64748B]">No current scope affiliations.</p>
           ) : (
-            <div className="mt-4 grid gap-2">
+            <div className="mt-5 grid gap-2">
               {detail.effectiveScopeAffiliations.map((item) => (
                 <div key={item.affiliationReference} className="rounded-md bg-[#F8FAFC] px-4 py-3">
                   <div className="font-medium text-[#172033]">{item.responsibilityScope}</div>
@@ -200,10 +295,93 @@ export function ResourceDetailsPage({
           <Users className="size-4 text-[#64748B]" aria-hidden="true" />
           <h2 className="font-semibold text-[#172033]">Responsibilities</h2>
         </div>
-        {detail.effectiveResponsibilities.length === 0 ? (
-          <p className="text-sm text-[#64748B]">No current responsibility assignments.</p>
-        ) : (
+
+        <form className="grid gap-3 rounded-md bg-[#F8FAFC] p-4" onSubmit={addResponsibility}>
           <div className="grid gap-3 md:grid-cols-2">
+            <label className="grid gap-1 text-sm font-medium text-[#172033]">
+              Party kind
+              <select
+                className={inputClass}
+                value={partyKind}
+                onChange={(event) => setPartyKind(event.target.value as "Person" | "Team")}
+              >
+                <option value="Team">Team</option>
+                <option value="Person">Person</option>
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-medium text-[#172033]">
+              Role
+              <select
+                className={inputClass}
+                value={responsibilityRole}
+                onChange={(event) =>
+                  setResponsibilityRole(
+                    event.target.value as
+                      | "ServiceOwner"
+                      | "TechnicalOwner"
+                      | "OperationsContact"
+                      | "BusinessOwner",
+                  )
+                }
+              >
+                <option value="TechnicalOwner">Technical owner</option>
+                <option value="ServiceOwner">Service owner</option>
+                <option value="OperationsContact">Operations contact</option>
+                <option value="BusinessOwner">Business owner</option>
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-medium text-[#172033]">
+              External person/team reference
+              <input
+                className={inputClass}
+                value={partyReference}
+                onChange={(event) => setPartyReference(event.target.value)}
+                placeholder="team:orders"
+                autoComplete="off"
+              />
+            </label>
+            <label className="grid gap-1 text-sm font-medium text-[#172033]">
+              Display name
+              <input
+                className={inputClass}
+                value={responsibilityDisplayName}
+                onChange={(event) => setResponsibilityDisplayName(event.target.value)}
+                placeholder="Orders Team"
+                autoComplete="off"
+              />
+            </label>
+          </div>
+          <label className="grid gap-1 text-sm font-medium text-[#172033]">
+            Contact (optional)
+            <input
+              className={inputClass}
+              value={responsibilityContact}
+              onChange={(event) => setResponsibilityContact(event.target.value)}
+              placeholder="orders@example.test"
+              autoComplete="off"
+            />
+          </label>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="max-w-2xl text-xs text-[#64748B]">
+              The external reference correlates this contact with a Person or Team identity owned outside Resource Catalogue. The assignment does not grant NAPMS permissions.
+            </p>
+            <Button
+              type="submit"
+              loading={creatingResponsibility}
+              disabled={!partyReference.trim() || !responsibilityDisplayName.trim()}
+            >
+              Add responsibility
+            </Button>
+          </div>
+        </form>
+        {responsibilityError ? (
+          <p className="mt-3 text-sm text-red-700">{responsibilityError.message}</p>
+        ) : null}
+
+        {detail.effectiveResponsibilities.length === 0 ? (
+          <p className="mt-5 text-sm text-[#64748B]">No current responsibility assignments.</p>
+        ) : (
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
             {detail.effectiveResponsibilities.map((item) => (
               <div key={item.assignmentReference} className="rounded-md border border-[#E2E8F0] p-4">
                 <div className="font-semibold text-[#172033]">{item.displayName}</div>
