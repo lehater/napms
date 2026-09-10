@@ -40,6 +40,9 @@ from napms.runtime.catalogue_resource_workspace_http import (
     create_catalogue_resource_workspace_router,
 )
 from napms.runtime.catalogue_target_http import create_catalogue_target_router
+from napms.runtime.catalogue_target_retirement_http import (
+    create_catalogue_target_retirement_router,
+)
 from napms.runtime.catalogue_temporal_curation_http import (
     create_catalogue_temporal_curation_router,
 )
@@ -181,6 +184,13 @@ def build_http_api(
     )
     app.include_router(
         create_catalogue_target_router(
+            sessions=sessions,
+            open_scope=open_target_scope,
+            clock=_utc_now,
+        )
+    )
+    app.include_router(
+        create_catalogue_target_retirement_router(
             sessions=sessions,
             open_scope=open_target_scope,
             clock=_utc_now,
