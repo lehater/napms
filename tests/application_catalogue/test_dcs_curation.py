@@ -132,11 +132,12 @@ def dns_alternative():
 
 
 def command(*, alternatives=None, key="create-dcs"):
+    selected = (https_alternative(),) if alternatives is None else alternatives
     return CreateDcsRevisionCommand(
         source_component_deployment_id=SOURCE,
         destination_component_deployment_id=DESTINATION,
         display_name=" HTTPS Orders ",
-        traffic_alternatives=alternatives or (https_alternative(),),
+        traffic_alternatives=selected,
         actor_id="actor-1",
         effective_time=NOW,
         idempotency_key=key,
