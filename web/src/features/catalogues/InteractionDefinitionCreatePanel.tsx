@@ -128,8 +128,16 @@ function parsePorts(value: string): PortConstraintDto {
   if (normalized === "n/a" || normalized === "na") return { kind: "NotApplicable" }
   if (!normalized) throw new Error("Port constraint is required.")
   const ranges = normalized.split(",").map((part) => {
-    const pieces = part.trim().split("-")
-    if (pieces.length < 1 || pieces.length > 2) throw new Error(`Invalid port range: ${part}`)
+    const token = part.trim()
+    if (!token) throw new Error("Port list contains an empty item.")
+    const pieces = token.split("-")
+    if (
+      pieces.length < 1 ||
+      pieces.length > 2 ||
+      pieces.some((piece) => !piece.trim())
+    ) {
+      throw new Error(`Invalid port range: ${part}`)
+    }
     const first = Number(pieces[0])
     const last = Number(pieces[1] ?? pieces[0])
     if (!Number.isInteger(first) || !Number.isInteger(last) || first < 0 || last > 65535 || first > last) {
