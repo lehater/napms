@@ -10,10 +10,9 @@ Current task: WP-0 final validation/integration after contract closure.
 
 Read first:
 - `docs/decisions/ADR-013-i31-application-catalogue-compatibility-and-reference-semantics.md`
-- `docs/domain/application-communication-catalogue/target-tactical-model.md`
 - `docs/engineering/application-catalogue-target-migration-roadmap.md`
 
-Expand only when required into `docs/requirements/application-catalogue-target.md`, `docs/architecture/application-catalogue-target-boundary.md`, ADR-012, the current ACC Tactical DDD and repository validation workflows.
+Expand only when required into `docs/domain/application-communication-catalogue/target-tactical-model.md`, `docs/requirements/application-catalogue-target.md`, `docs/architecture/application-catalogue-target-boundary.md`, ADR-012, the current ACC Tactical DDD and repository validation workflows.
 
 ## Blockers
 
