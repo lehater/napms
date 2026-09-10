@@ -22,6 +22,10 @@ def _component_row(page: Page, name: str, component_type: str):
     )
 
 
+def _deployment_row(page: Page):
+    return page.get_by_role("cell", name="Company A", exact=True).locator("xpath=..")
+
+
 def _add_component(page: Page, name: str, component_type: str = "Service") -> None:
     page.get_by_role("button", name="Add component").click()
     form = _create_form(page)
@@ -67,7 +71,10 @@ def _add_deployment(page: Page) -> None:
     form.get_by_label("Environment").fill("Production")
     form.get_by_label("Scope").fill("local-demo")
     form.get_by_role("button", name="Create", exact=True).click()
-    expect(page.get_by_role("row", name=re.compile(r"Company A.*Production.*local-demo"))).to_have_count(1)
+    deployment_row = _deployment_row(page)
+    expect(deployment_row).to_have_count(1)
+    expect(deployment_row.get_by_role("cell", name="Production", exact=True)).to_be_visible()
+    expect(deployment_row.get_by_role("cell", name="local-demo", exact=True)).to_be_visible()
 
 
 def test_j01_target_application_authoring_survives_correction_and_reopen() -> None:
@@ -121,7 +128,7 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
         )
 
         _add_deployment(page)
-        page.get_by_role("row", name=re.compile(r"Company A.*Production.*local-demo")).click()
+        _deployment_row(page).click()
         expect(
             page.get_by_role(
                 "heading",
@@ -172,8 +179,11 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
         expect(page.get_by_role("cell", name="TCP (5432)", exact=True)).to_be_visible()
 
         page.get_by_role("button", name="Deployments", exact=True).click()
-        deployment_row = page.get_by_role("row", name=re.compile(r"Company A.*Production.*local-demo.*2 / 2"))
+        deployment_row = _deployment_row(page)
         expect(deployment_row).to_have_count(1)
+        expect(deployment_row.get_by_role("cell", name="Production", exact=True)).to_be_visible()
+        expect(deployment_row.get_by_role("cell", name="local-demo", exact=True)).to_be_visible()
+        expect(deployment_row.get_by_role("cell", name="2 / 2", exact=True)).to_be_visible()
         deployment_row.click()
         expect(page.get_by_role("heading", name="Connectivity 2 / 2", exact=True)).to_be_visible()
 
