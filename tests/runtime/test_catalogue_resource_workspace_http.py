@@ -6,6 +6,10 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
+from napms.resource_catalogue.application.curation import (
+    ResourceMutationOutcome,
+    ResourceMutationResult,
+)
 from napms.resource_catalogue.application.curation_read import (
     ResourceCatalogueListItem,
     ResourceCatalogueWorkspacePage,
@@ -21,9 +25,36 @@ from napms.runtime.http_api import PublicApiError
 NOW = datetime(2026, 9, 10, 12, 0, tzinfo=timezone.utc)
 
 
+class MutationRecorder:
+    def __init__(self, result):
+        self.calls = []
+        self.result = result
+
+    def execute(self, command):
+        self.calls.append(command)
+        return self.result
+
+
 class Recorder:
     def __init__(self):
         self.calls = []
+        resource = Resource("res-orders", "prov:orders", "Orders DB")
+        self.rename = MutationRecorder(
+            ResourceMutationResult(
+                ResourceMutationOutcome.UPDATED,
+                resource=resource.renamed("Orders DB Primary"),
+                result_version=2,
+            )
+        )
+        self.retire = MutationRecorder(
+            ResourceMutationResult(
+                ResourceMutationOutcome.UPDATED,
+                resource=resource.retired(
+                    retirement_provenance_reference="prov:orders:retired"
+                ),
+                result_version=2,
+            )
+        )
 
     def execute_workspace(self, **kwargs):
         self.calls.append(kwargs)
@@ -48,7 +79,11 @@ class Recorder:
 def _client_for():
     recorder = Recorder()
     scope = SimpleNamespace(
-        resources=SimpleNamespace(list_resources=recorder),
+        resources=SimpleNamespace(
+            list_resources=recorder,
+            rename_resource=recorder.rename,
+            retire_resource=recorder.retire,
+        ),
     )
 
     @contextmanager
@@ -149,3 +184,61 @@ def test_resource_workspace_rejects_naive_explicit_as_of():
 
     assert response.status_code == 422
     assert recorder.calls == []
+
+
+def test_resource_workspace_renames_resource_with_expected_version():
+    client, recorder = _client_for()
+
+    response = client.post(
+        "/api/v1/catalogues/resources/res-orders/rename",
+        json={"displayName": "Orders DB Primary", "expectedVersion": 1},
+        headers={"Idempotency-Key": "rename-resource-1"},
+        cookies={"napms_session": "session-1"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["resource"]["displayName"] == "Orders DB Primary"
+    [command] = recorder.rename.calls
+    assert command.resource_reference == "res-orders"
+    assert command.display_name == "Orders DB Primary"
+    assert command.expected_version == 1
+    assert command.actor_id == "actor-1"
+    assert command.effective_time == NOW
+    assert command.idempotency_key == "rename-resource-1"
+
+
+def test_resource_workspace_retires_resource_with_expected_version():
+    client, recorder = _client_for()
+
+    response = client.post(
+        "/api/v1/catalogues/resources/res-orders/retire",
+        json={"expectedVersion": 1},
+        headers={"Idempotency-Key": "retire-resource-1"},
+        cookies={"napms_session": "session-1"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["resource"]["lifecycle"] == "Retired"
+    [command] = recorder.retire.calls
+    assert command.resource_reference == "res-orders"
+    assert command.expected_version == 1
+    assert command.actor_id == "actor-1"
+    assert command.effective_time == NOW
+    assert command.idempotency_key == "retire-resource-1"
+
+
+def test_resource_workspace_maps_retirement_blocked_to_public_conflict():
+    client, recorder = _client_for()
+    recorder.retire.result = ResourceMutationResult(
+        ResourceMutationOutcome.RETIREMENT_BLOCKED
+    )
+
+    response = client.post(
+        "/api/v1/catalogues/resources/res-orders/retire",
+        json={"expectedVersion": 1},
+        headers={"Idempotency-Key": "retire-resource-blocked"},
+        cookies={"napms_session": "session-1"},
+    )
+
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "CatalogueRetirementBlocked"
