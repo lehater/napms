@@ -1,6 +1,6 @@
 # I29 — J02 Resource authoring journey
 
-Status: `active`.
+Status: `active`
 
 ## Goal
 
@@ -76,4 +76,4 @@ None at plan start. Current chat cannot render the local Web UI directly, so hos
 
 ## Next
 
-Run WP-1 baseline. Validate static candidate gaps against the supported HTTP/Web surface, then create the minimum executable browser baseline needed to prove actual journey blockers before implementing fixes.
+Execute the current work package from `docs/plans/active/README.md`; keep mutable execution state there rather than duplicating it in this plan.
