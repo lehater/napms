@@ -5,7 +5,14 @@ import { ApiError } from "@/api"
 import { Button } from "@/components/ui/Button"
 import { AddDeploymentInteractionPanel } from "@/features/catalogues/AddDeploymentInteractionPanel"
 import { CataloguePager } from "@/features/catalogues/CataloguePager"
+import { DependencyBlockPanel } from "@/features/catalogues/DependencyBlockPanel"
 import { DeploymentEditPanel } from "@/features/catalogues/TargetCatalogueEditPanels"
+import {
+  retireDeploymentInteraction,
+  TargetCatalogueApiError,
+  type DependencyGroupDto,
+} from "@/features/catalogues/targetCatalogueCommands"
+import { readDeploymentInteractionLifecycle } from "@/features/catalogues/targetDeploymentInteractionLifecycle"
 import {
   listAvailableInteractions,
   listDeploymentConnectivity,
@@ -52,6 +59,11 @@ export function ApplicationDeploymentPage({
   const [protocol, setProtocol] = useState("")
   const [addOpen, setAddOpen] = useState(false)
   const [reloadToken, setReloadToken] = useState(0)
+  const [removingId, setRemovingId] = useState<string | null>(null)
+  const [removeError, setRemoveError] = useState<string | null>(null)
+  const [removeBlockers, setRemoveBlockers] = useState<DependencyGroupDto[] | null>(null)
+  const [removeBlockerSubject, setRemoveBlockerSubject] = useState<string | null>(null)
+  const [removing, setRemoving] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -92,7 +104,37 @@ export function ApplicationDeploymentPage({
 
   function refreshDeployment() {
     setPage(1)
+    setRemovingId(null)
+    setRemoveError(null)
+    setRemoveBlockers(null)
+    setRemoveBlockerSubject(null)
     setReloadToken((value) => value + 1)
+  }
+
+  async function removeInteraction(deploymentInteractionId: string) {
+    setRemoving(true)
+    setRemoveError(null)
+    setRemoveBlockers(null)
+    setRemoveBlockerSubject(null)
+    try {
+      const current = await readDeploymentInteractionLifecycle(deploymentInteractionId)
+      if (current.lifecycleState === "Retired") {
+        refreshDeployment()
+        return
+      }
+      await retireDeploymentInteraction(deploymentInteractionId, current.version)
+      refreshDeployment()
+    } catch (caught) {
+      if (caught instanceof TargetCatalogueApiError && caught.code === "CatalogueDependencyBlocked") {
+        setRemoveBlockers(caught.details?.dependencies ?? [])
+        setRemoveBlockerSubject(deploymentInteractionId)
+      } else {
+        setRemoveError(caught instanceof Error ? caught.message : "Interaction could not be removed from the deployment.")
+      }
+    } finally {
+      setRemoving(false)
+      setRemovingId(null)
+    }
   }
 
   if (detailLoading) return <div className="mx-auto max-w-7xl"><section className="rounded-lg border border-[#E2E8F0] bg-white p-6 text-sm text-[#64748B]">Loading deployment…</section></div>
@@ -104,49 +146,28 @@ export function ApplicationDeploymentPage({
       <div><Button variant="ghost" className="-ml-3" onClick={onBack}><ArrowLeft className="size-4" aria-hidden="true" />Deployments</Button></div>
 
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#64748B]">Applications / Deployments</div>
-          <h1 className="mt-1 text-2xl font-bold text-[#172033]">{applicationName ?? "Application"} — {deployment.companyReference} / {deployment.environment}</h1>
-        </div>
+        <div><div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#64748B]">Applications / Deployments</div><h1 className="mt-1 text-2xl font-bold text-[#172033]">{applicationName ?? "Application"} — {deployment.companyReference} / {deployment.environment}</h1></div>
         <Button variant="secondary" onClick={() => setEditOpen((value) => !value)}><Pencil className="size-4" aria-hidden="true" />Edit</Button>
       </header>
 
-      {editOpen ? (
-        <DeploymentEditPanel
-          deployment={deployment}
-          onChanged={(updated) => { setDeployment(updated); setEditOpen(false); refreshDeployment() }}
-          onRetired={onBack}
-          onCancel={() => setEditOpen(false)}
-        />
-      ) : null}
+      {editOpen ? <DeploymentEditPanel deployment={deployment} onChanged={(updated) => { setDeployment(updated); setEditOpen(false); refreshDeployment() }} onRetired={onBack} onCancel={() => setEditOpen(false)} /> : null}
 
       <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
-        <dl className="grid gap-4 md:grid-cols-4">
-          <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Application</dt><dd className="mt-1 text-sm font-medium text-[#172033]">{applicationName ?? "—"}</dd></div>
-          <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Company</dt><dd className="mt-1 text-sm text-[#172033]">{deployment.companyReference}</dd></div>
-          <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Environment</dt><dd className="mt-1 text-sm text-[#172033]">{deployment.environment}</dd></div>
-          <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Scope</dt><dd className="mt-1 text-sm text-[#172033]">{deployment.scopeReference}</dd></div>
-        </dl>
+        <dl className="grid gap-4 md:grid-cols-4"><div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Application</dt><dd className="mt-1 text-sm font-medium text-[#172033]">{applicationName ?? "—"}</dd></div><div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Company</dt><dd className="mt-1 text-sm text-[#172033]">{deployment.companyReference}</dd></div><div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Environment</dt><dd className="mt-1 text-sm text-[#172033]">{deployment.environment}</dd></div><div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Scope</dt><dd className="mt-1 text-sm text-[#172033]">{deployment.scopeReference}</dd></div></dl>
       </section>
 
       <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
-        <div className="flex items-center justify-between gap-4 border-b border-[#E2E8F0] px-5 py-4">
-          <div><h2 className="font-semibold text-[#172033]">Connectivity {selectedTotal} / {definedTotal}</h2><p className="mt-1 text-xs text-[#64748B]">Selected Interaction Definitions in this deployment.</p></div>
-          <Button onClick={() => setAddOpen((value) => !value)}><Plus className="size-4" aria-hidden="true" />Add interaction</Button>
-        </div>
-
+        <div className="flex items-center justify-between gap-4 border-b border-[#E2E8F0] px-5 py-4"><div><h2 className="font-semibold text-[#172033]">Connectivity {selectedTotal} / {definedTotal}</h2><p className="mt-1 text-xs text-[#64748B]">Selected Interaction Definitions in this deployment.</p></div><Button onClick={() => setAddOpen((value) => !value)}><Plus className="size-4" aria-hidden="true" />Add interaction</Button></div>
         {addOpen ? <AddDeploymentInteractionPanel deploymentId={deploymentId} onCancel={() => setAddOpen(false)} onChanged={refreshDeployment} /> : null}
 
-        <form className="grid gap-2 border-b border-[#E2E8F0] p-4 sm:grid-cols-[minmax(14rem,1fr)_10rem_auto]" onSubmit={(event) => { event.preventDefault(); setPage(1); setSearch(draftSearch.trim()); setProtocol(draftProtocol.trim()) }}>
-          <div className="relative min-w-0"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-[#94A3B8]" aria-hidden="true" /><input className={`${inputClass} w-full pl-9`} value={draftSearch} onChange={(event) => setDraftSearch(event.target.value)} placeholder="Search connectivity" aria-label="Search connectivity" /></div>
-          <input className={inputClass} value={draftProtocol} onChange={(event) => setDraftProtocol(event.target.value)} placeholder="Protocol" aria-label="Protocol" />
-          <Button type="submit" variant="secondary">Apply</Button>
-        </form>
+        <form className="grid gap-2 border-b border-[#E2E8F0] p-4 sm:grid-cols-[minmax(14rem,1fr)_10rem_auto]" onSubmit={(event) => { event.preventDefault(); setPage(1); setSearch(draftSearch.trim()); setProtocol(draftProtocol.trim()) }}><div className="relative min-w-0"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-[#94A3B8]" aria-hidden="true" /><input className={`${inputClass} w-full pl-9`} value={draftSearch} onChange={(event) => setDraftSearch(event.target.value)} placeholder="Search connectivity" aria-label="Search connectivity" /></div><input className={inputClass} value={draftProtocol} onChange={(event) => setDraftProtocol(event.target.value)} placeholder="Protocol" aria-label="Protocol" /><Button type="submit" variant="secondary">Apply</Button></form>
+
+        {removeError ? <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">{removeError}</div> : null}
+        {removeBlockers && removeBlockerSubject ? <DependencyBlockPanel groups={removeBlockers} subjectKind="deployment-interaction" subjectId={removeBlockerSubject} onClose={() => { setRemoveBlockers(null); setRemoveBlockerSubject(null) }} /> : null}
 
         {connectivityLoading ? <div className="p-6 text-sm text-[#64748B]">Loading connectivity…</div> : connectivityError ? <div className="p-6 text-sm text-red-700">{connectivityError.message}</div> : connectivity.length === 0 ? <div className="p-6 text-sm text-[#64748B]">No interactions match the current view.</div> : (
-          <div className="overflow-x-auto"><table className="w-full min-w-[980px] text-left text-sm"><thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]"><tr><th className="px-5 py-3">Source component</th><th className="px-5 py-3 text-right">Source resources</th><th className="px-5 py-3">Destination component</th><th className="px-5 py-3 text-right">Destination resources</th><th className="px-5 py-3">Traffic</th></tr></thead><tbody className="divide-y divide-[#E2E8F0]">{connectivity.map((item) => <tr key={item.deploymentInteractionId}><td className="px-5 py-3 font-semibold text-[#172033]">{item.sourceComponent.displayName}</td><td className="px-5 py-3 text-right tabular-nums"><button type="button" className="font-semibold text-[#2563EB] hover:underline" onClick={() => onOpenResources(item.deploymentInteractionId, "Source")}>{resourceCount(item.sourceComponent.resourceCount)}</button></td><td className="px-5 py-3 font-semibold text-[#172033]">{item.destinationComponent.displayName}</td><td className="px-5 py-3 text-right tabular-nums"><button type="button" className="font-semibold text-[#2563EB] hover:underline" onClick={() => onOpenResources(item.deploymentInteractionId, "Destination")}>{resourceCount(item.destinationComponent.resourceCount)}</button></td><td className="px-5 py-3 text-[#475569]">{trafficSummary(item.trafficAlternatives)}</td></tr>)}</tbody></table></div>
+          <div className="overflow-x-auto"><table className="w-full min-w-[1120px] text-left text-sm"><thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]"><tr><th className="px-5 py-3">Source component</th><th className="px-5 py-3 text-right">Source resources</th><th className="px-5 py-3">Destination component</th><th className="px-5 py-3 text-right">Destination resources</th><th className="px-5 py-3">Traffic</th><th className="w-44 px-5 py-3" /></tr></thead><tbody className="divide-y divide-[#E2E8F0]">{connectivity.map((item) => <tr key={item.deploymentInteractionId}><td className="px-5 py-3 font-semibold text-[#172033]">{item.sourceComponent.displayName}</td><td className="px-5 py-3 text-right tabular-nums"><button type="button" className="font-semibold text-[#2563EB] hover:underline" onClick={() => onOpenResources(item.deploymentInteractionId, "Source")}>{resourceCount(item.sourceComponent.resourceCount)}</button></td><td className="px-5 py-3 font-semibold text-[#172033]">{item.destinationComponent.displayName}</td><td className="px-5 py-3 text-right tabular-nums"><button type="button" className="font-semibold text-[#2563EB] hover:underline" onClick={() => onOpenResources(item.deploymentInteractionId, "Destination")}>{resourceCount(item.destinationComponent.resourceCount)}</button></td><td className="px-5 py-3 text-[#475569]">{trafficSummary(item.trafficAlternatives)}</td><td className="px-5 py-3 text-right">{removingId === item.deploymentInteractionId ? <div className="flex justify-end gap-2"><Button variant="ghost" disabled={removing} onClick={() => setRemovingId(null)}>Cancel</Button><Button variant="secondary" loading={removing} onClick={() => void removeInteraction(item.deploymentInteractionId)}>Confirm remove</Button></div> : <Button variant="ghost" onClick={() => setRemovingId(item.deploymentInteractionId)}>Remove from deployment</Button>}</td></tr>)}</tbody></table></div>
         )}
-
         {!connectivityLoading && !connectivityError ? <CataloguePager page={page} pageSize={pageSize} total={filteredTotal} onPageChange={setPage} /> : null}
       </section>
     </div>
