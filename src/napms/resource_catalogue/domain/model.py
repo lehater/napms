@@ -29,6 +29,7 @@ class Resource:
     provenance_reference: str
     display_name: str | None = None
     lifecycle_state: ResourceLifecycleState = ResourceLifecycleState.ACTIVE
+    retirement_provenance_reference: str | None = None
     version: int = 1
 
     def __post_init__(self) -> None:
@@ -46,6 +47,20 @@ class Resource:
                 "display_name",
                 _require_non_empty(self.display_name, field_name="display_name"),
             )
+        if self.lifecycle_state is ResourceLifecycleState.ACTIVE:
+            if self.retirement_provenance_reference is not None:
+                raise ResourceCatalogueInvariantError(
+                    "Active Resource cannot have retirement provenance"
+                )
+        else:
+            if self.retirement_provenance_reference is None:
+                raise ResourceCatalogueInvariantError(
+                    "Retired Resource requires retirement provenance"
+                )
+            _require_non_empty(
+                self.retirement_provenance_reference,
+                field_name="retirement_provenance_reference",
+            )
         if self.version < 1:
             raise ResourceCatalogueInvariantError("version must be >= 1")
 
@@ -62,11 +77,20 @@ class Resource:
             )
         return replace(self, display_name=normalized, version=self.version + 1)
 
-    def retired(self) -> "Resource":
+    def retired(
+        self,
+        *,
+        retirement_provenance_reference: str,
+    ) -> "Resource":
         self._require_active()
+        normalized = _require_non_empty(
+            retirement_provenance_reference,
+            field_name="retirement_provenance_reference",
+        )
         return replace(
             self,
             lifecycle_state=ResourceLifecycleState.RETIRED,
+            retirement_provenance_reference=normalized,
             version=self.version + 1,
         )
 
