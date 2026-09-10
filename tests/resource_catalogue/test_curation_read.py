@@ -34,6 +34,7 @@ class FakeReadCatalogue:
                 "prov:3",
                 "Legacy",
                 lifecycle_state=ResourceLifecycleState.RETIRED,
+                retirement_provenance_reference="prov:3:retirement",
             ),
         )
         self.list_calls = []
