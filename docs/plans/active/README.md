@@ -2,29 +2,30 @@
 
 Current: `PLAN-038-i24-local-deployment-hardening.md`
 
-Current task: local upgrade and migration procedure.
+Current task: WP6 final verification and absorption.
 
-Goal: harden the supported local Docker Compose deployment without introducing enterprise infrastructure or changing product/domain semantics.
+Goal: verify the complete I24 hardening branch, absorb durable operational outcomes into canonical repository truth, then retire PLAN-038 and promote I25.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-038-i24-local-deployment-hardening.md`
-- `docs/engineering/local-upgrade-procedure.md`
-- `src/napms/composition/postgres_migrations.py`
-- `tools/local_postgres_backup.py`
 - `.github/workflows/docker.yml`
+- `docs/engineering/local-docker-runtime.md`
+- `docs/engineering/local-upgrade-procedure.md`
+- `docs/engineering/current-state.md`
+- `docs/engineering/post-wave1-product-completion-roadmap.md`
 
-Expand only as needed into `compose.yaml`, `docs/engineering/local-docker-runtime.md`, Makefile and current engineering state.
+Expand only as needed into `docs/architecture/current-architecture.md`, `README.md`, `compose.yaml` and operator tooling touched by I24.
 
 ## Blockers
 
-None. Downgrade is intentionally not claimed; recovery from a failed forward upgrade uses the pre-upgrade logical backup rather than attempting arbitrary reverse migrations.
+No product/domain blocker remains. Closure depends only on complete-branch verification and canonical absorption. Enterprise TLS, external secret stores, HA, corporate identity and multi-node topology remain outside the selected local deployment target.
 
 ## Gate
 
-On a current restored database, replaying `napms-migrate` must succeed without changing the migration-journal count or durable application state. A migration checksum mismatch remains a hard failure.
+Core, PostgreSQL persistence, harness, knowledge and Docker local-runtime gates must all pass on the complete I24 head. Docker proof must cover SCRAM/password enforcement, preserved-volume restart with credential rotation, logical backup/clean restore, migration replay no-op and local diagnostic checks.
 
 ## Next
 
-Document the local pre-upgrade/forward-migration/recovery sequence and extend the Docker gate with an explicit migration replay no-op proof.
+Run final gates. If green, perform PR diff review, update canonical current-state/architecture/roadmap with accepted I24 outcomes, retire PLAN-038 and promote I25.
