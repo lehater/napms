@@ -5,6 +5,9 @@ from typing import Callable
 from fastapi import APIRouter, Header, Request
 from pydantic import BaseModel, ConfigDict, Field
 
+from napms.application_catalogue.application.binding_curation import (
+    EndDeploymentResourceBindingCommand,
+)
 from napms.resource_catalogue.application.ports import ResourceCataloguePersistenceError
 from napms.resource_catalogue.application.realization_curation import (
     ReplaceResourceRealizationCommand,
@@ -17,6 +20,7 @@ from napms.resource_catalogue.application.scope_affiliation_curation import (
 )
 from napms.runtime.auth import InMemorySessionStore
 from napms.runtime.catalogue_curation_http import (
+    _binding_dto,
     _mutation_response,
     _realization_dto,
     _require_actor,
@@ -166,6 +170,39 @@ def create_catalogue_temporal_curation_router(
         return _mutation_response(
             result.outcome,
             {"responsibility": _responsibility_dto(result.responsibility)},
+        )
+
+    @router.post(
+        "/api/v1/catalogues/deployment-resource-bindings/{binding_reference}/end",
+        name="EndCatalogueDeploymentResourceBinding",
+    )
+    def end_deployment_resource_binding(
+        binding_reference: str,
+        payload: EndTemporalRelationRequest,
+        request: Request,
+        idempotency_key: str = Header(
+            alias="Idempotency-Key",
+            min_length=1,
+            max_length=256,
+        ),
+    ):
+        actor_id = _require_actor(sessions, request)
+        _require_aware(payload.valid_to, "validTo")
+        with open_scope() as scope:
+            result = scope.applications.end_deployment_resource_binding.execute(
+                EndDeploymentResourceBindingCommand(
+                    binding_reference=binding_reference,
+                    valid_to=payload.valid_to,
+                    expected_version=payload.expected_version,
+                    actor_id=actor_id,
+                    effective_time=clock(),
+                    idempotency_key=idempotency_key,
+                )
+            )
+        _require_success(result.outcome)
+        return _mutation_response(
+            result.outcome,
+            {"binding": _binding_dto(result.binding)},
         )
 
     return router
