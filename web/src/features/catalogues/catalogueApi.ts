@@ -218,6 +218,22 @@ export async function createCatalogueDeployment(
   return response.deployment
 }
 
+export async function createCatalogueDeploymentResourceBinding(
+  deploymentId: string,
+  resourceReference: string,
+  validFrom: string,
+): Promise<DeploymentResourceBindingDto> {
+  const response = await request<{ binding: DeploymentResourceBindingDto }>(
+    `/api/v1/catalogues/deployments/${encodeURIComponent(deploymentId)}/resource-bindings`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ resourceReference, validFrom, validTo: null }),
+    },
+  )
+  return response.binding
+}
+
 export function listCatalogueResources(
   page = 1,
   search = "",
@@ -267,4 +283,42 @@ export async function createCatalogueResourceRealization(
     },
   )
   return response.realization
+}
+
+export async function createCatalogueResourceScopeAffiliation(
+  resourceReference: string,
+  responsibilityScope: string,
+  validFrom: string,
+): Promise<ResourceScopeAffiliationDto> {
+  const response = await request<{ scopeAffiliation: ResourceScopeAffiliationDto }>(
+    `/api/v1/catalogues/resources/${encodeURIComponent(resourceReference)}/scope-affiliations`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ responsibilityScope, validFrom, validTo: null }),
+    },
+  )
+  return response.scopeAffiliation
+}
+
+export async function createCatalogueResourceResponsibility(
+  resourceReference: string,
+  input: {
+    partyReference: string
+    partyKind: "Person" | "Team"
+    role: "ServiceOwner" | "TechnicalOwner" | "OperationsContact" | "BusinessOwner"
+    displayName: string
+    contact: string | null
+    validFrom: string
+  },
+): Promise<ResourceResponsibilityDto> {
+  const response = await request<{ responsibility: ResourceResponsibilityDto }>(
+    `/api/v1/catalogues/resources/${encodeURIComponent(resourceReference)}/responsibilities`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ ...input, validTo: null }),
+    },
+  )
+  return response.responsibility
 }
