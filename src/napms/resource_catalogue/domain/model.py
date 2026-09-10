@@ -1,5 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
+from enum import Enum
 
 
 class ResourceCatalogueInvariantError(Exception):
@@ -9,6 +10,65 @@ class ResourceCatalogueInvariantError(Exception):
 def _require_aware(value: datetime, *, field_name: str) -> None:
     if value.tzinfo is None or value.utcoffset() is None:
         raise ResourceCatalogueInvariantError(f"{field_name} must be offset-aware")
+
+
+def _require_non_empty(value: str, *, field_name: str) -> str:
+    if not value or not value.strip():
+        raise ResourceCatalogueInvariantError(f"{field_name} must be non-empty")
+    return value.strip()
+
+
+class ResourceLifecycleState(str, Enum):
+    ACTIVE = "Active"
+    RETIRED = "Retired"
+
+
+@dataclass(frozen=True, slots=True)
+class Resource:
+    resource_reference: str
+    provenance_reference: str
+    display_name: str | None = None
+    lifecycle_state: ResourceLifecycleState = ResourceLifecycleState.ACTIVE
+    version: int = 1
+
+    def __post_init__(self) -> None:
+        _require_non_empty(
+            self.resource_reference,
+            field_name="resource_reference",
+        )
+        _require_non_empty(
+            self.provenance_reference,
+            field_name="provenance_reference",
+        )
+        if self.display_name is not None:
+            object.__setattr__(
+                self,
+                "display_name",
+                _require_non_empty(self.display_name, field_name="display_name"),
+            )
+        if self.version < 1:
+            raise ResourceCatalogueInvariantError("version must be >= 1")
+
+    def _require_active(self) -> None:
+        if self.lifecycle_state is ResourceLifecycleState.RETIRED:
+            raise ResourceCatalogueInvariantError("Retired Resource is immutable")
+
+    def renamed(self, display_name: str) -> "Resource":
+        self._require_active()
+        normalized = _require_non_empty(display_name, field_name="display_name")
+        if normalized == self.display_name:
+            raise ResourceCatalogueInvariantError(
+                "rename requires a different display name"
+            )
+        return replace(self, display_name=normalized, version=self.version + 1)
+
+    def retired(self) -> "Resource":
+        self._require_active()
+        return replace(
+            self,
+            lifecycle_state=ResourceLifecycleState.RETIRED,
+            version=self.version + 1,
+        )
 
 
 @dataclass(frozen=True, slots=True, order=True)
