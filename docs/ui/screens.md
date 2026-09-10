@@ -1,212 +1,117 @@
 # Web UI screen map
 
+Status: `current through I27 Catalogue Curation`.
+
 Canonical product semantics:
-- docs/requirements/web-ui-requirements.md
-- docs/requirements/scoped-connectivity-inventory.md
+- `docs/requirements/web-ui-requirements.md`;
+- feature requirements under `docs/requirements/`;
+- feature boundaries under `docs/architecture/`.
 
 ## Login
 
-Input: login + password. Output: authenticated session or generic authentication failure.
-
-After successful login, default navigation goes to Connectivity.
+Input: login + password. Output: authenticated session or generic authentication failure. Successful login enters the normal product shell.
 
 ## Connectivity
 
-Primary product workspace.
+Primary resource-centric workspace for one selected Responsibility Scope.
 
-Purpose: show the selected responsibility scope as a resource-centric connectivity landscape.
+```text
+Resource
+  -> Component Deployment
+      -> Connectivity Relationship
+```
 
-Hierarchy:
+Show local/remote participants, direction, access/DCS, Need, Decision and Policy independently. Empty Resources/Deployments remain visible. Relationship detail progressively exposes owner-protected details and technical identifiers.
 
-    Resource
-      -> Component Deployment
-        -> Connectivity Relationship
+Contextual Add connectivity uses backend discovery and reuses known local context.
 
-Primary row information:
+## Checker
 
-- My Resource;
-- current endpoint/address as secondary technical data;
-- Component;
-- direction relative to local side;
-- Access/DCS label;
-- optional protocol/ports;
-- Remote Component;
-- Remote Resource;
-- Need summary;
-- Decision summary;
-- Policy summary;
-- Realization later.
+Technical traffic analysis entry point.
 
-Resources/Components with zero connectivity remain visible.
+Input: source/destination address, protocol/port semantics and `asOf`. Output groups:
+- Overview/address resolution;
+- Network Context candidates;
+- policy/governance matches;
+- Ownership/Resource Responsibility;
+- stored configured Evidence.
 
-The workspace does not use one generic status.
+Ambiguous/historical/unknown resolution and missing evidence remain explicit. Candidate devices are not rendered as a proven ordered path.
 
-### Empty/no-connectivity row
+## Applications
 
-Show an explicit state such as:
+Catalogue list/search plus create Application.
 
-    No connectivity declared
-    + Add connectivity
+Application detail exposes:
 
-when the local Component has no relationship.
+```text
+Application
+  Component
+    Component Deployment
+      Resource Bindings
+      DCS revisions
+```
 
-Do not confuse this with a known remote Component whose Resource realization is unresolved.
+Supported actions include Component/Deployment creation, backend Resource discovery, bind/unbind through temporal end semantics and immutable DCS authoring using Active participant discovery.
 
-### Relationship details
+Readable names lead; stable IDs, versions and provenance are available in technical detail.
 
-Open in Drawer or bookmarkable route depending depth.
+## Resources
 
-Sections:
+Paged/searchable Resource catalogue with effective Responsibility Scope filtering and current completeness diagnostics.
 
-- Need;
-- Decision;
-- Policy;
-- Local side;
-- Remote side;
-- Technical details;
-- provenance/history where separately admitted;
-- Realization later.
+Resource detail groups:
+- identity/lifecycle/provenance;
+- endpoint realization history/current technical addresses;
+- Responsibility Scope affiliations;
+- Resource Responsibility/contact assignments.
 
-Contextual action behavior:
-- `NoFinalDecision` -> Record decision;
-- `Allowed` with no Rule and otherwise eligible context -> Request access;
-- `NotAllowed` or `Unknown` -> no misleading Request access action.
-
-Protected details remain subject to their own backend read contracts.
-
-## Add Connectivity
-
-Contextual workflow launched from a local Component/relationship, not primary navigation.
-
-Known context is prefilled and not re-requested:
-
-- selected scope;
-- local Resource;
-- local Component.
-
-User selects/supplies:
-
-- remote side;
-- structurally valid access/DCS;
-- applicability/validity where required;
-- business reason/justification.
-
-Trusted catalogue/backend discovery constrains remote/DCS choices.
-
-The user-level action may be Request access or Add connectivity.
-
-Do not show durable Waiting/Under review state until I16A/I16B accepts workflow semantics.
+Supported actions include create, rename/retire, realization create/replace, scope-affiliation create/end and responsibility create/end. Missing current facts are shown explicitly.
 
 ## Needs
 
-Focused Connectivity Requirements workspace.
-
-List:
-
-- readable Source -> Destination;
-- access/DCS label;
-- dependent participant;
-- scope;
-- applicability;
-- Active | Retired;
-- justification summary;
-- Covered | Uncovered | NotCurrent | Unknown.
-
-Details:
-
-- stable Requirement ID;
-- immutable semantic interaction/dependent;
-- scope;
-- applicability;
-- justification;
-- provenance/history;
-- independently admitted mutations.
-
-Uncovered does not mean Denied.
+Connectivity Requirement workspace: readable interaction, scope/applicability, `Active | Retired`, justification and derived `Covered | Uncovered | NotCurrent | Unknown` alignment. Protected mutations remain independently admitted.
 
 ## Decisions
 
-Focused final Connectivity Decision workspace.
-
-Purpose:
-- inspect authorized final `Allowed | NotAllowed` Decisions;
-- record a direct final Decision for an exact admitted scope/ACC subject;
-- present reason, validity, evidence and deciding provenance;
-- inspect immutable supersession history;
-- record a replacement Decision by explicitly superseding the current Decision.
-
-Decision detail requires corresponding `ReadConnectivityDecision` authority. Recording requires independent `DecideConnectivity` authority.
-
-No Pending/approval lifecycle is displayed or persisted.
+Final Decision workspace for `Allowed | NotAllowed`: list/detail, direct admitted recording and explicit immutable supersession. No Pending/approval lifecycle.
 
 ## Rules
 
-Focused Access Policy workspace.
-
-Useful columns:
-
-- readable source deployment;
-- readable destination deployment;
-- access/DCS;
-- governance scope;
-- Active | Inactive;
-- effective-window summary;
-- Rule ID as secondary technical information.
-
-Row opens Rule Details.
-
-## Access Rule Details
-
-Sections:
-
-- readable semantic identity first;
-- canonical stable identity second;
-- Rule Governance Scope;
-- Active | Inactive;
-- EffectiveWindow;
-- Connectivity Decision correlation;
-- proposal/authority/catalogue provenance;
-- business history;
-- independently admitted mutation actions.
+Access Rule list/detail with readable participants/DCS first, governance scope, `Active | Inactive`, effective-window state, Decision correlation and provenance.
 
 ## Effective
 
-Purpose: inspect effective desired policy for one authorized scope and explicit asOf.
+Read effective desired policy for one authorized scope and `asOf`. Authorized empty, denied/unknown and technical failure are distinct.
 
-Show the user-facing meaning "what desired policy applies for this scope/time".
+## Export
 
-Authorized empty, denied/unknown and technical failure are distinct.
+Normalized technical policy view preserving semantic correlation, DCS traffic alternatives, realization, `asOf` and provenance.
 
-## Export / normalized policy
+## Realization
 
-Technical/export view over the accepted normalized policy semantics.
+Implemented operator workspace over desired policy, placement, configured evidence, reconciliation, rendering and available execution result. Stage availability is explicit; missing evidence/history is not fabricated as success.
 
-Preserve:
+## Navigation
 
-- Rule/decision correlation;
-- technical realization;
-- DCS traffic alternatives;
-- asOf;
-- provenance.
+```text
+OVERVIEW
+  Connectivity
+  Checker
 
-This need not be a top-level sidebar item.
+CATALOGUES
+  Applications
+  Resources
 
-## Planned technical workspaces
+POLICY
+  Needs
+  Decisions
+  Rules
+  Effective
+  Export
 
-The following may appear only as disabled Planned navigation until backed by implemented use cases:
+OPERATIONS
+  Realization
+```
 
-- Realization;
-- Evidence;
-- Enforcement.
-
-They must not show fabricated product data.
-
-## Future presentation modes over Connectivity
-
-Architecturally reserve:
-
-    Resources | Services | Graph
-
-Resources is the first implementation.
-
-Services and Graph must reuse the same accepted composition semantics rather than create separate domain truth or incompatible APIs.
+Future screens may be marked Planned only when backed by accepted scope and must not expose fake actions/data.

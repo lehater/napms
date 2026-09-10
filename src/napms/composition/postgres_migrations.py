@@ -68,6 +68,16 @@ MIGRATIONS: tuple[Migration, ...] = (
         "migrations/0002_display_metadata.sql",
     ),
     Migration(
+        "application-catalogue/0003",
+        "napms.application_catalogue.adapters.postgres",
+        "migrations/0003_catalogue_hierarchy.sql",
+    ),
+    Migration(
+        "application-catalogue/0004",
+        "napms.application_catalogue.adapters.postgres",
+        "migrations/0004_curation_write_support.sql",
+    ),
+    Migration(
         "resource-catalogue/0001",
         "napms.resource_catalogue.adapters.postgres",
         "migrations/0001_resource_catalogue.sql",
@@ -76,6 +86,11 @@ MIGRATIONS: tuple[Migration, ...] = (
         "resource-catalogue/0002",
         "napms.resource_catalogue.adapters.postgres",
         "migrations/0002_resource_scope_affiliations.sql",
+    ),
+    Migration(
+        "resource-catalogue/0003",
+        "napms.resource_catalogue.adapters.postgres",
+        "migrations/0003_curation_write_support.sql",
     ),
     Migration(
         "connectivity-requirements/0001",

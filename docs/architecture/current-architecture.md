@@ -1,12 +1,12 @@
 # Current target architecture
 
-Status: `accepted current target through I26 Traffic Analysis Checker for the supported local deployment`.
+Status: `accepted current target through I27 Catalogue Curation for the supported local deployment`.
 
 Date: 2026-09-10.
 
 ## Purpose
 
-Define the cross-cutting architecture that current feature boundaries must preserve. Product behavior is owned by requirements; domain identity/ownership is owned by DDD; consequential choices are owned by ADRs.
+Define the cross-cutting architecture current feature boundaries must preserve. Product behavior is owned by requirements; domain identity/ownership by DDD; feature-specific architecture by the corresponding boundary artifact/ADR.
 
 ## Architecture drivers
 
@@ -17,11 +17,11 @@ Priority order:
 4. explicit semantic ownership and action-scoped authority;
 5. simplest reversible topology consistent with current evidence.
 
-No accepted workload/SLA currently justifies service-per-context distribution or a multi-node topology.
+No accepted workload/SLA justifies service-per-context distribution or a multi-node topology.
 
 ## Structural style
 
-NAPMS is a modular application with explicit semantic modules and ports/adapters.
+NAPMS remains a modular application with explicit semantic modules and ports/adapters.
 
 ```text
 Domain
@@ -32,16 +32,16 @@ Domain
 Rules:
 - Domain depends only on language/runtime primitives and its own domain code;
 - Application depends inward on Domain and consumer-owned ports;
-- adapters translate persistence, HTTP, external source, target transport and runtime mechanics;
+- adapters translate persistence, HTTP, external-source, target-transport and runtime mechanics;
 - composition wires modules without becoming a semantic owner;
-- framework/database/transport/configuration/logging/DI-container types do not enter Domain;
+- framework/database/transport/config/logging/DI-container types do not enter Domain;
 - constructor injection is the default; no service locator/global mutable dependency registry.
 
 A Bounded Context is a semantic boundary, not automatically a service, database, team or deployment unit.
 
 ## Semantic and persistence ownership
 
-Each module owns access to its authoritative data and exposes application/port contracts to consumers. Cross-module direct table reads/writes are prohibited when they bypass owning contracts. Physical PostgreSQL colocation does not transfer semantic ownership.
+Each module owns its authoritative data and exposes application/port contracts to consumers. Cross-module direct table reads/writes are prohibited when they bypass owning contracts. Physical PostgreSQL colocation does not transfer semantic ownership.
 
 Current first-class semantic modules include:
 - Access Policy;
@@ -55,13 +55,11 @@ Current first-class semantic modules include:
 - Network Enforcement Placement;
 - Network Environment Operations.
 
-Current non-peer application/read compositions include Requirement-to-Policy Alignment, policy export/snapshot normalization, Scoped Connectivity Inventory, Network Operator Realization View and I26 Traffic Analysis Checker.
-
-I20 implements APR managed-scope desired/configured reconciliation. I21 adds target-specific rendering inside APR. I22 adds a separate downstream Network Environment Operations boundary for operation identity, authority admission, concurrency, mutation outcomes and verification. I23 adds only a dormant source-neutral external identity/source extension seam while preserving local-first runtime behavior. I24 hardens the selected local deployment/operations boundary. I25 closes the supported-local product chain with executable full-chain acceptance plus an owner-preserving operator read composition and Web explainability journey. I26 adds the reverse technical-entry-point analysis composition without introducing another source of domain truth.
+Non-peer application/read compositions include Requirement-to-Policy Alignment, policy export/snapshot normalization, Scoped Connectivity Inventory, Network Operator Realization View and Traffic Analysis Checker. Catalogue curation is not another bounded context: I27 adds write/read application seams inside ACC and RC and exposes them through outer adapters.
 
 ## Current runtime boundary
 
-Implemented local topology:
+Supported local topology:
 
 ```text
 browser
@@ -71,154 +69,182 @@ browser
   -> module-owned PostgreSQL repositories
 ```
 
-Local username/password authentication with server-side sessions is the primary supported authentication path. Authority/ACC/Resource data remain locally owned and populated for the current product. No external IdP, directory, CMDB, catalogue or MSSQL dependency is required for normal operation.
+Local username/password authentication with server-side sessions remains the primary path. Authority/ACC/Resource state is locally owned. No external IdP, directory, CMDB, catalogue or MSSQL dependency is required.
 
-Only nginx/Web is host-published by the supported Compose topology. API and PostgreSQL remain internal to the Compose network.
-
-PostgreSQL host access is password-authenticated; fresh local volumes initialize host authentication with SCRAM-SHA-256. The supported startup path prepares an ephemeral database credential, rotates the local role before dependent services start, and verifies that incorrect credentials are rejected. Credential preparation is an outer operational concern, not an application/domain responsibility.
-
-The supported local startup probe is intentionally non-mutating. A separate fresh-volume CI journey exercises state-changing product behavior. Local backup/recovery uses validated PostgreSQL custom-format logical backup plus explicit destructive clean-volume restore, then normal migration/startup. Failed forward upgrades recover from pre-upgrade backup and matching application revision; arbitrary reverse migrations are not promised.
-
-Runtime diagnostics use structured logs, `/health/live`, PostgreSQL-backed `/health/ready`, Compose state and an explicit PostgreSQL query probe. A separate metrics platform is not part of the selected local architecture because no accepted requirement demands one.
-
-Backend application containers remain non-root and NAPMS backend/Web Compose services use init/reaping plus `no-new-privileges`. PostgreSQL keeps the official image entrypoint/privilege model. Web dependency resolution is repository-owned through `web/package-lock.json`; supported CI and Docker build paths use `npm ci`.
+Only nginx/Web is host-published in the supported Compose topology. API and PostgreSQL remain internal. PostgreSQL host access uses password authentication; fresh volumes use SCRAM-SHA-256. Startup credential preparation/rotation, health probes, backup/restore, migrations and container hardening remain outer operational concerns.
 
 ## Authority and trust boundaries
 
-Authenticated actor identity originates from the server/session boundary, not request payloads. Application use cases evaluate action-specific Authority Management admission. Read authority and mutation authority remain independent. Unknown/ambiguous required authority fails closed.
+Authenticated actor identity originates from the server/session boundary, not request payloads. Application use cases evaluate action-specific Authority Management admission. Read and mutation authority remain independent; unknown/ambiguous required authority fails closed.
 
-Authentication identity does not grant business authority. Authority Management remains the owner of application permission. Resource responsibility/contact facts are also not authority facts.
+Authentication identity does not grant business authority. Resource responsibility/contact facts and Resource Scope Affiliation are also not authority facts.
 
-A dormant optional external-authentication seam may provide a verified provider-qualified external subject to an `ActorIdentityResolver`, which resolves only to `Mapped | Unmapped | Ambiguous | Unknown`; only `Mapped` exposes a NAPMS actor. This seam is not wired as the default login path.
+For I27 catalogue mutation the owning adapters select fixed administrative authority contexts:
+
+```text
+ACC -> CurateApplicationCatalogue @ application-catalogue
+RC  -> CurateResourceCatalogue    @ resource-catalogue
+```
+
+The caller cannot replace these with a selected Responsibility Scope. Catalogue visibility, `ReadScopedConnectivity`, Resource Scope Affiliation and Resource Responsibility do not imply either curation permission.
+
+## Catalogue Curation — I27
+
+Feature boundary: `docs/architecture/catalogue-curation-boundary.md`.
+
+I27 closes catalogue write capability inside the existing ACC/RC owners; it does not introduce a shared Catalogue aggregate/service.
+
+```text
+Web catalogue workspace
+  -> authenticated task-oriented HTTP route
+  -> ACC or RC application command/query
+  -> catalogue-owned Authority admission port
+  -> domain invariant
+  -> owner-specific PostgreSQL UoW
+```
+
+### Owner boundaries
+
+Application Communication Catalogue owns:
+
+```text
+Application
+  -> Component
+      -> Component Deployment
+          -> temporal Deployment Resource Binding
+          -> immutable DCS participation/revisions
+```
+
+Resource Catalogue owns:
+
+```text
+Resource
+  -> temporal Endpoint/realization facts
+  -> temporal Resource Scope Affiliation
+  -> temporal Resource Responsibility/contact
+```
+
+The Web/API does not become a second catalogue owner.
+
+### Cross-context binding
+
+A Deployment Resource Binding is ACC-owned. ACC validates an RC Resource through a consuming projection port/adaptor. The command mutates only ACC state; it does not read/write RC tables directly and does not use a distributed ACC+RC transaction.
+
+```text
+ACC binding command
+  -> DeploymentBindingResourceTargetPort
+  -> RC-owned adapter/projection
+  -> Active | Missing | Inactive | Unknown
+```
+
+Uncertainty fails closed.
+
+### Identity, lifecycle and temporal history
+
+Application, Component, Component Deployment and Resource have stable identities independent from presentation labels. Existing Deployment/DCS identities are preserved through migration.
+
+Historical truth is not maintained through generic delete/update semantics:
+- identity lifecycle uses explicit retirement;
+- temporal realization/affiliation/responsibility/binding uses create/end/replace semantics;
+- DCS revisions are immutable;
+- creation provenance is preserved and later retirement/end provenance is recorded separately.
+
+Optimistic `expectedVersion` and idempotent retry are separate controls. Durable command receipts prevent duplicate command effects; version checks prevent lost updates.
+
+Known SQL failure before commit is distinct from an ambiguous commit acknowledgement.
+
+### DCS authoring
+
+The ACC application layer owns vendor-neutral communication authoring semantics. HTTP/Web never treats serialized projection bytes or vendor ACL syntax as the DCS domain model.
+
+Normal UI selection of source/destination uses backend discovery of fully Active Application -> Component -> Deployment chains. NAPMS-owned relationships are not composed from manually pasted UUIDs in the ordinary workflow.
+
+### External correlation references
+
+NAPMS does not currently own a Responsibility Scope registry or Person/Team directory. ADR-011 therefore allows explicit local-first input of those external correlation references where no registry adapter exists. Such references do not create a new identity owner, Company/Organization aggregate or action authority.
+
+### Read models
+
+Owner-specific curation projections may optimize human workflows without duplicating authoritative state. In particular the Resources workspace read projection combines RC-owned current facts at one logical `asOf` to provide:
+- effective Responsibility Scope filtering;
+- search over Resource and current responsibility/contact presentation data;
+- current realization/scope/responsibility/contact completeness indicators.
+
+Those indicators are query projections, not Resource aggregate state.
 
 ## Technical Access Evidence
 
-TAE owns immutable source-qualified technical evidence, not authorization or realization truth. Source-specific parsing/collection remains adapters. APR and Traffic Analysis consume TAE through consumer-owned projections; TAE does not depend on either consumer.
+TAE owns immutable source-qualified technical evidence, not authorization or realization truth. Source-specific parsing/collection remains adapters. APR and Traffic Analysis consume TAE through consumer-owned projections.
 
-Configured data presented by Checker is always stored TAE evidence. Checker never performs a synchronous live firewall/device read and never promotes configured evidence to authorization truth.
+Configured data presented by Checker is stored TAE evidence. Checker never performs a synchronous live firewall/device read and never promotes configured evidence to authorization truth.
 
 ## Network Enforcement Placement / Network Context
 
-NEP owns Logical Firewall identity, temporal provider correspondence, Enforcement Attachment semantics and stronger forwarding/placement knowledge when such knowledge is actually available.
+NEP owns Logical Firewall identity, temporal provider correspondence, Enforcement Attachment semantics and stronger forwarding/placement knowledge where available.
 
-I26 establishes an important distinction:
-
-```text
-proven ForwardingPath capability
-!=
-baseline Network Context candidate set
-```
-
-A baseline Network Context result is an unordered set of relevant enforcement/device candidates. It may be incomplete and may contain false positives. Candidate membership is not proof of traversal, order, authorization or configured state. Source relevance, provenance and knowledge gaps must remain visible. A proven ordered path may still exist as a stronger optional capability only where a contributing source can actually prove it.
+A proven `ForwardingPath` is stronger than the baseline unordered Network Context candidate set. Candidate membership may be incomplete/false-positive and is not proof of traversal, order, authorization or configured state.
 
 Feature boundary: `docs/architecture/network-context-candidate-boundary.md`.
 
-## Resource Catalogue responsibility facts
+## Access Policy Realization / Network Environment Operations
 
-Resource Catalogue owns Resource identity, endpoint/realization history, Resource Scope Affiliation and I26 Resource Responsibility facts used for owner/support contact discovery.
-
-Resource Responsibility is temporal and may reference a person or team in roles such as service owner, technical owner, operations/support contact or business owner. These facts are independent from Authority Management Responsibility Assignments and do not grant NAPMS action permission.
-
-## Access Policy Realization — I18/I20/I21
-
-APR remains framework-free Domain/Application with APR-owned ports and outer owner-preserving/vendor adapters.
+APR remains framework-free and owner-preserving:
 
 ```text
 effective Access Policy + RC/ACC + NEP
     -> Desired Enforcement Policy
-
-configured TAE + trusted managed-scope contract
+configured TAE + managed-scope contract
     -> Configured Enforcement Snapshot
-    -> Policy Reconciliation
-
+    -> reconciliation
 Desired Enforcement Policy
-    -> RenderConfiguration
-    -> ConfigurationRenderer port
-    -> Cisco ASA outer adapter
+    -> target renderer
     -> Rendered | Unsupported | Unknown
 ```
 
-Rendering remains derived on demand and does not prove provider/device application.
+Rendered configuration does not prove application to a target.
 
-## Network Environment Operations — I22
+NEO remains a separate downstream boundary:
 
 ```text
-APR Rendered Configuration
-    -> composition projects EnforcementTarget identity
-    -> NEO OperationTarget
-    -> mutation-authority admission
-    -> acquire current target revision
+Rendered Configuration
+    -> operation authority
+    -> acquire target revision
     -> conditional apply
-    -> reacquire post-state
+    -> post-state verification
     -> Verified | PreconditionFailed | Rejected | Drift | Unknown
 ```
 
-NEO owns operation identity/outcome/concurrency/provenance, not desired policy, placement or rendering semantics. The current adapter is a deterministic in-process target stub because no real Cisco lab is available. Stub success proves orchestration semantics only; real transport, credential handling, production rollback and durable operation persistence require later concrete environment evidence.
-
-Feature contract: `docs/architecture/network-environment-operations-boundary.md`.
+The supported target remains deterministic in-process/stub-first. Real Cisco transport, production credentials/rollback and durable operation audit require later concrete environment evidence.
 
 ## Network Operator Realization View — I25
 
-I25 provides a non-peer, read-only application composition for network/security operator inspection. It owns no authoritative business state.
-
-```text
-server-authenticated actor + scope + asOf
-    -> ReadNetworkOperatorRealization authority admission
-    -> owner-preserving APR / NEP / TAE / NEO projections
-    -> stage availability + references/artifacts/evidence
-    -> HTTP transport DTO
-    -> Realization Web workspace
-```
-
-Missing configured-evidence/managed-scope input or actual NEO operation result remains `NotAvailable`; ambiguous/incomplete semantic input remains `Unknown`. Cross-chain explainability follows existing Rule -> Decision -> Connectivity Requirement owner pages.
+The Realization workspace is a non-peer read composition. It owns no authoritative business state and preserves explicit stage availability. Missing evidence or operation history remains unavailable/unknown rather than fabricated success.
 
 Feature contract: `docs/architecture/network-operator-realization-view.md`.
 
 ## Traffic Analysis Checker — I26
 
-I26 adds a second non-peer application/read composition, oriented from a technical traffic tuple back toward domain and operational context.
+Checker remains a non-peer read composition from a technical tuple back toward domain and operational context:
 
 ```text
-source address + destination address + protocol + port/range + asOf
-    -> Resource Catalogue reverse address resolution
-    -> ACC resource/component/DCS context
-    -> existing Scoped Connectivity Inventory policy summaries
-    -> Network Context unordered candidates
-    -> per-candidate stored Configured TAE snapshot matching
-    -> Resource Responsibility/contact projection
-    -> authenticated HTTP DTO
-    -> Checker Web workspace
+source/destination technical tuple + asOf
+    -> RC reverse resolution
+    -> ACC context
+    -> Scoped Connectivity summaries
+    -> unordered Network Context candidates
+    -> stored Configured TAE matching
+    -> Resource Responsibility/contact
 ```
 
-Architecture rules:
-- Traffic Analysis owns orchestration/read DTOs only; no Checker aggregate/table is introduced;
-- IP resolution preserves `Resolved | Ambiguous | Historical | Unknown` and may retain several candidate Resources;
-- policy composition reuses owner-preserving reads and preserves multiple/partial/unknown matches;
-- Web does not implement independent traffic predicate algebra;
-- technical matching is backend-owned and distinguishes exact/containment/overlap/no-match for supported predicates;
-- Network Context candidates are unordered and cannot be rendered as a proven `A -> B -> C` path;
-- each candidate may have an applicable stored evidence snapshot or explicit missing-evidence state;
-- snapshot `capturedAt`, `recordedAt`, source and provenance are carried independently of analysis time;
-- no absence of evidence is promoted into proof that a device/rule/path does not exist;
-- configured technical entries remain evidence and never imply `Allowed`;
-- ownership/support contacts are Resource Catalogue responsibility facts, not authorization;
-- the supported local target uses deterministic Network Context and responsibility adapters and stored PostgreSQL TAE; no live Cisco/provider transport is required.
-
-Observable contract: `docs/requirements/traffic-analysis-checker.md`.
-
-## I25 full-chain acceptance composition
-
-The PostgreSQL acceptance suite composes existing owner APIs/repositories to prove Requirement -> Decision -> Access Rule -> NEP/TAE/APR -> deterministic NEO -> `Verified`. This remains executable acceptance evidence, not a new aggregate and not a claim that every runtime installation always has configured inputs or operation history.
+No Checker aggregate/table is introduced. Ambiguity, partial data and missing evidence remain explicit; configured technical entries never imply `Allowed`.
 
 ## Cross-context application compositions
 
-A composition consumes explicit owner/application ports, owns orchestration only, does not create copied business truth, and represents missing/ambiguous contributors explicitly. APR EnforcementTarget -> NEO OperationTarget mapping, Scoped Connectivity Inventory, Network Operator Realization View and Traffic Analysis Checker follow this rule.
+A composition consumes explicit owner/application ports, owns orchestration only, does not create copied business truth, and represents missing/ambiguous contributors explicitly.
 
-Operational tooling may inspect/start/backup/restore the selected local runtime but does not acquire semantic ownership of module data. Database backup/restore preserves storage state as a whole; it is not a cross-context business API.
+This rule applies to Scoped Connectivity Inventory, Requirement-to-Policy Alignment, APR compositions, Network Operator Realization View, Traffic Analysis Checker and the ACC-to-RC validation seam used for Deployment Resource Binding.
 
-## Optional external extensions — I23
-
-External identity and source integrations are optional future extensions, not current target dependencies. Future adapters terminate at source-neutral/context-owned boundaries. Deterministic stubs are sufficient to prove dormant seams. Legacy/MSSQL and real provider/device transport are not target dependencies by default.
+Operational tooling may inspect/start/backup/restore the selected runtime but does not acquire semantic ownership of module data.
 
 ## Security/integrity guardrails
 
@@ -227,29 +253,32 @@ Architecture must preserve:
 - authoritative Rule uniqueness/idempotency;
 - module-owned persistence boundaries;
 - explicit logical-time validity where required;
-- no silent semantic broadening/narrowing in normalization or rendering;
+- catalogue visibility/responsibility/scope affiliation separate from mutation authority;
+- no caller-selected catalogue administrative authority scope;
+- immutable DCS revisions and stable catalogue identities across migration;
+- no destructive catalogue maintenance that erases referenced historical truth;
+- no silent semantic broadening/narrowing in normalization/rendering;
 - no false Verified outcome from transport acceptance alone;
 - operation idempotency and optimistic concurrency for mutation;
 - authentication identity separate from business authority;
-- resource responsibility/contact separate from business authority;
 - explicit degraded/error outcomes instead of convenient permission, absence or success;
 - no PostgreSQL network trust in the supported local Compose path;
-- operational startup/status probes do not mutate business state;
-- destructive local recovery requires explicit operator intent and a validated backup artifact;
-- realization and Traffic Analysis read models never promote missing/ambiguous owner evidence to success;
+- startup/status probes do not mutate business state;
+- missing/ambiguous evidence never becomes success;
 - Network Context candidates never become fabricated path/order facts;
 - Web dependency changes keep package intent and lockfile consistent.
 
 ## Revisit triggers
 
-Revisit topology or add infrastructure only when accepted evidence requires it, such as a concrete external identity/source requirement, a real Cisco lab/transport contract, calibrated path/telemetry evidence, durable NEO audit/rollback, measured workload/performance needs, independent scale/security/availability constraints, or a target environment requiring public TLS/HA/external secret management.
+Revisit topology or add infrastructure only when accepted evidence requires it, such as concrete external identity/catalogue-source synchronization, organization/stewardship hierarchy, fine-grained catalogue visibility, a real Cisco transport contract, calibrated path/telemetry evidence, durable NEO audit/rollback, measured workload/performance needs, independent availability/security constraints or an environment requiring public TLS/HA/external secret management.
 
 ## Canonical references
 
 - semantic ownership: `docs/domain/strategic-model.md`, `docs/domain/semantic-ownership.md`;
-- Resource role/responsibility model: `docs/domain/resource-role-model.md`;
-- current product requirements: `docs/requirements/`;
-- feature architecture: `docs/architecture/`;
-- runtime/product state: `docs/engineering/current-state.md`;
+- catalogue curation: `docs/architecture/catalogue-curation-boundary.md`, `docs/requirements/catalogue-curation.md`;
+- Resource role/responsibility: `docs/domain/resource-role-model.md`;
+- command/HTTP catalogue contracts: `docs/engineering/catalogue-curation-command-contract.md`, `docs/engineering/catalogue-curation-http-api-contract.md`;
+- Network Context: `docs/architecture/network-context-candidate-boundary.md`;
+- current runtime/product state: `docs/engineering/current-state.md`;
 - local operator workflow: `docs/engineering/local-product-operator-runbook.md`;
-- current execution only: `docs/plans/active/README.md`.
+- active work only: `docs/plans/active/README.md`.

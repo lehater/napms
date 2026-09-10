@@ -92,6 +92,9 @@ pytestmark = pytest.mark.postgres
 
 ACTOR = "actor-i20"
 SCOPE = "scope-i20"
+APPLICATION = UUID(int=2000)
+SOURCE_PARENT_COMPONENT = UUID(int=2011)
+DESTINATION_PARENT_COMPONENT = UUID(int=2012)
 SOURCE_COMPONENT = UUID(int=2001)
 DESTINATION_COMPONENT = UUID(int=2002)
 DCS = UUID(int=2003)
@@ -196,7 +199,9 @@ def clean(postgres_dsn, config):
             TRUNCATE TABLE
                 napms_application_catalogue.deployment_resource_bindings,
                 napms_application_catalogue.dcs_revisions,
-                napms_application_catalogue.component_deployments
+                napms_application_catalogue.component_deployments,
+                napms_application_catalogue.components,
+                napms_application_catalogue.applications
             CASCADE
             """
         )
@@ -294,13 +299,56 @@ def seed_domain(postgres_dsn):
                 ),
             )
 
-        for component, provenance in (
+        connection.execute(
+            """
+            INSERT INTO napms_application_catalogue.applications (
+                application_id,
+                display_name,
+                provenance_reference
+            )
+            VALUES (%s, %s, %s)
+            """,
+            (APPLICATION, "I20 test application", "application-prov-i20"),
+        )
+        for component_id, display_name, provenance in (
+            (
+                SOURCE_PARENT_COMPONENT,
+                "Source component",
+                "source-parent-component-prov",
+            ),
+            (
+                DESTINATION_PARENT_COMPONENT,
+                "Destination component",
+                "destination-parent-component-prov",
+            ),
+        ):
+            connection.execute(
+                """
+                INSERT INTO napms_application_catalogue.components (
+                    component_id,
+                    application_id,
+                    display_name,
+                    provenance_reference
+                )
+                VALUES (%s, %s, %s, %s)
+                """,
+                (
+                    component_id,
+                    APPLICATION,
+                    display_name,
+                    provenance,
+                ),
+            )
+
+        for deployment, component_id, provenance in (
             (
                 SOURCE_COMPONENT,
+                SOURCE_PARENT_COMPONENT,
                 "source-component-prov",
             ),
             (
                 DESTINATION_COMPONENT,
+                DESTINATION_PARENT_COMPONENT,
                 "destination-component-prov",
             ),
         ):
@@ -308,12 +356,14 @@ def seed_domain(postgres_dsn):
                 """
                 INSERT INTO napms_application_catalogue.component_deployments (
                     component_deployment_id,
+                    component_id,
                     provenance_reference
                 )
-                VALUES (%s, %s)
+                VALUES (%s, %s, %s)
                 """,
                 (
-                    component,
+                    deployment,
+                    component_id,
                     provenance,
                 ),
             )

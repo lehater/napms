@@ -44,7 +44,13 @@ def clean_state(postgres_dsn):
         connection.execute("TRUNCATE TABLE napms_access_policy.access_rules CASCADE")
         connection.execute("TRUNCATE TABLE napms_authority.authority_assignments")
         connection.execute(
-            "TRUNCATE TABLE napms_application_catalogue.component_deployments CASCADE"
+            """
+            TRUNCATE TABLE
+                napms_application_catalogue.component_deployments,
+                napms_application_catalogue.components,
+                napms_application_catalogue.applications
+            CASCADE
+            """
         )
         connection.execute("TRUNCATE TABLE napms_resource_catalogue.resources CASCADE")
         connection.execute(

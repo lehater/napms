@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
-from uuid import UUID
+from uuid import UUID, uuid5
 
 import pytest
 
@@ -72,6 +72,8 @@ pytestmark = pytest.mark.postgres
 
 ACTOR = "actor-1"
 SCOPE = "scope-1"
+TEST_APPLICATION = UUID("00000000-0000-0000-0000-000000001000")
+TEST_COMPONENT_NAMESPACE = UUID("00000000-0000-0000-0000-000000001100")
 SOURCE = UUID(int=1001)
 DESTINATION = UUID(int=1002)
 DCS = UUID(int=1003)
@@ -135,7 +137,9 @@ def clean_greenfield(postgres_dsn, greenfield_config):
             TRUNCATE TABLE
                 napms_application_catalogue.deployment_resource_bindings,
                 napms_application_catalogue.dcs_revisions,
-                napms_application_catalogue.component_deployments
+                napms_application_catalogue.component_deployments,
+                napms_application_catalogue.components,
+                napms_application_catalogue.applications
             CASCADE
             """
         )
@@ -270,6 +274,10 @@ def seed_authority(
         )
 
 
+def _component_id_for(deployment_id):
+    return uuid5(TEST_COMPONENT_NAMESPACE, str(deployment_id))
+
+
 def seed_acc(
     connection,
     *,
@@ -277,30 +285,54 @@ def seed_acc(
     dcs_source=SOURCE,
     include_bindings=True,
 ):
-    for deployment, provenance in (
+    connection.execute(
+        """
+        INSERT INTO napms_application_catalogue.applications (
+            application_id,
+            display_name,
+            provenance_reference
+        )
+        VALUES (%s, %s, %s)
+        """,
+        (TEST_APPLICATION, "Greenfield test application", "test:greenfield-application"),
+    )
+
+    deployments = [
         (SOURCE, "deployment-source-provenance"),
         (DESTINATION, "deployment-destination-provenance"),
-    ):
-        connection.execute(
-            """
-            INSERT INTO napms_application_catalogue.component_deployments (
-                component_deployment_id,
-                provenance_reference
-            )
-            VALUES (%s, %s)
-            """,
-            (deployment, provenance),
-        )
+    ]
     if dcs_source not in {SOURCE, DESTINATION}:
+        deployments.append((dcs_source, "deployment-other-provenance"))
+
+    for deployment, provenance in deployments:
+        component_id = _component_id_for(deployment)
+        connection.execute(
+            """
+            INSERT INTO napms_application_catalogue.components (
+                component_id,
+                application_id,
+                display_name,
+                provenance_reference
+            )
+            VALUES (%s, %s, %s, %s)
+            """,
+            (
+                component_id,
+                TEST_APPLICATION,
+                f"Component {deployment}",
+                f"component-provenance:{deployment}",
+            ),
+        )
         connection.execute(
             """
             INSERT INTO napms_application_catalogue.component_deployments (
                 component_deployment_id,
+                component_id,
                 provenance_reference
             )
-            VALUES (%s, %s)
+            VALUES (%s, %s, %s)
             """,
-            (dcs_source, "deployment-other-provenance"),
+            (deployment, component_id, provenance),
         )
 
     if include_dcs:

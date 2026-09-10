@@ -5,15 +5,20 @@ import psycopg
 from psycopg.types.json import Jsonb
 
 from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
-from napms.runtime.config import load_local_seed_config
 from napms.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
     PortRange,
 )
+from napms.runtime.config import load_local_seed_config
 
 
 _SCOPE = "local-demo"
+_APPLICATION_CATALOGUE_SCOPE = "application-catalogue"
+_RESOURCE_CATALOGUE_SCOPE = "resource-catalogue"
+_APPLICATION = UUID("00000000-0000-0000-0000-000000000100")
+_SOURCE_COMPONENT = UUID("00000000-0000-0000-0000-000000000201")
+_DESTINATION_COMPONENT = UUID("00000000-0000-0000-0000-000000000202")
 _SOURCE = UUID("00000000-0000-0000-0000-000000000101")
 _DESTINATION = UUID("00000000-0000-0000-0000-000000000102")
 _DCS = UUID("00000000-0000-0000-0000-000000000103")
@@ -34,6 +39,11 @@ _AUTHORITY_ACTIONS = (
     "RetireConnectivityRequirement",
     "ReadScopedConnectivity",
     "ReadNetworkOperatorRealization",
+)
+
+_CATALOGUE_AUTHORITIES = (
+    ("CurateApplicationCatalogue", _APPLICATION_CATALOGUE_SCOPE),
+    ("CurateResourceCatalogue", _RESOURCE_CATALOGUE_SCOPE),
 )
 
 
@@ -149,51 +159,101 @@ def _seed_checker_evidence(connection) -> None:
         )
 
 
+def _seed_authority(connection, *, actor_id: str, action: str, scope: str) -> None:
+    connection.execute(
+        """
+        INSERT INTO napms_authority.authority_assignments (
+            reference_id,
+            actor_id,
+            action,
+            scope,
+            valid_from,
+            valid_to,
+            provenance_reference
+        )
+        VALUES (%s, %s, %s, %s, %s, NULL, %s)
+        ON CONFLICT (reference_id) DO NOTHING
+        """,
+        (
+            f"local-demo:{actor_id}:{action}",
+            actor_id,
+            action,
+            scope,
+            _VALID_FROM,
+            f"local-demo:authority:{action}",
+        ),
+    )
+
+
 def seed_local_demo(connection, *, actor_id: str) -> None:
     if not actor_id:
         raise ValueError("local demo actor_id must be non-empty")
 
     for action in _AUTHORITY_ACTIONS:
+        _seed_authority(connection, actor_id=actor_id, action=action, scope=_SCOPE)
+    for action, scope in _CATALOGUE_AUTHORITIES:
+        _seed_authority(connection, actor_id=actor_id, action=action, scope=scope)
+
+    connection.execute(
+        """
+        INSERT INTO napms_application_catalogue.applications (
+            application_id,
+            display_name,
+            provenance_reference
+        )
+        VALUES (%s, %s, %s)
+        ON CONFLICT (application_id) DO UPDATE
+        SET display_name = EXCLUDED.display_name
+        """,
+        (_APPLICATION, "Demo Commerce", "local-demo:application"),
+    )
+
+    for component_id, display_name, provenance in (
+        (_SOURCE_COMPONENT, "Demo Web", "local-demo:source-component"),
+        (_DESTINATION_COMPONENT, "Demo Orders", "local-demo:destination-component"),
+    ):
         connection.execute(
             """
-            INSERT INTO napms_authority.authority_assignments (
-                reference_id,
-                actor_id,
-                action,
-                scope,
-                valid_from,
-                valid_to,
+            INSERT INTO napms_application_catalogue.components (
+                component_id,
+                application_id,
+                display_name,
                 provenance_reference
             )
-            VALUES (%s, %s, %s, %s, %s, NULL, %s)
-            ON CONFLICT (reference_id) DO NOTHING
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (component_id) DO UPDATE
+            SET display_name = EXCLUDED.display_name
             """,
-            (
-                f"local-demo:{actor_id}:{action}",
-                actor_id,
-                action,
-                _SCOPE,
-                _VALID_FROM,
-                f"local-demo:authority:{action}",
-            ),
+            (component_id, _APPLICATION, display_name, provenance),
         )
 
-    for deployment_id, display_name, provenance in (
-        (_SOURCE, "Demo Web Frontend", "local-demo:source-deployment"),
-        (_DESTINATION, "Demo Orders API", "local-demo:destination-deployment"),
+    for deployment_id, component_id, display_name, provenance in (
+        (
+            _SOURCE,
+            _SOURCE_COMPONENT,
+            "Demo Web Frontend",
+            "local-demo:source-deployment",
+        ),
+        (
+            _DESTINATION,
+            _DESTINATION_COMPONENT,
+            "Demo Orders API",
+            "local-demo:destination-deployment",
+        ),
     ):
         connection.execute(
             """
             INSERT INTO napms_application_catalogue.component_deployments (
                 component_deployment_id,
+                component_id,
                 provenance_reference,
                 display_name
             )
-            VALUES (%s, %s, %s)
+            VALUES (%s, %s, %s, %s)
             ON CONFLICT (component_deployment_id) DO UPDATE
             SET display_name = EXCLUDED.display_name
             """,
-            (deployment_id, provenance, display_name),
+            (deployment_id, component_id, provenance, display_name),
         )
 
     connection.execute(

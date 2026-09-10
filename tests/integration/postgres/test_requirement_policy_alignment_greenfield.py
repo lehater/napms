@@ -49,6 +49,9 @@ pytestmark = pytest.mark.postgres
 ACTOR = "alignment-owner"
 CR_SCOPE = "requirements-scope"
 AP_SCOPE = "policy-scope"
+APPLICATION = UUID(int=9290)
+SOURCE_COMPONENT = UUID(int=9291)
+DESTINATION_COMPONENT = UUID(int=9292)
 SOURCE = UUID(int=9201)
 DESTINATION = UUID(int=9202)
 DCS = UUID(int=9203)
@@ -108,7 +111,9 @@ def clean(postgres_dsn, greenfield_config):
             TRUNCATE TABLE
                 napms_application_catalogue.deployment_resource_bindings,
                 napms_application_catalogue.dcs_revisions,
-                napms_application_catalogue.component_deployments
+                napms_application_catalogue.component_deployments,
+                napms_application_catalogue.components,
+                napms_application_catalogue.applications
             CASCADE
             """
         )
@@ -145,16 +150,53 @@ def seed(postgres_dsn):
                 ),
             )
 
-        for deployment in (SOURCE, DESTINATION):
+        connection.execute(
+            """
+            INSERT INTO napms_application_catalogue.applications (
+                application_id,
+                display_name,
+                provenance_reference
+            )
+            VALUES (%s, %s, %s)
+            """,
+            (APPLICATION, "Alignment fixture", "fixture:alignment:application"),
+        )
+        for component_id, display_name in (
+            (SOURCE_COMPONENT, "Source component"),
+            (DESTINATION_COMPONENT, "Destination component"),
+        ):
+            connection.execute(
+                """
+                INSERT INTO napms_application_catalogue.components (
+                    component_id,
+                    application_id,
+                    display_name,
+                    provenance_reference
+                )
+                VALUES (%s, %s, %s, %s)
+                """,
+                (
+                    component_id,
+                    APPLICATION,
+                    display_name,
+                    f"fixture:alignment:component:{component_id}",
+                ),
+            )
+
+        for deployment, component_id in (
+            (SOURCE, SOURCE_COMPONENT),
+            (DESTINATION, DESTINATION_COMPONENT),
+        ):
             connection.execute(
                 """
                 INSERT INTO napms_application_catalogue.component_deployments (
                     component_deployment_id,
+                    component_id,
                     provenance_reference
                 )
-                VALUES (%s, %s)
+                VALUES (%s, %s, %s)
                 """,
-                (deployment, f"deployment:{deployment}"),
+                (deployment, component_id, f"deployment:{deployment}"),
             )
         connection.execute(
             """

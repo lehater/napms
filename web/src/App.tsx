@@ -3,6 +3,10 @@ import { useEffect, useState } from "react"
 import { getSession, login, logout, type Actor } from "@/api"
 import { AppShell } from "@/components/layout/AppShell"
 import { LoginPage } from "@/features/auth/LoginPage"
+import { ApplicationDetailsPage } from "@/features/catalogues/ApplicationDetailsPage"
+import { ApplicationsPage } from "@/features/catalogues/ApplicationsPage"
+import { ResourceDetailsPage } from "@/features/catalogues/ResourceDetailsPage"
+import { ResourcesPage } from "@/features/catalogues/ResourcesPage"
 import { CheckerPage } from "@/features/checker/CheckerPage"
 import { ConnectivityPage } from "@/features/connectivity/ConnectivityPage"
 import type { RequestConnectivityContext } from "@/features/connectivity/model"
@@ -21,6 +25,10 @@ import { AccessRulesPage } from "@/features/rules/AccessRulesPage"
 type Route =
   | { kind: "connectivity"; page: number }
   | { kind: "checker" }
+  | { kind: "applications"; page: number }
+  | { kind: "application"; applicationId: string }
+  | { kind: "resources"; page: number }
+  | { kind: "resource"; resourceReference: string }
   | {
       kind: "request-access"
       context: RequestConnectivityContext
@@ -37,9 +45,42 @@ type Route =
   | { kind: "normalized" }
   | { kind: "realization" }
 
+function pageFromHash(hash: string) {
+  const query = hash.includes("?") ? hash.split("?")[1] : ""
+  const page = Number(new URLSearchParams(query).get("page") ?? "1")
+  return Number.isInteger(page) && page > 0 ? page : 1
+}
+
 function readRoute(): Route {
   const hash = window.location.hash.replace(/^#/, "")
   if (hash.startsWith("checker")) return { kind: "checker" }
+
+  if (hash.startsWith("applications/")) {
+    const applicationId = hash.slice("applications/".length).split("?")[0]
+    if (applicationId) {
+      return {
+        kind: "application",
+        applicationId: decodeURIComponent(applicationId),
+      }
+    }
+  }
+  if (hash.startsWith("applications")) {
+    return { kind: "applications", page: pageFromHash(hash) }
+  }
+
+  if (hash.startsWith("resources/")) {
+    const resourceReference = hash.slice("resources/".length).split("?")[0]
+    if (resourceReference) {
+      return {
+        kind: "resource",
+        resourceReference: decodeURIComponent(resourceReference),
+      }
+    }
+  }
+  if (hash.startsWith("resources")) {
+    return { kind: "resources", page: pageFromHash(hash) }
+  }
+
   if (hash.startsWith("connectivity-decisions/")) {
     const decisionId = hash.slice("connectivity-decisions/".length).split("?")[0]
     if (decisionId) {
@@ -50,12 +91,7 @@ function readRoute(): Route {
     }
   }
   if (hash.startsWith("connectivity-decisions")) {
-    const query = hash.includes("?") ? hash.split("?")[1] : ""
-    const page = Number(new URLSearchParams(query).get("page") ?? "1")
-    return {
-      kind: "decisions",
-      page: Number.isInteger(page) && page > 0 ? page : 1,
-    }
+    return { kind: "decisions", page: pageFromHash(hash) }
   }
   if (hash.startsWith("connectivity-needs/")) {
     const requirementId = hash.slice("connectivity-needs/".length).split("?")[0]
@@ -67,20 +103,10 @@ function readRoute(): Route {
     }
   }
   if (hash.startsWith("connectivity-needs")) {
-    const query = hash.includes("?") ? hash.split("?")[1] : ""
-    const page = Number(new URLSearchParams(query).get("page") ?? "1")
-    return {
-      kind: "requirements",
-      page: Number.isInteger(page) && page > 0 ? page : 1,
-    }
+    return { kind: "requirements", page: pageFromHash(hash) }
   }
   if (hash.startsWith("connectivity")) {
-    const query = hash.includes("?") ? hash.split("?")[1] : ""
-    const page = Number(new URLSearchParams(query).get("page") ?? "1")
-    return {
-      kind: "connectivity",
-      page: Number.isInteger(page) && page > 0 ? page : 1,
-    }
+    return { kind: "connectivity", page: pageFromHash(hash) }
   }
   if (hash.startsWith("request-access")) {
     const query = hash.includes("?") ? hash.split("?")[1] : ""
@@ -130,12 +156,7 @@ function readRoute(): Route {
     if (ruleId) return { kind: "rule", ruleId: decodeURIComponent(ruleId) }
   }
   if (hash.startsWith("access-rules")) {
-    const query = hash.includes("?") ? hash.split("?")[1] : ""
-    const page = Number(new URLSearchParams(query).get("page") ?? "1")
-    return {
-      kind: "rules",
-      page: Number.isInteger(page) && page > 0 ? page : 1,
-    }
+    return { kind: "rules", page: pageFromHash(hash) }
   }
   return { kind: "connectivity", page: 1 }
 }
@@ -191,21 +212,25 @@ export function App() {
   const activeNav =
     route.kind === "checker"
       ? "checker"
-      : route.kind === "connectivity" ||
-          route.kind === "request-access" ||
-          route.kind === "compose"
-        ? "connectivity"
-        : route.kind === "requirements" || route.kind === "requirement"
-          ? "requirements"
-          : route.kind === "decisions" || route.kind === "decision"
-            ? "decisions"
-            : route.kind === "effective"
-              ? "effective"
-              : route.kind === "normalized"
-                ? "normalized"
-                : route.kind === "realization"
-                  ? "realization"
-                  : "rules"
+      : route.kind === "applications" || route.kind === "application"
+        ? "applications"
+        : route.kind === "resources" || route.kind === "resource"
+          ? "resources"
+          : route.kind === "connectivity" ||
+              route.kind === "request-access" ||
+              route.kind === "compose"
+            ? "connectivity"
+            : route.kind === "requirements" || route.kind === "requirement"
+              ? "requirements"
+              : route.kind === "decisions" || route.kind === "decision"
+                ? "decisions"
+                : route.kind === "effective"
+                  ? "effective"
+                  : route.kind === "normalized"
+                    ? "normalized"
+                    : route.kind === "realization"
+                      ? "realization"
+                      : "rules"
 
   return (
     <AppShell
@@ -217,17 +242,21 @@ export function App() {
             ? "connectivity?page=1"
             : target === "checker"
               ? "checker"
-              : target === "requirements"
-                ? "connectivity-needs?page=1"
-                : target === "decisions"
-                  ? "connectivity-decisions?page=1"
-                  : target === "rules"
-                    ? "access-rules?page=1"
-                    : target === "effective"
-                      ? "effective-policy"
-                      : target === "normalized"
-                        ? "normalized-policy"
-                        : "realization",
+              : target === "applications"
+                ? "applications?page=1"
+                : target === "resources"
+                  ? "resources?page=1"
+                  : target === "requirements"
+                    ? "connectivity-needs?page=1"
+                    : target === "decisions"
+                      ? "connectivity-decisions?page=1"
+                      : target === "rules"
+                        ? "access-rules?page=1"
+                        : target === "effective"
+                          ? "effective-policy"
+                          : target === "normalized"
+                            ? "normalized-policy"
+                            : "realization",
         )
       }
       onLogout={async () => {
@@ -237,6 +266,32 @@ export function App() {
     >
       {route.kind === "checker" ? (
         <CheckerPage />
+      ) : route.kind === "applications" ? (
+        <ApplicationsPage
+          page={route.page}
+          onPageChange={(page) => navigate(`applications?page=${page}`)}
+          onOpenApplication={(applicationId) =>
+            navigate(`applications/${encodeURIComponent(applicationId)}`)
+          }
+        />
+      ) : route.kind === "application" ? (
+        <ApplicationDetailsPage
+          applicationId={route.applicationId}
+          onBack={() => navigate("applications?page=1")}
+        />
+      ) : route.kind === "resources" ? (
+        <ResourcesPage
+          page={route.page}
+          onPageChange={(page) => navigate(`resources?page=${page}`)}
+          onOpenResource={(resourceReference) =>
+            navigate(`resources/${encodeURIComponent(resourceReference)}`)
+          }
+        />
+      ) : route.kind === "resource" ? (
+        <ResourceDetailsPage
+          resourceReference={route.resourceReference}
+          onBack={() => navigate("resources?page=1")}
+        />
       ) : route.kind === "connectivity" ? (
         <ConnectivityPage
           page={route.page}
@@ -258,20 +313,14 @@ export function App() {
       ) : route.kind === "request-access" ? (
         <RequestConnectivityPage
           context={route.context}
-          onBack={() =>
-            navigate(`connectivity?page=${route.returnPage}`)
-          }
+          onBack={() => navigate(`connectivity?page=${route.returnPage}`)}
         />
       ) : route.kind === "requirements" ? (
         <ConnectivityRequirementsPage
           page={route.page}
-          onPageChange={(page) =>
-            navigate(`connectivity-needs?page=${page}`)
-          }
+          onPageChange={(page) => navigate(`connectivity-needs?page=${page}`)}
           onOpenRequirement={(requirementId) =>
-            navigate(
-              `connectivity-needs/${encodeURIComponent(requirementId)}`,
-            )
+            navigate(`connectivity-needs/${encodeURIComponent(requirementId)}`)
           }
         />
       ) : route.kind === "requirement" ? (
@@ -282,13 +331,9 @@ export function App() {
       ) : route.kind === "decisions" ? (
         <ConnectivityDecisionsPage
           page={route.page}
-          onPageChange={(page) =>
-            navigate(`connectivity-decisions?page=${page}`)
-          }
+          onPageChange={(page) => navigate(`connectivity-decisions?page=${page}`)}
           onOpenDecision={(decisionId) =>
-            navigate(
-              `connectivity-decisions/${encodeURIComponent(decisionId)}`,
-            )
+            navigate(`connectivity-decisions/${encodeURIComponent(decisionId)}`)
           }
         />
       ) : route.kind === "decision" ? (
@@ -296,9 +341,7 @@ export function App() {
           decisionId={route.decisionId}
           onBack={() => navigate("connectivity-decisions?page=1")}
           onOpenDecision={(decisionId) =>
-            navigate(
-              `connectivity-decisions/${encodeURIComponent(decisionId)}`,
-            )
+            navigate(`connectivity-decisions/${encodeURIComponent(decisionId)}`)
           }
           onOpenRequirement={(requirementId) =>
             navigate(`connectivity-needs/${encodeURIComponent(requirementId)}`)

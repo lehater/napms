@@ -53,6 +53,9 @@ pytestmark = pytest.mark.postgres
 
 ACTOR = "requirements-actor"
 SCOPE = "requirements-scope"
+APPLICATION = UUID(int=9190)
+SOURCE_COMPONENT = UUID(int=9191)
+DESTINATION_COMPONENT = UUID(int=9192)
 SOURCE = UUID(int=9101)
 DESTINATION = UUID(int=9102)
 DCS = UUID(int=9103)
@@ -113,7 +116,9 @@ def clean_greenfield(postgres_dsn, greenfield_config):
             TRUNCATE TABLE
                 napms_application_catalogue.deployment_resource_bindings,
                 napms_application_catalogue.dcs_revisions,
-                napms_application_catalogue.component_deployments
+                napms_application_catalogue.component_deployments,
+                napms_application_catalogue.components,
+                napms_application_catalogue.applications
             CASCADE
             """
         )
@@ -152,19 +157,53 @@ def seed_greenfield(postgres_dsn):
                 ),
             )
 
-        for deployment, provenance in (
-            (SOURCE, "deployment-source-provenance"),
-            (DESTINATION, "deployment-destination-provenance"),
+        connection.execute(
+            """
+            INSERT INTO napms_application_catalogue.applications (
+                application_id,
+                display_name,
+                provenance_reference
+            )
+            VALUES (%s, %s, %s)
+            """,
+            (APPLICATION, "Requirements fixture", "fixture:requirements:application"),
+        )
+        for component_id, display_name in (
+            (SOURCE_COMPONENT, "Source component"),
+            (DESTINATION_COMPONENT, "Destination component"),
+        ):
+            connection.execute(
+                """
+                INSERT INTO napms_application_catalogue.components (
+                    component_id,
+                    application_id,
+                    display_name,
+                    provenance_reference
+                )
+                VALUES (%s, %s, %s, %s)
+                """,
+                (
+                    component_id,
+                    APPLICATION,
+                    display_name,
+                    f"fixture:requirements:component:{component_id}",
+                ),
+            )
+
+        for deployment, component_id, provenance in (
+            (SOURCE, SOURCE_COMPONENT, "deployment-source-provenance"),
+            (DESTINATION, DESTINATION_COMPONENT, "deployment-destination-provenance"),
         ):
             connection.execute(
                 """
                 INSERT INTO napms_application_catalogue.component_deployments (
                     component_deployment_id,
+                    component_id,
                     provenance_reference
                 )
-                VALUES (%s, %s)
+                VALUES (%s, %s, %s)
                 """,
-                (deployment, provenance),
+                (deployment, component_id, provenance),
             )
 
         connection.execute(

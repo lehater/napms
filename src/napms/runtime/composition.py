@@ -1,15 +1,29 @@
+from datetime import datetime, timezone
 from typing import Callable
 
 import psycopg
 from fastapi import FastAPI
 
 from napms.access_policy.application.ports import ConnectivityDecisionPort
+from napms.application_catalogue.domain.model import CatalogueInvariantError
+from napms.composition.catalogue_curation_postgres import (
+    open_catalogue_curation_scope,
+)
 from napms.composition.greenfield_postgres import open_greenfield_scope
 from napms.composition.network_operator_view_postgres import (
     open_network_operator_view_scope,
 )
 from napms.composition.traffic_analysis_postgres import open_traffic_analysis_scope
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
+from napms.runtime.catalogue_curation_http import create_catalogue_curation_router
+from napms.runtime.catalogue_discovery_http import create_catalogue_discovery_router
+from napms.runtime.catalogue_error_http import catalogue_invariant_error_handler
+from napms.runtime.catalogue_resource_workspace_http import (
+    create_catalogue_resource_workspace_router,
+)
+from napms.runtime.catalogue_temporal_curation_http import (
+    create_catalogue_temporal_curation_router,
+)
 from napms.runtime.config import HttpRuntimeConfig
 from napms.runtime.http_api import HttpApiDependencies, create_http_api
 from napms.runtime.local_decision import LocalDevAllowedConnectivityDecisionAdapter
@@ -17,6 +31,10 @@ from napms.runtime.network_operator_view_http import (
     create_network_operator_view_router,
 )
 from napms.runtime.traffic_analysis_http import create_traffic_analysis_router
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 def build_http_api(
@@ -42,6 +60,9 @@ def build_http_api(
     def open_checker_scope():
         return open_traffic_analysis_scope(config.application)
 
+    def open_curation_scope():
+        return open_catalogue_curation_scope(config.application)
+
     def default_readiness() -> bool:
         try:
             with psycopg.connect(config.application.postgres.dsn) as connection:
@@ -60,6 +81,10 @@ def build_http_api(
             secure_cookie=False,
         )
     )
+    app.add_exception_handler(
+        CatalogueInvariantError,
+        catalogue_invariant_error_handler,
+    )
     app.include_router(
         create_network_operator_view_router(
             sessions=sessions,
@@ -70,6 +95,33 @@ def build_http_api(
         create_traffic_analysis_router(
             sessions=sessions,
             open_scope=open_checker_scope,
+        )
+    )
+    app.include_router(
+        create_catalogue_discovery_router(
+            sessions=sessions,
+            open_scope=open_curation_scope,
+        )
+    )
+    app.include_router(
+        create_catalogue_curation_router(
+            sessions=sessions,
+            open_scope=open_curation_scope,
+            clock=_utc_now,
+        )
+    )
+    app.include_router(
+        create_catalogue_resource_workspace_router(
+            sessions=sessions,
+            open_scope=open_curation_scope,
+            clock=_utc_now,
+        )
+    )
+    app.include_router(
+        create_catalogue_temporal_curation_router(
+            sessions=sessions,
+            open_scope=open_curation_scope,
+            clock=_utc_now,
         )
     )
     return app

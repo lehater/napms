@@ -13,6 +13,8 @@ from napms.application_catalogue.domain.model import (
 SOURCE = UUID(int=101)
 DESTINATION = UUID(int=102)
 DCS = UUID(int=103)
+SOURCE_COMPONENT = UUID(int=201)
+DESTINATION_COMPONENT = UUID(int=202)
 IDENTITY = DirectedInteractionIdentity(SOURCE, DESTINATION, DCS)
 
 
@@ -40,16 +42,27 @@ class FakeCatalogue:
         )
 
 
+def deployment(deployment_id, component_id, provenance, display_name=None):
+    return ComponentDeployment(
+        deployment_id=deployment_id,
+        component_id=component_id,
+        provenance_reference=provenance,
+        display_name=display_name,
+    )
+
+
 def test_describe_exact_identity_returns_optional_labels_and_projection_payload():
     catalogue = FakeCatalogue(
         deployments=(
-            ComponentDeployment(
+            deployment(
                 SOURCE,
+                SOURCE_COMPONENT,
                 "source-provenance",
                 "Checkout Web",
             ),
-            ComponentDeployment(
+            deployment(
                 DESTINATION,
+                DESTINATION_COMPONENT,
                 "destination-provenance",
                 "Orders API",
             ),
@@ -83,8 +96,8 @@ def test_describe_exact_identity_returns_optional_labels_and_projection_payload(
 def test_describe_preserves_stable_fallback_when_labels_are_missing():
     catalogue = FakeCatalogue(
         deployments=(
-            ComponentDeployment(SOURCE, "source-provenance"),
-            ComponentDeployment(DESTINATION, "destination-provenance"),
+            deployment(SOURCE, SOURCE_COMPONENT, "source-provenance"),
+            deployment(DESTINATION, DESTINATION_COMPONENT, "destination-provenance"),
         ),
         revisions=(
             DcsRevision(
@@ -110,8 +123,8 @@ def test_describe_preserves_stable_fallback_when_labels_are_missing():
 def test_dcs_presentation_requires_exact_subject_match():
     catalogue = FakeCatalogue(
         deployments=(
-            ComponentDeployment(SOURCE, "source", "Checkout Web"),
-            ComponentDeployment(DESTINATION, "destination", "Orders API"),
+            deployment(SOURCE, SOURCE_COMPONENT, "source", "Checkout Web"),
+            deployment(DESTINATION, DESTINATION_COMPONENT, "destination", "Orders API"),
         ),
         revisions=(
             DcsRevision(

@@ -60,6 +60,9 @@ pytestmark = pytest.mark.postgres
 ACTOR = "scoped-owner"
 SCOPE = "payments-prod"
 AP_SCOPE = "policy-scope"
+APPLICATION = UUID(int=9700)
+SOURCE_COMPONENT = UUID(int=9711)
+DESTINATION_COMPONENT = UUID(int=9712)
 SOURCE = UUID(int=9701)
 DESTINATION = UUID(int=9702)
 DCS = UUID(int=9703)
@@ -125,7 +128,9 @@ def clean(postgres_dsn, greenfield_config):
             TRUNCATE TABLE
                 napms_application_catalogue.deployment_resource_bindings,
                 napms_application_catalogue.dcs_revisions,
-                napms_application_catalogue.component_deployments
+                napms_application_catalogue.component_deployments,
+                napms_application_catalogue.components,
+                napms_application_catalogue.applications
             CASCADE
             """
         )
@@ -255,21 +260,57 @@ def seed_catalogues_and_authority(postgres_dsn):
                 ),
             )
 
-        for deployment, display_name in (
-            (SOURCE, "Checkout Frontend"),
-            (DESTINATION, "Orders API"),
+        connection.execute(
+            """
+            INSERT INTO napms_application_catalogue.applications (
+                application_id,
+                display_name,
+                provenance_reference
+            )
+            VALUES (%s, %s, %s)
+            """,
+            (APPLICATION, "Payments", "application-provenance"),
+        )
+
+        for component_id, display_name in (
+            (SOURCE_COMPONENT, "Checkout"),
+            (DESTINATION_COMPONENT, "Orders"),
+        ):
+            connection.execute(
+                """
+                INSERT INTO napms_application_catalogue.components (
+                    component_id,
+                    application_id,
+                    display_name,
+                    provenance_reference
+                )
+                VALUES (%s, %s, %s, %s)
+                """,
+                (
+                    component_id,
+                    APPLICATION,
+                    display_name,
+                    f"component-provenance:{component_id}",
+                ),
+            )
+
+        for deployment, component_id, display_name in (
+            (SOURCE, SOURCE_COMPONENT, "Checkout Frontend"),
+            (DESTINATION, DESTINATION_COMPONENT, "Orders API"),
         ):
             connection.execute(
                 """
                 INSERT INTO napms_application_catalogue.component_deployments (
                     component_deployment_id,
+                    component_id,
                     provenance_reference,
                     display_name
                 )
-                VALUES (%s, %s, %s)
+                VALUES (%s, %s, %s, %s)
                 """,
                 (
                     deployment,
+                    component_id,
                     f"deployment-provenance:{deployment}",
                     display_name,
                 ),

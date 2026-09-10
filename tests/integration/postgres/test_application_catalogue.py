@@ -1,7 +1,7 @@
 import os
 from datetime import datetime, timedelta, timezone
 from importlib.resources import files
-from uuid import UUID
+from uuid import UUID, uuid5
 
 import pytest
 
@@ -47,6 +47,8 @@ pytestmark = pytest.mark.postgres
 SOURCE = UUID(int=101)
 DESTINATION = UUID(int=102)
 DCS = UUID(int=103)
+TEST_APPLICATION = UUID("00000000-0000-0000-0000-000000009001")
+TEST_COMPONENT_NAMESPACE = UUID("00000000-0000-0000-0000-000000009002")
 AS_OF = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
 VALID_TO = AS_OF + timedelta(days=1)
 IDENTITY = RuleSemanticIdentity(SOURCE, DESTINATION, DCS)
@@ -81,10 +83,16 @@ def clean_acc(postgres_dsn):
             TRUNCATE TABLE
                 napms_application_catalogue.deployment_resource_bindings,
                 napms_application_catalogue.dcs_revisions,
-                napms_application_catalogue.component_deployments
+                napms_application_catalogue.component_deployments,
+                napms_application_catalogue.components,
+                napms_application_catalogue.applications
             CASCADE
             """
         )
+
+
+def _component_id_for(deployment_id):
+    return uuid5(TEST_COMPONENT_NAMESPACE, str(deployment_id))
 
 
 def seed_deployment(
@@ -93,16 +101,48 @@ def seed_deployment(
     provenance,
     display_name=None,
 ):
+    component_id = _component_id_for(deployment_id)
+    connection.execute(
+        """
+        INSERT INTO napms_application_catalogue.applications (
+            application_id,
+            display_name,
+            provenance_reference
+        )
+        VALUES (%s, %s, %s)
+        ON CONFLICT (application_id) DO NOTHING
+        """,
+        (TEST_APPLICATION, "Integration test application", "test:application"),
+    )
+    connection.execute(
+        """
+        INSERT INTO napms_application_catalogue.components (
+            component_id,
+            application_id,
+            display_name,
+            provenance_reference
+        )
+        VALUES (%s, %s, %s, %s)
+        ON CONFLICT (component_id) DO NOTHING
+        """,
+        (
+            component_id,
+            TEST_APPLICATION,
+            f"Component {deployment_id}",
+            f"test:component:{deployment_id}",
+        ),
+    )
     connection.execute(
         """
         INSERT INTO napms_application_catalogue.component_deployments (
             component_deployment_id,
+            component_id,
             provenance_reference,
             display_name
         )
-        VALUES (%s, %s, %s)
+        VALUES (%s, %s, %s, %s)
         """,
-        (deployment_id, provenance, display_name),
+        (deployment_id, component_id, provenance, display_name),
     )
 
 
@@ -180,6 +220,21 @@ def seed_base(connection, *, dcs_source=SOURCE):
 
 def repository(connection):
     return PostgresApplicationCatalogueRepository(connection)
+
+
+def test_postgres_reads_component_parent_and_lifecycle_for_deployment(postgres_dsn):
+    with psycopg.connect(postgres_dsn) as connection:
+        seed_deployment(connection, SOURCE, "source-deployment-provenance", "Frontend")
+        connection.commit()
+
+    with psycopg.connect(postgres_dsn) as connection:
+        deployment = repository(connection).get_component_deployments((SOURCE,))[0]
+
+    assert deployment.deployment_id == SOURCE
+    assert deployment.component_id == _component_id_for(SOURCE)
+    assert deployment.display_name == "Frontend"
+    assert deployment.lifecycle_state.value == "Active"
+    assert deployment.version == 1
 
 
 def test_postgres_acc_validates_exact_dcs_subject(postgres_dsn):
@@ -352,7 +407,6 @@ def test_database_rejects_invalid_binding_validity(postgres_dsn):
             )
 
 
-
 def test_postgres_acc_discovers_directed_interaction_identities(postgres_dsn):
     with psycopg.connect(postgres_dsn) as connection:
         seed_base(connection)
@@ -368,7 +422,6 @@ def test_postgres_acc_discovers_directed_interaction_identities(postgres_dsn):
     assert result.page == 1
     assert result.page_size == 50
     assert result.has_more is False
-
 
 
 def test_postgres_acc_searches_human_readable_interactions(postgres_dsn):
@@ -448,7 +501,6 @@ def test_database_rejects_blank_display_metadata(postgres_dsn):
                 "source-provenance",
                 "   ",
             )
-
 
 
 def test_scoped_connectivity_catalogue_adapter_batches_bindings_and_interactions(
