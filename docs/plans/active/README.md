@@ -13,38 +13,45 @@ Owner requirement:
 Ordered roadmap:
 - `docs/engineering/catalogue-curation-roadmap.md`.
 
-Current gate: **Stage 3 / ACC core hierarchy and write-side in progress**.
+Current gate: **Stage 3 core implemented / verification pending; Stage 4 additive persistence work started**.
 
 Implemented in the current branch:
 - Stage 0 P0 semantic decisions are accepted in Tactical DDD / ADR / architecture / command-contract owners;
 - Stage 1 catalogue authority actions and owner-specific consuming adapters are implemented with fail-closed tests;
 - Stage 2 Resource Catalogue Domain/Application/Ports covers Resource create/rename/retire, realization create/replace, scope-affiliation create/end, responsibility create/end, curation list/detail read contracts, optimistic concurrency, idempotency and explicit transition/end provenance;
-- Stage 3 ACC now has Application/Component domain identities plus Application rename/retire and Component create/rename/retire application commands with parent/lifecycle guards, optimistic concurrency, idempotency and explicit retirement provenance;
-- existing Component Deployment and DCS semantic identifiers remain unchanged while hierarchy migration is still closed.
+- Stage 3 ACC covers Application/Component/Component Deployment create or lifecycle curation, owner-owned Application/Component/Deployment read hierarchy, immutable typed DCS revision authoring and temporal Deployment Resource Binding create/end semantics;
+- DCS authoring semantics are ACC-owned value objects; the existing JSON projection codec is reached through an adapter rather than by introducing an ACC application dependency on Policy Export;
+- Component Deployment now has mandatory immutable `componentId`, lifecycle/version and retirement provenance in the domain model;
+- additive `application-catalogue/0003` creates Application/Component persistence and deterministically backfills every legacy Component Deployment without changing any existing deployment/DCS UUID;
+- local demo seed now creates an explicit Application -> Component -> Deployment hierarchy and grants catalogue curation actions in their fixed catalogue authority scopes.
 
 Verification state:
-- executable tests have been added for the new core contracts;
-- this session cannot clone the repository because external DNS access from the local execution container is unavailable;
-- PR #51 is still draft, and the repository `core gate` workflow triggers on `ready_for_review`, so no current-head CI result exists yet;
-- implementation progress is therefore not treated as a passed repository gate.
+- executable tests have been added for Resource curation, ACC structural lifecycle, Component Deployment lifecycle, DCS authoring and Deployment Resource Binding semantics;
+- this session cannot clone the repository because the execution container cannot resolve `github.com`;
+- `make test` excludes PostgreSQL-marked integration suites, while PR #51 remains draft and the repository core workflow triggers on `ready_for_review`;
+- no current-head repository gate result therefore exists, and implemented stages are not being represented as verified.
+
+Stage 4 blockers / open work:
+- implement PostgreSQL command repositories, idempotency receipts and optimistic version checks for RC/ACC;
+- add persistence columns/migrations for Resource lifecycle/version/end provenance and Deployment Resource Binding version/end provenance;
+- update remaining cross-context PostgreSQL fixtures that still insert Component Deployments without explicit parents; these are `postgres-test` blockers, not Stage 3 core blockers;
+- prove `application-catalogue/0003` fresh-start and upgrade/backfill behavior in PostgreSQL integration tests.
 
 Still closed:
-- Component Deployment parent/lifecycle persistence migration;
-- ACC Deployment Resource Binding and DCS write commands that depend on the completed deployment lifecycle contract;
-- PostgreSQL command repositories/idempotency storage;
 - HTTP mutation routes;
-- Web `Resources` / `Applications` mutation workspaces.
+- Web `Resources` / `Applications` mutation workspaces;
+- end-to-end fresh-data acceptance through Connectivity.
 
 Next execution target:
-- finish ACC owner-owned curation read contracts for Application/Component hierarchy;
-- prepare the atomic Component Deployment hierarchy/schema migration so `componentId`, lifecycle and version are introduced without nullable transitional business semantics;
-- then complete binding/DCS commands against that stable participant model before opening general HTTP/UI work.
+- complete additive Stage 4 schema for write-owned lifecycle/idempotency fields;
+- implement the smallest PostgreSQL curation repositories for Application/Component/Deployment/DCS/Binding and Resource core commands;
+- update PostgreSQL fixtures and migration tests before opening HTTP Stage 5.
 
 Primary restart points:
-- `docs/domain/application-communication-catalogue/tactical-model.md`;
-- `docs/domain/resource-catalogue/tactical-model.md`;
-- `docs/engineering/catalogue-curation-command-contract.md`;
-- `src/napms/application_catalogue/application/structure_curation.py`;
+- `src/napms/application_catalogue/application/deployment_curation.py`;
+- `src/napms/application_catalogue/application/dcs_curation.py`;
+- `src/napms/application_catalogue/application/binding_curation.py`;
+- `src/napms/application_catalogue/adapters/postgres/migrations/0003_catalogue_hierarchy.sql`;
+- `src/napms/application_catalogue/adapters/postgres/repository.py`;
 - `src/napms/resource_catalogue/application/curation.py`;
-- `src/napms/resource_catalogue/application/realization_curation.py`;
 - `docs/plans/active/PLAN-I27-catalogue-curation.md`.
