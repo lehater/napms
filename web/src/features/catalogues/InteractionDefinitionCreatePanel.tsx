@@ -107,6 +107,7 @@ function ComponentPicker({
             <button
               key={item.componentId}
               type="button"
+              aria-label={item.displayName}
               className="block w-full border-b border-[#F1F5F9] px-3 py-2 text-left text-sm text-[#172033] last:border-0 hover:bg-[#F8FAFC]"
               onClick={() => onSelect({ id: item.componentId, name: item.displayName })}
             >
