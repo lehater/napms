@@ -2,31 +2,31 @@
 
 Current: `PLAN-039-i25-product-completion-acceptance.md`
 
-Current task: WP2B network-operator realization HTTP verification.
+Current task: WP3 explainability and network-operator Web journey.
 
-Goal: prove the owner-preserving operator projection through PostgreSQL composition and authenticated HTTP without inventing configured or executed state.
+Goal: expose the proven owner-preserving realization projection through one bounded Web workspace without inventing configured or executed state.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-039-i25-product-completion-acceptance.md`
-- `src/napms/network_operator_view/application.py`
+- `web/src/features/realization/NetworkOperatorRealizationPage.tsx`
 - `src/napms/runtime/network_operator_view_http.py`
 
-Expand only as needed into PostgreSQL composition, Authority Management adapter, runtime composition and tests.
+Expand only as needed into App routing/navigation, existing Rule detail navigation and Web/runtime gate diagnostics.
 
 ## Current result
 
-Framework-free operator view, dedicated Authority action, PostgreSQL composition and separate HTTP router are implemented. Desired/placement/rendering may be `Available`; missing configured-evidence/managed-scope inputs and absent NEO result stay `NotAvailable`. No new authoritative persistence was introduced.
+WP2B is done: framework-free operator view, dedicated Authority action, PostgreSQL composition and authenticated HTTP surface passed core, PostgreSQL, harness, knowledge and Docker gates. WP3 now adds one read-only `Realization` workspace that renders backend availability unchanged and links contributing Rule references back to authoritative Rule detail.
 
 ## Blockers
 
-No external blocker. Runtime still has no selected configured-evidence/managed-scope-contract source and no durable HTTP-wired NEO history, so those stages cannot truthfully become available yet.
+No external blocker. Runtime still has no selected configured-evidence/managed-scope-contract source and no durable HTTP-wired NEO history, so the Web must show those stages as unavailable until actual inputs/results exist.
 
 ## Gate
 
-Do not infer configured state, reconciliation outcome or execution success from desired policy/rendering alone. HTTP is transport mapping only. Local deterministic technical fixtures remain explicit bootstrap/demo data.
+Web is presentation only: no reconciliation calculation, execution inference, generic IAM roles or mutation controls. Preserve `Available | NotAvailable | Unknown` exactly from HTTP.
 
 ## Next
 
-Run the full gate cycle on the HTTP-wired WP2B head. If green, mark WP2B done and start the smallest Web operator workspace over the proven DTO.
+Run the repository gates on the Web-wired head. If green, inspect the remaining Requirement -> Decision -> Rule explainability links and add only the smallest missing navigation.
