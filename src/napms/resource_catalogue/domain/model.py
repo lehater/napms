@@ -95,6 +95,7 @@ class ResourceRealizationVersion:
     valid_from: datetime
     valid_to: datetime | None
     provenance_reference: str
+    end_provenance_reference: str | None = None
     version: int = 1
 
     def __post_init__(self) -> None:
@@ -106,6 +107,16 @@ class ResourceRealizationVersion:
             if not value:
                 raise ResourceCatalogueInvariantError(
                     f"{field_name} must be non-empty"
+                )
+
+        if self.end_provenance_reference is not None:
+            _require_non_empty(
+                self.end_provenance_reference,
+                field_name="end_provenance_reference",
+            )
+            if self.valid_to is None:
+                raise ResourceCatalogueInvariantError(
+                    "end provenance requires valid_to"
                 )
 
         if not self.endpoint_realizations:
@@ -133,13 +144,27 @@ class ResourceRealizationVersion:
             self.valid_to is None or as_of < self.valid_to
         )
 
-    def ended(self, *, valid_to: datetime) -> "ResourceRealizationVersion":
+    def ended(
+        self,
+        *,
+        valid_to: datetime,
+        end_provenance_reference: str,
+    ) -> "ResourceRealizationVersion":
         if self.valid_to is not None:
             raise ResourceCatalogueInvariantError("realization is already ended")
         _require_aware(valid_to, field_name="valid_to")
         if valid_to <= self.valid_from:
             raise ResourceCatalogueInvariantError("valid_to must be after valid_from")
-        return replace(self, valid_to=valid_to, version=self.version + 1)
+        end_provenance_reference = _require_non_empty(
+            end_provenance_reference,
+            field_name="end_provenance_reference",
+        )
+        return replace(
+            self,
+            valid_to=valid_to,
+            end_provenance_reference=end_provenance_reference,
+            version=self.version + 1,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -150,6 +175,7 @@ class ResourceScopeAffiliation:
     valid_from: datetime
     valid_to: datetime | None
     provenance_reference: str
+    end_provenance_reference: str | None = None
     version: int = 1
 
     def __post_init__(self) -> None:
@@ -162,6 +188,16 @@ class ResourceScopeAffiliation:
             if not value:
                 raise ResourceCatalogueInvariantError(
                     f"{field_name} must be non-empty"
+                )
+
+        if self.end_provenance_reference is not None:
+            _require_non_empty(
+                self.end_provenance_reference,
+                field_name="end_provenance_reference",
+            )
+            if self.valid_to is None:
+                raise ResourceCatalogueInvariantError(
+                    "end provenance requires valid_to"
                 )
 
         _require_aware(self.valid_from, field_name="valid_from")
@@ -180,10 +216,24 @@ class ResourceScopeAffiliation:
             self.valid_to is None or as_of < self.valid_to
         )
 
-    def ended(self, *, valid_to: datetime) -> "ResourceScopeAffiliation":
+    def ended(
+        self,
+        *,
+        valid_to: datetime,
+        end_provenance_reference: str,
+    ) -> "ResourceScopeAffiliation":
         if self.valid_to is not None:
             raise ResourceCatalogueInvariantError("scope affiliation is already ended")
         _require_aware(valid_to, field_name="valid_to")
         if valid_to <= self.valid_from:
             raise ResourceCatalogueInvariantError("valid_to must be after valid_from")
-        return replace(self, valid_to=valid_to, version=self.version + 1)
+        end_provenance_reference = _require_non_empty(
+            end_provenance_reference,
+            field_name="end_provenance_reference",
+        )
+        return replace(
+            self,
+            valid_to=valid_to,
+            end_provenance_reference=end_provenance_reference,
+            version=self.version + 1,
+        )
