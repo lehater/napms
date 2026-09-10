@@ -4,6 +4,9 @@ from typing import Iterator
 
 import psycopg
 
+from napms.access_policy.adapters.postgres.application_catalogue_dependency_query import (
+    PostgresAccessRuleDependencyQuery,
+)
 from napms.application_catalogue.adapters.curation_support import (
     LocalApplicationCatalogueIdentityFactory,
     LocalApplicationCatalogueProvenanceFactory,
@@ -33,6 +36,7 @@ from napms.application_catalogue.application.target_curation import (
     CreateInteractionDefinition,
     SelectDeploymentInteraction,
     UpdateInteractionDefinitionEndpoints,
+    UpdateInteractionDefinitionTraffic,
 )
 from napms.application_catalogue.application.target_metadata_curation import (
     UpdateApplicationDefinitionMetadata,
@@ -49,10 +53,21 @@ from napms.authority_management.adapters.postgres import (
     PostgresAuthorityAssignmentRepository,
 )
 from napms.authority_management.application.check_authority import CheckAuthority
+from napms.composition.application_catalogue_target_dependencies import (
+    AccessRuleDependencyAdapter,
+    ConnectivityDecisionDependencyAdapter,
+    ConnectivityRequirementDependencyAdapter,
+)
 from napms.composition.application_catalogue_target_read_postgres import (
     PostgresApplicationCatalogueTargetReadModel,
 )
 from napms.composition.config import ApplicationConfig
+from napms.connectivity_decision.adapters.postgres.application_catalogue_dependency_query import (
+    PostgresConnectivityDecisionDependencyQuery,
+)
+from napms.connectivity_requirements.adapters.postgres.application_catalogue_dependency_query import (
+    PostgresConnectivityRequirementDependencyQuery,
+)
 from napms.resource_catalogue.adapters.postgres.transactional_curation_repository import (
     TransactionalPostgresResourceCatalogueCurationRepository,
 )
@@ -67,6 +82,7 @@ class TargetApplicationCatalogueServices:
     update_component_metadata: UpdateComponentMetadata
     create_interaction_definition: CreateInteractionDefinition
     update_interaction_endpoints: UpdateInteractionDefinitionEndpoints
+    update_interaction_traffic: UpdateInteractionDefinitionTraffic
     create_application_deployment: CreateApplicationDeployment
     update_application_deployment_context: UpdateApplicationDeploymentContext
     select_deployment_interaction: SelectDeploymentInteraction
@@ -109,6 +125,16 @@ def open_catalogue_target_scope(
         binding_identities = LocalDeploymentBindingIdentityFactory()
         binding_provenance = LocalDeploymentBindingProvenanceFactory()
         traffic = JsonDcsAuthoringProjectionEncoder()
+
+        requirements = ConnectivityRequirementDependencyAdapter(
+            PostgresConnectivityRequirementDependencyQuery(application_connection)
+        )
+        decisions = ConnectivityDecisionDependencyAdapter(
+            PostgresConnectivityDecisionDependencyQuery(application_connection)
+        )
+        access_rules = AccessRuleDependencyAdapter(
+            PostgresAccessRuleDependencyQuery(application_connection)
+        )
 
         create_legacy_binding = CreateDeploymentResourceBinding(
             authority=application_authority,
@@ -154,6 +180,16 @@ def open_catalogue_target_scope(
             update_interaction_endpoints=UpdateInteractionDefinitionEndpoints(
                 authority=application_authority,
                 catalogue=application_repository,
+            ),
+            update_interaction_traffic=UpdateInteractionDefinitionTraffic(
+                authority=application_authority,
+                catalogue=application_repository,
+                identities=identities,
+                provenance=provenance,
+                encoder=traffic,
+                requirements=requirements,
+                decisions=decisions,
+                access_rules=access_rules,
             ),
             create_application_deployment=CreateApplicationDeployment(
                 authority=application_authority,
