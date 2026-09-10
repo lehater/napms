@@ -69,7 +69,7 @@ def test_j03_requirement_decision_and_rule_remain_independent_authoritative_stat
         page.get_by_label("DCS / Access").select_option(index=1)
         expect(page.get_by_label("Final outcome")).to_have_value("Allowed")
         page.get_by_label("Reason code").fill("j03-approved")
-        page.get_by_label("Reason").fill(
+        page.get_by_role("textbox", name="Reason", exact=True).fill(
             "Connectivity Requirement reviewed for the J03 acceptance journey."
         )
         page.get_by_role("button", name="Record Decision", exact=True).click()
