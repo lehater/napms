@@ -5,9 +5,12 @@ x-backend: &backend
   build:
     context: .
     dockerfile: Dockerfile
+  init: true
+  security_opt:
+    - no-new-privileges:true
   environment: &backend-environment
     NAPMS_ENVIRONMENT: local-dev
-    NAPMS_DATABASE_DSN: postgresql://napms@postgres:5432/napms
+    NAPMS_DATABASE_DSN: postgresql://napms:${NAPMS_POSTGRES_PASSWORD:?set NAPMS_POSTGRES_PASSWORD}@postgres:5432/napms
     NAPMS_LOCAL_AUTH_LOGIN: ${NAPMS_LOCAL_AUTH_LOGIN:-local-admin}
     NAPMS_LOCAL_AUTH_ACTOR_ID: ${NAPMS_LOCAL_AUTH_ACTOR_ID:-local-admin}
     NAPMS_LOCAL_AUTH_PASSWORD_HASH: ${NAPMS_LOCAL_AUTH_PASSWORD_HASH:-invalid-local-hash}
@@ -20,7 +23,8 @@ services:
     environment:
       POSTGRES_USER: napms
       POSTGRES_DB: napms
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_PASSWORD: ${NAPMS_POSTGRES_PASSWORD:?set NAPMS_POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
     volumes:
       - napms-postgres:/var/lib/postgresql/data
     healthcheck:
@@ -58,6 +62,9 @@ services:
     build:
       context: web
       dockerfile: Dockerfile
+    init: true
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       api:
         condition: service_healthy

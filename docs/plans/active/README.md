@@ -2,6 +2,6 @@
 
 Current: none.
 
-I23 Optional Integration Extension Skeleton is complete and absorbed into canonical requirements, architecture, engineering state and roadmap.
+I24 Local Deployment and Operational Hardening is complete and absorbed into canonical architecture, engineering state and roadmap.
 
-Next roadmap increment: I24 — Local Deployment and Operational Hardening. It is not yet selected for execution.
+Next roadmap increment: I25 — Product Completion, Operator UX and Acceptance. It is not yet selected for execution.

@@ -1,6 +1,6 @@
 # Post-Wave-1 product completion roadmap
 
-Status: `accepted ordered sequencing baseline; I23 complete, I24 next`.
+Status: `accepted ordered sequencing baseline; I24 complete, I25 next`.
 
 Date: 2026-09-10.
 
@@ -28,7 +28,7 @@ The roadmap may be refined when new accepted domain evidence changes boundaries 
 ## Baseline
 
 Completed:
-- I1-I23;
+- I1-I24;
 - Wave 1 proposal -> Connectivity Decision seam -> Access Rule -> effective desired policy -> coherent normalized policy;
 - PostgreSQL persistence;
 - Web/HTTP runtime;
@@ -38,22 +38,26 @@ Completed:
 - Technical Access Evidence Tactical DDD, durable source-qualified persistence and strict local/import proof;
 - Access Policy Realization through technical-to-domain resolution, enforcement placement consumption, desired-vs-configured reconciliation and first target-specific configuration rendering;
 - Network Environment Operations stub-first execution semantics through controlled pre-check, conditional apply and post-check verification;
-- optional source-neutral external identity/source extension boundaries without changing the local-first runtime.
+- optional source-neutral external identity/source extension boundaries without changing the local-first runtime;
+- local deployment hardening with PostgreSQL password/SCRAM authentication, repeatable non-mutating startup, logical backup/clean restore, forward migration/recovery procedure, local status diagnostics and low-risk container hardening.
 
 Current product direction:
 - local deployment and local data remain the supported operating model;
 - real provider/device transport and lab validation remain optional future integrations;
 - external identity/source integrations are optional extension work, not a prerequisite for product completion;
-- deterministic stubs are sufficient where an extension seam needs executable proof.
+- deterministic stubs are sufficient where an extension seam needs executable proof;
+- product-completion work now focuses on operator UX, explainability and end-to-end acceptance of the supported local chain.
 
 Still deferred unless explicitly selected by a future requirement:
 - real provider/device transport and lab validation;
 - crash-durable execution audit and production rollback;
-- external identity providers, directories, CMDB/catalogue sources and Legacy/MSSQL bridges.
+- external identity providers, directories, CMDB/catalogue sources and Legacy/MSSQL bridges;
+- enterprise HA, public TLS automation, external secret stores and multi-node topology;
+- performance/SLA claims without an accepted workload target.
 
 ## Ordered increments
 
-### Completed increments — I13 through I23
+### Completed increments — I13 through I24
 
 Status: `done / absorbed into canonical truth`.
 
@@ -69,91 +73,35 @@ Status: `done / absorbed into canonical truth`.
 - I21 — Configuration Rendering: accepted APR-owned rendering semantics, first Cisco Secure Firewall ASA CLI extended ACL renderer, deterministic fail-closed output, statement provenance, independent semantic projection/equivalence proof and PostgreSQL owner-preserving derive -> render integration without provider/device mutation.
 - I22 — Network Environment Operations: separate NEO semantic module, NEO-owned `OperationTarget`, mutation authority port, operation-id idempotency, optimistic target-revision concurrency, explicit apply/final outcomes, post-check verification, deterministic target stub and end-to-end desired -> rendered -> stub-applied -> verified composition proof. No real Cisco transport is claimed.
 - I23 — Optional Integration Extension Skeleton: local login and local Authority/ACC/Resource state remain primary; a dormant provider-qualified external identity -> actor resolution seam and context-owned future source-adapter boundaries are defined; deterministic tests prove fail-closed mapping without OIDC, IdP, CMDB, MSSQL or external synchronization dependencies.
+- I24 — Local Deployment and Operational Hardening: supported Compose no longer uses PostgreSQL network trust; fresh volumes use SCRAM host auth; ephemeral DB credentials are rotated safely across preserved volumes; startup is non-mutating/repeatable; logical backup/validated clean restore and forward-upgrade recovery are supported; migration replay is proven no-op; local status diagnostics and reversible container hardening are present; enterprise topology/performance claims remain explicitly deferred without accepted requirements.
 
 Detailed completed execution is not roadmap state. Durable outcomes live in current requirements/domain/architecture/engineering artifacts; Git history preserves the execution record.
 
-### I17 — Technical Access Evidence Core
-
-Status: `done / absorbed into canonical truth`.
-
-Exit achieved:
-NAPMS can persist/query technical evidence without treating evidence as authorization.
-
-### I18 — Technical-to-Domain Access Resolution
-
-Status: `done / absorbed into canonical truth`.
-
-Exit achieved:
-technical evidence can be explained in domain interaction terms without consumer-specific meaning.
-
-### I19 — Network Enforcement Placement
-
-Status: `done / absorbed into canonical truth`.
-
-Exit achieved:
-NAPMS can derive/explain enforcement placement for domain-attributable traffic without embedding vendor syntax or realization semantics.
-
-### I20 — Desired-vs-Configured Reconciliation and Enforcement Policy Derivation
-
-Status: `done / absorbed into canonical truth`.
-
-Exit achieved:
-NAPMS can truthfully answer whether complete configured effective-Permit evidence realizes desired policy for one proven managed enforcement scope and what exact semantic delta remains.
-
-### I21 — Configuration Rendering
-
-Status: `done / absorbed into canonical truth`.
-
-Exit achieved:
-NAPMS can produce a deterministic, provenance-preserving Cisco ASA representation for the supported desired enforcement subset and prove that the representation is semantically exact.
-
-### I22 — Network Environment Operations
-
-Status: `done / absorbed into canonical truth`.
-
-Exit achieved:
-NAPMS has an executable, fail-closed network-operation semantic loop through a deterministic stub, while explicitly deferring real Cisco transport validation until a lab/provider contract exists.
-
-### I23 — Optional Integration Extension Skeleton
+### I24 — Local Deployment and Operational Hardening
 
 Status: `done / absorbed into canonical truth`.
 
 Accepted outcome:
-- local username/password authentication remains the primary runtime path;
-- local Authority/ACC/Resource state remains the supported current source of truth;
-- `VerifiedExternalIdentity` provides a source-neutral provider-qualified optional identity value;
-- `ActorIdentityResolver` maps optional external subjects to NAPMS actors with explicit `Mapped | Unmapped | Ambiguous | Unknown` outcomes;
-- only `Mapped` exposes an actor; all other outcomes fail closed;
-- authentication identity remains separate from Authority Management business authorization;
-- future external Authority/ACC/Resource adapters terminate at context-owned import/projection boundaries;
-- no OIDC/OAuth2, corporate IdP, directory, CMDB, Legacy/MSSQL, source synchronization engine or HTTP login migration is introduced;
-- deterministic in-process tests prove only the dormant seam, not provider compatibility.
+- PostgreSQL network `trust` removed from the supported local Compose path;
+- fresh local volumes initialize host authentication with SCRAM-SHA-256;
+- application/migration/seed database access requires an explicit password;
+- supported startup generates an ephemeral DB credential and rotates the local role before dependent services start, including preserved-volume restart;
+- correct-password acceptance and wrong-password rejection are executable checks;
+- supported `make dev-up` uses a non-mutating readiness/login/session/read probe; the stateful mutation journey remains separate CI evidence;
+- PostgreSQL custom-format logical backup is validated before publication and before destructive clean restore;
+- clean-volume restore is explicit, destructive and followed by normal migration/startup verification;
+- forward upgrade requires a pre-upgrade backup; migration checksum mismatch fails closed; arbitrary downgrade is not promised;
+- repeated migration execution on current restored state is proven to leave the migration journal and durable Access Rule state unchanged;
+- `make dev-status` checks Compose state, public live/ready and PostgreSQL queryability;
+- backend/Web application containers use low-risk init/reaping and `no-new-privileges`, with backend execution remaining non-root;
+- dedicated metrics, enterprise HA/TLS/secret stores and capacity/SLA claims remain deferred because the selected local target does not require or justify them.
 
 Exit achieved:
-NAPMS remains fully usable in local mode while future integrations have bounded extension points that do not pollute Domain or alter semantic ownership. External integration is not a mandatory predecessor for later roadmap work.
-
-### I24 — Local Deployment and Operational Hardening
-
-Status: `next; not yet selected for execution`.
-
-Goal:
-make the supported local deployment more robust and supportable without assuming an enterprise production topology.
-
-Expected scope, selected only where useful for the local target environment:
-- local TLS/secure ingress options where required;
-- secret/configuration handling;
-- PostgreSQL authentication and migration/upgrade procedure;
-- backup/restore;
-- metrics/monitoring/logging appropriate to the local deployment;
-- dependency/container hardening;
-- recovery procedure;
-- accepted workload envelope and performance validation.
-
-External HA, enterprise secret stores, corporate identity, multi-node capacity topology and similar infrastructure remain deferred until a concrete target environment requires them.
+NAPMS has an executable and verified local deployment/recovery/upgrade operating contract without inventing enterprise infrastructure or changing product/domain semantics.
 
 ### I25 — Product Completion, Operator UX and Acceptance
 
-Status: `planned final integration increment`.
+Status: `next; not yet selected for execution`.
 
 Goal:
 close the remaining product-operability surface and prove the complete local NAPMS chain.

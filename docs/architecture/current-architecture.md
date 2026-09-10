@@ -1,6 +1,6 @@
 # Current target architecture
 
-Status: `accepted current target through I23 optional integration skeleton; I24 local deployment hardening is next`.
+Status: `accepted current target through I24 local deployment hardening; I25 product completion and acceptance is next`.
 
 Date: 2026-09-10.
 
@@ -17,7 +17,7 @@ Priority order:
 4. explicit semantic ownership and action-scoped authority;
 5. simplest reversible topology consistent with current evidence.
 
-No accepted workload/SLA currently justifies service-per-context distribution.
+No accepted workload/SLA currently justifies service-per-context distribution or a multi-node topology.
 
 ## Structural style
 
@@ -59,7 +59,7 @@ Current first-class semantic modules include:
 
 Current non-peer application/read compositions include Requirement-to-Policy Alignment, policy export/snapshot normalization and Scoped Connectivity Inventory.
 
-I20 implements APR managed-scope desired/configured reconciliation. I21 adds target-specific rendering inside APR. I22 adds a separate downstream Network Environment Operations boundary for operation identity, authority admission, concurrency, mutation outcomes and verification. I23 adds only a dormant source-neutral external identity/source extension seam while preserving local-first runtime behavior. Runtime/deployment decomposition remains evidence-driven.
+I20 implements APR managed-scope desired/configured reconciliation. I21 adds target-specific rendering inside APR. I22 adds a separate downstream Network Environment Operations boundary for operation identity, authority admission, concurrency, mutation outcomes and verification. I23 adds only a dormant source-neutral external identity/source extension seam while preserving local-first runtime behavior. I24 hardens the selected local deployment/operations boundary without changing semantic ownership or introducing enterprise infrastructure.
 
 ## Current runtime boundary
 
@@ -67,7 +67,7 @@ Implemented local topology:
 
 ```text
 browser
-  -> nginx / React Web UI
+  -> 127.0.0.1 published nginx / React Web UI
   -> FastAPI HTTP outer adapter
   -> framework-free application/domain modules
   -> module-owned PostgreSQL repositories
@@ -75,7 +75,19 @@ browser
 
 Local username/password authentication with server-side sessions is the primary supported authentication path. Authority/ACC/Resource data remain locally owned and populated for the current product. No external IdP, directory, CMDB, catalogue or MSSQL dependency is required for normal operation.
 
-The normal local topology exposes one public nginx endpoint. It is the current supported deployment shape, not a claim of enterprise HA/SLA topology.
+Only nginx/Web is host-published by the supported Compose topology. API and PostgreSQL remain internal to the Compose network.
+
+PostgreSQL host access on that network is password-authenticated; fresh local volumes initialize host authentication with SCRAM-SHA-256. The supported startup path prepares an ephemeral database credential, rotates the local role before dependent services start, and verifies that incorrect credentials are rejected. Credential preparation uses the container-local PostgreSQL socket and is an outer operational concern, not an application/domain responsibility.
+
+The supported local startup probe is intentionally non-mutating. A separate fresh-volume CI journey exercises state-changing product behavior. This separation prevents operational readiness checks from manufacturing domain state.
+
+Local backup/recovery is PostgreSQL logical recovery: validated custom-format backup, explicit destructive clean-volume restore, then normal migration/startup. It is not physical replication, PITR or HA. Failed forward upgrades recover from a pre-upgrade backup and matching application revision; arbitrary reverse migrations are not an architectural promise.
+
+Runtime diagnostics use boundary-owned structured logs, `/health/live`, PostgreSQL-backed `/health/ready`, Compose state and an explicit PostgreSQL query probe. A separate metrics platform is not part of the selected local architecture because no accepted operator/use-load requirement currently demands one.
+
+Backend application containers remain non-root and NAPMS backend/Web Compose services use init/reaping plus `no-new-privileges`. PostgreSQL keeps the official image entrypoint/privilege model rather than a custom security rewrite without evidence.
+
+This is the current supported local deployment shape, not a claim of enterprise HA/SLA topology. Performance/capacity claims require an accepted workload target before further topology or instrumentation is justified.
 
 ## Authority and trust boundaries
 
@@ -84,6 +96,8 @@ Authenticated actor identity originates from the server/session boundary, not re
 A dormant optional external-authentication seam may provide a verified provider-qualified external subject to an `ActorIdentityResolver`, which resolves only to `Mapped | Unmapped | Ambiguous | Unknown`; only `Mapped` exposes a NAPMS actor. This seam is not wired as the default login path and introduces no OIDC/OAuth2/provider dependency.
 
 Authentication identity does not grant business authority. Authority Management remains the owner of application permission for both local actors and any future externally mapped actor.
+
+Local PostgreSQL credentials are operational transport credentials only. They do not represent NAPMS business actors or Authority facts.
 
 ## Technical Access Evidence
 
@@ -152,6 +166,8 @@ Feature contract: `docs/architecture/network-environment-operations-boundary.md`
 
 A composition consumes explicit owner/application ports, owns orchestration only, does not create copied business truth, and represents missing/ambiguous contributors explicitly. APR EnforcementTarget -> NEO OperationTarget mapping follows this rule.
 
+Operational tooling may inspect/start/backup/restore the selected local runtime but does not acquire semantic ownership of module data. Database backup/restore preserves storage state as a whole; it is not a cross-context business API.
+
 ## Optional external extensions — I23
 
 External identity and source integrations are optional future extensions, not current target dependencies.
@@ -175,11 +191,14 @@ Architecture must preserve:
 - no false Verified outcome from transport acceptance alone;
 - operation idempotency and optimistic concurrency for mutation;
 - authentication identity separate from business authority;
-- explicit degraded/error outcomes instead of convenient permission, absence or success.
+- explicit degraded/error outcomes instead of convenient permission, absence or success;
+- no PostgreSQL network trust in the supported local Compose path;
+- operational startup/status probes do not mutate business state;
+- destructive local recovery requires explicit operator intent and a validated backup artifact.
 
 ## Revisit triggers
 
-Revisit topology or add infrastructure only when accepted evidence requires it, such as a concrete external identity/source requirement, a real Cisco lab/transport contract, measured performance needs, or independent scale/security/availability constraints.
+Revisit topology or add infrastructure only when accepted evidence requires it, such as a concrete external identity/source requirement, a real Cisco lab/transport contract, measured workload/performance needs, independent scale/security/availability constraints, or a target environment requiring public TLS/HA/external secret management.
 
 ## Canonical references
 
