@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Search } from "lucide-react"
 
 import { ApiError } from "@/api"
 import { Button } from "@/components/ui/Button"
+import { CataloguePager } from "@/features/catalogues/CataloguePager"
 import {
+  listAvailableInteractions,
   listDeploymentConnectivity,
   readApplicationDeployment,
   type ApplicationDeploymentDto,
   type DeploymentConnectivityDto,
+  type DeploymentInteractionSide,
 } from "@/features/catalogues/targetCatalogueApi"
 import { resourceCount, trafficSummary } from "@/features/catalogues/targetPresentation"
+
+const inputClass =
+  "min-h-10 min-w-0 rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
 
 function errorFrom(caught: unknown, fallback: string) {
   return caught instanceof ApiError
@@ -20,42 +26,94 @@ function errorFrom(caught: unknown, fallback: string) {
 export function ApplicationDeploymentPage({
   deploymentId,
   onBack,
+  onOpenResources,
 }: {
   deploymentId: string
   onBack: () => void
+  onOpenResources: (
+    deploymentInteractionId: string,
+    side: DeploymentInteractionSide,
+  ) => void
 }) {
   const [deployment, setDeployment] = useState<ApplicationDeploymentDto | null>(null)
   const [applicationName, setApplicationName] = useState<string | null>(null)
-  const [connectivity, setConnectivity] = useState<DeploymentConnectivityDto[]>([])
   const [selectedTotal, setSelectedTotal] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<ApiError | null>(null)
+  const [definedTotal, setDefinedTotal] = useState(0)
+  const [detailLoading, setDetailLoading] = useState(true)
+  const [detailError, setDetailError] = useState<ApiError | null>(null)
+
+  const [connectivity, setConnectivity] = useState<DeploymentConnectivityDto[]>([])
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(50)
+  const [filteredTotal, setFilteredTotal] = useState(0)
+  const [connectivityLoading, setConnectivityLoading] = useState(true)
+  const [connectivityError, setConnectivityError] = useState<ApiError | null>(null)
+  const [draftSearch, setDraftSearch] = useState("")
+  const [draftProtocol, setDraftProtocol] = useState("")
+  const [search, setSearch] = useState("")
+  const [protocol, setProtocol] = useState("")
 
   useEffect(() => {
     let active = true
-    setLoading(true)
-    setError(null)
+    setDetailLoading(true)
+    setDetailError(null)
     void Promise.all([
       readApplicationDeployment(deploymentId),
-      listDeploymentConnectivity({ applicationDeploymentId: deploymentId, page: 1 }),
+      listDeploymentConnectivity({
+        applicationDeploymentId: deploymentId,
+        page: 1,
+        pageSize: 1,
+      }),
+      listAvailableInteractions({
+        applicationDeploymentId: deploymentId,
+        page: 1,
+        pageSize: 1,
+      }),
     ])
-      .then(([detail, rows]) => {
+      .then(([detail, selected, available]) => {
         if (!active) return
         setDeployment(detail.deployment)
         setApplicationName(detail.applicationName)
-        setConnectivity(rows.items)
-        setSelectedTotal(rows.total)
+        setSelectedTotal(selected.total)
+        setDefinedTotal(selected.total + available.total)
       })
       .catch((caught) => {
-        if (active) setError(errorFrom(caught, "Application Deployment could not be loaded."))
+        if (active) setDetailError(errorFrom(caught, "Application Deployment could not be loaded."))
       })
       .finally(() => {
-        if (active) setLoading(false)
+        if (active) setDetailLoading(false)
       })
     return () => {
       active = false
     }
   }, [deploymentId])
+
+  useEffect(() => {
+    let active = true
+    setConnectivityLoading(true)
+    setConnectivityError(null)
+    void listDeploymentConnectivity({
+      applicationDeploymentId: deploymentId,
+      page,
+      search,
+      protocol,
+    })
+      .then((result) => {
+        if (!active) return
+        setConnectivity(result.items)
+        setFilteredTotal(result.total)
+        setPageSize(result.pageSize)
+      })
+      .catch((caught) => {
+        if (active) setConnectivityError(errorFrom(caught, "Connectivity could not be loaded."))
+      })
+      .finally(() => {
+        if (active) setConnectivityLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [deploymentId, page, search, protocol])
 
   return (
     <div className="mx-auto grid max-w-7xl gap-5">
@@ -66,13 +124,13 @@ export function ApplicationDeploymentPage({
         </Button>
       </div>
 
-      {loading ? (
+      {detailLoading ? (
         <section className="rounded-lg border border-[#E2E8F0] bg-white p-6 text-sm text-[#64748B]">
           Loading deployment…
         </section>
-      ) : error ? (
+      ) : detailError ? (
         <section className="rounded-lg border border-[#E2E8F0] bg-white p-6 text-sm text-red-700">
-          {error.message}
+          {detailError.message}
         </section>
       ) : deployment ? (
         <>
@@ -107,12 +165,47 @@ export function ApplicationDeploymentPage({
           </section>
 
           <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
-              <h2 className="font-semibold text-[#172033]">Connectivity</h2>
-              <span className="text-sm font-medium text-[#64748B]">{selectedTotal} selected interactions</span>
+            <div className="flex flex-col gap-3 border-b border-[#E2E8F0] p-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 className="font-semibold text-[#172033]">Connectivity {selectedTotal} / {definedTotal}</h2>
+                <p className="mt-1 text-xs text-[#64748B]">Selected Interaction Definitions in this deployment.</p>
+              </div>
+              <form
+                className="grid gap-2 sm:grid-cols-[minmax(14rem,1fr)_10rem_auto]"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  setPage(1)
+                  setSearch(draftSearch.trim())
+                  setProtocol(draftProtocol.trim())
+                }}
+              >
+                <div className="relative min-w-0">
+                  <Search className="pointer-events-none absolute left-3 top-3 size-4 text-[#94A3B8]" aria-hidden="true" />
+                  <input
+                    className={`${inputClass} w-full pl-9`}
+                    value={draftSearch}
+                    onChange={(event) => setDraftSearch(event.target.value)}
+                    placeholder="Search connectivity"
+                    aria-label="Search connectivity"
+                  />
+                </div>
+                <input
+                  className={inputClass}
+                  value={draftProtocol}
+                  onChange={(event) => setDraftProtocol(event.target.value)}
+                  placeholder="Protocol"
+                  aria-label="Protocol"
+                />
+                <Button type="submit" variant="secondary">Apply</Button>
+              </form>
             </div>
-            {connectivity.length === 0 ? (
-              <div className="p-6 text-sm text-[#64748B]">No interactions are selected for this deployment.</div>
+
+            {connectivityLoading ? (
+              <div className="p-6 text-sm text-[#64748B]">Loading connectivity…</div>
+            ) : connectivityError ? (
+              <div className="p-6 text-sm text-red-700">{connectivityError.message}</div>
+            ) : connectivity.length === 0 ? (
+              <div className="p-6 text-sm text-[#64748B]">No interactions match the current view.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[980px] text-left text-sm">
@@ -129,9 +222,25 @@ export function ApplicationDeploymentPage({
                     {connectivity.map((item) => (
                       <tr key={item.deploymentInteractionId}>
                         <td className="px-5 py-3 font-semibold text-[#172033]">{item.sourceComponent.displayName}</td>
-                        <td className="px-5 py-3 text-right tabular-nums text-[#475569]">{resourceCount(item.sourceComponent.resourceCount)}</td>
+                        <td className="px-5 py-3 text-right tabular-nums">
+                          <button
+                            type="button"
+                            className="font-semibold text-[#2563EB] hover:underline"
+                            onClick={() => onOpenResources(item.deploymentInteractionId, "Source")}
+                          >
+                            {resourceCount(item.sourceComponent.resourceCount)}
+                          </button>
+                        </td>
                         <td className="px-5 py-3 font-semibold text-[#172033]">{item.destinationComponent.displayName}</td>
-                        <td className="px-5 py-3 text-right tabular-nums text-[#475569]">{resourceCount(item.destinationComponent.resourceCount)}</td>
+                        <td className="px-5 py-3 text-right tabular-nums">
+                          <button
+                            type="button"
+                            className="font-semibold text-[#2563EB] hover:underline"
+                            onClick={() => onOpenResources(item.deploymentInteractionId, "Destination")}
+                          >
+                            {resourceCount(item.destinationComponent.resourceCount)}
+                          </button>
+                        </td>
                         <td className="px-5 py-3 text-[#475569]">{trafficSummary(item.trafficAlternatives)}</td>
                       </tr>
                     ))}
@@ -139,6 +248,15 @@ export function ApplicationDeploymentPage({
                 </table>
               </div>
             )}
+
+            {!connectivityLoading && !connectivityError ? (
+              <CataloguePager
+                page={page}
+                pageSize={pageSize}
+                total={filteredTotal}
+                onPageChange={setPage}
+              />
+            ) : null}
           </section>
         </>
       ) : null}
