@@ -26,6 +26,36 @@ def _deployment_row(page: Page):
     return page.get_by_role("cell", name="Company A", exact=True).locator("xpath=..")
 
 
+def _create_resource(
+    page: Page,
+    desktop_nav,
+    *,
+    name: str,
+    address: str,
+) -> str:
+    desktop_nav.get_by_role("button", name="Resources").click()
+    expect(page.get_by_role("heading", name="Resources", exact=True)).to_be_visible()
+    page.get_by_label("Resource name").fill(name)
+    page.get_by_role("button", name="Create", exact=True).click()
+    expect(page.get_by_role("heading", name=name, exact=True)).to_be_visible()
+
+    identity_text = page.locator("header").get_by_text(
+        re.compile(r"resource:[0-9a-f-]{36}")
+    ).text_content()
+    match = re.search(r"resource:[0-9a-f-]{36}", identity_text or "")
+    assert match is not None
+    resource_reference = match.group(0)
+
+    page.get_by_label("Technical addresses").fill(address)
+    page.get_by_role("button", name="Add addresses").click()
+    expect(page.get_by_text(address, exact=True)).to_be_visible()
+
+    page.get_by_label("External scope reference").fill("local-demo")
+    page.get_by_role("button", name="Add affiliation").click()
+    expect(page.get_by_text("local-demo", exact=True)).to_be_visible()
+    return resource_reference
+
+
 def _add_component(page: Page, name: str, component_type: str = "Service") -> None:
     page.get_by_role("button", name="Add component").click()
     form = _create_form(page)
@@ -77,6 +107,37 @@ def _add_deployment(page: Page) -> None:
     expect(deployment_row.get_by_role("cell", name="local-demo", exact=True)).to_be_visible()
 
 
+def _add_resource_to_current_set(page: Page, resource_name: str) -> None:
+    page.get_by_role("button", name="Add resource", exact=True).click()
+    panel = page.get_by_role("heading", name="Add resource", exact=True).locator("xpath=..")
+    panel.get_by_label("Search Resource Catalogue").fill(resource_name)
+    panel.get_by_role("button", name="Search", exact=True).click()
+    choice = panel.get_by_role("button").filter(has_text=resource_name)
+    expect(choice).to_have_count(1)
+    choice.click()
+    panel.get_by_role("button", name="Add resource", exact=True).click()
+    expect(page.get_by_role("cell", name=resource_name, exact=True)).to_be_visible()
+
+
+def _select_option_containing(page: Page, label: str, text: str) -> None:
+    select = page.get_by_label(label)
+    option = select.locator("option").filter(has_text=text)
+    expect(option).to_have_count(1)
+    value = option.get_attribute("value")
+    assert value
+    select.select_option(value=value)
+
+
+def _open_target_connectivity(page: Page, desktop_nav, resource_reference: str) -> None:
+    desktop_nav.get_by_role("button", name="Connectivity").click()
+    expect(page.get_by_role("heading", name="Connectivity", exact=True)).to_be_visible()
+    page.get_by_placeholder("Resource reference…").fill(resource_reference)
+    page.get_by_role("button", name="Search", exact=True).click()
+    expect(page.get_by_text(resource_reference, exact=True)).to_be_visible()
+    expect(page.get_by_text("Web UI", exact=True)).to_be_visible()
+    expect(page.get_by_text("Orders API", exact=True)).to_be_visible()
+
+
 def test_j01_target_application_authoring_survives_correction_and_reopen() -> None:
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch()
@@ -91,6 +152,20 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
         desktop_nav = page.locator("aside").get_by_role(
             "navigation", name="Primary navigation"
         )
+
+        web_resource_reference = _create_resource(
+            page,
+            desktop_nav,
+            name="J01 Web Resource",
+            address="10.31.0.10",
+        )
+        _create_resource(
+            page,
+            desktop_nav,
+            name="J01 API Resource",
+            address="10.31.0.20",
+        )
+
         desktop_nav.get_by_role("button", name="Applications").click()
         expect(page.get_by_role("heading", name="Applications", exact=True)).to_be_visible()
         expect(page.get_by_role("button", name="Definitions", exact=True)).to_be_visible()
@@ -146,6 +221,22 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
         expect(page.get_by_role("cell", name="TCP (443)", exact=True)).to_be_visible()
         expect(page.get_by_role("cell", name="TCP (5432)", exact=True)).to_be_visible()
 
+        web_to_api = page.get_by_role("cell", name="Web UI", exact=True).locator("xpath=..")
+        web_to_api.get_by_role("button", name="0 resources", exact=True).first.click()
+        expect(page.get_by_role("heading", name="Source resources", exact=True)).to_be_visible()
+        _add_resource_to_current_set(page, "J01 Web Resource")
+        page.get_by_role("button", name="Deployment", exact=True).click()
+
+        web_to_api = page.get_by_role("cell", name="Web UI", exact=True).locator("xpath=..")
+        expect(web_to_api.get_by_role("button", name="1 resource", exact=True)).to_be_visible()
+        web_to_api.get_by_role("button", name="0 resources", exact=True).click()
+        expect(page.get_by_role("heading", name="Destination resources", exact=True)).to_be_visible()
+        _add_resource_to_current_set(page, "J01 API Resource")
+        page.get_by_role("button", name="Deployment", exact=True).click()
+
+        web_to_api = page.get_by_role("cell", name="Web UI", exact=True).locator("xpath=..")
+        expect(web_to_api.get_by_role("button", name="1 resource", exact=True)).to_have_count(2)
+
         page.get_by_role("button", name="Deployments", exact=True).first.click()
         desktop_nav.get_by_role("button", name="Applications").click()
         page.get_by_placeholder("Search definitions").fill("Order Management")
@@ -186,5 +277,63 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
         expect(deployment_row.get_by_role("cell", name="2 / 2", exact=True)).to_be_visible()
         deployment_row.click()
         expect(page.get_by_role("heading", name="Connectivity 2 / 2", exact=True)).to_be_visible()
+
+        # Target-authored Resource membership must feed the unchanged downstream
+        # compatibility identity rather than requiring target IDs in peer contexts.
+        _open_target_connectivity(page, desktop_nav, web_resource_reference)
+        expect(page.get_by_text("No current need", exact=True)).to_be_visible()
+        expect(page.get_by_text("No final decision", exact=True)).to_be_visible()
+        expect(page.get_by_text("No rule", exact=True)).to_be_visible()
+
+        page.get_by_role("button", name="Request access", exact=True).click()
+        expect(page.get_by_role("heading", name="Request access", exact=True)).to_be_visible()
+        page.get_by_label("Business justification").fill(
+            "Target-authored Web UI requires the Orders API for checkout."
+        )
+        page.get_by_role("button", name="Request access", exact=True).click()
+        expect(page.get_by_text("DecisionUnknown", exact=True)).to_be_visible()
+        expect(
+            page.get_by_text(
+                "The Connectivity Requirement was recorded before the later access step failed.",
+                exact=True,
+            )
+        ).to_be_visible()
+
+        page.get_by_role("button", name="Back to Connectivity", exact=True).click()
+        expect(page.get_by_text("Required", exact=True)).to_be_visible()
+        expect(page.get_by_text("No final decision", exact=True)).to_be_visible()
+        expect(page.get_by_text("No rule", exact=True)).to_be_visible()
+
+        desktop_nav.get_by_role("button", name="Decisions").click()
+        expect(page.get_by_role("heading", name="Decisions", exact=True)).to_be_visible()
+        expect(page.get_by_label("Decision Governance Scope")).to_have_value("local-demo")
+        page.get_by_placeholder("Search interactions").fill("Web UI")
+        _select_option_containing(page, "Source Component Deployment", "Web UI")
+        _select_option_containing(page, "Destination Component Deployment", "Orders API")
+        page.get_by_label("DCS / Access").select_option(index=1)
+        expect(page.get_by_label("Final outcome")).to_have_value("Allowed")
+        page.get_by_label("Reason code").fill("j01-target-approved")
+        page.get_by_role("textbox", name="Reason", exact=True).fill(
+            "Target-authored compatibility interaction accepted end to end."
+        )
+        page.get_by_role("button", name="Record Decision", exact=True).click()
+        expect(page.get_by_text(re.compile(r"^Decision .* recorded\.$"))).to_be_visible()
+
+        _open_target_connectivity(page, desktop_nav, web_resource_reference)
+        expect(page.get_by_text("Required", exact=True)).to_be_visible()
+        expect(page.get_by_text("Allowed", exact=True)).to_be_visible()
+        expect(page.get_by_text("No rule", exact=True)).to_be_visible()
+
+        page.get_by_role("button", name="Request access", exact=True).click()
+        expect(page.get_by_text("Confirm access proposal", exact=True)).to_be_visible()
+        page.get_by_role("button", name="Request access", exact=True).click()
+        expect(page.get_by_text("Access authorized", exact=True)).to_be_visible()
+        page.locator("section").filter(has_text="Access authorized").get_by_role(
+            "button", name="Back to Connectivity", exact=True
+        ).click()
+        expect(page.get_by_text("Required", exact=True)).to_be_visible()
+        expect(page.get_by_text("Allowed", exact=True)).to_be_visible()
+        expect(page.get_by_text("Covered", exact=True)).to_be_visible()
+        expect(page.get_by_role("cell", name="Active · effective", exact=True)).to_be_visible()
 
         browser.close()
