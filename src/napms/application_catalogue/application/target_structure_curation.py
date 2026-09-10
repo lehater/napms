@@ -24,6 +24,9 @@ from napms.application_catalogue.domain.model import (
 )
 
 
+_CREATE_TARGET_COMPONENT = "CreateTargetComponent"
+
+
 @dataclass(frozen=True, slots=True)
 class CreateTargetComponentCommand:
     application_id: UUID
@@ -78,6 +81,29 @@ class CreateTargetComponent:
         self._identities = identities
         self._provenance = provenance
 
+    def _resolve_receipt(
+        self,
+        *,
+        actor_id: str,
+        idempotency_key: str,
+        fingerprint: str,
+    ) -> TargetComponentMutationResult | None:
+        receipt = self._catalogue.find_command_receipt(
+            actor_id=actor_id,
+            idempotency_key=idempotency_key,
+        )
+        if receipt is None:
+            return None
+        if (
+            receipt.command_kind != _CREATE_TARGET_COMPONENT
+            or receipt.request_fingerprint != fingerprint
+        ):
+            return TargetComponentMutationResult(TargetMutationOutcome.IDEMPOTENCY_CONFLICT)
+        existing = self._catalogue.get_component(receipt.result_id)
+        if existing is None:
+            return TargetComponentMutationResult(TargetMutationOutcome.PERSISTENCE_UNKNOWN)
+        return TargetComponentMutationResult(TargetMutationOutcome.RESOLVED, existing)
+
     def execute(self, command: CreateTargetComponentCommand) -> TargetComponentMutationResult:
         check = self._authority.check_curation(
             actor_id=command.actor_id,
@@ -111,27 +137,13 @@ class CreateTargetComponent:
                 "description": description,
             }
         )
-        receipt = self._catalogue.find_command_receipt(
+        replay = self._resolve_receipt(
             actor_id=command.actor_id,
             idempotency_key=idempotency_key,
+            fingerprint=fingerprint,
         )
-        if receipt is not None:
-            if (
-                receipt.command_kind != "CreateTargetComponent"
-                or receipt.request_fingerprint != fingerprint
-            ):
-                return TargetComponentMutationResult(
-                    TargetMutationOutcome.IDEMPOTENCY_CONFLICT
-                )
-            existing = self._catalogue.get_component(receipt.result_id)
-            if existing is None:
-                return TargetComponentMutationResult(
-                    TargetMutationOutcome.PERSISTENCE_UNKNOWN
-                )
-            return TargetComponentMutationResult(
-                TargetMutationOutcome.RESOLVED,
-                existing,
-            )
+        if replay is not None:
+            return replay
 
         application = self._catalogue.get_application(command.application_id)
         if application is None:
@@ -162,7 +174,7 @@ class CreateTargetComponent:
             actor_id=command.actor_id,
             idempotency_key=idempotency_key,
             receipt=ApplicationCatalogueCommandReceipt(
-                command_kind="CreateTargetComponent",
+                command_kind=_CREATE_TARGET_COMPONENT,
                 request_fingerprint=fingerprint,
                 result_id=component.component_id,
                 result_version=component.version,
@@ -171,7 +183,14 @@ class CreateTargetComponent:
         try:
             self._catalogue.commit()
         except CatalogueIdempotencyConflict:
-            return TargetComponentMutationResult(TargetMutationOutcome.IDEMPOTENCY_CONFLICT)
+            replay = self._resolve_receipt(
+                actor_id=command.actor_id,
+                idempotency_key=idempotency_key,
+                fingerprint=fingerprint,
+            )
+            return replay or TargetComponentMutationResult(
+                TargetMutationOutcome.PERSISTENCE_UNKNOWN
+            )
         except CataloguePersistenceOutcomeUnknown:
             return TargetComponentMutationResult(TargetMutationOutcome.PERSISTENCE_UNKNOWN)
         return TargetComponentMutationResult(TargetMutationOutcome.CREATED, component)
