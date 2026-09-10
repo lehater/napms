@@ -8,7 +8,10 @@ from napms.application_catalogue.application.ports import (
     ApplicationCatalogueIdentityFactory,
     ApplicationCatalogueProvenanceFactory,
 )
-from napms.application_catalogue.domain.model import DirectedInteractionIdentity
+from napms.application_catalogue.domain.model import (
+    DeploymentResourceBinding,
+    DirectedInteractionIdentity,
+)
 from napms.application_catalogue.domain.target_model import (
     ApplicationDeployment,
     DeploymentInteraction,
@@ -204,3 +207,10 @@ class TargetApplicationCatalogueRepository(
         *,
         expected_version: int,
     ) -> None: ...
+
+    def find_effective_bindings(
+        self,
+        *,
+        component_deployment_id: UUID,
+        as_of: datetime,
+    ) -> tuple[DeploymentResourceBinding, ...]: ...
