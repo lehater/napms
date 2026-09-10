@@ -16,29 +16,31 @@ Responsibility: primary product navigation using short user-oriented labels.
 
 Expanded desktop width: 224-240px. Collapsed width: 64-72px.
 
-Baseline navigation:
+Current navigation:
 
     OVERVIEW
       Connectivity
+      Checker
+
+    CATALOGUES
+      Applications
+      Resources
 
     POLICY
       Needs
       Decisions
       Rules
       Effective
+      Export
 
-    TECHNICAL
-      Realization      Planned
-      Evidence         Planned
-      Enforcement      Planned
-
-Catalogue/admin sections are added only when concrete user workflows exist.
+    OPERATIONS
+      Realization
 
 Compose Connectivity is not a primary navigation destination. It is an action flow launched from Connectivity or relevant details.
 
-### Planned items
+### Future navigation
 
-Roadmap-backed future areas may be visible only when marked Planned and visually disabled/distinct. They do not navigate to fabricated working screens or fake data.
+Future areas may be visible only when backed by accepted scope, explicitly marked Planned and visually disabled/distinct. They do not navigate to fabricated working screens or fake data.
 
 ## Topbar / scope context
 
