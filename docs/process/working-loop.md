@@ -69,6 +69,24 @@ If two chats must write concurrently:
 
 Do not introduce multi-agent coordination machinery for ordinary sequential work.
 
+## Validation execution
+
+Repository-local checks and GitHub Actions are two execution surfaces for the same deterministic repository gates.
+
+Normal editing loop:
+1. run the smallest applicable local check when the agent environment supports it;
+2. fix known failures before requesting the final hosted gate;
+3. use the applicable workflow's `workflow_dispatch` as an intermediate fallback only when local execution is unavailable and the current GitHub capability can dispatch it;
+4. inspect hosted run/job status and logs before recording PASS evidence.
+
+Before declaring a gate unexecutable, inspect `.github/workflows/` to determine:
+- which workflow owns the affected area;
+- its exact command;
+- its path filters and event trigger;
+- whether `workflow_dispatch` is available.
+
+Do not confuse capability absence with CI absence. If the current connector/runtime can read Actions but cannot start a new workflow, record that tool limitation explicitly and preserve the pending gate in the active capsule.
+
 ## Integration
 
 One PR should represent one coherent semantic stage. Accumulate branch commits freely enough for safety/review, then squash merge.
@@ -77,6 +95,7 @@ For expensive GitHub Actions, keep the PR draft while work is accumulating. Repo
 
 Treat `Ready for review` as a request for the final hosted gate, not as a per-fix test button:
 - before marking ready, run the applicable repository-local checks and batch known fixes;
+- if local execution is unavailable, an explicit `workflow_dispatch` run of the same gate may provide the intermediate evidence without changing PR review state;
 - if a deterministic gate failure requires material changes, return the PR to draft once, batch the corrections, rerun the applicable local checks, then mark ready once for a fresh gate;
 - if an isolated hosted job fails for a transient/flaky infrastructure reason and no repository change is required, rerun the failed job/workflow instead of toggling Draft/Ready;
 - avoid repeated Draft -> Ready cycles for individual fixes: each cycle reevaluates the accumulated PR path diff and can restart every applicable hosted gate.
