@@ -1,5 +1,6 @@
 import {
   Activity,
+  Boxes,
   ClipboardList,
   Clock3,
   Gavel,
@@ -7,6 +8,7 @@ import {
   LogOut,
   Network,
   Search,
+  Server,
   TableProperties,
 } from "lucide-react"
 
@@ -16,6 +18,8 @@ import { Button } from "@/components/ui/Button"
 export type NavKey =
   | "connectivity"
   | "checker"
+  | "applications"
+  | "resources"
   | "requirements"
   | "decisions"
   | "rules"
@@ -76,6 +80,29 @@ export function AppShell({
             <Search className="size-4" aria-hidden="true" />
             Checker
           </button>
+
+          <div className="px-3 pb-2 pt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
+            Catalogues
+          </div>
+          <button
+            type="button"
+            className={navClass("applications")}
+            aria-current={activeNav === "applications" ? "page" : undefined}
+            onClick={() => onNavigate("applications")}
+          >
+            <Boxes className="size-4" aria-hidden="true" />
+            Applications
+          </button>
+          <button
+            type="button"
+            className={navClass("resources")}
+            aria-current={activeNav === "resources" ? "page" : undefined}
+            onClick={() => onNavigate("resources")}
+          >
+            <Server className="size-4" aria-hidden="true" />
+            Resources
+          </button>
+
           <div className="px-3 pb-2 pt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
             Policy
           </div>
@@ -149,6 +176,8 @@ export function AppShell({
               [
                 ["connectivity", "Connectivity"],
                 ["checker", "Checker"],
+                ["applications", "Applications"],
+                ["resources", "Resources"],
                 ["requirements", "Needs"],
                 ["decisions", "Decisions"],
                 ["rules", "Rules"],
