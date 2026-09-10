@@ -1,0 +1,1 @@
+Stage 0 semantic closure completed on 2026-09-10. Next execution target is Domain/Application/Ports implementation for catalogue curation. This coordination note is temporary and should be removed when the active PLAN/capsule is refreshed.
