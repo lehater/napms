@@ -66,7 +66,11 @@ class DeploymentConnectivityRow:
 
 @dataclass(frozen=True, slots=True)
 class ResourceSetMember:
+    binding_reference: str
+    binding_version: int
     resource_reference: str
+    valid_from: datetime
+    valid_to: datetime | None
     display_name: str | None = None
     scope_references: tuple[str, ...] = ()
 
