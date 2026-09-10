@@ -24,4 +24,8 @@ jobs:
         with:
           node-version: "22"
       - run: npm install --no-audit --no-fund
+      - uses: actions/upload-artifact@v4
+        with:
+          name: napms-web-package-lock
+          path: web/package-lock.json
       - run: npm run build
