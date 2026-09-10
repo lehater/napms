@@ -16,6 +16,9 @@ from napms.application_catalogue.adapters.curation_support import (
 from napms.application_catalogue.adapters.dcs_authoring import (
     JsonDcsAuthoringProjectionEncoder,
 )
+from napms.application_catalogue.adapters.postgres.target_retirement_query import (
+    PostgresApplicationCatalogueRetirementDependencyQuery,
+)
 from napms.application_catalogue.adapters.postgres.transactional_target_repository import (
     TransactionalPostgresTargetApplicationCatalogueRepository,
 )
@@ -38,10 +41,23 @@ from napms.application_catalogue.application.target_curation import (
     UpdateInteractionDefinitionEndpoints,
     UpdateInteractionDefinitionTraffic,
 )
+from napms.application_catalogue.application.target_lifecycle import (
+    RetireApplicationDefinition,
+    RetireApplicationDeployment,
+    RetireComponentTarget,
+    RetireDeploymentInteraction,
+    RetireInteractionDefinition,
+    TargetRetirementDependencies,
+)
 from napms.application_catalogue.application.target_metadata_curation import (
     UpdateApplicationDefinitionMetadata,
     UpdateApplicationDeploymentContext,
     UpdateComponentMetadata,
+)
+from napms.application_catalogue.application.target_retirement import (
+    BoundedRetirementService,
+    RetirementSubjectKind,
+    TargetRetirementDependencyReader,
 )
 from napms.application_catalogue.application.target_structure_curation import (
     CreateTargetComponent,
@@ -76,16 +92,22 @@ from napms.resource_catalogue.adapters.postgres.transactional_curation_repositor
 @dataclass(slots=True)
 class TargetApplicationCatalogueServices:
     read: PostgresApplicationCatalogueTargetReadModel
+    retirement_dependencies: TargetRetirementDependencyReader
     create_definition: CreateApplication
     update_definition_metadata: UpdateApplicationDefinitionMetadata
+    retire_definition: BoundedRetirementService
     create_component: CreateTargetComponent
     update_component_metadata: UpdateComponentMetadata
+    retire_component: BoundedRetirementService
     create_interaction_definition: CreateInteractionDefinition
     update_interaction_endpoints: UpdateInteractionDefinitionEndpoints
     update_interaction_traffic: UpdateInteractionDefinitionTraffic
+    retire_interaction_definition: BoundedRetirementService
     create_application_deployment: CreateApplicationDeployment
     update_application_deployment_context: UpdateApplicationDeploymentContext
+    retire_application_deployment: BoundedRetirementService
     select_deployment_interaction: SelectDeploymentInteraction
+    retire_deployment_interaction: BoundedRetirementService
     create_resource_binding: CreateDeploymentInteractionResourceBinding
     end_resource_binding: EndDeploymentInteractionResourceBinding
 
@@ -101,7 +123,7 @@ class CatalogueTargetPostgresScope:
 def open_catalogue_target_scope(
     config: ApplicationConfig,
 ) -> Iterator[CatalogueTargetPostgresScope]:
-    """Open owner UoWs plus the query-only I31 read projection for one request."""
+    """Open owner UoWs plus query-only I31 projections for one request."""
 
     with ExitStack() as stack:
         authority_connection = stack.enter_context(psycopg.connect(config.postgres.dsn))
@@ -135,6 +157,21 @@ def open_catalogue_target_scope(
         access_rules = AccessRuleDependencyAdapter(
             PostgresAccessRuleDependencyQuery(application_connection)
         )
+        lifecycle_dependencies = TargetRetirementDependencies(
+            catalogue=application_repository,
+            requirements=requirements,
+            decisions=decisions,
+            access_rules=access_rules,
+        )
+        retirement_dependencies = TargetRetirementDependencyReader(
+            catalogue=application_repository,
+            local=PostgresApplicationCatalogueRetirementDependencyQuery(
+                application_connection
+            ),
+            requirements=requirements,
+            decisions=decisions,
+            access_rules=access_rules,
+        )
 
         create_legacy_binding = CreateDeploymentResourceBinding(
             authority=application_authority,
@@ -149,8 +186,40 @@ def open_catalogue_target_scope(
             provenance=binding_provenance,
         )
 
+        retire_definition = RetireApplicationDefinition(
+            authority=application_authority,
+            catalogue=application_repository,
+            provenance=provenance,
+            dependencies=lifecycle_dependencies,
+        )
+        retire_component = RetireComponentTarget(
+            authority=application_authority,
+            catalogue=application_repository,
+            provenance=provenance,
+            dependencies=lifecycle_dependencies,
+        )
+        retire_interaction_definition = RetireInteractionDefinition(
+            authority=application_authority,
+            catalogue=application_repository,
+            provenance=provenance,
+            dependencies=lifecycle_dependencies,
+        )
+        retire_application_deployment = RetireApplicationDeployment(
+            authority=application_authority,
+            catalogue=application_repository,
+            provenance=provenance,
+            dependencies=lifecycle_dependencies,
+        )
+        retire_deployment_interaction = RetireDeploymentInteraction(
+            authority=application_authority,
+            catalogue=application_repository,
+            provenance=provenance,
+            dependencies=lifecycle_dependencies,
+        )
+
         services = TargetApplicationCatalogueServices(
             read=PostgresApplicationCatalogueTargetReadModel(application_connection),
+            retirement_dependencies=retirement_dependencies,
             create_definition=CreateApplication(
                 authority=application_authority,
                 applications=application_repository,
@@ -161,6 +230,12 @@ def open_catalogue_target_scope(
                 authority=application_authority,
                 catalogue=application_repository,
             ),
+            retire_definition=BoundedRetirementService(
+                subject_kind=RetirementSubjectKind.APPLICATION_DEFINITION,
+                subject_id_attribute="application_id",
+                dependencies=retirement_dependencies,
+                delegate=retire_definition,
+            ),
             create_component=CreateTargetComponent(
                 authority=application_authority,
                 catalogue=application_repository,
@@ -170,6 +245,12 @@ def open_catalogue_target_scope(
             update_component_metadata=UpdateComponentMetadata(
                 authority=application_authority,
                 catalogue=application_repository,
+            ),
+            retire_component=BoundedRetirementService(
+                subject_kind=RetirementSubjectKind.COMPONENT,
+                subject_id_attribute="component_id",
+                dependencies=retirement_dependencies,
+                delegate=retire_component,
             ),
             create_interaction_definition=CreateInteractionDefinition(
                 authority=application_authority,
@@ -191,6 +272,12 @@ def open_catalogue_target_scope(
                 decisions=decisions,
                 access_rules=access_rules,
             ),
+            retire_interaction_definition=BoundedRetirementService(
+                subject_kind=RetirementSubjectKind.INTERACTION_DEFINITION,
+                subject_id_attribute="interaction_definition_id",
+                dependencies=retirement_dependencies,
+                delegate=retire_interaction_definition,
+            ),
             create_application_deployment=CreateApplicationDeployment(
                 authority=application_authority,
                 catalogue=application_repository,
@@ -201,12 +288,24 @@ def open_catalogue_target_scope(
                 authority=application_authority,
                 catalogue=application_repository,
             ),
+            retire_application_deployment=BoundedRetirementService(
+                subject_kind=RetirementSubjectKind.APPLICATION_DEPLOYMENT,
+                subject_id_attribute="application_deployment_id",
+                dependencies=retirement_dependencies,
+                delegate=retire_application_deployment,
+            ),
             select_deployment_interaction=SelectDeploymentInteraction(
                 authority=application_authority,
                 catalogue=application_repository,
                 identities=identities,
                 provenance=provenance,
                 encoder=traffic,
+            ),
+            retire_deployment_interaction=BoundedRetirementService(
+                subject_kind=RetirementSubjectKind.DEPLOYMENT_INTERACTION,
+                subject_id_attribute="deployment_interaction_id",
+                dependencies=retirement_dependencies,
+                delegate=retire_deployment_interaction,
             ),
             create_resource_binding=CreateDeploymentInteractionResourceBinding(
                 catalogue=application_repository,
