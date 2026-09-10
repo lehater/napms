@@ -1,6 +1,6 @@
 # I31 Application Catalogue Target Migration
 
-Status: `active`.
+Status: `active`
 
 Date: 2026-09-10.
 
