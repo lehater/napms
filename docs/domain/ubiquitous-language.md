@@ -218,23 +218,57 @@ Properties:
 
 ## Application Communication Catalogue
 
-### Application / Component
-Application structure used to identify the communicating domain participants relevant to governed access.
+### Application
+Stable ACC-owned structural identity grouping Components that belong to one application concern relevant to governed communication.
+
+```text
+Application
+    ApplicationId
+    Display Name
+    Active | Retired
+```
+
+Application identity is server-owned and remains stable across display-name changes. Retirement is terminal in the first I27 curation slice and does not rewrite historical Component Deployments, DCS revisions or downstream policy references.
+
+### Component
+Stable ACC-owned structural identity inside exactly one Application.
+
+```text
+Component
+    ComponentId
+    ApplicationId
+    Display Name
+    Active | Retired
+```
+
+A Component is not a Component Deployment. Its parent Application is immutable for the Component lifetime. Changing the business parent is represented by replacement rather than in-place reassignment.
 
 ### Component Deployment
 Concrete deployment of a Component used as one side of an Access Rule / Domain Interaction.
 
+```text
+Component Deployment
+    ComponentDeploymentId
+    ComponentId
+    optional Display Name
+    Active | Retired
+```
+
+The existing Component Deployment UUID remains the stable identity consumed by Requirements, Decisions and Access Rules. Its parent Component is immutable for the deployment lifetime. Retirement prevents new authoring that requires an active participant but preserves historical references.
+
 ### Catalogue Display Name
-Optional Application Communication Catalogue-owned human-readable presentation metadata for a Component Deployment or immutable DCS revision.
+Human-readable ACC-owned presentation metadata for Application, Component, Component Deployment or immutable DCS revision where the owning type supports it.
 
 ```text
 Catalogue Display Name
+!= Application identity
+!= Component identity
 != Component Deployment identity
 != DCS revision identity
 != RuleSemanticIdentity
 ```
 
-Changing or omitting a display name does not change proposal validity, Connectivity Decision subject, Access Rule identity, effective desired-policy membership or normalized-policy semantics. Consumers must retain the stable UUID/reference as technical identity and fall back to it when no display name exists.
+Changing or omitting a deployment/DCS display name does not change proposal validity, Connectivity Decision subject, Access Rule identity, effective desired-policy membership or normalized-policy semantics. Consumers must retain the stable UUID/reference as technical identity and fall back according to the owning read contract.
 
 ### Deployment Resource Binding
 Application Communication Catalogue-owned, time-qualified relation from one Component Deployment to one-or-more stable Resource references used to obtain technical realization from Resource Catalogue.
@@ -270,7 +304,9 @@ PortRangeSet
 Inclusive integer interval `first..last` within `0..65535`. Sets of ranges are canonicalized to sorted, non-overlapping and non-adjacent ranges and are not expanded into individual ports.
 
 ### Directed Communication Specification
-Application-owned communication contract connecting compatible source/destination component roles and carrying protocol/service/port semantics.
+Application-owned communication contract connecting compatible source/destination Component Deployments and carrying protocol/service/port semantics.
+
+A persisted DCS revision is immutable. Changing communication semantics creates another revision rather than mutating the revision referenced by existing Requirements, Decisions or Rules.
 
 The context owns application/component/deployment structure only to the depth required to define and realize governed communication; it is not a generic application portfolio/CMDB.
 
