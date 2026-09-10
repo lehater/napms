@@ -33,6 +33,28 @@ def config(postgres_dsn):
     return value
 
 
+def clean_state(postgres_dsn):
+    with psycopg.connect(postgres_dsn, autocommit=True) as connection:
+        connection.execute(
+            "TRUNCATE TABLE napms_connectivity_requirements.connectivity_requirements CASCADE"
+        )
+        connection.execute(
+            "TRUNCATE TABLE napms_connectivity_decision.connectivity_decisions CASCADE"
+        )
+        connection.execute("TRUNCATE TABLE napms_access_policy.access_rules CASCADE")
+        connection.execute("TRUNCATE TABLE napms_authority.authority_assignments")
+        connection.execute(
+            "TRUNCATE TABLE napms_application_catalogue.component_deployments CASCADE"
+        )
+        connection.execute("TRUNCATE TABLE napms_resource_catalogue.resources CASCADE")
+        connection.execute(
+            "TRUNCATE TABLE napms_technical_access_evidence.evidence_sets CASCADE"
+        )
+        connection.execute(
+            "TRUNCATE TABLE napms_network_enforcement_placement.knowledge_captures CASCADE"
+        )
+
+
 def grant_operator_view(postgres_dsn):
     with psycopg.connect(postgres_dsn) as connection:
         connection.execute(
@@ -59,7 +81,7 @@ def test_postgres_operator_view_keeps_unselected_runtime_inputs_not_available(
     config,
     postgres_dsn,
 ):
-    acceptance.clean_product_completion_state(postgres_dsn, config)
+    clean_state(postgres_dsn)
     acceptance.seed_static_owner_facts(postgres_dsn)
     grant_operator_view(postgres_dsn)
     requirement = acceptance.declare_requirement(config)
