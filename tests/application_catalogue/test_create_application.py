@@ -9,11 +9,15 @@ from napms.application_catalogue.application.curation import (
 from napms.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
+    ApplicationCatalogueCommandReceipt,
+    CatalogueIdempotencyConflict,
 )
+from napms.application_catalogue.domain.model import Application
 
 
 NOW = datetime(2026, 9, 10, 11, 0, tzinfo=timezone.utc)
 APPLICATION_ID = UUID("00000000-0000-0000-0000-000000002001")
+WINNER_ID = UUID("00000000-0000-0000-0000-000000002002")
 
 
 class FakeAuthority:
@@ -26,7 +30,9 @@ class FakeAuthority:
         return ApplicationCatalogueAuthorityCheck(
             outcome=self.outcome,
             authority_reference=(
-                "auth-acc" if self.outcome is ApplicationCatalogueAuthorityOutcome.PERMITTED else None
+                "auth-acc"
+                if self.outcome is ApplicationCatalogueAuthorityOutcome.PERMITTED
+                else None
             ),
         )
 
@@ -53,6 +59,27 @@ class FakeApplications:
 
     def commit(self):
         self.commit_count += 1
+
+
+class RacingApplications(FakeApplications):
+    def commit(self):
+        self.commit_count += 1
+        ((key, attempted_receipt),) = tuple(self.receipts.items())
+        winner = Application(
+            application_id=WINNER_ID,
+            display_name="Checkout",
+            provenance_reference="winner:provenance",
+        )
+        self.items = {WINNER_ID: winner}
+        self.receipts = {
+            key: ApplicationCatalogueCommandReceipt(
+                command_kind=attempted_receipt.command_kind,
+                request_fingerprint=attempted_receipt.request_fingerprint,
+                result_id=WINNER_ID,
+                result_version=winner.version,
+            )
+        }
+        raise CatalogueIdempotencyConflict
 
 
 class FakeIdentities:
@@ -150,6 +177,18 @@ def test_equivalent_retry_returns_original_application_without_second_write():
     assert second.application.application_id == APPLICATION_ID
     assert len(applications.add_calls) == 1
     assert applications.commit_count == 1
+    assert identities.count == 1
+
+
+def test_concurrent_equivalent_create_resolves_to_authoritative_winner():
+    applications = RacingApplications()
+    use_case, _, _, identities, _ = service(applications=applications)
+
+    result = use_case.execute(command(display_name="Checkout", key="race-key"))
+
+    assert result.outcome is CreateApplicationOutcome.RESOLVED
+    assert result.application is not None
+    assert result.application.application_id == WINNER_ID
     assert identities.count == 1
 
 
