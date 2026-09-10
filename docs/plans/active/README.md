@@ -2,31 +2,32 @@
 
 Current: `PLAN-039-i25-product-completion-acceptance.md`
 
-Current task: WP3 cross-chain explainability navigation.
+Current task: WP7 final canonical absorption, verification and roadmap closure.
 
-Goal: complete the bounded operator journey by making existing authoritative provenance references navigable, without adding new semantic data or authority.
+Goal: close I25 for the supported local target without broadening product scope.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-039-i25-product-completion-acceptance.md`
-- `web/src/App.tsx`
-- `docs/requirements/network-operator-realization-view.md`
+- `docs/engineering/current-state.md`
+- `docs/engineering/post-wave1-product-completion-roadmap.md`
+- `docs/engineering/local-product-operator-runbook.md`
 
-Expand only as needed into `AccessRuleDetailsPage.tsx`, `ConnectivityDecisionDetailsPage.tsx`, Requirement detail routing and Web/runtime gate diagnostics.
+Expand only as needed into `docs/architecture/current-architecture.md`, PR #49 diff and final gate diagnostics.
 
 ## Current result
 
-WP2B is done and the first WP3 `Realization` workspace is gate-proven. Cross-chain navigation has now been wired as `Realization -> Rule -> Decision -> Connectivity Requirement`, using only identifiers already returned by the authoritative owner APIs. Each destination still performs its own read authorization.
+WP1-WP6 are done. The full PostgreSQL acceptance chain is proven; the owner-preserving `Realization` HTTP/Web surface is implemented; explainability navigation is `Realization -> Rule -> Decision -> Connectivity Requirement`; unsupported reconciliation/operation runtime stages remain explicit `NotAvailable`; Web dependency resolution is locked and built with `npm ci`; the local operator runbook is present.
 
 ## Blockers
 
-No external blocker. Runtime still has no selected configured-evidence/managed-scope-contract source and no durable HTTP-wired NEO history, so those stages remain unavailable until actual owning inputs/results exist.
+No external blocker. Real Cisco/device transport, enterprise identity/sources, crash-durable NEO history, HA/TLS/external secret infrastructure and unproven search/bulk/dashboard work remain outside I25.
 
 ## Gate
 
-Navigation only: do not copy Decision/Requirement state into another view, infer semantics, broaden authority, or add mutation controls. Keep the resume working set under the harness context budget.
+Do not convert acceptance-only controlled execution into a claim of interactive durable NEO history. Do not infer configured/reconciliation/operation success when owning inputs/results are absent. Final work is canonical absorption, full gates, diff review, plan retirement and squash merge.
 
 ## Next
 
-Run the Web/runtime gates on the cross-link head. If green, close WP3, reassess whether any WP4 productivity work is justified, and otherwise advance directly toward local acceptance/runbook closure.
+Update current-state/architecture/roadmap for completed I25, run all repository gates, review PR #49 for overreach, retire PLAN-039 and squash merge if green.
