@@ -16,6 +16,7 @@ from napms.application_catalogue.domain.model import CatalogueInvariantError
 from napms.composition.catalogue_curation_postgres import (
     open_catalogue_curation_scope,
 )
+from napms.composition.catalogue_target_postgres import open_catalogue_target_scope
 from napms.composition.greenfield_postgres import open_greenfield_scope
 from napms.composition.network_operator_view_postgres import (
     open_network_operator_view_scope,
@@ -37,6 +38,10 @@ from napms.runtime.catalogue_discovery_http import create_catalogue_discovery_ro
 from napms.runtime.catalogue_error_http import catalogue_invariant_error_handler
 from napms.runtime.catalogue_resource_workspace_http import (
     create_catalogue_resource_workspace_router,
+)
+from napms.runtime.catalogue_target_http import create_catalogue_target_router
+from napms.runtime.catalogue_target_retirement_http import (
+    create_catalogue_target_retirement_router,
 )
 from napms.runtime.catalogue_temporal_curation_http import (
     create_catalogue_temporal_curation_router,
@@ -106,6 +111,9 @@ def build_http_api(
     def open_curation_scope():
         return open_catalogue_curation_scope(config.application)
 
+    def open_target_scope():
+        return open_catalogue_target_scope(config.application)
+
     def default_readiness() -> bool:
         try:
             with psycopg.connect(config.application.postgres.dsn) as connection:
@@ -171,6 +179,20 @@ def build_http_api(
         create_catalogue_temporal_curation_router(
             sessions=sessions,
             open_scope=open_curation_scope,
+            clock=_utc_now,
+        )
+    )
+    app.include_router(
+        create_catalogue_target_router(
+            sessions=sessions,
+            open_scope=open_target_scope,
+            clock=_utc_now,
+        )
+    )
+    app.include_router(
+        create_catalogue_target_retirement_router(
+            sessions=sessions,
+            open_scope=open_target_scope,
             clock=_utc_now,
         )
     )

@@ -61,6 +61,18 @@ deploymentInteractionId + side + resourceReference
 
 The persistence adapter is responsible for translating target binding ownership into the compatibility rows required by the existing resolver.
 
+Resource-set UI rows combine ACC-owned effective membership with Resource Catalogue-owned display data and effective Responsibility Scope. This is a read-composition concern, not a transfer of ownership.
+
+The I31 bounded query projection may therefore compose owner schemas at the composition/read-model boundary when they are available in one PostgreSQL deployment. That projection:
+
+- is query-only and owns no domain fact;
+- performs no mutation, lifecycle or authority decision;
+- uses one explicit `asOf` for all temporal membership/scope facts in one response;
+- applies search/filter/sort/paging and totals in the server query rather than loading an unbounded child collection;
+- is not an ACC or RC persistence adapter and does not permit either bounded context to read the other's schema.
+
+If owner schemas later move to separate stores, this query composition can be replaced by owner query ports or a derived read store without changing ACC identity or the public target authoring contract.
+
 ## Traffic projection
 
 Interaction Definition traffic is current ACC truth. DCS revision remains immutable downstream snapshot truth.
@@ -124,6 +136,10 @@ ACC Domain
 peer Domain/Application
   <- peer adapters
       <- ACC dependency adapters at composition boundary
+
+ACC + RC read facts
+  -> query-only composition projection
+      -> target HTTP read model
 ```
 
 The implementation must preserve inward dependency direction and avoid shared mutable domain models.
@@ -133,5 +149,6 @@ The implementation must preserve inward dependency direction and avoid shared mu
 - I31 changes the ACC user/write model without a cross-context identity migration;
 - compatibility logic remains an ACC adapter/application concern rather than leaking into Web or peer domains;
 - cross-context blockers are explicit port calls rather than direct persistence coupling;
+- bounded cross-context UI projections may be composed outside owner adapters without transferring mutation semantics;
 - target Resource binding semantics reuse existing proven downstream resolution mechanics;
 - optional enterprise reference discovery can be added later without changing the target domain model.

@@ -1,120 +1,96 @@
-# Application Catalogue canonical wireframes
+# Application Catalogue target wireframes
 
 Status: `accepted target; implementation pending`.
 
 Date: 2026-09-10.
 
-Canonical semantics:
-- `docs/decisions/ADR-012-application-definition-deployment-model.md`;
-- `docs/ui/application-catalogue-target.md`.
-
-These low-fidelity wireframes are the target screen-layout contract. Implementation may refine spacing, typography and responsive behavior, but must not introduce new information architecture, actions, columns or entity grouping without updating the accepted UX/domain documentation first.
+These wireframes define screen structure and information priority for the I31 Application Catalogue target. They are not pixel-perfect visual specifications.
 
 ## 1. Applications / Definitions
 
 ```text
 Applications
-[Definitions] [Deployments]
 
-Definitions                                      [+ Add application]
+Definitions | Deployments
 
-[Search............................]
-[Domain ▾] [Owner ▾] [More filters]
+[Search................................................] [Domain ▾] [Owner ▾] [+ Add application]
 
-Name          Domain        Components   Interactions   Deployments
-CRM           Sales              8            24            17
-SAP ERP       Finance           15            63             8
-Monitoring    Infrastructure    27           118            42
+Name                 Domain          Components   Interactions   Deployments
+CRM                  Business        14           24             8
+Payments             Finance         9            17             12
+Identity             Platform        11           31             6
+...
 
                                       1–50 of 327   < 1 2 3 >
 ```
 
-Row name opens Application Definition detail.
+The list is server-backed. Counts are server projections; the client does not load child collections to calculate them.
 
 ## 2. Application Definition
 
 ```text
 Applications / Definitions / CRM
 
-CRM                                             [Edit] [⋮]
-Customer Relationship Management
+CRM                                              [Edit] [⋮]
+Business · Owner: team-crm
 
-Domain: Sales
-Owner: CRM Team
-
-[Overview] [Components 8] [Interactions 24] [Deployments 17]
+Overview | Components | Interactions | Deployments
 ```
 
 ### Components
 
 ```text
-CRM / Components                               [+ Add component]
+[Search................................................] [Type ▾] [+ Add component]
 
-[Search................] [Type ▾]
-
-Name           Type          Description
-Web            Frontend      Web frontend
-API            Service       Backend API
-Database       Database      Primary database
-Reporting      Service       Reporting
-
-                                      1–50 of 8
+Name              Type            Description
+Users             Service         User-facing entry point
+Web               Service         Web frontend
+API               Service         CRM API
+Database          Database        Primary data store
+...
 ```
-
-Component create/edit uses a compact drawer while the field set remains small.
 
 ### Interactions
 
 ```text
-CRM / Interactions                            [+ Add interaction]
+[Search................................................] [Source ▾] [Destination ▾] [Protocol ▾] [+ Add interaction]
 
-[Search................]
-[Source ▾] [Destination ▾] [Protocol ▾]
-
-Source       Destination    Traffic                          Deployments
-Web          API            TCP (80, 443)                        17
-API          Database       TCP (5432)                           12
-API          DNS            UDP (53), TCP (53)                   15
-API          Gateway        TCP (12 ports), UDP (4 ports)         7
-
-                                      1–50 of 24
+Source       Destination     Traffic                         Deployments
+Users        Web             TCP (443)                       8
+Web          API             TCP (443)                       8
+API          Database        TCP (5432)                      6
+API          DNS             UDP (53), TCP (53)              4
+...
 ```
 
-One row is one Interaction Definition. Large traffic collections are summarized and drilled into rather than wrapped.
-
-### Definition-local Deployments
+### Deployments
 
 ```text
-CRM / Deployments                              [+ Deploy]
+[Search................................................] [Company ▾] [Environment ▾] [Scope ▾] [+ Add deployment]
 
-[Search................]
-[Company ▾] [Environment ▾] [Scope ▾]
-
-Company       Environment   Scope        Interactions
-Company A     Production    Moscow          18 / 24
-Company A     Test          Moscow          24 / 24
-Company B     Production    SPb             11 / 24
-
-                                      1–50 of 17
+Company          Environment     Scope          Interactions
+Company A        Production      Moscow         18 / 24
+Company A        Test            Moscow         24 / 24
+Company B        Production      SPb            12 / 24
+...
 ```
 
 ## 3. Applications / Deployments
 
 ```text
 Applications
-[Definitions] [Deployments]
 
-Deployments                                    [+ Add deployment]
+Definitions | Deployments
 
-[Search...................................]
-[Application ▾] [Company ▾] [Environment ▾] [Scope ▾]
+[Search................................................] [Application ▾] [Company ▾] [Environment ▾] [Scope ▾]
 
-Application   Company      Environment   Scope       Interactions
-CRM           Company A    Production    Moscow        18 / 24
-SAP ERP       Company A    Production    Moscow        52 / 63
-CRM           Company B    Production    SPb           11 / 24
+Application      Company          Environment     Scope          Interactions
+CRM              Company A        Production      Moscow         18 / 24
+CRM              Company B        Production      SPb            12 / 24
+Payments         Company A        Production      Moscow         17 / 17
+...
 
-                                      1–50 of 846
+                                      1–50 of 634   < 1 2 3 >
 ```
 
 ## 4. Application Deployment
@@ -132,7 +108,7 @@ Scope           Moscow
 Connectivity 18 / 24                              [+ Add interaction]
 
 [Search................................................]
-[Source ▾] [Destination ▾] [Protocol ▾] [Binding state ▾] [More filters]
+[Source ▾] [Destination ▾] [Protocol ▾] [More filters]
 
 Source       Source resources   Destination   Destination resources   Traffic
 Users        327 resources      Web           12 resources            TCP (80, 443)
@@ -147,6 +123,8 @@ API          119 resources      Gateway        7 resources            TCP (14 po
 One row is one selected Interaction Definition in this Application Deployment.
 
 Resource collections always render a count. The count itself is the drill-down/edit target; no adjacent `Manage` action is shown.
+
+No synthetic `Binding state` taxonomy is part of I31. Source/destination Resource counts expose the current effective membership directly.
 
 ## 5. Deployment Interaction detail
 
@@ -179,18 +157,20 @@ API → Database
 
 327 resources
 
-[Search........................] [Type ▾] [Scope ▾] [More filters]
+[Search........................] [Scope ▾] [More filters]
 
-Resource          Type        Scope
-resource-001      Network     Moscow
-resource-002      Host        Moscow
-resource-003      Host        SPb
+Resource                         Scope
+Orders database                  Moscow
+resource-002                     Moscow
+resource-003                     SPb
 ...
 
                                       1–50 of 327   < 1 2 3 >
 ```
 
 The same surface is used for one resource or thousands of resources.
+
+Resource type/classification is intentionally absent from I31 because Resource Catalogue has no accepted Resource type attribute. It must not be inferred from addresses or other realization data.
 
 ## 7. Add interaction to Deployment
 

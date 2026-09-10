@@ -95,7 +95,7 @@ Resource cells never concatenate arbitrary resource names. They render counts co
 327 resources
 ```
 
-The count is clickable. Clicking it opens the resource set for that interaction side in a server-paged/searchable/filterable table.
+The count is clickable. Clicking it opens the resource set for that interaction side in a server-paged/searchable/filterable Resource table.
 
 Traffic uses the same progressive disclosure principle:
 
@@ -127,6 +127,12 @@ Traffic
 `Add interaction` selects one or more Interaction Definitions already belonging to the Application Definition. It does not author new traffic semantics and does not create an exception/override.
 
 After selection, source and destination Resource bindings are curated in the context of that selected Deployment Interaction.
+
+## Resource-set filtering
+
+Resource-set membership is ACC truth, while Resource display metadata and effective Responsibility Scope remain Resource Catalogue truth.
+
+The I31 executable surface supports Resource search and effective Scope filtering. A Resource `Type` filter is not exposed because Resource Catalogue does not currently own a Resource type/classification attribute; adding one requires a separate accepted Resource Catalogue domain change rather than inferring a type from technical realization.
 
 ## Scale rules
 

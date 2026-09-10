@@ -43,7 +43,7 @@ Outputs:
 - target Tactical DDD, product requirement and architecture boundary;
 - legacy I27 coexistence rule without fabricated target migration semantics.
 
-Local exit: satisfied. No P0 unknown/conflict remains necessary to design domain/application code. PR #58 remains at the final M0 validation/integration gate.
+Local exit: satisfied and integrated through PR #58.
 
 ## WP-1 — domain, application and ports
 
@@ -57,7 +57,7 @@ Outputs:
 - ACC-owned compatibility-projection contracts preserving downstream stable identity;
 - domain/application/architecture tests.
 
-Local exit: target use cases and compatibility identity are executable in memory and existing downstream contracts require no rewrite.
+Local exit: satisfied and integrated through PR #59. Target use cases and compatibility identity are executable in memory and existing downstream contracts require no rewrite.
 
 ## WP-2 — PostgreSQL and compatibility projection
 
@@ -71,7 +71,7 @@ Outputs:
 - deterministic persistence/concurrency/idempotency behavior;
 - migration replay, repository integration and compatibility-projection tests.
 
-Local exit: fresh target data and existing legacy data coexist without identity rewrite or ambiguous projection.
+Local exit: satisfied and integrated through PR #60. Fresh target data and existing legacy data coexist without identity rewrite or ambiguous projection.
 
 ## WP-3 — HTTP and bounded read models
 
@@ -87,7 +87,9 @@ Outputs:
 - new product API does not expose compatibility Component Deployment IDs as authoring concepts;
 - HTTP contract/security/integration tests.
 
-Local exit: the accepted UI can be implemented without client-side whole-catalogue loading or client-manufactured internal identity combinations.
+Implementation state: coded in PR #61. The target read projection is bounded and explicit-time; Resource-set Scope enrichment is query-only composition over ACC membership and RC-owned facts; unsupported Resource Type/Binding-state assumptions were removed from UI truth. Target HTTP exposes Definition/Deployment working sets, task mutations, bounded available-interaction selection, interaction-side Resource membership and terminal retirement with exact dependency counts plus paged drill-down. Compatibility Component Deployment/DCS identities remain backend-only.
+
+Local exit: pending final self-review and repository gates.
 
 ## WP-4 — Web target
 
@@ -133,8 +135,8 @@ Local exit: the I31 completion criterion in the roadmap is executable and green.
 
 ## Blockers
 
-No semantic blocker remains for M1. M0 integration is pending repository final gates on PR #58.
+None known. M0-M2 are integrated. PR #61 remains Draft until WP-3 self-review and all touched-scope gates are green.
 
 ## Next
 
-Run the final M0 harness/knowledge gates for PR #58. If green, squash-merge M0. Start WP-1 only from a new branch/PR based on the resulting `main`; do not add M1 code to PR #58.
+Complete WP-3 diff/architecture review, fix any P0/P1 findings, validate focused HTTP and PostgreSQL proofs, then move PR #61 to Ready once so the repository CI triggers on the final head. If green, squash-merge M3 and start WP-4 from the resulting `main` in a new branch/PR.
