@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
-import { ArrowLeft, Search } from "lucide-react"
+import { ArrowLeft, Plus, Search } from "lucide-react"
 
 import { ApiError } from "@/api"
 import { Button } from "@/components/ui/Button"
+import { AddDeploymentInteractionPanel } from "@/features/catalogues/AddDeploymentInteractionPanel"
 import { CataloguePager } from "@/features/catalogues/CataloguePager"
 import {
   listAvailableInteractions,
@@ -52,6 +53,8 @@ export function ApplicationDeploymentPage({
   const [draftProtocol, setDraftProtocol] = useState("")
   const [search, setSearch] = useState("")
   const [protocol, setProtocol] = useState("")
+  const [addOpen, setAddOpen] = useState(false)
+  const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
     let active = true
@@ -86,7 +89,7 @@ export function ApplicationDeploymentPage({
     return () => {
       active = false
     }
-  }, [deploymentId])
+  }, [deploymentId, reloadToken])
 
   useEffect(() => {
     let active = true
@@ -113,7 +116,12 @@ export function ApplicationDeploymentPage({
     return () => {
       active = false
     }
-  }, [deploymentId, page, search, protocol])
+  }, [deploymentId, page, search, protocol, reloadToken])
+
+  function refreshDeployment() {
+    setPage(1)
+    setReloadToken((value) => value + 1)
+  }
 
   return (
     <div className="mx-auto grid max-w-7xl gap-5">
@@ -145,60 +153,49 @@ export function ApplicationDeploymentPage({
 
           <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
             <dl className="grid gap-4 md:grid-cols-4">
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Application</dt>
-                <dd className="mt-1 text-sm font-medium text-[#172033]">{applicationName ?? "—"}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Company</dt>
-                <dd className="mt-1 text-sm text-[#172033]">{deployment.companyReference}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Environment</dt>
-                <dd className="mt-1 text-sm text-[#172033]">{deployment.environment}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Scope</dt>
-                <dd className="mt-1 text-sm text-[#172033]">{deployment.scopeReference}</dd>
-              </div>
+              <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Application</dt><dd className="mt-1 text-sm font-medium text-[#172033]">{applicationName ?? "—"}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Company</dt><dd className="mt-1 text-sm text-[#172033]">{deployment.companyReference}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Environment</dt><dd className="mt-1 text-sm text-[#172033]">{deployment.environment}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Scope</dt><dd className="mt-1 text-sm text-[#172033]">{deployment.scopeReference}</dd></div>
             </dl>
           </section>
 
           <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-[#E2E8F0] p-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center justify-between gap-4 border-b border-[#E2E8F0] px-5 py-4">
               <div>
                 <h2 className="font-semibold text-[#172033]">Connectivity {selectedTotal} / {definedTotal}</h2>
                 <p className="mt-1 text-xs text-[#64748B]">Selected Interaction Definitions in this deployment.</p>
               </div>
-              <form
-                className="grid gap-2 sm:grid-cols-[minmax(14rem,1fr)_10rem_auto]"
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  setPage(1)
-                  setSearch(draftSearch.trim())
-                  setProtocol(draftProtocol.trim())
-                }}
-              >
-                <div className="relative min-w-0">
-                  <Search className="pointer-events-none absolute left-3 top-3 size-4 text-[#94A3B8]" aria-hidden="true" />
-                  <input
-                    className={`${inputClass} w-full pl-9`}
-                    value={draftSearch}
-                    onChange={(event) => setDraftSearch(event.target.value)}
-                    placeholder="Search connectivity"
-                    aria-label="Search connectivity"
-                  />
-                </div>
-                <input
-                  className={inputClass}
-                  value={draftProtocol}
-                  onChange={(event) => setDraftProtocol(event.target.value)}
-                  placeholder="Protocol"
-                  aria-label="Protocol"
-                />
-                <Button type="submit" variant="secondary">Apply</Button>
-              </form>
+              <Button onClick={() => setAddOpen((value) => !value)}>
+                <Plus className="size-4" aria-hidden="true" />
+                Add interaction
+              </Button>
             </div>
+
+            {addOpen ? (
+              <AddDeploymentInteractionPanel
+                deploymentId={deploymentId}
+                onCancel={() => setAddOpen(false)}
+                onChanged={refreshDeployment}
+              />
+            ) : null}
+
+            <form
+              className="grid gap-2 border-b border-[#E2E8F0] p-4 sm:grid-cols-[minmax(14rem,1fr)_10rem_auto]"
+              onSubmit={(event) => {
+                event.preventDefault()
+                setPage(1)
+                setSearch(draftSearch.trim())
+                setProtocol(draftProtocol.trim())
+              }}
+            >
+              <div className="relative min-w-0">
+                <Search className="pointer-events-none absolute left-3 top-3 size-4 text-[#94A3B8]" aria-hidden="true" />
+                <input className={`${inputClass} w-full pl-9`} value={draftSearch} onChange={(event) => setDraftSearch(event.target.value)} placeholder="Search connectivity" aria-label="Search connectivity" />
+              </div>
+              <input className={inputClass} value={draftProtocol} onChange={(event) => setDraftProtocol(event.target.value)} placeholder="Protocol" aria-label="Protocol" />
+              <Button type="submit" variant="secondary">Apply</Button>
+            </form>
 
             {connectivityLoading ? (
               <div className="p-6 text-sm text-[#64748B]">Loading connectivity…</div>
@@ -210,37 +207,15 @@ export function ApplicationDeploymentPage({
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[980px] text-left text-sm">
                   <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                    <tr>
-                      <th className="px-5 py-3">Source component</th>
-                      <th className="px-5 py-3 text-right">Source resources</th>
-                      <th className="px-5 py-3">Destination component</th>
-                      <th className="px-5 py-3 text-right">Destination resources</th>
-                      <th className="px-5 py-3">Traffic</th>
-                    </tr>
+                    <tr><th className="px-5 py-3">Source component</th><th className="px-5 py-3 text-right">Source resources</th><th className="px-5 py-3">Destination component</th><th className="px-5 py-3 text-right">Destination resources</th><th className="px-5 py-3">Traffic</th></tr>
                   </thead>
                   <tbody className="divide-y divide-[#E2E8F0]">
                     {connectivity.map((item) => (
                       <tr key={item.deploymentInteractionId}>
                         <td className="px-5 py-3 font-semibold text-[#172033]">{item.sourceComponent.displayName}</td>
-                        <td className="px-5 py-3 text-right tabular-nums">
-                          <button
-                            type="button"
-                            className="font-semibold text-[#2563EB] hover:underline"
-                            onClick={() => onOpenResources(item.deploymentInteractionId, "Source")}
-                          >
-                            {resourceCount(item.sourceComponent.resourceCount)}
-                          </button>
-                        </td>
+                        <td className="px-5 py-3 text-right tabular-nums"><button type="button" className="font-semibold text-[#2563EB] hover:underline" onClick={() => onOpenResources(item.deploymentInteractionId, "Source")}>{resourceCount(item.sourceComponent.resourceCount)}</button></td>
                         <td className="px-5 py-3 font-semibold text-[#172033]">{item.destinationComponent.displayName}</td>
-                        <td className="px-5 py-3 text-right tabular-nums">
-                          <button
-                            type="button"
-                            className="font-semibold text-[#2563EB] hover:underline"
-                            onClick={() => onOpenResources(item.deploymentInteractionId, "Destination")}
-                          >
-                            {resourceCount(item.destinationComponent.resourceCount)}
-                          </button>
-                        </td>
+                        <td className="px-5 py-3 text-right tabular-nums"><button type="button" className="font-semibold text-[#2563EB] hover:underline" onClick={() => onOpenResources(item.deploymentInteractionId, "Destination")}>{resourceCount(item.destinationComponent.resourceCount)}</button></td>
                         <td className="px-5 py-3 text-[#475569]">{trafficSummary(item.trafficAlternatives)}</td>
                       </tr>
                     ))}
@@ -249,14 +224,7 @@ export function ApplicationDeploymentPage({
               </div>
             )}
 
-            {!connectivityLoading && !connectivityError ? (
-              <CataloguePager
-                page={page}
-                pageSize={pageSize}
-                total={filteredTotal}
-                onPageChange={setPage}
-              />
-            ) : null}
+            {!connectivityLoading && !connectivityError ? <CataloguePager page={page} pageSize={pageSize} total={filteredTotal} onPageChange={setPage} /> : null}
           </section>
         </>
       ) : null}
