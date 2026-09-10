@@ -29,6 +29,7 @@ class ResourceResponsibility:
     valid_from: datetime
     valid_to: datetime | None
     provenance_reference: str
+    end_provenance_reference: str | None = None
     version: int = 1
 
     def __post_init__(self) -> None:
@@ -45,6 +46,15 @@ class ResourceResponsibility:
             raise ResourceCatalogueInvariantError(
                 "contact must be non-empty when provided"
             )
+        if self.end_provenance_reference is not None:
+            if not self.end_provenance_reference.strip():
+                raise ResourceCatalogueInvariantError(
+                    "end_provenance_reference must be non-empty when provided"
+                )
+            if self.valid_to is None:
+                raise ResourceCatalogueInvariantError(
+                    "end provenance requires valid_to"
+                )
         if self.valid_from.tzinfo is None or self.valid_from.utcoffset() is None:
             raise ResourceCatalogueInvariantError("valid_from must be offset-aware")
         if self.valid_to is not None:
@@ -62,11 +72,25 @@ class ResourceResponsibility:
             self.valid_to is None or as_of < self.valid_to
         )
 
-    def ended(self, *, valid_to: datetime) -> "ResourceResponsibility":
+    def ended(
+        self,
+        *,
+        valid_to: datetime,
+        end_provenance_reference: str,
+    ) -> "ResourceResponsibility":
         if self.valid_to is not None:
             raise ResourceCatalogueInvariantError("responsibility is already ended")
         if valid_to.tzinfo is None or valid_to.utcoffset() is None:
             raise ResourceCatalogueInvariantError("valid_to must be offset-aware")
         if valid_to <= self.valid_from:
             raise ResourceCatalogueInvariantError("valid_to must be after valid_from")
-        return replace(self, valid_to=valid_to, version=self.version + 1)
+        if not end_provenance_reference or not end_provenance_reference.strip():
+            raise ResourceCatalogueInvariantError(
+                "end_provenance_reference must be non-empty"
+            )
+        return replace(
+            self,
+            valid_to=valid_to,
+            end_provenance_reference=end_provenance_reference.strip(),
+            version=self.version + 1,
+        )
