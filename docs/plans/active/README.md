@@ -4,25 +4,24 @@ Current: `PLAN-I31-application-catalogue-target-migration.md`
 
 Goal: migrate the accepted Application Catalogue target end to end without rewriting existing downstream semantic identities or historical policy truth.
 
-Current task: WP-2 implement additive PostgreSQL persistence and compatibility projection.
+Current task: WP-2 final validation/integration for PostgreSQL target persistence and compatibility projection.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-I31-application-catalogue-target-migration.md`
-- `src/napms/application_catalogue/application/target_ports.py`
-- `src/napms/application_catalogue/adapters/postgres/curation_repository.py`
+- `src/napms/application_catalogue/adapters/postgres/migrations/0005_application_catalogue_target.sql`
 
-Expand only when required into ACC migrations, target domain/application models, PostgreSQL integration tests, existing migration/UoW helpers and curation support factories.
+Expand only when required into `target_repository.py`, target application/domain contracts, curation support, PostgreSQL migration runner and the I31 target integration tests.
 
 ## Blockers
 
-None known. M0 and M1 are squash-merged. WP-2 may add infrastructure but must preserve legacy rows and must not invent target Company/Environment/Scope or interaction ownership for legacy data.
+No known P0/P1 blocker. M0/M1 are merged. The target schema is additive, target compatibility sides are explicitly mapped, legacy I27 rows are not promoted, and executable evidence covers target write/reload plus consumption through the existing downstream repository contract.
 
 ## Gate
 
-WP-2 exits when fresh target entities persist/reload transactionally, Deployment Interaction compatibility mapping is explicit and stable, legacy rows remain untouched/readable, concurrency/idempotency behavior is deterministic, and migration replay plus PostgreSQL integration tests pass. No HTTP or Web implementation belongs in this stage.
+WP-2 local implementation exit is satisfied pending final hosted validation. No HTTP or Web implementation belongs in PR #60. Mark Ready only to request final applicable core/PostgreSQL/harness/browser regression gates; inspect job-level conclusions before claiming PASS or merging.
 
 ## Next
 
-Add the minimum additive schema first, then implement the PostgreSQL target repository/factories and focused integration tests. Prove fresh target selection -> compatibility sides/DCS/bindings while preserving legacy coexistence.
+Run final hosted validation for PR #60. If green, squash-merge M2. Start WP-3 from a new branch based on resulting `main`; implement bounded HTTP/read models and target task commands there.
