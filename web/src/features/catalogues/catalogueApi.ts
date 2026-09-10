@@ -42,12 +42,25 @@ export type DeploymentResourceBindingDto = {
   endProvenanceReference: string | null
 }
 
+export type PortConstraintDto = {
+  kind: "Any" | "Ranges" | "NotApplicable"
+  ranges?: Array<{ first: number; last: number }>
+}
+
+export type DcsTrafficAlternativeDto = {
+  protocol: string
+  sourcePorts: PortConstraintDto
+  destinationPorts: PortConstraintDto
+  serviceReference: string | null
+}
+
 export type DcsRevisionSummaryDto = {
   revisionId: string
   sourceComponentDeploymentId: string
   destinationComponentDeploymentId: string
   displayName: string | null
   provenanceReference: string
+  trafficAlternatives: DcsTrafficAlternativeDto[]
 }
 
 export type ApplicationCatalogueParticipantDto = {
@@ -203,7 +216,38 @@ export async function createCatalogueApplication(
 export function readCatalogueApplication(
   applicationId: string,
 ): Promise<ApplicationTreeDto> {
-  return request(`/api/v1/catalogues/applications/${encodeURIComponent(applicationId)}`)
+  return request(
+    `/api/v1/catalogues/application-workspace/${encodeURIComponent(applicationId)}`,
+  )
+}
+
+export async function renameCatalogueApplication(
+  application: ApplicationDto,
+  displayName: string,
+): Promise<ApplicationDto> {
+  const response = await request<{ application: ApplicationDto }>(
+    `/api/v1/catalogues/applications/${encodeURIComponent(application.applicationId)}/rename`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ displayName, expectedVersion: application.version }),
+    },
+  )
+  return response.application
+}
+
+export async function retireCatalogueApplication(
+  application: ApplicationDto,
+): Promise<ApplicationDto> {
+  const response = await request<{ application: ApplicationDto }>(
+    `/api/v1/catalogues/applications/${encodeURIComponent(application.applicationId)}/retire`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ expectedVersion: application.version }),
+    },
+  )
+  return response.application
 }
 
 export async function createCatalogueComponent(
@@ -221,6 +265,35 @@ export async function createCatalogueComponent(
   return response.component
 }
 
+export async function renameCatalogueComponent(
+  component: ComponentDto,
+  displayName: string,
+): Promise<ComponentDto> {
+  const response = await request<{ component: ComponentDto }>(
+    `/api/v1/catalogues/components/${encodeURIComponent(component.componentId)}/rename`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ displayName, expectedVersion: component.version }),
+    },
+  )
+  return response.component
+}
+
+export async function retireCatalogueComponent(
+  component: ComponentDto,
+): Promise<ComponentDto> {
+  const response = await request<{ component: ComponentDto }>(
+    `/api/v1/catalogues/components/${encodeURIComponent(component.componentId)}/retire`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ expectedVersion: component.version }),
+    },
+  )
+  return response.component
+}
+
 export async function createCatalogueDeployment(
   componentId: string,
   displayName: string | null,
@@ -231,6 +304,35 @@ export async function createCatalogueDeployment(
       method: "POST",
       headers: mutationHeaders(),
       body: JSON.stringify({ displayName: displayName || null }),
+    },
+  )
+  return response.deployment
+}
+
+export async function renameCatalogueDeployment(
+  deployment: ComponentDeploymentDto,
+  displayName: string | null,
+): Promise<ComponentDeploymentDto> {
+  const response = await request<{ deployment: ComponentDeploymentDto }>(
+    `/api/v1/catalogues/deployments/${encodeURIComponent(deployment.componentDeploymentId)}/rename`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ displayName, expectedVersion: deployment.version }),
+    },
+  )
+  return response.deployment
+}
+
+export async function retireCatalogueDeployment(
+  deployment: ComponentDeploymentDto,
+): Promise<ComponentDeploymentDto> {
+  const response = await request<{ deployment: ComponentDeploymentDto }>(
+    `/api/v1/catalogues/deployments/${encodeURIComponent(deployment.componentDeploymentId)}/retire`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ expectedVersion: deployment.version }),
     },
   )
   return response.deployment

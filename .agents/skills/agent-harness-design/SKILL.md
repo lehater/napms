@@ -11,7 +11,8 @@ description: "Use when designing, reviewing, or auditing the NAPMS repository en
 - current-plan recoverability;
 - project truth vs process vs Skill ownership;
 - Skill trigger overlap;
-- validators/evals and CI alignment;
+- validator/eval and CI alignment;
+- CI discoverability: agents can find applicable hosted gates, exact triggers/commands and manual-dispatch fallback without blind repository scans;
 - stale/dead paths and duplicated truth;
 - unnecessary harness complexity.
 
@@ -24,4 +25,5 @@ Classify findings P0-P3.
 - extend before adding;
 - no current project facts in reusable Skill bodies;
 - completed audit artifacts are not permanent repository archives;
-- run `make harness-check` after changes.
+- before treating a required deterministic check as unavailable, inspect the applicable `.github/workflows/` definition and distinguish repository capability from connector/runtime capability;
+- run `make harness-check` after changes, locally when possible or through the equivalent hosted workflow when local execution is unavailable.

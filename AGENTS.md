@@ -38,6 +38,7 @@ Use `docs/process/decision-protocol.md` when a material answer is missing or con
 - `docs/baseline/` — accepted snapshots/provenance; not the normal edit target.
 - `src/` + `tests/` — backend implementation and executable evidence.
 - `web/` — React outer adapter; apply `web/AGENTS.md` before Web UI work.
+- `.github/workflows/` — executable hosted CI gates and their exact triggers/commands.
 
 When layers disagree materially, do not silently choose the code. Resolve the highest affected canonical truth first.
 
@@ -50,6 +51,20 @@ When layers disagree materially, do not silently choose the code. Resolve the hi
 - Ordinary branch pushes must not trigger hosted Actions.
 - If material changes are required after the final PR gate, return the PR to draft and gate again when ready.
 - Git history is the archive for completed plans/superseded working artifacts.
+
+## CI execution map
+
+Repository CI is part of the Harness execution surface, not hidden repository plumbing.
+
+- Before claiming a required check cannot be executed, inspect the applicable workflow under `.github/workflows/` and its exact command/trigger.
+- The current hosted gates are intentionally trigger-controlled; do not assume every push or squash runs them.
+- `Ready for review` requests the final hosted PR gate for affected paths.
+- Workflows that expose `workflow_dispatch` may be used as an intermediate deterministic execution fallback when the current agent environment cannot run the same repository-local command.
+- Prefer local checks during the editing loop when available; do not toggle Draft/Ready merely to obtain an intermediate run.
+- When hosted CI is used as evidence, inspect the resulting run/job status and relevant logs before claiming the gate passed.
+- If the connected GitHub capability cannot dispatch a new workflow, state that capability gap explicitly rather than treating CI as absent.
+
+See `docs/process/working-loop.md` for the local-vs-hosted validation loop.
 
 ## No-invention / domain re-entry
 
@@ -97,4 +112,4 @@ Use the check matching the touched area:
 - `make check` — backend/core + harness + knowledge checks;
 - `make web-check` — Web TypeScript/build check.
 
-Hosted Actions are the final PR gate, not the branch editing loop.
+Hosted Actions are the final PR gate; applicable `workflow_dispatch` runs are an execution fallback for intermediate deterministic checks when local execution is unavailable.

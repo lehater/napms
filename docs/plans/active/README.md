@@ -2,4 +2,4 @@
 
 Current: none.
 
-No implementation plan is selected after I27 Catalogue Curation absorption. Start new work only from a new accepted requirement/target and create a fresh active PLAN according to repository process.
+No active execution plan. I28 user-journey validation pilot completed its local exit criteria; its durable product/UI truth, Harness support and executable J01 regression remain in their owning artifacts and Git history.

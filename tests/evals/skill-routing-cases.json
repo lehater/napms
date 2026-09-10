@@ -147,6 +147,15 @@
     ]
   },
   {
+    "id": "harness-ci-discovery",
+    "prompt": "Агент считает, что не может выполнить проверку, хотя в GitHub Actions уже есть workflow с тем же gate. Исправь discoverability CI в harness.",
+    "expected_skill": "agent-harness-design",
+    "not_expected_skills": [
+      "implement-slice",
+      "user-journey-validation"
+    ]
+  },
+  {
     "id": "skill-new",
     "prompt": "Стоит ли этот повторяющийся workflow оформить новым Agent Skill? Проверь trigger boundary.",
     "expected_skill": "skill-design",
@@ -168,6 +177,33 @@
     "expected_skill": "skill-design",
     "not_expected_skills": [
       "execute-work-package"
+    ]
+  },
+  {
+    "id": "journey-baseline",
+    "prompt": "Пройди J01 глазами пользователя через UI, проверь, может ли он завершить цель, и классифицируй найденные gaps P0-P3. Пока ничего не реализуй.",
+    "expected_skill": "user-journey-validation",
+    "not_expected_skills": [
+      "implement-slice",
+      "agent-harness-design"
+    ]
+  },
+  {
+    "id": "journey-usability",
+    "prompt": "Проверь полный пользовательский путь создания приложения, компонентов и связей: полноту возможностей, понятность интерфейса и сохранение результата. Выдай PASS/FAIL и findings.",
+    "expected_skill": "user-journey-validation",
+    "not_expected_skills": [
+      "implement-slice",
+      "architecture-review"
+    ]
+  },
+  {
+    "id": "journey-accepted-gap-implementation",
+    "prompt": "Baseline journey уже показал, что принятая операция rename отсутствует в Web UI. Реализуй её по существующим контрактам и добавь тесты.",
+    "expected_skill": "implement-slice",
+    "not_expected_skills": [
+      "user-journey-validation",
+      "domain-model-change"
     ]
   }
 ]

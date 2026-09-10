@@ -1,6 +1,6 @@
 # I27 Catalogue Curation HTTP API contract
 
-Status: `accepted / implemented pending final gate`.
+Status: `accepted / implemented through I28 J01 pilot corrections`.
 
 Date: 2026-09-10.
 
@@ -14,9 +14,9 @@ Relevant decisions:
 
 ## Purpose and precedence
 
-This artifact owns the I27 public transport contract for `/api/v1/catalogues/**`.
+This artifact owns the I27 public transport contract for `/api/v1/catalogues/**`, including I28 corrections that expose already accepted catalogue lifecycle and presentation behavior needed by the Application workspace.
 
-It extends the shared session, correlation, error-envelope and framework-boundary rules in `http-api-contract.md`. If a catalogue-specific statement here conflicts with an older generic/deferred statement in the base contract, this artifact is authoritative for the I27 catalogue surface.
+It extends the shared session, correlation, error-envelope and framework-boundary rules in `http-api-contract.md`. If a catalogue-specific statement here conflicts with an older generic/deferred statement in the base contract, this artifact is authoritative for the catalogue surface.
 
 The API is task-oriented. It is not a generic table/CMDB CRUD API.
 
@@ -43,13 +43,13 @@ Every catalogue mutation requires a non-empty `Idempotency-Key` header. Equivale
 
 Mutation admission is independent of catalogue visibility, Resource Responsibility and `ReadScopedConnectivity`.
 
-Selected I27 mutation actions:
+Selected catalogue mutation actions:
 - Application Communication Catalogue: `CurateApplicationCatalogue` at server-selected catalogue scope `application-catalogue`;
 - Resource Catalogue: `CurateResourceCatalogue` at server-selected catalogue scope `resource-catalogue`.
 
 The caller cannot substitute either scope in request JSON/query parameters.
 
-Current I27 read baseline preserves the accepted authenticated catalogue visibility model. Read permission does not imply either mutation action.
+Current catalogue-read visibility baseline preserves the accepted authenticated catalogue visibility model. Read permission does not imply either mutation action.
 
 ## Application Communication Catalogue reads
 
@@ -66,7 +66,7 @@ Returned stable IDs remain available as secondary technical identity; presentati
 
 ### GET /api/v1/catalogues/applications/{applicationId}
 
-Returns the owner-composed Application tree:
+Returns the owner-composed Application tree used by lightweight catalogue consumers:
 
 ```text
 Application
@@ -77,6 +77,29 @@ Application
 ```
 
 The HTTP adapter does not reconstruct this hierarchy from unrelated endpoints.
+
+### GET /api/v1/catalogues/application-workspace/{applicationId}
+
+Returns the Application-workspace projection over the same ACC-owned hierarchy. It includes lifecycle/version fields required for optimistic maintenance and expands each DCS revision with decoded vendor-neutral `trafficAlternatives`:
+
+```json
+{
+  "protocol": "tcp",
+  "sourcePorts": {"kind": "Any"},
+  "destinationPorts": {
+    "kind": "Ranges",
+    "ranges": [{"first": 443, "last": 443}]
+  },
+  "serviceReference": "https"
+}
+```
+
+Raw `projection_payload` bytes are never exposed to the Web client. If a stored payload cannot be decoded, the adapter does not invent traffic semantics; the revision remains identifiable with an empty alternatives collection so the UI can present that semantics are unavailable.
+
+Query:
+- optional offset-aware `asOf`;
+- optional `includeRetiredComponents`;
+- optional `includeRetiredDeployments`.
 
 ### GET /api/v1/catalogues/application-participants
 
@@ -104,6 +127,35 @@ Creates a Component under an Active Application. Parent identity comes from the 
 
 Creates a Component Deployment under an Active Component/ancestor Application chain.
 
+### POST /api/v1/catalogues/applications/{applicationId}/rename
+### POST /api/v1/catalogues/components/{componentId}/rename
+### POST /api/v1/catalogues/deployments/{deploymentId}/rename
+
+Rename presentation metadata without changing stable catalogue identity. Requests carry current `expectedVersion`; stale edits return `409 CatalogueConcurrencyConflict`. Application and Component require non-empty display names. Component Deployment may clear its optional display name by sending `null`.
+
+Example:
+
+```json
+{
+  "displayName": "Orders API",
+  "expectedVersion": 2
+}
+```
+
+### POST /api/v1/catalogues/applications/{applicationId}/retire
+### POST /api/v1/catalogues/components/{componentId}/retire
+### POST /api/v1/catalogues/deployments/{deploymentId}/retire
+
+Retire stable catalogue identities; no hard delete is exposed. Request:
+
+```json
+{
+  "expectedVersion": 2
+}
+```
+
+Retirement follows the accepted leaf-to-parent constraints: active Component Deployments block Component retirement and active Components block Application retirement. Such attempts return `409 CatalogueRetirementBlocked`. Historical bindings, DCS revisions and downstream references are preserved.
+
 ### POST /api/v1/catalogues/dcs-revisions
 
 Creates one immutable DCS revision from ACC-owned communication semantics.
@@ -113,7 +165,7 @@ Request contains:
 - optional display label;
 - one-or-more vendor-neutral traffic alternatives (protocol, source/destination port constraints, optional service reference).
 
-The request never accepts raw projection bytes or ACL/vendor syntax.
+The request never accepts raw projection bytes or ACL/vendor syntax. Correcting communication semantics creates another DCS revision; an existing revision is never edited in place.
 
 ### POST /api/v1/catalogues/deployments/{deploymentId}/resource-bindings
 
@@ -262,6 +314,7 @@ Minimum stable catalogue mappings:
 | catalogue authority ambiguous/unknown | 409 | `CatalogueAuthorityUnknown` |
 | subject not found | 404 | `CatalogueSubjectNotFound` |
 | inactive parent/Resource | 409 | `CatalogueParentInactive` / `CatalogueResourceInactive` |
+| blocked parent retirement | 409 | `CatalogueRetirementBlocked` |
 | invalid input/domain invariant | 422 | `CatalogueInputInvalid` / `CatalogueValidationError` |
 | invalid temporal interval/time | 422 | catalogue time/interval validation code |
 | temporal overlap | 409 | `CatalogueOverlapConflict` |
@@ -274,14 +327,16 @@ Known pre-commit SQL failure and ambiguous commit acknowledgement are intentiona
 
 ## Acceptance contract
 
-The I27 acceptance path must prove without pre-seeding the newly curated business objects:
+The catalogue acceptance path must prove without pre-seeding the newly curated business objects:
 
 ```text
 create Resources
   -> realization + scope affiliation + responsibility
 create Application -> Components -> Deployments
+  -> rename/correct structure without changing identity
   -> bind Deployments to Resources
   -> create immutable DCS
+  -> reopen and inspect its traffic semantics
   -> observe the new relationship in scoped Connectivity
   -> declare an existing Connectivity Requirement/Need for that interaction
   -> observe Required state

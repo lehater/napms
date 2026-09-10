@@ -18,6 +18,7 @@ class DcsCatalogueSummary:
     revision_id: UUID
     source_component_deployment_id: UUID
     destination_component_deployment_id: UUID
+    projection_payload: bytes
     display_name: str | None
     provenance_reference: str
 
@@ -151,6 +152,7 @@ class ReadApplicationCatalogueTreeDetail:
                 revision_id=revision.revision_id,
                 source_component_deployment_id=revision.source_component_deployment_id,
                 destination_component_deployment_id=revision.destination_component_deployment_id,
+                projection_payload=revision.projection_payload,
                 display_name=revision.display_name,
                 provenance_reference=revision.provenance_reference,
             )

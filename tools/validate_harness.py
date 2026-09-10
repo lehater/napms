@@ -82,6 +82,7 @@ def main() -> int:
         ROOT / "docs" / "architecture" / "README.md",
         ROOT / "docs" / "architecture" / "current-architecture.md",
         ROOT / "tests" / "evals" / "skill-routing-cases.json",
+        ROOT / ".github" / "workflows" / "harness.yml",
     ]
     for path in required:
         if not path.is_file():
@@ -101,6 +102,9 @@ def main() -> int:
             "web/AGENTS.md",
             "squash merge",
             "must not commit directly to",
+            "## CI execution map",
+            ".github/workflows/",
+            "workflow_dispatch",
         ]:
             if marker not in text:
                 errors.append(
@@ -130,10 +134,13 @@ def main() -> int:
             "## Context rollover",
             "disposable execution context",
             "read-only by default",
+            "## Validation execution",
+            ".github/workflows/",
+            "workflow_dispatch",
         ]:
             if marker not in text:
                 errors.append(
-                    f"working-loop.md missing context-performance marker: "
+                    f"working-loop.md missing context-performance/CI marker: "
                     f"{marker}"
                 )
 
