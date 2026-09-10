@@ -11,6 +11,8 @@ from napms.application_catalogue.application.ports import (
     ApplicationCatalogueCurationRepository,
     ApplicationCatalogueIdentityFactory,
     ApplicationCatalogueProvenanceFactory,
+    CatalogueIdempotencyConflict,
+    CataloguePersistenceOutcomeUnknown,
 )
 from napms.application_catalogue.domain.model import Application, CatalogueInvariantError
 
@@ -71,6 +73,32 @@ class CreateApplication:
         self._identities = identities
         self._provenance = provenance
 
+    def _resolve_receipt(
+        self,
+        *,
+        actor_id: str,
+        idempotency_key: str,
+        fingerprint: str,
+    ) -> CreateApplicationResult | None:
+        receipt = self._applications.find_command_receipt(
+            actor_id=actor_id,
+            idempotency_key=idempotency_key,
+        )
+        if receipt is None:
+            return None
+        if (
+            receipt.command_kind != _CREATE_APPLICATION
+            or receipt.request_fingerprint != fingerprint
+        ):
+            return CreateApplicationResult(CreateApplicationOutcome.IDEMPOTENCY_CONFLICT)
+        existing = self._applications.get_application(receipt.result_id)
+        if existing is None:
+            return CreateApplicationResult(CreateApplicationOutcome.PERSISTENCE_UNKNOWN)
+        return CreateApplicationResult(
+            CreateApplicationOutcome.RESOLVED,
+            application=existing,
+        )
+
     def execute(self, command: CreateApplicationCommand) -> CreateApplicationResult:
         authority = self._authority.check_curation(
             actor_id=command.actor_id,
@@ -90,27 +118,13 @@ class CreateApplication:
             return CreateApplicationResult(CreateApplicationOutcome.INPUT_INVALID)
 
         fingerprint = _fingerprint(display_name=display_name)
-        receipt = self._applications.find_command_receipt(
+        replay = self._resolve_receipt(
             actor_id=command.actor_id,
             idempotency_key=idempotency_key,
+            fingerprint=fingerprint,
         )
-        if receipt is not None:
-            if (
-                receipt.command_kind != _CREATE_APPLICATION
-                or receipt.request_fingerprint != fingerprint
-            ):
-                return CreateApplicationResult(
-                    CreateApplicationOutcome.IDEMPOTENCY_CONFLICT
-                )
-            existing = self._applications.get_application(receipt.result_id)
-            if existing is None:
-                return CreateApplicationResult(
-                    CreateApplicationOutcome.PERSISTENCE_UNKNOWN
-                )
-            return CreateApplicationResult(
-                CreateApplicationOutcome.RESOLVED,
-                application=existing,
-            )
+        if replay is not None:
+            return replay
 
         application_id = self._identities.new_application_id()
         provenance_reference = self._provenance.for_application(
@@ -139,7 +153,19 @@ class CreateApplication:
                 result_version=application.version,
             ),
         )
-        self._applications.commit()
+        try:
+            self._applications.commit()
+        except CatalogueIdempotencyConflict:
+            replay = self._resolve_receipt(
+                actor_id=command.actor_id,
+                idempotency_key=idempotency_key,
+                fingerprint=fingerprint,
+            )
+            return replay or CreateApplicationResult(
+                CreateApplicationOutcome.PERSISTENCE_UNKNOWN
+            )
+        except CataloguePersistenceOutcomeUnknown:
+            return CreateApplicationResult(CreateApplicationOutcome.PERSISTENCE_UNKNOWN)
 
         return CreateApplicationResult(
             CreateApplicationOutcome.CREATED,
