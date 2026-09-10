@@ -92,6 +92,11 @@ def clean_catalogues(postgres_dsn):
         )
 
 
+def _executemany(connection, statement: str, rows) -> None:
+    with connection.cursor() as cursor:
+        cursor.executemany(statement, rows)
+
+
 def _traffic_payload(port: int = 443) -> bytes:
     return JsonDcsAuthoringProjectionEncoder().encode(
         (
@@ -115,7 +120,8 @@ def _seed(connection) -> None:
         """,
         (APP,),
     )
-    connection.executemany(
+    _executemany(
+        connection,
         """
         INSERT INTO napms_application_catalogue.components (
             component_id, application_id, display_name, provenance_reference,
@@ -127,7 +133,8 @@ def _seed(connection) -> None:
             (DESTINATION, APP, "API", "prov:api", "Service", "API tier"),
         ),
     )
-    connection.executemany(
+    _executemany(
+        connection,
         """
         INSERT INTO napms_application_catalogue.interaction_definitions (
             interaction_definition_id, application_id, source_component_id,
@@ -165,7 +172,8 @@ def _seed(connection) -> None:
         """,
         (DEPLOYMENT_INTERACTION, DEPLOYMENT, INTERACTION),
     )
-    connection.executemany(
+    _executemany(
+        connection,
         """
         INSERT INTO napms_application_catalogue.component_deployments (
             component_deployment_id, provenance_reference, component_id,
@@ -187,7 +195,8 @@ def _seed(connection) -> None:
         """,
         (DCS, SOURCE_COMPAT, DESTINATION_COMPAT, _traffic_payload()),
     )
-    connection.executemany(
+    _executemany(
+        connection,
         """
         INSERT INTO napms_application_catalogue.deployment_interaction_compatibility_sides (
             deployment_interaction_id, side, component_deployment_id
@@ -207,7 +216,8 @@ def _seed(connection) -> None:
         (DEPLOYMENT_INTERACTION, DCS),
     )
 
-    connection.executemany(
+    _executemany(
+        connection,
         """
         INSERT INTO napms_resource_catalogue.resources (
             resource_reference, provenance_reference, display_name, lifecycle_state, version
@@ -219,7 +229,8 @@ def _seed(connection) -> None:
             ("resource:api-current", "prov:r3", "api-001"),
         ),
     )
-    connection.executemany(
+    _executemany(
+        connection,
         """
         INSERT INTO napms_resource_catalogue.resource_scope_affiliations (
             affiliation_reference, resource_reference, responsibility_scope,
@@ -232,7 +243,8 @@ def _seed(connection) -> None:
             ("scope:r3", "resource:api-current", "scope:spb", NOW - timedelta(days=30), None, "prov:s3"),
         ),
     )
-    connection.executemany(
+    _executemany(
+        connection,
         """
         INSERT INTO napms_application_catalogue.deployment_resource_bindings (
             reference_id, component_deployment_id, resource_reference,
