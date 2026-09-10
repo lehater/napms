@@ -87,9 +87,9 @@ Outputs:
 - new product API does not expose compatibility Component Deployment IDs as authoring concepts;
 - HTTP contract/security/integration tests.
 
-Implementation state: coded in PR #61. The target read projection is bounded and explicit-time; Resource-set Scope enrichment is query-only composition over ACC membership and RC-owned facts; unsupported Resource Type/Binding-state assumptions were removed from UI truth. Target HTTP exposes Definition/Deployment working sets, task mutations, bounded available-interaction selection, interaction-side Resource membership and terminal retirement with exact dependency counts plus paged drill-down. Compatibility Component Deployment/DCS identities remain backend-only.
+Implementation state: integrated through PR #61. The target read projection is bounded and explicit-time; Resource-set Scope enrichment is query-only composition over ACC membership and RC-owned facts; target HTTP exposes Definition/Deployment working sets, task mutations, available-interaction selection, interaction-side Resource membership and terminal retirement with exact dependency counts plus paged drill-down. Compatibility Component Deployment/DCS identities remain backend-only.
 
-Local exit: pending final self-review and repository gates.
+Local exit: satisfied. Core, PostgreSQL persistence, harness, knowledge, Docker local runtime and browser journey gates passed on the final M3 head before squash integration.
 
 ## WP-4 — Web target
 
@@ -106,7 +106,9 @@ Outputs:
 - no hard-delete action;
 - `make web-check` evidence.
 
-Local exit: representative target user flow matches the accepted wireframes semantically and remains bounded for large datasets.
+Implementation state: started on `i31/m4-web-target`. First slice is the target working-set/navigation shell consuming M3 server-bounded APIs; subsequent slices add authoring, Deployment connectivity/Resource-set drill-down and dependency-blocked flows only after the shell is validated.
+
+Local exit: pending. Representative target user flow must match the accepted wireframes semantically and remain bounded for large datasets.
 
 ## WP-5 — journeys, screenshots and absorption
 
@@ -135,8 +137,8 @@ Local exit: the I31 completion criterion in the roadmap is executable and green.
 
 ## Blockers
 
-None known. M0-M2 are integrated. PR #61 remains Draft until WP-3 self-review and all touched-scope gates are green.
+None known. M0-M3 are integrated. WP-4 is active on a new branch from the M3 squash commit.
 
 ## Next
 
-Complete WP-3 diff/architecture review, fix any P0/P1 findings, validate focused HTTP and PostgreSQL proofs, then move PR #61 to Ready once so the repository CI triggers on the final head. If green, squash-merge M3 and start WP-4 from the resulting `main` in a new branch/PR.
+Open the WP-4 Draft PR, inspect the existing Web Applications surface against the accepted target wireframes, implement the smallest `Definitions | Deployments` end-to-end slice against the M3 HTTP API, and run the focused Web gate before expanding the flow.
