@@ -231,6 +231,7 @@ def open_catalogue_target_scope(
                 catalogue=application_repository,
             ),
             retire_definition=BoundedRetirementService(
+                authority=application_authority,
                 subject_kind=RetirementSubjectKind.APPLICATION_DEFINITION,
                 subject_id_attribute="application_id",
                 dependencies=retirement_dependencies,
@@ -247,6 +248,7 @@ def open_catalogue_target_scope(
                 catalogue=application_repository,
             ),
             retire_component=BoundedRetirementService(
+                authority=application_authority,
                 subject_kind=RetirementSubjectKind.COMPONENT,
                 subject_id_attribute="component_id",
                 dependencies=retirement_dependencies,
@@ -273,6 +275,7 @@ def open_catalogue_target_scope(
                 access_rules=access_rules,
             ),
             retire_interaction_definition=BoundedRetirementService(
+                authority=application_authority,
                 subject_kind=RetirementSubjectKind.INTERACTION_DEFINITION,
                 subject_id_attribute="interaction_definition_id",
                 dependencies=retirement_dependencies,
@@ -289,6 +292,7 @@ def open_catalogue_target_scope(
                 catalogue=application_repository,
             ),
             retire_application_deployment=BoundedRetirementService(
+                authority=application_authority,
                 subject_kind=RetirementSubjectKind.APPLICATION_DEPLOYMENT,
                 subject_id_attribute="application_deployment_id",
                 dependencies=retirement_dependencies,
@@ -302,6 +306,7 @@ def open_catalogue_target_scope(
                 encoder=traffic,
             ),
             retire_deployment_interaction=BoundedRetirementService(
+                authority=application_authority,
                 subject_kind=RetirementSubjectKind.DEPLOYMENT_INTERACTION,
                 subject_id_attribute="deployment_interaction_id",
                 dependencies=retirement_dependencies,
