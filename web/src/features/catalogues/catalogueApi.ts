@@ -50,6 +50,15 @@ export type DcsRevisionSummaryDto = {
   provenanceReference: string
 }
 
+export type ApplicationCatalogueParticipantDto = {
+  applicationId: string
+  applicationDisplayName: string
+  componentId: string
+  componentDisplayName: string
+  componentDeploymentId: string
+  deploymentDisplayName: string | null
+}
+
 export type ApplicationTreeDto = {
   application: ApplicationDto
   asOf: string
@@ -168,6 +177,15 @@ export function listCatalogueApplications(
   return request(`/api/v1/catalogues/applications?${params}`)
 }
 
+export function listCatalogueApplicationParticipants(
+  page = 1,
+  search = "",
+): Promise<Page<ApplicationCatalogueParticipantDto>> {
+  const params = new URLSearchParams({ page: String(page), pageSize: "200" })
+  if (search.trim()) params.set("search", search.trim())
+  return request(`/api/v1/catalogues/application-participants?${params}`)
+}
+
 export async function createCatalogueApplication(
   displayName: string,
 ): Promise<ApplicationDto> {
@@ -232,6 +250,42 @@ export async function createCatalogueDeploymentResourceBinding(
     },
   )
   return response.binding
+}
+
+export async function createCatalogueDcsRevision(input: {
+  sourceComponentDeploymentId: string
+  destinationComponentDeploymentId: string
+  displayName: string | null
+  protocol: "tcp" | "udp"
+  destinationPort: number
+  serviceReference: string | null
+}): Promise<DcsRevisionSummaryDto> {
+  const response = await request<{ dcsRevision: DcsRevisionSummaryDto }>(
+    "/api/v1/catalogues/dcs-revisions",
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({
+        sourceComponentDeploymentId: input.sourceComponentDeploymentId,
+        destinationComponentDeploymentId: input.destinationComponentDeploymentId,
+        displayName: input.displayName,
+        trafficAlternatives: [
+          {
+            protocol: input.protocol,
+            sourcePorts: { kind: "Any", ranges: [] },
+            destinationPorts: {
+              kind: "Ranges",
+              ranges: [
+                { first: input.destinationPort, last: input.destinationPort },
+              ],
+            },
+            serviceReference: input.serviceReference,
+          },
+        ],
+      }),
+    },
+  )
+  return response.dcsRevision
 }
 
 export function listCatalogueResources(
