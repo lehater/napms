@@ -1,6 +1,6 @@
 # PLAN — I27 Catalogue Curation
 
-Status: `selected / active planning`.
+Status: `selected / active implementation`
 
 Date: 2026-09-10.
 
@@ -8,386 +8,213 @@ Owner requirement: `docs/requirements/catalogue-curation.md`.
 
 Ordered roadmap: `docs/engineering/catalogue-curation-roadmap.md`.
 
-## Objective
+## Goal
 
-Close the supported-local product gap where Resource Catalogue and Application Communication Catalogue truth is persisted and consumed but normal users cannot curate that truth through supported product workflows.
+Close the supported-local product gap where Resource Catalogue and Application Communication Catalogue truth is consumed by Connectivity and related workflows but cannot be curated through normal product paths.
 
-Target end-to-end result:
-
-```text
-user creates access-domain Resources
-    -> adds endpoint/scope/responsibility facts
-    -> creates Application/Component/Deployment structure
-    -> binds Deployment to Resource
-    -> creates valid immutable DCS revision
-    -> newly curated data appears in Connectivity
-    -> existing Need/Decision/Rule workflow can consume it
-```
-
-## Why this increment is selected
-
-Current product behavior demonstrates a concrete catalogue workflow need:
-
-- Connectivity and Checker depend on RC/ACC data;
-- demo/local catalogue facts are currently populated by seed/direct persistence mechanisms;
-- Web has no `Applications` or `Resources` curation workspaces;
-- ACC Strategic DDD owns Application/Component/Deployment/DCS identities, while current persistence/runtime starts largely at Component Deployment;
-- current read authority/visibility semantics deliberately do not imply catalogue mutation.
-
-The accepted trigger from `web-ui-requirements.md` — add catalogue workspaces only after concrete user workflows exist — is now satisfied by the local self-service onboarding workflow captured in the I27 requirement.
-
-## Highest affected layers
-
-This is not a Web-only change.
+Target journey:
 
 ```text
-Strategic DDD: mostly stable ownership
-Tactical DDD: material ACC/RC write-model closure required
-Requirements: new observable self-service behavior
-Architecture: mutation/use-case/persistence/transport seams
-Implementation: backend + PostgreSQL + Web
+create Resources
+    -> add realization / scope affiliation / responsibility
+    -> create Application / Component / Deployment structure
+    -> bind Deployments to Resources
+    -> create immutable DCS
+    -> observe the relationship in Connectivity
+    -> declare the existing Connectivity Requirement / Need
 ```
 
-Use `docs/process/domain-change-protocol.md` and `docs/process/decision-protocol.md` for any newly discovered semantic conflict/unknown.
+The increment is catalogue curation for access-domain truth, not a generic CMDB/application portfolio product.
 
-## P0 — blocking decisions before infrastructure
+## Inputs
 
-### P0.1 ACC tactical hierarchy
+Canonical inputs:
+- `docs/requirements/catalogue-curation.md` — observable I27 behavior and non-goals;
+- `docs/domain/` — Resource Catalogue and ACC ownership/identity/lifecycle semantics;
+- `docs/architecture/current-architecture.md` — dependency and composition boundaries;
+- `docs/engineering/catalogue-curation-roadmap.md` — ordered I27 capability increments;
+- `docs/engineering/catalogue-curation-http-api-contract.md` — selected `/api/v1/catalogues/**` transport contract;
+- relevant I27 ADRs, especially external correlation reference handling.
 
-Resolve canonical Tactical DDD for:
+Repository process inputs:
+- root/scoped `AGENTS.md`;
+- `docs/process/domain-change-protocol.md` and `docs/process/decision-protocol.md` when material truth is missing/conflicting;
+- repository core/PostgreSQL/Web/harness/knowledge/docker gates.
 
-```text
-Application
-  -> Component
-      -> Component Deployment
-```
+## Semantic constraints
 
-Must decide:
-
-- stable identity form for Application and Component;
-- parent/containment invariants;
-- whether Component Deployment parent identity is immutable;
-- lifecycle/retirement semantics;
-- display metadata versus identity;
-- compatibility/migration for existing Component Deployment rows that currently have no persisted Application/Component parents.
-
-Do not solve this by nullable foreign keys/UI-only grouping without an explicit migration/semantic rule.
-
-### P0.2 Catalogue lifecycle and deletion
-
-Select lifecycle semantics for locally curated catalogue identities/facts.
-
-Constraint:
-
-- downstream Requirements/Decisions/Rules/history may reference stable catalogue identities;
-- destructive deletion must not silently invalidate historical business truth.
-
-Prefer explicit retirement/end-of-validity/version replacement where the domain meaning supports it. Hard deletion is permitted only for facts whose accepted semantics and reference constraints make it safe.
-
-### P0.3 Mutation authority
-
-Define Authority Management actions and scope correlation for:
-
-- Resource Catalogue curation;
-- Application Communication Catalogue curation;
-- DCS revision creation;
-- temporal relation maintenance where different authority is justified.
-
-Avoid one generic `Admin` action unless domain evidence demonstrates that all catalogue mutations share one responsibility boundary.
-
-The selected model must preserve:
+I27 preserves these distinctions:
 
 ```text
 catalogue visibility
+!= Resource Scope Affiliation
 != Resource Responsibility
 != ReadScopedConnectivity
 != catalogue mutation authority
 ```
 
-### P0.4 DCS user-authored contract
+Further constraints:
+- Application, Component, Component Deployment and Resource are stable access-domain identities, not UI grouping keys;
+- temporal realization/affiliation/responsibility/binding facts are created/ended/replaced rather than historically rewritten;
+- DCS is immutable application-communication semantics, not a firewall-rule editor;
+- NAPMS-owned cross-entity identities use backend discovery in normal UI paths;
+- external Responsibility Scope / Person / Team correlation references follow ADR-011 and do not establish identity or authority;
+- mutation actor, action time, authority context, generated identity/provenance and idempotency handling remain backend owned;
+- existing Requirement/Decision/Rule semantic identities continue to use stable Component Deployment + DCS identities.
+
+## Execution stages
+
+### Stage 0 — semantic closure
+
+Resolved and implemented:
+- first-class `Application -> Component -> Component Deployment` Tactical DDD;
+- Active/Retired lifecycle with auditable retirement provenance;
+- temporal fact end/replacement provenance;
+- separate `CurateApplicationCatalogue` and `CurateResourceCatalogue` authority actions;
+- ACC-owned DCS authoring semantics;
+- server-owned command identity/provenance/idempotency rules.
+
+### Stage 1 — authority
+
+Implemented:
+- fail-closed owner-specific curation authority adapters;
+- server-selected catalogue scopes `application-catalogue` and `resource-catalogue`;
+- negative tests proving caller-selected scope/Resource Responsibility/read visibility do not grant curation authority.
+
+### Stage 2 — Resource Catalogue core
+
+Implemented Domain/Application/Ports for:
+- Resource create/rename/retire;
+- owner list/detail reads;
+- realization create/replace;
+- Resource Scope Affiliation create/end;
+- Resource Responsibility create/end;
+- optimistic concurrency, idempotency and audit/provenance rules.
 
-Define the supported input model for creating one immutable Directed Communication Specification revision.
+### Stage 3 — Application Communication Catalogue core
 
-The form/application contract must express application communication semantics and validate them server-side. It must not expose raw projection bytes or treat a firewall ACL editor as the ACC domain model.
+Implemented Domain/Application/Ports for:
+- Application/Component/Component Deployment create and lifecycle maintenance;
+- owner hierarchy/detail/participant reads;
+- immutable typed DCS revision creation;
+- temporal Deployment Resource Binding create/end;
+- cross-BC Resource target check through an RC-owned projection port.
 
-### P0.5 Local provenance and command identity
+### Stage 4 — PostgreSQL
 
-Define how locally curated facts receive:
+Implemented additive persistence:
+- Application/Component hierarchy and mandatory Deployment parent;
+- deterministic compatibility backfill preserving existing Deployment/DCS identities;
+- Resource lifecycle and temporal curation persistence;
+- command receipts and optimistic versions;
+- separate ACC/RC curation repositories;
+- transaction policy distinguishing known pre-commit failure from ambiguous commit acknowledgement;
+- migration replay/backfill tests and parent-aware legacy integration fixtures.
 
-- stable identity/reference;
-- provenance reference;
-- effective time where applicable;
-- idempotency/duplicate-submission behavior.
+### Stage 5 — HTTP
 
-Avoid requiring users to manually manufacture internal provenance strings/UUIDs unless they are intentionally importing an external authoritative identity.
+Implemented task-oriented authenticated catalogue routes:
+- catalogue list/detail/discovery/create operations;
+- Resource realization replacement and scope/responsibility end operations;
+- binding create/end;
+- immutable DCS authoring with Active participant discovery;
+- required `Idempotency-Key` for mutations;
+- session actor/runtime action time and backend authority context;
+- stable catalogue error mappings and 422 domain-validation safety net.
 
-## P1 — implementation stages
+The selected contract is `docs/engineering/catalogue-curation-http-api-contract.md` and extends the base HTTP conventions.
 
-### Stage 0 — canonical semantic closure
+### Stage 6 — Resources workspace
 
-Deliverables:
+Implemented:
+- `CATALOGUES -> Resources` navigation;
+- paged/searchable create/list/detail workflow;
+- effective Responsibility Scope filter;
+- current responsibility/contact search;
+- missing current realization/scope/responsibility/contact indicators;
+- realization create/replace;
+- scope affiliation create/end;
+- responsibility/contact create/end.
 
-- ACC Tactical DDD artifact under `docs/domain/`;
-- Resource Catalogue write semantics added to the smallest owning canonical artifact;
-- ubiquitous-language adjustments only where needed;
-- authority actions documented in the owning domain/requirements layer;
-- architecture delta for command/application/persistence composition;
-- executable core tests describing selected invariants before infrastructure.
+### Stage 7 — Applications workspace
 
-Exit criterion:
+Implemented:
+- `CATALOGUES -> Applications` navigation;
+- Application list/create/detail;
+- Component and Deployment creation;
+- Resource discovery, binding and unbinding;
+- DCS authoring through backend Active Application/Component/Deployment participant discovery;
+- stable IDs remain secondary technical information rather than required manual relationship input.
 
-- all P0 decisions accepted;
-- no unresolved semantic conflict blocks command implementation;
-- `make knowledge-check` expected to remain satisfiable after canonical edits.
+### Stage 8 — existing-product integration
 
-### Stage 1 — Authority Management
+Executable evidence is present for:
+- fresh Resource scope affiliation appearing in Scoped Connectivity;
+- bound Deployment appearing under that Resource;
+- newly curated DCS becoming the exact interaction consumed by existing Connectivity Requirement declaration;
+- requirement state changing from no current Need to `Required` without direct catalogue SQL/seed edits;
+- local demo hierarchy and curation authority remaining usable.
 
-Implement selected catalogue mutation actions and admission tests.
+### Stage 9 — validation and absorption
 
-Exit criterion:
+Hosted gate iterations are in progress. Core/PostgreSQL/Web/knowledge/docker have reached green on the accumulated implementation; remaining harness-plan-format fixes are being applied under draft PR state and must be re-gated on the final head.
 
-- positive and negative authority behavior is executable;
-- actor identity remains server owned;
-- selected scope/subject semantics cannot be substituted by the caller.
+After a green implementation gate:
+- absorb durable outcomes into current-state/architecture/UI owners where materially changed;
+- mark `docs/engineering/catalogue-curation-roadmap.md` complete;
+- remove this active PLAN after absorption;
+- set `docs/plans/active/README.md` to the repository's no-active-plan form;
+- re-run any gate required by material absorption changes;
+- squash-merge PR #51 only after final green validation.
 
-### Stage 2 — Resource Catalogue Domain/Application/Ports
+## Risks
 
-Implement the minimum task-oriented command/read set required by the Resources workflow.
+### P0 — accidental CMDB expansion
 
-Expected use-case responsibilities:
+Control: keep catalogue fields and workflows limited to access-domain identity, realization, responsibility, binding and communication semantics required by existing product flows.
 
-- register Resource;
-- read/list/search Resources;
-- add/end current realization version;
-- add/end Resource Scope Affiliation;
-- add/end Resource Responsibility assignment;
-- expose trusted selection data to other catalogue forms.
+### P0 — historical reference breakage
 
-Exact class/command names follow the accepted Tactical DDD rather than this plan text.
+Control: stable identity plus retirement/end/replacement semantics; no generic hard delete or mutable DCS revision.
 
-Tests first at Domain/Application level.
+### P1 — ownership/visibility becomes authority
 
-### Stage 3 — ACC Domain/Application/Ports
+Control: dedicated Authority Management actions and negative backend acceptance.
 
-Implement/complete:
+### P1 — cross-context leakage
 
-- Application and Component identities/relations;
-- Component Deployment hierarchy relation;
-- list/search/detail projections;
-- create/retire semantics selected in Stage 0;
-- Deployment Resource Binding command semantics;
-- DCS immutable revision command.
+Control: consuming ports/adapters; ACC does not read Resource Catalogue tables directly for binding admission.
 
-Ensure existing Access Rule / Requirement identity triples continue using stable Component Deployment + DCS identities without semantic rewrite.
+### P1 — migration compatibility
 
-### Stage 4 — PostgreSQL migration/persistence
+Control: additive migrations, immutable old migration checksums, deterministic orphan-only hierarchy backfill, preserved existing Deployment/DCS UUIDs and PostgreSQL integration coverage.
 
-Only after Stages 0-3 contracts are stable.
+### P2 — external identity over-modeling
 
-Tasks:
+Control: ADR-011 keeps Responsibility Scope / Person / Team references external until an accepted registry/domain requirement exists.
 
-- add Application/Component persistence required by selected model;
-- migrate existing seeded Component Deployments deterministically according to accepted compatibility rule;
-- implement command repositories for RC/ACC;
-- preserve temporal constraints/history;
-- implement optimistic/idempotent behavior selected in P0.5;
-- prove migration replay/startup compatibility.
+## Exit criteria
 
-No generic repository `save-any-row` API.
+I27 is complete only when all are true:
+- Resources and Applications workspaces support the accepted fresh-data journey without direct catalogue SQL/seed edits;
+- RC/ACC write semantics remain Domain/Application owned and PostgreSQL-backed;
+- catalogue mutation authority is explicit, backend-enforced and separate from read visibility/responsibility/scope affiliation;
+- historical/immutable identity semantics and existing downstream references are preserved;
+- fresh curated data participates in Scoped Connectivity and existing Requirement/Need flow;
+- read-allowed/mutation-denied acceptance passes;
+- core, PostgreSQL persistence, Web, harness, knowledge and local Docker runtime gates are green on the final implementation head;
+- durable documentation/current-state is absorbed and active execution artifacts are retired according to repository process.
 
-### Stage 5 — HTTP API
+## Blockers
 
-Add authenticated task-oriented catalogue endpoints and DTOs.
+No unresolved product/domain blocker is known.
 
-Required API capabilities:
+Current blocker is repository validation only: the active plan/capsule must satisfy the current harness schema and the resulting final head must pass the hosted gates.
 
-- list/search/detail read models;
-- command routes for selected mutations;
-- backend-owned discovery for Resource/Application/Component/Deployment/DCS form references;
-- authority checks before mutation;
-- explicit 4xx mapping for authorization, validation, missing reference and semantic conflict;
-- no trusted `actorId` from request bodies.
+## Next
 
-Update `docs/engineering/http-api-contract.md` when route contracts stabilize.
-
-### Stage 6 — Resources UI
-
-Read `web/AGENTS.md` before implementation.
-
-Add:
-
-```text
-CATALOGS
-  Resources
-```
-
-Minimum screen flow:
-
-```text
-Resources list
-  -> Resource detail
-      -> identity/provenance
-      -> endpoints/realizations
-      -> scope affiliations
-      -> responsibility/contact
-      -> contextual mutations
-```
-
-First slice favors complete single-entity workflows over bulk editing.
-
-### Stage 7 — Applications UI
-
-Add:
-
-```text
-CATALOGS
-  Applications
-```
-
-Minimum screen flow:
-
-```text
-Applications list
-  -> Application
-      -> Component
-          -> Deployment
-              -> Resource bindings
-              -> DCS / communication specs
-```
-
-Provide create flows using backend discovery. Do not require users to paste UUIDs for normal relationships.
-
-### Stage 8 — integration with existing product
-
-Prove new data is immediately available through existing owner-preserving compositions.
-
-At minimum:
-
-- Resource appears in scope-focused Connectivity after effective affiliation;
-- bound Component Deployment appears under the Resource;
-- DCS interaction can become the subject of existing Add connectivity / Requirement flow;
-- Checker/other read surfaces continue to preserve visibility/authority boundaries;
-- existing demo seed remains usable.
-
-### Stage 9 — acceptance and absorption
-
-Run/tighten:
-
-- focused domain/application tests;
-- PostgreSQL integration/migration tests;
-- authenticated HTTP tests;
-- Web tests/build;
-- `make test`;
-- `make harness-check`;
-- `make knowledge-check`;
-- `make web-check`;
-- Docker local runtime acceptance required by current repository practice.
-
-Acceptance scenario must start from catalogue curation rather than pre-seeded business objects for the newly proven path.
-
-After final gate:
-
-- update `docs/engineering/current-state.md`;
-- update `docs/architecture/current-architecture.md` if runtime structure changed materially;
-- update `docs/requirements/web-ui-requirements.md` / `docs/ui/` to reflect implemented catalogue workspaces;
-- mark roadmap complete;
-- remove this PLAN and reset `docs/plans/active/README.md` after durable outcomes are absorbed.
-
-## Candidate file impact
-
-Expected backend areas:
-
-```text
-src/napms/application_catalogue/domain/
-src/napms/application_catalogue/application/
-src/napms/application_catalogue/adapters/postgres/
-src/napms/resource_catalogue/domain/
-src/napms/resource_catalogue/application/
-src/napms/resource_catalogue/adapters/postgres/
-src/napms/authority_management/
-src/napms/runtime/http_api.py
-src/napms/composition/
-```
-
-Expected Web areas:
-
-```text
-web/src/App.tsx
-web/src/api.ts
-web/src/components/layout/AppShell.tsx
-web/src/features/resources/
-web/src/features/applications/
-```
-
-Expected documentation owners:
-
-```text
-docs/domain/
-docs/requirements/catalogue-curation.md
-docs/requirements/web-ui-requirements.md
-docs/architecture/current-architecture.md
-docs/engineering/http-api-contract.md
-docs/engineering/current-state.md
-docs/ui/
-```
-
-The exact touched set follows semantic need; do not mechanically edit every listed artifact.
-
-## Risk register
-
-### P0 — UI drives accidental domain model
-
-Risk: implementing `Applications` as a convenient nested frontend structure before resolving Application/Component identities creates schema/API semantics that conflict with Strategic DDD.
-
-Control: Stage 0 closes Tactical DDD first.
-
-### P0 — destructive editing breaks historical references
-
-Risk: generic update/delete endpoints can invalidate Requirement/Decision/Rule provenance or historical interpretation.
-
-Control: explicit lifecycle/version/end semantics; no generic hard-delete UX.
-
-### P1 — authority collapses into ownership
-
-Risk: selected scope, Resource Responsibility or visible catalogue data gets treated as write permission.
-
-Control: explicit Authority Management mutation actions and negative acceptance tests.
-
-### P1 — DCS becomes ACL editor
-
-Risk: user-facing communication authoring leaks technical/vendor policy concerns into ACC.
-
-Control: domain DCS input contract and immutable backend encoding.
-
-### P1 — current seed becomes migration obstacle
-
-Risk: existing deployments lack Application/Component parent rows.
-
-Control: explicit deterministic compatibility/migration decision in P0.1 before schema change.
-
-### P2 — scope/company hierarchy pressure
-
-Risk: catalogue UI tries to solve company/org hierarchy because Responsibility Scope is currently an opaque reference.
-
-Control: I27 only consumes existing Responsibility Scope references; organization hierarchy requires separate requirement/domain work.
-
-### P2 — too much catalogue scope
-
-Risk: feature expands into CMDB, bulk import, custom fields and external synchronization.
-
-Control: acceptance journey remains the minimum access-domain onboarding flow.
-
-## Definition of done
-
-I27 is done when all are true:
-
-- catalogue curation requirements are implemented without generic CMDB semantics;
-- Application/Component/Deployment tactical hierarchy is canonical and persisted;
-- RC and ACC mutation use cases are domain/application owned;
-- mutation authority is explicit and backend-enforced;
-- Resources and Applications workspaces support the minimum fresh-data journey;
-- no direct SQL/seed edit is required to onboard the proven Resource/Application/DCS structure;
-- newly curated data participates in existing Connectivity/access flow;
-- historical/immutable identity semantics are preserved;
-- required repository gates pass;
-- durable outcomes are absorbed and this active PLAN is retired.
+1. Keep PR #51 draft while this plan-schema correction is committed.
+2. Mark PR #51 ready again and inspect all hosted workflows on the new head SHA.
+3. Fix any remaining executable gate failure under draft state and re-gate.
+4. After an all-green implementation gate, perform Stage 9 durable-state absorption and retire active execution artifacts.
+5. Run any final gate required after absorption, then squash-merge PR #51.
