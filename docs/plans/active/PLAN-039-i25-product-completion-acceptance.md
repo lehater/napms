@@ -1,6 +1,6 @@
 # PLAN-039 — I25 Product Completion, Operator UX and Acceptance
 
-Status: `active — WP2A full-chain acceptance proof`
+Status: `active — WP2B operator realization/execution read surface`
 
 Date: 2026-09-10.
 
@@ -24,8 +24,8 @@ Status: `done`.
 Accepted outcome:
 - current Web/HTTP product surface is complete through Connectivity, Needs, Decisions, Rules, Effective Desired Policy and Normalized Policy;
 - NEP/TAE/APR/NEO are executable internally but have no human-facing operator surface;
-- upstream product/runtime and downstream realization/execution proofs are separated by fixture/seed boundaries;
-- P0 is the absence of one executable Requirement -> Decision -> Rule -> realization -> rendering -> execution -> verification acceptance proof;
+- upstream product/runtime and downstream realization/execution proofs were separated by fixture/seed boundaries;
+- P0 was the absence of one executable Requirement -> Decision -> Rule -> realization -> rendering -> execution -> verification acceptance proof;
 - P1 gaps are downstream operator visibility and cross-chain explainability;
 - P2 gaps include role/task navigation, uneven search/filtering and Web dependency lockfile reproducibility debt;
 - speculative dashboards, exports and bulk operations remain unjustified.
@@ -34,39 +34,47 @@ Evidence: `docs/engineering/product-completion-gap-matrix.md`.
 
 ## WP2A — Full-chain acceptance composition/test
 
-Status: `active`.
+Status: `done`.
 
-Purpose:
-close the P0 evidence gap before adding UI.
+Implemented evidence:
+- `tests/integration/postgres/test_product_completion_acceptance.py` declares a real Connectivity Requirement through its application API;
+- records a real PostgreSQL-backed Connectivity Decision referencing that Requirement;
+- Access Policy consumes that real Decision through `ConnectivityDecisionConsumerAdapter` and materializes the exact Rule;
+- NEP placement and configured TAE evidence feed APR;
+- APR derives desired policy, proves `Drift/Add`, renders the accepted target artifact;
+- NEO deterministic execution returns `Verified` with matching post-state digest;
+- exact Requirement/Decision/Rule and APR rule-reference continuity is asserted;
+- no production-domain change or copied cross-context persistence was introduced.
 
-Required chain:
-```text
-real Connectivity Requirement declaration
-    -> real Connectivity Decision persistence/selection
-    -> Access Rule proposal/materialization using the real decision seam
-    -> effective desired policy
-    -> NEP placement + TAE configured evidence
-    -> APR desired-vs-configured conclusion
-    -> APR target rendering
-    -> NEO deterministic controlled execution
-    -> post-check Verified evidence
-```
-
-Rules:
-- use existing application/domain APIs and context-owned repositories;
-- no copied cross-context truth or new persistence;
-- no `AllowedDecision` test stub at the Decision -> Access Policy handoff;
-- assert exact subject/reference continuity at semantic handoffs;
-- deterministic NEO target stub is accepted execution evidence and does not claim real Cisco transport.
-
-Exit:
-- one PostgreSQL integration acceptance test proves the complete supported local chain and fail-closed ownership boundaries without direct application-table mutation for lifecycle facts that already have owning APIs.
+Verification:
+- PostgreSQL suite passed after aligning the expected APR provenance reference to canonical `access-rule:<uuid>` form;
+- harness passed after restoring the mandatory plan exit-criteria section.
 
 ## WP2B — Network-operator realization/execution read model and HTTP surface
 
-Status: `blocked on WP2A`.
+Status: `active`.
 
-Define the smallest read-only owner-preserving projection needed to inspect placement, reconciliation, rendering and execution evidence. Prefer one operator composition over generic CRUD surfaces per bounded context.
+Purpose:
+provide the smallest truthful read surface for placement, reconciliation, rendering and operation evidence without turning NEP/TAE/APR/NEO into generic CRUD workspaces.
+
+Discovered runtime constraint:
+- the current HTTP runtime has no selected source for a `ManagedReconciliationScopeContract` or configured TAE evidence selection;
+- NEO is not wired to HTTP and its current operation repository is process-local/in-memory;
+- therefore an operator view must not manufacture `Satisfied/Drift`, configured-state or execution history when those inputs are unavailable.
+
+Required semantics:
+- owner-preserving composition only;
+- distinguish `Available`, `NotAvailable` and `Unknown/Ambiguous` rather than interpreting absence as a fact;
+- desired policy/placement/rendering may be shown when their owning inputs are available;
+- reconciliation is shown only when an explicit configured-evidence selection and managed-scope contract are available;
+- operation result is shown only from an actual NEO operation record/result, never inferred from rendering;
+- local deterministic technical fixtures may make the demo executable but remain bootstrap/demo facts, not production truth.
+
+Exit:
+- accepted requirement/architecture contract for the operator projection;
+- framework-free read composition with tests for available and fail-closed unavailable/unknown inputs;
+- authenticated HTTP read surface over that projection;
+- no new authoritative cross-context table.
 
 ## WP3 — Explainability and operator Web journey
 
@@ -82,7 +90,7 @@ Improve only concrete task bottlenecks. Bulk actions and extra serializers remai
 
 ## WP5 — End-to-end local acceptance chain
 
-Status: `partly advanced by WP2A; final product acceptance blocked on WP3`.
+Status: `executable core chain proven by WP2A; final product acceptance blocked on WP3 explainability`.
 
 The final accepted local product criterion remains:
 ```text
@@ -106,7 +114,7 @@ Consolidate supported local startup/recovery/upgrade/product workflows and expli
 
 ## WP7 — Final product verification and roadmap closure
 
-Status: `blocked on WP2A-WP6`.
+Status: `blocked on WP2B-WP6`.
 
 Run repository gates and acceptance evidence, absorb durable outcomes into canonical truth, retire PLAN-039 and mark the current post-Wave-1 roadmap complete for the supported local target.
 
@@ -123,8 +131,8 @@ I25 exits when:
 
 ## Blockers
 
-None for WP2A. Real Cisco/device access, corporate identity, external authoritative sources and enterprise infrastructure remain optional and non-blocking.
+No external infrastructure blocks WP2B. The main semantic constraint is internal: configured reconciliation and operation history can only be presented when their actual owning inputs/results exist. Real Cisco/device access, corporate identity and enterprise sources remain optional.
 
 ## Next
 
-Build the real PostgreSQL-backed Requirement -> Decision -> Rule handoff, then extend the existing APR/NEP/TAE/NEO proof through reconciliation, rendering and Verified execution without using the historical `AllowedDecision` stub.
+Define and accept the owner-preserving network-operator projection contract, including explicit unavailable/unknown states for missing configured evidence/managed-scope contract/operation result, then implement its framework-free read composition before adding HTTP or Web presentation.
