@@ -8,8 +8,13 @@ import {
   createCatalogueResourceRealization,
   createCatalogueResourceResponsibility,
   createCatalogueResourceScopeAffiliation,
+  endCatalogueResourceResponsibility,
+  endCatalogueResourceScopeAffiliation,
   readCatalogueResource,
+  replaceCatalogueResourceRealization,
   type ResourceDetailDto,
+  type ResourceResponsibilityDto,
+  type ResourceScopeAffiliationDto,
 } from "@/features/catalogues/catalogueApi"
 
 const inputClass =
@@ -33,11 +38,12 @@ export function ResourceDetailsPage({
   const [error, setError] = useState<ApiError | null>(null)
 
   const [addresses, setAddresses] = useState("")
-  const [creatingRealization, setCreatingRealization] = useState(false)
+  const [savingRealization, setSavingRealization] = useState(false)
   const [realizationError, setRealizationError] = useState<ApiError | null>(null)
 
   const [responsibilityScope, setResponsibilityScope] = useState("")
   const [creatingAffiliation, setCreatingAffiliation] = useState(false)
+  const [endingAffiliationReference, setEndingAffiliationReference] = useState<string | null>(null)
   const [affiliationError, setAffiliationError] = useState<ApiError | null>(null)
 
   const [partyReference, setPartyReference] = useState("")
@@ -48,6 +54,9 @@ export function ResourceDetailsPage({
   const [responsibilityDisplayName, setResponsibilityDisplayName] = useState("")
   const [responsibilityContact, setResponsibilityContact] = useState("")
   const [creatingResponsibility, setCreatingResponsibility] = useState(false)
+  const [endingResponsibilityReference, setEndingResponsibilityReference] = useState<
+    string | null
+  >(null)
   const [responsibilityError, setResponsibilityError] = useState<ApiError | null>(null)
 
   async function load() {
@@ -66,27 +75,38 @@ export function ResourceDetailsPage({
     void load()
   }, [resourceReference])
 
-  async function addRealization(event: React.FormEvent) {
+  async function saveRealization(event: React.FormEvent) {
     event.preventDefault()
     const values = addresses
       .split(/[\n,]+/)
       .map((value) => value.trim())
       .filter(Boolean)
     if (values.length === 0) return
-    setCreatingRealization(true)
+    setSavingRealization(true)
     setRealizationError(null)
     try {
-      await createCatalogueResourceRealization(
-        resourceReference,
-        values,
-        new Date().toISOString(),
-      )
+      const current = detail?.effectiveRealizations[0]
+      if (current) {
+        await replaceCatalogueResourceRealization(
+          current,
+          values,
+          new Date().toISOString(),
+        )
+      } else {
+        await createCatalogueResourceRealization(
+          resourceReference,
+          values,
+          new Date().toISOString(),
+        )
+      }
       setAddresses("")
       await load()
     } catch (caught) {
-      setRealizationError(errorFrom(caught, "Resource realization could not be created."))
+      setRealizationError(
+        errorFrom(caught, "Resource realization could not be saved."),
+      )
     } finally {
-      setCreatingRealization(false)
+      setSavingRealization(false)
     }
   }
 
@@ -108,6 +128,20 @@ export function ResourceDetailsPage({
       setAffiliationError(errorFrom(caught, "Scope affiliation could not be created."))
     } finally {
       setCreatingAffiliation(false)
+    }
+  }
+
+  async function endScopeAffiliation(item: ResourceScopeAffiliationDto) {
+    if (!window.confirm(`End scope affiliation ${item.responsibilityScope} now?`)) return
+    setEndingAffiliationReference(item.affiliationReference)
+    setAffiliationError(null)
+    try {
+      await endCatalogueResourceScopeAffiliation(item, new Date().toISOString())
+      await load()
+    } catch (caught) {
+      setAffiliationError(errorFrom(caught, "Scope affiliation could not be ended."))
+    } finally {
+      setEndingAffiliationReference(null)
     }
   }
 
@@ -140,6 +174,24 @@ export function ResourceDetailsPage({
     }
   }
 
+  async function endResponsibility(item: ResourceResponsibilityDto) {
+    if (!window.confirm(`End ${item.role} responsibility for ${item.displayName} now?`)) {
+      return
+    }
+    setEndingResponsibilityReference(item.assignmentReference)
+    setResponsibilityError(null)
+    try {
+      await endCatalogueResourceResponsibility(item, new Date().toISOString())
+      await load()
+    } catch (caught) {
+      setResponsibilityError(
+        errorFrom(caught, "Resource responsibility could not be ended."),
+      )
+    } finally {
+      setEndingResponsibilityReference(null)
+    }
+  }
+
   if (loading && detail === null) {
     return <div className="text-sm text-[#64748B]">Loading resource…</div>
   }
@@ -157,6 +209,8 @@ export function ResourceDetailsPage({
   }
 
   if (!detail) return null
+
+  const hasCurrentRealization = detail.effectiveRealizations.length > 0
 
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
@@ -186,9 +240,11 @@ export function ResourceDetailsPage({
       <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center gap-2">
           <Plus className="size-4 text-[#2563EB]" aria-hidden="true" />
-          <h2 className="font-semibold text-[#172033]">Add technical addresses</h2>
+          <h2 className="font-semibold text-[#172033]">
+            {hasCurrentRealization ? "Replace technical addresses" : "Add technical addresses"}
+          </h2>
         </div>
-        <form className="grid gap-3" onSubmit={addRealization}>
+        <form className="grid gap-3" onSubmit={saveRealization}>
           <textarea
             className={`${inputClass} min-h-24 resize-y`}
             value={addresses}
@@ -198,10 +254,12 @@ export function ResourceDetailsPage({
           />
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs text-[#64748B]">
-              One address per line or comma. A new authoritative realization starts now.
+              {hasCurrentRealization
+                ? "Replacing ends the current realization now and creates a new historical version."
+                : "One address per line or comma. A new authoritative realization starts now."}
             </p>
-            <Button type="submit" loading={creatingRealization} disabled={!addresses.trim()}>
-              Add addresses
+            <Button type="submit" loading={savingRealization} disabled={!addresses.trim()}>
+              {hasCurrentRealization ? "Replace addresses" : "Add addresses"}
             </Button>
           </div>
         </form>
@@ -278,11 +336,24 @@ export function ResourceDetailsPage({
           ) : (
             <div className="mt-5 grid gap-2">
               {detail.effectiveScopeAffiliations.map((item) => (
-                <div key={item.affiliationReference} className="rounded-md bg-[#F8FAFC] px-4 py-3">
-                  <div className="font-medium text-[#172033]">{item.responsibilityScope}</div>
-                  <div className="mt-1 text-xs text-[#64748B]">
-                    since {new Date(item.validFrom).toLocaleString()} · v{item.version}
+                <div
+                  key={item.affiliationReference}
+                  className="flex items-center justify-between gap-3 rounded-md bg-[#F8FAFC] px-4 py-3"
+                >
+                  <div>
+                    <div className="font-medium text-[#172033]">{item.responsibilityScope}</div>
+                    <div className="mt-1 text-xs text-[#64748B]">
+                      since {new Date(item.validFrom).toLocaleString()} · v{item.version}
+                    </div>
                   </div>
+                  <Button
+                    variant="secondary"
+                    loading={endingAffiliationReference === item.affiliationReference}
+                    disabled={endingAffiliationReference !== null}
+                    onClick={() => void endScopeAffiliation(item)}
+                  >
+                    End
+                  </Button>
                 </div>
               ))}
             </div>
@@ -384,9 +455,21 @@ export function ResourceDetailsPage({
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {detail.effectiveResponsibilities.map((item) => (
               <div key={item.assignmentReference} className="rounded-md border border-[#E2E8F0] p-4">
-                <div className="font-semibold text-[#172033]">{item.displayName}</div>
-                <div className="mt-1 text-sm text-[#64748B]">
-                  {item.role} · {item.partyKind}
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-semibold text-[#172033]">{item.displayName}</div>
+                    <div className="mt-1 text-sm text-[#64748B]">
+                      {item.role} · {item.partyKind}
+                    </div>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    loading={endingResponsibilityReference === item.assignmentReference}
+                    disabled={endingResponsibilityReference !== null}
+                    onClick={() => void endResponsibility(item)}
+                  >
+                    End
+                  </Button>
                 </div>
                 <div className="mt-2 font-mono text-xs text-[#64748B]">{item.partyReference}</div>
                 {item.contact ? (
