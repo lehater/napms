@@ -13,23 +13,23 @@ Define observable authorization behavior for catalogue mutation without conflati
 I27 uses:
 
 ```text
-CurateApplicationCatalogue
-CurateResourceCatalogue
+CurateApplicationCatalogue @ application-catalogue
+CurateResourceCatalogue    @ resource-catalogue
 ```
 
-Authority Management remains the sole owner of actor/action admission.
+Authority Management remains the sole owner of actor/action admission. The administrative scope references above are server-owned command policy; callers do not select them.
 
 ## Observable behavior
 
 For every catalogue mutation:
 
 1. authenticated session supplies the Actor;
-2. caller selects only an explicit curation Responsibility Scope where required by the workflow;
-3. backend evaluates the corresponding `Curate*Catalogue` action for the Actor/scope/effective time;
+2. owning application use case selects its fixed catalogue administrative scope;
+3. backend evaluates the corresponding `Curate*Catalogue` action for Actor/scope/effective time;
 4. command validates owner-domain invariants;
 5. persistence occurs only after admission and invariant validation.
 
-The client does not supply trusted `actorId`.
+The client does not supply trusted `actorId`, catalogue authority scope or server action time.
 
 ## Separation of concerns
 
@@ -45,17 +45,19 @@ The following facts do not by themselves grant curation permission:
 
 Likewise catalogue curation authority does not grant any of those protected policy actions.
 
-## Scope ambiguity
+A Responsibility Scope appearing inside a Resource Scope Affiliation command is business data for that relation. It is not substituted for the server-owned `resource-catalogue` authorization scope.
 
-A mutation requiring a curation scope must fail closed when the effective authority context is missing or ambiguous. The backend must not guess a scope from display names, Resource address, Application hierarchy or currently visible UI selection.
+## Scope integrity
 
-For Resource Scope Affiliation commands the target affiliation scope is itself the authority scope.
+ACC and RC curation fail closed unless the actor has exactly one effective admitted assignment for the corresponding fixed administrative action/scope according to existing Authority Management ambiguity semantics.
 
-For ACC curation the selected Responsibility Scope is an administrative action context and does not become part of Application/Component/Deployment identity.
+The backend must not derive catalogue permission from display names, Resource addresses, Application hierarchy, Resource Scope Affiliation, Resource Responsibility or currently visible UI selection.
+
+If a later requirement needs delegated per-team/per-company catalogue editing, the product must introduce an explicit catalogue stewardship/governance contract rather than reinterpret current membership/contact relations.
 
 ## Read workspace
 
-The UI may hide or disable create/edit actions when the session has no admitted curation scope. This is presentation only.
+The UI may hide or disable create/edit actions when the session lacks the corresponding catalogue curation capability. This is presentation only.
 
 Direct HTTP invocation of the same mutation must still be rejected when authority is absent.
 
@@ -74,4 +76,4 @@ Protected internal authority/provenance details must not be leaked merely to exp
 
 ## Local demo
 
-The supported local demo actor may be seeded with both curation actions for `local-demo` to exercise the workflow end to end.
+The supported local demo actor may be seeded with both curation actions on their fixed catalogue administrative scopes to exercise the workflow end to end.
