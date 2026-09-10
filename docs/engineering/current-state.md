@@ -4,7 +4,7 @@ Status: `I25 Product Completion, Operator UX and Acceptance accepted and impleme
 
 Date: 2026-09-10.
 
-Current execution pointer: `docs/plans/active/README.md` while final I25 merge verification is in progress.
+Current execution pointer: `docs/plans/active/README.md`; no active implementation plan remains after I25 retirement.
 
 This file is a capability snapshot, not an increment-by-increment changelog. Detailed history lives in Git; roadmap status lives in `docs/engineering/post-wave1-product-completion-roadmap.md`.
 
@@ -56,7 +56,7 @@ Local username/password authentication is the primary supported authentication p
 
 ## I25 product-completion boundary
 
-The supported local product now has one executable full-chain acceptance proof:
+The supported local product has one executable full-chain acceptance proof:
 
 ```text
 declared Connectivity Requirement
@@ -106,7 +106,9 @@ Each destination performs its own read authorization. The Realization projection
 
 ## Current execution
 
-I25 Product Completion, Operator UX and Acceptance is implemented and in final merge verification. Durable outcomes include:
+No implementation plan is selected after I25 absorption.
+
+I25 Product Completion, Operator UX and Acceptance is complete. Durable outcomes include:
 - a PostgreSQL-backed full-chain acceptance proof from Requirement through deterministic controlled execution and `Verified` post-state;
 - an accepted owner-preserving Network Operator Realization View requirement/architecture boundary;
 - dedicated `ReadNetworkOperatorRealization` authority admission, PostgreSQL composition and authenticated HTTP transport;
@@ -116,7 +118,7 @@ I25 Product Completion, Operator UX and Acceptance is implemented and in final m
 - a package-manager-generated Web lockfile with `npm ci` in CI and Docker build paths;
 - `docs/engineering/local-product-operator-runbook.md` for supported startup/status/product/recovery/upgrade workflow and explicit exclusions.
 
-Final I25 gates are required on the absorption candidate before merge. Previous I25 candidates passed core, PostgreSQL persistence, Web, harness, knowledge and Docker local-runtime gates; Docker coverage includes fresh authenticated product execution, preserved-volume restart with credential rotation, logical backup/clean restore, migration replay no-op and operator status diagnostics.
+The final I25 absorption candidate passed core, PostgreSQL persistence, Web, harness, knowledge and Docker local-runtime gates. Docker coverage includes fresh authenticated product execution, preserved-volume restart with credential rotation, logical backup/clean restore, migration replay no-op and operator status diagnostics.
 
 I24 Local Deployment and Operational Hardening, I23 Optional Integration Extension Skeleton, I22 Network Environment Operations, I21 Configuration Rendering, I20 Reconciliation, I19 Network Enforcement Placement, I18 Technical-to-Domain Access Resolution, I17 Technical Access Evidence, I16B Connectivity Decision Runtime/Workflow and earlier increments remain complete and absorbed.
 
