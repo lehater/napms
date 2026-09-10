@@ -10,12 +10,9 @@ Current task: WP-5 compatibility acceptance, deterministic screenshot evidence a
 
 Read first:
 - `docs/plans/active/PLAN-I31-application-catalogue-target-migration.md`
-- `docs/engineering/application-catalogue-target-migration-roadmap.md`
-- `docs/ui/application-catalogue-wireframes.md`
 - `e2e/test_j01_application_authoring.py`
-- `e2e/test_j03_connectivity_request_decision.py`
 
-Expand only when required into downstream Connectivity / Decision / Access Policy Web flows, browser-gate infrastructure and current-state/canonical documentation touched by I31.
+Expand only when required into `e2e/test_j03_connectivity_request_decision.py`, the migration roadmap/wireframes, downstream Connectivity / Decision / Access Policy Web flows, browser-gate infrastructure and current-state/canonical documentation touched by I31.
 
 ## Blockers
 
