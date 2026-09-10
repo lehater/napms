@@ -4,7 +4,11 @@ from enum import Enum
 from typing import Protocol
 from uuid import UUID
 
-from napms.application_catalogue.application.ports import CataloguePersistenceError
+from napms.application_catalogue.application.ports import (
+    ApplicationCatalogueAuthorityOutcome,
+    ApplicationCatalogueCurationAuthorityPort,
+    CataloguePersistenceError,
+)
 from napms.application_catalogue.application.target_curation import TargetMutationOutcome
 from napms.application_catalogue.application.target_lifecycle import (
     RetirementDependencyKind,
@@ -225,22 +229,36 @@ class TargetRetirementDependencyReader:
 
 
 class BoundedRetirementService:
-    """Preflight exact bounded dependencies, then delegate the existing lifecycle mutation."""
+    """Authorize, preflight exact bounded dependencies, then delegate lifecycle mutation."""
 
     def __init__(
         self,
         *,
+        authority: ApplicationCatalogueCurationAuthorityPort,
         subject_kind: RetirementSubjectKind,
         subject_id_attribute: str,
         dependencies: TargetRetirementDependencyReader,
         delegate,
     ) -> None:
+        self._authority = authority
         self._subject_kind = subject_kind
         self._subject_id_attribute = subject_id_attribute
         self._dependencies = dependencies
         self._delegate = delegate
 
     def execute(self, command) -> TargetRetirementMutationResult:
+        authority = self._authority.check_curation(
+            actor_id=command.actor_id,
+            effective_time=command.effective_time,
+        )
+        if authority.outcome is ApplicationCatalogueAuthorityOutcome.DENIED:
+            return TargetRetirementMutationResult(TargetMutationOutcome.AUTHORITY_DENIED)
+        if (
+            authority.outcome is not ApplicationCatalogueAuthorityOutcome.PERMITTED
+            or authority.authority_reference is None
+        ):
+            return TargetRetirementMutationResult(TargetMutationOutcome.AUTHORITY_UNKNOWN)
+
         subject_id = getattr(command, self._subject_id_attribute)
         groups = self._dependencies.summarize(
             subject_kind=self._subject_kind,
@@ -253,11 +271,10 @@ class BoundedRetirementService:
                 dependencies=groups,
             )
 
+        # The M1 delegate repeats authority/version/dependency checks and owns the
+        # actual transaction. That second check closes the preflight-to-write race.
         result: RetirementMutationResult = self._delegate.execute(command)
         if result.outcome is TargetMutationOutcome.DEPENDENCY_BLOCKED:
-            # A dependency may have appeared after preflight. Re-read exact bounded
-            # groups for the response; fall back to the M1 result only if the race
-            # disappeared again before this projection.
             current = self._dependencies.summarize(
                 subject_kind=self._subject_kind,
                 subject_id=subject_id,
