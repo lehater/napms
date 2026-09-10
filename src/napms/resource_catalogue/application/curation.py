@@ -9,7 +9,9 @@ from napms.resource_catalogue.application.ports import (
     ResourceCatalogueCommandReceipt,
     ResourceCatalogueCurationAuthorityPort,
     ResourceCatalogueCurationRepository,
+    ResourceCatalogueIdempotencyConflict,
     ResourceCatalogueIdentityFactory,
+    ResourceCataloguePersistenceOutcomeUnknown,
     ResourceCatalogueProvenanceFactory,
 )
 from napms.resource_catalogue.domain.model import Resource, ResourceCatalogueInvariantError
@@ -78,6 +80,32 @@ class CreateResource:
         self._identities = identities
         self._provenance = provenance
 
+    def _resolve_receipt(
+        self,
+        *,
+        actor_id: str,
+        idempotency_key: str,
+        fingerprint: str,
+    ) -> CreateResourceResult | None:
+        receipt = self._resources.find_command_receipt(
+            actor_id=actor_id,
+            idempotency_key=idempotency_key,
+        )
+        if receipt is None:
+            return None
+        if (
+            receipt.command_kind != _CREATE_RESOURCE
+            or receipt.request_fingerprint != fingerprint
+        ):
+            return CreateResourceResult(CreateResourceOutcome.IDEMPOTENCY_CONFLICT)
+        existing = self._resources.get_resource(receipt.result_reference)
+        if existing is None:
+            return CreateResourceResult(CreateResourceOutcome.PERSISTENCE_UNKNOWN)
+        return CreateResourceResult(
+            CreateResourceOutcome.RESOLVED,
+            resource=existing,
+        )
+
     def execute(self, command: CreateResourceCommand) -> CreateResourceResult:
         authority = self._authority.check_curation(
             actor_id=command.actor_id,
@@ -100,23 +128,13 @@ class CreateResource:
             return CreateResourceResult(CreateResourceOutcome.INPUT_INVALID)
 
         fingerprint = _fingerprint(display_name=display_name)
-        receipt = self._resources.find_command_receipt(
+        replay = self._resolve_receipt(
             actor_id=command.actor_id,
             idempotency_key=idempotency_key,
+            fingerprint=fingerprint,
         )
-        if receipt is not None:
-            if (
-                receipt.command_kind != _CREATE_RESOURCE
-                or receipt.request_fingerprint != fingerprint
-            ):
-                return CreateResourceResult(CreateResourceOutcome.IDEMPOTENCY_CONFLICT)
-            existing = self._resources.get_resource(receipt.result_reference)
-            if existing is None:
-                return CreateResourceResult(CreateResourceOutcome.PERSISTENCE_UNKNOWN)
-            return CreateResourceResult(
-                CreateResourceOutcome.RESOLVED,
-                resource=existing,
-            )
+        if replay is not None:
+            return replay
 
         resource_reference = self._identities.new_resource_reference()
         provenance_reference = self._provenance.for_resource(
@@ -145,7 +163,19 @@ class CreateResource:
                 result_version=resource.version,
             ),
         )
-        self._resources.commit()
+        try:
+            self._resources.commit()
+        except ResourceCatalogueIdempotencyConflict:
+            replay = self._resolve_receipt(
+                actor_id=command.actor_id,
+                idempotency_key=idempotency_key,
+                fingerprint=fingerprint,
+            )
+            return replay or CreateResourceResult(
+                CreateResourceOutcome.PERSISTENCE_UNKNOWN
+            )
+        except ResourceCataloguePersistenceOutcomeUnknown:
+            return CreateResourceResult(CreateResourceOutcome.PERSISTENCE_UNKNOWN)
 
         return CreateResourceResult(
             CreateResourceOutcome.CREATED,
