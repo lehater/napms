@@ -11,9 +11,8 @@ Current task: WP-3 close final CI findings for bounded target read models and ta
 Read first:
 - `docs/plans/active/PLAN-I31-application-catalogue-target-migration.md`
 - `docs/engineering/application-catalogue-target-http-contract.md`
-- `src/napms/application_catalogue/application/target_read.py`
 
-Expand only when required into target retirement, HTTP routers, PostgreSQL query/repository adapters, catalogue composition, owner-specific dependency queries and focused runtime/integration tests.
+Expand only when required into target read/retirement application contracts, HTTP routers, PostgreSQL query/repository adapters, catalogue composition, owner-specific dependency queries and focused runtime/integration tests.
 
 ## Blockers
 
@@ -25,4 +24,4 @@ WP-3 exits when the accepted target UI can consume Definition/Deployment lists, 
 
 ## Next
 
-Close the failing PostgreSQL and harness gates on PR #61, rerun the affected checks on the final head, then squash-merge M3 only after all applicable gates are green.
+Close the failing PostgreSQL and harness gates on PR #61, rerun all applicable checks on the final head, then squash-merge M3 only after every required gate is green.
