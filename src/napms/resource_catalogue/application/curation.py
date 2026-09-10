@@ -7,6 +7,7 @@ import json
 from napms.resource_catalogue.application.ports import (
     ResourceCatalogueAuthorityOutcome,
     ResourceCatalogueCommandReceipt,
+    ResourceCatalogueConcurrencyConflict,
     ResourceCatalogueCurationAuthorityPort,
     ResourceCatalogueCurationRepository,
     ResourceCatalogueIdempotencyConflict,
@@ -18,6 +19,8 @@ from napms.resource_catalogue.domain.model import Resource, ResourceCatalogueInv
 
 
 _CREATE_RESOURCE = "CreateResource"
+_RENAME_RESOURCE = "RenameResource"
+_RETIRE_RESOURCE = "RetireResource"
 
 
 class CreateResourceOutcome(str, Enum):
@@ -26,6 +29,19 @@ class CreateResourceOutcome(str, Enum):
     AUTHORITY_DENIED = "AuthorityDenied"
     AUTHORITY_UNKNOWN = "AuthorityUnknown"
     INPUT_INVALID = "InputInvalid"
+    IDEMPOTENCY_CONFLICT = "IdempotencyConflict"
+    PERSISTENCE_UNKNOWN = "PersistenceUnknown"
+
+
+class ResourceMutationOutcome(str, Enum):
+    UPDATED = "Updated"
+    RESOLVED = "Resolved"
+    AUTHORITY_DENIED = "AuthorityDenied"
+    AUTHORITY_UNKNOWN = "AuthorityUnknown"
+    NOT_FOUND = "NotFound"
+    INPUT_INVALID = "InputInvalid"
+    CONCURRENCY_CONFLICT = "ConcurrencyConflict"
+    RETIREMENT_BLOCKED = "RetirementBlocked"
     IDEMPOTENCY_CONFLICT = "IdempotencyConflict"
     PERSISTENCE_UNKNOWN = "PersistenceUnknown"
 
@@ -44,6 +60,32 @@ class CreateResourceResult:
     resource: Resource | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class RenameResourceCommand:
+    resource_reference: str
+    display_name: str
+    expected_version: int
+    actor_id: str
+    effective_time: datetime
+    idempotency_key: str
+
+
+@dataclass(frozen=True, slots=True)
+class RetireResourceCommand:
+    resource_reference: str
+    expected_version: int
+    actor_id: str
+    effective_time: datetime
+    idempotency_key: str
+
+
+@dataclass(frozen=True, slots=True)
+class ResourceMutationResult:
+    outcome: ResourceMutationOutcome
+    resource: Resource | None = None
+    result_version: int | None = None
+
+
 def _normalize_optional(value: str | None) -> str | None:
     if value is None:
         return None
@@ -56,14 +98,43 @@ def _normalize_required(value: str) -> str | None:
     return normalized or None
 
 
-def _fingerprint(*, display_name: str | None) -> str:
-    payload = json.dumps(
-        {"displayName": display_name},
+def _fingerprint(payload: dict[str, object]) -> str:
+    encoded = json.dumps(
+        payload,
         sort_keys=True,
         separators=(",", ":"),
         ensure_ascii=False,
     ).encode("utf-8")
-    return sha256(payload).hexdigest()
+    return sha256(encoded).hexdigest()
+
+
+def _resolve_mutation_receipt(
+    *,
+    resources: ResourceCatalogueCurationRepository,
+    actor_id: str,
+    idempotency_key: str,
+    command_kind: str,
+    fingerprint: str,
+) -> ResourceMutationResult | None:
+    receipt = resources.find_command_receipt(
+        actor_id=actor_id,
+        idempotency_key=idempotency_key,
+    )
+    if receipt is None:
+        return None
+    if (
+        receipt.command_kind != command_kind
+        or receipt.request_fingerprint != fingerprint
+    ):
+        return ResourceMutationResult(ResourceMutationOutcome.IDEMPOTENCY_CONFLICT)
+    current = resources.get_resource(receipt.result_reference)
+    if current is None:
+        return ResourceMutationResult(ResourceMutationOutcome.PERSISTENCE_UNKNOWN)
+    return ResourceMutationResult(
+        ResourceMutationOutcome.RESOLVED,
+        resource=current,
+        result_version=receipt.result_version,
+    )
 
 
 class CreateResource:
@@ -127,7 +198,7 @@ class CreateResource:
         if command.display_name is not None and display_name is None:
             return CreateResourceResult(CreateResourceOutcome.INPUT_INVALID)
 
-        fingerprint = _fingerprint(display_name=display_name)
+        fingerprint = _fingerprint({"displayName": display_name})
         replay = self._resolve_receipt(
             actor_id=command.actor_id,
             idempotency_key=idempotency_key,
@@ -180,4 +251,216 @@ class CreateResource:
         return CreateResourceResult(
             CreateResourceOutcome.CREATED,
             resource=resource,
+        )
+
+
+class RenameResource:
+    def __init__(
+        self,
+        *,
+        authority: ResourceCatalogueCurationAuthorityPort,
+        resources: ResourceCatalogueCurationRepository,
+    ) -> None:
+        self._authority = authority
+        self._resources = resources
+
+    def execute(self, command: RenameResourceCommand) -> ResourceMutationResult:
+        authority = self._authority.check_curation(
+            actor_id=command.actor_id,
+            effective_time=command.effective_time,
+        )
+        if authority.outcome is ResourceCatalogueAuthorityOutcome.DENIED:
+            return ResourceMutationResult(ResourceMutationOutcome.AUTHORITY_DENIED)
+        if (
+            authority.outcome is not ResourceCatalogueAuthorityOutcome.PERMITTED
+            or authority.authority_reference is None
+        ):
+            return ResourceMutationResult(ResourceMutationOutcome.AUTHORITY_UNKNOWN)
+
+        resource_reference = _normalize_required(command.resource_reference)
+        display_name = _normalize_required(command.display_name)
+        idempotency_key = _normalize_required(command.idempotency_key)
+        if (
+            resource_reference is None
+            or display_name is None
+            or idempotency_key is None
+            or command.expected_version < 1
+        ):
+            return ResourceMutationResult(ResourceMutationOutcome.INPUT_INVALID)
+
+        fingerprint = _fingerprint(
+            {
+                "resourceReference": resource_reference,
+                "displayName": display_name,
+                "expectedVersion": command.expected_version,
+            }
+        )
+        replay = _resolve_mutation_receipt(
+            resources=self._resources,
+            actor_id=command.actor_id,
+            idempotency_key=idempotency_key,
+            command_kind=_RENAME_RESOURCE,
+            fingerprint=fingerprint,
+        )
+        if replay is not None:
+            return replay
+
+        current = self._resources.get_resource(resource_reference)
+        if current is None:
+            return ResourceMutationResult(ResourceMutationOutcome.NOT_FOUND)
+        if current.version != command.expected_version:
+            return ResourceMutationResult(ResourceMutationOutcome.CONCURRENCY_CONFLICT)
+
+        try:
+            updated = current.renamed(display_name)
+        except ResourceCatalogueInvariantError:
+            return ResourceMutationResult(ResourceMutationOutcome.INPUT_INVALID)
+
+        try:
+            self._resources.save_resource(
+                updated,
+                expected_version=command.expected_version,
+            )
+        except ResourceCatalogueConcurrencyConflict:
+            return ResourceMutationResult(ResourceMutationOutcome.CONCURRENCY_CONFLICT)
+
+        self._resources.record_command_receipt(
+            actor_id=command.actor_id,
+            idempotency_key=idempotency_key,
+            receipt=ResourceCatalogueCommandReceipt(
+                command_kind=_RENAME_RESOURCE,
+                request_fingerprint=fingerprint,
+                result_reference=updated.resource_reference,
+                result_version=updated.version,
+            ),
+        )
+        try:
+            self._resources.commit()
+        except ResourceCatalogueIdempotencyConflict:
+            replay = _resolve_mutation_receipt(
+                resources=self._resources,
+                actor_id=command.actor_id,
+                idempotency_key=idempotency_key,
+                command_kind=_RENAME_RESOURCE,
+                fingerprint=fingerprint,
+            )
+            return replay or ResourceMutationResult(
+                ResourceMutationOutcome.PERSISTENCE_UNKNOWN
+            )
+        except ResourceCataloguePersistenceOutcomeUnknown:
+            return ResourceMutationResult(ResourceMutationOutcome.PERSISTENCE_UNKNOWN)
+
+        return ResourceMutationResult(
+            ResourceMutationOutcome.UPDATED,
+            resource=updated,
+            result_version=updated.version,
+        )
+
+
+class RetireResource:
+    def __init__(
+        self,
+        *,
+        authority: ResourceCatalogueCurationAuthorityPort,
+        resources: ResourceCatalogueCurationRepository,
+    ) -> None:
+        self._authority = authority
+        self._resources = resources
+
+    def execute(self, command: RetireResourceCommand) -> ResourceMutationResult:
+        authority = self._authority.check_curation(
+            actor_id=command.actor_id,
+            effective_time=command.effective_time,
+        )
+        if authority.outcome is ResourceCatalogueAuthorityOutcome.DENIED:
+            return ResourceMutationResult(ResourceMutationOutcome.AUTHORITY_DENIED)
+        if (
+            authority.outcome is not ResourceCatalogueAuthorityOutcome.PERMITTED
+            or authority.authority_reference is None
+        ):
+            return ResourceMutationResult(ResourceMutationOutcome.AUTHORITY_UNKNOWN)
+
+        resource_reference = _normalize_required(command.resource_reference)
+        idempotency_key = _normalize_required(command.idempotency_key)
+        if (
+            resource_reference is None
+            or idempotency_key is None
+            or command.expected_version < 1
+        ):
+            return ResourceMutationResult(ResourceMutationOutcome.INPUT_INVALID)
+
+        fingerprint = _fingerprint(
+            {
+                "resourceReference": resource_reference,
+                "expectedVersion": command.expected_version,
+            }
+        )
+        replay = _resolve_mutation_receipt(
+            resources=self._resources,
+            actor_id=command.actor_id,
+            idempotency_key=idempotency_key,
+            command_kind=_RETIRE_RESOURCE,
+            fingerprint=fingerprint,
+        )
+        if replay is not None:
+            return replay
+
+        current = self._resources.get_resource(resource_reference)
+        if current is None:
+            return ResourceMutationResult(ResourceMutationOutcome.NOT_FOUND)
+        if current.version != command.expected_version:
+            return ResourceMutationResult(ResourceMutationOutcome.CONCURRENCY_CONFLICT)
+
+        if self._resources.has_effective_scope_affiliations(
+            resource_reference=resource_reference,
+            as_of=command.effective_time,
+        ) or self._resources.has_effective_responsibilities(
+            resource_reference=resource_reference,
+            as_of=command.effective_time,
+        ):
+            return ResourceMutationResult(ResourceMutationOutcome.RETIREMENT_BLOCKED)
+
+        try:
+            updated = current.retired()
+        except ResourceCatalogueInvariantError:
+            return ResourceMutationResult(ResourceMutationOutcome.INPUT_INVALID)
+
+        try:
+            self._resources.save_resource(
+                updated,
+                expected_version=command.expected_version,
+            )
+        except ResourceCatalogueConcurrencyConflict:
+            return ResourceMutationResult(ResourceMutationOutcome.CONCURRENCY_CONFLICT)
+
+        self._resources.record_command_receipt(
+            actor_id=command.actor_id,
+            idempotency_key=idempotency_key,
+            receipt=ResourceCatalogueCommandReceipt(
+                command_kind=_RETIRE_RESOURCE,
+                request_fingerprint=fingerprint,
+                result_reference=updated.resource_reference,
+                result_version=updated.version,
+            ),
+        )
+        try:
+            self._resources.commit()
+        except ResourceCatalogueIdempotencyConflict:
+            replay = _resolve_mutation_receipt(
+                resources=self._resources,
+                actor_id=command.actor_id,
+                idempotency_key=idempotency_key,
+                command_kind=_RETIRE_RESOURCE,
+                fingerprint=fingerprint,
+            )
+            return replay or ResourceMutationResult(
+                ResourceMutationOutcome.PERSISTENCE_UNKNOWN
+            )
+        except ResourceCataloguePersistenceOutcomeUnknown:
+            return ResourceMutationResult(ResourceMutationOutcome.PERSISTENCE_UNKNOWN)
+
+        return ResourceMutationResult(
+            ResourceMutationOutcome.UPDATED,
+            resource=updated,
+            result_version=updated.version,
         )
