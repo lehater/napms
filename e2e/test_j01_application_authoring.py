@@ -1,5 +1,5 @@
-import re
 import os
+import re
 
 from playwright.sync_api import Page, expect, sync_playwright
 
@@ -15,13 +15,20 @@ def _create_form(page: Page):
     )
 
 
+def _component_row(page: Page, name: str, component_type: str):
+    return page.get_by_role(
+        "row",
+        name=re.compile(rf"^{re.escape(name)}\s+{re.escape(component_type)}(?:\s|$)"),
+    )
+
+
 def _add_component(page: Page, name: str, component_type: str = "Service") -> None:
     page.get_by_role("button", name="Add component").click()
     form = _create_form(page)
     form.get_by_label("Name").fill(name)
     form.get_by_label("Type").fill(component_type)
     form.get_by_role("button", name="Create", exact=True).click()
-    expect(page.get_by_role("cell", name=name, exact=True)).to_be_visible()
+    expect(_component_row(page, name, component_type)).to_have_count(1)
 
 
 def _select_component(page: Page, picker_label: str, name: str) -> None:
@@ -60,9 +67,7 @@ def _add_deployment(page: Page) -> None:
     form.get_by_label("Environment").fill("Production")
     form.get_by_label("Scope").fill("local-demo")
     form.get_by_role("button", name="Create", exact=True).click()
-    expect(page.get_by_role("cell", name="Company A", exact=True)).to_be_visible()
-    expect(page.get_by_role("cell", name="Production", exact=True)).to_be_visible()
-    expect(page.get_by_role("cell", name="local-demo", exact=True)).to_be_visible()
+    expect(page.get_by_role("row", name=re.compile(r"Company A.*Production.*local-demo"))).to_have_count(1)
 
 
 def test_j01_target_application_authoring_survives_correction_and_reopen() -> None:
@@ -152,8 +157,9 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
         row.click()
 
         page.get_by_role("button", name="Components", exact=True).click()
-        for component in ("Web UI", "Orders API", "Database"):
-            expect(page.get_by_role("cell", name=component, exact=True)).to_be_visible()
+        expect(_component_row(page, "Web UI", "Service")).to_have_count(1)
+        expect(_component_row(page, "Orders API", "Service")).to_have_count(1)
+        expect(_component_row(page, "Database", "Database")).to_have_count(1)
 
         page.get_by_role("button", name="Interactions", exact=True).click()
         expect(page.get_by_role("cell", name="TCP (443)", exact=True)).to_be_visible()
