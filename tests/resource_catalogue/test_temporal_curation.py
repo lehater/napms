@@ -217,6 +217,7 @@ def test_new_temporal_fact_requires_active_resource():
         display_name="Orders",
         provenance_reference="prov:resource",
         lifecycle_state=ResourceLifecycleState.RETIRED,
+        retirement_provenance_reference="prov:resource:retirement",
     )
     catalogue = FakeCatalogue(resource=retired)
 
