@@ -115,12 +115,15 @@ class TechnicalAccessEvidenceTrafficAnalysisAdapter:
 
 def _query_predicate(query: TrafficAnalysisQuery) -> TechnicalAccessPredicate:
     protocol = query.protocol.strip().upper()
-    try:
-        number = _PROTOCOLS.get(protocol, int(protocol))
-    except ValueError as exc:
-        raise TrafficAnalysisInvariantError(
-            f"unsupported protocol {query.protocol!r}"
-        ) from exc
+    if protocol in _PROTOCOLS:
+        number = _PROTOCOLS[protocol]
+    else:
+        try:
+            number = int(protocol)
+        except ValueError as exc:
+            raise TrafficAnalysisInvariantError(
+                f"unsupported protocol {query.protocol!r}"
+            ) from exc
     if not 0 <= number <= 255:
         raise TrafficAnalysisInvariantError("IP protocol number must be within 0..255")
     return TechnicalAccessPredicate(
