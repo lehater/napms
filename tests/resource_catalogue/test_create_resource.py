@@ -8,7 +8,10 @@ from napms.resource_catalogue.application.curation import (
 from napms.resource_catalogue.application.ports import (
     ResourceCatalogueAuthorityCheck,
     ResourceCatalogueAuthorityOutcome,
+    ResourceCatalogueCommandReceipt,
+    ResourceCatalogueIdempotencyConflict,
 )
+from napms.resource_catalogue.domain.model import Resource
 
 
 NOW = datetime(2026, 9, 10, 11, 0, tzinfo=timezone.utc)
@@ -24,7 +27,9 @@ class FakeAuthority:
         return ResourceCatalogueAuthorityCheck(
             outcome=self.outcome,
             authority_reference=(
-                "auth-rc" if self.outcome is ResourceCatalogueAuthorityOutcome.PERMITTED else None
+                "auth-rc"
+                if self.outcome is ResourceCatalogueAuthorityOutcome.PERMITTED
+                else None
             ),
         )
 
@@ -51,6 +56,27 @@ class FakeResources:
 
     def commit(self):
         self.commit_count += 1
+
+
+class RacingResources(FakeResources):
+    def commit(self):
+        self.commit_count += 1
+        ((key, attempted_receipt),) = tuple(self.receipts.items())
+        winner = Resource(
+            resource_reference="resource:winner",
+            display_name="Orders production",
+            provenance_reference="winner:provenance",
+        )
+        self.items = {winner.resource_reference: winner}
+        self.receipts = {
+            key: ResourceCatalogueCommandReceipt(
+                command_kind=attempted_receipt.command_kind,
+                request_fingerprint=attempted_receipt.request_fingerprint,
+                result_reference=winner.resource_reference,
+                result_version=winner.version,
+            )
+        }
+        raise ResourceCatalogueIdempotencyConflict
 
 
 class FakeIdentities:
@@ -162,6 +188,18 @@ def test_equivalent_retry_returns_original_resource_without_second_write():
     assert second.resource.resource_reference == "resource:generated:1"
     assert len(resources.add_calls) == 1
     assert resources.commit_count == 1
+    assert identities.count == 1
+
+
+def test_concurrent_equivalent_create_resolves_to_authoritative_winner():
+    resources = RacingResources()
+    use_case, _, _, identities, _ = service(resources=resources)
+
+    result = use_case.execute(command(display_name="Orders production", key="race-key"))
+
+    assert result.outcome is CreateResourceOutcome.RESOLVED
+    assert result.resource is not None
+    assert result.resource.resource_reference == "resource:winner"
     assert identities.count == 1
 
 
