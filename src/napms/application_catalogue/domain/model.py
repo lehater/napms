@@ -69,12 +69,12 @@ class Application:
     application_id: UUID
     display_name: str
     provenance_reference: str
-    description: str | None = None
-    domain: str | None = None
-    owner_reference: str | None = None
     lifecycle_state: CatalogueLifecycleState = CatalogueLifecycleState.ACTIVE
     retirement_provenance_reference: str | None = None
     version: int = 1
+    description: str | None = None
+    domain: str | None = None
+    owner_reference: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -160,11 +160,11 @@ class Component:
     application_id: UUID
     display_name: str
     provenance_reference: str
-    component_type: str | None = None
-    description: str | None = None
     lifecycle_state: CatalogueLifecycleState = CatalogueLifecycleState.ACTIVE
     retirement_provenance_reference: str | None = None
     version: int = 1
+    component_type: str | None = None
+    description: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(
