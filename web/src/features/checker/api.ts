@@ -104,37 +104,17 @@ export async function getTrafficAnalysis(query: CheckerQuery): Promise<CheckerRe
 }
 
 function adaptTrafficAnalysis(payload: TrafficAnalysisResponse): CheckerResult {
-  const policy = payload.policyMatches[0]
   return {
     query: payload.query,
     source: adaptSide(payload.source, payload.sourceResponsibilities),
     destination: adaptSide(payload.destination, payload.destinationResponsibilities),
-    connectivity: {
-      sourceComponent: policy?.sourceComponent ?? null,
-      destinationComponent: policy?.destinationComponent ?? null,
-      dcs: policy?.dcsDisplayName ?? policy?.dcsReference ?? null,
-      access: policy?.accessSummary ?? null,
-    },
-    policy: {
-      requirement: policy?.requirement ?? "Unknown",
-      requirementReference: null,
-      decision: policy?.decision ?? "Unknown",
-      decisionReference: null,
-      rule: policy?.rule ?? "Unknown",
-      ruleReference: null,
-      effective: policy?.effective ?? "Unknown",
-    },
+    policyMatches: payload.policyMatches,
     networkContext: {
       completeForPair: payload.networkContext.completeForPair,
       knowledgeGaps: payload.networkContext.knowledgeGaps,
       candidates: payload.networkContext.candidates.map(adaptCandidate),
     },
-    findings: [
-      ...payload.findings,
-      ...(payload.policyMatches.length > 1
-        ? [`${payload.policyMatches.length} policy projections match this traffic tuple.`]
-        : []),
-    ],
+    findings: payload.findings,
   }
 }
 
@@ -142,16 +122,12 @@ function adaptSide(
   resolution: ApiResolution,
   responsibilities: ApiResponsibility[],
 ): ResourceSide {
-  const primary = resolution.resources[0]
   return {
     state: resolution.state,
     address: resolution.address,
-    endpointReference: primary?.endpointReference ?? null,
-    resourceReference: primary?.resourceReference ?? null,
-    componentName: primary?.componentNames[0] ?? null,
-    serviceName: primary?.componentNames[0] ?? null,
-    responsibilityScope: primary?.responsibilityScope ?? null,
+    candidates: resolution.resources,
     responsibilities: responsibilities.map((item) => ({
+      resourceReference: item.resourceReference,
       role: humanizeRole(item.role),
       party: item.displayName,
       contact: item.contact,
