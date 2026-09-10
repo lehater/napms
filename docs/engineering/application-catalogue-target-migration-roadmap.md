@@ -1,106 +1,130 @@
 # Application Catalogue Target Migration Roadmap
 
-Status: `selected for I31; implementation pending`.
+Status: `I31 M0 contract closed; final gate pending`.
 
 Date: 2026-09-10.
 
 ## Purpose
 
-Migrate the implemented I27 Application Communication Catalogue to the accepted Application Definition / Application Deployment target from PR #57 without rewriting existing Connectivity Requirement, Connectivity Decision, Access Rule or policy-export truth.
+Migrate the implemented I27 Application Communication Catalogue to the accepted Application Definition / Application Deployment target without rewriting existing Connectivity Requirement, Connectivity Decision, Access Rule or policy-export truth.
 
-Canonical target inputs:
+Canonical target and M0 closure:
 - `docs/decisions/ADR-012-application-definition-deployment-model.md`;
+- `docs/decisions/ADR-013-i31-application-catalogue-compatibility-and-reference-semantics.md`;
+- `docs/domain/application-communication-catalogue/target-tactical-model.md`;
+- `docs/requirements/application-catalogue-target.md`;
+- `docs/architecture/application-catalogue-target-boundary.md`;
 - `docs/ui/application-catalogue-target.md`;
 - `docs/ui/application-catalogue-wireframes.md`.
 
-Current runtime truth remains the I27 model until the relevant I31 stage is accepted and implemented.
+Current runtime truth remains the I27 implementation until the relevant I31 stage is implemented and absorbed.
 
 ## Current-to-target gap
 
-| Layer | Current runtime | Target | Priority / migration consequence |
-| --- | --- | --- | --- |
-| Domain identity | `Application -> Component -> ComponentDeployment`; downstream identity is `(sourceComponentDeploymentId, destinationComponentDeploymentId, dcsRevisionId)` | Application Definition owns Components and Interaction Definitions; `ApplicationDeployment` is deployment unit | **P0** — define compatibility projection before code migration; existing downstream identities and historical facts must remain valid |
-| Interaction semantics | immutable DCS revision is authored between Component Deployments | Interaction Definition is authored between Components; Deployment selects a subset and inherits traffic | **P0** — define edit/snapshot semantics that preserve historical downstream DCS references |
-| Resource binding | temporal binding belongs to Component Deployment | binding belongs to one Deployment Interaction side | **P0** — same Component may resolve to different Resource sets per interaction; old global binding ownership cannot be exposed as target truth |
-| Deployment context | Component Deployment has optional display name only | Application Deployment has Company / Environment / Scope context | **P0** — ownership/reference semantics are not yet canonical; I27 explicitly did not introduce Company/Organization ownership |
-| Definition metadata | Application has display name only; Component has display name only | wireframes require Application Domain/Owner/description and Component Type/Description | **P0** — accepted UX requires data not currently defined by the canonical domain model |
-| Lifecycle | Active -> Retired; parent retirement blockers are structural; Component Deployment may retire with historical references | Active -> Retired; retirement blocked by active incoming references; no hard delete | **P0** — dependency rules and dependency-count read contract must be made consistent for new entities |
-| Read API | application list supports page/search; detail returns the full nested component/deployment/binding/DCS tree | separate Definitions/Deployments working sets and server-backed bounded tables | **P1** — replace whole-tree workspace reads with task-oriented paged projections |
-| API write model | create Component Deployment, DCS revision between deployments, bind Resource to deployment | create Application Deployment, Interaction Definition, select Deployment Interactions, bind each side | **P1** — new task-oriented commands; compatibility identities remain backend-only |
-| Scale contract | `hasMore`; limited filters; nested detail can expand all children | paging/search/filter/sort, exact row counts in wireframes, URL query state | **P1** — add stable sorting/filter contracts and totals where the UI displays totals |
-| Web IA | one Applications list plus one monolithic Application tree; status/version/internal IDs visible | Definitions/Deployments, Definition tabs, Deployment connectivity table, count drill-downs | **P1** — replace the user projection rather than restyle the existing tree |
-| Interaction authoring UI | selects Component Deployments across catalogue; wrapper authors one protocol + one destination port | selects Components in one Definition and supports traffic alternatives | **P1** — replace authoring flow; reuse existing vendor-neutral traffic value semantics where applicable |
-| Retirement UX | generic `409 CatalogueRetirementBlocked` and browser confirms | blocked action explains active dependency counts with drill-down | **P1** — add structured dependency read/error projection |
-| Acceptance | J01 asserts old Component -> deployment -> DCS UI; J03 consumes old identity directly | target wireframes plus downstream behavior must remain valid | **P1** — replace J01 and prove the compatibility projection through existing downstream journeys |
+| Layer | Current runtime | Target / selected migration consequence |
+| --- | --- | --- |
+| Domain identity | `Application -> Component -> ComponentDeployment`; downstream identity is `(sourceComponentDeploymentId, destinationComponentDeploymentId, dcsRevisionId)` | Application Definition retains existing Application ID; Application Deployment / Deployment Interaction are new target identities; each Deployment Interaction projects internally to unique stable compatibility Component Deployment sides plus current immutable DCS revision |
+| Interaction semantics | immutable DCS authored between Component Deployments | Interaction Definition is current reusable Component-to-Component traffic intent; endpoint edit is blocked by Active selections; permitted traffic edit creates new DCS snapshots for all Active selections and is blocked by active/effective downstream references |
+| Resource binding | temporal binding belongs to Component Deployment | target binding belongs to one Deployment Interaction side and projects to that interaction's unique compatibility Component Deployment side |
+| Deployment context | Component Deployment has optional display name only | Application Deployment owns required Company external reference, Environment label and external Responsibility Scope reference; these are context/correlation values, not identity/authority |
+| Definition metadata | Application/Component have display name only | Application gains optional description/domain/owner reference; Component gains optional type/description; classifications remain descriptive and open-ended |
+| Lifecycle | Active -> Retired with structural I27 blockers | target entities use terminal Active -> Retired; no hard delete; active Resource/downstream/legacy references block relevant operations and are exposed as grouped dependency counts/drill-down |
+| Read API | list plus full nested Application workspace | bounded Definition/Deployment/Component/Interaction/Resource/dependency projections with server paging/search/filter/stable sort and totals where required |
+| API write model | Component Deployment/DCS/binding commands | target task commands operate on Interaction Definition, Application Deployment, Deployment Interaction and interaction-side Resource binding; compatibility IDs remain backend-only |
+| Web IA | monolithic card tree with lifecycle/version/internal IDs | accepted Definitions/Deployments IA, Definition tabs, dense Deployment connectivity table and count drill-downs |
+| Acceptance | J01 asserts old deployment/DCS authoring | target J01 plus compatibility proof through unchanged downstream Connectivity/Decision/Access Policy semantics |
 
-## Minimal migration strategy
-
-### Preserve the stable boundary first
-
-The minimum-change direction is to keep the existing downstream semantic triple as a compatibility contract while changing the ACC product model and curation API above it.
-
-Preferred implementation candidate, pending WP-0 acceptance:
+## Selected compatibility strategy
 
 ```text
-Application (existing stable id; presented as Definition)
+Application Definition (existing Application ID)
   -> Component
-  -> InteractionDefinition
+  -> Interaction Definition
 
-ApplicationDeployment
-  -> DeploymentInteraction
-      -> InteractionDefinition
+Application Deployment
+  -> Deployment Interaction
+      -> Interaction Definition
       -> source-side Resource bindings
       -> destination-side Resource bindings
-
-DeploymentInteraction
-  -> internal compatibility projection
-      -> source ComponentDeployment identity
-      -> destination ComponentDeployment identity
-      -> immutable DCS revision
-      -> existing DirectedInteractionIdentity triple
+      -> internal compatibility projection
+          -> source compatibility ComponentDeployment
+          -> destination compatibility ComponentDeployment
+          -> current immutable DcsRevision
+          -> existing DirectedInteractionIdentity triple
 ```
 
-Compatibility Component Deployment identities must be unique per Deployment Interaction side, not merely per Component. Otherwise two interactions using the same Component could not bind different Resource sets as required by ADR-012.
+Compatibility Component Deployment identities are unique per Deployment Interaction side and stable for that Deployment Interaction lifetime. This preserves interaction-scoped Resource sets while leaving downstream identity types unchanged.
 
-The compatibility projection is an internal adapter/persistence concern. New Application Catalogue Web/API surfaces must not require users to understand or assemble compatibility Component Deployment IDs.
+Target side Resource membership is realized through existing temporal Deployment Resource Binding rows attached to the appropriate compatibility side. Target code owns the stronger side/deployment-interaction meaning.
 
-Traffic changes may be represented by a new immutable DCS revision for the current compatibility pair while older DCS revisions remain addressable by historical downstream subjects. Exact edit rules, especially source/destination Component changes on an Interaction Definition already selected by active Deployments, are a blocking WP-0 decision rather than an implementation assumption.
+Compatibility identities are internal. New target Web/API authoring does not ask users to understand or assemble Component Deployment/DCS IDs.
 
-### Do not infer target meaning from legacy I27 rows
+## Interaction edit strategy
 
-Existing I27 Component Deployments, DCS revisions and bindings remain valid historical/runtime facts. Migration must not infer Application Deployment context, Interaction Definition ownership or Company/Environment/Scope from display names.
+Source/destination Component replacement is allowed only while an Interaction Definition has no Active Deployment Interaction selection. Otherwise replacement uses a new Interaction Definition and explicit selection replacement.
 
-Some existing DCS rows can legally connect participants across Applications, while the target Interaction Definition belongs to one Application Definition. Therefore automatic promotion of arbitrary legacy DCS rows into target editable entities is unsafe. A later explicit migration/import workflow may be added only if it has sufficient business input.
+Traffic edit never rewrites a DCS revision. It is blocked when any affected current compatibility triple has an owner-reported active/effective Connectivity Requirement, effective/final Connectivity Decision or active/effective Access Rule. When admitted, the edit creates a new immutable DCS revision for every Active selection and advances all of them atomically to the new current traffic snapshot.
 
-### Distinguish business versioning from concurrency
+Historical DCS/downstream references remain unchanged.
 
-ADR-012 defers Application Definition versioning. Existing integer `version` fields may remain as technical optimistic-concurrency tokens where needed; they are not user-facing Definition revisions and should not be rendered as catalogue metadata.
+## Metadata/context strategy
+
+No Company/Organization/Party/Scope registry is introduced for I31.
+
+- Application `description` and `domain`: ACC descriptive metadata.
+- Application `ownerReference`: external responsible-party/team correlation.
+- Component `type` and `description`: ACC descriptive metadata; type is not a closed enum.
+- Deployment `companyReference`: external correlation.
+- Deployment `environment`: ACC-owned descriptive context label, not Network Environment Operations identity.
+- Deployment `scopeReference`: external Responsibility Scope correlation using the existing ADR-011 concept.
+
+These values do not define stable identity or grant authority.
+
+## Retirement dependency strategy
+
+Retirement is terminal and non-cascading. Active dependants are cleared first.
+
+The target application/read contract groups non-zero blockers into bounded drill-down categories including Components, Interactions, Application Deployments, Deployment Interactions, Resource Bindings, Connectivity Requirements, Connectivity Decisions, Access Rules and legacy Component Deployments.
+
+Peer contexts remain authoritative for whether their references are active/effective; ACC consumes explicit dependency ports and does not infer peer lifecycle from persistence.
+
+## Legacy coexistence
+
+Existing pre-I31 Component Deployments, DCS revisions and bindings remain valid legacy ACC/downstream truth. They are not promoted automatically into target Deployments or Interaction Definitions because Company/Environment/Scope and target interaction ownership cannot be inferred safely.
+
+Existing Application and Component IDs may be reused as target Definition/Component IDs. Active legacy Component Deployments remain an explicit Component-retirement dependency and continue through a compatibility/maintenance path until explicitly retired or migrated with sufficient business input.
+
+No legacy display name is used to invent target domain meaning.
 
 ## Ordered stages
 
 | Stage | Outcome | Main gate |
 | --- | --- | --- |
-| M0 — contract closure | compatibility identity projection, metadata/context ownership, interaction edit semantics and retirement dependencies are canonical and implementation-ready | no blocking unknown/conflict; `knowledge-check` + `harness-check` |
-| M1 — domain/application | target entities, invariants, commands, query ports and compatibility-projection port exist without transport/persistence coupling | domain/application tests + architecture/core gate |
-| M2 — persistence/projection | additive PostgreSQL schema persists target entities and selected compatibility mapping while preserving all legacy IDs/facts | migration replay + PostgreSQL integration + downstream projection tests |
-| M3 — HTTP/read models | bounded Definitions/Deployments/Components/Interactions/resource-set APIs support server paging/search/filter/sort and structured retirement dependencies | HTTP contract/security/integration tests |
-| M4 — Web target | accepted wireframes implemented: Definitions/Deployments, Definition tabs, one Deployment connectivity table and count drill-downs | `make web-check` + deterministic browser target journey |
-| M5 — compatibility acceptance/absorption | target-authored data works through Connectivity/Decision/Access Policy; representative screenshot regressions protect layout; canonical current-state docs absorbed | J01 replacement + relevant J03/downstream regressions + Docker/hosted final gates |
+| M0 — contract closure | **closed in PR #58 pending final hosted gate**: compatibility projection, metadata/context ownership, edit semantics and retirement dependencies canonicalized | `knowledge-check` + `harness-check` |
+| M1 — domain/application | target entities, invariants, commands, query/dependency ports and compatibility-projection contracts without transport/persistence coupling | domain/application tests + architecture/core gate |
+| M2 — persistence/projection | additive PostgreSQL schema persists target entities/mapping while preserving all legacy IDs/facts | migration replay + PostgreSQL integration + compatibility projection tests |
+| M3 — HTTP/read models | bounded target command/read APIs with server paging/search/filter/sort and structured dependencies | HTTP contract/security/integration tests |
+| M4 — Web target | accepted Definitions/Deployments IA, Definition tabs, Deployment connectivity table and count drill-downs | `make web-check` + deterministic browser target journey |
+| M5 — compatibility acceptance/absorption | target-authored data works through Connectivity/Decision/Access Policy; representative screenshot regressions protect layout; current-state docs absorbed | J01 replacement + downstream regressions + Docker/hosted gates |
 
-Each stage is one coherent semantic integration stage and should use its own draft PR/squash merge. Do not combine M0 through M5 into one implementation PR.
+Each stage is one coherent semantic integration stage and uses its own draft PR/squash merge.
 
-## M0 blocking decisions
+## M0 resolution record
 
-1. **Downstream compatibility identity.** Accept or replace the preferred internal projection while preserving every existing downstream identity and historical reference.
-2. **Interaction edit boundary.** Define whether source/destination Components are mutable after an Interaction Definition has active Deployment selections; define how traffic edits produce immutable downstream snapshots.
-3. **Application Definition metadata.** Define ownership and validation for `description`, `domain`, and `owner`, or explicitly amend the accepted wireframes before implementation.
-4. **Component metadata.** Define ownership and allowed vocabulary/reference semantics for `type` and `description`, or explicitly amend the wireframes.
-5. **Application Deployment context.** Define Company, Environment and Scope as owned identities or external correlation/value data. Do not create a Company/Organization aggregate only to satisfy the UI.
-6. **Retirement dependencies.** Define active incoming references for Application, Component, Interaction Definition, Application Deployment and Deployment Interaction, including the shape returned for blocked-retirement drill-down.
+All previous M0 P0 choices are closed by ADR-013 and the target Tactical DDD:
+
+1. downstream compatibility identity — accepted internal per-Deployment-Interaction side projection;
+2. Interaction edit boundary — endpoints blocked by Active selections; traffic changes create new immutable snapshots and fail closed on active/effective downstream dependencies;
+3. Application metadata — descriptive domain/description plus external owner correlation;
+4. Component metadata — descriptive open type/description;
+5. Deployment context — external Company/Responsibility Scope references plus descriptive Environment label, none used as identity/authority;
+6. retirement dependencies — explicit structural, Resource, downstream and legacy blocker classes with server-derived grouped counts/drill-down.
+
+M1 must not reopen these choices as implementation convenience. A newly discovered contradiction re-enters through `docs/process/domain-change-protocol.md`.
 
 ## API/read-model direction after M0
 
-Prefer extending the existing catalogue boundary rather than creating a second parallel catalogue API. `Application` may retain its stable ID and route as the Definition identity if M0 accepts that mapping.
+Prefer extending the existing catalogue boundary rather than creating a second parallel catalogue API. Existing `applicationId` remains the Definition identity.
 
 Required capabilities are:
 - paged Definition list with target columns/counts, filters, sort and total;
@@ -109,14 +133,14 @@ Required capabilities are:
 - Application Deployment overview plus paged selected-interaction connectivity rows;
 - paged/searchable/filterable Resource set for one Deployment Interaction side;
 - task commands for Interaction Definition, Application Deployment, Deployment Interaction selection and side bindings;
-- structured retirement dependency discovery;
+- structured retirement/traffic-edit dependency discovery;
 - compatibility Component Deployment/DCS identities kept behind ACC-owned ports/adapters.
 
-Do not retain the current full nested Application workspace as the primary target read contract merely to minimize frontend changes; it conflicts with the accepted scale model.
+Do not retain the current full nested Application workspace as the primary target read contract merely to minimize frontend changes.
 
-## Web direction after M3
+## Web direction
 
-The target Web adapter should follow `docs/ui/application-catalogue-wireframes.md` literally for information architecture and actions:
+The target Web adapter follows `docs/ui/application-catalogue-wireframes.md` for information architecture and actions:
 - `Applications -> Definitions | Deployments`;
 - dense bounded tables rather than card trees;
 - no ordinary Status column/badge for Components or normal Retired rows;
