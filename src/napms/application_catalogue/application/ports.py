@@ -29,6 +29,9 @@ class CatalogueConcurrencyConflict(CataloguePersistenceError):
     """Optimistic concurrency precondition did not match authoritative state."""
 
 
+ApplicationCatalogueConcurrencyConflict = CatalogueConcurrencyConflict
+
+
 class CatalogueIdempotencyConflict(CataloguePersistenceError):
     """Another command won the same idempotency-key uniqueness boundary."""
 
