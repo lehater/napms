@@ -5,6 +5,7 @@ from hashlib import sha256
 import json
 
 from napms.resource_catalogue.application.ports import (
+    ResourceCatalogueAuthorityCheck,
     ResourceCatalogueAuthorityOutcome,
     ResourceCatalogueCommandReceipt,
     ResourceCatalogueConcurrencyConflict,
@@ -108,6 +109,18 @@ def _fingerprint(payload: dict[str, object]) -> str:
     return sha256(encoded).hexdigest()
 
 
+def _authorize(
+    *,
+    authority: ResourceCatalogueCurationAuthorityPort,
+    actor_id: str,
+    effective_time: datetime,
+) -> ResourceCatalogueAuthorityCheck:
+    return authority.check_curation(
+        actor_id=actor_id,
+        effective_time=effective_time,
+    )
+
+
 def _resolve_mutation_receipt(
     *,
     resources: ResourceCatalogueCurationRepository,
@@ -178,7 +191,8 @@ class CreateResource:
         )
 
     def execute(self, command: CreateResourceCommand) -> CreateResourceResult:
-        authority = self._authority.check_curation(
+        authority = _authorize(
+            authority=self._authority,
             actor_id=command.actor_id,
             effective_time=command.effective_time,
         )
@@ -265,7 +279,8 @@ class RenameResource:
         self._resources = resources
 
     def execute(self, command: RenameResourceCommand) -> ResourceMutationResult:
-        authority = self._authority.check_curation(
+        authority = _authorize(
+            authority=self._authority,
             actor_id=command.actor_id,
             effective_time=command.effective_time,
         )
@@ -363,12 +378,15 @@ class RetireResource:
         *,
         authority: ResourceCatalogueCurationAuthorityPort,
         resources: ResourceCatalogueCurationRepository,
+        provenance: ResourceCatalogueProvenanceFactory,
     ) -> None:
         self._authority = authority
         self._resources = resources
+        self._provenance = provenance
 
     def execute(self, command: RetireResourceCommand) -> ResourceMutationResult:
-        authority = self._authority.check_curation(
+        authority = _authorize(
+            authority=self._authority,
             actor_id=command.actor_id,
             effective_time=command.effective_time,
         )
@@ -420,8 +438,16 @@ class RetireResource:
         ):
             return ResourceMutationResult(ResourceMutationOutcome.RETIREMENT_BLOCKED)
 
+        retirement_provenance_reference = self._provenance.for_resource_retirement(
+            resource_reference=resource_reference,
+            actor_id=command.actor_id,
+            authority_reference=authority.authority_reference,
+            effective_time=command.effective_time,
+        )
         try:
-            updated = current.retired()
+            updated = current.retired(
+                retirement_provenance_reference=retirement_provenance_reference,
+            )
         except ResourceCatalogueInvariantError:
             return ResourceMutationResult(ResourceMutationOutcome.INPUT_INVALID)
 
