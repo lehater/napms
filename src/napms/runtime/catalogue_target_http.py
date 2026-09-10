@@ -15,7 +15,6 @@ from napms.application_catalogue.application.target_curation import (
     CreateApplicationDeploymentCommand,
     CreateInteractionDefinitionCommand,
     SelectDeploymentInteractionCommand,
-    TargetMutationOutcome,
     UpdateInteractionDefinitionEndpointsCommand,
     UpdateInteractionDefinitionTrafficCommand,
 )
@@ -40,6 +39,9 @@ from napms.runtime.catalogue_curation_http import (
     _traffic_alternative,
 )
 from napms.runtime.http_api import PublicApiError
+
+
+_SUCCESS_OUTCOMES = {"Created", "Updated", "Resolved"}
 
 
 class CreateApplicationDefinitionRequest(BaseModel):
@@ -96,14 +98,18 @@ class UpdateInteractionTrafficRequest(BaseModel):
 class CreateApplicationDeploymentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
     application_id: UUID = Field(alias="applicationId")
-    company_reference: str = Field(alias="companyReference", min_length=1, max_length=2048)
+    company_reference: str = Field(
+        alias="companyReference", min_length=1, max_length=2048
+    )
     environment: str = Field(min_length=1, max_length=256)
     scope_reference: str = Field(alias="scopeReference", min_length=1, max_length=2048)
 
 
 class UpdateApplicationDeploymentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
-    company_reference: str = Field(alias="companyReference", min_length=1, max_length=2048)
+    company_reference: str = Field(
+        alias="companyReference", min_length=1, max_length=2048
+    )
     environment: str = Field(min_length=1, max_length=256)
     scope_reference: str = Field(alias="scopeReference", min_length=1, max_length=2048)
     expected_version: int = Field(alias="expectedVersion", ge=1)
@@ -117,7 +123,9 @@ class SelectDeploymentInteractionRequest(BaseModel):
 class CreateInteractionResourceBindingRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
     side: DeploymentInteractionSide
-    resource_reference: str = Field(alias="resourceReference", min_length=1, max_length=2048)
+    resource_reference: str = Field(
+        alias="resourceReference", min_length=1, max_length=2048
+    )
     valid_from: datetime = Field(alias="validFrom")
     valid_to: datetime | None = Field(default=None, alias="validTo")
 
@@ -159,7 +167,7 @@ def create_catalogue_target_router(
             )
         return _page_response(
             result.page,
-            page=page,
+            page_number=page,
             items=[_definition_summary_dto(item) for item in result.items],
         )
 
@@ -194,7 +202,7 @@ def create_catalogue_target_router(
             )
         return _page_response(
             result.page,
-            page=page,
+            page_number=page,
             items=[_component_dto(item) for item in result.items],
         )
 
@@ -224,7 +232,7 @@ def create_catalogue_target_router(
             )
         return _page_response(
             result.page,
-            page=page,
+            page_number=page,
             items=[_interaction_summary_dto(item) for item in result.items],
         )
 
@@ -254,7 +262,7 @@ def create_catalogue_target_router(
             )
         return _page_response(
             result.page,
-            page=page,
+            page_number=page,
             items=[_deployment_summary_dto(item) for item in result.items],
         )
 
@@ -284,7 +292,7 @@ def create_catalogue_target_router(
             )
         return _page_response(
             result.page,
-            page=page,
+            page_number=page,
             items=[_deployment_summary_dto(item) for item in result.items],
         )
 
@@ -340,7 +348,7 @@ def create_catalogue_target_router(
             )
         return _page_response(
             result.page,
-            page=page,
+            page_number=page,
             items=[_interaction_summary_dto(item) for item in result.items],
         )
 
@@ -379,7 +387,7 @@ def create_catalogue_target_router(
             )
         response = _page_response(
             result.page,
-            page=page,
+            page_number=page,
             items=[_connectivity_dto(item) for item in result.items],
         )
         response["asOf"] = result.as_of.isoformat()
@@ -415,7 +423,7 @@ def create_catalogue_target_router(
             )
         response = _page_response(
             result.page,
-            page=page,
+            page_number=page,
             items=[_resource_member_dto(item) for item in result.items],
         )
         response["asOf"] = result.as_of.isoformat()
@@ -443,7 +451,7 @@ def create_catalogue_target_router(
         _require_target_success(result)
         return {
             "outcome": result.outcome.value,
-            "definition": _definition_dto(result.application),
+            "definition": _definition_dto(_required_result(result.application)),
         }
 
     @router.post("/api/v1/catalogues/application-definitions/{application_id}/metadata")
@@ -471,7 +479,7 @@ def create_catalogue_target_router(
         _require_target_success(result)
         return {
             "outcome": result.outcome.value,
-            "definition": _definition_dto(result.subject),
+            "definition": _definition_dto(_required_result(result.subject)),
         }
 
     @router.post("/api/v1/catalogues/application-definitions/{application_id}/components")
@@ -495,7 +503,10 @@ def create_catalogue_target_router(
                 )
             )
         _require_target_success(result)
-        return {"outcome": result.outcome.value, "component": _component_dto(result.component)}
+        return {
+            "outcome": result.outcome.value,
+            "component": _component_dto(_required_result(result.component)),
+        }
 
     @router.post("/api/v1/catalogues/application-components/{component_id}/metadata")
     def update_component(
@@ -519,7 +530,10 @@ def create_catalogue_target_router(
                 )
             )
         _require_target_success(result)
-        return {"outcome": result.outcome.value, "component": _component_dto(result.subject)}
+        return {
+            "outcome": result.outcome.value,
+            "component": _component_dto(_required_result(result.subject)),
+        }
 
     @router.post("/api/v1/catalogues/application-definitions/{application_id}/interactions")
     def create_interaction(
@@ -546,7 +560,9 @@ def create_catalogue_target_router(
         _require_target_success(result)
         return {
             "outcome": result.outcome.value,
-            "interaction": _interaction_dto(result.interaction_definition),
+            "interaction": _interaction_dto(
+                _required_result(result.interaction_definition)
+            ),
         }
 
     @router.post("/api/v1/catalogues/interaction-definitions/{interaction_id}/endpoints")
@@ -572,7 +588,9 @@ def create_catalogue_target_router(
         _require_target_success(result)
         return {
             "outcome": result.outcome.value,
-            "interaction": _interaction_dto(result.interaction_definition),
+            "interaction": _interaction_dto(
+                _required_result(result.interaction_definition)
+            ),
         }
 
     @router.post("/api/v1/catalogues/interaction-definitions/{interaction_id}/traffic")
@@ -583,7 +601,6 @@ def create_catalogue_target_router(
         idempotency_key: str = Header(alias="Idempotency-Key", min_length=1, max_length=256),
     ):
         actor_id = _require_actor(sessions, request)
-        effective_time = clock()
         with open_scope() as scope:
             result = scope.applications.update_interaction_traffic.execute(
                 UpdateInteractionDefinitionTrafficCommand(
@@ -593,14 +610,16 @@ def create_catalogue_target_router(
                     ),
                     expected_version=payload.expected_version,
                     actor_id=actor_id,
-                    effective_time=effective_time,
+                    effective_time=clock(),
                     idempotency_key=idempotency_key,
                 )
             )
         _require_target_success(result)
         return {
             "outcome": result.outcome.value,
-            "interaction": _interaction_dto(result.interaction_definition),
+            "interaction": _interaction_dto(
+                _required_result(result.interaction_definition)
+            ),
         }
 
     @router.post("/api/v1/catalogues/application-deployments")
@@ -625,7 +644,9 @@ def create_catalogue_target_router(
         _require_target_success(result)
         return {
             "outcome": result.outcome.value,
-            "deployment": _deployment_dto(result.application_deployment),
+            "deployment": _deployment_dto(
+                _required_result(result.application_deployment)
+            ),
         }
 
     @router.post("/api/v1/catalogues/application-deployments/{deployment_id}/context")
@@ -650,7 +671,10 @@ def create_catalogue_target_router(
                 )
             )
         _require_target_success(result)
-        return {"outcome": result.outcome.value, "deployment": _deployment_dto(result.subject)}
+        return {
+            "outcome": result.outcome.value,
+            "deployment": _deployment_dto(_required_result(result.subject)),
+        }
 
     @router.post("/api/v1/catalogues/application-deployments/{deployment_id}/interactions")
     def select_interaction(
@@ -674,11 +698,13 @@ def create_catalogue_target_router(
         return {
             "outcome": result.outcome.value,
             "deploymentInteraction": _deployment_interaction_dto(
-                result.deployment_interaction
+                _required_result(result.deployment_interaction)
             ),
         }
 
-    @router.post("/api/v1/catalogues/deployment-interactions/{interaction_id}/resource-bindings")
+    @router.post(
+        "/api/v1/catalogues/deployment-interactions/{interaction_id}/resource-bindings"
+    )
     def create_resource_binding(
         interaction_id: UUID,
         payload: CreateInteractionResourceBindingRequest,
@@ -703,7 +729,10 @@ def create_catalogue_target_router(
                 )
             )
         _require_target_success(result)
-        return {"outcome": result.outcome.value, "binding": _binding_dto(result.binding)}
+        return {
+            "outcome": result.outcome.value,
+            "binding": _binding_dto(_required_result(result.binding)),
+        }
 
     @router.post(
         "/api/v1/catalogues/deployment-interactions/{interaction_id}/resource-bindings/{binding_reference:path}/end"
@@ -731,15 +760,265 @@ def create_catalogue_target_router(
                 )
             )
         _require_target_success(result)
-        return {"outcome": result.outcome.value, "binding": _binding_dto(result.binding)}
+        return {
+            "outcome": result.outcome.value,
+            "binding": _binding_dto(_required_result(result.binding)),
+        }
 
     return router
 
 
-def _page_response(page, *, page: int, items: list[dict]) -> dict:
+def _page_response(page_info, *, page_number: int, items: list[dict]) -> dict:
     return {
         "items": items,
-        "page": page,
-        "pageSize": page.limit,
-        "total": page.total,
+        "page": page_number,
+        "pageSize": page_info.limit,
+        "total": page_info.total,
     }
+
+
+def _definition_dto(value) -> dict:
+    return {
+        "applicationId": str(value.application_id),
+        "displayName": value.display_name,
+        "description": value.description,
+        "domain": value.domain,
+        "ownerReference": value.owner_reference,
+        "lifecycleState": value.lifecycle_state.value,
+        "version": value.version,
+    }
+
+
+def _definition_summary_dto(value) -> dict:
+    return {
+        **_definition_dto(value.application),
+        "componentCount": value.component_count,
+        "interactionCount": value.interaction_count,
+        "deploymentCount": value.deployment_count,
+    }
+
+
+def _component_dto(value) -> dict:
+    return {
+        "componentId": str(value.component_id),
+        "applicationId": str(value.application_id),
+        "displayName": value.display_name,
+        "componentType": value.component_type,
+        "description": value.description,
+        "lifecycleState": value.lifecycle_state.value,
+        "version": value.version,
+    }
+
+
+def _interaction_dto(value) -> dict:
+    return {
+        "interactionDefinitionId": str(value.interaction_definition_id),
+        "applicationId": str(value.application_id),
+        "sourceComponentId": str(value.source_component_id),
+        "destinationComponentId": str(value.destination_component_id),
+        "trafficAlternatives": [_traffic_dto(item) for item in value.traffic_alternatives],
+        "lifecycleState": value.lifecycle_state.value,
+        "version": value.version,
+    }
+
+
+def _interaction_summary_dto(value) -> dict:
+    return {
+        **_interaction_dto(value.interaction),
+        "sourceComponentName": value.source_component_name,
+        "destinationComponentName": value.destination_component_name,
+        "activeDeploymentCount": value.active_deployment_count,
+    }
+
+
+def _deployment_dto(value) -> dict:
+    return {
+        "applicationDeploymentId": str(value.application_deployment_id),
+        "applicationId": str(value.application_id),
+        "companyReference": value.company_reference,
+        "environment": value.environment,
+        "scopeReference": value.scope_reference,
+        "lifecycleState": value.lifecycle_state.value,
+        "version": value.version,
+    }
+
+
+def _deployment_summary_dto(value) -> dict:
+    return {
+        **_deployment_dto(value.deployment),
+        "applicationName": value.application_name,
+        "selectedInteractionCount": value.selected_interaction_count,
+        "definedInteractionCount": value.available_interaction_count,
+    }
+
+
+def _deployment_interaction_dto(value) -> dict:
+    return {
+        "deploymentInteractionId": str(value.deployment_interaction_id),
+        "applicationDeploymentId": str(value.application_deployment_id),
+        "interactionDefinitionId": str(value.interaction_definition_id),
+        "lifecycleState": value.lifecycle_state.value,
+        "version": value.version,
+    }
+
+
+def _connectivity_dto(value) -> dict:
+    return {
+        "deploymentInteractionId": str(value.deployment_interaction_id),
+        "interactionDefinitionId": str(value.interaction_definition_id),
+        "sourceComponent": {
+            "componentId": str(value.source_component_id),
+            "displayName": value.source_component_name,
+            "resourceCount": value.source_resource_count,
+        },
+        "destinationComponent": {
+            "componentId": str(value.destination_component_id),
+            "displayName": value.destination_component_name,
+            "resourceCount": value.destination_resource_count,
+        },
+        "trafficAlternatives": [_traffic_dto(item) for item in value.traffic_alternatives],
+    }
+
+
+def _resource_member_dto(value) -> dict:
+    return {
+        "bindingReference": value.binding_reference,
+        "bindingVersion": value.binding_version,
+        "resourceReference": value.resource_reference,
+        "displayName": value.display_name,
+        "scopeReferences": list(value.scope_references),
+        "validFrom": value.valid_from.isoformat(),
+        "validTo": value.valid_to.isoformat() if value.valid_to is not None else None,
+    }
+
+
+def _binding_dto(value) -> dict:
+    return {
+        "bindingReference": value.reference_id,
+        "deploymentInteractionId": str(value.deployment_interaction_id),
+        "side": value.side.value,
+        "resourceReference": value.resource_reference,
+        "validFrom": value.valid_from.isoformat(),
+        "validTo": value.valid_to.isoformat() if value.valid_to is not None else None,
+        "version": value.version,
+    }
+
+
+def _traffic_dto(value: AuthoredDcsTrafficAlternative) -> dict:
+    return {
+        "protocol": value.protocol,
+        "sourcePorts": _constraint_dto(value.source_ports),
+        "destinationPorts": _constraint_dto(value.destination_ports),
+        "serviceReference": value.service_reference,
+    }
+
+
+def _constraint_dto(value: DcsPortConstraint) -> dict:
+    result: dict[str, object] = {"kind": value.kind.value}
+    if value.ranges:
+        result["ranges"] = [
+            {"first": item.first, "last": item.last} for item in value.ranges
+        ]
+    return result
+
+
+def _required_result(value):
+    if value is None:
+        raise PublicApiError(
+            status_code=503,
+            code="CataloguePersistenceOutcomeUnknown",
+            message="The catalogue result could not be resolved authoritatively.",
+        )
+    return value
+
+
+def _not_found(subject: str) -> None:
+    raise PublicApiError(
+        status_code=404,
+        code="CatalogueSubjectNotFound",
+        message=f"The {subject} was not found.",
+    )
+
+
+def _require_target_success(result) -> None:
+    outcome = result.outcome.value
+    if outcome in _SUCCESS_OUTCOMES:
+        return
+    if outcome == "DependencyBlocked":
+        raise PublicApiError(
+            status_code=409,
+            code="CatalogueDependencyBlocked",
+            message="The catalogue mutation is blocked by active dependencies.",
+            details={"dependencies": _dependency_details(result)},
+        )
+    mapping = {
+        "AuthorityDenied": (
+            403,
+            "CatalogueAuthorityDenied",
+            "The actor is not authorized to curate the Application Catalogue.",
+        ),
+        "AuthorityUnknown": (
+            409,
+            "CatalogueAuthorityUnknown",
+            "Application Catalogue mutation authority could not be resolved.",
+        ),
+        "NotFound": (
+            404,
+            "CatalogueSubjectNotFound",
+            "The catalogue subject was not found.",
+        ),
+        "ParentInactive": (
+            409,
+            "CatalogueParentInactive",
+            "The required catalogue parent is not Active.",
+        ),
+        "AlreadyExists": (
+            409,
+            "CatalogueAlreadyExists",
+            "The requested Active catalogue relation already exists.",
+        ),
+        "InputInvalid": (
+            422,
+            "CatalogueInputInvalid",
+            "The request violates the Application Catalogue contract.",
+        ),
+        "ConcurrencyConflict": (
+            409,
+            "CatalogueConcurrencyConflict",
+            "The catalogue subject changed since the supplied version.",
+        ),
+        "IdempotencyConflict": (
+            409,
+            "CatalogueIdempotencyConflict",
+            "The idempotency key was already used for a different request.",
+        ),
+        "PersistenceUnknown": (
+            503,
+            "CataloguePersistenceOutcomeUnknown",
+            "The catalogue persistence outcome could not be confirmed.",
+        ),
+    }
+    status_code, code, message = mapping.get(
+        outcome,
+        (503, "CatalogueUnavailable", "The Application Catalogue operation failed."),
+    )
+    raise PublicApiError(status_code=status_code, code=code, message=message)
+
+
+def _dependency_details(result) -> list[dict]:
+    details = []
+    for group in getattr(result, "dependencies", ()):
+        details.append(
+            {
+                "kind": group.kind.value,
+                "count": group.count,
+                "preview": [
+                    {
+                        "reference": item.reference,
+                        "displayName": item.display_name,
+                    }
+                    for item in group.references
+                ],
+            }
+        )
+    return details
