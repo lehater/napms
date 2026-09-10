@@ -6,7 +6,7 @@ Authoritative greenfield NAPMS product repository.
 
 ## Current implementation state
 
-NAPMS includes the current local product chain through Network Environment Operations plus the optional external-integration seam absorbed in I23. Canonical capability status lives in `docs/engineering/current-state.md`; roadmap sequencing lives in `docs/engineering/post-wave1-product-completion-roadmap.md`.
+NAPMS includes the current local product chain through Network Environment Operations, the optional external-integration seam from I23, and the hardened local deployment/recovery operating contract completed in I24. Canonical capability status lives in `docs/engineering/current-state.md`; roadmap sequencing lives in `docs/engineering/post-wave1-product-completion-roadmap.md`.
 
 ## Local Docker start
 
@@ -23,12 +23,13 @@ Open the printed URL (default `http://127.0.0.1:8080`).
 Useful commands:
 
 ```bash
+make dev-status
 make dev-logs
 make dev-down
 make dev-reset
 ```
 
-`dev-down` preserves the database volume. `dev-reset` deletes local database state. Re-running `make dev-up` against preserved state does not create or mutate application domain objects as part of its startup probe.
+`dev-status` prints Compose state and verifies public liveness/readiness plus PostgreSQL queryability. `dev-down` preserves the database volume. `dev-reset` deletes local database state. Re-running `make dev-up` against preserved state does not create or mutate application domain objects as part of its startup probe.
 
 A PostgreSQL volume created by the older pre-I24 host-`trust` configuration may fail the new authentication verification even though the application can connect. Back up needed data before recreating or explicitly migrating such a volume.
 
@@ -47,6 +48,8 @@ make dev-restore BACKUP=backups/napms.napms.dump CONFIRM_RESET=yes
 ```
 
 Restore is deliberately destructive and refuses to replace the volume without explicit confirmation. The archive is validated before volume deletion. See `docs/engineering/local-backup-recovery.md` for the exact recovery boundary and exclusions.
+
+Forward upgrades require a pre-upgrade backup and use the tracked migration runner before normal startup. Arbitrary reverse migrations are not supported. See `docs/engineering/local-upgrade-procedure.md`.
 
 For raw `docker compose up`, provide `NAPMS_POSTGRES_PASSWORD` and `NAPMS_LOCAL_AUTH_PASSWORD_HASH` outside version control. `.env.example` lists the supported overrides but intentionally contains no usable credentials.
 
