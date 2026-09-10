@@ -95,6 +95,7 @@ class ResourceRealizationVersion:
     valid_from: datetime
     valid_to: datetime | None
     provenance_reference: str
+    version: int = 1
 
     def __post_init__(self) -> None:
         for field_name, value in (
@@ -123,12 +124,22 @@ class ResourceRealizationVersion:
                 raise ResourceCatalogueInvariantError(
                     "valid_from must be before valid_to"
                 )
+        if self.version < 1:
+            raise ResourceCatalogueInvariantError("version must be >= 1")
 
     def is_effective_at(self, as_of: datetime) -> bool:
         _require_aware(as_of, field_name="as_of")
         return self.valid_from <= as_of and (
             self.valid_to is None or as_of < self.valid_to
         )
+
+    def ended(self, *, valid_to: datetime) -> "ResourceRealizationVersion":
+        if self.valid_to is not None:
+            raise ResourceCatalogueInvariantError("realization is already ended")
+        _require_aware(valid_to, field_name="valid_to")
+        if valid_to <= self.valid_from:
+            raise ResourceCatalogueInvariantError("valid_to must be after valid_from")
+        return replace(self, valid_to=valid_to, version=self.version + 1)
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,6 +150,7 @@ class ResourceScopeAffiliation:
     valid_from: datetime
     valid_to: datetime | None
     provenance_reference: str
+    version: int = 1
 
     def __post_init__(self) -> None:
         for field_name, value in (
@@ -159,9 +171,19 @@ class ResourceScopeAffiliation:
                 raise ResourceCatalogueInvariantError(
                     "valid_from must be before valid_to"
                 )
+        if self.version < 1:
+            raise ResourceCatalogueInvariantError("version must be >= 1")
 
     def is_effective_at(self, as_of: datetime) -> bool:
         _require_aware(as_of, field_name="as_of")
         return self.valid_from <= as_of and (
             self.valid_to is None or as_of < self.valid_to
         )
+
+    def ended(self, *, valid_to: datetime) -> "ResourceScopeAffiliation":
+        if self.valid_to is not None:
+            raise ResourceCatalogueInvariantError("scope affiliation is already ended")
+        _require_aware(valid_to, field_name="valid_to")
+        if valid_to <= self.valid_from:
+            raise ResourceCatalogueInvariantError("valid_to must be after valid_from")
+        return replace(self, valid_to=valid_to, version=self.version + 1)
