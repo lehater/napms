@@ -30,6 +30,7 @@ _AUTHORITY_ACTIONS = (
     "SetConnectivityRequirementJustification",
     "RetireConnectivityRequirement",
     "ReadScopedConnectivity",
+    "ReadNetworkOperatorRealization",
 )
 
 
