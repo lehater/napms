@@ -1,5 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
+from enum import Enum
 from uuid import UUID
 
 
@@ -12,6 +13,12 @@ def _require_aware(value: datetime, *, field_name: str) -> None:
         raise CatalogueInvariantError(f"{field_name} must be offset-aware")
 
 
+def _require_non_empty(value: str, *, field_name: str) -> str:
+    if not value or not value.strip():
+        raise CatalogueInvariantError(f"{field_name} must be non-empty")
+    return value.strip()
+
+
 @dataclass(frozen=True, slots=True)
 class DirectedInteractionIdentity:
     source_component_deployment_id: UUID
@@ -22,6 +29,94 @@ class DirectedInteractionIdentity:
 def _validate_display_name(value: str | None, *, field_name: str) -> None:
     if value is not None and not value.strip():
         raise CatalogueInvariantError(f"{field_name} must be non-empty when provided")
+
+
+class CatalogueLifecycleState(str, Enum):
+    ACTIVE = "Active"
+    RETIRED = "Retired"
+
+
+@dataclass(frozen=True, slots=True)
+class Application:
+    application_id: UUID
+    display_name: str
+    provenance_reference: str
+    lifecycle_state: CatalogueLifecycleState = CatalogueLifecycleState.ACTIVE
+    version: int = 1
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "display_name",
+            _require_non_empty(self.display_name, field_name="display_name"),
+        )
+        _require_non_empty(
+            self.provenance_reference,
+            field_name="provenance_reference",
+        )
+        if self.version < 1:
+            raise CatalogueInvariantError("version must be >= 1")
+
+    def _require_active(self) -> None:
+        if self.lifecycle_state is CatalogueLifecycleState.RETIRED:
+            raise CatalogueInvariantError("Retired Application is immutable")
+
+    def renamed(self, display_name: str) -> "Application":
+        self._require_active()
+        normalized = _require_non_empty(display_name, field_name="display_name")
+        if normalized == self.display_name:
+            raise CatalogueInvariantError("rename requires a different display name")
+        return replace(self, display_name=normalized, version=self.version + 1)
+
+    def retired(self) -> "Application":
+        self._require_active()
+        return replace(
+            self,
+            lifecycle_state=CatalogueLifecycleState.RETIRED,
+            version=self.version + 1,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class Component:
+    component_id: UUID
+    application_id: UUID
+    display_name: str
+    provenance_reference: str
+    lifecycle_state: CatalogueLifecycleState = CatalogueLifecycleState.ACTIVE
+    version: int = 1
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "display_name",
+            _require_non_empty(self.display_name, field_name="display_name"),
+        )
+        _require_non_empty(
+            self.provenance_reference,
+            field_name="provenance_reference",
+        )
+        if self.version < 1:
+            raise CatalogueInvariantError("version must be >= 1")
+
+    def _require_active(self) -> None:
+        if self.lifecycle_state is CatalogueLifecycleState.RETIRED:
+            raise CatalogueInvariantError("Retired Component is immutable")
+
+    def renamed(self, display_name: str) -> "Component":
+        self._require_active()
+        normalized = _require_non_empty(display_name, field_name="display_name")
+        if normalized == self.display_name:
+            raise CatalogueInvariantError("rename requires a different display name")
+        return replace(self, display_name=normalized, version=self.version + 1)
+
+    def retired(self) -> "Component":
+        self._require_active()
+        return replace(
+            self,
+            lifecycle_state=CatalogueLifecycleState.RETIRED,
+            version=self.version + 1,
+        )
 
 
 @dataclass(frozen=True, slots=True)
