@@ -1,7 +1,6 @@
 import { useState } from "react"
 
 import { ApiError } from "@/api"
-import { StatusBadge } from "@/components/ui/StatusBadge"
 import { PolicyViewControls } from "@/features/policy/PolicyViewControls"
 import {
   getNetworkOperatorRealization,
@@ -10,6 +9,14 @@ import {
 
 function ruleId(reference: string): string | null {
   return reference.startsWith("access-rule:") ? reference.slice("access-rule:".length) : null
+}
+
+function AvailabilityBadge({ value }: { value: string }) {
+  return (
+    <span className="rounded-full border border-[#CBD5E1] bg-[#F8FAFC] px-2.5 py-1 text-xs font-semibold text-[#475569]">
+      {value}
+    </span>
+  )
 }
 
 function StageCard({
@@ -25,7 +32,7 @@ function StageCard({
     <section className="rounded-lg border border-[#E2E8F0] bg-white p-5">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="font-semibold text-[#172033]">{title}</h2>
-        <StatusBadge value={availability} />
+        <AvailabilityBadge value={availability} />
       </div>
       {children}
     </section>
