@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { getSession, login, logout, type Actor } from "@/api"
 import { AppShell } from "@/components/layout/AppShell"
 import { LoginPage } from "@/features/auth/LoginPage"
+import { CheckerPage } from "@/features/checker/CheckerPage"
 import { ConnectivityPage } from "@/features/connectivity/ConnectivityPage"
 import type { RequestConnectivityContext } from "@/features/connectivity/model"
 import { ConnectivityDecisionDetailsPage } from "@/features/decisions/ConnectivityDecisionDetailsPage"
@@ -19,6 +20,7 @@ import { AccessRulesPage } from "@/features/rules/AccessRulesPage"
 
 type Route =
   | { kind: "connectivity"; page: number }
+  | { kind: "checker" }
   | {
       kind: "request-access"
       context: RequestConnectivityContext
@@ -37,6 +39,7 @@ type Route =
 
 function readRoute(): Route {
   const hash = window.location.hash.replace(/^#/, "")
+  if (hash.startsWith("checker")) return { kind: "checker" }
   if (hash.startsWith("connectivity-decisions/")) {
     const decisionId = hash.slice("connectivity-decisions/".length).split("?")[0]
     if (decisionId) {
@@ -186,21 +189,23 @@ export function App() {
   }
 
   const activeNav =
-    route.kind === "connectivity" ||
-    route.kind === "request-access" ||
-    route.kind === "compose"
-      ? "connectivity"
-      : route.kind === "requirements" || route.kind === "requirement"
-        ? "requirements"
-        : route.kind === "decisions" || route.kind === "decision"
-          ? "decisions"
-          : route.kind === "effective"
-            ? "effective"
-            : route.kind === "normalized"
-              ? "normalized"
-              : route.kind === "realization"
-                ? "realization"
-                : "rules"
+    route.kind === "checker"
+      ? "checker"
+      : route.kind === "connectivity" ||
+          route.kind === "request-access" ||
+          route.kind === "compose"
+        ? "connectivity"
+        : route.kind === "requirements" || route.kind === "requirement"
+          ? "requirements"
+          : route.kind === "decisions" || route.kind === "decision"
+            ? "decisions"
+            : route.kind === "effective"
+              ? "effective"
+              : route.kind === "normalized"
+                ? "normalized"
+                : route.kind === "realization"
+                  ? "realization"
+                  : "rules"
 
   return (
     <AppShell
@@ -210,17 +215,19 @@ export function App() {
         navigate(
           target === "connectivity"
             ? "connectivity?page=1"
-            : target === "requirements"
-              ? "connectivity-needs?page=1"
-              : target === "decisions"
-                ? "connectivity-decisions?page=1"
-                : target === "rules"
-                  ? "access-rules?page=1"
-                  : target === "effective"
-                    ? "effective-policy"
-                    : target === "normalized"
-                      ? "normalized-policy"
-                      : "realization",
+            : target === "checker"
+              ? "checker"
+              : target === "requirements"
+                ? "connectivity-needs?page=1"
+                : target === "decisions"
+                  ? "connectivity-decisions?page=1"
+                  : target === "rules"
+                    ? "access-rules?page=1"
+                    : target === "effective"
+                      ? "effective-policy"
+                      : target === "normalized"
+                        ? "normalized-policy"
+                        : "realization",
         )
       }
       onLogout={async () => {
@@ -228,7 +235,9 @@ export function App() {
         setActor(null)
       }}
     >
-      {route.kind === "connectivity" ? (
+      {route.kind === "checker" ? (
+        <CheckerPage />
+      ) : route.kind === "connectivity" ? (
         <ConnectivityPage
           page={route.page}
           onPageChange={(page) => navigate(`connectivity?page=${page}`)}
