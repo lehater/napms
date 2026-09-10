@@ -7,6 +7,12 @@ Canonical product semantics:
 - feature requirements under `docs/requirements/`;
 - feature boundaries under `docs/architecture/`.
 
+Accepted next Applications target, not yet implemented:
+- `docs/ui/application-catalogue-target.md`;
+- `docs/decisions/ADR-012-application-definition-deployment-model.md`.
+
+The screen descriptions below remain current implemented I27 truth until the target model is implemented and absorbed.
+
 ## Login
 
 Input: login + password. Output: authenticated session or generic authentication failure. Successful login enters the normal product shell.
