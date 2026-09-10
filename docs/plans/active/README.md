@@ -2,42 +2,41 @@
 
 Current: `PLAN-I28-user-journey-validation-pilot.md`
 Goal: Prove a minimal Harness-supported user-journey validation loop on J01 Application Catalogue authoring, close its P0/P1 gaps, then retain only demonstrated reusable support.
-Current task: WP-2 — establish the J01 Application Catalogue baseline and classify journey gaps before implementing fixes.
-Working mode: `execute-work-package` with `user-journey-validation`; route discovered semantic or implementation gaps only after baseline classification.
+Current task: WP-3 — close the two J01 P1 gaps proven by the baseline: lifecycle maintenance and durable DCS semantics inspection.
+Working mode: `execute-work-package`; implement accepted behavior through the scoped runtime/Web adapters and keep domain identity/lifecycle unchanged.
 
 ## Working set
 
 Read first:
-- `docs/requirements/catalogue-curation-acceptance-examples.md`
-- `docs/requirements/web-ui-requirements.md`
 - `web/AGENTS.md`
+- `web/src/features/catalogues/catalogueApi.ts`
 
 Expand only if needed:
-- `docs/requirements/catalogue-curation.md`
-- `docs/ui/screens.md`
-- `docs/ui/interaction-rules.md`
-- `web/src/features/catalogues/ApplicationsPage.tsx`
-- `web/src/features/catalogues/ApplicationDetailsPage.tsx`
-- `web/src/features/catalogues/DcsAuthoringPanel.tsx`
-- `web/src/features/catalogues/catalogueApi.ts`
+- `docs/requirements/web-ui-requirements.md`
+- `src/napms/application_catalogue/application/curation_detail.py`
 - `src/napms/runtime/catalogue_curation_http.py`
+- `src/napms/runtime/composition.py`
+- `web/src/features/catalogues/ApplicationDetailsPage.tsx`
+- `tests/runtime/test_catalogue_curation_http.py`
 
 ## Recovery facts
 
-- WP-1 is closed: hosted Harness run `34500542639` executed `make harness-check` successfully after CI exposed and corrections closed two active-plan validation defects.
-- `user-journey-validation` is the selected workflow for WP-2; J01-specific truth remains in accepted requirements and the active plan.
-- J01 fixture is `Order Management` with `Web UI`, `Orders API`, `Database` production deployments and tcp/443 plus tcp/5432 directed communications.
-- Journey evidence must come from supported UI behavior. Code/API inspection may identify candidate gaps or diagnose failures but must not be presented as an executed UI PASS.
-- Repository CI is an available deterministic execution surface; current connector can inspect runs/jobs/logs but cannot create `workflow_dispatch` runs.
+- WP-1 is closed: hosted Harness run `34500542639` executed `make harness-check` successfully.
+- WP-2 verdict: `FAIL` with two P1 findings proven from accepted contracts plus implementation inspection; no subjective browser PASS is claimed.
+- J01-P1-01: Application/Component/Deployment rename+retire are accepted and already implemented/wired in the application layer, but are not exposed by the current HTTP/Web Applications workspace. Expected result: stable-identity rename, optimistic concurrency, leaf-to-parent retirement, confirmation and explicit conflict/block feedback.
+- J01-P1-02: Applications detail drops persisted DCS traffic semantics and after reload shows only revision label/direction. Expected result: readable source/destination plus protocol/ports/service alternatives after reopen; correction remains creation of another immutable DCS revision.
+- `docs/requirements/web-ui-requirements.md` has been synchronized with the already accepted ACC lifecycle/DCS semantics before implementation.
+- Prefer a small Application-workspace HTTP adapter parallel to the existing Resource-workspace adapter rather than expanding generic curation transport responsibilities.
+- No running browser/UI execution surface is connected to this chat; deterministic tests/builds can prove implementation behavior but final judgement-based journey closure still requires executable UI evidence.
 
 ## Blockers
 
-No running browser/UI execution surface is currently connected to this chat. WP-2 may use code inspection to identify reproducible candidate gaps, but J01 cannot be declared PASS without executable UI evidence. If the baseline shows a blocking implementation gap directly from accepted requirements/code, classify it rather than inventing browser evidence.
+None for implementing the two proven P1 gaps.
 
 ## Gate
 
-WP-2 closes when J01 has an explicit PASS/FAIL verdict with reproducible P0-P3 findings and every P0/P1 finding has an owning next workflow plus concrete expected accepted result.
+WP-3 closes when both J01 P1 findings are implemented through supported HTTP/Web paths, relevant core/runtime and Web checks pass, and no new P0/P1 is introduced by the changes. J01 remains pending final executable UI evidence before overall pilot closure.
 
 ## Next
 
-Compare accepted Catalogue Curation/Web UI behavior with the current Applications UI and backend boundary, establish the smallest reproducible J01 baseline findings, and identify the least-complex executable UI evidence path needed before implementation begins.
+Add the Application workspace runtime adapter for lifecycle mutations and DCS traffic presentation, wire it in composition, update the Applications Web client/detail UI, add focused deterministic tests, then run the affected hosted gates.
