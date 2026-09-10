@@ -358,7 +358,7 @@ class PostgresApplicationCatalogueCurationRepository:
                    lifecycle_state, retirement_provenance_reference, version
             FROM napms_application_catalogue.applications
             WHERE (%s OR lifecycle_state = 'Active')
-              AND (%s IS NULL OR display_name ILIKE %s OR application_id::text ILIKE %s)
+              AND (%s::text IS NULL OR display_name ILIKE %s OR application_id::text ILIKE %s)
             ORDER BY display_name, application_id
             OFFSET %s LIMIT %s
             """,
