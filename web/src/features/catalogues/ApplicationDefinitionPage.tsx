@@ -23,6 +23,12 @@ import { trafficSummary } from "@/features/catalogues/targetPresentation"
 type Tab = "overview" | "components" | "interactions" | "deployments"
 type TabFilters = { search: string; first: string; second: string; third: string }
 const EMPTY_FILTERS: TabFilters = { search: "", first: "", second: "", third: "" }
+const TAB_LABELS: Record<Tab, string> = {
+  overview: "Overview",
+  components: "Components",
+  interactions: "Interactions",
+  deployments: "Deployments",
+}
 const inputClass = "min-h-10 min-w-0 rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
 
 function errorFrom(caught: unknown, fallback: string) {
@@ -112,7 +118,7 @@ export function ApplicationDefinitionPage({ applicationId, onBack, onOpenDeploym
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#64748B]">Applications / Definitions</div><h1 className="mt-1 text-2xl font-bold text-[#172033]">{definition.displayName}</h1><p className="mt-2 text-sm text-[#64748B]">{definition.domain ?? "No domain"}{definition.ownerReference ? ` · Owner: ${definition.ownerReference}` : ""}</p></div><Button variant="secondary" onClick={() => setDefinitionEditOpen((value) => !value)}><Pencil className="size-4" aria-hidden="true" />Edit</Button></header>
       {definitionEditOpen ? <DefinitionEditPanel definition={definition} onChanged={(updated) => { setDefinition(updated); setDefinitionEditOpen(false) }} onRetired={onBack} onCancel={() => setDefinitionEditOpen(false)} /> : null}
 
-      <div className="flex gap-1 border-b border-[#E2E8F0]">{(["overview", "components", "interactions", "deployments"] as const).map((item) => <button key={item} type="button" className={`border-b-2 px-4 py-3 text-sm font-semibold capitalize ${tab === item ? "border-[#2563EB] text-[#1D4ED8]" : "border-transparent text-[#64748B] hover:text-[#172033]"}`} onClick={() => selectTab(item)}>{item}</button>)}</div>
+      <div className="flex gap-1 border-b border-[#E2E8F0]">{(["overview", "components", "interactions", "deployments"] as const).map((item) => <button key={item} type="button" className={`border-b-2 px-4 py-3 text-sm font-semibold ${tab === item ? "border-[#2563EB] text-[#1D4ED8]" : "border-transparent text-[#64748B] hover:text-[#172033]"}`} onClick={() => selectTab(item)}>{TAB_LABELS[item]}</button>)}</div>
 
       <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
         {tab === "overview" ? <dl className="grid gap-x-8 gap-y-5 p-6 md:grid-cols-2"><div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Name</dt><dd className="mt-1 text-sm font-medium text-[#172033]">{definition.displayName}</dd></div><div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Domain</dt><dd className="mt-1 text-sm text-[#172033]">{definition.domain ?? "—"}</dd></div><div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Owner</dt><dd className="mt-1 text-sm text-[#172033]">{definition.ownerReference ?? "—"}</dd></div><div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Description</dt><dd className="mt-1 text-sm text-[#172033]">{definition.description ?? "—"}</dd></div></dl> : (
