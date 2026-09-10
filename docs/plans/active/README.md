@@ -2,31 +2,31 @@
 
 Current: `PLAN-039-i25-product-completion-acceptance.md`
 
-Current task: WP2B network-operator realization/execution read surface.
+Current task: WP2B network-operator realization HTTP verification.
 
-Goal: expose downstream local product state truthfully through one owner-preserving read projection before Web presentation.
+Goal: prove the owner-preserving operator projection through PostgreSQL composition and authenticated HTTP without inventing configured or executed state.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-039-i25-product-completion-acceptance.md`
-- `docs/requirements/network-operator-realization-view.md`
 - `src/napms/network_operator_view/application.py`
+- `src/napms/runtime/network_operator_view_http.py`
 
-Expand only as needed into APR composition, Authority Management adapter, runtime HTTP composition and tests.
+Expand only as needed into PostgreSQL composition, Authority Management adapter, runtime composition and tests.
 
 ## Current result
 
-Framework-free operator-view application contract exists with explicit `Available | NotAvailable | Unknown` stage availability and authority-first admission. Missing configured-evidence/managed-scope-contract inputs and absent NEO result remain `NotAvailable`; ambiguous/unknown owner semantics are not promoted to positive conclusions.
+Framework-free operator view, dedicated Authority action, PostgreSQL composition and separate HTTP router are implemented. Desired/placement/rendering may be `Available`; missing configured-evidence/managed-scope inputs and absent NEO result stay `NotAvailable`. No new authoritative persistence was introduced.
 
 ## Blockers
 
-No external blocker. Runtime still has no selected configured-evidence/managed-scope-contract source and no durable HTTP-wired NEO history, so those stages must remain unavailable unless actual inputs/results are supplied.
+No external blocker. Runtime still has no selected configured-evidence/managed-scope-contract source and no durable HTTP-wired NEO history, so those stages cannot truthfully become available yet.
 
 ## Gate
 
-Do not infer configured state, reconciliation outcome or execution success from desired policy/rendering alone. No new authoritative cross-context persistence. Deterministic local technical fixtures may support demo execution but remain explicit bootstrap data.
+Do not infer configured state, reconciliation outcome or execution success from desired policy/rendering alone. HTTP is transport mapping only. Local deterministic technical fixtures remain explicit bootstrap/demo data.
 
 ## Next
 
-Verify the framework-free contract, then wire PostgreSQL APR composition plus dedicated Authority Management read admission. Add HTTP only after that composition proves the availability semantics end to end.
+Run the full gate cycle on the HTTP-wired WP2B head. If green, mark WP2B done and start the smallest Web operator workspace over the proven DTO.
