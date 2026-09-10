@@ -235,6 +235,8 @@ class DeploymentResourceBinding:
     valid_from: datetime
     valid_to: datetime | None
     provenance_reference: str
+    end_provenance_reference: str | None = None
+    version: int = 1
 
     def __post_init__(self) -> None:
         for field_name, value in (
@@ -242,17 +244,48 @@ class DeploymentResourceBinding:
             ("resource_reference", self.resource_reference),
             ("provenance_reference", self.provenance_reference),
         ):
-            if not value:
-                raise CatalogueInvariantError(f"{field_name} must be non-empty")
+            _require_non_empty(value, field_name=field_name)
+
+        if self.end_provenance_reference is not None:
+            _require_non_empty(
+                self.end_provenance_reference,
+                field_name="end_provenance_reference",
+            )
+            if self.valid_to is None:
+                raise CatalogueInvariantError("end provenance requires valid_to")
 
         _require_aware(self.valid_from, field_name="valid_from")
         if self.valid_to is not None:
             _require_aware(self.valid_to, field_name="valid_to")
             if self.valid_from >= self.valid_to:
                 raise CatalogueInvariantError("valid_from must be before valid_to")
+        if self.version < 1:
+            raise CatalogueInvariantError("version must be >= 1")
 
     def is_effective_at(self, as_of: datetime) -> bool:
         _require_aware(as_of, field_name="as_of")
         return self.valid_from <= as_of and (
             self.valid_to is None or as_of < self.valid_to
+        )
+
+    def ended(
+        self,
+        *,
+        valid_to: datetime,
+        end_provenance_reference: str,
+    ) -> "DeploymentResourceBinding":
+        if self.valid_to is not None:
+            raise CatalogueInvariantError("deployment resource binding is already ended")
+        _require_aware(valid_to, field_name="valid_to")
+        if valid_to <= self.valid_from:
+            raise CatalogueInvariantError("valid_to must be after valid_from")
+        normalized_provenance = _require_non_empty(
+            end_provenance_reference,
+            field_name="end_provenance_reference",
+        )
+        return replace(
+            self,
+            valid_to=valid_to,
+            end_provenance_reference=normalized_provenance,
+            version=self.version + 1,
         )
