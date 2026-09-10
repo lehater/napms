@@ -1,247 +1,80 @@
 # Catalogue Curation Roadmap
 
-Status: `I27 selected / planning`.
+Status: `I27 complete and absorbed`.
 
 Date: 2026-09-10.
 
 ## Purpose
 
-Provide the ordered implementation path that makes the supported local NAPMS product self-service for the Resource Catalogue and Application Communication Catalogue truth already consumed by Connectivity and related workflows.
+Record the completed I27 path that made the supported local NAPMS product self-service for Resource Catalogue and Application Communication Catalogue truth already consumed by Connectivity and related workflows.
 
-Accepted observable behavior is owned by `docs/requirements/catalogue-curation.md`.
+Observable behavior is owned by `docs/requirements/catalogue-curation.md`. Current runtime truth is summarized in `docs/engineering/current-state.md`; architecture is owned by `docs/architecture/catalogue-curation-boundary.md` and `docs/architecture/current-architecture.md`.
 
-I27 is not generic catalogue CRUD. It completes owner-controlled domain/application mutation seams first and exposes task-oriented Web workflows only after the semantic model is closed.
+## Completion summary
 
-## Starting state
+All ordered stages are complete:
 
-Known current state:
+| Stage | Outcome |
+| --- | --- |
+| C0 | ACC/RC tactical curation semantics, lifecycle, provenance, idempotency and DCS authoring contract accepted |
+| C1 | explicit `CurateApplicationCatalogue` / `CurateResourceCatalogue` Authority actions implemented |
+| C2 | Resource command/read slice implemented, including temporal realization/scope/responsibility maintenance |
+| C3 | first-class `Application -> Component -> Component Deployment` hierarchy and commands implemented |
+| C4 | immutable vendor-neutral DCS authoring implemented with Active participant discovery |
+| C5 | additive PostgreSQL persistence/migrations, deterministic legacy backfill, concurrency/idempotency receipts implemented |
+| C6 | authenticated task-oriented `/api/v1/catalogues/**` HTTP boundary implemented |
+| C7 | Resources Web workspace implemented |
+| C8 | Applications Web workspace implemented |
+| C9 | fresh catalogue data proven through existing Connectivity/Requirement flow |
+| C10 | acceptance, hardening and durable absorption completed |
 
-- Resource Catalogue persists Resource identities, endpoint/realization history and Resource Scope Affiliation; I26 also established Resource Responsibility read semantics;
-- Application Communication Catalogue persists Component Deployments, DCS revisions and Deployment Resource Bindings;
-- Strategic DDD already assigns Application/Component/Deployment/DCS identities to ACC;
-- normal local catalogue population still depends on seed/direct persistence paths rather than supported user-facing mutation use cases;
-- Web currently consumes catalogue truth through Connectivity, Checker and other projections but has no Applications or Resources curation workspace;
-- `ReadScopedConnectivity`, catalogue read visibility and Resource Responsibility do not imply catalogue mutation authority.
+## Accepted product boundary
 
-## Ordered roadmap
-
-### C0 — Domain re-entry and catalogue mutation contract
-
-Resolve the blocking semantic decisions before opening infrastructure work.
-
-Deliverables:
-
-- ACC Tactical DDD for Application, Component, Component Deployment, DCS revision and Deployment Resource Binding;
-- explicit identity and lifecycle rules, including how retirement/replacement works and what is immutable;
-- Resource Catalogue write semantics for Resource identity, realization versions, Resource Scope Affiliation and Resource Responsibility;
-- catalogue mutation authority model and scope correlation;
-- local curation provenance and command/idempotency semantics;
-- accepted DCS authoring input model separated from normalized firewall-rule representation;
-- updates to ubiquitous language/semantic ownership only where the clarified tactical model requires them.
-
-Gate:
-
-- no PostgreSQL migration, HTTP write route or Web mutation form before these decisions are canonical and knowledge checks are satisfiable.
-
-### C1 — Authority Management mutation actions
-
-Implement explicit catalogue mutation actions selected by C0.
-
-Requirements:
-
-- actor identity remains server/session owned;
-- Resource and ACC actions are independently admitted according to the accepted granularity;
-- read visibility, responsibility/contact and `ReadScopedConnectivity` do not confer write authority;
-- tests prove allow/deny, effective-time and scope behavior.
-
-### C2 — Resource Catalogue command/use-case slice
-
-Implement Domain/Application/Ports for supported local Resource curation.
-
-Minimum application capabilities:
-
-- register Resource identity;
-- read Resource detail/current projection;
-- add/end/replace Resource realization versions according to C0 semantics;
-- add/end Resource Scope Affiliations;
-- add/end Resource Responsibility assignments;
-- list/search data needed by the Resources workspace and selection forms.
-
-Preserve temporal history rather than implementing generic row updates.
-
-### C3 — Application Communication Catalogue hierarchy and command slice
-
-Complete ACC tactical/runtime support for the accepted hierarchy:
+I27 remains deliberately narrower than generic CMDB/application portfolio management.
 
 ```text
-Application
-  -> Component
-      -> Component Deployment
+Resource Catalogue
+  owns Resource + temporal realization/scope/responsibility facts
+
+Application Communication Catalogue
+  owns Application -> Component -> Deployment
+  owns temporal Deployment Resource Binding
+  owns immutable DCS revisions
+
+Authority Management
+  owns mutation admission
 ```
 
-Minimum application capabilities:
+Catalogue visibility, selected Responsibility Scope, Resource Scope Affiliation, Resource Responsibility/contact, `ReadScopedConnectivity` and catalogue mutation authority remain independent concerns.
 
-- register and inspect Application;
-- register and inspect Component within its accepted parent relation;
-- register and inspect Component Deployment;
-- list/search hierarchy for UI discovery;
-- maintain time-qualified Deployment Resource Bindings;
-- preserve stable identities referenced by existing Requirement/Decision/Rule semantics.
+Responsibility Scope and Person/Team are external correlation references for this local-first slice; I27 does not introduce Company/Organization identity or directory ownership.
 
-This stage closes the current gap where persisted runtime starts at Component Deployment while Strategic DDD already owns Application and Component identities.
+Historical identities/facts are retired/ended/replaced according to domain semantics rather than hard-deleted or rewritten for UI convenience.
 
-### C4 — DCS authoring and immutable revision commands
+## Acceptance evidence
 
-Implement one safe local user-authored DCS path.
+The completed increment contains executable evidence for:
+- RC/ACC domain/application lifecycle, temporal, validation, authority, concurrency and idempotency semantics;
+- PostgreSQL migration replay, deterministic legacy parent backfill and transaction-failure policy;
+- authenticated HTTP session/idempotency/validation/trust boundaries;
+- backend discovery for normal cross-reference selection;
+- Resource workspace paging/search/scope filtering/current completeness projection;
+- Web Applications/Resources workflows;
+- a fresh-data journey from catalogue curation through Scoped Connectivity to Connectivity Requirement state `Required`;
+- authenticated catalogue read with mutation denied `403 CatalogueAuthorityDenied` and no persisted change when curation authority is absent;
+- local demo hierarchy and authority assertions.
 
-The path shall:
+Pre-absorption hosted validation passed all repository gates on the I27 branch: core, PostgreSQL persistence, Web, harness, knowledge and Docker local runtime.
 
-- select supported source/destination participants through ACC-owned discovery;
-- accept validated service/protocol/port semantics selected in C0;
-- encode the existing immutable projection payload behind the application boundary;
-- create a new immutable DCS revision rather than rewrite referenced truth;
-- provide label/display metadata without making labels identity.
+## Deferred candidates
 
-Do not expose raw projection bytes or normalized vendor/firewall rule editing as the primary authoring model.
-
-### C5 — PostgreSQL persistence and migrations
-
-Open the infrastructure gate only after C0-C4 domain/application contracts are tested.
-
-Implement module-owned persistence for the selected write model:
-
-- Resource Catalogue repositories/migrations as required by new command seams;
-- ACC Application/Component persistence and parent relations;
-- any lifecycle/version/provenance/idempotency persistence selected by C0;
-- constraints that preserve temporal/reference invariants;
-- migration compatibility with existing local seeded data.
-
-Existing Component Deployment/DCS/binding identities must remain readable and migratable without silent semantic rebinding.
-
-### C6 — Authenticated task-oriented HTTP API
-
-Expose catalogue application use cases through authenticated routes.
-
-Requirements:
-
-- transport DTOs only;
-- backend authority checks on every mutation;
-- server-backed paging/search/discovery;
-- explicit domain/authorization/conflict/transport error mapping;
-- task-oriented commands instead of generic table CRUD;
-- no caller-supplied trusted actor identity;
-- form discovery endpoints/read models prevent the Web client from assembling arbitrary cross-context IDs.
-
-### C7 — Resources Web workspace
-
-Add `CATALOGS -> Resources` to the normal product shell.
-
-First end-to-end UI slice:
-
-- paged/searchable Resource list;
-- Resource detail;
-- register Resource;
-- maintain endpoint/realization history;
-- maintain Responsibility Scope affiliations;
-- maintain Resource Responsibility/contact assignments;
-- render missing current relations explicitly;
-- hide/disable mutation affordances according to backend capability hints where useful, while relying on backend enforcement.
-
-The screen remains a Resource Catalogue workflow, not a generic asset-management UI.
-
-### C8 — Applications Web workspace
-
-Add `CATALOGS -> Applications`.
-
-First end-to-end UI slice:
-
-- Application list/search;
-- Application -> Component -> Deployment drill-down;
-- create supported hierarchy entities;
-- bind deployments to Resources through trusted discovery;
-- inspect bindings and DCS revisions;
-- create a supported immutable DCS revision through a validated form.
-
-Stable IDs/provenance remain available in details but human-readable names/structure lead the normal workflow.
-
-### C9 — Connectivity integration and fresh-data journey
-
-Prove that freshly curated catalogue data feeds the existing product without a parallel projection or manual seed editing.
-
-Journey:
-
-```text
-Resources / Applications curation
-    -> Deployment Resource Binding
-    -> DCS revision
-    -> Connectivity inventory
-    -> Add connectivity / Needs
-    -> existing Decision / Rule path
-```
-
-Requirements:
-
-- Connectivity sees newly curated effective Resources/Deployments through existing owner-preserving composition;
-- no Web-only duplicate catalogue truth is introduced;
-- current local demo seed may remain for immediate startup/demo, but the same semantic structure can be recreated through supported product workflows.
-
-### C10 — Acceptance, hardening and absorption
-
-Acceptance must cover:
-
-- fresh PostgreSQL volume;
-- authenticated admitted curation path for both catalogues;
-- denied mutation for an authenticated actor lacking the selected authority;
-- temporal replacement/end semantics where applicable;
-- migration/startup compatibility with current demo seed;
-- full fresh-data journey into Connectivity and one existing access workflow;
-- backend/core tests, PostgreSQL integration, Web check, harness/knowledge checks and Docker local runtime gate.
-
-After completion:
-
-- absorb durable semantic truth into domain/requirements/architecture/current-state/UI owners;
-- mark this roadmap complete;
-- remove the active PLAN after absorption according to repository policy.
-
-## Dependency sequence
-
-```text
-C0 semantic closure
-  -> C1 authority contract
-  -> C2 Resource commands
-  -> C3 ACC hierarchy/commands
-  -> C4 DCS commands
-  -> C5 persistence
-  -> C6 HTTP
-  -> C7 Resources UI
-  -> C8 Applications UI
-  -> C9 existing-workflow integration
-  -> C10 acceptance/absorption
-```
-
-C2-C4 may be implemented as separate coherent code stages after C0/C1, but infrastructure remains downstream from their accepted contracts.
-
-## Product constraints
-
-- Local-first remains the selected target.
-- PostgreSQL remains the supported local catalogue source of truth.
-- No external CMDB/application registry/directory integration is required.
-- No real firewall/network lab is required.
-- Responsibility Scope remains an opaque correlation reference in I27; do not invent Company/Organization hierarchy.
-- Resource Responsibility is operational/contact truth, not authority.
-- Catalogue visibility is independent from catalogue mutation authority.
-- Existing Requirement/Decision/Rule semantic identities must not be rewritten by catalogue curation.
-- Historical/immutable catalogue facts must not be implemented as destructive scalar CRUD merely for UI convenience.
-
-## Explicit deferred candidates
-
-The following do not block I27 and require a later concrete requirement:
-
+The following remain outside I27 and require a new accepted requirement/target:
 - bulk import/edit;
-- external source synchronization;
+- external CMDB/application/directory synchronization;
 - organization/company hierarchy management;
+- delegated stewardship derived from a future explicit governance relation;
 - fine-grained foreign catalogue visibility;
-- arbitrary custom fields/tags;
+- arbitrary custom catalogue fields/tags;
 - generic CMDB inventory;
 - real provider/device discovery;
 - catalogue approval workflow;
@@ -249,4 +82,4 @@ The following do not block I27 and require a later concrete requirement:
 
 ## Completion criterion
 
-I27 is complete when a local user with the proper authority can onboard the minimum Resource + Application + Deployment + Binding + DCS structure through supported Web/API use cases and immediately use that truth in the existing Connectivity/access-policy journey, while unauthorized mutation is backend-denied and historical/semantic identities remain correct.
+Satisfied: an admitted local user can onboard the minimum Resource + Application + Component + Deployment + Binding + DCS structure through supported Web/API use cases and immediately consume it in the existing Connectivity/access workflow; unauthorized mutation is backend-denied; existing stable identities and historical/immutable semantics remain correct.
