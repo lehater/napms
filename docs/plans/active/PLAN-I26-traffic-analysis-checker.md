@@ -1,6 +1,6 @@
 # PLAN-I26 — Traffic Analysis Checker
 
-Status: `active / final gate`.
+Status: `active / final gate`
 
 Date: 2026-09-10.
 
