@@ -29,6 +29,10 @@ class CatalogueConcurrencyConflict(CataloguePersistenceError):
     """Optimistic concurrency precondition did not match authoritative state."""
 
 
+# Compatibility name used by the first I27 structural curation slice.
+ApplicationCatalogueConcurrencyConflict = CatalogueConcurrencyConflict
+
+
 class CatalogueIdempotencyConflict(CataloguePersistenceError):
     """Another command won the same idempotency-key uniqueness boundary."""
 
