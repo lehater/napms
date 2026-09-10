@@ -9,9 +9,11 @@ import {
   createCatalogueComponent,
   createCatalogueDeployment,
   createCatalogueDeploymentResourceBinding,
+  endCatalogueDeploymentResourceBinding,
   listCatalogueResources,
   readCatalogueApplication,
   type ApplicationTreeDto,
+  type DeploymentResourceBindingDto,
   type ResourceDto,
 } from "@/features/catalogues/catalogueApi"
 
@@ -41,6 +43,7 @@ export function ApplicationDetailsPage({
   const [resources, setResources] = useState<ResourceDto[]>([])
   const [resourceSelections, setResourceSelections] = useState<Record<string, string>>({})
   const [bindingDeployment, setBindingDeployment] = useState<string | null>(null)
+  const [endingBindingReference, setEndingBindingReference] = useState<string | null>(null)
   const [mutationError, setMutationError] = useState<ApiError | null>(null)
 
   async function load() {
@@ -121,6 +124,23 @@ export function ApplicationDetailsPage({
       setMutationError(errorFrom(caught, "Resource binding could not be created."))
     } finally {
       setBindingDeployment(null)
+    }
+  }
+
+  async function endBinding(binding: DeploymentResourceBindingDto) {
+    if (!window.confirm(`End binding to ${binding.resourceReference} now?`)) return
+    setEndingBindingReference(binding.bindingReference)
+    setMutationError(null)
+    try {
+      await endCatalogueDeploymentResourceBinding(
+        binding,
+        new Date().toISOString(),
+      )
+      await load()
+    } catch (caught) {
+      setMutationError(errorFrom(caught, "Resource binding could not be ended."))
+    } finally {
+      setEndingBindingReference(null)
     }
   }
 
@@ -281,14 +301,25 @@ export function ApplicationDetailsPage({
                               {deployment.effectiveResourceBindings.map((binding) => (
                                 <div
                                   key={binding.bindingReference}
-                                  className="text-sm text-[#172033]"
+                                  className="flex items-center justify-between gap-3 text-sm text-[#172033]"
                                 >
-                                  <span className="font-medium">
-                                    {binding.resourceReference}
-                                  </span>
-                                  <span className="ml-2 text-xs text-[#64748B]">
-                                    since {new Date(binding.validFrom).toLocaleString()}
-                                  </span>
+                                  <div>
+                                    <span className="font-medium">
+                                      {binding.resourceReference}
+                                    </span>
+                                    <span className="ml-2 text-xs text-[#64748B]">
+                                      since {new Date(binding.validFrom).toLocaleString()} · v{binding.version}
+                                    </span>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="secondary"
+                                    loading={endingBindingReference === binding.bindingReference}
+                                    disabled={endingBindingReference !== null}
+                                    onClick={() => void endBinding(binding)}
+                                  >
+                                    End
+                                  </Button>
                                 </div>
                               ))}
                             </div>
