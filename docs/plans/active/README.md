@@ -2,27 +2,27 @@
 
 Current: `PLAN-039-i25-product-completion-acceptance.md`
 
-Current task: WP2A full-chain acceptance proof.
+Current task: WP2B network-operator realization/execution read surface.
 
-Goal: close the P0 product-completion evidence gap with one real Requirement -> Decision -> Rule -> realization -> rendering -> controlled execution -> Verified PostgreSQL integration scenario before adding downstream UI.
+Goal: expose the downstream local product state truthfully through one owner-preserving read projection before adding Web presentation.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-039-i25-product-completion-acceptance.md`
 - `docs/engineering/product-completion-gap-matrix.md`
-- `tests/integration/postgres/test_network_environment_operations_stub_flow.py`
+- `src/napms/composition/access_policy_realization_postgres.py`
 
-Expand only as needed into real Connectivity Requirement/Decision integration tests, greenfield composition, APR reconciliation fixtures and owning application APIs.
+Expand only as needed into APR/NEP/TAE/NEO contracts, runtime HTTP composition and tests.
 
 ## Blockers
 
-None. The deterministic NEO target stub is accepted for controlled-execution semantics; real Cisco/device access and enterprise integrations are not required.
+No external blocker. Runtime currently has no selected configured-evidence/managed-scope-contract source and no HTTP-wired NEO history, so the projection must represent those stages as unavailable/unknown unless actual inputs/results are supplied.
 
 ## Gate
 
-The acceptance proof must use real Connectivity Requirement and Connectivity Decision persistence at the upstream handoff, not the historical `AllowedDecision` stub. It may reuse deterministic catalogue/resource/topology/evidence fixture preparation, but lifecycle facts with existing owning APIs must be created through those APIs.
+Do not infer configured state, reconciliation outcome or execution success from desired policy/rendering alone. No new authoritative cross-context persistence. Deterministic local technical fixtures may support demo execution but remain explicit bootstrap data.
 
 ## Next
 
-Inspect the existing PostgreSQL-backed Requirement/Decision composition and build the smallest owner-preserving full-chain acceptance test through APR reconciliation/rendering and NEO `Verified`.
+Accept the operator projection requirement/architecture contract with explicit availability states, then implement the framework-free read composition and tests before wiring HTTP/Web.
