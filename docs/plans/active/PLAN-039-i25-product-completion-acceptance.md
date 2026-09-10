@@ -1,6 +1,6 @@
 # PLAN-039 — I25 Product Completion, Operator UX and Acceptance
 
-Status: `active — WP7 final verification and closure`.
+Status: `active — WP7 final verification and closure`
 
 Date: 2026-09-10.
 
