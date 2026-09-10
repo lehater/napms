@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react"
-import { ChevronRight, Search } from "lucide-react"
+import { ChevronRight, Plus, Search } from "lucide-react"
 
 import { ApiError } from "@/api"
 import { Button } from "@/components/ui/Button"
+import { CataloguePager } from "@/features/catalogues/CataloguePager"
+import { CreateDefinitionPanel } from "@/features/catalogues/TargetCatalogueForms"
 import {
   listApplicationDefinitions,
   listApplicationDeployments,
@@ -29,44 +31,6 @@ function errorFrom(caught: unknown, fallback: string) {
     : new ApiError(500, "InternalError", fallback)
 }
 
-function PageFooter({
-  page,
-  pageSize,
-  total,
-  loading,
-  onPageChange,
-}: {
-  page: number
-  pageSize: number
-  total: number
-  loading: boolean
-  onPageChange: (page: number) => void
-}) {
-  const first = total === 0 ? 0 : (page - 1) * pageSize + 1
-  const last = Math.min(page * pageSize, total)
-  return (
-    <div className="flex items-center justify-between border-t border-[#E2E8F0] px-4 py-3">
-      <Button
-        variant="secondary"
-        disabled={page <= 1 || loading}
-        onClick={() => onPageChange(page - 1)}
-      >
-        Previous
-      </Button>
-      <span className="text-xs font-medium text-[#64748B]">
-        {first}–{last} of {total}
-      </span>
-      <Button
-        variant="secondary"
-        disabled={last >= total || loading}
-        onClick={() => onPageChange(page + 1)}
-      >
-        Next
-      </Button>
-    </div>
-  )
-}
-
 export function ApplicationCataloguePage({
   view,
   page,
@@ -90,6 +54,7 @@ export function ApplicationCataloguePage({
   const [error, setError] = useState<ApiError | null>(null)
   const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS)
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
+  const [showCreate, setShowCreate] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -135,6 +100,7 @@ export function ApplicationCataloguePage({
   function switchView(next: ApplicationCatalogueView) {
     setDraft(EMPTY_FILTERS)
     setFilters(EMPTY_FILTERS)
+    setShowCreate(false)
     onViewChange(next)
   }
 
@@ -144,11 +110,19 @@ export function ApplicationCataloguePage({
 
   return (
     <div className="mx-auto grid max-w-7xl gap-5">
-      <header>
-        <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#64748B]">
-          Catalogues
+      <header className="flex items-end justify-between gap-4">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#64748B]">
+            Catalogues
+          </div>
+          <h1 className="mt-1 text-2xl font-bold text-[#172033]">Applications</h1>
         </div>
-        <h1 className="mt-1 text-2xl font-bold text-[#172033]">Applications</h1>
+        {view === "definitions" ? (
+          <Button onClick={() => setShowCreate((value) => !value)}>
+            <Plus className="size-4" aria-hidden="true" />
+            Add application
+          </Button>
+        ) : null}
       </header>
 
       <div className="flex gap-1 border-b border-[#E2E8F0]">
@@ -167,6 +141,16 @@ export function ApplicationCataloguePage({
           </button>
         ))}
       </div>
+
+      {showCreate && view === "definitions" ? (
+        <CreateDefinitionPanel
+          onCancel={() => setShowCreate(false)}
+          onCreated={(definition) => {
+            setShowCreate(false)
+            onOpenDefinition(definition.applicationId)
+          }}
+        />
+      ) : null}
 
       <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
         <form
@@ -197,50 +181,18 @@ export function ApplicationCataloguePage({
           </div>
           {view === "definitions" ? (
             <>
-              <input
-                className={inputClass}
-                value={draft.first}
-                onChange={(event) => changeDraft("first", event.target.value)}
-                placeholder="Domain"
-                aria-label="Domain"
-              />
-              <input
-                className={inputClass}
-                value={draft.second}
-                onChange={(event) => changeDraft("second", event.target.value)}
-                placeholder="Owner"
-                aria-label="Owner"
-              />
+              <input className={inputClass} value={draft.first} onChange={(event) => changeDraft("first", event.target.value)} placeholder="Domain" aria-label="Domain" />
+              <input className={inputClass} value={draft.second} onChange={(event) => changeDraft("second", event.target.value)} placeholder="Owner" aria-label="Owner" />
               <div className="hidden lg:block" />
             </>
           ) : (
             <>
-              <input
-                className={inputClass}
-                value={draft.first}
-                onChange={(event) => changeDraft("first", event.target.value)}
-                placeholder="Company"
-                aria-label="Company"
-              />
-              <input
-                className={inputClass}
-                value={draft.second}
-                onChange={(event) => changeDraft("second", event.target.value)}
-                placeholder="Environment"
-                aria-label="Environment"
-              />
-              <input
-                className={inputClass}
-                value={draft.third}
-                onChange={(event) => changeDraft("third", event.target.value)}
-                placeholder="Scope"
-                aria-label="Scope"
-              />
+              <input className={inputClass} value={draft.first} onChange={(event) => changeDraft("first", event.target.value)} placeholder="Company" aria-label="Company" />
+              <input className={inputClass} value={draft.second} onChange={(event) => changeDraft("second", event.target.value)} placeholder="Environment" aria-label="Environment" />
+              <input className={inputClass} value={draft.third} onChange={(event) => changeDraft("third", event.target.value)} placeholder="Scope" aria-label="Scope" />
             </>
           )}
-          <Button type="submit" variant="secondary">
-            Apply
-          </Button>
+          <Button type="submit" variant="secondary">Apply</Button>
         </form>
 
         {loading ? (
@@ -248,9 +200,7 @@ export function ApplicationCataloguePage({
         ) : error ? (
           <div className="p-6">
             <p className="text-sm text-red-700">{error.message}</p>
-            <Button className="mt-3" variant="secondary" onClick={() => void load()}>
-              Retry
-            </Button>
+            <Button className="mt-3" variant="secondary" onClick={() => void load()}>Retry</Button>
           </div>
         ) : view === "definitions" ? (
           definitions.length === 0 ? (
@@ -259,22 +209,11 @@ export function ApplicationCataloguePage({
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-left text-sm">
                 <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                  <tr>
-                    <th className="px-5 py-3">Name</th>
-                    <th className="px-5 py-3">Domain</th>
-                    <th className="px-5 py-3 text-right">Components</th>
-                    <th className="px-5 py-3 text-right">Interactions</th>
-                    <th className="px-5 py-3 text-right">Deployments</th>
-                    <th className="w-10 px-3 py-3" />
-                  </tr>
+                  <tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Domain</th><th className="px-5 py-3 text-right">Components</th><th className="px-5 py-3 text-right">Interactions</th><th className="px-5 py-3 text-right">Deployments</th><th className="w-10 px-3 py-3" /></tr>
                 </thead>
                 <tbody className="divide-y divide-[#E2E8F0]">
                   {definitions.map((item) => (
-                    <tr
-                      key={item.applicationId}
-                      className="cursor-pointer hover:bg-[#F8FAFC]"
-                      onClick={() => onOpenDefinition(item.applicationId)}
-                    >
+                    <tr key={item.applicationId} className="cursor-pointer hover:bg-[#F8FAFC]" onClick={() => onOpenDefinition(item.applicationId)}>
                       <td className="px-5 py-3 font-semibold text-[#172033]">{item.displayName}</td>
                       <td className="px-5 py-3 text-[#475569]">{item.domain ?? "—"}</td>
                       <td className="px-5 py-3 text-right tabular-nums">{item.componentCount}</td>
@@ -293,29 +232,16 @@ export function ApplicationCataloguePage({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[920px] text-left text-sm">
               <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                <tr>
-                  <th className="px-5 py-3">Application</th>
-                  <th className="px-5 py-3">Company</th>
-                  <th className="px-5 py-3">Environment</th>
-                  <th className="px-5 py-3">Scope</th>
-                  <th className="px-5 py-3 text-right">Interactions</th>
-                  <th className="w-10 px-3 py-3" />
-                </tr>
+                <tr><th className="px-5 py-3">Application</th><th className="px-5 py-3">Company</th><th className="px-5 py-3">Environment</th><th className="px-5 py-3">Scope</th><th className="px-5 py-3 text-right">Interactions</th><th className="w-10 px-3 py-3" /></tr>
               </thead>
               <tbody className="divide-y divide-[#E2E8F0]">
                 {deployments.map((item) => (
-                  <tr
-                    key={item.applicationDeploymentId}
-                    className="cursor-pointer hover:bg-[#F8FAFC]"
-                    onClick={() => onOpenDeployment(item.applicationDeploymentId)}
-                  >
+                  <tr key={item.applicationDeploymentId} className="cursor-pointer hover:bg-[#F8FAFC]" onClick={() => onOpenDeployment(item.applicationDeploymentId)}>
                     <td className="px-5 py-3 font-semibold text-[#172033]">{item.applicationName}</td>
                     <td className="px-5 py-3 text-[#475569]">{item.companyReference}</td>
                     <td className="px-5 py-3 text-[#475569]">{item.environment}</td>
                     <td className="px-5 py-3 text-[#475569]">{item.scopeReference}</td>
-                    <td className="px-5 py-3 text-right tabular-nums">
-                      {item.selectedInteractionCount} / {item.definedInteractionCount}
-                    </td>
+                    <td className="px-5 py-3 text-right tabular-nums">{item.selectedInteractionCount} / {item.definedInteractionCount}</td>
                     <td className="px-3 py-3"><ChevronRight className="size-4 text-[#94A3B8]" /></td>
                   </tr>
                 ))}
@@ -325,13 +251,7 @@ export function ApplicationCataloguePage({
         )}
 
         {!loading && !error ? (
-          <PageFooter
-            page={page}
-            pageSize={pageSize}
-            total={total}
-            loading={loading}
-            onPageChange={onPageChange}
-          />
+          <CataloguePager page={page} pageSize={pageSize} total={total} loading={loading} onPageChange={onPageChange} />
         ) : null}
       </section>
     </div>
