@@ -252,6 +252,21 @@ export async function createCatalogueDeploymentResourceBinding(
   return response.binding
 }
 
+export async function endCatalogueDeploymentResourceBinding(
+  binding: DeploymentResourceBindingDto,
+  validTo: string,
+): Promise<DeploymentResourceBindingDto> {
+  const response = await request<{ binding: DeploymentResourceBindingDto }>(
+    `/api/v1/catalogues/deployment-resource-bindings/${encodeURIComponent(binding.bindingReference)}/end`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ validTo, expectedVersion: binding.version }),
+    },
+  )
+  return response.binding
+}
+
 export async function createCatalogueDcsRevision(input: {
   sourceComponentDeploymentId: string
   destinationComponentDeploymentId: string
