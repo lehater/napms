@@ -65,7 +65,7 @@ class ApplicationCatalogueCurationAuthorityPort(Protocol):
 class ApplicationCatalogueCommandReceipt:
     command_kind: str
     request_fingerprint: str
-    result_id: UUID
+    result_id: UUID | str
     result_version: int
 
 
