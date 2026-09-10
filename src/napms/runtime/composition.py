@@ -18,6 +18,9 @@ from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
 from napms.runtime.catalogue_curation_http import create_catalogue_curation_router
 from napms.runtime.catalogue_discovery_http import create_catalogue_discovery_router
 from napms.runtime.catalogue_error_http import catalogue_invariant_error_handler
+from napms.runtime.catalogue_temporal_curation_http import (
+    create_catalogue_temporal_curation_router,
+)
 from napms.runtime.config import HttpRuntimeConfig
 from napms.runtime.http_api import HttpApiDependencies, create_http_api
 from napms.runtime.local_decision import LocalDevAllowedConnectivityDecisionAdapter
@@ -99,6 +102,13 @@ def build_http_api(
     )
     app.include_router(
         create_catalogue_curation_router(
+            sessions=sessions,
+            open_scope=open_curation_scope,
+            clock=_utc_now,
+        )
+    )
+    app.include_router(
+        create_catalogue_temporal_curation_router(
             sessions=sessions,
             open_scope=open_curation_scope,
             clock=_utc_now,
