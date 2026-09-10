@@ -15,6 +15,7 @@ from napms.composition.network_operator_view_postgres import (
 from napms.composition.traffic_analysis_postgres import open_traffic_analysis_scope
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
 from napms.runtime.catalogue_curation_http import create_catalogue_curation_router
+from napms.runtime.catalogue_discovery_http import create_catalogue_discovery_router
 from napms.runtime.config import HttpRuntimeConfig
 from napms.runtime.http_api import HttpApiDependencies, create_http_api
 from napms.runtime.local_decision import LocalDevAllowedConnectivityDecisionAdapter
@@ -82,6 +83,12 @@ def build_http_api(
         create_traffic_analysis_router(
             sessions=sessions,
             open_scope=open_checker_scope,
+        )
+    )
+    app.include_router(
+        create_catalogue_discovery_router(
+            sessions=sessions,
+            open_scope=open_curation_scope,
         )
     )
     app.include_router(
