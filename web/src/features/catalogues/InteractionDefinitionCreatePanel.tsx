@@ -77,7 +77,7 @@ function ComponentPicker({
   }, [applicationId, applied])
 
   return (
-    <div className="grid gap-2">
+    <div className="grid gap-2" role="group" aria-label={label}>
       <div className="text-sm font-semibold text-[#475569]">{label}</div>
       {selected ? (
         <div className="rounded-md border border-[#BFDBFE] bg-[#EFF6FF] px-3 py-2 text-sm font-semibold text-[#1D4ED8]">
