@@ -19,6 +19,9 @@ from napms.application_catalogue.adapters.postgres.curation_detail import (
 from napms.application_catalogue.adapters.postgres.curation_repository import (
     PostgresApplicationCatalogueCurationRepository,
 )
+from napms.application_catalogue.adapters.postgres.participant_discovery import (
+    PostgresApplicationCatalogueParticipantRepository,
+)
 from napms.application_catalogue.adapters.postgres.repository import (
     PostgresApplicationCatalogueRepository,
 )
@@ -42,6 +45,9 @@ from napms.application_catalogue.application.deployment_curation import (
     CreateComponentDeployment,
     RenameComponentDeployment,
     RetireComponentDeployment,
+)
+from napms.application_catalogue.application.participant_discovery import (
+    ListApplicationCatalogueParticipants,
 )
 from napms.application_catalogue.application.structure_curation import (
     CreateComponent,
@@ -92,6 +98,7 @@ from napms.resource_catalogue.application.scope_affiliation_curation import (
 @dataclass(slots=True)
 class ApplicationCatalogueCurationServices:
     list_applications: ListApplicationCatalogue
+    list_participants: ListApplicationCatalogueParticipants
     read_application: ReadApplicationCatalogueDetail
     read_application_tree: ReadApplicationCatalogueTreeDetail
     create_application: CreateApplication
@@ -163,6 +170,9 @@ def open_catalogue_curation_scope(
             curation=application_repository,
             semantic=application_semantic_repository,
         )
+        participant_repository = PostgresApplicationCatalogueParticipantRepository(
+            application_connection
+        )
         resource_repository = PostgresResourceCatalogueCurationRepository(
             resource_connection
         )
@@ -178,6 +188,9 @@ def open_catalogue_curation_scope(
         applications = ApplicationCatalogueCurationServices(
             list_applications=ListApplicationCatalogue(
                 catalogue=application_repository
+            ),
+            list_participants=ListApplicationCatalogueParticipants(
+                catalogue=participant_repository
             ),
             read_application=ReadApplicationCatalogueDetail(
                 catalogue=application_repository
