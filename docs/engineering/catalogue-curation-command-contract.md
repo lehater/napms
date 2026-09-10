@@ -15,12 +15,18 @@ Every catalogue mutation receives application-level context equivalent to:
 ```text
 CatalogueCommandContext
     actorId            # server/session supplied
-    authorityScope     # selected admitted Responsibility Scope
     idempotencyKey     # opaque non-empty value
     effectiveAt        # server-owned authorization/action time
 ```
 
-The HTTP client never supplies trusted `actorId` or server action time.
+The owning use case supplies its authority policy internally:
+
+```text
+ACC -> CurateApplicationCatalogue @ application-catalogue
+RC  -> CurateResourceCatalogue    @ resource-catalogue
+```
+
+The HTTP client never supplies trusted `actorId`, catalogue authority scope or server action time.
 
 A mutation of an existing mutable entity additionally receives:
 
@@ -28,7 +34,7 @@ A mutation of an existing mutable entity additionally receives:
 expectedVersion: positive integer
 ```
 
-Temporal authoring commands may separately receive user-intended validity instants such as `validFrom` / `validUntil`.
+Temporal authoring commands may separately receive user-intended semantic values such as a target Responsibility Scope and `validFrom` / `validUntil`. Those values are command data and do not replace the fixed catalogue authorization scope.
 
 ## Result envelope
 
@@ -60,23 +66,25 @@ HTTP mapping may use conventional status codes, but transport mapping must not c
 Recommended first-slice mapping:
 
 ```text
-NotAuthorized            -> 403
-NotFound                 -> 404
-ValidationFailed         -> 422
-ConcurrencyConflict      -> 409 / catalogue_concurrency_conflict
-IdempotencyConflict      -> 409 / catalogue_idempotency_conflict
-PersistenceOutcomeUnknown-> 503 or owning runtime uncertainty mapping
+NotAuthorized             -> 403
+NotFound                  -> 404
+ValidationFailed          -> 422
+ConcurrencyConflict       -> 409 / catalogue_concurrency_conflict
+IdempotencyConflict       -> 409 / catalogue_idempotency_conflict
+PersistenceOutcomeUnknown -> 503 or owning runtime uncertainty mapping
 ```
 
 Authentication failure remains session/auth transport behavior.
 
 ## Authority admission
 
-ACC command handlers require `CurateApplicationCatalogue`.
+ACC command handlers require `CurateApplicationCatalogue` on server-owned scope `application-catalogue`.
 
-RC command handlers require `CurateResourceCatalogue`.
+RC command handlers require `CurateResourceCatalogue` on server-owned scope `resource-catalogue`.
 
-Authority is checked before mutation persistence. Object lookup needed to derive authoritative command context must not become a side channel leaking protected data.
+Authority is checked before mutation persistence. The request cannot replace either administrative scope with a Responsibility Scope or arbitrary caller value.
+
+Resource Scope Affiliation and Resource Responsibility remain semantic catalogue data only; they are not authority derivation inputs in the first I27 slice.
 
 ## Identity factory ports
 
@@ -105,7 +113,7 @@ The resulting domain provenance reference is non-empty and stable enough for exp
 Each owning catalogue persistence boundary provides application support for idempotency records keyed by a tuple equivalent to:
 
 ```text
-actor + authority action + authority scope + idempotency key
+actor + authority action + fixed catalogue authority scope + idempotency key
 ```
 
 Stored data includes:
@@ -142,7 +150,7 @@ Create commands do not take client-generated domain identity.
 
 On first execution:
 
-1. authorize;
+1. authorize using the server-owned catalogue action/scope;
 2. validate semantic inputs/parents;
 3. allocate server identity/reference;
 4. create provenance;
@@ -155,7 +163,7 @@ On retry with the same equivalent idempotency command, return the original gener
 
 `CreateDcsRevision` is create-only:
 
-1. authorize `CurateApplicationCatalogue`;
+1. authorize `CurateApplicationCatalogue @ application-catalogue`;
 2. ensure source/destination deployments exist and are Active;
 3. validate/canonicalize traffic alternatives;
 4. generate revision UUID and provenance;
@@ -182,6 +190,7 @@ Every command family requires focused executable evidence for:
 
 - authorized success;
 - unauthorized failure with no mutation;
+- rejection of caller-controlled authority scope substitution;
 - invariant validation;
 - server-generated identity/provenance;
 - equivalent idempotent replay;
