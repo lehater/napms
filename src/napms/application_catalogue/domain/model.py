@@ -19,6 +19,12 @@ def _require_non_empty(value: str, *, field_name: str) -> str:
     return value.strip()
 
 
+def _optional_non_empty(value: str | None, *, field_name: str) -> str | None:
+    if value is None:
+        return None
+    return _require_non_empty(value, field_name=field_name)
+
+
 @dataclass(frozen=True, slots=True)
 class DirectedInteractionIdentity:
     source_component_deployment_id: UUID
@@ -66,6 +72,9 @@ class Application:
     lifecycle_state: CatalogueLifecycleState = CatalogueLifecycleState.ACTIVE
     retirement_provenance_reference: str | None = None
     version: int = 1
+    description: str | None = None
+    domain: str | None = None
+    owner_reference: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -73,6 +82,12 @@ class Application:
             "display_name",
             _require_non_empty(self.display_name, field_name="display_name"),
         )
+        for field_name in ("description", "domain", "owner_reference"):
+            object.__setattr__(
+                self,
+                field_name,
+                _optional_non_empty(getattr(self, field_name), field_name=field_name),
+            )
         _require_non_empty(self.provenance_reference, field_name="provenance_reference")
         _validate_retirement_provenance(
             lifecycle_state=self.lifecycle_state,
@@ -92,6 +107,38 @@ class Application:
         if normalized == self.display_name:
             raise CatalogueInvariantError("rename requires a different display name")
         return replace(self, display_name=normalized, version=self.version + 1)
+
+    def changed_metadata(
+        self,
+        *,
+        display_name: str,
+        description: str | None,
+        domain: str | None,
+        owner_reference: str | None,
+    ) -> "Application":
+        self._require_active()
+        normalized = (
+            _require_non_empty(display_name, field_name="display_name"),
+            _optional_non_empty(description, field_name="description"),
+            _optional_non_empty(domain, field_name="domain"),
+            _optional_non_empty(owner_reference, field_name="owner_reference"),
+        )
+        current = (
+            self.display_name,
+            self.description,
+            self.domain,
+            self.owner_reference,
+        )
+        if normalized == current:
+            raise CatalogueInvariantError("metadata edit requires a semantic change")
+        return replace(
+            self,
+            display_name=normalized[0],
+            description=normalized[1],
+            domain=normalized[2],
+            owner_reference=normalized[3],
+            version=self.version + 1,
+        )
 
     def retired(self, *, retirement_provenance_reference: str) -> "Application":
         self._require_active()
@@ -116,12 +163,24 @@ class Component:
     lifecycle_state: CatalogueLifecycleState = CatalogueLifecycleState.ACTIVE
     retirement_provenance_reference: str | None = None
     version: int = 1
+    component_type: str | None = None
+    description: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(
             self,
             "display_name",
             _require_non_empty(self.display_name, field_name="display_name"),
+        )
+        object.__setattr__(
+            self,
+            "component_type",
+            _optional_non_empty(self.component_type, field_name="component_type"),
+        )
+        object.__setattr__(
+            self,
+            "description",
+            _optional_non_empty(self.description, field_name="description"),
         )
         _require_non_empty(self.provenance_reference, field_name="provenance_reference")
         _validate_retirement_provenance(
@@ -142,6 +201,30 @@ class Component:
         if normalized == self.display_name:
             raise CatalogueInvariantError("rename requires a different display name")
         return replace(self, display_name=normalized, version=self.version + 1)
+
+    def changed_metadata(
+        self,
+        *,
+        display_name: str,
+        component_type: str | None,
+        description: str | None,
+    ) -> "Component":
+        self._require_active()
+        normalized = (
+            _require_non_empty(display_name, field_name="display_name"),
+            _optional_non_empty(component_type, field_name="component_type"),
+            _optional_non_empty(description, field_name="description"),
+        )
+        current = (self.display_name, self.component_type, self.description)
+        if normalized == current:
+            raise CatalogueInvariantError("metadata edit requires a semantic change")
+        return replace(
+            self,
+            display_name=normalized[0],
+            component_type=normalized[1],
+            description=normalized[2],
+            version=self.version + 1,
+        )
 
     def retired(self, *, retirement_provenance_reference: str) -> "Component":
         self._require_active()
