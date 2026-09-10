@@ -29,9 +29,6 @@ class CatalogueConcurrencyConflict(CataloguePersistenceError):
     """Optimistic concurrency precondition did not match authoritative state."""
 
 
-ApplicationCatalogueConcurrencyConflict = CatalogueConcurrencyConflict
-
-
 class CatalogueIdempotencyConflict(CataloguePersistenceError):
     """Another command won the same idempotency-key uniqueness boundary."""
 
@@ -121,6 +118,15 @@ class ApplicationCatalogueProvenanceFactory(Protocol):
         effective_time: datetime,
     ) -> str: ...
 
+    def for_component_deployment_retirement(
+        self,
+        *,
+        deployment_id: UUID,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
     def for_dcs_revision(
         self,
         *,
@@ -158,6 +164,20 @@ class ApplicationCatalogueCurationRepository(Protocol):
 
     def has_active_component_deployments(self, *, component_id: UUID) -> bool: ...
 
+    def get_component_deployment(
+        self,
+        deployment_id: UUID,
+    ) -> ComponentDeployment | None: ...
+
+    def add_component_deployment(self, deployment: ComponentDeployment) -> None: ...
+
+    def save_component_deployment(
+        self,
+        deployment: ComponentDeployment,
+        *,
+        expected_version: int,
+    ) -> None: ...
+
     def find_command_receipt(
         self,
         *,
@@ -194,6 +214,13 @@ class ApplicationCatalogueCurationReadRepository(Protocol):
         application_id: UUID,
         include_retired: bool,
     ) -> tuple[Component, ...]: ...
+
+    def list_component_deployments(
+        self,
+        *,
+        component_id: UUID,
+        include_retired: bool,
+    ) -> tuple[ComponentDeployment, ...]: ...
 
 
 class ApplicationCatalogueRepository(Protocol):
