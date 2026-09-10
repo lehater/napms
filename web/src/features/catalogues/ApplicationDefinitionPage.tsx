@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react"
-import { ArrowLeft, Plus } from "lucide-react"
+import { ArrowLeft, Pencil, Plus } from "lucide-react"
 
 import { ApiError } from "@/api"
 import { Button } from "@/components/ui/Button"
 import { CataloguePager } from "@/features/catalogues/CataloguePager"
 import { InteractionDefinitionCreatePanel } from "@/features/catalogues/InteractionDefinitionCreatePanel"
+import { InteractionDefinitionEditPanel } from "@/features/catalogues/InteractionDefinitionEditPanel"
+import {
+  ComponentEditPanel,
+  DefinitionEditPanel,
+} from "@/features/catalogues/TargetCatalogueEditPanels"
 import {
   CreateComponentPanel,
   CreateDeploymentPanel,
@@ -24,9 +29,7 @@ import { trafficSummary } from "@/features/catalogues/targetPresentation"
 type Tab = "overview" | "components" | "interactions" | "deployments"
 
 function errorFrom(caught: unknown, fallback: string) {
-  return caught instanceof ApiError
-    ? caught
-    : new ApiError(500, "InternalError", fallback)
+  return caught instanceof ApiError ? caught : new ApiError(500, "InternalError", fallback)
 }
 
 function LoadingOrError({ loading, error }: { loading: boolean; error: ApiError | null }) {
@@ -57,6 +60,9 @@ export function ApplicationDefinitionPage({
   const [error, setError] = useState<ApiError | null>(null)
   const [tabError, setTabError] = useState<ApiError | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
+  const [definitionEditOpen, setDefinitionEditOpen] = useState(false)
+  const [editingComponent, setEditingComponent] = useState<ApplicationComponentDto | null>(null)
+  const [editingInteraction, setEditingInteraction] = useState<InteractionDefinitionSummaryDto | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
@@ -64,18 +70,10 @@ export function ApplicationDefinitionPage({
     setLoading(true)
     setError(null)
     void readApplicationDefinition(applicationId)
-      .then((result) => {
-        if (active) setDefinition(result.definition)
-      })
-      .catch((caught) => {
-        if (active) setError(errorFrom(caught, "Application Definition could not be loaded."))
-      })
-      .finally(() => {
-        if (active) setLoading(false)
-      })
-    return () => {
-      active = false
-    }
+      .then((result) => { if (active) setDefinition(result.definition) })
+      .catch((caught) => { if (active) setError(errorFrom(caught, "Application Definition could not be loaded.")) })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
   }, [applicationId])
 
   useEffect(() => {
@@ -88,170 +86,106 @@ export function ApplicationDefinitionPage({
       setTabTotal(result.total)
       setTabPageSize(result.pageSize)
     }
-    const pending =
-      tab === "components"
-        ? listApplicationComponents({ applicationId, page: tabPage }).then((result) => {
-            if (active) setComponents(result.items)
-            acceptPage(result)
-          })
-        : tab === "interactions"
-          ? listInteractionDefinitions({ applicationId, page: tabPage }).then((result) => {
-              if (active) setInteractions(result.items)
-              acceptPage(result)
-            })
-          : listApplicationDeployments({
-              applicationId,
-              page: tabPage,
-              sort: "company",
-            }).then((result) => {
-              if (active) setDeployments(result.items)
-              acceptPage(result)
-            })
+    const pending = tab === "components"
+      ? listApplicationComponents({ applicationId, page: tabPage }).then((result) => { if (active) setComponents(result.items); acceptPage(result) })
+      : tab === "interactions"
+        ? listInteractionDefinitions({ applicationId, page: tabPage }).then((result) => { if (active) setInteractions(result.items); acceptPage(result) })
+        : listApplicationDeployments({ applicationId, page: tabPage, sort: "company" }).then((result) => { if (active) setDeployments(result.items); acceptPage(result) })
     void pending
-      .catch((caught) => {
-        if (active) setTabError(errorFrom(caught, "Definition details could not be loaded."))
-      })
-      .finally(() => {
-        if (active) setTabLoading(false)
-      })
-    return () => {
-      active = false
-    }
+      .catch((caught) => { if (active) setTabError(errorFrom(caught, "Definition details could not be loaded.")) })
+      .finally(() => { if (active) setTabLoading(false) })
+    return () => { active = false }
   }, [applicationId, tab, tabPage, reloadToken])
 
   function selectTab(next: Tab) {
     setTabPage(1)
     setTabTotal(0)
     setCreateOpen(false)
+    setEditingComponent(null)
+    setEditingInteraction(null)
     setTab(next)
   }
 
   function refreshTab() {
     setCreateOpen(false)
+    setEditingComponent(null)
+    setEditingInteraction(null)
     setTabPage(1)
     setReloadToken((value) => value + 1)
   }
 
+  if (loading || error) {
+    return <div className="mx-auto max-w-7xl"><section className="rounded-lg border border-[#E2E8F0] bg-white"><LoadingOrError loading={loading} error={error} /></section></div>
+  }
+  if (!definition) return null
+
   return (
     <div className="mx-auto grid max-w-7xl gap-5">
-      <div>
-        <Button variant="ghost" className="-ml-3" onClick={onBack}>
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          Definitions
-        </Button>
+      <div><Button variant="ghost" className="-ml-3" onClick={onBack}><ArrowLeft className="size-4" aria-hidden="true" />Definitions</Button></div>
+
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#64748B]">Applications / Definitions</div>
+          <h1 className="mt-1 text-2xl font-bold text-[#172033]">{definition.displayName}</h1>
+          <p className="mt-2 text-sm text-[#64748B]">{definition.domain ?? "No domain"}{definition.ownerReference ? ` · Owner: ${definition.ownerReference}` : ""}</p>
+        </div>
+        <Button variant="secondary" onClick={() => setDefinitionEditOpen((value) => !value)}><Pencil className="size-4" aria-hidden="true" />Edit</Button>
+      </header>
+
+      {definitionEditOpen ? (
+        <DefinitionEditPanel
+          definition={definition}
+          onChanged={(updated) => { setDefinition(updated); setDefinitionEditOpen(false) }}
+          onRetired={onBack}
+          onCancel={() => setDefinitionEditOpen(false)}
+        />
+      ) : null}
+
+      <div className="flex gap-1 border-b border-[#E2E8F0]">
+        {(["overview", "components", "interactions", "deployments"] as const).map((item) => (
+          <button key={item} type="button" className={`border-b-2 px-4 py-3 text-sm font-semibold capitalize ${tab === item ? "border-[#2563EB] text-[#1D4ED8]" : "border-transparent text-[#64748B] hover:text-[#172033]"}`} onClick={() => selectTab(item)}>{item}</button>
+        ))}
       </div>
 
-      {loading || error ? (
-        <section className="rounded-lg border border-[#E2E8F0] bg-white">
-          <LoadingOrError loading={loading} error={error} />
-        </section>
-      ) : definition ? (
-        <>
-          <header>
-            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#64748B]">
-              Applications / Definitions
-            </div>
-            <h1 className="mt-1 text-2xl font-bold text-[#172033]">{definition.displayName}</h1>
-            <p className="mt-2 text-sm text-[#64748B]">
-              {definition.domain ?? "No domain"}
-              {definition.ownerReference ? ` · Owner: ${definition.ownerReference}` : ""}
-            </p>
-          </header>
-
-          <div className="flex gap-1 border-b border-[#E2E8F0]">
-            {(["overview", "components", "interactions", "deployments"] as const).map((item) => (
-              <button
-                key={item}
-                type="button"
-                className={`border-b-2 px-4 py-3 text-sm font-semibold capitalize ${
-                  tab === item
-                    ? "border-[#2563EB] text-[#1D4ED8]"
-                    : "border-transparent text-[#64748B] hover:text-[#172033]"
-                }`}
-                onClick={() => selectTab(item)}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-
-          <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
-            {tab === "overview" ? (
-              <dl className="grid gap-x-8 gap-y-5 p-6 md:grid-cols-2">
-                <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Name</dt><dd className="mt-1 text-sm font-medium text-[#172033]">{definition.displayName}</dd></div>
-                <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Domain</dt><dd className="mt-1 text-sm text-[#172033]">{definition.domain ?? "—"}</dd></div>
-                <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Owner</dt><dd className="mt-1 text-sm text-[#172033]">{definition.ownerReference ?? "—"}</dd></div>
-                <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Description</dt><dd className="mt-1 text-sm text-[#172033]">{definition.description ?? "—"}</dd></div>
-              </dl>
-            ) : tabLoading || tabError ? (
-              <LoadingOrError loading={tabLoading} error={tabError} />
-            ) : tab === "components" ? (
-              <>
-                <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
-                  <h2 className="font-semibold text-[#172033]">Components</h2>
-                  <Button onClick={() => setCreateOpen((value) => !value)}><Plus className="size-4" aria-hidden="true" />Add component</Button>
-                </div>
-                {createOpen ? <CreateComponentPanel applicationId={applicationId} onCancel={() => setCreateOpen(false)} onCreated={refreshTab} /> : null}
-                {components.length === 0 ? (
-                  <div className="p-6 text-sm text-[#64748B]">No active components.</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[720px] text-left text-sm">
-                      <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]"><tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Type</th><th className="px-5 py-3">Description</th></tr></thead>
-                      <tbody className="divide-y divide-[#E2E8F0]">{components.map((item) => (<tr key={item.componentId}><td className="px-5 py-3 font-semibold text-[#172033]">{item.displayName}</td><td className="px-5 py-3 text-[#475569]">{item.componentType ?? "—"}</td><td className="px-5 py-3 text-[#475569]">{item.description ?? "—"}</td></tr>))}</tbody>
-                    </table>
-                  </div>
-                )}
-                <CataloguePager page={tabPage} pageSize={tabPageSize} total={tabTotal} onPageChange={setTabPage} />
-              </>
-            ) : tab === "interactions" ? (
-              <>
-                <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
-                  <h2 className="font-semibold text-[#172033]">Interactions</h2>
-                  <Button onClick={() => setCreateOpen((value) => !value)}><Plus className="size-4" aria-hidden="true" />Add interaction</Button>
-                </div>
-                {createOpen ? (
-                  <InteractionDefinitionCreatePanel
-                    applicationId={applicationId}
-                    onCancel={() => setCreateOpen(false)}
-                    onCreated={refreshTab}
-                  />
-                ) : null}
-                {interactions.length === 0 ? (
-                  <div className="p-6 text-sm text-[#64748B]">No active interactions.</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[760px] text-left text-sm">
-                      <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]"><tr><th className="px-5 py-3">Source</th><th className="px-5 py-3">Destination</th><th className="px-5 py-3">Traffic</th><th className="px-5 py-3 text-right">Deployments</th></tr></thead>
-                      <tbody className="divide-y divide-[#E2E8F0]">{interactions.map((item) => (<tr key={item.interactionDefinitionId}><td className="px-5 py-3 font-semibold text-[#172033]">{item.sourceComponentName}</td><td className="px-5 py-3 font-semibold text-[#172033]">{item.destinationComponentName}</td><td className="px-5 py-3 text-[#475569]">{trafficSummary(item.trafficAlternatives)}</td><td className="px-5 py-3 text-right tabular-nums">{item.activeDeploymentCount}</td></tr>))}</tbody>
-                    </table>
-                  </div>
-                )}
-                <CataloguePager page={tabPage} pageSize={tabPageSize} total={tabTotal} onPageChange={setTabPage} />
-              </>
-            ) : (
-              <>
-                <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
-                  <h2 className="font-semibold text-[#172033]">Deployments</h2>
-                  <Button onClick={() => setCreateOpen((value) => !value)}><Plus className="size-4" aria-hidden="true" />Add deployment</Button>
-                </div>
-                {createOpen ? <CreateDeploymentPanel applicationId={applicationId} onCancel={() => setCreateOpen(false)} onCreated={refreshTab} /> : null}
-                {deployments.length === 0 ? (
-                  <div className="p-6 text-sm text-[#64748B]">No active deployments.</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[760px] text-left text-sm">
-                      <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]"><tr><th className="px-5 py-3">Company</th><th className="px-5 py-3">Environment</th><th className="px-5 py-3">Scope</th><th className="px-5 py-3 text-right">Interactions</th></tr></thead>
-                      <tbody className="divide-y divide-[#E2E8F0]">{deployments.map((item) => (<tr key={item.applicationDeploymentId} className="cursor-pointer hover:bg-[#F8FAFC]" onClick={() => onOpenDeployment(item.applicationDeploymentId)}><td className="px-5 py-3 font-semibold text-[#172033]">{item.companyReference}</td><td className="px-5 py-3 text-[#475569]">{item.environment}</td><td className="px-5 py-3 text-[#475569]">{item.scopeReference}</td><td className="px-5 py-3 text-right tabular-nums">{item.selectedInteractionCount} / {item.definedInteractionCount}</td></tr>))}</tbody>
-                    </table>
-                  </div>
-                )}
-                <CataloguePager page={tabPage} pageSize={tabPageSize} total={tabTotal} onPageChange={setTabPage} />
-              </>
+      <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
+        {tab === "overview" ? (
+          <dl className="grid gap-x-8 gap-y-5 p-6 md:grid-cols-2">
+            <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Name</dt><dd className="mt-1 text-sm font-medium text-[#172033]">{definition.displayName}</dd></div>
+            <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Domain</dt><dd className="mt-1 text-sm text-[#172033]">{definition.domain ?? "—"}</dd></div>
+            <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Owner</dt><dd className="mt-1 text-sm text-[#172033]">{definition.ownerReference ?? "—"}</dd></div>
+            <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Description</dt><dd className="mt-1 text-sm text-[#172033]">{definition.description ?? "—"}</dd></div>
+          </dl>
+        ) : tabLoading || tabError ? <LoadingOrError loading={tabLoading} error={tabError} /> : tab === "components" ? (
+          <>
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4"><h2 className="font-semibold text-[#172033]">Components</h2><Button onClick={() => { setEditingComponent(null); setCreateOpen((value) => !value) }}><Plus className="size-4" aria-hidden="true" />Add component</Button></div>
+            {createOpen ? <CreateComponentPanel applicationId={applicationId} onCancel={() => setCreateOpen(false)} onCreated={refreshTab} /> : null}
+            {editingComponent ? <ComponentEditPanel component={editingComponent} onChanged={(updated) => { setComponents((items) => items.map((item) => item.componentId === updated.componentId ? updated : item)); setEditingComponent(null) }} onRetired={refreshTab} onCancel={() => setEditingComponent(null)} /> : null}
+            {components.length === 0 ? <div className="p-6 text-sm text-[#64748B]">No active components.</div> : (
+              <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]"><tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Type</th><th className="px-5 py-3">Description</th><th className="w-20 px-5 py-3" /></tr></thead><tbody className="divide-y divide-[#E2E8F0]">{components.map((item) => <tr key={item.componentId}><td className="px-5 py-3 font-semibold text-[#172033]">{item.displayName}</td><td className="px-5 py-3 text-[#475569]">{item.componentType ?? "—"}</td><td className="px-5 py-3 text-[#475569]">{item.description ?? "—"}</td><td className="px-5 py-3"><Button variant="ghost" onClick={() => { setCreateOpen(false); setEditingComponent(item) }}>Edit</Button></td></tr>)}</tbody></table></div>
             )}
-          </section>
-        </>
-      ) : null}
+            <CataloguePager page={tabPage} pageSize={tabPageSize} total={tabTotal} onPageChange={setTabPage} />
+          </>
+        ) : tab === "interactions" ? (
+          <>
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4"><h2 className="font-semibold text-[#172033]">Interactions</h2><Button onClick={() => { setEditingInteraction(null); setCreateOpen((value) => !value) }}><Plus className="size-4" aria-hidden="true" />Add interaction</Button></div>
+            {createOpen ? <InteractionDefinitionCreatePanel applicationId={applicationId} onCancel={() => setCreateOpen(false)} onCreated={refreshTab} /> : null}
+            {editingInteraction ? <InteractionDefinitionEditPanel interaction={editingInteraction} sourceName={editingInteraction.sourceComponentName} destinationName={editingInteraction.destinationComponentName} onChanged={() => refreshTab()} onRetired={refreshTab} onCancel={() => setEditingInteraction(null)} /> : null}
+            {interactions.length === 0 ? <div className="p-6 text-sm text-[#64748B]">No active interactions.</div> : (
+              <div className="overflow-x-auto"><table className="w-full min-w-[840px] text-left text-sm"><thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]"><tr><th className="px-5 py-3">Source</th><th className="px-5 py-3">Destination</th><th className="px-5 py-3">Traffic</th><th className="px-5 py-3 text-right">Deployments</th><th className="w-20 px-5 py-3" /></tr></thead><tbody className="divide-y divide-[#E2E8F0]">{interactions.map((item) => <tr key={item.interactionDefinitionId}><td className="px-5 py-3 font-semibold text-[#172033]">{item.sourceComponentName}</td><td className="px-5 py-3 font-semibold text-[#172033]">{item.destinationComponentName}</td><td className="px-5 py-3 text-[#475569]">{trafficSummary(item.trafficAlternatives)}</td><td className="px-5 py-3 text-right tabular-nums">{item.activeDeploymentCount}</td><td className="px-5 py-3"><Button variant="ghost" onClick={() => { setCreateOpen(false); setEditingInteraction(item) }}>Edit</Button></td></tr>)}</tbody></table></div>
+            )}
+            <CataloguePager page={tabPage} pageSize={tabPageSize} total={tabTotal} onPageChange={setTabPage} />
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4"><h2 className="font-semibold text-[#172033]">Deployments</h2><Button onClick={() => setCreateOpen((value) => !value)}><Plus className="size-4" aria-hidden="true" />Add deployment</Button></div>
+            {createOpen ? <CreateDeploymentPanel applicationId={applicationId} onCancel={() => setCreateOpen(false)} onCreated={refreshTab} /> : null}
+            {deployments.length === 0 ? <div className="p-6 text-sm text-[#64748B]">No active deployments.</div> : (
+              <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]"><tr><th className="px-5 py-3">Company</th><th className="px-5 py-3">Environment</th><th className="px-5 py-3">Scope</th><th className="px-5 py-3 text-right">Interactions</th></tr></thead><tbody className="divide-y divide-[#E2E8F0]">{deployments.map((item) => <tr key={item.applicationDeploymentId} className="cursor-pointer hover:bg-[#F8FAFC]" onClick={() => onOpenDeployment(item.applicationDeploymentId)}><td className="px-5 py-3 font-semibold text-[#172033]">{item.companyReference}</td><td className="px-5 py-3 text-[#475569]">{item.environment}</td><td className="px-5 py-3 text-[#475569]">{item.scopeReference}</td><td className="px-5 py-3 text-right tabular-nums">{item.selectedInteractionCount} / {item.definedInteractionCount}</td></tr>)}</tbody></table></div>
+            )}
+            <CataloguePager page={tabPage} pageSize={tabPageSize} total={tabTotal} onPageChange={setTabPage} />
+          </>
+        )}
+      </section>
     </div>
   )
 }
