@@ -72,11 +72,11 @@ INSERT INTO napms_application_catalogue.components (
 )
 SELECT
     (
-        substr(h.digest, 1, 8) || '-' ||
-        substr(h.digest, 9, 4) || '-' ||
-        substr(h.digest, 13, 4) || '-' ||
-        substr(h.digest, 17, 4) || '-' ||
-        substr(h.digest, 21, 12)
+        substr(md5('napms:i27:compat-component:' || d.component_deployment_id::text), 1, 8) || '-' ||
+        substr(md5('napms:i27:compat-component:' || d.component_deployment_id::text), 9, 4) || '-' ||
+        substr(md5('napms:i27:compat-component:' || d.component_deployment_id::text), 13, 4) || '-' ||
+        substr(md5('napms:i27:compat-component:' || d.component_deployment_id::text), 17, 4) || '-' ||
+        substr(md5('napms:i27:compat-component:' || d.component_deployment_id::text), 21, 12)
     )::uuid,
     '506918c2-afff-018a-d9e2-900b43852c1e'::uuid,
     COALESCE(NULLIF(btrim(d.display_name), ''), d.component_deployment_id::text),
@@ -84,9 +84,6 @@ SELECT
     'Active',
     1
 FROM napms_application_catalogue.component_deployments AS d
-CROSS JOIN LATERAL (
-    SELECT md5('napms:i27:compat-component:' || d.component_deployment_id::text) AS digest
-) AS h
 ON CONFLICT (component_id) DO NOTHING;
 
 ALTER TABLE napms_application_catalogue.component_deployments
@@ -94,15 +91,12 @@ ADD COLUMN IF NOT EXISTS component_id uuid NULL;
 
 UPDATE napms_application_catalogue.component_deployments AS d
 SET component_id = (
-    substr(h.digest, 1, 8) || '-' ||
-    substr(h.digest, 9, 4) || '-' ||
-    substr(h.digest, 13, 4) || '-' ||
-    substr(h.digest, 17, 4) || '-' ||
-    substr(h.digest, 21, 12)
+    substr(md5('napms:i27:compat-component:' || d.component_deployment_id::text), 1, 8) || '-' ||
+    substr(md5('napms:i27:compat-component:' || d.component_deployment_id::text), 9, 4) || '-' ||
+    substr(md5('napms:i27:compat-component:' || d.component_deployment_id::text), 13, 4) || '-' ||
+    substr(md5('napms:i27:compat-component:' || d.component_deployment_id::text), 17, 4) || '-' ||
+    substr(md5('napms:i27:compat-component:' || d.component_deployment_id::text), 21, 12)
 )::uuid
-FROM LATERAL (
-    SELECT md5('napms:i27:compat-component:' || d.component_deployment_id::text) AS digest
-) AS h
 WHERE d.component_id IS NULL;
 
 ALTER TABLE napms_application_catalogue.component_deployments
