@@ -77,6 +77,14 @@ export type ApplicationDeploymentSummaryDto = ApplicationDeploymentDto & {
   definedInteractionCount: number
 }
 
+export type DeploymentInteractionDto = {
+  deploymentInteractionId: string
+  applicationDeploymentId: string
+  interactionDefinitionId: string
+  lifecycleState: CatalogueLifecycleState
+  version: number
+}
+
 export type DeploymentConnectivityDto = {
   deploymentInteractionId: string
   interactionDefinitionId: string
@@ -117,10 +125,15 @@ type DeploymentResponse = {
   applicationName: string | null
 }
 
-async function request<T>(input: RequestInfo | URL): Promise<T> {
+async function request<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, {
+    ...init,
     credentials: "same-origin",
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json",
+      ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      ...(init?.headers ?? {}),
+    },
   })
   const payload = await response.json()
   if (!response.ok) {
@@ -133,6 +146,14 @@ async function request<T>(input: RequestInfo | URL): Promise<T> {
     )
   }
   return payload as T
+}
+
+function mutationHeaders(): HeadersInit {
+  const key =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`
+  return { "Idempotency-Key": key }
 }
 
 function addOptional(params: URLSearchParams, key: string, value?: string | null) {
@@ -167,6 +188,23 @@ export function readApplicationDefinition(
   )
 }
 
+export async function createApplicationDefinition(input: {
+  displayName: string
+  description?: string | null
+  domain?: string | null
+  ownerReference?: string | null
+}): Promise<ApplicationDefinitionDto> {
+  const result = await request<{ definition: ApplicationDefinitionDto }>(
+    "/api/v1/catalogues/application-definitions",
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify(input),
+    },
+  )
+  return result.definition
+}
+
 export function listApplicationComponents(input: {
   applicationId: string
   page: number
@@ -185,6 +223,25 @@ export function listApplicationComponents(input: {
   return request(
     `/api/v1/catalogues/application-definitions/${encodeURIComponent(input.applicationId)}/components?${params}`,
   )
+}
+
+export async function createApplicationComponent(
+  applicationId: string,
+  input: {
+    displayName: string
+    componentType?: string | null
+    description?: string | null
+  },
+): Promise<ApplicationComponentDto> {
+  const result = await request<{ component: ApplicationComponentDto }>(
+    `/api/v1/catalogues/application-definitions/${encodeURIComponent(applicationId)}/components`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify(input),
+    },
+  )
+  return result.component
 }
 
 export function listInteractionDefinitions(input: {
@@ -238,6 +295,23 @@ export function readApplicationDeployment(
   )
 }
 
+export async function createApplicationDeployment(input: {
+  applicationId: string
+  companyReference: string
+  environment: string
+  scopeReference: string
+}): Promise<ApplicationDeploymentDto> {
+  const result = await request<{ deployment: ApplicationDeploymentDto }>(
+    "/api/v1/catalogues/application-deployments",
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify(input),
+    },
+  )
+  return result.deployment
+}
+
 export function listAvailableInteractions(input: {
   applicationDeploymentId: string
   page?: number
@@ -255,6 +329,21 @@ export function listAvailableInteractions(input: {
   return request(
     `/api/v1/catalogues/application-deployments/${encodeURIComponent(input.applicationDeploymentId)}/available-interactions?${params}`,
   )
+}
+
+export async function selectDeploymentInteraction(
+  applicationDeploymentId: string,
+  interactionDefinitionId: string,
+): Promise<DeploymentInteractionDto> {
+  const result = await request<{ deploymentInteraction: DeploymentInteractionDto }>(
+    `/api/v1/catalogues/application-deployments/${encodeURIComponent(applicationDeploymentId)}/interactions`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ interactionDefinitionId }),
+    },
+  )
+  return result.deploymentInteraction
 }
 
 export function listDeploymentConnectivity(input: {
