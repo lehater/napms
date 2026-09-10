@@ -84,8 +84,8 @@ Application Deployment and selection:
 - `POST /api/v1/catalogues/application-deployments/{applicationDeploymentId}/interactions`
 
 Interaction-scoped Resource membership:
-- `POST /api/v1/catalogues/deployment-interactions/{deploymentInteractionId}/resources`
-- `POST /api/v1/catalogues/deployment-interactions/{deploymentInteractionId}/resources/{bindingReference}/end`
+- `POST /api/v1/catalogues/deployment-interactions/{deploymentInteractionId}/resource-bindings`
+- `POST /api/v1/catalogues/deployment-interactions/{deploymentInteractionId}/resource-bindings/{bindingReference}/end`
 
 Traffic is authored only on Interaction Definition. Deployment selection never accepts traffic overrides.
 
