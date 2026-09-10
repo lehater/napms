@@ -5,6 +5,7 @@ from typing import Protocol
 from uuid import UUID
 
 from napms.application_catalogue.domain.model import (
+    Application,
     ComponentDeployment,
     DcsRevision,
     DeploymentResourceBinding,
@@ -17,6 +18,14 @@ APPLICATION_CATALOGUE_AUTHORITY_SCOPE = "application-catalogue"
 
 class CataloguePersistenceError(Exception):
     """Catalogue persistence failed without a trustworthy semantic result."""
+
+
+class CataloguePersistenceOutcomeUnknown(CataloguePersistenceError):
+    """Commit acknowledgement failed, so authoritative outcome is uncertain."""
+
+
+class CatalogueConcurrencyConflict(CataloguePersistenceError):
+    """Optimistic concurrency precondition did not match authoritative state."""
 
 
 class ApplicationCatalogueAuthorityOutcome(str, Enum):
@@ -38,6 +47,52 @@ class ApplicationCatalogueCurationAuthorityPort(Protocol):
         actor_id: str,
         effective_time: datetime,
     ) -> ApplicationCatalogueAuthorityCheck: ...
+
+
+@dataclass(frozen=True, slots=True)
+class ApplicationCatalogueCommandReceipt:
+    command_kind: str
+    request_fingerprint: str
+    result_id: UUID
+    result_version: int
+
+
+class ApplicationCatalogueIdentityFactory(Protocol):
+    def new_application_id(self) -> UUID: ...
+
+
+class ApplicationCatalogueProvenanceFactory(Protocol):
+    def for_application(
+        self,
+        *,
+        application_id: UUID,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
+
+class ApplicationCatalogueCurationRepository(Protocol):
+    def get_application(self, application_id: UUID) -> Application | None: ...
+
+    def find_command_receipt(
+        self,
+        *,
+        actor_id: str,
+        idempotency_key: str,
+    ) -> ApplicationCatalogueCommandReceipt | None: ...
+
+    def add_application(self, application: Application) -> None: ...
+
+    def record_command_receipt(
+        self,
+        *,
+        actor_id: str,
+        idempotency_key: str,
+        receipt: ApplicationCatalogueCommandReceipt,
+    ) -> None: ...
+
+    def commit(self) -> None: ...
 
 
 class ApplicationCatalogueRepository(Protocol):
