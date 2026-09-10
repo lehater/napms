@@ -28,8 +28,11 @@ class PostgresAccessRuleDependencyQuery:
         predicate = """
             r.operational_state = 'Active'
             AND (
-                window.rule_id IS NULL
-                OR (window.start_at <= %s AND %s < window.end_at)
+                effective_window.rule_id IS NULL
+                OR (
+                    effective_window.start_at <= %s
+                    AND %s < effective_window.end_at
+                )
             )
         """
         joins = f"""
@@ -38,8 +41,8 @@ class PostgresAccessRuleDependencyQuery:
               ON w.source_id = r.source_component_deployment_id
              AND w.destination_id = r.destination_component_deployment_id
              AND w.dcs_id = r.dcs_contract_revision_id
-            LEFT JOIN napms_access_policy.access_rule_effective_windows window
-              ON window.rule_id = r.rule_id
+            LEFT JOIN napms_access_policy.access_rule_effective_windows effective_window
+              ON effective_window.rule_id = r.rule_id
         """
         try:
             total = self._connection.execute(
