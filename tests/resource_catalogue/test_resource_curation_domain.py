@@ -28,17 +28,30 @@ def test_resource_rename_preserves_identity_and_increments_version():
     assert renamed.version == 2
 
 
-def test_resource_retirement_preserves_identity_and_is_terminal():
-    retired = resource().retired()
+def test_resource_retirement_preserves_identity_and_records_transition_provenance():
+    retired = resource().retired(
+        retirement_provenance_reference="test:resource:retirement"
+    )
 
     assert retired.resource_reference == "res-1"
     assert retired.lifecycle_state is ResourceLifecycleState.RETIRED
+    assert retired.retirement_provenance_reference == "test:resource:retirement"
     assert retired.version == 2
 
     with pytest.raises(ResourceCatalogueInvariantError, match="Retired Resource"):
         retired.renamed("Another")
     with pytest.raises(ResourceCatalogueInvariantError, match="Retired Resource"):
-        retired.retired()
+        retired.retired(retirement_provenance_reference="test:again")
+
+
+def test_retired_resource_requires_retirement_provenance():
+    with pytest.raises(ResourceCatalogueInvariantError, match="requires retirement provenance"):
+        resource(lifecycle_state=ResourceLifecycleState.RETIRED)
+
+
+def test_active_resource_rejects_retirement_provenance():
+    with pytest.raises(ResourceCatalogueInvariantError, match="Active Resource"):
+        resource(retirement_provenance_reference="test:invalid")
 
 
 def test_resource_may_exist_without_display_name():
