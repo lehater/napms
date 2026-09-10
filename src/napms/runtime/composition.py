@@ -5,6 +5,7 @@ import psycopg
 from fastapi import FastAPI
 
 from napms.access_policy.application.ports import ConnectivityDecisionPort
+from napms.application_catalogue.domain.model import CatalogueInvariantError
 from napms.composition.catalogue_curation_postgres import (
     open_catalogue_curation_scope,
 )
@@ -16,6 +17,7 @@ from napms.composition.traffic_analysis_postgres import open_traffic_analysis_sc
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
 from napms.runtime.catalogue_curation_http import create_catalogue_curation_router
 from napms.runtime.catalogue_discovery_http import create_catalogue_discovery_router
+from napms.runtime.catalogue_error_http import catalogue_invariant_error_handler
 from napms.runtime.config import HttpRuntimeConfig
 from napms.runtime.http_api import HttpApiDependencies, create_http_api
 from napms.runtime.local_decision import LocalDevAllowedConnectivityDecisionAdapter
@@ -72,6 +74,10 @@ def build_http_api(
             readiness=readiness_probe or default_readiness,
             secure_cookie=False,
         )
+    )
+    app.add_exception_handler(
+        CatalogueInvariantError,
+        catalogue_invariant_error_handler,
     )
     app.include_router(
         create_network_operator_view_router(
