@@ -88,6 +88,11 @@ MIGRATIONS: tuple[Migration, ...] = (
         "migrations/0002_resource_scope_affiliations.sql",
     ),
     Migration(
+        "resource-catalogue/0003",
+        "napms.resource_catalogue.adapters.postgres",
+        "migrations/0003_curation_write_support.sql",
+    ),
+    Migration(
         "connectivity-requirements/0001",
         "napms.connectivity_requirements.adapters.postgres",
         "migrations/0001_connectivity_requirements.sql",
