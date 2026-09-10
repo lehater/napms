@@ -82,6 +82,15 @@ class ResourceCatalogueProvenanceFactory(Protocol):
         effective_time: datetime,
     ) -> str: ...
 
+    def for_resource_retirement(
+        self,
+        *,
+        resource_reference: str,
+        actor_id: str,
+        authority_reference: str,
+        effective_time: datetime,
+    ) -> str: ...
+
     def for_realization(
         self,
         *,
