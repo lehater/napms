@@ -128,10 +128,14 @@ Required current behavior:
 - list/search Applications;
 - create Application and drill into bookmarkable detail;
 - create Components and Component Deployments under their accepted parents;
+- rename Applications, Components and Component Deployments without changing stable identity, using the accepted optimistic-concurrency contract;
+- retire Component Deployments, Components and Applications using the accepted leaf-to-parent lifecycle rules rather than hard deletion, with accidental destructive/history-ending actions confirmed;
 - discover existing Resources from backend data and create/end Deployment Resource Bindings;
 - inspect current/historical bindings as provided by the backend;
 - discover Active ACC participants for DCS authoring;
 - create immutable DCS revisions from validated vendor-neutral protocol/service/port semantics;
+- inspect saved DCS revisions after reload/reopen with readable source/destination and traffic alternatives (protocol, source/destination ports and service reference) rather than only opaque revision identifiers;
+- present correction of communication semantics as creation of a new immutable DCS revision while preserving existing revisions and downstream references;
 - show stable IDs/provenance progressively, with readable labels/structure leading normal work.
 
 Normal flows do not require the user to paste NAPMS-owned UUID combinations.
