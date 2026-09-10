@@ -26,6 +26,10 @@ Normal product workflows do not hard-delete Resource identity or historical temp
 
 A retired Resource remains historically resolvable and may remain referenced by existing ACC bindings, Requirements, Decisions, Rules and realization evidence.
 
+Retirement records a separate server-owned `retirementProvenanceReference`. Creation provenance remains unchanged. Newly persisted `Retired` state without a retirement provenance reference is invalid.
+
+Likewise an explicit end/replace of a temporal realization, affiliation or responsibility preserves creation provenance and records a separate end-transition provenance reference rather than overwriting the original fact source.
+
 ## Retirement constraints
 
 Before Resource retirement, the application layer must prevent a misleading current state. Currently effective scope affiliations and responsibility/contact assignments must be explicitly ended or otherwise handled by a later accepted retirement orchestration contract; I27 does not silently cascade these cross-record changes.
@@ -43,6 +47,7 @@ The exact external string form is an implementation contract, not business meani
 ## Consequences
 
 - Resource endpoint, scope and responsibility changes stay temporal and explainable;
+- lifecycle and temporal endings retain both creation and transition provenance;
 - no catalogue mutation silently changes business/policy identity;
 - user-facing delete semantics become explicit end/retire operations;
 - HTTP and Web can present current state without losing historical truth;
