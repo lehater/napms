@@ -61,7 +61,7 @@ Current product direction remains local-first:
 - I24 — Local Deployment and Operational Hardening.
 - I25 — Product Completion, Operator UX and Acceptance.
 
-All are `done / absorbed into canonical truth` once PR #49 final verification and merge complete.
+All are `done / absorbed into canonical truth`.
 
 ## I25 — Product Completion, Operator UX and Acceptance
 
@@ -118,7 +118,7 @@ declared connectivity need
 
 plus the local authentication, deployment, recovery, diagnostics and acceptance controls required for the selected local environment.
 
-This criterion is achieved by the combined I1-I25 implementation and acceptance evidence, subject to final I25 merge gates.
+This criterion is achieved by the combined I1-I25 implementation and acceptance evidence. The final I25 absorption candidate passed core, PostgreSQL persistence, Web, harness, knowledge and Docker local-runtime gates before active-plan retirement.
 
 ## Explicit future/non-current work
 
@@ -134,7 +134,6 @@ Any of these becomes a new roadmap increment only after a concrete accepted requ
 
 ## Tracking after closure
 
-Once I25 merges:
 - `docs/engineering/current-state.md` is the capability snapshot;
 - `docs/architecture/current-architecture.md` is the cross-cutting architecture boundary;
 - `docs/requirements/` and `docs/domain/` remain semantic sources of truth;
