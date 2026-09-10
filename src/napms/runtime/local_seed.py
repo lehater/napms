@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 import psycopg
+from psycopg.types.json import Jsonb
 
 from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
 from napms.runtime.config import load_local_seed_config
@@ -17,6 +18,8 @@ _SOURCE = UUID("00000000-0000-0000-0000-000000000101")
 _DESTINATION = UUID("00000000-0000-0000-0000-000000000102")
 _DCS = UUID("00000000-0000-0000-0000-000000000103")
 _VALID_FROM = datetime(2020, 1, 1, tzinfo=timezone.utc)
+_CHECKER_CAPTURED_AT = datetime(2026, 9, 10, 0, 0, tzinfo=timezone.utc)
+_CHECKER_RECORDED_AT = datetime(2026, 9, 10, 0, 5, tzinfo=timezone.utc)
 
 _AUTHORITY_ACTIONS = (
     "ProposeConnectivity",
@@ -45,6 +48,105 @@ def _dcs_payload() -> bytes:
             ),
         )
     )
+
+
+def _configured_entry(
+    *,
+    entry_id: str,
+    reference: str,
+    source_first: str,
+    source_last: str,
+    destination_first: str,
+    destination_last: str,
+) -> dict:
+    return {
+        "evidence_entry_id": entry_id,
+        "predicate": {
+            "source_addresses": {
+                "kind": "Ranges",
+                "ranges": [{"first": source_first, "last": source_last}],
+            },
+            "destination_addresses": {
+                "kind": "Ranges",
+                "ranges": [
+                    {"first": destination_first, "last": destination_last}
+                ],
+            },
+            "protocol": {"kind": "IpProtocolNumber", "number": 6},
+            "source_ports": {"kind": "Any", "ranges": []},
+            "destination_ports": {
+                "kind": "Ranges",
+                "ranges": [{"first": 443, "last": 443}],
+            },
+        },
+        "action": "Permit",
+        "source_entry_reference": reference,
+        "source_position": 100,
+    }
+
+
+def _seed_checker_evidence(connection) -> None:
+    snapshots = (
+        (
+            UUID("00000000-0000-0000-0000-000000000301"),
+            "fw-demo-edge",
+            "local-demo:checker:edge:20260910",
+            _configured_entry(
+                entry_id="00000000-0000-0000-0000-000000000311",
+                reference="ACL-DEMO-100",
+                source_first="10.10.10.0",
+                source_last="10.10.10.255",
+                destination_first="10.20.20.0",
+                destination_last="10.20.20.255",
+            ),
+        ),
+        (
+            UUID("00000000-0000-0000-0000-000000000302"),
+            "fw-demo-core",
+            "local-demo:checker:core:20260910",
+            _configured_entry(
+                entry_id="00000000-0000-0000-0000-000000000312",
+                reference="CORE-DEMO-200",
+                source_first="10.10.0.0",
+                source_last="10.10.255.255",
+                destination_first="10.20.0.0",
+                destination_last="10.20.255.255",
+            ),
+        ),
+    )
+    for evidence_set_id, device_reference, capture_reference, entry in snapshots:
+        connection.execute(
+            """
+            INSERT INTO napms_technical_access_evidence.evidence_sets (
+                evidence_set_id,
+                kind,
+                source_namespace,
+                source_reference,
+                source_scope_reference,
+                source_capture_reference,
+                evidence_time_kind,
+                evidence_time_at,
+                evidence_time_start,
+                evidence_time_end,
+                recorded_at,
+                entries
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NULL, NULL, %s, %s)
+            ON CONFLICT (evidence_set_id) DO NOTHING
+            """,
+            (
+                evidence_set_id,
+                "Configured",
+                "local-demo-firewall-import",
+                "access-list-snapshot",
+                device_reference,
+                capture_reference,
+                "Instant",
+                _CHECKER_CAPTURED_AT,
+                _CHECKER_RECORDED_AT,
+                Jsonb([entry]),
+            ),
+        )
 
 
 def seed_local_demo(connection, *, actor_id: str) -> None:
@@ -77,16 +179,8 @@ def seed_local_demo(connection, *, actor_id: str) -> None:
         )
 
     for deployment_id, display_name, provenance in (
-        (
-            _SOURCE,
-            "Demo Web Frontend",
-            "local-demo:source-deployment",
-        ),
-        (
-            _DESTINATION,
-            "Demo Orders API",
-            "local-demo:destination-deployment",
-        ),
+        (_SOURCE, "Demo Web Frontend", "local-demo:source-deployment"),
+        (_DESTINATION, "Demo Orders API", "local-demo:destination-deployment"),
     ):
         connection.execute(
             """
@@ -232,6 +326,7 @@ def seed_local_demo(connection, *, actor_id: str) -> None:
             (fact_reference, endpoint_reference, address),
         )
 
+    _seed_checker_evidence(connection)
     connection.commit()
 
 
