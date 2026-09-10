@@ -9,15 +9,15 @@ Working mode: `execute-work-package` with `user-journey-validation`.
 
 Read first:
 - `e2e/test_j02_resource_authoring.py`
-- `web/src/features/catalogues/ResourceDetailsPage.tsx`
 - `src/napms/runtime/catalogue_resource_workspace_http.py`
-- `tests/runtime/test_catalogue_resource_workspace_http.py`
+- `web/src/features/catalogues/resourceWorkspaceApi.ts`
+- `.agents/skills/user-journey-validation/SKILL.md`
 
 Expand only if needed:
-- `.agents/skills/user-journey-validation/SKILL.md`
+- `web/src/features/catalogues/ResourceDetailsPage.tsx`
+- `tests/runtime/test_catalogue_resource_workspace_http.py`
 - `docs/requirements/catalogue-curation.md`
 - `docs/decisions/ADR-007-i27-resource-lifecycle.md`
-- `web/src/features/catalogues/resourceWorkspaceApi.ts`
 - `src/napms/resource_catalogue/application/curation.py`
 
 ## Recovery facts
@@ -30,6 +30,7 @@ Expand only if needed:
 - Accepted retirement remains non-destructive and blocked while current scope affiliations or responsibilities exist; the user must end those relations explicitly before retrying retirement.
 - J02-P2-01 candidate: Resource detail currently presents only effective temporal facts, so a replaced realization becomes invisible even though the UI states that a historical version is created. This does not block the current-authoring journey and is not part of WP-2 unless executable evidence elevates it.
 - Shared browser execution is now justified by two real journeys: `make journey-e2e` runs all `e2e/` tests and the workflow covers both Application and Resource Catalogue surfaces.
+- First WP-2 hosted attempt exposed only Harness continuity defects in this capsule/plan: oversized `Read first` and malformed Status marker. Product/browser results from that attempt remain diagnostic, not final gate evidence.
 
 ## Blockers
 
@@ -41,4 +42,4 @@ WP-2 closes when J02 can rename, navigate away/reopen by the new name, receive a
 
 ## Next
 
-Run the complete J01+J02 browser regression and applicable core/Web/runtime checks. Fix only reproducible failures, then advance to WP-3/WP-4 absorption and final integration.
+Use the in-flight diagnostic browser/Web results to catch product defects. Batch any fixes, then mark the PR Ready once for a fresh full affected-scope gate.
