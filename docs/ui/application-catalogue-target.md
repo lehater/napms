@@ -6,6 +6,8 @@ Date: 2026-09-10.
 
 Canonical target domain decision: `docs/decisions/ADR-012-application-definition-deployment-model.md`.
 
+Canonical screen-layout contract: `docs/ui/application-catalogue-wireframes.md`.
+
 ## Applications / Definitions
 
 Dense server-backed table:
