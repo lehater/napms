@@ -26,6 +26,10 @@ class ResourceCatalogueConcurrencyConflict(ResourceCataloguePersistenceError):
     """Optimistic concurrency precondition did not match authoritative state."""
 
 
+class ResourceCatalogueIdempotencyConflict(ResourceCataloguePersistenceError):
+    """Another command won the same idempotency-key uniqueness boundary."""
+
+
 class ResourceCatalogueAuthorityOutcome(str, Enum):
     PERMITTED = "Permitted"
     DENIED = "Denied"
