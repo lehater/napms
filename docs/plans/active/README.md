@@ -9,11 +9,10 @@ Current task: WP-1 final validation/integration for target Domain/Application/Po
 ## Working set
 
 Read first:
-- `docs/domain/application-communication-catalogue/target-tactical-model.md`
+- `docs/plans/active/PLAN-I31-application-catalogue-target-migration.md`
 - `src/napms/application_catalogue/application/target_ports.py`
-- `src/napms/application_catalogue/application/target_curation.py`
 
-Expand only when required into ADR-013, `target_lifecycle.py`, `target_binding_curation.py`, `target_metadata_curation.py`, `target_read.py`, domain target model and matching tests.
+Expand only when required into the target Tactical DDD, ADR-013, `target_curation.py`, `target_lifecycle.py`, `target_binding_curation.py`, `target_metadata_curation.py`, `target_read.py`, domain target model and matching tests.
 
 ## Blockers
 
