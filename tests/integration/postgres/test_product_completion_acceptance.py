@@ -311,7 +311,7 @@ def test_requirement_to_verified_operation_full_local_product_chain(config, post
             as_of=realization.AS_OF,
         )
         assert len(desired.intents) == 1
-        assert desired.intents[0].rule_references == (str(RULE_ID),)
+        assert desired.intents[0].rule_references == (f"access-rule:{RULE_ID}",)
         assert desired.regions_for(realization.TARGET_A)
 
         configured = scope.build_configured.execute(
