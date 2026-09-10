@@ -25,6 +25,9 @@ from napms.application_catalogue.adapters.postgres.participant_discovery import 
 from napms.application_catalogue.adapters.postgres.repository import (
     PostgresApplicationCatalogueRepository,
 )
+from napms.application_catalogue.adapters.postgres.transactional_curation_repository import (
+    TransactionalPostgresApplicationCatalogueCurationRepository,
+)
 from napms.application_catalogue.adapters.resource_binding_target import (
     ResourceCatalogueBindingTargetAdapter,
 )
@@ -71,6 +74,9 @@ from napms.resource_catalogue.adapters.curation_support import (
 )
 from napms.resource_catalogue.adapters.postgres.curation_repository import (
     PostgresResourceCatalogueCurationRepository,
+)
+from napms.resource_catalogue.adapters.postgres.transactional_curation_repository import (
+    TransactionalPostgresResourceCatalogueCurationRepository,
 )
 from napms.resource_catalogue.application.curation import (
     CreateResource,
@@ -160,8 +166,10 @@ def open_catalogue_curation_scope(
             checker=checker
         )
 
-        application_repository = PostgresApplicationCatalogueCurationRepository(
-            application_connection
+        application_repository = (
+            TransactionalPostgresApplicationCatalogueCurationRepository(
+                application_connection
+            )
         )
         application_semantic_repository = PostgresApplicationCatalogueRepository(
             application_connection
@@ -173,7 +181,7 @@ def open_catalogue_curation_scope(
         participant_repository = PostgresApplicationCatalogueParticipantRepository(
             application_connection
         )
-        resource_repository = PostgresResourceCatalogueCurationRepository(
+        resource_repository = TransactionalPostgresResourceCatalogueCurationRepository(
             resource_connection
         )
         resource_target = ResourceCatalogueBindingTargetAdapter(resource_repository)
