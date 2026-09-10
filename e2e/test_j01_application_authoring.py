@@ -32,8 +32,8 @@ def _add_component(page: Page, name: str, component_type: str = "Service") -> No
 
 
 def _select_component(page: Page, picker_label: str, name: str) -> None:
-    search = page.get_by_label(f"Search {picker_label}")
-    root = search.locator("xpath=ancestor::form[1]/..")
+    root = page.get_by_text(picker_label, exact=True).locator("xpath=..")
+    search = root.get_by_label(f"Search {picker_label}")
     search.fill(name)
     root.get_by_role("button", name="Search", exact=True).click()
     root.get_by_role("button", name=re.compile(rf"^{re.escape(name)}(?:\s|$)")).click()
