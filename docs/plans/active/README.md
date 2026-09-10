@@ -11,9 +11,7 @@ Current task: complete the final repository gates and absorb I26 into canonical 
 Read first:
 - `docs/plans/active/PLAN-I26-traffic-analysis-checker.md`
 - `docs/requirements/traffic-analysis-checker.md`
-- `docs/engineering/traffic-analysis-checker-roadmap.md`
-- `docs/engineering/current-state.md`
-- `docs/architecture/current-architecture.md`
+- `docs/architecture/network-context-candidate-boundary.md`
 
 Expand only when a failing gate or changed contract requires another owner document.
 
