@@ -50,21 +50,44 @@ def test_component_parent_identity_is_stable_across_supported_mutations():
     current = component()
 
     renamed = current.renamed("Frontend")
-    retired = renamed.retired()
+    retired = renamed.retired(
+        retirement_provenance_reference="test:component:retirement"
+    )
 
     assert renamed.application_id == APPLICATION_ID
     assert retired.application_id == APPLICATION_ID
     assert retired.lifecycle_state is CatalogueLifecycleState.RETIRED
+    assert retired.retirement_provenance_reference == "test:component:retirement"
     assert retired.version == 3
 
 
 def test_retired_catalogue_identity_is_immutable():
-    retired = application().retired()
+    retired = application().retired(
+        retirement_provenance_reference="test:application:retirement"
+    )
 
     with pytest.raises(CatalogueInvariantError, match="Retired Application"):
         retired.renamed("Another name")
     with pytest.raises(CatalogueInvariantError, match="Retired Application"):
-        retired.retired()
+        retired.retired(retirement_provenance_reference="test:again")
+
+
+@pytest.mark.parametrize(
+    "factory,state",
+    [
+        (application, CatalogueLifecycleState.RETIRED),
+        (component, CatalogueLifecycleState.RETIRED),
+    ],
+)
+def test_retired_catalogue_identity_requires_retirement_provenance(factory, state):
+    with pytest.raises(CatalogueInvariantError, match="requires retirement provenance"):
+        factory(lifecycle_state=state)
+
+
+@pytest.mark.parametrize("factory", [application, component])
+def test_active_catalogue_identity_rejects_retirement_provenance(factory):
+    with pytest.raises(CatalogueInvariantError, match="cannot have retirement provenance"):
+        factory(retirement_provenance_reference="test:invalid")
 
 
 @pytest.mark.parametrize("value", ["", "   "])
