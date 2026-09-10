@@ -193,9 +193,7 @@ def authenticated_smoke(
                 "Scoped Connectivity foreign remote Resource is unavailable"
             )
         if relationship["need"].get("current") != "None":
-            raise RuntimeError(
-                "initial Scoped Connectivity Need must be absent"
-            )
+            raise RuntimeError("initial Scoped Connectivity Need must be absent")
         if relationship["policy"].get("ruleExists") != "No":
             raise RuntimeError(
                 "initial Scoped Connectivity Policy must have no Rule"
@@ -272,28 +270,89 @@ def authenticated_smoke(
                 "Requirement without effective Access Rule must be Uncovered"
             )
 
+    proposal_payload = {
+        "authorityScope": "local-demo",
+        "sourceComponentDeploymentId": interaction["sourceComponentDeploymentId"],
+        "destinationComponentDeploymentId": interaction[
+            "destinationComponentDeploymentId"
+        ],
+        "dcsContractRevisionId": interaction["dcsContractRevisionId"],
+    }
+
     proposal = urllib.request.Request(
         f"{base_url}/api/v1/access-rule-proposals",
         method="POST",
+        data=json.dumps(proposal_payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    try:
+        with opener.open(proposal, timeout=5):
+            raise RuntimeError(
+                "Access Rule proposal without final Decision must fail closed"
+            )
+    except urllib.error.HTTPError as exc:
+        error = json.load(exc)
+        if exc.code != 503 or error.get("error", {}).get("code") != "DecisionUnknown":
+            raise RuntimeError(
+                "proposal without final Decision failed with unexpected semantics"
+            ) from exc
+
+    with opener.open(
+        f"{base_url}/api/v1/access-rules?page=1&pageSize=50",
+        timeout=5,
+    ) as response:
+        before_decision_rules = json.load(response)
+        if before_decision_rules.get("items"):
+            raise RuntimeError(
+                "failed proposal without final Decision created an Access Rule"
+            )
+
+    decision_request = urllib.request.Request(
+        f"{base_url}/api/v1/connectivity-decisions",
+        method="POST",
         data=json.dumps(
             {
-                "authorityScope": "local-demo",
-                "sourceComponentDeploymentId": interaction[
-                    "sourceComponentDeploymentId"
+                **proposal_payload,
+                "validFrom": "2020-01-01T00:00:00+00:00",
+                "validUntil": None,
+                "outcome": "Allowed",
+                "reasonCode": "local-demo-approved",
+                "reasonText": "Local Docker smoke final connectivity decision.",
+                "evidenceReferences": [
+                    {
+                        "kind": "ConnectivityRequirement",
+                        "reference": requirement_id,
+                    }
                 ],
-                "destinationComponentDeploymentId": interaction[
-                    "destinationComponentDeploymentId"
-                ],
-                "dcsContractRevisionId": interaction["dcsContractRevisionId"],
             }
         ).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    with opener.open(decision_request, timeout=5) as response:
+        if response.status != 201:
+            raise RuntimeError("Connectivity Decision record smoke failed")
+        recorded = json.load(response)
+        decision = recorded.get("decision") or {}
+        decision_id = decision.get("decisionId")
+        if recorded.get("outcome") not in {"Recorded", "Resolved"} or not decision_id:
+            raise RuntimeError("final Connectivity Decision was not recorded")
+
+    proposal = urllib.request.Request(
+        f"{base_url}/api/v1/access-rule-proposals",
+        method="POST",
+        data=json.dumps(proposal_payload).encode("utf-8"),
         headers={"Content-Type": "application/json"},
     )
     with opener.open(proposal, timeout=5) as response:
         materialized = json.load(response)
         if materialized.get("outcome") not in {"Materialized", "Resolved"}:
             raise RuntimeError("explicit Access Rule proposal smoke failed")
-        rule_id = materialized["rule"]["ruleId"]
+        rule = materialized["rule"]
+        rule_id = rule["ruleId"]
+        if rule.get("decisionReference") != decision_id:
+            raise RuntimeError(
+                "Access Rule did not retain authoritative Connectivity Decision reference"
+            )
 
     with opener.open(alignment_url, timeout=5) as response:
         alignment = json.load(response)
@@ -301,7 +360,6 @@ def authenticated_smoke(
             raise RuntimeError(
                 "effective exact Access Rule must cover Connectivity Requirement"
             )
-
 
     with opener.open(connectivity_url, timeout=5) as response:
         connectivity = json.load(response)
@@ -315,6 +373,10 @@ def authenticated_smoke(
         if relationship["need"].get("coverage") != "Covered":
             raise RuntimeError(
                 "Scoped Connectivity must reflect Requirement policy coverage"
+            )
+        if relationship["decision"].get("state") != "Allowed":
+            raise RuntimeError(
+                "Scoped Connectivity must reflect the authoritative final Decision"
             )
         policy = relationship["policy"]
         if (
