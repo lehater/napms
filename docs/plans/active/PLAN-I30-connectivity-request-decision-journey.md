@@ -14,6 +14,19 @@ Validate one cross-role connectivity journey without inventing a ticket/approval
 
 The journey must preserve the accepted separation `Required != Authorized`, `Proposal != Decision`, `Decision != Access Rule`.
 
+## Inputs
+
+Canonical behavior:
+- `docs/requirements/scoped-connectivity-inventory.md`;
+- `docs/requirements/connectivity-requirements-core.md`;
+- `docs/requirements/connectivity-decision-core.md`;
+- `docs/requirements/access-policy-core.md`.
+
+Execution surfaces:
+- Connectivity / Request access / Needs / Decisions / Rules Web workspaces;
+- local PostgreSQL runtime composition and local demo seed;
+- full local compose stack and browser E2E.
+
 ## Fixture
 
 Use the seeded local-demo interaction:
@@ -45,3 +58,11 @@ After P0/P1 closure, add deterministic browser coverage for the supported cross-
 - decision maker can identify the exact subject and record a final Decision with accepted authority semantics;
 - no P0/P1 journey findings remain, or the journey is explicitly blocked by an unresolved product-semantic decision rather than papered over in UI;
 - applicable core/Web/PostgreSQL/Harness/Knowledge/Docker/browser gates are green before integration.
+
+## Blockers
+
+None at plan start. Hosted browser execution is the executable UI surface available to this chat. Static composition/seed candidates are not treated as findings until the browser baseline confirms user-visible impact.
+
+## Next
+
+Inspect the J03 browser baseline. Classify confirmed findings, then close only demonstrated P0/P1 gaps before extending the stable cross-role regression.
