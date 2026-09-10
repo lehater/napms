@@ -34,6 +34,18 @@ class ResourceCatalogueRepository(Protocol):
         resource_references: tuple[str, ...],
     ) -> tuple[str, ...]: ...
 
+    def find_effective_realizations_by_address(
+        self,
+        *,
+        technical_address: str,
+        as_of: datetime,
+    ) -> tuple[ResourceRealizationVersion, ...]: ...
+
+    def has_realization_facts_for_address(
+        self,
+        *,
+        technical_address: str,
+    ) -> bool: ...
 
 
 class ResourceScopeAffiliationRepository(Protocol):

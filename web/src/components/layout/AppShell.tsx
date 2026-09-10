@@ -6,6 +6,7 @@ import {
   ListTree,
   LogOut,
   Network,
+  Search,
   TableProperties,
 } from "lucide-react"
 
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/Button"
 
 export type NavKey =
   | "connectivity"
+  | "checker"
   | "requirements"
   | "decisions"
   | "rules"
@@ -64,6 +66,15 @@ export function AppShell({
           >
             <Network className="size-4" aria-hidden="true" />
             Connectivity
+          </button>
+          <button
+            type="button"
+            className={navClass("checker")}
+            aria-current={activeNav === "checker" ? "page" : undefined}
+            onClick={() => onNavigate("checker")}
+          >
+            <Search className="size-4" aria-hidden="true" />
+            Checker
           </button>
           <div className="px-3 pb-2 pt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
             Policy
@@ -137,6 +148,7 @@ export function AppShell({
             {(
               [
                 ["connectivity", "Connectivity"],
+                ["checker", "Checker"],
                 ["requirements", "Needs"],
                 ["decisions", "Decisions"],
                 ["rules", "Rules"],

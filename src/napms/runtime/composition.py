@@ -8,6 +8,7 @@ from napms.composition.greenfield_postgres import open_greenfield_scope
 from napms.composition.network_operator_view_postgres import (
     open_network_operator_view_scope,
 )
+from napms.composition.traffic_analysis_postgres import open_traffic_analysis_scope
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
 from napms.runtime.config import HttpRuntimeConfig
 from napms.runtime.http_api import HttpApiDependencies, create_http_api
@@ -15,6 +16,7 @@ from napms.runtime.local_decision import LocalDevAllowedConnectivityDecisionAdap
 from napms.runtime.network_operator_view_http import (
     create_network_operator_view_router,
 )
+from napms.runtime.traffic_analysis_http import create_traffic_analysis_router
 
 
 def build_http_api(
@@ -23,7 +25,7 @@ def build_http_api(
     decisions: ConnectivityDecisionPort,
     readiness_probe: Callable[[], bool] | None = None,
 ) -> FastAPI:
-    """Compose the I8 HTTP process while keeping Decision Domain behind its port."""
+    """Compose the HTTP process while keeping domain owners behind explicit ports."""
 
     authenticator = LocalPasswordAuthenticator(config.local_credential)
     sessions = InMemorySessionStore()
@@ -36,6 +38,9 @@ def build_http_api(
             config.application,
             actor_id=actor_id,
         )
+
+    def open_checker_scope():
+        return open_traffic_analysis_scope(config.application)
 
     def default_readiness() -> bool:
         try:
@@ -59,6 +64,12 @@ def build_http_api(
         create_network_operator_view_router(
             sessions=sessions,
             open_scope=open_operator_scope,
+        )
+    )
+    app.include_router(
+        create_traffic_analysis_router(
+            sessions=sessions,
+            open_scope=open_checker_scope,
         )
     )
     return app
