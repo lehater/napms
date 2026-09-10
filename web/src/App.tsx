@@ -9,8 +9,10 @@ import {
 } from "@/features/catalogues/ApplicationCataloguePage"
 import { ApplicationDefinitionPage } from "@/features/catalogues/ApplicationDefinitionPage"
 import { ApplicationDeploymentPage } from "@/features/catalogues/ApplicationDeploymentPage"
+import { DeploymentResourceSetPage } from "@/features/catalogues/DeploymentResourceSetPage"
 import { ResourceDetailsPage } from "@/features/catalogues/ResourceDetailsPage"
 import { ResourcesPage } from "@/features/catalogues/ResourcesPage"
+import type { DeploymentInteractionSide } from "@/features/catalogues/targetCatalogueApi"
 import { CheckerPage } from "@/features/checker/CheckerPage"
 import { ConnectivityPage } from "@/features/connectivity/ConnectivityPage"
 import { RequestConnectivityPage } from "@/features/connectivity/RequestConnectivityPage"
@@ -32,6 +34,12 @@ type Route =
   | { kind: "applications"; page: number; view: ApplicationCatalogueView }
   | { kind: "application-definition"; applicationId: string }
   | { kind: "application-deployment"; deploymentId: string }
+  | {
+      kind: "deployment-resources"
+      deploymentId: string
+      deploymentInteractionId: string
+      side: DeploymentInteractionSide
+    }
   | { kind: "resources"; page: number }
   | { kind: "resource"; resourceReference: string }
   | {
@@ -79,11 +87,27 @@ function readRoute(): Route {
     }
   }
   if (hash.startsWith("applications/deployments/")) {
-    const deploymentId = hash.slice("applications/deployments/".length).split("?")[0]
-    if (deploymentId) {
+    const tail = hash.slice("applications/deployments/".length).split("?")[0]
+    const parts = tail.split("/").map(decodeURIComponent)
+    if (
+      parts.length === 5 &&
+      parts[0] &&
+      parts[1] === "interactions" &&
+      parts[2] &&
+      parts[3] === "resources" &&
+      (parts[4] === "Source" || parts[4] === "Destination")
+    ) {
+      return {
+        kind: "deployment-resources",
+        deploymentId: parts[0],
+        deploymentInteractionId: parts[2],
+        side: parts[4],
+      }
+    }
+    if (parts[0]) {
       return {
         kind: "application-deployment",
-        deploymentId: decodeURIComponent(deploymentId),
+        deploymentId: parts[0],
       }
     }
   }
@@ -240,7 +264,8 @@ export function App() {
       ? "checker"
       : route.kind === "applications" ||
           route.kind === "application-definition" ||
-          route.kind === "application-deployment"
+          route.kind === "application-deployment" ||
+          route.kind === "deployment-resources"
         ? "applications"
         : route.kind === "resources" || route.kind === "resource"
           ? "resources"
@@ -321,6 +346,19 @@ export function App() {
         <ApplicationDeploymentPage
           deploymentId={route.deploymentId}
           onBack={() => navigate("applications?view=deployments&page=1")}
+          onOpenResources={(interactionId, side) =>
+            navigate(
+              `applications/deployments/${encodeURIComponent(route.deploymentId)}/interactions/${encodeURIComponent(interactionId)}/resources/${side}`,
+            )
+          }
+        />
+      ) : route.kind === "deployment-resources" ? (
+        <DeploymentResourceSetPage
+          deploymentInteractionId={route.deploymentInteractionId}
+          side={route.side}
+          onBack={() =>
+            navigate(`applications/deployments/${encodeURIComponent(route.deploymentId)}`)
+          }
         />
       ) : route.kind === "resources" ? (
         <ResourcesPage
