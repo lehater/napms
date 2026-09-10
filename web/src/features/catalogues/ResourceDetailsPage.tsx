@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { ArrowLeft, Network, Plus, RefreshCw, Users } from "lucide-react"
+import { Archive, ArrowLeft, Network, Pencil, Plus, RefreshCw, Users } from "lucide-react"
 
 import { ApiError } from "@/api"
 import { shortId } from "@/components/catalogue/CatalogueIdentity"
@@ -16,6 +16,10 @@ import {
   type ResourceResponsibilityDto,
   type ResourceScopeAffiliationDto,
 } from "@/features/catalogues/catalogueApi"
+import {
+  renameCatalogueResource,
+  retireCatalogueResource,
+} from "@/features/catalogues/resourceWorkspaceApi"
 
 const inputClass =
   "min-h-10 w-full rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
@@ -36,6 +40,11 @@ export function ResourceDetailsPage({
   const [detail, setDetail] = useState<ResourceDetailDto | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<ApiError | null>(null)
+
+  const [editingName, setEditingName] = useState(false)
+  const [nameDraft, setNameDraft] = useState("")
+  const [savingLifecycle, setSavingLifecycle] = useState<"rename" | "retire" | null>(null)
+  const [lifecycleError, setLifecycleError] = useState<string | null>(null)
 
   const [addresses, setAddresses] = useState("")
   const [savingRealization, setSavingRealization] = useState(false)
@@ -74,6 +83,52 @@ export function ResourceDetailsPage({
   useEffect(() => {
     void load()
   }, [resourceReference])
+
+  useEffect(() => {
+    if (!editingName && detail) {
+      setNameDraft(detail.resource.displayName ?? "")
+    }
+  }, [detail, editingName])
+
+  async function renameResource(event: React.FormEvent) {
+    event.preventDefault()
+    if (!detail) return
+    const nextName = nameDraft.trim()
+    if (!nextName || nextName === (detail.resource.displayName ?? "")) return
+    setSavingLifecycle("rename")
+    setLifecycleError(null)
+    try {
+      await renameCatalogueResource(detail.resource, nextName)
+      setEditingName(false)
+      await load()
+    } catch (caught) {
+      setLifecycleError(errorFrom(caught, "Resource could not be renamed.").message)
+    } finally {
+      setSavingLifecycle(null)
+    }
+  }
+
+  async function retireResource() {
+    if (!detail) return
+    if (!window.confirm(
+      "Retire this resource? Current scope affiliations and responsibilities must be ended first. Historical references will be preserved.",
+    )) return
+    setSavingLifecycle("retire")
+    setLifecycleError(null)
+    try {
+      await retireCatalogueResource(detail.resource)
+      await load()
+    } catch (caught) {
+      const failure = errorFrom(caught, "Resource could not be retired.")
+      setLifecycleError(
+        failure.code === "CatalogueRetirementBlocked"
+          ? "End current scope affiliations and responsibilities before retiring this resource."
+          : failure.message,
+      )
+    } finally {
+      setSavingLifecycle(null)
+    }
+  }
 
   async function saveRealization(event: React.FormEvent) {
     event.preventDefault()
@@ -210,7 +265,9 @@ export function ResourceDetailsPage({
 
   if (!detail) return null
 
+  const resourceActive = detail.resource.lifecycle === "Active"
   const hasCurrentRealization = detail.effectiveRealizations.length > 0
+  const currentName = detail.resource.displayName || shortId(detail.resource.resourceReference)
 
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
@@ -224,49 +281,108 @@ export function ResourceDetailsPage({
             <ArrowLeft className="size-4" aria-hidden="true" />
             Resources
           </button>
-          <h1 className="text-2xl font-bold text-[#172033]">
-            {detail.resource.displayName || shortId(detail.resource.resourceReference)}
-          </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-bold text-[#172033]">{currentName}</h1>
+            <span className="rounded-full border border-[#CBD5E1] px-2 py-0.5 text-xs font-semibold text-[#475569]">
+              {detail.resource.lifecycle}
+            </span>
+          </div>
           <div className="mt-1 font-mono text-xs text-[#64748B]">
-            {detail.resource.resourceReference}
+            {detail.resource.resourceReference} · v{detail.resource.version}
           </div>
         </div>
-        <Button variant="secondary" loading={loading} onClick={() => void load()}>
-          <RefreshCw className="size-4" aria-hidden="true" />
-          Refresh
-        </Button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {resourceActive ? (
+            <>
+              {editingName ? (
+                <form className="flex min-w-64 flex-wrap items-center gap-2" onSubmit={renameResource}>
+                  <input
+                    className={inputClass}
+                    value={nameDraft}
+                    onChange={(event) => setNameDraft(event.target.value)}
+                    aria-label="New display name"
+                    maxLength={256}
+                    autoFocus
+                  />
+                  <Button
+                    type="submit"
+                    loading={savingLifecycle === "rename"}
+                    disabled={!nameDraft.trim() || nameDraft.trim() === (detail.resource.displayName ?? "")}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={savingLifecycle !== null}
+                    onClick={() => setEditingName(false)}
+                  >
+                    Cancel
+                  </Button>
+                </form>
+              ) : (
+                <Button type="button" variant="ghost" onClick={() => setEditingName(true)}>
+                  <Pencil className="size-4" aria-hidden="true" />
+                  Rename
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="secondary"
+                loading={savingLifecycle === "retire"}
+                disabled={savingLifecycle !== null}
+                onClick={() => void retireResource()}
+              >
+                <Archive className="size-4" aria-hidden="true" />
+                Retire
+              </Button>
+            </>
+          ) : null}
+          <Button variant="secondary" loading={loading} onClick={() => void load()}>
+            <RefreshCw className="size-4" aria-hidden="true" />
+            Refresh
+          </Button>
+        </div>
       </header>
 
-      <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
-        <div className="mb-4 flex items-center gap-2">
-          <Plus className="size-4 text-[#2563EB]" aria-hidden="true" />
-          <h2 className="font-semibold text-[#172033]">
-            {hasCurrentRealization ? "Replace technical addresses" : "Add technical addresses"}
-          </h2>
+      {lifecycleError ? (
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">
+          {lifecycleError}
         </div>
-        <form className="grid gap-3" onSubmit={saveRealization}>
-          <textarea
-            className={`${inputClass} min-h-24 resize-y`}
-            value={addresses}
-            onChange={(event) => setAddresses(event.target.value)}
-            placeholder={"10.20.30.40\n10.20.30.41"}
-            aria-label="Technical addresses"
-          />
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-[#64748B]">
-              {hasCurrentRealization
-                ? "Replacing ends the current realization now and creates a new historical version."
-                : "One address per line or comma. A new authoritative realization starts now."}
-            </p>
-            <Button type="submit" loading={savingRealization} disabled={!addresses.trim()}>
-              {hasCurrentRealization ? "Replace addresses" : "Add addresses"}
-            </Button>
+      ) : null}
+
+      {resourceActive ? (
+        <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
+          <div className="mb-4 flex items-center gap-2">
+            <Plus className="size-4 text-[#2563EB]" aria-hidden="true" />
+            <h2 className="font-semibold text-[#172033]">
+              {hasCurrentRealization ? "Replace technical addresses" : "Add technical addresses"}
+            </h2>
           </div>
-        </form>
-        {realizationError ? (
-          <p className="mt-3 text-sm text-red-700">{realizationError.message}</p>
-        ) : null}
-      </section>
+          <form className="grid gap-3" onSubmit={saveRealization}>
+            <textarea
+              className={`${inputClass} min-h-24 resize-y`}
+              value={addresses}
+              onChange={(event) => setAddresses(event.target.value)}
+              placeholder={"10.20.30.40\n10.20.30.41"}
+              aria-label="Technical addresses"
+            />
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs text-[#64748B]">
+                {hasCurrentRealization
+                  ? "Replacing ends the current realization now and creates a new historical version."
+                  : "One address per line or comma. A new authoritative realization starts now."}
+              </p>
+              <Button type="submit" loading={savingRealization} disabled={!addresses.trim()}>
+                {hasCurrentRealization ? "Replace addresses" : "Add addresses"}
+              </Button>
+            </div>
+          </form>
+          {realizationError ? (
+            <p className="mt-3 text-sm text-red-700">{realizationError.message}</p>
+          ) : null}
+        </section>
+      ) : null}
 
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
@@ -303,30 +419,32 @@ export function ResourceDetailsPage({
 
         <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
           <h2 className="font-semibold text-[#172033]">Responsibility scopes</h2>
-          <form className="mt-4 grid gap-3" onSubmit={addScopeAffiliation}>
-            <label className="grid gap-1 text-sm font-medium text-[#172033]">
-              External scope reference
-              <input
-                className={inputClass}
-                value={responsibilityScope}
-                onChange={(event) => setResponsibilityScope(event.target.value)}
-                placeholder="payments-team"
-                autoComplete="off"
-              />
-            </label>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="max-w-xl text-xs text-[#64748B]">
-                Correlation reference from the scope naming source used by your environment. NAPMS does not create that scope or derive curation authority from it.
-              </p>
-              <Button
-                type="submit"
-                loading={creatingAffiliation}
-                disabled={!responsibilityScope.trim()}
-              >
-                Add affiliation
-              </Button>
-            </div>
-          </form>
+          {resourceActive ? (
+            <form className="mt-4 grid gap-3" onSubmit={addScopeAffiliation}>
+              <label className="grid gap-1 text-sm font-medium text-[#172033]">
+                External scope reference
+                <input
+                  className={inputClass}
+                  value={responsibilityScope}
+                  onChange={(event) => setResponsibilityScope(event.target.value)}
+                  placeholder="payments-team"
+                  autoComplete="off"
+                />
+              </label>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="max-w-xl text-xs text-[#64748B]">
+                  Correlation reference from the scope naming source used by your environment. NAPMS does not create that scope or derive curation authority from it.
+                </p>
+                <Button
+                  type="submit"
+                  loading={creatingAffiliation}
+                  disabled={!responsibilityScope.trim()}
+                >
+                  Add affiliation
+                </Button>
+              </div>
+            </form>
+          ) : null}
           {affiliationError ? (
             <p className="mt-3 text-sm text-red-700">{affiliationError.message}</p>
           ) : null}
@@ -346,14 +464,16 @@ export function ResourceDetailsPage({
                       since {new Date(item.validFrom).toLocaleString()} · v{item.version}
                     </div>
                   </div>
-                  <Button
-                    variant="secondary"
-                    loading={endingAffiliationReference === item.affiliationReference}
-                    disabled={endingAffiliationReference !== null}
-                    onClick={() => void endScopeAffiliation(item)}
-                  >
-                    End
-                  </Button>
+                  {resourceActive ? (
+                    <Button
+                      variant="secondary"
+                      loading={endingAffiliationReference === item.affiliationReference}
+                      disabled={endingAffiliationReference !== null}
+                      onClick={() => void endScopeAffiliation(item)}
+                    >
+                      End
+                    </Button>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -367,84 +487,86 @@ export function ResourceDetailsPage({
           <h2 className="font-semibold text-[#172033]">Responsibilities</h2>
         </div>
 
-        <form className="grid gap-3 rounded-md bg-[#F8FAFC] p-4" onSubmit={addResponsibility}>
-          <div className="grid gap-3 md:grid-cols-2">
+        {resourceActive ? (
+          <form className="grid gap-3 rounded-md bg-[#F8FAFC] p-4" onSubmit={addResponsibility}>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="grid gap-1 text-sm font-medium text-[#172033]">
+                Party kind
+                <select
+                  className={inputClass}
+                  value={partyKind}
+                  onChange={(event) => setPartyKind(event.target.value as "Person" | "Team")}
+                >
+                  <option value="Team">Team</option>
+                  <option value="Person">Person</option>
+                </select>
+              </label>
+              <label className="grid gap-1 text-sm font-medium text-[#172033]">
+                Role
+                <select
+                  className={inputClass}
+                  value={responsibilityRole}
+                  onChange={(event) =>
+                    setResponsibilityRole(
+                      event.target.value as
+                        | "ServiceOwner"
+                        | "TechnicalOwner"
+                        | "OperationsContact"
+                        | "BusinessOwner",
+                    )
+                  }
+                >
+                  <option value="TechnicalOwner">Technical owner</option>
+                  <option value="ServiceOwner">Service owner</option>
+                  <option value="OperationsContact">Operations contact</option>
+                  <option value="BusinessOwner">Business owner</option>
+                </select>
+              </label>
+              <label className="grid gap-1 text-sm font-medium text-[#172033]">
+                External person/team reference
+                <input
+                  className={inputClass}
+                  value={partyReference}
+                  onChange={(event) => setPartyReference(event.target.value)}
+                  placeholder="team:orders"
+                  autoComplete="off"
+                />
+              </label>
+              <label className="grid gap-1 text-sm font-medium text-[#172033]">
+                Display name
+                <input
+                  className={inputClass}
+                  value={responsibilityDisplayName}
+                  onChange={(event) => setResponsibilityDisplayName(event.target.value)}
+                  placeholder="Orders Team"
+                  autoComplete="off"
+                />
+              </label>
+            </div>
             <label className="grid gap-1 text-sm font-medium text-[#172033]">
-              Party kind
-              <select
-                className={inputClass}
-                value={partyKind}
-                onChange={(event) => setPartyKind(event.target.value as "Person" | "Team")}
-              >
-                <option value="Team">Team</option>
-                <option value="Person">Person</option>
-              </select>
-            </label>
-            <label className="grid gap-1 text-sm font-medium text-[#172033]">
-              Role
-              <select
-                className={inputClass}
-                value={responsibilityRole}
-                onChange={(event) =>
-                  setResponsibilityRole(
-                    event.target.value as
-                      | "ServiceOwner"
-                      | "TechnicalOwner"
-                      | "OperationsContact"
-                      | "BusinessOwner",
-                  )
-                }
-              >
-                <option value="TechnicalOwner">Technical owner</option>
-                <option value="ServiceOwner">Service owner</option>
-                <option value="OperationsContact">Operations contact</option>
-                <option value="BusinessOwner">Business owner</option>
-              </select>
-            </label>
-            <label className="grid gap-1 text-sm font-medium text-[#172033]">
-              External person/team reference
+              Contact (optional)
               <input
                 className={inputClass}
-                value={partyReference}
-                onChange={(event) => setPartyReference(event.target.value)}
-                placeholder="team:orders"
+                value={responsibilityContact}
+                onChange={(event) => setResponsibilityContact(event.target.value)}
+                placeholder="orders@example.test"
                 autoComplete="off"
               />
             </label>
-            <label className="grid gap-1 text-sm font-medium text-[#172033]">
-              Display name
-              <input
-                className={inputClass}
-                value={responsibilityDisplayName}
-                onChange={(event) => setResponsibilityDisplayName(event.target.value)}
-                placeholder="Orders Team"
-                autoComplete="off"
-              />
-            </label>
-          </div>
-          <label className="grid gap-1 text-sm font-medium text-[#172033]">
-            Contact (optional)
-            <input
-              className={inputClass}
-              value={responsibilityContact}
-              onChange={(event) => setResponsibilityContact(event.target.value)}
-              placeholder="orders@example.test"
-              autoComplete="off"
-            />
-          </label>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="max-w-2xl text-xs text-[#64748B]">
-              The external reference correlates this contact with a Person or Team identity owned outside Resource Catalogue. The assignment does not grant NAPMS permissions.
-            </p>
-            <Button
-              type="submit"
-              loading={creatingResponsibility}
-              disabled={!partyReference.trim() || !responsibilityDisplayName.trim()}
-            >
-              Add responsibility
-            </Button>
-          </div>
-        </form>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="max-w-2xl text-xs text-[#64748B]">
+                The external reference correlates this contact with a Person or Team identity owned outside Resource Catalogue. The assignment does not grant NAPMS permissions.
+              </p>
+              <Button
+                type="submit"
+                loading={creatingResponsibility}
+                disabled={!partyReference.trim() || !responsibilityDisplayName.trim()}
+              >
+                Add responsibility
+              </Button>
+            </div>
+          </form>
+        ) : null}
         {responsibilityError ? (
           <p className="mt-3 text-sm text-red-700">{responsibilityError.message}</p>
         ) : null}
@@ -462,14 +584,16 @@ export function ResourceDetailsPage({
                       {item.role} · {item.partyKind}
                     </div>
                   </div>
-                  <Button
-                    variant="secondary"
-                    loading={endingResponsibilityReference === item.assignmentReference}
-                    disabled={endingResponsibilityReference !== null}
-                    onClick={() => void endResponsibility(item)}
-                  >
-                    End
-                  </Button>
+                  {resourceActive ? (
+                    <Button
+                      variant="secondary"
+                      loading={endingResponsibilityReference === item.assignmentReference}
+                      disabled={endingResponsibilityReference !== null}
+                      onClick={() => void endResponsibility(item)}
+                    >
+                      End
+                    </Button>
+                  ) : null}
                 </div>
                 <div className="mt-2 font-mono text-xs text-[#64748B]">{item.partyReference}</div>
                 {item.contact ? (

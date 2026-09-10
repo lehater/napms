@@ -19,10 +19,14 @@ export type ResourceWorkspacePageDto = {
   responsibilityScope: string | null
 }
 
-async function request<T>(input: RequestInfo | URL): Promise<T> {
+async function request<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, {
+    ...init,
     credentials: "same-origin",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
+    },
   })
   const payload = await response.json()
   if (!response.ok) {
@@ -37,6 +41,14 @@ async function request<T>(input: RequestInfo | URL): Promise<T> {
   return payload as T
 }
 
+function mutationHeaders(): HeadersInit {
+  const key =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`
+  return { "Idempotency-Key": key }
+}
+
 export function listCatalogueResourceWorkspace(
   page = 1,
   search = "",
@@ -48,4 +60,33 @@ export function listCatalogueResourceWorkspace(
     params.set("responsibilityScope", responsibilityScope.trim())
   }
   return request(`/api/v1/catalogues/resource-workspace?${params}`)
+}
+
+export async function renameCatalogueResource(
+  resource: ResourceDto,
+  displayName: string,
+): Promise<ResourceDto> {
+  const response = await request<{ resource: ResourceDto }>(
+    `/api/v1/catalogues/resources/${encodeURIComponent(resource.resourceReference)}/rename`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ displayName, expectedVersion: resource.version }),
+    },
+  )
+  return response.resource
+}
+
+export async function retireCatalogueResource(
+  resource: ResourceDto,
+): Promise<ResourceDto> {
+  const response = await request<{ resource: ResourceDto }>(
+    `/api/v1/catalogues/resources/${encodeURIComponent(resource.resourceReference)}/retire`,
+    {
+      method: "POST",
+      headers: mutationHeaders(),
+      body: JSON.stringify({ expectedVersion: resource.version }),
+    },
+  )
+  return response.resource
 }

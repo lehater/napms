@@ -1,4 +1,4 @@
-name: J01 browser journey gate
+name: browser journey gate
 
 on:
   pull_request:
@@ -7,6 +7,7 @@ on:
       - "e2e/**"
       - "web/**"
       - "src/napms/application_catalogue/**"
+      - "src/napms/resource_catalogue/**"
       - "src/napms/runtime/**"
       - "src/napms/composition/**"
       - "src/napms/authority_management/**"
@@ -24,14 +25,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  j01:
+  journeys:
     runs-on: ubuntu-latest
     env:
-      NAPMS_POSTGRES_PASSWORD: j01-postgres-password
+      NAPMS_POSTGRES_PASSWORD: journey-postgres-password
       NAPMS_LOCAL_AUTH_LOGIN: local-admin
       NAPMS_LOCAL_AUTH_ACTOR_ID: local-admin
       NAPMS_E2E_LOGIN: local-admin
-      NAPMS_E2E_PASSWORD: j01-browser-password
+      NAPMS_E2E_PASSWORD: browser-journey-password
       NAPMS_E2E_BASE_URL: http://127.0.0.1:8080
     steps:
       - uses: actions/checkout@v4
@@ -51,7 +52,7 @@ jobs:
           python tools/prepare_local_postgres.py
           docker compose up --build --detach --remove-orphans
           python -c 'import os; from tools.local_start import wait_ready; wait_ready(os.environ["NAPMS_E2E_BASE_URL"])'
-      - name: Run J01 through the browser
+      - name: Run browser journeys
         run: make journey-e2e
       - if: failure()
         run: docker compose logs --no-color

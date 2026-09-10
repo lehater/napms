@@ -2,16 +2,34 @@ from contextlib import AbstractContextManager
 from datetime import datetime
 from typing import Callable
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Header, Query, Request
+from pydantic import BaseModel, ConfigDict, Field
 
+from napms.resource_catalogue.application.curation import (
+    RenameResourceCommand,
+    RetireResourceCommand,
+)
 from napms.resource_catalogue.application.ports import ResourceCataloguePersistenceError
 from napms.runtime.auth import InMemorySessionStore
 from napms.runtime.catalogue_curation_http import (
+    _mutation_response,
     _require_actor,
     _require_aware,
+    _require_success,
     _resource_dto,
     _resource_persistence_error,
 )
+
+
+class RenameCatalogueResourceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+    display_name: str = Field(alias="displayName", min_length=1, max_length=256)
+    expected_version: int = Field(alias="expectedVersion", ge=1)
+
+
+class RetireCatalogueResourceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+    expected_version: int = Field(alias="expectedVersion", ge=1)
 
 
 def create_catalogue_resource_workspace_router(
@@ -70,5 +88,74 @@ def create_catalogue_resource_workspace_router(
             "asOf": result.as_of.isoformat(),
             "responsibilityScope": result.responsibility_scope,
         }
+
+    @router.post(
+        "/api/v1/catalogues/resources/{resource_reference:path}/rename",
+        name="RenameCatalogueResource",
+    )
+    def rename_resource(
+        resource_reference: str,
+        payload: RenameCatalogueResourceRequest,
+        request: Request,
+        idempotency_key: str = Header(
+            alias="Idempotency-Key",
+            min_length=1,
+            max_length=256,
+        ),
+    ):
+        actor_id = _require_actor(sessions, request)
+        try:
+            with open_scope() as scope:
+                result = scope.resources.rename_resource.execute(
+                    RenameResourceCommand(
+                        resource_reference=resource_reference,
+                        display_name=payload.display_name,
+                        expected_version=payload.expected_version,
+                        actor_id=actor_id,
+                        effective_time=clock(),
+                        idempotency_key=idempotency_key,
+                    )
+                )
+        except ResourceCataloguePersistenceError as exc:
+            raise _resource_persistence_error() from exc
+        _require_success(result.outcome)
+        return _mutation_response(
+            result.outcome,
+            {"resource": _resource_dto(result.resource)},
+        )
+
+    @router.post(
+        "/api/v1/catalogues/resources/{resource_reference:path}/retire",
+        name="RetireCatalogueResource",
+    )
+    def retire_resource(
+        resource_reference: str,
+        payload: RetireCatalogueResourceRequest,
+        request: Request,
+        idempotency_key: str = Header(
+            alias="Idempotency-Key",
+            min_length=1,
+            max_length=256,
+        ),
+    ):
+        actor_id = _require_actor(sessions, request)
+        try:
+            with open_scope() as scope:
+                result = scope.resources.retire_resource.execute(
+                    RetireResourceCommand(
+                        resource_reference=resource_reference,
+                        expected_version=payload.expected_version,
+                        actor_id=actor_id,
+                        effective_time=clock(),
+                        idempotency_key=idempotency_key,
+                    )
+                )
+        except ResourceCataloguePersistenceError as exc:
+            raise _resource_persistence_error() from exc
+        _require_success(result.outcome)
+        return _mutation_response(
+            result.outcome,
+            {"resource": _resource_dto(result.resource)},
+        )
 
     return router

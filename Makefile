@@ -10,7 +10,7 @@ web-check:
 	cd web && npm run build
 
 journey-e2e:
-	python -m pytest -q e2e/test_j01_application_authoring.py
+	python -m pytest -q e2e
 
 docker-build:
 	NAPMS_POSTGRES_PASSWORD=local-build-placeholder docker compose build
