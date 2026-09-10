@@ -1,4 +1,5 @@
 import {
+  Activity,
   ClipboardList,
   Clock3,
   Gavel,
@@ -18,6 +19,7 @@ export type NavKey =
   | "rules"
   | "effective"
   | "normalized"
+  | "realization"
 
 export function AppShell({
   actor,
@@ -111,6 +113,18 @@ export function AppShell({
             <TableProperties className="size-4" aria-hidden="true" />
             Export
           </button>
+          <div className="px-3 pb-2 pt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8FA6C2]">
+            Operations
+          </div>
+          <button
+            type="button"
+            className={navClass("realization")}
+            aria-current={activeNav === "realization" ? "page" : undefined}
+            onClick={() => onNavigate("realization")}
+          >
+            <Activity className="size-4" aria-hidden="true" />
+            Realization
+          </button>
         </nav>
       </aside>
 
@@ -128,6 +142,7 @@ export function AppShell({
                 ["rules", "Rules"],
                 ["effective", "Effective"],
                 ["normalized", "Export"],
+                ["realization", "Realization"],
               ] as const
             ).map(([key, label]) => (
               <button
