@@ -4,24 +4,25 @@ Current: `PLAN-I31-application-catalogue-target-migration.md`
 
 Goal: migrate the accepted Application Catalogue target end to end without rewriting existing downstream semantic identities or historical policy truth.
 
-Current task: WP-2 final validation/integration for PostgreSQL target persistence and compatibility projection.
+Current task: WP-3 implement bounded target read models and task-oriented HTTP API.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-I31-application-catalogue-target-migration.md`
-- `src/napms/application_catalogue/adapters/postgres/migrations/0005_application_catalogue_target.sql`
+- `src/napms/application_catalogue/application/target_read.py`
+- `src/napms/runtime/catalogue_application_workspace_http.py`
 
-Expand only when required into `target_repository.py`, target application/domain contracts, curation support, PostgreSQL migration runner and the I31 target integration tests.
+Expand only when required into the target PostgreSQL repository, catalogue composition, target curation/lifecycle/binding use cases, HTTP error conventions and focused runtime/integration tests.
 
 ## Blockers
 
-No known P0/P1 blocker. M0/M1 are merged. The target schema is additive, target compatibility sides are explicitly mapped, legacy I27 rows are not promoted, and executable evidence covers target write/reload plus consumption through the existing downstream repository contract.
+None known. M0-M2 are squash-merged. WP-3 must keep compatibility Component Deployment IDs backend-only and must implement server-bounded search/filter/sort/paging rather than rebuilding the old whole-tree workspace contract.
 
 ## Gate
 
-WP-2 local implementation exit is satisfied pending final hosted validation. No HTTP or Web implementation belongs in PR #60. Mark Ready only to request final applicable core/PostgreSQL/harness/browser regression gates; inspect job-level conclusions before claiming PASS or merging.
+WP-3 exits when the accepted target UI can consume Definition/Deployment lists, Definition tabs, Deployment connectivity/resource-set drill-downs and task commands entirely through authenticated HTTP without client-manufactured internal IDs. No Web implementation belongs in this stage.
 
 ## Next
 
-Run final hosted validation for PR #60. If green, squash-merge M2. Start WP-3 from a new branch based on resulting `main`; implement bounded HTTP/read models and target task commands there.
+Implement the PostgreSQL target read projection first, then expose authenticated target routes and mutation composition. Add focused HTTP/security/integration tests and keep the current I27 routes available only as compatibility until the Web switches in WP-4.
