@@ -16,6 +16,15 @@ class LocalApplicationCatalogueIdentityFactory:
     def new_dcs_revision_id(self) -> UUID:
         return uuid4()
 
+    def new_interaction_definition_id(self) -> UUID:
+        return uuid4()
+
+    def new_application_deployment_id(self) -> UUID:
+        return uuid4()
+
+    def new_deployment_interaction_id(self) -> UUID:
+        return uuid4()
+
 
 class LocalDeploymentBindingIdentityFactory:
     def new_binding_reference(self) -> str:
@@ -51,6 +60,56 @@ class LocalApplicationCatalogueProvenanceFactory:
 
     def for_dcs_revision(self, **kwargs) -> str:
         return _reference("CreateDcsRevision", kwargs["revision_id"], kwargs)
+
+    def for_interaction_definition(self, **kwargs) -> str:
+        return _reference(
+            "CreateInteractionDefinition",
+            kwargs["interaction_definition_id"],
+            kwargs,
+        )
+
+    def for_interaction_definition_retirement(self, **kwargs) -> str:
+        return _reference(
+            "RetireInteractionDefinition",
+            kwargs["interaction_definition_id"],
+            kwargs,
+        )
+
+    def for_application_deployment(self, **kwargs) -> str:
+        return _reference(
+            "CreateApplicationDeployment",
+            kwargs["application_deployment_id"],
+            kwargs,
+        )
+
+    def for_application_deployment_retirement(self, **kwargs) -> str:
+        return _reference(
+            "RetireApplicationDeployment",
+            kwargs["application_deployment_id"],
+            kwargs,
+        )
+
+    def for_deployment_interaction(self, **kwargs) -> str:
+        return _reference(
+            "SelectDeploymentInteraction",
+            kwargs["deployment_interaction_id"],
+            kwargs,
+        )
+
+    def for_deployment_interaction_retirement(self, **kwargs) -> str:
+        return _reference(
+            "RetireDeploymentInteraction",
+            kwargs["deployment_interaction_id"],
+            kwargs,
+        )
+
+    def for_compatibility_component_deployment(self, **kwargs) -> str:
+        subject = (
+            f"{kwargs['deployment_interaction_id']}:"
+            f"{kwargs['side'].value}:"
+            f"{kwargs['component_deployment_id']}"
+        )
+        return _reference("CompatibilityComponentDeployment", subject, kwargs)
 
 
 class LocalDeploymentBindingProvenanceFactory:

@@ -4,24 +4,24 @@ Current: `PLAN-I31-application-catalogue-target-migration.md`
 
 Goal: migrate the accepted Application Catalogue target end to end without rewriting existing downstream semantic identities or historical policy truth.
 
-Current task: WP-1 final validation/integration for target Domain/Application/Ports.
+Current task: WP-2 final validation/integration for PostgreSQL target persistence and compatibility projection.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-I31-application-catalogue-target-migration.md`
-- `src/napms/application_catalogue/application/target_ports.py`
+- `src/napms/application_catalogue/adapters/postgres/migrations/0005_application_catalogue_target.sql`
 
-Expand only when required into the target Tactical DDD, ADR-013, `target_curation.py`, `target_lifecycle.py`, `target_binding_curation.py`, `target_metadata_curation.py`, `target_read.py`, domain target model and matching tests.
+Expand only when required into `target_repository.py`, target application/domain contracts, curation support, PostgreSQL migration runner and the I31 target integration tests.
 
 ## Blockers
 
-No known P0/P1 blocker. M0 is merged. M1 self-review closed compatibility-binding leakage and made the effective-binding dependency query explicit in the owned target repository contract.
+No known P0/P1 blocker. M0/M1 are merged. The target schema is additive, target compatibility sides are explicitly mapped, legacy I27 rows are not promoted, and executable evidence covers target write/reload plus consumption through the existing downstream repository contract.
 
 ## Gate
 
-Infrastructure remains closed for WP-1: no PostgreSQL, HTTP or Web implementation belongs in PR #59. M1 local semantic exit is satisfied pending final hosted validation. Mark Ready only to request the core/harness gates; inspect their exact run/job status before claiming PASS or merging.
+WP-2 local implementation exit is satisfied pending final hosted validation. No HTTP or Web implementation belongs in PR #60. Mark Ready only to request final applicable core/PostgreSQL/harness/browser regression gates; inspect job-level conclusions before claiming PASS or merging.
 
 ## Next
 
-Run final hosted validation for PR #59. If green, squash-merge M1. Start WP-2 from a new branch based on resulting `main`; implement additive PostgreSQL persistence and the explicit Deployment Interaction compatibility projection there.
+Run final hosted validation for PR #60. If green, squash-merge M2. Start WP-3 from a new branch based on resulting `main`; implement bounded HTTP/read models and target task commands there.
