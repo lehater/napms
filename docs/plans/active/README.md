@@ -11,12 +11,9 @@ Goal: verify the complete I24 hardening branch, absorb durable operational outco
 Read first:
 - `docs/plans/active/PLAN-038-i24-local-deployment-hardening.md`
 - `.github/workflows/docker.yml`
-- `docs/engineering/local-docker-runtime.md`
 - `docs/engineering/local-upgrade-procedure.md`
-- `docs/engineering/current-state.md`
-- `docs/engineering/post-wave1-product-completion-roadmap.md`
 
-Expand only as needed into `docs/architecture/current-architecture.md`, `README.md`, `compose.yaml` and operator tooling touched by I24.
+Expand only as needed into `docs/engineering/local-docker-runtime.md`, `docs/engineering/current-state.md`, `docs/engineering/post-wave1-product-completion-roadmap.md`, `docs/architecture/current-architecture.md`, `README.md`, `compose.yaml` and operator tooling touched by I24.
 
 ## Blockers
 
