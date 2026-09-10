@@ -8,6 +8,7 @@ export type TargetPage<T> = {
 }
 
 export type CatalogueLifecycleState = "Active" | "Retired"
+export type DeploymentInteractionSide = "Source" | "Destination"
 
 export type ApplicationDefinitionDto = {
   applicationId: string
@@ -93,6 +94,20 @@ export type DeploymentConnectivityDto = {
 }
 
 export type DeploymentConnectivityPage = TargetPage<DeploymentConnectivityDto> & {
+  asOf: string
+}
+
+export type ResourceSetMemberDto = {
+  bindingReference: string
+  bindingVersion: number
+  resourceReference: string
+  displayName: string | null
+  scopeReferences: string[]
+  validFrom: string
+  validTo: string | null
+}
+
+export type ResourceSetPage = TargetPage<ResourceSetMemberDto> & {
   asOf: string
 }
 
@@ -223,6 +238,25 @@ export function readApplicationDeployment(
   )
 }
 
+export function listAvailableInteractions(input: {
+  applicationDeploymentId: string
+  page?: number
+  pageSize?: number
+  search?: string
+  protocol?: string
+}): Promise<TargetPage<InteractionDefinitionSummaryDto>> {
+  const params = new URLSearchParams({
+    page: String(input.page ?? 1),
+    pageSize: String(input.pageSize ?? 50),
+    sort: "source",
+  })
+  addOptional(params, "search", input.search)
+  addOptional(params, "protocol", input.protocol)
+  return request(
+    `/api/v1/catalogues/application-deployments/${encodeURIComponent(input.applicationDeploymentId)}/available-interactions?${params}`,
+  )
+}
+
 export function listDeploymentConnectivity(input: {
   applicationDeploymentId: string
   page: number
@@ -242,5 +276,28 @@ export function listDeploymentConnectivity(input: {
   addOptional(params, "asOf", input.asOf)
   return request(
     `/api/v1/catalogues/application-deployments/${encodeURIComponent(input.applicationDeploymentId)}/connectivity?${params}`,
+  )
+}
+
+export function listDeploymentInteractionResources(input: {
+  deploymentInteractionId: string
+  side: DeploymentInteractionSide
+  page: number
+  pageSize?: number
+  search?: string
+  scopeReference?: string
+  sort?: string
+  asOf?: string
+}): Promise<ResourceSetPage> {
+  const params = new URLSearchParams({
+    page: String(input.page),
+    pageSize: String(input.pageSize ?? 50),
+    sort: input.sort ?? "resource",
+  })
+  addOptional(params, "search", input.search)
+  addOptional(params, "scopeReference", input.scopeReference)
+  addOptional(params, "asOf", input.asOf)
+  return request(
+    `/api/v1/catalogues/deployment-interactions/${encodeURIComponent(input.deploymentInteractionId)}/resources/${input.side}?${params}`,
   )
 }
