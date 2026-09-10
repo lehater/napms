@@ -7,8 +7,11 @@ import { Button } from "@/components/ui/Button"
 import {
   createCatalogueComponent,
   createCatalogueDeployment,
+  createCatalogueDeploymentResourceBinding,
+  listCatalogueResources,
   readCatalogueApplication,
   type ApplicationTreeDto,
+  type ResourceDto,
 } from "@/features/catalogues/catalogueApi"
 
 const inputClass =
@@ -34,6 +37,9 @@ export function ApplicationDetailsPage({
   const [creatingComponent, setCreatingComponent] = useState(false)
   const [deploymentNames, setDeploymentNames] = useState<Record<string, string>>({})
   const [creatingDeployment, setCreatingDeployment] = useState<string | null>(null)
+  const [resources, setResources] = useState<ResourceDto[]>([])
+  const [resourceSelections, setResourceSelections] = useState<Record<string, string>>({})
+  const [bindingDeployment, setBindingDeployment] = useState<string | null>(null)
   const [mutationError, setMutationError] = useState<ApiError | null>(null)
 
   async function load() {
@@ -51,6 +57,22 @@ export function ApplicationDetailsPage({
   useEffect(() => {
     void load()
   }, [applicationId])
+
+  useEffect(() => {
+    let active = true
+    void listCatalogueResources(1)
+      .then((result) => {
+        if (active) setResources(result.items.filter((item) => item.lifecycle === "Active"))
+      })
+      .catch((caught) => {
+        if (active) {
+          setMutationError(errorFrom(caught, "Resource discovery could not be loaded."))
+        }
+      })
+    return () => {
+      active = false
+    }
+  }, [])
 
   async function addComponent(event: React.FormEvent) {
     event.preventDefault()
@@ -81,6 +103,26 @@ export function ApplicationDetailsPage({
       setMutationError(errorFrom(caught, "Deployment could not be created."))
     } finally {
       setCreatingDeployment(null)
+    }
+  }
+
+  async function bindResource(deploymentId: string) {
+    const resourceReference = resourceSelections[deploymentId]
+    if (!resourceReference) return
+    setBindingDeployment(deploymentId)
+    setMutationError(null)
+    try {
+      await createCatalogueDeploymentResourceBinding(
+        deploymentId,
+        resourceReference,
+        new Date().toISOString(),
+      )
+      setResourceSelections((current) => ({ ...current, [deploymentId]: "" }))
+      await load()
+    } catch (caught) {
+      setMutationError(errorFrom(caught, "Resource binding could not be created."))
+    } finally {
+      setBindingDeployment(null)
     }
   }
 
@@ -236,6 +278,35 @@ export function ApplicationDetailsPage({
                               ))}
                             </div>
                           )}
+                          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                            <select
+                              className={inputClass}
+                              value={resourceSelections[deployment.componentDeploymentId] ?? ""}
+                              onChange={(event) =>
+                                setResourceSelections((current) => ({
+                                  ...current,
+                                  [deployment.componentDeploymentId]: event.target.value,
+                                }))
+                              }
+                              aria-label="Resource to bind"
+                            >
+                              <option value="">Select Resource…</option>
+                              {resources.map((resource) => (
+                                <option key={resource.resourceReference} value={resource.resourceReference}>
+                                  {resource.displayName || shortId(resource.resourceReference)}
+                                </option>
+                              ))}
+                            </select>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              loading={bindingDeployment === deployment.componentDeploymentId}
+                              disabled={!resourceSelections[deployment.componentDeploymentId]}
+                              onClick={() => void bindResource(deployment.componentDeploymentId)}
+                            >
+                              Bind
+                            </Button>
+                          </div>
                         </div>
 
                         <div className="rounded-md bg-[#F8FAFC] p-4">
@@ -258,6 +329,9 @@ export function ApplicationDetailsPage({
                               ))}
                             </div>
                           )}
+                          <p className="mt-3 text-xs text-[#64748B]">
+                            DCS creation remains read-only here until participant discovery can prevent arbitrary UUID combinations.
+                          </p>
                         </div>
                       </div>
                     </div>
