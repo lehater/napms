@@ -77,8 +77,8 @@ def test_j01_application_authoring_survives_correction_and_reopen() -> None:
             _add_component(page, component)
             _add_deployment(page, component)
 
-        # Participant discovery is intentionally backend-owned. Searching after structure
-        # creation refreshes the selectable Active deployment projection without using IDs.
+        # Participant discovery is backend-owned. Searching after structure creation
+        # refreshes the selectable Active deployment projection without using IDs.
         page.get_by_placeholder("Application, component or deployment").fill(
             "Order Management"
         )
@@ -108,10 +108,18 @@ def test_j01_application_authoring_survives_correction_and_reopen() -> None:
 
         # A history-ending lifecycle action must be deliberate; dismissing confirmation
         # must leave the active Component untouched.
+        confirmation_messages: list[str] = []
+
+        def dismiss_retirement(dialog) -> None:
+            confirmation_messages.append(dialog.message)
+            dialog.dismiss()
+
         web_section = _component_section(page, "Web UI")
-        with page.expect_event("dialog") as dialog_info:
-            web_section.get_by_role("button", name="Retire").first.click()
-        dialog_info.value.dismiss()
+        page.once("dialog", dismiss_retirement)
+        web_section.get_by_role("button", name="Retire").first.click()
+        assert confirmation_messages == [
+            "Retire Web UI? Active deployments must be retired first. Historical references will be preserved."
+        ]
         expect(page.get_by_role("heading", name="Web UI", exact=True)).to_be_visible()
 
         # Reopen from another workspace. The durable model must remain understandable
