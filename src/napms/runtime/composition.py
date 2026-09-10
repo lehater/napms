@@ -15,6 +15,9 @@ from napms.composition.network_operator_view_postgres import (
 )
 from napms.composition.traffic_analysis_postgres import open_traffic_analysis_scope
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
+from napms.runtime.catalogue_application_workspace_http import (
+    create_catalogue_application_workspace_router,
+)
 from napms.runtime.catalogue_curation_http import create_catalogue_curation_router
 from napms.runtime.catalogue_discovery_http import create_catalogue_discovery_router
 from napms.runtime.catalogue_error_http import catalogue_invariant_error_handler
@@ -105,6 +108,13 @@ def build_http_api(
     )
     app.include_router(
         create_catalogue_curation_router(
+            sessions=sessions,
+            open_scope=open_curation_scope,
+            clock=_utc_now,
+        )
+    )
+    app.include_router(
+        create_catalogue_application_workspace_router(
             sessions=sessions,
             open_scope=open_curation_scope,
             clock=_utc_now,
