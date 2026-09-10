@@ -8,24 +8,36 @@ on:
       - ".github/workflows/web.yml"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: web
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
       - run: npm install --no-audit --no-fund
-      - uses: actions/upload-artifact@v4
-        with:
-          name: napms-web-package-lock
-          path: web/package-lock.json
+      - name: Commit generated lockfile baseline
+        run: |
+          if git diff --quiet -- package-lock.json && git ls-files --error-unmatch package-lock.json >/dev/null 2>&1; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "I25: lock Web dependency graph"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
       - run: npm run build
