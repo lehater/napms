@@ -1,6 +1,6 @@
 # Application Catalogue target HTTP contract
 
-Status: `I31 M3 implementation contract`.
+Status: `I31 M3/M4 implementation contract`.
 
 Date: 2026-09-11.
 
@@ -8,7 +8,7 @@ Date: 2026-09-11.
 
 Expose the accepted Application Definition / Application Deployment target through authenticated task-oriented HTTP while keeping compatibility Component Deployment and DCS identities backend-only.
 
-This contract coexists with the I27 catalogue routes until the Web switches to the target information architecture in WP-4.
+The target Web consumes these routes in WP-4. Legacy I27 catalogue routes remain compatibility surfaces for unchanged downstream behavior and are not the Applications authoring entry point.
 
 ## Trust and identity boundary
 
@@ -46,6 +46,9 @@ Deployment working set:
 - `GET /api/v1/catalogues/application-deployments/{applicationDeploymentId}/available-interactions`
 - `GET /api/v1/catalogues/application-deployments/{applicationDeploymentId}/connectivity`
 - `GET /api/v1/catalogues/deployment-interactions/{deploymentInteractionId}/resources/{side}`
+
+Lifecycle support:
+- `GET /api/v1/catalogues/deployment-interactions/{deploymentInteractionId}` returns only the target Deployment Interaction identity, lifecycle state and current optimistic-concurrency `version`; the Web uses it immediately before removing an interaction from a Deployment.
 
 Supported filters/sorts correspond to the accepted UI fields. `available-interactions` is a server-side difference projection: it returns Active Interaction Definitions of the Deployment's Definition that are not already selected by an Active Deployment Interaction.
 
@@ -97,6 +100,8 @@ Terminal retirement commands:
 - `POST /api/v1/catalogues/interaction-definitions/{id}/retire`
 - `POST /api/v1/catalogues/application-deployments/{id}/retire`
 - `POST /api/v1/catalogues/deployment-interactions/{id}/retire`
+
+Removing an Interaction Definition from one Application Deployment is represented by terminal retirement of that Deployment Interaction. The Web reads the current Deployment Interaction `version` immediately before the retirement command; any intervening change is still rejected by optimistic concurrency.
 
 Dependency projection:
 - `GET /api/v1/catalogues/retirement-dependencies/{subjectKind}/{subjectId}` returns non-zero groups with exact `count` and a bounded preview;
