@@ -1,6 +1,6 @@
 # I28 — User Journey Validation Pilot
 
-Status: `active`.
+Status: `active`
 
 ## Goal
 
