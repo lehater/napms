@@ -16,6 +16,7 @@ from napms.application_catalogue.domain.model import DeploymentResourceBinding
 from napms.application_catalogue.domain.target_model import (
     DeploymentInteraction,
     DeploymentInteractionCompatibility,
+    DeploymentInteractionResourceBinding,
     DeploymentInteractionSide,
 )
 
@@ -113,13 +114,17 @@ def test_source_binding_targets_only_source_compatibility_side() -> None:
 
     assert result.outcome is TargetMutationOutcome.CREATED
     assert delegated.command.component_deployment_id == UUID(int=10)
-    assert result.binding.component_deployment_id == UUID(int=10)
+    assert isinstance(result.binding, DeploymentInteractionResourceBinding)
+    assert result.binding.deployment_interaction_id == UUID(int=1)
+    assert result.binding.side is DeploymentInteractionSide.SOURCE
+    assert result.binding.resource_reference == "resource:web"
+    assert not hasattr(result.binding, "component_deployment_id")
 
 
 def test_destination_binding_targets_only_destination_compatibility_side() -> None:
     catalogue = TargetCatalogue()
     delegated = CreateBinding()
-    CreateDeploymentInteractionResourceBinding(
+    result = CreateDeploymentInteractionResourceBinding(
         catalogue=catalogue,
         create_binding=delegated,
     ).execute(
@@ -136,6 +141,7 @@ def test_destination_binding_targets_only_destination_compatibility_side() -> No
     )
 
     assert delegated.command.component_deployment_id == UUID(int=11)
+    assert result.binding.side is DeploymentInteractionSide.DESTINATION
 
 
 def test_end_binding_rejects_reference_owned_by_other_interaction_side() -> None:
@@ -169,3 +175,39 @@ def test_end_binding_rejects_reference_owned_by_other_interaction_side() -> None
 
     assert result.outcome is TargetMutationOutcome.INPUT_INVALID
     assert delegated.command is None
+
+
+def test_end_binding_returns_target_projection_without_compatibility_identity() -> None:
+    catalogue = TargetCatalogue()
+    binding = DeploymentResourceBinding(
+        reference_id="binding-source",
+        component_deployment_id=UUID(int=10),
+        resource_reference="resource:web",
+        valid_from=NOW,
+        valid_to=None,
+        provenance_reference="prov:binding",
+    )
+    delegated = EndBinding(binding)
+
+    result = EndDeploymentInteractionResourceBinding(
+        catalogue=catalogue,
+        bindings=BindingRepository(binding),
+        end_binding=delegated,
+    ).execute(
+        EndDeploymentInteractionResourceBindingCommand(
+            deployment_interaction_id=UUID(int=1),
+            side=DeploymentInteractionSide.SOURCE,
+            binding_reference="binding-source",
+            valid_to=datetime(2026, 9, 10, 13, 0, tzinfo=timezone.utc),
+            expected_version=1,
+            actor_id="actor-1",
+            effective_time=NOW,
+            idempotency_key="end-binding-source",
+        )
+    )
+
+    assert result.outcome is TargetMutationOutcome.UPDATED
+    assert result.binding.deployment_interaction_id == UUID(int=1)
+    assert result.binding.side is DeploymentInteractionSide.SOURCE
+    assert result.binding.valid_to == datetime(2026, 9, 10, 13, 0, tzinfo=timezone.utc)
+    assert not hasattr(result.binding, "component_deployment_id")
