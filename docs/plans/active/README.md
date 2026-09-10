@@ -1,6 +1,6 @@
 # Active execution
 
-Current: `PLAN-I26-traffic-analysis-checker.md`.
+Current: `PLAN-I26-traffic-analysis-checker.md`
 
 I25 Product Completion, Operator UX and Acceptance is complete and absorbed into canonical current-state/architecture/roadmap truth for the supported local target.
 
@@ -19,7 +19,7 @@ Durable implementation roadmap:
 Active plan:
 - `docs/plans/active/PLAN-I26-traffic-analysis-checker.md`.
 
-Current next action: execute WP0 semantic re-entry for the I19 ordered-path versus Network Context candidate-set mismatch, then start the Checker Web fixture slice.
+Current next action: complete the I26 repository gates, fix any remaining mechanical or integration failures, then absorb the increment into canonical current-state/roadmap documentation.
 
 Canonical restart points:
 - `docs/requirements/traffic-analysis-checker.md`;
