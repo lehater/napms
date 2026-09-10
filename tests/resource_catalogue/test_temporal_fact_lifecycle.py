@@ -60,26 +60,50 @@ def responsibility():
 def test_temporal_fact_end_is_explicit_and_increments_version(factory):
     current = factory()
 
-    ended = current.ended(valid_to=END)
+    ended = current.ended(
+        valid_to=END,
+        end_provenance_reference="prov:end",
+    )
 
     assert ended.valid_to == END
+    assert ended.end_provenance_reference == "prov:end"
+    assert ended.provenance_reference == current.provenance_reference
     assert ended.version == 2
     assert current.valid_to is None
+    assert current.end_provenance_reference is None
     assert current.version == 1
 
 
 @pytest.mark.parametrize("factory", [realization, affiliation, responsibility])
 def test_temporal_fact_cannot_be_ended_twice(factory):
-    ended = factory().ended(valid_to=END)
+    ended = factory().ended(
+        valid_to=END,
+        end_provenance_reference="prov:end",
+    )
 
     with pytest.raises(ResourceCatalogueInvariantError, match="already ended"):
-        ended.ended(valid_to=END)
+        ended.ended(
+            valid_to=END,
+            end_provenance_reference="prov:second-end",
+        )
 
 
 @pytest.mark.parametrize("factory", [realization, affiliation, responsibility])
 def test_temporal_fact_end_must_be_after_start(factory):
     with pytest.raises(ResourceCatalogueInvariantError):
-        factory().ended(valid_to=START)
+        factory().ended(
+            valid_to=START,
+            end_provenance_reference="prov:end",
+        )
+
+
+@pytest.mark.parametrize("factory", [realization, affiliation, responsibility])
+def test_temporal_fact_end_requires_provenance(factory):
+    with pytest.raises(ResourceCatalogueInvariantError):
+        factory().ended(
+            valid_to=END,
+            end_provenance_reference="   ",
+        )
 
 
 @pytest.mark.parametrize("factory", [realization, affiliation, responsibility])
