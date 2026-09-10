@@ -110,6 +110,17 @@ Status: `blocked on WP2A-WP6`.
 
 Run repository gates and acceptance evidence, absorb durable outcomes into canonical truth, retire PLAN-039 and mark the current post-Wave-1 roadmap complete for the supported local target.
 
+## Exit criteria
+
+I25 exits when:
+- one executable PostgreSQL-backed acceptance proof demonstrates the mandatory Requirement -> Decision -> Rule -> realization -> rendering -> controlled execution -> Verified local chain;
+- downstream placement/reconciliation/rendering/execution evidence is available through the smallest justified owner-preserving operator read surface;
+- the Web product provides a bounded network/security operator journey and cross-chain explainability without introducing copied authoritative state or generic IAM roles;
+- any additional search/filter/productivity work is tied to demonstrated operator needs, while unjustified dashboards/bulk/export surfaces remain excluded;
+- the supported local operator runbook and explicit optional-integration exclusions are current;
+- core, PostgreSQL persistence, Web, harness, knowledge and relevant Docker/runtime gates pass on the final merge candidate;
+- durable I25 outcomes are absorbed into canonical current-state/architecture/roadmap truth and PLAN-039 is retired.
+
 ## Blockers
 
 None for WP2A. Real Cisco/device access, corporate identity, external authoritative sources and enterprise infrastructure remain optional and non-blocking.
