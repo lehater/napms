@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react"
-import { Plus, X } from "lucide-react"
+import { Plus } from "lucide-react"
 
-import { Button } from "@/components/ui/Button"
-import { Input } from "@/components/ui/Field"
+import { Button } from "@/design-system/components/Button"
 import {
   DataTable,
   DataTableBody,
@@ -14,7 +13,6 @@ import {
 } from "@/design-system/components/DataTable"
 import { EmptyState, ErrorState, LoadingState } from "@/design-system/components/PageState"
 import { SearchInput } from "@/design-system/components/SearchInput"
-import { StatusIndicator } from "@/design-system/components/StatusIndicator"
 import { PrimaryTableAction, ReferenceText } from "@/design-system/components/TableValue"
 import {
   CataloguePage,
@@ -28,20 +26,14 @@ import {
   type ApplicationDto,
 } from "@/features/catalogues/api/catalogue"
 import { shortId } from "@/features/catalogues/components/CatalogueIdentity"
+import { CatalogueLifecycleStatus } from "@/features/catalogues/components/CatalogueLifecycleStatus"
+import { CreateApplicationDialog } from "@/features/catalogues/components/CreateApplicationDialog"
 import { ApiError } from "@/lib/api"
 
 function errorFrom(caught: unknown, fallback: string) {
   return caught instanceof ApiError
     ? caught
     : new ApiError(500, "InternalError", fallback)
-}
-
-function LifecycleIndicator({ value }: { value: ApplicationDto["lifecycle"] }) {
-  return (
-    <StatusIndicator tone={value === "Active" ? "positive" : "critical"}>
-      {value}
-    </StatusIndicator>
-  )
 }
 
 export function ApplicationsPage({
@@ -59,11 +51,7 @@ export function ApplicationsPage({
   const [error, setError] = useState<ApiError | null>(null)
   const [searchInput, setSearchInput] = useState("")
   const [search, setSearch] = useState("")
-
   const [showCreate, setShowCreate] = useState(false)
-  const [displayName, setDisplayName] = useState("")
-  const [creating, setCreating] = useState(false)
-  const [createError, setCreateError] = useState<ApiError | null>(null)
 
   async function load() {
     setLoading(true)
@@ -95,22 +83,13 @@ export function ApplicationsPage({
     return () => window.clearTimeout(timeout)
   }, [page, search, searchInput, onPageChange])
 
-  async function create(event: React.FormEvent) {
-    event.preventDefault()
-    const name = displayName.trim()
-    if (!name) return
-
-    setCreating(true)
-    setCreateError(null)
+  async function createApplication(displayName: string) {
     try {
-      const created = await createCatalogueApplication(name)
-      setDisplayName("")
-      setShowCreate(false)
+      const created = await createCatalogueApplication(displayName)
       onOpenApplication(created.applicationId)
+      return null
     } catch (caught) {
-      setCreateError(errorFrom(caught, "Application could not be created."))
-    } finally {
-      setCreating(false)
+      return errorFrom(caught, "Application could not be created.").message
     }
   }
 
@@ -178,7 +157,7 @@ export function ApplicationsPage({
                     <ReferenceText>{shortId(item.applicationId)}</ReferenceText>
                   </DataTableCell>
                   <DataTableCell>
-                    <LifecycleIndicator value={item.lifecycle} />
+                    <CatalogueLifecycleStatus value={item.lifecycle} />
                   </DataTableCell>
                 </DataTableRow>
               ))}
@@ -214,78 +193,11 @@ export function ApplicationsPage({
         </CataloguePagination>
       </CatalogueSurface>
 
-      {showCreate ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.currentTarget === event.target && !creating) setShowCreate(false)
-          }}
-        >
-          <div
-            className="w-full max-w-[500px] overflow-hidden rounded-xl border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] shadow-2xl"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="create-application-title"
-          >
-            <div className="flex min-h-[89px] items-start justify-between border-b border-[var(--napms-color-border)] px-7 py-6">
-              <div>
-                <h2
-                  id="create-application-title"
-                  className="text-lg font-semibold text-[var(--napms-color-text-primary)]"
-                >
-                  New application
-                </h2>
-                <p className="mt-1 text-sm text-[var(--napms-color-text-secondary)]">
-                  Create the application identity first. Components and deployments are added from its workspace.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                aria-label="Close new application dialog"
-                disabled={creating}
-                onClick={() => setShowCreate(false)}
-              >
-                <X className="size-4" aria-hidden="true" />
-              </Button>
-            </div>
-
-            <form className="grid gap-5 px-7 py-6" onSubmit={create}>
-              <label className="grid gap-2 text-sm font-medium text-[var(--napms-color-text-body)]">
-                Display name
-                <Input
-                  autoFocus
-                  value={displayName}
-                  onChange={(event) => setDisplayName(event.target.value)}
-                  placeholder="Application name"
-                  maxLength={256}
-                  aria-label="Application name"
-                />
-              </label>
-
-              {createError ? (
-                <p className="text-sm text-[var(--napms-color-danger)]">{createError.message}</p>
-              ) : null}
-
-              <div className="flex justify-end gap-2 border-t border-[var(--napms-color-border)] pt-5">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={creating}
-                  onClick={() => setShowCreate(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" loading={creating} disabled={!displayName.trim()}>
-                  Create application
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
+      <CreateApplicationDialog
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        onCreate={createApplication}
+      />
     </CataloguePage>
   )
 }
