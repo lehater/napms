@@ -1,14 +1,16 @@
 from dataclasses import dataclass
 
 from napms.access_policy_realization.domain.realization import EnforcementTarget
-from napms.network_environment_operations.adapters import (
+from napms.contexts.network_environment_operations.infrastructure.stubs import (
     AllowAllMutationAuthority,
     DeterministicTargetStub,
     InMemoryOperationRepository,
     StubScenario,
 )
-from napms.network_environment_operations.application import ExecuteNetworkOperation
-from napms.network_environment_operations.domain import OperationTarget
+from napms.contexts.network_environment_operations.application.execute import (
+    ExecuteNetworkOperation,
+)
+from napms.contexts.network_environment_operations.domain.model import OperationTarget
 
 
 @dataclass(slots=True)

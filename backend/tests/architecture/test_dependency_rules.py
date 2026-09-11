@@ -14,6 +14,7 @@ CONNECTIVITY_REQUIREMENTS = NAPMS / "connectivity_requirements"
 CONNECTIVITY_DECISION = NAPMS / "connectivity_decision"
 TECHNICAL_ACCESS_EVIDENCE = NAPMS / "technical_access_evidence"
 NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "network_enforcement_placement"
+NETWORK_ENVIRONMENT_OPERATIONS = NAPMS / "contexts" / "network_environment_operations"
 REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
 POLICY_EXPORT = NAPMS / "policy_export"
 SCOPED_CONNECTIVITY_INVENTORY = NAPMS / "scoped_connectivity_inventory"
@@ -41,6 +42,7 @@ DOMAIN_LAYERS = (
     CONNECTIVITY_DECISION / "domain",
     TECHNICAL_ACCESS_EVIDENCE / "domain",
     NETWORK_ENFORCEMENT_PLACEMENT / "domain",
+    NETWORK_ENVIRONMENT_OPERATIONS / "domain",
 )
 APPLICATION_LAYERS = (
     ACCESS_POLICY / "application",
@@ -52,6 +54,7 @@ APPLICATION_LAYERS = (
     CONNECTIVITY_DECISION / "application",
     TECHNICAL_ACCESS_EVIDENCE / "application",
     NETWORK_ENFORCEMENT_PLACEMENT / "application",
+    NETWORK_ENVIRONMENT_OPERATIONS / "application",
     REQUIREMENT_POLICY_ALIGNMENT / "application",
     POLICY_EXPORT / "application",
 )
@@ -313,7 +316,26 @@ BOUNDED_CONTEXT_CORES = (
         NETWORK_ENFORCEMENT_PLACEMENT,
         "napms.network_enforcement_placement",
     ),
+    (
+        NETWORK_ENVIRONMENT_OPERATIONS,
+        "napms.contexts.network_environment_operations",
+    ),
 )
+
+
+def test_network_environment_operations_has_no_legacy_package():
+    assert not (NAPMS / "network_environment_operations").exists()
+
+
+def test_network_environment_operations_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = NETWORK_ENVIRONMENT_OPERATIONS / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
 
 
 def test_bounded_context_core_does_not_import_another_bounded_context():

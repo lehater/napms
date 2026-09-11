@@ -2,16 +2,20 @@ from uuid import UUID
 
 import pytest
 
-from napms.network_environment_operations.adapters import (
+from napms.contexts.network_environment_operations.infrastructure.stubs import (
     AllowAllMutationAuthority,
     DenyAllMutationAuthority,
     DeterministicTargetStub,
     InMemoryOperationRepository,
     StubScenario,
 )
-from napms.network_environment_operations.application import ExecuteNetworkOperation
-from napms.network_environment_operations.domain import (
+from napms.contexts.network_environment_operations.application.command import (
     ExecuteNetworkOperationCommand,
+)
+from napms.contexts.network_environment_operations.application.execute import (
+    ExecuteNetworkOperation,
+)
+from napms.contexts.network_environment_operations.domain.model import (
     OperationOutcome,
     OperationTarget,
 )

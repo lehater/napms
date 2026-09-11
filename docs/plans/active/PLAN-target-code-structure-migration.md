@@ -35,6 +35,8 @@ The long-range roadmap owns detailed stage rules. The active capsule selects the
 
 ## M1 — Repository backend boundary
 
+Status: `complete` in `f0e281e`.
+
 Scope is mechanical only:
 
 ```text
@@ -78,10 +80,20 @@ M1 is complete only when:
 
 After M1, inspect actual dependency/import fan-out and select the least-coupled bounded context for the first M2 slice. Do not preselect from intuition.
 
+## M2 — First bounded-context slice
+
+Move only `network_environment_operations` to
+`backend/src/napms/contexts/network_environment_operations/` with its final
+Domain/Application/Infrastructure layers. Preserve behavior, update all consumers and
+tests, prohibit the legacy package, and leave the composition stub in place until M3.
+
+Do not select or start another context in this slice.
+
 ## Blockers
 
 None.
 
 ## Next
 
-Execute M1 only. Do not start M2 semantic-module moves in the same stage.
+Complete, commit and push the first M2 `network_environment_operations` slice. Await
+owner direction before selecting the next context.

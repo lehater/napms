@@ -14,10 +14,14 @@ from napms.composition.network_environment_operations_stub import (
     open_network_environment_operations_stub_scope,
 )
 from napms.composition.postgres_migrations import apply_greenfield_migrations
-from napms.network_environment_operations.adapters import StubScenario
-from napms.network_environment_operations.domain import (
+from napms.contexts.network_environment_operations.application.command import (
     ExecuteNetworkOperationCommand,
+)
+from napms.contexts.network_environment_operations.domain.model import (
     OperationOutcome,
+)
+from napms.contexts.network_environment_operations.infrastructure.stubs import (
+    StubScenario,
 )
 from tests.integration.postgres import (
     test_access_policy_realization_reconciliation as baseline,

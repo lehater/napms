@@ -56,8 +56,10 @@ from napms.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementApplicability,
 )
-from napms.network_environment_operations.domain import (
+from napms.contexts.network_environment_operations.application.command import (
     ExecuteNetworkOperationCommand,
+)
+from napms.contexts.network_environment_operations.domain.model import (
     OperationOutcome,
 )
 from tests.integration.postgres import (

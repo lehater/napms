@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from napms.network_environment_operations.domain import (
+from napms.contexts.network_environment_operations.domain.model import (
     ApplyResult,
     NetworkOperationResult,
     OperationTarget,

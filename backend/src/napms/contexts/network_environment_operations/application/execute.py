@@ -1,13 +1,15 @@
-from napms.network_environment_operations.domain import (
-    ApplyStatus,
+from napms.contexts.network_environment_operations.application.command import (
     ExecuteNetworkOperationCommand,
-    NetworkOperationResult,
-    OperationOutcome,
 )
-from napms.network_environment_operations.ports import (
+from napms.contexts.network_environment_operations.application.ports import (
     MutationAuthorityPort,
     OperationRepository,
     TargetExecutionPort,
+)
+from napms.contexts.network_environment_operations.domain.model import (
+    ApplyStatus,
+    NetworkOperationResult,
+    OperationOutcome,
 )
 
 

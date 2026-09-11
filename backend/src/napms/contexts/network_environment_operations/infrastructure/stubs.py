@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from napms.network_environment_operations.domain import (
+from napms.contexts.network_environment_operations.domain.model import (
     ApplyResult,
     ApplyStatus,
     NetworkOperationResult,

@@ -7,7 +7,9 @@ from uuid import UUID
 from napms.access_policy_realization.application.ports import ManagedReconciliationScopeContract
 from napms.access_policy_realization.domain.realization import DesiredDerivationStatus
 from napms.access_policy_realization.domain.rendering import RenderStatus
-from napms.network_environment_operations.domain import NetworkOperationResult
+from napms.contexts.network_environment_operations.domain.model import (
+    NetworkOperationResult,
+)
 
 
 class Availability(str, Enum):
