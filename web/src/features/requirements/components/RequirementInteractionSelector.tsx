@@ -1,44 +1,24 @@
-import { Search } from "lucide-react"
-
 import { Field, Select } from "@/design-system/components/Field"
 import {
-  shortId,
-  trafficAlternativeText,
-} from "@/features/catalogues/components/CatalogueIdentity"
+  CatalogueInteractionSelector,
+  catalogueOptionLabel,
+} from "@/features/catalogues/components/CatalogueInteractionSelector"
 import type { ProposalInteraction } from "@/features/catalogues/model/interaction"
-
-function optionLabel(name: string | null | undefined, id: string) {
-  const readable = name?.trim()
-  return readable ? `${readable} · ${shortId(id)}` : shortId(id)
-}
-
-function dcsLabel(item: ProposalInteraction) {
-  const base = optionLabel(
-    item.catalogue?.dcsDisplayName,
-    item.dcsContractRevisionId,
-  )
-  const alternatives = item.catalogue?.trafficAlternatives ?? []
-  return alternatives.length > 0
-    ? `${base} — ${alternatives.map(trafficAlternativeText).join(" | ")}`
-    : base
-}
 
 export function RequirementInteractionSelector({
   scope,
   scopes,
   loadingScopes,
   onScopeChange,
+  interactions,
   searchInput,
   onSearchInputChange,
   loadingInteractions,
   source,
-  sourceOptions,
   onSourceChange,
   destination,
-  destinationOptions,
   onDestinationChange,
   dcs,
-  dcsOptions,
   onDcsChange,
   dependent,
   selectedInteraction,
@@ -48,17 +28,15 @@ export function RequirementInteractionSelector({
   scopes: string[]
   loadingScopes: boolean
   onScopeChange: (value: string) => void
+  interactions: ProposalInteraction[]
   searchInput: string
   onSearchInputChange: (value: string) => void
   loadingInteractions: boolean
   source: string
-  sourceOptions: Array<[string, string | null | undefined]>
   onSourceChange: (value: string) => void
   destination: string
-  destinationOptions: Array<[string, string | null | undefined]>
   onDestinationChange: (value: string) => void
   dcs: string
-  dcsOptions: ProposalInteraction[]
   onDcsChange: (value: string) => void
   dependent: string
   selectedInteraction: ProposalInteraction | null
@@ -82,70 +60,22 @@ export function RequirementInteractionSelector({
         </Select>
       </Field>
 
-      <Field label="Search required interaction">
-        <div className="relative">
-          <Search
-            className="pointer-events-none absolute left-3 top-3 size-4 text-[#94A3B8]"
-            aria-hidden="true"
-          />
-          <input
-            type="search"
-            value={searchInput}
-            maxLength={256}
-            onChange={(event) => onSearchInputChange(event.target.value)}
-            disabled={!scope}
-            placeholder="Orders, Checkout, HTTPS…"
-            className="min-h-10 w-full rounded-md border border-[#CBD5E1] py-2 pl-9 pr-3 text-sm disabled:bg-[#F8FAFC]"
-          />
-        </div>
-      </Field>
-
-      <Field label="Source Component Deployment">
-        <Select
-          value={source}
-          onChange={(event) => onSourceChange(event.target.value)}
-          disabled={!scope || loadingInteractions}
-          required
-        >
-          <option value="">Select source</option>
-          {sourceOptions.map(([id, name]) => (
-            <option key={id} value={id}>{optionLabel(name, id)}</option>
-          ))}
-        </Select>
-      </Field>
-
-      <Field label="Destination Component Deployment">
-        <Select
-          value={destination}
-          onChange={(event) => onDestinationChange(event.target.value)}
-          disabled={!source}
-          required
-        >
-          <option value="">Select destination</option>
-          {destinationOptions.map(([id, name]) => (
-            <option key={id} value={id}>{optionLabel(name, id)}</option>
-          ))}
-        </Select>
-      </Field>
-
-      <Field label="Directed Communication Specification">
-        <Select
-          value={dcs}
-          onChange={(event) => onDcsChange(event.target.value)}
-          disabled={!destination}
-          required
-        >
-          <option value="">Select DCS</option>
-          {dcsOptions.map((item) => (
-            <option
-              key={item.dcsContractRevisionId}
-              value={item.dcsContractRevisionId}
-            >
-              {dcsLabel(item)}
-            </option>
-          ))}
-        </Select>
-      </Field>
+      <CatalogueInteractionSelector
+        interactions={interactions}
+        searchInput={searchInput}
+        onSearchInputChange={onSearchInputChange}
+        searchDisabled={!scope}
+        searchLabel="Search required interaction"
+        searchPlaceholder="Orders, Checkout, HTTPS…"
+        loading={loadingInteractions}
+        disabled={!scope}
+        source={source}
+        onSourceChange={onSourceChange}
+        destination={destination}
+        onDestinationChange={onDestinationChange}
+        dcs={dcs}
+        onDcsChange={onDcsChange}
+      />
 
       <Field
         label="Dependent Component Deployment"
@@ -161,7 +91,7 @@ export function RequirementInteractionSelector({
           {selectedInteraction ? (
             <>
               <option value={selectedInteraction.sourceComponentDeploymentId}>
-                {optionLabel(
+                {catalogueOptionLabel(
                   selectedInteraction.catalogue?.sourceDisplayName,
                   selectedInteraction.sourceComponentDeploymentId,
                 )}
@@ -169,7 +99,7 @@ export function RequirementInteractionSelector({
               {selectedInteraction.destinationComponentDeploymentId !==
               selectedInteraction.sourceComponentDeploymentId ? (
                 <option value={selectedInteraction.destinationComponentDeploymentId}>
-                  {optionLabel(
+                  {catalogueOptionLabel(
                     selectedInteraction.catalogue?.destinationDisplayName,
                     selectedInteraction.destinationComponentDeploymentId,
                   )}
