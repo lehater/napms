@@ -162,7 +162,12 @@ For each context slice:
 - use a temporary compatibility shim only when it materially reduces integration risk;
 - remove the shim before M7.
 
-Exit gate per slice: relevant unit, architecture and integration tests pass; no old implementation remains duplicated.
+M2 integration policy:
+- all bounded-context slices accumulate on one M2 milestone branch and are integrated through one milestone PR;
+- one bounded context is one atomic commit;
+- after each context, relevant unit and architecture tests pass and no old implementation remains duplicated;
+- affected integration tests run within each work package, with the full M2 local gate before final review;
+- hosted gates run only once, when the complete M2 milestone PR is ready for final review.
 
 ### M3 — Workflows and elimination of generic composition
 
@@ -255,7 +260,7 @@ Exit gate: full repository checks and required hosted PR gates pass; canonical d
 
 ## Integration policy
 
-- One coherent stage or context migration per PR; squash merge.
+- One coherent milestone per PR; squash merge. M2 is one milestone PR containing one atomic commit per bounded context.
 - Keep each PR behavior-preserving unless a separately accepted product/domain change is explicitly bundled.
 - Never leave `main` in a half-moved state that requires a future PR to import/run.
 - Prefer mechanical move/import changes before local refactoring inside the same slice; keep semantic redesign out of this roadmap.
