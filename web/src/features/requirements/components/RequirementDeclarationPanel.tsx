@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
-import { CircleAlert, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 
+import { Alert } from "@/design-system/components/Alert"
 import { Button } from "@/design-system/components/Button"
 import type { ProposalInteraction } from "@/features/catalogues/model/interaction"
 import {
@@ -123,8 +124,8 @@ export function RequirementDeclarationPanel({ onDeclared }: { onDeclared: () => 
   }
 
   return (
-    <form onSubmit={submit} className="self-start rounded-lg border border-[#E2E8F0] bg-white p-5">
-      <div className="mb-5 flex items-center gap-2"><Plus className="size-4 text-[#2563EB]" aria-hidden="true" /><h2 className="text-base font-semibold text-[#172033]">Declare Connectivity Requirement</h2></div>
+    <form onSubmit={submit} className="self-start rounded-[var(--napms-surface-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] p-5 shadow-[var(--napms-surface-shadow)]">
+      <div className="mb-5 flex items-center gap-2"><Plus className="size-4 text-[var(--napms-color-primary)]" aria-hidden="true" /><h2 className="text-base font-semibold text-[var(--napms-color-text-primary)]">Declare Connectivity Requirement</h2></div>
       <div className="grid gap-4">
         <RequirementInteractionSelector
           scope={scope} scopes={scopes} loadingScopes={loadingScopes}
@@ -139,13 +140,13 @@ export function RequirementDeclarationPanel({ onDeclared }: { onDeclared: () => 
           dependent={dependent} selectedInteraction={selectedInteraction} onDependentChange={setDependent}
         />
         <RequirementApplicabilityFields kind={applicabilityKind} onKindChange={setApplicabilityKind} windowStart={windowStart} onWindowStartChange={setWindowStart} windowEnd={windowEnd} onWindowEndChange={setWindowEnd} justification={justification} onJustificationChange={setJustification} />
-        <div className="flex items-center justify-between rounded-md border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2">
-          <span className="text-xs text-[#64748B]">Interaction page {interactionPage}</span>
+        <div className="flex items-center justify-between rounded-[var(--napms-control-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface-subtle)] px-3 py-2">
+          <span className="text-xs text-[var(--napms-color-text-secondary)]">Interaction page {interactionPage}</span>
           <div className="flex gap-2"><Button type="button" variant="secondary" disabled={interactionPage === 1 || loadingInteractions} onClick={() => setInteractionPage((value) => Math.max(1, value - 1))}>Previous</Button><Button type="button" variant="secondary" disabled={!hasMoreInteractions || loadingInteractions} onClick={() => setInteractionPage((value) => value + 1)}>Next</Button></div>
         </div>
-        {ambiguousDeclareScopes.length > 0 ? <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">{ambiguousDeclareScopes.length} declaration scope(s) remain fail-closed because authority is ambiguous.</div> : null}
-        {declareError ? <div role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800"><div className="flex gap-2"><CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" /><div><div className="font-semibold">{declareError.code}</div><div className="mt-1">{declareError.message}</div></div></div></div> : null}
-        {declareMessage ? <div role="status" className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">{declareMessage}</div> : null}
+        {ambiguousDeclareScopes.length > 0 ? <Alert tone="warning">{ambiguousDeclareScopes.length} declaration scope(s) remain fail-closed because authority is ambiguous.</Alert> : null}
+        {declareError ? <Alert role="alert" tone="danger"><div className="font-semibold">{declareError.code}</div><div className="mt-1">{declareError.message}</div></Alert> : null}
+        {declareMessage ? <Alert role="status" tone="success">{declareMessage}</Alert> : null}
         <Button type="submit" loading={declaring} disabled={!scope || !source || !destination || !dcs || !dependent || !justification.trim() || (applicabilityKind === "AbsoluteWindow" && (!windowStart || !windowEnd))}>Declare Requirement</Button>
       </div>
     </form>
