@@ -5,7 +5,7 @@ Status: `accepted current architecture`.
 Date: 2026-09-11.
 
 Decision: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
-Migration: `docs/engineering/target-code-structure-migration-roadmap.md`.
+Migration history: `docs/engineering/target-code-structure-migration-roadmap.md`.
 
 ## Purpose
 
@@ -37,13 +37,13 @@ napms/
   README.md
 ```
 
-This is the current physical repository structure. The root Makefile remains the stable repository-level command surface. Backend packaging and backend tests belong under `backend/`; cross-system E2E stays repository-level.
+This is the current physical repository structure. The root Makefile is the stable repository-level command surface. Backend packaging and backend tests belong under `backend/`; cross-system E2E stays repository-level.
 
 ## Backend taxonomy
 
 ### `contexts/`
 
-Contains bounded contexts / authoritative semantic owners.
+Contains bounded contexts and authoritative semantic owners.
 
 ```text
 contexts/<context>/
@@ -60,9 +60,9 @@ Create only layers that have actual responsibility.
 - `infrastructure/` — persistence and outbound/integration implementations.
 - `presentation/` — inbound HTTP/CLI/other delivery adapters.
 
-Large application layers are decomposed by capability/use case when change locality demonstrates separate responsibilities.
+Large application layers are decomposed by capability/use case only when responsibility and change locality justify it.
 
-Accepted context classification:
+Accepted contexts:
 - `access_policy`;
 - `access_policy_realization`;
 - `application_catalogue`;
@@ -85,20 +85,20 @@ workflows/<workflow>/
   presentation/
 ```
 
-Accepted workflow classification:
+Accepted workflows:
 - `requirement_policy_alignment`;
 - `policy_export`;
 - `scoped_connectivity_inventory`;
 - `network_operator_view`;
 - `traffic_analysis`.
 
-A workflow may own orchestration-specific projections/read models. It must consume bounded-context contracts/ports rather than context-owned persistence internals. If it acquires independent identity, lifecycle or invariants, reconsider its classification explicitly.
+A workflow may own orchestration-specific projections/read models. It consumes bounded-context application contracts/ports rather than context-owned persistence internals. If a workflow acquires independent identity, lifecycle or invariants, reconsider its bounded-context classification explicitly.
 
-There is no generic target `composition/` package. Workflow-specific composition lives with the workflow; pure executable wiring lives in `platform/bootstrap`.
+There is no generic `composition/` package. Workflow-specific implementation lives with the workflow; pure executable wiring lives in `platform/bootstrap`.
 
 ### `platform/`
 
-Contains only technical process/execution concerns:
+Contains technical process/execution concerns only:
 
 ```text
 platform/
@@ -135,7 +135,7 @@ Rules:
 - Bootstrap may depend on concrete context/workflow outer layers to assemble the process.
 - One context does not import another context's `domain`.
 - Cross-context interaction uses explicit application contracts/ports.
-- Workflows do not bypass semantic ownership through direct writes/reads of context-owned persistence.
+- Workflows do not bypass semantic ownership through direct reads/writes of context-owned persistence.
 - No service locator or global mutable dependency registry.
 
 ## Shared code rule
@@ -146,41 +146,43 @@ Technical reuse belongs in the narrow owning platform/library capability. Semant
 
 ## Frontend taxonomy
 
-`web/` remains a React outer adapter with feature-first locality:
+`web/` is a React outer adapter with feature-first locality:
 
 ```text
 web/src/
-  app/                    # application bootstrap/routing/providers
+  app/                    # application bootstrap/routing/shell
   features/<feature>/
     api/
     model/
     components/
     pages/
-  components/ui/          # reusable visual primitives
+  components/ui/          # genuinely shared visual primitives
   lib/                    # genuinely shared technical helpers
 ```
 
-Feature DTO/request mapping and behavior stay feature-local. Root/shared API code contains only genuinely cross-feature transport/auth/session mechanics.
+Create only feature subdirectories that have actual contents. Feature DTOs, request mapping, session/auth operations and behavior stay with their explicit feature owner. `lib/` remains technical, including shared HTTP transport/error handling and other non-semantic helpers. `app/` owns bootstrap, routing and application shell composition.
+
+Cross-feature semantic reuse imports from the explicit owning feature; do not recreate a root API barrel or generic `shared/model` package.
 
 ## Structural change rules
 
 - Preserve accepted product/domain semantics unless a separate accepted change says otherwise.
-- Move code directly toward final ownership; do not create new transitional architectural categories.
+- Put code directly under final ownership; do not create transitional architectural categories.
 - Move matching tests with their implementation boundary.
-- Add/update architecture tests whenever a migrated boundary is mechanically enforceable.
-- Migration compatibility facades and transitional import/port shims are forbidden in the final structure.
+- Add/update architecture tests whenever a boundary is mechanically enforceable.
+- Structural compatibility facades, transitional import shims and generic ownership buckets are forbidden.
 - File size alone is not a decomposition rule; use responsibility and change coupling.
 - A physical move must not silently imply semantic ownership transfer.
 
 ## Enforcement
 
-The production backend package contains only `contexts/`, `workflows/` and `platform/` at its semantic top level. Context and workflow roots admit only their applicable layers described above; `adapters/` and generic `composition/` directories are forbidden throughout `backend/src/napms/`.
+The production backend package contains only `contexts/`, `workflows/` and `platform/` at its semantic top level. Context and workflow roots admit only their applicable layers described above. `adapters/` and generic `composition/` directories are forbidden throughout `backend/src/napms/`.
 
-Architecture tests enforce this taxonomy together with dependency direction, cross-context isolation, persistence ownership, platform HTTP neutrality and feature-local Web ownership. Historical migration roadmaps provide provenance only and do not define the current structure.
+Architecture tests enforce this taxonomy together with dependency direction, cross-context isolation, persistence ownership, platform HTTP neutrality, capability boundaries and feature-local Web ownership. Historical migration roadmaps provide provenance only and do not define current structure.
 
 ## Success condition
 
-A developer or agent can locate a normal change as:
+A normal change should be locatable as:
 
 ```text
 business owner?
@@ -197,4 +199,4 @@ then
   -> capability/use case when further decomposition is justified
 ```
 
-No generic composition bucket, process feature ownership, cross-context domain imports or global technical-layer tree remains.
+No generic composition bucket, process feature ownership, cross-context domain imports or global technical-layer tree is accepted.
