@@ -1,6 +1,6 @@
 # PLAN — Target Code Structure Migration
 
-Status: `active`.
+Status: `active`
 
 ## Goal
 
