@@ -171,7 +171,7 @@ export function AppShell({
             Logout
           </Button>
         </header>
-        <main className="p-4 md:p-6 lg:p-8">{children}</main>
+        <main className="p-4 md:p-6">{children}</main>
       </div>
     </div>
   )
