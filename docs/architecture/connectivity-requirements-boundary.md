@@ -15,7 +15,7 @@ This document defines dependency direction and cross-context ports. It does not 
 Target source layout:
 
 ```text
-src/napms/connectivity_requirements/
+backend/src/napms/connectivity_requirements/
     domain/
         model.py
     application/
@@ -29,10 +29,10 @@ src/napms/connectivity_requirements/
     adapters/
         postgres/
 
-src/napms/authority_management/adapters/
+backend/src/napms/authority_management/adapters/
     connectivity_requirements.py
 
-src/napms/application_catalogue/adapters/
+backend/src/napms/application_catalogue/adapters/
     connectivity_requirements.py
 ```
 

@@ -11,7 +11,7 @@ Define the first module/dependency boundary for Technical-to-Domain Access Resol
 ## Target module
 
 ```text
-src/napms/access_policy_realization/
+backend/src/napms/access_policy_realization/
     domain/
         model.py
         algebra.py

@@ -2,8 +2,9 @@ import ast
 from pathlib import Path
 
 
-ROOT = Path(__file__).parents[2]
-SRC = ROOT / "src"
+BACKEND = Path(__file__).parents[2]
+REPOSITORY = BACKEND.parent
+SRC = BACKEND / "src"
 
 
 def imported_modules(path):
@@ -16,9 +17,20 @@ def imported_modules(path):
 
 
 def test_legacy_repository_shapes_are_not_present():
-    assert not (ROOT / "apps").exists()
-    assert not (ROOT / "legacy").exists()
-    assert not (ROOT / "prototype").exists()
+    assert not (REPOSITORY / "apps").exists()
+    assert not (REPOSITORY / "legacy").exists()
+    assert not (REPOSITORY / "prototype").exists()
+
+
+def test_backend_owns_python_package_and_tests():
+    assert (BACKEND / "pyproject.toml").is_file()
+    assert (BACKEND / "Dockerfile").is_file()
+    assert SRC.is_dir()
+    assert (BACKEND / "tests").is_dir()
+    assert not (REPOSITORY / "pyproject.toml").exists()
+    assert not (REPOSITORY / "Dockerfile").exists()
+    assert not (REPOSITORY / "src").exists()
+    assert not (REPOSITORY / "tests").exists()
 
 
 def test_product_source_uses_napms_package_not_old_napm_package():

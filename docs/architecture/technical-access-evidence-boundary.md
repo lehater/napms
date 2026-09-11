@@ -13,7 +13,7 @@ Define the first module/dependency boundary for Technical Access Evidence while 
 Target core layout:
 
 ```text
-src/napms/technical_access_evidence/
+backend/src/napms/technical_access_evidence/
     domain/
         model.py
     application/

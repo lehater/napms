@@ -47,7 +47,7 @@ The local Docker product journey exercises authenticated product behavior throug
 
 ### Downstream realization/execution journey
 
-`tests/integration/postgres/test_network_environment_operations_stub_flow.py` proves a desired-policy -> rendering -> deterministic target apply -> post-check `Verified` path while preserving owner state.
+`backend/tests/integration/postgres/test_network_environment_operations_stub_flow.py` proves a desired-policy -> rendering -> deterministic target apply -> post-check `Verified` path while preserving owner state.
 
 That downstream proof seeds/materializes the Access Rule and placement/evidence prerequisites directly. It does not begin from a declared Connectivity Requirement and final Connectivity Decision.
 

@@ -36,7 +36,7 @@ Use `docs/process/decision-protocol.md` when a material answer is missing or con
 - `docs/plans/active/` — current execution state only.
 - `docs/process/` — reusable repository working protocols.
 - `docs/baseline/` — accepted snapshots/provenance; not the normal edit target.
-- `src/` + `tests/` — backend implementation and executable evidence.
+- `backend/src/` + `backend/tests/` — backend implementation and executable evidence.
 - `web/` — React outer adapter; apply `web/AGENTS.md` before Web UI work.
 - `.github/workflows/` — executable hosted CI gates and their exact triggers/commands.
 

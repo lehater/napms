@@ -6,16 +6,16 @@ on:
     paths:
       - "e2e/**"
       - "web/**"
-      - "src/napms/application_catalogue/**"
-      - "src/napms/resource_catalogue/**"
-      - "src/napms/runtime/**"
-      - "src/napms/composition/**"
-      - "src/napms/authority_management/**"
-      - "Dockerfile"
+      - "backend/src/napms/application_catalogue/**"
+      - "backend/src/napms/resource_catalogue/**"
+      - "backend/src/napms/runtime/**"
+      - "backend/src/napms/composition/**"
+      - "backend/src/napms/authority_management/**"
+      - "backend/Dockerfile"
       - "compose.yaml"
       - "tools/prepare_local_postgres.py"
       - "tools/local_start.py"
-      - "pyproject.toml"
+      - "backend/pyproject.toml"
       - "Makefile"
       - ".github/workflows/journey-e2e.yml"
   workflow_dispatch:
@@ -41,7 +41,7 @@ jobs:
           python-version: "3.12"
       - name: Install browser test dependencies
         run: |
-          python -m pip install -e ".[e2e]"
+          python -m pip install -e "backend[e2e]"
           python -m playwright install --with-deps chromium
       - name: Configure deterministic local authentication
         run: |

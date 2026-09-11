@@ -12,8 +12,8 @@ Conversation history is disposable execution context. Durable project truth, exe
 - `docs/domain|requirements|architecture|engineering|decisions/` — project truth.
 - `docs/plans/active/README.md` — compact current-task resume state.
 - `docs/plans/active/PLAN-*.md` — plan coordination, dependencies, future stages and overall exit.
-- `src/AGENTS.md` and `web/AGENTS.md` — scoped implementation routing.
-- `tools/` and `tests/evals/` — deterministic harness regressions.
+- `backend/src/AGENTS.md` and `web/AGENTS.md` — scoped implementation routing.
+- `tools/` and `backend/tests/evals/` — deterministic harness regressions.
 - `.github/workflows/` — hosted execution of repository gates; inspect applicable triggers and `workflow_dispatch` before declaring a check unavailable.
 
 Read the full active plan on demand rather than as mandatory startup context. Prefer a fresh chat after a semantic phase change or when conversation context becomes costly; recover from repository state instead of prior chat history.

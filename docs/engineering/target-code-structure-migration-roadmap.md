@@ -35,25 +35,25 @@ The migration is allowed to be large, but every integrated stage must leave `mai
 ### Contexts
 
 ```text
-src/napms/access_policy
+backend/src/napms/access_policy
   -> backend/src/napms/contexts/access_policy
-src/napms/access_policy_realization
+backend/src/napms/access_policy_realization
   -> backend/src/napms/contexts/access_policy_realization
-src/napms/application_catalogue
+backend/src/napms/application_catalogue
   -> backend/src/napms/contexts/application_catalogue
-src/napms/authority_management
+backend/src/napms/authority_management
   -> backend/src/napms/contexts/authority_management
-src/napms/connectivity_decision
+backend/src/napms/connectivity_decision
   -> backend/src/napms/contexts/connectivity_decision
-src/napms/connectivity_requirements
+backend/src/napms/connectivity_requirements
   -> backend/src/napms/contexts/connectivity_requirements
-src/napms/network_enforcement_placement
+backend/src/napms/network_enforcement_placement
   -> backend/src/napms/contexts/network_enforcement_placement
-src/napms/network_environment_operations
+backend/src/napms/network_environment_operations
   -> backend/src/napms/contexts/network_environment_operations
-src/napms/resource_catalogue
+backend/src/napms/resource_catalogue
   -> backend/src/napms/contexts/resource_catalogue
-src/napms/technical_access_evidence
+backend/src/napms/technical_access_evidence
   -> backend/src/napms/contexts/technical_access_evidence
 ```
 
@@ -72,19 +72,19 @@ Adapter files that mix inbound and outbound responsibility must be split by resp
 ### Workflows
 
 ```text
-src/napms/requirement_policy_alignment
+backend/src/napms/requirement_policy_alignment
   -> backend/src/napms/workflows/requirement_policy_alignment
-src/napms/policy_export
+backend/src/napms/policy_export
   -> backend/src/napms/workflows/policy_export
-src/napms/scoped_connectivity_inventory
+backend/src/napms/scoped_connectivity_inventory
   -> backend/src/napms/workflows/scoped_connectivity_inventory
-src/napms/network_operator_view
+backend/src/napms/network_operator_view
   -> backend/src/napms/workflows/network_operator_view
-src/napms/traffic_analysis
+backend/src/napms/traffic_analysis
   -> backend/src/napms/workflows/traffic_analysis
 ```
 
-Cross-context implementations currently under `src/napms/composition/` are classified file-by-file:
+Cross-context implementations currently under `backend/src/napms/composition/` are classified file-by-file:
 - workflow-specific query/orchestration implementation -> owning workflow `infrastructure/`;
 - context-specific outbound/persistence implementation -> owning context `infrastructure/` only when semantic ownership is true;
 - pure executable dependency wiring -> `platform/bootstrap/`.
@@ -174,7 +174,7 @@ For each workflow:
 - PostgreSQL/query/external composition becomes `infrastructure/`;
 - dependencies on contexts use explicit application contracts/ports only.
 
-Then drain `src/napms/composition/` by classifying every file against the rules above. `composition/` is deleted when empty.
+Then drain `backend/src/napms/composition/` by classifying every file against the rules above. `composition/` is deleted when empty.
 
 Exit gate:
 - no generic cross-context composition package remains;

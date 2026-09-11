@@ -27,7 +27,7 @@ Architecture contract: `docs/architecture/code-structure.md`.
 The bounded context remains the primary physical axis, with Clean/Hexagonal layers inside it:
 
 ```text
-src/napms/<semantic-owner>/
+backend/src/napms/<semantic-owner>/
   domain/
   application/
   adapters/
@@ -84,7 +84,7 @@ I32 did not:
 - introduce microservices or per-context deployments/databases;
 - change API behavior merely to fit folders;
 - rewrite persistence models;
-- introduce global technical-layer directories or `src/napms/modules/`;
+- introduce global technical-layer directories or `backend/src/napms/modules/`;
 - split files based on a numeric size threshold;
 - force genuinely shared/application-level Web responsibilities under a single feature.
 

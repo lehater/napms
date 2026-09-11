@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / ".agents" / "skills"
-CASES = ROOT / "tests" / "evals" / "skill-routing-cases.json"
+CASES = ROOT / "backend" / "tests" / "evals" / "skill-routing-cases.json"
 
 
 def main() -> int:

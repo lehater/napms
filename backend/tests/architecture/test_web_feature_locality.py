@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-ROOT = Path(__file__).parents[2]
+ROOT = Path(__file__).parents[3]
 WEB = ROOT / "web" / "src"
 ROOT_API = WEB / "api.ts"
 SHARED_API = WEB / "lib" / "api.ts"

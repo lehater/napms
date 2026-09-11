@@ -1,10 +1,10 @@
 .PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-check knowledge-check check
 
 test:
-	python -m pytest -q -m "not postgres"
+	cd backend && python -m pytest -q -m "not postgres"
 
 postgres-test:
-	python -m pytest -q -m postgres tests/integration/postgres
+	cd backend && python -m pytest -q -m postgres tests/integration/postgres
 
 web-check:
 	cd web && npm run build

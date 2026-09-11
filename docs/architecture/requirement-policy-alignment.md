@@ -11,16 +11,16 @@ Requirement-to-Policy Alignment is an **application composition**, not a new Bou
 Target layout:
 
 ```text
-src/napms/requirement_policy_alignment/
+backend/src/napms/requirement_policy_alignment/
     application/
         model.py
         ports.py
         align.py
 
-src/napms/connectivity_requirements/adapters/
+backend/src/napms/connectivity_requirements/adapters/
     requirement_policy_alignment.py
 
-src/napms/access_policy/adapters/
+backend/src/napms/access_policy/adapters/
     requirement_policy_alignment.py
 ```
 

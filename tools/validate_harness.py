@@ -67,7 +67,7 @@ def main() -> int:
     errors: list[str] = []
     required = [
         ROOT / "AGENTS.md",
-        ROOT / "src" / "AGENTS.md",
+        ROOT / "backend" / "src" / "AGENTS.md",
         ROOT / "web" / "AGENTS.md",
         ROOT / "docs" / "AGENTS.md",
         ROOT / ".agents" / "README.md",
@@ -81,7 +81,7 @@ def main() -> int:
         ROOT / "docs" / "requirements" / "policy-export-core.md",
         ROOT / "docs" / "architecture" / "README.md",
         ROOT / "docs" / "architecture" / "current-architecture.md",
-        ROOT / "tests" / "evals" / "skill-routing-cases.json",
+        ROOT / "backend" / "tests" / "evals" / "skill-routing-cases.json",
         ROOT / ".github" / "workflows" / "harness.yml",
     ]
     for path in required:
