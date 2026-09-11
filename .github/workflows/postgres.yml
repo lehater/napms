@@ -2,7 +2,7 @@ name: postgres persistence gate
 
 on:
   pull_request:
-    types: [ready_for_review]
+    types: [opened, reopened, ready_for_review, synchronize]
     paths:
       - "backend/src/napms/contexts/access_policy/infrastructure/persistence/postgres/**"
       - "backend/src/napms/authority_management/**"
@@ -23,6 +23,7 @@ concurrency:
 
 jobs:
   integration:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     services:
       postgres:
