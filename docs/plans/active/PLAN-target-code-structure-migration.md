@@ -31,39 +31,71 @@ M1 backend repository boundary
 -> M7 compatibility purge + final enforcement
 ```
 
-## M1 — Repository backend boundary
+## Completed milestones
 
-Status: `complete` in `f0e281e`.
+- M1 — complete in `f0e281e`.
+- M2 — complete in PR #74, squash merge `91eb009c2338697458ba3874836c93cc044f753a`; all six hosted gates passed.
 
-## M2 — Bounded contexts
+## M3 — Workflows and generic composition removal
 
-Status: `implementation complete; final PR gates pending` on branch `refactor/m2-network-environment-operations`.
+Status: `active` on branch `refactor/m3-workflows-composition`.
 
-All ten accepted bounded contexts now live only under `backend/src/napms/contexts/<context>/` with responsibility-based Clean outer layers. Legacy top-level context packages are absent. Workflow/composition/platform ownership remains intentionally transitional for M3/M4.
+M3 is one milestone PR. Each workflow move is an atomic commit; generic `composition/` is drained only after ownership is explicitly classified. Hosted gates run once on the final M3 PR.
 
-Completed slices:
+Accepted workflows:
 
-1. `network_environment_operations` — `8dac6ff40fc82732b14ec7aeca80dabc84af062a`
-2. `technical_access_evidence` — `3dd64d4167838bcd3f90933f6aef54940f6ef88b`
-3. `network_enforcement_placement` — `a17ba404496932d70ee21ccb3ff7806ca52e7344`
-4. `connectivity_requirements` — `a8842d21eeaa7da22993d9af7ae2dd71a16de82d`
-5. `connectivity_decision` — `7c75e448c755a37774dd7bbd4d5ff09708559eac`
-6. `authority_management` — `3ad1015cd71daf81231d6e717302e1f448a48e84`
-7. `resource_catalogue` — `3ca10ac360672536b6858a48f55d1d269fe159a4`
-8. `access_policy_realization` — `46fa4d97dd8c8bf1658a75677161e88171ab949a`
-9. `application_catalogue` — `80f99bbc14b169887b8f8092d51ec7d60e6cdf51`
-10. `access_policy` — `a363f313e058be69631a3dc08822f77b8d8544f4`
+1. `requirement_policy_alignment`
+2. `policy_export`
+3. `scoped_connectivity_inventory`
+4. `network_operator_view`
+5. `traffic_analysis`
 
-Validation evidence before final PR:
-- targeted tests passed for every context slice;
-- `make test`: 796 passed, 141 deselected;
-- `make harness-check`: passed;
-- `make knowledge-check`: passed;
-- configured PostgreSQL run: 141 passed, 0 skipped.
+Rules:
+- workflow application orchestration -> `workflows/<workflow>/application/`;
+- inbound HTTP -> `workflows/<workflow>/presentation/http/`;
+- workflow-owned outbound/cross-context adapters -> `workflows/<workflow>/infrastructure/`;
+- pure executable dependency assembly is not workflow infrastructure; it moves from generic `composition/` to `platform/bootstrap/`;
+- process-level migration mechanics move to `platform/database/`;
+- context-owned integrations/read models move to the owning context infrastructure only when the ownership is explicit;
+- no generic `composition/` remains at M3 exit;
+- do not redesign product/domain semantics.
+
+### Current M3 work package
+
+Move four structurally simple workflows as four atomic commits:
+
+1. `requirement_policy_alignment`
+2. `policy_export`
+3. `scoped_connectivity_inventory`
+4. `network_operator_view`
+
+For this package only repair imports in existing `composition/` wiring as needed. Do not yet drain or relocate `composition/`; do not move `traffic_analysis`.
+
+Target shapes:
+
+```text
+workflows/requirement_policy_alignment/
+  application/
+  presentation/http/
+
+workflows/policy_export/
+  application/
+  presentation/http/
+
+workflows/scoped_connectivity_inventory/
+  application/
+  presentation/http/
+
+workflows/network_operator_view/
+  application/
+  presentation/http/
+```
+
+`network_operator_view/application.py` becomes an application package module without semantic change.
 
 ## Exit criteria
 
-M2 closes when the final milestone PR passes all required hosted gates and is squash-merged to `main`.
+M3 closes when all five accepted workflows are under `napms.workflows`, legacy top-level workflow packages are absent, generic `napms.composition` is deleted, wiring/query ownership is explicit, architecture guards prohibit workflow persistence bypass, full local/integration checks pass, and one final M3 PR passes required hosted gates.
 
 ## Blockers
 
@@ -71,4 +103,4 @@ None.
 
 ## Next
 
-Open the final M2 milestone PR, run all required hosted gates, and squash-merge if green. Do not start M3 or make material changes after the final gate without returning the PR to draft and gating again.
+Complete the four-workflow package above as four atomic commits, run targeted/architecture tests after each workflow and full core/harness/knowledge checks after the package, push, and stop for architectural review. Do not start `traffic_analysis`, drain `composition/`, or start M4 before that review.
