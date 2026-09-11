@@ -1,136 +1,95 @@
 # Code Structure Refactoring Roadmap
 
-Status: `selected for I32 execution`.
+Status: `completed through I32`.
 
 Date: 2026-09-11.
 
 ## Purpose
 
-Incrementally align the physical repository structure with the already accepted modular-monolith / Clean Architecture / ports-and-adapters model, improving code locality for humans and agents without changing product/domain semantics.
+Align the physical repository structure with the accepted context-first modular-monolith / Clean Architecture / ports-and-adapters model, improving code locality for humans and agents without changing product/domain semantics.
 
 Architecture contract: `docs/architecture/code-structure.md`.
 
-## Drivers
+## Completion result
 
-Current code already preserves strong semantic modules and inward dependency rules, but outer-layer code is harder to navigate than the architecture implies:
-
-- feature HTTP is split between a very large `runtime/http_api.py` and many feature-specific `runtime/*_http.py` files;
-- I31 added additional Catalogue HTTP surface under `runtime/`, increasing that concentration;
-- executable composition is divided between `runtime/composition.py` and `composition/*`;
-- frontend feature-first direction is sound, but several large page/API files remain later locality hotspots.
-
-The roadmap therefore fixes ownership/locality before file-size cleanup.
-
-## Ordered stages
-
-| Stage | Outcome | Gate |
+| Stage | Integration | Durable outcome |
 | --- | --- | --- |
-| M0 | canonical code-structure contract, roadmap and active Harness state | harness + knowledge/document consistency |
-| M1 | Application Catalogue target HTTP pilot moved from `runtime/` to ACC-owned HTTP adapters; executable boundary guard added | core + PostgreSQL + relevant HTTP/E2E + harness/knowledge |
-| M2 | remaining Catalogue HTTP distributed to ACC/RC or explicit composition owners | core + PostgreSQL + relevant Web/E2E + architecture gates |
-| M3 | `runtime/http_api.py` decomposed incrementally by semantic owner/read composition until it owns only cross-cutting process HTTP concerns | core + affected integration/E2E gates |
-| M4 | runtime/composition/config responsibilities inventoried and consolidated into a small process/bootstrap surface; cross-context query compositions remain explicitly owner-preserving | core + PostgreSQL + Docker/runtime + architecture gates |
-| M5 | demonstrated backend locality hotspots decomposed by use case/responsibility, not by arbitrary size threshold | affected core/PostgreSQL gates |
-| M6 | demonstrated Web hotspots aligned with existing feature-local API/model/component/page structure | Web + relevant browser journeys |
+| M0 | PR #64 | canonical code-structure contract, roadmap and executable architecture/planning guards |
+| M1-M4 | PR #65 (`a90b866`) | feature HTTP moved beside semantic owners; active runtime HTTP reduced to process assembly; `napms.bootstrap` established as the executable composition root; composition/config ownership made explicit |
+| M5 | PR #66 (`62c77f6`) | demonstrated ACC Application/Component mutation hotspot split by responsibility; no second backend split selected merely by size |
+| M6 Requirements | PR #67 (`e59bb4d`) | Connectivity Requirements Web API implementation localized under `features/requirements` |
+| M6 Decisions | PR #68 (`a8eb8c0`) | Connectivity Decisions Web API implementation localized under `features/decisions` |
+| M6 Rules | PR #69 (`e38ffb3`) | Access Rules Web query/mutation/detail implementation localized under `features/rules`; shared `RuleDto` intentionally remains shared |
+| M6 final | PR #70 | Policy and scoped Connectivity Web API implementation localized under their feature owners; I32 active execution cleared |
 
-Each stage is independently reviewable and may revise later stages if evidence shows the proposed target does not improve locality.
+## Durable backend structure
 
-## M0 — architecture and execution contract
-
-Responsibility: make the target and migration constraints durable before moving production code.
-
-Outputs:
-- `docs/architecture/code-structure.md`;
-- this roadmap;
-- selected I32 active plan and resume capsule;
-- architecture/plans navigation updated;
-- explicit statement that architecture/engineering maintenance increments may be selected without inventing a product/domain change when semantics are intentionally unchanged.
-
-Local exit: repository truth and Harness recovery state agree on the target, M1 pilot, gates and non-goals.
-
-## M1 — Application Catalogue HTTP pilot
-
-Responsibility: prove that moving feature HTTP beside its semantic owner improves locality without behavior change.
-
-Initial slice:
+The bounded context remains the primary physical axis, with Clean/Hexagonal layers inside it:
 
 ```text
-src/napms/runtime/catalogue_target_http.py
-src/napms/runtime/catalogue_target_retirement_http.py
-  -> src/napms/application_catalogue/adapters/http/
+src/napms/<semantic-owner>/
+  domain/
+  application/
+  adapters/
+    http/        # when the owner exposes HTTP
+    postgres/    # when the owner owns persistence adapters
 ```
 
-Outputs:
-- imports/tests updated with no API contract change;
-- `runtime/composition.py` only assembles the migrated router factories;
-- architecture test prevents ACC Domain/Application from depending on HTTP and prevents new ACC target HTTP ownership from returning to `runtime/`;
-- existing target-authored J01/downstream acceptance remains green.
+Process bootstrap/wiring is separate from semantic modules. `napms.bootstrap` is the executable composition root. Cross-context read/application compositions remain explicitly outside bounded-context persistence ownership where required; they are not mechanically moved into a peer adapter package.
 
-Local exit: same observable behavior, no semantic/persistence ownership change, and the next ACC HTTP change can be located from `application_catalogue/` without scanning `runtime/`.
+`runtime/` is not a feature-code container. Process-level HTTP/error/session/readiness concerns may remain process-level when genuinely cross-cutting.
 
-Decision after M1: continue M2 only if the pilot reduces search/ownership ambiguity without creating compensating indirection.
+M5 confirmed that size alone is not a split criterion. `application_catalogue.application.structure_curation` had real Application-vs-Component change coupling and was split; `deployment_curation` and `binding_curation` were evaluated and retained because each is cohesive around one lifecycle responsibility.
 
-## M2 — Catalogue HTTP completion
+## Durable Web structure
 
-Responsibility: remove Catalogue feature ownership from the process runtime package.
+The Web UI remains feature-first:
 
-Candidates are classified before moving:
-- ACC-owned HTTP -> `application_catalogue/adapters/http/`;
-- RC-owned HTTP -> `resource_catalogue/adapters/http/`;
-- true cross-context/read-composition HTTP -> the explicit composition owner, not arbitrarily into ACC or RC.
+```text
+web/src/features/<feature>/
+  api.ts         # feature-specific HTTP DTO/query/command implementation when present
+  model.ts       # feature-local model when useful
+  components/
+  pages / feature entry components
 
-Local exit: `runtime/` contains no Catalogue feature endpoint implementation.
+web/src/lib/     # genuinely shared technical utilities
+web/src/components/ui/  # reusable visual primitives
+```
 
-## M3 — general HTTP decomposition
+The root `web/src/api.ts` is now a compatibility/shared boundary rather than the owner of Requirements, Decisions, Rules, Policy or scoped Connectivity endpoint implementations. It intentionally retains:
+- genuinely cross-feature DTOs such as proposal/catalogue interaction shapes and `RuleDto` where multiple features consume them;
+- authentication/session operations used by root application bootstrap/logout orchestration;
+- Access Rule proposal capability because it is consumed by both the Proposals and Connectivity flows;
+- compatibility re-exports so existing pages do not require unrelated churn during structural migration.
 
-Responsibility: dismantle cross-context ownership in `runtime/http_api.py` one coherent slice at a time.
+`App.tsx` remains the root route/application composition surface. Its size alone is not evidence that feature ownership is misplaced.
 
-Order is chosen from current dependency/usage evidence; no all-at-once rewrite. Shared process concerns such as authentication/session plumbing, correlation/error envelope policy and readiness may remain process-level when they are genuinely cross-cutting.
+Executable locality tests prevent localized feature endpoint implementation from drifting back into the root API facade.
 
-Local exit: feature endpoints and feature DTO/mapping logic are owned by their semantic module/composition; the process HTTP surface is small and assembly-oriented.
+## Validation
 
-## M4 — bootstrap/composition cleanup
+Each structural slice preserved product/domain semantics and was accepted only with the applicable hosted gates. The final I32 completion head is required to pass:
+- Core;
+- Web build;
+- Harness;
+- Docker local runtime;
+- browser journey.
 
-Responsibility: remove ambiguity between `runtime/composition.py`, `composition/*` and duplicated configuration surfaces.
+Earlier M1-M5 slices additionally used the applicable PostgreSQL/integration/architecture gates for their backend scope.
 
-Before moving files, classify each item as:
-- process bootstrap/wiring;
-- module adapter;
-- explicit cross-context read/application composition;
-- migration/seed operational helper.
+## Non-goals retained
 
-Only process assembly/configuration moves toward `bootstrap/`. Accepted cross-context read composition must remain visibly outside bounded-context persistence ownership where required.
-
-Local exit: one obvious executable composition root; no misleading owner placement; Docker/local startup and migrations remain unchanged behaviorally.
-
-## M5 — backend granularity
-
-Responsibility: reduce files that demonstrably force unrelated use cases into the same editing/search context.
-
-Candidates include large ACC application/repository files and any other hotspots discovered after M1-M4. Split by use case, aggregate responsibility or adapter role. Do not create generic services/helpers solely to shrink files.
-
-Local exit: each split reduces change coupling and keeps inward dependency direction intact.
-
-## M6 — Web locality
-
-Responsibility: apply the already accepted feature-first Web rule to demonstrated hotspots.
-
-Candidates include root `App.tsx`/`api.ts` responsibilities and large feature pages. Prefer feature-local `api`, `model`, `components`, `pages`; preserve `components/ui` and shared technical `lib` only for demonstrated reuse.
-
-Local exit: representative feature changes remain feature-local and current browser journeys stay green.
-
-## Non-goals
-
-I32 does not:
+I32 did not:
 - change DDD semantic ownership or bounded-context identities;
 - introduce microservices or per-context deployments/databases;
-- change current API behavior merely to fit folders;
+- change API behavior merely to fit folders;
 - rewrite persistence models;
-- remove legacy business truth;
-- introduce global technical-layer directories;
-- add `src/napms/modules/`;
-- split files based on a numeric size rule alone.
+- introduce global technical-layer directories or `src/napms/modules/`;
+- split files based on a numeric size threshold;
+- force genuinely shared/application-level Web responsibilities under a single feature.
 
 ## Completion criterion
 
-I32 is complete when feature code is reliably discoverable from its semantic owner, runtime/bootstrap is assembly-oriented rather than a feature-code container, architecture tests protect the new boundaries, current product journeys remain unchanged, and remaining large files are either locally coherent or explicitly deferred with evidence.
+Satisfied. Feature code is discoverable from semantic owners; runtime/bootstrap is assembly-oriented rather than a feature-code container; architecture/locality tests protect the boundaries; current product journeys remain unchanged; remaining large files are either locally coherent or require new evidence before further refactoring.
+
+Future structural work requires a new selected architecture/engineering increment with concrete locality or ownership evidence rather than continuation of I32 by inertia.

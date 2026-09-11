@@ -8,6 +8,8 @@ SHARED_API = WEB / "lib" / "api.ts"
 REQUIREMENTS_API = WEB / "features" / "requirements" / "api.ts"
 DECISIONS_API = WEB / "features" / "decisions" / "api.ts"
 RULES_API = WEB / "features" / "rules" / "api.ts"
+POLICY_API = WEB / "features" / "policy" / "api.ts"
+CONNECTIVITY_API = WEB / "features" / "connectivity" / "api.ts"
 
 
 def _assert_feature_local(feature_api: Path, implementations: tuple[str, ...]) -> None:
@@ -65,12 +67,43 @@ def test_rules_api_implementation_is_feature_local():
     )
 
 
+def test_policy_api_implementation_is_feature_local():
+    _assert_feature_local(
+        POLICY_API,
+        (
+            "export type EffectivePolicyResponse =",
+            "export type NormalizedPolicyResponse =",
+            "export async function listPolicyViewScopes(",
+            "export async function getEffectiveDesiredPolicy(",
+            "export async function getNormalizedPolicy(",
+        ),
+    )
+
+
+def test_scoped_connectivity_api_implementation_is_feature_local():
+    _assert_feature_local(
+        CONNECTIVITY_API,
+        (
+            "export type ScopedConnectivityInventoryPage =",
+            "export type ScopedConnectivityRelationship =",
+            "export async function listScopedConnectivityScopes(",
+            "export async function getScopedConnectivityInventory(",
+        ),
+    )
+
+
 def test_root_api_only_compatibility_exports_localized_slices():
     root_source = ROOT_API.read_text(encoding="utf-8")
     assert 'from "@/features/requirements/api"' in root_source
     assert 'from "@/features/decisions/api"' in root_source
     assert 'from "@/features/rules/api"' in root_source
+    assert 'from "@/features/policy/api"' in root_source
+    assert 'from "@/features/connectivity/api"' in root_source
     assert 'from "@/lib/api"' in root_source
     assert '"/api/v1/connectivity-requirements' not in root_source
     assert '"/api/v1/connectivity-decisions' not in root_source
     assert '"/api/v1/access-rules' not in root_source
+    assert '"/api/v1/policy-views' not in root_source
+    assert '"/api/v1/effective-desired-policy' not in root_source
+    assert '"/api/v1/normalized-policy' not in root_source
+    assert '"/api/v1/connectivity' not in root_source
