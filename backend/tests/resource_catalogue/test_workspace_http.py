@@ -14,6 +14,7 @@ from napms.contexts.resource_catalogue.application.curation import (
     ResourceMutationResult,
 )
 from napms.contexts.resource_catalogue.application.curation_read import (
+    ResourceCatalogueHistory,
     ResourceCatalogueListItem,
     ResourceCatalogueWorkspacePage,
 )
@@ -35,9 +36,24 @@ class MutationRecorder:
         return self.result
 
 
+class HistoryRecorder:
+    def __init__(self):
+        self.calls = []
+
+    def execute_history(self, **kwargs):
+        self.calls.append(kwargs)
+        return ResourceCatalogueHistory(
+            resource=Resource("res-orders", "prov:orders", "Orders DB"),
+            realizations=(),
+            scope_affiliations=(),
+            responsibilities=(),
+        )
+
+
 class Recorder:
     def __init__(self):
         self.calls = []
+        self.history = HistoryRecorder()
         resource = Resource("res-orders", "prov:orders", "Orders DB")
         self.rename = MutationRecorder(
             ResourceMutationResult(
@@ -66,6 +82,9 @@ class Recorder:
                     has_effective_scope_affiliation=True,
                     has_effective_responsibility=True,
                     has_effective_contact=False,
+                    current_addresses=("10.20.30.40",),
+                    current_scopes=("payments-team",),
+                    technical_owners=("Platform Team",),
                 ),
             ),
             page=kwargs["page"],
@@ -73,6 +92,7 @@ class Recorder:
             has_more=False,
             as_of=kwargs["as_of"],
             responsibility_scope=kwargs["responsibility_scope"],
+            data_state=kwargs["data_state"],
         )
 
 
@@ -81,6 +101,7 @@ def _client_for():
     scope = SimpleNamespace(
         resources=SimpleNamespace(
             list_resources=recorder,
+            read_resource=recorder.history,
             rename_resource=recorder.rename,
             retire_resource=recorder.retire,
         ),
@@ -122,6 +143,7 @@ def test_resource_workspace_projects_scope_search_as_of_and_completeness():
             "pageSize": 25,
             "search": "orders",
             "responsibilityScope": "payments-team",
+            "dataState": "missing-address",
             "asOf": NOW.isoformat(),
         },
         cookies={"napms_session": "session-1"},
@@ -133,6 +155,7 @@ def test_resource_workspace_projects_scope_search_as_of_and_completeness():
     assert payload["pageSize"] == 25
     assert payload["asOf"] == NOW.isoformat()
     assert payload["responsibilityScope"] == "payments-team"
+    assert payload["dataState"] == "missing-address"
     assert payload["items"][0]["resourceReference"] == "res-orders"
     assert payload["items"][0]["currentFacts"] == {
         "hasRealization": True,
@@ -140,6 +163,9 @@ def test_resource_workspace_projects_scope_search_as_of_and_completeness():
         "hasResponsibility": True,
         "hasContact": False,
     }
+    assert payload["items"][0]["currentAddresses"] == ["10.20.30.40"]
+    assert payload["items"][0]["currentScopes"] == ["payments-team"]
+    assert payload["items"][0]["technicalOwners"] == ["Platform Team"]
     assert recorder.calls == [
         {
             "page": 2,
@@ -147,6 +173,7 @@ def test_resource_workspace_projects_scope_search_as_of_and_completeness():
             "search": "orders",
             "include_retired": False,
             "responsibility_scope": "payments-team",
+            "data_state": "missing-address",
             "as_of": NOW,
         }
     ]
@@ -162,6 +189,38 @@ def test_resource_workspace_uses_server_clock_when_as_of_is_omitted():
 
     assert response.status_code == 200
     assert recorder.calls[0]["as_of"] == NOW
+    assert recorder.calls[0]["data_state"] is None
+
+
+def test_resource_workspace_rejects_unsupported_data_state_at_http_boundary():
+    client, recorder = _client_for()
+
+    response = client.get(
+        "/api/v1/catalogues/resource-workspace",
+        params={"dataState": "missing-contact"},
+        cookies={"napms_session": "session-1"},
+    )
+
+    assert response.status_code == 422
+    assert recorder.calls == []
+
+
+def test_resource_history_uses_dedicated_history_projection():
+    client, recorder = _client_for()
+
+    response = client.get(
+        "/api/v1/catalogues/resource-history/res-orders",
+        cookies={"napms_session": "session-1"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["resource"]["resourceReference"] == "res-orders"
+    assert payload["asOf"] == NOW.isoformat()
+    assert payload["realizations"] == []
+    assert payload["scopeAffiliations"] == []
+    assert payload["responsibilities"] == []
+    assert recorder.history.calls == [{"resource_reference": "res-orders"}]
 
 
 def test_resource_workspace_requires_authenticated_session():

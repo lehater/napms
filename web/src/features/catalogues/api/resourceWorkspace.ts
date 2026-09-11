@@ -1,6 +1,12 @@
 import { ApiError } from "@/lib/api"
 import type { ResourceDto } from "@/features/catalogues/api/catalogue"
 
+export type ResourceWorkspaceDataState =
+  | ""
+  | "missing-address"
+  | "missing-scope"
+  | "missing-responsibility"
+
 export type ResourceWorkspaceItemDto = ResourceDto & {
   currentFacts: {
     hasRealization: boolean
@@ -8,6 +14,9 @@ export type ResourceWorkspaceItemDto = ResourceDto & {
     hasResponsibility: boolean
     hasContact: boolean
   }
+  currentAddresses: string[]
+  currentScopes: string[]
+  technicalOwners: string[]
 }
 
 export type ResourceWorkspacePageDto = {
@@ -17,6 +26,7 @@ export type ResourceWorkspacePageDto = {
   hasMore: boolean
   asOf: string
   responsibilityScope: string | null
+  dataState: string | null
 }
 
 async function request<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
@@ -53,12 +63,18 @@ export function listCatalogueResourceWorkspace(
   page = 1,
   search = "",
   responsibilityScope = "",
+  options: {
+    includeRetired?: boolean
+    dataState?: ResourceWorkspaceDataState
+  } = {},
 ): Promise<ResourceWorkspacePageDto> {
   const params = new URLSearchParams({ page: String(page), pageSize: "50" })
   if (search.trim()) params.set("search", search.trim())
   if (responsibilityScope.trim()) {
     params.set("responsibilityScope", responsibilityScope.trim())
   }
+  if (options.includeRetired) params.set("includeRetired", "true")
+  if (options.dataState) params.set("dataState", options.dataState)
   return request(`/api/v1/catalogues/resource-workspace?${params}`)
 }
 

@@ -12,6 +12,10 @@ def _accept_next_dialog(page) -> None:
     page.once("dialog", lambda dialog: dialog.accept())
 
 
+def _open_actions(page) -> None:
+    page.get_by_role("button", name="Actions", exact=True).click()
+
+
 def test_j02_resource_authoring_survives_correction_reopen_and_retirement() -> None:
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch()
@@ -27,42 +31,59 @@ def test_j02_resource_authoring_survives_correction_reopen_and_retirement() -> N
             "navigation", name="Primary navigation"
         )
         desktop_nav.get_by_role("button", name="Resources").click()
-        expect(page.get_by_role("heading", name="Resources", exact=True)).to_be_visible()
+        expect(
+            page.get_by_role("heading", name="Resource Catalogue", exact=True, level=1)
+        ).to_be_visible()
 
-        page.get_by_label("Resource name").fill("Orders Database")
-        page.get_by_role("button", name="Create", exact=True).click()
+        page.get_by_role("button", name="New resource", exact=True).click()
+        create_dialog = page.get_by_role("dialog")
+        create_dialog.get_by_label("Display name").fill("Orders Database")
+        create_dialog.get_by_role("button", name="Create resource", exact=True).click()
         expect(
             page.get_by_role("heading", name="Orders Database", exact=True)
         ).to_be_visible()
 
-        page.get_by_label("Technical addresses").fill("10.20.30.40")
-        page.get_by_role("button", name="Add addresses").click()
+        page.get_by_role("button", name="Add addresses", exact=True).click()
+        page.locator("textarea").fill("10.20.30.40")
+        page.get_by_role("button", name="Add", exact=True).click()
         expect(page.get_by_text("10.20.30.40", exact=True)).to_be_visible()
 
-        page.get_by_label("External scope reference").fill("orders-prod")
-        page.get_by_role("button", name="Add affiliation").click()
+        page.get_by_role("button", name="Add scope", exact=True).click()
+        page.get_by_placeholder("payments-team").fill("orders-prod")
+        page.get_by_role("button", name="Add", exact=True).click()
         expect(page.get_by_text("orders-prod", exact=True)).to_be_visible()
 
-        page.get_by_label("Party kind").select_option("Team")
-        page.get_by_label("Role").select_option("TechnicalOwner")
-        page.get_by_label("External person/team reference").fill(
+        page.get_by_role("button", name="Add responsibility", exact=True).click()
+        responsibility_form = page.get_by_placeholder("team:platform").locator(
+            "xpath=ancestor::form[1]"
+        )
+        responsibility_form.locator("select").nth(0).select_option("Team")
+        responsibility_form.locator("select").nth(1).select_option("TechnicalOwner")
+        responsibility_form.get_by_placeholder("team:platform").fill(
             "team:orders-platform"
         )
-        page.get_by_label("Display name").fill("Orders Platform")
-        page.get_by_label("Contact (optional)").fill("orders@example.test")
-        page.get_by_role("button", name="Add responsibility").click()
+        responsibility_form.get_by_placeholder("Platform Team").fill("Orders Platform")
+        responsibility_form.get_by_placeholder("Contact (optional)").fill(
+            "orders@example.test"
+        )
+        responsibility_form.get_by_role("button", name="Add", exact=True).click()
         expect(page.get_by_text("Orders Platform", exact=True)).to_be_visible()
         expect(page.get_by_text("orders@example.test", exact=True)).to_be_visible()
 
-        page.get_by_label("Technical addresses").fill("10.20.30.41")
-        page.get_by_role("button", name="Replace addresses").click()
+        page.get_by_role("button", name="Replace addresses", exact=True).click()
+        page.locator("textarea").fill("10.20.30.41")
+        page.get_by_role("button", name="Replace", exact=True).click()
         expect(page.get_by_text("10.20.30.41", exact=True)).to_be_visible()
         expect(page.get_by_text("10.20.30.40", exact=True)).to_have_count(0)
 
         # Correct display metadata without changing Resource identity.
+        _open_actions(page)
         page.get_by_role("button", name="Rename", exact=True).click()
-        page.get_by_label("New display name").fill("Orders Database Primary")
-        page.get_by_role("button", name="Save", exact=True).click()
+        rename_form = page.get_by_role("button", name="Save", exact=True).locator(
+            "xpath=ancestor::form[1]"
+        )
+        rename_form.locator("input").fill("Orders Database Primary")
+        rename_form.get_by_role("button", name="Save", exact=True).click()
         expect(
             page.get_by_role("heading", name="Orders Database Primary", exact=True)
         ).to_be_visible()
@@ -71,9 +92,11 @@ def test_j02_resource_authoring_survives_correction_reopen_and_retirement() -> N
         # through normal user discovery rather than retaining an internal identifier.
         desktop_nav.get_by_role("button", name="Connectivity").click()
         desktop_nav.get_by_role("button", name="Resources").click()
-        expect(page.get_by_role("heading", name="Resources", exact=True)).to_be_visible()
+        expect(
+            page.get_by_role("heading", name="Resource Catalogue", exact=True, level=1)
+        ).to_be_visible()
         page.get_by_label("Search resources").fill("Orders Database Primary")
-        page.get_by_role("button", name="Apply resource filters").click()
+        page.get_by_role("button", name="Apply", exact=True).click()
         result = page.locator("main").get_by_role("button").filter(
             has_text="Orders Database Primary"
         )
@@ -91,7 +114,8 @@ def test_j02_resource_authoring_survives_correction_reopen_and_retirement() -> N
         # Retirement is deliberately blocked while authoritative current ownership
         # relations exist; the UI must expose that reason rather than cascade-delete.
         _accept_next_dialog(page)
-        page.get_by_role("button", name="Retire", exact=True).click()
+        _open_actions(page)
+        page.get_by_role("button", name="Retire resource", exact=True).click()
         expect(page.get_by_role("alert")).to_contain_text(
             "End current scope affiliations and responsibilities before retiring this resource."
         )
@@ -113,15 +137,18 @@ def test_j02_resource_authoring_survives_correction_reopen_and_retirement() -> N
         ).to_have_count(0)
 
         _accept_next_dialog(page)
-        page.get_by_role("button", name="Retire", exact=True).click()
-        expect(page.get_by_text("Retired", exact=True)).to_be_visible()
+        _open_actions(page)
+        page.get_by_role("button", name="Retire resource", exact=True).click()
+        expect(page.locator("header").get_by_text("Retired", exact=True)).to_be_visible()
+        _open_actions(page)
         expect(page.get_by_role("button", name="Rename", exact=True)).to_have_count(0)
+        page.get_by_role("button", name="Actions", exact=True).click()
 
         # Default discovery is the Active workspace; retired history is no longer
         # presented as current work.
         desktop_nav.get_by_role("button", name="Resources").click()
         page.get_by_label("Search resources").fill("Orders Database Primary")
-        page.get_by_role("button", name="Apply resource filters").click()
-        expect(page.get_by_text("No resources match the current view.")).to_be_visible()
+        page.get_by_role("button", name="Apply", exact=True).click()
+        expect(page.get_by_text("No resources found", exact=True)).to_be_visible()
 
         browser.close()

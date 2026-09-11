@@ -32,6 +32,7 @@ class TransactionalPostgresResourceCatalogueCurationRepository(
         search: str | None,
         include_retired: bool,
         responsibility_scope: str | None,
+        data_state: str | None,
         as_of: datetime,
     ) -> tuple[ResourceCatalogueListItem, ...]:
         return PostgresResourceCatalogueListQuery(self._connection).list_resources(
@@ -40,8 +41,44 @@ class TransactionalPostgresResourceCatalogueCurationRepository(
             search=search,
             include_retired=include_retired,
             responsibility_scope=responsibility_scope,
+            data_state=data_state,
             as_of=as_of,
         )
+
+    def list_realizations(self, *, resource_reference: str):
+        rows = self._realization_rows(
+            "WHERE r.resource_reference = %s",
+            (resource_reference,),
+        )
+        return self._realizations(rows)
+
+    def list_scope_affiliations(self, *, resource_reference: str):
+        rows = self._fetchall(
+            """
+            SELECT affiliation_reference, resource_reference, responsibility_scope,
+                   valid_from, valid_to, provenance_reference,
+                   end_provenance_reference, version
+            FROM napms_resource_catalogue.resource_scope_affiliations
+            WHERE resource_reference = %s
+            ORDER BY valid_from DESC, affiliation_reference
+            """,
+            (resource_reference,),
+        )
+        return tuple(self._affiliation(row) for row in rows)
+
+    def list_responsibilities(self, *, resource_reference: str):
+        rows = self._fetchall(
+            """
+            SELECT assignment_reference, resource_reference, party_reference,
+                   party_kind, role, display_name, contact, valid_from, valid_to,
+                   provenance_reference, end_provenance_reference, version
+            FROM napms_resource_catalogue.resource_responsibilities
+            WHERE resource_reference = %s
+            ORDER BY valid_from DESC, assignment_reference
+            """,
+            (resource_reference,),
+        )
+        return tuple(self._responsibility(row) for row in rows)
 
     def commit(self) -> None:
         if self._pending_receipt is not None:

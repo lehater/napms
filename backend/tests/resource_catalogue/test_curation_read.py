@@ -119,6 +119,77 @@ class FakeReadCatalogue:
             ),
         )
 
+    def list_realizations(self, *, resource_reference):
+        return (
+            ResourceRealizationVersion(
+                fact_reference="realization-old",
+                resource_reference=resource_reference,
+                endpoint_realizations=(EndpointAddress("ep-old", "10.0.0.9"),),
+                valid_from=NOW - timedelta(days=10),
+                valid_to=NOW - timedelta(days=2),
+                provenance_reference="prov:realization-old",
+                end_provenance_reference="prov:realization-old:end",
+            ),
+            ResourceRealizationVersion(
+                fact_reference="realization-current",
+                resource_reference=resource_reference,
+                endpoint_realizations=(EndpointAddress("ep-current", "10.0.0.1"),),
+                valid_from=NOW - timedelta(days=1),
+                valid_to=None,
+                provenance_reference="prov:realization-current",
+            ),
+        )
+
+    def list_scope_affiliations(self, *, resource_reference):
+        return (
+            ResourceScopeAffiliation(
+                affiliation_reference="aff-old",
+                resource_reference=resource_reference,
+                responsibility_scope="legacy",
+                valid_from=NOW - timedelta(days=8),
+                valid_to=NOW - timedelta(days=3),
+                provenance_reference="prov:aff-old",
+                end_provenance_reference="prov:aff-old:end",
+            ),
+            ResourceScopeAffiliation(
+                affiliation_reference="aff-current",
+                resource_reference=resource_reference,
+                responsibility_scope="payments",
+                valid_from=NOW - timedelta(days=1),
+                valid_to=None,
+                provenance_reference="prov:aff-current",
+            ),
+        )
+
+    def list_responsibilities(self, *, resource_reference):
+        return (
+            ResourceResponsibility(
+                assignment_reference="resp-old",
+                resource_reference=resource_reference,
+                party_reference="team-legacy",
+                party_kind=ResponsiblePartyKind.TEAM,
+                role=ResourceResponsibilityRole.TECHNICAL_OWNER,
+                display_name="Legacy team",
+                contact=None,
+                valid_from=NOW - timedelta(days=7),
+                valid_to=NOW - timedelta(days=4),
+                provenance_reference="prov:resp-old",
+                end_provenance_reference="prov:resp-old:end",
+            ),
+            ResourceResponsibility(
+                assignment_reference="resp-current",
+                resource_reference=resource_reference,
+                party_reference="team-payments",
+                party_kind=ResponsiblePartyKind.TEAM,
+                role=ResourceResponsibilityRole.TECHNICAL_OWNER,
+                display_name="Payments team",
+                contact=None,
+                valid_from=NOW - timedelta(days=1),
+                valid_to=None,
+                provenance_reference="prov:resp-current",
+            ),
+        )
+
 
 def test_list_resource_catalogue_uses_limit_plus_one_for_has_more():
     catalogue = FakeReadCatalogue()
@@ -160,11 +231,38 @@ def test_read_resource_detail_filters_owner_rows_at_requested_time():
     ) == ("resp-current",)
 
 
+def test_read_resource_history_returns_all_temporal_facts_newest_first():
+    history = ReadResourceCatalogueDetail(catalogue=FakeReadCatalogue()).execute_history(
+        resource_reference=" res-1 ",
+    )
+
+    assert history is not None
+    assert history.resource.resource_reference == "res-1"
+    assert tuple(item.fact_reference for item in history.realizations) == (
+        "realization-current",
+        "realization-old",
+    )
+    assert tuple(item.affiliation_reference for item in history.scope_affiliations) == (
+        "aff-current",
+        "aff-old",
+    )
+    assert tuple(item.assignment_reference for item in history.responsibilities) == (
+        "resp-current",
+        "resp-old",
+    )
+
+
 def test_read_resource_detail_returns_none_for_unknown_resource():
     assert (
         ReadResourceCatalogueDetail(catalogue=FakeReadCatalogue()).execute(
             resource_reference="missing",
             as_of=NOW,
+        )
+        is None
+    )
+    assert (
+        ReadResourceCatalogueDetail(catalogue=FakeReadCatalogue()).execute_history(
+            resource_reference="missing",
         )
         is None
     )

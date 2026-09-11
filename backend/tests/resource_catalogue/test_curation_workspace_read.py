@@ -43,6 +43,7 @@ class FakeWorkspaceCatalogue:
         search,
         include_retired,
         responsibility_scope,
+        data_state,
         as_of,
     ):
         self.calls.append(
@@ -52,6 +53,7 @@ class FakeWorkspaceCatalogue:
                 "search": search,
                 "include_retired": include_retired,
                 "responsibility_scope": responsibility_scope,
+                "data_state": data_state,
                 "as_of": as_of,
             }
         )
@@ -73,6 +75,7 @@ def test_workspace_list_normalizes_inputs_and_preserves_completeness_flags():
     assert page.has_more is True
     assert page.as_of == NOW
     assert page.responsibility_scope == "payments-team"
+    assert page.data_state is None
     assert page.items[0].has_effective_realization is True
     assert page.items[0].has_effective_scope_affiliation is True
     assert page.items[0].has_effective_responsibility is True
@@ -84,12 +87,13 @@ def test_workspace_list_normalizes_inputs_and_preserves_completeness_flags():
             "search": "Orders",
             "include_retired": False,
             "responsibility_scope": "payments-team",
+            "data_state": None,
             "as_of": NOW,
         }
     ]
 
 
-def test_workspace_list_treats_blank_scope_and_search_as_absent():
+def test_workspace_list_treats_blank_scope_search_and_data_state_as_absent():
     catalogue = FakeWorkspaceCatalogue()
 
     page = ListResourceCatalogue(catalogue=catalogue).execute_workspace(
@@ -97,12 +101,43 @@ def test_workspace_list_treats_blank_scope_and_search_as_absent():
         page_size=50,
         search="   ",
         responsibility_scope="   ",
+        data_state="   ",
         as_of=NOW,
     )
 
     assert page.responsibility_scope is None
+    assert page.data_state is None
     assert catalogue.calls[0]["search"] is None
     assert catalogue.calls[0]["responsibility_scope"] is None
+    assert catalogue.calls[0]["data_state"] is None
+
+
+def test_workspace_list_normalizes_and_forwards_supported_data_state():
+    catalogue = FakeWorkspaceCatalogue()
+
+    page = ListResourceCatalogue(catalogue=catalogue).execute_workspace(
+        page=1,
+        page_size=50,
+        data_state=" missing-address ",
+        as_of=NOW,
+    )
+
+    assert page.data_state == "missing-address"
+    assert catalogue.calls[0]["data_state"] == "missing-address"
+
+
+def test_workspace_list_rejects_unsupported_data_state():
+    catalogue = FakeWorkspaceCatalogue()
+
+    with pytest.raises(ResourceCatalogueInvariantError):
+        ListResourceCatalogue(catalogue=catalogue).execute_workspace(
+            page=1,
+            page_size=50,
+            data_state="missing-contact",
+            as_of=NOW,
+        )
+
+    assert catalogue.calls == []
 
 
 def test_workspace_list_rejects_naive_as_of_before_calling_repository():

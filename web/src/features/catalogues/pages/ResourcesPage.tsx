@@ -1,19 +1,24 @@
-import { useEffect, useState } from "react"
-import { ChevronRight, Plus, Search } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Plus,
+  Search,
+  X,
+} from "lucide-react"
 
 import { ApiError } from "@/lib/api"
-import { CatalogueIdentity } from "@/features/catalogues/components/CatalogueIdentity"
+import { shortId } from "@/features/catalogues/components/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
-import {
-  createCatalogueResource,
-} from "@/features/catalogues/api/catalogue"
+import { createCatalogueResource } from "@/features/catalogues/api/catalogue"
 import {
   listCatalogueResourceWorkspace,
+  type ResourceWorkspaceDataState,
   type ResourceWorkspaceItemDto,
 } from "@/features/catalogues/api/resourceWorkspace"
 
-const inputClass =
-  "min-h-10 w-full rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
+const controlClass =
+  "min-h-10 w-full rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none transition focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
 
 function errorFrom(caught: unknown, fallback: string) {
   return caught instanceof ApiError
@@ -21,32 +26,69 @@ function errorFrom(caught: unknown, fallback: string) {
     : new ApiError(500, "InternalError", fallback)
 }
 
-function MissingFacts({ item }: { item: ResourceWorkspaceItemDto }) {
+function DataState({ item }: { item: ResourceWorkspaceItemDto }) {
   const missing: string[] = []
-  if (!item.currentFacts.hasRealization) missing.push("No addresses")
+  if (!item.currentFacts.hasRealization) missing.push("No address")
   if (!item.currentFacts.hasScopeAffiliation) missing.push("No scope")
-  if (!item.currentFacts.hasResponsibility) {
-    missing.push("No responsibility")
-  } else if (!item.currentFacts.hasContact) {
-    missing.push("No contact")
-  }
+  if (!item.currentFacts.hasResponsibility) missing.push("No responsibility")
 
   if (missing.length === 0) {
     return (
-      <span className="text-xs font-medium text-[#64748B]">Current facts complete</span>
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+        <CheckCircle2 className="size-3.5" aria-hidden="true" />
+        No missing facts
+      </span>
     )
   }
 
   return (
-    <div className="flex flex-wrap justify-end gap-1.5">
-      {missing.map((value) => (
+    <div className="grid gap-1">
+      {missing.map((label) => (
+        <span
+          key={label}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700"
+        >
+          <AlertTriangle className="size-3.5" aria-hidden="true" />
+          {label}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function LifecycleBadge({ value }: { value: string }) {
+  const active = value === "Active"
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold ${
+        active
+          ? "bg-emerald-50 text-emerald-700"
+          : "bg-slate-100 text-slate-600"
+      }`}
+    >
+      <span className={`size-1.5 rounded-full ${active ? "bg-emerald-500" : "bg-slate-400"}`} />
+      {value}
+    </span>
+  )
+}
+
+function ScopeChips({ values }: { values: string[] }) {
+  if (values.length === 0) return <span className="text-[#94A3B8]">—</span>
+  return (
+    <div className="flex flex-wrap gap-1">
+      {values.slice(0, 2).map((value) => (
         <span
           key={value}
-          className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800"
+          className="rounded bg-[#EFF6FF] px-2 py-0.5 text-xs font-medium text-[#1D4ED8]"
         >
           {value}
         </span>
       ))}
+      {values.length > 2 ? (
+        <span className="rounded bg-[#F1F5F9] px-2 py-0.5 text-xs text-[#64748B]">
+          +{values.length - 2}
+        </span>
+      ) : null}
     </div>
   )
 }
@@ -64,13 +106,23 @@ export function ResourcesPage({
   const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<ApiError | null>(null)
+
   const [searchInput, setSearchInput] = useState("")
   const [search, setSearch] = useState("")
   const [scopeInput, setScopeInput] = useState("")
   const [scopeFilter, setScopeFilter] = useState("")
+  const [lifecycle, setLifecycle] = useState<"active" | "all">("active")
+  const [dataState, setDataState] = useState<ResourceWorkspaceDataState>("")
+
+  const [showCreate, setShowCreate] = useState(false)
   const [displayName, setDisplayName] = useState("")
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<ApiError | null>(null)
+
+  const visibleScopes = useMemo(
+    () => Array.from(new Set(items.flatMap((item) => item.currentScopes))).sort(),
+    [items],
+  )
 
   async function load() {
     setLoading(true)
@@ -80,6 +132,10 @@ export function ResourcesPage({
         page,
         search,
         scopeFilter,
+        {
+          includeRetired: lifecycle === "all",
+          dataState,
+        },
       )
       setItems(result.items)
       setHasMore(result.hasMore)
@@ -92,7 +148,7 @@ export function ResourcesPage({
 
   useEffect(() => {
     void load()
-  }, [page, search, scopeFilter])
+  }, [page, search, scopeFilter, lifecycle, dataState])
 
   async function create(event: React.FormEvent) {
     event.preventDefault()
@@ -101,6 +157,7 @@ export function ResourcesPage({
     try {
       const created = await createCatalogueResource(displayName.trim() || null)
       setDisplayName("")
+      setShowCreate(false)
       onOpenResource(created.resourceReference)
     } catch (caught) {
       setCreateError(errorFrom(caught, "Resource could not be created."))
@@ -109,133 +166,320 @@ export function ResourcesPage({
     }
   }
 
-  function applyFilters(event: React.FormEvent) {
+  function applySearch(event: React.FormEvent) {
     event.preventDefault()
     if (page !== 1) onPageChange(1)
     setSearch(searchInput.trim())
     setScopeFilter(scopeInput.trim())
   }
 
+  function updateDataState(next: ResourceWorkspaceDataState) {
+    if (page !== 1) onPageChange(1)
+    setDataState(next)
+  }
+
+  function resetFilters() {
+    setSearchInput("")
+    setSearch("")
+    setScopeInput("")
+    setScopeFilter("")
+    setLifecycle("active")
+    setDataState("")
+    if (page !== 1) onPageChange(1)
+  }
+
   return (
-    <div className="mx-auto grid max-w-6xl gap-6">
-      <header>
-        <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#64748B]">
-          Catalogues
+    <div className="mx-auto grid max-w-[1480px] gap-5">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#172033]">Resource Catalogue</h1>
+          <p className="mt-1 text-sm text-[#64748B]">
+            Find and manage network-relevant resources.
+          </p>
         </div>
-        <h1 className="mt-1 text-2xl font-bold text-[#172033]">Resources</h1>
-        <p className="mt-2 max-w-3xl text-sm text-[#64748B]">
-          Maintain network-relevant resources, their current addresses, responsibility scopes and contacts.
-        </p>
+        <Button onClick={() => setShowCreate(true)}>
+          <Plus className="size-4" aria-hidden="true" />
+          New resource
+        </Button>
       </header>
 
-      <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
-        <div className="mb-4 flex items-center gap-2">
-          <Plus className="size-4 text-[#2563EB]" aria-hidden="true" />
-          <h2 className="font-semibold text-[#172033]">Add resource</h2>
-        </div>
-        <form className="flex flex-col gap-3 sm:flex-row" onSubmit={create}>
-          <input
-            className={inputClass}
-            value={displayName}
-            onChange={(event) => setDisplayName(event.target.value)}
-            placeholder="Resource name (optional)"
-            maxLength={256}
-            aria-label="Resource name"
-          />
-          <Button type="submit" loading={creating}>Create</Button>
-        </form>
-        <p className="mt-2 text-xs text-[#64748B]">
-          Stable resource identity is generated by NAPMS; the display name can be changed later.
-        </p>
-        {createError ? (
-          <p className="mt-3 text-sm text-red-700">{createError.message}</p>
-        ) : null}
-      </section>
-
-      <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
-        <div className="grid gap-3 border-b border-[#E2E8F0] p-4 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div>
-            <h2 className="font-semibold text-[#172033]">Resource catalogue</h2>
-            <p className="mt-1 text-xs text-[#64748B]">
-              Scope filtering uses the effective external Responsibility Scope reference; it does not change catalogue read permission.
-            </p>
-          </div>
-          <form
-            className="grid min-w-0 gap-2 sm:grid-cols-[minmax(12rem,1fr)_minmax(12rem,1fr)_auto] lg:w-[42rem]"
-            onSubmit={applyFilters}
-          >
+      <section className="overflow-hidden rounded-lg border border-[#DCE3EC] bg-white shadow-sm">
+        <form className="border-b border-[#E2E8F0] p-4" onSubmit={applySearch}>
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#94A3B8]"
+              aria-hidden="true"
+            />
             <input
-              className={inputClass}
+              className={`${controlClass} pl-10`}
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Resource, owner or contact"
+              placeholder="Search by name, reference, address, scope or owner…"
               aria-label="Search resources"
             />
-            <input
-              className={inputClass}
-              value={scopeInput}
-              onChange={(event) => setScopeInput(event.target.value)}
-              placeholder="Responsibility scope (optional)"
-              aria-label="Responsibility scope filter"
-            />
-            <Button type="submit" variant="secondary" aria-label="Apply resource filters">
-              <Search className="size-4" aria-hidden="true" />
-              Filter
+          </div>
+
+          <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(13rem,1fr)_11rem_13rem_auto_auto]">
+            <div>
+              <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[#64748B]">
+                Scope
+              </label>
+              <input
+                className={controlClass}
+                value={scopeInput}
+                onChange={(event) => setScopeInput(event.target.value)}
+                placeholder="All scopes"
+                list="resource-scope-options"
+              />
+              <datalist id="resource-scope-options">
+                {visibleScopes.map((scope) => (
+                  <option key={scope} value={scope} />
+                ))}
+              </datalist>
+            </div>
+            <label className="grid gap-1 text-[11px] font-semibold uppercase tracking-wide text-[#64748B]">
+              Lifecycle
+              <select
+                className={controlClass}
+                value={lifecycle}
+                onChange={(event) => {
+                  if (page !== 1) onPageChange(1)
+                  setLifecycle(event.target.value as "active" | "all")
+                }}
+              >
+                <option value="active">Active</option>
+                <option value="all">All</option>
+              </select>
+            </label>
+            <label className="grid gap-1 text-[11px] font-semibold uppercase tracking-wide text-[#64748B]">
+              Data state
+              <select
+                className={controlClass}
+                value={dataState}
+                onChange={(event) =>
+                  updateDataState(event.target.value as ResourceWorkspaceDataState)
+                }
+              >
+                <option value="">All</option>
+                <option value="missing-address">Missing address</option>
+                <option value="missing-scope">Missing scope</option>
+                <option value="missing-responsibility">Missing responsibility</option>
+              </select>
+            </label>
+            <Button type="submit" variant="secondary" className="self-end">
+              Apply
             </Button>
-          </form>
+            <Button
+              type="button"
+              variant="ghost"
+              className="self-end"
+              onClick={resetFilters}
+            >
+              Reset
+            </Button>
+          </div>
+        </form>
+
+        <div className="flex flex-wrap items-center gap-2 border-b border-[#E2E8F0] px-4 py-3">
+          {[
+            ["", "All"],
+            ["missing-address", "No address"],
+            ["missing-responsibility", "No responsibility"],
+            ["missing-scope", "No scope"],
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => updateDataState(value as ResourceWorkspaceDataState)}
+              className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                dataState === value
+                  ? "border-[#93C5FD] bg-[#EFF6FF] text-[#1D4ED8]"
+                  : "border-[#E2E8F0] bg-white text-[#64748B] hover:bg-[#F8FAFC]"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         {loading ? (
-          <div className="p-6 text-sm text-[#64748B]">Loading resources…</div>
+          <div className="p-8 text-sm text-[#64748B]">Loading resources…</div>
         ) : error ? (
-          <div className="p-6">
+          <div className="p-8">
             <p className="text-sm text-red-700">{error.message}</p>
             <Button className="mt-3" variant="secondary" onClick={() => void load()}>
               Retry
             </Button>
           </div>
         ) : items.length === 0 ? (
-          <div className="p-6 text-sm text-[#64748B]">No resources match the current view.</div>
+          <div className="p-10 text-center">
+            <div className="text-sm font-semibold text-[#172033]">No resources found</div>
+            <p className="mt-1 text-sm text-[#64748B]">
+              Change the search or filters, or create a new resource.
+            </p>
+          </div>
         ) : (
-          <div className="divide-y divide-[#E2E8F0]">
-            {items.map((item) => (
-              <button
-                key={item.resourceReference}
-                type="button"
-                className="grid w-full gap-3 px-5 py-4 text-left hover:bg-[#F8FAFC] sm:grid-cols-[minmax(0,1fr)_minmax(14rem,auto)_auto] sm:items-center"
-                onClick={() => onOpenResource(item.resourceReference)}
-              >
-                <CatalogueIdentity name={item.displayName} id={item.resourceReference} />
-                <MissingFacts item={item} />
-                <div className="flex items-center justify-end gap-3">
-                  <span className="rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-800">
-                    {item.lifecycle}
-                  </span>
-                  <ChevronRight className="size-4 text-[#94A3B8]" aria-hidden="true" />
-                </div>
-              </button>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1000px] border-collapse text-left text-sm">
+              <thead className="bg-[#F8FAFC] text-[11px] font-semibold uppercase tracking-wide text-[#64748B]">
+                <tr className="border-b border-[#E2E8F0]">
+                  <th className="px-4 py-3">Name</th>
+                  <th className="px-4 py-3">Reference</th>
+                  <th className="px-4 py-3">Addresses</th>
+                  <th className="px-4 py-3">Scope(s)</th>
+                  <th className="px-4 py-3">Technical owner</th>
+                  <th className="px-4 py-3">Lifecycle</th>
+                  <th className="px-4 py-3">Data state</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E2E8F0]">
+                {items.map((item) => (
+                  <tr
+                    key={item.resourceReference}
+                    className="cursor-pointer bg-white transition hover:bg-[#F8FAFC]"
+                    onClick={() => onOpenResource(item.resourceReference)}
+                  >
+                    <td className="px-4 py-3.5 align-top">
+                      <button
+                        type="button"
+                        className="font-semibold text-[#2563EB] hover:underline"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          onOpenResource(item.resourceReference)
+                        }}
+                      >
+                        {item.displayName || shortId(item.resourceReference)}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3.5 align-top font-mono text-xs text-[#64748B]">
+                      {shortId(item.resourceReference)}
+                    </td>
+                    <td className="px-4 py-3.5 align-top">
+                      {item.currentAddresses.length === 0 ? (
+                        <span className="text-[#94A3B8]">—</span>
+                      ) : (
+                        <div className="grid gap-0.5 font-mono text-xs text-[#334155]">
+                          {item.currentAddresses.slice(0, 2).map((address) => (
+                            <span key={address}>{address}</span>
+                          ))}
+                          {item.currentAddresses.length > 2 ? (
+                            <span className="text-[#64748B]">
+                              +{item.currentAddresses.length - 2} more
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3.5 align-top">
+                      <ScopeChips values={item.currentScopes} />
+                    </td>
+                    <td className="px-4 py-3.5 align-top text-[#334155]">
+                      {item.technicalOwners.length > 0
+                        ? item.technicalOwners.join(", ")
+                        : <span className="text-[#94A3B8]">—</span>}
+                    </td>
+                    <td className="px-4 py-3.5 align-top">
+                      <LifecycleBadge value={item.lifecycle} />
+                    </td>
+                    <td className="px-4 py-3.5 align-top">
+                      <DataState item={item} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 
         <div className="flex items-center justify-between border-t border-[#E2E8F0] px-4 py-3">
-          <Button
-            variant="secondary"
-            disabled={page <= 1 || loading}
-            onClick={() => onPageChange(page - 1)}
-          >
-            Previous
-          </Button>
-          <span className="text-xs font-medium text-[#64748B]">Page {page}</span>
-          <Button
-            variant="secondary"
-            disabled={!hasMore || loading}
-            onClick={() => onPageChange(page + 1)}
-          >
-            Next
-          </Button>
+          <span className="text-xs text-[#64748B]">
+            Page {page} · up to 50 resources per page
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              disabled={page <= 1 || loading}
+              onClick={() => onPageChange(page - 1)}
+            >
+              Previous
+            </Button>
+            <span className="flex size-9 items-center justify-center rounded-md border border-[#93C5FD] bg-[#EFF6FF] text-sm font-semibold text-[#1D4ED8]">
+              {page}
+            </span>
+            <Button
+              variant="secondary"
+              disabled={!hasMore || loading}
+              onClick={() => onPageChange(page + 1)}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       </section>
+
+      {showCreate ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.currentTarget === event.target && !creating) setShowCreate(false)
+          }}
+        >
+          <div
+            className="w-full max-w-lg rounded-xl border border-[#E2E8F0] bg-white shadow-2xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="create-resource-title"
+          >
+            <div className="flex items-start justify-between border-b border-[#E2E8F0] px-5 py-4">
+              <div>
+                <h2 id="create-resource-title" className="font-semibold text-[#172033]">
+                  New resource
+                </h2>
+                <p className="mt-1 text-xs text-[#64748B]">
+                  NAPMS generates the stable resource reference.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rounded-md p-2 text-[#64748B] hover:bg-[#F1F5F9]"
+                onClick={() => setShowCreate(false)}
+                disabled={creating}
+                aria-label="Close"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </button>
+            </div>
+            <form className="p-5" onSubmit={create}>
+              <label className="grid gap-1.5 text-sm font-medium text-[#172033]">
+                Display name
+                <input
+                  className={controlClass}
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  placeholder="api-gateway"
+                  maxLength={256}
+                  autoFocus
+                />
+              </label>
+              {createError ? (
+                <p className="mt-3 text-sm text-red-700">{createError.message}</p>
+              ) : null}
+              <div className="mt-5 flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={creating}
+                  onClick={() => setShowCreate(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" loading={creating}>Create resource</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
