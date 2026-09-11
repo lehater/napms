@@ -7,7 +7,7 @@ import {
   shortId,
 } from "@/features/catalogues/components/CatalogueIdentity"
 import { StatusBadge } from "@/components/ui/StatusBadge"
-import { PolicyViewControls } from "@/features/policy/PolicyViewControls"
+import { PolicyViewControls } from "@/features/policy/components/PolicyViewControls"
 
 export function EffectivePolicyPage({
   onOpenRule,

@@ -3,9 +3,9 @@ import { Search } from "lucide-react"
 
 import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/Button"
-import { listCatalogueResourceWorkspace, type ResourceWorkspaceItemDto } from "@/features/catalogues/resourceWorkspaceApi"
-import { createDeploymentResourceBinding } from "@/features/catalogues/targetCatalogueCommands"
-import type { DeploymentInteractionSide } from "@/features/catalogues/targetCatalogueApi"
+import { listCatalogueResourceWorkspace, type ResourceWorkspaceItemDto } from "@/features/catalogues/api/resourceWorkspace"
+import { createDeploymentResourceBinding } from "@/features/catalogues/api/targetCommands"
+import type { DeploymentInteractionSide } from "@/features/catalogues/api/targetCatalogue"
 
 const inputClass =
   "min-h-10 min-w-0 rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"

@@ -7,7 +7,7 @@ import type {
   PortConstraintDto,
   TrafficAlternativeDto,
 } from "@/features/catalogues/model/interaction"
-import { DependencyBlockPanel } from "@/features/catalogues/DependencyBlockPanel"
+import { DependencyBlockPanel } from "@/features/catalogues/components/DependencyBlockPanel"
 import {
   retireInteractionDefinition,
   TargetCatalogueApiError,
@@ -15,11 +15,11 @@ import {
   updateInteractionTraffic,
   type DependencyGroupDto,
   type InteractionDefinitionDto,
-} from "@/features/catalogues/targetCatalogueCommands"
+} from "@/features/catalogues/api/targetCommands"
 import {
   listApplicationComponents,
   type ApplicationComponentDto,
-} from "@/features/catalogues/targetCatalogueApi"
+} from "@/features/catalogues/api/targetCatalogue"
 
 const inputClass =
   "min-h-10 w-full rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"

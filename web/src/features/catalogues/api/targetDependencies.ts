@@ -1,5 +1,5 @@
-import type { DependencyReferenceDto } from "@/features/catalogues/targetCatalogueCommands"
-import { TargetCatalogueApiError } from "@/features/catalogues/targetCatalogueCommands"
+import type { DependencyReferenceDto } from "@/features/catalogues/api/targetCommands"
+import { TargetCatalogueApiError } from "@/features/catalogues/api/targetCommands"
 
 export type RetirementSubjectPath =
   | "application-definition"

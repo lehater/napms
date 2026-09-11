@@ -4,7 +4,7 @@ import { ApiError } from "@/lib/api"
 import { getNormalizedPolicy, type NormalizedPolicyResponse } from "@/features/policy/api"
 import type { PortConstraintDto } from "@/features/catalogues/model/interaction"
 import { displayName } from "@/features/catalogues/components/CatalogueIdentity"
-import { PolicyViewControls } from "@/features/policy/PolicyViewControls"
+import { PolicyViewControls } from "@/features/policy/components/PolicyViewControls"
 
 function renderPorts(value: PortConstraintDto): string {
   if (value.kind === "Any" || value.kind === "NotApplicable") {

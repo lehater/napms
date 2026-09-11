@@ -3,16 +3,16 @@ import { ArrowLeft, Pencil, Plus, Search } from "lucide-react"
 
 import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/Button"
-import { AddDeploymentInteractionPanel } from "@/features/catalogues/AddDeploymentInteractionPanel"
-import { CataloguePager } from "@/features/catalogues/CataloguePager"
-import { DependencyBlockPanel } from "@/features/catalogues/DependencyBlockPanel"
-import { DeploymentEditPanel } from "@/features/catalogues/TargetCatalogueEditPanels"
+import { AddDeploymentInteractionPanel } from "@/features/catalogues/components/AddDeploymentInteractionPanel"
+import { CataloguePager } from "@/features/catalogues/components/CataloguePager"
+import { DependencyBlockPanel } from "@/features/catalogues/components/DependencyBlockPanel"
+import { DeploymentEditPanel } from "@/features/catalogues/components/TargetCatalogueEditPanels"
 import {
   retireDeploymentInteraction,
   TargetCatalogueApiError,
   type DependencyGroupDto,
-} from "@/features/catalogues/targetCatalogueCommands"
-import { readDeploymentInteractionLifecycle } from "@/features/catalogues/targetDeploymentInteractionLifecycle"
+} from "@/features/catalogues/api/targetCommands"
+import { readDeploymentInteractionLifecycle } from "@/features/catalogues/api/targetDeploymentInteractionLifecycle"
 import {
   listAvailableInteractions,
   listDeploymentConnectivity,
@@ -20,8 +20,8 @@ import {
   type ApplicationDeploymentDto,
   type DeploymentConnectivityDto,
   type DeploymentInteractionSide,
-} from "@/features/catalogues/targetCatalogueApi"
-import { resourceCount, trafficSummary } from "@/features/catalogues/targetPresentation"
+} from "@/features/catalogues/api/targetCatalogue"
+import { resourceCount, trafficSummary } from "@/features/catalogues/model/targetPresentation"
 
 const inputClass =
   "min-h-10 min-w-0 rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"

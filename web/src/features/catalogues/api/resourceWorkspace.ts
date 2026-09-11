@@ -1,5 +1,5 @@
 import { ApiError } from "@/lib/api"
-import type { ResourceDto } from "@/features/catalogues/catalogueApi"
+import type { ResourceDto } from "@/features/catalogues/api/catalogue"
 
 export type ResourceWorkspaceItemDto = ResourceDto & {
   currentFacts: {

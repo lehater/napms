@@ -3,13 +3,13 @@ import { Search } from "lucide-react"
 
 import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/Button"
-import { CataloguePager } from "@/features/catalogues/CataloguePager"
+import { CataloguePager } from "@/features/catalogues/components/CataloguePager"
 import {
   listAvailableInteractions,
   selectDeploymentInteraction,
   type InteractionDefinitionSummaryDto,
-} from "@/features/catalogues/targetCatalogueApi"
-import { trafficSummary } from "@/features/catalogues/targetPresentation"
+} from "@/features/catalogues/api/targetCatalogue"
+import { trafficSummary } from "@/features/catalogues/model/targetPresentation"
 
 const inputClass =
   "min-h-10 min-w-0 rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"

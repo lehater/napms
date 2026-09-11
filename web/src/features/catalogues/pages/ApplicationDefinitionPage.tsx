@@ -3,11 +3,11 @@ import { ArrowLeft, Pencil, Plus, Search } from "lucide-react"
 
 import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/Button"
-import { CataloguePager } from "@/features/catalogues/CataloguePager"
-import { InteractionDefinitionCreatePanel } from "@/features/catalogues/InteractionDefinitionCreatePanel"
-import { InteractionDefinitionEditPanel } from "@/features/catalogues/InteractionDefinitionEditPanel"
-import { ComponentEditPanel, DefinitionEditPanel } from "@/features/catalogues/TargetCatalogueEditPanels"
-import { CreateComponentPanel, CreateDeploymentPanel } from "@/features/catalogues/TargetCatalogueForms"
+import { CataloguePager } from "@/features/catalogues/components/CataloguePager"
+import { InteractionDefinitionCreatePanel } from "@/features/catalogues/components/InteractionDefinitionCreatePanel"
+import { InteractionDefinitionEditPanel } from "@/features/catalogues/components/InteractionDefinitionEditPanel"
+import { ComponentEditPanel, DefinitionEditPanel } from "@/features/catalogues/components/TargetCatalogueEditPanels"
+import { CreateComponentPanel, CreateDeploymentPanel } from "@/features/catalogues/components/TargetCatalogueForms"
 import {
   listApplicationComponents,
   listApplicationDeployments,
@@ -17,8 +17,8 @@ import {
   type ApplicationDefinitionDto,
   type ApplicationDeploymentSummaryDto,
   type InteractionDefinitionSummaryDto,
-} from "@/features/catalogues/targetCatalogueApi"
-import { trafficSummary } from "@/features/catalogues/targetPresentation"
+} from "@/features/catalogues/api/targetCatalogue"
+import { trafficSummary } from "@/features/catalogues/model/targetPresentation"
 
 type Tab = "overview" | "components" | "interactions" | "deployments"
 type TabFilters = { search: string; first: string; second: string; third: string }

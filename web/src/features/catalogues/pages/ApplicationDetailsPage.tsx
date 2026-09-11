@@ -4,7 +4,7 @@ import { Archive, ArrowLeft, Boxes, Link2, Pencil, Plus, RefreshCw } from "lucid
 import { ApiError } from "@/lib/api"
 import { shortId } from "@/features/catalogues/components/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
-import { DcsAuthoringPanel } from "@/features/catalogues/DcsAuthoringPanel"
+import { DcsAuthoringPanel } from "@/features/catalogues/components/DcsAuthoringPanel"
 import {
   createCatalogueComponent,
   createCatalogueDeployment,
@@ -22,7 +22,7 @@ import {
   type DeploymentResourceBindingDto,
   type PortConstraintDto,
   type ResourceDto,
-} from "@/features/catalogues/catalogueApi"
+} from "@/features/catalogues/api/catalogue"
 
 const inputClass =
   "min-h-10 w-full rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"

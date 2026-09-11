@@ -1,5 +1,5 @@
-import type { ApplicationCatalogueView } from "@/features/catalogues/ApplicationCataloguePage"
-import type { DeploymentInteractionSide } from "@/features/catalogues/targetCatalogueApi"
+import type { ApplicationCatalogueView } from "@/features/catalogues/pages/ApplicationCataloguePage"
+import type { DeploymentInteractionSide } from "@/features/catalogues/api/targetCatalogue"
 import type { RequestConnectivityContext } from "@/features/connectivity/model"
 
 export type Route =

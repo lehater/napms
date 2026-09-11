@@ -3,14 +3,14 @@ import { ChevronRight, Plus, Search } from "lucide-react"
 
 import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/Button"
-import { CataloguePager } from "@/features/catalogues/CataloguePager"
-import { CreateDefinitionPanel } from "@/features/catalogues/TargetCatalogueForms"
+import { CataloguePager } from "@/features/catalogues/components/CataloguePager"
+import { CreateDefinitionPanel } from "@/features/catalogues/components/TargetCatalogueForms"
 import {
   listApplicationDefinitions,
   listApplicationDeployments,
   type ApplicationDefinitionSummaryDto,
   type ApplicationDeploymentSummaryDto,
-} from "@/features/catalogues/targetCatalogueApi"
+} from "@/features/catalogues/api/targetCatalogue"
 
 export type ApplicationCatalogueView = "definitions" | "deployments"
 

@@ -47,7 +47,7 @@ M1 backend repository boundary
 
 ## M6 — Web final locality
 
-Status: `ownership classified; implementation pending` on branch `refactor/m6-web-locality`.
+Status: `M6 implementation complete; awaiting architectural review` on branch `refactor/m6-web-locality`.
 
 Goal: make the frontend feature-local without creating a new generic shared semantic layer.
 

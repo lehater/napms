@@ -5,19 +5,17 @@ ROOT = Path(__file__).parents[3]
 WEB = ROOT / "web" / "src"
 ROOT_API = WEB / "api.ts"
 SHARED_API = WEB / "lib" / "api.ts"
-REQUIREMENTS_API = WEB / "features" / "requirements" / "api.ts"
-DECISIONS_API = WEB / "features" / "decisions" / "api.ts"
-RULES_API = WEB / "features" / "rules" / "api.ts"
-POLICY_API = WEB / "features" / "policy" / "api.ts"
-CONNECTIVITY_API = WEB / "features" / "connectivity" / "api.ts"
+REQUIREMENTS_API = WEB / "features" / "requirements" / "api" / "index.ts"
+DECISIONS_API = WEB / "features" / "decisions" / "api" / "index.ts"
+RULES_API = WEB / "features" / "rules" / "api" / "index.ts"
+POLICY_API = WEB / "features" / "policy" / "api" / "index.ts"
+CONNECTIVITY_API = WEB / "features" / "connectivity" / "api" / "index.ts"
 
 
 def _assert_feature_local(feature_api: Path, implementations: tuple[str, ...]) -> None:
-    root_source = ROOT_API.read_text(encoding="utf-8")
     feature_source = feature_api.read_text(encoding="utf-8")
     assert feature_api.is_file()
     for implementation in implementations:
-        assert implementation not in root_source
         assert implementation in feature_source
 
 
@@ -92,18 +90,5 @@ def test_scoped_connectivity_api_implementation_is_feature_local():
     )
 
 
-def test_root_api_only_compatibility_exports_localized_slices():
-    root_source = ROOT_API.read_text(encoding="utf-8")
-    assert 'from "@/features/requirements/api"' in root_source
-    assert 'from "@/features/decisions/api"' in root_source
-    assert 'from "@/features/rules/api"' in root_source
-    assert 'from "@/features/policy/api"' in root_source
-    assert 'from "@/features/connectivity/api"' in root_source
-    assert 'from "@/lib/api"' in root_source
-    assert '"/api/v1/connectivity-requirements' not in root_source
-    assert '"/api/v1/connectivity-decisions' not in root_source
-    assert '"/api/v1/access-rules' not in root_source
-    assert '"/api/v1/policy-views' not in root_source
-    assert '"/api/v1/effective-desired-policy' not in root_source
-    assert '"/api/v1/normalized-policy' not in root_source
-    assert '"/api/v1/connectivity' not in root_source
+def test_root_api_compatibility_facade_is_absent():
+    assert not ROOT_API.exists()

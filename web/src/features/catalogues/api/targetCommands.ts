@@ -6,7 +6,7 @@ import type {
   ApplicationDeploymentDto,
   CatalogueLifecycleState,
   DeploymentInteractionSide,
-} from "@/features/catalogues/targetCatalogueApi"
+} from "@/features/catalogues/api/targetCatalogue"
 
 export type DependencyReferenceDto = {
   reference: string

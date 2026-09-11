@@ -3,14 +3,14 @@ import { ArrowLeft, Plus, Search } from "lucide-react"
 
 import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/Button"
-import { CataloguePager } from "@/features/catalogues/CataloguePager"
-import { ResourceMembershipPanel } from "@/features/catalogues/ResourceMembershipPanel"
-import { endDeploymentResourceBinding } from "@/features/catalogues/targetCatalogueCommands"
+import { CataloguePager } from "@/features/catalogues/components/CataloguePager"
+import { ResourceMembershipPanel } from "@/features/catalogues/components/ResourceMembershipPanel"
+import { endDeploymentResourceBinding } from "@/features/catalogues/api/targetCommands"
 import {
   listDeploymentInteractionResources,
   type DeploymentInteractionSide,
   type ResourceSetMemberDto,
-} from "@/features/catalogues/targetCatalogueApi"
+} from "@/features/catalogues/api/targetCatalogue"
 
 const inputClass =
   "min-h-10 min-w-0 rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"

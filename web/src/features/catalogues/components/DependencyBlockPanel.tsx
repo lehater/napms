@@ -2,15 +2,15 @@ import { useEffect, useState } from "react"
 
 import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/Button"
-import { CataloguePager } from "@/features/catalogues/CataloguePager"
+import { CataloguePager } from "@/features/catalogues/components/CataloguePager"
 import type {
   DependencyGroupDto,
   DependencyReferenceDto,
-} from "@/features/catalogues/targetCatalogueCommands"
+} from "@/features/catalogues/api/targetCommands"
 import {
   listRetirementDependencyPage,
   type RetirementSubjectPath,
-} from "@/features/catalogues/targetCatalogueDependencies"
+} from "@/features/catalogues/api/targetDependencies"
 
 function displayKind(kind: string) {
   return kind.replace(/([a-z])([A-Z])/g, "$1 $2")
