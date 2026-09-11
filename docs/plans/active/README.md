@@ -2,7 +2,7 @@
 
 Current: `PLAN-I33-code-structure-locality-cleanup.md`
 Goal: I33 Code Structure Locality Cleanup removes proven residual compatibility/locality debt after completed I32 without changing product, domain, API or persistence semantics.
-Current task: S2 — removal of residual Catalogue HTTP compatibility facades.
+Current task: S3 — localization of Policy Export JSON serialization.
 
 Working branch: `refactor/code-structure-locality`.
 
@@ -10,11 +10,11 @@ Working branch: `refactor/code-structure-locality`.
 
 Read first:
 - `docs/plans/active/PLAN-I33-code-structure-locality-cleanup.md`
-- `tests/application_catalogue/test_temporal_curation_http.py`
-- `tests/resource_catalogue/test_temporal_curation_http.py`
+- `src/napms/policy_export/adapters/http_json.py`
+- `tests/policy_export/test_http_json.py`
 - `tests/architecture/test_dependency_rules.py`
 
-Expand only to the PostgreSQL integration consumer and failures directly caused by S2. Do not redesign HTTP APIs, change route contracts or application/domain semantics, resize legacy owner modules, or touch other runtime modules.
+Expand only to the named production consumers and failures directly caused by S3. Replace import paths only: do not change the JSON contract, application/domain types or consuming adapter behavior, and do not create shared infrastructure.
 
 ## Blockers
 
@@ -22,8 +22,8 @@ None known.
 
 ## Gate
 
-The two Catalogue HTTP facades must be absent, imports and tests must bind directly to semantic owners, owner-local tests must pass, the architecture guard must prevent all `runtime/catalogue_*_http.py` facades, and `make check` must pass.
+The serializer and its test must be owner-local, all consumers must use `napms.policy_export.adapters.http_json`, the runtime source and old references must be absent, the architecture guard must protect this state, and `make check` must pass.
 
 ## Next
 
-Execute S2, validate, push, then coordinator review.
+Execute S3, validate, push, then coordinator review.

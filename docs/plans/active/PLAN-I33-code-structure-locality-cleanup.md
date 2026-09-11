@@ -23,25 +23,32 @@ Canonical inputs:
 - Move config/composition/local-seed tests from `tests/runtime/` to `tests/bootstrap/`.
 - Change the architecture guard to prevent these runtime facades from returning.
 
-## Current slice S2
+## Completed slice S2
 
 - Remove residual Catalogue HTTP compatibility facades from `src/napms/runtime/`.
 - Bind production imports and tests directly to their Application Catalogue or Resource Catalogue semantic owners.
 - Strengthen the architecture guard so `runtime` cannot contain `catalogue_*_http.py` facades.
 
+## Current slice S3
+
+- Move Policy Export JSON serialization from process `runtime` to the `policy_export` semantic owner.
+- Bind all production consumers and serializer tests directly to the owner-local adapter.
+- Add an architecture guard that protects the owner-local serializer location.
+
 ## Explicit non-goals
 
-- Do not redesign the HTTP API or change route paths/contracts.
-- Do not change application/domain semantics.
-- Do not refactor `legacy_curation.py` or `legacy_temporal.py` by size.
-- Do not touch other runtime modules.
+- Do not change the JSON contract.
+- Do not change application/domain types.
+- Do not refactor consuming HTTP adapters.
+- Do not touch `legacy_http_api.py` except for its import path.
+- Do not create a shared or global infrastructure package.
 
 ## Exit criteria
 
-- The two Catalogue HTTP facade files are absent.
-- Production consumers import directly from semantic owners or shared runtime support.
-- Catalogue HTTP tests live under their semantic-owner test packages and use owner routers directly.
-- The architecture guard prevents any `catalogue_*_http.py` facade in `runtime`.
+- The serializer lives at `src/napms/policy_export/adapters/http_json.py`.
+- The obsolete runtime serializer is absent.
+- All production consumers and tests import the owner-local serializer.
+- The architecture guard protects the owner-local location.
 - `make check` passes.
 
 ## Blockers

@@ -35,7 +35,7 @@ from napms.connectivity_decision.domain.model import (
 from napms.policy_export.application.normalization_ports import DcsProjectionDecodeError
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
 from napms.runtime.http_support import PublicApiError, authenticated_actor, set_outcome
-from napms.runtime.normalized_policy_json import port_constraint_json
+from napms.policy_export.adapters.http_json import port_constraint_json
 
 
 class DecisionEvidenceReferenceValue(BaseModel):

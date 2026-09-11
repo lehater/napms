@@ -150,7 +150,7 @@ from napms.runtime.auth import (
     InMemorySessionStore,
     LocalPasswordAuthenticator,
 )
-from napms.runtime.normalized_policy_json import (
+from napms.policy_export.adapters.http_json import (
     normalized_policy_export_json,
     port_constraint_json,
     snapshot_diagnostic_json,

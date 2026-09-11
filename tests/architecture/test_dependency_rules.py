@@ -25,6 +25,7 @@ CONNECTIVITY_DECISION_HTTP = CONNECTIVITY_DECISION / "adapters" / "http.py"
 ACCESS_POLICY_HTTP = ACCESS_POLICY / "adapters" / "http.py"
 REQUIREMENT_POLICY_ALIGNMENT_HTTP = REQUIREMENT_POLICY_ALIGNMENT / "adapters" / "http.py"
 POLICY_EXPORT_HTTP = POLICY_EXPORT / "adapters" / "http.py"
+POLICY_EXPORT_HTTP_JSON = POLICY_EXPORT / "adapters" / "http_json.py"
 SCOPED_CONNECTIVITY_HTTP = SCOPED_CONNECTIVITY_INVENTORY / "adapters" / "http.py"
 PROCESS_HTTP = RUNTIME / "http_api.py"
 LEGACY_PROCESS_HTTP = RUNTIME / "legacy_http_api.py"
@@ -159,6 +160,11 @@ def test_catalogue_http_endpoints_are_not_implemented_in_runtime():
 def test_catalogue_owner_http_packages_exist():
     assert APPLICATION_CATALOGUE_HTTP.is_dir()
     assert RESOURCE_CATALOGUE_HTTP.is_dir()
+
+
+def test_policy_export_json_serialization_is_owner_local():
+    assert POLICY_EXPORT_HTTP_JSON.is_file()
+    assert not (RUNTIME / "normalized_policy_json.py").exists()
 
 
 def test_feature_http_is_owner_local():

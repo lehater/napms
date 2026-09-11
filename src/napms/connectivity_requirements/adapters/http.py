@@ -52,7 +52,7 @@ from napms.runtime.http_support import (
     authenticated_actor,
     set_outcome,
 )
-from napms.runtime.normalized_policy_json import port_constraint_json
+from napms.policy_export.adapters.http_json import port_constraint_json
 
 
 class RequirementApplicabilityValue(BaseModel):
