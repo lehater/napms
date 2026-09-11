@@ -57,7 +57,7 @@ export function ConnectivityInventoryRows({
           const componentCell = (
             <div>
               <div className="font-medium text-[var(--napms-color-text-primary)]">{component.displayName?.trim() || component.componentDeploymentId}</div>
-              {component.displayName?.trim() ? <div className="mt-0.5 font-mono text-[11px] text-[var(--napms-color-text-muted)]">{component.componentDeploymentId}</div> : null}
+              {component.displayName?.trim() ? <div className="mt-0.5 font-mono text-[var(--napms-font-size-caption)] text-[var(--napms-color-text-muted)]">{component.componentDeploymentId}</div> : null}
             </div>
           )
 
