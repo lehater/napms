@@ -2,29 +2,25 @@
 
 Current: `PLAN-I32-code-structure-refactoring.md`
 Goal: align physical code ownership with the accepted context-first Clean/Hexagonal architecture without changing product/domain semantics.
-Current task: WP-1 — execute backend structural migration stages M1-M4 in one Draft PR, starting with the Application Catalogue HTTP pilot.
+Current task: WP-1 — validate the completed M1-M4 backend structural migration in PR #65 and fix only gate regressions.
 
 ## Working set
 
 Read first:
-- `docs/architecture/code-structure.md`
-- `docs/engineering/code-structure-refactoring-roadmap.md`
 - `docs/plans/active/PLAN-I32-code-structure-refactoring.md`
-- `src/napms/runtime/composition.py`
-- `tests/architecture/test_dependency_rules.py`
+- `src/napms/bootstrap/composition.py`
+- `tests/architecture/test_bootstrap_structure.py`
 
-Expand only to the current stage's owner-local HTTP/adapters/tests and the smallest runtime/composition files needed to preserve wiring. Do not load M5/M6 work by default.
+Expand only to the failing gate's owner-local HTTP/adapters/tests, `runtime/http_api.py` / `legacy_http_api.py`, or the smallest Harness file needed to diagnose a reported failure. Do not load M5/M6 work by default.
 
 ## Blockers
 
-None known.
+Final hosted gates are running; failures are treated as concrete WP-1 blockers until resolved.
 
 ## Gate
 
-Current local gate is M1: move the two I31 target Catalogue HTTP routers to ACC-owned HTTP adapters with no behavior/API change, update imports/tests, add executable architecture protection, and validate the smallest applicable core/PostgreSQL/HTTP/E2E plus Harness/knowledge checks available in the environment. Do not continue M2 if the pilot creates worse indirection or unresolved P0/P1 findings.
-
-M1-M4 accumulate in one Draft PR. Final hosted gates run once on the complete Ready-for-review backend diff before squash integration.
+M1-M4 are implemented in PR #65 and the PR is Ready for review. The final gate is the repository's hosted Ready-for-review workflow set. Preserve behavior/API semantics and fix only failures caused by this structural migration. Harness plan validation, architecture rules, core tests, PostgreSQL persistence, Docker local runtime, and browser journey checks must be green before squash integration.
 
 ## Next
 
-Move `runtime/catalogue_target_http.py` and `runtime/catalogue_target_retirement_http.py` into `application_catalogue/adapters/http/`, update their internal/runtime/test imports and architecture rules, then evaluate the M1 locality result before classifying remaining Catalogue HTTP for M2.
+Re-run the final gate after each targeted fix. When all required hosted checks are green, record WP-1 completion and prepare the single squash integration; keep M5 backend granularity and M6 Web locality out of this PR.
