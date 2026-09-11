@@ -153,19 +153,7 @@ def test_application_catalogue_target_http_is_owner_local():
 
 
 def test_catalogue_http_endpoints_are_not_implemented_in_runtime():
-    violations = []
-    for path in RUNTIME.glob("catalogue_*_http.py"):
-        tree = ast.parse(path.read_text(encoding="utf-8"))
-        for node in ast.walk(tree):
-            for decorator in getattr(node, "decorator_list", ()):
-                if (
-                    isinstance(decorator, ast.Call)
-                    and isinstance(decorator.func, ast.Attribute)
-                    and isinstance(decorator.func.value, ast.Name)
-                    and decorator.func.value.id == "router"
-                ):
-                    violations.append((path, decorator.func.attr))
-    assert violations == []
+    assert list(RUNTIME.glob("catalogue_*_http.py")) == []
 
 
 def test_catalogue_owner_http_packages_exist():

@@ -2,7 +2,7 @@
 
 Current: `PLAN-I33-code-structure-locality-cleanup.md`
 Goal: I33 Code Structure Locality Cleanup removes proven residual compatibility/locality debt after completed I32 without changing product, domain, API or persistence semantics.
-Current task: S1 — removal of obsolete runtime bootstrap facades.
+Current task: S2 — removal of residual Catalogue HTTP compatibility facades.
 
 Working branch: `refactor/code-structure-locality`.
 
@@ -10,10 +10,11 @@ Working branch: `refactor/code-structure-locality`.
 
 Read first:
 - `docs/plans/active/PLAN-I33-code-structure-locality-cleanup.md`
-- `src/napms/bootstrap/local_seed.py`
-- `tests/architecture/test_bootstrap_structure.py`
+- `tests/application_catalogue/test_temporal_curation_http.py`
+- `tests/resource_catalogue/test_temporal_curation_http.py`
+- `tests/architecture/test_dependency_rules.py`
 
-Expand only to the three owner-local bootstrap tests and failures directly caused by S1. Do not touch other `runtime` HTTP/auth/support files, `composition/`, domain/application behavior or other structural cleanup.
+Expand only to the PostgreSQL integration consumer and failures directly caused by S2. Do not redesign HTTP APIs, change route contracts or application/domain semantics, resize legacy owner modules, or touch other runtime modules.
 
 ## Blockers
 
@@ -21,8 +22,8 @@ None known.
 
 ## Gate
 
-The five obsolete facade files must be absent, remaining consumers must use `napms.bootstrap`, owner-local tests must live under `tests/bootstrap/`, the architecture guard must prevent facade return, and `make check` must pass.
+The two Catalogue HTTP facades must be absent, imports and tests must bind directly to semantic owners, owner-local tests must pass, the architecture guard must prevent all `runtime/catalogue_*_http.py` facades, and `make check` must pass.
 
 ## Next
 
-Execute S1, validate, push, then coordinator review.
+Execute S2, validate, push, then coordinator review.

@@ -9,6 +9,9 @@ from fastapi.testclient import TestClient
 from napms.resource_catalogue.application._temporal_curation import (
     TemporalCurationOutcome,
 )
+from napms.resource_catalogue.adapters.http.curation import (
+    create_resource_catalogue_curation_router,
+)
 from napms.resource_catalogue.application.responsibility_curation import (
     ResponsibilityMutationResult,
 )
@@ -22,7 +25,6 @@ from napms.resource_catalogue.domain.responsibility import (
     ResourceResponsibilityRole,
 )
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.catalogue_curation_http import create_catalogue_curation_router
 from napms.runtime.http_api import PublicApiError
 
 
@@ -100,7 +102,7 @@ def _client(*, affiliation_outcome=TemporalCurationOutcome.CREATED):
         )
 
     app.include_router(
-        create_catalogue_curation_router(
+        create_resource_catalogue_curation_router(
             sessions=sessions,
             open_scope=open_scope,
             clock=lambda: NOW,

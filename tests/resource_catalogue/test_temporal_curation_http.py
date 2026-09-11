@@ -1,19 +1,13 @@
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from types import SimpleNamespace
-from uuid import UUID
-
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from napms.application_catalogue.application.binding_curation import (
-    DeploymentBindingMutationResult,
+from napms.resource_catalogue.adapters.http.temporal import (
+    create_resource_catalogue_temporal_router,
 )
-from napms.application_catalogue.application.structure_curation import (
-    CatalogueMutationOutcome,
-)
-from napms.application_catalogue.domain.model import DeploymentResourceBinding
 from napms.resource_catalogue.application._temporal_curation import (
     TemporalCurationOutcome,
 )
@@ -37,15 +31,11 @@ from napms.resource_catalogue.domain.responsibility import (
     ResourceResponsibilityRole,
 )
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.catalogue_temporal_curation_http import (
-    create_catalogue_temporal_curation_router,
-)
 from napms.runtime.http_api import PublicApiError
 
 
 NOW = datetime(2026, 9, 10, 12, 0, tzinfo=timezone.utc)
 START = datetime(2026, 9, 9, 12, 0, tzinfo=timezone.utc)
-DEPLOYMENT_ID = UUID("00000000-0000-0000-0000-000000006101")
 
 
 class Recorder:
@@ -93,17 +83,6 @@ def _client_for():
         end_provenance_reference="provenance:responsibility:end",
         version=4,
     )
-    ended_binding = DeploymentResourceBinding(
-        reference_id="binding:orders",
-        component_deployment_id=DEPLOYMENT_ID,
-        resource_reference="resource:orders",
-        valid_from=START,
-        valid_to=NOW,
-        provenance_reference="provenance:binding:create",
-        end_provenance_reference="provenance:binding:end",
-        version=5,
-    )
-
     replace_realization = Recorder(
         RealizationMutationResult(
             TemporalCurationOutcome.UPDATED,
@@ -126,23 +105,12 @@ def _client_for():
             result_version=ended_responsibility.version,
         )
     )
-    end_binding = Recorder(
-        DeploymentBindingMutationResult(
-            CatalogueMutationOutcome.UPDATED,
-            binding=ended_binding,
-            result_version=ended_binding.version,
-        )
-    )
-
     resources = SimpleNamespace(
         replace_realization=replace_realization,
         end_scope_affiliation=end_scope_affiliation,
         end_responsibility=end_responsibility,
     )
-    applications = SimpleNamespace(
-        end_deployment_resource_binding=end_binding,
-    )
-    scope = SimpleNamespace(resources=resources, applications=applications)
+    scope = SimpleNamespace(resources=resources)
 
     @contextmanager
     def open_scope():
@@ -161,7 +129,7 @@ def _client_for():
         )
 
     app.include_router(
-        create_catalogue_temporal_curation_router(
+        create_resource_catalogue_temporal_router(
             sessions=sessions,
             open_scope=open_scope,
             clock=lambda: NOW,
@@ -172,12 +140,11 @@ def _client_for():
         replace_realization,
         end_scope_affiliation,
         end_responsibility,
-        end_binding,
     )
 
 
 def test_replace_realization_uses_selected_fact_version_and_server_context():
-    client, recorder, _, _, _ = _client_for()
+    client, recorder, _, _ = _client_for()
 
     response = client.post(
         "/api/v1/catalogues/resource-realizations/realization:old/replacement",
@@ -203,7 +170,7 @@ def test_replace_realization_uses_selected_fact_version_and_server_context():
 
 
 def test_end_scope_affiliation_uses_relation_reference_version_and_server_context():
-    client, _, recorder, _, _ = _client_for()
+    client, _, recorder, _ = _client_for()
 
     response = client.post(
         "/api/v1/catalogues/resource-scope-affiliations/affiliation:orders/end",
@@ -226,7 +193,7 @@ def test_end_scope_affiliation_uses_relation_reference_version_and_server_contex
 
 
 def test_end_responsibility_uses_relation_reference_version_and_server_context():
-    client, _, _, recorder, _ = _client_for()
+    client, _, _, recorder = _client_for()
 
     response = client.post(
         "/api/v1/catalogues/resource-responsibilities/responsibility:orders/end",
@@ -248,31 +215,8 @@ def test_end_responsibility_uses_relation_reference_version_and_server_context()
     assert command.idempotency_key == "responsibility-end-1"
 
 
-def test_end_binding_uses_relation_reference_version_and_server_context():
-    client, _, _, _, recorder = _client_for()
-
-    response = client.post(
-        "/api/v1/catalogues/deployment-resource-bindings/binding:orders/end",
-        json={
-            "validTo": NOW.isoformat(),
-            "expectedVersion": 4,
-        },
-        headers={"Idempotency-Key": "binding-end-1"},
-        cookies={"napms_session": "session-1"},
-    )
-
-    assert response.status_code == 200
-    assert response.json()["binding"]["version"] == 5
-    command = recorder.calls[0]
-    assert command.binding_reference == "binding:orders"
-    assert command.expected_version == 4
-    assert command.actor_id == "actor-1"
-    assert command.effective_time == NOW
-    assert command.idempotency_key == "binding-end-1"
-
-
 def test_temporal_mutation_rejects_client_authority_scope_substitution():
-    client, _, recorder, _, _ = _client_for()
+    client, _, recorder, _ = _client_for()
 
     response = client.post(
         "/api/v1/catalogues/resource-scope-affiliations/affiliation:orders/end",
@@ -290,7 +234,7 @@ def test_temporal_mutation_rejects_client_authority_scope_substitution():
 
 
 def test_temporal_mutation_requires_authenticated_session():
-    client, recorder, _, _, _ = _client_for()
+    client, recorder, _, _ = _client_for()
 
     response = client.post(
         "/api/v1/catalogues/resource-realizations/realization:old/replacement",
