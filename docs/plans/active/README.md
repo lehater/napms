@@ -1,8 +1,8 @@
 # Active execution
 
 Current: `PLAN-target-code-structure-migration.md`
-Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M5 — implementation and architectural review complete; final PostgreSQL evidence before milestone PR.
+Goal: migrate NAPMS to the accepted final backend and Web taxonomy without product/domain semantic change.
+Current task: M6 — implement final Web locality in two atomic commits on `refactor/m6-web-locality`.
 
 ## Working set
 
@@ -11,7 +11,7 @@ Read first:
 - `docs/architecture/code-structure.md`
 - `docs/engineering/target-code-structure-migration-roadmap.md`
 
-Expand only if needed: `docs/requirements/application-catalogue-target.md`.
+Expand only if needed: current `web/src` files being moved.
 
 ## Blockers
 
@@ -19,10 +19,8 @@ None.
 
 ## Gate
 
-The accepted M5 scope is only the Application Catalogue capability split into `curation / discovery / target`. Architectural review passed: final root topology is explicit, legacy flat modules are absent, cross-capability direction is enforced, and Resource Catalogue was deliberately left unsplit because current change locality does not justify extra package boundaries. Validation already passed: targeted ACC 151, architecture 67, `make test` 810 with 141 deselected, harness and knowledge checks.
-
-A real PostgreSQL integration run without skips is still required before the final M5 PR. Hosted gates remain deferred until that evidence is green.
+M5 is complete in PR #78, squash merge `3bd5525061a382b77d6298ea5d607bd7f2f63179`. M6 ownership is classified: application bootstrap/routing belongs under `app/`; feature HTTP/model/UI belongs under the owning feature; root `api.ts` must disappear; root `components` must contain only shared UI primitives; `lib` remains technical only. No generic shared semantic model/package is introduced.
 
 ## Next
 
-Run `make postgres-test` against configured PostgreSQL. If all integration tests pass without skips, open the final M5 milestone PR and run hosted gates. Do not start M6 before M5 is merged.
+Implement root app/API ownership cleanup, then normalize every feature to applicable `api / model / components / pages` directories, add Web structure guards, run local gates, and stop for architectural review before the M6 PR.
