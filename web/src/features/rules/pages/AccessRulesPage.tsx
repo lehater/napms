@@ -1,15 +1,29 @@
 import { useEffect, useState } from "react"
-import { ChevronRight, CircleAlert } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 
-import { ApiError } from "@/lib/api"
-import { listAccessRules } from "@/features/rules/api"
-import type { RuleDto } from "@/features/rules/model/rule"
+import { Button } from "@/design-system/components/Button"
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHeadCell,
+  DataTableHeader,
+  DataTableHeaderRow,
+  DataTableRow,
+} from "@/design-system/components/DataTable"
+import { EmptyState, ErrorState, LoadingState } from "@/design-system/components/PageState"
+import { PageHeader } from "@/design-system/layout/PageHeader"
+import { PageWorkspace } from "@/design-system/layout/PageWorkspace"
+import { ListPagination } from "@/design-system/patterns/list/ListPage"
+import { Surface } from "@/design-system/primitives/Surface"
 import {
   CatalogueIdentity,
   shortId,
 } from "@/features/catalogues/components/CatalogueIdentity"
-import { Button } from "@/components/ui/Button"
-import { StatusBadge } from "@/components/ui/StatusBadge"
+import { listAccessRules } from "@/features/rules/api"
+import { RuleOperationalStatus } from "@/features/rules/components/RuleStatus"
+import type { RuleDto } from "@/features/rules/model/rule"
+import { ApiError } from "@/lib/api"
 
 export function AccessRulesPage({
   page,
@@ -30,7 +44,6 @@ export function AccessRulesPage({
     let active = true
     setLoading(true)
     setError(null)
-
     void listAccessRules(page)
       .then((result) => {
         if (!active) return
@@ -39,162 +52,76 @@ export function AccessRulesPage({
         setAmbiguousScopes(result.ambiguousScopes.map((item) => item.scope))
       })
       .catch((caught) => {
-        if (!active) return
-        setError(
-          caught instanceof ApiError
-            ? caught
-            : new ApiError(500, "InternalError", "Access Rules could not be loaded."),
-        )
+        if (active) setError(caught instanceof ApiError ? caught : new ApiError(500, "InternalError", "Access Rules could not be loaded."))
       })
-      .finally(() => {
-        if (active) setLoading(false)
-      })
-
-    return () => {
-      active = false
-    }
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
   }, [page])
 
   return (
-    <div className="mx-auto max-w-[1280px]">
-      <header className="mb-6">
-        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
-          Access Policy
-        </div>
-        <h1 className="text-[28px] font-bold tracking-tight text-[#172033]">
-          Access Rules
-        </h1>
-        <p className="mt-2 max-w-3xl text-sm text-[#64748B]">
-          Authoritative Rules visible through your effective ReadAccessRule authority.
-        </p>
-      </header>
+    <PageWorkspace>
+      <PageHeader title="Access Rules" description="Authoritative Rules visible through your effective ReadAccessRule authority." />
 
       {ambiguousScopes.length > 0 ? (
-        <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+        <div className="rounded-[var(--napms-control-radius)] border border-[var(--napms-color-warning-dot)] bg-[var(--napms-color-warning-bg)] p-4 text-sm text-[var(--napms-color-warning)]">
           <div className="font-semibold">Some scopes are fail-closed</div>
-          <div className="mt-1">
-            {ambiguousScopes.length} scope(s) have ambiguous read authority and are not
-            included in this list.
-          </div>
+          <div className="mt-1">{ambiguousScopes.length} scope(s) have ambiguous read authority and are not included in this list.</div>
         </div>
       ) : null}
 
-      {error ? (
-        <div
-          role="alert"
-          className="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800"
-        >
-          <div className="flex gap-3">
-            <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            <div>
-              <div className="font-semibold">{error.code}</div>
-              <div className="mt-1">{error.message}</div>
-              {error.correlationId ? (
-                <div className="mt-2 text-xs">Correlation: {error.correlationId}</div>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {error ? <ErrorState message={`${error.code}: ${error.message}${error.correlationId ? ` · Correlation: ${error.correlationId}` : ""}`} /> : null}
 
-      <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
-        <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
-          <div>
-            <h2 className="text-base font-semibold text-[#172033]">Authorized Rules</h2>
-            <p className="mt-1 text-xs text-[#64748B]">Page {page}</p>
-          </div>
+      <Surface className="min-w-0 overflow-hidden">
+        <div className="border-b border-[var(--napms-color-border)] px-5 py-4">
+          <h2 className="text-base font-semibold text-[var(--napms-color-text-primary)]">Authorized Rules</h2>
+          <p className="mt-1 text-xs text-[var(--napms-color-text-secondary)]">Page {page}</p>
         </div>
 
         {loading ? (
-          <div className="p-8 text-sm text-[#64748B]">Loading Access Rules…</div>
+          <LoadingState>Loading Access Rules…</LoadingState>
         ) : rules.length === 0 ? (
-          <div className="p-10 text-center">
-            <div className="text-sm font-semibold text-[#334155]">
-              No visible Access Rules
-            </div>
-            <div className="mt-2 text-sm text-[#64748B]">
-              No authoritative Rules are currently visible through your read authority.
-            </div>
-          </div>
+          <EmptyState title="No visible Access Rules" description="No authoritative Rules are currently visible through your read authority." />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[920px] border-collapse text-left text-sm">
-              <thead className="bg-[#F8FAFC] text-xs uppercase tracking-wide text-[#64748B]">
-                <tr>
-                  <th className="px-5 py-3 font-semibold">Rule ID</th>
-                  <th className="px-5 py-3 font-semibold">Source</th>
-                  <th className="px-5 py-3 font-semibold">Destination</th>
-                  <th className="px-5 py-3 font-semibold">DCS revision</th>
-                  <th className="px-5 py-3 font-semibold">Scope</th>
-                  <th className="px-5 py-3 font-semibold">State</th>
-                  <th className="w-12 px-5 py-3" aria-label="Open" />
-                </tr>
-              </thead>
-              <tbody>
-                {rules.map((rule) => (
-                  <tr
-                    key={rule.ruleId}
-                    className="border-t border-[#E2E8F0] hover:bg-[#F8FAFC]"
-                  >
-                    <td className="px-5 py-3 font-mono text-xs text-[#334155]">
-                      {shortId(rule.ruleId)}
-                    </td>
-                    <td className="px-5 py-3">
-                      <CatalogueIdentity
-                        name={rule.catalogue?.sourceDisplayName}
-                        id={rule.semanticIdentity.sourceComponentDeploymentId}
-                      />
-                    </td>
-                    <td className="px-5 py-3">
-                      <CatalogueIdentity
-                        name={rule.catalogue?.destinationDisplayName}
-                        id={rule.semanticIdentity.destinationComponentDeploymentId}
-                      />
-                    </td>
-                    <td className="px-5 py-3">
-                      <CatalogueIdentity
-                        name={rule.catalogue?.dcsDisplayName}
-                        id={rule.semanticIdentity.dcsContractRevisionId}
-                      />
-                    </td>
-                    <td className="px-5 py-3">{rule.governanceScope}</td>
-                    <td className="px-5 py-3">
-                      <StatusBadge value={rule.operationalState} />
-                    </td>
-                    <td className="px-5 py-3">
-                      <button
-                        type="button"
-                        aria-label={`Open Rule ${rule.ruleId}`}
-                        className="grid size-8 place-items-center rounded-md text-[#64748B] hover:bg-[#E2E8F0] hover:text-[#172033]"
-                        onClick={() => onOpenRule(rule.ruleId)}
-                      >
-                        <ChevronRight className="size-4" aria-hidden="true" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable minWidth={920}>
+            <DataTableHeader>
+              <DataTableHeaderRow>
+                <DataTableHeadCell>Rule ID</DataTableHeadCell>
+                <DataTableHeadCell>Source</DataTableHeadCell>
+                <DataTableHeadCell>Destination</DataTableHeadCell>
+                <DataTableHeadCell>DCS revision</DataTableHeadCell>
+                <DataTableHeadCell>Scope</DataTableHeadCell>
+                <DataTableHeadCell>State</DataTableHeadCell>
+                <DataTableHeadCell className="w-12" aria-label="Open" />
+              </DataTableHeaderRow>
+            </DataTableHeader>
+            <DataTableBody>
+              {rules.map((rule) => (
+                <DataTableRow key={rule.ruleId}>
+                  <DataTableCell className="font-mono text-xs text-[var(--napms-color-text-body)]">{shortId(rule.ruleId)}</DataTableCell>
+                  <DataTableCell><CatalogueIdentity name={rule.catalogue?.sourceDisplayName} id={rule.semanticIdentity.sourceComponentDeploymentId} /></DataTableCell>
+                  <DataTableCell><CatalogueIdentity name={rule.catalogue?.destinationDisplayName} id={rule.semanticIdentity.destinationComponentDeploymentId} /></DataTableCell>
+                  <DataTableCell><CatalogueIdentity name={rule.catalogue?.dcsDisplayName} id={rule.semanticIdentity.dcsContractRevisionId} /></DataTableCell>
+                  <DataTableCell>{rule.governanceScope}</DataTableCell>
+                  <DataTableCell><RuleOperationalStatus state={rule.operationalState} /></DataTableCell>
+                  <DataTableCell>
+                    <button type="button" aria-label={`Open Rule ${rule.ruleId}`} className="grid size-8 place-items-center rounded-[var(--napms-control-radius)] text-[var(--napms-color-text-secondary)] hover:bg-[var(--napms-color-surface-muted)] hover:text-[var(--napms-color-text-primary)]" onClick={() => onOpenRule(rule.ruleId)}>
+                      <ChevronRight className="size-4" aria-hidden="true" />
+                    </button>
+                  </DataTableCell>
+                </DataTableRow>
+              ))}
+            </DataTableBody>
+          </DataTable>
         )}
 
-        <div className="flex items-center justify-end gap-2 border-t border-[#E2E8F0] px-5 py-4">
-          <Button
-            variant="secondary"
-            disabled={page === 1 || loading}
-            onClick={() => onPageChange(Math.max(1, page - 1))}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="secondary"
-            disabled={!hasMore || loading}
-            onClick={() => onPageChange(page + 1)}
-          >
-            Next
-          </Button>
-        </div>
-      </section>
-    </div>
+        <ListPagination>
+          <span className="text-xs text-[var(--napms-color-text-secondary)]">Page {page}</span>
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" disabled={page === 1 || loading} onClick={() => onPageChange(Math.max(1, page - 1))}>Previous</Button>
+            <Button variant="secondary" size="sm" disabled={!hasMore || loading} onClick={() => onPageChange(page + 1)}>Next</Button>
+          </div>
+        </ListPagination>
+      </Surface>
+    </PageWorkspace>
   )
 }
