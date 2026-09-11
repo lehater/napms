@@ -1,6 +1,6 @@
 import pytest
 
-from napms.resource_catalogue.domain.model import (
+from napms.contexts.resource_catalogue.domain.model import (
     Resource,
     ResourceCatalogueInvariantError,
     ResourceLifecycleState,

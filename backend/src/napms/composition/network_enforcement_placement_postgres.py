@@ -5,13 +5,13 @@ from typing import Iterator
 import psycopg
 
 from napms.composition.config import ApplicationConfig
-from napms.network_enforcement_placement.adapters.postgres import (
+from napms.contexts.network_enforcement_placement.infrastructure.persistence.postgres import (
     PostgresPlacementKnowledgeRepository,
 )
-from napms.network_enforcement_placement.application.record import (
+from napms.contexts.network_enforcement_placement.application.record import (
     RecordPlacementKnowledge,
 )
-from napms.network_enforcement_placement.application.select import (
+from napms.contexts.network_enforcement_placement.application.select import (
     SelectEnforcement,
 )
 

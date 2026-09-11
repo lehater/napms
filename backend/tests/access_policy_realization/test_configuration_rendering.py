@@ -1,24 +1,24 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from napms.access_policy_realization.adapters.cisco_asa import CiscoAsaAclRenderer
-from napms.access_policy_realization.adapters.cisco_asa_semantics import (
+from napms.contexts.access_policy_realization.infrastructure.rendering.cisco_asa import CiscoAsaAclRenderer
+from napms.contexts.access_policy_realization.infrastructure.rendering.cisco_asa_semantics import (
     project_asa_permit_regions,
 )
-from napms.access_policy_realization.application.render import RenderConfiguration
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.application.render import RenderConfiguration
+from napms.contexts.access_policy_realization.domain.model import (
     AddressRange,
     DomainInteractionIdentity,
     PortRegion,
     TechnicalRegionFragment,
 )
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     DesiredDerivationStatus,
     DesiredEnforcementIntent,
     DesiredEnforcementPolicy,
     EnforcementTarget,
 )
-from napms.access_policy_realization.domain.rendering import RenderStatus
+from napms.contexts.access_policy_realization.domain.rendering import RenderStatus
 
 
 def _policy(fragment: TechnicalRegionFragment) -> DesiredEnforcementPolicy:

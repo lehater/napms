@@ -5,13 +5,13 @@ from typing import Iterator
 import psycopg
 
 from napms.composition.config import ApplicationConfig
-from napms.technical_access_evidence.adapters.postgres import (
+from napms.contexts.technical_access_evidence.infrastructure.persistence.postgres import (
     PostgresTechnicalAccessEvidenceRepository,
 )
-from napms.technical_access_evidence.application.read import (
+from napms.contexts.technical_access_evidence.application.read import (
     GetTechnicalAccessEvidenceSet,
 )
-from napms.technical_access_evidence.application.record import (
+from napms.contexts.technical_access_evidence.application.record import (
     RecordTechnicalAccessEvidenceSet,
 )
 

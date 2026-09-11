@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi.testclient import TestClient
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AccessRulePersistenceError,
     AccessRuleReadScopeOptions,
     AuthorityCheck,
@@ -13,7 +13,7 @@ from napms.access_policy.application.ports import (
     DecisionOutcome,
     TernaryOutcome,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,
@@ -22,7 +22,7 @@ from napms.access_policy.domain.model import (
     ProposalProvenance,
     RuleSemanticIdentity,
 )
-from napms.application_catalogue.application.describe_interactions import (
+from napms.contexts.application_catalogue.application.describe_interactions import (
     DirectedInteractionDescription,
 )
 from napms.runtime.auth import (

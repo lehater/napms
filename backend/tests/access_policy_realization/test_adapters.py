@@ -1,16 +1,16 @@
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from napms.access_policy_realization.adapters.catalogues import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.catalogues import (
     CatalogueDomainKnowledgeAdapter,
 )
-from napms.access_policy_realization.adapters.technical_access_evidence import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.technical_access_evidence import (
     TechnicalAccessEvidenceProjectionAdapter,
 )
-from napms.access_policy_realization.application.resolve import (
+from napms.contexts.access_policy_realization.application.resolve import (
     ResolveTechnicalAccess,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     AddressConstraint,
     AddressRange,
     PortConstraint,
@@ -19,7 +19,7 @@ from napms.access_policy_realization.domain.model import (
     ResolutionStatus,
     TechnicalAccessPredicate,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     DcsRevision,
     DeploymentResourceBinding,
 )
@@ -31,11 +31,11 @@ from napms.policy_export.application.normalization_types import (
     PortConstraint as DcsPortConstraint,
     PortRange as DcsPortRange,
 )
-from napms.resource_catalogue.domain.model import (
+from napms.contexts.resource_catalogue.domain.model import (
     EndpointAddress,
     ResourceRealizationVersion,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraint as TaeAddressConstraint,
     AddressRange as TaeAddressRange,
     EvidenceAction,

@@ -2,13 +2,13 @@ from datetime import datetime, timezone
 
 import pytest
 
-from napms.resource_catalogue.domain.model import (
+from napms.contexts.resource_catalogue.domain.model import (
     EndpointAddress,
     ResourceCatalogueInvariantError,
     ResourceRealizationVersion,
     ResourceScopeAffiliation,
 )
-from napms.resource_catalogue.domain.responsibility import (
+from napms.contexts.resource_catalogue.domain.responsibility import (
     ResponsiblePartyKind,
     ResourceResponsibility,
     ResourceResponsibilityRole,

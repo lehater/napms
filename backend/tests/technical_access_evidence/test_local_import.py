@@ -2,11 +2,11 @@ import json
 
 import pytest
 
-from napms.technical_access_evidence.adapters.local_import import (
+from napms.contexts.technical_access_evidence.presentation.imports.local_json import (
     LocalEvidenceImportAdapter,
     LocalEvidenceImportError,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     EvidenceAction,
     EvidenceKind,
     EvidenceTime,

@@ -1,12 +1,12 @@
 from uuid import UUID
 
-from napms.network_enforcement_placement.application.network_context import ReadNetworkContext
-from napms.network_enforcement_placement.domain.model import (
+from napms.contexts.network_enforcement_placement.application.network_context import ReadNetworkContext
+from napms.contexts.network_enforcement_placement.domain.model import (
     KnowledgeGap,
     ProviderRealizationReference,
     TrafficRelation,
 )
-from napms.network_enforcement_placement.domain.network_context import (
+from napms.contexts.network_enforcement_placement.domain.network_context import (
     NetworkContextCandidate,
     NetworkContextSnapshot,
 )

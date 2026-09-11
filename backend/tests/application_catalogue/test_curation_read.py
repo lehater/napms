@@ -2,11 +2,11 @@ from uuid import UUID
 
 import pytest
 
-from napms.application_catalogue.application.curation_read import (
+from napms.contexts.application_catalogue.application.curation_read import (
     ListApplicationCatalogue,
     ReadApplicationCatalogueDetail,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     Application,
     CatalogueInvariantError,
     CatalogueLifecycleState,

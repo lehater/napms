@@ -7,22 +7,22 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy_realization.adapters.catalogues import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.catalogues import (
     CatalogueDomainKnowledgeAdapter,
 )
-from napms.access_policy_realization.adapters.technical_access_evidence import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.technical_access_evidence import (
     TechnicalAccessEvidenceProjectionAdapter,
 )
-from napms.access_policy_realization.application.resolve import (
+from napms.contexts.access_policy_realization.application.resolve import (
     ResolveTechnicalAccess,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     ResolutionStatus,
 )
-from napms.application_catalogue.adapters.dcs_json_codec import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import (
     JsonDcsProjectionCodec,
 )
-from napms.application_catalogue.adapters.postgres import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres import (
     PostgresApplicationCatalogueRepository,
 )
 from napms.composition.config import (
@@ -40,16 +40,16 @@ from napms.policy_export.application.normalization_types import (
     PortConstraint,
     PortRange,
 )
-from napms.resource_catalogue.adapters.postgres import (
+from napms.contexts.resource_catalogue.infrastructure.persistence.postgres import (
     PostgresResourceCatalogueRepository,
 )
-from napms.technical_access_evidence.adapters.local_import import (
+from napms.contexts.technical_access_evidence.presentation.imports.local_json import (
     LocalEvidenceImportAdapter,
 )
-from napms.technical_access_evidence.application.read import (
+from napms.contexts.technical_access_evidence.application.read import (
     EvidenceSetDetailOutcome,
 )
-from napms.technical_access_evidence.application.record import (
+from napms.contexts.technical_access_evidence.application.record import (
     RecordEvidenceOutcome,
 )
 

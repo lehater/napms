@@ -3,7 +3,7 @@ from uuid import UUID
 
 import pytest
 
-from napms.network_enforcement_placement.adapters.local_import import (
+from napms.contexts.network_enforcement_placement.presentation.imports.local_json import (
     LocalPlacementKnowledgeImportAdapter,
     LocalPlacementKnowledgeImportError,
 )

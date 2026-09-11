@@ -3,10 +3,10 @@ from uuid import UUID
 
 import pytest
 
-from napms.access_policy_realization.application.resolve import (
+from napms.contexts.access_policy_realization.application.resolve import (
     ResolveTechnicalAccess,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     AccessCorrespondence,
     AddressConstraint,
     AddressRange,

@@ -6,46 +6,46 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.application.materialize_rule import (
+from napms.contexts.access_policy.application.materialize_rule import (
     MaterializationOutcome,
     MaterializeAllowedAccessRule,
     SubmitAccessRuleProposal,
 )
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     ConnectivityDecision,
     DecisionOutcome,
 )
-from napms.access_policy.application.read_rules import (
+from napms.contexts.access_policy.application.read_rules import (
     AccessRuleDetailOutcome,
     GetAuthorizedAccessRule,
     ListAuthorizedAccessRules,
 )
-from napms.access_policy.application.proposal_options import (
+from napms.contexts.access_policy.application.proposal_options import (
     DiscoverProposalInteractions,
     DiscoverProposalScopes,
     ProposalInteractionDiscoveryOutcome,
 )
-from napms.access_policy.application.set_effective_window import (
+from napms.contexts.access_policy.application.set_effective_window import (
     EffectiveWindowMutationOutcome,
     SetAccessRuleEffectiveWindow,
     SetRuleEffectiveWindow,
 )
-from napms.access_policy.application.set_operational_state import (
+from napms.contexts.access_policy.application.set_operational_state import (
     OperationalStateMutationOutcome,
     SetAccessRuleOperationalState,
     SetRuleOperationalState,
 )
-from napms.access_policy.application.select_effective_policy import (
+from napms.contexts.access_policy.application.select_effective_policy import (
     EffectivePolicySelectionOutcome,
     SelectAccessPolicyEffectiveDesiredPolicy,
     SelectEffectiveDesiredPolicy,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     EffectiveWindow,
     OperationalState,
     RuleSemanticIdentity,
 )
-from napms.application_catalogue.adapters.dcs_json_codec import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import (
     JsonDcsProjectionCodec,
 )
 from napms.composition.config import ApplicationConfig, PostgresConfig

@@ -2,11 +2,11 @@ from datetime import datetime, timezone
 
 import pytest
 
-from napms.resource_catalogue.application.curation_read import (
+from napms.contexts.resource_catalogue.application.curation_read import (
     ListResourceCatalogue,
     ResourceCatalogueListItem,
 )
-from napms.resource_catalogue.domain.model import (
+from napms.contexts.resource_catalogue.domain.model import (
     Resource,
     ResourceCatalogueInvariantError,
 )

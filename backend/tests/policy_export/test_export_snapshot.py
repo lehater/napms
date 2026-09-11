@@ -4,11 +4,11 @@ from uuid import UUID
 
 import pytest
 
-from napms.access_policy.application.select_effective_policy import (
+from napms.contexts.access_policy.application.select_effective_policy import (
     EffectivePolicySelectionOutcome,
     EffectivePolicySelectionResult,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,

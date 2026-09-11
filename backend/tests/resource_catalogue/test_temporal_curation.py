@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
 
-from napms.resource_catalogue.application.ports import (
+from napms.contexts.resource_catalogue.application.ports import (
     ResourceCatalogueAuthorityCheck,
     ResourceCatalogueAuthorityOutcome,
 )
-from napms.resource_catalogue.application.temporal_curation import (
+from napms.contexts.resource_catalogue.application.temporal_curation import (
     CreateResourceResponsibility,
     CreateResourceScopeAffiliation,
     CreateResponsibilityCommand,
@@ -15,12 +15,12 @@ from napms.resource_catalogue.application.temporal_curation import (
     EndScopeAffiliationCommand,
     TemporalCurationOutcome,
 )
-from napms.resource_catalogue.domain.model import (
+from napms.contexts.resource_catalogue.domain.model import (
     Resource,
     ResourceLifecycleState,
     ResourceScopeAffiliation,
 )
-from napms.resource_catalogue.domain.responsibility import (
+from napms.contexts.resource_catalogue.domain.responsibility import (
     ResponsiblePartyKind,
     ResourceResponsibility,
     ResourceResponsibilityRole,

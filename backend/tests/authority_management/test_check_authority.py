@@ -2,15 +2,15 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from napms.access_policy.application.ports import AuthorityAction, TernaryOutcome
-from napms.authority_management.adapters.access_policy import (
+from napms.contexts.access_policy.application.ports import AuthorityAction, TernaryOutcome
+from napms.contexts.authority_management.infrastructure.integrations.access_policy import (
     AccessPolicyAuthorityAdapter,
 )
-from napms.authority_management.application.check_authority import (
+from napms.contexts.authority_management.application.check_authority import (
     AuthorityOutcome,
     CheckAuthority,
 )
-from napms.authority_management.domain.model import (
+from napms.contexts.authority_management.domain.model import (
     AuthorityAssignment,
     AuthorityInvariantError,
 )

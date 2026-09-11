@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from napms.application_catalogue.application.describe_interactions import (
+from napms.contexts.application_catalogue.application.describe_interactions import (
     DescribeDirectedInteractions,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     ComponentDeployment,
     DcsRevision,
     DirectedInteractionIdentity,

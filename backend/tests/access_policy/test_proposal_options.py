@@ -1,14 +1,14 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AuthorityCheck,
     ProposalInteractionPage,
     ProposalScopeOptions,
     RuleSemanticIdentity,
     TernaryOutcome,
 )
-from napms.access_policy.application.proposal_options import (
+from napms.contexts.access_policy.application.proposal_options import (
     DiscoverProposalInteractions,
     DiscoverProposalScopes,
     ProposalInteractionDiscoveryOutcome,

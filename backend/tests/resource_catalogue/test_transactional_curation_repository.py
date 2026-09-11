@@ -1,10 +1,10 @@
 import pytest
 from psycopg import Error as PsycopgError
 
-from napms.resource_catalogue.adapters.postgres.transactional_curation_repository import (
+from napms.contexts.resource_catalogue.infrastructure.persistence.postgres.transactional_curation_repository import (
     TransactionalPostgresResourceCatalogueCurationRepository,
 )
-from napms.resource_catalogue.application.ports import (
+from napms.contexts.resource_catalogue.application.ports import (
     ResourceCatalogueCommandReceipt,
     ResourceCataloguePersistenceError,
     ResourceCataloguePersistenceOutcomeUnknown,

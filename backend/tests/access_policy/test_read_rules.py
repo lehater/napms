@@ -3,17 +3,17 @@ from uuid import UUID
 
 import pytest
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AccessRuleReadScopeOptions,
     AuthorityCheck,
     TernaryOutcome,
 )
-from napms.access_policy.application.read_rules import (
+from napms.contexts.access_policy.application.read_rules import (
     AccessRuleDetailOutcome,
     GetAuthorizedAccessRule,
     ListAuthorizedAccessRules,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,

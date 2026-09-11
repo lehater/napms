@@ -3,12 +3,12 @@ from uuid import UUID
 
 import pytest
 
-from napms.connectivity_decision.application.options import (
+from napms.contexts.connectivity_decision.application.options import (
     DecisionInteractionDiscoveryOutcome,
     DiscoverDecisionInteractions,
     DiscoverDecisionScopes,
 )
-from napms.connectivity_decision.application.ports import (
+from napms.contexts.connectivity_decision.application.ports import (
     DecisionAuthorityCheck,
     DecisionCommitOutcomeUnknown,
     DecisionCurrentConflict,
@@ -18,21 +18,21 @@ from napms.connectivity_decision.application.ports import (
     SubjectOutcome,
     TernaryOutcome,
 )
-from napms.connectivity_decision.application.read import (
+from napms.contexts.connectivity_decision.application.read import (
     DecisionDetailOutcome,
     GetConnectivityDecision,
     ListConnectivityDecisions,
 )
-from napms.connectivity_decision.application.record import (
+from napms.contexts.connectivity_decision.application.record import (
     RecordConnectivityDecision,
     RecordDecision,
     RecordDecisionOutcome,
 )
-from napms.connectivity_decision.application.select import (
+from napms.contexts.connectivity_decision.application.select import (
     SelectEffectiveConnectivityDecision,
     SelectionOutcome,
 )
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     ConnectivityDecision,
     DecisionEvidenceReference,
     DecisionInvariantError,

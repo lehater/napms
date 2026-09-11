@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from napms.application_catalogue.adapters.scoped_connectivity_inventory import (
+from napms.contexts.application_catalogue.infrastructure.integrations.scoped_connectivity_inventory import (
     ApplicationCatalogueScopedConnectivityAdapter,
 )
 from napms.scoped_connectivity_inventory.application.ports import (

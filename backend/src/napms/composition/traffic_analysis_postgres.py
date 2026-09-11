@@ -4,20 +4,20 @@ from typing import Iterator
 
 import psycopg
 
-from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import JsonDcsProjectionCodec
 from napms.composition.config import ApplicationConfig
 from napms.composition.greenfield_postgres import open_greenfield_scope
-from napms.network_enforcement_placement.application.network_context import ReadNetworkContext
-from napms.resource_catalogue.adapters.local_responsibility import (
+from napms.contexts.network_enforcement_placement.application.network_context import ReadNetworkContext
+from napms.contexts.resource_catalogue.infrastructure.local.responsibility import (
     LocalDemoResourceResponsibilityAdapter,
 )
-from napms.resource_catalogue.application.resolve_address import (
+from napms.contexts.resource_catalogue.application.resolve_address import (
     ResolveResourcesByTechnicalAddress,
 )
-from napms.resource_catalogue.application.responsibility import (
+from napms.contexts.resource_catalogue.application.responsibility import (
     ReadResourceResponsibilities,
 )
-from napms.technical_access_evidence.adapters.postgres import (
+from napms.contexts.technical_access_evidence.infrastructure.persistence.postgres import (
     PostgresTechnicalAccessEvidenceRepository,
 )
 from napms.traffic_analysis.adapters.local_network_context import (

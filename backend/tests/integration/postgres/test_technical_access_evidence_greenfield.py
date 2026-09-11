@@ -10,14 +10,14 @@ from napms.composition.greenfield_postgres import apply_greenfield_migrations
 from napms.composition.technical_access_evidence_postgres import (
     open_technical_access_evidence_scope,
 )
-from napms.technical_access_evidence.adapters.local_import import (
+from napms.contexts.technical_access_evidence.presentation.imports.local_json import (
     LocalEvidenceImportAdapter,
     LocalEvidenceImportError,
 )
-from napms.technical_access_evidence.application.read import (
+from napms.contexts.technical_access_evidence.application.read import (
     EvidenceSetDetailOutcome,
 )
-from napms.technical_access_evidence.application.record import (
+from napms.contexts.technical_access_evidence.application.record import (
     RecordEvidenceOutcome,
 )
 

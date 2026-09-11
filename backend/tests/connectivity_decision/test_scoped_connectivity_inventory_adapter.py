@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from napms.connectivity_decision.adapters.scoped_connectivity_inventory import (
+from napms.contexts.connectivity_decision.infrastructure.integrations.scoped_connectivity_inventory import (
     ConnectivityDecisionScopedConnectivityAdapter,
 )
-from napms.connectivity_decision.application.ports import DecisionPersistenceError
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.application.ports import DecisionPersistenceError
+from napms.contexts.connectivity_decision.domain.model import (
     ConnectivityDecision,
     DecisionOutcome,
     DecisionProvenance,

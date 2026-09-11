@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from napms.application_catalogue.application.ports import (
+from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
 )
-from napms.application_catalogue.application.target_curation import (
+from napms.contexts.application_catalogue.application.target_curation import (
     CreateApplicationDeployment,
     CreateApplicationDeploymentCommand,
     CreateInteractionDefinition,
@@ -19,13 +19,13 @@ from napms.application_catalogue.application.target_curation import (
     UpdateInteractionDefinitionTraffic,
     UpdateInteractionDefinitionTrafficCommand,
 )
-from napms.application_catalogue.application.target_ports import ActiveDependencyReference
-from napms.application_catalogue.domain.communication import (
+from napms.contexts.application_catalogue.application.target_ports import ActiveDependencyReference
+from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,
     DcsPortConstraint,
     DcsPortRange,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     Application,
     CatalogueLifecycleState,
     Component,

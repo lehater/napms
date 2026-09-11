@@ -39,82 +39,82 @@ class Migration:
 MIGRATIONS: tuple[Migration, ...] = (
     Migration(
         "access-policy/0001",
-        "napms.access_policy.adapters.postgres",
+        "napms.contexts.access_policy.infrastructure.persistence.postgres",
         "migrations/0001_access_rules.sql",
     ),
     Migration(
         "access-policy/0002",
-        "napms.access_policy.adapters.postgres",
+        "napms.contexts.access_policy.infrastructure.persistence.postgres",
         "migrations/0002_rule_state_transitions.sql",
     ),
     Migration(
         "access-policy/0003",
-        "napms.access_policy.adapters.postgres",
+        "napms.contexts.access_policy.infrastructure.persistence.postgres",
         "migrations/0003_effective_windows.sql",
     ),
     Migration(
         "authority-management/0001",
-        "napms.authority_management.adapters.postgres",
+        "napms.contexts.authority_management.infrastructure.persistence.postgres",
         "migrations/0001_authority_assignments.sql",
     ),
     Migration(
         "application-catalogue/0001",
-        "napms.application_catalogue.adapters.postgres",
+        "napms.contexts.application_catalogue.infrastructure.persistence.postgres",
         "migrations/0001_application_catalogue.sql",
     ),
     Migration(
         "application-catalogue/0002",
-        "napms.application_catalogue.adapters.postgres",
+        "napms.contexts.application_catalogue.infrastructure.persistence.postgres",
         "migrations/0002_display_metadata.sql",
     ),
     Migration(
         "application-catalogue/0003",
-        "napms.application_catalogue.adapters.postgres",
+        "napms.contexts.application_catalogue.infrastructure.persistence.postgres",
         "migrations/0003_catalogue_hierarchy.sql",
     ),
     Migration(
         "application-catalogue/0004",
-        "napms.application_catalogue.adapters.postgres",
+        "napms.contexts.application_catalogue.infrastructure.persistence.postgres",
         "migrations/0004_curation_write_support.sql",
     ),
     Migration(
         "application-catalogue/0005",
-        "napms.application_catalogue.adapters.postgres",
+        "napms.contexts.application_catalogue.infrastructure.persistence.postgres",
         "migrations/0005_application_catalogue_target.sql",
     ),
     Migration(
         "resource-catalogue/0001",
-        "napms.resource_catalogue.adapters.postgres",
+        "napms.contexts.resource_catalogue.infrastructure.persistence.postgres",
         "migrations/0001_resource_catalogue.sql",
     ),
     Migration(
         "resource-catalogue/0002",
-        "napms.resource_catalogue.adapters.postgres",
+        "napms.contexts.resource_catalogue.infrastructure.persistence.postgres",
         "migrations/0002_resource_scope_affiliations.sql",
     ),
     Migration(
         "resource-catalogue/0003",
-        "napms.resource_catalogue.adapters.postgres",
+        "napms.contexts.resource_catalogue.infrastructure.persistence.postgres",
         "migrations/0003_curation_write_support.sql",
     ),
     Migration(
         "connectivity-requirements/0001",
-        "napms.connectivity_requirements.adapters.postgres",
+        "napms.contexts.connectivity_requirements.infrastructure.persistence.postgres",
         "migrations/0001_connectivity_requirements.sql",
     ),
     Migration(
         "connectivity-decision/0001",
-        "napms.connectivity_decision.adapters.postgres",
+        "napms.contexts.connectivity_decision.infrastructure.persistence.postgres",
         "migrations/0001_connectivity_decisions.sql",
     ),
     Migration(
         "technical-access-evidence/0001",
-        "napms.technical_access_evidence.adapters.postgres",
+        "napms.contexts.technical_access_evidence.infrastructure.persistence.postgres",
         "migrations/0001_evidence_sets.sql",
     ),
     Migration(
         "network-enforcement-placement/0001",
-        "napms.network_enforcement_placement.adapters.postgres",
+        "napms.contexts.network_enforcement_placement.infrastructure.persistence.postgres",
         "migrations/0001_knowledge_captures.sql",
     ),
 )

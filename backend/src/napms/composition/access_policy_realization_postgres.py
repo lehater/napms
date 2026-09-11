@@ -2,32 +2,32 @@ from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass
 from typing import Iterator
 
-from napms.access_policy.application.select_effective_policy import (
+from napms.contexts.access_policy.application.select_effective_policy import (
     SelectAccessPolicyEffectiveDesiredPolicy,
 )
-from napms.access_policy_realization.adapters.catalogues import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.catalogues import (
     CatalogueDomainKnowledgeAdapter,
 )
-from napms.access_policy_realization.adapters.cisco_asa import (
+from napms.contexts.access_policy_realization.infrastructure.rendering.cisco_asa import (
     CiscoAsaAclRenderer,
 )
-from napms.access_policy_realization.adapters.configured_evidence import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.configured_evidence import (
     ConfiguredEvidenceProjectionAdapter,
 )
-from napms.access_policy_realization.adapters.desired_policy import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.desired_policy import (
     EffectiveDesiredPolicyProjectionAdapter,
 )
-from napms.access_policy_realization.adapters.placement import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.placement import (
     NetworkEnforcementPlacementProjectionAdapter,
 )
-from napms.access_policy_realization.application.realize import (
+from napms.contexts.access_policy_realization.application.realize import (
     BuildConfiguredEnforcementSnapshot,
     DeriveDesiredEnforcementFromOwners,
 )
-from napms.access_policy_realization.application.reconcile import (
+from napms.contexts.access_policy_realization.application.reconcile import (
     ReconcileEnforcementPolicy,
 )
-from napms.access_policy_realization.application.render import (
+from napms.contexts.access_policy_realization.application.render import (
     RenderConfiguration,
 )
 from napms.composition.config import ApplicationConfig

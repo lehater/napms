@@ -1,4 +1,4 @@
-from napms.resource_catalogue.application.responsibility import ReadResourceResponsibilities
+from napms.contexts.resource_catalogue.application.responsibility import ReadResourceResponsibilities
 from napms.traffic_analysis.application.model import ResponsibilityItem
 
 

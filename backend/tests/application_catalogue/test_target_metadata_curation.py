@@ -1,12 +1,12 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from napms.application_catalogue.application.ports import (
+from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
 )
-from napms.application_catalogue.application.target_curation import TargetMutationOutcome
-from napms.application_catalogue.application.target_metadata_curation import (
+from napms.contexts.application_catalogue.application.target_curation import TargetMutationOutcome
+from napms.contexts.application_catalogue.application.target_metadata_curation import (
     UpdateApplicationDefinitionMetadata,
     UpdateApplicationDefinitionMetadataCommand,
     UpdateApplicationDeploymentContext,
@@ -14,8 +14,8 @@ from napms.application_catalogue.application.target_metadata_curation import (
     UpdateComponentMetadata,
     UpdateComponentMetadataCommand,
 )
-from napms.application_catalogue.domain.model import Application, Component
-from napms.application_catalogue.domain.target_model import ApplicationDeployment
+from napms.contexts.application_catalogue.domain.model import Application, Component
+from napms.contexts.application_catalogue.domain.target_model import ApplicationDeployment
 
 
 NOW = datetime(2026, 9, 10, 12, 0, tzinfo=timezone.utc)
@@ -158,7 +158,7 @@ def test_deployment_context_correction_preserves_deployment_identity() -> None:
 
 
 def test_new_metadata_fields_do_not_shift_legacy_positional_lifecycle_arguments() -> None:
-    from napms.application_catalogue.domain.model import CatalogueLifecycleState
+    from napms.contexts.application_catalogue.domain.model import CatalogueLifecycleState
 
     application = Application(
         UUID(int=10),

@@ -3,7 +3,14 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).parents[2]
-APPLICATION = ROOT / "src" / "napms" / "application_catalogue" / "application"
+APPLICATION = (
+    ROOT
+    / "src"
+    / "napms"
+    / "contexts"
+    / "application_catalogue"
+    / "application"
+)
 FACADE = APPLICATION / "structure_curation.py"
 APPLICATION_MUTATIONS = APPLICATION / "application_structure_curation.py"
 COMPONENT_MUTATIONS = APPLICATION / "component_structure_curation.py"

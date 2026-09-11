@@ -14,23 +14,23 @@ from napms.composition.config import (
 from napms.composition.postgres_migrations import (
     apply_greenfield_migrations,
 )
-from napms.network_enforcement_placement.adapters.local_import import (
+from napms.contexts.network_enforcement_placement.presentation.imports.local_json import (
     LocalPlacementKnowledgeImportAdapter,
 )
-from napms.network_enforcement_placement.adapters.postgres import (
+from napms.contexts.network_enforcement_placement.infrastructure.persistence.postgres import (
     PostgresPlacementKnowledgeRepository,
 )
-from napms.network_enforcement_placement.application.ports import (
+from napms.contexts.network_enforcement_placement.application.ports import (
     PlacementPersistenceError,
 )
-from napms.network_enforcement_placement.application.record import (
+from napms.contexts.network_enforcement_placement.application.record import (
     RecordPlacementKnowledge,
     RecordPlacementKnowledgeOutcome,
 )
-from napms.network_enforcement_placement.application.select import (
+from napms.contexts.network_enforcement_placement.application.select import (
     SelectEnforcement,
 )
-from napms.network_enforcement_placement.domain.model import (
+from napms.contexts.network_enforcement_placement.domain.model import (
     SelectionStatus,
 )
 
@@ -431,7 +431,7 @@ def test_corrupt_persisted_completeness_fails_closed(
         from importlib.resources import files
 
         migration = files(
-            "napms.network_enforcement_placement.adapters.postgres"
+            "napms.contexts.network_enforcement_placement.infrastructure.persistence.postgres"
         ).joinpath(
             "migrations/0001_knowledge_captures.sql"
         )

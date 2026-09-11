@@ -7,31 +7,31 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.application.ports import InteractionOutcome
-from napms.access_policy.domain.model import RuleSemanticIdentity
-from napms.application_catalogue.adapters.access_policy import (
+from napms.contexts.access_policy.application.ports import InteractionOutcome
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.application_catalogue.infrastructure.integrations.access_policy import (
     AccessPolicyCommunicationCatalogueAdapter,
     AccessPolicyProposalInteractionCatalogueAdapter,
 )
-from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
-from napms.application_catalogue.adapters.policy_export import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import JsonDcsProjectionCodec
+from napms.contexts.application_catalogue.infrastructure.integrations.policy_export import (
     PolicyExportApplicationCatalogueAdapter,
 )
-from napms.application_catalogue.adapters.postgres import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres import (
     PostgresApplicationCatalogueRepository,
 )
-from napms.application_catalogue.adapters.scoped_connectivity_inventory import (
+from napms.contexts.application_catalogue.infrastructure.integrations.scoped_connectivity_inventory import (
     ApplicationCatalogueScopedConnectivityAdapter,
 )
-from napms.application_catalogue.application.describe_interactions import (
+from napms.contexts.application_catalogue.application.describe_interactions import (
     DescribeDirectedInteractions,
 )
-from napms.application_catalogue.application.list_interactions import ListDirectedInteractions
-from napms.application_catalogue.application.resolve import (
+from napms.contexts.application_catalogue.application.list_interactions import ListDirectedInteractions
+from napms.contexts.application_catalogue.application.resolve import (
     ResolveApplicationProjection,
     ValidateDirectedInteraction,
 )
-from napms.application_catalogue.domain.model import DirectedInteractionIdentity
+from napms.contexts.application_catalogue.domain.model import DirectedInteractionIdentity
 from napms.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
@@ -64,7 +64,7 @@ def postgres_dsn():
 
 @pytest.fixture(scope="session", autouse=True)
 def migrated_acc(postgres_dsn):
-    migrations = files("napms.application_catalogue.adapters.postgres").joinpath(
+    migrations = files("napms.contexts.application_catalogue.infrastructure.persistence.postgres").joinpath(
         "migrations"
     )
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:

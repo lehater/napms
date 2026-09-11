@@ -1,17 +1,17 @@
 from datetime import datetime, timezone
 
-from napms.resource_catalogue.application.curation import (
+from napms.contexts.resource_catalogue.application.curation import (
     RenameResource,
     RenameResourceCommand,
     ResourceMutationOutcome,
     RetireResource,
     RetireResourceCommand,
 )
-from napms.resource_catalogue.application.ports import (
+from napms.contexts.resource_catalogue.application.ports import (
     ResourceCatalogueAuthorityCheck,
     ResourceCatalogueAuthorityOutcome,
 )
-from napms.resource_catalogue.domain.model import Resource, ResourceLifecycleState
+from napms.contexts.resource_catalogue.domain.model import Resource, ResourceLifecycleState
 
 
 NOW = datetime(2026, 9, 10, 12, 0, tzinfo=timezone.utc)

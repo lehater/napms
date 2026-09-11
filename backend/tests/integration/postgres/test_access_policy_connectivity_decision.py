@@ -6,28 +6,28 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.adapters.connectivity_decision import (
+from napms.contexts.access_policy.infrastructure.integrations.connectivity_decision import (
     ConnectivityDecisionConsumerAdapter,
 )
-from napms.access_policy.adapters.postgres import PostgresAccessRuleRepository
-from napms.access_policy.application.materialize_rule import (
+from napms.contexts.access_policy.infrastructure.persistence.postgres import PostgresAccessRuleRepository
+from napms.contexts.access_policy.application.materialize_rule import (
     MaterializationOutcome,
     MaterializeAllowedAccessRule,
     SubmitAccessRuleProposal,
 )
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AuthorityCheck,
     InteractionCheck,
     InteractionOutcome,
     TernaryOutcome,
 )
-from napms.connectivity_decision.adapters.postgres import (
+from napms.contexts.connectivity_decision.infrastructure.persistence.postgres import (
     PostgresConnectivityDecisionRepository,
 )
-from napms.connectivity_decision.application.select import (
+from napms.contexts.connectivity_decision.application.select import (
     SelectEffectiveConnectivityDecision,
 )
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     ConnectivityDecision,
     DecisionOutcome,
     DecisionProvenance,

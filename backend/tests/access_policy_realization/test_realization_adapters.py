@@ -2,11 +2,11 @@ from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from napms.access_policy.application.select_effective_policy import (
+from napms.contexts.access_policy.application.select_effective_policy import (
     EffectivePolicySelectionOutcome,
     EffectivePolicySelectionResult,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,
@@ -14,28 +14,28 @@ from napms.access_policy.domain.model import (
     ProposalProvenance,
     RuleSemanticIdentity,
 )
-from napms.access_policy_realization.adapters.configured_evidence import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.configured_evidence import (
     ConfiguredEvidenceProjectionAdapter,
 )
-from napms.access_policy_realization.adapters.desired_policy import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.desired_policy import (
     EffectiveDesiredPolicyProjectionAdapter,
 )
-from napms.access_policy_realization.adapters.placement import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.placement import (
     NetworkEnforcementPlacementProjectionAdapter,
 )
-from napms.access_policy_realization.application.ports import (
+from napms.contexts.access_policy_realization.application.ports import (
     ConfiguredPolicySemantics,
     ManagedReconciliationScopeContract,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     InputProvenance,
 )
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     EnforcementTarget,
     ManagedReconciliationScope,
     PlacementStatus,
 )
-from napms.network_enforcement_placement.domain.model import (
+from napms.contexts.network_enforcement_placement.domain.model import (
     EnforcementPlacement,
     EnforcementSelection,
     InputProvenance as NepInputProvenance,
@@ -58,11 +58,11 @@ from napms.policy_export.application.normalization_types import (
 from napms.policy_export.application.ports import (
     ResourceReference,
 )
-from napms.technical_access_evidence.application.read import (
+from napms.contexts.technical_access_evidence.application.read import (
     EvidenceSetDetailOutcome,
     EvidenceSetDetailResult,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraint as TaeAddressConstraint,
     AddressRange as TaeAddressRange,
     EvidenceAction,

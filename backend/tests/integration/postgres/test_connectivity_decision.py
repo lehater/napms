@@ -9,10 +9,10 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.connectivity_decision.adapters.postgres import (
+from napms.contexts.connectivity_decision.infrastructure.persistence.postgres import (
     PostgresConnectivityDecisionRepository,
 )
-from napms.connectivity_decision.application.ports import (
+from napms.contexts.connectivity_decision.application.ports import (
     DecisionAuthorityCheck,
     DecisionCommitOutcomeUnknown,
     DecisionCurrentConflict,
@@ -21,16 +21,16 @@ from napms.connectivity_decision.application.ports import (
     SubjectOutcome,
     TernaryOutcome,
 )
-from napms.connectivity_decision.application.record import (
+from napms.contexts.connectivity_decision.application.record import (
     RecordConnectivityDecision,
     RecordDecision,
     RecordDecisionOutcome,
 )
-from napms.connectivity_decision.application.select import (
+from napms.contexts.connectivity_decision.application.select import (
     SelectEffectiveConnectivityDecision,
     SelectionOutcome,
 )
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     ConnectivityDecision,
     DecisionEvidenceReference,
     DecisionOutcome,
@@ -60,7 +60,7 @@ def postgres_dsn():
 @pytest.fixture(scope="session", autouse=True)
 def migrated_connectivity_decision(postgres_dsn):
     migrations = files(
-        "napms.connectivity_decision.adapters.postgres"
+        "napms.contexts.connectivity_decision.infrastructure.persistence.postgres"
     ).joinpath("migrations")
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:
         for migration in sorted(

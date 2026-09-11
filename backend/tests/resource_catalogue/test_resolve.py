@@ -4,14 +4,14 @@ from napms.policy_export.application.ports import (
     ResourceRealizationOutcome,
     ResourceReference,
 )
-from napms.resource_catalogue.adapters.policy_export import (
+from napms.contexts.resource_catalogue.infrastructure.integrations.policy_export import (
     PolicyExportResourceCatalogueAdapter,
 )
-from napms.resource_catalogue.application.resolve import (
+from napms.contexts.resource_catalogue.application.resolve import (
     ResolveResourceRealization,
     ResourceResolutionOutcome,
 )
-from napms.resource_catalogue.domain.model import (
+from napms.contexts.resource_catalogue.domain.model import (
     EndpointAddress,
     ResourceRealizationVersion,
 )

@@ -1,20 +1,20 @@
-from napms.access_policy.adapters.postgres.application_catalogue_dependency_query import (
+from napms.contexts.access_policy.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresAccessRuleDependencyQuery,
 )
-from napms.access_policy.domain.model import RuleSemanticIdentity
-from napms.application_catalogue.application.target_ports import (
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.application_catalogue.application.target_ports import (
     ActiveDependencyReference,
     ActiveDependencySummary,
 )
-from napms.application_catalogue.domain.model import DirectedInteractionIdentity
-from napms.connectivity_decision.adapters.postgres.application_catalogue_dependency_query import (
+from napms.contexts.application_catalogue.domain.model import DirectedInteractionIdentity
+from napms.contexts.connectivity_decision.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityDecisionDependencyQuery,
 )
-from napms.connectivity_decision.domain.model import DecisionSubject
-from napms.connectivity_requirements.adapters.postgres.application_catalogue_dependency_query import (
+from napms.contexts.connectivity_decision.domain.model import DecisionSubject
+from napms.contexts.connectivity_requirements.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityRequirementDependencyQuery,
 )
-from napms.connectivity_requirements.domain.model import RequiredSemanticInteraction
+from napms.contexts.connectivity_requirements.domain.model import RequiredSemanticInteraction
 
 
 class ConnectivityRequirementDependencyAdapter:

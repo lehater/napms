@@ -7,34 +7,34 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.application.materialize_rule import (
+from napms.contexts.access_policy.application.materialize_rule import (
     MaterializationOutcome,
     MaterializeAllowedAccessRule,
     SubmitAccessRuleProposal,
 )
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     ConnectivityDecision,
     DecisionOutcome,
 )
-from napms.access_policy.application.set_operational_state import (
+from napms.contexts.access_policy.application.set_operational_state import (
     OperationalStateMutationOutcome,
     SetAccessRuleOperationalState,
     SetRuleOperationalState,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     OperationalState,
 )
-from napms.access_policy_realization.application.ports import (
+from napms.contexts.access_policy_realization.application.ports import (
     ConfiguredPolicySemantics,
     ManagedReconciliationScopeContract,
 )
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     EnforcementTarget,
     ManagedReconciliationScope,
     ReconciliationStatus,
     RequiredSemanticChange,
 )
-from napms.application_catalogue.adapters.dcs_json_codec import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import (
     JsonDcsProjectionCodec,
 )
 from napms.composition.access_policy_realization_postgres import (
@@ -56,10 +56,10 @@ from napms.composition.postgres_migrations import (
 from napms.composition.technical_access_evidence_postgres import (
     open_technical_access_evidence_scope,
 )
-from napms.network_enforcement_placement.adapters.local_import import (
+from napms.contexts.network_enforcement_placement.presentation.imports.local_json import (
     LocalPlacementKnowledgeImportAdapter,
 )
-from napms.network_enforcement_placement.application.record import (
+from napms.contexts.network_enforcement_placement.application.record import (
     RecordPlacementKnowledgeOutcome,
 )
 from napms.policy_export.application.normalization_types import (
@@ -67,11 +67,11 @@ from napms.policy_export.application.normalization_types import (
     PortConstraint,
     PortRange,
 )
-from napms.technical_access_evidence.application.record import (
+from napms.contexts.technical_access_evidence.application.record import (
     RecordEvidenceOutcome,
     RecordEvidenceSet,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraint,
     AddressRange,
     EvidenceAction,

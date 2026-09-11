@@ -1,21 +1,21 @@
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from napms.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.binding_curation import (
     BindingTargetOutcome,
     CreateDeploymentResourceBinding,
     CreateDeploymentResourceBindingCommand,
     EndDeploymentResourceBinding,
     EndDeploymentResourceBindingCommand,
 )
-from napms.application_catalogue.application.ports import (
+from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
 )
-from napms.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.structure_curation import (
     CatalogueMutationOutcome,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     CatalogueLifecycleState,
     ComponentDeployment,
     DeploymentResourceBinding,

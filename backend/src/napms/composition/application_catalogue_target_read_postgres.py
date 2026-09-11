@@ -3,11 +3,11 @@ from uuid import UUID
 
 from psycopg import Error as PsycopgError
 
-from napms.application_catalogue.adapters.dcs_authoring import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_authoring import (
     JsonDcsAuthoringProjectionEncoder,
 )
-from napms.application_catalogue.application.ports import CataloguePersistenceError
-from napms.application_catalogue.application.target_read import (
+from napms.contexts.application_catalogue.application.ports import CataloguePersistenceError
+from napms.contexts.application_catalogue.application.target_read import (
     ApplicationDefinitionSummary,
     ApplicationDeploymentPage,
     ApplicationDeploymentSummary,
@@ -23,13 +23,13 @@ from napms.application_catalogue.application.target_read import (
     normalize_bounded_query,
     require_as_of,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     Application,
     CatalogueInvariantError,
     CatalogueLifecycleState,
     Component,
 )
-from napms.application_catalogue.domain.target_model import (
+from napms.contexts.application_catalogue.domain.target_model import (
     ApplicationDeployment,
     DeploymentInteractionSide,
     InteractionDefinition,

@@ -5,26 +5,31 @@ from pathlib import Path
 ROOT = Path(__file__).parents[2]
 NAPMS = ROOT / "src" / "napms"
 
-ACCESS_POLICY = NAPMS / "access_policy"
-ACCESS_POLICY_REALIZATION = NAPMS / "access_policy_realization"
-AUTHORITY_MANAGEMENT = NAPMS / "authority_management"
-APPLICATION_CATALOGUE = NAPMS / "application_catalogue"
-RESOURCE_CATALOGUE = NAPMS / "resource_catalogue"
-CONNECTIVITY_REQUIREMENTS = NAPMS / "connectivity_requirements"
-CONNECTIVITY_DECISION = NAPMS / "connectivity_decision"
-TECHNICAL_ACCESS_EVIDENCE = NAPMS / "technical_access_evidence"
-NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "network_enforcement_placement"
+ACCESS_POLICY = NAPMS / "contexts" / "access_policy"
+ACCESS_POLICY_REALIZATION = NAPMS / "contexts" / "access_policy_realization"
+AUTHORITY_MANAGEMENT = NAPMS / "contexts" / "authority_management"
+APPLICATION_CATALOGUE = NAPMS / "contexts" / "application_catalogue"
+RESOURCE_CATALOGUE = NAPMS / "contexts" / "resource_catalogue"
+CONNECTIVITY_REQUIREMENTS = NAPMS / "contexts" / "connectivity_requirements"
+CONNECTIVITY_DECISION = NAPMS / "contexts" / "connectivity_decision"
+TECHNICAL_ACCESS_EVIDENCE = NAPMS / "contexts" / "technical_access_evidence"
+NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "contexts" / "network_enforcement_placement"
+NETWORK_ENVIRONMENT_OPERATIONS = NAPMS / "contexts" / "network_environment_operations"
 REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
 POLICY_EXPORT = NAPMS / "policy_export"
 SCOPED_CONNECTIVITY_INVENTORY = NAPMS / "scoped_connectivity_inventory"
 RUNTIME = NAPMS / "runtime"
-APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "adapters" / "http"
-RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "adapters" / "http"
+APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "presentation" / "http"
+RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "presentation" / "http"
 APPLICATION_CATALOGUE_HTTP_SUPPORT = APPLICATION_CATALOGUE_HTTP / "support.py"
 RESOURCE_CATALOGUE_HTTP_SUPPORT = RESOURCE_CATALOGUE_HTTP / "support.py"
-CONNECTIVITY_REQUIREMENTS_HTTP = CONNECTIVITY_REQUIREMENTS / "adapters" / "http.py"
-CONNECTIVITY_DECISION_HTTP = CONNECTIVITY_DECISION / "adapters" / "http.py"
-ACCESS_POLICY_HTTP = ACCESS_POLICY / "adapters" / "http.py"
+CONNECTIVITY_REQUIREMENTS_HTTP = (
+    CONNECTIVITY_REQUIREMENTS / "presentation" / "http" / "routes.py"
+)
+CONNECTIVITY_DECISION_HTTP = (
+    CONNECTIVITY_DECISION / "presentation" / "http" / "routes.py"
+)
+ACCESS_POLICY_HTTP = ACCESS_POLICY / "presentation" / "http" / "routes.py"
 REQUIREMENT_POLICY_ALIGNMENT_HTTP = REQUIREMENT_POLICY_ALIGNMENT / "adapters" / "http.py"
 POLICY_EXPORT_HTTP = POLICY_EXPORT / "adapters" / "http.py"
 POLICY_EXPORT_HTTP_JSON = POLICY_EXPORT / "adapters" / "http_json.py"
@@ -41,6 +46,7 @@ DOMAIN_LAYERS = (
     CONNECTIVITY_DECISION / "domain",
     TECHNICAL_ACCESS_EVIDENCE / "domain",
     NETWORK_ENFORCEMENT_PLACEMENT / "domain",
+    NETWORK_ENVIRONMENT_OPERATIONS / "domain",
 )
 APPLICATION_LAYERS = (
     ACCESS_POLICY / "application",
@@ -52,6 +58,7 @@ APPLICATION_LAYERS = (
     CONNECTIVITY_DECISION / "application",
     TECHNICAL_ACCESS_EVIDENCE / "application",
     NETWORK_ENFORCEMENT_PLACEMENT / "application",
+    NETWORK_ENVIRONMENT_OPERATIONS / "application",
     REQUIREMENT_POLICY_ALIGNMENT / "application",
     POLICY_EXPORT / "application",
 )
@@ -193,12 +200,12 @@ def test_feature_http_is_owner_local():
 
 def test_process_http_has_no_feature_endpoint_implementation():
     forbidden_prefixes = (
-        "napms.access_policy.application",
-        "napms.access_policy.domain",
-        "napms.connectivity_requirements.application",
-        "napms.connectivity_requirements.domain",
-        "napms.connectivity_decision.application",
-        "napms.connectivity_decision.domain",
+        "napms.contexts.access_policy.application",
+        "napms.contexts.access_policy.domain",
+        "napms.contexts.connectivity_requirements.application",
+        "napms.contexts.connectivity_requirements.domain",
+        "napms.contexts.connectivity_decision.application",
+        "napms.contexts.connectivity_decision.domain",
         "napms.requirement_policy_alignment.application",
         "napms.policy_export.application",
         "napms.scoped_connectivity_inventory.application",
@@ -230,35 +237,38 @@ def test_semantic_adapters_do_not_import_process_http_api():
 
 POSTGRES_SCHEMA_OWNERS = (
     (
-        NAPMS / "access_policy" / "adapters" / "postgres",
+        ACCESS_POLICY / "infrastructure" / "persistence" / "postgres",
         "napms_access_policy",
     ),
     (
-        NAPMS / "authority_management" / "adapters" / "postgres",
+        AUTHORITY_MANAGEMENT / "infrastructure" / "persistence" / "postgres",
         "napms_authority",
     ),
     (
-        NAPMS / "application_catalogue" / "adapters" / "postgres",
+        APPLICATION_CATALOGUE / "infrastructure" / "persistence" / "postgres",
         "napms_application_catalogue",
     ),
     (
-        NAPMS / "resource_catalogue" / "adapters" / "postgres",
+        RESOURCE_CATALOGUE / "infrastructure" / "persistence" / "postgres",
         "napms_resource_catalogue",
     ),
     (
-        NAPMS / "connectivity_requirements" / "adapters" / "postgres",
+        CONNECTIVITY_REQUIREMENTS / "infrastructure" / "persistence" / "postgres",
         "napms_connectivity_requirements",
     ),
     (
-        NAPMS / "connectivity_decision" / "adapters" / "postgres",
+        CONNECTIVITY_DECISION / "infrastructure" / "persistence" / "postgres",
         "napms_connectivity_decision",
     ),
     (
-        NAPMS / "technical_access_evidence" / "adapters" / "postgres",
+        TECHNICAL_ACCESS_EVIDENCE / "infrastructure" / "persistence" / "postgres",
         "napms_technical_access_evidence",
     ),
     (
-        NAPMS / "network_enforcement_placement" / "adapters" / "postgres",
+        NETWORK_ENFORCEMENT_PLACEMENT
+        / "infrastructure"
+        / "persistence"
+        / "postgres",
         "napms_network_enforcement_placement",
     ),
 )
@@ -279,41 +289,173 @@ def test_postgres_modules_do_not_read_or_reference_other_module_schemas():
 BOUNDED_CONTEXT_CORES = (
     (
         ACCESS_POLICY,
-        "napms.access_policy",
+        "napms.contexts.access_policy",
     ),
     (
         ACCESS_POLICY_REALIZATION,
-        "napms.access_policy_realization",
+        "napms.contexts.access_policy_realization",
     ),
     (
         AUTHORITY_MANAGEMENT,
-        "napms.authority_management",
+        "napms.contexts.authority_management",
     ),
     (
         APPLICATION_CATALOGUE,
-        "napms.application_catalogue",
+        "napms.contexts.application_catalogue",
     ),
     (
         RESOURCE_CATALOGUE,
-        "napms.resource_catalogue",
+        "napms.contexts.resource_catalogue",
     ),
     (
         CONNECTIVITY_REQUIREMENTS,
-        "napms.connectivity_requirements",
+        "napms.contexts.connectivity_requirements",
     ),
     (
         CONNECTIVITY_DECISION,
-        "napms.connectivity_decision",
+        "napms.contexts.connectivity_decision",
     ),
     (
         TECHNICAL_ACCESS_EVIDENCE,
-        "napms.technical_access_evidence",
+        "napms.contexts.technical_access_evidence",
     ),
     (
         NETWORK_ENFORCEMENT_PLACEMENT,
-        "napms.network_enforcement_placement",
+        "napms.contexts.network_enforcement_placement",
+    ),
+    (
+        NETWORK_ENVIRONMENT_OPERATIONS,
+        "napms.contexts.network_environment_operations",
     ),
 )
+
+
+def test_network_environment_operations_has_no_legacy_package():
+    assert not (NAPMS / "network_environment_operations").exists()
+
+
+def test_access_policy_has_no_legacy_package():
+    assert not (NAPMS / "access_policy").exists()
+
+
+def test_access_policy_realization_has_no_legacy_package():
+    assert not (NAPMS / "access_policy_realization").exists()
+
+
+def test_access_policy_realization_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = ACCESS_POLICY_REALIZATION / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
+
+
+def test_authority_management_has_no_legacy_package():
+    assert not (NAPMS / "authority_management").exists()
+
+
+def test_application_catalogue_has_no_legacy_package():
+    assert not (NAPMS / "application_catalogue").exists()
+
+
+def test_authority_management_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = AUTHORITY_MANAGEMENT / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
+
+
+def test_resource_catalogue_has_no_legacy_package():
+    assert not (NAPMS / "resource_catalogue").exists()
+
+
+def test_resource_catalogue_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = RESOURCE_CATALOGUE / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
+
+
+def test_technical_access_evidence_has_no_legacy_package():
+    assert not (NAPMS / "technical_access_evidence").exists()
+
+
+def test_network_enforcement_placement_has_no_legacy_package():
+    assert not (NAPMS / "network_enforcement_placement").exists()
+
+
+def test_connectivity_requirements_has_no_legacy_package():
+    assert not (NAPMS / "connectivity_requirements").exists()
+
+
+def test_connectivity_requirements_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = CONNECTIVITY_REQUIREMENTS / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
+
+
+def test_connectivity_decision_has_no_legacy_package():
+    assert not (NAPMS / "connectivity_decision").exists()
+
+
+def test_connectivity_decision_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = CONNECTIVITY_DECISION / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
+
+
+def test_network_enforcement_placement_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = NETWORK_ENFORCEMENT_PLACEMENT / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
+
+
+def test_technical_access_evidence_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = TECHNICAL_ACCESS_EVIDENCE / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
+
+
+def test_network_environment_operations_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = NETWORK_ENVIRONMENT_OPERATIONS / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
 
 
 def test_bounded_context_core_does_not_import_another_bounded_context():
@@ -338,8 +480,8 @@ def test_alignment_application_does_not_import_source_bounded_contexts():
         for module in imported_modules(path):
             if module.startswith(
                 (
-                    "napms.connectivity_requirements",
-                    "napms.access_policy",
+                    "napms.contexts.connectivity_requirements",
+                    "napms.contexts.access_policy",
                 )
             ):
                 violations.append((path, module))

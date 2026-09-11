@@ -4,28 +4,28 @@ from typing import Callable
 import psycopg
 from fastapi import FastAPI
 
-from napms.access_policy.adapters.connectivity_decision import (
+from napms.contexts.access_policy.infrastructure.integrations.connectivity_decision import (
     ConnectivityDecisionConsumerAdapter,
 )
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     ConnectivityDecision as AccessPolicyConnectivityDecision,
     ConnectivityDecisionPort,
     DecisionOutcome as AccessPolicyDecisionOutcome,
 )
-from napms.application_catalogue.adapters.http.application_workspace import (
+from napms.contexts.application_catalogue.presentation.http.application_workspace import (
     create_catalogue_application_workspace_router,
 )
-from napms.application_catalogue.adapters.http.discovery import (
+from napms.contexts.application_catalogue.presentation.http.discovery import (
     create_catalogue_discovery_router,
 )
-from napms.application_catalogue.adapters.http.legacy_curation import (
+from napms.contexts.application_catalogue.presentation.http.legacy_curation import (
     create_application_catalogue_curation_router,
 )
-from napms.application_catalogue.adapters.http.legacy_temporal import (
+from napms.contexts.application_catalogue.presentation.http.legacy_temporal import (
     create_application_catalogue_temporal_router,
 )
-from napms.application_catalogue.adapters.http.target import create_catalogue_target_router
-from napms.application_catalogue.adapters.http.target_retirement import (
+from napms.contexts.application_catalogue.presentation.http.target import create_catalogue_target_router
+from napms.contexts.application_catalogue.presentation.http.target_retirement import (
     create_catalogue_target_retirement_router,
 )
 from napms.bootstrap.config import HttpRuntimeConfig
@@ -36,19 +36,19 @@ from napms.composition.network_operator_view_postgres import (
     open_network_operator_view_scope,
 )
 from napms.composition.traffic_analysis_postgres import open_traffic_analysis_scope
-from napms.connectivity_decision.adapters.postgres import (
+from napms.contexts.connectivity_decision.infrastructure.persistence.postgres import (
     PostgresConnectivityDecisionRepository,
 )
-from napms.connectivity_decision.application.ports import DecisionPersistenceError
-from napms.connectivity_decision.application.select import SelectEffectiveConnectivityDecision
+from napms.contexts.connectivity_decision.application.ports import DecisionPersistenceError
+from napms.contexts.connectivity_decision.application.select import SelectEffectiveConnectivityDecision
 from napms.network_operator_view.adapters.http import create_network_operator_view_router
-from napms.resource_catalogue.adapters.http.curation import (
+from napms.contexts.resource_catalogue.presentation.http.curation import (
     create_resource_catalogue_curation_router,
 )
-from napms.resource_catalogue.adapters.http.temporal import (
+from napms.contexts.resource_catalogue.presentation.http.temporal import (
     create_resource_catalogue_temporal_router,
 )
-from napms.resource_catalogue.adapters.http.workspace import (
+from napms.contexts.resource_catalogue.presentation.http.workspace import (
     create_catalogue_resource_workspace_router,
 )
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator

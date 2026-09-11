@@ -6,10 +6,10 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.application_catalogue.adapters.postgres.curation_repository import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres.curation_repository import (
     PostgresApplicationCatalogueCurationRepository,
 )
-from napms.application_catalogue.domain.model import Application
+from napms.contexts.application_catalogue.domain.model import Application
 
 
 pytestmark = pytest.mark.postgres
@@ -26,7 +26,7 @@ def postgres_dsn():
 @pytest.fixture(scope="session", autouse=True)
 def migrated_application_catalogue(postgres_dsn):
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:
-        migrations = files("napms.application_catalogue.adapters.postgres").joinpath(
+        migrations = files("napms.contexts.application_catalogue.infrastructure.persistence.postgres").joinpath(
             "migrations"
         )
         for migration in sorted(

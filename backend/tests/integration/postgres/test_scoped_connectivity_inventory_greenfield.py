@@ -6,30 +6,30 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,
     ProposalProvenance,
     RuleSemanticIdentity,
 )
-from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import JsonDcsProjectionCodec
 from napms.composition.config import ApplicationConfig, PostgresConfig
 from napms.composition.greenfield_postgres import (
     apply_greenfield_migrations,
     open_greenfield_scope,
 )
-from napms.connectivity_decision.adapters.postgres import (
+from napms.contexts.connectivity_decision.infrastructure.persistence.postgres import (
     PostgresConnectivityDecisionRepository,
 )
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     ConnectivityDecision,
     DecisionOutcome,
     DecisionProvenance,
     DecisionSubject,
     DecisionValidity,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     ConnectivityRequirement,
     RequiredSemanticInteraction,
     RequirementApplicability,

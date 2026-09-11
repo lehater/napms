@@ -4,14 +4,14 @@ from uuid import UUID
 
 from fastapi.testclient import TestClient
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     ConnectivityDecision as AccessPolicyConnectivityDecision,
     DecisionOutcome as AccessPolicyDecisionOutcome,
 )
-from napms.application_catalogue.application.describe_interactions import (
+from napms.contexts.application_catalogue.application.describe_interactions import (
     DirectedInteractionDescription,
 )
-from napms.connectivity_decision.application.ports import (
+from napms.contexts.connectivity_decision.application.ports import (
     DecisionAuthorityCheck,
     DecisionInteractionPage,
     DecisionScopeOptions,
@@ -19,7 +19,7 @@ from napms.connectivity_decision.application.ports import (
     SubjectOutcome,
     TernaryOutcome,
 )
-from napms.connectivity_decision.domain.model import DecisionSubject
+from napms.contexts.connectivity_decision.domain.model import DecisionSubject
 from napms.runtime.auth import (
     InMemorySessionStore,
     LocalCredential,

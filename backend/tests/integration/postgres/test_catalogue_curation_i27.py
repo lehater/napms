@@ -6,65 +6,65 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.application_catalogue.adapters.curation_support import (
+from napms.contexts.application_catalogue.infrastructure.local.curation_support import (
     LocalApplicationCatalogueIdentityFactory,
     LocalApplicationCatalogueProvenanceFactory,
     LocalDeploymentBindingIdentityFactory,
     LocalDeploymentBindingProvenanceFactory,
 )
-from napms.application_catalogue.adapters.dcs_authoring import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_authoring import (
     JsonDcsAuthoringProjectionEncoder,
 )
-from napms.application_catalogue.adapters.postgres import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres import (
     PostgresApplicationCatalogueCurationRepository,
 )
-from napms.application_catalogue.adapters.resource_binding_target import (
+from napms.contexts.application_catalogue.infrastructure.integrations.resource_binding_target import (
     ResourceCatalogueBindingTargetAdapter,
 )
-from napms.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.binding_curation import (
     CreateDeploymentResourceBinding,
     CreateDeploymentResourceBindingCommand,
 )
-from napms.application_catalogue.application.curation import (
+from napms.contexts.application_catalogue.application.curation import (
     CreateApplication,
     CreateApplicationCommand,
     CreateApplicationOutcome,
 )
-from napms.application_catalogue.application.dcs_curation import (
+from napms.contexts.application_catalogue.application.dcs_curation import (
     CreateDcsRevision,
     CreateDcsRevisionCommand,
 )
-from napms.application_catalogue.application.deployment_curation import (
+from napms.contexts.application_catalogue.application.deployment_curation import (
     CreateComponentDeployment,
     CreateComponentDeploymentCommand,
 )
-from napms.application_catalogue.application.ports import (
+from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
 )
-from napms.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.structure_curation import (
     CatalogueMutationOutcome,
     CreateComponent,
     CreateComponentCommand,
 )
-from napms.application_catalogue.domain.communication import (
+from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,
     DcsPortConstraint,
     DcsPortRange,
 )
-from napms.resource_catalogue.adapters.curation_support import (
+from napms.contexts.resource_catalogue.infrastructure.local.curation_support import (
     LocalResourceCatalogueIdentityFactory,
     LocalResourceCatalogueProvenanceFactory,
 )
-from napms.resource_catalogue.adapters.postgres import (
+from napms.contexts.resource_catalogue.infrastructure.persistence.postgres import (
     PostgresResourceCatalogueCurationRepository,
 )
-from napms.resource_catalogue.application.curation import (
+from napms.contexts.resource_catalogue.application.curation import (
     CreateResource,
     CreateResourceCommand,
     CreateResourceOutcome,
 )
-from napms.resource_catalogue.application.ports import (
+from napms.contexts.resource_catalogue.application.ports import (
     ResourceCatalogueAuthorityCheck,
     ResourceCatalogueAuthorityOutcome,
 )
@@ -86,8 +86,8 @@ def postgres_dsn():
 def migrated_catalogues(postgres_dsn):
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:
         for package in (
-            "napms.application_catalogue.adapters.postgres",
-            "napms.resource_catalogue.adapters.postgres",
+            "napms.contexts.application_catalogue.infrastructure.persistence.postgres",
+            "napms.contexts.resource_catalogue.infrastructure.persistence.postgres",
         ):
             migrations = files(package).joinpath("migrations")
             for migration in sorted(

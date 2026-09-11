@@ -6,19 +6,19 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.application.ports import AuthorityAction, TernaryOutcome
-from napms.authority_management.adapters.access_policy import (
+from napms.contexts.access_policy.application.ports import AuthorityAction, TernaryOutcome
+from napms.contexts.authority_management.infrastructure.integrations.access_policy import (
     AccessPolicyAuthorityAdapter,
     AccessPolicyProposalScopeAdapter,
 )
-from napms.authority_management.adapters.postgres import (
+from napms.contexts.authority_management.infrastructure.persistence.postgres import (
     PostgresAuthorityAssignmentRepository,
 )
-from napms.authority_management.adapters.scoped_connectivity_inventory import (
+from napms.contexts.authority_management.infrastructure.integrations.scoped_connectivity_inventory import (
     AuthorityManagementScopedConnectivityAdapter,
 )
-from napms.authority_management.application.check_authority import CheckAuthority
-from napms.authority_management.application.list_scopes import ListEffectiveAuthorityScopes
+from napms.contexts.authority_management.application.check_authority import CheckAuthority
+from napms.contexts.authority_management.application.list_scopes import ListEffectiveAuthorityScopes
 from napms.scoped_connectivity_inventory.application.ports import (
     DependencyAvailability,
     ScopeAdmissionOutcome,
@@ -40,7 +40,7 @@ def postgres_dsn():
 
 @pytest.fixture(scope="session", autouse=True)
 def migrated_authority(postgres_dsn):
-    migrations = files("napms.authority_management.adapters.postgres").joinpath(
+    migrations = files("napms.contexts.authority_management.infrastructure.persistence.postgres").joinpath(
         "migrations"
     )
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:

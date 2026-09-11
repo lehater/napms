@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from napms.application_catalogue.adapters.dcs_json_codec import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import (
     DcsProjectionEncodeError,
     JsonDcsProjectionCodec,
 )

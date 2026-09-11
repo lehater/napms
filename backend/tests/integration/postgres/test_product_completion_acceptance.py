@@ -6,24 +6,24 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.adapters.connectivity_decision import (
+from napms.contexts.access_policy.infrastructure.integrations.connectivity_decision import (
     ConnectivityDecisionConsumerAdapter,
 )
-from napms.access_policy.application.materialize_rule import (
+from napms.contexts.access_policy.application.materialize_rule import (
     MaterializationOutcome,
     MaterializeAllowedAccessRule,
     SubmitAccessRuleProposal,
 )
-from napms.access_policy_realization.application.ports import (
+from napms.contexts.access_policy_realization.application.ports import (
     ConfiguredPolicySemantics,
     ManagedReconciliationScopeContract,
 )
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     ManagedReconciliationScope,
     ReconciliationStatus,
     RequiredSemanticChange,
 )
-from napms.access_policy_realization.domain.rendering import RenderStatus
+from napms.contexts.access_policy_realization.domain.rendering import RenderStatus
 from napms.composition.access_policy_realization_postgres import (
     open_access_policy_realization_scope,
 )
@@ -33,31 +33,33 @@ from napms.composition.network_environment_operations_stub import (
     open_network_environment_operations_stub_scope,
 )
 from napms.composition.postgres_migrations import apply_greenfield_migrations
-from napms.connectivity_decision.application.record import (
+from napms.contexts.connectivity_decision.application.record import (
     RecordConnectivityDecision,
     RecordDecision,
     RecordDecisionOutcome,
 )
-from napms.connectivity_decision.application.select import (
+from napms.contexts.connectivity_decision.application.select import (
     SelectEffectiveConnectivityDecision,
 )
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     DecisionEvidenceReference,
     DecisionOutcome,
     DecisionSubject,
     DecisionValidity,
 )
-from napms.connectivity_requirements.application.declare import (
+from napms.contexts.connectivity_requirements.application.declare import (
     DeclarationOutcome,
     DeclareConnectivityRequirement,
     DeclareRequirement,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementApplicability,
 )
-from napms.network_environment_operations.domain import (
+from napms.contexts.network_environment_operations.application.command import (
     ExecuteNetworkOperationCommand,
+)
+from napms.contexts.network_environment_operations.domain.model import (
     OperationOutcome,
 )
 from tests.integration.postgres import (

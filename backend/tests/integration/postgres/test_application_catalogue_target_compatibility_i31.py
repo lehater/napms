@@ -7,19 +7,19 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.application_catalogue.adapters.dcs_authoring import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_authoring import (
     JsonDcsAuthoringProjectionEncoder,
 )
-from napms.application_catalogue.adapters.postgres import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres import (
     PostgresApplicationCatalogueRepository,
     PostgresTargetApplicationCatalogueRepository,
 )
-from napms.application_catalogue.domain.communication import (
+from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,
     DcsPortConstraint,
     DcsPortRange,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     Application,
     Component,
     ComponentDeployment,
@@ -27,7 +27,7 @@ from napms.application_catalogue.domain.model import (
     DeploymentResourceBinding,
     DirectedInteractionIdentity,
 )
-from napms.application_catalogue.domain.target_model import (
+from napms.contexts.application_catalogue.domain.target_model import (
     ApplicationDeployment,
     DeploymentInteraction,
     DeploymentInteractionCompatibility,
@@ -59,7 +59,7 @@ def postgres_dsn():
 @pytest.fixture(scope="session", autouse=True)
 def migrated_catalogue(postgres_dsn):
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:
-        migrations = files("napms.application_catalogue.adapters.postgres").joinpath(
+        migrations = files("napms.contexts.application_catalogue.infrastructure.persistence.postgres").joinpath(
             "migrations"
         )
         for migration in sorted(

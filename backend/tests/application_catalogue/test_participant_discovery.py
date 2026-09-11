@@ -2,11 +2,11 @@ from uuid import UUID
 
 import pytest
 
-from napms.application_catalogue.application.participant_discovery import (
+from napms.contexts.application_catalogue.application.participant_discovery import (
     ApplicationCatalogueParticipant,
     ListApplicationCatalogueParticipants,
 )
-from napms.application_catalogue.domain.model import CatalogueInvariantError
+from napms.contexts.application_catalogue.domain.model import CatalogueInvariantError
 
 
 class FakeCatalogue:

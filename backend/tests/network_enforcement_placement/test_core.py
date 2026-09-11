@@ -3,10 +3,10 @@ from uuid import UUID
 
 import pytest
 
-from napms.network_enforcement_placement.application.select import (
+from napms.contexts.network_enforcement_placement.application.select import (
     SelectEnforcement,
 )
-from napms.network_enforcement_placement.domain.model import (
+from napms.contexts.network_enforcement_placement.domain.model import (
     EffectiveWindow,
     EnforcementAttachment,
     ForwardingPath,

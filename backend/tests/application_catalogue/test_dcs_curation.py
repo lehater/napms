@@ -3,23 +3,23 @@ from uuid import UUID
 
 import pytest
 
-from napms.application_catalogue.application.dcs_curation import (
+from napms.contexts.application_catalogue.application.dcs_curation import (
     CreateDcsRevision,
     CreateDcsRevisionCommand,
 )
-from napms.application_catalogue.application.ports import (
+from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
 )
-from napms.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.structure_curation import (
     CatalogueMutationOutcome,
 )
-from napms.application_catalogue.domain.communication import (
+from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,
     DcsPortConstraint,
     DcsPortRange,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     CatalogueInvariantError,
     CatalogueLifecycleState,
     ComponentDeployment,

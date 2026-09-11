@@ -3,16 +3,16 @@ from uuid import UUID
 
 import pytest
 
-from napms.application_catalogue.domain.communication import (
+from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,
     DcsPortConstraint,
     DcsPortRange,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     CatalogueInvariantError,
     CatalogueLifecycleState,
 )
-from napms.application_catalogue.domain.target_model import (
+from napms.contexts.application_catalogue.domain.target_model import (
     ApplicationDeployment,
     DeploymentInteraction,
     DeploymentInteractionCompatibility,

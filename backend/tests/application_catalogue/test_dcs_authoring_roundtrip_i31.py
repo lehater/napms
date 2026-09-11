@@ -1,7 +1,7 @@
-from napms.application_catalogue.adapters.dcs_authoring import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_authoring import (
     JsonDcsAuthoringProjectionEncoder,
 )
-from napms.application_catalogue.domain.communication import (
+from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,
     DcsPortConstraint,
     DcsPortRange,

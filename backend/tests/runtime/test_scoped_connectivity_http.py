@@ -4,11 +4,11 @@ from uuid import UUID
 
 from fastapi.testclient import TestClient
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     ConnectivityDecision,
     DecisionOutcome,
 )
-from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 from napms.runtime.auth import (
     InMemorySessionStore,
     LocalCredential,

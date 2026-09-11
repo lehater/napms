@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from napms.access_policy.adapters.requirement_policy_alignment import (
+from napms.contexts.access_policy.infrastructure.integrations.requirement_policy_alignment import (
     AccessPolicyAlignmentAdapter,
 )
-from napms.access_policy.application.ports import AccessRulePersistenceError
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.application.ports import AccessRulePersistenceError
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,
@@ -14,21 +14,21 @@ from napms.access_policy.domain.model import (
     ProposalProvenance,
     RuleSemanticIdentity,
 )
-from napms.connectivity_requirements.adapters.requirement_policy_alignment import (
+from napms.contexts.connectivity_requirements.infrastructure.integrations.requirement_policy_alignment import (
     ConnectivityRequirementsAlignmentAdapter,
 )
-from napms.connectivity_requirements.application.ports import (
+from napms.contexts.connectivity_requirements.application.ports import (
     RequirementAuthorityCheck,
     RequirementAuthorityAction,
     RequirementPersistenceError,
     RequirementScopeOptions,
     TernaryOutcome,
 )
-from napms.connectivity_requirements.application.read import (
+from napms.contexts.connectivity_requirements.application.read import (
     GetAuthorizedRequirement,
     ListConnectivityRequirements,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     ConnectivityRequirement,
     RequiredSemanticInteraction,
     RequirementApplicability,

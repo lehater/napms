@@ -7,20 +7,20 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.application_catalogue.adapters.dcs_authoring import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_authoring import (
     JsonDcsAuthoringProjectionEncoder,
 )
-from napms.application_catalogue.adapters.postgres.target_retirement_query import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres.target_retirement_query import (
     PostgresApplicationCatalogueRetirementDependencyQuery,
 )
-from napms.application_catalogue.application.target_lifecycle import RetirementDependencyKind
-from napms.application_catalogue.application.target_retirement import RetirementSubjectKind
-from napms.application_catalogue.domain.communication import (
+from napms.contexts.application_catalogue.application.target_lifecycle import RetirementDependencyKind
+from napms.contexts.application_catalogue.application.target_retirement import RetirementSubjectKind
+from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,
     DcsPortConstraint,
     DcsPortRange,
 )
-from napms.application_catalogue.domain.target_model import DeploymentInteractionSide
+from napms.contexts.application_catalogue.domain.target_model import DeploymentInteractionSide
 from napms.composition.application_catalogue_target_read_postgres import (
     PostgresApplicationCatalogueTargetReadModel,
 )
@@ -53,8 +53,8 @@ def postgres_dsn():
 def migrated_catalogues(postgres_dsn):
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:
         for package in (
-            "napms.application_catalogue.adapters.postgres",
-            "napms.resource_catalogue.adapters.postgres",
+            "napms.contexts.application_catalogue.infrastructure.persistence.postgres",
+            "napms.contexts.resource_catalogue.infrastructure.persistence.postgres",
         ):
             migrations = files(package).joinpath("migrations")
             for migration in sorted(

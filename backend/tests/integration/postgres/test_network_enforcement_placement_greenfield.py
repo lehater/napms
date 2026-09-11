@@ -12,10 +12,10 @@ from napms.composition.network_enforcement_placement_postgres import (
     open_network_enforcement_placement_scope,
 )
 from napms.composition.postgres_migrations import apply_greenfield_migrations
-from napms.network_enforcement_placement.adapters.local_import import (
+from napms.contexts.network_enforcement_placement.presentation.imports.local_json import (
     LocalPlacementKnowledgeImportAdapter,
 )
-from napms.network_enforcement_placement.domain.model import (
+from napms.contexts.network_enforcement_placement.domain.model import (
     InputProvenance,
     SelectionStatus,
 )

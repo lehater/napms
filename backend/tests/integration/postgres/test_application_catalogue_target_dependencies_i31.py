@@ -7,18 +7,18 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.adapters.postgres.application_catalogue_dependency_query import (
+from napms.contexts.access_policy.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresAccessRuleDependencyQuery,
 )
-from napms.access_policy.domain.model import RuleSemanticIdentity
-from napms.connectivity_decision.adapters.postgres.application_catalogue_dependency_query import (
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.connectivity_decision.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityDecisionDependencyQuery,
 )
-from napms.connectivity_decision.domain.model import DecisionSubject
-from napms.connectivity_requirements.adapters.postgres.application_catalogue_dependency_query import (
+from napms.contexts.connectivity_decision.domain.model import DecisionSubject
+from napms.contexts.connectivity_requirements.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityRequirementDependencyQuery,
 )
-from napms.connectivity_requirements.domain.model import RequiredSemanticInteraction
+from napms.contexts.connectivity_requirements.domain.model import RequiredSemanticInteraction
 
 
 pytestmark = pytest.mark.postgres
@@ -45,9 +45,9 @@ def postgres_dsn():
 def migrated_dependencies(postgres_dsn):
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:
         for package in (
-            "napms.connectivity_requirements.adapters.postgres",
-            "napms.connectivity_decision.adapters.postgres",
-            "napms.access_policy.adapters.postgres",
+            "napms.contexts.connectivity_requirements.infrastructure.persistence.postgres",
+            "napms.contexts.connectivity_decision.infrastructure.persistence.postgres",
+            "napms.contexts.access_policy.infrastructure.persistence.postgres",
         ):
             migrations = files(package).joinpath("migrations")
             for migration in sorted(

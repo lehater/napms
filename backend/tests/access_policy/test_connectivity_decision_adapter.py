@@ -3,16 +3,16 @@ from uuid import UUID
 
 import pytest
 
-from napms.access_policy.adapters.connectivity_decision import (
+from napms.contexts.access_policy.infrastructure.integrations.connectivity_decision import (
     ConnectivityDecisionConsumerAdapter,
 )
-from napms.access_policy.application.ports import DecisionOutcome
-from napms.access_policy.domain.model import RuleSemanticIdentity
-from napms.connectivity_decision.application.select import (
+from napms.contexts.access_policy.application.ports import DecisionOutcome
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.connectivity_decision.application.select import (
     SelectionOutcome,
     SelectionResult,
 )
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     ConnectivityDecision,
     DecisionOutcome as DomainDecisionOutcome,
     DecisionProvenance,

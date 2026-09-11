@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
-from napms.access_policy_realization.domain.realization import DesiredDerivationStatus
-from napms.access_policy_realization.domain.rendering import RenderStatus
+from napms.contexts.access_policy_realization.domain.realization import DesiredDerivationStatus
+from napms.contexts.access_policy_realization.domain.rendering import RenderStatus
 from napms.network_operator_view.application import (
     AuthorityResult,
     Availability,

@@ -4,7 +4,7 @@ from uuid import UUID
 
 import pytest
 
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,

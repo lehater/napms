@@ -10,20 +10,20 @@ from napms.policy_export.application.ports import (
     ResourceRealizationOutcome,
     ResourceReference,
 )
-from napms.resource_catalogue.adapters.policy_export import (
+from napms.contexts.resource_catalogue.infrastructure.integrations.policy_export import (
     PolicyExportResourceCatalogueAdapter,
 )
-from napms.resource_catalogue.adapters.postgres import (
+from napms.contexts.resource_catalogue.infrastructure.persistence.postgres import (
     PostgresResourceCatalogueRepository,
 )
-from napms.resource_catalogue.adapters.scoped_connectivity_inventory import (
+from napms.contexts.resource_catalogue.infrastructure.integrations.scoped_connectivity_inventory import (
     ResourceCatalogueScopedConnectivityAdapter,
 )
-from napms.resource_catalogue.application.list_scope_resources import (
+from napms.contexts.resource_catalogue.application.list_scope_resources import (
     ListResourcesInResponsibilityScope,
 )
-from napms.resource_catalogue.application.ports import ResourceCataloguePersistenceError
-from napms.resource_catalogue.application.resolve import ResolveResourceRealization
+from napms.contexts.resource_catalogue.application.ports import ResourceCataloguePersistenceError
+from napms.contexts.resource_catalogue.application.resolve import ResolveResourceRealization
 from napms.scoped_connectivity_inventory.application.model import RealizationState
 
 
@@ -43,7 +43,7 @@ def postgres_dsn():
 
 @pytest.fixture(scope="session", autouse=True)
 def migrated_resource_catalogue(postgres_dsn):
-    migrations = files("napms.resource_catalogue.adapters.postgres").joinpath(
+    migrations = files("napms.contexts.resource_catalogue.infrastructure.persistence.postgres").joinpath(
         "migrations"
     )
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:

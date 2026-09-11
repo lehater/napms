@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
 
-from napms.resource_catalogue.application.resolve_address import (
+from napms.contexts.resource_catalogue.application.resolve_address import (
     ResolveResourcesByTechnicalAddress,
     TechnicalAddressResolutionOutcome,
 )
-from napms.resource_catalogue.domain.model import EndpointAddress, ResourceRealizationVersion
+from napms.contexts.resource_catalogue.domain.model import EndpointAddress, ResourceRealizationVersion
 
 
 NOW = datetime(2026, 9, 10, 8, 0, tzinfo=timezone.utc)

@@ -4,105 +4,105 @@ from typing import Iterator
 
 import psycopg
 
-from napms.access_policy.adapters.postgres import PostgresAccessRuleRepository
-from napms.access_policy.adapters.requirement_policy_alignment import (
+from napms.contexts.access_policy.infrastructure.persistence.postgres import PostgresAccessRuleRepository
+from napms.contexts.access_policy.infrastructure.integrations.requirement_policy_alignment import (
     AccessPolicyAlignmentAdapter,
 )
-from napms.access_policy.adapters.scoped_connectivity_inventory import (
+from napms.contexts.access_policy.infrastructure.integrations.scoped_connectivity_inventory import (
     AccessPolicyScopedConnectivityAdapter,
 )
-from napms.application_catalogue.adapters.access_policy import (
+from napms.contexts.application_catalogue.infrastructure.integrations.access_policy import (
     AccessPolicyCommunicationCatalogueAdapter,
     AccessPolicyProposalInteractionCatalogueAdapter,
 )
-from napms.application_catalogue.adapters.connectivity_decision import (
+from napms.contexts.application_catalogue.infrastructure.integrations.connectivity_decision import (
     ConnectivityDecisionCatalogueAdapter,
     ConnectivityDecisionInteractionDiscoveryAdapter,
 )
-from napms.application_catalogue.adapters.connectivity_requirements import (
+from napms.contexts.application_catalogue.infrastructure.integrations.connectivity_requirements import (
     ConnectivityRequirementsCatalogueAdapter,
     ConnectivityRequirementsInteractionDiscoveryAdapter,
 )
-from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
-from napms.application_catalogue.adapters.policy_export import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import JsonDcsProjectionCodec
+from napms.contexts.application_catalogue.infrastructure.integrations.policy_export import (
     PolicyExportApplicationCatalogueAdapter,
 )
-from napms.application_catalogue.adapters.postgres import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres import (
     PostgresApplicationCatalogueRepository,
 )
-from napms.application_catalogue.adapters.scoped_connectivity_inventory import (
+from napms.contexts.application_catalogue.infrastructure.integrations.scoped_connectivity_inventory import (
     ApplicationCatalogueScopedConnectivityAdapter,
 )
-from napms.application_catalogue.application.describe_interactions import (
+from napms.contexts.application_catalogue.application.describe_interactions import (
     DescribeDirectedInteractions,
 )
-from napms.application_catalogue.application.list_interactions import (
+from napms.contexts.application_catalogue.application.list_interactions import (
     ListDirectedInteractions,
 )
-from napms.application_catalogue.application.resolve import (
+from napms.contexts.application_catalogue.application.resolve import (
     ResolveApplicationProjection,
     ValidateDirectedInteraction,
 )
-from napms.authority_management.adapters.access_policy import (
+from napms.contexts.authority_management.infrastructure.integrations.access_policy import (
     AccessPolicyAuthorityAdapter,
     AccessPolicyEffectivePolicyReadScopeAdapter,
     AccessPolicyProposalScopeAdapter,
     AccessPolicyRuleReadScopeAdapter,
 )
-from napms.authority_management.adapters.connectivity_decision import (
+from napms.contexts.authority_management.infrastructure.integrations.connectivity_decision import (
     ConnectivityDecisionAuthorityAdapter,
     ConnectivityDecisionReadScopeAdapter,
     ConnectivityDecisionScopeAdapter,
 )
-from napms.authority_management.adapters.connectivity_requirements import (
+from napms.contexts.authority_management.infrastructure.integrations.connectivity_requirements import (
     ConnectivityRequirementsAuthorityAdapter,
     ConnectivityRequirementsDeclarationScopeAdapter,
     ConnectivityRequirementsReadScopeAdapter,
 )
-from napms.authority_management.adapters.postgres import (
+from napms.contexts.authority_management.infrastructure.persistence.postgres import (
     PostgresAuthorityAssignmentRepository,
 )
-from napms.authority_management.adapters.scoped_connectivity_inventory import (
+from napms.contexts.authority_management.infrastructure.integrations.scoped_connectivity_inventory import (
     AuthorityManagementScopedConnectivityAdapter,
 )
-from napms.authority_management.application.check_authority import CheckAuthority
-from napms.authority_management.application.list_scopes import (
+from napms.contexts.authority_management.application.check_authority import CheckAuthority
+from napms.contexts.authority_management.application.list_scopes import (
     ListEffectiveAuthorityScopes,
 )
 from napms.composition.config import ApplicationConfig
-from napms.connectivity_decision.adapters.postgres import (
+from napms.contexts.connectivity_decision.infrastructure.persistence.postgres import (
     PostgresConnectivityDecisionRepository,
 )
-from napms.connectivity_decision.adapters.scoped_connectivity_inventory import (
+from napms.contexts.connectivity_decision.infrastructure.integrations.scoped_connectivity_inventory import (
     ConnectivityDecisionScopedConnectivityAdapter,
 )
-from napms.connectivity_requirements.adapters.postgres import (
+from napms.contexts.connectivity_requirements.infrastructure.persistence.postgres import (
     PostgresConnectivityRequirementRepository,
 )
-from napms.connectivity_requirements.adapters.requirement_policy_alignment import (
+from napms.contexts.connectivity_requirements.infrastructure.integrations.requirement_policy_alignment import (
     ConnectivityRequirementsAlignmentAdapter,
 )
-from napms.connectivity_requirements.adapters.scoped_connectivity_inventory import (
+from napms.contexts.connectivity_requirements.infrastructure.integrations.scoped_connectivity_inventory import (
     ConnectivityRequirementsScopedConnectivityAdapter,
 )
-from napms.connectivity_requirements.application.read import (
+from napms.contexts.connectivity_requirements.application.read import (
     GetAuthorizedRequirement,
     ListConnectivityRequirements,
 )
 from napms.composition.postgres_migrations import apply_greenfield_migrations
-from napms.resource_catalogue.adapters.policy_export import (
+from napms.contexts.resource_catalogue.infrastructure.integrations.policy_export import (
     PolicyExportResourceCatalogueAdapter,
 )
-from napms.resource_catalogue.adapters.postgres import (
+from napms.contexts.resource_catalogue.infrastructure.persistence.postgres import (
     PostgresResourceCatalogueRepository,
 )
-from napms.resource_catalogue.adapters.scoped_connectivity_inventory import (
+from napms.contexts.resource_catalogue.infrastructure.integrations.scoped_connectivity_inventory import (
     ResourceCatalogueScopedConnectivityAdapter,
 )
-from napms.resource_catalogue.application.list_scope_resources import (
+from napms.contexts.resource_catalogue.application.list_scope_resources import (
     ListResourcesInResponsibilityScope,
 )
-from napms.resource_catalogue.application.resolve import ResolveResourceRealization
+from napms.contexts.resource_catalogue.application.resolve import ResolveResourceRealization
 from napms.scoped_connectivity_inventory.application.read import (
     DiscoverScopedConnectivityScopes,
     ReadScopedConnectivityInventory,

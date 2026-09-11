@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from napms.application_catalogue.application.deployment_curation import (
+from napms.contexts.application_catalogue.application.deployment_curation import (
     CreateComponentDeployment,
     CreateComponentDeploymentCommand,
     RenameComponentDeployment,
@@ -9,14 +9,14 @@ from napms.application_catalogue.application.deployment_curation import (
     RetireComponentDeployment,
     RetireComponentDeploymentCommand,
 )
-from napms.application_catalogue.application.ports import (
+from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
 )
-from napms.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.structure_curation import (
     CatalogueMutationOutcome,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     Application,
     CatalogueLifecycleState,
     Component,

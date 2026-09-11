@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from napms.application_catalogue.application.ports import (
+from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
 )
-from napms.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.structure_curation import (
     CatalogueMutationOutcome,
     CreateComponent,
     CreateComponentCommand,
@@ -16,7 +16,7 @@ from napms.application_catalogue.application.structure_curation import (
     RetireComponent,
     RetireComponentCommand,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     Application,
     CatalogueLifecycleState,
     Component,

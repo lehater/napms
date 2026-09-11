@@ -1,7 +1,7 @@
 import pytest
 
-from napms.application_catalogue.application.target_read import normalize_bounded_query
-from napms.application_catalogue.domain.model import CatalogueInvariantError
+from napms.contexts.application_catalogue.application.target_read import normalize_bounded_query
+from napms.contexts.application_catalogue.domain.model import CatalogueInvariantError
 
 
 def test_target_query_normalizes_search_and_stable_sort_direction() -> None:

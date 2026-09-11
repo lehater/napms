@@ -22,7 +22,7 @@ def postgres_dsn():
 
 def _migration(name: str) -> str:
     return (
-        files("napms.application_catalogue.adapters.postgres")
+        files("napms.contexts.application_catalogue.infrastructure.persistence.postgres")
         .joinpath("migrations", name)
         .read_text(encoding="utf-8")
     )
