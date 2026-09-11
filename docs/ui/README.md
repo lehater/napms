@@ -25,8 +25,10 @@ When UI guidance would need to restate a business lifecycle, authority rule, sem
 - `components.md` — reusable component responsibilities.
 - `screens.md` — screen-level presentation responsibilities.
 - `interaction-rules.md` — URL/tree-grid/form/loading/error interaction mechanics.
-- `references/` — visual direction only.
+- `application-catalogue-target.md` / `application-catalogue-wireframes.md` — accepted Application Catalogue target and screen wireframes.
+- `resource-catalogue-wireframes.md` — accepted Resource Catalogue screen/interaction wireframes, with linked SVG references.
+- `references/` — visual direction and implementation-reference images only; `references/resource-catalogue/` contains versioned Resource Catalogue SVG mockups.
 
 Execution sequencing does not belong here. Current UI work is selected by `docs/plans/active/README.md` / the active plan and the durable roadmap in `docs/engineering/`.
 
-Reference screenshots define composition/palette/density direction only. Their sample entities/statuses are not NAPMS truth.
+Reference screenshots and SVG mockups define composition/palette/density direction only. Their sample entities/statuses are not independent NAPMS domain truth; the linked Markdown/canonical domain and requirements owners win on semantic conflicts.
