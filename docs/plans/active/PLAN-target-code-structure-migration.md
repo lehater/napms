@@ -37,23 +37,11 @@ Status: `complete` in `f0e281e`.
 
 ## M2 — Bounded contexts
 
-Status: `active` on branch `refactor/m2-network-environment-operations`.
+Status: `implementation complete; final PR gates pending` on branch `refactor/m2-network-environment-operations`.
 
-M2 is one milestone PR. Each bounded-context move remains an atomic commit. Hosted gates run only on the final M2 PR.
+All ten accepted bounded contexts now live only under `backend/src/napms/contexts/<context>/` with responsibility-based Clean outer layers. Legacy top-level context packages are absent. Workflow/composition/platform ownership remains intentionally transitional for M3/M4.
 
-Execution rules:
-- preserve product/domain behavior;
-- move each context directly to `backend/src/napms/contexts/<context>/`;
-- normalize only real responsibilities to `domain / application / infrastructure / presentation`;
-- update all consumers, package-data/migrations and tests;
-- remove the legacy top-level implementation package;
-- add architecture guards;
-- run targeted unit + architecture tests after every context;
-- run `make test`, harness and knowledge checks after each work package;
-- configured PostgreSQL evidence is mandatory before final M2 closure;
-- do not move workflow/composition ownership until M3.
-
-### Completed M2 slices
+Completed slices:
 
 1. `network_environment_operations` — `8dac6ff40fc82732b14ec7aeca80dabc84af062a`
 2. `technical_access_evidence` — `3dd64d4167838bcd3f90933f6aef54940f6ef88b`
@@ -63,64 +51,24 @@ Execution rules:
 6. `authority_management` — `3ad1015cd71daf81231d6e717302e1f448a48e84`
 7. `resource_catalogue` — `3ca10ac360672536b6858a48f55d1d269fe159a4`
 8. `access_policy_realization` — `46fa4d97dd8c8bf1658a75677161e88171ab949a`
+9. `application_catalogue` — `80f99bbc14b169887b8f8092d51ec7d60e6cdf51`
+10. `access_policy` — `a363f313e058be69631a3dc08822f77b8d8544f4`
 
-All completed contexts use only the final `napms.contexts` namespace.
-
-### Final M2 work package
-
-Migrate the two remaining bounded contexts as separate commits, in this order:
-
-1. `application_catalogue`
-2. `access_policy`
-
-`application_catalogue` target outer structure:
-
-```text
-contexts/application_catalogue/
-  domain/
-  application/
-  infrastructure/
-    persistence/postgres/
-    integrations/
-    local/
-  presentation/http/
-```
-
-Classification:
-- existing HTTP tree -> `presentation/http/`;
-- PostgreSQL tree -> `infrastructure/persistence/postgres/`;
-- `access_policy.py`, `connectivity_decision.py`, `connectivity_requirements.py`, `policy_export.py`, `resource_binding_target.py`, `scoped_connectivity_inventory.py` -> `infrastructure/integrations/`;
-- `dcs_authoring.py` and `dcs_json_codec.py` -> `infrastructure/integrations/` because they translate to/from existing policy-export normalization contracts;
-- `curation_support.py` -> `infrastructure/local/curation_support.py`.
-
-`access_policy` target outer structure:
-
-```text
-contexts/access_policy/
-  domain/
-  application/
-  infrastructure/
-    persistence/postgres/
-    integrations/
-  presentation/http/
-```
-
-Classification:
-- `http.py` -> `presentation/http/routes.py`;
-- `http_errors.py` -> `presentation/http/errors.py`;
-- PostgreSQL tree -> `infrastructure/persistence/postgres/`;
-- `connectivity_decision.py`, `requirement_policy_alignment.py`, `scoped_connectivity_inventory.py` -> `infrastructure/integrations/`.
-
-Do not move generic `composition/` or workflow ownership in this package; repair only imports needed by context moves.
+Validation evidence before final PR:
+- targeted tests passed for every context slice;
+- `make test`: 796 passed, 141 deselected;
+- `make harness-check`: passed;
+- `make knowledge-check`: passed;
+- configured PostgreSQL run: 141 passed, 0 skipped.
 
 ## Exit criteria
 
-M2 closes only when all ten accepted bounded contexts are under `napms.contexts`, legacy top-level context packages are absent, architecture guards enforce the final boundaries, full local checks pass, PostgreSQL integration evidence runs in a configured environment, and one final M2 PR passes required hosted gates.
+M2 closes when the final milestone PR passes all required hosted gates and is squash-merged to `main`.
 
 ## Blockers
 
-None for the final context-migration package. Configured PostgreSQL execution remains a milestone-exit requirement after the two context commits.
+None.
 
 ## Next
 
-Migrate `application_catalogue` and then `access_policy` as separate atomic commits. Push and stop for final M2 architectural review. Do not start M3 or create the PR before that review.
+Open the final M2 milestone PR, run all required hosted gates, and squash-merge if green. Do not start M3 or make material changes after the final gate without returning the PR to draft and gating again.
