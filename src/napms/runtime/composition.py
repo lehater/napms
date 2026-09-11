@@ -21,6 +21,12 @@ from napms.application_catalogue.adapters.http.discovery import (
 from napms.application_catalogue.adapters.http.errors import (
     catalogue_invariant_error_handler,
 )
+from napms.application_catalogue.adapters.http.legacy_curation import (
+    create_application_catalogue_curation_router,
+)
+from napms.application_catalogue.adapters.http.legacy_temporal import (
+    create_application_catalogue_temporal_router,
+)
 from napms.application_catalogue.adapters.http.target import create_catalogue_target_router
 from napms.application_catalogue.adapters.http.target_retirement import (
     create_catalogue_target_retirement_router,
@@ -42,14 +48,16 @@ from napms.connectivity_decision.application.ports import DecisionPersistenceErr
 from napms.connectivity_decision.application.select import (
     SelectEffectiveConnectivityDecision,
 )
+from napms.resource_catalogue.adapters.http.curation import (
+    create_resource_catalogue_curation_router,
+)
+from napms.resource_catalogue.adapters.http.temporal import (
+    create_resource_catalogue_temporal_router,
+)
 from napms.resource_catalogue.adapters.http.workspace import (
     create_catalogue_resource_workspace_router,
 )
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
-from napms.runtime.catalogue_curation_http import create_catalogue_curation_router
-from napms.runtime.catalogue_temporal_curation_http import (
-    create_catalogue_temporal_curation_router,
-)
 from napms.runtime.config import HttpRuntimeConfig
 from napms.runtime.http_api import HttpApiDependencies, create_http_api
 from napms.runtime.network_operator_view_http import (
@@ -159,7 +167,14 @@ def build_http_api(
         )
     )
     app.include_router(
-        create_catalogue_curation_router(
+        create_application_catalogue_curation_router(
+            sessions=sessions,
+            open_scope=open_curation_scope,
+            clock=_utc_now,
+        )
+    )
+    app.include_router(
+        create_resource_catalogue_curation_router(
             sessions=sessions,
             open_scope=open_curation_scope,
             clock=_utc_now,
@@ -180,7 +195,14 @@ def build_http_api(
         )
     )
     app.include_router(
-        create_catalogue_temporal_curation_router(
+        create_resource_catalogue_temporal_router(
+            sessions=sessions,
+            open_scope=open_curation_scope,
+            clock=_utc_now,
+        )
+    )
+    app.include_router(
+        create_application_catalogue_temporal_router(
             sessions=sessions,
             open_scope=open_curation_scope,
             clock=_utc_now,
