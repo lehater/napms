@@ -1,28 +1,17 @@
 # Active execution
 
-Current: `PLAN-I31-application-catalogue-target-migration.md`
+Current: none.
 
-Goal: complete I31 by proving the accepted Application Catalogue target through unchanged downstream semantics and absorbing the resulting current-state documentation.
-
-Current task: WP-5 compatibility acceptance, deterministic screenshot evidence and final absorption.
+No implementation increment is selected after I31 Application Catalogue migration absorption.
 
 ## Working set
 
-Read first:
-- `docs/plans/active/PLAN-I31-application-catalogue-target-migration.md`
-
-## Scope expansion
-
-Then work from `e2e/test_j01_application_authoring.py`; expand only when required into `e2e/test_j03_connectivity_request_decision.py`, the migration roadmap/wireframes, downstream Connectivity / Decision / Access Policy Web flows, browser-gate infrastructure and current-state/canonical documentation touched by I31.
+Use `docs/engineering/current-state.md` for current runtime truth and `docs/plans/README.md` for completed roadmap references.
 
 ## Blockers
 
-None known. M0-M4 are squash-merged. M4 is integrated as `64bd709b5f29db7bd59b09cc4447aa9141e9556f` after all six applicable hosted gates passed.
-
-## Gate
-
-WP-5 exits when target-authored Application data is proven through existing downstream Connectivity / final Decision / Access Policy semantics, representative accepted Application Catalogue layouts have deterministic screenshot regression evidence, and current-state/canonical documentation is absorbed with the active I31 plan removed.
+None known.
 
 ## Next
 
-Extend J01 from target authoring into downstream semantics without duplicating J03, add the smallest deterministic screenshot regression set for representative accepted layouts, run Docker/hosted gates, then absorb documentation and close I31.
+Select a new accepted requirement/domain change before creating another `PLAN-*.md` under `active/`.
