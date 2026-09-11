@@ -23,6 +23,9 @@
   --napms-color-danger: #b91c1c;
   --napms-color-danger-dot: #ef4444;
   --napms-color-danger-bg: #fef2f2;
+  --napms-color-unknown: #c2410c;
+  --napms-color-unknown-bg: #fff7ed;
+  --napms-color-unknown-border: #fed7aa;
 
   --napms-color-nav-bg: #0b1628;
   --napms-color-nav-active: #17375e;
