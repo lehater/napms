@@ -18,12 +18,25 @@
   --napms-color-success-dot: #10b981;
   --napms-color-success-bg: #ecfdf5;
   --napms-color-warning: #b45309;
+  --napms-color-warning-dot: #f59e0b;
+  --napms-color-warning-bg: #fffbeb;
   --napms-color-danger: #b91c1c;
+  --napms-color-danger-dot: #ef4444;
+  --napms-color-danger-bg: #fef2f2;
 
   --napms-control-height: 42px;
   --napms-control-height-sm: 34px;
   --napms-control-radius: 6px;
   --napms-surface-radius: 10px;
+  --napms-tag-radius: 4px;
+  --napms-checkbox-size: 16px;
+  --napms-icon-size-control: 16px;
+
   --napms-page-gap: 20px;
+  --napms-table-header-height: 44px;
+  --napms-table-row-height: 62px;
+  --napms-table-body-min-height: 456px;
+  --napms-table-selection-column: 52px;
+
   --napms-surface-shadow: 0 1px 2px rgb(15 23 42 / 5%);
 }
