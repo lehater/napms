@@ -1,28 +1,16 @@
 # Web UI Component Composition Roadmap
 
-Status: `planned`.
+Status: `implemented; final hosted gates pending`.
 
 Tracking issue: #90.
+Integration PR: #91.
+Working branch: `docs/web-ui-component-composition-roadmap`.
 
 ## Purpose
 
-Reduce Web UI change coupling by making component ownership and composition explicit.
+Reduce Web UI change coupling by making component ownership and composition explicit while preserving accepted product semantics and user-visible behavior.
 
-The migration preserves accepted product semantics and user-visible behavior. Its responsibility is structural: pages become screen/use-case composition roots, reusable visual behavior moves to the narrowest stable owner, and feature semantics remain feature-owned.
-
-## Current problem
-
-The Web UI already has shared controls and a design system, but reuse stops too early. Several feature pages combine five responsibilities:
-
-1. screen/use-case orchestration;
-2. query and mutation state;
-3. domain-to-visual mapping;
-4. reusable layout/form/dialog/detail/list composition;
-5. feature-specific presentation.
-
-This produces large pages and repeated local implementations of status visuals, dialogs, detail rows, page sections, search/paging mechanics and mutation/error handling.
-
-File size is evidence, not the decomposition rule. Extraction is justified by responsibility, change coupling and demonstrated reuse.
+The migration makes pages screen/use-case composition roots, moves generic visual behavior to one design-system owner, keeps domain-to-visual mapping feature-owned, and extracts technical React mechanics only after demonstrated equivalent reuse.
 
 ## Target layering
 
@@ -35,292 +23,126 @@ semantic tokens
           -> feature pages
 ```
 
-### `design-system/primitives`
+### Ownership
 
-Responsibility: smallest visual/layout building blocks with stable generic contracts.
+- `design-system/primitives` — smallest semantic-token-based visual/layout building blocks.
+- `design-system/components` — generic controls and focused visual components with no NAPMS domain vocabulary.
+- `design-system/layout` — stable application/page geometry.
+- `design-system/patterns` — reusable generic compositions such as catalogue, dialog and detail interactions.
+- `features/<feature>/components` — feature-owned presentation and domain-to-visual mapping.
+- `features/<feature>/pages` — route/screen orchestration, loading/mutation coordination and composition.
+- `lib/` — cross-feature technical helpers only after equivalent semantics are demonstrated.
 
-Examples: `Surface`.
+`components/ui/` is compatibility-only. It may delegate to `design-system/components` for callers not yet mechanically migrated, but owns no independent generic UI implementation. New code must target the design system directly.
 
-Inputs: generic visual/content props.
+## Decision rules
 
-Outputs: semantic-token-based geometry and styling.
+Classify extraction candidates in this order:
 
-Must not know NAPMS domain terms.
+1. Domain-specific meaning -> owning feature `components/`.
+2. Generic visual/control behavior across unrelated features -> `design-system/components/`.
+3. Reusable composition of generic UI with stable interaction/layout semantics -> `design-system/patterns/`.
+4. Pure cross-feature technical React mechanics -> `lib/`, only after demonstrated equivalent lifecycle semantics.
+5. Used once and unstable -> keep local.
 
-### `design-system/components`
+Do not create universal CRUD/page/form abstractions, generic shared business models, or prop-driven mega-components. Reuse is earned by stable responsibility, not anticipated by naming.
 
-Responsibility: reusable generic controls and focused visual components.
+## Executed migration
 
-Examples: buttons/fields after consolidation, `Checkbox`, `DataTable`, `SearchInput`, `StatusIndicator`, `Tag`, shared page states.
+### M0 — Canonicalize boundaries — complete
 
-A component belongs here when its contract is useful across unrelated features without domain vocabulary.
+- frontend architecture now explicitly recognizes `design-system/`;
+- `docs/ui/component-composition.md` owns durable extraction/ownership rules;
+- `web/AGENTS.md` routes future UI work through those rules;
+- issue #90 and PR #91 track execution.
 
-### `design-system/layout`
+### M1 — Reusable generic composition base — complete
 
-Responsibility: stable application/page geometry.
+Added/established:
 
-Examples: `PageWorkspace`, `PageHeader`.
+- design-system `Button`, `Field/Input/Select/Textarea` ownership;
+- semantic `StatusBadge` with design tokens;
+- reusable `Dialog` composition;
+- reusable `DetailSection`, `DetailRow`, `DetailStack` composition;
+- reusable `InlineTextEdit` pattern;
+- compatibility-only legacy `components/ui` adapters delegating to design-system implementations.
 
-### `design-system/patterns`
+The generic design system remains feature-semantic-free.
 
-Responsibility: reusable compositions of design-system components that encode a product UI interaction/layout pattern but not feature/domain semantics.
+### M2 — Catalogue reference decomposition — complete
 
-Examples/candidates after demonstrated reuse:
-- dialog shell with header/body/footer;
-- detail workspace sections/rows/actions;
-- catalogue/list toolbar + filter/view/pagination composition;
-- inline-edit interaction;
-- confirmation action presentation where the contract remains generic.
+- `ApplicationsPage` and `ResourcesPage` compose reusable create dialogs and feature-owned status/data-state components;
+- `ApplicationDetailsPage` delegates component/deployment/resource-binding presentation to `ApplicationComponentSection` and uses generic inline editing;
+- `ResourceDetailsPage` uses generic detail composition and feature-owned resource overview/history/technical sections;
+- catalogue-owned ACC interaction labels/selection are centralized under `features/catalogues/components` for semantic reuse by other features.
 
-Patterns expose composition slots and focused behavior. They do not become giant universal page/form components.
+### M3 — Connectivity decomposition — complete
 
-### `features/<feature>/components`
+- Need/Decision/Policy mappings moved to feature-owned status components;
+- endpoint/remote-side presentation moved to connectivity components;
+- inventory row/detail/action presentation moved out of `ConnectivityPage`;
+- request context and request form moved out of `RequestConnectivityPage`.
 
-Responsibility: reusable presentation and domain-to-visual mapping inside one feature boundary.
+Pages retain screen/API orchestration.
 
-Examples:
-- `NeedStatus`, `DecisionStatus`, `PolicyStatus`;
-- `ConnectivityEndpoint`;
-- requirement declaration form;
-- application/component/deployment cards;
-- resource responsibility/scope/history sections.
+### M4 — Requirements decomposition — complete
 
-Feature components may use domain terminology and DTO/view-model types owned by that feature.
+- requirement status/alignment mapping is feature-owned;
+- requirement list/table presentation is extracted;
+- declaration interaction/applicability presentation is extracted;
+- requirement detail interaction/provenance/history sections use the generic detail pattern;
+- shared ACC semantics reuse the catalogue owner rather than a generic shared model.
 
-### `features/<feature>/pages`
+### M5 — Decisions decomposition — complete
 
-Responsibility: screen-level orchestration.
+- decision status, list/table and evidence presentation are feature-owned;
+- decision list interaction selection reuses catalogue-owned ACC selection;
+- decision detail subject/reason/evidence/provenance/supersession sections use generic detail composition;
+- replacement Decision form reuses feature-owned evidence fields while the page retains mutation orchestration.
 
-A page may:
-- select/load screen data;
-- coordinate feature use cases;
-- own route/navigation integration;
-- compose design-system patterns and feature components;
-- translate screen events into feature API/application actions.
+### M6 — Proven technical-state reuse — complete
 
-A page should not define a local component library or duplicate shared geometry/control styling.
+`useDebouncedValue` was extracted only after equivalent debounce behavior was demonstrated in multiple catalogue screens. It has concrete consumers in Applications and Resources.
 
-## Ownership decision rule
+Async query/mutation/paging state was deliberately not generalized: current screens have materially different refresh, authority, error and mutation semantics. A local React Query replacement was not introduced.
 
-For every extraction candidate, classify it in this order:
+### M7 — Enforcement and cleanup — implemented; final gates pending
 
-1. **Domain-specific meaning?** Keep under `features/<owner>/components`.
-2. **Generic visual/control behavior used across unrelated features?** Put under `design-system/components`.
-3. **Reusable composition of generic components with stable interaction/layout semantics?** Put under `design-system/patterns`.
-4. **Pure technical React/helper behavior with no product semantics?** Put under `lib/` only when truly cross-feature.
-5. **Used once and unstable?** Keep local until a second concrete consumer or a clearly stable primitive contract appears.
+- design-system semantic unknown-state tokens added;
+- `web/scripts/check-ui-boundaries.mjs` enforces that the design system cannot depend on feature semantics or legacy UI ownership, and that compatibility UI files only delegate inward;
+- Web `build`/`check` include the boundary check;
+- `web.yml` and `harness.yml` now support the repository's documented `Ready for review` final-gate workflow without running hosted checks on ordinary draft-branch pushes;
+- canonical guidance has been updated to the final ownership model.
 
-The default is locality. Reuse is earned by stable responsibility, not anticipated by naming.
+## Final integration procedure
 
-## Anti-abstraction rules
+This migration intentionally executes as one long-lived branch and one draft PR, per the selected execution strategy:
 
-- Do not create a universal `Page`, `EntityPage`, `Form`, or `CRUD` component with broad mode/variant prop matrices.
-- Prefer composition slots/children over inheritance and deeply conditional mega-components.
-- Do not move NAPMS vocabulary into the generic design system.
-- Do not introduce a generic `shared/model` or shared business-logic package.
-- Do not extract hooks that merely hide one page's state. Extract only repeated technical mechanics with equivalent lifecycle/error semantics.
-- Do not preserve duplicate namespaces through compatibility facades; migrate callers and remove the obsolete owner in the same coherent stage when practical.
+1. accumulate M0-M7 commits on `docs/web-ui-component-composition-roadmap`;
+2. keep PR #91 draft while work changes;
+3. once implementation/docs are complete, mark PR #91 ready for review;
+4. inspect the hosted Web and Harness gate results and logs;
+5. if a material fix is needed, return the PR to draft, commit the fix on the same branch, and request the final gate again;
+6. after all applicable final gates pass, squash merge PR #91 into `main`;
+7. close #90 and leave this document as migration provenance; durable rules remain in architecture/UI guidance.
 
-## Candidate inventory
-
-The first audit identified these high-value candidates.
-
-### Generic/design-system candidates
-
-- dialog shell and dialog sections/actions;
-- detail row / section heading / panel composition;
-- inline editing interaction;
-- confirmation/destructive-action presentation;
-- unified status visual mechanism;
-- shared form error/action layout;
-- list/catalogue search/filter/view/pagination composition where current `CataloguePage` abstractions already demonstrate reuse.
-
-### Feature-owned candidates
-
-`catalogues`:
-- application identity/header;
-- application component card;
-- deployment card/editor;
-- resource binding editor;
-- resource detail overview/history/technical sections.
-
-`connectivity`:
-- need status;
-- decision status;
-- policy status;
-- local/remote endpoint presentation;
-- connectivity inventory row/table/filter composition.
-
-`requirements`:
-- requirement status/alignment presentation;
-- requirement list/table;
-- declaration form and interaction selector.
-
-`decisions`:
-- decision status/presentation;
-- decision list/table;
-- decision detail sections/actions.
-
-### Technical reuse candidates
-
-Evaluate only after component decomposition exposes genuinely identical mechanics:
-- debounced value/search;
-- async mutation state;
-- paged query coordination.
-
-Do not build a local replacement for a mature server-state library accidentally. If repeated server-state orchestration becomes substantial, make that dependency/architecture choice explicitly rather than growing ad-hoc hooks indefinitely.
-
-## Target source structure
-
-```text
-web/src/
-  app/
-  design-system/
-    primitives/
-    components/
-    layout/
-    patterns/
-      catalogue/
-      detail/          # only if justified by concrete reuse
-      dialog/          # only if justified by concrete reuse
-  features/<feature>/
-    api/
-    model/
-    components/
-    pages/
-  lib/
-```
-
-`components/ui/` is transitional current state, not a second permanent generic-component ownership model. Its components should be moved into `design-system/components/` when touched by the migration and when the resulting ownership is clear. Do not perform a blind directory move independent of consumer migration.
-
-## Roadmap
-
-### M0 — Canonicalize boundaries
-
-Goal: make repository guidance unambiguous before code movement.
-
-Changes:
-- update `docs/architecture/code-structure.md` frontend taxonomy to include `design-system/`;
-- extend `docs/ui/design-system.md` with component ownership/extraction rules;
-- record this roadmap and tracking issue.
-
-Exit criteria:
-- architecture, Web agent guidance and UI design-system guidance agree on ownership.
-
-### M1 — Establish reusable generic composition base
-
-Goal: extract only already-demonstrated generic UI composition.
-
-Candidate work:
-- introduce a reusable dialog composition from existing create/edit dialogs;
-- establish detail row/section/panel composition where at least two current detail screens match;
-- converge duplicated status visual styling onto existing semantic status components;
-- decide migration path from `components/ui/` into `design-system/components/`.
-
-Validation:
-- `make web-check`;
-- affected browser/E2E checks;
-- no product-semantic changes.
-
-### M2 — Catalogue decomposition reference slice
-
-Goal: use catalogue screens as the reference implementation for page/component boundaries.
-
-Start with the highest-value pages:
-- `ApplicationDetailsPage`;
-- `ResourceDetailsPage`;
-- `ResourcesPage` / `ApplicationsPage` where shared list/dialog patterns are demonstrated.
-
-Expected result:
-- page roots primarily orchestrate data/actions and compose extracted feature components;
-- application/component/deployment/resource sections live in feature components;
-- generic geometry comes from the design system.
-
-Exit criterion: catalogue pages provide a repeatable example for other features without introducing catalogue-specific behavior into generic patterns.
-
-### M3 — Connectivity decomposition
-
-Goal: split `ConnectivityPage` and `RequestConnectivityPage` by presentation responsibility.
-
-Expected feature components:
-- status mappings;
-- endpoint presentation;
-- inventory filters/table/rows;
-- request form sections.
-
-Reuse generic patterns established in M1/M2 before creating new ones.
-
-### M4 — Requirements decomposition
-
-Goal: split list/detail/declaration responsibilities in Connectivity Requirements.
-
-Expected feature components:
-- requirement status/alignment;
-- list/table/filter composition;
-- declaration/interaction selection;
-- detail sections/actions.
-
-### M5 — Decisions decomposition
-
-Goal: split Connectivity Decision list/detail pages using the same established boundaries.
-
-Expected feature components:
-- decision status;
-- list/table/filter composition;
-- detail sections/actions.
-
-### M6 — Proven technical-state reuse
-
-Goal: reduce repeated technical React mechanics only after M2-M5 expose equivalence.
-
-Evaluate repeated patterns for:
-- debounced search;
-- async mutation state;
-- paging/filter coordination.
-
-Each extracted helper/hook must have at least two concrete consumers with equivalent semantics and tests where behavior is non-trivial.
-
-### M7 — Enforcement and cleanup
-
-Goal: prevent regression.
-
-Changes:
-- remove obsolete duplicated local/shared implementations;
-- add architecture/static checks where boundaries can be mechanically enforced;
-- add focused component tests for shared interaction contracts;
-- retain/extend E2E coverage for user-visible behavior;
-- update canonical docs to final state;
-- close #90 only after all accepted migration stages are complete.
-
-## PR strategy
-
-Use one coherent migration stage per PR; do not submit a repository-wide mechanical rewrite.
-
-Recommended sequence:
-1. M1 generic composition base;
-2. M2 catalogue reference decomposition;
-3. M3 connectivity;
-4. M4 requirements;
-5. M5 decisions;
-6. M6 technical reuse;
-7. M7 enforcement/cleanup.
-
-A stage may be split further when reviewability requires it, but each PR must leave callers on final ownership with no compatibility facade.
+No intermediate merge to `main` is part of this roadmap.
 
 ## Acceptance criteria
 
-The migration is complete when:
+The migration is complete for integration when:
 
-- feature pages are primarily screen/use-case orchestration and composition;
-- repeated generic controls/geometry have one design-system owner;
+- feature pages primarily own screen/use-case orchestration and composition;
+- repeated generic controls/geometry have one design-system implementation owner;
 - domain-to-visual mapping is feature-owned;
-- repeated feature presentation is under feature `components/`, not page-local helper components;
-- `components/ui/` no longer competes with `design-system/components/` as a generic ownership namespace;
-- shared hooks/helpers exist only for demonstrated technical reuse;
-- no universal prop-driven page/form abstraction has replaced explicit composition;
-- Web build and applicable E2E/visual guards pass;
-- accepted product/domain behavior is unchanged unless separately approved.
+- repeated feature presentation resides under feature `components/`, not page-local mini-libraries;
+- `components/ui/` does not compete with `design-system/components/` and contains only compatibility delegation;
+- cross-feature semantic reuse imports from its explicit feature owner;
+- technical hooks exist only for demonstrated equivalent reuse;
+- no universal prop-driven page/form abstraction was introduced;
+- UI ownership boundary checks are part of the Web build;
+- final hosted Web/Harness gates pass before squash merge.
 
-## Execution gate
+## Remaining integration gate
 
-This roadmap defines order and boundaries, not automatic authorization to perform every stage at once. Select the next milestone as the active increment, implement it end-to-end, verify its value and boundary quality, then continue.
+Implementation is complete on the working branch. The only remaining roadmap action before integration is the final `Ready for review` hosted gate, followed by one squash merge if the checks pass.
