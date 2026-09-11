@@ -7,7 +7,7 @@ NAPMS = ROOT / "src" / "napms"
 
 ACCESS_POLICY = NAPMS / "access_policy"
 ACCESS_POLICY_REALIZATION = NAPMS / "access_policy_realization"
-AUTHORITY_MANAGEMENT = NAPMS / "authority_management"
+AUTHORITY_MANAGEMENT = NAPMS / "contexts" / "authority_management"
 APPLICATION_CATALOGUE = NAPMS / "application_catalogue"
 RESOURCE_CATALOGUE = NAPMS / "resource_catalogue"
 CONNECTIVITY_REQUIREMENTS = NAPMS / "contexts" / "connectivity_requirements"
@@ -241,7 +241,7 @@ POSTGRES_SCHEMA_OWNERS = (
         "napms_access_policy",
     ),
     (
-        NAPMS / "authority_management" / "adapters" / "postgres",
+        AUTHORITY_MANAGEMENT / "infrastructure" / "persistence" / "postgres",
         "napms_authority",
     ),
     (
@@ -297,7 +297,7 @@ BOUNDED_CONTEXT_CORES = (
     ),
     (
         AUTHORITY_MANAGEMENT,
-        "napms.authority_management",
+        "napms.contexts.authority_management",
     ),
     (
         APPLICATION_CATALOGUE,
@@ -332,6 +332,21 @@ BOUNDED_CONTEXT_CORES = (
 
 def test_network_environment_operations_has_no_legacy_package():
     assert not (NAPMS / "network_environment_operations").exists()
+
+
+def test_authority_management_has_no_legacy_package():
+    assert not (NAPMS / "authority_management").exists()
+
+
+def test_authority_management_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = AUTHORITY_MANAGEMENT / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
 
 
 def test_technical_access_evidence_has_no_legacy_package():

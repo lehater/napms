@@ -59,14 +59,14 @@ from napms.application_catalogue.application.structure_curation import (
     RetireApplication,
     RetireComponent,
 )
-from napms.authority_management.adapters.catalogue_curation import (
+from napms.contexts.authority_management.infrastructure.integrations.catalogue_curation import (
     ApplicationCatalogueCurationAuthorityAdapter,
     ResourceCatalogueCurationAuthorityAdapter,
 )
-from napms.authority_management.adapters.postgres import (
+from napms.contexts.authority_management.infrastructure.persistence.postgres import (
     PostgresAuthorityAssignmentRepository,
 )
-from napms.authority_management.application.check_authority import CheckAuthority
+from napms.contexts.authority_management.application.check_authority import CheckAuthority
 from napms.composition.config import ApplicationConfig
 from napms.resource_catalogue.adapters.curation_support import (
     LocalResourceCatalogueIdentityFactory,

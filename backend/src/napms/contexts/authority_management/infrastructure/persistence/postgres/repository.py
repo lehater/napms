@@ -2,8 +2,8 @@ from datetime import datetime
 
 from psycopg import Connection, Error as PsycopgError
 
-from napms.authority_management.application.ports import AuthorityPersistenceError
-from napms.authority_management.domain.model import (
+from napms.contexts.authority_management.application.ports import AuthorityPersistenceError
+from napms.contexts.authority_management.domain.model import (
     AuthorityAssignment,
     AuthorityInvariantError,
 )

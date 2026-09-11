@@ -1,1 +1,0 @@
-# Authority Management adapters.

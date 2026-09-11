@@ -28,7 +28,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "napms.access_policy.adapters.postgres" = ["migrations/*.sql"]
-"napms.authority_management.adapters.postgres" = ["migrations/*.sql"]
+"napms.contexts.authority_management.infrastructure.persistence.postgres" = ["migrations/*.sql"]
 "napms.application_catalogue.adapters.postgres" = ["migrations/*.sql"]
 "napms.resource_catalogue.adapters.postgres" = ["migrations/*.sql"]
 "napms.contexts.connectivity_requirements.infrastructure.persistence.postgres" = ["migrations/*.sql"]

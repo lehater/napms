@@ -1,4 +1,4 @@
-from napms.authority_management.adapters.postgres.repository import (
+from napms.contexts.authority_management.infrastructure.persistence.postgres.repository import (
     PostgresAuthorityAssignmentRepository,
 )
 

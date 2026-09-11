@@ -4,13 +4,13 @@ from typing import Iterator
 
 import psycopg
 
-from napms.authority_management.adapters.network_operator_view import (
+from napms.contexts.authority_management.infrastructure.integrations.network_operator_view import (
     AuthorityManagementNetworkOperatorViewAdapter,
 )
-from napms.authority_management.adapters.postgres import (
+from napms.contexts.authority_management.infrastructure.persistence.postgres import (
     PostgresAuthorityAssignmentRepository,
 )
-from napms.authority_management.application.check_authority import CheckAuthority
+from napms.contexts.authority_management.application.check_authority import CheckAuthority
 from napms.composition.access_policy_realization_postgres import (
     open_access_policy_realization_scope,
 )

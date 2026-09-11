@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 
-from napms.authority_management.application.ports import AuthorityPersistenceError
+from napms.contexts.authority_management.application.ports import AuthorityPersistenceError
 from napms.runtime.http_support import error_response
 
 

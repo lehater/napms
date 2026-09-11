@@ -6,11 +6,11 @@ from napms.access_policy.application.ports import (
     ProposalScopeOptions,
     TernaryOutcome,
 )
-from napms.authority_management.application.check_authority import (
+from napms.contexts.authority_management.application.check_authority import (
     AuthorityOutcome,
     CheckAuthority,
 )
-from napms.authority_management.application.list_scopes import (
+from napms.contexts.authority_management.application.list_scopes import (
     ListEffectiveAuthorityScopes,
 )
 

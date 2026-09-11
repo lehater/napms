@@ -43,30 +43,30 @@ from napms.application_catalogue.application.resolve import (
     ResolveApplicationProjection,
     ValidateDirectedInteraction,
 )
-from napms.authority_management.adapters.access_policy import (
+from napms.contexts.authority_management.infrastructure.integrations.access_policy import (
     AccessPolicyAuthorityAdapter,
     AccessPolicyEffectivePolicyReadScopeAdapter,
     AccessPolicyProposalScopeAdapter,
     AccessPolicyRuleReadScopeAdapter,
 )
-from napms.authority_management.adapters.connectivity_decision import (
+from napms.contexts.authority_management.infrastructure.integrations.connectivity_decision import (
     ConnectivityDecisionAuthorityAdapter,
     ConnectivityDecisionReadScopeAdapter,
     ConnectivityDecisionScopeAdapter,
 )
-from napms.authority_management.adapters.connectivity_requirements import (
+from napms.contexts.authority_management.infrastructure.integrations.connectivity_requirements import (
     ConnectivityRequirementsAuthorityAdapter,
     ConnectivityRequirementsDeclarationScopeAdapter,
     ConnectivityRequirementsReadScopeAdapter,
 )
-from napms.authority_management.adapters.postgres import (
+from napms.contexts.authority_management.infrastructure.persistence.postgres import (
     PostgresAuthorityAssignmentRepository,
 )
-from napms.authority_management.adapters.scoped_connectivity_inventory import (
+from napms.contexts.authority_management.infrastructure.integrations.scoped_connectivity_inventory import (
     AuthorityManagementScopedConnectivityAdapter,
 )
-from napms.authority_management.application.check_authority import CheckAuthority
-from napms.authority_management.application.list_scopes import (
+from napms.contexts.authority_management.application.check_authority import CheckAuthority
+from napms.contexts.authority_management.application.list_scopes import (
     ListEffectiveAuthorityScopes,
 )
 from napms.composition.config import ApplicationConfig

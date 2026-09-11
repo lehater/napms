@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from napms.authority_management.application.ports import AuthorityAssignmentRepository
+from napms.contexts.authority_management.application.ports import AuthorityAssignmentRepository
 
 
 @dataclass(frozen=True, slots=True)

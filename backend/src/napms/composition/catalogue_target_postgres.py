@@ -65,13 +65,13 @@ from napms.application_catalogue.application.target_selection_read import (
 from napms.application_catalogue.application.target_structure_curation import (
     CreateTargetComponent,
 )
-from napms.authority_management.adapters.catalogue_curation import (
+from napms.contexts.authority_management.infrastructure.integrations.catalogue_curation import (
     ApplicationCatalogueCurationAuthorityAdapter,
 )
-from napms.authority_management.adapters.postgres import (
+from napms.contexts.authority_management.infrastructure.persistence.postgres import (
     PostgresAuthorityAssignmentRepository,
 )
-from napms.authority_management.application.check_authority import CheckAuthority
+from napms.contexts.authority_management.application.check_authority import CheckAuthority
 from napms.composition.application_catalogue_target_dependencies import (
     AccessRuleDependencyAdapter,
     ConnectivityDecisionDependencyAdapter,

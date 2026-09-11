@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
-from napms.authority_management.application.list_scopes import ListEffectiveAuthorityScopes
-from napms.authority_management.domain.model import AuthorityAssignment
+from napms.contexts.authority_management.application.list_scopes import ListEffectiveAuthorityScopes
+from napms.contexts.authority_management.domain.model import AuthorityAssignment
 
 
 NOW = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)

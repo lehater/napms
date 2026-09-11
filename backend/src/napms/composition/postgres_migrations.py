@@ -54,7 +54,7 @@ MIGRATIONS: tuple[Migration, ...] = (
     ),
     Migration(
         "authority-management/0001",
-        "napms.authority_management.adapters.postgres",
+        "napms.contexts.authority_management.infrastructure.persistence.postgres",
         "migrations/0001_authority_assignments.sql",
     ),
     Migration(

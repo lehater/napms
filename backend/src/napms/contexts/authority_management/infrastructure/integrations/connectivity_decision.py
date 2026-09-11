@@ -1,19 +1,19 @@
-from napms.authority_management.application.check_authority import (
+from napms.contexts.authority_management.application.check_authority import (
     AuthorityOutcome,
     CheckAuthority,
 )
-from napms.authority_management.application.list_scopes import (
+from napms.contexts.authority_management.application.list_scopes import (
     ListEffectiveAuthorityScopes,
 )
-from napms.contexts.connectivity_requirements.application.ports import (
-    RequirementAuthorityAction,
-    RequirementAuthorityCheck,
-    RequirementScopeOptions,
+from napms.contexts.connectivity_decision.application.ports import (
+    DecisionAuthorityAction,
+    DecisionAuthorityCheck,
+    DecisionScopeOptions,
     TernaryOutcome,
 )
 
 
-class ConnectivityRequirementsAuthorityAdapter:
+class ConnectivityDecisionAuthorityAdapter:
     def __init__(self, *, checker: CheckAuthority) -> None:
         self._checker = checker
 
@@ -21,11 +21,11 @@ class ConnectivityRequirementsAuthorityAdapter:
         self,
         *,
         actor_id: str,
-        action: RequirementAuthorityAction,
+        action: DecisionAuthorityAction,
         scope: str,
         effective_time,
-    ) -> RequirementAuthorityCheck:
-        decision = self._checker.execute(
+    ) -> DecisionAuthorityCheck:
+        result = self._checker.execute(
             actor_id=actor_id,
             action=action.value,
             scope=scope,
@@ -35,54 +35,54 @@ class ConnectivityRequirementsAuthorityAdapter:
             AuthorityOutcome.PERMITTED: TernaryOutcome.PERMITTED,
             AuthorityOutcome.DENIED: TernaryOutcome.DENIED,
             AuthorityOutcome.UNKNOWN: TernaryOutcome.UNKNOWN,
-        }[decision.outcome]
-        return RequirementAuthorityCheck(
+        }[result.outcome]
+        return DecisionAuthorityCheck(
             outcome=outcome,
             authority_reference=(
-                decision.authority_reference
-                if decision.outcome is AuthorityOutcome.PERMITTED
+                result.authority_reference
+                if result.outcome is AuthorityOutcome.PERMITTED
                 else None
             ),
         )
 
 
-class ConnectivityRequirementsDeclarationScopeAdapter:
+class ConnectivityDecisionScopeAdapter:
     def __init__(self, *, discovery: ListEffectiveAuthorityScopes) -> None:
         self._discovery = discovery
 
-    def list_effective_declaration_scopes(
+    def list_effective_decision_scopes(
         self,
         *,
         actor_id: str,
         effective_time,
-    ) -> RequirementScopeOptions:
+    ) -> DecisionScopeOptions:
         result = self._discovery.execute(
             actor_id=actor_id,
-            action=RequirementAuthorityAction.DECLARE.value,
+            action=DecisionAuthorityAction.DECIDE.value,
             effective_time=effective_time,
         )
-        return RequirementScopeOptions(
+        return DecisionScopeOptions(
             permitted_scopes=result.permitted_scopes,
             ambiguous_scopes=result.ambiguous_scopes,
         )
 
 
-class ConnectivityRequirementsReadScopeAdapter:
+class ConnectivityDecisionReadScopeAdapter:
     def __init__(self, *, discovery: ListEffectiveAuthorityScopes) -> None:
         self._discovery = discovery
 
-    def list_effective_read_scopes(
+    def list_effective_decision_read_scopes(
         self,
         *,
         actor_id: str,
         effective_time,
-    ) -> RequirementScopeOptions:
+    ) -> DecisionScopeOptions:
         result = self._discovery.execute(
             actor_id=actor_id,
-            action=RequirementAuthorityAction.READ.value,
+            action=DecisionAuthorityAction.READ.value,
             effective_time=effective_time,
         )
-        return RequirementScopeOptions(
+        return DecisionScopeOptions(
             permitted_scopes=result.permitted_scopes,
             ambiguous_scopes=result.ambiguous_scopes,
         )

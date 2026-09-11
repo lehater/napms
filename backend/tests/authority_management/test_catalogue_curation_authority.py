@@ -5,12 +5,12 @@ from napms.application_catalogue.application.ports import (
     APPLICATION_CATALOGUE_CURATION_ACTION,
     ApplicationCatalogueAuthorityOutcome,
 )
-from napms.authority_management.adapters.catalogue_curation import (
+from napms.contexts.authority_management.infrastructure.integrations.catalogue_curation import (
     ApplicationCatalogueCurationAuthorityAdapter,
     ResourceCatalogueCurationAuthorityAdapter,
 )
-from napms.authority_management.application.check_authority import CheckAuthority
-from napms.authority_management.domain.model import AuthorityAssignment
+from napms.contexts.authority_management.application.check_authority import CheckAuthority
+from napms.contexts.authority_management.domain.model import AuthorityAssignment
 from napms.resource_catalogue.application.ports import (
     RESOURCE_CATALOGUE_AUTHORITY_SCOPE,
     RESOURCE_CATALOGUE_CURATION_ACTION,
