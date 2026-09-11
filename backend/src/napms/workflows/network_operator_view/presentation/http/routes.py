@@ -4,7 +4,7 @@ from typing import Callable
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
-from napms.network_operator_view.application import ReadOutcome
+from napms.workflows.network_operator_view.application.read import ReadOutcome
 from napms.runtime.auth import InMemorySessionStore
 from napms.runtime.http_support import SESSION_COOKIE_NAME
 

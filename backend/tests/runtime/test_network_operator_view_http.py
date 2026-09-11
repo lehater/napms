@@ -6,8 +6,8 @@ from uuid import UUID
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from napms.network_operator_view.adapters.http import create_network_operator_view_router
-from napms.network_operator_view.application import (
+from napms.workflows.network_operator_view.presentation.http.routes import create_network_operator_view_router
+from napms.workflows.network_operator_view.application.read import (
     Availability,
     NetworkOperatorRealizationView,
     ReadNetworkOperatorRealizationResult,

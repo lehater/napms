@@ -41,7 +41,7 @@ from napms.contexts.connectivity_decision.infrastructure.persistence.postgres im
 )
 from napms.contexts.connectivity_decision.application.ports import DecisionPersistenceError
 from napms.contexts.connectivity_decision.application.select import SelectEffectiveConnectivityDecision
-from napms.network_operator_view.adapters.http import create_network_operator_view_router
+from napms.workflows.network_operator_view.presentation.http.routes import create_network_operator_view_router
 from napms.contexts.resource_catalogue.presentation.http.curation import (
     create_resource_catalogue_curation_router,
 )

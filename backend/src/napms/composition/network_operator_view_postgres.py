@@ -15,7 +15,7 @@ from napms.composition.access_policy_realization_postgres import (
     open_access_policy_realization_scope,
 )
 from napms.composition.config import ApplicationConfig
-from napms.network_operator_view.application import ReadNetworkOperatorRealization
+from napms.workflows.network_operator_view.application.read import ReadNetworkOperatorRealization
 
 
 @dataclass(slots=True)
