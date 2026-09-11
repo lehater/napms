@@ -16,13 +16,9 @@ export type ResourceHistoryDto = {
 
 export async function readCatalogueResourceHistory(
   resourceReference: string,
-  asOf?: string | null,
 ): Promise<ResourceHistoryDto> {
-  const params = new URLSearchParams()
-  if (asOf) params.set("asOf", asOf)
-  const suffix = params.size > 0 ? `?${params}` : ""
   const response = await fetch(
-    `/api/v1/catalogues/resource-history/${encodeURIComponent(resourceReference)}${suffix}`,
+    `/api/v1/catalogues/resource-history/${encodeURIComponent(resourceReference)}`,
     { credentials: "same-origin" },
   )
   const payload = await response.json()
