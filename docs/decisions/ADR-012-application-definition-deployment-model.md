@@ -1,6 +1,6 @@
 # ADR-012 — Application Definition and Deployment Model
 
-Status: `accepted target; implementation pending`.
+Status: `accepted and implemented through I31`.
 
 Date: 2026-09-10.
 
