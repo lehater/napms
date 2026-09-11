@@ -20,40 +20,40 @@ Canonical architecture and execution inputs:
 
 ## WP-0 — structure contract
 
-Outcome: completed and integrated through PR #64.
+Outcome: completed through PR #64.
 
 ## WP-1 — backend structural migration
 
-Outcome: completed through PR #65 (`a90b866`). M1-M4 aligned feature HTTP ownership and established `napms.bootstrap` as the executable composition root.
+Outcome: completed through PR #65 (`a90b866`).
 
 ## WP-2 — demonstrated backend granularity
 
-Outcome: completed through PR #66 (`62c77f6`). The mixed Application/Component structure mutation hotspot was split by owner; no second backend split was justified by evidence.
+Outcome: completed through PR #66 (`62c77f6`).
 
 ## WP-3 — demonstrated Web locality
 
-M6 is executed incrementally only where root/shared files still own feature-specific API responsibility.
+Completed slices:
+- Connectivity Requirements — PR #67 (`e59bb4d`);
+- Connectivity Decisions — PR #68 (`a8eb8c0`);
+- Access Rules — PR #69 (`e38ffb3`).
 
-Completed slice: Connectivity Requirements, PR #67 (`e59bb4d`). Requirement DTO/query/command/alignment implementation is now under `features/requirements`; shared request/error handling lives in `lib/api.ts`; root `api.ts` retains compatibility exports only for that slice. Core, Web, Harness, Docker and browser gates were green.
-
-Completed slice: Connectivity Decisions, PR #68 (`a8eb8c0`). Decision DTO/query/command implementation is now under `features/decisions`; root `api.ts` retains compatibility exports only for that slice. Core, Web, Harness, Docker and browser gates were green.
-
-Current slice: Access Rules.
-- Rule list/detail/mutation operations still live in root `web/src/api.ts` while their pages live under `web/src/features/rules/`;
-- `RuleDto` remains genuinely shared because Policy and Proposal representations also use it;
-- move rule-specific detail/list types and rule query/mutation implementation beside the feature;
-- keep shared `RuleDto`, catalogue/interaction types and generic transport shared;
-- preserve API/UX behavior and root compatibility exports.
-
-Equivalent remaining root API slices (Policy, scoped Connectivity, Proposals/Auth) are not part of this increment and must be evaluated separately after Rules.
-
-`App.tsx` routing remains a legitimate application-composition responsibility and is not selected by size alone.
+Final selected slice: Policy + scoped Connectivity.
+- Policy view/query implementation belongs under `features/policy`;
+- scoped Connectivity inventory/query implementation belongs under `features/connectivity`;
+- shared DTOs (`ProposalScope`, `ProposalInteraction`, `RuleDto`, catalogue/port types), generic transport, auth/session and proposal capability remain shared/application-level;
+- proposal operations are intentionally not moved under `features/proposals` because they are also consumed by `features/connectivity`;
+- auth/session remains root application orchestration because `App.tsx` owns session bootstrap/logout flow;
+- `App.tsx` routing remains legitimate application composition and is not selected by size alone.
 
 ## Exit criteria
 
-The current slice exits when rule-specific list/detail/query/mutation implementation is feature-local, root `api.ts` retains only shared Rule DTOs plus compatibility exports for Rules, locality protection is executable, and applicable Web/Harness/Core/browser/runtime gates are green.
-
-I32 completes only when remaining root API responsibilities are either feature-local or explicitly justified as genuinely shared/application-level.
+I32 completes when:
+- Policy and scoped Connectivity endpoint implementation is feature-local;
+- root `web/src/api.ts` contains no remaining feature-specific endpoint implementation from Requirements, Decisions, Rules, Policy or scoped Connectivity;
+- remaining root responsibilities are explicitly shared/application-level;
+- locality protection is executable;
+- Web, Harness, Core, Docker runtime and browser journey gates are green;
+- durable outcomes are absorbed into canonical engineering docs and active execution is cleared.
 
 ## Blockers
 
@@ -61,4 +61,4 @@ None known.
 
 ## Next
 
-On `i32/web-rules-api-locality`, validate the Rules API extraction and locality guard, resolve only slice-specific failures, then evaluate Policy, scoped Connectivity and Proposals/Auth separately.
+On `i32/web-final-api-locality`, validate Policy + scoped Connectivity extraction and locality guards. If gates are green, absorb I32 completion into canonical engineering docs, clear active execution, rerun the final hosted gate, and squash-integrate the completion PR.
