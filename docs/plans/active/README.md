@@ -1,8 +1,8 @@
 # Active execution
 
 Current: `PLAN-target-code-structure-migration.md`
-Goal: migrate NAPMS to the accepted final backend and Web taxonomy without product/domain semantic change.
-Current task: M6 architectural review complete; final hosted PR gates pending.
+Goal: finish the structural migration and leave final backend/Web taxonomy protected by executable rules.
+Current task: M7 — purge structural compatibility debt and strengthen final enforcement.
 
 ## Working set
 
@@ -17,8 +17,8 @@ None.
 
 ## Gate
 
-M6 implementation and architectural review are complete. Final Web taxonomy is `app / features / components/ui / lib`; the legacy root API/application files and feature-specific root components are absent. Architecture guards pass. Validation: `make web-check` passed; architecture 72 passed; `make test` 815 passed with 141 deselected; harness and knowledge checks passed; local Docker browser journeys 3 passed. The J03 change only synchronizes with the existing debounce search request and preserves all journey assertions.
+M1-M6 are merged. Backend production top-level is already exactly `contexts / workflows / platform`; Web is already `app / features / components/ui / lib`. M7 audit found a pre-M5 ACC curation re-export facade, transitional dependency-port fallbacks, vacuous legacy adapter checks, and structure docs that still describe migration-era state. Accepted product/domain compatibility is not part of this purge.
 
 ## Next
 
-Open the final M6 milestone PR, mark it ready once, run required hosted gates, and squash-merge if green. Do not start M7 before M6 is merged.
+Implement the final M7 purge/enforcement package, run full local validation including real PostgreSQL and browser/runtime evidence, push, and stop for architectural review. Do not create the final PR or retire the active plan yet.
