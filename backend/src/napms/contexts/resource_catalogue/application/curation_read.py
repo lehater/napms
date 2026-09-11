@@ -15,6 +15,9 @@ from napms.contexts.resource_catalogue.domain.responsibility import ResourceResp
 RESOURCE_WORKSPACE_DATA_STATES = frozenset(
     {"missing-address", "missing-scope", "missing-responsibility"}
 )
+RESOURCE_WORKSPACE_LIFECYCLES = frozenset({"active", "retired", "all"})
+RESOURCE_WORKSPACE_SORT_FIELDS = frozenset({"name", "reference", "lifecycle"})
+RESOURCE_WORKSPACE_SORT_DIRECTIONS = frozenset({"asc", "desc"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,14 +41,30 @@ class ResourceCataloguePage:
 
 
 @dataclass(frozen=True, slots=True)
+class ResourceCatalogueWorkspaceCounts:
+    total: int
+    all: int
+    active: int
+    retired: int
+    missing_address: int
+    missing_scope: int
+    missing_responsibility: int
+
+
+@dataclass(frozen=True, slots=True)
 class ResourceCatalogueWorkspacePage:
     items: tuple[ResourceCatalogueListItem, ...]
     page: int
     page_size: int
     has_more: bool
+    total: int
+    counts: ResourceCatalogueWorkspaceCounts
     as_of: datetime
     responsibility_scope: str | None
     data_state: str | None
+    lifecycle: str
+    sort_by: str
+    sort_direction: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,11 +100,23 @@ class ResourceCatalogueCurationReadPort(Protocol):
         offset: int,
         limit: int,
         search: str | None,
-        include_retired: bool,
+        lifecycle: str,
+        responsibility_scope: str | None,
+        data_state: str | None,
+        sort_by: str,
+        sort_direction: str,
+        as_of: datetime,
+    ) -> tuple[ResourceCatalogueListItem, ...]: ...
+
+    def summarize_workspace_resources(
+        self,
+        *,
+        search: str | None,
+        lifecycle: str,
         responsibility_scope: str | None,
         data_state: str | None,
         as_of: datetime,
-    ) -> tuple[ResourceCatalogueListItem, ...]: ...
+    ) -> ResourceCatalogueWorkspaceCounts: ...
 
     def get_resource(self, resource_reference: str) -> Resource | None: ...
 
@@ -147,7 +178,7 @@ class ListResourceCatalogue:
         normalized_search = search.strip() if search is not None else None
         if normalized_search == "":
             normalized_search = None
-        return normalized_search, (page - 1) * page_size, page_size + 1
+        return normalized_search, (page - 1) * page_size, page_size
 
     def execute(
         self,
@@ -164,7 +195,7 @@ class ListResourceCatalogue:
         )
         rows = self._catalogue.list_resources(
             offset=offset,
-            limit=limit,
+            limit=limit + 1,
             search=normalized_search,
             include_retired=include_retired,
         )
@@ -182,9 +213,11 @@ class ListResourceCatalogue:
         page_size: int,
         as_of: datetime,
         search: str | None = None,
-        include_retired: bool = False,
+        lifecycle: str = "active",
         responsibility_scope: str | None = None,
         data_state: str | None = None,
+        sort_by: str = "name",
+        sort_direction: str = "asc",
     ) -> ResourceCatalogueWorkspacePage:
         normalized_search, offset, limit = self._inputs(
             page=page,
@@ -193,39 +226,59 @@ class ListResourceCatalogue:
         )
         if not is_aware(as_of):
             raise ResourceCatalogueInvariantError("as_of must be offset-aware")
-        normalized_scope = (
-            responsibility_scope.strip()
-            if responsibility_scope is not None
-            else None
-        )
+
+        normalized_scope = responsibility_scope.strip() if responsibility_scope is not None else None
         if normalized_scope == "":
             normalized_scope = None
+
         normalized_data_state = data_state.strip() if data_state is not None else None
         if normalized_data_state == "":
             normalized_data_state = None
-        if (
-            normalized_data_state is not None
-            and normalized_data_state not in RESOURCE_WORKSPACE_DATA_STATES
-        ):
+        if normalized_data_state is not None and normalized_data_state not in RESOURCE_WORKSPACE_DATA_STATES:
             raise ResourceCatalogueInvariantError("unsupported Resource workspace data_state")
 
+        normalized_lifecycle = lifecycle.strip().lower() if lifecycle else "active"
+        if normalized_lifecycle not in RESOURCE_WORKSPACE_LIFECYCLES:
+            raise ResourceCatalogueInvariantError("unsupported Resource workspace lifecycle")
+
+        normalized_sort_by = sort_by.strip().lower() if sort_by else "name"
+        if normalized_sort_by not in RESOURCE_WORKSPACE_SORT_FIELDS:
+            raise ResourceCatalogueInvariantError("unsupported Resource workspace sort field")
+        normalized_sort_direction = sort_direction.strip().lower() if sort_direction else "asc"
+        if normalized_sort_direction not in RESOURCE_WORKSPACE_SORT_DIRECTIONS:
+            raise ResourceCatalogueInvariantError("unsupported Resource workspace sort direction")
+
+        counts = self._catalogue.summarize_workspace_resources(
+            search=normalized_search,
+            lifecycle=normalized_lifecycle,
+            responsibility_scope=normalized_scope,
+            data_state=normalized_data_state,
+            as_of=as_of,
+        )
         rows = self._catalogue.list_workspace_resources(
             offset=offset,
             limit=limit,
             search=normalized_search,
-            include_retired=include_retired,
+            lifecycle=normalized_lifecycle,
             responsibility_scope=normalized_scope,
             data_state=normalized_data_state,
+            sort_by=normalized_sort_by,
+            sort_direction=normalized_sort_direction,
             as_of=as_of,
         )
         return ResourceCatalogueWorkspacePage(
-            items=rows[:page_size],
+            items=rows,
             page=page,
             page_size=page_size,
-            has_more=len(rows) > page_size,
+            has_more=offset + len(rows) < counts.total,
+            total=counts.total,
+            counts=counts,
             as_of=as_of,
             responsibility_scope=normalized_scope,
             data_state=normalized_data_state,
+            lifecycle=normalized_lifecycle,
+            sort_by=normalized_sort_by,
+            sort_direction=normalized_sort_direction,
         )
 
 
