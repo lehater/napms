@@ -16,6 +16,7 @@ from napms.contexts.resource_catalogue.application.curation import (
 from napms.contexts.resource_catalogue.application.curation_read import (
     ResourceCatalogueHistory,
     ResourceCatalogueListItem,
+    ResourceCatalogueWorkspaceCounts,
     ResourceCatalogueWorkspacePage,
 )
 from napms.contexts.resource_catalogue.domain.model import Resource
@@ -90,9 +91,22 @@ class Recorder:
             page=kwargs["page"],
             page_size=kwargs["page_size"],
             has_more=False,
+            total=81,
+            counts=ResourceCatalogueWorkspaceCounts(
+                total=81,
+                all=100,
+                active=81,
+                retired=19,
+                missing_address=8,
+                missing_scope=3,
+                missing_responsibility=5,
+            ),
             as_of=kwargs["as_of"],
             responsibility_scope=kwargs["responsibility_scope"],
             data_state=kwargs["data_state"],
+            lifecycle=kwargs["lifecycle"],
+            sort_by=kwargs["sort_by"],
+            sort_direction=kwargs["sort_direction"],
         )
 
 
@@ -133,7 +147,7 @@ def _client_for():
     return TestClient(app), recorder
 
 
-def test_resource_workspace_projects_scope_search_as_of_and_completeness():
+def test_resource_workspace_projects_reference_list_controls_and_completeness():
     client, recorder = _client_for()
 
     response = client.get(
@@ -144,6 +158,9 @@ def test_resource_workspace_projects_scope_search_as_of_and_completeness():
             "search": "orders",
             "responsibilityScope": "payments-team",
             "dataState": "missing-address",
+            "lifecycle": "all",
+            "sortBy": "reference",
+            "sortDirection": "desc",
             "asOf": NOW.isoformat(),
         },
         cookies={"napms_session": "session-1"},
@@ -153,6 +170,18 @@ def test_resource_workspace_projects_scope_search_as_of_and_completeness():
     payload = response.json()
     assert payload["page"] == 2
     assert payload["pageSize"] == 25
+    assert payload["total"] == 81
+    assert payload["counts"] == {
+        "all": 100,
+        "active": 81,
+        "retired": 19,
+        "missingAddress": 8,
+        "missingScope": 3,
+        "missingResponsibility": 5,
+    }
+    assert payload["lifecycle"] == "all"
+    assert payload["sortBy"] == "reference"
+    assert payload["sortDirection"] == "desc"
     assert payload["asOf"] == NOW.isoformat()
     assert payload["responsibilityScope"] == "payments-team"
     assert payload["dataState"] == "missing-address"
@@ -171,15 +200,17 @@ def test_resource_workspace_projects_scope_search_as_of_and_completeness():
             "page": 2,
             "page_size": 25,
             "search": "orders",
-            "include_retired": False,
+            "lifecycle": "all",
             "responsibility_scope": "payments-team",
             "data_state": "missing-address",
+            "sort_by": "reference",
+            "sort_direction": "desc",
             "as_of": NOW,
         }
     ]
 
 
-def test_resource_workspace_uses_server_clock_when_as_of_is_omitted():
+def test_resource_workspace_uses_server_clock_and_reference_defaults():
     client, recorder = _client_for()
 
     response = client.get(
@@ -190,6 +221,20 @@ def test_resource_workspace_uses_server_clock_when_as_of_is_omitted():
     assert response.status_code == 200
     assert recorder.calls[0]["as_of"] == NOW
     assert recorder.calls[0]["data_state"] is None
+    assert recorder.calls[0]["lifecycle"] == "active"
+    assert recorder.calls[0]["sort_by"] == "name"
+    assert recorder.calls[0]["sort_direction"] == "asc"
+
+
+def test_resource_workspace_keeps_include_retired_compatibility():
+    client, recorder = _client_for()
+    response = client.get(
+        "/api/v1/catalogues/resource-workspace",
+        params={"includeRetired": "true"},
+        cookies={"napms_session": "session-1"},
+    )
+    assert response.status_code == 200
+    assert recorder.calls[0]["lifecycle"] == "all"
 
 
 def test_resource_workspace_rejects_unsupported_data_state_at_http_boundary():

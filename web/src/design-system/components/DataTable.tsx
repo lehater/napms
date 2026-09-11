@@ -1,3 +1,5 @@
+import { ArrowDown, ArrowUp } from "lucide-react"
+
 export function DataTable({
   children,
   minWidth = 1180,
@@ -65,11 +67,44 @@ export function DataTableRow({
 export function DataTableHeadCell({
   children,
   className = "",
+  onSort,
+  sortDirection = null,
+  ariaLabel,
 }: {
   children?: React.ReactNode
   className?: string
+  onSort?: () => void
+  sortDirection?: "asc" | "desc" | null
+  ariaLabel?: string
 }) {
-  return <th className={`px-[var(--napms-table-cell-x)] ${className}`}>{children}</th>
+  const ariaSort = sortDirection === "asc" ? "ascending" : sortDirection === "desc" ? "descending" : "none"
+
+  return (
+    <th
+      className={`px-[var(--napms-table-cell-x)] ${className}`}
+      aria-sort={onSort ? ariaSort : undefined}
+    >
+      {onSort ? (
+        <button
+          type="button"
+          className="group inline-flex min-h-7 items-center gap-1 rounded px-1 text-left hover:bg-[var(--napms-color-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--napms-color-primary-border)]"
+          onClick={onSort}
+          aria-label={ariaLabel}
+        >
+          <span>{children}</span>
+          {sortDirection === "asc" ? (
+            <ArrowUp className="size-3" aria-hidden="true" />
+          ) : sortDirection === "desc" ? (
+            <ArrowDown className="size-3" aria-hidden="true" />
+          ) : (
+            <span className="w-3 opacity-0 transition-opacity group-hover:opacity-40" aria-hidden="true">↕</span>
+          )}
+        </button>
+      ) : (
+        children
+      )}
+    </th>
+  )
 }
 
 export function DataTableCell({

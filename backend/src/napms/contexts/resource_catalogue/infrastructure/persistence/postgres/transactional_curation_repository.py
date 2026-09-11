@@ -11,6 +11,7 @@ from napms.contexts.resource_catalogue.infrastructure.persistence.postgres.curat
 )
 from napms.contexts.resource_catalogue.application.curation_read import (
     ResourceCatalogueListItem,
+    ResourceCatalogueWorkspaceCounts,
 )
 from napms.contexts.resource_catalogue.application.ports import (
     ResourceCatalogueIdempotencyConflict,
@@ -30,16 +31,37 @@ class TransactionalPostgresResourceCatalogueCurationRepository(
         offset: int,
         limit: int,
         search: str | None,
-        include_retired: bool,
+        lifecycle: str,
         responsibility_scope: str | None,
         data_state: str | None,
+        sort_by: str,
+        sort_direction: str,
         as_of: datetime,
     ) -> tuple[ResourceCatalogueListItem, ...]:
         return PostgresResourceCatalogueListQuery(self._connection).list_resources(
             offset=offset,
             limit=limit,
             search=search,
-            include_retired=include_retired,
+            lifecycle=lifecycle,
+            responsibility_scope=responsibility_scope,
+            data_state=data_state,
+            sort_by=sort_by,
+            sort_direction=sort_direction,
+            as_of=as_of,
+        )
+
+    def summarize_workspace_resources(
+        self,
+        *,
+        search: str | None,
+        lifecycle: str,
+        responsibility_scope: str | None,
+        data_state: str | None,
+        as_of: datetime,
+    ) -> ResourceCatalogueWorkspaceCounts:
+        return PostgresResourceCatalogueListQuery(self._connection).summarize_resources(
+            search=search,
+            lifecycle=lifecycle,
             responsibility_scope=responsibility_scope,
             data_state=data_state,
             as_of=as_of,
