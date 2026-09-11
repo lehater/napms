@@ -1,4 +1,4 @@
-from napms.contexts.application_catalogue.application.resolve import (
+from napms.contexts.application_catalogue.application.discovery.resolve import (
     CatalogueResolutionOutcome,
     ResolveApplicationProjection,
 )

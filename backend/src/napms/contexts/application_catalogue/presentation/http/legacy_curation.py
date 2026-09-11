@@ -6,15 +6,15 @@ from uuid import UUID
 from fastapi import APIRouter, Header, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 
-from napms.contexts.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.curation.bindings import (
     CreateDeploymentResourceBindingCommand,
 )
-from napms.contexts.application_catalogue.application.curation import CreateApplicationCommand
-from napms.contexts.application_catalogue.application.dcs_curation import CreateDcsRevisionCommand
-from napms.contexts.application_catalogue.application.deployment_curation import (
+from napms.contexts.application_catalogue.application.curation.create_application import CreateApplicationCommand
+from napms.contexts.application_catalogue.application.curation.dcs import CreateDcsRevisionCommand
+from napms.contexts.application_catalogue.application.curation.deployments import (
     CreateComponentDeploymentCommand,
 )
-from napms.contexts.application_catalogue.application.structure_curation import CreateComponentCommand
+from napms.contexts.application_catalogue.application.curation.structure import CreateComponentCommand
 from napms.contexts.application_catalogue.presentation.http.support import (
     mutation_response,
     require_aware,

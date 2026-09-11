@@ -11,10 +11,11 @@ APPLICATION = (
     / "application_catalogue"
     / "application"
 )
-FACADE = APPLICATION / "structure_curation.py"
-APPLICATION_MUTATIONS = APPLICATION / "application_structure_curation.py"
-COMPONENT_MUTATIONS = APPLICATION / "component_structure_curation.py"
-SHARED_MUTATION = APPLICATION / "curation_mutation.py"
+CURATION = APPLICATION / "curation"
+STRUCTURE_EXPORTS = CURATION / "structure.py"
+APPLICATION_MUTATIONS = CURATION / "application_structure.py"
+COMPONENT_MUTATIONS = CURATION / "component_structure.py"
+SHARED_MUTATION = CURATION / "mutation.py"
 
 
 def test_structure_mutations_are_split_by_owner():
@@ -35,8 +36,8 @@ def test_structure_mutations_are_split_by_owner():
     assert "class RenameApplication" not in component_source
 
 
-def test_structure_curation_facade_contains_no_use_case_implementation():
-    tree = ast.parse(FACADE.read_text(encoding="utf-8"))
+def test_structure_exports_contain_no_use_case_implementation():
+    tree = ast.parse(STRUCTURE_EXPORTS.read_text(encoding="utf-8"))
     implementation_nodes = (
         ast.ClassDef,
         ast.FunctionDef,

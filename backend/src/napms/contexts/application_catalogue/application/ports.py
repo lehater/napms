@@ -46,6 +46,21 @@ class ApplicationCatalogueAuthorityOutcome(str, Enum):
     UNKNOWN = "Unknown"
 
 
+class CatalogueMutationOutcome(str, Enum):
+    CREATED = "Created"
+    UPDATED = "Updated"
+    RESOLVED = "Resolved"
+    AUTHORITY_DENIED = "AuthorityDenied"
+    AUTHORITY_UNKNOWN = "AuthorityUnknown"
+    NOT_FOUND = "NotFound"
+    PARENT_INACTIVE = "ParentInactive"
+    RETIREMENT_BLOCKED = "RetirementBlocked"
+    INPUT_INVALID = "InputInvalid"
+    CONCURRENCY_CONFLICT = "ConcurrencyConflict"
+    IDEMPOTENCY_CONFLICT = "IdempotencyConflict"
+    PERSISTENCE_UNKNOWN = "PersistenceUnknown"
+
+
 @dataclass(frozen=True, slots=True)
 class ApplicationCatalogueAuthorityCheck:
     outcome: ApplicationCatalogueAuthorityOutcome

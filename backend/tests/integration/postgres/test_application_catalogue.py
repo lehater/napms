@@ -23,11 +23,11 @@ from napms.contexts.application_catalogue.infrastructure.persistence.postgres im
 from napms.contexts.application_catalogue.infrastructure.integrations.scoped_connectivity_inventory import (
     ApplicationCatalogueScopedConnectivityAdapter,
 )
-from napms.contexts.application_catalogue.application.describe_interactions import (
+from napms.contexts.application_catalogue.application.discovery.describe_interactions import (
     DescribeDirectedInteractions,
 )
-from napms.contexts.application_catalogue.application.list_interactions import ListDirectedInteractions
-from napms.contexts.application_catalogue.application.resolve import (
+from napms.contexts.application_catalogue.application.discovery.list_interactions import ListDirectedInteractions
+from napms.contexts.application_catalogue.application.discovery.resolve import (
     ResolveApplicationProjection,
     ValidateDirectedInteraction,
 )

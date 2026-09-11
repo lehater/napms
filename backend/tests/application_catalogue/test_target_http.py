@@ -8,18 +8,18 @@ from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
 from napms.contexts.application_catalogue.presentation.http.target import create_catalogue_target_router
-from napms.contexts.application_catalogue.application.curation import (
+from napms.contexts.application_catalogue.application.curation.create_application import (
     CreateApplicationOutcome,
     CreateApplicationResult,
 )
-from napms.contexts.application_catalogue.application.target_curation import (
+from napms.contexts.application_catalogue.application.target.curation import (
     InteractionDefinitionMutationResult,
     TargetDependencyGroup,
     TargetDependencyKind,
     TargetMutationOutcome,
 )
-from napms.contexts.application_catalogue.application.target_ports import ActiveDependencyReference
-from napms.contexts.application_catalogue.application.target_read import (
+from napms.contexts.application_catalogue.application.target.ports import ActiveDependencyReference
+from napms.contexts.application_catalogue.application.target.read import (
     ApplicationDefinitionSummary,
     DefinitionSummaryPage,
     DeploymentConnectivityPage,

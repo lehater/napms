@@ -21,15 +21,15 @@ from napms.contexts.application_catalogue.infrastructure.persistence.postgres im
 from napms.contexts.application_catalogue.infrastructure.integrations.resource_binding_target import (
     ResourceCatalogueBindingTargetAdapter,
 )
-from napms.contexts.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.curation.bindings import (
     CreateDeploymentResourceBinding,
 )
-from napms.contexts.application_catalogue.application.curation import (
+from napms.contexts.application_catalogue.application.curation.create_application import (
     CreateApplication,
     CreateApplicationCommand,
     CreateApplicationOutcome,
 )
-from napms.contexts.application_catalogue.application.deployment_curation import (
+from napms.contexts.application_catalogue.application.curation.deployments import (
     CreateComponentDeployment,
     CreateComponentDeploymentCommand,
 )
@@ -38,16 +38,16 @@ from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityOutcome,
     CatalogueConcurrencyConflict,
 )
-from napms.contexts.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.curation.structure import (
     CatalogueMutationOutcome,
     CreateComponent,
     CreateComponentCommand,
 )
-from napms.contexts.application_catalogue.application.target_binding_curation import (
+from napms.contexts.application_catalogue.application.target.bindings import (
     CreateDeploymentInteractionResourceBinding,
     CreateDeploymentInteractionResourceBindingCommand,
 )
-from napms.contexts.application_catalogue.application.target_curation import (
+from napms.contexts.application_catalogue.application.target.curation import (
     CreateApplicationDeployment,
     CreateApplicationDeploymentCommand,
     CreateInteractionDefinition,
@@ -56,7 +56,7 @@ from napms.contexts.application_catalogue.application.target_curation import (
     SelectDeploymentInteractionCommand,
     TargetMutationOutcome,
 )
-from napms.contexts.application_catalogue.application.target_metadata_curation import (
+from napms.contexts.application_catalogue.application.target.metadata import (
     UpdateApplicationDefinitionMetadata,
     UpdateApplicationDefinitionMetadataCommand,
     UpdateComponentMetadata,

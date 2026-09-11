@@ -7,7 +7,7 @@ from napms.contexts.application_catalogue.infrastructure.integrations.dcs_author
     JsonDcsAuthoringProjectionEncoder,
 )
 from napms.contexts.application_catalogue.application.ports import CataloguePersistenceError
-from napms.contexts.application_catalogue.application.target_read import (
+from napms.contexts.application_catalogue.application.target.read import (
     ApplicationDefinitionSummary,
     ApplicationDeploymentPage,
     ApplicationDeploymentSummary,

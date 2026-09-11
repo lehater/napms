@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
 from napms.contexts.application_catalogue.presentation.http.discovery import create_catalogue_discovery_router
-from napms.contexts.application_catalogue.application.participant_discovery import (
+from napms.contexts.application_catalogue.application.discovery.participants import (
     ApplicationCatalogueParticipant,
     ApplicationCatalogueParticipantPage,
 )

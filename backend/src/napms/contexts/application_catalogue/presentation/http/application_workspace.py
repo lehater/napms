@@ -18,11 +18,11 @@ from napms.contexts.application_catalogue.presentation.http.support import (
     require_aware,
     require_mutation_success,
 )
-from napms.contexts.application_catalogue.application.deployment_curation import (
+from napms.contexts.application_catalogue.application.curation.deployments import (
     RenameComponentDeploymentCommand,
     RetireComponentDeploymentCommand,
 )
-from napms.contexts.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.curation.structure import (
     RenameApplicationCommand,
     RenameComponentCommand,
     RetireApplicationCommand,

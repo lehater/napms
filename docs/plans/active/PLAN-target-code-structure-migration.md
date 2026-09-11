@@ -35,56 +35,63 @@ M1 backend repository boundary
 
 - M1 — complete in `f0e281e`.
 - M2 — complete in PR #74, squash merge `91eb009c2338697458ba3874836c93cc044f753a`.
-- M3 — complete in PR #75, squash merge `18787e3f790368dec8d57078b47c7b6454e85b5d`; all required hosted gates passed.
+- M3 — complete in PR #75, squash merge `18787e3f790368dec8d57078b47c7b6454e85b5d`.
+- M4 — complete in PR #76, squash merge `a2caf39587c111fe97341686ff92fbeb9d30599d`; post-merge CI path-filter correction complete in PR #77, squash merge `10182694590b6b851d35b9594ecc03823cee811f`.
 
-## M4 — Platform consolidation
+## M5 — Capability-oriented internals
 
-Status: `implementation and architectural review complete; final hosted PR gates pending` on branch `refactor/m4-platform-consolidation`.
+Status: `implementation and architectural review complete; final PostgreSQL evidence and hosted PR gates pending` on branch `refactor/m5-capability-internals`.
 
-Goal: remove legacy top-level `napms.bootstrap` and `napms.runtime`, leaving process/runtime mechanics only under `napms.platform`.
+M5 refines only application layers where actual change locality shows independent responsibilities. File size alone is not a reason to split. M5 is one milestone PR and hosted gates run once at the end.
 
-Accepted ownership:
-- authentication/session and enterprise identity mechanics -> `platform/auth/`;
-- generic HTTP shell, public HTTP support, correlation/error/logging/session endpoints -> `platform/http/`;
-- executable assembly, process configuration and HTTP entrypoint -> `platform/bootstrap/`;
-- migration runner and migration CLI -> `platform/database/`;
-- existing M3 wiring modules already under `platform/bootstrap/` remain there;
-- local demo seeding remains an explicit local-dev bootstrap utility; it is fixture/operational setup, not authoritative product/domain behavior;
-- no context/workflow core may import platform;
-- platform may depend outward on concrete context/workflow adapters for executable assembly but owns no feature/domain truth.
+### Accepted split — Application Catalogue
 
-Implemented target:
+Application Catalogue has sufficient evidence for capability decomposition: its application layer contains separate curation, discovery/read, and accepted I31 Application Catalogue Target responsibilities. The split is intentionally coarse; there is no one-folder-per-use-case convention.
+
+Final application shape:
 
 ```text
-napms/platform/
-  auth/
-  bootstrap/
-  database/
-  http/
+contexts/application_catalogue/application/
+  __init__.py
+  ports.py
+  curation/
+  discovery/
+  target/
 ```
 
-Legacy top-level `napms.bootstrap`, `napms.runtime`, and `napms.composition` are absent. Production package top level is only `contexts / workflows / platform` plus package metadata. Test taxonomy was aligned under `tests/platform` and old `tests/bootstrap`, `tests/runtime`, and `tests/composition` locations were removed.
+`curation/` owns retained general catalogue mutation use cases and shared catalogue truth.
 
-Validation before final PR:
-- targeted auth: 13 passed;
-- platform + architecture: 183 passed;
-- `make test`: 807 passed, 141 deselected;
+`discovery/` owns catalogue/detail/participant/interaction discovery and resolve-oriented reads.
+
+`target/` owns the accepted I31 Application Catalogue Target contract and use cases. `target` is accepted requirement terminology, not a temporary generic bucket.
+
+Architecture review confirms:
+- application root contains only `__init__.py`, `ports.py`, and the three capability packages;
+- mapped legacy flat modules are absent and consumers use final imports;
+- `target` does not import `curation` or `discovery`;
+- `curation` and `discovery` do not import `target`;
+- common `CatalogueMutationOutcome` was moved to the context-wide application contract surface because it is consumed across capability boundaries;
+- target compatibility-binding calls use consumer-side structural contracts rather than importing curation implementation types;
+- product/domain behavior is preserved.
+
+Validation:
+- targeted Application Catalogue: 151 passed;
+- architecture: 67 passed;
+- `make test`: 810 passed, 141 deselected;
 - `make harness-check`: passed;
-- `make knowledge-check`: passed;
-- PostgreSQL 16 `make postgres-test`: 141 passed, no skipped;
-- `docker compose config`: passed;
-- `docker compose build`: passed.
+- `make knowledge-check`: passed.
 
-Final architectural review confirms:
-- `platform/http` imports no bounded context or workflow modules;
-- feature HTTP wiring/error registration lives in `platform/bootstrap/http_process.py`;
-- context domain/application and workflow application code do not import `napms.platform`;
-- console entrypoints use final platform namespaces;
-- process/runtime mechanics are fully consolidated under `napms.platform` without compatibility shims.
+### Resource Catalogue review
+
+Resource Catalogue was evaluated as the only secondary M5 candidate and is intentionally **not** decomposed further in this milestone.
+
+Reason: current read/workspace behavior spans Resource core state plus effective realization, scope affiliation and responsibility; temporal mutation use cases share one repository/temporal contract. Additional packages would introduce artificial cross-capability coupling rather than improve demonstrated change locality. Large files alone are not sufficient evidence.
+
+Access Policy and the remaining contexts/workflows likewise do not justify additional M5 package depth.
 
 ## Exit criteria
 
-M4 closes when the final milestone PR passes all required hosted gates and is squash-merged to `main`.
+M5 closes when the accepted ACC capability split remains behavior-preserving, architecture/locality guards pass, a real PostgreSQL integration run passes without skips, and one final M5 PR passes all required hosted gates.
 
 ## Blockers
 
@@ -92,4 +99,4 @@ None.
 
 ## Next
 
-Open the final M4 milestone PR, run required hosted gates, and squash-merge if green. Do not start M5 or make material changes after the final gate without returning the PR to draft and gating again.
+Run final PostgreSQL integration evidence for M5. If green, open one M5 milestone PR, run required hosted gates, and squash-merge. Do not start M6 before M5 is merged.

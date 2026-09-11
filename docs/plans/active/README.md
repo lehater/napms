@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M4 — architectural review complete; final milestone PR and hosted gates.
+Current task: M5 — implementation and architectural review complete; final PostgreSQL evidence before milestone PR.
 
 ## Working set
 
@@ -11,7 +11,7 @@ Read first:
 - `docs/architecture/code-structure.md`
 - `docs/engineering/target-code-structure-migration-roadmap.md`
 
-Expand only if needed: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
+Expand only if needed: `docs/requirements/application-catalogue-target.md`.
 
 ## Blockers
 
@@ -19,10 +19,10 @@ None.
 
 ## Gate
 
-M4 implementation and architectural review are complete: production taxonomy is `contexts / workflows / platform`; legacy `napms.bootstrap`, `napms.runtime`, and `napms.composition` are absent; generic HTTP shell is feature-independent; feature HTTP wiring and executable assembly live under `platform/bootstrap`; core layers do not import platform. Validation: targeted auth 13 passed, platform/architecture 183 passed, `make test` 807 passed, `make harness-check` passed, `make knowledge-check` passed, PostgreSQL 16 `make postgres-test` 141 passed without skips, and Docker Compose config/build passed.
+The accepted M5 scope is only the Application Catalogue capability split into `curation / discovery / target`. Architectural review passed: final root topology is explicit, legacy flat modules are absent, cross-capability direction is enforced, and Resource Catalogue was deliberately left unsplit because current change locality does not justify extra package boundaries. Validation already passed: targeted ACC 151, architecture 67, `make test` 810 with 141 deselected, harness and knowledge checks.
 
-The remaining M4 gate is the final hosted PR suite.
+A real PostgreSQL integration run without skips is still required before the final M5 PR. Hosted gates remain deferred until that evidence is green.
 
 ## Next
 
-Open the final M4 milestone PR, run required hosted gates, and squash-merge if green. Do not start M5 before M4 is merged.
+Run `make postgres-test` against configured PostgreSQL. If all integration tests pass without skips, open the final M5 milestone PR and run hosted gates. Do not start M6 before M5 is merged.

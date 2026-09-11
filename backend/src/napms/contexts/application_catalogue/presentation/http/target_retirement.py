@@ -7,7 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, Header, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 
-from napms.contexts.application_catalogue.application.target_lifecycle import (
+from napms.contexts.application_catalogue.application.target.lifecycle import (
     RetireApplicationDefinitionCommand,
     RetireApplicationDeploymentCommand,
     RetireComponentTargetCommand,
@@ -15,7 +15,7 @@ from napms.contexts.application_catalogue.application.target_lifecycle import (
     RetireInteractionDefinitionCommand,
     RetirementDependencyKind,
 )
-from napms.contexts.application_catalogue.application.target_retirement import RetirementSubjectKind
+from napms.contexts.application_catalogue.application.target.retirement import RetirementSubjectKind
 from napms.contexts.application_catalogue.presentation.http.target import (
     _dependency_details,
     _require_target_success,

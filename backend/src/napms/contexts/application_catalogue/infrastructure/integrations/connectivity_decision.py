@@ -1,7 +1,7 @@
-from napms.contexts.application_catalogue.application.list_interactions import (
+from napms.contexts.application_catalogue.application.discovery.list_interactions import (
     ListDirectedInteractions,
 )
-from napms.contexts.application_catalogue.application.resolve import (
+from napms.contexts.application_catalogue.application.discovery.resolve import (
     CatalogueResolutionOutcome,
     ValidateDirectedInteraction,
 )

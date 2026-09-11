@@ -13,8 +13,8 @@ from napms.contexts.application_catalogue.infrastructure.integrations.dcs_author
 from napms.contexts.application_catalogue.infrastructure.persistence.postgres.target_retirement_query import (
     PostgresApplicationCatalogueRetirementDependencyQuery,
 )
-from napms.contexts.application_catalogue.application.target_lifecycle import RetirementDependencyKind
-from napms.contexts.application_catalogue.application.target_retirement import RetirementSubjectKind
+from napms.contexts.application_catalogue.application.target.lifecycle import RetirementDependencyKind
+from napms.contexts.application_catalogue.application.target.retirement import RetirementSubjectKind
 from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,
     DcsPortConstraint,

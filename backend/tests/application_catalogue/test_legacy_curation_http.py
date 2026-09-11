@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from napms.contexts.application_catalogue.application.curation import (
+from napms.contexts.application_catalogue.application.curation.create_application import (
     CreateApplicationOutcome,
     CreateApplicationResult,
 )
