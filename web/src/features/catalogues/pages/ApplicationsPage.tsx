@@ -29,6 +29,7 @@ import { shortId } from "@/features/catalogues/components/CatalogueIdentity"
 import { CatalogueLifecycleStatus } from "@/features/catalogues/components/CatalogueLifecycleStatus"
 import { CreateApplicationDialog } from "@/features/catalogues/components/CreateApplicationDialog"
 import { ApiError } from "@/lib/api"
+import { useDebouncedValue } from "@/lib/useDebouncedValue"
 
 function errorFrom(caught: unknown, fallback: string) {
   return caught instanceof ApiError
@@ -52,6 +53,7 @@ export function ApplicationsPage({
   const [searchInput, setSearchInput] = useState("")
   const [search, setSearch] = useState("")
   const [showCreate, setShowCreate] = useState(false)
+  const debouncedSearch = useDebouncedValue(searchInput.trim(), 250)
 
   async function load() {
     setLoading(true)
@@ -72,16 +74,10 @@ export function ApplicationsPage({
   }, [page, search])
 
   useEffect(() => {
-    const nextSearch = searchInput.trim()
-    if (nextSearch === search) return
-
-    const timeout = window.setTimeout(() => {
-      if (page !== 1) onPageChange(1)
-      setSearch(nextSearch)
-    }, 250)
-
-    return () => window.clearTimeout(timeout)
-  }, [page, search, searchInput, onPageChange])
+    if (debouncedSearch === search) return
+    if (page !== 1) onPageChange(1)
+    setSearch(debouncedSearch)
+  }, [debouncedSearch, onPageChange, page, search])
 
   async function createApplication(displayName: string) {
     try {
