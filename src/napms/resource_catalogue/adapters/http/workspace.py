@@ -5,19 +5,21 @@ from typing import Callable
 from fastapi import APIRouter, Header, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 
+from napms.resource_catalogue.adapters.http.curation import (
+    resource_dto,
+    resource_persistence_error,
+)
 from napms.resource_catalogue.application.curation import (
     RenameResourceCommand,
     RetireResourceCommand,
 )
 from napms.resource_catalogue.application.ports import ResourceCataloguePersistenceError
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.catalogue_curation_http import (
-    _mutation_response,
-    _require_actor,
-    _require_aware,
-    _require_success,
-    _resource_dto,
-    _resource_persistence_error,
+from napms.runtime.http_support import (
+    mutation_response,
+    require_actor,
+    require_aware,
+    require_mutation_success,
 )
 
 
@@ -53,9 +55,9 @@ def create_catalogue_resource_workspace_router(
         asOf: datetime | None = Query(None),
         includeRetired: bool = Query(False),
     ):
-        _require_actor(sessions, request)
+        require_actor(sessions, request)
         as_of = asOf or clock()
-        _require_aware(as_of, "asOf")
+        require_aware(as_of, "asOf")
         try:
             with open_scope() as scope:
                 result = scope.resources.list_resources.execute_workspace(
@@ -67,12 +69,12 @@ def create_catalogue_resource_workspace_router(
                     as_of=as_of,
                 )
         except ResourceCataloguePersistenceError as exc:
-            raise _resource_persistence_error() from exc
+            raise resource_persistence_error() from exc
 
         return {
             "items": [
                 {
-                    **_resource_dto(item.resource),
+                    **resource_dto(item.resource),
                     "currentFacts": {
                         "hasRealization": item.has_effective_realization,
                         "hasScopeAffiliation": item.has_effective_scope_affiliation,
@@ -103,7 +105,7 @@ def create_catalogue_resource_workspace_router(
             max_length=256,
         ),
     ):
-        actor_id = _require_actor(sessions, request)
+        actor_id = require_actor(sessions, request)
         try:
             with open_scope() as scope:
                 result = scope.resources.rename_resource.execute(
@@ -117,11 +119,11 @@ def create_catalogue_resource_workspace_router(
                     )
                 )
         except ResourceCataloguePersistenceError as exc:
-            raise _resource_persistence_error() from exc
-        _require_success(result.outcome)
-        return _mutation_response(
+            raise resource_persistence_error() from exc
+        require_mutation_success(result.outcome)
+        return mutation_response(
             result.outcome,
-            {"resource": _resource_dto(result.resource)},
+            {"resource": resource_dto(result.resource)},
         )
 
     @router.post(
@@ -138,7 +140,7 @@ def create_catalogue_resource_workspace_router(
             max_length=256,
         ),
     ):
-        actor_id = _require_actor(sessions, request)
+        actor_id = require_actor(sessions, request)
         try:
             with open_scope() as scope:
                 result = scope.resources.retire_resource.execute(
@@ -151,11 +153,11 @@ def create_catalogue_resource_workspace_router(
                     )
                 )
         except ResourceCataloguePersistenceError as exc:
-            raise _resource_persistence_error() from exc
-        _require_success(result.outcome)
-        return _mutation_response(
+            raise resource_persistence_error() from exc
+        require_mutation_success(result.outcome)
+        return mutation_response(
             result.outcome,
-            {"resource": _resource_dto(result.resource)},
+            {"resource": resource_dto(result.resource)},
         )
 
     return router
