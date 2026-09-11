@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react"
 import {
   AlertTriangle,
   CheckCircle2,
-  MoreHorizontal,
   Plus,
   Search,
   X,
@@ -28,32 +27,32 @@ function errorFrom(caught: unknown, fallback: string) {
 }
 
 function DataState({ item }: { item: ResourceWorkspaceItemDto }) {
-  let label = "Complete"
-  let warning = false
-  if (!item.currentFacts.hasRealization) {
-    label = "No address"
-    warning = true
-  } else if (!item.currentFacts.hasScopeAffiliation) {
-    label = "No scope"
-    warning = true
-  } else if (!item.currentFacts.hasResponsibility) {
-    label = "No responsibility"
-    warning = true
+  const missing: string[] = []
+  if (!item.currentFacts.hasRealization) missing.push("No address")
+  if (!item.currentFacts.hasScopeAffiliation) missing.push("No scope")
+  if (!item.currentFacts.hasResponsibility) missing.push("No responsibility")
+
+  if (missing.length === 0) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+        <CheckCircle2 className="size-3.5" aria-hidden="true" />
+        No missing facts
+      </span>
+    )
   }
 
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-        warning ? "text-amber-700" : "text-emerald-700"
-      }`}
-    >
-      {warning ? (
-        <AlertTriangle className="size-3.5" aria-hidden="true" />
-      ) : (
-        <CheckCircle2 className="size-3.5" aria-hidden="true" />
-      )}
-      {label}
-    </span>
+    <div className="grid gap-1">
+      {missing.map((label) => (
+        <span
+          key={label}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700"
+        >
+          <AlertTriangle className="size-3.5" aria-hidden="true" />
+          {label}
+        </span>
+      ))}
+    </div>
   )
 }
 
@@ -321,7 +320,7 @@ export function ResourcesPage({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[1000px] border-collapse text-left text-sm">
               <thead className="bg-[#F8FAFC] text-[11px] font-semibold uppercase tracking-wide text-[#64748B]">
                 <tr className="border-b border-[#E2E8F0]">
                   <th className="px-4 py-3">Name</th>
@@ -331,7 +330,6 @@ export function ResourcesPage({
                   <th className="px-4 py-3">Technical owner</th>
                   <th className="px-4 py-3">Lifecycle</th>
                   <th className="px-4 py-3">Data state</th>
-                  <th className="w-10 px-3 py-3" aria-label="Actions" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E2E8F0]">
@@ -385,9 +383,6 @@ export function ResourcesPage({
                     </td>
                     <td className="px-4 py-3.5 align-top">
                       <DataState item={item} />
-                    </td>
-                    <td className="px-3 py-3.5 align-top text-right">
-                      <MoreHorizontal className="size-4 text-[#94A3B8]" aria-hidden="true" />
                     </td>
                   </tr>
                 ))}
