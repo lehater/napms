@@ -44,6 +44,27 @@ export {
   type RuleListPage,
   type RuleStateTransition,
 } from "@/features/rules/api"
+export {
+  getEffectiveDesiredPolicy,
+  getNormalizedPolicy,
+  listPolicyViewScopes,
+  type EffectivePolicyResponse,
+  type NormalizedPolicyResponse,
+  type NormalizedPolicyRow,
+} from "@/features/policy/api"
+export {
+  getScopedConnectivityInventory,
+  listScopedConnectivityScopes,
+  type ScopedConnectivityComponent,
+  type ScopedConnectivityDecisionSummary,
+  type ScopedConnectivityInventoryPage,
+  type ScopedConnectivityNeedSummary,
+  type ScopedConnectivityPolicySummary,
+  type ScopedConnectivityRelationship,
+  type ScopedConnectivityResource,
+  type ScopedConnectivityResourceItem,
+  type ScopedConnectivityScopeResponse,
+} from "@/features/connectivity/api"
 
 export type Actor = {
   actorId: string
@@ -52,6 +73,11 @@ export type Actor = {
 
 export type ProposalScope = {
   scope: string
+}
+
+export type PortConstraintDto = {
+  kind: "Any" | "NotApplicable" | "Ranges"
+  ranges?: { first: number; last: number }[]
 }
 
 export type TrafficAlternativeDto = {
@@ -90,6 +116,13 @@ export type ProposalResult =
   | { outcome: "Materialized" | "Resolved"; rule: RuleDto }
   | { outcome: "NotAllowed"; rule: null }
 
+export type ProposalInteractionPage = {
+  items: ProposalInteraction[]
+  page: number
+  pageSize: number
+  hasMore: boolean
+}
+
 export async function login(login: string, password: string): Promise<Actor> {
   const result = await request<{ actor: Actor }>("/api/v1/session", {
     method: "POST",
@@ -121,13 +154,6 @@ export async function listProposalScopes(): Promise<{
   return request("/api/v1/access-rule-proposals/scopes")
 }
 
-export type ProposalInteractionPage = {
-  items: ProposalInteraction[]
-  page: number
-  pageSize: number
-  hasMore: boolean
-}
-
 export async function listProposalInteractions(
   scope: string,
   page: number,
@@ -156,198 +182,4 @@ export async function submitProposal(input: {
     method: "POST",
     body: JSON.stringify(input),
   })
-}
-
-export async function listPolicyViewScopes(asOf: string): Promise<{
-  scopes: ProposalScope[]
-  ambiguousScopes: ProposalScope[]
-}> {
-  const params = new URLSearchParams({ asOf })
-  return request(`/api/v1/policy-views/scopes?${params}`)
-}
-
-export type EffectivePolicyResponse = {
-  scope: string
-  asOf: string
-  authorityReference: string
-  rules: RuleDto[]
-}
-
-export async function getEffectiveDesiredPolicy(
-  scope: string,
-  asOf: string,
-): Promise<EffectivePolicyResponse> {
-  const params = new URLSearchParams({ scope, asOf })
-  return request<EffectivePolicyResponse>(
-    `/api/v1/effective-desired-policy?${params}`,
-  )
-}
-
-export type PortConstraintDto = {
-  kind: "Any" | "NotApplicable" | "Ranges"
-  ranges?: { first: number; last: number }[]
-}
-
-export type NormalizedPolicyRow = {
-  ruleId: string
-  semanticIdentity: ProposalInteraction
-  decisionReference: string | null
-  governanceScope: string
-  operationalState: "Active" | "Inactive"
-  effectiveWindow: { start: string; end: string } | null
-  snapshotAsOf: string
-  readAuthorityReference: string
-  source: {
-    resourceReference: string
-    endpointReference: string
-    technicalAddress: string
-    factReference: string
-    validityReference: string
-    provenanceReference: string
-  }
-  destination: {
-    resourceReference: string
-    endpointReference: string
-    technicalAddress: string
-    factReference: string
-    validityReference: string
-    provenanceReference: string
-  }
-  traffic: {
-    protocol: string
-    sourcePorts: PortConstraintDto
-    destinationPorts: PortConstraintDto
-    serviceReference: string | null
-  }
-  catalogue?: CataloguePresentation | null
-  applicationCommunicationCatalogue: {
-    factReference: string
-    validityReference: string
-    provenanceReference: string
-  }
-}
-
-export type NormalizedPolicyResponse = {
-  scope: string
-  asOf: string
-  authorityReference: string
-  rows: NormalizedPolicyRow[]
-}
-
-export async function getNormalizedPolicy(
-  scope: string,
-  asOf: string,
-): Promise<NormalizedPolicyResponse> {
-  const params = new URLSearchParams({ scope, asOf })
-  return request<NormalizedPolicyResponse>(
-    `/api/v1/normalized-policy?${params}`,
-  )
-}
-
-export type ScopedConnectivityResource = {
-  resourceReference: string
-  realizationState: "Resolved" | "Unresolved" | "Unknown"
-  endpoints: {
-    endpointReference: string
-    technicalAddress: string
-  }[]
-}
-
-export type ScopedConnectivityNeedSummary = {
-  current: "Required" | "None" | "Unknown"
-  historicalOnly: boolean | null
-  coverage:
-    | "Covered"
-    | "Uncovered"
-    | "NotCurrent"
-    | "Unknown"
-    | "NotApplicable"
-}
-
-export type ScopedConnectivityDecisionSummary = {
-  state: "Allowed" | "NotAllowed" | "NoFinalDecision" | "Unknown"
-}
-
-export type ScopedConnectivityPolicySummary = {
-  ruleExists: "Yes" | "No" | "Unknown"
-  operationalState: "Active" | "Inactive" | "Unavailable"
-  effectiveAtAsOf: "Yes" | "No" | "Unknown" | "Unavailable"
-}
-
-export type ScopedConnectivityRelationship = {
-  semanticIdentity: {
-    sourceComponentDeploymentId: string
-    destinationComponentDeploymentId: string
-    dcsContractRevisionId: string
-  }
-  direction: "Outgoing" | "Incoming"
-  remoteComponent: {
-    componentDeploymentId: string
-    displayName: string | null
-  }
-  dcsDisplayName: string | null
-  accessSummary: string | null
-  remoteResourcesKnown: boolean
-  remoteResources: ScopedConnectivityResource[]
-  need: ScopedConnectivityNeedSummary
-  decision: ScopedConnectivityDecisionSummary
-  policy: ScopedConnectivityPolicySummary
-}
-
-export type ScopedConnectivityComponent = {
-  componentDeploymentId: string
-  displayName: string | null
-  relationshipsKnown: boolean
-  relationships: ScopedConnectivityRelationship[]
-}
-
-export type ScopedConnectivityResourceItem = {
-  resource: ScopedConnectivityResource
-  componentsKnown: boolean
-  components: ScopedConnectivityComponent[]
-}
-
-export type ScopedConnectivityInventoryPage = {
-  scope: string
-  asOf: string
-  items: ScopedConnectivityResourceItem[]
-  page: number
-  pageSize: number
-  hasMore: boolean
-  partial: boolean
-}
-
-export type ScopedConnectivityScopeResponse = {
-  asOf: string
-  scopes: ProposalScope[]
-  ambiguousScopes: ProposalScope[]
-}
-
-export async function listScopedConnectivityScopes(
-  asOf: string,
-): Promise<ScopedConnectivityScopeResponse> {
-  const params = new URLSearchParams({ asOf })
-  return request<ScopedConnectivityScopeResponse>(
-    `/api/v1/connectivity/scopes?${params}`,
-  )
-}
-
-export async function getScopedConnectivityInventory(
-  scope: string,
-  asOf: string,
-  page: number,
-  search?: string,
-): Promise<ScopedConnectivityInventoryPage> {
-  const params = new URLSearchParams({
-    scope,
-    asOf,
-    page: String(page),
-    pageSize: "50",
-  })
-  if (search?.trim()) {
-    params.set("search", search.trim())
-  }
-  return request<ScopedConnectivityInventoryPage>(
-    `/api/v1/connectivity?${params}`,
-  )
 }
