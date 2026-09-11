@@ -17,7 +17,7 @@ from napms.resource_catalogue.application.resolve_address import (
 from napms.resource_catalogue.application.responsibility import (
     ReadResourceResponsibilities,
 )
-from napms.technical_access_evidence.adapters.postgres import (
+from napms.contexts.technical_access_evidence.infrastructure.persistence.postgres import (
     PostgresTechnicalAccessEvidenceRepository,
 )
 from napms.traffic_analysis.adapters.local_network_context import (

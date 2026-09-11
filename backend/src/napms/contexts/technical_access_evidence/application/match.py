@@ -1,6 +1,6 @@
 from enum import Enum
 
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraint,
     AddressConstraintKind,
     PortConstraint,

@@ -1,8 +1,8 @@
 import json
 from datetime import datetime
 
-from napms.technical_access_evidence.application.record import RecordEvidenceSet
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.application.record import RecordEvidenceSet
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraint,
     AddressRange,
     EvidenceAction,

@@ -4,13 +4,13 @@ from psycopg import Connection, Error as PsycopgError
 from psycopg.errors import UniqueViolation
 from psycopg.types.json import Jsonb
 
-from napms.technical_access_evidence.application.ports import (
+from napms.contexts.technical_access_evidence.application.ports import (
     EvidenceCaptureConflict,
     EvidenceCommitOutcomeUnknown,
     EvidencePersistenceError,
     EvidenceSetFilters,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraint,
     AddressConstraintKind,
     AddressRange,

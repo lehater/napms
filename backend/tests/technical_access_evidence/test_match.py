@@ -1,8 +1,8 @@
-from napms.technical_access_evidence.application.match import (
+from napms.contexts.technical_access_evidence.application.match import (
     PredicateMatchKind,
     match_predicates,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraint,
     AddressRange,
     PortConstraint,

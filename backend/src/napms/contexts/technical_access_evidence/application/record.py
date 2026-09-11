@@ -4,11 +4,11 @@ from enum import Enum
 from typing import Callable
 from uuid import UUID, uuid4
 
-from napms.technical_access_evidence.application.ports import (
+from napms.contexts.technical_access_evidence.application.ports import (
     EvidenceCaptureConflict,
     TechnicalAccessEvidenceRepository,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     EvidenceKind,
     EvidenceSourceReference,
     EvidenceTime,

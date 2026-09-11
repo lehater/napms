@@ -3,22 +3,22 @@ from uuid import UUID
 
 import pytest
 
-from napms.technical_access_evidence.application.ports import (
+from napms.contexts.technical_access_evidence.application.ports import (
     EvidenceCaptureConflict,
     EvidenceCommitOutcomeUnknown,
     EvidenceSetFilters,
 )
-from napms.technical_access_evidence.application.read import (
+from napms.contexts.technical_access_evidence.application.read import (
     EvidenceSetDetailOutcome,
     GetTechnicalAccessEvidenceSet,
     ListTechnicalAccessEvidenceSets,
 )
-from napms.technical_access_evidence.application.record import (
+from napms.contexts.technical_access_evidence.application.record import (
     RecordEvidenceOutcome,
     RecordEvidenceSet,
     RecordTechnicalAccessEvidenceSet,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraint,
     AddressRange,
     EvidenceAction,

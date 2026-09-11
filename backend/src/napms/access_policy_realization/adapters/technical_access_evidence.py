@@ -10,7 +10,7 @@ from napms.access_policy_realization.domain.model import (
     ProtocolSelector,
     TechnicalAccessPredicate,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraintKind as TaeAddressConstraintKind,
     EvidenceTimeKind,
     PortConstraintKind as TaePortConstraintKind,

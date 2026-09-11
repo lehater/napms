@@ -67,11 +67,11 @@ from napms.policy_export.application.normalization_types import (
     PortConstraint,
     PortRange,
 )
-from napms.technical_access_evidence.application.record import (
+from napms.contexts.technical_access_evidence.application.record import (
     RecordEvidenceOutcome,
     RecordEvidenceSet,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraint,
     AddressRange,
     EvidenceAction,

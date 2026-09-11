@@ -1,4 +1,4 @@
-from napms.technical_access_evidence.adapters.postgres.repository import (
+from napms.contexts.technical_access_evidence.infrastructure.persistence.postgres.repository import (
     PostgresTechnicalAccessEvidenceRepository,
 )
 

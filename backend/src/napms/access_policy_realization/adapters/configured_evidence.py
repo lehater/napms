@@ -10,10 +10,10 @@ from napms.access_policy_realization.application.ports import (
 from napms.access_policy_realization.domain.model import (
     KnowledgeGap,
 )
-from napms.technical_access_evidence.application.read import (
+from napms.contexts.technical_access_evidence.application.read import (
     EvidenceSetDetailOutcome,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     EvidenceAction,
     EvidenceKind,
     EvidenceTimeKind,

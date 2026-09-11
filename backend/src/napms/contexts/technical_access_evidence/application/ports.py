@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     EvidenceKind,
     EvidenceSourceReference,
     SourceCaptureReference,

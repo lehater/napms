@@ -9,21 +9,21 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.technical_access_evidence.adapters.postgres import (
+from napms.contexts.technical_access_evidence.infrastructure.persistence.postgres import (
     PostgresTechnicalAccessEvidenceRepository,
 )
-from napms.technical_access_evidence.application.ports import (
+from napms.contexts.technical_access_evidence.application.ports import (
     EvidenceCaptureConflict,
     EvidenceCommitOutcomeUnknown,
     EvidencePersistenceError,
     EvidenceSetFilters,
 )
-from napms.technical_access_evidence.application.record import (
+from napms.contexts.technical_access_evidence.application.record import (
     RecordEvidenceOutcome,
     RecordEvidenceSet,
     RecordTechnicalAccessEvidenceSet,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraint,
     AddressRange,
     EvidenceAction,
@@ -63,7 +63,7 @@ def postgres_dsn():
 @pytest.fixture(scope="session", autouse=True)
 def migrated_tae(postgres_dsn):
     migrations = files(
-        "napms.technical_access_evidence.adapters.postgres"
+        "napms.contexts.technical_access_evidence.infrastructure.persistence.postgres"
     ).joinpath("migrations")
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:
         for migration in sorted(
@@ -444,7 +444,7 @@ def test_corrupt_persisted_json_fails_closed(postgres_dsn):
                 ).get_by_id(original.evidence_set_id)
     finally:
         migration = files(
-            "napms.technical_access_evidence.adapters.postgres"
+            "napms.contexts.technical_access_evidence.infrastructure.persistence.postgres"
         ).joinpath("migrations/0001_evidence_sets.sql")
         with psycopg.connect(postgres_dsn, autocommit=True) as connection:
             connection.execute(migration.read_text(encoding="utf-8"))

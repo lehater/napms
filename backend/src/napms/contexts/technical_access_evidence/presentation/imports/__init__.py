@@ -1,4 +1,4 @@
-from napms.technical_access_evidence.adapters.local_import import (
+from napms.contexts.technical_access_evidence.presentation.imports.local_json import (
     LocalEvidenceImportAdapter,
     LocalEvidenceImportError,
 )

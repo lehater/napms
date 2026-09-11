@@ -109,7 +109,7 @@ MIGRATIONS: tuple[Migration, ...] = (
     ),
     Migration(
         "technical-access-evidence/0001",
-        "napms.technical_access_evidence.adapters.postgres",
+        "napms.contexts.technical_access_evidence.infrastructure.persistence.postgres",
         "migrations/0001_evidence_sets.sql",
     ),
     Migration(

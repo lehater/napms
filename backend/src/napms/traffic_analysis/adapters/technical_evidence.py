@@ -1,14 +1,14 @@
 from datetime import timedelta
 
-from napms.technical_access_evidence.application.match import (
+from napms.contexts.technical_access_evidence.application.match import (
     PredicateMatchKind,
     match_predicates,
 )
-from napms.technical_access_evidence.application.ports import (
+from napms.contexts.technical_access_evidence.application.ports import (
     EvidenceSetFilters,
     TechnicalAccessEvidenceRepository,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraint,
     AddressRange,
     EvidenceKind,

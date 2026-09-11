@@ -35,7 +35,7 @@ from napms.resource_catalogue.domain.model import (
     EndpointAddress,
     ResourceRealizationVersion,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraint as TaeAddressConstraint,
     AddressRange as TaeAddressRange,
     EvidenceAction,

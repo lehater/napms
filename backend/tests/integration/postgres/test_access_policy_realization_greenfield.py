@@ -43,13 +43,13 @@ from napms.policy_export.application.normalization_types import (
 from napms.resource_catalogue.adapters.postgres import (
     PostgresResourceCatalogueRepository,
 )
-from napms.technical_access_evidence.adapters.local_import import (
+from napms.contexts.technical_access_evidence.presentation.imports.local_json import (
     LocalEvidenceImportAdapter,
 )
-from napms.technical_access_evidence.application.read import (
+from napms.contexts.technical_access_evidence.application.read import (
     EvidenceSetDetailOutcome,
 )
-from napms.technical_access_evidence.application.record import (
+from napms.contexts.technical_access_evidence.application.record import (
     RecordEvidenceOutcome,
 )
 

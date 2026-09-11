@@ -58,11 +58,11 @@ from napms.policy_export.application.normalization_types import (
 from napms.policy_export.application.ports import (
     ResourceReference,
 )
-from napms.technical_access_evidence.application.read import (
+from napms.contexts.technical_access_evidence.application.read import (
     EvidenceSetDetailOutcome,
     EvidenceSetDetailResult,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     AddressConstraint as TaeAddressConstraint,
     AddressRange as TaeAddressRange,
     EvidenceAction,

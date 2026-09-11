@@ -12,7 +12,7 @@ APPLICATION_CATALOGUE = NAPMS / "application_catalogue"
 RESOURCE_CATALOGUE = NAPMS / "resource_catalogue"
 CONNECTIVITY_REQUIREMENTS = NAPMS / "connectivity_requirements"
 CONNECTIVITY_DECISION = NAPMS / "connectivity_decision"
-TECHNICAL_ACCESS_EVIDENCE = NAPMS / "technical_access_evidence"
+TECHNICAL_ACCESS_EVIDENCE = NAPMS / "contexts" / "technical_access_evidence"
 NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "network_enforcement_placement"
 NETWORK_ENVIRONMENT_OPERATIONS = NAPMS / "contexts" / "network_environment_operations"
 REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
@@ -257,7 +257,7 @@ POSTGRES_SCHEMA_OWNERS = (
         "napms_connectivity_decision",
     ),
     (
-        NAPMS / "technical_access_evidence" / "adapters" / "postgres",
+        TECHNICAL_ACCESS_EVIDENCE / "infrastructure" / "persistence" / "postgres",
         "napms_technical_access_evidence",
     ),
     (
@@ -310,7 +310,7 @@ BOUNDED_CONTEXT_CORES = (
     ),
     (
         TECHNICAL_ACCESS_EVIDENCE,
-        "napms.technical_access_evidence",
+        "napms.contexts.technical_access_evidence",
     ),
     (
         NETWORK_ENFORCEMENT_PLACEMENT,
@@ -325,6 +325,21 @@ BOUNDED_CONTEXT_CORES = (
 
 def test_network_environment_operations_has_no_legacy_package():
     assert not (NAPMS / "network_environment_operations").exists()
+
+
+def test_technical_access_evidence_has_no_legacy_package():
+    assert not (NAPMS / "technical_access_evidence").exists()
+
+
+def test_technical_access_evidence_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = TECHNICAL_ACCESS_EVIDENCE / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
 
 
 def test_network_environment_operations_core_has_no_outer_layer_dependencies():

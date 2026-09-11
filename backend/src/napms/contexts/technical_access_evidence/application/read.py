@@ -2,11 +2,11 @@ from dataclasses import dataclass
 from enum import Enum
 from uuid import UUID
 
-from napms.technical_access_evidence.application.ports import (
+from napms.contexts.technical_access_evidence.application.ports import (
     EvidenceSetFilters,
     TechnicalAccessEvidenceRepository,
 )
-from napms.technical_access_evidence.domain.model import (
+from napms.contexts.technical_access_evidence.domain.model import (
     EvidenceSourceReference,
     SourceCaptureReference,
     TechnicalAccessEvidenceSet,
