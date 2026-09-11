@@ -37,7 +37,7 @@ The long-range roadmap owns detailed stage rules. The active capsule selects the
 
 Status: `complete` in `f0e281e`.
 
-Scope is mechanical only:
+Scope was mechanical only:
 
 ```text
 pyproject.toml -> backend/pyproject.toml
@@ -46,48 +46,52 @@ src/           -> backend/src/
 tests/         -> backend/tests/
 ```
 
-Update in the same stage:
-- root Makefile commands while keeping Makefile as the stable repository entry point;
-- Compose/backend build paths;
-- `.github/workflows/` backend path filters and commands;
-- repository tooling/config that references `src/`, `tests/`, `pyproject.toml` or backend Dockerfile;
-- AGENTS/Skills path guidance only where paths become stale.
+M1 passed local and hosted gates and was squash-merged before M2 started.
 
-Do not in M1:
-- move semantic modules under `contexts/` yet;
-- rename `adapters`;
-- change application/domain semantics;
-- refactor implementation while moving files.
+## M2 — Bounded contexts
 
-Procedure:
-1. Inventory exact repository references to the four moved backend paths.
-2. Move backend files/directories mechanically.
-3. Repair root Makefile/tool/Compose/CI references.
-4. Run/import-check the same backend test commands from the new location.
-5. Update architecture tests only for repository path changes, not future M2 rules.
-6. Validate applicable local checks and final hosted PR gates.
-7. Update the active capsule: mark M1 complete and select the first M2 context slice.
+Status: `active` on branch `refactor/m2-network-environment-operations`.
 
-## Exit criteria
+M2 is integrated as one milestone PR, not one PR per context. Contexts are migrated incrementally in the same branch.
 
-M1 is complete only when:
-- backend imports resolve from `backend/src`;
-- product/core tests pass;
-- harness and knowledge checks pass;
-- Docker/integration checks affected by build-path changes pass;
-- hosted final PR gates for affected paths pass;
-- no product/domain behavior changed.
+Execution policy:
+- one bounded context = one atomic commit;
+- never mix two context moves in one commit;
+- after every context run targeted unit + architecture tests;
+- run `make test` after each work package of at most 2–3 contexts and before final M2 review;
+- run affected PostgreSQL/integration tests for persistence-bearing contexts and full `make postgres-test` before final M2 review;
+- no hosted PR gates per context; run hosted gates once on the final M2 PR;
+- after each work package, stop for architectural review before selecting the next package;
+- no M3 workflow/composition ownership moves while M2 is active.
 
-After M1, inspect actual dependency/import fan-out and select the least-coupled bounded context for the first M2 slice. Do not preselect from intuition.
+For each context:
+- move it directly to `backend/src/napms/contexts/<context>/`;
+- normalize outer layers to `domain / application / infrastructure / presentation` only where responsibility exists;
+- update all consumers and tests;
+- remove the legacy top-level implementation package;
+- add architecture guards for the final namespace and dependency direction;
+- preserve product/domain behavior.
 
-## M2 — First bounded-context slice
+### Completed M2 slices
 
-Move only `network_environment_operations` to
-`backend/src/napms/contexts/network_environment_operations/` with its final
-Domain/Application/Infrastructure layers. Preserve behavior, update all consumers and
-tests, prohibit the legacy package, and leave the composition stub in place until M3.
+1. `network_environment_operations` — complete in `8dac6ff40fc82732b14ec7aeca80dabc84af062a`.
+   - final namespace under `napms.contexts`;
+   - no compatibility facade;
+   - composition stub intentionally remains for M3;
+   - local core, architecture, harness, knowledge and PostgreSQL checks pass.
 
-Do not select or start another context in this slice.
+### Current M2 work package
+
+Migrate, as two separate commits and in this order:
+
+1. `technical_access_evidence`
+2. `network_enforcement_placement`
+
+Do not select a third context in this work package. Their existing `composition/*_postgres.py` wiring remains under `composition/` until M3; only update imports required by the context move.
+
+## M2 milestone exit criteria
+
+M2 closes only when all accepted bounded contexts are under `napms.contexts`, legacy top-level context packages are absent, architecture guards enforce the new boundaries, full local checks pass, and one final M2 PR passes the required hosted gates.
 
 ## Blockers
 
@@ -95,5 +99,4 @@ None.
 
 ## Next
 
-Complete, commit and push the first M2 `network_environment_operations` slice. Await
-owner direction before selecting the next context.
+Execute the current two-context work package with one atomic commit per context, push the branch, then stop for architectural review.
