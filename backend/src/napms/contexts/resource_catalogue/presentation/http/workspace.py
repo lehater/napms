@@ -1,6 +1,6 @@
 from contextlib import AbstractContextManager
 from datetime import datetime
-from typing import Callable
+from typing import Callable, Literal
 
 from fastapi import APIRouter, Header, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
@@ -24,6 +24,13 @@ from napms.contexts.resource_catalogue.application.curation import (
 from napms.contexts.resource_catalogue.application.ports import ResourceCataloguePersistenceError
 from napms.platform.auth.local import InMemorySessionStore
 from napms.platform.http.support import PublicApiError, require_actor
+
+
+ResourceWorkspaceDataState = Literal[
+    "missing-address",
+    "missing-scope",
+    "missing-responsibility",
+]
 
 
 class RenameCatalogueResourceRequest(BaseModel):
@@ -55,7 +62,7 @@ def create_catalogue_resource_workspace_router(
         pageSize: int = Query(50, ge=1, le=200),
         search: str | None = Query(None, max_length=256),
         responsibilityScope: str | None = Query(None, max_length=512),
-        dataState: str | None = Query(None, max_length=64),
+        dataState: ResourceWorkspaceDataState | None = Query(None),
         asOf: datetime | None = Query(None),
         includeRetired: bool = Query(False),
     ):
@@ -107,16 +114,14 @@ def create_catalogue_resource_workspace_router(
     def read_resource_history(
         resource_reference: str,
         request: Request,
-        asOf: datetime | None = Query(None),
     ):
         require_actor(sessions, request)
-        as_of = asOf or clock()
-        require_aware(as_of, "asOf")
+        read_at = clock()
+        require_aware(read_at, "clock")
         try:
             with open_scope() as scope:
-                result = scope.resources.read_resource.execute(
+                result = scope.resources.read_resource.execute_history(
                     resource_reference=resource_reference,
-                    as_of=as_of,
                 )
         except ResourceCataloguePersistenceError as exc:
             raise resource_persistence_error() from exc
@@ -128,16 +133,13 @@ def create_catalogue_resource_workspace_router(
             )
         return {
             "resource": resource_dto(result.resource),
-            "asOf": result.as_of.isoformat(),
-            "realizations": [
-                realization_dto(item) for item in result.realization_history
-            ],
+            "asOf": read_at.isoformat(),
+            "realizations": [realization_dto(item) for item in result.realizations],
             "scopeAffiliations": [
-                scope_affiliation_dto(item)
-                for item in result.scope_affiliation_history
+                scope_affiliation_dto(item) for item in result.scope_affiliations
             ],
             "responsibilities": [
-                responsibility_dto(item) for item in result.responsibility_history
+                responsibility_dto(item) for item in result.responsibilities
             ],
         }
 
