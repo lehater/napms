@@ -43,63 +43,67 @@ M1 moved the backend workspace under `backend/`, preserved behavior, and passed 
 
 Status: `active` on branch `refactor/m2-network-environment-operations`.
 
-M2 is integrated as one milestone PR. Contexts are migrated incrementally in the same branch.
+M2 is integrated as one milestone PR. One bounded context remains one atomic commit; hosted PR gates run only on the final M2 PR.
 
 Execution policy:
-- one bounded context = one atomic commit;
-- never mix two context moves in one commit;
-- after every context run targeted unit + architecture tests;
-- run `make test` after each work package of at most 2–3 contexts and before final M2 review;
-- run affected PostgreSQL/integration tests for persistence-bearing contexts and full `make postgres-test` in a configured environment before final M2 review;
-- no hosted PR gates per context; run hosted gates once on the final M2 PR;
-- after each work package, stop for architectural review before selecting the next package;
-- no M3 workflow/composition ownership moves while M2 is active.
-
-For each context:
-- move it directly to `backend/src/napms/contexts/<context>/`;
-- normalize outer layers to `domain / application / infrastructure / presentation` only where responsibility exists;
-- update all consumers and tests;
+- preserve product/domain behavior;
+- move each context directly to `backend/src/napms/contexts/<context>/`;
+- normalize only real responsibilities to `domain / application / infrastructure / presentation`;
+- update all consumers, package-data/migrations and tests;
 - remove the legacy top-level implementation package;
-- add architecture guards for the final namespace and dependency direction;
-- preserve product/domain behavior.
+- add architecture guards;
+- run targeted unit + architecture tests after every context;
+- run `make test`, harness and knowledge checks after each work package;
+- configured PostgreSQL evidence is mandatory before final M2 closure;
+- do not move workflow/composition ownership until M3.
 
 ### Completed M2 slices
 
-1. `network_environment_operations` — `8dac6ff40fc82732b14ec7aeca80dabc84af062a`.
-2. `technical_access_evidence` — `3dd64d4167838bcd3f90933f6aef54940f6ef88b`.
-3. `network_enforcement_placement` — `a17ba404496932d70ee21ccb3ff7806ca52e7344`.
-4. `connectivity_requirements` — `a8842d21eeaa7da22993d9af7ae2dd71a16de82d`.
-5. `connectivity_decision` — `7c75e448c755a37774dd7bbd4d5ff09708559eac`.
+1. `network_environment_operations` — `8dac6ff40fc82732b14ec7aeca80dabc84af062a`
+2. `technical_access_evidence` — `3dd64d4167838bcd3f90933f6aef54940f6ef88b`
+3. `network_enforcement_placement` — `a17ba404496932d70ee21ccb3ff7806ca52e7344`
+4. `connectivity_requirements` — `a8842d21eeaa7da22993d9af7ae2dd71a16de82d`
+5. `connectivity_decision` — `7c75e448c755a37774dd7bbd4d5ff09708559eac`
+6. `authority_management` — `3ad1015cd71daf81231d6e717302e1f448a48e84`
+7. `resource_catalogue` — `3ca10ac360672536b6858a48f55d1d269fe159a4`
 
-All five use the final `napms.contexts` namespace; legacy implementation packages are removed. Existing `composition/*` wiring remains transitional until M3 and only import/path references are updated during M2.
+All completed contexts use the final `napms.contexts` namespace and have no legacy implementation package.
 
 ### Current M2 work package
 
-Migrate as two separate commits and in this order:
+Migrate only `access_policy_realization`.
 
-1. `authority_management`
-2. `resource_catalogue`
+Target outer structure:
 
-For both contexts:
-- preserve existing domain/application semantics;
-- HTTP inbound code moves under `presentation/http/`;
-- owner PostgreSQL persistence moves under `infrastructure/persistence/postgres/`;
-- adapters serving other contexts/workflows move under `infrastructure/integrations/`;
-- owner-local support code that is not HTTP/persistence/integration should live under a capability-named `infrastructure/` package rather than a generic adapter bucket;
-- do not move workflow ownership or generic `composition` files yet; M3 owns that cleanup;
-- update package-data/migration references and all repository consumers;
-- remove legacy namespaces and add architecture guards.
+```text
+contexts/access_policy_realization/
+  domain/
+  application/
+  infrastructure/
+    integrations/
+    rendering/
+  presentation/        # only if actual inbound responsibility exists
+```
 
-Run targeted tests after each context. After both commits run `make test`, `make harness-check`, and `make knowledge-check`. Run PostgreSQL tests only if a configured environment is available; absence of local PostgreSQL is not a blocker for continuing M2, but configured PostgreSQL evidence is mandatory before final M2 closure.
+Current adapter classification:
+- `catalogues.py` -> `infrastructure/integrations/catalogues.py`;
+- `desired_policy.py` -> `infrastructure/integrations/desired_policy.py`;
+- `placement.py` -> `infrastructure/integrations/placement.py`;
+- `technical_access_evidence.py` -> `infrastructure/integrations/technical_access_evidence.py`;
+- `configured_evidence.py` -> `infrastructure/integrations/configured_evidence.py`;
+- `cisco_asa.py` -> `infrastructure/rendering/cisco_asa.py`;
+- `cisco_asa_semantics.py` -> `infrastructure/rendering/cisco_asa_semantics.py`.
+
+No generic `adapters/` remains. Do not move `composition/access_policy_realization_postgres.py` or workflow ownership in this slice; only repair imports required by the context move.
 
 ## Exit criteria
 
-M2 closes only when all accepted bounded contexts are under `napms.contexts`, legacy top-level context packages are absent, architecture guards enforce the new boundaries, full local checks pass, PostgreSQL integration evidence is exercised in a configured environment, and one final M2 PR passes the required hosted gates.
+M2 closes only when all accepted bounded contexts are under `napms.contexts`, legacy top-level context packages are absent, architecture guards enforce the new boundaries, full local checks pass, PostgreSQL integration evidence is exercised in a configured environment, and one final M2 PR passes required hosted gates.
 
 ## Blockers
 
-None for the current work package. Configured PostgreSQL execution remains a deferred milestone-exit requirement.
+None for the current context slice. Configured PostgreSQL execution remains a deferred M2 milestone-exit requirement.
 
 ## Next
 
-Complete `authority_management` and `resource_catalogue` as separate atomic commits, push the milestone branch, and stop for architectural review. Do not start another context or M3 before that review.
+Migrate only `access_policy_realization` as one atomic commit, push the milestone branch, and stop for architectural review. Do not start `application_catalogue`, `access_policy`, or M3.
