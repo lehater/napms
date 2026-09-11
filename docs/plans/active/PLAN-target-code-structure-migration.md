@@ -39,7 +39,7 @@ M1 backend repository boundary
 
 ## M4 — Platform consolidation
 
-Status: `active` on branch `refactor/m4-platform-consolidation`.
+Status: `implementation complete; awaiting architectural review` on branch `refactor/m4-platform-consolidation`.
 
 Goal: remove legacy top-level `napms.bootstrap` and `napms.runtime`, leaving process/runtime mechanics only under `napms.platform`.
 
@@ -89,4 +89,4 @@ None.
 
 ## Next
 
-Execute the M4 platform consolidation as one coherent work package, run local validation, push, and stop for architectural review. Do not start M5 or create the PR before that review.
+Perform final M4 architectural review. Do not start M5 or create the PR before that review.

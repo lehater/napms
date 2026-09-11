@@ -40,7 +40,7 @@ from napms.platform.auth.local import (
     LocalPasswordAuthenticator,
     hash_local_password,
 )
-from napms.platform.http.api import HttpApiDependencies, create_http_api
+from napms.platform.bootstrap.http_process import HttpApiDependencies, create_http_api
 
 
 NOW = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
