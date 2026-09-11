@@ -1,6 +1,6 @@
 # Application Catalogue Target Requirements
 
-Status: `accepted for I31`.
+Status: `accepted and implemented through I31`.
 
 Date: 2026-09-10.
 
@@ -8,7 +8,7 @@ Date: 2026-09-10.
 
 Define the user-observable Application Catalogue behavior selected by ADR-012 and the migration safety constraints closed by ADR-013.
 
-This requirement supersedes the I27 Application-side curation UX/structure once I31 is implemented. Resource Catalogue behavior from I27 remains unchanged unless separately amended.
+This requirement supersedes the I27 Application-side curation UX/structure. Resource Catalogue behavior from I27 remains unchanged unless separately amended.
 
 ## User model
 
@@ -135,7 +135,7 @@ No normal hard-delete action exists.
 
 Retired entities are excluded from normal working lists and are shown only where history/reference explanation requires them.
 
-Retirement is blocked while active dependants/references exist. Required blocker classes are defined by the ACC target tactical model and ADR-013.
+Retirement is blocked while active dependants/references exist. Required blocker classes are defined by the ACC tactical model and ADR-013.
 
 For a blocked operation the UI shall show grouped dependency counts and let the user drill into each non-zero group.
 
@@ -151,11 +151,11 @@ Historical downstream business records remain valid and are never rewritten beca
 
 Existing pre-I31 Component Deployments, DCS revisions and bindings remain valid ACC/downstream truth.
 
-They are not automatically converted into target Application Deployments because Company/Environment/Scope and target Interaction ownership cannot be inferred safely.
+They are not automatically converted into Application Deployments because Company/Environment/Scope and target Interaction ownership cannot be inferred safely.
 
-Existing Application and Component identities may be reused as target Definition/Component identities.
+Existing Application and Component identities may be reused as Definition/Component identities.
 
-The target UI does not present legacy Component Deployment as the new deployment unit. Active legacy participants remain explainable dependencies until explicitly retired or migrated through a future workflow with sufficient business input.
+The current UI does not present legacy Component Deployment as the new deployment unit. Active legacy participants remain explainable dependencies until explicitly retired or migrated through a future workflow with sufficient business input.
 
 ## Authority
 
@@ -165,7 +165,7 @@ Authenticated identity, owner correlation, Company, Environment, Scope and Resou
 
 ## Acceptance
 
-I31 acceptance must prove at least:
+I31 acceptance proves at least:
 
 1. create a Definition and Components;
 2. create Interaction Definitions with multiple traffic alternatives;
