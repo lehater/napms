@@ -48,6 +48,9 @@ from napms.connectivity_decision.application.ports import DecisionPersistenceErr
 from napms.connectivity_decision.application.select import (
     SelectEffectiveConnectivityDecision,
 )
+from napms.network_operator_view.adapters.http import (
+    create_network_operator_view_router,
+)
 from napms.resource_catalogue.adapters.http.curation import (
     create_resource_catalogue_curation_router,
 )
@@ -60,10 +63,7 @@ from napms.resource_catalogue.adapters.http.workspace import (
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
 from napms.runtime.config import HttpRuntimeConfig
 from napms.runtime.http_api import HttpApiDependencies, create_http_api
-from napms.runtime.network_operator_view_http import (
-    create_network_operator_view_router,
-)
-from napms.runtime.traffic_analysis_http import create_traffic_analysis_router
+from napms.traffic_analysis.adapters.http import create_traffic_analysis_router
 
 
 def _utc_now() -> datetime:
