@@ -1,12 +1,8 @@
 # PLAN — Target Code Structure Migration
 
-Status: `selected; M1 next after architecture setup merge`.
+Status: `active`.
 
-Architecture: `docs/architecture/code-structure.md`.
-Roadmap: `docs/engineering/target-code-structure-migration-roadmap.md`.
-Decision: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
-
-## Objective
+## Goal
 
 Move NAPMS to the accepted final physical taxonomy without product/domain semantic change:
 
@@ -16,6 +12,12 @@ backend/src/napms/
   workflows/
   platform/
 ```
+
+## Inputs
+
+- `docs/architecture/code-structure.md`
+- `docs/engineering/target-code-structure-migration-roadmap.md`
+- `docs/decisions/ADR-014-target-code-structure-taxonomy.md`
 
 ## Execution order
 
@@ -29,7 +31,7 @@ M1 backend repository boundary
 -> M7 compatibility purge + final enforcement
 ```
 
-The long-range roadmap owns detailed stage rules. This active plan owns only the currently selected next stage.
+The long-range roadmap owns detailed stage rules. The active capsule selects the current task.
 
 ## M1 — Repository backend boundary
 
@@ -55,19 +57,18 @@ Do not in M1:
 - change application/domain semantics;
 - refactor implementation while moving files.
 
-## M1 procedure
-
+Procedure:
 1. Inventory exact repository references to the four moved backend paths.
 2. Move backend files/directories mechanically.
 3. Repair root Makefile/tool/Compose/CI references.
 4. Run/import-check the same backend test commands from the new location.
 5. Update architecture tests only for repository path changes, not future M2 rules.
-6. Validate applicable local checks; inspect hosted workflow definitions before final PR gate.
-7. Update `docs/plans/active/README.md`: mark M1 complete and select M2 first context slice.
+6. Validate applicable local checks and final hosted PR gates.
+7. Update the active capsule: mark M1 complete and select the first M2 context slice.
 
-## M1 exit gate
+## Exit criteria
 
-Required evidence:
+M1 is complete only when:
 - backend imports resolve from `backend/src`;
 - product/core tests pass;
 - harness and knowledge checks pass;
@@ -75,6 +76,12 @@ Required evidence:
 - hosted final PR gates for affected paths pass;
 - no product/domain behavior changed.
 
-## M2 selection rule
+After M1, inspect actual dependency/import fan-out and select the least-coupled bounded context for the first M2 slice. Do not preselect from intuition.
 
-After M1, inspect actual dependency/import fan-out and select the least-coupled bounded context for the first M2 slice. Do not preselect from intuition. Each M2 slice moves one coherent context directly to its final `contexts/<context>/domain|application|infrastructure|presentation` shape and updates all consumers/tests in the same PR.
+## Blockers
+
+None.
+
+## Next
+
+Execute M1 only. Do not start M2 semantic-module moves in the same stage.
