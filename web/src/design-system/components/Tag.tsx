@@ -1,6 +1,6 @@
 export function Tag({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex min-h-6 items-center rounded-[var(--napms-tag-radius)] bg-[var(--napms-color-primary-subtle)] px-2 text-xs font-semibold text-[var(--napms-color-primary-hover)]">
+    <span className="inline-flex min-h-5 items-center rounded-[var(--napms-tag-radius)] bg-[var(--napms-color-primary-subtle)] px-2 text-[10px] font-medium text-[var(--napms-color-primary-hover)]">
       {children}
     </span>
   )
@@ -17,7 +17,7 @@ export function TagList({ values, limit = 2 }: { values: string[]; limit?: numbe
         <Tag key={value}>{value}</Tag>
       ))}
       {values.length > limit ? (
-        <span className="inline-flex min-h-6 items-center rounded-[var(--napms-tag-radius)] bg-[var(--napms-color-surface-muted)] px-2 text-xs text-[var(--napms-color-text-secondary)]">
+        <span className="inline-flex min-h-5 items-center rounded-[var(--napms-tag-radius)] bg-[var(--napms-color-surface-muted)] px-2 text-[10px] text-[var(--napms-color-text-secondary)]">
           +{values.length - limit}
         </span>
       ) : null}
