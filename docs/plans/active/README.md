@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M2 — migrate only `access_policy_realization` as one atomic context commit on the milestone branch.
+Current task: M2 — migrate the final two bounded contexts, `application_catalogue` then `access_policy`, as separate atomic commits.
 
 ## Working set
 
@@ -15,14 +15,14 @@ Expand only if the architectural decision rationale is needed: `docs/decisions/A
 
 ## Blockers
 
-None for the current slice. Configured PostgreSQL execution remains required before final M2 closure.
+None for the final context package. Configured PostgreSQL execution is required after the package before M2 can close.
 
 ## Gate
 
-`access_policy_realization` must exist only under `napms.contexts`, all adapters must be classified into explicit infrastructure responsibilities, all consumers must use the final namespace, architecture tests must enforce the boundary, and targeted/core/harness/knowledge checks must pass.
+Both contexts must exist only under `napms.contexts`, all adapters must be classified into explicit presentation/infrastructure responsibilities, legacy namespaces must be absent, all consumers and package-data/migration references must use final paths, and targeted/core/harness/knowledge checks must pass.
 
-Hosted PR gates remain deferred until the complete M2 milestone is ready for one final PR.
+Hosted PR gates remain deferred until final M2 architectural review and configured PostgreSQL evidence are complete.
 
 ## Next
 
-Migrate only `access_policy_realization`, push the branch, and stop for architectural review. Do not start `application_catalogue`, `access_policy`, or M3.
+Migrate `application_catalogue`, then `access_policy`, one atomic commit each. Push and stop for final M2 review. Do not start M3 or create the PR.
