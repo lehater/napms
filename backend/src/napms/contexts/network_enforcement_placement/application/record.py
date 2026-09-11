@@ -4,11 +4,11 @@ from enum import Enum
 from typing import Callable
 from uuid import UUID, uuid4
 
-from napms.network_enforcement_placement.application.capture import (
+from napms.contexts.network_enforcement_placement.application.capture import (
     PersistedPlacementKnowledgeCapture,
     PlacementKnowledgeCapture,
 )
-from napms.network_enforcement_placement.application.ports import (
+from napms.contexts.network_enforcement_placement.application.ports import (
     PlacementCaptureConflict,
     PlacementKnowledgeCaptureRepository,
 )

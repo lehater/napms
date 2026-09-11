@@ -35,7 +35,7 @@ from napms.access_policy_realization.domain.realization import (
     ManagedReconciliationScope,
     PlacementStatus,
 )
-from napms.network_enforcement_placement.domain.model import (
+from napms.contexts.network_enforcement_placement.domain.model import (
     EnforcementPlacement,
     EnforcementSelection,
     InputProvenance as NepInputProvenance,

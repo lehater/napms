@@ -1,15 +1,15 @@
 from datetime import datetime
 
-from napms.network_enforcement_placement.application.ports import (
+from napms.contexts.network_enforcement_placement.application.ports import (
     PlacementKnowledgePort,
 )
-from napms.network_enforcement_placement.domain.model import (
+from napms.contexts.network_enforcement_placement.domain.model import (
     EnforcementSelection,
     InputProvenance,
     TrafficRelation,
     require_aware,
 )
-from napms.network_enforcement_placement.domain.selection import (
+from napms.contexts.network_enforcement_placement.domain.selection import (
     select_enforcement,
 )
 

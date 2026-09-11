@@ -7,7 +7,7 @@ import psycopg
 from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
 from napms.composition.config import ApplicationConfig
 from napms.composition.greenfield_postgres import open_greenfield_scope
-from napms.network_enforcement_placement.application.network_context import ReadNetworkContext
+from napms.contexts.network_enforcement_placement.application.network_context import ReadNetworkContext
 from napms.resource_catalogue.adapters.local_responsibility import (
     LocalDemoResourceResponsibilityAdapter,
 )

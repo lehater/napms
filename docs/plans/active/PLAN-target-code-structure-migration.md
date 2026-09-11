@@ -79,24 +79,32 @@ For each context:
    - no compatibility facade;
    - composition stub intentionally remains for M3;
    - local core, architecture, harness, knowledge and PostgreSQL checks pass.
+2. `technical_access_evidence` — complete in `3dd64d4` on the M2 milestone branch.
+   - final namespace and Clean layers under `napms.contexts`;
+   - all consumers and migration resource paths updated;
+   - legacy package removed and architecture guards added.
+3. `network_enforcement_placement` — complete in the current M2 work package.
+   - final namespace and Clean layers under `napms.contexts`;
+   - all consumers and migration resource paths updated;
+   - legacy package removed and architecture guards added.
 
-### Current M2 work package
+### Completed M2 work package
 
-Migrate, as two separate commits and in this order:
+Migrated as two separate commits and in this order:
 
 1. `technical_access_evidence`
 2. `network_enforcement_placement`
 
-Do not select a third context in this work package. Their existing `composition/*_postgres.py` wiring remains under `composition/` until M3; only update imports required by the context move.
+No third context was selected. Existing `composition/*_postgres.py` wiring remains under `composition/` until M3; only imports required by the context moves changed.
 
-## M2 milestone exit criteria
+## Exit criteria
 
 M2 closes only when all accepted bounded contexts are under `napms.contexts`, legacy top-level context packages are absent, architecture guards enforce the new boundaries, full local checks pass, and one final M2 PR passes the required hosted gates.
 
 ## Blockers
 
-None.
+Local PostgreSQL execution evidence is unavailable: `make postgres-test` completed successfully but skipped all 141 tests because the PostgreSQL test environment was not configured.
 
 ## Next
 
-Execute the current two-context work package with one atomic commit per context, push the branch, then stop for architectural review.
+Review the completed two-context work package. Do not select another context or start M3 before that review.

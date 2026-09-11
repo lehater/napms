@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Protocol
 
-from napms.network_enforcement_placement.domain.model import (
+from napms.contexts.network_enforcement_placement.domain.model import (
     InputProvenance,
     TrafficRelation,
     require_aware,
 )
-from napms.network_enforcement_placement.domain.network_context import (
+from napms.contexts.network_enforcement_placement.domain.network_context import (
     NetworkContextResult,
     NetworkContextSnapshot,
 )

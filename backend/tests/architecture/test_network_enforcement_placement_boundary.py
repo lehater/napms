@@ -7,6 +7,7 @@ NEP = (
     ROOT
     / "src"
     / "napms"
+    / "contexts"
     / "network_enforcement_placement"
 )
 
@@ -51,7 +52,7 @@ def test_nep_core_does_not_import_peer_bounded_contexts():
                         "napms."
                     )
                     and not module.startswith(
-                        "napms.network_enforcement_placement"
+                        "napms.contexts.network_enforcement_placement"
                     )
                 ):
                     violations.append(
@@ -65,13 +66,15 @@ def test_nep_postgres_references_only_owned_schema():
     for path in list(
         (
             NEP
-            / "adapters"
+            / "infrastructure"
+            / "persistence"
             / "postgres"
         ).rglob("*.py")
     ) + list(
         (
             NEP
-            / "adapters"
+            / "infrastructure"
+            / "persistence"
             / "postgres"
         ).rglob("*.sql")
     ):

@@ -13,7 +13,7 @@ RESOURCE_CATALOGUE = NAPMS / "resource_catalogue"
 CONNECTIVITY_REQUIREMENTS = NAPMS / "connectivity_requirements"
 CONNECTIVITY_DECISION = NAPMS / "connectivity_decision"
 TECHNICAL_ACCESS_EVIDENCE = NAPMS / "contexts" / "technical_access_evidence"
-NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "network_enforcement_placement"
+NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "contexts" / "network_enforcement_placement"
 NETWORK_ENVIRONMENT_OPERATIONS = NAPMS / "contexts" / "network_environment_operations"
 REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
 POLICY_EXPORT = NAPMS / "policy_export"
@@ -261,7 +261,10 @@ POSTGRES_SCHEMA_OWNERS = (
         "napms_technical_access_evidence",
     ),
     (
-        NAPMS / "network_enforcement_placement" / "adapters" / "postgres",
+        NETWORK_ENFORCEMENT_PLACEMENT
+        / "infrastructure"
+        / "persistence"
+        / "postgres",
         "napms_network_enforcement_placement",
     ),
 )
@@ -314,7 +317,7 @@ BOUNDED_CONTEXT_CORES = (
     ),
     (
         NETWORK_ENFORCEMENT_PLACEMENT,
-        "napms.network_enforcement_placement",
+        "napms.contexts.network_enforcement_placement",
     ),
     (
         NETWORK_ENVIRONMENT_OPERATIONS,
@@ -329,6 +332,21 @@ def test_network_environment_operations_has_no_legacy_package():
 
 def test_technical_access_evidence_has_no_legacy_package():
     assert not (NAPMS / "technical_access_evidence").exists()
+
+
+def test_network_enforcement_placement_has_no_legacy_package():
+    assert not (NAPMS / "network_enforcement_placement").exists()
+
+
+def test_network_enforcement_placement_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = NETWORK_ENFORCEMENT_PLACEMENT / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
 
 
 def test_technical_access_evidence_core_has_no_outer_layer_dependencies():

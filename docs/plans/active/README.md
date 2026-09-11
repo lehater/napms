@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M2 — migrate `technical_access_evidence` and `network_enforcement_placement` as separate atomic commits in the existing M2 branch.
+Current task: M2 — the `technical_access_evidence` and `network_enforcement_placement` work package is complete on the milestone branch and awaits architectural review.
 
 ## Working set
 
@@ -15,14 +15,14 @@ Expand only if the architectural decision rationale is needed: `docs/decisions/A
 
 ## Blockers
 
-None.
+Local PostgreSQL execution evidence is unavailable: `make postgres-test` completed successfully but skipped all 141 tests because the PostgreSQL test environment was not configured.
 
 ## Gate
 
-For each context: final `napms.contexts` namespace only, all consumers updated, architecture boundary enforced, targeted tests green. After both contexts: `make test`, harness/knowledge checks and applicable PostgreSQL tests must pass.
+Both contexts use only the final `napms.contexts` namespace, all consumers are updated, architecture boundaries are enforced, and targeted/core/harness/knowledge checks are green. PostgreSQL tests remain to be exercised in a configured environment.
 
 Hosted PR gates are deferred until the complete M2 milestone is ready for one final PR.
 
 ## Next
 
-Execute `technical_access_evidence`, commit and test it; then execute `network_enforcement_placement` as a second commit. Push and stop for architectural review. Do not start another context or M3.
+Review the completed `technical_access_evidence` and `network_enforcement_placement` work package. Do not select another context or start M3 before that review.

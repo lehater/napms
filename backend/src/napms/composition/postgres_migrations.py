@@ -114,7 +114,7 @@ MIGRATIONS: tuple[Migration, ...] = (
     ),
     Migration(
         "network-enforcement-placement/0001",
-        "napms.network_enforcement_placement.adapters.postgres",
+        "napms.contexts.network_enforcement_placement.infrastructure.persistence.postgres",
         "migrations/0001_knowledge_captures.sql",
     ),
 )

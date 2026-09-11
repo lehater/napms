@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Protocol
 
-from napms.network_enforcement_placement.application.capture import (
+from napms.contexts.network_enforcement_placement.application.capture import (
     KnowledgeSourceReference,
     PersistedPlacementKnowledgeCapture,
     SourceCaptureReference,
 )
-from napms.network_enforcement_placement.domain.model import (
+from napms.contexts.network_enforcement_placement.domain.model import (
     PlacementKnowledgeSnapshot,
     TrafficRelation,
 )

@@ -5,18 +5,18 @@ from psycopg import Connection, Error as PsycopgError
 from psycopg.errors import UniqueViolation
 from psycopg.types.json import Jsonb
 
-from napms.network_enforcement_placement.application.capture import (
+from napms.contexts.network_enforcement_placement.application.capture import (
     KnowledgeSourceReference,
     PersistedPlacementKnowledgeCapture,
     PlacementKnowledgeCapture,
     SourceCaptureReference,
 )
-from napms.network_enforcement_placement.application.ports import (
+from napms.contexts.network_enforcement_placement.application.ports import (
     PlacementCaptureConflict,
     PlacementCommitOutcomeUnknown,
     PlacementPersistenceError,
 )
-from napms.network_enforcement_placement.domain.model import (
+from napms.contexts.network_enforcement_placement.domain.model import (
     EffectiveWindow,
     EnforcementAttachment,
     ForwardingPath,

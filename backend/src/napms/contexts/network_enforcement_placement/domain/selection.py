@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from napms.network_enforcement_placement.domain.model import (
+from napms.contexts.network_enforcement_placement.domain.model import (
     EnforcementPlacement,
     EnforcementSelection,
     InputProvenance,

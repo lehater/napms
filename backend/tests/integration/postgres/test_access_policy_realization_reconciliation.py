@@ -56,10 +56,10 @@ from napms.composition.postgres_migrations import (
 from napms.composition.technical_access_evidence_postgres import (
     open_technical_access_evidence_scope,
 )
-from napms.network_enforcement_placement.adapters.local_import import (
+from napms.contexts.network_enforcement_placement.presentation.imports.local_json import (
     LocalPlacementKnowledgeImportAdapter,
 )
-from napms.network_enforcement_placement.application.record import (
+from napms.contexts.network_enforcement_placement.application.record import (
     RecordPlacementKnowledgeOutcome,
 )
 from napms.policy_export.application.normalization_types import (

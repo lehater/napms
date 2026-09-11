@@ -34,7 +34,7 @@ where = ["src"]
 "napms.connectivity_requirements.adapters.postgres" = ["migrations/*.sql"]
 "napms.connectivity_decision.adapters.postgres" = ["migrations/*.sql"]
 "napms.contexts.technical_access_evidence.infrastructure.persistence.postgres" = ["migrations/*.sql"]
-"napms.network_enforcement_placement.adapters.postgres" = ["migrations/*.sql"]
+"napms.contexts.network_enforcement_placement.infrastructure.persistence.postgres" = ["migrations/*.sql"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
