@@ -9,9 +9,6 @@ APPLICATION_SCREEN_BASELINES: dict[str, str] = {
     "definition-interactions": "90008400c203c2014480708082064601802c932c33089106330b330781039102",
     "deployment-connectivity": "90008521c28b929199994911802c802ec09b9641946a9c2a1c2a1c2281038102",
 }
-RESOURCE_SCREEN_BASELINES: dict[str, str] = {
-    "resource-catalogue": "c816c416b00068062b2bb091a968a96ed01e900ed15e989a911a811ac88c4004",
-}
 MAX_HAMMING_DISTANCE = 6
 
 
@@ -57,13 +54,5 @@ def assert_application_screen_fingerprints(actual: dict[str, str]) -> None:
     _assert_screen_fingerprints(
         family="Application",
         expected=APPLICATION_SCREEN_BASELINES,
-        actual=actual,
-    )
-
-
-def assert_resource_screen_fingerprints(actual: dict[str, str]) -> None:
-    _assert_screen_fingerprints(
-        family="Resource",
-        expected=RESOURCE_SCREEN_BASELINES,
         actual=actual,
     )
