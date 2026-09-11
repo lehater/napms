@@ -36,19 +36,22 @@ M6 is executed incrementally only where root/shared files still own feature-spec
 
 Completed slice: Connectivity Requirements, PR #67 (`e59bb4d`). Requirement DTO/query/command/alignment implementation is now under `features/requirements`; shared request/error handling lives in `lib/api.ts`; root `api.ts` retains compatibility exports only for that slice. Core, Web, Harness, Docker and browser gates were green.
 
-Current slice: Connectivity Decisions.
-- Decision DTOs, queries and commands still live in root `web/src/api.ts`;
-- both pages under `web/src/features/decisions/` consume those operations;
-- move Decision-specific implementation beside the feature using the proven shared-transport + compatibility-export pattern;
-- preserve API/UX behavior and avoid page rewrites unrelated to ownership.
+Completed slice: Connectivity Decisions, PR #68 (`a8eb8c0`). Decision DTO/query/command implementation is now under `features/decisions`; root `api.ts` retains compatibility exports only for that slice. Core, Web, Harness, Docker and browser gates were green.
 
-Equivalent remaining root API slices (Rules, Policy, scoped Connectivity, Proposals/Auth) are not part of this increment and must be evaluated separately after Decisions.
+Current slice: Access Rules.
+- Rule list/detail/mutation operations still live in root `web/src/api.ts` while their pages live under `web/src/features/rules/`;
+- `RuleDto` remains genuinely shared because Policy and Proposal representations also use it;
+- move rule-specific detail/list types and rule query/mutation implementation beside the feature;
+- keep shared `RuleDto`, catalogue/interaction types and generic transport shared;
+- preserve API/UX behavior and root compatibility exports.
+
+Equivalent remaining root API slices (Policy, scoped Connectivity, Proposals/Auth) are not part of this increment and must be evaluated separately after Rules.
 
 `App.tsx` routing remains a legitimate application-composition responsibility and is not selected by size alone.
 
 ## Exit criteria
 
-The current slice exits when Decision-specific DTO/query/command implementation is feature-local, root `api.ts` contains compatibility exports but no Decision implementation, locality protection is executable, and applicable Web/Harness/Core/browser/runtime gates are green.
+The current slice exits when rule-specific list/detail/query/mutation implementation is feature-local, root `api.ts` retains only shared Rule DTOs plus compatibility exports for Rules, locality protection is executable, and applicable Web/Harness/Core/browser/runtime gates are green.
 
 I32 completes only when remaining root API responsibilities are either feature-local or explicitly justified as genuinely shared/application-level.
 
@@ -58,4 +61,4 @@ None known.
 
 ## Next
 
-On `i32/web-decisions-api-locality`, move Decision-specific API implementation into `web/src/features/decisions/api.ts`, extend the Web locality guard, validate the final gates, then evaluate the next remaining root API slice.
+On `i32/web-rules-api-locality`, validate the Rules API extraction and locality guard, resolve only slice-specific failures, then evaluate Policy, scoped Connectivity and Proposals/Auth separately.
