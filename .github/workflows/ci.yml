@@ -8,7 +8,7 @@ on:
       - "backend/tests/access_policy/**"
       - "backend/tests/application_catalogue/**"
       - "backend/tests/authority_management/**"
-      - "backend/tests/runtime/**"
+      - "backend/tests/platform/**"
       - "backend/tests/architecture/**"
       - "backend/pyproject.toml"
       - "Makefile"

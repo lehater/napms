@@ -925,7 +925,7 @@ Correlation identity never replaces Rule/domain identity.
 
 ## Selected HTTP adapter
 
-The I8 HTTP adapter uses FastAPI as an outer transport framework. FastAPI/Pydantic types remain confined to `napms.runtime`; Domain/Application stay framework-independent.
+The I8 HTTP adapter uses FastAPI as an outer transport framework. FastAPI/Pydantic types remain confined to presentation adapters and `napms.platform.http`; Domain/Application stay framework-independent.
 
 Normal local composition uses the durable PostgreSQL-backed Connectivity Decision runtime. Access Policy consumes it through its own exact subject/scope/time projection. Explicit injected Decision-port fakes remain a focused test seam only and are not selected by the normal product composition.
 

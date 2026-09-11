@@ -31,7 +31,7 @@ ACC_TARGET_READ_MODEL = (
     / "postgres"
     / "target.py"
 )
-RUNTIME = NAPMS / "runtime"
+PLATFORM_HTTP = NAPMS / "platform" / "http"
 APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "presentation" / "http"
 RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "presentation" / "http"
 APPLICATION_CATALOGUE_HTTP_SUPPORT = APPLICATION_CATALOGUE_HTTP / "support.py"
@@ -54,7 +54,7 @@ SCOPED_CONNECTIVITY_HTTP = (
 NETWORK_OPERATOR_VIEW_HTTP = (
     NETWORK_OPERATOR_VIEW / "presentation" / "http" / "routes.py"
 )
-PROCESS_HTTP = RUNTIME / "http_api.py"
+PROCESS_HTTP = PLATFORM_HTTP / "api.py"
 
 DOMAIN_LAYERS = (
     ACCESS_POLICY / "domain",
@@ -168,7 +168,7 @@ def test_semantic_owner_adapters_do_not_depend_on_process_http_assembly():
     for adapter_root in adapter_roots:
         for path in adapter_root.rglob("*.py"):
             for module in imported_modules(path):
-                if module == "napms.runtime.http_api":
+                if module == "napms.platform.http.api":
                     violations.append((path, module))
     assert violations == []
 
@@ -176,12 +176,12 @@ def test_semantic_owner_adapters_do_not_depend_on_process_http_assembly():
 def test_application_catalogue_target_http_is_owner_local():
     assert (APPLICATION_CATALOGUE_HTTP / "target.py").is_file()
     assert (APPLICATION_CATALOGUE_HTTP / "target_retirement.py").is_file()
-    assert not (RUNTIME / "catalogue_target_http.py").exists()
-    assert not (RUNTIME / "catalogue_target_retirement_http.py").exists()
+    assert not (PLATFORM_HTTP / "catalogue_target_http.py").exists()
+    assert not (PLATFORM_HTTP / "catalogue_target_retirement_http.py").exists()
 
 
 def test_catalogue_http_endpoints_are_not_implemented_in_runtime():
-    assert list(RUNTIME.glob("catalogue_*_http.py")) == []
+    assert list(PLATFORM_HTTP.glob("catalogue_*_http.py")) == []
 
 
 def test_catalogue_owner_http_packages_exist():
@@ -192,7 +192,7 @@ def test_catalogue_owner_http_packages_exist():
 def test_catalogue_http_support_is_owner_local():
     assert APPLICATION_CATALOGUE_HTTP_SUPPORT.is_file()
     assert RESOURCE_CATALOGUE_HTTP_SUPPORT.is_file()
-    runtime_support = (RUNTIME / "http_support.py").read_text(encoding="utf-8")
+    runtime_support = (PLATFORM_HTTP / "support.py").read_text(encoding="utf-8")
     forbidden_vocabulary = (
         "InvalidCatalogueTime",
         "InvalidCatalogueInterval",
@@ -205,7 +205,7 @@ def test_catalogue_http_support_is_owner_local():
 
 def test_policy_export_json_serialization_is_owner_local():
     assert POLICY_EXPORT_HTTP_JSON.is_file()
-    assert not (RUNTIME / "normalized_policy_json.py").exists()
+    assert not (PLATFORM_HTTP / "normalized_policy_json.py").exists()
 
 
 def test_feature_http_is_owner_local():
@@ -219,7 +219,7 @@ def test_feature_http_is_owner_local():
         NETWORK_OPERATOR_VIEW_HTTP,
     ):
         assert path.is_file()
-    assert not (RUNTIME / "legacy_http_api.py").exists()
+    assert not (PLATFORM_HTTP / "legacy_http_api.py").exists()
 
 
 def test_process_http_has_no_feature_endpoint_implementation():
@@ -254,7 +254,7 @@ def test_semantic_adapters_do_not_import_process_http_api():
     violations = []
     for path in NAPMS.glob("*/adapters/**/*.py"):
         for module in imported_modules(path):
-            if module == "napms.runtime.http_api":
+            if module == "napms.platform.http.api":
                 violations.append((path, module))
     assert violations == []
 

@@ -10,8 +10,8 @@ from napms.workflows.requirement_policy_alignment.application.align import (
     AlignmentQueryOutcome,
     AlignVisibleConnectivityRequirementsToPolicy,
 )
-from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.http_support import PublicApiError, authenticated_actor, set_outcome
+from napms.platform.auth.local import AuthenticatedActor, InMemorySessionStore
+from napms.platform.http.support import PublicApiError, authenticated_actor, set_outcome
 
 
 def create_requirement_policy_alignment_router(

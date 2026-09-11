@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from napms.runtime.auth import (
+from napms.platform.auth.local import (
     AuthenticatedActor,
     InMemorySessionStore,
     LocalAuthenticationConfigurationError,

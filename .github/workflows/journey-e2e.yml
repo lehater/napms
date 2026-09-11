@@ -8,7 +8,7 @@ on:
       - "web/**"
       - "backend/src/napms/application_catalogue/**"
       - "backend/src/napms/resource_catalogue/**"
-      - "backend/src/napms/runtime/**"
+      - "backend/src/napms/platform/**"
       - "backend/src/napms/platform/**"
       - "backend/src/napms/authority_management/**"
       - "backend/Dockerfile"

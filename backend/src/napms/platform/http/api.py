@@ -5,7 +5,7 @@ import traceback
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from time import perf_counter
-from typing import Any, Callable, ContextManager
+from typing import Any, Callable
 from uuid import uuid4
 
 from fastapi import Depends, FastAPI, Request, Response
@@ -14,12 +14,12 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore, LocalPasswordAuthenticator
-from napms.runtime.http_support import PublicApiError, SESSION_COOKIE_NAME, error_response
+from napms.platform.auth.local import AuthenticatedActor, InMemorySessionStore, LocalPasswordAuthenticator
+from napms.platform.http.support import PublicApiError, SESSION_COOKIE_NAME, error_response
 
 CORRELATION_HEADER = "X-Correlation-ID"
 _CORRELATION_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
-_LOGGER = logging.getLogger("napms.runtime.http")
+_LOGGER = logging.getLogger("napms.platform.http")
 
 
 def _utc_now() -> datetime:
@@ -30,8 +30,6 @@ def _utc_now() -> datetime:
 class HttpApiDependencies:
     authenticator: LocalPasswordAuthenticator
     sessions: InMemorySessionStore
-    open_scope: Callable[[], ContextManager[Any]]
-    decisions: Any
     readiness: Callable[[], bool]
     clock: Callable[[], datetime] = _utc_now
     secure_cookie: bool = False
@@ -77,19 +75,6 @@ def _actor_dto(actor: AuthenticatedActor) -> dict[str, str]:
 
 
 def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
-    from napms.contexts.access_policy.presentation.http.routes import create_access_policy_router
-    from napms.contexts.access_policy.presentation.http.errors import register_access_policy_http_error_handlers
-    from napms.contexts.application_catalogue.presentation.http.errors import register_application_catalogue_http_error_handlers
-    from napms.contexts.authority_management.presentation.http.errors import register_authority_management_http_error_handlers
-    from napms.contexts.connectivity_decision.presentation.http.routes import create_connectivity_decision_router
-    from napms.contexts.connectivity_decision.presentation.http.errors import register_connectivity_decision_http_error_handlers
-    from napms.contexts.connectivity_requirements.presentation.http.routes import create_connectivity_requirements_router
-    from napms.contexts.connectivity_requirements.presentation.http.errors import register_connectivity_requirements_http_error_handlers
-    from napms.workflows.policy_export.presentation.http.routes import create_policy_export_router
-    from napms.workflows.policy_export.presentation.http.errors import register_policy_export_http_error_handlers
-    from napms.workflows.requirement_policy_alignment.presentation.http.routes import create_requirement_policy_alignment_router
-    from napms.workflows.scoped_connectivity_inventory.presentation.http.routes import create_scoped_connectivity_inventory_router
-
     app = FastAPI(title="NAPMS API", version="1")
 
     @app.middleware("http")
@@ -143,13 +128,6 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
     @app.exception_handler(RequestValidationError)
     async def request_validation_error_handler(request: Request, exc: RequestValidationError):
         return _error_response(request, status_code=422, code="ValidationError", message="The request is invalid.")
-
-    register_access_policy_http_error_handlers(app)
-    register_connectivity_decision_http_error_handlers(app)
-    register_connectivity_requirements_http_error_handlers(app)
-    register_authority_management_http_error_handlers(app)
-    register_policy_export_http_error_handlers(app)
-    register_application_catalogue_http_error_handlers(app)
 
     def require_actor(request: Request) -> AuthenticatedActor:
         actor = dependencies.sessions.get(request.cookies.get(SESSION_COOKIE_NAME))
@@ -206,10 +184,4 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
         _set_outcome(request, "Ready")
         return {"status": "ready"}
 
-    app.include_router(create_scoped_connectivity_inventory_router(sessions=dependencies.sessions, open_scope=dependencies.open_scope))
-    app.include_router(create_requirement_policy_alignment_router(sessions=dependencies.sessions, open_scope=dependencies.open_scope))
-    app.include_router(create_connectivity_requirements_router(sessions=dependencies.sessions, open_scope=dependencies.open_scope, clock=dependencies.clock))
-    app.include_router(create_connectivity_decision_router(sessions=dependencies.sessions, open_scope=dependencies.open_scope, clock=dependencies.clock))
-    app.include_router(create_access_policy_router(sessions=dependencies.sessions, open_scope=dependencies.open_scope, decisions=dependencies.decisions, clock=dependencies.clock))
-    app.include_router(create_policy_export_router(sessions=dependencies.sessions, open_scope=dependencies.open_scope))
     return app

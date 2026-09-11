@@ -3,8 +3,8 @@ from typing import Callable
 
 from fastapi import APIRouter, Query, Request
 
-from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_support import PublicApiError, SESSION_COOKIE_NAME
+from napms.platform.auth.local import InMemorySessionStore
+from napms.platform.http.support import PublicApiError, SESSION_COOKIE_NAME
 
 
 def create_catalogue_discovery_router(

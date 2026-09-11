@@ -5,8 +5,8 @@ from typing import Callable
 from fastapi import APIRouter, HTTPException, Query, Request
 
 from napms.workflows.network_operator_view.application.read import ReadOutcome
-from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_support import SESSION_COOKIE_NAME
+from napms.platform.auth.local import InMemorySessionStore
+from napms.platform.http.support import SESSION_COOKIE_NAME
 
 
 def create_network_operator_view_router(

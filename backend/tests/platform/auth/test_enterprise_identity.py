@@ -1,6 +1,6 @@
 import pytest
 
-from napms.runtime.enterprise_identity import (
+from napms.platform.auth.enterprise_identity import (
     ActorIdentityMapping,
     ActorIdentityResolution,
     ActorIdentityResolutionKind,
@@ -142,7 +142,7 @@ def test_unknown_mapping_evidence_never_exposes_actor() -> None:
 
 
 def test_resolution_invariant_rejects_actor_on_non_mapped_outcome() -> None:
-    from napms.runtime.auth import AuthenticatedActor
+    from napms.platform.auth.local import AuthenticatedActor
 
     with pytest.raises(ValueError, match="must not expose actor"):
         ActorIdentityResolution(

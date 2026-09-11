@@ -33,8 +33,8 @@ from napms.contexts.application_catalogue.domain.communication import (
 )
 from napms.contexts.application_catalogue.domain.model import Application
 from napms.contexts.application_catalogue.domain.target_model import InteractionDefinition
-from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.http_api import PublicApiError
+from napms.platform.auth.local import AuthenticatedActor, InMemorySessionStore
+from napms.platform.http.api import PublicApiError
 
 
 NOW = datetime(2026, 9, 11, 0, 0, tzinfo=timezone.utc)

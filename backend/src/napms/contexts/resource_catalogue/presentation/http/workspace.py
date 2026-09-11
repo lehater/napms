@@ -19,8 +19,8 @@ from napms.contexts.resource_catalogue.application.curation import (
     RetireResourceCommand,
 )
 from napms.contexts.resource_catalogue.application.ports import ResourceCataloguePersistenceError
-from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_support import require_actor
+from napms.platform.auth.local import InMemorySessionStore
+from napms.platform.http.support import require_actor
 
 
 class RenameCatalogueResourceRequest(BaseModel):

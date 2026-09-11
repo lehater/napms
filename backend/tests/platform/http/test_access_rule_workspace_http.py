@@ -25,13 +25,13 @@ from napms.contexts.access_policy.domain.model import (
 from napms.contexts.application_catalogue.application.describe_interactions import (
     DirectedInteractionDescription,
 )
-from napms.runtime.auth import (
+from napms.platform.auth.local import (
     InMemorySessionStore,
     LocalCredential,
     LocalPasswordAuthenticator,
     hash_local_password,
 )
-from napms.runtime.http_api import HttpApiDependencies, create_http_api
+from napms.platform.bootstrap.http_process import HttpApiDependencies, create_http_api
 
 
 NOW = datetime(2026, 9, 9, 9, 0, tzinfo=timezone.utc)

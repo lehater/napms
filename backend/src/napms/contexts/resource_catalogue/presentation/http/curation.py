@@ -26,8 +26,8 @@ from napms.contexts.resource_catalogue.presentation.http.support import (
     require_interval,
     require_mutation_success,
 )
-from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_support import (
+from napms.platform.auth.local import InMemorySessionStore
+from napms.platform.http.support import (
     PublicApiError,
     require_actor,
 )

@@ -4,7 +4,7 @@ from napms.contexts.access_policy.application.ports import (
     AccessRuleCommitOutcomeUnknown,
     AccessRulePersistenceError,
 )
-from napms.runtime.http_support import error_response
+from napms.platform.http.support import error_response
 
 
 def register_access_policy_http_error_handlers(app: FastAPI) -> None:

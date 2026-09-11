@@ -10,9 +10,9 @@ requires-python = ">=3.10"
 dependencies = ["fastapi>=0.141,<1"]
 
 [project.scripts]
-napms-http = "napms.bootstrap.main:run"
-napms-migrate = "napms.bootstrap.migrations:run"
-napms-seed-local = "napms.bootstrap.local_seed:run"
+napms-http = "napms.platform.bootstrap.main:run"
+napms-migrate = "napms.platform.database.cli:run"
+napms-seed-local = "napms.platform.bootstrap.local_seed:run"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0.0", "httpx>=0.28,<1"]

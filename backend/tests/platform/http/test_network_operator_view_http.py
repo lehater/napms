@@ -14,7 +14,7 @@ from napms.workflows.network_operator_view.application.read import (
     ReadOutcome,
     Stage,
 )
-from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
+from napms.platform.auth.local import AuthenticatedActor, InMemorySessionStore
 
 NOW = datetime(2026, 9, 10, 8, 0, tzinfo=timezone.utc)
 
