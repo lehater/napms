@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react"
-import { Search } from "lucide-react"
 
-import { ApiError } from "@/lib/api"
-import { Button } from "@/components/ui/Button"
-import { listCatalogueResourceWorkspace, type ResourceWorkspaceItemDto } from "@/features/catalogues/api/resourceWorkspace"
+import { Button } from "@/design-system/components/Button"
+import { Input } from "@/design-system/components/Field"
+import { SearchInput } from "@/design-system/components/SearchInput"
 import { createDeploymentResourceBinding } from "@/features/catalogues/api/targetCommands"
 import type { DeploymentInteractionSide } from "@/features/catalogues/api/targetCatalogue"
-
-const inputClass =
-  "min-h-10 min-w-0 rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
+import { listCatalogueResourceWorkspace, type ResourceWorkspaceItemDto } from "@/features/catalogues/api/resourceWorkspace"
+import { ApiError } from "@/lib/api"
 
 function errorFrom(caught: unknown) {
   return caught instanceof ApiError
@@ -50,15 +48,9 @@ export function ResourceMembershipPanel({
         setItems(result.items)
         setHasMore(result.hasMore)
       })
-      .catch((caught) => {
-        if (active) setError(errorFrom(caught))
-      })
-      .finally(() => {
-        if (active) setLoading(false)
-      })
-    return () => {
-      active = false
-    }
+      .catch((caught) => { if (active) setError(errorFrom(caught)) })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
   }, [search, scope])
 
   async function addSelected() {
@@ -82,16 +74,10 @@ export function ResourceMembershipPanel({
   }
 
   return (
-    <div
-      role="group"
-      aria-label="Add resource"
-      className="grid gap-4 border-b border-[#E2E8F0] bg-[#F8FAFC] p-5"
-    >
+    <div role="group" aria-label="Add resource" className="my-3 grid gap-4 rounded-[var(--napms-control-radius)] bg-[var(--napms-color-surface-subtle)] p-4">
       <div>
-        <h3 className="font-semibold text-[#172033]">Add resource</h3>
-        <p className="mt-1 text-xs text-[#64748B]">
-          Select an existing Resource Catalogue entry. Membership becomes effective now.
-        </p>
+        <h3 className="font-semibold text-[var(--napms-color-text-primary)]">Add resource</h3>
+        <p className="mt-1 text-xs text-[var(--napms-color-text-secondary)]">Select an existing Resource Catalogue entry. Membership becomes effective now.</p>
       </div>
 
       <form
@@ -103,67 +89,45 @@ export function ResourceMembershipPanel({
           setScope(scopeQuery.trim())
         }}
       >
-        <div className="relative min-w-0">
-          <Search className="pointer-events-none absolute left-3 top-3 size-4 text-[#94A3B8]" aria-hidden="true" />
-          <input
-            className={`${inputClass} w-full pl-9`}
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search Resource Catalogue"
-            aria-label="Search Resource Catalogue"
-          />
-        </div>
-        <input
-          className={inputClass}
-          value={scopeQuery}
-          onChange={(event) => setScopeQuery(event.target.value)}
-          placeholder="Scope"
-          aria-label="Resource scope"
-        />
+        <SearchInput value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search Resource Catalogue" aria-label="Search Resource Catalogue" />
+        <Input value={scopeQuery} onChange={(event) => setScopeQuery(event.target.value)} placeholder="Scope" aria-label="Resource scope" />
         <Button type="submit" variant="secondary">Search</Button>
       </form>
 
       {loading ? (
-        <div className="text-sm text-[#64748B]">Loading Resource Catalogue…</div>
+        <div className="text-sm text-[var(--napms-color-text-secondary)]">Loading Resource Catalogue…</div>
       ) : error ? (
-        <div className="text-sm text-red-700">{error.message}</div>
+        <div className="text-sm text-[var(--napms-color-danger)]">{error.message}</div>
       ) : (
-        <div className="max-h-64 overflow-y-auto rounded-md border border-[#E2E8F0] bg-white">
+        <div className="max-h-64 overflow-y-auto rounded-[var(--napms-control-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)]">
           {items.map((item) => {
             const alreadyBound = activeResourceReferences.has(item.resourceReference)
+            const selectedItem = selected?.resourceReference === item.resourceReference
             return (
               <button
                 key={item.resourceReference}
                 type="button"
                 disabled={alreadyBound}
-                className={`flex w-full items-center justify-between gap-4 border-b border-[#F1F5F9] px-4 py-3 text-left last:border-0 ${alreadyBound ? "cursor-default bg-[#F8FAFC] text-[#94A3B8]" : "hover:bg-[#F8FAFC]"}`}
+                className={`flex w-full items-center justify-between gap-4 border-b border-[var(--napms-color-surface-muted)] px-4 py-3 text-left last:border-0 ${alreadyBound ? "cursor-default bg-[var(--napms-color-surface-subtle)] text-[var(--napms-color-text-muted)]" : selectedItem ? "bg-[var(--napms-color-primary-subtle)]" : "hover:bg-[var(--napms-color-surface-subtle)]"}`}
                 onClick={() => setSelected(item)}
               >
                 <span>
                   <span className="block text-sm font-semibold">{item.displayName ?? item.resourceReference}</span>
-                  {item.displayName ? <span className="mt-0.5 block text-xs text-[#94A3B8]">{item.resourceReference}</span> : null}
+                  {item.displayName ? <span className="mt-0.5 block text-xs text-[var(--napms-color-text-muted)]">{item.resourceReference}</span> : null}
                 </span>
-                <span className="text-xs font-semibold">{alreadyBound ? "Already added" : selected?.resourceReference === item.resourceReference ? "Selected" : ""}</span>
+                <span className="text-xs font-semibold">{alreadyBound ? "Already added" : selectedItem ? "Selected" : ""}</span>
               </button>
             )
           })}
-          {items.length === 0 ? <div className="px-4 py-4 text-sm text-[#64748B]">No Resources found.</div> : null}
+          {items.length === 0 ? <div className="px-4 py-4 text-sm text-[var(--napms-color-text-secondary)]">No Resources found.</div> : null}
         </div>
       )}
 
-      {hasMore ? (
-        <div className="text-xs text-[#64748B]">More Resources match. Refine search or Scope to narrow the selection.</div>
-      ) : null}
+      {hasMore ? <div className="text-xs text-[var(--napms-color-text-secondary)]">More Resources match. Refine search or Scope to narrow the selection.</div> : null}
 
       <div className="flex justify-end gap-2">
         <Button variant="secondary" onClick={onCancel}>Cancel</Button>
-        <Button
-          loading={saving}
-          disabled={!selected || activeResourceReferences.has(selected.resourceReference)}
-          onClick={() => void addSelected()}
-        >
-          Add resource
-        </Button>
+        <Button loading={saving} disabled={!selected || activeResourceReferences.has(selected.resourceReference)} onClick={() => void addSelected()}>Add resource</Button>
       </div>
     </div>
   )
