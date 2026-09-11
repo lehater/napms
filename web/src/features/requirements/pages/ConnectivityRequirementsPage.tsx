@@ -1,61 +1,27 @@
 import { useEffect, useMemo, useState } from "react"
-import { ChevronRight, CircleAlert, Plus, Search } from "lucide-react"
+import { CircleAlert, Plus } from "lucide-react"
 
-import { ApiError } from "@/lib/api"
-import { declareConnectivityRequirement, listConnectivityRequirementAlignment, listConnectivityRequirementInteractions, listConnectivityRequirements, listConnectivityRequirementScopes, type ConnectivityRequirementDto, type RequirementApplicability, type RequirementPolicyAlignmentStatus } from "@/features/requirements/api"
+import { Button } from "@/design-system/components/Button"
+import { Field, Input } from "@/design-system/components/Field"
 import type { ProposalInteraction } from "@/features/catalogues/model/interaction"
 import {
-  displayName,
-  shortId,
-  trafficAlternativeText,
-} from "@/features/catalogues/components/CatalogueIdentity"
-import { Button } from "@/components/ui/Button"
-import { Field, Select } from "@/components/ui/Field"
+  declareConnectivityRequirement,
+  listConnectivityRequirementAlignment,
+  listConnectivityRequirementInteractions,
+  listConnectivityRequirements,
+  listConnectivityRequirementScopes,
+  type ConnectivityRequirementDto,
+  type RequirementApplicability,
+  type RequirementPolicyAlignmentStatus,
+} from "@/features/requirements/api"
+import { RequirementApplicabilityFields } from "@/features/requirements/components/RequirementApplicabilityFields"
+import { RequirementInteractionSelector } from "@/features/requirements/components/RequirementInteractionSelector"
+import { RequirementsTable } from "@/features/requirements/components/RequirementsTable"
+import { ApiError } from "@/lib/api"
 import {
   nowLocalDateTimeInput,
   toOffsetAwareIso,
 } from "@/lib/datetime"
-
-function applicabilityText(value: RequirementApplicability) {
-  return value.kind === "Ongoing"
-    ? "Ongoing"
-    : `${value.start} → ${value.end}`
-}
-
-function alignmentClasses(status: RequirementPolicyAlignmentStatus) {
-  switch (status) {
-    case "Covered":
-      return "border-green-200 bg-green-50 text-green-800"
-    case "Uncovered":
-      return "border-amber-200 bg-amber-50 text-amber-900"
-    case "NotCurrent":
-      return "border-slate-200 bg-slate-100 text-slate-700"
-    case "Unknown":
-      return "border-red-200 bg-red-50 text-red-800"
-  }
-}
-
-function lifecycleClasses(state: "Active" | "Retired") {
-  return state === "Active"
-    ? "border-green-200 bg-green-50 text-green-800"
-    : "border-slate-200 bg-slate-100 text-slate-700"
-}
-
-function optionLabel(name: string | null | undefined, id: string) {
-  const readable = name?.trim()
-  return readable ? `${readable} · ${shortId(id)}` : shortId(id)
-}
-
-function dcsLabel(item: ProposalInteraction) {
-  const base = optionLabel(
-    item.catalogue?.dcsDisplayName,
-    item.dcsContractRevisionId,
-  )
-  const alternatives = item.catalogue?.trafficAlternatives ?? []
-  return alternatives.length > 0
-    ? `${base} — ${alternatives.map(trafficAlternativeText).join(" | ")}`
-    : base
-}
 
 export function ConnectivityRequirementsPage({
   page,
@@ -387,12 +353,11 @@ export function ConnectivityRequirementsPage({
               label="Policy coverage as of"
               hint="Same logical time is used for Requirement applicability and Rule effectiveness."
             >
-              <input
+              <Input
                 type="datetime-local"
                 step="1"
                 value={alignmentAsOf}
                 onChange={(event) => setAlignmentAsOf(event.target.value)}
-                className="min-h-10 rounded-md border border-[#CBD5E1] px-3 py-2 text-sm"
               />
             </Field>
           </div>
@@ -430,103 +395,12 @@ export function ConnectivityRequirementsPage({
               </div>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[980px] text-left text-sm">
-                <thead className="bg-[#F8FAFC] text-xs uppercase tracking-wide text-[#64748B]">
-                  <tr>
-                    <th className="px-4 py-3 font-semibold">Interaction</th>
-                    <th className="px-4 py-3 font-semibold">Dependent</th>
-                    <th className="px-4 py-3 font-semibold">Scope</th>
-                    <th className="px-4 py-3 font-semibold">Applicability</th>
-                    <th className="px-4 py-3 font-semibold">Policy coverage</th>
-                    <th className="px-4 py-3 font-semibold">Lifecycle</th>
-                    <th className="w-12 px-4 py-3" aria-label="Open" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {requirements.map((item) => {
-                    const interaction = item.requiredInteraction
-                    const dependentName =
-                      item.dependentComponentDeploymentId ===
-                      interaction.sourceComponentDeploymentId
-                        ? displayName(
-                            item.catalogue?.sourceDisplayName,
-                            interaction.sourceComponentDeploymentId,
-                          )
-                        : displayName(
-                            item.catalogue?.destinationDisplayName,
-                            interaction.destinationComponentDeploymentId,
-                          )
-                    return (
-                      <tr
-                        key={item.requirementId}
-                        className="border-t border-[#E2E8F0] align-top hover:bg-[#F8FAFC]"
-                      >
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-[#172033]">
-                            {displayName(
-                              item.catalogue?.sourceDisplayName,
-                              interaction.sourceComponentDeploymentId,
-                            )}{" "}
-                            →{" "}
-                            {displayName(
-                              item.catalogue?.destinationDisplayName,
-                              interaction.destinationComponentDeploymentId,
-                            )}
-                          </div>
-                          <div className="mt-1 text-xs text-[#64748B]">
-                            {displayName(
-                              item.catalogue?.dcsDisplayName,
-                              interaction.dcsContractRevisionId,
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">{dependentName}</td>
-                        <td className="px-4 py-3">{item.governanceScope}</td>
-                        <td className="px-4 py-3 text-xs text-[#475569]">
-                          {applicabilityText(item.applicability)}
-                        </td>
-                        <td className="px-4 py-3">
-                          {alignmentById[item.requirementId] ? (
-                            <span
-                              className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${alignmentClasses(alignmentById[item.requirementId])}`}
-                              title={
-                                alignmentById[item.requirementId] === "Uncovered"
-                                  ? "No exact matching Access Rule contributes effective desired policy at the selected time. This does not mean Denied."
-                                  : undefined
-                              }
-                            >
-                              {alignmentById[item.requirementId]}
-                            </span>
-                          ) : loadingAlignment ? (
-                            <span className="text-xs text-[#64748B]">Loading…</span>
-                          ) : (
-                            <span className="text-xs text-[#64748B]">—</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${lifecycleClasses(item.lifecycleState)}`}
-                          >
-                            {item.lifecycleState}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <button
-                            type="button"
-                            aria-label={`Open Requirement ${item.requirementId}`}
-                            className="grid size-8 place-items-center rounded-md text-[#64748B] hover:bg-[#E2E8F0]"
-                            onClick={() => onOpenRequirement(item.requirementId)}
-                          >
-                            <ChevronRight className="size-4" aria-hidden="true" />
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <RequirementsTable
+              requirements={requirements}
+              alignmentById={alignmentById}
+              loadingAlignment={loadingAlignment}
+              onOpenRequirement={onOpenRequirement}
+            />
           )}
 
           <div className="flex justify-end gap-2 border-t border-[#E2E8F0] px-5 py-4">
@@ -559,197 +433,53 @@ export function ConnectivityRequirementsPage({
           </div>
 
           <div className="grid gap-4">
-            <Field label="Requirement Governance Scope">
-              <Select
-                value={scope}
-                onChange={(event) => {
-                  setScope(event.target.value)
-                  setInteractionPage(1)
-                }}
-                disabled={loadingScopes}
-                required
-              >
-                <option value="">
-                  {loadingScopes ? "Loading scopes…" : "Select scope"}
-                </option>
-                {scopes.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </Select>
-            </Field>
+            <RequirementInteractionSelector
+              scope={scope}
+              scopes={scopes}
+              loadingScopes={loadingScopes}
+              onScopeChange={(value) => {
+                setScope(value)
+                setInteractionPage(1)
+              }}
+              searchInput={searchInput}
+              onSearchInputChange={setSearchInput}
+              loadingInteractions={loadingInteractions}
+              source={source}
+              sourceOptions={sourceOptions}
+              onSourceChange={(value) => {
+                setSource(value)
+                setDestination("")
+                setDcs("")
+                setDependent("")
+              }}
+              destination={destination}
+              destinationOptions={destinationOptions}
+              onDestinationChange={(value) => {
+                setDestination(value)
+                setDcs("")
+                setDependent("")
+              }}
+              dcs={dcs}
+              dcsOptions={dcsOptions}
+              onDcsChange={(value) => {
+                setDcs(value)
+                setDependent("")
+              }}
+              dependent={dependent}
+              selectedInteraction={selectedInteraction}
+              onDependentChange={setDependent}
+            />
 
-            <Field label="Search required interaction">
-              <div className="relative">
-                <Search
-                  className="pointer-events-none absolute left-3 top-3 size-4 text-[#94A3B8]"
-                  aria-hidden="true"
-                />
-                <input
-                  type="search"
-                  value={searchInput}
-                  maxLength={256}
-                  onChange={(event) => setSearchInput(event.target.value)}
-                  disabled={!scope}
-                  placeholder="Orders, Checkout, HTTPS…"
-                  className="min-h-10 w-full rounded-md border border-[#CBD5E1] py-2 pl-9 pr-3 text-sm disabled:bg-[#F8FAFC]"
-                />
-              </div>
-            </Field>
-
-            <Field label="Source Component Deployment">
-              <Select
-                value={source}
-                onChange={(event) => {
-                  setSource(event.target.value)
-                  setDestination("")
-                  setDcs("")
-                  setDependent("")
-                }}
-                disabled={!scope || loadingInteractions}
-                required
-              >
-                <option value="">Select source</option>
-                {sourceOptions.map(([id, name]) => (
-                  <option key={id} value={id}>
-                    {optionLabel(name, id)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-
-            <Field label="Destination Component Deployment">
-              <Select
-                value={destination}
-                onChange={(event) => {
-                  setDestination(event.target.value)
-                  setDcs("")
-                  setDependent("")
-                }}
-                disabled={!source}
-                required
-              >
-                <option value="">Select destination</option>
-                {destinationOptions.map(([id, name]) => (
-                  <option key={id} value={id}>
-                    {optionLabel(name, id)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-
-            <Field label="Directed Communication Specification">
-              <Select
-                value={dcs}
-                onChange={(event) => {
-                  setDcs(event.target.value)
-                  setDependent("")
-                }}
-                disabled={!destination}
-                required
-              >
-                <option value="">Select DCS</option>
-                {dcsOptions.map((item) => (
-                  <option
-                    key={item.dcsContractRevisionId}
-                    value={item.dcsContractRevisionId}
-                  >
-                    {dcsLabel(item)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-
-            <Field
-              label="Dependent Component Deployment"
-              hint="Whose operational/business concern requires this interaction?"
-            >
-              <Select
-                value={dependent}
-                onChange={(event) => setDependent(event.target.value)}
-                disabled={!selectedInteraction}
-                required
-              >
-                <option value="">Select dependent participant</option>
-                {selectedInteraction ? (
-                  <>
-                    <option value={selectedInteraction.sourceComponentDeploymentId}>
-                      {optionLabel(
-                        selectedInteraction.catalogue?.sourceDisplayName,
-                        selectedInteraction.sourceComponentDeploymentId,
-                      )}
-                    </option>
-                    {selectedInteraction.destinationComponentDeploymentId !==
-                    selectedInteraction.sourceComponentDeploymentId ? (
-                      <option
-                        value={
-                          selectedInteraction.destinationComponentDeploymentId
-                        }
-                      >
-                        {optionLabel(
-                          selectedInteraction.catalogue?.destinationDisplayName,
-                          selectedInteraction.destinationComponentDeploymentId,
-                        )}
-                      </option>
-                    ) : null}
-                  </>
-                ) : null}
-              </Select>
-            </Field>
-
-            <Field label="Applicability">
-              <Select
-                value={applicabilityKind}
-                onChange={(event) =>
-                  setApplicabilityKind(
-                    event.target.value as "Ongoing" | "AbsoluteWindow",
-                  )
-                }
-              >
-                <option value="Ongoing">Ongoing</option>
-                <option value="AbsoluteWindow">Absolute time window</option>
-              </Select>
-            </Field>
-
-            {applicabilityKind === "AbsoluteWindow" ? (
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-                <Field label="Start">
-                  <input
-                    type="datetime-local"
-                    step="1"
-                    value={windowStart}
-                    onChange={(event) => setWindowStart(event.target.value)}
-                    className="min-h-10 rounded-md border border-[#CBD5E1] px-3 py-2 text-sm"
-                    required
-                  />
-                </Field>
-                <Field label="End">
-                  <input
-                    type="datetime-local"
-                    step="1"
-                    value={windowEnd}
-                    onChange={(event) => setWindowEnd(event.target.value)}
-                    className="min-h-10 rounded-md border border-[#CBD5E1] px-3 py-2 text-sm"
-                    required
-                  />
-                </Field>
-              </div>
-            ) : null}
-
-            <Field
-              label="Business justification"
-              hint="Why is this semantic connectivity required?"
-            >
-              <textarea
-                value={justification}
-                onChange={(event) => setJustification(event.target.value)}
-                maxLength={4096}
-                rows={4}
-                required
-                className="w-full rounded-md border border-[#CBD5E1] px-3 py-2 text-sm"
-              />
-            </Field>
+            <RequirementApplicabilityFields
+              kind={applicabilityKind}
+              onKindChange={setApplicabilityKind}
+              windowStart={windowStart}
+              onWindowStartChange={setWindowStart}
+              windowEnd={windowEnd}
+              onWindowEndChange={setWindowEnd}
+              justification={justification}
+              onJustificationChange={setJustification}
+            />
 
             <div className="flex items-center justify-between rounded-md border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2">
               <span className="text-xs text-[#64748B]">
