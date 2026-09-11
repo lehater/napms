@@ -8,12 +8,12 @@ from napms.contexts.connectivity_decision.domain.model import (
     DecisionOutcome,
     DecisionSubject,
 )
-from napms.scoped_connectivity_inventory.application.model import (
+from napms.workflows.scoped_connectivity_inventory.application.model import (
     DecisionSummary,
     DecisionSummaryState,
     InteractionIdentity,
 )
-from napms.scoped_connectivity_inventory.application.ports import (
+from napms.workflows.scoped_connectivity_inventory.application.ports import (
     DecisionSummaryReadResult,
     DependencyAvailability,
 )

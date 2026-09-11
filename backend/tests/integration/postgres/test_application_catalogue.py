@@ -32,13 +32,13 @@ from napms.contexts.application_catalogue.application.resolve import (
     ValidateDirectedInteraction,
 )
 from napms.contexts.application_catalogue.domain.model import DirectedInteractionIdentity
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
     PortRange,
 )
-from napms.policy_export.application.ports import ApplicationProjectionOutcome
-from napms.scoped_connectivity_inventory.application.ports import (
+from napms.workflows.policy_export.application.ports import ApplicationProjectionOutcome
+from napms.workflows.scoped_connectivity_inventory.application.ports import (
     DependencyAvailability,
 )
 

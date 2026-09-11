@@ -1,6 +1,6 @@
 from napms.contexts.authority_management.application.check_authority import AuthorityOutcome, CheckAuthority
 from napms.contexts.authority_management.application.ports import AuthorityPersistenceError
-from napms.network_operator_view.application import AuthorityResult
+from napms.workflows.network_operator_view.application.read import AuthorityResult
 
 _ACTION = "ReadNetworkOperatorRealization"
 

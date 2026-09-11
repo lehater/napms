@@ -3,12 +3,12 @@ import os
 import psycopg
 import pytest
 
-from napms.composition.config import ApplicationConfig, PostgresConfig
-from napms.composition.network_operator_view_postgres import (
+from napms.platform.bootstrap.config import ApplicationConfig, PostgresConfig
+from napms.platform.bootstrap.network_operator_view import (
     open_network_operator_view_scope,
 )
-from napms.composition.postgres_migrations import apply_greenfield_migrations
-from napms.network_operator_view.application import Availability, ReadOutcome
+from napms.platform.database.migrations import apply_greenfield_migrations
+from napms.workflows.network_operator_view.application.read import Availability, ReadOutcome
 from tests.integration.postgres import test_product_completion_acceptance as acceptance
 from tests.integration.postgres import test_access_policy_realization_reconciliation as realization
 

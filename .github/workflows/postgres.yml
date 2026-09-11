@@ -10,7 +10,7 @@ on:
       - "backend/src/napms/resource_catalogue/**"
       - "backend/src/napms/technical_access_evidence/**"
       - "backend/src/napms/network_enforcement_placement/adapters/postgres/**"
-      - "backend/src/napms/composition/**"
+      - "backend/src/napms/platform/**"
       - "backend/tests/integration/postgres/**"
       - "backend/pyproject.toml"
       - "Makefile"

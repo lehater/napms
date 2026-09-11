@@ -3,7 +3,9 @@ from datetime import datetime
 from psycopg import Error as PsycopgError
 
 from napms.contexts.connectivity_decision.application.ports import DecisionPersistenceError
-from napms.contexts.connectivity_decision.domain.model import DecisionSubject
+from napms.contexts.connectivity_decision.application.active_dependency_references import (
+    ConnectivityDecisionDependencySubject,
+)
 
 
 class PostgresConnectivityDecisionDependencyQuery:
@@ -15,7 +17,7 @@ class PostgresConnectivityDecisionDependencyQuery:
     def page(
         self,
         *,
-        subjects: tuple[DecisionSubject, ...],
+        subjects: tuple[ConnectivityDecisionDependencySubject, ...],
         as_of: datetime,
         offset: int,
         limit: int,
@@ -69,7 +71,7 @@ class PostgresConnectivityDecisionDependencyQuery:
             raise DecisionPersistenceError() from exc
 
 
-def _values(subjects: tuple[DecisionSubject, ...]) -> tuple[str, tuple]:
+def _values(subjects: tuple[ConnectivityDecisionDependencySubject, ...]) -> tuple[str, tuple]:
     sql = ", ".join("(%s::uuid, %s::uuid, %s::uuid)" for _ in subjects)
     params: list[object] = []
     for subject in subjects:

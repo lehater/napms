@@ -10,7 +10,7 @@ on:
       - ".env.example"
       - "web/**"
       - "backend/src/napms/runtime/**"
-      - "backend/src/napms/composition/**"
+      - "backend/src/napms/platform/**"
       - "backend/src/napms/contexts/access_policy/infrastructure/persistence/postgres/migrations/**"
       - "backend/src/napms/authority_management/adapters/postgres/migrations/**"
       - "backend/src/napms/contexts/application_catalogue/infrastructure/persistence/postgres/migrations/**"

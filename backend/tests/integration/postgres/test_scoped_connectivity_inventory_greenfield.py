@@ -14,8 +14,8 @@ from napms.contexts.access_policy.domain.model import (
     RuleSemanticIdentity,
 )
 from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import JsonDcsProjectionCodec
-from napms.composition.config import ApplicationConfig, PostgresConfig
-from napms.composition.greenfield_postgres import (
+from napms.platform.bootstrap.config import ApplicationConfig, PostgresConfig
+from napms.platform.bootstrap.greenfield import (
     apply_greenfield_migrations,
     open_greenfield_scope,
 )
@@ -36,12 +36,12 @@ from napms.contexts.connectivity_requirements.domain.model import (
     RequirementDeclarationProvenance,
     RequirementSemanticKey,
 )
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
     PortRange,
 )
-from napms.scoped_connectivity_inventory.application.model import (
+from napms.workflows.scoped_connectivity_inventory.application.model import (
     CoverageSummary,
     DecisionSummaryState,
     Direction,
@@ -50,7 +50,7 @@ from napms.scoped_connectivity_inventory.application.model import (
     RequirementCurrent,
     RuleExists,
 )
-from napms.scoped_connectivity_inventory.application.read import (
+from napms.workflows.scoped_connectivity_inventory.application.read import (
     InventoryQueryOutcome,
 )
 

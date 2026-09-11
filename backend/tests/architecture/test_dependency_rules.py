@@ -15,9 +15,22 @@ CONNECTIVITY_DECISION = NAPMS / "contexts" / "connectivity_decision"
 TECHNICAL_ACCESS_EVIDENCE = NAPMS / "contexts" / "technical_access_evidence"
 NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "contexts" / "network_enforcement_placement"
 NETWORK_ENVIRONMENT_OPERATIONS = NAPMS / "contexts" / "network_environment_operations"
-REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
-POLICY_EXPORT = NAPMS / "policy_export"
-SCOPED_CONNECTIVITY_INVENTORY = NAPMS / "scoped_connectivity_inventory"
+WORKFLOWS = NAPMS / "workflows"
+REQUIREMENT_POLICY_ALIGNMENT = WORKFLOWS / "requirement_policy_alignment"
+POLICY_EXPORT = WORKFLOWS / "policy_export"
+SCOPED_CONNECTIVITY_INVENTORY = WORKFLOWS / "scoped_connectivity_inventory"
+NETWORK_OPERATOR_VIEW = WORKFLOWS / "network_operator_view"
+TRAFFIC_ANALYSIS = WORKFLOWS / "traffic_analysis"
+ACC_TARGET_INTEGRATIONS = (
+    APPLICATION_CATALOGUE / "infrastructure" / "integrations" / "target_dependencies.py"
+)
+ACC_TARGET_READ_MODEL = (
+    APPLICATION_CATALOGUE
+    / "infrastructure"
+    / "read_models"
+    / "postgres"
+    / "target.py"
+)
 RUNTIME = NAPMS / "runtime"
 APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "presentation" / "http"
 RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "presentation" / "http"
@@ -30,10 +43,17 @@ CONNECTIVITY_DECISION_HTTP = (
     CONNECTIVITY_DECISION / "presentation" / "http" / "routes.py"
 )
 ACCESS_POLICY_HTTP = ACCESS_POLICY / "presentation" / "http" / "routes.py"
-REQUIREMENT_POLICY_ALIGNMENT_HTTP = REQUIREMENT_POLICY_ALIGNMENT / "adapters" / "http.py"
-POLICY_EXPORT_HTTP = POLICY_EXPORT / "adapters" / "http.py"
-POLICY_EXPORT_HTTP_JSON = POLICY_EXPORT / "adapters" / "http_json.py"
-SCOPED_CONNECTIVITY_HTTP = SCOPED_CONNECTIVITY_INVENTORY / "adapters" / "http.py"
+REQUIREMENT_POLICY_ALIGNMENT_HTTP = (
+    REQUIREMENT_POLICY_ALIGNMENT / "presentation" / "http" / "routes.py"
+)
+POLICY_EXPORT_HTTP = POLICY_EXPORT / "presentation" / "http" / "routes.py"
+POLICY_EXPORT_HTTP_JSON = POLICY_EXPORT / "presentation" / "http" / "json.py"
+SCOPED_CONNECTIVITY_HTTP = (
+    SCOPED_CONNECTIVITY_INVENTORY / "presentation" / "http" / "routes.py"
+)
+NETWORK_OPERATOR_VIEW_HTTP = (
+    NETWORK_OPERATOR_VIEW / "presentation" / "http" / "routes.py"
+)
 PROCESS_HTTP = RUNTIME / "http_api.py"
 
 DOMAIN_LAYERS = (
@@ -61,6 +81,9 @@ APPLICATION_LAYERS = (
     NETWORK_ENVIRONMENT_OPERATIONS / "application",
     REQUIREMENT_POLICY_ALIGNMENT / "application",
     POLICY_EXPORT / "application",
+    SCOPED_CONNECTIVITY_INVENTORY / "application",
+    NETWORK_OPERATOR_VIEW / "application",
+    TRAFFIC_ANALYSIS / "application",
 )
 CORE_LAYERS = DOMAIN_LAYERS + APPLICATION_LAYERS
 
@@ -193,6 +216,7 @@ def test_feature_http_is_owner_local():
         REQUIREMENT_POLICY_ALIGNMENT_HTTP,
         POLICY_EXPORT_HTTP,
         SCOPED_CONNECTIVITY_HTTP,
+        NETWORK_OPERATOR_VIEW_HTTP,
     ):
         assert path.is_file()
     assert not (RUNTIME / "legacy_http_api.py").exists()
@@ -206,9 +230,9 @@ def test_process_http_has_no_feature_endpoint_implementation():
         "napms.contexts.connectivity_requirements.domain",
         "napms.contexts.connectivity_decision.application",
         "napms.contexts.connectivity_decision.domain",
-        "napms.requirement_policy_alignment.application",
-        "napms.policy_export.application",
-        "napms.scoped_connectivity_inventory.application",
+        "napms.workflows.requirement_policy_alignment.application",
+        "napms.workflows.policy_export.application",
+        "napms.workflows.scoped_connectivity_inventory.application",
     )
     assert all(
         not module.startswith(forbidden_prefixes)
@@ -332,6 +356,78 @@ BOUNDED_CONTEXT_CORES = (
 
 def test_network_environment_operations_has_no_legacy_package():
     assert not (NAPMS / "network_environment_operations").exists()
+
+
+def test_requirement_policy_alignment_uses_final_workflow_namespace():
+    assert REQUIREMENT_POLICY_ALIGNMENT.is_dir()
+    assert not (NAPMS / "requirement_policy_alignment").exists()
+
+
+def test_workflow_application_has_no_outer_layer_dependencies():
+    violations = []
+    for workflow in (
+        REQUIREMENT_POLICY_ALIGNMENT,
+        POLICY_EXPORT,
+        SCOPED_CONNECTIVITY_INVENTORY,
+        NETWORK_OPERATOR_VIEW,
+        TRAFFIC_ANALYSIS,
+    ):
+        for path in (workflow / "application").rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
+
+
+def test_workflows_do_not_import_context_persistence_internals():
+    violations = []
+    for path in WORKFLOWS.rglob("*.py"):
+        for module in imported_modules(path):
+            if module.startswith("napms.contexts.") and ".infrastructure.persistence" in module:
+                violations.append((path, module))
+    assert violations == []
+
+
+def test_acc_target_integrations_use_only_peer_application_contracts():
+    violations = []
+    for module in imported_modules(ACC_TARGET_INTEGRATIONS):
+        if not module.startswith("napms.contexts."):
+            continue
+        if module.startswith("napms.contexts.application_catalogue."):
+            continue
+        if ".domain" in module or ".infrastructure" in module:
+            violations.append(module)
+    assert violations == []
+
+
+def test_acc_target_read_model_has_no_resource_catalogue_sql():
+    assert "napms_resource_catalogue" not in ACC_TARGET_READ_MODEL.read_text(
+        encoding="utf-8"
+    )
+
+
+def test_policy_export_uses_final_workflow_namespace():
+    assert POLICY_EXPORT.is_dir()
+    assert not (NAPMS / "policy_export").exists()
+
+
+def test_scoped_connectivity_inventory_uses_final_workflow_namespace():
+    assert SCOPED_CONNECTIVITY_INVENTORY.is_dir()
+    assert not (NAPMS / "scoped_connectivity_inventory").exists()
+
+
+def test_network_operator_view_uses_final_workflow_namespace():
+    assert NETWORK_OPERATOR_VIEW.is_dir()
+    assert not (NAPMS / "network_operator_view").exists()
+
+
+def test_traffic_analysis_uses_final_workflow_namespace():
+    assert TRAFFIC_ANALYSIS.is_dir()
+    assert not (NAPMS / "traffic_analysis").exists()
+
+
+def test_generic_composition_package_is_absent():
+    assert not (NAPMS / "composition").exists()
 
 
 def test_access_policy_has_no_legacy_package():

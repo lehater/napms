@@ -13,12 +13,12 @@ from napms.contexts.connectivity_requirements.domain.model import (
     RequirementApplicability,
     RequirementLifecycleState,
 )
-from napms.scoped_connectivity_inventory.application.model import (
+from napms.workflows.scoped_connectivity_inventory.application.model import (
     CoverageSummary,
     InteractionIdentity,
     RequirementCurrent,
 )
-from napms.scoped_connectivity_inventory.application.ports import (
+from napms.workflows.scoped_connectivity_inventory.application.ports import (
     DependencyAvailability,
 )
 

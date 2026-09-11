@@ -26,11 +26,11 @@ from napms.contexts.application_catalogue.domain.communication import (
     DcsPortConstraint,
     DcsPortRange,
 )
-from napms.composition.catalogue_curation_postgres import (
+from napms.platform.bootstrap.catalogue_curation import (
     open_catalogue_curation_scope,
 )
-from napms.composition.config import ApplicationConfig, PostgresConfig
-from napms.composition.greenfield_postgres import (
+from napms.platform.bootstrap.config import ApplicationConfig, PostgresConfig
+from napms.platform.bootstrap.greenfield import (
     apply_greenfield_migrations,
     open_greenfield_scope,
 )
@@ -57,11 +57,11 @@ from napms.contexts.resource_catalogue.domain.responsibility import (
     ResponsiblePartyKind,
     ResourceResponsibilityRole,
 )
-from napms.scoped_connectivity_inventory.application.model import (
+from napms.workflows.scoped_connectivity_inventory.application.model import (
     Direction,
     RequirementCurrent,
 )
-from napms.scoped_connectivity_inventory.application.read import (
+from napms.workflows.scoped_connectivity_inventory.application.read import (
     InventoryQueryOutcome,
 )
 

@@ -48,20 +48,20 @@ from napms.contexts.access_policy.domain.model import (
 from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import (
     JsonDcsProjectionCodec,
 )
-from napms.composition.config import ApplicationConfig, PostgresConfig
-from napms.composition.greenfield_postgres import (
+from napms.platform.bootstrap.config import ApplicationConfig, PostgresConfig
+from napms.platform.bootstrap.greenfield import (
     apply_greenfield_migrations,
     open_greenfield_scope,
 )
-from napms.composition.postgres_migrations import MIGRATIONS
-from napms.policy_export.application.export_snapshot import (
+from napms.platform.database.migrations import MIGRATIONS
+from napms.workflows.policy_export.application.export_snapshot import (
     AssembleExportSnapshot,
     SnapshotAssemblyOutcome,
     SnapshotFactSource,
     SnapshotFailureCategory,
 )
-from napms.policy_export.application.normalize_snapshot import NormalizeExportSnapshot
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.normalize_snapshot import NormalizeExportSnapshot
+from napms.workflows.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
     PortRange,

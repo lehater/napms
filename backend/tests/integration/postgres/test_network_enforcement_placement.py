@@ -7,11 +7,11 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.composition.config import (
+from napms.platform.bootstrap.config import (
     ApplicationConfig,
     PostgresConfig,
 )
-from napms.composition.postgres_migrations import (
+from napms.platform.database.migrations import (
     apply_greenfield_migrations,
 )
 from napms.contexts.network_enforcement_placement.presentation.imports.local_json import (

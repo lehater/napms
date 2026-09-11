@@ -20,10 +20,10 @@ from napms.contexts.access_policy_realization.domain.model import (
     ResolutionInvariantError,
     TechnicalAccessPredicate,
 )
-from napms.policy_export.application.export_snapshot import (
+from napms.workflows.policy_export.application.export_snapshot import (
     SnapshotAssemblyOutcome,
 )
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.normalization_types import (
     NormalizationInvariantError,
     PortConstraint as ExportPortConstraint,
     PortConstraintKind as ExportPortConstraintKind,

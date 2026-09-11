@@ -10,14 +10,14 @@ from napms.contexts.connectivity_requirements.domain.model import (
     RequirementApplicabilityKind,
     RequirementLifecycleState,
 )
-from napms.requirement_policy_alignment.application.model import (
+from napms.workflows.requirement_policy_alignment.application.model import (
     AlignmentApplicability,
     AlignmentApplicabilityKind,
     AlignmentRequirementLifecycle,
     AlignmentSemanticIdentity,
     RequirementAlignmentSnapshot,
 )
-from napms.requirement_policy_alignment.application.ports import (
+from napms.workflows.requirement_policy_alignment.application.ports import (
     RequirementAlignmentListOutcome,
     RequirementAlignmentListResult,
     RequirementAlignmentReadOutcome,

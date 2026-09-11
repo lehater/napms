@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from napms.traffic_analysis.application.model import (
+from napms.workflows.traffic_analysis.application.model import (
     EndpointResolution,
     EvidenceSnapshot,
     NetworkCandidateView,
@@ -13,7 +13,7 @@ from napms.traffic_analysis.application.model import (
     TechnicalRuleMatch,
     TrafficAnalysisQuery,
 )
-from napms.traffic_analysis.application.read import ReadTrafficAnalysis
+from napms.workflows.traffic_analysis.application.read import ReadTrafficAnalysis
 
 
 NOW = datetime(2026, 9, 10, 8, 0, tzinfo=timezone.utc)

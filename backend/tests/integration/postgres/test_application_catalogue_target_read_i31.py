@@ -21,8 +21,14 @@ from napms.contexts.application_catalogue.domain.communication import (
     DcsPortRange,
 )
 from napms.contexts.application_catalogue.domain.target_model import DeploymentInteractionSide
-from napms.composition.application_catalogue_target_read_postgres import (
+from napms.contexts.application_catalogue.infrastructure.read_models.postgres.target import (
     PostgresApplicationCatalogueTargetReadModel,
+)
+from napms.contexts.resource_catalogue.application.read_resource_references import (
+    ReadResourceReferences,
+)
+from napms.contexts.resource_catalogue.infrastructure.persistence.postgres.resource_reference_query import (
+    PostgresResourceReferenceQuery,
 )
 
 
@@ -263,7 +269,12 @@ def _seed(connection) -> None:
 def test_target_read_projection_is_bounded_temporal_and_scope_aware(postgres_dsn):
     with psycopg.connect(postgres_dsn) as connection:
         _seed(connection)
-        read = PostgresApplicationCatalogueTargetReadModel(connection)
+        read = PostgresApplicationCatalogueTargetReadModel(
+            connection,
+            resources=ReadResourceReferences(
+                query=PostgresResourceReferenceQuery(connection)
+            ),
+        )
 
         definitions = read.list_definitions(
             offset=0,

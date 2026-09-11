@@ -6,7 +6,7 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.policy_export.application.ports import (
+from napms.workflows.policy_export.application.ports import (
     ResourceRealizationOutcome,
     ResourceReference,
 )
@@ -24,7 +24,7 @@ from napms.contexts.resource_catalogue.application.list_scope_resources import (
 )
 from napms.contexts.resource_catalogue.application.ports import ResourceCataloguePersistenceError
 from napms.contexts.resource_catalogue.application.resolve import ResolveResourceRealization
-from napms.scoped_connectivity_inventory.application.model import RealizationState
+from napms.workflows.scoped_connectivity_inventory.application.model import RealizationState
 
 
 pytestmark = pytest.mark.postgres

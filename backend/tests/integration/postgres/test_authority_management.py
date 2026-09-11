@@ -19,7 +19,7 @@ from napms.contexts.authority_management.infrastructure.integrations.scoped_conn
 )
 from napms.contexts.authority_management.application.check_authority import CheckAuthority
 from napms.contexts.authority_management.application.list_scopes import ListEffectiveAuthorityScopes
-from napms.scoped_connectivity_inventory.application.ports import (
+from napms.workflows.scoped_connectivity_inventory.application.ports import (
     DependencyAvailability,
     ScopeAdmissionOutcome,
 )

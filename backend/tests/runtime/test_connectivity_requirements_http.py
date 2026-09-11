@@ -30,7 +30,7 @@ from napms.contexts.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementLifecycleState,
 )
-from napms.requirement_policy_alignment.application.ports import (
+from napms.workflows.requirement_policy_alignment.application.ports import (
     PolicyCoverageOutcome,
 )
 from napms.runtime.auth import (

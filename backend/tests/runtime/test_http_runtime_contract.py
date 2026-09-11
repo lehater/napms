@@ -21,12 +21,12 @@ from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 from napms.contexts.application_catalogue.application.describe_interactions import (
     DirectedInteractionDescription,
 )
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
     PortRange,
 )
-from napms.policy_export.application.ports import (
+from napms.workflows.policy_export.application.ports import (
     ApplicationProjectionFact,
     ApplicationProjectionOutcome,
     EndpointRealization,

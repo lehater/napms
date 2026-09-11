@@ -27,7 +27,7 @@ from napms.contexts.application_catalogue.domain.target_model import (
     DeploymentInteractionSide,
     InteractionDefinition,
 )
-from napms.policy_export.application.normalization_ports import DcsProjectionDecodeError
+from napms.workflows.policy_export.application.normalization_ports import DcsProjectionDecodeError
 
 
 class PostgresTargetApplicationCatalogueRepository(

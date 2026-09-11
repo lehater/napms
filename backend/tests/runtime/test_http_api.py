@@ -18,7 +18,7 @@ from napms.contexts.application_catalogue.application.describe_interactions impo
     DirectedInteractionDescription,
 )
 from napms.contexts.application_catalogue.application.ports import CataloguePersistenceError
-from napms.policy_export.application.ports import (
+from napms.workflows.policy_export.application.ports import (
     ApplicationProjectionFact,
     ApplicationProjectionOutcome,
 )

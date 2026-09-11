@@ -5,9 +5,9 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.composition.config import ApplicationConfig, PostgresConfig
-from napms.composition.greenfield_postgres import apply_greenfield_migrations
-from napms.composition.technical_access_evidence_postgres import (
+from napms.platform.bootstrap.config import ApplicationConfig, PostgresConfig
+from napms.platform.bootstrap.greenfield import apply_greenfield_migrations
+from napms.platform.bootstrap.technical_access_evidence import (
     open_technical_access_evidence_scope,
 )
 from napms.contexts.technical_access_evidence.presentation.imports.local_json import (

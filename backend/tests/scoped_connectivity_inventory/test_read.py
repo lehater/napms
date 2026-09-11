@@ -3,7 +3,7 @@ from uuid import UUID
 
 import pytest
 
-from napms.scoped_connectivity_inventory.application.model import (
+from napms.workflows.scoped_connectivity_inventory.application.model import (
     BoundComponentSnapshot,
     ComponentResourceBindingSnapshot,
     CoverageSummary,
@@ -23,7 +23,7 @@ from napms.scoped_connectivity_inventory.application.model import (
     RuleExists,
     ScopedConnectivityInventoryInvariantError,
 )
-from napms.scoped_connectivity_inventory.application.ports import (
+from napms.workflows.scoped_connectivity_inventory.application.ports import (
     BoundComponentReadResult,
     ComponentResourceBindingReadResult,
     DecisionSummaryReadResult,
@@ -38,7 +38,7 @@ from napms.scoped_connectivity_inventory.application.ports import (
     ScopeAdmissionResult,
     ScopeDiscoveryResult,
 )
-from napms.scoped_connectivity_inventory.application.read import (
+from napms.workflows.scoped_connectivity_inventory.application.read import (
     DiscoverScopedConnectivityScopes,
     InventoryQueryOutcome,
     ReadScopedConnectivityInventory,

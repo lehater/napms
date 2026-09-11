@@ -1,5 +1,5 @@
-from napms.composition.config import load_application_config
-from napms.composition.postgres_migrations import apply_greenfield_migrations
+from napms.platform.bootstrap.config import load_application_config
+from napms.platform.database.migrations import apply_greenfield_migrations
 
 
 def run() -> None:

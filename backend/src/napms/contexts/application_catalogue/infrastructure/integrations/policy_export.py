@@ -3,7 +3,7 @@ from napms.contexts.application_catalogue.application.resolve import (
     ResolveApplicationProjection,
 )
 from napms.contexts.application_catalogue.domain.model import DirectedInteractionIdentity
-from napms.policy_export.application.ports import (
+from napms.workflows.policy_export.application.ports import (
     ApplicationProjectionFact,
     ApplicationProjectionOutcome,
     ResourceReference,

@@ -1,6 +1,6 @@
 import pytest
 
-from napms.composition.config import (
+from napms.platform.bootstrap.config import (
     ApplicationConfig,
     ConfigurationError,
     PostgresConfig,

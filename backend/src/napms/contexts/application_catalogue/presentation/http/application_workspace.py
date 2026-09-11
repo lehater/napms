@@ -28,13 +28,13 @@ from napms.contexts.application_catalogue.application.structure_curation import 
     RetireApplicationCommand,
     RetireComponentCommand,
 )
-from napms.policy_export.application.normalization_ports import DcsProjectionDecodeError
+from napms.workflows.policy_export.application.normalization_ports import DcsProjectionDecodeError
 from napms.runtime.auth import InMemorySessionStore
 from napms.runtime.http_support import (
     PublicApiError,
     require_actor,
 )
-from napms.policy_export.adapters.http_json import port_constraint_json
+from napms.workflows.policy_export.presentation.http.json import port_constraint_json
 
 
 class RenameCatalogueEntityRequest(BaseModel):

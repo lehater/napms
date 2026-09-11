@@ -18,8 +18,8 @@ from napms.contexts.access_policy.domain.model import (
     ProposalProvenance,
     RuleSemanticIdentity,
 )
-from napms.composition.config import ApplicationConfig, PostgresConfig
-from napms.composition.greenfield_postgres import (
+from napms.platform.bootstrap.config import ApplicationConfig, PostgresConfig
+from napms.platform.bootstrap.greenfield import (
     apply_greenfield_migrations,
     open_greenfield_scope,
 )
@@ -37,11 +37,11 @@ from napms.contexts.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementApplicability,
 )
-from napms.requirement_policy_alignment.application.align import (
+from napms.workflows.requirement_policy_alignment.application.align import (
     AlignConnectivityRequirementToPolicy,
     AlignmentQueryOutcome,
 )
-from napms.requirement_policy_alignment.application.model import AlignmentStatus
+from napms.workflows.requirement_policy_alignment.application.model import AlignmentStatus
 
 
 pytestmark = pytest.mark.postgres

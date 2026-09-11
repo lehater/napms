@@ -18,10 +18,10 @@ from napms.contexts.technical_access_evidence.domain.model import (
     TechnicalAccessEvidenceSet,
     TechnicalAccessPredicate,
 )
-from napms.traffic_analysis.adapters.technical_evidence import (
+from napms.workflows.traffic_analysis.infrastructure.integrations.technical_evidence import (
     TechnicalAccessEvidenceTrafficAnalysisAdapter,
 )
-from napms.traffic_analysis.application.model import RuleMatchKind, TrafficAnalysisQuery
+from napms.workflows.traffic_analysis.application.model import RuleMatchKind, TrafficAnalysisQuery
 
 
 NOW = datetime(2026, 9, 10, 8, 0, tzinfo=timezone.utc)

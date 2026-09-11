@@ -9,7 +9,7 @@ on:
       - "backend/src/napms/application_catalogue/**"
       - "backend/src/napms/resource_catalogue/**"
       - "backend/src/napms/runtime/**"
-      - "backend/src/napms/composition/**"
+      - "backend/src/napms/platform/**"
       - "backend/src/napms/authority_management/**"
       - "backend/Dockerfile"
       - "compose.yaml"

@@ -13,23 +13,23 @@ from napms.contexts.access_policy.domain.model import (
     ProposalProvenance,
     RuleSemanticIdentity,
 )
-from napms.policy_export.application.export_snapshot import (
+from napms.workflows.policy_export.application.export_snapshot import (
     CapturedResourceRealization,
     ExportSnapshotItem,
     SuccessfulExportSnapshot,
 )
-from napms.policy_export.application.normalize_snapshot import NormalizeExportSnapshot
-from napms.policy_export.application.normalization_ports import (
+from napms.workflows.policy_export.application.normalize_snapshot import NormalizeExportSnapshot
+from napms.workflows.policy_export.application.normalization_ports import (
     DcsProjectionDecodeError,
 )
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     NormalizationInvariantError,
     PortConstraint,
     PortConstraintKind,
     PortRange,
 )
-from napms.policy_export.application.ports import (
+from napms.workflows.policy_export.application.ports import (
     ApplicationProjectionFact,
     ApplicationProjectionOutcome,
     EndpointRealization,

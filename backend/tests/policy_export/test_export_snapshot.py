@@ -17,13 +17,13 @@ from napms.contexts.access_policy.domain.model import (
     ProposalProvenance,
     RuleSemanticIdentity,
 )
-from napms.policy_export.application.export_snapshot import (
+from napms.workflows.policy_export.application.export_snapshot import (
     AssembleExportSnapshot,
     SnapshotAssemblyOutcome,
     SnapshotFactSource,
     SnapshotFailureCategory,
 )
-from napms.policy_export.application.ports import (
+from napms.workflows.policy_export.application.ports import (
     ApplicationProjectionFact,
     ApplicationProjectionOutcome,
     EndpointRealization,

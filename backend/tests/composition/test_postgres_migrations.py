@@ -1,6 +1,6 @@
 import pytest
 
-from napms.composition.postgres_migrations import (
+from napms.platform.database.migrations import (
     MIGRATIONS,
     MigrationChecksumMismatch,
     MigrationError,
