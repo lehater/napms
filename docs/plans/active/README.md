@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M2 — first bounded-context slice, `network_environment_operations`.
+Current task: M2 — migrate `technical_access_evidence` and `network_enforcement_placement` as separate atomic commits in the existing M2 branch.
 
 ## Working set
 
@@ -19,8 +19,10 @@ None.
 
 ## Gate
 
-The first M2 slice is complete only when `network_environment_operations` exists solely under `napms.contexts`, all consumers use the final namespace, architecture checks enforce its Domain/Application boundary and legacy-package absence, and required local checks pass.
+For each context: final `napms.contexts` namespace only, all consumers updated, architecture boundary enforced, targeted tests green. After both contexts: `make test`, harness/knowledge checks and applicable PostgreSQL tests must pass.
+
+Hosted PR gates are deferred until the complete M2 milestone is ready for one final PR.
 
 ## Next
 
-Finish, commit and push the `network_environment_operations` slice. Do not select or start the next context without owner direction.
+Execute `technical_access_evidence`, commit and test it; then execute `network_enforcement_placement` as a second commit. Push and stop for architectural review. Do not start another context or M3.
