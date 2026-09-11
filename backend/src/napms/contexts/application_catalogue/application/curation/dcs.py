@@ -11,11 +11,9 @@ from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueIdentityFactory,
     ApplicationCatalogueProvenanceFactory,
     CatalogueIdempotencyConflict,
+    CatalogueMutationOutcome,
     CataloguePersistenceOutcomeUnknown,
     DcsProjectionAuthoringEncoder,
-)
-from napms.contexts.application_catalogue.application.curation.structure import (
-    CatalogueMutationOutcome,
 )
 from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,

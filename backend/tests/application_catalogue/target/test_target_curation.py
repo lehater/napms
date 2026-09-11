@@ -19,7 +19,10 @@ from napms.contexts.application_catalogue.application.target.curation import (
     UpdateInteractionDefinitionTraffic,
     UpdateInteractionDefinitionTrafficCommand,
 )
-from napms.contexts.application_catalogue.application.target.ports import ActiveDependencyReference
+from napms.contexts.application_catalogue.application.target.ports import (
+    ActiveDependencyReference,
+    ActiveDependencySummary,
+)
 from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,
     DcsPortConstraint,
@@ -119,9 +122,12 @@ class DependencyPort:
         self.references = tuple(references)
         self.subjects = []
 
-    def find_active_references(self, *, subject, as_of):
-        self.subjects.append(subject)
-        return self.references
+    def summarize_active_references(self, *, subjects, as_of, preview_limit):
+        self.subjects.extend(subjects)
+        return ActiveDependencySummary(
+            total=len(self.references),
+            references=self.references[:preview_limit],
+        )
 
 
 class FakeCatalogue:

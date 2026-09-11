@@ -245,24 +245,10 @@ def _dependency_summary(
     subjects: tuple[DirectedInteractionIdentity, ...],
     as_of: datetime,
 ) -> ActiveDependencySummary:
-    summarize = getattr(port, "summarize_active_references", None)
-    if summarize is not None:
-        return summarize(
-            subjects=subjects,
-            as_of=as_of,
-            preview_limit=_DEPENDENCY_PREVIEW_LIMIT,
-        )
-
-    # Transitional compatibility for M1 in-memory adapters. Production M3 adapters
-    # implement the bounded batch contract above.
-    references: dict[str, ActiveDependencyReference] = {}
-    for subject in subjects:
-        for item in port.find_active_references(subject=subject, as_of=as_of):
-            references[item.reference] = item
-    ordered = tuple(references[key] for key in sorted(references))
-    return ActiveDependencySummary(
-        total=len(ordered),
-        references=ordered[:_DEPENDENCY_PREVIEW_LIMIT],
+    return port.summarize_active_references(
+        subjects=subjects,
+        as_of=as_of,
+        preview_limit=_DEPENDENCY_PREVIEW_LIMIT,
     )
 
 

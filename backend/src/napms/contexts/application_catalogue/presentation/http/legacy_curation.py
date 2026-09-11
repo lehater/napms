@@ -14,7 +14,7 @@ from napms.contexts.application_catalogue.application.curation.dcs import Create
 from napms.contexts.application_catalogue.application.curation.deployments import (
     CreateComponentDeploymentCommand,
 )
-from napms.contexts.application_catalogue.application.curation.structure import CreateComponentCommand
+from napms.contexts.application_catalogue.application.curation.component_structure import CreateComponentCommand
 from napms.contexts.application_catalogue.presentation.http.support import (
     mutation_response,
     require_aware,

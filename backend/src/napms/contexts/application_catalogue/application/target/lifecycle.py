@@ -310,15 +310,30 @@ class TargetRetirementDependencies:
             ),
             self._group(
                 RetirementDependencyKind.CONNECTIVITY_REQUIREMENTS,
-                self._requirements.find_active_references(subject=subject, as_of=as_of),
+                self._requirements.list_active_references(
+                    subjects=(subject,),
+                    as_of=as_of,
+                    offset=0,
+                    limit=1,
+                ).references,
             ),
             self._group(
                 RetirementDependencyKind.CONNECTIVITY_DECISIONS,
-                self._decisions.find_active_references(subject=subject, as_of=as_of),
+                self._decisions.list_active_references(
+                    subjects=(subject,),
+                    as_of=as_of,
+                    offset=0,
+                    limit=1,
+                ).references,
             ),
             self._group(
                 RetirementDependencyKind.ACCESS_RULES,
-                self._access_rules.find_active_references(subject=subject, as_of=as_of),
+                self._access_rules.list_active_references(
+                    subjects=(subject,),
+                    as_of=as_of,
+                    offset=0,
+                    limit=1,
+                ).references,
             ),
         )
         return tuple(group for group in candidates if group is not None)

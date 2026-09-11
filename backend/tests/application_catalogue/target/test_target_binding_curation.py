@@ -4,7 +4,7 @@ from uuid import UUID
 from napms.contexts.application_catalogue.application.curation.bindings import (
     DeploymentBindingMutationResult,
 )
-from napms.contexts.application_catalogue.application.curation.structure import CatalogueMutationOutcome
+from napms.contexts.application_catalogue.application.ports import CatalogueMutationOutcome
 from napms.contexts.application_catalogue.application.target.bindings import (
     CreateDeploymentInteractionResourceBinding,
     CreateDeploymentInteractionResourceBindingCommand,

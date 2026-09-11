@@ -13,7 +13,7 @@ from napms.contexts.application_catalogue.presentation.http.legacy_temporal impo
 from napms.contexts.application_catalogue.application.curation.bindings import (
     DeploymentBindingMutationResult,
 )
-from napms.contexts.application_catalogue.application.curation.structure import (
+from napms.contexts.application_catalogue.application.ports import (
     CatalogueMutationOutcome,
 )
 from napms.contexts.application_catalogue.domain.model import DeploymentResourceBinding

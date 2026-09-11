@@ -12,7 +12,10 @@ from napms.contexts.application_catalogue.application.target.lifecycle import (
     RetirementDependencyKind,
     TargetRetirementDependencies,
 )
-from napms.contexts.application_catalogue.application.target.ports import ActiveDependencyReference
+from napms.contexts.application_catalogue.application.target.ports import (
+    ActiveDependencyReference,
+    ActiveDependencySummary,
+)
 from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,
     DcsPortConstraint,
@@ -58,8 +61,11 @@ class DependencyPort:
     def __init__(self, *references):
         self.references = tuple(ActiveDependencyReference(value) for value in references)
 
-    def find_active_references(self, *, subject, as_of):
-        return self.references
+    def list_active_references(self, *, subjects, as_of, offset, limit):
+        return ActiveDependencySummary(
+            total=len(self.references),
+            references=self.references[offset : offset + limit],
+        )
 
 
 class Provenance:

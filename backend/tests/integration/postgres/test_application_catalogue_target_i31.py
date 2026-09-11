@@ -38,10 +38,12 @@ from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityOutcome,
     CatalogueConcurrencyConflict,
 )
-from napms.contexts.application_catalogue.application.curation.structure import (
-    CatalogueMutationOutcome,
+from napms.contexts.application_catalogue.application.curation.component_structure import (
     CreateComponent,
     CreateComponentCommand,
+)
+from napms.contexts.application_catalogue.application.ports import (
+    CatalogueMutationOutcome,
 )
 from napms.contexts.application_catalogue.application.target.bindings import (
     CreateDeploymentInteractionResourceBinding,

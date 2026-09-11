@@ -52,11 +52,13 @@ from napms.contexts.application_catalogue.application.curation.deployments impor
 from napms.contexts.application_catalogue.application.discovery.participants import (
     ListApplicationCatalogueParticipants,
 )
-from napms.contexts.application_catalogue.application.curation.structure import (
-    CreateComponent,
+from napms.contexts.application_catalogue.application.curation.application_structure import (
     RenameApplication,
-    RenameComponent,
     RetireApplication,
+)
+from napms.contexts.application_catalogue.application.curation.component_structure import (
+    CreateComponent,
+    RenameComponent,
     RetireComponent,
 )
 from napms.contexts.authority_management.infrastructure.integrations.catalogue_curation import (

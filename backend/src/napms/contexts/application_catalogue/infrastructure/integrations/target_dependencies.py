@@ -38,20 +38,6 @@ class ConnectivityRequirementDependencyAdapter:
         )
         return _summary(total, references)
 
-    def find_active_references(self, *, subject, as_of):
-        """Bounded compatibility recheck for the M1 retirement service.
-
-        M3 product reads use the summary/page contract above. The M1 lifecycle service
-        only needs to know whether at least one peer dependency appeared after preflight.
-        """
-        return self.list_active_references(
-            subjects=(subject,),
-            as_of=as_of,
-            offset=0,
-            limit=1,
-        ).references
-
-
 class ConnectivityDecisionDependencyAdapter:
     def __init__(self, query: ReadActiveConnectivityDecisionReferences) -> None:
         self._query = query
@@ -73,15 +59,6 @@ class ConnectivityDecisionDependencyAdapter:
         )
         return _summary(total, references)
 
-    def find_active_references(self, *, subject, as_of):
-        return self.list_active_references(
-            subjects=(subject,),
-            as_of=as_of,
-            offset=0,
-            limit=1,
-        ).references
-
-
 class AccessRuleDependencyAdapter:
     def __init__(self, query: ReadActiveAccessRuleReferences) -> None:
         self._query = query
@@ -102,15 +79,6 @@ class AccessRuleDependencyAdapter:
             limit=limit,
         )
         return _summary(total, references)
-
-    def find_active_references(self, *, subject, as_of):
-        return self.list_active_references(
-            subjects=(subject,),
-            as_of=as_of,
-            offset=0,
-            limit=1,
-        ).references
-
 
 def _unique(
     subjects: tuple[DirectedInteractionIdentity, ...],

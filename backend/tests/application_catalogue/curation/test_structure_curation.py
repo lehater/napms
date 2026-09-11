@@ -5,17 +5,19 @@ from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
 )
-from napms.contexts.application_catalogue.application.curation.structure import (
-    CatalogueMutationOutcome,
-    CreateComponent,
-    CreateComponentCommand,
+from napms.contexts.application_catalogue.application.curation.application_structure import (
     RenameApplication,
     RenameApplicationCommand,
     RetireApplication,
     RetireApplicationCommand,
+)
+from napms.contexts.application_catalogue.application.curation.component_structure import (
+    CreateComponent,
+    CreateComponentCommand,
     RetireComponent,
     RetireComponentCommand,
 )
+from napms.contexts.application_catalogue.application.ports import CatalogueMutationOutcome
 from napms.contexts.application_catalogue.domain.model import (
     Application,
     CatalogueLifecycleState,
