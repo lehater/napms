@@ -1,5 +1,5 @@
 :root {
-  --napms-color-app-bg: #f5f7fa;
+  --napms-color-app-bg: #f8fafc;
   --napms-color-surface: #ffffff;
   --napms-color-surface-subtle: #f8fafc;
   --napms-color-surface-muted: #f1f5f9;
@@ -25,25 +25,27 @@
   --napms-color-danger-bg: #fef2f2;
 
   --napms-color-nav-bg: #0b1628;
-  --napms-color-nav-active: #172e50;
+  --napms-color-nav-active: #17375e;
   --napms-color-nav-text: #d9e4f2;
   --napms-color-nav-muted: #8fa6c2;
   --napms-color-nav-divider: rgb(255 255 255 / 10%);
 
-  --napms-control-height: 42px;
-  --napms-control-height-sm: 34px;
+  --napms-control-height: 38px;
+  --napms-control-height-sm: 32px;
   --napms-control-radius: 6px;
-  --napms-surface-radius: 10px;
+  --napms-surface-radius: 7px;
   --napms-tag-radius: 4px;
   --napms-checkbox-size: 16px;
   --napms-icon-size-control: 16px;
 
   --napms-sidebar-width: 232px;
-  --napms-page-gap: 20px;
-  --napms-table-header-height: 44px;
-  --napms-table-row-height: 62px;
-  --napms-table-body-min-height: 456px;
-  --napms-table-selection-column: 52px;
+  --napms-page-gap: 14px;
+  --napms-table-header-height: 40px;
+  --napms-table-row-height: 40px;
+  --napms-table-body-min-height: 0px;
+  --napms-table-selection-column: 48px;
+  --napms-table-cell-x: 12px;
+  --napms-table-cell-y: 7px;
 
   --napms-surface-shadow: 0 1px 2px rgb(15 23 42 / 5%);
 }
