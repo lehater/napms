@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M2 — migrate `connectivity_requirements` and `connectivity_decision` as two atomic context commits on the milestone branch.
+Current task: M2 — migrate `authority_management` and `resource_catalogue` as two atomic context commits on the milestone branch.
 
 ## Working set
 
@@ -25,4 +25,4 @@ Hosted PR gates remain deferred until the complete M2 milestone is ready for one
 
 ## Next
 
-Migrate `connectivity_requirements` first, then `connectivity_decision`, one atomic commit per context. Stop after the two-context package for architectural review; do not start M3.
+Migrate `authority_management` first, then `resource_catalogue`, one atomic commit per context. Stop after the two-context package for architectural review; do not start M3.
