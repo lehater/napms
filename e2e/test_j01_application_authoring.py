@@ -7,6 +7,7 @@ from playwright.sync_api import Page, expect, sync_playwright
 BASE_URL = os.environ.get("NAPMS_E2E_BASE_URL", "http://127.0.0.1:8080")
 LOGIN = os.environ.get("NAPMS_E2E_LOGIN", "local-admin")
 PASSWORD = os.environ.get("NAPMS_E2E_PASSWORD", "local-e2e-password")
+UUID_PATTERN = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
 
 def _create_form(page: Page):
@@ -119,23 +120,54 @@ def _add_resource_to_current_set(page: Page, resource_name: str) -> None:
     expect(page.get_by_role("cell", name=resource_name, exact=True)).to_be_visible()
 
 
-def _select_option_containing(page: Page, label: str, text: str) -> None:
-    select = page.get_by_label(label)
-    option = select.locator("option").filter(has_text=text)
-    expect(option).to_have_count(1)
-    value = option.get_attribute("value")
-    assert value
-    select.select_option(value=value)
+def _target_connectivity_row(page: Page, destination_resource_reference: str):
+    return (
+        page.get_by_role("row")
+        .filter(has_text=destination_resource_reference)
+        .filter(has_text="tcp 443")
+    )
 
 
-def _open_target_connectivity(page: Page, desktop_nav, resource_reference: str) -> None:
+def _open_target_connectivity(
+    page: Page,
+    desktop_nav,
+    source_resource_reference: str,
+    destination_resource_reference: str,
+) -> tuple[str, str]:
     desktop_nav.get_by_role("button", name="Connectivity").click()
     expect(page.get_by_role("heading", name="Connectivity", exact=True)).to_be_visible()
-    page.get_by_placeholder("Resource reference…").fill(resource_reference)
+    page.get_by_placeholder("Resource reference…").fill(source_resource_reference)
     page.get_by_role("button", name="Search", exact=True).click()
-    expect(page.get_by_text(resource_reference, exact=True)).to_be_visible()
-    expect(page.get_by_text("Web UI", exact=True)).to_be_visible()
-    expect(page.get_by_text("Orders API", exact=True)).to_be_visible()
+    expect(page.get_by_text(source_resource_reference, exact=True)).to_be_visible()
+
+    row = _target_connectivity_row(page, destination_resource_reference)
+    expect(row).to_have_count(1)
+    expect(row.get_by_text("Communication", exact=True)).to_be_visible()
+    expect(row.get_by_text("tcp 443", exact=True)).to_be_visible()
+    expect(row.get_by_text(destination_resource_reference, exact=False)).to_be_visible()
+
+    source_text = row.get_by_role("cell").nth(0).inner_text()
+    remote_text = row.get_by_role("cell").nth(3).inner_text()
+    source_match = re.search(UUID_PATTERN, source_text)
+    destination_match = re.search(UUID_PATTERN, remote_text)
+    assert source_match is not None
+    assert destination_match is not None
+    return source_match.group(0), destination_match.group(0)
+
+
+def _assert_target_state(
+    page: Page,
+    destination_resource_reference: str,
+    *,
+    need: str,
+    decision: str,
+    policy: str,
+) -> None:
+    row = _target_connectivity_row(page, destination_resource_reference)
+    expect(row).to_have_count(1)
+    expect(row.get_by_text(need, exact=True)).to_be_visible()
+    expect(row.get_by_text(decision, exact=True)).to_be_visible()
+    expect(row.get_by_text(policy, exact=True)).to_be_visible()
 
 
 def test_j01_target_application_authoring_survives_correction_and_reopen() -> None:
@@ -159,7 +191,7 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
             name="J01 Web Resource",
             address="10.31.0.10",
         )
-        _create_resource(
+        api_resource_reference = _create_resource(
             page,
             desktop_nav,
             name="J01 API Resource",
@@ -278,14 +310,27 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
         deployment_row.click()
         expect(page.get_by_role("heading", name="Connectivity 2 / 2", exact=True)).to_be_visible()
 
-        # Target-authored Resource membership must feed the unchanged downstream
-        # compatibility identity rather than requiring target IDs in peer contexts.
-        _open_target_connectivity(page, desktop_nav, web_resource_reference)
-        expect(page.get_by_text("No current need", exact=True)).to_be_visible()
-        expect(page.get_by_text("No final decision", exact=True)).to_be_visible()
-        expect(page.get_by_text("No rule", exact=True)).to_be_visible()
+        # Target IDs stay local to Application Catalogue. Downstream contexts consume
+        # the stable compatibility Component Deployment identity emitted by the bridge.
+        source_component_deployment_id, destination_component_deployment_id = (
+            _open_target_connectivity(
+                page,
+                desktop_nav,
+                web_resource_reference,
+                api_resource_reference,
+            )
+        )
+        _assert_target_state(
+            page,
+            api_resource_reference,
+            need="No current need",
+            decision="No final decision",
+            policy="No rule",
+        )
 
-        page.get_by_role("button", name="Request access", exact=True).click()
+        _target_connectivity_row(page, api_resource_reference).get_by_role(
+            "button", name="Request access", exact=True
+        ).click()
         expect(page.get_by_role("heading", name="Request access", exact=True)).to_be_visible()
         page.get_by_label("Business justification").fill(
             "Target-authored Web UI requires the Orders API for checkout."
@@ -300,16 +345,34 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
         ).to_be_visible()
 
         page.get_by_role("button", name="Back to Connectivity", exact=True).click()
-        expect(page.get_by_text("Required", exact=True)).to_be_visible()
-        expect(page.get_by_text("No final decision", exact=True)).to_be_visible()
-        expect(page.get_by_text("No rule", exact=True)).to_be_visible()
+        _assert_target_state(
+            page,
+            api_resource_reference,
+            need="Required",
+            decision="No final decision",
+            policy="No rule",
+        )
 
         desktop_nav.get_by_role("button", name="Decisions").click()
         expect(page.get_by_role("heading", name="Decisions", exact=True)).to_be_visible()
         expect(page.get_by_label("Decision Governance Scope")).to_have_value("local-demo")
-        page.get_by_placeholder("Search interactions").fill("Web UI")
-        _select_option_containing(page, "Source Component Deployment", "Web UI")
-        _select_option_containing(page, "Destination Component Deployment", "Orders API")
+
+        source_select = page.get_by_label("Source Component Deployment")
+        expect(
+            source_select.locator(
+                f'option[value="{source_component_deployment_id}"]'
+            )
+        ).to_have_count(1)
+        source_select.select_option(value=source_component_deployment_id)
+
+        destination_select = page.get_by_label("Destination Component Deployment")
+        expect(
+            destination_select.locator(
+                f'option[value="{destination_component_deployment_id}"]'
+            )
+        ).to_have_count(1)
+        destination_select.select_option(value=destination_component_deployment_id)
+
         page.get_by_label("DCS / Access").select_option(index=1)
         expect(page.get_by_label("Final outcome")).to_have_value("Allowed")
         page.get_by_label("Reason code").fill("j01-target-approved")
@@ -319,21 +382,42 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
         page.get_by_role("button", name="Record Decision", exact=True).click()
         expect(page.get_by_text(re.compile(r"^Decision .* recorded\.$"))).to_be_visible()
 
-        _open_target_connectivity(page, desktop_nav, web_resource_reference)
-        expect(page.get_by_text("Required", exact=True)).to_be_visible()
-        expect(page.get_by_text("Allowed", exact=True)).to_be_visible()
-        expect(page.get_by_text("No rule", exact=True)).to_be_visible()
+        source_after_decision, destination_after_decision = _open_target_connectivity(
+            page,
+            desktop_nav,
+            web_resource_reference,
+            api_resource_reference,
+        )
+        assert source_after_decision == source_component_deployment_id
+        assert destination_after_decision == destination_component_deployment_id
+        _assert_target_state(
+            page,
+            api_resource_reference,
+            need="Required",
+            decision="Allowed",
+            policy="No rule",
+        )
 
-        page.get_by_role("button", name="Request access", exact=True).click()
+        _target_connectivity_row(page, api_resource_reference).get_by_role(
+            "button", name="Request access", exact=True
+        ).click()
         expect(page.get_by_text("Confirm access proposal", exact=True)).to_be_visible()
         page.get_by_role("button", name="Request access", exact=True).click()
         expect(page.get_by_text("Access authorized", exact=True)).to_be_visible()
         page.locator("section").filter(has_text="Access authorized").get_by_role(
             "button", name="Back to Connectivity", exact=True
         ).click()
-        expect(page.get_by_text("Required", exact=True)).to_be_visible()
-        expect(page.get_by_text("Allowed", exact=True)).to_be_visible()
-        expect(page.get_by_text("Covered", exact=True)).to_be_visible()
-        expect(page.get_by_role("cell", name="Active · effective", exact=True)).to_be_visible()
+        _assert_target_state(
+            page,
+            api_resource_reference,
+            need="Required",
+            decision="Allowed",
+            policy="Covered",
+        )
+        expect(
+            _target_connectivity_row(page, api_resource_reference).get_by_role(
+                "cell", name="Active · effective", exact=True
+            )
+        ).to_be_visible()
 
         browser.close()
