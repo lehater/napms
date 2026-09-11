@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
+from napms.application_catalogue.adapters.http.target import create_catalogue_target_router
 from napms.application_catalogue.application.curation import (
     CreateApplicationOutcome,
     CreateApplicationResult,
@@ -33,7 +34,6 @@ from napms.application_catalogue.domain.communication import (
 from napms.application_catalogue.domain.model import Application
 from napms.application_catalogue.domain.target_model import InteractionDefinition
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.catalogue_target_http import create_catalogue_target_router
 from napms.runtime.http_api import PublicApiError
 
 
