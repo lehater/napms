@@ -13,8 +13,6 @@ from napms.contexts.application_catalogue.application.ports import (
     CatalogueConcurrencyConflict,
     CatalogueIdempotencyConflict,
     CataloguePersistenceOutcomeUnknown,
-)
-from napms.contexts.application_catalogue.application.curation.structure import (
     CatalogueMutationOutcome,
 )
 from napms.contexts.application_catalogue.domain.model import (

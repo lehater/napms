@@ -1,280 +1,87 @@
 # Target Code Structure Migration Roadmap
 
-Status: `active long-range roadmap`.
+Status: `completed through M7`.
 
 Date: 2026-09-11.
 
 Architecture decision: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
-Canonical target structure: `docs/architecture/code-structure.md`.
+Canonical current structure: `docs/architecture/code-structure.md`.
+
+This roadmap is retained as migration history. It no longer defines active work or current architecture.
 
 ## Goal
 
-Migrate the repository to the final structure without changing product/domain semantics:
+Move NAPMS to the final physical taxonomy without product/domain semantic change:
 
 ```text
 backend/src/napms/
   contexts/
   workflows/
   platform/
-```
 
-with context-local Clean Architecture:
-
-```text
-contexts/<context>/
-  domain/
-  application/
-  infrastructure/
-  presentation/
-```
-
-The migration is allowed to be large, but every integrated stage must leave `main` working and architecture-testable.
-
-## AS-IS -> TO-BE classification
-
-### Contexts
-
-```text
-backend/src/napms/access_policy
-  -> backend/src/napms/contexts/access_policy
-backend/src/napms/access_policy_realization
-  -> backend/src/napms/contexts/access_policy_realization
-backend/src/napms/application_catalogue
-  -> backend/src/napms/contexts/application_catalogue
-backend/src/napms/authority_management
-  -> backend/src/napms/contexts/authority_management
-backend/src/napms/connectivity_decision
-  -> backend/src/napms/contexts/connectivity_decision
-backend/src/napms/connectivity_requirements
-  -> backend/src/napms/contexts/connectivity_requirements
-backend/src/napms/network_enforcement_placement
-  -> backend/src/napms/contexts/network_enforcement_placement
-backend/src/napms/network_environment_operations
-  -> backend/src/napms/contexts/network_environment_operations
-backend/src/napms/resource_catalogue
-  -> backend/src/napms/contexts/resource_catalogue
-backend/src/napms/technical_access_evidence
-  -> backend/src/napms/contexts/technical_access_evidence
-```
-
-Layer mapping inside each context:
-
-```text
-domain/          -> domain/
-application/     -> application/
-adapters/http/   -> presentation/http/
-adapters/postgres/ and outbound adapters
-                 -> infrastructure/
-```
-
-Adapter files that mix inbound and outbound responsibility must be split by responsibility during the move, not copied into a generic target bucket.
-
-### Workflows
-
-```text
-backend/src/napms/requirement_policy_alignment
-  -> backend/src/napms/workflows/requirement_policy_alignment
-backend/src/napms/policy_export
-  -> backend/src/napms/workflows/policy_export
-backend/src/napms/scoped_connectivity_inventory
-  -> backend/src/napms/workflows/scoped_connectivity_inventory
-backend/src/napms/network_operator_view
-  -> backend/src/napms/workflows/network_operator_view
-backend/src/napms/traffic_analysis
-  -> backend/src/napms/workflows/traffic_analysis
-```
-
-Cross-context implementations currently under `backend/src/napms/composition/` are classified file-by-file:
-- workflow-specific query/orchestration implementation -> owning workflow `infrastructure/`;
-- context-specific outbound/persistence implementation -> owning context `infrastructure/` only when semantic ownership is true;
-- pure executable dependency wiring -> `platform/bootstrap/`.
-
-No target file remains under a generic `composition/` package.
-
-### Platform
-
-Current `bootstrap/`, `runtime/` and remaining process mechanics become explicit platform capabilities:
-
-```text
-backend/src/napms/platform/
-  bootstrap/
-  auth/
-  database/
-  http/
-  observability/    # when/where actual responsibility exists
-```
-
-`platform` owns no feature/domain behavior.
-
-## Migration strategy
-
-### M0 — Canonical target and execution state
-
-Deliverables:
-- ADR-014 accepted;
-- `docs/architecture/code-structure.md` changed from current-layout policy to target-layout contract;
-- this roadmap created;
-- active plan/capsule created.
-
-Exit gate:
-- documentation/harness/knowledge checks applicable to architecture planning pass;
-- no production code moved yet.
-
-### M1 — Repository backend boundary
-
-Mechanically create the final backend workspace first:
-
-```text
-pyproject.toml        -> backend/pyproject.toml
-Dockerfile            -> backend/Dockerfile
-src/                  -> backend/src/
-tests/                -> backend/tests/
-```
-
-Update root Makefile, CI paths/commands, Compose/build references and developer tooling in the same stage. Root Makefile remains the stable repository command surface.
-
-Rules:
-- no semantic/module refactor in M1;
-- preserve all existing import paths inside the Python package;
-- `make test`, `make check` and required hosted gates must still represent the same checks.
-
-Exit gate: backend/core + harness + knowledge + Docker/integration gates affected by path changes pass.
-
-### M2 — Bounded contexts to final paths
-
-Move each bounded context directly to `backend/src/napms/contexts/<context>/` and normalize its outer layers in the same slice:
-
-```text
-adapters/http        -> presentation/http
-adapters/postgres    -> infrastructure/persistence/postgres (when useful)
-other outbound adapters -> infrastructure/integrations or capability-named infrastructure package
-```
-
-Execution order:
-1. least-coupled/small contexts first;
-2. then contexts with moderate cross-context consumers;
-3. Application Communication Catalogue and Access Policy last because they have the broadest integration surface.
-
-For each context slice:
-- move code and matching tests together;
-- update all imports/consumer ports in the repository;
-- add/update architecture tests for the new boundary;
-- use a temporary compatibility shim only when it materially reduces integration risk;
-- remove the shim before M7.
-
-M2 integration policy:
-- all bounded-context slices accumulate on one M2 milestone branch and are integrated through one milestone PR;
-- one bounded context is one atomic commit;
-- after each context, relevant unit and architecture tests pass and no old implementation remains duplicated;
-- affected integration tests run within each work package, with the full M2 local gate before final review;
-- hosted gates run only once, when the complete M2 milestone PR is ready for final review.
-
-### M3 — Workflows and elimination of generic composition
-
-Move the five accepted cross-context compositions under `workflows/`.
-
-For each workflow:
-- application orchestration stays under `application/`;
-- HTTP becomes `presentation/http/`;
-- PostgreSQL/query/external composition becomes `infrastructure/`;
-- dependencies on contexts use explicit application contracts/ports only.
-
-Then drain `backend/src/napms/composition/` by classifying every file against the rules above. `composition/` is deleted when empty.
-
-Exit gate:
-- no generic cross-context composition package remains;
-- architecture tests prohibit direct workflow access to context-owned persistence internals.
-
-### M4 — Platform consolidation
-
-Move genuine process concerns from `bootstrap/` and `runtime/` into `platform/`.
-
-Target responsibilities:
-- `platform/bootstrap` — executable assembly and wiring;
-- `platform/auth` — authentication/session and enterprise identity mechanics;
-- `platform/database` — process-level database/migration support;
-- `platform/http` — generic process HTTP shell/support only;
-- `platform/observability` — only when concrete shared logging/metrics/tracing responsibility exists.
-
-Delete legacy top-level `bootstrap/` and `runtime/` after imports and tests are migrated.
-
-Exit gate: process shell contains no feature ownership; bootstrap depends outward on concrete context/workflow adapters and no core code imports platform.
-
-### M5 — Capability-oriented internals
-
-Refine only contexts/workflows whose application layer has multiple independent change axes.
-
-Preferred shape:
-
-```text
-application/
-  <capability>/
-    commands.py / queries.py / handlers.py / dto.py as justified
-  ports/
-```
-
-Use change locality/cohesion as the split criterion. Do not create empty symmetric folders or split solely by file size.
-
-Primary candidate: Application Communication Catalogue. Re-evaluate others from actual coupling after M2-M4; do not pre-invent slices.
-
-Exit gate: architecture/locality tests protect any newly explicit capability boundary.
-
-### M6 — Web final locality
-
-Converge Web UI to:
-
-```text
 web/src/
   app/
-  features/<feature>/
-    api/
-    model/
-    components/
-    pages/
+  features/
   components/ui/
   lib/
 ```
 
-Move root application bootstrap/routing from the current large application surface into `app/`. Keep feature DTO/request mapping feature-local. Shared transport/auth/session mechanics remain shared only when genuinely cross-feature.
+## Completed sequence
 
-Exit gate: `make web-check` and affected browser journeys pass; root API/application files no longer own feature behavior.
+### M0 — Canonical target and execution state
+
+ADR-014, the canonical code-structure contract, migration roadmap and execution plan were established before production moves began.
+
+### M1 — Repository backend boundary
+
+Python packaging, backend tests and Docker ownership moved under `backend/` while the root Makefile remained the stable repository command surface.
+
+### M2 — Bounded contexts to final paths
+
+All accepted bounded contexts moved under `backend/src/napms/contexts/<context>/` with context-local `domain / application / infrastructure / presentation` layers as applicable. Legacy top-level context packages were removed.
+
+### M3 — Workflows and generic composition removal
+
+The five accepted cross-context orchestrations moved under `workflows/`. Generic `composition/` was drained into workflow/context infrastructure or process bootstrap ownership and then removed.
+
+### M4 — Platform consolidation
+
+Process concerns moved under `platform/bootstrap`, `platform/auth`, `platform/database` and `platform/http`. Legacy top-level `bootstrap/` and `runtime/` packages were removed. A follow-up CI path-filter correction ensured future context migrations/changes trigger the appropriate hosted gates.
+
+### M5 — Capability-oriented internals
+
+Application Catalogue was split where change-locality evidence justified `curation / discovery / target`. Resource Catalogue was deliberately left unsplit because its responsibilities were not independent enough to justify additional package boundaries.
+
+### M6 — Web final locality
+
+The Web application converged on `app / features / components/ui / lib`. Root `api.ts`, root application files and feature-specific root components were removed; semantic DTO/API ownership became feature-local.
 
 ### M7 — Compatibility purge and final enforcement
 
-Remove:
-- old import shims;
-- old top-level semantic/workflow/platform package paths;
-- obsolete structural documentation;
-- transitional architecture-test allowlists.
+Structural migration compatibility debt was removed:
+- the pre-M5 Application Catalogue curation facade was deleted;
+- transitional dependency-port fallbacks were removed in favor of final summary/page contracts;
+- vacuous legacy structure checks were replaced by generic taxonomy enforcement;
+- canonical architecture documentation was aligned with the actual repository.
 
-Strengthen executable rules so new code cannot reintroduce:
-- semantic modules directly under `napms/`;
-- generic `composition/`;
-- feature code in `platform`;
-- cross-context domain imports;
-- context persistence bypass from workflows.
+Accepted product/domain compatibility behavior, including the ACC compatibility projection and transactional dependency recheck, was intentionally preserved.
 
-Final backend top-level package must contain only the target architectural categories plus package metadata.
+## Final enforcement
 
-Exit gate: full repository checks and required hosted PR gates pass; canonical docs describe actual code, not future state.
+Executable architecture tests protect at least:
+- backend top-level taxonomy `contexts / workflows / platform`;
+- context/workflow layer locality;
+- absence of generic `adapters/` and `composition/` buckets;
+- Clean Architecture dependency direction;
+- bounded-context isolation and application-contract-based cross-context interaction;
+- context-owned PostgreSQL schema isolation;
+- workflow persistence boundaries;
+- generic `platform/http` ownership;
+- Application Catalogue capability boundaries;
+- Web source locality and absence of the former root API facade.
 
-## Integration policy
+## Validation
 
-- One coherent milestone per PR; squash merge. M2 is one milestone PR containing one atomic commit per bounded context.
-- Keep each PR behavior-preserving unless a separately accepted product/domain change is explicitly bundled.
-- Never leave `main` in a half-moved state that requires a future PR to import/run.
-- Prefer mechanical move/import changes before local refactoring inside the same slice; keep semantic redesign out of this roadmap.
-- If a move reveals an ownership conflict, stop that slice and resolve the canonical domain/architecture owner before continuing.
+Each milestone was integrated only after its applicable local and hosted gates passed. The final migration exit requires backend, Web, Harness, Knowledge, PostgreSQL, Docker/runtime and browser-journey validation as applicable to the closing PR.
 
-## Done definition
-
-The migration is complete when:
-
-```text
-backend/src/napms/
-  contexts/
-  workflows/
-  platform/
-```
-
-is the actual backend package taxonomy; each context is locally Clean-Architecture-shaped; generic `composition`, top-level `runtime/bootstrap`, direct context-domain coupling and obsolete compatibility paths are absent; Web and repository root match the target structure; architecture tests enforce the result.
+For all new work, use `docs/architecture/code-structure.md` and ADR-014 rather than this historical migration sequence.

@@ -42,10 +42,12 @@ from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
 )
-from napms.contexts.application_catalogue.application.curation.structure import (
-    CatalogueMutationOutcome,
+from napms.contexts.application_catalogue.application.curation.component_structure import (
     CreateComponent,
     CreateComponentCommand,
+)
+from napms.contexts.application_catalogue.application.ports import (
+    CatalogueMutationOutcome,
 )
 from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,

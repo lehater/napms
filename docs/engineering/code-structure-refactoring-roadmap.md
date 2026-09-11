@@ -1,14 +1,16 @@
 # Code Structure Refactoring Roadmap
 
-Status: `completed through I32`.
+Status: `historical / superseded structural snapshot; completed through I32`.
 
 Date: 2026-09-11.
+
+This document records the repository state reached after I32. Its references to `napms.bootstrap`, root `web/src/api.ts`, root `App.tsx` and the former `adapters/` taxonomy are historical and must not be used as current architecture guidance. The current structure is defined by `docs/architecture/code-structure.md` and `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
 
 ## Purpose
 
 Align the physical repository structure with the accepted context-first modular-monolith / Clean Architecture / ports-and-adapters model, improving code locality for humans and agents without changing product/domain semantics.
 
-Architecture contract: `docs/architecture/code-structure.md`.
+Current architecture successor: `docs/architecture/code-structure.md` and ADR-014.
 
 ## Completion result
 

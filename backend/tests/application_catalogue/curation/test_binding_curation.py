@@ -12,7 +12,7 @@ from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
 )
-from napms.contexts.application_catalogue.application.curation.structure import (
+from napms.contexts.application_catalogue.application.ports import (
     CatalogueMutationOutcome,
 )
 from napms.contexts.application_catalogue.domain.model import (

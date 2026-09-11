@@ -22,10 +22,12 @@ from napms.contexts.application_catalogue.application.curation.deployments impor
     RenameComponentDeploymentCommand,
     RetireComponentDeploymentCommand,
 )
-from napms.contexts.application_catalogue.application.curation.structure import (
+from napms.contexts.application_catalogue.application.curation.application_structure import (
     RenameApplicationCommand,
-    RenameComponentCommand,
     RetireApplicationCommand,
+)
+from napms.contexts.application_catalogue.application.curation.component_structure import (
+    RenameComponentCommand,
     RetireComponentCommand,
 )
 from napms.workflows.policy_export.application.normalization_ports import DcsProjectionDecodeError

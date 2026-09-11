@@ -20,11 +20,13 @@ from napms.contexts.application_catalogue.application.discovery.catalogue_detail
 from napms.contexts.application_catalogue.application.curation.deployments import (
     ComponentDeploymentMutationResult,
 )
-from napms.contexts.application_catalogue.application.curation.structure import (
+from napms.contexts.application_catalogue.application.curation.application_structure import (
     ApplicationMutationResult,
-    CatalogueMutationOutcome,
+)
+from napms.contexts.application_catalogue.application.curation.component_structure import (
     ComponentMutationResult,
 )
+from napms.contexts.application_catalogue.application.ports import CatalogueMutationOutcome
 from napms.contexts.application_catalogue.domain.model import (
     Application,
     CatalogueLifecycleState,

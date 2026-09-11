@@ -6,13 +6,11 @@ Completed/superseded plans are removed after their durable outcomes are absorbed
 
 Long-range ordered sequencing is canonicalized outside `active/` when it is broader than the current execution stage.
 
-Current active increment: Target Code Structure Migration (`docs/plans/active/PLAN-target-code-structure-migration.md`).
-
-Long-range active roadmap:
-- `docs/engineering/target-code-structure-migration-roadmap.md` — migration to `backend/src/napms/{contexts,workflows,platform}`.
+Current active increment: none.
 
 Completed roadmap/history references include:
-- `docs/engineering/code-structure-refactoring-roadmap.md` — completed I32 structural refactoring;
+- `docs/engineering/target-code-structure-migration-roadmap.md` — completed M0-M7 migration to `backend/src/napms/{contexts,workflows,platform}` and final Web locality;
+- `docs/engineering/code-structure-refactoring-roadmap.md` — historical I32 structural snapshot;
 - `docs/engineering/application-catalogue-target-migration-roadmap.md` — completed I31 Application Catalogue target migration;
 - `docs/engineering/catalogue-curation-roadmap.md` — completed I27 Catalogue Curation;
 - `docs/engineering/traffic-analysis-checker-roadmap.md` — I26;

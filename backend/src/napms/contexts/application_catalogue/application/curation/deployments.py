@@ -12,10 +12,8 @@ from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueProvenanceFactory,
     CatalogueConcurrencyConflict,
     CatalogueIdempotencyConflict,
-    CataloguePersistenceOutcomeUnknown,
-)
-from napms.contexts.application_catalogue.application.curation.structure import (
     CatalogueMutationOutcome,
+    CataloguePersistenceOutcomeUnknown,
 )
 from napms.contexts.application_catalogue.domain.model import (
     CatalogueInvariantError,

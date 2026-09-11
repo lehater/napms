@@ -271,8 +271,8 @@ class BoundedRetirementService:
                 dependencies=groups,
             )
 
-        # The M1 delegate repeats authority/version/dependency checks and owns the
-        # actual transaction. That second check closes the preflight-to-write race.
+        # The transactional delegate repeats authority/version/dependency checks and
+        # owns the write. That second check closes the preflight-to-write race.
         result: RetirementMutationResult = self._delegate.execute(command)
         if result.outcome is TargetMutationOutcome.DEPENDENCY_BLOCKED:
             current = self._dependencies.summarize(
