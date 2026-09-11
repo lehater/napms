@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Search } from "lucide-react"
 
-import { ApiError } from "@/api"
+import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/Button"
 import { listCatalogueResourceWorkspace, type ResourceWorkspaceItemDto } from "@/features/catalogues/resourceWorkspaceApi"
 import { createDeploymentResourceBinding } from "@/features/catalogues/targetCatalogueCommands"

@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-import { ApiError } from "@/api"
+import { ApiError } from "@/lib/api"
 import { PolicyViewControls } from "@/features/policy/PolicyViewControls"
 import {
   getNetworkOperatorRealization,

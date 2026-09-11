@@ -1,4 +1,8 @@
-import { ApiError } from "@/api"
+import { ApiError } from "@/lib/api"
+import type {
+  PortConstraintDto,
+  TrafficAlternativeDto,
+} from "@/features/catalogues/model/interaction"
 
 export type TargetPage<T> = {
   items: T[]
@@ -34,18 +38,6 @@ export type ApplicationComponentDto = {
   description: string | null
   lifecycleState: CatalogueLifecycleState
   version: number
-}
-
-export type PortConstraintDto = {
-  kind: "Any" | "Ranges" | "NotApplicable"
-  ranges?: Array<{ first: number; last: number }>
-}
-
-export type TrafficAlternativeDto = {
-  protocol: string
-  sourcePorts: PortConstraintDto
-  destinationPorts: PortConstraintDto
-  serviceReference: string | null
 }
 
 export type InteractionDefinitionSummaryDto = {

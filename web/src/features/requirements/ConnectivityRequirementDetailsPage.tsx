@@ -1,23 +1,13 @@
 import { useEffect, useState } from "react"
 import { ArrowLeft, CircleAlert } from "lucide-react"
 
-import {
-  ApiError,
-  getConnectivityRequirement,
-  getConnectivityRequirementAlignment,
-  retireConnectivityRequirement,
-  setConnectivityRequirementApplicability,
-  setConnectivityRequirementJustification,
-  type ConnectivityRequirementDetailResponse,
-  type RequirementApplicability,
-  type RequirementPolicyAlignmentDetail,
-  type RequirementPolicyAlignmentStatus,
-} from "@/api"
+import { ApiError } from "@/lib/api"
+import { getConnectivityRequirement, getConnectivityRequirementAlignment, retireConnectivityRequirement, setConnectivityRequirementApplicability, setConnectivityRequirementJustification, type ConnectivityRequirementDetailResponse, type RequirementApplicability, type RequirementPolicyAlignmentDetail, type RequirementPolicyAlignmentStatus } from "@/features/requirements/api"
 import {
   CatalogueIdentity,
   displayName,
   trafficAlternativeText,
-} from "@/components/catalogue/CatalogueIdentity"
+} from "@/features/catalogues/components/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import { Field, Select } from "@/components/ui/Field"
 import {

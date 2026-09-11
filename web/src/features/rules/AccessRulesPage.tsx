@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react"
 import { ChevronRight, CircleAlert } from "lucide-react"
 
-import { ApiError, listAccessRules, type RuleDto } from "@/api"
+import { ApiError } from "@/lib/api"
+import { listAccessRules } from "@/features/rules/api"
+import type { RuleDto } from "@/features/rules/model/rule"
 import {
   CatalogueIdentity,
   shortId,
-} from "@/components/catalogue/CatalogueIdentity"
+} from "@/features/catalogues/components/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import { StatusBadge } from "@/components/ui/StatusBadge"
 

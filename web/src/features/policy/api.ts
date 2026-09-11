@@ -1,11 +1,8 @@
-import type {
-  CataloguePresentation,
-  PortConstraintDto,
-  ProposalInteraction,
-  ProposalScope,
-  RuleDto,
-} from "@/api"
+import type { CataloguePresentation, PortConstraintDto, ProposalInteraction } from "@/features/catalogues/model/interaction"
+import type { RuleDto } from "@/features/rules/model/rule"
 import { request } from "@/lib/api"
+
+type ProposalScope = { scope: string }
 
 export async function listPolicyViewScopes(asOf: string): Promise<{
   scopes: ProposalScope[]

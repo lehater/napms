@@ -12,7 +12,7 @@ import {
   TableProperties,
 } from "lucide-react"
 
-import type { Actor } from "@/api"
+import type { Actor } from "@/features/auth/model/actor"
 import { Button } from "@/components/ui/Button"
 
 export type NavKey =

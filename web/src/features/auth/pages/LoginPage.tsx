@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Network } from "lucide-react"
 
-import { ApiError } from "@/api"
+import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/Button"
 
 export function LoginPage({

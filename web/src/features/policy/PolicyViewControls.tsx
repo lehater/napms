@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 
-import { ApiError, listPolicyViewScopes } from "@/api"
+import { ApiError } from "@/lib/api"
+import { listPolicyViewScopes } from "@/features/policy/api"
 import { Button } from "@/components/ui/Button"
 import { Field, Select } from "@/components/ui/Field"
 import { nowLocalDateTimeInput, toOffsetAwareIso } from "@/lib/datetime"

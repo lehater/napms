@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-import { ApiError } from "@/api"
+import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/Button"
 import { CataloguePager } from "@/features/catalogues/CataloguePager"
 import type {

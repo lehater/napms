@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { Archive, ArrowLeft, Boxes, Link2, Pencil, Plus, RefreshCw } from "lucide-react"
 
-import { ApiError } from "@/api"
-import { shortId } from "@/components/catalogue/CatalogueIdentity"
+import { ApiError } from "@/lib/api"
+import { shortId } from "@/features/catalogues/components/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import { DcsAuthoringPanel } from "@/features/catalogues/DcsAuthoringPanel"
 import {

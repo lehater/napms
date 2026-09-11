@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import { ChevronRight, Plus, Search } from "lucide-react"
 
-import { ApiError } from "@/api"
-import { CatalogueIdentity } from "@/components/catalogue/CatalogueIdentity"
+import { ApiError } from "@/lib/api"
+import { CatalogueIdentity } from "@/features/catalogues/components/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import {
   createCatalogueResource,

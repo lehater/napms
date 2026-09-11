@@ -8,16 +8,8 @@ import {
   Search,
 } from "lucide-react"
 
-import {
-  ApiError,
-  getScopedConnectivityInventory,
-  listScopedConnectivityScopes,
-  type ScopedConnectivityDecisionSummary,
-  type ScopedConnectivityInventoryPage,
-  type ScopedConnectivityNeedSummary,
-  type ScopedConnectivityPolicySummary,
-  type ScopedConnectivityResource,
-} from "@/api"
+import { ApiError } from "@/lib/api"
+import { getScopedConnectivityInventory, listScopedConnectivityScopes, type ScopedConnectivityDecisionSummary, type ScopedConnectivityInventoryPage, type ScopedConnectivityNeedSummary, type ScopedConnectivityPolicySummary, type ScopedConnectivityResource } from "@/features/connectivity/api"
 import { Button } from "@/components/ui/Button"
 import { Field, Select } from "@/components/ui/Field"
 import type { RequestConnectivityContext } from "@/features/connectivity/model"

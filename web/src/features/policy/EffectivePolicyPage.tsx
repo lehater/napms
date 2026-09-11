@@ -1,14 +1,11 @@
 import { useState } from "react"
 
-import {
-  ApiError,
-  getEffectiveDesiredPolicy,
-  type EffectivePolicyResponse,
-} from "@/api"
+import { ApiError } from "@/lib/api"
+import { getEffectiveDesiredPolicy, type EffectivePolicyResponse } from "@/features/policy/api"
 import {
   CatalogueIdentity,
   shortId,
-} from "@/components/catalogue/CatalogueIdentity"
+} from "@/features/catalogues/components/CatalogueIdentity"
 import { StatusBadge } from "@/components/ui/StatusBadge"
 import { PolicyViewControls } from "@/features/policy/PolicyViewControls"
 

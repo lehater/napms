@@ -1,4 +1,4 @@
-import { ApiError } from "@/api"
+import { ApiError } from "@/lib/api"
 import type {
   CheckerQuery,
   CheckerResult,

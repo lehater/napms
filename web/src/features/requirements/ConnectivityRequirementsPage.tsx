@@ -1,23 +1,14 @@
 import { useEffect, useMemo, useState } from "react"
 import { ChevronRight, CircleAlert, Plus, Search } from "lucide-react"
 
-import {
-  ApiError,
-  declareConnectivityRequirement,
-  listConnectivityRequirementAlignment,
-  listConnectivityRequirementInteractions,
-  listConnectivityRequirements,
-  listConnectivityRequirementScopes,
-  type ConnectivityRequirementDto,
-  type ProposalInteraction,
-  type RequirementApplicability,
-  type RequirementPolicyAlignmentStatus,
-} from "@/api"
+import { ApiError } from "@/lib/api"
+import { declareConnectivityRequirement, listConnectivityRequirementAlignment, listConnectivityRequirementInteractions, listConnectivityRequirements, listConnectivityRequirementScopes, type ConnectivityRequirementDto, type RequirementApplicability, type RequirementPolicyAlignmentStatus } from "@/features/requirements/api"
+import type { ProposalInteraction } from "@/features/catalogues/model/interaction"
 import {
   displayName,
   shortId,
   trafficAlternativeText,
-} from "@/components/catalogue/CatalogueIdentity"
+} from "@/features/catalogues/components/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import { Field, Select } from "@/components/ui/Field"
 import {

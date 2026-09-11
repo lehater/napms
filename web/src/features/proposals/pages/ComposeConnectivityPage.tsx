@@ -7,19 +7,15 @@ import {
   ShieldCheck,
 } from "lucide-react"
 
-import {
-  ApiError,
-  listProposalInteractions,
-  listProposalScopes,
-  submitProposal,
-  type ProposalInteraction,
-  type ProposalResult,
-} from "@/api"
+import { ApiError } from "@/lib/api"
+import { listProposalInteractions, listProposalScopes, submitProposal } from "@/features/proposals/api"
+import type { ProposalInteraction } from "@/features/catalogues/model/interaction"
+import type { ProposalResult } from "@/features/proposals/model/result"
 import {
   displayName,
   shortId,
   trafficAlternativeText,
-} from "@/components/catalogue/CatalogueIdentity"
+} from "@/features/catalogues/components/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import { Field, Select } from "@/components/ui/Field"
 

@@ -1,18 +1,13 @@
 import { useEffect, useState } from "react"
 import { ArrowLeft, CircleAlert } from "lucide-react"
 
-import {
-  ApiError,
-  getAccessRule,
-  setAccessRuleEffectiveWindow,
-  setAccessRuleOperationalState,
-  type RuleDetailResponse,
-} from "@/api"
+import { ApiError } from "@/lib/api"
+import { getAccessRule, setAccessRuleEffectiveWindow, setAccessRuleOperationalState, type RuleDetailResponse } from "@/features/rules/api"
 import {
   CatalogueIdentity,
   displayName,
   trafficAlternativeText,
-} from "@/components/catalogue/CatalogueIdentity"
+} from "@/features/catalogues/components/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import { StatusBadge } from "@/components/ui/StatusBadge"
 import { toLocalDateTimeInput, toOffsetAwareIso } from "@/lib/datetime"

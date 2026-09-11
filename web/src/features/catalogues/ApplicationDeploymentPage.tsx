@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { ArrowLeft, Pencil, Plus, Search } from "lucide-react"
 
-import { ApiError } from "@/api"
+import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/Button"
 import { AddDeploymentInteractionPanel } from "@/features/catalogues/AddDeploymentInteractionPanel"
 import { CataloguePager } from "@/features/catalogues/CataloguePager"

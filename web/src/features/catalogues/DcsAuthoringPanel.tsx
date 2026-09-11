@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { ArrowRight, Plus } from "lucide-react"
 
-import { ApiError } from "@/api"
-import { shortId } from "@/components/catalogue/CatalogueIdentity"
+import { ApiError } from "@/lib/api"
+import { shortId } from "@/features/catalogues/components/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import {
   createCatalogueDcsRevision,

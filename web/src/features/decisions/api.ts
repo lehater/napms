@@ -1,9 +1,7 @@
-import type {
-  CataloguePresentation,
-  ProposalInteractionPage,
-  ProposalScope,
-} from "@/api"
+import type { CataloguePresentation, ProposalInteractionPage } from "@/features/catalogues/model/interaction"
 import { request } from "@/lib/api"
+
+type ProposalScope = { scope: string }
 
 export type ConnectivityDecisionOutcome = "Allowed" | "NotAllowed"
 

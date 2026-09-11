@@ -1,20 +1,13 @@
 import { useEffect, useState } from "react"
 import { ArrowLeft, RotateCcw, Trash2 } from "lucide-react"
 
-import {
-  ApiError,
-  getConnectivityDecision,
-  listConnectivityDecisionScopes,
-  recordConnectivityDecision,
-  type ConnectivityDecisionDetailResponse,
-  type ConnectivityDecisionOutcome,
-  type DecisionEvidenceReferenceDto,
-} from "@/api"
+import { ApiError } from "@/lib/api"
+import { getConnectivityDecision, listConnectivityDecisionScopes, recordConnectivityDecision, type ConnectivityDecisionDetailResponse, type ConnectivityDecisionOutcome, type DecisionEvidenceReferenceDto } from "@/features/decisions/api"
 import {
   CatalogueIdentity,
   displayName,
   shortId,
-} from "@/components/catalogue/CatalogueIdentity"
+} from "@/features/catalogues/components/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import { Field, Select } from "@/components/ui/Field"
 import {

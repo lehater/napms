@@ -1,4 +1,4 @@
-import { ApiError } from "@/api"
+import { ApiError } from "@/lib/api"
 
 export type DeploymentInteractionLifecycleDto = {
   deploymentInteractionId: string

@@ -1,23 +1,15 @@
 import { useEffect, useMemo, useState } from "react"
 import { ChevronRight, Plus, Search, Trash2 } from "lucide-react"
 
-import {
-  ApiError,
-  listConnectivityDecisionInteractions,
-  listConnectivityDecisions,
-  listConnectivityDecisionScopes,
-  recordConnectivityDecision,
-  type ConnectivityDecisionDto,
-  type ConnectivityDecisionOutcome,
-  type DecisionEvidenceReferenceDto,
-  type ProposalInteraction,
-} from "@/api"
+import { ApiError } from "@/lib/api"
+import { listConnectivityDecisionInteractions, listConnectivityDecisions, listConnectivityDecisionScopes, recordConnectivityDecision, type ConnectivityDecisionDto, type ConnectivityDecisionOutcome, type DecisionEvidenceReferenceDto } from "@/features/decisions/api"
+import type { ProposalInteraction } from "@/features/catalogues/model/interaction"
 import {
   CatalogueIdentity,
   displayName,
   shortId,
   trafficAlternativeText,
-} from "@/components/catalogue/CatalogueIdentity"
+} from "@/features/catalogues/components/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import { Field, Select } from "@/components/ui/Field"
 import {

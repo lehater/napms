@@ -1,4 +1,4 @@
-import type { PortConstraintDto, TrafficAlternativeDto } from "@/features/catalogues/targetCatalogueApi"
+import type { PortConstraintDto, TrafficAlternativeDto } from "@/features/catalogues/model/interaction"
 
 function rangeText(constraint: PortConstraintDto): string {
   if (constraint.kind === "Any") return "any"

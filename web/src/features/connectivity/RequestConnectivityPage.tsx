@@ -1,19 +1,15 @@
 import { useEffect, useMemo, useState } from "react"
 import { ArrowLeft, CircleAlert, ShieldCheck } from "lucide-react"
 
-import {
-  ApiError,
-  declareConnectivityRequirement,
-  listProposalInteractions,
-  submitProposal,
-  type ProposalInteraction,
-  type ProposalResult,
-  type RequirementApplicability,
-} from "@/api"
+import { ApiError } from "@/lib/api"
+import { declareConnectivityRequirement, type RequirementApplicability } from "@/features/requirements/api"
+import { listProposalInteractions, submitProposal } from "@/features/proposals/api"
+import type { ProposalInteraction } from "@/features/catalogues/model/interaction"
+import type { ProposalResult } from "@/features/proposals/model/result"
 import {
   displayName,
   trafficAlternativeText,
-} from "@/components/catalogue/CatalogueIdentity"
+} from "@/features/catalogues/components/CatalogueIdentity"
 import { Button } from "@/components/ui/Button"
 import { Field, Select } from "@/components/ui/Field"
 import type { RequestConnectivityContext } from "@/features/connectivity/model"

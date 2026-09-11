@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react"
 import { Plus, Search, X } from "lucide-react"
 
-import { ApiError } from "@/api"
+import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/Button"
+import type {
+  PortConstraintDto,
+  TrafficAlternativeDto,
+} from "@/features/catalogues/model/interaction"
 import {
   createInteractionDefinition,
   TargetCatalogueApiError,
@@ -10,8 +14,6 @@ import {
 import {
   listApplicationComponents,
   type ApplicationComponentDto,
-  type PortConstraintDto,
-  type TrafficAlternativeDto,
 } from "@/features/catalogues/targetCatalogueApi"
 
 const inputClass =

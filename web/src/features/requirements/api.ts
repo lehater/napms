@@ -1,10 +1,7 @@
-import type {
-  CataloguePresentation,
-  ProposalInteraction,
-  ProposalInteractionPage,
-  ProposalScope,
-} from "@/api"
+import type { CataloguePresentation, ProposalInteraction, ProposalInteractionPage } from "@/features/catalogues/model/interaction"
 import { request } from "@/lib/api"
+
+type ProposalScope = { scope: string }
 
 export type RequirementApplicability =
   | { kind: "Ongoing" }

@@ -1,12 +1,9 @@
 import { useState } from "react"
 
-import {
-  ApiError,
-  getNormalizedPolicy,
-  type NormalizedPolicyResponse,
-  type PortConstraintDto,
-} from "@/api"
-import { displayName } from "@/components/catalogue/CatalogueIdentity"
+import { ApiError } from "@/lib/api"
+import { getNormalizedPolicy, type NormalizedPolicyResponse } from "@/features/policy/api"
+import type { PortConstraintDto } from "@/features/catalogues/model/interaction"
+import { displayName } from "@/features/catalogues/components/CatalogueIdentity"
 import { PolicyViewControls } from "@/features/policy/PolicyViewControls"
 
 function renderPorts(value: PortConstraintDto): string {

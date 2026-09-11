@@ -1,5 +1,6 @@
-import type { ProposalScope } from "@/api"
 import { request } from "@/lib/api"
+
+type ProposalScope = { scope: string }
 
 export type ScopedConnectivityResource = {
   resourceReference: string

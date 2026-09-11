@@ -1,5 +1,7 @@
-import type { ProposalScope, RuleDto } from "@/api"
+import type { RuleDto } from "@/features/rules/model/rule"
 import { request } from "@/lib/api"
+
+type ProposalScope = { scope: string }
 
 export type RuleStateTransition = {
   fromState: "Active" | "Inactive"

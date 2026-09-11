@@ -1,4 +1,4 @@
-import type { PortConstraintDto, TrafficAlternativeDto } from "@/api"
+import type { PortConstraintDto, TrafficAlternativeDto } from "@/features/catalogues/model/interaction"
 
 export function shortId(value: string) {
   return value.length <= 18 ? value : `${value.slice(0, 8)}…${value.slice(-6)}`

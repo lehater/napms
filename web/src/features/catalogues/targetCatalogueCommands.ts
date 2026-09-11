@@ -1,11 +1,11 @@
-import { ApiError } from "@/api"
+import { ApiError } from "@/lib/api"
+import type { TrafficAlternativeDto } from "@/features/catalogues/model/interaction"
 import type {
   ApplicationComponentDto,
   ApplicationDefinitionDto,
   ApplicationDeploymentDto,
   CatalogueLifecycleState,
   DeploymentInteractionSide,
-  TrafficAlternativeDto,
 } from "@/features/catalogues/targetCatalogueApi"
 
 export type DependencyReferenceDto = {
