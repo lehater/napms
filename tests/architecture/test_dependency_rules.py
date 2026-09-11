@@ -18,6 +18,9 @@ REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
 RUNTIME = NAPMS / "runtime"
 APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "adapters" / "http"
 RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "adapters" / "http"
+CONNECTIVITY_REQUIREMENTS_HTTP = CONNECTIVITY_REQUIREMENTS / "adapters" / "http.py"
+PROCESS_HTTP = RUNTIME / "http_api.py"
+LEGACY_PROCESS_HTTP = RUNTIME / "legacy_http_api.py"
 
 DOMAIN_LAYERS = (
     ACCESS_POLICY / "domain",
@@ -120,6 +123,22 @@ def test_catalogue_http_endpoints_are_not_implemented_in_runtime():
 def test_catalogue_owner_http_packages_exist():
     assert APPLICATION_CATALOGUE_HTTP.is_dir()
     assert RESOURCE_CATALOGUE_HTTP.is_dir()
+
+
+def test_connectivity_requirements_http_is_owner_local():
+    assert CONNECTIVITY_REQUIREMENTS_HTTP.is_file()
+    assert LEGACY_PROCESS_HTTP.is_file()
+    process_source = PROCESS_HTTP.read_text(encoding="utf-8")
+    assert "/api/v1/connectivity-requirements" not in process_source
+    assert all(
+        not module.startswith(
+            (
+                "napms.connectivity_requirements.application",
+                "napms.connectivity_requirements.domain",
+            )
+        )
+        for module in imported_modules(PROCESS_HTTP)
+    )
 
 
 POSTGRES_SCHEMA_OWNERS = (
