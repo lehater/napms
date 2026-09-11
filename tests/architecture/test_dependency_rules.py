@@ -20,6 +20,8 @@ SCOPED_CONNECTIVITY_INVENTORY = NAPMS / "scoped_connectivity_inventory"
 RUNTIME = NAPMS / "runtime"
 APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "adapters" / "http"
 RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "adapters" / "http"
+APPLICATION_CATALOGUE_HTTP_SUPPORT = APPLICATION_CATALOGUE_HTTP / "support.py"
+RESOURCE_CATALOGUE_HTTP_SUPPORT = RESOURCE_CATALOGUE_HTTP / "support.py"
 CONNECTIVITY_REQUIREMENTS_HTTP = CONNECTIVITY_REQUIREMENTS / "adapters" / "http.py"
 CONNECTIVITY_DECISION_HTTP = CONNECTIVITY_DECISION / "adapters" / "http.py"
 ACCESS_POLICY_HTTP = ACCESS_POLICY / "adapters" / "http.py"
@@ -155,6 +157,20 @@ def test_catalogue_http_endpoints_are_not_implemented_in_runtime():
 def test_catalogue_owner_http_packages_exist():
     assert APPLICATION_CATALOGUE_HTTP.is_dir()
     assert RESOURCE_CATALOGUE_HTTP.is_dir()
+
+
+def test_catalogue_http_support_is_owner_local():
+    assert APPLICATION_CATALOGUE_HTTP_SUPPORT.is_file()
+    assert RESOURCE_CATALOGUE_HTTP_SUPPORT.is_file()
+    runtime_support = (RUNTIME / "http_support.py").read_text(encoding="utf-8")
+    forbidden_vocabulary = (
+        "InvalidCatalogueTime",
+        "InvalidCatalogueInterval",
+        "CatalogueAuthorityDenied",
+        "CatalogueMutationFailed",
+        "CataloguePersistenceOutcomeUnknown",
+    )
+    assert all(value not in runtime_support for value in forbidden_vocabulary)
 
 
 def test_policy_export_json_serialization_is_owner_local():

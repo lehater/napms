@@ -13,6 +13,11 @@ from napms.application_catalogue.adapters.http.legacy_curation import (
     _component_dto,
     _deployment_dto,
 )
+from napms.application_catalogue.adapters.http.support import (
+    mutation_response,
+    require_aware,
+    require_mutation_success,
+)
 from napms.application_catalogue.application.deployment_curation import (
     RenameComponentDeploymentCommand,
     RetireComponentDeploymentCommand,
@@ -27,10 +32,7 @@ from napms.policy_export.application.normalization_ports import DcsProjectionDec
 from napms.runtime.auth import InMemorySessionStore
 from napms.runtime.http_support import (
     PublicApiError,
-    mutation_response,
     require_actor,
-    require_aware,
-    require_mutation_success,
 )
 from napms.policy_export.adapters.http_json import port_constraint_json
 

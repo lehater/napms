@@ -10,6 +10,7 @@ from napms.application_catalogue.adapters.http.legacy_curation import (
     DcsTrafficAlternativeValue,
     _traffic_alternative,
 )
+from napms.application_catalogue.adapters.http.support import require_aware as _require_aware
 from napms.application_catalogue.application.curation import CreateApplicationCommand
 from napms.application_catalogue.application.target_binding_curation import (
     CreateDeploymentInteractionResourceBindingCommand,
@@ -38,7 +39,6 @@ from napms.application_catalogue.domain.target_model import DeploymentInteractio
 from napms.runtime.auth import InMemorySessionStore
 from napms.runtime.http_support import PublicApiError
 from napms.runtime.http_support import require_actor as _require_actor
-from napms.runtime.http_support import require_aware as _require_aware
 
 
 _SUCCESS_OUTCOMES = {"Created", "Updated", "Resolved"}

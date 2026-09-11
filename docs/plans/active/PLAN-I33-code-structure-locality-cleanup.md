@@ -49,6 +49,14 @@ Canonical inputs:
 - Register owner-local error handlers and routers from process composition.
 - Remove the legacy HTTP module and migration filtering mechanism.
 
+## Completed slice S6
+
+- Keep `runtime/http_support.py` limited to genuinely shared process/transport helpers.
+- Move Catalogue-specific validation and mutation mapping to owner-local Application Catalogue and Resource Catalogue HTTP support modules.
+- Preserve the existing HTTP contracts, status codes, messages and application/domain semantics.
+- Keep Application Catalogue and Resource Catalogue separate; intentional small duplication does not establish a shared Catalogue owner.
+- Do not perform size-based refactoring of other HTTP adapters.
+
 ## Explicit non-goals
 
 - Do not change product, domain, API, session, cookie, correlation, logging, readiness or persistence semantics.
@@ -56,10 +64,9 @@ Canonical inputs:
 
 ## Exit criteria
 
-- `src/napms/runtime/http_api.py` contains only process responsibilities and direct process routes.
-- Feature routers and exception mappings live with their semantic owners.
-- Semantic adapters do not import process HTTP assembly.
-- The legacy HTTP module and migration filtering mechanism are absent.
+- `src/napms/runtime/http_support.py` contains only shared process/transport support and no Catalogue-specific validation or mutation mapping.
+- Application Catalogue and Resource Catalogue adapters import Catalogue-specific helpers from their respective owner-local support modules.
+- Architecture guards protect both owner-local support locations and the runtime boundary.
 - `make check` passes.
 
 ## Blockers
@@ -68,4 +75,4 @@ None known.
 
 ## Next
 
-Coordinator reviews completed S5 and selects the next evidence-backed slice.
+Coordinator review; select the next evidence-backed slice before further implementation.

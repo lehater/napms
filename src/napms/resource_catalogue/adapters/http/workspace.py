@@ -9,18 +9,18 @@ from napms.resource_catalogue.adapters.http.curation import (
     resource_dto,
     resource_persistence_error,
 )
+from napms.resource_catalogue.adapters.http.support import (
+    mutation_response,
+    require_aware,
+    require_mutation_success,
+)
 from napms.resource_catalogue.application.curation import (
     RenameResourceCommand,
     RetireResourceCommand,
 )
 from napms.resource_catalogue.application.ports import ResourceCataloguePersistenceError
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_support import (
-    mutation_response,
-    require_actor,
-    require_aware,
-    require_mutation_success,
-)
+from napms.runtime.http_support import require_actor
 
 
 class RenameCatalogueResourceRequest(BaseModel):

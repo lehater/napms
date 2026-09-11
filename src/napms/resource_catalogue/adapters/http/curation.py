@@ -20,14 +20,16 @@ from napms.resource_catalogue.domain.responsibility import (
     ResponsiblePartyKind,
     ResourceResponsibilityRole,
 )
-from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_support import (
-    PublicApiError,
+from napms.resource_catalogue.adapters.http.support import (
     mutation_response,
-    require_actor,
     require_aware,
     require_interval,
     require_mutation_success,
+)
+from napms.runtime.auth import InMemorySessionStore
+from napms.runtime.http_support import (
+    PublicApiError,
+    require_actor,
 )
 
 
