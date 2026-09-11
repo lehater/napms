@@ -1,322 +1,333 @@
 # Application Communication Catalogue Tactical Model
 
-Status: `accepted for I27 catalogue curation Stage 0`.
+Status: `accepted and implemented through I31`.
 
 Date: 2026-09-10.
 
 ## Purpose
 
-Define the Tactical DDD model required to curate the Application Communication Catalogue through normal NAPMS product workflows while preserving existing Access Rule, Connectivity Requirement, Connectivity Decision and policy identities.
+Define the current Application Communication Catalogue write/read semantics selected by ADR-012 and ADR-013. This model supersedes the I27 Application-side tactical structure for current authoring while preserving legacy Component Deployment/DCS/binding truth and unchanged downstream semantic identities.
 
-This document refines the already accepted Strategic DDD ownership:
+## Current structure
 
 ```text
-Application Communication Catalogue
-    owns Application / Component / Component Deployment / Directed Communication Specification identities and structure
+Application Definition
+  -> Components
+  -> Interaction Definitions
+
+Application Deployment
+  -> Application Definition
+  -> deployment context
+  -> Deployment Interactions
+
+Deployment Interaction
+  -> Interaction Definition
+  -> source Resource bindings
+  -> destination Resource bindings
+  -> internal current compatibility projection
 ```
 
-It does not turn NAPMS into a generic application portfolio, deployment inventory or CMDB.
+## Identities and fields
 
-## Product boundary
+### Application Definition
 
-The catalogue exists to describe application participants and communication semantics that are relevant to governed network access.
-
-The first curation slice supports this hierarchy:
+The existing stable ACC `applicationId` remains the Application Definition identity.
 
 ```text
-Application
-  -> Component
-      -> Component Deployment
-
-Component Deployment
-  -> Deployment Resource Binding -> Resource Catalogue Resource
-
-Directed Communication Specification Revision
-  -> Source Component Deployment
-  -> Destination Component Deployment
-  -> immutable traffic projection
-```
-
-Application and Component are structural catalogue identities. Component Deployment remains the identity used directly by Connectivity Requirement, Connectivity Decision and Access Rule semantic subjects.
-
-## Identity model
-
-### Application
-
-```text
-Application
+ApplicationDefinition
     applicationId: UUID
     displayName: non-empty string
+    description: optional descriptive text
+    domain: optional classification label
+    ownerReference: optional external correlation reference
     lifecycle: Active | Retired
-    provenanceReference: non-empty string
+    provenanceReference
+    technical concurrency token
 ```
 
-`applicationId` is stable and server-owned.
-
-Display-name changes do not create another Application and do not affect downstream policy identity.
+Description, domain and owner reference do not participate in identity. Owner reference does not grant authority.
 
 ### Component
+
+The existing stable ACC `componentId` remains the Component identity and belongs to exactly one Application Definition.
 
 ```text
 Component
     componentId: UUID
     applicationId: UUID
     displayName: non-empty string
+    type: optional classification label
+    description: optional descriptive text
     lifecycle: Active | Retired
-    provenanceReference: non-empty string
+    provenanceReference
+    technical concurrency token
 ```
 
-A Component belongs to exactly one Application for its lifetime.
+Component type is descriptive and open-ended in I31; no domain behavior branches on the text value.
 
-Moving a Component between Applications is not an in-place edit in I27. If the business concept changes parent Application, curate a replacement Component and retire the old one. This avoids silently rewriting structural provenance relied on by deployed participants.
-
-### Component Deployment
+### Interaction Definition
 
 ```text
-Component Deployment
-    deploymentId: UUID
-    componentId: UUID
-    displayName: optional non-empty string
+InteractionDefinition
+    interactionDefinitionId: UUID
+    applicationId: UUID
+    sourceComponentId: UUID
+    destinationComponentId: UUID
+    trafficAlternatives: 1+
     lifecycle: Active | Retired
-    provenanceReference: non-empty string
+    provenanceReference
+    technical concurrency token
 ```
 
-`deploymentId` is the existing stable UUID already consumed by downstream semantic identities.
+Source and destination Components must belong to the same Application Definition as the Interaction Definition.
 
-A Component Deployment belongs to exactly one Component for its lifetime.
+Traffic uses the existing vendor-neutral DCS traffic value semantics for protocols and port constraints.
 
-Changing its parent Component in place is forbidden. Replacement is represented by another deployment identity plus retirement of the old deployment when appropriate.
+Interaction Definition is current reusable communication intent. It is not itself the immutable downstream DCS revision identity.
 
-The existing optional deployment display name remains presentation metadata. If omitted, consumers may fall back to the parent Component name or stable deployment ID according to the owning read contract.
-
-### Directed Communication Specification Revision
-
-The existing DCS revision identity remains unchanged:
+### Application Deployment
 
 ```text
-DcsRevision
-    revisionId: UUID
-    sourceComponentDeploymentId: UUID
-    destinationComponentDeploymentId: UUID
-    immutable projectionPayload
-    displayName: optional non-empty string
-    provenanceReference: non-empty string
+ApplicationDeployment
+    applicationDeploymentId: UUID
+    applicationId: UUID
+    companyReference: non-empty external correlation reference
+    environment: non-empty deployment-context label
+    scopeReference: non-empty external Responsibility Scope reference
+    lifecycle: Active | Retired
+    provenanceReference
+    technical concurrency token
 ```
 
-A DCS revision is immutable communication truth. Editing communication semantics creates another DCS revision; existing Requirements, Decisions and Rules keep references to their original immutable revision.
+Application Deployment belongs to exactly one Application Definition. Company/Environment/Scope are mutable context metadata, not identity components and not authority scope.
 
-I27 may add authoring commands that produce a DCS projection, but those commands must not expose `projectionPayload` as a user-authored opaque persistence blob.
+A new Application Deployment may contain zero Deployment Interactions.
 
-### Deployment Resource Binding
-
-The existing temporal relation remains:
+### Deployment Interaction
 
 ```text
-Deployment Resource Binding
-    referenceId: stable string
-    componentDeploymentId: UUID
+DeploymentInteraction
+    deploymentInteractionId: UUID
+    applicationDeploymentId: UUID
+    interactionDefinitionId: UUID
+    lifecycle: Active | Retired
+    provenanceReference
+    technical concurrency token
+```
+
+For one Application Deployment, the same Active Interaction Definition may be selected at most once.
+
+A Deployment Interaction inherits source Component, destination Component and traffic from its active Interaction Definition. Deployment-specific traffic or endpoint overrides do not exist in I31.
+
+### Deployment Interaction Resource Binding
+
+A Resource binding belongs to exactly one Deployment Interaction side.
+
+```text
+DeploymentInteractionResourceBinding
+    bindingReference: stable string
+    deploymentInteractionId: UUID
+    side: Source | Destination
     resourceReference: Resource Catalogue reference
-    validity: [validFrom, validUntil)
-    provenanceReference: non-empty string
+    validity: [validFrom, validTo)
+    provenanceReference
+    technical concurrency token
 ```
 
-A binding relates two independently owned identities. It does not make Resource identity part of Component Deployment identity.
+The same Resource may be bound to both sides only when each side independently selects it; the side relation is explicit.
 
-## Lifecycle
+Within one Deployment Interaction side, duplicate simultaneously effective bindings for the same Resource are invalid.
 
-### Catalogue entity lifecycle
+## Compatibility identity
 
-I27 adopts a minimal lifecycle for Application, Component and Component Deployment:
+The current model preserves the existing downstream semantic boundary through an ACC-owned compatibility projection.
+
+For each Active Deployment Interaction:
+
+```text
+CompatibilityProjection
+    deploymentInteractionId
+    sourceCompatibilityComponentDeploymentId
+    destinationCompatibilityComponentDeploymentId
+    currentDcsRevisionId
+```
+
+The source/destination compatibility Component Deployment identities are unique per Deployment Interaction side and stable for that Deployment Interaction lifetime.
+
+The current immutable DCS revision references those two compatibility identities and carries the current Interaction Definition traffic snapshot.
+
+Target Resource bindings project to the corresponding compatibility Component Deployment. Existing downstream resolvers therefore continue to obtain Resource sets and DCS payload through the existing `DirectedInteractionIdentity` triple.
+
+Compatibility IDs are not user-facing authoring identities.
+
+## Creation invariants
+
+### Create Interaction Definition
+
+Required:
+
+1. parent Application Definition exists and is Active;
+2. source and destination Components exist, are Active and belong to that same Definition;
+3. at least one valid traffic alternative is supplied;
+4. traffic semantics satisfy the existing DCS traffic constraints.
+
+No compatibility projection is created until the Interaction Definition is selected by an Application Deployment.
+
+### Create Application Deployment
+
+Required:
+
+1. referenced Application Definition exists and is Active;
+2. Company, Environment and Scope context values are present and valid bounded values;
+3. no Company/Scope existence or authority is inferred from the text values.
+
+### Select Deployment Interaction
+
+Required:
+
+1. Application Deployment exists and is Active;
+2. Interaction Definition exists, is Active and belongs to the same Application Definition;
+3. the Interaction Definition is not already selected as another Active Deployment Interaction in that Application Deployment.
+
+Creation establishes the Deployment Interaction and its compatibility source/destination Component Deployment identities plus initial immutable DCS revision in one semantic operation.
+
+### Bind Resource
+
+Required:
+
+1. Deployment Interaction is Active;
+2. selected side is Source or Destination;
+3. referenced Resource exists and is admitted by the Resource Catalogue consuming contract;
+4. temporal interval is valid;
+5. no duplicate effective binding exists for the same Deployment Interaction side and Resource.
+
+## Edit semantics
+
+### Descriptive/context fields
+
+Display names, descriptions, classifications, owner correlation reference and Application Deployment context may be corrected in place with provenance and optimistic concurrency. These values do not change stable identity or downstream compatibility identity.
+
+### Interaction endpoints
+
+Source/destination Component change is allowed only when the Interaction Definition has no Active Deployment Interaction selection.
+
+If Active selections exist, endpoint change is rejected as a dependency conflict. Replacement is represented by another Interaction Definition and explicit replacement of selections.
+
+### Interaction traffic
+
+Traffic edit is a semantic operation over the Interaction Definition and all of its Active Deployment Interactions.
+
+Before update, ACC asks downstream dependency ports whether any affected current compatibility triple has an active/effective Connectivity Requirement, effective/final Connectivity Decision or active/effective Access Rule.
+
+If any such dependency exists, the edit is blocked and returns grouped dependencies.
+
+Otherwise the operation:
+
+1. validates the new traffic alternatives;
+2. updates the Interaction Definition current traffic;
+3. creates one new immutable DCS revision per Active Deployment Interaction using its existing compatibility side IDs;
+4. advances each affected Deployment Interaction current projection to that new revision;
+5. preserves every previous DCS revision and historical downstream reference.
+
+The operation must not leave some Active Deployment Interactions on old current traffic while others use the new Definition traffic.
+
+## Lifecycle and dependency invariants
+
+Lifecycle is terminal:
 
 ```text
 Active -> Retired
 ```
 
-`Retired` is terminal for the first curation slice.
+No normal hard delete exists.
 
-Retirement means the catalogue identity is no longer available for new authoring/discovery flows that require active participants. Historical reads and references remain valid.
+Retirement does not cascade. The user clears active dependants first.
 
-Retirement does not rewrite or delete existing Connectivity Requirements, Connectivity Decisions, Access Rules, DCS revisions or historical bindings.
+### Application Definition retirement blockers
 
-### Parent/child retirement invariants
+- Active Components;
+- Active Interaction Definitions;
+- Active Application Deployments.
 
-Retirement does not cascade physically.
+### Component retirement blockers
 
-The application layer must reject retirement that would create structurally invalid active children:
+- Active Interaction Definitions using the Component as source or destination;
+- Active legacy I27 Component Deployments belonging to the Component during coexistence.
 
-- an Application cannot be retired while it has Active Components;
-- a Component cannot be retired while it has Active Component Deployments;
-- a Component Deployment may be retired while historical bindings/DCS revisions/downstream policy references exist because those references remain historical truth.
+### Interaction Definition retirement blockers
 
-This requires the user to retire from leaves upward and makes the consequence explicit rather than silently cascading state changes.
+- Active Deployment Interactions selecting it.
 
-### Hard deletion
+### Application Deployment retirement blockers
 
-Normal product commands do not hard-delete Applications, Components, Component Deployments, DCS revisions or historical bindings.
+- Active Deployment Interactions.
 
-Database-level destructive maintenance is outside the I27 product contract.
+### Deployment Interaction retirement blockers
 
-## Structural invariants
+- effective source Resource bindings;
+- effective destination Resource bindings;
+- owner-reported active/effective Connectivity Requirements for the current compatibility triple;
+- owner-reported effective/final Connectivity Decisions for the current compatibility triple;
+- owner-reported active/effective Access Rules for the current compatibility triple.
 
-The ACC write model enforces:
+After blockers are cleared, retiring a Deployment Interaction retires its compatibility Component Deployment identities from new authoring/discovery while preserving historical DCS/binding/downstream references.
 
-1. every Component references an existing Application;
-2. every Component Deployment references an existing Component;
-3. active Components require an Active parent Application;
-4. active Component Deployments require an Active parent Component and Active ancestor Application;
-5. DCS source and destination deployments must exist;
-6. new DCS revisions may reference only Active deployments for normal authoring;
-7. new Deployment Resource Bindings may reference only an Active Component Deployment and an existing Resource Catalogue Resource admitted by the consuming use case;
-8. no parent identity is changed in place;
-9. no lifecycle action changes downstream semantic identities.
+## Dependency projection
 
-## Aggregate and consistency boundary
-
-Application, Component and Component Deployment are separate stable catalogue entities persisted within the ACC bounded context.
-
-I27 does not require one large aggregate loading an entire Application tree for every command. Structural invariants are enforced through ACC-owned application services/repositories under one transactional boundary where a command spans several ACC records.
-
-The tactical model should remain KISS-oriented:
-
-- command one semantic mutation at a time;
-- validate parent existence/state before child creation;
-- use database foreign keys as structural backstops, not as the only domain validation;
-- preserve downstream immutable references.
-
-## Command responsibility
-
-The application layer will expose task-oriented commands rather than a generic repository CRUD API.
-
-Expected command families after Stage 0 closure:
+Blocked retirement and blocked traffic edit return grouped dependency counts owned by the application/read model. Supported semantic groups are:
 
 ```text
-CreateApplication
-RenameApplication
-RetireApplication
-
-CreateComponent
-RenameComponent
-RetireComponent
-
-CreateComponentDeployment
-RenameComponentDeployment
-RetireComponentDeployment
-
-CreateDeploymentResourceBinding
-EndDeploymentResourceBinding
-
-CreateDcsRevision
+Components
+Interactions
+ApplicationDeployments
+DeploymentInteractions
+ResourceBindings
+ConnectivityRequirements
+ConnectivityDecisions
+AccessRules
+LegacyComponentDeployments
 ```
 
-Exact authority action names and DCS authoring request shape remain separate Stage 0 P0 decisions.
+Counts are server-derived and each non-zero group has a bounded drill-down query. The Web client does not infer dependency counts from loaded children.
 
-## Query responsibility
+## Read-model responsibility
 
-Catalogue curation requires read models that support:
+Current reads are bounded projections rather than one whole Application tree.
 
-```text
-Applications
-  -> Components
-      -> Component Deployments
-          -> effective Resource bindings
-          -> communication specifications
-```
+Required projections support:
 
-The read side may be optimized independently from write entities, but it must preserve ACC ownership and stable IDs.
+- paged/searchable/filterable Application Definitions with Component/Interaction/Deployment counts;
+- Definition overview;
+- separately paged Components;
+- separately paged Interaction Definitions with active Deployment-selection counts;
+- separately paged Definition-local Application Deployments;
+- paged global Application Deployments;
+- Deployment detail and paged Deployment Interaction connectivity rows;
+- paged Resource set for one Deployment Interaction side;
+- grouped dependency summaries and bounded dependency drill-downs.
 
-Existing interaction discovery/read consumers remain valid and must not be forced through the curation UI projection.
+Potentially unbounded lists use server-side stable sort and paging.
 
-## Compatibility with the existing implementation
+## Legacy coexistence
 
-### Existing state
+Existing I27 Application and Component IDs remain valid and may be presented as current Definitions/Components.
 
-Before I27, persisted ACC state contains:
+Existing pre-I31 Component Deployments, DCS revisions and Deployment Resource Bindings are not automatically transformed into Application Deployments or Interaction Definitions because required business context cannot be inferred safely.
 
-```text
-component_deployments
-    component_deployment_id
-    provenance_reference
-    display_name
+They remain legacy ACC truth for existing downstream references. Active legacy Component Deployments are an explicit retirement dependency until retired through the retained compatibility/maintenance path or a future explicit migration workflow.
 
-dcs_revisions
-    revision_id
-    source_component_deployment_id
-    destination_component_deployment_id
-    projection_payload
-    provenance_reference
-    display_name
+## Authority and external references
 
-deployment_resource_bindings
-    ...
-```
+Catalogue mutation authority remains the existing ACC curation authority contract. Company, owner and Responsibility Scope correlation values do not grant or select mutation authority.
 
-Downstream contexts already treat `component_deployment_id` and `revision_id` as stable semantic references. I27 must preserve them exactly.
-
-### Migration principle
-
-The schema extension introduces Application and Component parent identities without replacing existing deployment IDs.
-
-For existing pre-I27 rows, migration must create deterministic compatibility parents rather than invent domain meaning from display names.
-
-Accepted migration strategy:
-
-```text
-one compatibility Application
-    id = deterministic repository-defined UUID
-    name = "Imported catalogue"
-
-one compatibility Component per existing Component Deployment
-    id = deterministic function of deploymentId
-    name = existing deployment displayName when present,
-           otherwise deploymentId
-
-existing Component Deployment
-    keeps deploymentId unchanged
-    gains componentId pointing to its compatibility Component
-```
-
-Why one Component per deployment initially:
-
-- there is no trustworthy pre-I27 evidence that two deployments belong to the same logical Component;
-- grouping by equal display name would manufacture identity;
-- grouping every deployment under one Component would collapse distinctions the strategic model says are independent;
-- deterministic one-to-one compatibility parents preserve all existing semantics and can later be curated explicitly through supported replacement/retirement workflows.
-
-The compatibility Application/Components are real ACC records after migration, not UI-only aliases.
-
-Migration-generated provenance must explicitly identify the I27 compatibility migration as its source.
-
-### Migration non-goals
-
-The migration must not:
-
-- change an existing `component_deployment_id`;
-- change an existing DCS `revision_id` or its source/destination deployment references;
-- infer Application names, Component grouping, ownership or responsibility from deployment names;
-- rewrite Connectivity Requirements, Decisions, Access Rules or policy export facts;
-- create Resource bindings that did not already exist.
-
-## Concurrency and consistency
-
-Commands that mutate catalogue entities must use explicit optimistic concurrency or another accepted lost-update prevention mechanism before HTTP/Web mutation is opened.
-
-The exact version field/ETag contract is decided in the I27 command/idempotency P0 closure. The tactical invariant is that concurrent edits must not silently overwrite each other.
-
-## Authority boundary
-
-Catalogue lifecycle or structural ownership does not imply actor permission.
-
-Every mutation command is admitted by Authority Management using the authority action model accepted later in I27 Stage 0.
-
-Read/discovery visibility remains independent from mutation authority.
-
-Resource Responsibility and Resource Scope Affiliation remain Resource Catalogue concerns and do not grant ACC mutation authority.
+Future Company/Party/Scope discovery integrations remain optional adapters. They may improve selection/validation without moving ACC entity ownership or changing identity.
 
 ## Consequences
 
-- the accepted Strategic DDD hierarchy now has an explicit write model;
-- existing deployment/DCS identities remain compatible;
-- parent reassignment cannot silently mutate meaning;
-- normal product deletion becomes retirement rather than referential destruction;
-- migration handles missing historical Application/Component knowledge without guessing it;
-- infrastructure/API/UI implementation can proceed only after the remaining Stage 0 authority, DCS-authoring and command-concurrency decisions are closed.
+- the current user mental model is represented directly in ACC;
+- existing downstream semantic identity remains unchanged through an internal compatibility projection;
+- interaction-scoped Resource sets do not leak into global Component identity;
+- traffic history remains immutable and active downstream semantics cannot silently become stale;
+- missing enterprise registries do not block the local-first product;
+- retirement blockers are explicit and explainable;
+- pre-I31 Component Deployment/DCS/binding truth remains available for historical and compatibility consumers without becoming the current authoring model.
