@@ -99,7 +99,7 @@ MIGRATIONS: tuple[Migration, ...] = (
     ),
     Migration(
         "connectivity-requirements/0001",
-        "napms.connectivity_requirements.adapters.postgres",
+        "napms.contexts.connectivity_requirements.infrastructure.persistence.postgres",
         "migrations/0001_connectivity_requirements.sql",
     ),
     Migration(

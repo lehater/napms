@@ -12,37 +12,37 @@ from napms.composition.greenfield_postgres import (
     apply_greenfield_migrations,
     open_greenfield_scope,
 )
-from napms.connectivity_requirements.application.declare import (
+from napms.contexts.connectivity_requirements.application.declare import (
     DeclarationOutcome,
     DeclareConnectivityRequirement,
     DeclareRequirement,
 )
-from napms.connectivity_requirements.application.options import (
+from napms.contexts.connectivity_requirements.application.options import (
     DiscoverRequiredInteractions,
     DiscoverRequirementScopes,
     RequiredInteractionDiscoveryOutcome,
 )
-from napms.connectivity_requirements.application.read import (
+from napms.contexts.connectivity_requirements.application.read import (
     GetConnectivityRequirement,
     ListConnectivityRequirements,
     RequirementDetailOutcome,
 )
-from napms.connectivity_requirements.application.retire import (
+from napms.contexts.connectivity_requirements.application.retire import (
     RetireConnectivityRequirement,
     RetireRequirement,
     RetirementOutcome,
 )
-from napms.connectivity_requirements.application.set_applicability import (
+from napms.contexts.connectivity_requirements.application.set_applicability import (
     ApplicabilityMutationOutcome,
     SetConnectivityRequirementApplicability,
     SetRequirementApplicability,
 )
-from napms.connectivity_requirements.application.set_justification import (
+from napms.contexts.connectivity_requirements.application.set_justification import (
     JustificationMutationOutcome,
     SetConnectivityRequirementJustification,
     SetRequirementJustification,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementApplicability,
     RequirementLifecycleState,

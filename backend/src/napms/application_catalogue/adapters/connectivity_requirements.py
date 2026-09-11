@@ -6,12 +6,12 @@ from napms.application_catalogue.application.resolve import (
     ValidateDirectedInteraction,
 )
 from napms.application_catalogue.domain.model import DirectedInteractionIdentity
-from napms.connectivity_requirements.application.ports import (
+from napms.contexts.connectivity_requirements.application.ports import (
     InteractionOutcome,
     RequirementInteractionCheck,
     RequirementInteractionPage,
 )
-from napms.connectivity_requirements.domain.model import RequiredSemanticInteraction
+from napms.contexts.connectivity_requirements.domain.model import RequiredSemanticInteraction
 
 
 def _to_acc(identity: RequiredSemanticInteraction) -> DirectedInteractionIdentity:

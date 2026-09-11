@@ -4,10 +4,10 @@ from enum import Enum
 from typing import Protocol
 from uuid import UUID
 
-from napms.connectivity_requirements.application.inventory_summary import (
+from napms.contexts.connectivity_requirements.application.inventory_summary import (
     ConnectivityRequirementInventorySnapshot,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     ConnectivityRequirement,
     RequiredSemanticInteraction,
     RequirementSemanticKey,

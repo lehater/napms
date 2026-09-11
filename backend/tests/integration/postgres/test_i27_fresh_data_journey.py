@@ -34,12 +34,12 @@ from napms.composition.greenfield_postgres import (
     apply_greenfield_migrations,
     open_greenfield_scope,
 )
-from napms.connectivity_requirements.application.declare import (
+from napms.contexts.connectivity_requirements.application.declare import (
     DeclarationOutcome,
     DeclareConnectivityRequirement,
     DeclareRequirement,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementApplicability,
 )

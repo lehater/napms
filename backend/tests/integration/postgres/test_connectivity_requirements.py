@@ -7,22 +7,22 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.connectivity_requirements.adapters.postgres import (
+from napms.contexts.connectivity_requirements.infrastructure.persistence.postgres import (
     PostgresConnectivityRequirementRepository,
 )
-from napms.connectivity_requirements.application.ports import (
+from napms.contexts.connectivity_requirements.application.ports import (
     ActiveRequirementSemanticConflict,
     RequirementAuthorityCheck,
     RequirementPersistenceError,
     RequirementVersionConflict,
     TernaryOutcome,
 )
-from napms.connectivity_requirements.application.set_applicability import (
+from napms.contexts.connectivity_requirements.application.set_applicability import (
     ApplicabilityMutationOutcome,
     SetConnectivityRequirementApplicability,
     SetRequirementApplicability,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     ConnectivityRequirement,
     RequiredSemanticInteraction,
     RequirementApplicability,
@@ -52,7 +52,7 @@ def postgres_dsn():
 @pytest.fixture(scope="session", autouse=True)
 def migrated_connectivity_requirements(postgres_dsn):
     migrations = files(
-        "napms.connectivity_requirements.adapters.postgres"
+        "napms.contexts.connectivity_requirements.infrastructure.persistence.postgres"
     ).joinpath("migrations")
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:
         for migration in sorted(
@@ -370,7 +370,7 @@ def test_postgres_commit_failure_maps_to_unknown_outcome():
     repository = PostgresConnectivityRequirementRepository(
         CommitFailureConnection()
     )
-    from napms.connectivity_requirements.application.ports import (
+    from napms.contexts.connectivity_requirements.application.ports import (
         RequirementCommitOutcomeUnknown,
     )
 

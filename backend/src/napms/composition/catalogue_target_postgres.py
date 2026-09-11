@@ -84,7 +84,7 @@ from napms.composition.config import ApplicationConfig
 from napms.connectivity_decision.adapters.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityDecisionDependencyQuery,
 )
-from napms.connectivity_requirements.adapters.postgres.application_catalogue_dependency_query import (
+from napms.contexts.connectivity_requirements.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityRequirementDependencyQuery,
 )
 from napms.resource_catalogue.adapters.postgres.transactional_curation_repository import (

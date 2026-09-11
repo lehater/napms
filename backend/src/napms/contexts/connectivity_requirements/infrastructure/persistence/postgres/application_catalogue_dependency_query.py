@@ -2,8 +2,8 @@ from datetime import datetime
 
 from psycopg import Error as PsycopgError
 
-from napms.connectivity_requirements.application.ports import RequirementPersistenceError
-from napms.connectivity_requirements.domain.model import RequiredSemanticInteraction
+from napms.contexts.connectivity_requirements.application.ports import RequirementPersistenceError
+from napms.contexts.connectivity_requirements.domain.model import RequiredSemanticInteraction
 
 
 class PostgresConnectivityRequirementDependencyQuery:

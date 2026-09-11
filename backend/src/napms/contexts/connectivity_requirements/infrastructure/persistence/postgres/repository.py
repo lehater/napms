@@ -3,16 +3,16 @@ from uuid import UUID
 from psycopg import Connection, Error as PsycopgError
 from psycopg.errors import UniqueViolation
 
-from napms.connectivity_requirements.application.inventory_summary import (
+from napms.contexts.connectivity_requirements.application.inventory_summary import (
     ConnectivityRequirementInventorySnapshot,
 )
-from napms.connectivity_requirements.application.ports import (
+from napms.contexts.connectivity_requirements.application.ports import (
     ActiveRequirementSemanticConflict,
     RequirementCommitOutcomeUnknown,
     RequirementPersistenceError,
     RequirementVersionConflict,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     ConnectivityRequirement,
     RequiredSemanticInteraction,
     RequirementApplicability,

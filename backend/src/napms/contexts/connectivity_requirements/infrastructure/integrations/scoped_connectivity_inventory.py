@@ -1,10 +1,10 @@
 from collections import defaultdict
 
-from napms.connectivity_requirements.application.ports import (
+from napms.contexts.connectivity_requirements.application.ports import (
     ConnectivityRequirementRepository,
     RequirementPersistenceError,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementLifecycleState,
 )

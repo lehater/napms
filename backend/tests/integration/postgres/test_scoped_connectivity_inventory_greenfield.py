@@ -29,7 +29,7 @@ from napms.connectivity_decision.domain.model import (
     DecisionSubject,
     DecisionValidity,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     ConnectivityRequirement,
     RequiredSemanticInteraction,
     RequirementApplicability,

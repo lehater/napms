@@ -47,12 +47,12 @@ from napms.connectivity_decision.domain.model import (
     DecisionSubject,
     DecisionValidity,
 )
-from napms.connectivity_requirements.application.declare import (
+from napms.contexts.connectivity_requirements.application.declare import (
     DeclarationOutcome,
     DeclareConnectivityRequirement,
     DeclareRequirement,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementApplicability,
 )

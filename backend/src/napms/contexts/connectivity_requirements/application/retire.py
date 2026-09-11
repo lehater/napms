@@ -3,43 +3,40 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from napms.connectivity_requirements.application.ports import (
+from napms.contexts.connectivity_requirements.application.ports import (
     ConnectivityRequirementRepository,
     RequirementAuthorityAction,
     RequirementAuthorityPort,
     TernaryOutcome,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     ConnectivityRequirement,
-    RequirementApplicability,
     RequirementLifecycleState,
 )
 
 
-class ApplicabilityMutationOutcome(str, Enum):
-    UPDATED = "Updated"
-    ALREADY_IN_REQUESTED_VALUE = "AlreadyInRequestedValue"
+class RetirementOutcome(str, Enum):
+    RETIRED = "Retired"
+    ALREADY_RETIRED = "AlreadyRetired"
     REQUIREMENT_NOT_FOUND = "RequirementNotFound"
     AUTHORITY_DENIED = "AuthorityDenied"
     AUTHORITY_UNKNOWN = "AuthorityUnknown"
-    REQUIREMENT_RETIRED = "RequirementRetired"
 
 
 @dataclass(frozen=True, slots=True)
-class SetRequirementApplicability:
+class RetireRequirement:
     requirement_id: UUID
-    applicability: RequirementApplicability
     actor_id: str
     effective_time: datetime
 
 
 @dataclass(frozen=True, slots=True)
-class ApplicabilityMutationResult:
-    outcome: ApplicabilityMutationOutcome
+class RetirementResult:
+    outcome: RetirementOutcome
     requirement: ConnectivityRequirement | None = None
 
 
-class SetConnectivityRequirementApplicability:
+class RetireConnectivityRequirement:
     def __init__(
         self,
         *,
@@ -49,45 +46,31 @@ class SetConnectivityRequirementApplicability:
         self._authority = authority
         self._requirements = requirements
 
-    def execute(
-        self,
-        command: SetRequirementApplicability,
-    ) -> ApplicabilityMutationResult:
+    def execute(self, command: RetireRequirement) -> RetirementResult:
         requirement = self._requirements.get_by_id(command.requirement_id)
         if requirement is None:
-            return ApplicabilityMutationResult(
-                ApplicabilityMutationOutcome.REQUIREMENT_NOT_FOUND
-            )
+            return RetirementResult(RetirementOutcome.REQUIREMENT_NOT_FOUND)
 
         authority = self._authority.check(
             actor_id=command.actor_id,
-            action=RequirementAuthorityAction.SET_APPLICABILITY,
+            action=RequirementAuthorityAction.RETIRE,
             scope=requirement.governance_scope,
             effective_time=command.effective_time,
         )
         if authority.outcome is TernaryOutcome.DENIED:
-            return ApplicabilityMutationResult(
-                ApplicabilityMutationOutcome.AUTHORITY_DENIED
-            )
+            return RetirementResult(RetirementOutcome.AUTHORITY_DENIED)
         if (
             authority.outcome is not TernaryOutcome.PERMITTED
             or authority.authority_reference is None
         ):
-            return ApplicabilityMutationResult(
-                ApplicabilityMutationOutcome.AUTHORITY_UNKNOWN
-            )
+            return RetirementResult(RetirementOutcome.AUTHORITY_UNKNOWN)
         if requirement.lifecycle_state is RequirementLifecycleState.RETIRED:
-            return ApplicabilityMutationResult(
-                ApplicabilityMutationOutcome.REQUIREMENT_RETIRED
-            )
-        if requirement.applicability == command.applicability:
-            return ApplicabilityMutationResult(
-                ApplicabilityMutationOutcome.ALREADY_IN_REQUESTED_VALUE,
+            return RetirementResult(
+                RetirementOutcome.ALREADY_RETIRED,
                 requirement=requirement,
             )
 
-        updated = requirement.with_applicability(
-            applicability=command.applicability,
+        updated = requirement.retired(
             actor_id=command.actor_id,
             effective_time=command.effective_time,
             authority_reference=authority.authority_reference,
@@ -97,7 +80,7 @@ class SetConnectivityRequirementApplicability:
             expected_version=requirement.version,
         )
         self._requirements.commit()
-        return ApplicabilityMutationResult(
-            ApplicabilityMutationOutcome.UPDATED,
+        return RetirementResult(
+            RetirementOutcome.RETIRED,
             requirement=updated,
         )

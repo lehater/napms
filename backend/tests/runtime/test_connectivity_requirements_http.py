@@ -11,10 +11,10 @@ from napms.access_policy.application.ports import (
 from napms.application_catalogue.application.describe_interactions import (
     DirectedInteractionDescription,
 )
-from napms.connectivity_requirements.adapters.requirement_policy_alignment import (
+from napms.contexts.connectivity_requirements.infrastructure.integrations.requirement_policy_alignment import (
     ConnectivityRequirementsAlignmentAdapter,
 )
-from napms.connectivity_requirements.application.ports import (
+from napms.contexts.connectivity_requirements.application.ports import (
     InteractionOutcome,
     RequirementAuthorityCheck,
     RequirementInteractionCheck,
@@ -22,11 +22,11 @@ from napms.connectivity_requirements.application.ports import (
     RequirementScopeOptions,
     TernaryOutcome,
 )
-from napms.connectivity_requirements.application.read import (
+from napms.contexts.connectivity_requirements.application.read import (
     GetAuthorizedRequirement,
     ListConnectivityRequirements,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementLifecycleState,
 )

@@ -1,12 +1,12 @@
-from napms.connectivity_requirements.application.ports import (
+from napms.contexts.connectivity_requirements.application.ports import (
     RequirementPersistenceError,
 )
-from napms.connectivity_requirements.application.read import (
+from napms.contexts.connectivity_requirements.application.read import (
     GetAuthorizedRequirement,
     ListConnectivityRequirements,
     RequirementDetailOutcome,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     RequirementApplicabilityKind,
     RequirementLifecycleState,
 )

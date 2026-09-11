@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Callable
 from uuid import UUID, uuid4
 
-from napms.connectivity_requirements.application.ports import (
+from napms.contexts.connectivity_requirements.application.ports import (
     ActiveRequirementSemanticConflict,
     ConnectivityRequirementRepository,
     InteractionOutcome,
@@ -13,7 +13,7 @@ from napms.connectivity_requirements.application.ports import (
     RequirementInteractionCataloguePort,
     TernaryOutcome,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     ConnectivityRequirement,
     RequiredSemanticInteraction,
     RequirementApplicability,

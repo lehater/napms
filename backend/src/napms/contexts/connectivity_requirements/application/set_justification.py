@@ -3,13 +3,13 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from napms.connectivity_requirements.application.ports import (
+from napms.contexts.connectivity_requirements.application.ports import (
     ConnectivityRequirementRepository,
     RequirementAuthorityAction,
     RequirementAuthorityPort,
     TernaryOutcome,
 )
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     ConnectivityRequirement,
     RequirementInvariantError,
     RequirementLifecycleState,

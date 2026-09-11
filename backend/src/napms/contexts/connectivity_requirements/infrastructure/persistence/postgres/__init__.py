@@ -1,4 +1,4 @@
-from napms.connectivity_requirements.adapters.postgres.repository import (
+from napms.contexts.connectivity_requirements.infrastructure.persistence.postgres.repository import (
     PostgresConnectivityRequirementRepository,
 )
 

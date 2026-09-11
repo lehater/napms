@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from napms.connectivity_requirements.application.ports import (
+from napms.contexts.connectivity_requirements.application.ports import (
     RequirementAuthorityAction,
     RequirementAuthorityPort,
     RequirementDeclarationScopeDiscoveryPort,

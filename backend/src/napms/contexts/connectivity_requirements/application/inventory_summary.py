@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementApplicability,
     RequirementLifecycleState,

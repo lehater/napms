@@ -1,14 +1,14 @@
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from napms.connectivity_requirements.adapters.scoped_connectivity_inventory import (
+from napms.contexts.connectivity_requirements.infrastructure.integrations.scoped_connectivity_inventory import (
     ConnectivityRequirementsScopedConnectivityAdapter,
 )
-from napms.connectivity_requirements.application.inventory_summary import (
+from napms.contexts.connectivity_requirements.application.inventory_summary import (
     ConnectivityRequirementInventorySnapshot,
 )
-from napms.connectivity_requirements.application.ports import RequirementPersistenceError
-from napms.connectivity_requirements.domain.model import (
+from napms.contexts.connectivity_requirements.application.ports import RequirementPersistenceError
+from napms.contexts.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementApplicability,
     RequirementLifecycleState,

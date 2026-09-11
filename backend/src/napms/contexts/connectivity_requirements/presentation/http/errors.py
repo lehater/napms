@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 
-from napms.connectivity_requirements.application.ports import (
+from napms.contexts.connectivity_requirements.application.ports import (
     ActiveRequirementSemanticConflict,
     RequirementCommitOutcomeUnknown,
     RequirementPersistenceError,

@@ -76,16 +76,16 @@ from napms.connectivity_decision.adapters.postgres import (
 from napms.connectivity_decision.adapters.scoped_connectivity_inventory import (
     ConnectivityDecisionScopedConnectivityAdapter,
 )
-from napms.connectivity_requirements.adapters.postgres import (
+from napms.contexts.connectivity_requirements.infrastructure.persistence.postgres import (
     PostgresConnectivityRequirementRepository,
 )
-from napms.connectivity_requirements.adapters.requirement_policy_alignment import (
+from napms.contexts.connectivity_requirements.infrastructure.integrations.requirement_policy_alignment import (
     ConnectivityRequirementsAlignmentAdapter,
 )
-from napms.connectivity_requirements.adapters.scoped_connectivity_inventory import (
+from napms.contexts.connectivity_requirements.infrastructure.integrations.scoped_connectivity_inventory import (
     ConnectivityRequirementsScopedConnectivityAdapter,
 )
-from napms.connectivity_requirements.application.read import (
+from napms.contexts.connectivity_requirements.application.read import (
     GetAuthorizedRequirement,
     ListConnectivityRequirements,
 )
