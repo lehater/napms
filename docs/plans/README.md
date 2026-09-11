@@ -6,7 +6,8 @@ Completed/superseded plans are removed after their durable outcomes are absorbed
 
 Long-range ordered sequencing is canonicalized outside `active/` when it is broader than the current execution stage.
 
-No implementation roadmap is currently selected.
+Current selected roadmap:
+- `docs/engineering/code-structure-refactoring-roadmap.md` — I32 staged structural refactoring with no intended product/domain semantic change.
 
 Completed roadmap/history references include:
 - `docs/engineering/application-catalogue-target-migration-roadmap.md` — completed I31 Application Catalogue target migration;

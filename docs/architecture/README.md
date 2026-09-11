@@ -5,6 +5,7 @@ This directory contains current target architecture only.
 Start with the smallest relevant artifact:
 
 - `current-architecture.md` — cross-cutting target structure, dependency/ownership rules, runtime boundary and architecture drivers.
+- `code-structure.md` — context-first backend/Web physical structure, HTTP ownership, bootstrap/composition boundaries and staged structural-refactoring constraints.
 - `application-catalogue-target-boundary.md` — I31 target ACC compatibility projection, cross-context dependency ports and external-correlation boundary.
 - `connectivity-requirements-boundary.md` — Connectivity Requirements boundary.
 - `requirement-policy-alignment.md` — Requirement-to-Policy Alignment composition.
