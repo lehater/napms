@@ -97,7 +97,11 @@ def test_j03_requirement_decision_and_rule_remain_independent_authoritative_stat
         expect(page.get_by_role("heading", name="Decisions", exact=True)).to_be_visible()
         expect(page.get_by_label("Decision Governance Scope")).to_have_value("local-demo")
 
-        page.get_by_placeholder("Search interactions").fill("Demo Web Frontend")
+        with page.expect_response(
+            lambda response: "/api/v1/connectivity-decisions/interactions?" in response.url
+            and "search=Demo+Web+Frontend" in response.url
+        ):
+            page.get_by_placeholder("Search interactions").fill("Demo Web Frontend")
         _select_option_containing(
             page,
             "Source Component Deployment",

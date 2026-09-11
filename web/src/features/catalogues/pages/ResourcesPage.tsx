@@ -1,0 +1,241 @@
+import { useEffect, useState } from "react"
+import { ChevronRight, Plus, Search } from "lucide-react"
+
+import { ApiError } from "@/lib/api"
+import { CatalogueIdentity } from "@/features/catalogues/components/CatalogueIdentity"
+import { Button } from "@/components/ui/Button"
+import {
+  createCatalogueResource,
+} from "@/features/catalogues/api/catalogue"
+import {
+  listCatalogueResourceWorkspace,
+  type ResourceWorkspaceItemDto,
+} from "@/features/catalogues/api/resourceWorkspace"
+
+const inputClass =
+  "min-h-10 w-full rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
+
+function errorFrom(caught: unknown, fallback: string) {
+  return caught instanceof ApiError
+    ? caught
+    : new ApiError(500, "InternalError", fallback)
+}
+
+function MissingFacts({ item }: { item: ResourceWorkspaceItemDto }) {
+  const missing: string[] = []
+  if (!item.currentFacts.hasRealization) missing.push("No addresses")
+  if (!item.currentFacts.hasScopeAffiliation) missing.push("No scope")
+  if (!item.currentFacts.hasResponsibility) {
+    missing.push("No responsibility")
+  } else if (!item.currentFacts.hasContact) {
+    missing.push("No contact")
+  }
+
+  if (missing.length === 0) {
+    return (
+      <span className="text-xs font-medium text-[#64748B]">Current facts complete</span>
+    )
+  }
+
+  return (
+    <div className="flex flex-wrap justify-end gap-1.5">
+      {missing.map((value) => (
+        <span
+          key={value}
+          className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800"
+        >
+          {value}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+export function ResourcesPage({
+  page,
+  onPageChange,
+  onOpenResource,
+}: {
+  page: number
+  onPageChange: (page: number) => void
+  onOpenResource: (resourceReference: string) => void
+}) {
+  const [items, setItems] = useState<ResourceWorkspaceItemDto[]>([])
+  const [hasMore, setHasMore] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<ApiError | null>(null)
+  const [searchInput, setSearchInput] = useState("")
+  const [search, setSearch] = useState("")
+  const [scopeInput, setScopeInput] = useState("")
+  const [scopeFilter, setScopeFilter] = useState("")
+  const [displayName, setDisplayName] = useState("")
+  const [creating, setCreating] = useState(false)
+  const [createError, setCreateError] = useState<ApiError | null>(null)
+
+  async function load() {
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await listCatalogueResourceWorkspace(
+        page,
+        search,
+        scopeFilter,
+      )
+      setItems(result.items)
+      setHasMore(result.hasMore)
+    } catch (caught) {
+      setError(errorFrom(caught, "Resources could not be loaded."))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void load()
+  }, [page, search, scopeFilter])
+
+  async function create(event: React.FormEvent) {
+    event.preventDefault()
+    setCreating(true)
+    setCreateError(null)
+    try {
+      const created = await createCatalogueResource(displayName.trim() || null)
+      setDisplayName("")
+      onOpenResource(created.resourceReference)
+    } catch (caught) {
+      setCreateError(errorFrom(caught, "Resource could not be created."))
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  function applyFilters(event: React.FormEvent) {
+    event.preventDefault()
+    if (page !== 1) onPageChange(1)
+    setSearch(searchInput.trim())
+    setScopeFilter(scopeInput.trim())
+  }
+
+  return (
+    <div className="mx-auto grid max-w-6xl gap-6">
+      <header>
+        <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#64748B]">
+          Catalogues
+        </div>
+        <h1 className="mt-1 text-2xl font-bold text-[#172033]">Resources</h1>
+        <p className="mt-2 max-w-3xl text-sm text-[#64748B]">
+          Maintain network-relevant resources, their current addresses, responsibility scopes and contacts.
+        </p>
+      </header>
+
+      <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
+        <div className="mb-4 flex items-center gap-2">
+          <Plus className="size-4 text-[#2563EB]" aria-hidden="true" />
+          <h2 className="font-semibold text-[#172033]">Add resource</h2>
+        </div>
+        <form className="flex flex-col gap-3 sm:flex-row" onSubmit={create}>
+          <input
+            className={inputClass}
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
+            placeholder="Resource name (optional)"
+            maxLength={256}
+            aria-label="Resource name"
+          />
+          <Button type="submit" loading={creating}>Create</Button>
+        </form>
+        <p className="mt-2 text-xs text-[#64748B]">
+          Stable resource identity is generated by NAPMS; the display name can be changed later.
+        </p>
+        {createError ? (
+          <p className="mt-3 text-sm text-red-700">{createError.message}</p>
+        ) : null}
+      </section>
+
+      <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
+        <div className="grid gap-3 border-b border-[#E2E8F0] p-4 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div>
+            <h2 className="font-semibold text-[#172033]">Resource catalogue</h2>
+            <p className="mt-1 text-xs text-[#64748B]">
+              Scope filtering uses the effective external Responsibility Scope reference; it does not change catalogue read permission.
+            </p>
+          </div>
+          <form
+            className="grid min-w-0 gap-2 sm:grid-cols-[minmax(12rem,1fr)_minmax(12rem,1fr)_auto] lg:w-[42rem]"
+            onSubmit={applyFilters}
+          >
+            <input
+              className={inputClass}
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Resource, owner or contact"
+              aria-label="Search resources"
+            />
+            <input
+              className={inputClass}
+              value={scopeInput}
+              onChange={(event) => setScopeInput(event.target.value)}
+              placeholder="Responsibility scope (optional)"
+              aria-label="Responsibility scope filter"
+            />
+            <Button type="submit" variant="secondary" aria-label="Apply resource filters">
+              <Search className="size-4" aria-hidden="true" />
+              Filter
+            </Button>
+          </form>
+        </div>
+
+        {loading ? (
+          <div className="p-6 text-sm text-[#64748B]">Loading resources…</div>
+        ) : error ? (
+          <div className="p-6">
+            <p className="text-sm text-red-700">{error.message}</p>
+            <Button className="mt-3" variant="secondary" onClick={() => void load()}>
+              Retry
+            </Button>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="p-6 text-sm text-[#64748B]">No resources match the current view.</div>
+        ) : (
+          <div className="divide-y divide-[#E2E8F0]">
+            {items.map((item) => (
+              <button
+                key={item.resourceReference}
+                type="button"
+                className="grid w-full gap-3 px-5 py-4 text-left hover:bg-[#F8FAFC] sm:grid-cols-[minmax(0,1fr)_minmax(14rem,auto)_auto] sm:items-center"
+                onClick={() => onOpenResource(item.resourceReference)}
+              >
+                <CatalogueIdentity name={item.displayName} id={item.resourceReference} />
+                <MissingFacts item={item} />
+                <div className="flex items-center justify-end gap-3">
+                  <span className="rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-800">
+                    {item.lifecycle}
+                  </span>
+                  <ChevronRight className="size-4 text-[#94A3B8]" aria-hidden="true" />
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between border-t border-[#E2E8F0] px-4 py-3">
+          <Button
+            variant="secondary"
+            disabled={page <= 1 || loading}
+            onClick={() => onPageChange(page - 1)}
+          >
+            Previous
+          </Button>
+          <span className="text-xs font-medium text-[#64748B]">Page {page}</span>
+          <Button
+            variant="secondary"
+            disabled={!hasMore || loading}
+            onClick={() => onPageChange(page + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      </section>
+    </div>
+  )
+}

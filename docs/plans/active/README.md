@@ -1,8 +1,8 @@
 # Active execution
 
 Current: `PLAN-target-code-structure-migration.md`
-Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M5 — implementation and architectural review complete; final PostgreSQL evidence before milestone PR.
+Goal: migrate NAPMS to the accepted final backend and Web taxonomy without product/domain semantic change.
+Current task: M6 architectural review complete; final hosted PR gates pending.
 
 ## Working set
 
@@ -11,18 +11,14 @@ Read first:
 - `docs/architecture/code-structure.md`
 - `docs/engineering/target-code-structure-migration-roadmap.md`
 
-Expand only if needed: `docs/requirements/application-catalogue-target.md`.
-
 ## Blockers
 
 None.
 
 ## Gate
 
-The accepted M5 scope is only the Application Catalogue capability split into `curation / discovery / target`. Architectural review passed: final root topology is explicit, legacy flat modules are absent, cross-capability direction is enforced, and Resource Catalogue was deliberately left unsplit because current change locality does not justify extra package boundaries. Validation already passed: targeted ACC 151, architecture 67, `make test` 810 with 141 deselected, harness and knowledge checks.
-
-A real PostgreSQL integration run without skips is still required before the final M5 PR. Hosted gates remain deferred until that evidence is green.
+M6 implementation and architectural review are complete. Final Web taxonomy is `app / features / components/ui / lib`; the legacy root API/application files and feature-specific root components are absent. Architecture guards pass. Validation: `make web-check` passed; architecture 72 passed; `make test` 815 passed with 141 deselected; harness and knowledge checks passed; local Docker browser journeys 3 passed. The J03 change only synchronizes with the existing debounce search request and preserves all journey assertions.
 
 ## Next
 
-Run `make postgres-test` against configured PostgreSQL. If all integration tests pass without skips, open the final M5 milestone PR and run hosted gates. Do not start M6 before M5 is merged.
+Open the final M6 milestone PR, mark it ready once, run required hosted gates, and squash-merge if green. Do not start M7 before M6 is merged.
