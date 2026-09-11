@@ -2,7 +2,7 @@ name: docker local runtime gate
 
 on:
   pull_request:
-    types: [ready_for_review]
+    types: [opened, reopened, ready_for_review, synchronize]
     paths:
       - "backend/Dockerfile"
       - "backend/.dockerignore"
@@ -28,6 +28,7 @@ concurrency:
 
 jobs:
   smoke:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     env:
       NAPMS_POSTGRES_PASSWORD: ci-compose-interpolation-placeholder
