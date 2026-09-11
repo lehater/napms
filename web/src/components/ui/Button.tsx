@@ -2,11 +2,13 @@ import type { ButtonHTMLAttributes } from "react"
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "ghost"
+  size?: "sm" | "default"
   loading?: boolean
 }
 
 export function Button({
   variant = "primary",
+  size = "default",
   loading = false,
   disabled,
   className = "",
@@ -15,16 +17,20 @@ export function Button({
 }: Props) {
   const variants = {
     primary:
-      "bg-[#2563EB] text-white hover:bg-[#1D4ED8] active:bg-[#1E40AF] border-transparent",
+      "border-transparent bg-[var(--napms-color-primary)] text-white hover:bg-[var(--napms-color-primary-hover)] active:bg-[var(--napms-color-primary-active)]",
     secondary:
-      "bg-white text-[#172033] hover:bg-[#F8FAFC] border-[#CBD5E1]",
+      "border-[var(--napms-color-border-strong)] bg-[var(--napms-color-surface)] text-[var(--napms-color-text-primary)] hover:bg-[var(--napms-color-surface-subtle)]",
     ghost:
-      "bg-transparent text-[#64748B] hover:bg-[#F1F5F9] border-transparent",
+      "border-transparent bg-transparent text-[var(--napms-color-text-secondary)] hover:bg-[var(--napms-color-surface-muted)]",
+  }
+  const sizes = {
+    default: "min-h-[var(--napms-control-height)] px-4 py-2 text-sm",
+    sm: "min-h-[var(--napms-control-height-sm)] px-3 py-1.5 text-xs",
   }
 
   return (
     <button
-      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-[var(--napms-control-radius)] border font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={disabled || loading}
       {...props}
     >
