@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M3 — move the first four simple workflows under `napms.workflows` as atomic commits.
+Current task: M3 — move `traffic_analysis` and fully eliminate generic `napms.composition` using explicit ownership.
 
 ## Working set
 
@@ -15,14 +15,14 @@ Expand only if needed: `docs/decisions/ADR-014-target-code-structure-taxonomy.md
 
 ## Blockers
 
-None.
+None. The two non-wiring ACC composition files have explicit target ownership in the active plan.
 
 ## Gate
 
-Each moved workflow must exist only under `napms.workflows`; HTTP must be under `presentation/http`; application orchestration stays under `application`; all consumers and tests must use final imports; architecture tests must protect the new workflow namespace. Existing `composition/` may receive import-only repairs in this package but is not relocated yet.
+`traffic_analysis` must exist only under `napms.workflows`; generic `napms.composition` must be absent; pure assembly/config must be under `platform/bootstrap`, migration mechanics under `platform/database`, and ACC read/dependency integrations must use peer application contracts rather than peer domain or persistence internals. Full local and configured PostgreSQL checks must pass before final M3 PR review.
 
 Hosted PR gates remain deferred until complete M3 milestone review.
 
 ## Next
 
-Move `requirement_policy_alignment`, `policy_export`, `scoped_connectivity_inventory`, then `network_operator_view`, one atomic commit each. Run package checks, push, and stop for architectural review. Do not start `traffic_analysis`, composition drain, or M4.
+Execute the final M3 package from the active plan, push, and stop for final architectural review. Do not start M4 or create the PR.
