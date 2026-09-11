@@ -6,8 +6,11 @@ from fastapi import APIRouter, Header, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 
 from napms.contexts.resource_catalogue.presentation.http.curation import (
+    realization_dto,
     resource_dto,
     resource_persistence_error,
+    responsibility_dto,
+    scope_affiliation_dto,
 )
 from napms.contexts.resource_catalogue.presentation.http.support import (
     mutation_response,
@@ -20,7 +23,7 @@ from napms.contexts.resource_catalogue.application.curation import (
 )
 from napms.contexts.resource_catalogue.application.ports import ResourceCataloguePersistenceError
 from napms.platform.auth.local import InMemorySessionStore
-from napms.platform.http.support import require_actor
+from napms.platform.http.support import PublicApiError, require_actor
 
 
 class RenameCatalogueResourceRequest(BaseModel):
@@ -52,6 +55,7 @@ def create_catalogue_resource_workspace_router(
         pageSize: int = Query(50, ge=1, le=200),
         search: str | None = Query(None, max_length=256),
         responsibilityScope: str | None = Query(None, max_length=512),
+        dataState: str | None = Query(None, max_length=64),
         asOf: datetime | None = Query(None),
         includeRetired: bool = Query(False),
     ):
@@ -66,6 +70,7 @@ def create_catalogue_resource_workspace_router(
                     search=search,
                     include_retired=includeRetired,
                     responsibility_scope=responsibilityScope,
+                    data_state=dataState,
                     as_of=as_of,
                 )
         except ResourceCataloguePersistenceError as exc:
@@ -81,6 +86,9 @@ def create_catalogue_resource_workspace_router(
                         "hasResponsibility": item.has_effective_responsibility,
                         "hasContact": item.has_effective_contact,
                     },
+                    "currentAddresses": list(item.current_addresses),
+                    "currentScopes": list(item.current_scopes),
+                    "technicalOwners": list(item.technical_owners),
                 }
                 for item in result.items
             ],
@@ -89,6 +97,48 @@ def create_catalogue_resource_workspace_router(
             "hasMore": result.has_more,
             "asOf": result.as_of.isoformat(),
             "responsibilityScope": result.responsibility_scope,
+            "dataState": result.data_state,
+        }
+
+    @router.get(
+        "/api/v1/catalogues/resource-history/{resource_reference:path}",
+        name="ReadCatalogueResourceHistory",
+    )
+    def read_resource_history(
+        resource_reference: str,
+        request: Request,
+        asOf: datetime | None = Query(None),
+    ):
+        require_actor(sessions, request)
+        as_of = asOf or clock()
+        require_aware(as_of, "asOf")
+        try:
+            with open_scope() as scope:
+                result = scope.resources.read_resource.execute(
+                    resource_reference=resource_reference,
+                    as_of=as_of,
+                )
+        except ResourceCataloguePersistenceError as exc:
+            raise resource_persistence_error() from exc
+        if result is None:
+            raise PublicApiError(
+                status_code=404,
+                code="CatalogueResourceNotFound",
+                message="The catalogue Resource was not found.",
+            )
+        return {
+            "resource": resource_dto(result.resource),
+            "asOf": result.as_of.isoformat(),
+            "realizations": [
+                realization_dto(item) for item in result.realization_history
+            ],
+            "scopeAffiliations": [
+                scope_affiliation_dto(item)
+                for item in result.scope_affiliation_history
+            ],
+            "responsibilities": [
+                responsibility_dto(item) for item in result.responsibility_history
+            ],
         }
 
     @router.post(
