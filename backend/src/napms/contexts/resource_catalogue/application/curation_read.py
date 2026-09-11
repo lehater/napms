@@ -12,6 +12,11 @@ from napms.contexts.resource_catalogue.domain.model import (
 from napms.contexts.resource_catalogue.domain.responsibility import ResourceResponsibility
 
 
+RESOURCE_WORKSPACE_DATA_STATES = frozenset(
+    {"missing-address", "missing-scope", "missing-responsibility"}
+)
+
+
 @dataclass(frozen=True, slots=True)
 class ResourceCatalogueListItem:
     resource: Resource
@@ -19,6 +24,9 @@ class ResourceCatalogueListItem:
     has_effective_scope_affiliation: bool
     has_effective_responsibility: bool
     has_effective_contact: bool
+    current_addresses: tuple[str, ...] = ()
+    current_scopes: tuple[str, ...] = ()
+    technical_owners: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,6 +45,7 @@ class ResourceCatalogueWorkspacePage:
     has_more: bool
     as_of: datetime
     responsibility_scope: str | None
+    data_state: str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,6 +55,9 @@ class ResourceCatalogueDetail:
     effective_scope_affiliations: tuple[ResourceScopeAffiliation, ...]
     effective_responsibilities: tuple[ResourceResponsibility, ...]
     as_of: datetime
+    realization_history: tuple[ResourceRealizationVersion, ...] = ()
+    scope_affiliation_history: tuple[ResourceScopeAffiliation, ...] = ()
+    responsibility_history: tuple[ResourceResponsibility, ...] = ()
 
 
 class ResourceCatalogueCurationReadPort(Protocol):
@@ -66,6 +78,7 @@ class ResourceCatalogueCurationReadPort(Protocol):
         search: str | None,
         include_retired: bool,
         responsibility_scope: str | None,
+        data_state: str | None,
         as_of: datetime,
     ) -> tuple[ResourceCatalogueListItem, ...]: ...
 
@@ -90,6 +103,24 @@ class ResourceCatalogueCurationReadPort(Protocol):
         *,
         resource_reference: str,
         as_of: datetime,
+    ) -> tuple[ResourceResponsibility, ...]: ...
+
+    def list_realizations(
+        self,
+        *,
+        resource_reference: str,
+    ) -> tuple[ResourceRealizationVersion, ...]: ...
+
+    def list_scope_affiliations(
+        self,
+        *,
+        resource_reference: str,
+    ) -> tuple[ResourceScopeAffiliation, ...]: ...
+
+    def list_responsibilities(
+        self,
+        *,
+        resource_reference: str,
     ) -> tuple[ResourceResponsibility, ...]: ...
 
 
@@ -148,6 +179,7 @@ class ListResourceCatalogue:
         search: str | None = None,
         include_retired: bool = False,
         responsibility_scope: str | None = None,
+        data_state: str | None = None,
     ) -> ResourceCatalogueWorkspacePage:
         normalized_search, offset, limit = self._inputs(
             page=page,
@@ -163,6 +195,14 @@ class ListResourceCatalogue:
         )
         if normalized_scope == "":
             normalized_scope = None
+        normalized_data_state = data_state.strip() if data_state is not None else None
+        if normalized_data_state == "":
+            normalized_data_state = None
+        if (
+            normalized_data_state is not None
+            and normalized_data_state not in RESOURCE_WORKSPACE_DATA_STATES
+        ):
+            raise ResourceCatalogueInvariantError("unsupported Resource workspace data_state")
 
         rows = self._catalogue.list_workspace_resources(
             offset=offset,
@@ -170,6 +210,7 @@ class ListResourceCatalogue:
             search=normalized_search,
             include_retired=include_retired,
             responsibility_scope=normalized_scope,
+            data_state=normalized_data_state,
             as_of=as_of,
         )
         return ResourceCatalogueWorkspacePage(
@@ -179,6 +220,7 @@ class ListResourceCatalogue:
             has_more=len(rows) > page_size,
             as_of=as_of,
             responsibility_scope=normalized_scope,
+            data_state=normalized_data_state,
         )
 
 
@@ -229,6 +271,25 @@ class ReadResourceCatalogueDetail:
             if item.is_effective_at(as_of)
         )
 
+        list_realizations = getattr(self._catalogue, "list_realizations", None)
+        list_affiliations = getattr(self._catalogue, "list_scope_affiliations", None)
+        list_responsibilities = getattr(self._catalogue, "list_responsibilities", None)
+        realization_history = (
+            tuple(list_realizations(resource_reference=reference))
+            if callable(list_realizations)
+            else realizations
+        )
+        affiliation_history = (
+            tuple(list_affiliations(resource_reference=reference))
+            if callable(list_affiliations)
+            else affiliations
+        )
+        responsibility_history = (
+            tuple(list_responsibilities(resource_reference=reference))
+            if callable(list_responsibilities)
+            else responsibilities
+        )
+
         return ResourceCatalogueDetail(
             resource=resource,
             effective_realizations=tuple(
@@ -254,4 +315,25 @@ class ReadResourceCatalogueDetail:
                 )
             ),
             as_of=as_of,
+            realization_history=tuple(
+                sorted(
+                    realization_history,
+                    key=lambda item: (item.valid_from, item.fact_reference),
+                    reverse=True,
+                )
+            ),
+            scope_affiliation_history=tuple(
+                sorted(
+                    affiliation_history,
+                    key=lambda item: (item.valid_from, item.affiliation_reference),
+                    reverse=True,
+                )
+            ),
+            responsibility_history=tuple(
+                sorted(
+                    responsibility_history,
+                    key=lambda item: (item.valid_from, item.assignment_reference),
+                    reverse=True,
+                )
+            ),
         )
