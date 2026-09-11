@@ -7,10 +7,10 @@ from napms.application_catalogue.application.target_ports import (
     ActiveDependencySummary,
 )
 from napms.application_catalogue.domain.model import DirectedInteractionIdentity
-from napms.connectivity_decision.adapters.postgres.application_catalogue_dependency_query import (
+from napms.contexts.connectivity_decision.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityDecisionDependencyQuery,
 )
-from napms.connectivity_decision.domain.model import DecisionSubject
+from napms.contexts.connectivity_decision.domain.model import DecisionSubject
 from napms.contexts.connectivity_requirements.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityRequirementDependencyQuery,
 )

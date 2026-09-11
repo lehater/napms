@@ -3,12 +3,12 @@ from uuid import UUID
 from psycopg import Connection, Error as PsycopgError
 from psycopg.types.json import Jsonb
 
-from napms.connectivity_decision.application.ports import (
+from napms.contexts.connectivity_decision.application.ports import (
     DecisionCommitOutcomeUnknown,
     DecisionCurrentConflict,
     DecisionPersistenceError,
 )
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     ConnectivityDecision,
     DecisionEvidenceReference,
     DecisionInvariantError,

@@ -11,7 +11,7 @@ AUTHORITY_MANAGEMENT = NAPMS / "authority_management"
 APPLICATION_CATALOGUE = NAPMS / "application_catalogue"
 RESOURCE_CATALOGUE = NAPMS / "resource_catalogue"
 CONNECTIVITY_REQUIREMENTS = NAPMS / "contexts" / "connectivity_requirements"
-CONNECTIVITY_DECISION = NAPMS / "connectivity_decision"
+CONNECTIVITY_DECISION = NAPMS / "contexts" / "connectivity_decision"
 TECHNICAL_ACCESS_EVIDENCE = NAPMS / "contexts" / "technical_access_evidence"
 NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "contexts" / "network_enforcement_placement"
 NETWORK_ENVIRONMENT_OPERATIONS = NAPMS / "contexts" / "network_environment_operations"
@@ -26,7 +26,9 @@ RESOURCE_CATALOGUE_HTTP_SUPPORT = RESOURCE_CATALOGUE_HTTP / "support.py"
 CONNECTIVITY_REQUIREMENTS_HTTP = (
     CONNECTIVITY_REQUIREMENTS / "presentation" / "http" / "routes.py"
 )
-CONNECTIVITY_DECISION_HTTP = CONNECTIVITY_DECISION / "adapters" / "http.py"
+CONNECTIVITY_DECISION_HTTP = (
+    CONNECTIVITY_DECISION / "presentation" / "http" / "routes.py"
+)
 ACCESS_POLICY_HTTP = ACCESS_POLICY / "adapters" / "http.py"
 REQUIREMENT_POLICY_ALIGNMENT_HTTP = REQUIREMENT_POLICY_ALIGNMENT / "adapters" / "http.py"
 POLICY_EXPORT_HTTP = POLICY_EXPORT / "adapters" / "http.py"
@@ -202,8 +204,8 @@ def test_process_http_has_no_feature_endpoint_implementation():
         "napms.access_policy.domain",
         "napms.contexts.connectivity_requirements.application",
         "napms.contexts.connectivity_requirements.domain",
-        "napms.connectivity_decision.application",
-        "napms.connectivity_decision.domain",
+        "napms.contexts.connectivity_decision.application",
+        "napms.contexts.connectivity_decision.domain",
         "napms.requirement_policy_alignment.application",
         "napms.policy_export.application",
         "napms.scoped_connectivity_inventory.application",
@@ -255,7 +257,7 @@ POSTGRES_SCHEMA_OWNERS = (
         "napms_connectivity_requirements",
     ),
     (
-        NAPMS / "connectivity_decision" / "adapters" / "postgres",
+        CONNECTIVITY_DECISION / "infrastructure" / "persistence" / "postgres",
         "napms_connectivity_decision",
     ),
     (
@@ -311,7 +313,7 @@ BOUNDED_CONTEXT_CORES = (
     ),
     (
         CONNECTIVITY_DECISION,
-        "napms.connectivity_decision",
+        "napms.contexts.connectivity_decision",
     ),
     (
         TECHNICAL_ACCESS_EVIDENCE,
@@ -348,6 +350,21 @@ def test_connectivity_requirements_core_has_no_outer_layer_dependencies():
     violations = []
     for layer_name in ("domain", "application"):
         layer = CONNECTIVITY_REQUIREMENTS / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
+
+
+def test_connectivity_decision_has_no_legacy_package():
+    assert not (NAPMS / "connectivity_decision").exists()
+
+
+def test_connectivity_decision_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = CONNECTIVITY_DECISION / layer_name
         for path in layer.rglob("*.py"):
             for module in imported_modules(path):
                 if ".infrastructure" in module or ".presentation" in module:

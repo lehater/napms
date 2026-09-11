@@ -5,7 +5,7 @@ from napms.authority_management.application.check_authority import (
 from napms.authority_management.application.list_scopes import (
     ListEffectiveAuthorityScopes,
 )
-from napms.connectivity_decision.application.ports import (
+from napms.contexts.connectivity_decision.application.ports import (
     DecisionAuthorityAction,
     DecisionAuthorityCheck,
     DecisionScopeOptions,

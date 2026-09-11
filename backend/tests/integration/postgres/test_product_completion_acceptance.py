@@ -33,15 +33,15 @@ from napms.composition.network_environment_operations_stub import (
     open_network_environment_operations_stub_scope,
 )
 from napms.composition.postgres_migrations import apply_greenfield_migrations
-from napms.connectivity_decision.application.record import (
+from napms.contexts.connectivity_decision.application.record import (
     RecordConnectivityDecision,
     RecordDecision,
     RecordDecisionOutcome,
 )
-from napms.connectivity_decision.application.select import (
+from napms.contexts.connectivity_decision.application.select import (
     SelectEffectiveConnectivityDecision,
 )
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     DecisionEvidenceReference,
     DecisionOutcome,
     DecisionSubject,

@@ -104,7 +104,7 @@ MIGRATIONS: tuple[Migration, ...] = (
     ),
     Migration(
         "connectivity-decision/0001",
-        "napms.connectivity_decision.adapters.postgres",
+        "napms.contexts.connectivity_decision.infrastructure.persistence.postgres",
         "migrations/0001_connectivity_decisions.sql",
     ),
     Migration(

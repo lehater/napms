@@ -2,8 +2,8 @@ from datetime import datetime
 
 from psycopg import Error as PsycopgError
 
-from napms.connectivity_decision.application.ports import DecisionPersistenceError
-from napms.connectivity_decision.domain.model import DecisionSubject
+from napms.contexts.connectivity_decision.application.ports import DecisionPersistenceError
+from napms.contexts.connectivity_decision.domain.model import DecisionSubject
 
 
 class PostgresConnectivityDecisionDependencyQuery:

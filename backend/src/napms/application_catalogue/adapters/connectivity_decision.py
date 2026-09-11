@@ -6,12 +6,12 @@ from napms.application_catalogue.application.resolve import (
     ValidateDirectedInteraction,
 )
 from napms.application_catalogue.domain.model import DirectedInteractionIdentity
-from napms.connectivity_decision.application.ports import (
+from napms.contexts.connectivity_decision.application.ports import (
     DecisionInteractionPage,
     DecisionSubjectCheck,
     SubjectOutcome,
 )
-from napms.connectivity_decision.domain.model import DecisionSubject
+from napms.contexts.connectivity_decision.domain.model import DecisionSubject
 
 
 def _to_acc(subject: DecisionSubject) -> DirectedInteractionIdentity:

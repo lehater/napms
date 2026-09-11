@@ -32,7 +32,7 @@ where = ["src"]
 "napms.application_catalogue.adapters.postgres" = ["migrations/*.sql"]
 "napms.resource_catalogue.adapters.postgres" = ["migrations/*.sql"]
 "napms.contexts.connectivity_requirements.infrastructure.persistence.postgres" = ["migrations/*.sql"]
-"napms.connectivity_decision.adapters.postgres" = ["migrations/*.sql"]
+"napms.contexts.connectivity_decision.infrastructure.persistence.postgres" = ["migrations/*.sql"]
 "napms.contexts.technical_access_evidence.infrastructure.persistence.postgres" = ["migrations/*.sql"]
 "napms.contexts.network_enforcement_placement.infrastructure.persistence.postgres" = ["migrations/*.sql"]
 

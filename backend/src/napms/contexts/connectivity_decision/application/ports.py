@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Protocol
 from uuid import UUID
 
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     ConnectivityDecision,
     DecisionSubject,
 )

@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Callable
 from uuid import UUID, uuid4
 
-from napms.connectivity_decision.application.ports import (
+from napms.contexts.connectivity_decision.application.ports import (
     ConnectivityDecisionRepository,
     DecisionAuthorityAction,
     DecisionAuthorityPort,
@@ -13,7 +13,7 @@ from napms.connectivity_decision.application.ports import (
     SubjectOutcome,
     TernaryOutcome,
 )
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     ConnectivityDecision,
     DecisionEvidenceReference,
     DecisionOutcome,

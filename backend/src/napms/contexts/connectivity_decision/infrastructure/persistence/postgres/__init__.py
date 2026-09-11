@@ -1,4 +1,4 @@
-from napms.connectivity_decision.adapters.postgres.repository import (
+from napms.contexts.connectivity_decision.infrastructure.persistence.postgres.repository import (
     PostgresConnectivityDecisionRepository,
 )
 

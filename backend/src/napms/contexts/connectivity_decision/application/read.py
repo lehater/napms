@@ -3,14 +3,14 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from napms.connectivity_decision.application.ports import (
+from napms.contexts.connectivity_decision.application.ports import (
     ConnectivityDecisionRepository,
     DecisionAuthorityAction,
     DecisionAuthorityPort,
     DecisionReadScopeDiscoveryPort,
     TernaryOutcome,
 )
-from napms.connectivity_decision.domain.model import ConnectivityDecision
+from napms.contexts.connectivity_decision.domain.model import ConnectivityDecision
 
 
 @dataclass(frozen=True, slots=True)

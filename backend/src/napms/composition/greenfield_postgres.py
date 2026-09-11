@@ -70,10 +70,10 @@ from napms.authority_management.application.list_scopes import (
     ListEffectiveAuthorityScopes,
 )
 from napms.composition.config import ApplicationConfig
-from napms.connectivity_decision.adapters.postgres import (
+from napms.contexts.connectivity_decision.infrastructure.persistence.postgres import (
     PostgresConnectivityDecisionRepository,
 )
-from napms.connectivity_decision.adapters.scoped_connectivity_inventory import (
+from napms.contexts.connectivity_decision.infrastructure.integrations.scoped_connectivity_inventory import (
     ConnectivityDecisionScopedConnectivityAdapter,
 )
 from napms.contexts.connectivity_requirements.infrastructure.persistence.postgres import (

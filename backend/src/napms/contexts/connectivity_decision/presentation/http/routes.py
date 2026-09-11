@@ -9,22 +9,22 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from napms.application_catalogue.application.ports import CataloguePersistenceError
 from napms.application_catalogue.domain.model import DirectedInteractionIdentity
-from napms.connectivity_decision.application.options import (
+from napms.contexts.connectivity_decision.application.options import (
     DecisionInteractionDiscoveryOutcome,
     DiscoverDecisionInteractions,
     DiscoverDecisionScopes,
 )
-from napms.connectivity_decision.application.read import (
+from napms.contexts.connectivity_decision.application.read import (
     DecisionDetailOutcome,
     GetConnectivityDecision,
     ListConnectivityDecisions,
 )
-from napms.connectivity_decision.application.record import (
+from napms.contexts.connectivity_decision.application.record import (
     RecordConnectivityDecision,
     RecordDecision,
     RecordDecisionOutcome,
 )
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     ConnectivityDecision,
     DecisionEvidenceReference,
     DecisionInvariantError,

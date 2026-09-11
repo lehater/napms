@@ -1,10 +1,10 @@
 from collections import defaultdict
 
-from napms.connectivity_decision.application.ports import (
+from napms.contexts.connectivity_decision.application.ports import (
     ConnectivityDecisionRepository,
     DecisionPersistenceError,
 )
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     DecisionOutcome,
     DecisionSubject,
 )

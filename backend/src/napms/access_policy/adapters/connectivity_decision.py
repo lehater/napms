@@ -3,11 +3,11 @@ from napms.access_policy.application.ports import (
 )
 from napms.access_policy.application.ports import DecisionOutcome as AccessPolicyDecisionOutcome
 from napms.access_policy.domain.model import RuleSemanticIdentity
-from napms.connectivity_decision.application.select import (
+from napms.contexts.connectivity_decision.application.select import (
     SelectEffectiveConnectivityDecision,
     SelectionOutcome,
 )
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     DecisionOutcome as DomainDecisionOutcome,
     DecisionSubject,
 )

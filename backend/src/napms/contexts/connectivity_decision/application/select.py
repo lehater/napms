@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from napms.connectivity_decision.application.ports import (
+from napms.contexts.connectivity_decision.application.ports import (
     ConnectivityDecisionRepository,
 )
-from napms.connectivity_decision.domain.model import (
+from napms.contexts.connectivity_decision.domain.model import (
     ConnectivityDecision,
     DecisionSubject,
 )

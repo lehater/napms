@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 
-from napms.connectivity_decision.application.ports import (
+from napms.contexts.connectivity_decision.application.ports import (
     DecisionCommitOutcomeUnknown,
     DecisionPersistenceError,
 )

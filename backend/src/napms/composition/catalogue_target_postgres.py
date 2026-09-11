@@ -81,7 +81,7 @@ from napms.composition.application_catalogue_target_read_postgres import (
     PostgresApplicationCatalogueTargetReadModel,
 )
 from napms.composition.config import ApplicationConfig
-from napms.connectivity_decision.adapters.postgres.application_catalogue_dependency_query import (
+from napms.contexts.connectivity_decision.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityDecisionDependencyQuery,
 )
 from napms.contexts.connectivity_requirements.infrastructure.persistence.postgres.application_catalogue_dependency_query import (

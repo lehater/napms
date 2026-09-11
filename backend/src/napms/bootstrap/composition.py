@@ -36,11 +36,11 @@ from napms.composition.network_operator_view_postgres import (
     open_network_operator_view_scope,
 )
 from napms.composition.traffic_analysis_postgres import open_traffic_analysis_scope
-from napms.connectivity_decision.adapters.postgres import (
+from napms.contexts.connectivity_decision.infrastructure.persistence.postgres import (
     PostgresConnectivityDecisionRepository,
 )
-from napms.connectivity_decision.application.ports import DecisionPersistenceError
-from napms.connectivity_decision.application.select import SelectEffectiveConnectivityDecision
+from napms.contexts.connectivity_decision.application.ports import DecisionPersistenceError
+from napms.contexts.connectivity_decision.application.select import SelectEffectiveConnectivityDecision
 from napms.network_operator_view.adapters.http import create_network_operator_view_router
 from napms.resource_catalogue.adapters.http.curation import (
     create_resource_catalogue_curation_router,
