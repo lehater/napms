@@ -3,10 +3,10 @@ from napms.contexts.access_policy.application.ports import (
     AccessRuleRepository,
 )
 from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
-from napms.requirement_policy_alignment.application.model import (
+from napms.workflows.requirement_policy_alignment.application.model import (
     AlignmentSemanticIdentity,
 )
-from napms.requirement_policy_alignment.application.ports import (
+from napms.workflows.requirement_policy_alignment.application.ports import (
     PolicyCoverageOutcome,
 )
 

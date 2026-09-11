@@ -3,13 +3,13 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from napms.requirement_policy_alignment.application.model import (
+from napms.workflows.requirement_policy_alignment.application.model import (
     AlignmentRequirementLifecycle,
     AlignmentSemanticIdentity,
     AlignmentStatus,
     require_aware,
 )
-from napms.requirement_policy_alignment.application.ports import (
+from napms.workflows.requirement_policy_alignment.application.ports import (
     AuthorizedRequirementAlignmentListPort,
     AuthorizedRequirementAlignmentPort,
     EffectivePolicyCoveragePort,

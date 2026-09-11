@@ -5,7 +5,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
 
-from napms.requirement_policy_alignment.application.align import (
+from napms.workflows.requirement_policy_alignment.application.align import (
     AlignConnectivityRequirementToPolicy,
     AlignmentQueryOutcome,
     AlignVisibleConnectivityRequirementsToPolicy,

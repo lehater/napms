@@ -3,12 +3,12 @@ from uuid import UUID
 
 import pytest
 
-from napms.requirement_policy_alignment.application.align import (
+from napms.workflows.requirement_policy_alignment.application.align import (
     AlignConnectivityRequirementToPolicy,
     AlignVisibleConnectivityRequirementsToPolicy,
     AlignmentQueryOutcome,
 )
-from napms.requirement_policy_alignment.application.model import (
+from napms.workflows.requirement_policy_alignment.application.model import (
     AlignmentApplicability,
     AlignmentApplicabilityKind,
     AlignmentInvariantError,
@@ -17,7 +17,7 @@ from napms.requirement_policy_alignment.application.model import (
     AlignmentStatus,
     RequirementAlignmentSnapshot,
 )
-from napms.requirement_policy_alignment.application.ports import (
+from napms.workflows.requirement_policy_alignment.application.ports import (
     PolicyCoverageOutcome,
     RequirementAlignmentListOutcome,
     RequirementAlignmentListResult,

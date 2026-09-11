@@ -15,7 +15,8 @@ CONNECTIVITY_DECISION = NAPMS / "contexts" / "connectivity_decision"
 TECHNICAL_ACCESS_EVIDENCE = NAPMS / "contexts" / "technical_access_evidence"
 NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "contexts" / "network_enforcement_placement"
 NETWORK_ENVIRONMENT_OPERATIONS = NAPMS / "contexts" / "network_environment_operations"
-REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
+WORKFLOWS = NAPMS / "workflows"
+REQUIREMENT_POLICY_ALIGNMENT = WORKFLOWS / "requirement_policy_alignment"
 POLICY_EXPORT = NAPMS / "policy_export"
 SCOPED_CONNECTIVITY_INVENTORY = NAPMS / "scoped_connectivity_inventory"
 RUNTIME = NAPMS / "runtime"
@@ -30,7 +31,9 @@ CONNECTIVITY_DECISION_HTTP = (
     CONNECTIVITY_DECISION / "presentation" / "http" / "routes.py"
 )
 ACCESS_POLICY_HTTP = ACCESS_POLICY / "presentation" / "http" / "routes.py"
-REQUIREMENT_POLICY_ALIGNMENT_HTTP = REQUIREMENT_POLICY_ALIGNMENT / "adapters" / "http.py"
+REQUIREMENT_POLICY_ALIGNMENT_HTTP = (
+    REQUIREMENT_POLICY_ALIGNMENT / "presentation" / "http" / "routes.py"
+)
 POLICY_EXPORT_HTTP = POLICY_EXPORT / "adapters" / "http.py"
 POLICY_EXPORT_HTTP_JSON = POLICY_EXPORT / "adapters" / "http_json.py"
 SCOPED_CONNECTIVITY_HTTP = SCOPED_CONNECTIVITY_INVENTORY / "adapters" / "http.py"
@@ -206,7 +209,7 @@ def test_process_http_has_no_feature_endpoint_implementation():
         "napms.contexts.connectivity_requirements.domain",
         "napms.contexts.connectivity_decision.application",
         "napms.contexts.connectivity_decision.domain",
-        "napms.requirement_policy_alignment.application",
+        "napms.workflows.requirement_policy_alignment.application",
         "napms.policy_export.application",
         "napms.scoped_connectivity_inventory.application",
     )
@@ -332,6 +335,21 @@ BOUNDED_CONTEXT_CORES = (
 
 def test_network_environment_operations_has_no_legacy_package():
     assert not (NAPMS / "network_environment_operations").exists()
+
+
+def test_requirement_policy_alignment_uses_final_workflow_namespace():
+    assert REQUIREMENT_POLICY_ALIGNMENT.is_dir()
+    assert not (NAPMS / "requirement_policy_alignment").exists()
+
+
+def test_workflow_application_has_no_outer_layer_dependencies():
+    violations = []
+    for workflow in (REQUIREMENT_POLICY_ALIGNMENT,):
+        for path in (workflow / "application").rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
 
 
 def test_access_policy_has_no_legacy_package():

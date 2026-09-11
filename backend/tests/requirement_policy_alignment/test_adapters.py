@@ -35,12 +35,12 @@ from napms.contexts.connectivity_requirements.domain.model import (
     RequirementDeclarationProvenance,
     RequirementSemanticKey,
 )
-from napms.requirement_policy_alignment.application.model import (
+from napms.workflows.requirement_policy_alignment.application.model import (
     AlignmentApplicabilityKind,
     AlignmentRequirementLifecycle,
     AlignmentSemanticIdentity,
 )
-from napms.requirement_policy_alignment.application.ports import (
+from napms.workflows.requirement_policy_alignment.application.ports import (
     PolicyCoverageOutcome,
     RequirementAlignmentListOutcome,
     RequirementAlignmentReadOutcome,

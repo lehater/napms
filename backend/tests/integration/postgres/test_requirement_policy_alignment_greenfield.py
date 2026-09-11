@@ -37,11 +37,11 @@ from napms.contexts.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementApplicability,
 )
-from napms.requirement_policy_alignment.application.align import (
+from napms.workflows.requirement_policy_alignment.application.align import (
     AlignConnectivityRequirementToPolicy,
     AlignmentQueryOutcome,
 )
-from napms.requirement_policy_alignment.application.model import AlignmentStatus
+from napms.workflows.requirement_policy_alignment.application.model import AlignmentStatus
 
 
 pytestmark = pytest.mark.postgres

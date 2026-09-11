@@ -87,7 +87,7 @@ def create_http_api(dependencies: HttpApiDependencies) -> FastAPI:
     from napms.contexts.connectivity_requirements.presentation.http.errors import register_connectivity_requirements_http_error_handlers
     from napms.policy_export.adapters.http import create_policy_export_router
     from napms.policy_export.adapters.http_errors import register_policy_export_http_error_handlers
-    from napms.requirement_policy_alignment.adapters.http import create_requirement_policy_alignment_router
+    from napms.workflows.requirement_policy_alignment.presentation.http.routes import create_requirement_policy_alignment_router
     from napms.scoped_connectivity_inventory.adapters.http import create_scoped_connectivity_inventory_router
 
     app = FastAPI(title="NAPMS API", version="1")

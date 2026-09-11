@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Protocol
 from uuid import UUID
 
-from napms.requirement_policy_alignment.application.model import (
+from napms.workflows.requirement_policy_alignment.application.model import (
     AlignmentSemanticIdentity,
     RequirementAlignmentSnapshot,
 )
