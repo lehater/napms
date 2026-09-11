@@ -6,6 +6,9 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
+from napms.resource_catalogue.adapters.http.workspace import (
+    create_catalogue_resource_workspace_router,
+)
 from napms.resource_catalogue.application.curation import (
     ResourceMutationOutcome,
     ResourceMutationResult,
@@ -16,9 +19,6 @@ from napms.resource_catalogue.application.curation_read import (
 )
 from napms.resource_catalogue.domain.model import Resource
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.catalogue_resource_workspace_http import (
-    create_catalogue_resource_workspace_router,
-)
 from napms.runtime.http_api import PublicApiError
 
 
