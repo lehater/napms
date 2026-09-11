@@ -6,8 +6,7 @@ Completed/superseded plans are removed after their durable outcomes are absorbed
 
 Long-range ordered sequencing is canonicalized outside `active/` when it is broader than the current execution stage.
 
-Current active increment:
-- `active/PLAN-I33-code-structure-locality-cleanup.md` — I33 evidence-backed code-structure locality cleanup.
+Current active increment: none.
 
 Completed roadmap/history references include:
 - `docs/engineering/code-structure-refactoring-roadmap.md` — completed I32 structural refactoring;
