@@ -153,11 +153,11 @@ The unchecked items are deliberate semantic gaps, not invitations to fake client
 - Detail screens use the same tokens, shared controls, status indicators, page states and surfaces as catalogue lists.
 - Temporal facts continue to use add/replace/end semantics; a wider layout must not turn them into scalar CRUD.
 
-## Visual regression guard
+## Browser reference guard
 
-The canonical Resource Catalogue layout is protected by `e2e/test_j00_resource_catalogue_visual.py` at a `1440x1000` viewport. The test fingerprints the rendered `main` workspace after creating deterministic Resource rows and compares it with the accepted browser baseline in `e2e/screenshot_regression.py`.
+`e2e/test_j00_resource_catalogue_visual.py` protects the Resource Catalogue reference at a `1440x1000` viewport with explicit browser assertions for the accepted behavior and geometry: sidebar/account placement, default Name ascending sort and direction toggle, counted preset filters, result summary, numbered pager, Rows per page, and full-width Resource detail workspace. This is intentionally behavioral/structural rather than a brittle whole-screen perceptual hash for values that now contain server-backed totals.
 
-The fingerprint is a regression guard, not the source of design truth. Rebaseline it only after a deliberate comparison with the accepted concept-board reference and the canonical UI/domain contracts. A changed fingerprint caused by an intentional reference/design-system change must be reviewed before its baseline is accepted.
+Application screens continue to use their existing screenshot fingerprint guard where that representation remains useful. The accepted concept-board reference and canonical UI/domain contracts remain the source of design truth.
 
 ## Tokens
 
