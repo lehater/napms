@@ -1,4 +1,3 @@
-import ast
 from pathlib import Path
 
 
@@ -7,17 +6,6 @@ NAPMS = ROOT / "src" / "napms"
 BOOTSTRAP = NAPMS / "bootstrap"
 RUNTIME = NAPMS / "runtime"
 PYPROJECT = ROOT / "pyproject.toml"
-
-
-def _imports(path: Path) -> set[str]:
-    tree = ast.parse(path.read_text(encoding="utf-8"))
-    modules = set()
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            modules.update(alias.name for alias in node.names)
-        elif isinstance(node, ast.ImportFrom) and node.module:
-            modules.add(node.module)
-    return modules
 
 
 def test_executable_process_entrypoints_live_under_bootstrap():
@@ -33,14 +21,9 @@ def test_executable_process_entrypoints_live_under_bootstrap():
     assert "napms.runtime.local_seed:run" not in pyproject
 
 
-def test_runtime_bootstrap_names_are_compatibility_facades_only():
+def test_runtime_does_not_retain_bootstrap_compatibility_facades():
     for name in ("main.py", "config.py", "composition.py", "migrations.py", "local_seed.py"):
-        path = RUNTIME / name
-        source = path.read_text(encoding="utf-8")
-        assert "Compatibility facade" in source
-        imports = _imports(path)
-        assert imports
-        assert all(module.startswith("napms.bootstrap") for module in imports)
+        assert not (RUNTIME / name).exists()
 
 
 def test_bootstrap_main_targets_bootstrap_module():

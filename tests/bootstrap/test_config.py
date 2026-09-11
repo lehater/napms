@@ -1,8 +1,8 @@
 import pytest
 
+from napms.bootstrap.config import load_http_runtime_config, load_local_seed_config
 from napms.composition.config import ConfigurationError
 from napms.runtime.auth import hash_local_password
-from napms.runtime.config import load_http_runtime_config, load_local_seed_config
 
 
 def _environment():
