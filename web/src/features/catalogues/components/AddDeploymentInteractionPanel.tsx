@@ -1,18 +1,32 @@
 import { useEffect, useState } from "react"
-import { Search } from "lucide-react"
 
-import { ApiError } from "@/lib/api"
-import { Button } from "@/components/ui/Button"
-import { CataloguePager } from "@/features/catalogues/components/CataloguePager"
+import { Button } from "@/design-system/components/Button"
+import { Checkbox } from "@/design-system/components/Checkbox"
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHeadCell,
+  DataTableHeader,
+  DataTableHeaderRow,
+  DataTableRow,
+} from "@/design-system/components/DataTable"
+import { Input } from "@/design-system/components/Field"
+import { EmptyState, ErrorState, LoadingState } from "@/design-system/components/PageState"
+import { SearchInput } from "@/design-system/components/SearchInput"
+import {
+  CatalogueFilterBar,
+  CatalogueFilterField,
+  CataloguePaginationControls,
+  CatalogueToolbar,
+} from "@/design-system/patterns/catalogue/CataloguePage"
 import {
   listAvailableInteractions,
   selectDeploymentInteraction,
   type InteractionDefinitionSummaryDto,
 } from "@/features/catalogues/api/targetCatalogue"
 import { trafficSummary } from "@/features/catalogues/model/targetPresentation"
-
-const inputClass =
-  "min-h-10 min-w-0 rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
+import { ApiError } from "@/lib/api"
 
 function errorFrom(caught: unknown) {
   return caught instanceof ApiError
@@ -51,25 +65,19 @@ export function AddDeploymentInteractionPanel({
     void listAvailableInteractions({
       applicationDeploymentId: deploymentId,
       page,
+      pageSize,
       search,
       protocol,
     })
       .then((result) => {
         if (!active) return
         setItems(result.items)
-        setPageSize(result.pageSize)
         setTotal(result.total)
       })
-      .catch((caught) => {
-        if (active) setLoadError(errorFrom(caught))
-      })
-      .finally(() => {
-        if (active) setLoading(false)
-      })
-    return () => {
-      active = false
-    }
-  }, [deploymentId, page, search, protocol, reloadToken])
+      .catch((caught) => { if (active) setLoadError(errorFrom(caught)) })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [deploymentId, page, pageSize, search, protocol, reloadToken])
 
   function toggle(interactionId: string) {
     setSelected((current) => {
@@ -101,17 +109,16 @@ export function AddDeploymentInteractionPanel({
   }
 
   return (
-    <div className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
-      <div className="flex items-center justify-between px-5 py-4">
+    <div className="my-3 grid gap-4 rounded-[var(--napms-control-radius)] bg-[var(--napms-color-surface-subtle)] p-4">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="font-semibold text-[#172033]">Add interaction</h3>
-          <p className="mt-1 text-xs text-[#64748B]">Select Interaction Definitions already owned by this Application Definition.</p>
+          <h3 className="font-semibold text-[var(--napms-color-text-primary)]">Add interaction</h3>
+          <p className="mt-1 text-xs text-[var(--napms-color-text-secondary)]">Select Interaction Definitions already owned by this Application Definition.</p>
         </div>
-        <Button variant="ghost" onClick={onCancel}>Close</Button>
+        <Button variant="ghost" size="sm" onClick={onCancel}>Close</Button>
       </div>
 
       <form
-        className="grid gap-2 border-y border-[#E2E8F0] bg-white p-4 sm:grid-cols-[minmax(14rem,1fr)_10rem_auto]"
         onSubmit={(event) => {
           event.preventDefault()
           setPage(1)
@@ -121,48 +128,68 @@ export function AddDeploymentInteractionPanel({
           setProtocol(draftProtocol.trim())
         }}
       >
-        <div className="relative min-w-0">
-          <Search className="pointer-events-none absolute left-3 top-3 size-4 text-[#94A3B8]" aria-hidden="true" />
-          <input className={`${inputClass} w-full pl-9`} value={draftSearch} onChange={(event) => setDraftSearch(event.target.value)} placeholder="Search interactions" aria-label="Search interactions" />
-        </div>
-        <input className={inputClass} value={draftProtocol} onChange={(event) => setDraftProtocol(event.target.value)} placeholder="Protocol" aria-label="Protocol" />
-        <Button type="submit" variant="secondary">Apply</Button>
+        <CatalogueToolbar>
+          <SearchInput value={draftSearch} onChange={(event) => setDraftSearch(event.target.value)} placeholder="Search interactions" aria-label="Search interactions" />
+          <CatalogueFilterBar>
+            <CatalogueFilterField label="Protocol" className="xl:w-[190px]">
+              <Input value={draftProtocol} onChange={(event) => setDraftProtocol(event.target.value)} aria-label="Protocol" />
+            </CatalogueFilterField>
+            <Button type="submit" variant="secondary" size="sm" className="xl:ml-auto">Apply</Button>
+          </CatalogueFilterBar>
+        </CatalogueToolbar>
       </form>
 
       {actionError ? (
-        <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">
+        <div className="rounded-[var(--napms-control-radius)] border border-[var(--napms-color-danger-dot)] bg-[var(--napms-color-danger-bg)] px-4 py-3 text-sm text-[var(--napms-color-danger)]">
           {actionError.message} Server state has been refreshed; already completed selections remain applied.
         </div>
       ) : null}
 
       {loading ? (
-        <div className="p-6 text-sm text-[#64748B]">Loading available interactions…</div>
+        <LoadingState>Loading available interactions…</LoadingState>
       ) : loadError ? (
-        <div className="p-6 text-sm text-red-700">{loadError.message}</div>
+        <ErrorState message={loadError.message} />
       ) : items.length === 0 ? (
-        <div className="p-6 text-sm text-[#64748B]">No additional interactions are available.</div>
+        <EmptyState title="No additional interactions are available" />
       ) : (
-        <div className="overflow-x-auto bg-white">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-              <tr><th className="w-16 px-5 py-3">Use</th><th className="px-5 py-3">Source</th><th className="px-5 py-3">Destination</th><th className="px-5 py-3">Traffic</th></tr>
-            </thead>
-            <tbody className="divide-y divide-[#E2E8F0]">
-              {items.map((item) => (
-                <tr key={item.interactionDefinitionId}>
-                  <td className="px-5 py-3"><input type="checkbox" checked={selected.has(item.interactionDefinitionId)} onChange={() => toggle(item.interactionDefinitionId)} aria-label={`Select ${item.sourceComponentName} to ${item.destinationComponentName}`} /></td>
-                  <td className="px-5 py-3 font-semibold text-[#172033]">{item.sourceComponentName}</td>
-                  <td className="px-5 py-3 font-semibold text-[#172033]">{item.destinationComponentName}</td>
-                  <td className="px-5 py-3 text-[#475569]">{trafficSummary(item.trafficAlternatives)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable minWidth={760}>
+          <DataTableHeader>
+            <DataTableHeaderRow>
+              <DataTableHeadCell className="w-16">Use</DataTableHeadCell>
+              <DataTableHeadCell>Source</DataTableHeadCell>
+              <DataTableHeadCell>Destination</DataTableHeadCell>
+              <DataTableHeadCell>Traffic</DataTableHeadCell>
+            </DataTableHeaderRow>
+          </DataTableHeader>
+          <DataTableBody>
+            {items.map((item) => (
+              <DataTableRow key={item.interactionDefinitionId}>
+                <DataTableCell>
+                  <Checkbox
+                    checked={selected.has(item.interactionDefinitionId)}
+                    onChange={() => toggle(item.interactionDefinitionId)}
+                    aria-label={`Select ${item.sourceComponentName} to ${item.destinationComponentName}`}
+                  />
+                </DataTableCell>
+                <DataTableCell className="font-semibold text-[var(--napms-color-text-primary)]">{item.sourceComponentName}</DataTableCell>
+                <DataTableCell className="font-semibold text-[var(--napms-color-text-primary)]">{item.destinationComponentName}</DataTableCell>
+                <DataTableCell>{trafficSummary(item.trafficAlternatives)}</DataTableCell>
+              </DataTableRow>
+            ))}
+          </DataTableBody>
+        </DataTable>
       )}
 
-      {!loading && !loadError ? <CataloguePager page={page} pageSize={pageSize} total={total} onPageChange={(next) => { setSelected(new Set()); setPage(next) }} /> : null}
-      <div className="flex justify-end gap-2 border-t border-[#E2E8F0] px-5 py-4">
+      {!loading && !loadError ? (
+        <CataloguePaginationControls
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={(next) => { setSelected(new Set()); setPage(next) }}
+          onPageSizeChange={(nextPageSize) => { setSelected(new Set()); setPageSize(nextPageSize); setPage(1) }}
+        />
+      ) : null}
+      <div className="flex justify-end gap-2 border-t border-[var(--napms-color-border)] pt-4">
         <Button variant="secondary" onClick={onCancel}>Cancel</Button>
         <Button loading={saving} disabled={selected.size === 0} onClick={() => void addSelected()}>Add selected</Button>
       </div>
