@@ -1,29 +1,30 @@
 # Active execution
 
-Current: `PLAN-web-ui-component-composition.md`
+Current: `PLAN-web-ui-convergence.md`
 
-Goal: integrate the completed Web UI component-composition migration through the repository's final hosted gates and one squash merge.
+Goal: converge routed Web UI screens on the shared design-system composition model and remove parallel legacy layout paths left after #91.
 
-Current task: correct the failed Harness plan-continuity check, then re-run the final PR gates on the same branch.
+Current task: finish the repository-wide UI tail audit, then migrate confirmed legacy consumers in coherent groups without weakening feature semantics.
 
 ## Working set
 
 Read first:
-- `docs/plans/active/PLAN-web-ui-component-composition.md`
-- `docs/engineering/web-ui-component-composition-roadmap.md`
+- `docs/plans/active/PLAN-web-ui-convergence.md`
 - `web/AGENTS.md`
 - `docs/ui/component-composition.md`
+- `docs/ui/design-system.md`
+- `web/scripts/check-ui-boundaries.mjs`
 
-Expand only to PR #91 workflow results/logs and the specific failing file when a gate reports a material defect.
+Expand to routed `web/src/features/**` pages/components and their existing design-system owners as the audit identifies concrete tails.
 
 ## Blockers
 
-The first final Harness gate failed because this active index did not use the required `Current: <plan-file>` contract. The migration itself remains on the same branch; no merge has occurred.
+None. The previous #91 active capsule remained stale on `main`; this increment replaces it.
 
 ## Gate
 
-PR #91 must be marked Ready for review only when the branch is ready for a complete Web + Harness final gate. If a material failure occurs, return PR #91 to draft, fix on `docs/web-ui-component-composition-roadmap`, and gate again. Squash merge only when all applicable final checks pass on the final head.
+Keep the PR draft while implementation is accumulating. Mark Ready only when the complete convergence change is ready for all applicable hosted checks. On any material failure, return to draft, fix on `refactor/web-ui-convergence`, and gate again. Squash merge only when Web, Harness, Docker runtime, and browser journey checks applicable to the final head are green.
 
 ## Next
 
-Commit this capsule repair, mark PR #91 Ready for review again, inspect both hosted gate results and logs, and either fix the same branch or squash merge when green.
+Count and classify local page shells, width constraints, manual tables/pagers/forms, compatibility imports, raw visual constants, and dead duplicate screens; migrate them to shared composition, strengthen boundary enforcement, then run the final gate.
