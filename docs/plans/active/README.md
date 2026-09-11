@@ -1,6 +1,6 @@
 # Active execution
 
-Current: Target Code Structure Migration.
+Current: `PLAN-target-code-structure-migration.md`.
 Selected next stage: M1 — Repository backend boundary.
 
 ## Working set
