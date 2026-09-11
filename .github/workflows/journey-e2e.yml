@@ -17,6 +17,23 @@ on:
       - "backend/pyproject.toml"
       - "Makefile"
       - ".github/workflows/journey-e2e.yml"
+  pull_request:
+    types: [ready_for_review]
+    branches: [main]
+    paths:
+      - "e2e/**"
+      - "web/**"
+      - "backend/src/napms/contexts/application_catalogue/**"
+      - "backend/src/napms/contexts/resource_catalogue/**"
+      - "backend/src/napms/contexts/authority_management/**"
+      - "backend/src/napms/platform/**"
+      - "backend/Dockerfile"
+      - "compose.yaml"
+      - "tools/prepare_local_postgres.py"
+      - "tools/local_start.py"
+      - "backend/pyproject.toml"
+      - "Makefile"
+      - ".github/workflows/journey-e2e.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
