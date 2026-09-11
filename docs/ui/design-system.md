@@ -59,12 +59,31 @@ AppShell
           reference text
           technical values
           TagList
-          StatusPill
+          StatusIndicator
           IssueIndicator
       CataloguePagination
 ```
 
 The Resource Catalogue is the first executable reference implementation.
+
+## Visual calibration from the accepted board
+
+The first reference crop was inspected as a scaled screenshot rather than treated as an abstract mood board. Its proportions imply the following executable targets:
+
+- desktop sidebar: `232px`;
+- workspace padding: `24px`;
+- page title: about `20px` with compact line-height;
+- primary/search/filter controls: about `38px` high;
+- quick filters: about `28px` high;
+- table header: about `40px` high;
+- table rows: about `40px` high;
+- selection column: about `48px`;
+- table cells: compact horizontal padding (`12px`);
+- table itself owns its border/radius; toolbar, quick filters and pagination are not wrapped in a large card;
+- lifecycle inside catalogue rows is dot + text, not a filled badge;
+- scope tags are compact and visually lighter than quick-filter chips.
+
+These values are encoded in `web/src/design-system/tokens.css` so later catalogue pages inherit the same density.
 
 ## Reference audit checklist
 
@@ -76,12 +95,11 @@ The reference slice is reviewed from top-left to bottom-right. Each item must be
 - [x] user block and logout at sidebar bottom;
 - [x] full-width application workspace;
 - [x] page title, description and primary action;
-- [x] single catalogue surface;
 - [x] full-width search with leading icon;
 - [x] labeled compact filter controls;
-- [x] apply/reset actions;
+- [x] reset action without an extra visible Apply button;
 - [x] quick-filter chips;
-- [x] dense table header;
+- [x] dense table with its own border/radius;
 - [x] select-all checkbox;
 - [x] per-row checkbox;
 - [x] checked/unchecked/indeterminate selection behavior;
@@ -90,14 +108,17 @@ The reference slice is reviewed from top-left to bottom-right. Each item must be
 - [x] monospace secondary reference;
 - [x] technical address presentation;
 - [x] compact scope tags;
-- [x] lifecycle status pill;
+- [x] lifecycle dot indicator;
 - [x] diagnostic state indicators;
 - [x] distinct loading/error/empty states;
 - [x] compact pagination footer;
+- [ ] Resource type filter shown in the concept board: intentionally omitted because canonical Resource Catalogue semantics explicitly reject a first-class Resource type attribute/filter;
+- [ ] More filters affordance: omitted until there are additional accepted filters to reveal;
 - [ ] saved-view behavior: visually present in the concept family but no accepted product semantics yet;
-- [ ] bulk mutation toolbar: selection is supported, but no bulk domain actions are accepted yet.
+- [ ] bulk mutation toolbar: selection is supported, but no bulk domain actions are accepted yet;
+- [ ] catalogue-wide facet counts and exact total: require a server-backed read-model extension; do not derive them from the current page.
 
-The unchecked items are deliberate semantic gaps, not visual omissions to fill with fake behavior.
+The unchecked items are deliberate semantic/read-model gaps, not invitations to fake client-side behavior.
 
 ## Table rules
 
@@ -107,7 +128,7 @@ The unchecked items are deliberate semantic gaps, not visual omissions to fill w
 - Checkbox interaction never triggers row navigation.
 - Primary identity is the strongest clickable cell; technical references are secondary/monospace.
 - Empty technical values use a neutral dash unless the domain explicitly defines an error state.
-- Tags, lifecycle/status pills and diagnostic indicators are separate visual concepts.
+- Tags, lifecycle/status indicators and diagnostic indicators are separate visual concepts.
 - Loading, error and empty results are distinct shared page states.
 
 ## Tokens
@@ -120,7 +141,7 @@ Executable tokens live in `web/src/design-system/tokens.css` and cover:
 - control heights/radii;
 - tag and checkbox dimensions;
 - sidebar width;
-- table header/row/body dimensions;
+- table header/row/cell dimensions;
 - standard surface shadow.
 
 Features consume semantic tokens indirectly through design-system components where possible.
@@ -133,4 +154,4 @@ Current reusable implementation lives under `web/src/design-system/`.
 
 ## Deliberate non-goals of the first slice
 
-The visual baseline may show affordances whose product behavior is not yet accepted (for example saved views or bulk mutations). Do not create placeholder backend/domain behavior merely to fill the picture. Add such affordances only when their semantics are accepted; the visual system should already have a place for them.
+The visual baseline may show affordances whose product behavior is not yet accepted. Do not create placeholder backend/domain behavior merely to fill the picture. When the missing item is a legitimate read-model need (for example global facet counts), add it server-side rather than approximating it from one paginated page.
