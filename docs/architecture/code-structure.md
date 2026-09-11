@@ -1,152 +1,200 @@
 # Code Structure
 
-Status: `accepted current architecture; no product/domain semantic change`.
+Status: `accepted target architecture; migration in progress`.
 
 Date: 2026-09-11.
 
+Decision: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
+Migration: `docs/engineering/target-code-structure-migration-roadmap.md`.
+
 ## Purpose
 
-Make repository ownership and dependency direction visible from paths so a developer or agent can locate one change without first scanning cross-context runtime files.
+Make path structure answer three questions without repository-wide search:
+1. is this authoritative domain ownership, cross-context orchestration, or technical execution;
+2. which semantic capability owns the change;
+3. which Clean Architecture layer contains it.
 
-This structure refactoring preserves the accepted modular-monolith topology and all current domain, API, persistence and Web semantics. It does not introduce services, new bounded contexts or shared business models.
-
-## Structural axis
-
-NAPMS remains **semantic module / bounded context first, Clean/Hexagonal layers second**.
-
-Do not reorganize the backend into global `domain/`, `application/` and `infrastructure/` directories. That would mix bounded contexts inside technical layers and weaken the ownership boundaries already enforced by architecture tests.
-
-First-class semantic modules remain directly visible under `src/napms/`.
-
-Within a semantic module use only layers that have real responsibility:
+## Repository target
 
 ```text
-src/napms/<semantic-module>/
-  domain/
-  application/
-  adapters/
-    postgres/      # when the module owns persistence
-    http/          # when the module exposes HTTP
-    ...            # other concrete outer adapters when required
+napms/
+  backend/
+    pyproject.toml
+    Dockerfile
+    src/napms/
+      contexts/
+      workflows/
+      platform/
+    tests/
+  web/
+  e2e/
+  deploy/
+  tools/
+  docs/
+  .agents/
+  .github/
+  Makefile
+  README.md
 ```
 
-Do not create empty `domain/`, `application/` or `adapters/` directories merely to make packages look uniform.
+The root Makefile remains the stable repository-level command surface. Backend packaging and backend tests belong under `backend/`; cross-system E2E stays repository-level.
+
+## Backend taxonomy
+
+### `contexts/`
+
+Contains bounded contexts / authoritative semantic owners.
+
+```text
+contexts/<context>/
+  domain/
+  application/
+  infrastructure/
+  presentation/
+```
+
+Create only layers that have actual responsibility.
+
+- `domain/` — model, invariants, domain services/events/errors.
+- `application/` — use cases, orchestration within the context, DTO/contracts and consumer-owned ports.
+- `infrastructure/` — persistence and outbound/integration implementations.
+- `presentation/` — inbound HTTP/CLI/other delivery adapters.
+
+Large application layers are decomposed by capability/use case when change locality demonstrates separate responsibilities.
+
+Accepted context classification:
+- `access_policy`;
+- `access_policy_realization`;
+- `application_catalogue`;
+- `authority_management`;
+- `connectivity_decision`;
+- `connectivity_requirements`;
+- `network_enforcement_placement`;
+- `network_environment_operations`;
+- `resource_catalogue`;
+- `technical_access_evidence`.
+
+### `workflows/`
+
+Contains explicit cross-context application/read orchestration that owns no authoritative business truth.
+
+```text
+workflows/<workflow>/
+  application/
+  infrastructure/
+  presentation/
+```
+
+Accepted workflow classification:
+- `requirement_policy_alignment`;
+- `policy_export`;
+- `scoped_connectivity_inventory`;
+- `network_operator_view`;
+- `traffic_analysis`.
+
+A workflow may own orchestration-specific projections/read models. It must consume bounded-context contracts/ports rather than context-owned persistence internals. If it acquires independent identity, lifecycle or invariants, reconsider its classification explicitly.
+
+There is no generic target `composition/` package. Workflow-specific composition lives with the workflow; pure executable wiring lives in `platform/bootstrap`.
+
+### `platform/`
+
+Contains only technical process/execution concerns:
+
+```text
+platform/
+  bootstrap/
+  auth/
+  database/
+  http/
+  observability/   # only when concrete shared responsibility exists
+```
+
+Typical responsibilities:
+- executable dependency wiring;
+- process configuration;
+- migrations/process-level database support;
+- authentication/session infrastructure;
+- generic HTTP shell/support;
+- logging/metrics/tracing infrastructure.
+
+`platform` never owns feature behavior or domain semantics.
 
 ## Dependency direction
 
-The existing dependency rule remains authoritative:
-
 ```text
-Domain
-  <- Application / consuming Ports
-      <- Adapters
-          <- Bootstrap / process composition
+domain
+  <- application
+      <- infrastructure / presentation
+          <- platform/bootstrap wiring
 ```
 
-- Domain contains no framework, persistence, transport, configuration, logging or DI concerns.
-- Application depends on its Domain and consumer-owned ports.
-- Adapters depend inward and implement/invoke those ports.
-- Process/bootstrap code may depend on modules and adapters to assemble the executable application.
-- Domain/Application never import bootstrap/runtime code.
+Rules:
+- Domain has no framework, persistence, transport, configuration, logging or DI dependencies.
+- Application depends on its Domain and explicit consumer-owned ports/contracts.
+- Infrastructure and Presentation depend inward.
+- Bootstrap may depend on concrete context/workflow outer layers to assemble the process.
+- One context does not import another context's `domain`.
+- Cross-context interaction uses explicit application contracts/ports.
+- Workflows do not bypass semantic ownership through direct writes/reads of context-owned persistence.
+- No service locator or global mutable dependency registry.
 
-## HTTP ownership
+## Shared code rule
 
-Feature HTTP is an outer adapter and belongs next to the semantic owner or explicit read/application composition it exposes.
+Do not create a general shared business-model/utilities package.
 
-For example:
+Technical reuse belongs in the narrow owning platform/library capability. Semantic reuse stays behind explicit owner contracts. A true DDD Shared Kernel requires a separate accepted architecture/domain decision.
 
-```text
-application_catalogue/
-  domain/
-  application/
-  adapters/
-    postgres/
-    http/
-      router.py
-      requests.py
-      responses.py
-      mapping.py
-```
+## Frontend target
 
-A router may be split further by use case when change locality demonstrates the need. File size alone is not a reason to introduce abstractions.
-
-Feature routers, DTO and error mappings, and feature serializers belong to their semantic owners. `runtime` and `bootstrap` must not become their owner.
-
-## Cross-context read/application compositions
-
-Existing non-peer compositions remain explicit under `src/napms/composition/` rather than being moved into a bounded-context adapter for cosmetic locality.
-
-A composition may consume multiple owner/application ports and may implement query-only technical composition where accepted architecture explicitly permits it, but it does not acquire authoritative business ownership.
-
-Accepted cross-schema query composition must not be moved into an owner-specific PostgreSQL adapter if that would imply false ownership or violate schema-boundary rules.
-
-## Runtime and bootstrap ownership
-
-`runtime/` is limited to genuine process/runtime concerns:
-
-- authentication and session support;
-- the process HTTP shell;
-- generic transport support;
-- the accepted enterprise identity seam.
-
-`bootstrap/` owns executable assembly, configuration, migrations and local seed:
-
-```text
-src/napms/bootstrap/
-  app.py
-  config.py
-  migrations.py
-  local_seed.py
-  wiring/          # only when decomposition is justified by concrete wiring size
-```
-
-Legacy runtime feature facades and `legacy_http_api.py` are absent. Feature code is registered by executable composition without making the process shell its semantic owner.
-
-## Frontend
-
-`web/` remains a React outer adapter and keeps the existing feature/use-case-first direction.
-
-Target shape is incremental:
+`web/` remains a React outer adapter with feature-first locality:
 
 ```text
 web/src/
-  app/             # application bootstrap/routing/providers
-  features/
-    <feature>/
-      api/
-      model/
-      components/
-      pages/
-  components/ui/   # genuinely reusable visual primitives
-  lib/             # genuinely shared technical helpers
+  app/                    # application bootstrap/routing/providers
+  features/<feature>/
+    api/
+    model/
+    components/
+    pages/
+  components/ui/          # reusable visual primitives
+  lib/                    # genuinely shared technical helpers
 ```
 
-Feature-local code stays local until reuse is demonstrated. Global `api.ts` is limited over time to shared transport mechanics; feature DTO/request mapping belongs at the feature API boundary.
+Feature DTO/request mapping and behavior stay feature-local. Root/shared API code contains only genuinely cross-feature transport/auth/session mechanics.
 
-## Structural change constraints
+## Structural change rules
 
-- Structural moves must preserve public behavior and historical semantics.
-- Prefer move/import cleanup before opportunistic redesign.
-- Add architecture tests when a migrated boundary can be expressed as an executable rule.
-- Keep compatibility shims only when they reduce migration risk; remove them once no longer needed.
-- Do not introduce `src/napms/modules/`; existing top-level semantic modules are already sufficiently explicit and another nesting level would add import churn without ownership value.
-- Further structural work requires new, concrete ownership or change-locality evidence; completed cleanup is not a reason for automatic continuation.
+- Preserve accepted product/domain semantics unless a separate accepted change says otherwise.
+- Move code directly toward final ownership; do not create new transitional architectural categories.
+- Move matching tests with their implementation boundary.
+- Add/update architecture tests whenever a migrated boundary is mechanically enforceable.
+- Temporary compatibility shims are allowed only to keep integrated stages working and must be removed by the final migration stage.
+- File size alone is not a decomposition rule; use responsibility and change coupling.
+- A physical move must not silently imply semantic ownership transfer.
 
-## Current structural baseline
+## Migration state
 
-The semantic-module-first structure, owner-local feature adapters, explicit cross-context compositions, small runtime process surface and bootstrap-owned executable assembly are the accepted baseline. Architecture tests protect boundaries that can be expressed mechanically.
+The current implementation still contains legacy top-level semantic modules plus `composition/`, `runtime/` and `bootstrap/`. Those are migration inputs, not the final target.
+
+The ordered `AS-IS -> TO-BE` map, stage sequence and gates are owned by `docs/engineering/target-code-structure-migration-roadmap.md`. The currently selected stage is owned by `docs/plans/active/`.
 
 ## Success condition
 
-A normal change should be discoverable primarily from its semantic owner:
+A developer or agent can locate a normal change as:
 
 ```text
-feature/use case
-  -> semantic module
-  -> HTTP adapter or application use case
-  -> consuming port
-  -> concrete adapter
-  -> bootstrap only when wiring changes
+business owner?
+  -> contexts/<context>
+
+cross-context scenario?
+  -> workflows/<workflow>
+
+process/runtime mechanics?
+  -> platform/<capability>
+
+then
+  -> domain / application / infrastructure / presentation
+  -> capability/use case when further decomposition is justified
 ```
 
-The refactoring is successful when this path is reliable and architecture tests prevent feature concerns from accumulating again in the process/bootstrap surface.
+No generic composition bucket, process feature ownership, cross-context domain imports or global technical-layer tree remains.

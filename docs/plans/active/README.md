@@ -1,12 +1,17 @@
 # Active execution
 
-Current: none.
-No implementation increment is selected.
+Current: `PLAN-target-code-structure-migration.md`
+Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
+Current task: M1 — Repository backend boundary.
 
 ## Working set
 
-- Canonical structure: `docs/architecture/code-structure.md`.
-- Completed structural roadmap: `docs/engineering/code-structure-refactoring-roadmap.md`.
+Read first:
+- `docs/plans/active/PLAN-target-code-structure-migration.md`
+- `docs/architecture/code-structure.md`
+- `docs/engineering/target-code-structure-migration-roadmap.md`
+
+Expand only if the architectural decision rationale is needed: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
 
 ## Blockers
 
@@ -14,8 +19,8 @@ None.
 
 ## Gate
 
-No active execution gate.
+M1 is behavior-preserving repository movement. Required evidence is defined in the active plan: backend/core, harness, knowledge, affected Docker/integration checks and final hosted PR gates.
 
 ## Next
 
-Select a new product, domain or architecture increment only from new evidence. Do not continue I33 cleanup automatically.
+Execute M1 exactly as defined in `PLAN-target-code-structure-migration.md`. Do not start M2 semantic-module moves in the same stage.
