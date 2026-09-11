@@ -1,0 +1,29 @@
+:root {
+  --napms-color-app-bg: #f5f7fa;
+  --napms-color-surface: #ffffff;
+  --napms-color-surface-subtle: #f8fafc;
+  --napms-color-surface-muted: #f1f5f9;
+  --napms-color-text-primary: #172033;
+  --napms-color-text-secondary: #64748b;
+  --napms-color-text-muted: #94a3b8;
+  --napms-color-text-body: #334155;
+  --napms-color-border: #e2e8f0;
+  --napms-color-border-strong: #cbd5e1;
+  --napms-color-primary: #2563eb;
+  --napms-color-primary-hover: #1d4ed8;
+  --napms-color-primary-active: #1e40af;
+  --napms-color-primary-subtle: #eff6ff;
+  --napms-color-primary-border: #93c5fd;
+  --napms-color-success: #047857;
+  --napms-color-success-dot: #10b981;
+  --napms-color-success-bg: #ecfdf5;
+  --napms-color-warning: #b45309;
+  --napms-color-danger: #b91c1c;
+
+  --napms-control-height: 42px;
+  --napms-control-height-sm: 34px;
+  --napms-control-radius: 6px;
+  --napms-surface-radius: 10px;
+  --napms-page-gap: 20px;
+  --napms-surface-shadow: 0 1px 2px rgb(15 23 42 / 5%);
+}
