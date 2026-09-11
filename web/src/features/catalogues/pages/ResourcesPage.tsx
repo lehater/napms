@@ -154,6 +154,18 @@ export function ResourcesPage({
   }, [page, search, scopeFilter, lifecycle, dataState])
 
   useEffect(() => {
+    const nextSearch = searchInput.trim()
+    if (nextSearch === search) return
+
+    const timeout = window.setTimeout(() => {
+      if (page !== 1) onPageChange(1)
+      setSearch(nextSearch)
+    }, 250)
+
+    return () => window.clearTimeout(timeout)
+  }, [page, search, searchInput, onPageChange])
+
+  useEffect(() => {
     const visible = new Set(visibleReferences)
     setSelected((current) => new Set([...current].filter((reference) => visible.has(reference))))
   }, [visibleReferences])
