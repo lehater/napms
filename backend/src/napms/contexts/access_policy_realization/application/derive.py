@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     DomainInteractionIdentity,
     KnowledgeGap,
 )
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     DesiredEnforcementPolicy,
     DesiredPolicyContribution,
     derive_desired_enforcement_policy,

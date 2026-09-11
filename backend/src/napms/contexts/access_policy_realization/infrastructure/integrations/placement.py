@@ -1,11 +1,11 @@
-from napms.access_policy_realization.application.ports import (
+from napms.contexts.access_policy_realization.application.ports import (
     PlacementSelectionProjection,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     InputProvenance,
     KnowledgeGap,
 )
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     EnforcementPlacementProjection,
     EnforcementTarget,
     PlacementStatus,

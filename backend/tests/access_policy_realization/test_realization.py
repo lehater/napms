@@ -3,16 +3,16 @@ from uuid import UUID
 
 import pytest
 
-from napms.access_policy_realization.application.derive import (
+from napms.contexts.access_policy_realization.application.derive import (
     DeriveDesiredEnforcementPolicy,
 )
-from napms.access_policy_realization.application.reconcile import (
+from napms.contexts.access_policy_realization.application.reconcile import (
     ReconcileEnforcementPolicy,
 )
-from napms.access_policy_realization.domain.algebra import (
+from napms.contexts.access_policy_realization.domain.algebra import (
     resolve_domain_access,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     AddressConstraint,
     AddressRange,
     DomainInteractionIdentity,
@@ -27,7 +27,7 @@ from napms.access_policy_realization.domain.model import (
     TechnicalAccessPredicate,
     TechnicalRegionFragment,
 )
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     ConfiguredEnforcementSnapshot,
     DesiredDerivationStatus,
     DesiredPolicyContribution,

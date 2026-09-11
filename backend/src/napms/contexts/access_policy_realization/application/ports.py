@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Protocol
 from uuid import UUID
 
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     DomainInteractionIdentity,
     DomainKnowledgeSnapshot,
     InputProvenance,
@@ -12,7 +12,7 @@ from napms.access_policy_realization.domain.model import (
     TechnicalAccessPredicate,
     require_aware,
 )
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     EnforcementPlacementProjection,
     ManagedReconciliationScope,
     PlacementStatus,

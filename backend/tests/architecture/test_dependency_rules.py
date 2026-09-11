@@ -6,7 +6,7 @@ ROOT = Path(__file__).parents[2]
 NAPMS = ROOT / "src" / "napms"
 
 ACCESS_POLICY = NAPMS / "access_policy"
-ACCESS_POLICY_REALIZATION = NAPMS / "access_policy_realization"
+ACCESS_POLICY_REALIZATION = NAPMS / "contexts" / "access_policy_realization"
 AUTHORITY_MANAGEMENT = NAPMS / "contexts" / "authority_management"
 APPLICATION_CATALOGUE = NAPMS / "application_catalogue"
 RESOURCE_CATALOGUE = NAPMS / "contexts" / "resource_catalogue"
@@ -293,7 +293,7 @@ BOUNDED_CONTEXT_CORES = (
     ),
     (
         ACCESS_POLICY_REALIZATION,
-        "napms.access_policy_realization",
+        "napms.contexts.access_policy_realization",
     ),
     (
         AUTHORITY_MANAGEMENT,
@@ -332,6 +332,21 @@ BOUNDED_CONTEXT_CORES = (
 
 def test_network_environment_operations_has_no_legacy_package():
     assert not (NAPMS / "network_environment_operations").exists()
+
+
+def test_access_policy_realization_has_no_legacy_package():
+    assert not (NAPMS / "access_policy_realization").exists()
+
+
+def test_access_policy_realization_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = ACCESS_POLICY_REALIZATION / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
 
 
 def test_authority_management_has_no_legacy_package():

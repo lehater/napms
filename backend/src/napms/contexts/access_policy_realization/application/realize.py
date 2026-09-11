@@ -1,23 +1,23 @@
 from datetime import datetime
 from uuid import UUID
 
-from napms.access_policy_realization.application.ports import (
+from napms.contexts.access_policy_realization.application.ports import (
     ConfiguredEvidencePort,
     DesiredPolicyPort,
     DomainKnowledgePort,
     EnforcementPlacementPort,
     ManagedReconciliationScopeContract,
 )
-from napms.access_policy_realization.application.resolve import (
+from napms.contexts.access_policy_realization.application.resolve import (
     ResolveTechnicalAccess,
 )
-from napms.access_policy_realization.domain.algebra import (
+from napms.contexts.access_policy_realization.domain.algebra import (
     expand_predicate,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     KnowledgeGap,
 )
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     ConfiguredEnforcementSnapshot,
     DesiredEnforcementPolicy,
     DesiredPolicyContribution,

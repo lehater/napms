@@ -1,13 +1,13 @@
-from napms.access_policy_realization.adapters.technical_access_evidence import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.technical_access_evidence import (
     TechnicalAccessEvidenceProjectionAdapter,
 )
-from napms.access_policy_realization.application.ports import (
+from napms.contexts.access_policy_realization.application.ports import (
     ConfiguredEvidenceProjection,
     ConfiguredPermitProjection,
     ConfiguredPolicySemantics,
     ManagedReconciliationScopeContract,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     KnowledgeGap,
 )
 from napms.contexts.technical_access_evidence.application.read import (

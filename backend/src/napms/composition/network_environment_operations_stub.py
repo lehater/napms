@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from napms.access_policy_realization.domain.realization import EnforcementTarget
+from napms.contexts.access_policy_realization.domain.realization import EnforcementTarget
 from napms.contexts.network_environment_operations.infrastructure.stubs import (
     AllowAllMutationAuthority,
     DeterministicTargetStub,

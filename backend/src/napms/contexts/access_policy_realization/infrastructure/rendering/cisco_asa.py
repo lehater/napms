@@ -1,15 +1,15 @@
 from ipaddress import IPv4Address, IPv4Network, summarize_address_range
 
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     PortRegion,
     PortRegionKind,
     TechnicalRegionFragment,
 )
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     DesiredEnforcementPolicy,
     EnforcementTarget,
 )
-from napms.access_policy_realization.domain.rendering import (
+from napms.contexts.access_policy_realization.domain.rendering import (
     RenderedConfiguration,
     RenderedStatement,
     RenderStatus,

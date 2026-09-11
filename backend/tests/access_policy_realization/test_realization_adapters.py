@@ -14,23 +14,23 @@ from napms.access_policy.domain.model import (
     ProposalProvenance,
     RuleSemanticIdentity,
 )
-from napms.access_policy_realization.adapters.configured_evidence import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.configured_evidence import (
     ConfiguredEvidenceProjectionAdapter,
 )
-from napms.access_policy_realization.adapters.desired_policy import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.desired_policy import (
     EffectiveDesiredPolicyProjectionAdapter,
 )
-from napms.access_policy_realization.adapters.placement import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.placement import (
     NetworkEnforcementPlacementProjectionAdapter,
 )
-from napms.access_policy_realization.application.ports import (
+from napms.contexts.access_policy_realization.application.ports import (
     ConfiguredPolicySemantics,
     ManagedReconciliationScopeContract,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     InputProvenance,
 )
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     EnforcementTarget,
     ManagedReconciliationScope,
     PlacementStatus,

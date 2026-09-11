@@ -3,13 +3,13 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from napms.access_policy_realization.domain.algebra import (
+from napms.contexts.access_policy_realization.domain.algebra import (
     expand_predicate,
     fragment_sort_key,
     intersect_fragments,
     subtract_many,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     DomainAccessResolution,
     DomainInteractionIdentity,
     KnowledgeGap,

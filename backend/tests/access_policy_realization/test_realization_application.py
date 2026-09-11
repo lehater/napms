@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from napms.access_policy_realization.application.ports import (
+from napms.contexts.access_policy_realization.application.ports import (
     ConfiguredEvidenceProjection,
     ConfiguredPermitProjection,
     ConfiguredPolicySemantics,
@@ -10,11 +10,11 @@ from napms.access_policy_realization.application.ports import (
     ManagedReconciliationScopeContract,
     PlacementSelectionProjection,
 )
-from napms.access_policy_realization.application.realize import (
+from napms.contexts.access_policy_realization.application.realize import (
     BuildConfiguredEnforcementSnapshot,
     DeriveDesiredEnforcementFromOwners,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     AddressConstraint,
     AddressRange,
     DomainInteractionIdentity,
@@ -31,7 +31,7 @@ from napms.access_policy_realization.domain.model import (
     TechnicalAccessPredicate,
     TechnicalRegionFragment,
 )
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     DesiredDerivationStatus,
     EnforcementPlacementProjection,
     EnforcementTarget,

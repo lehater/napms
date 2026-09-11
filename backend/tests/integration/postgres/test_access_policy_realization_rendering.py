@@ -4,10 +4,10 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy_realization.adapters.cisco_asa_semantics import (
+from napms.contexts.access_policy_realization.infrastructure.rendering.cisco_asa_semantics import (
     project_asa_permit_regions,
 )
-from napms.access_policy_realization.domain.rendering import (
+from napms.contexts.access_policy_realization.domain.rendering import (
     RenderStatus,
 )
 from napms.composition.access_policy_realization_postgres import (

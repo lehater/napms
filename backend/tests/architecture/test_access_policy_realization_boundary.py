@@ -7,6 +7,7 @@ APR = (
     ROOT
     / "src"
     / "napms"
+    / "contexts"
     / "access_policy_realization"
 )
 TAE = (
@@ -40,10 +41,10 @@ def imported_modules(path):
             yield node.module
 
 
-def test_apr_adapters_do_not_bypass_peer_persistence():
+def test_apr_infrastructure_does_not_bypass_peer_persistence():
     violations = []
     for path in (
-        APR / "adapters"
+        APR / "infrastructure"
     ).rglob("*.py"):
         for module in imported_modules(
             path
@@ -51,6 +52,8 @@ def test_apr_adapters_do_not_bypass_peer_persistence():
             if (
                 module == "psycopg"
                 or ".adapters.postgres"
+                in module
+                or ".persistence.postgres"
                 in module
             ):
                 violations.append(
@@ -66,7 +69,7 @@ def test_tae_does_not_depend_on_apr():
             path
         ):
             if module.startswith(
-                "napms.access_policy_realization"
+                "napms.contexts.access_policy_realization"
             ):
                 violations.append(
                     (path, module)

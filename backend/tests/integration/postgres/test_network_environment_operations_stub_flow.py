@@ -5,7 +5,7 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy_realization.domain.rendering import RenderStatus
+from napms.contexts.access_policy_realization.domain.rendering import RenderStatus
 from napms.composition.access_policy_realization_postgres import (
     open_access_policy_realization_scope,
 )

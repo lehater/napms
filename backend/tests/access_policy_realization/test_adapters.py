@@ -1,16 +1,16 @@
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from napms.access_policy_realization.adapters.catalogues import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.catalogues import (
     CatalogueDomainKnowledgeAdapter,
 )
-from napms.access_policy_realization.adapters.technical_access_evidence import (
+from napms.contexts.access_policy_realization.infrastructure.integrations.technical_access_evidence import (
     TechnicalAccessEvidenceProjectionAdapter,
 )
-from napms.access_policy_realization.application.resolve import (
+from napms.contexts.access_policy_realization.application.resolve import (
     ResolveTechnicalAccess,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     AddressConstraint,
     AddressRange,
     PortConstraint,

@@ -1,6 +1,6 @@
 from ipaddress import IPv4Address, IPv4Network
 
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     AddressRange,
     PortRegion,
     TechnicalRegionFragment,

@@ -1,11 +1,11 @@
 from typing import Protocol
 
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     DesiredDerivationStatus,
     DesiredEnforcementPolicy,
     EnforcementTarget,
 )
-from napms.access_policy_realization.domain.rendering import (
+from napms.contexts.access_policy_realization.domain.rendering import (
     RenderedConfiguration,
     RenderStatus,
 )

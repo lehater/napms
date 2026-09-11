@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from ipaddress import ip_address
 from itertools import product
 
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     AddressConstraint,
     AddressConstraintKind,
     AddressRange,

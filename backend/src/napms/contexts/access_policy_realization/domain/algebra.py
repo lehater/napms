@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     AccessCorrespondence,
     AddressConstraint,
     AddressConstraintKind,

@@ -4,11 +4,11 @@ from napms.access_policy.application.select_effective_policy import (
     EffectivePolicySelectionOutcome,
     SelectEffectiveDesiredPolicy,
 )
-from napms.access_policy_realization.application.ports import (
+from napms.contexts.access_policy_realization.application.ports import (
     DesiredPolicyRowProjection,
     DesiredPolicySnapshot,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     AddressConstraint,
     AddressRange,
     DomainInteractionIdentity,

@@ -1,12 +1,12 @@
 from datetime import datetime
 
-from napms.access_policy_realization.application.ports import (
+from napms.contexts.access_policy_realization.application.ports import (
     DomainKnowledgePort,
 )
-from napms.access_policy_realization.domain.algebra import (
+from napms.contexts.access_policy_realization.domain.algebra import (
     resolve_domain_access,
 )
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     DomainAccessResolution,
     InputProvenance,
     ProtocolSelectorKind,

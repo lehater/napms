@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from napms.access_policy_realization.domain.realization import EnforcementTarget
+from napms.contexts.access_policy_realization.domain.realization import EnforcementTarget
 
 
 class RenderStatus(str, Enum):

@@ -1,4 +1,4 @@
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     ConfiguredEnforcementSnapshot,
     DesiredEnforcementPolicy,
     PolicyReconciliation,

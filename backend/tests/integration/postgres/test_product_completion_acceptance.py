@@ -14,16 +14,16 @@ from napms.access_policy.application.materialize_rule import (
     MaterializeAllowedAccessRule,
     SubmitAccessRuleProposal,
 )
-from napms.access_policy_realization.application.ports import (
+from napms.contexts.access_policy_realization.application.ports import (
     ConfiguredPolicySemantics,
     ManagedReconciliationScopeContract,
 )
-from napms.access_policy_realization.domain.realization import (
+from napms.contexts.access_policy_realization.domain.realization import (
     ManagedReconciliationScope,
     ReconciliationStatus,
     RequiredSemanticChange,
 )
-from napms.access_policy_realization.domain.rendering import RenderStatus
+from napms.contexts.access_policy_realization.domain.rendering import RenderStatus
 from napms.composition.access_policy_realization_postgres import (
     open_access_policy_realization_scope,
 )

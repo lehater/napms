@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from uuid import UUID
 
-from napms.access_policy_realization.domain.model import (
+from napms.contexts.access_policy_realization.domain.model import (
     AddressConstraint,
     AddressRange,
     InputProvenance,
