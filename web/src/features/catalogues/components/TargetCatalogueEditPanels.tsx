@@ -1,7 +1,8 @@
 import { useState } from "react"
 
-import { Button } from "@/components/ui/Button"
-import { DependencyBlockPanel } from "@/features/catalogues/components/DependencyBlockPanel"
+import { Button } from "@/design-system/components/Button"
+import { Input } from "@/design-system/components/Field"
+import { Surface } from "@/design-system/primitives/Surface"
 import {
   retireApplicationComponent,
   retireApplicationDefinition,
@@ -17,9 +18,7 @@ import type {
   ApplicationDefinitionDto,
   ApplicationDeploymentDto,
 } from "@/features/catalogues/api/targetCatalogue"
-
-const inputClass =
-  "min-h-10 w-full rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
+import { DependencyBlockPanel } from "@/features/catalogues/components/DependencyBlockPanel"
 
 function messageFrom(caught: unknown, fallback: string) {
   return caught instanceof Error ? caught.message : fallback
@@ -29,6 +28,46 @@ function blockersFrom(caught: unknown): DependencyGroupDto[] | null {
   return caught instanceof TargetCatalogueApiError && caught.code === "CatalogueDependencyBlocked"
     ? (caught.details?.dependencies ?? [])
     : null
+}
+
+function EditorActions({
+  confirmLabel,
+  confirming,
+  retiring,
+  saving,
+  canSave,
+  onStartRetire,
+  onCancelRetire,
+  onRetire,
+  onCancel,
+  onSave,
+}: {
+  confirmLabel: string
+  confirming: boolean
+  retiring: boolean
+  saving: boolean
+  canSave: boolean
+  onStartRetire: () => void
+  onCancelRetire: () => void
+  onRetire: () => void
+  onCancel: () => void
+  onSave: () => void
+}) {
+  return (
+    <div className="flex flex-wrap justify-between gap-2">
+      {confirming ? (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-[var(--napms-color-text-secondary)]">{confirmLabel}</span>
+          <Button variant="secondary" size="sm" onClick={onCancelRetire}>Cancel</Button>
+          <Button size="sm" loading={retiring} onClick={onRetire}>Retire</Button>
+        </div>
+      ) : <Button variant="ghost" size="sm" onClick={onStartRetire}>Retire</Button>}
+      <div className="flex gap-2">
+        <Button variant="secondary" size="sm" onClick={onCancel}>Close</Button>
+        <Button size="sm" loading={saving} disabled={!canSave} onClick={onSave}>Save</Button>
+      </div>
+    </div>
+  )
 }
 
 export function DefinitionEditPanel({
@@ -57,13 +96,12 @@ export function DefinitionEditPanel({
     setSaving(true)
     setError(null)
     try {
-      const updated = await updateApplicationDefinition(definition, {
+      onChanged(await updateApplicationDefinition(definition, {
         displayName: displayName.trim(),
         domain: domain.trim() || null,
         ownerReference: ownerReference.trim() || null,
         description: description.trim() || null,
-      })
-      onChanged(updated)
+      }))
     } catch (caught) {
       setError(messageFrom(caught, "Application Definition could not be updated."))
     } finally {
@@ -89,35 +127,19 @@ export function DefinitionEditPanel({
   }
 
   return (
-    <div className="grid gap-4 rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
-      <div className="grid gap-3 md:grid-cols-2">
-        <input className={inputClass} value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Name" aria-label="Application name" />
-        <input className={inputClass} value={domain} onChange={(event) => setDomain(event.target.value)} placeholder="Domain" aria-label="Application domain" />
-        <input className={inputClass} value={ownerReference} onChange={(event) => setOwnerReference(event.target.value)} placeholder="Owner" aria-label="Application owner" />
-        <input className={inputClass} value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Description" aria-label="Application description" />
-      </div>
-      {error ? <div className="text-sm text-red-700">{error}</div> : null}
-      {blockers ? (
-        <DependencyBlockPanel groups={blockers} subjectKind="application-definition" subjectId={definition.applicationId} onClose={() => setBlockers(null)} />
-      ) : null}
-      <div className="flex flex-wrap justify-between gap-2">
-        <div>
-          {confirmRetire ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-[#64748B]">Retire this Definition?</span>
-              <Button variant="secondary" onClick={() => setConfirmRetire(false)}>Cancel</Button>
-              <Button loading={retiring} onClick={() => void retire()}>Retire</Button>
-            </div>
-          ) : (
-            <Button variant="ghost" onClick={() => setConfirmRetire(true)}>Retire</Button>
-          )}
+    <Surface className="p-5">
+      <div className="grid gap-4">
+        <div className="grid gap-3 md:grid-cols-2">
+          <Input value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Name" aria-label="Application name" />
+          <Input value={domain} onChange={(event) => setDomain(event.target.value)} placeholder="Domain" aria-label="Application domain" />
+          <Input value={ownerReference} onChange={(event) => setOwnerReference(event.target.value)} placeholder="Owner" aria-label="Application owner" />
+          <Input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Description" aria-label="Application description" />
         </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={onCancel}>Close</Button>
-          <Button loading={saving} disabled={!displayName.trim()} onClick={() => void save()}>Save</Button>
-        </div>
+        {error ? <div className="text-sm text-[var(--napms-color-danger)]">{error}</div> : null}
+        {blockers ? <DependencyBlockPanel groups={blockers} subjectKind="application-definition" subjectId={definition.applicationId} onClose={() => setBlockers(null)} /> : null}
+        <EditorActions confirmLabel="Retire this Definition?" confirming={confirmRetire} retiring={retiring} saving={saving} canSave={Boolean(displayName.trim())} onStartRetire={() => setConfirmRetire(true)} onCancelRetire={() => setConfirmRetire(false)} onRetire={() => void retire()} onCancel={onCancel} onSave={() => void save()} />
       </div>
-    </div>
+    </Surface>
   )
 }
 
@@ -146,12 +168,11 @@ export function ComponentEditPanel({
     setSaving(true)
     setError(null)
     try {
-      const updated = await updateApplicationComponent(component, {
+      onChanged(await updateApplicationComponent(component, {
         displayName: displayName.trim(),
         componentType: componentType.trim() || null,
         description: description.trim() || null,
-      })
-      onChanged(updated)
+      }))
     } catch (caught) {
       setError(messageFrom(caught, "Component could not be updated."))
     } finally {
@@ -177,20 +198,15 @@ export function ComponentEditPanel({
   }
 
   return (
-    <div className="grid gap-3 border-b border-[#E2E8F0] bg-[#F8FAFC] p-4">
+    <div className="my-3 grid gap-3 rounded-[var(--napms-control-radius)] bg-[var(--napms-color-surface-subtle)] p-4">
       <div className="grid gap-2 md:grid-cols-3">
-        <input className={inputClass} value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Name" aria-label="Component name" />
-        <input className={inputClass} value={componentType} onChange={(event) => setComponentType(event.target.value)} placeholder="Type" aria-label="Component type" />
-        <input className={inputClass} value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Description" aria-label="Component description" />
+        <Input value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Name" aria-label="Component name" />
+        <Input value={componentType} onChange={(event) => setComponentType(event.target.value)} placeholder="Type" aria-label="Component type" />
+        <Input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Description" aria-label="Component description" />
       </div>
-      {error ? <div className="text-sm text-red-700">{error}</div> : null}
+      {error ? <div className="text-sm text-[var(--napms-color-danger)]">{error}</div> : null}
       {blockers ? <DependencyBlockPanel groups={blockers} subjectKind="component" subjectId={component.componentId} onClose={() => setBlockers(null)} /> : null}
-      <div className="flex flex-wrap justify-between gap-2">
-        {confirmRetire ? (
-          <div className="flex items-center gap-2"><span className="text-sm text-[#64748B]">Retire Component?</span><Button variant="secondary" onClick={() => setConfirmRetire(false)}>Cancel</Button><Button loading={retiring} onClick={() => void retire()}>Retire</Button></div>
-        ) : <Button variant="ghost" onClick={() => setConfirmRetire(true)}>Retire</Button>}
-        <div className="flex gap-2"><Button variant="secondary" onClick={onCancel}>Close</Button><Button loading={saving} disabled={!displayName.trim()} onClick={() => void save()}>Save</Button></div>
-      </div>
+      <EditorActions confirmLabel="Retire Component?" confirming={confirmRetire} retiring={retiring} saving={saving} canSave={Boolean(displayName.trim())} onStartRetire={() => setConfirmRetire(true)} onCancelRetire={() => setConfirmRetire(false)} onRetire={() => void retire()} onCancel={onCancel} onSave={() => void save()} />
     </div>
   )
 }
@@ -220,12 +236,11 @@ export function DeploymentEditPanel({
     setSaving(true)
     setError(null)
     try {
-      const updated = await updateApplicationDeployment(deployment, {
+      onChanged(await updateApplicationDeployment(deployment, {
         companyReference: companyReference.trim(),
         environment: environment.trim(),
         scopeReference: scopeReference.trim(),
-      })
-      onChanged(updated)
+      }))
     } catch (caught) {
       setError(messageFrom(caught, "Application Deployment could not be updated."))
     } finally {
@@ -250,21 +265,20 @@ export function DeploymentEditPanel({
     }
   }
 
+  const canSave = Boolean(companyReference.trim() && environment.trim() && scopeReference.trim())
+
   return (
-    <div className="grid gap-3 rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
-      <div className="grid gap-2 md:grid-cols-3">
-        <input className={inputClass} value={companyReference} onChange={(event) => setCompanyReference(event.target.value)} placeholder="Company" aria-label="Company" />
-        <input className={inputClass} value={environment} onChange={(event) => setEnvironment(event.target.value)} placeholder="Environment" aria-label="Environment" />
-        <input className={inputClass} value={scopeReference} onChange={(event) => setScopeReference(event.target.value)} placeholder="Scope" aria-label="Scope" />
+    <Surface className="p-5">
+      <div className="grid gap-3">
+        <div className="grid gap-2 md:grid-cols-3">
+          <Input value={companyReference} onChange={(event) => setCompanyReference(event.target.value)} placeholder="Company" aria-label="Company" />
+          <Input value={environment} onChange={(event) => setEnvironment(event.target.value)} placeholder="Environment" aria-label="Environment" />
+          <Input value={scopeReference} onChange={(event) => setScopeReference(event.target.value)} placeholder="Scope" aria-label="Scope" />
+        </div>
+        {error ? <div className="text-sm text-[var(--napms-color-danger)]">{error}</div> : null}
+        {blockers ? <DependencyBlockPanel groups={blockers} subjectKind="application-deployment" subjectId={deployment.applicationDeploymentId} onClose={() => setBlockers(null)} /> : null}
+        <EditorActions confirmLabel="Retire Deployment?" confirming={confirmRetire} retiring={retiring} saving={saving} canSave={canSave} onStartRetire={() => setConfirmRetire(true)} onCancelRetire={() => setConfirmRetire(false)} onRetire={() => void retire()} onCancel={onCancel} onSave={() => void save()} />
       </div>
-      {error ? <div className="text-sm text-red-700">{error}</div> : null}
-      {blockers ? <DependencyBlockPanel groups={blockers} subjectKind="application-deployment" subjectId={deployment.applicationDeploymentId} onClose={() => setBlockers(null)} /> : null}
-      <div className="flex flex-wrap justify-between gap-2">
-        {confirmRetire ? (
-          <div className="flex items-center gap-2"><span className="text-sm text-[#64748B]">Retire Deployment?</span><Button variant="secondary" onClick={() => setConfirmRetire(false)}>Cancel</Button><Button loading={retiring} onClick={() => void retire()}>Retire</Button></div>
-        ) : <Button variant="ghost" onClick={() => setConfirmRetire(true)}>Retire</Button>}
-        <div className="flex gap-2"><Button variant="secondary" onClick={onCancel}>Close</Button><Button loading={saving} disabled={!companyReference.trim() || !environment.trim() || !scopeReference.trim()} onClick={() => void save()}>Save</Button></div>
-      </div>
-    </div>
+    </Surface>
   )
 }
