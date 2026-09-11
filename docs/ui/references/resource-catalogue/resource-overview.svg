@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
+  <title id="title">NAPMS Resource Overview reference</title>
+  <desc id="desc">Resource detail Overview with current technical realization, responsibility scopes and responsibilities.</desc>
+  <defs><style>
+    .bg{fill:#f8fafc}.side{fill:#111827}.side2{fill:#1f2937}.card{fill:#fff;stroke:#dce3ec;stroke-width:1}.line{stroke:#e2e8f0;stroke-width:1}.txt{font-family:Inter,Arial,sans-serif;fill:#172033}.muted{font-family:Inter,Arial,sans-serif;fill:#64748b}.small{font-size:12px}.body{font-size:14px}.label{font-size:11px;font-weight:700;letter-spacing:.7px}.h1{font-size:27px;font-weight:700}.h2{font-size:16px;font-weight:700}.bold{font-weight:700}.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.btn{fill:#2563eb}.btnText{font-family:Inter,Arial,sans-serif;fill:#fff;font-size:13px;font-weight:700}.control{fill:#fff;stroke:#cbd5e1}.green{fill:#ecfdf5}.greenText{font-family:Inter,Arial,sans-serif;fill:#047857;font-size:12px;font-weight:700}.chip{fill:#eff6ff}.chipText{font-family:Inter,Arial,sans-serif;fill:#1d4ed8;font-size:12px;font-weight:700}.nav{font-family:Inter,Arial,sans-serif;fill:#cbd5e1;font-size:14px}.navActive{fill:#fff;font-weight:700}
+  </style></defs>
+  <rect class="bg" width="1440" height="900"/><rect class="side" width="228" height="900"/>
+  <text x="28" y="42" class="txt" style="fill:#fff;font-size:19px;font-weight:800">NAPMS</text><text x="28" y="82" class="muted label" style="fill:#64748b">CATALOGUES</text><rect x="16" y="98" width="196" height="38" rx="7" class="side2"/><text x="32" y="123" class="nav navActive">Resources</text><text x="32" y="164" class="nav">Applications</text>
+  <g transform="translate(270 48)">
+    <text x="0" y="0" class="txt body bold" style="fill:#2563eb">← Back to resources</text>
+    <text x="0" y="54" class="txt h1">api-gateway</text><rect x="190" y="31" width="72" height="26" rx="13" class="green"/><text x="205" y="49" class="greenText">● Active</text>
+    <text x="0" y="80" class="muted small">Resource reference: </text><text x="118" y="80" class="muted small mono">res-a31d2f…</text>
+    <rect x="1010" y="31" width="112" height="38" rx="7" class="control"/><text x="1036" y="55" class="txt body bold">Actions ▾</text>
+    <line x1="0" y1="118" x2="1122" y2="118" class="line"/>
+    <text x="18" y="151" class="txt body bold" style="fill:#2563eb">Overview</text><text x="120" y="151" class="muted body bold">History</text><text x="195" y="151" class="muted body bold">Technical details</text><line x1="0" y1="166" x2="86" y2="166" stroke="#2563eb" stroke-width="3"/>
+
+    <g transform="translate(0 192)">
+      <rect x="0" y="0" width="530" height="240" rx="10" class="card"/><text x="20" y="34" class="txt h2">Basic information</text>
+      <text x="20" y="74" class="muted body">Name</text><text x="185" y="74" class="txt body bold">api-gateway</text>
+      <text x="20" y="106" class="muted body">Reference</text><text x="185" y="106" class="txt small mono">res-a31d2f…</text>
+      <text x="20" y="138" class="muted body">Lifecycle</text><rect x="185" y="120" width="72" height="24" rx="12" class="green"/><text x="199" y="137" class="greenText">● Active</text>
+      <text x="20" y="170" class="muted body">Version</text><text x="185" y="170" class="txt body">v7</text>
+      <text x="20" y="202" class="muted body">State read at</text><text x="185" y="202" class="txt body">Sep 11, 2026, 18:00</text>
+
+      <rect x="0" y="260" width="530" height="280" rx="10" class="card"/><text x="20" y="296" class="txt h2">Technical realization</text><rect x="360" y="277" width="150" height="38" rx="7" class="control"/><text x="377" y="301" class="txt small bold">Replace addresses</text>
+      <text x="20" y="344" class="txt body bold mono" style="fill:#2563eb">10.20.30.40</text><text x="20" y="374" class="txt body bold mono" style="fill:#2563eb">10.20.30.41</text><text x="20" y="410" class="muted small">Effective since Sep 11, 2026, 17:42</text>
+      <rect x="20" y="442" width="490" height="76" rx="7" fill="#f8fafc"/><text x="36" y="470" class="muted small">Replacing ends the current realization and creates a successor.</text><text x="36" y="494" class="muted small">Historical facts are preserved.</text>
+    </g>
+
+    <g transform="translate(552 192)">
+      <rect x="0" y="0" width="570" height="242" rx="10" class="card"/><text x="20" y="34" class="txt h2">Responsibility scopes</text><text x="20" y="55" class="muted small">Current effective affiliations.</text><rect x="438" y="18" width="112" height="36" rx="7" class="control"/><text x="464" y="41" class="txt small bold">+ Add scope</text>
+      <rect x="20" y="82" width="255" height="62" rx="7" class="control"/><rect x="34" y="98" width="78" height="24" rx="4" class="chip"/><text x="47" y="115" class="chipText">Payments</text><text x="224" y="115" class="muted small bold">End</text><text x="34" y="134" class="muted small">Since Sep 11, 17:45</text>
+      <rect x="295" y="82" width="255" height="62" rx="7" class="control"/><rect x="309" y="98" width="50" height="24" rx="4" class="chip"/><text x="322" y="115" class="chipText">Core</text><text x="499" y="115" class="muted small bold">End</text><text x="309" y="134" class="muted small">Since Sep 11, 17:47</text>
+
+      <rect x="0" y="260" width="570" height="350" rx="10" class="card"/><text x="20" y="296" class="txt h2">Responsibilities</text><rect x="396" y="278" width="154" height="36" rx="7" class="control"/><text x="412" y="301" class="txt small bold">+ Add responsibility</text>
+      <circle cx="40" cy="350" r="18" fill="#f1f5f9"/><text x="32" y="355" class="muted body">●</text><text x="70" y="337" class="muted small">Technical owner</text><text x="70" y="358" class="txt body bold" style="fill:#2563eb">Platform Team</text><text x="70" y="378" class="muted small">platform@example.test</text><text x="514" y="357" class="muted small bold">End</text><line x1="20" y1="402" x2="550" y2="402" class="line"/>
+      <circle cx="40" cy="455" r="18" fill="#f1f5f9"/><text x="32" y="460" class="muted body">●</text><text x="70" y="442" class="muted small">Operations contact</text><text x="70" y="463" class="txt body bold" style="fill:#2563eb">NOC Team</text><text x="70" y="483" class="muted small">noc@example.test</text><text x="514" y="462" class="muted small bold">End</text>
+      <text x="20" y="552" class="muted small">Multiple simultaneous assignments are allowed; no primary owner is implied.</text>
+    </g>
+  </g>
+</svg>
