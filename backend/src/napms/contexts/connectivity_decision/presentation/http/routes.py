@@ -33,8 +33,8 @@ from napms.contexts.connectivity_decision.domain.model import (
     DecisionValidity,
 )
 from napms.workflows.policy_export.application.normalization_ports import DcsProjectionDecodeError
-from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.http_support import PublicApiError, authenticated_actor, set_outcome
+from napms.platform.auth.local import AuthenticatedActor, InMemorySessionStore
+from napms.platform.http.support import PublicApiError, authenticated_actor, set_outcome
 from napms.workflows.policy_export.presentation.http.json import port_constraint_json
 
 

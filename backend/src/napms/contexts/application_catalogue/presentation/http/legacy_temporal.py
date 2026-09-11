@@ -14,8 +14,8 @@ from napms.contexts.application_catalogue.presentation.http.support import (
     require_aware,
     require_mutation_success,
 )
-from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_support import require_actor
+from napms.platform.auth.local import InMemorySessionStore
+from napms.platform.http.support import require_actor
 
 
 class EndDeploymentResourceBindingRequest(BaseModel):

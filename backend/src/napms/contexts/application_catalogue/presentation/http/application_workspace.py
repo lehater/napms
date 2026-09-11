@@ -29,8 +29,8 @@ from napms.contexts.application_catalogue.application.structure_curation import 
     RetireComponentCommand,
 )
 from napms.workflows.policy_export.application.normalization_ports import DcsProjectionDecodeError
-from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_support import (
+from napms.platform.auth.local import InMemorySessionStore
+from napms.platform.http.support import (
     PublicApiError,
     require_actor,
 )

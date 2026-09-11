@@ -33,13 +33,13 @@ from napms.contexts.connectivity_requirements.domain.model import (
 from napms.workflows.requirement_policy_alignment.application.ports import (
     PolicyCoverageOutcome,
 )
-from napms.runtime.auth import (
+from napms.platform.auth.local import (
     InMemorySessionStore,
     LocalCredential,
     LocalPasswordAuthenticator,
     hash_local_password,
 )
-from napms.runtime.http_api import HttpApiDependencies, create_http_api
+from napms.platform.http.api import HttpApiDependencies, create_http_api
 
 
 NOW = datetime(2026, 9, 9, 9, 0, tzinfo=timezone.utc)

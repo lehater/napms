@@ -4,7 +4,7 @@ from napms.contexts.connectivity_decision.application.ports import (
     DecisionCommitOutcomeUnknown,
     DecisionPersistenceError,
 )
-from napms.runtime.http_support import error_response
+from napms.platform.http.support import error_response
 
 
 def register_connectivity_decision_http_error_handlers(app: FastAPI) -> None:

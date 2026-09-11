@@ -6,7 +6,7 @@ from uuid import UUID
 import pytest
 from fastapi.testclient import TestClient
 
-import napms.runtime.http_api as http_api_module
+import napms.platform.http.api as http_api_module
 from napms.contexts.access_policy.application.ports import (
     AccessRuleCommitOutcomeUnknown,
     AccessRulePersistenceError,
@@ -34,13 +34,13 @@ from napms.workflows.policy_export.application.ports import (
     ResourceRealizationOutcome,
     ResourceReference,
 )
-from napms.runtime.auth import (
+from napms.platform.auth.local import (
     InMemorySessionStore,
     LocalCredential,
     LocalPasswordAuthenticator,
     hash_local_password,
 )
-from napms.runtime.http_api import HttpApiDependencies, create_http_api
+from napms.platform.http.api import HttpApiDependencies, create_http_api
 
 
 NOW = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)

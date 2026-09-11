@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 
 from napms.workflows.policy_export.application.normalization_types import NormalizationInvariantError
-from napms.runtime.http_support import error_response
+from napms.platform.http.support import error_response
 
 
 def register_policy_export_http_error_handlers(app: FastAPI) -> None:

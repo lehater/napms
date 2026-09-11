@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi.responses import JSONResponse
 
-from napms.runtime.http_support import PublicApiError
+from napms.platform.http.support import PublicApiError
 
 
 SUCCESS_OUTCOMES = {"Created", "Updated", "Resolved"}

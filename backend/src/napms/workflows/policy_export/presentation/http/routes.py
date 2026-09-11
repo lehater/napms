@@ -18,8 +18,8 @@ from napms.workflows.policy_export.application.export_snapshot import (
 )
 from napms.workflows.policy_export.application.normalize_snapshot import NormalizeExportSnapshot
 from napms.workflows.policy_export.application.normalization_ports import DcsProjectionDecodeError
-from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.http_support import PublicApiError, authenticated_actor, set_outcome
+from napms.platform.auth.local import AuthenticatedActor, InMemorySessionStore
+from napms.platform.http.support import PublicApiError, authenticated_actor, set_outcome
 from napms.workflows.policy_export.presentation.http.json import (
     normalized_policy_export_json,
     port_constraint_json,

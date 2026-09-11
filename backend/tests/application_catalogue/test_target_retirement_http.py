@@ -20,8 +20,8 @@ from napms.contexts.application_catalogue.application.target_retirement import (
 )
 from napms.contexts.application_catalogue.domain.model import Application, CatalogueLifecycleState
 from napms.contexts.application_catalogue.domain.target_model import DeploymentInteraction
-from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.http_api import PublicApiError
+from napms.platform.auth.local import AuthenticatedActor, InMemorySessionStore
+from napms.platform.http.api import PublicApiError
 
 
 NOW = datetime(2026, 9, 11, 0, 0, tzinfo=timezone.utc)

@@ -9,13 +9,13 @@ from napms.contexts.access_policy.application.ports import (
     DecisionOutcome,
 )
 from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
-from napms.runtime.auth import (
+from napms.platform.auth.local import (
     InMemorySessionStore,
     LocalCredential,
     LocalPasswordAuthenticator,
     hash_local_password,
 )
-from napms.runtime.http_api import HttpApiDependencies, create_http_api
+from napms.platform.http.api import HttpApiDependencies, create_http_api
 from napms.workflows.scoped_connectivity_inventory.application.model import (
     ComponentInventoryItem,
     ConnectivityRelationshipItem,

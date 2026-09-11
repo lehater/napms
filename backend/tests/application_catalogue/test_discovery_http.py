@@ -11,8 +11,8 @@ from napms.contexts.application_catalogue.application.participant_discovery impo
     ApplicationCatalogueParticipant,
     ApplicationCatalogueParticipantPage,
 )
-from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.http_api import PublicApiError
+from napms.platform.auth.local import AuthenticatedActor, InMemorySessionStore
+from napms.platform.http.api import PublicApiError
 
 
 APPLICATION_ID = UUID("00000000-0000-0000-0000-000000006001")

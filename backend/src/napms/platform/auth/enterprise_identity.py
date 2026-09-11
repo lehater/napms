@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol, Sequence
 
-from napms.runtime.auth import AuthenticatedActor
+from napms.platform.auth.local import AuthenticatedActor
 
 
 @dataclass(frozen=True, slots=True)

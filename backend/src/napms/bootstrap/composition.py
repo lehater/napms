@@ -51,8 +51,8 @@ from napms.contexts.resource_catalogue.presentation.http.temporal import (
 from napms.contexts.resource_catalogue.presentation.http.workspace import (
     create_catalogue_resource_workspace_router,
 )
-from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
-from napms.runtime.http_api import HttpApiDependencies, create_http_api
+from napms.platform.auth.local import InMemorySessionStore, LocalPasswordAuthenticator
+from napms.platform.http.api import HttpApiDependencies, create_http_api
 from napms.workflows.traffic_analysis.presentation.http.routes import create_traffic_analysis_router
 
 

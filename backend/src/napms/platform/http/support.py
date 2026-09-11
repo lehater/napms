@@ -4,7 +4,7 @@ from uuid import uuid4
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
+from napms.platform.auth.local import AuthenticatedActor, InMemorySessionStore
 
 
 SESSION_COOKIE_NAME = "napms_session"

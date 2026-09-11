@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from napms.contexts.application_catalogue.application.ports import CataloguePersistenceError
 from napms.contexts.application_catalogue.domain.model import CatalogueInvariantError
-from napms.runtime.http_support import error_response
+from napms.platform.http.support import error_response
 
 
 async def catalogue_invariant_error_handler(

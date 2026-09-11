@@ -1,6 +1,6 @@
 from napms.bootstrap.composition import build_local_dev_http_api
 from napms.bootstrap.config import load_http_runtime_config
-from napms.runtime.http_api import configure_json_logging
+from napms.platform.http.api import configure_json_logging
 
 
 config = load_http_runtime_config()

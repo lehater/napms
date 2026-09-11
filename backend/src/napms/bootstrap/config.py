@@ -7,7 +7,7 @@ from napms.platform.bootstrap.config import (
     ConfigurationError,
     load_application_config,
 )
-from napms.runtime.auth import LocalCredential
+from napms.platform.auth.local import LocalCredential
 
 
 @dataclass(frozen=True, slots=True)

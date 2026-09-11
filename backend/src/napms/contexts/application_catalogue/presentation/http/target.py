@@ -36,9 +36,9 @@ from napms.contexts.application_catalogue.domain.communication import (
     DcsPortConstraint,
 )
 from napms.contexts.application_catalogue.domain.target_model import DeploymentInteractionSide
-from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_support import PublicApiError
-from napms.runtime.http_support import require_actor as _require_actor
+from napms.platform.auth.local import InMemorySessionStore
+from napms.platform.http.support import PublicApiError
+from napms.platform.http.support import require_actor as _require_actor
 
 
 _SUCCESS_OUTCOMES = {"Created", "Updated", "Resolved"}

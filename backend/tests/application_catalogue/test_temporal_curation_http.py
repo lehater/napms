@@ -17,8 +17,8 @@ from napms.contexts.application_catalogue.application.structure_curation import 
     CatalogueMutationOutcome,
 )
 from napms.contexts.application_catalogue.domain.model import DeploymentResourceBinding
-from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.http_api import PublicApiError
+from napms.platform.auth.local import AuthenticatedActor, InMemorySessionStore
+from napms.platform.http.api import PublicApiError
 
 
 NOW = datetime(2026, 9, 10, 12, 0, tzinfo=timezone.utc)

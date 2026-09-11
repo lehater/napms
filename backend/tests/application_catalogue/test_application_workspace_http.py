@@ -36,8 +36,8 @@ from napms.workflows.policy_export.application.normalization_types import (
     PortConstraint,
     PortRange,
 )
-from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.http_api import PublicApiError
+from napms.platform.auth.local import AuthenticatedActor, InMemorySessionStore
+from napms.platform.http.api import PublicApiError
 
 
 NOW = datetime(2026, 9, 10, 12, 0, tzinfo=timezone.utc)

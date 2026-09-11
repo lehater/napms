@@ -168,7 +168,7 @@ def test_semantic_owner_adapters_do_not_depend_on_process_http_assembly():
     for adapter_root in adapter_roots:
         for path in adapter_root.rglob("*.py"):
             for module in imported_modules(path):
-                if module == "napms.runtime.http_api":
+                if module == "napms.platform.http.api":
                     violations.append((path, module))
     assert violations == []
 
@@ -254,7 +254,7 @@ def test_semantic_adapters_do_not_import_process_http_api():
     violations = []
     for path in NAPMS.glob("*/adapters/**/*.py"):
         for module in imported_modules(path):
-            if module == "napms.runtime.http_api":
+            if module == "napms.platform.http.api":
                 violations.append((path, module))
     assert violations == []
 
