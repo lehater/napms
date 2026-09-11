@@ -222,7 +222,7 @@ export function ResourcesPage({
             />
           </div>
 
-          <div className="mt-5 grid gap-3 lg:grid-cols-[290px_155px_230px_84px_auto] lg:gap-5">
+          <div className="mt-5 grid gap-3 xl:grid-cols-[290px_155px_230px_84px_auto] xl:gap-5">
             <div>
               <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.07em] text-[#64748B]">
                 Scope
@@ -279,7 +279,7 @@ export function ResourcesPage({
             <Button
               type="button"
               variant="ghost"
-              className="h-[42px] min-h-[42px] self-end justify-start px-1 lg:justify-center"
+              className="h-[42px] min-h-[42px] self-end justify-start px-1 xl:justify-center"
               onClick={resetFilters}
             >
               Reset
