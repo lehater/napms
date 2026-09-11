@@ -20,6 +20,7 @@ REQUIREMENT_POLICY_ALIGNMENT = WORKFLOWS / "requirement_policy_alignment"
 POLICY_EXPORT = WORKFLOWS / "policy_export"
 SCOPED_CONNECTIVITY_INVENTORY = WORKFLOWS / "scoped_connectivity_inventory"
 NETWORK_OPERATOR_VIEW = WORKFLOWS / "network_operator_view"
+TRAFFIC_ANALYSIS = WORKFLOWS / "traffic_analysis"
 RUNTIME = NAPMS / "runtime"
 APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "presentation" / "http"
 RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "presentation" / "http"
@@ -70,6 +71,9 @@ APPLICATION_LAYERS = (
     NETWORK_ENVIRONMENT_OPERATIONS / "application",
     REQUIREMENT_POLICY_ALIGNMENT / "application",
     POLICY_EXPORT / "application",
+    SCOPED_CONNECTIVITY_INVENTORY / "application",
+    NETWORK_OPERATOR_VIEW / "application",
+    TRAFFIC_ANALYSIS / "application",
 )
 CORE_LAYERS = DOMAIN_LAYERS + APPLICATION_LAYERS
 
@@ -356,6 +360,7 @@ def test_workflow_application_has_no_outer_layer_dependencies():
         POLICY_EXPORT,
         SCOPED_CONNECTIVITY_INVENTORY,
         NETWORK_OPERATOR_VIEW,
+        TRAFFIC_ANALYSIS,
     ):
         for path in (workflow / "application").rglob("*.py"):
             for module in imported_modules(path):
@@ -377,6 +382,11 @@ def test_scoped_connectivity_inventory_uses_final_workflow_namespace():
 def test_network_operator_view_uses_final_workflow_namespace():
     assert NETWORK_OPERATOR_VIEW.is_dir()
     assert not (NAPMS / "network_operator_view").exists()
+
+
+def test_traffic_analysis_uses_final_workflow_namespace():
+    assert TRAFFIC_ANALYSIS.is_dir()
+    assert not (NAPMS / "traffic_analysis").exists()
 
 
 def test_access_policy_has_no_legacy_package():

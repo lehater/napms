@@ -8,7 +8,7 @@ from napms.workflows.scoped_connectivity_inventory.application.read import (
     ReadScopedConnectivityInventory,
     ScopeDiscoveryQueryOutcome,
 )
-from napms.traffic_analysis.application.model import (
+from napms.workflows.traffic_analysis.application.model import (
     EndpointResolution,
     PolicyMatch,
     ResolutionState,

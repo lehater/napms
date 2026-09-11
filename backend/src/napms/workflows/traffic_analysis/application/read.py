@@ -1,13 +1,13 @@
 from dataclasses import replace
 
-from napms.traffic_analysis.application.model import (
+from napms.workflows.traffic_analysis.application.model import (
     NetworkCandidateView,
     NetworkContextView,
     ResolutionState,
     TrafficAnalysisQuery,
     TrafficAnalysisResult,
 )
-from napms.traffic_analysis.application.ports import (
+from napms.workflows.traffic_analysis.application.ports import (
     ConfiguredEvidenceProjectionPort,
     NetworkContextProjectionPort,
     ResourceResponsibilityProjectionPort,

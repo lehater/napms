@@ -19,7 +19,7 @@ from napms.contexts.technical_access_evidence.domain.model import (
     SourceScopeReference,
     TechnicalAccessPredicate,
 )
-from napms.traffic_analysis.application.model import (
+from napms.workflows.traffic_analysis.application.model import (
     EvidenceSnapshot,
     RuleMatchKind,
     TechnicalRuleMatch,

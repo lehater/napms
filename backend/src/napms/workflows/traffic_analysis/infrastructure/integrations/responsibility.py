@@ -1,5 +1,5 @@
 from napms.contexts.resource_catalogue.application.responsibility import ReadResourceResponsibilities
-from napms.traffic_analysis.application.model import ResponsibilityItem
+from napms.workflows.traffic_analysis.application.model import ResponsibilityItem
 
 
 class ResourceResponsibilityTrafficAnalysisAdapter:

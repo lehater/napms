@@ -20,23 +20,25 @@ from napms.contexts.resource_catalogue.application.responsibility import (
 from napms.contexts.technical_access_evidence.infrastructure.persistence.postgres import (
     PostgresTechnicalAccessEvidenceRepository,
 )
-from napms.traffic_analysis.adapters.local_network_context import (
-    LocalDemoNetworkContextKnowledgeAdapter,
+from napms.workflows.traffic_analysis.infrastructure.integrations.network_enforcement_placement import (
     NetworkEnforcementPlacementTrafficAnalysisAdapter,
 )
-from napms.traffic_analysis.adapters.resource_catalogue import (
+from napms.workflows.traffic_analysis.infrastructure.local.network_context import (
+    LocalDemoNetworkContextKnowledgeAdapter,
+)
+from napms.workflows.traffic_analysis.infrastructure.integrations.resource_catalogue import (
     ResourceCatalogueTrafficEndpointAdapter,
 )
-from napms.traffic_analysis.adapters.responsibility import (
+from napms.workflows.traffic_analysis.infrastructure.integrations.responsibility import (
     ResourceResponsibilityTrafficAnalysisAdapter,
 )
-from napms.traffic_analysis.adapters.scoped_policy import (
+from napms.workflows.traffic_analysis.infrastructure.integrations.scoped_policy import (
     ScopedConnectivityTrafficPolicyAdapter,
 )
-from napms.traffic_analysis.adapters.technical_evidence import (
+from napms.workflows.traffic_analysis.infrastructure.integrations.technical_evidence import (
     TechnicalAccessEvidenceTrafficAnalysisAdapter,
 )
-from napms.traffic_analysis.application.read import ReadTrafficAnalysis
+from napms.workflows.traffic_analysis.application.read import ReadTrafficAnalysis
 
 
 @dataclass(slots=True)

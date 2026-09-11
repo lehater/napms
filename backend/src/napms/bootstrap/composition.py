@@ -53,7 +53,7 @@ from napms.contexts.resource_catalogue.presentation.http.workspace import (
 )
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator
 from napms.runtime.http_api import HttpApiDependencies, create_http_api
-from napms.traffic_analysis.adapters.http import create_traffic_analysis_router
+from napms.workflows.traffic_analysis.presentation.http.routes import create_traffic_analysis_router
 
 
 def _utc_now() -> datetime:

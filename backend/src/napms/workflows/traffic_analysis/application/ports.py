@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Protocol
 
-from napms.traffic_analysis.application.model import (
+from napms.workflows.traffic_analysis.application.model import (
     EndpointResolution,
     EvidenceSnapshot,
     NetworkContextView,

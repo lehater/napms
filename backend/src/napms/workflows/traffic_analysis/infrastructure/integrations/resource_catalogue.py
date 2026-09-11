@@ -3,7 +3,7 @@ from napms.contexts.resource_catalogue.application.resolve_address import (
     ResolveResourcesByTechnicalAddress,
     TechnicalAddressResolutionOutcome,
 )
-from napms.traffic_analysis.application.model import (
+from napms.workflows.traffic_analysis.application.model import (
     EndpointResolution,
     ResolvedResource,
     ResolutionState,
