@@ -1,28 +1,29 @@
 # Active execution
 
-Current: Web UI Component Composition Migration (`#90`).
+Current: `PLAN-web-ui-component-composition.md`
 
-Execution source: `docs/engineering/web-ui-component-composition-roadmap.md`.
+Goal: integrate the completed Web UI component-composition migration through the repository's final hosted gates and one squash merge.
 
-Working branch: `docs/web-ui-component-composition-roadmap`.
+Current task: correct the failed Harness plan-continuity check, then re-run the final PR gates on the same branch.
 
-Integration rule: M0-M7 execute as sequential commits on this single branch and PR #91 remains draft while work changes. After implementation/docs are complete, request one final hosted PR gate and squash merge only after all applicable checks pass.
+## Working set
 
-Current stage: final integration gate. M0-M7 implementation is complete on the working branch; no intermediate merge has occurred.
+Read first:
+- `docs/plans/active/PLAN-web-ui-component-composition.md`
+- `docs/engineering/web-ui-component-composition-roadmap.md`
+- `web/AGENTS.md`
+- `docs/ui/component-composition.md`
 
-Recovery order for this increment:
-1. `AGENTS.md`;
-2. this file;
-3. `web/AGENTS.md`;
-4. `docs/ui/component-composition.md`;
-5. `docs/ui/design-system.md`;
-6. `docs/engineering/web-ui-component-composition-roadmap.md`;
-7. PR #91 hosted gate status/logs.
+Expand only to PR #91 workflow results/logs and the specific failing file when a gate reports a material defect.
 
-Next transition:
-1. mark PR #91 ready for review;
-2. inspect Web and Harness gate results/logs;
-3. if a material fix is required, return to draft and fix on the same branch;
-4. once gates pass, squash merge PR #91 into `main` and close #90.
+## Blockers
 
-Preserve accepted product/domain semantics. This increment changes Web UI ownership/composition boundaries, not business behavior.
+The first final Harness gate failed because this active index did not use the required `Current: <plan-file>` contract. The migration itself remains on the same branch; no merge has occurred.
+
+## Gate
+
+PR #91 must be marked Ready for review only when the branch is ready for a complete Web + Harness final gate. If a material failure occurs, return PR #91 to draft, fix on `docs/web-ui-component-composition-roadmap`, and gate again. Squash merge only when all applicable final checks pass on the final head.
+
+## Next
+
+Commit this capsule repair, mark PR #91 Ready for review again, inspect both hosted gate results and logs, and either fix the same branch or squash merge when green.
