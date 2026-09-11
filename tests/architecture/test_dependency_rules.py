@@ -19,6 +19,7 @@ RUNTIME = NAPMS / "runtime"
 APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "adapters" / "http"
 RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "adapters" / "http"
 CONNECTIVITY_REQUIREMENTS_HTTP = CONNECTIVITY_REQUIREMENTS / "adapters" / "http.py"
+CONNECTIVITY_DECISION_HTTP = CONNECTIVITY_DECISION / "adapters" / "http.py"
 PROCESS_HTTP = RUNTIME / "http_api.py"
 LEGACY_PROCESS_HTTP = RUNTIME / "legacy_http_api.py"
 
@@ -135,6 +136,21 @@ def test_connectivity_requirements_http_is_owner_local():
             (
                 "napms.connectivity_requirements.application",
                 "napms.connectivity_requirements.domain",
+            )
+        )
+        for module in imported_modules(PROCESS_HTTP)
+    )
+
+
+def test_connectivity_decision_http_is_owner_local():
+    assert CONNECTIVITY_DECISION_HTTP.is_file()
+    process_source = PROCESS_HTTP.read_text(encoding="utf-8")
+    assert "/api/v1/connectivity-decisions" not in process_source
+    assert all(
+        not module.startswith(
+            (
+                "napms.connectivity_decision.application",
+                "napms.connectivity_decision.domain",
             )
         )
         for module in imported_modules(PROCESS_HTTP)
