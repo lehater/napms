@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react"
 import { ArrowLeft, RotateCcw } from "lucide-react"
 
+import { Alert } from "@/design-system/components/Alert"
 import { Button } from "@/design-system/components/Button"
 import { Field, Input, Select, Textarea } from "@/design-system/components/Field"
+import { PageWorkspace } from "@/design-system/layout/PageWorkspace"
 import { DetailSection } from "@/design-system/patterns/detail/Detail"
 import { shortId } from "@/features/catalogues/components/CatalogueIdentity"
 import {
@@ -235,25 +237,21 @@ export function ConnectivityDecisionDetailsPage({
     !scopeAmbiguous
 
   return (
-    <div className="mx-auto max-w-[1180px]">
-      <button
-        type="button"
-        className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-[var(--napms-color-text-body)] hover:text-[var(--napms-color-text-primary)]"
-        onClick={onBack}
-      >
+    <PageWorkspace width="content">
+      <Button variant="ghost" onClick={onBack}>
         <ArrowLeft className="size-4" aria-hidden="true" />
         Back to Decisions
-      </button>
+      </Button>
 
       {loading ? (
-        <div className="rounded-lg border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] p-8 text-sm text-[var(--napms-color-text-secondary)]">
+        <div className="rounded-[var(--napms-surface-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] p-8 text-sm text-[var(--napms-color-text-secondary)]">
           Loading Decision…
         </div>
       ) : error ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-800">
+        <Alert role="alert" tone="danger">
           <div className="font-semibold">{error.code}</div>
           <div className="mt-1">{error.message}</div>
-        </div>
+        </Alert>
       ) : detail && decision ? (
         <div className="grid gap-6">
           <header>
@@ -261,7 +259,7 @@ export function ConnectivityDecisionDetailsPage({
               Connectivity Decision
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-[28px] font-bold tracking-tight text-[var(--napms-color-text-primary)]">
+              <h1 className="text-2xl font-bold tracking-tight text-[var(--napms-color-text-primary)]">
                 Decision {shortId(decision.decisionId)}
               </h1>
               <DecisionOutcomeStatus outcome={decision.outcome} />
@@ -298,29 +296,29 @@ export function ConnectivityDecisionDetailsPage({
             </p>
 
             {scopeError ? (
-              <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+              <Alert role="alert" tone="danger" className="mt-4">
                 <div className="font-semibold">{scopeError.code}</div>
                 <div className="mt-1">{scopeError.message}</div>
-              </div>
+              </Alert>
             ) : null}
 
             {scopeAmbiguous ? (
-              <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+              <Alert tone="warning" className="mt-4">
                 DecideConnectivity authority for this governance scope is ambiguous, so replacement remains fail-closed.
-              </div>
+              </Alert>
             ) : null}
 
             {!loadingScopes && !canReplace && !scopeAmbiguous && !scopeError ? (
-              <div className="mt-4 rounded-md border border-[var(--napms-color-border)] bg-[var(--napms-color-surface-subtle)] p-3 text-sm text-[var(--napms-color-text-body)]">
+              <Alert className="mt-4">
                 This Decision is readable, but its governance scope is not independently admitted for DecideConnectivity.
-              </div>
+              </Alert>
             ) : null}
 
             {recordError ? (
-              <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+              <Alert role="alert" tone="danger" className="mt-4">
                 <div className="font-semibold">{recordError.code}</div>
                 <div className="mt-1">{recordError.message}</div>
-              </div>
+              </Alert>
             ) : null}
 
             {canReplace ? (
@@ -389,6 +387,6 @@ export function ConnectivityDecisionDetailsPage({
           </DetailSection>
         </div>
       ) : null}
-    </div>
+    </PageWorkspace>
   )
 }
