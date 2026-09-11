@@ -12,15 +12,15 @@ from napms.contexts.access_policy.application.select_effective_policy import (
 from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 from napms.contexts.application_catalogue.application.ports import CataloguePersistenceError
 from napms.contexts.application_catalogue.domain.model import DirectedInteractionIdentity
-from napms.policy_export.application.export_snapshot import (
+from napms.workflows.policy_export.application.export_snapshot import (
     AssembleExportSnapshot,
     SnapshotAssemblyOutcome,
 )
-from napms.policy_export.application.normalize_snapshot import NormalizeExportSnapshot
-from napms.policy_export.application.normalization_ports import DcsProjectionDecodeError
+from napms.workflows.policy_export.application.normalize_snapshot import NormalizeExportSnapshot
+from napms.workflows.policy_export.application.normalization_ports import DcsProjectionDecodeError
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
 from napms.runtime.http_support import PublicApiError, authenticated_actor, set_outcome
-from napms.policy_export.adapters.http_json import (
+from napms.workflows.policy_export.presentation.http.json import (
     normalized_policy_export_json,
     port_constraint_json,
     snapshot_diagnostic_json,

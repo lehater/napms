@@ -8,7 +8,7 @@ from napms.contexts.access_policy.application.select_effective_policy import (
     EffectivePolicySelectionResult,
 )
 from napms.contexts.access_policy.domain.model import AccessRule
-from napms.policy_export.application.ports import (
+from napms.workflows.policy_export.application.ports import (
     ApplicationCommunicationProjectionPort,
     ApplicationProjectionFact,
     ApplicationProjectionOutcome,

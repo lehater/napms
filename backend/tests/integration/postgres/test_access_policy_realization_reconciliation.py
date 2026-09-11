@@ -62,7 +62,7 @@ from napms.contexts.network_enforcement_placement.presentation.imports.local_jso
 from napms.contexts.network_enforcement_placement.application.record import (
     RecordPlacementKnowledgeOutcome,
 )
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
     PortRange,

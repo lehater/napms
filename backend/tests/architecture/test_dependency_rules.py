@@ -17,7 +17,7 @@ NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "contexts" / "network_enforcement_placem
 NETWORK_ENVIRONMENT_OPERATIONS = NAPMS / "contexts" / "network_environment_operations"
 WORKFLOWS = NAPMS / "workflows"
 REQUIREMENT_POLICY_ALIGNMENT = WORKFLOWS / "requirement_policy_alignment"
-POLICY_EXPORT = NAPMS / "policy_export"
+POLICY_EXPORT = WORKFLOWS / "policy_export"
 SCOPED_CONNECTIVITY_INVENTORY = NAPMS / "scoped_connectivity_inventory"
 RUNTIME = NAPMS / "runtime"
 APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "presentation" / "http"
@@ -34,8 +34,8 @@ ACCESS_POLICY_HTTP = ACCESS_POLICY / "presentation" / "http" / "routes.py"
 REQUIREMENT_POLICY_ALIGNMENT_HTTP = (
     REQUIREMENT_POLICY_ALIGNMENT / "presentation" / "http" / "routes.py"
 )
-POLICY_EXPORT_HTTP = POLICY_EXPORT / "adapters" / "http.py"
-POLICY_EXPORT_HTTP_JSON = POLICY_EXPORT / "adapters" / "http_json.py"
+POLICY_EXPORT_HTTP = POLICY_EXPORT / "presentation" / "http" / "routes.py"
+POLICY_EXPORT_HTTP_JSON = POLICY_EXPORT / "presentation" / "http" / "json.py"
 SCOPED_CONNECTIVITY_HTTP = SCOPED_CONNECTIVITY_INVENTORY / "adapters" / "http.py"
 PROCESS_HTTP = RUNTIME / "http_api.py"
 
@@ -210,7 +210,7 @@ def test_process_http_has_no_feature_endpoint_implementation():
         "napms.contexts.connectivity_decision.application",
         "napms.contexts.connectivity_decision.domain",
         "napms.workflows.requirement_policy_alignment.application",
-        "napms.policy_export.application",
+        "napms.workflows.policy_export.application",
         "napms.scoped_connectivity_inventory.application",
     )
     assert all(
@@ -344,12 +344,17 @@ def test_requirement_policy_alignment_uses_final_workflow_namespace():
 
 def test_workflow_application_has_no_outer_layer_dependencies():
     violations = []
-    for workflow in (REQUIREMENT_POLICY_ALIGNMENT,):
+    for workflow in (REQUIREMENT_POLICY_ALIGNMENT, POLICY_EXPORT):
         for path in (workflow / "application").rglob("*.py"):
             for module in imported_modules(path):
                 if ".infrastructure" in module or ".presentation" in module:
                     violations.append((path, module))
     assert violations == []
+
+
+def test_policy_export_uses_final_workflow_namespace():
+    assert POLICY_EXPORT.is_dir()
+    assert not (NAPMS / "policy_export").exists()
 
 
 def test_access_policy_has_no_legacy_package():

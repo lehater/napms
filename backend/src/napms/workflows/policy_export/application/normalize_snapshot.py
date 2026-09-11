@@ -1,22 +1,22 @@
 from itertools import product
 
-from napms.policy_export.application.export_snapshot import (
+from napms.workflows.policy_export.application.export_snapshot import (
     CapturedResourceRealization,
     ExportSnapshotItem,
     SuccessfulExportSnapshot,
 )
-from napms.policy_export.application.normalization_ports import (
+from napms.workflows.policy_export.application.normalization_ports import (
     DcsProjectionDecodeError,
     DcsProjectionDecoder,
 )
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     NormalizationInvariantError,
     NormalizedPolicyRow,
     PortConstraint,
     SuccessfulNormalizedPolicyExport,
 )
-from napms.policy_export.application.ports import ApplicationProjectionOutcome
+from napms.workflows.policy_export.application.ports import ApplicationProjectionOutcome
 
 
 class NormalizeExportSnapshot:

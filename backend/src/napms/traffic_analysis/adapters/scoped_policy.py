@@ -1,6 +1,6 @@
 from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import JsonDcsProjectionCodec
 from napms.contexts.application_catalogue.application.ports import ApplicationCatalogueRepository
-from napms.policy_export.application.normalization_types import PortConstraintKind
+from napms.workflows.policy_export.application.normalization_types import PortConstraintKind
 from napms.scoped_connectivity_inventory.application.model import Direction, RuleExists
 from napms.scoped_connectivity_inventory.application.read import (
     DiscoverScopedConnectivityScopes,

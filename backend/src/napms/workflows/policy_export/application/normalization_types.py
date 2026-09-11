@@ -8,7 +8,7 @@ from napms.contexts.access_policy.domain.model import (
     OperationalState,
     RuleSemanticIdentity,
 )
-from napms.policy_export.application.ports import ResourceReference
+from napms.workflows.policy_export.application.ports import ResourceReference
 
 
 class NormalizationInvariantError(Exception):

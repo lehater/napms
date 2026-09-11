@@ -1,7 +1,7 @@
 from typing import Any
 
-from napms.policy_export.application.export_snapshot import SnapshotDiagnostic
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.export_snapshot import SnapshotDiagnostic
+from napms.workflows.policy_export.application.normalization_types import (
     NormalizedPolicyRow,
     PortConstraint,
     SuccessfulNormalizedPolicyExport,

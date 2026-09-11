@@ -32,10 +32,10 @@ from napms.contexts.connectivity_decision.domain.model import (
     DecisionSubject,
     DecisionValidity,
 )
-from napms.policy_export.application.normalization_ports import DcsProjectionDecodeError
+from napms.workflows.policy_export.application.normalization_ports import DcsProjectionDecodeError
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
 from napms.runtime.http_support import PublicApiError, authenticated_actor, set_outcome
-from napms.policy_export.adapters.http_json import port_constraint_json
+from napms.workflows.policy_export.presentation.http.json import port_constraint_json
 
 
 class DecisionEvidenceReferenceValue(BaseModel):

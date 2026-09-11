@@ -35,7 +35,7 @@ from napms.composition.greenfield_postgres import (
 from napms.composition.technical_access_evidence_postgres import (
     open_technical_access_evidence_scope,
 )
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
     PortRange,

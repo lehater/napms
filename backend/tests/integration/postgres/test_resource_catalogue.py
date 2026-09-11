@@ -6,7 +6,7 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.policy_export.application.ports import (
+from napms.workflows.policy_export.application.ports import (
     ResourceRealizationOutcome,
     ResourceReference,
 )

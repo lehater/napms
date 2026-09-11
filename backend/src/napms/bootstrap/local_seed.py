@@ -6,7 +6,7 @@ from psycopg.types.json import Jsonb
 
 from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import JsonDcsProjectionCodec
 from napms.bootstrap.config import load_local_seed_config
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
     PortRange,

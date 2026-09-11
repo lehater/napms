@@ -19,7 +19,7 @@ from napms.contexts.application_catalogue.domain.model import (
     DeploymentResourceBinding,
     DirectedInteractionIdentity,
 )
-from napms.policy_export.application.ports import ApplicationProjectionOutcome
+from napms.workflows.policy_export.application.ports import ApplicationProjectionOutcome
 
 
 SOURCE = UUID(int=1)

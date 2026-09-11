@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from napms.policy_export.application.normalization_types import DcsTrafficAlternative
+from napms.workflows.policy_export.application.normalization_types import DcsTrafficAlternative
 
 
 class DcsProjectionDecodeError(Exception):

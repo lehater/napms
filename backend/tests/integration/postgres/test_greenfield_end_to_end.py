@@ -54,14 +54,14 @@ from napms.composition.greenfield_postgres import (
     open_greenfield_scope,
 )
 from napms.composition.postgres_migrations import MIGRATIONS
-from napms.policy_export.application.export_snapshot import (
+from napms.workflows.policy_export.application.export_snapshot import (
     AssembleExportSnapshot,
     SnapshotAssemblyOutcome,
     SnapshotFactSource,
     SnapshotFailureCategory,
 )
-from napms.policy_export.application.normalize_snapshot import NormalizeExportSnapshot
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.normalize_snapshot import NormalizeExportSnapshot
+from napms.workflows.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
     PortRange,

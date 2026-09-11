@@ -1,9 +1,9 @@
 import json
 
-from napms.policy_export.application.normalization_ports import (
+from napms.workflows.policy_export.application.normalization_ports import (
     DcsProjectionDecodeError,
 )
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     NormalizationInvariantError,
     PortConstraint,

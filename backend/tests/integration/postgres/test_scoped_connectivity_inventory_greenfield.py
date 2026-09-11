@@ -36,7 +36,7 @@ from napms.contexts.connectivity_requirements.domain.model import (
     RequirementDeclarationProvenance,
     RequirementSemanticKey,
 )
-from napms.policy_export.application.normalization_types import (
+from napms.workflows.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
     PortRange,
