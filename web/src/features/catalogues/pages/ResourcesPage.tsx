@@ -31,7 +31,7 @@ import {
   CatalogueFilterBar,
   CatalogueFilterField,
   CataloguePage,
-  CataloguePagination,
+  CataloguePaginationControls,
   CatalogueSurface,
   CatalogueToolbar,
   CatalogueViewBar,
@@ -41,6 +41,9 @@ import {
   listCatalogueResourceWorkspace,
   type ResourceWorkspaceDataState,
   type ResourceWorkspaceItemDto,
+  type ResourceWorkspaceLifecycle,
+  type ResourceWorkspaceSortBy,
+  type ResourceWorkspaceSortDirection,
 } from "@/features/catalogues/api/resourceWorkspace"
 import { shortId } from "@/features/catalogues/components/CatalogueIdentity"
 import { ApiError } from "@/lib/api"
@@ -55,9 +58,7 @@ function DataState({ item }: { item: ResourceWorkspaceItemDto }) {
   const missing: Array<{ label: string; tone: "warning" | "danger" }> = []
   if (!item.currentFacts.hasRealization) missing.push({ label: "No address", tone: "danger" })
   if (!item.currentFacts.hasScopeAffiliation) missing.push({ label: "No scope", tone: "warning" })
-  if (!item.currentFacts.hasResponsibility) {
-    missing.push({ label: "No responsibility", tone: "warning" })
-  }
+  if (!item.currentFacts.hasResponsibility) missing.push({ label: "No responsibility", tone: "warning" })
 
   if (missing.length === 0) {
     return <IssueIndicator tone="success">No missing facts</IssueIndicator>
@@ -66,9 +67,7 @@ function DataState({ item }: { item: ResourceWorkspaceItemDto }) {
   return (
     <div className="grid gap-0.5">
       {missing.map(({ label, tone }) => (
-        <IssueIndicator key={label} tone={tone}>
-          {label}
-        </IssueIndicator>
+        <IssueIndicator key={label} tone={tone}>{label}</IssueIndicator>
       ))}
     </div>
   )
@@ -82,6 +81,15 @@ function LifecycleIndicator({ value }: { value: string }) {
   )
 }
 
+const emptyCounts = {
+  all: 0,
+  active: 0,
+  retired: 0,
+  missingAddress: 0,
+  missingScope: 0,
+  missingResponsibility: 0,
+}
+
 export function ResourcesPage({
   page,
   onPageChange,
@@ -92,17 +100,21 @@ export function ResourcesPage({
   onOpenResource: (resourceReference: string) => void
 }) {
   const [items, setItems] = useState<ResourceWorkspaceItemDto[]>([])
-  const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<ApiError | null>(null)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [total, setTotal] = useState(0)
+  const [counts, setCounts] = useState(emptyCounts)
 
   const [searchInput, setSearchInput] = useState("")
   const [search, setSearch] = useState("")
   const [scopeInput, setScopeInput] = useState("")
   const [scopeFilter, setScopeFilter] = useState("")
-  const [lifecycle, setLifecycle] = useState<"active" | "all">("active")
+  const [lifecycle, setLifecycle] = useState<ResourceWorkspaceLifecycle>("active")
   const [dataState, setDataState] = useState<ResourceWorkspaceDataState>("")
+  const [pageSize, setPageSize] = useState(50)
+  const [sortBy, setSortBy] = useState<ResourceWorkspaceSortBy>("name")
+  const [sortDirection, setSortDirection] = useState<ResourceWorkspaceSortDirection>("asc")
 
   const [showCreate, setShowCreate] = useState(false)
   const [displayName, setDisplayName] = useState("")
@@ -117,31 +129,27 @@ export function ResourcesPage({
     () => Array.from(new Set([scopeInput, scopeFilter, ...visibleScopes].filter(Boolean))).sort(),
     [scopeFilter, scopeInput, visibleScopes],
   )
-
   const visibleReferences = useMemo(
     () => items.map((item) => item.resourceReference),
     [items],
   )
-  const allVisibleSelected =
-    visibleReferences.length > 0 && visibleReferences.every((reference) => selected.has(reference))
-  const someVisibleSelected =
-    !allVisibleSelected && visibleReferences.some((reference) => selected.has(reference))
+  const allVisibleSelected = visibleReferences.length > 0 && visibleReferences.every((reference) => selected.has(reference))
+  const someVisibleSelected = !allVisibleSelected && visibleReferences.some((reference) => selected.has(reference))
 
   async function load() {
     setLoading(true)
     setError(null)
     try {
-      const result = await listCatalogueResourceWorkspace(
-        page,
-        search,
-        scopeFilter,
-        {
-          includeRetired: lifecycle === "all",
-          dataState,
-        },
-      )
+      const result = await listCatalogueResourceWorkspace(page, search, scopeFilter, {
+        pageSize,
+        lifecycle,
+        dataState,
+        sortBy,
+        sortDirection,
+      })
       setItems(result.items)
-      setHasMore(result.hasMore)
+      setTotal(result.total)
+      setCounts(result.counts)
     } catch (caught) {
       setError(errorFrom(caught, "Resources could not be loaded."))
     } finally {
@@ -151,17 +159,15 @@ export function ResourcesPage({
 
   useEffect(() => {
     void load()
-  }, [page, search, scopeFilter, lifecycle, dataState])
+  }, [page, search, scopeFilter, lifecycle, dataState, pageSize, sortBy, sortDirection])
 
   useEffect(() => {
     const nextSearch = searchInput.trim()
     if (nextSearch === search) return
-
     const timeout = window.setTimeout(() => {
       if (page !== 1) onPageChange(1)
       setSearch(nextSearch)
     }, 250)
-
     return () => window.clearTimeout(timeout)
   }, [page, search, searchInput, onPageChange])
 
@@ -192,14 +198,29 @@ export function ResourcesPage({
     setSearch(searchInput.trim())
   }
 
-  function updateScope(next: string) {
+  function resetPage() {
     if (page !== 1) onPageChange(1)
+  }
+
+  function updateScope(next: string) {
+    resetPage()
     setScopeInput(next)
     setScopeFilter(next)
   }
 
   function updateDataState(next: ResourceWorkspaceDataState) {
-    if (page !== 1) onPageChange(1)
+    resetPage()
+    setDataState(next)
+  }
+
+  function setQuickFilter(next: "all" | "active" | "retired" | "missing-address" | "missing-responsibility" | "missing-scope") {
+    resetPage()
+    if (next === "active" || next === "retired" || next === "all") {
+      setLifecycle(next)
+      setDataState("")
+      return
+    }
+    setLifecycle("all")
     setDataState(next)
   }
 
@@ -210,7 +231,17 @@ export function ResourcesPage({
     setScopeFilter("")
     setLifecycle("active")
     setDataState("")
-    if (page !== 1) onPageChange(1)
+    resetPage()
+  }
+
+  function updateSort(field: ResourceWorkspaceSortBy) {
+    resetPage()
+    if (sortBy === field) {
+      setSortDirection((value) => value === "asc" ? "desc" : "asc")
+    } else {
+      setSortBy(field)
+      setSortDirection("asc")
+    }
   }
 
   function toggleResource(reference: string, checked: boolean) {
@@ -225,6 +256,15 @@ export function ResourcesPage({
   function toggleAllVisible(checked: boolean) {
     setSelected(checked ? new Set(visibleReferences) : new Set())
   }
+
+  const quickFilters = [
+    { key: "all" as const, label: "All", count: counts.all, selected: lifecycle === "all" && dataState === "" },
+    { key: "active" as const, label: "Active", count: counts.active, selected: lifecycle === "active" && dataState === "" },
+    { key: "retired" as const, label: "Retired", count: counts.retired, selected: lifecycle === "retired" && dataState === "" },
+    { key: "missing-address" as const, label: "No address", count: counts.missingAddress, selected: dataState === "missing-address" },
+    { key: "missing-responsibility" as const, label: "No responsibility", count: counts.missingResponsibility, selected: dataState === "missing-responsibility" },
+    { key: "missing-scope" as const, label: "No scope", count: counts.missingScope, selected: dataState === "missing-scope" },
+  ]
 
   return (
     <CataloguePage
@@ -249,17 +289,9 @@ export function ResourcesPage({
 
             <CatalogueFilterBar>
               <CatalogueFilterField label="Scope" className="xl:w-[170px]">
-                <Select
-                  value={scopeInput}
-                  onChange={(event) => updateScope(event.target.value)}
-                  aria-label="Filter resources by scope"
-                >
+                <Select value={scopeInput} onChange={(event) => updateScope(event.target.value)} aria-label="Filter resources by scope">
                   <option value="">All scopes</option>
-                  {scopeOptions.map((scope) => (
-                    <option key={scope} value={scope}>
-                      {scope}
-                    </option>
-                  ))}
+                  {scopeOptions.map((scope) => <option key={scope} value={scope}>{scope}</option>)}
                 </Select>
               </CatalogueFilterField>
 
@@ -267,22 +299,18 @@ export function ResourcesPage({
                 <Select
                   value={lifecycle}
                   onChange={(event) => {
-                    if (page !== 1) onPageChange(1)
-                    setLifecycle(event.target.value as "active" | "all")
+                    resetPage()
+                    setLifecycle(event.target.value as ResourceWorkspaceLifecycle)
                   }}
                 >
                   <option value="active">Active</option>
+                  <option value="retired">Retired</option>
                   <option value="all">All</option>
                 </Select>
               </CatalogueFilterField>
 
               <CatalogueFilterField label="Data state" className="xl:w-[170px]">
-                <Select
-                  value={dataState}
-                  onChange={(event) =>
-                    updateDataState(event.target.value as ResourceWorkspaceDataState)
-                  }
-                >
+                <Select value={dataState} onChange={(event) => updateDataState(event.target.value as ResourceWorkspaceDataState)}>
                   <option value="">All</option>
                   <option value="missing-address">Missing address</option>
                   <option value="missing-scope">Missing scope</option>
@@ -290,32 +318,18 @@ export function ResourcesPage({
                 </Select>
               </CatalogueFilterField>
 
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="xl:ml-auto"
-                onClick={resetFilters}
-              >
-                Reset
-              </Button>
+              <Button type="button" variant="ghost" size="sm" className="xl:ml-auto" onClick={resetFilters}>Reset</Button>
             </CatalogueFilterBar>
           </CatalogueToolbar>
         </form>
 
         <CatalogueViewBar>
-          {[
-            ["", "All"],
-            ["missing-address", "No address"],
-            ["missing-responsibility", "No responsibility"],
-            ["missing-scope", "No scope"],
-          ].map(([value, label]) => (
-            <FilterChip
-              key={value}
-              selected={dataState === value}
-              onClick={() => updateDataState(value as ResourceWorkspaceDataState)}
-            >
-              {label}
+          {quickFilters.map((filter) => (
+            <FilterChip key={filter.key} selected={filter.selected} onClick={() => setQuickFilter(filter.key)}>
+              <span className="inline-flex items-center gap-2">
+                <span>{filter.label}</span>
+                <span className="tabular-nums">{filter.count.toLocaleString()}</span>
+              </span>
             </FilterChip>
           ))}
         </CatalogueViewBar>
@@ -325,10 +339,7 @@ export function ResourcesPage({
         ) : error ? (
           <ErrorState message={error.message} onRetry={() => void load()} />
         ) : items.length === 0 ? (
-          <EmptyState
-            title="No resources found"
-            description="Change the search or filters, or create a new resource."
-          />
+          <EmptyState title="No resources found" description="Change the search or filters, or create a new resource." />
         ) : (
           <DataTable minWidth={1120}>
             <colgroup>
@@ -344,19 +355,14 @@ export function ResourcesPage({
             <DataTableHeader>
               <DataTableHeaderRow>
                 <DataTableSelectionHead>
-                  <Checkbox
-                    checked={allVisibleSelected}
-                    indeterminate={someVisibleSelected}
-                    onChange={(event) => toggleAllVisible(event.target.checked)}
-                    aria-label="Select all resources on this page"
-                  />
+                  <Checkbox checked={allVisibleSelected} indeterminate={someVisibleSelected} onChange={(event) => toggleAllVisible(event.target.checked)} aria-label="Select all resources on this page" />
                 </DataTableSelectionHead>
-                <DataTableHeadCell>Name</DataTableHeadCell>
-                <DataTableHeadCell>Reference</DataTableHeadCell>
+                <DataTableHeadCell onSort={() => updateSort("name")} sortDirection={sortBy === "name" ? sortDirection : null} ariaLabel="Sort by name">Name</DataTableHeadCell>
+                <DataTableHeadCell onSort={() => updateSort("reference")} sortDirection={sortBy === "reference" ? sortDirection : null} ariaLabel="Sort by reference">Reference</DataTableHeadCell>
                 <DataTableHeadCell>Addresses</DataTableHeadCell>
                 <DataTableHeadCell>Scope(s)</DataTableHeadCell>
                 <DataTableHeadCell>Technical owner</DataTableHeadCell>
-                <DataTableHeadCell>Lifecycle</DataTableHeadCell>
+                <DataTableHeadCell onSort={() => updateSort("lifecycle")} sortDirection={sortBy === "lifecycle" ? sortDirection : null} ariaLabel="Sort by lifecycle">Lifecycle</DataTableHeadCell>
                 <DataTableHeadCell>Data state</DataTableHeadCell>
               </DataTableHeaderRow>
             </DataTableHeader>
@@ -366,37 +372,17 @@ export function ResourcesPage({
                 return (
                   <DataTableRow key={item.resourceReference} selected={isSelected}>
                     <DataTableSelectionCell>
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={(event) =>
-                          toggleResource(item.resourceReference, event.target.checked)
-                        }
-                        aria-label={`Select ${item.displayName || shortId(item.resourceReference)}`}
-                      />
+                      <Checkbox checked={isSelected} onChange={(event) => toggleResource(item.resourceReference, event.target.checked)} aria-label={`Select ${item.displayName || shortId(item.resourceReference)}`} />
                     </DataTableSelectionCell>
                     <DataTableCell>
-                      <PrimaryTableAction onClick={() => onOpenResource(item.resourceReference)}>
-                        {item.displayName || shortId(item.resourceReference)}
-                      </PrimaryTableAction>
+                      <PrimaryTableAction onClick={() => onOpenResource(item.resourceReference)}>{item.displayName || shortId(item.resourceReference)}</PrimaryTableAction>
                     </DataTableCell>
-                    <DataTableCell>
-                      <ReferenceText>{shortId(item.resourceReference)}</ReferenceText>
-                    </DataTableCell>
-                    <DataTableCell>
-                      <TechnicalValueList values={item.currentAddresses} />
-                    </DataTableCell>
-                    <DataTableCell>
-                      <TagList values={item.currentScopes} />
-                    </DataTableCell>
-                    <DataTableCell className="text-[var(--napms-color-text-body)]">
-                      {item.technicalOwners.length > 0 ? item.technicalOwners.join(", ") : <EmptyValue />}
-                    </DataTableCell>
-                    <DataTableCell>
-                      <LifecycleIndicator value={item.lifecycle} />
-                    </DataTableCell>
-                    <DataTableCell>
-                      <DataState item={item} />
-                    </DataTableCell>
+                    <DataTableCell><ReferenceText>{shortId(item.resourceReference)}</ReferenceText></DataTableCell>
+                    <DataTableCell><TechnicalValueList values={item.currentAddresses} /></DataTableCell>
+                    <DataTableCell><TagList values={item.currentScopes} /></DataTableCell>
+                    <DataTableCell className="text-[var(--napms-color-text-body)]">{item.technicalOwners.length > 0 ? item.technicalOwners.join(", ") : <EmptyValue />}</DataTableCell>
+                    <DataTableCell><LifecycleIndicator value={item.lifecycle} /></DataTableCell>
+                    <DataTableCell><DataState item={item} /></DataTableCell>
                   </DataTableRow>
                 )
               })}
@@ -404,99 +390,38 @@ export function ResourcesPage({
           </DataTable>
         )}
 
-        <CataloguePagination>
-          <span className="text-[11px] text-[var(--napms-color-text-secondary)]">
-            Page {page} · up to 50 resources per page
-            {selected.size > 0 ? ` · ${selected.size} selected` : ""}
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={page <= 1 || loading}
-              onClick={() => onPageChange(page - 1)}
-            >
-              Previous
-            </Button>
-            <span className="flex size-[var(--napms-control-height-sm)] items-center justify-center rounded-[var(--napms-control-radius)] border border-[var(--napms-color-primary-border)] bg-[var(--napms-color-primary-subtle)] text-[11px] font-semibold text-[var(--napms-color-primary-hover)]">
-              {page}
-            </span>
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={!hasMore || loading}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Next
-            </Button>
-          </div>
-        </CataloguePagination>
+        <CataloguePaginationControls
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          disabled={loading}
+          onPageChange={onPageChange}
+          onPageSizeChange={(nextPageSize) => {
+            setPageSize(nextPageSize)
+            if (page !== 1) onPageChange(1)
+          }}
+        />
       </CatalogueSurface>
 
       {showCreate ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.currentTarget === event.target && !creating) setShowCreate(false)
-          }}
-        >
-          <div
-            className="w-full max-w-[500px] overflow-hidden rounded-xl border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] shadow-2xl"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="create-resource-title"
-          >
-            <div className="flex min-h-[89px] items-start justify-between border-b border-[var(--napms-color-border)] px-7 py-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target && !creating) setShowCreate(false) }}>
+          <div className="w-full max-w-[500px] overflow-hidden rounded-xl border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="create-resource-title">
+            <div className="flex items-start justify-between border-b border-[var(--napms-color-border)] px-7 py-6">
               <div>
-                <h2 id="create-resource-title" className="text-lg font-bold text-[var(--napms-color-text-primary)]">
-                  New resource
-                </h2>
-                <p className="mt-1 text-xs text-[var(--napms-color-text-secondary)]">
-                  NAPMS generates the stable resource reference.
-                </p>
+                <h2 id="create-resource-title" className="text-lg font-semibold text-[var(--napms-color-text-primary)]">New resource</h2>
+                <p className="mt-1 text-sm text-[var(--napms-color-text-secondary)]">Create the Resource identity first. Current facts can be added from its detail page.</p>
               </div>
-              <button
-                type="button"
-                className="rounded-[var(--napms-control-radius)] p-1.5 text-[var(--napms-color-text-secondary)] hover:bg-[var(--napms-color-surface-muted)]"
-                onClick={() => setShowCreate(false)}
-                disabled={creating}
-                aria-label="Close"
-              >
-                <X className="size-[var(--napms-icon-size-control)]" aria-hidden="true" />
-              </button>
+              <Button type="button" variant="ghost" size="sm" aria-label="Close new resource dialog" disabled={creating} onClick={() => setShowCreate(false)}><X className="size-4" aria-hidden="true" /></Button>
             </div>
-            <form onSubmit={create}>
-              <div className="px-7 py-8">
-                <label className="grid gap-3 text-sm font-semibold text-[var(--napms-color-text-primary)]">
-                  Display name
-                  <Input
-                    value={displayName}
-                    onChange={(event) => setDisplayName(event.target.value)}
-                    placeholder="api-gateway"
-                    maxLength={256}
-                    autoFocus
-                  />
-                </label>
-                <p className="mt-6 text-xs leading-5 text-[var(--napms-color-text-secondary)]">
-                  Resource identity can exist before realization, scope affiliation or responsibility facts are added.
-                </p>
-                {createError ? (
-                  <p className="mt-3 text-sm text-[var(--napms-color-danger)]">{createError.message}</p>
-                ) : null}
-              </div>
-              <div className="flex min-h-[74px] justify-end gap-3 border-t border-[var(--napms-color-border)] px-7 py-[18px]">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={creating}
-                  onClick={() => setShowCreate(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" loading={creating}>
-                  Create resource
-                </Button>
+            <form className="grid gap-5 px-7 py-6" onSubmit={create}>
+              <label className="grid gap-2 text-sm font-medium text-[var(--napms-color-text-body)]">
+                Display name
+                <Input autoFocus value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Optional resource name" maxLength={256} />
+              </label>
+              {createError ? <p className="text-sm text-[var(--napms-color-danger)]">{createError.message}</p> : null}
+              <div className="flex justify-end gap-2 border-t border-[var(--napms-color-border)] pt-5">
+                <Button type="button" variant="secondary" disabled={creating} onClick={() => setShowCreate(false)}>Cancel</Button>
+                <Button type="submit" loading={creating}>Create resource</Button>
               </div>
             </form>
           </div>
