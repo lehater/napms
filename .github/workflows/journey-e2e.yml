@@ -1,8 +1,8 @@
 name: browser journey gate
 
 on:
-  pull_request:
-    types: [opened, reopened, ready_for_review, synchronize]
+  push:
+    branches: [main]
     paths:
       - "e2e/**"
       - "web/**"
@@ -17,15 +17,13 @@ on:
       - "backend/pyproject.toml"
       - "Makefile"
       - ".github/workflows/journey-e2e.yml"
-  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   journeys:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     env:
       NAPMS_POSTGRES_PASSWORD: journey-postgres-password
