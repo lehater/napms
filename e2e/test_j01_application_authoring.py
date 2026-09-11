@@ -40,9 +40,14 @@ def _create_resource(
     address: str,
 ) -> str:
     desktop_nav.get_by_role("button", name="Resources").click()
-    expect(page.get_by_role("heading", name="Resources", exact=True)).to_be_visible()
-    page.get_by_label("Resource name").fill(name)
-    page.get_by_role("button", name="Create", exact=True).click()
+    expect(
+        page.get_by_role("heading", name="Resource Catalogue", exact=True)
+    ).to_be_visible()
+
+    page.get_by_role("button", name="New resource", exact=True).click()
+    create_dialog = page.get_by_role("dialog")
+    create_dialog.get_by_label("Display name").fill(name)
+    create_dialog.get_by_role("button", name="Create resource", exact=True).click()
     expect(page.get_by_role("heading", name=name, exact=True)).to_be_visible()
 
     identity_text = page.locator("header").get_by_text(
@@ -52,12 +57,14 @@ def _create_resource(
     assert match is not None
     resource_reference = match.group(0)
 
-    page.get_by_label("Technical addresses").fill(address)
-    page.get_by_role("button", name="Add addresses").click()
+    page.get_by_role("button", name="Add addresses", exact=True).click()
+    page.locator("textarea").fill(address)
+    page.get_by_role("button", name="Add", exact=True).click()
     expect(page.get_by_text(address, exact=True)).to_be_visible()
 
-    page.get_by_label("External scope reference").fill("local-demo")
-    page.get_by_role("button", name="Add affiliation").click()
+    page.get_by_role("button", name="Add scope", exact=True).click()
+    page.get_by_placeholder("payments-team").fill("local-demo")
+    page.get_by_role("button", name="Add", exact=True).click()
     expect(page.get_by_text("local-demo", exact=True)).to_be_visible()
     return resource_reference
 
