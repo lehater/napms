@@ -15,6 +15,8 @@ CONNECTIVITY_DECISION = NAPMS / "connectivity_decision"
 TECHNICAL_ACCESS_EVIDENCE = NAPMS / "technical_access_evidence"
 NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "network_enforcement_placement"
 REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
+RUNTIME = NAPMS / "runtime"
+APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "adapters" / "http"
 
 DOMAIN_LAYERS = (
     ACCESS_POLICY / "domain",
@@ -89,6 +91,13 @@ def test_core_does_not_depend_on_adapter_layer():
                 if ".adapters" in module:
                     violations.append((path, module))
     assert violations == []
+
+
+def test_application_catalogue_target_http_is_owner_local():
+    assert (APPLICATION_CATALOGUE_HTTP / "target.py").is_file()
+    assert (APPLICATION_CATALOGUE_HTTP / "target_retirement.py").is_file()
+    assert not (RUNTIME / "catalogue_target_http.py").exists()
+    assert not (RUNTIME / "catalogue_target_retirement_http.py").exists()
 
 
 POSTGRES_SCHEMA_OWNERS = (
@@ -192,7 +201,6 @@ def test_bounded_context_core_does_not_import_another_bounded_context():
                     ):
                         violations.append((path, owned_prefix, module))
     assert violations == []
-
 
 
 def test_alignment_application_does_not_import_source_bounded_contexts():
