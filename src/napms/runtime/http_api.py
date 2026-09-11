@@ -24,6 +24,15 @@ _MIGRATED_ROUTE_NAMES = {
     "RecordConnectivityDecision",
     "ListConnectivityDecisions",
     "GetConnectivityDecision",
+    "DiscoverProposalScopes",
+    "DiscoverProposalInteractions",
+    "SubmitAccessRuleProposal",
+    "ListAccessRules",
+    "GetAccessRule",
+    "SetAccessRuleOperationalState",
+    "SetAccessRuleEffectiveWindow",
+    "DiscoverPolicyViewScopes",
+    "GetEffectiveDesiredPolicy",
 }
 
 
@@ -32,6 +41,7 @@ def create_http_api(dependencies: HttpApiDependencies):
 
     # Import lazily so owner adapters may reuse the stable transport contract
     # re-exported by this module without creating an import cycle.
+    from napms.access_policy.adapters.http import create_access_policy_router
     from napms.connectivity_decision.adapters.http import (
         create_connectivity_decision_router,
     )
@@ -56,6 +66,14 @@ def create_http_api(dependencies: HttpApiDependencies):
         create_connectivity_decision_router(
             sessions=dependencies.sessions,
             open_scope=dependencies.open_scope,
+            clock=dependencies.clock,
+        )
+    )
+    app.include_router(
+        create_access_policy_router(
+            sessions=dependencies.sessions,
+            open_scope=dependencies.open_scope,
+            decisions=dependencies.decisions,
             clock=dependencies.clock,
         )
     )
