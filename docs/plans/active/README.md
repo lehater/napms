@@ -1,15 +1,17 @@
 # Active execution
 
-Current: `PLAN-target-code-structure-migration.md`.
-Selected next stage: M1 — Repository backend boundary.
+Current: `PLAN-target-code-structure-migration.md`
+Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
+Current task: M1 — Repository backend boundary.
 
 ## Working set
 
-- Decision: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
-- Canonical target: `docs/architecture/code-structure.md`.
-- Long-range roadmap: `docs/engineering/target-code-structure-migration-roadmap.md`.
-- Active plan: `docs/plans/active/PLAN-target-code-structure-migration.md`.
-- Current implementation baseline: `docs/architecture/current-architecture.md`.
+Read first:
+- `docs/plans/active/PLAN-target-code-structure-migration.md`
+- `docs/architecture/code-structure.md`
+- `docs/engineering/target-code-structure-migration-roadmap.md`
+
+Expand only if the architectural decision rationale is needed: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
 
 ## Blockers
 
