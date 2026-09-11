@@ -1,6 +1,6 @@
 # NAPMS UI design system
 
-Status: reference slice in PR #85.
+Status: Resource Catalogue reference behavior implemented through PR #89.
 
 The accepted Resource Catalogue concept board under `docs/ui/references/resource-catalogue/` is the visual baseline for NAPMS. Product/domain semantics remain owned by canonical requirements/domain/architecture artifacts; this document owns reusable visual/layout rules derived from that baseline.
 
@@ -19,12 +19,13 @@ Features supply domain data and actions. They must not recreate shared geometry 
 ## Global invariants
 
 - Desktop workspace uses the full width available after the sidebar.
-- Page-root arbitrary `max-width` is not used for operational/data pages.
+- Page-root arbitrary `max-width` is not used for operational/data/detail workspaces.
 - Width constraints are allowed only for semantic cases such as dialogs, forms or readable prose.
 - Features do not introduce raw hex colors when a semantic token exists.
 - Shared controls, status visuals, tags, page states and table structure come from the design system.
 - React reuse is by composition, not page inheritance or a monolithic prop-driven universal page.
 - A feature may map domain meaning to a visual tone, but generic design-system components must not encode Resource/Application/etc. semantics.
+- The signed-in account remains visible in the lower-left desktop sidebar; display only actor data actually supplied by authentication.
 
 ## Reference catalogue anatomy
 
@@ -48,11 +49,11 @@ AppShell
           CatalogueFilterField*
           actions
       CatalogueViewBar
-        FilterChip*
+        counted FilterChip presets
         optional view actions
       DataTable
         selection column
-        header
+        sortable header cells
         rows
           Checkbox
           primary link/cell
@@ -61,14 +62,17 @@ AppShell
           TagList
           StatusIndicator
           IssueIndicator
-      CataloguePagination
+      CataloguePaginationControls
+        result summary
+        numbered pager
+        rows-per-page selector
 ```
 
-The Resource Catalogue is the first executable reference implementation.
+The Resource Catalogue is the executable reference implementation.
 
 ## Visual calibration from the accepted board
 
-The first reference crop was inspected as a scaled screenshot rather than treated as an abstract mood board. Its proportions imply the following executable targets:
+The reference crop is treated as an implementation reference rather than an abstract mood board. Its executable targets include:
 
 - desktop sidebar: `232px`;
 - workspace padding: `24px`;
@@ -81,9 +85,12 @@ The first reference crop was inspected as a scaled screenshot rather than treate
 - table cells: compact horizontal padding (`12px`);
 - table itself owns its border/radius; toolbar, quick filters and pagination are not wrapped in a large card;
 - lifecycle inside catalogue rows is dot + text, not a filled badge;
-- scope tags are compact and visually lighter than quick-filter chips.
+- scope tags are compact and visually lighter than quick-filter chips;
+- default Resource ordering is Name ascending, shown by the upward sort arrow;
+- pagination is summary on the left, numbered pages in the center and Rows per page on the right;
+- the first page of a long result set renders `1 2 3 4 5 … last` between previous/next arrows.
 
-These values are encoded in `web/src/design-system/tokens.css` so later catalogue pages inherit the same density.
+These values are encoded in reusable design-system components/tokens so later catalogue pages inherit the same density.
 
 ## Reference audit checklist
 
@@ -92,15 +99,18 @@ The reference slice is reviewed from top-left to bottom-right. Each item must be
 - [x] dark fixed desktop sidebar;
 - [x] brand block;
 - [x] grouped navigation and active state;
-- [x] user block and logout at sidebar bottom;
-- [x] full-width application workspace;
+- [x] signed-in account block and logout at sidebar bottom;
+- [x] full-width application and Resource detail workspaces;
 - [x] page title, description and primary action;
 - [x] full-width search with leading icon;
 - [x] search applies server-side after a short debounce and still submits immediately on Enter;
 - [x] labeled compact filter controls;
 - [x] reset action without an extra visible Apply button;
-- [x] quick-filter chips;
+- [x] counted quick-filter presets: All, Active, Retired, No address, No responsibility, No scope;
+- [x] counts and exact total are server-backed and computed before pagination;
 - [x] dense table with its own border/radius;
+- [x] sortable supported columns with ascending/descending indicator;
+- [x] sorting is server-backed and applied before pagination;
 - [x] select-all checkbox;
 - [x] per-row checkbox;
 - [x] checked/unchecked/indeterminate selection behavior;
@@ -112,31 +122,42 @@ The reference slice is reviewed from top-left to bottom-right. Each item must be
 - [x] lifecycle dot indicator;
 - [x] diagnostic state indicators;
 - [x] distinct loading/error/empty states;
-- [x] compact pagination footer;
+- [x] pagination summary (`Showing x–y of n`);
+- [x] centered numbered pager with previous/next arrows;
+- [x] server-backed rows-per-page selector;
 - [ ] Resource type filter shown in the concept board: intentionally omitted because canonical Resource Catalogue semantics explicitly reject a first-class Resource type attribute/filter;
 - [ ] More filters affordance: omitted until there are additional accepted filters to reveal;
 - [ ] saved-view behavior: visually present in the concept family but no accepted product semantics yet;
-- [ ] bulk mutation toolbar: selection is supported, but no bulk domain actions are accepted yet;
-- [ ] catalogue-wide facet counts and exact total: require a server-backed read-model extension; do not derive them from the current page.
+- [ ] bulk mutation toolbar: selection is supported, but no bulk domain actions are accepted yet.
 
-The unchecked items are deliberate semantic/read-model gaps, not invitations to fake client-side behavior.
+The unchecked items are deliberate semantic gaps, not invitations to fake client-side behavior.
 
-## Table rules
+## Table and paging rules
 
 - Catalogue tables are dense and server-backed.
 - Header and row heights are tokens.
+- Sorting is an allow-listed read-model capability. The backend orders the whole filtered set before offset/limit; never sort only the current client page.
+- The active sorted column exposes `aria-sort` and a visible arrow; repeated activation toggles direction.
 - Selection uses a first-column checkbox, including select-all and indeterminate state.
 - Checkbox interaction never triggers row navigation.
 - Primary identity is the strongest clickable cell; technical references are secondary/monospace.
 - Empty technical values use a neutral dash unless the domain explicitly defines an error state.
 - Tags, lifecycle/status indicators and diagnostic indicators are separate visual concepts.
 - Loading, error and empty results are distinct shared page states.
+- Exact totals and quick-filter counts come from the read model, never from the current page.
+- Page-size changes reset to page 1 and are sent to the backend.
+
+## Detail workspace rules
+
+- Resource Overview, History and Technical details use the full available workspace after the sidebar.
+- Detail screens use the same tokens, shared controls, status indicators, page states and surfaces as catalogue lists.
+- Temporal facts continue to use add/replace/end semantics; a wider layout must not turn them into scalar CRUD.
 
 ## Visual regression guard
 
 The canonical Resource Catalogue layout is protected by `e2e/test_j00_resource_catalogue_visual.py` at a `1440x1000` viewport. The test fingerprints the rendered `main` workspace after creating deterministic Resource rows and compares it with the accepted browser baseline in `e2e/screenshot_regression.py`.
 
-The fingerprint is a regression guard, not the source of design truth. Rebaseline it only after a deliberate comparison with the accepted concept-board reference and the canonical UI/domain contracts. A changed fingerprint caused by an intentional global shell/design-system change must be reviewed together with other affected reference fingerprints rather than silently accepted.
+The fingerprint is a regression guard, not the source of design truth. Rebaseline it only after a deliberate comparison with the accepted concept-board reference and the canonical UI/domain contracts. A changed fingerprint caused by an intentional reference/design-system change must be reviewed before its baseline is accepted.
 
 ## Tokens
 
@@ -157,8 +178,8 @@ Features consume semantic tokens indirectly through design-system components whe
 
 Current reusable implementation lives under `web/src/design-system/`.
 
-`web/src/features/catalogues/pages/ResourcesPage.tsx` is the reference catalogue feature page. New catalogue migrations should first attempt composition from the existing pattern and extend the pattern only when the new requirement is genuinely reusable.
+`web/src/features/catalogues/pages/ResourcesPage.tsx` is the reference catalogue feature page. `ResourceDetailsPage.tsx` is the full-width Resource detail reference. New catalogue/detail migrations should first attempt composition from the existing patterns and extend them only when the new requirement is genuinely reusable.
 
-## Deliberate non-goals of the first slice
+## Deliberate non-goals
 
-The visual baseline may show affordances whose product behavior is not yet accepted. Do not create placeholder backend/domain behavior merely to fill the picture. When the missing item is a legitimate read-model need (for example global facet counts), add it server-side rather than approximating it from one paginated page.
+The visual baseline may show affordances whose product behavior is not accepted. Do not create placeholder backend/domain behavior merely to fill the picture. Legitimate read-model needs such as total counts, facet counts and ordering belong server-side; domain concepts such as a Resource type do not become valid merely because a concept image contains a control for them.
