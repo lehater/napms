@@ -8,8 +8,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "check": "tsc -b --pretty false"
+    "ui-boundary-check": "node scripts/check-ui-boundaries.mjs",
+    "build": "npm run ui-boundary-check && tsc -b && vite build",
+    "check": "npm run ui-boundary-check && tsc -b --pretty false"
   },
   "dependencies": {
     "lucide-react": "^1.43.0",
