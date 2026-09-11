@@ -22,6 +22,12 @@ import { SearchInput } from "@/design-system/components/SearchInput"
 import { StatusPill } from "@/design-system/components/StatusPill"
 import { TagList } from "@/design-system/components/Tag"
 import {
+  EmptyValue,
+  PrimaryTableAction,
+  ReferenceText,
+  TechnicalValueList,
+} from "@/design-system/components/TableValue"
+import {
   CatalogueFilterBar,
   CatalogueFilterField,
   CataloguePage,
@@ -102,6 +108,10 @@ export function ResourcesPage({
   const visibleScopes = useMemo(
     () => Array.from(new Set(items.flatMap((item) => item.currentScopes))).sort(),
     [items],
+  )
+  const scopeOptions = useMemo(
+    () => Array.from(new Set([scopeInput, scopeFilter, ...visibleScopes].filter(Boolean))).sort(),
+    [scopeFilter, scopeInput, visibleScopes],
   )
 
   const visibleReferences = useMemo(
@@ -218,17 +228,18 @@ export function ResourcesPage({
 
             <CatalogueFilterBar>
               <CatalogueFilterField label="Scope" className="xl:w-[290px]">
-                <Input
+                <Select
                   value={scopeInput}
                   onChange={(event) => setScopeInput(event.target.value)}
-                  placeholder="All scopes"
-                  list="resource-scope-options"
-                />
-                <datalist id="resource-scope-options">
-                  {visibleScopes.map((scope) => (
-                    <option key={scope} value={scope} />
+                  aria-label="Filter resources by scope"
+                >
+                  <option value="">All scopes</option>
+                  {scopeOptions.map((scope) => (
+                    <option key={scope} value={scope}>
+                      {scope}
+                    </option>
                   ))}
-                </datalist>
+                </Select>
               </CatalogueFilterField>
 
               <CatalogueFilterField label="Lifecycle" className="xl:w-[155px]">
@@ -297,7 +308,7 @@ export function ResourcesPage({
         ) : (
           <DataTable minWidth={1200}>
             <colgroup>
-              <col style={{ width: "52px" }} />
+              <col style={{ width: "var(--napms-table-selection-column)" }} />
               <col style={{ width: "15.1%" }} />
               <col style={{ width: "11.8%" }} />
               <col style={{ width: "15.5%" }} />
@@ -340,42 +351,21 @@ export function ResourcesPage({
                       />
                     </DataTableSelectionCell>
                     <DataTableCell>
-                      <button
-                        type="button"
-                        className="font-semibold text-[var(--napms-color-primary)] hover:underline"
-                        onClick={() => onOpenResource(item.resourceReference)}
-                      >
+                      <PrimaryTableAction onClick={() => onOpenResource(item.resourceReference)}>
                         {item.displayName || shortId(item.resourceReference)}
-                      </button>
-                    </DataTableCell>
-                    <DataTableCell className="font-mono text-xs text-[var(--napms-color-text-secondary)]">
-                      {shortId(item.resourceReference)}
+                      </PrimaryTableAction>
                     </DataTableCell>
                     <DataTableCell>
-                      {item.currentAddresses.length === 0 ? (
-                        <span className="text-[var(--napms-color-text-muted)]">—</span>
-                      ) : (
-                        <div className="grid gap-0.5 font-mono text-xs text-[var(--napms-color-text-body)]">
-                          {item.currentAddresses.slice(0, 2).map((address) => (
-                            <span key={address}>{address}</span>
-                          ))}
-                          {item.currentAddresses.length > 2 ? (
-                            <span className="text-[var(--napms-color-text-secondary)]">
-                              +{item.currentAddresses.length - 2} more
-                            </span>
-                          ) : null}
-                        </div>
-                      )}
+                      <ReferenceText>{shortId(item.resourceReference)}</ReferenceText>
+                    </DataTableCell>
+                    <DataTableCell>
+                      <TechnicalValueList values={item.currentAddresses} />
                     </DataTableCell>
                     <DataTableCell>
                       <TagList values={item.currentScopes} />
                     </DataTableCell>
                     <DataTableCell className="text-[var(--napms-color-text-body)]">
-                      {item.technicalOwners.length > 0 ? (
-                        item.technicalOwners.join(", ")
-                      ) : (
-                        <span className="text-[var(--napms-color-text-muted)]">—</span>
-                      )}
+                      {item.technicalOwners.length > 0 ? item.technicalOwners.join(", ") : <EmptyValue />}
                     </DataTableCell>
                     <DataTableCell>
                       <LifecycleBadge value={item.lifecycle} />
@@ -404,7 +394,7 @@ export function ResourcesPage({
             >
               Previous
             </Button>
-            <span className="flex size-[34px] items-center justify-center rounded-[var(--napms-control-radius)] border border-[var(--napms-color-primary-border)] bg-[var(--napms-color-primary-subtle)] text-xs font-semibold text-[var(--napms-color-primary-hover)]">
+            <span className="flex size-[var(--napms-control-height-sm)] items-center justify-center rounded-[var(--napms-control-radius)] border border-[var(--napms-color-primary-border)] bg-[var(--napms-color-primary-subtle)] text-xs font-semibold text-[var(--napms-color-primary-hover)]">
               {page}
             </span>
             <Button
