@@ -43,7 +43,7 @@ M1 moved the backend workspace under `backend/`, preserved behavior, and passed 
 
 Status: `active` on branch `refactor/m2-network-environment-operations`.
 
-M2 is integrated as one milestone PR, not one PR per context. Contexts are migrated incrementally in the same branch.
+M2 is integrated as one milestone PR. Contexts are migrated incrementally in the same branch.
 
 Execution policy:
 - one bounded context = one atomic commit;
@@ -65,29 +65,32 @@ For each context:
 
 ### Completed M2 slices
 
-1. `network_environment_operations` — complete in `8dac6ff40fc82732b14ec7aeca80dabc84af062a`.
-2. `technical_access_evidence` — complete in `3dd64d4167838bcd3f90933f6aef54940f6ef88b`.
-3. `network_enforcement_placement` — complete in `a17ba404496932d70ee21ccb3ff7806ca52e7344`.
+1. `network_environment_operations` — `8dac6ff40fc82732b14ec7aeca80dabc84af062a`.
+2. `technical_access_evidence` — `3dd64d4167838bcd3f90933f6aef54940f6ef88b`.
+3. `network_enforcement_placement` — `a17ba404496932d70ee21ccb3ff7806ca52e7344`.
+4. `connectivity_requirements` — `a8842d21eeaa7da22993d9af7ae2dd71a16de82d`.
+5. `connectivity_decision` — `7c75e448c755a37774dd7bbd4d5ff09708559eac`.
 
-All three use the final `napms.contexts` namespace; legacy implementation packages are removed. Existing `composition/*` wiring remains transitional until M3 and only import/path references are updated during M2.
+All five use the final `napms.contexts` namespace; legacy implementation packages are removed. Existing `composition/*` wiring remains transitional until M3 and only import/path references are updated during M2.
 
 ### Current M2 work package
 
 Migrate as two separate commits and in this order:
 
-1. `connectivity_requirements`
-2. `connectivity_decision`
+1. `authority_management`
+2. `resource_catalogue`
 
 For both contexts:
-- keep existing domain/application semantics;
+- preserve existing domain/application semantics;
 - HTTP inbound code moves under `presentation/http/`;
-- owner persistence moves under `infrastructure/persistence/postgres/`;
-- other current adapters move under capability-named `infrastructure/integrations/` when they are outbound/cross-context integrations;
+- owner PostgreSQL persistence moves under `infrastructure/persistence/postgres/`;
+- adapters serving other contexts/workflows move under `infrastructure/integrations/`;
+- owner-local support code that is not HTTP/persistence/integration should live under a capability-named `infrastructure/` package rather than a generic adapter bucket;
 - do not move workflow ownership or generic `composition` files yet; M3 owns that cleanup;
-- update package-data/migration package references and all repository consumers;
+- update package-data/migration references and all repository consumers;
 - remove legacy namespaces and add architecture guards.
 
-Run targeted tests after each context. After both commits run `make test`, `make harness-check`, and `make knowledge-check`. Run PostgreSQL tests if a configured environment is available; absence of local PostgreSQL is not a blocker for continuing M2, but a configured PostgreSQL run is mandatory before final M2 closure.
+Run targeted tests after each context. After both commits run `make test`, `make harness-check`, and `make knowledge-check`. Run PostgreSQL tests only if a configured environment is available; absence of local PostgreSQL is not a blocker for continuing M2, but configured PostgreSQL evidence is mandatory before final M2 closure.
 
 ## Exit criteria
 
@@ -95,8 +98,8 @@ M2 closes only when all accepted bounded contexts are under `napms.contexts`, le
 
 ## Blockers
 
-None for the current two-context package. Configured PostgreSQL execution remains a deferred milestone-exit requirement.
+None for the current work package. Configured PostgreSQL execution remains a deferred milestone-exit requirement.
 
 ## Next
 
-Complete `connectivity_requirements` and `connectivity_decision` as separate atomic commits, push the milestone branch, and stop for architectural review. Do not start another context or M3 before that review.
+Complete `authority_management` and `resource_catalogue` as separate atomic commits, push the milestone branch, and stop for architectural review. Do not start another context or M3 before that review.
