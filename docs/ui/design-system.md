@@ -31,35 +31,73 @@ Features supply domain data and actions. They must not recreate shared geometry 
 The canonical catalogue slice is composed as:
 
 ```text
-CataloguePage
-  PageHeader
-    title
-    description
-    primary action
-  CatalogueSurface
-    CatalogueToolbar
-      SearchInput
-      CatalogueFilterBar
-        CatalogueFilterField*
-        actions
-    CatalogueViewBar
-      FilterChip*
-      optional view actions
-    DataTable
-      selection column
-      header
-      rows
-        Checkbox
-        primary link/cell
-        reference text
-        technical values
-        TagList
-        StatusPill
-        IssueIndicator
-    CataloguePagination
+AppShell
+  Sidebar
+    Brand
+    grouped Navigation
+    User/Logout
+  PageWorkspace
+    PageHeader
+      title
+      description
+      primary action
+    CatalogueSurface
+      CatalogueToolbar
+        SearchInput
+        CatalogueFilterBar
+          CatalogueFilterField*
+          actions
+      CatalogueViewBar
+        FilterChip*
+        optional view actions
+      DataTable
+        selection column
+        header
+        rows
+          Checkbox
+          primary link/cell
+          reference text
+          technical values
+          TagList
+          StatusPill
+          IssueIndicator
+      CataloguePagination
 ```
 
 The Resource Catalogue is the first executable reference implementation.
+
+## Reference audit checklist
+
+The reference slice is reviewed from top-left to bottom-right. Each item must be represented by a shared component/token/pattern or explicitly marked not applicable because product behavior is not accepted.
+
+- [x] dark fixed desktop sidebar;
+- [x] brand block;
+- [x] grouped navigation and active state;
+- [x] user block and logout at sidebar bottom;
+- [x] full-width application workspace;
+- [x] page title, description and primary action;
+- [x] single catalogue surface;
+- [x] full-width search with leading icon;
+- [x] labeled compact filter controls;
+- [x] apply/reset actions;
+- [x] quick-filter chips;
+- [x] dense table header;
+- [x] select-all checkbox;
+- [x] per-row checkbox;
+- [x] checked/unchecked/indeterminate selection behavior;
+- [x] selected-row visual state;
+- [x] primary clickable identity cell;
+- [x] monospace secondary reference;
+- [x] technical address presentation;
+- [x] compact scope tags;
+- [x] lifecycle status pill;
+- [x] diagnostic state indicators;
+- [x] distinct loading/error/empty states;
+- [x] compact pagination footer;
+- [ ] saved-view behavior: visually present in the concept family but no accepted product semantics yet;
+- [ ] bulk mutation toolbar: selection is supported, but no bulk domain actions are accepted yet.
+
+The unchecked items are deliberate semantic gaps, not visual omissions to fill with fake behavior.
 
 ## Table rules
 
