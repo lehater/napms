@@ -5,11 +5,11 @@ on:
     types: [opened, reopened, ready_for_review, synchronize]
     paths:
       - "backend/src/napms/contexts/access_policy/infrastructure/persistence/postgres/**"
-      - "backend/src/napms/authority_management/**"
+      - "backend/src/napms/contexts/authority_management/**"
       - "backend/src/napms/contexts/application_catalogue/**"
-      - "backend/src/napms/resource_catalogue/**"
-      - "backend/src/napms/technical_access_evidence/**"
-      - "backend/src/napms/network_enforcement_placement/adapters/postgres/**"
+      - "backend/src/napms/contexts/resource_catalogue/**"
+      - "backend/src/napms/contexts/technical_access_evidence/**"
+      - "backend/src/napms/contexts/network_enforcement_placement/infrastructure/persistence/postgres/**"
       - "backend/src/napms/platform/**"
       - "backend/tests/integration/postgres/**"
       - "backend/pyproject.toml"
