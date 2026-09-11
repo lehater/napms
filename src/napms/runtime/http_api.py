@@ -10,7 +10,7 @@ from napms.runtime.legacy_http_api import (
 )
 
 
-_CONNECTIVITY_REQUIREMENT_ROUTE_NAMES = {
+_MIGRATED_ROUTE_NAMES = {
     "DiscoverConnectivityRequirementScopes",
     "DiscoverConnectivityRequirementInteractions",
     "DeclareConnectivityRequirement",
@@ -19,6 +19,11 @@ _CONNECTIVITY_REQUIREMENT_ROUTE_NAMES = {
     "SetConnectivityRequirementApplicability",
     "SetConnectivityRequirementJustification",
     "RetireConnectivityRequirement",
+    "DiscoverConnectivityDecisionScopes",
+    "DiscoverConnectivityDecisionInteractions",
+    "RecordConnectivityDecision",
+    "ListConnectivityDecisions",
+    "GetConnectivityDecision",
 }
 
 
@@ -27,6 +32,9 @@ def create_http_api(dependencies: HttpApiDependencies):
 
     # Import lazily so owner adapters may reuse the stable transport contract
     # re-exported by this module without creating an import cycle.
+    from napms.connectivity_decision.adapters.http import (
+        create_connectivity_decision_router,
+    )
     from napms.connectivity_requirements.adapters.http import (
         create_connectivity_requirements_router,
     )
@@ -35,10 +43,17 @@ def create_http_api(dependencies: HttpApiDependencies):
     app.router.routes[:] = [
         route
         for route in app.router.routes
-        if getattr(route, "name", None) not in _CONNECTIVITY_REQUIREMENT_ROUTE_NAMES
+        if getattr(route, "name", None) not in _MIGRATED_ROUTE_NAMES
     ]
     app.include_router(
         create_connectivity_requirements_router(
+            sessions=dependencies.sessions,
+            open_scope=dependencies.open_scope,
+            clock=dependencies.clock,
+        )
+    )
+    app.include_router(
+        create_connectivity_decision_router(
             sessions=dependencies.sessions,
             open_scope=dependencies.open_scope,
             clock=dependencies.clock,
