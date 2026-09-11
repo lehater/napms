@@ -1,4 +1,4 @@
-from napms.application_catalogue.application.ports import ApplicationCatalogueRepository
+from napms.contexts.application_catalogue.application.ports import ApplicationCatalogueRepository
 from napms.contexts.resource_catalogue.application.resolve_address import (
     ResolveResourcesByTechnicalAddress,
     TechnicalAddressResolutionOutcome,

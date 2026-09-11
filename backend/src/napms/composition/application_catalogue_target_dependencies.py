@@ -2,11 +2,11 @@ from napms.access_policy.adapters.postgres.application_catalogue_dependency_quer
     PostgresAccessRuleDependencyQuery,
 )
 from napms.access_policy.domain.model import RuleSemanticIdentity
-from napms.application_catalogue.application.target_ports import (
+from napms.contexts.application_catalogue.application.target_ports import (
     ActiveDependencyReference,
     ActiveDependencySummary,
 )
-from napms.application_catalogue.domain.model import DirectedInteractionIdentity
+from napms.contexts.application_catalogue.domain.model import DirectedInteractionIdentity
 from napms.contexts.connectivity_decision.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityDecisionDependencyQuery,
 )

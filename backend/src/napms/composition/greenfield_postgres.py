@@ -11,35 +11,35 @@ from napms.access_policy.adapters.requirement_policy_alignment import (
 from napms.access_policy.adapters.scoped_connectivity_inventory import (
     AccessPolicyScopedConnectivityAdapter,
 )
-from napms.application_catalogue.adapters.access_policy import (
+from napms.contexts.application_catalogue.infrastructure.integrations.access_policy import (
     AccessPolicyCommunicationCatalogueAdapter,
     AccessPolicyProposalInteractionCatalogueAdapter,
 )
-from napms.application_catalogue.adapters.connectivity_decision import (
+from napms.contexts.application_catalogue.infrastructure.integrations.connectivity_decision import (
     ConnectivityDecisionCatalogueAdapter,
     ConnectivityDecisionInteractionDiscoveryAdapter,
 )
-from napms.application_catalogue.adapters.connectivity_requirements import (
+from napms.contexts.application_catalogue.infrastructure.integrations.connectivity_requirements import (
     ConnectivityRequirementsCatalogueAdapter,
     ConnectivityRequirementsInteractionDiscoveryAdapter,
 )
-from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
-from napms.application_catalogue.adapters.policy_export import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import JsonDcsProjectionCodec
+from napms.contexts.application_catalogue.infrastructure.integrations.policy_export import (
     PolicyExportApplicationCatalogueAdapter,
 )
-from napms.application_catalogue.adapters.postgres import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres import (
     PostgresApplicationCatalogueRepository,
 )
-from napms.application_catalogue.adapters.scoped_connectivity_inventory import (
+from napms.contexts.application_catalogue.infrastructure.integrations.scoped_connectivity_inventory import (
     ApplicationCatalogueScopedConnectivityAdapter,
 )
-from napms.application_catalogue.application.describe_interactions import (
+from napms.contexts.application_catalogue.application.describe_interactions import (
     DescribeDirectedInteractions,
 )
-from napms.application_catalogue.application.list_interactions import (
+from napms.contexts.application_catalogue.application.list_interactions import (
     ListDirectedInteractions,
 )
-from napms.application_catalogue.application.resolve import (
+from napms.contexts.application_catalogue.application.resolve import (
     ResolveApplicationProjection,
     ValidateDirectedInteraction,
 )

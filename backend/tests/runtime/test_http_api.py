@@ -14,10 +14,10 @@ from napms.access_policy.application.ports import (
     ProposalScopeOptions,
     TernaryOutcome,
 )
-from napms.application_catalogue.application.describe_interactions import (
+from napms.contexts.application_catalogue.application.describe_interactions import (
     DirectedInteractionDescription,
 )
-from napms.application_catalogue.application.ports import CataloguePersistenceError
+from napms.contexts.application_catalogue.application.ports import CataloguePersistenceError
 from napms.policy_export.application.ports import (
     ApplicationProjectionFact,
     ApplicationProjectionOutcome,

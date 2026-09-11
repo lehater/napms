@@ -4,55 +4,55 @@ from typing import Iterator
 
 import psycopg
 
-from napms.application_catalogue.adapters.curation_support import (
+from napms.contexts.application_catalogue.infrastructure.local.curation_support import (
     LocalApplicationCatalogueIdentityFactory,
     LocalApplicationCatalogueProvenanceFactory,
     LocalDeploymentBindingIdentityFactory,
     LocalDeploymentBindingProvenanceFactory,
 )
-from napms.application_catalogue.adapters.dcs_authoring import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_authoring import (
     JsonDcsAuthoringProjectionEncoder,
 )
-from napms.application_catalogue.adapters.postgres.curation_detail import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres.curation_detail import (
     PostgresApplicationCatalogueDetailRepository,
 )
-from napms.application_catalogue.adapters.postgres.curation_repository import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres.curation_repository import (
     PostgresApplicationCatalogueCurationRepository,
 )
-from napms.application_catalogue.adapters.postgres.participant_discovery import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres.participant_discovery import (
     PostgresApplicationCatalogueParticipantRepository,
 )
-from napms.application_catalogue.adapters.postgres.repository import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres.repository import (
     PostgresApplicationCatalogueRepository,
 )
-from napms.application_catalogue.adapters.postgres.transactional_curation_repository import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres.transactional_curation_repository import (
     TransactionalPostgresApplicationCatalogueCurationRepository,
 )
-from napms.application_catalogue.adapters.resource_binding_target import (
+from napms.contexts.application_catalogue.infrastructure.integrations.resource_binding_target import (
     ResourceCatalogueBindingTargetAdapter,
 )
-from napms.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.binding_curation import (
     CreateDeploymentResourceBinding,
     EndDeploymentResourceBinding,
 )
-from napms.application_catalogue.application.curation import CreateApplication
-from napms.application_catalogue.application.curation_detail import (
+from napms.contexts.application_catalogue.application.curation import CreateApplication
+from napms.contexts.application_catalogue.application.curation_detail import (
     ReadApplicationCatalogueTreeDetail,
 )
-from napms.application_catalogue.application.curation_read import (
+from napms.contexts.application_catalogue.application.curation_read import (
     ListApplicationCatalogue,
     ReadApplicationCatalogueDetail,
 )
-from napms.application_catalogue.application.dcs_curation import CreateDcsRevision
-from napms.application_catalogue.application.deployment_curation import (
+from napms.contexts.application_catalogue.application.dcs_curation import CreateDcsRevision
+from napms.contexts.application_catalogue.application.deployment_curation import (
     CreateComponentDeployment,
     RenameComponentDeployment,
     RetireComponentDeployment,
 )
-from napms.application_catalogue.application.participant_discovery import (
+from napms.contexts.application_catalogue.application.participant_discovery import (
     ListApplicationCatalogueParticipants,
 )
-from napms.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.structure_curation import (
     CreateComponent,
     RenameApplication,
     RenameComponent,

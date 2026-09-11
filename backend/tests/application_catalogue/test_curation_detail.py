@@ -3,10 +3,10 @@ from uuid import UUID
 
 import pytest
 
-from napms.application_catalogue.application.curation_detail import (
+from napms.contexts.application_catalogue.application.curation_detail import (
     ReadApplicationCatalogueTreeDetail,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     Application,
     CatalogueInvariantError,
     Component,

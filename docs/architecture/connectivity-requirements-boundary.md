@@ -32,7 +32,7 @@ backend/src/napms/connectivity_requirements/
 backend/src/napms/authority_management/adapters/
     connectivity_requirements.py
 
-backend/src/napms/application_catalogue/adapters/
+backend/src/napms/contexts/application_catalogue/infrastructure/integrations/
     connectivity_requirements.py
 ```
 

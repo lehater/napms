@@ -8,7 +8,7 @@ NAPMS = ROOT / "src" / "napms"
 ACCESS_POLICY = NAPMS / "access_policy"
 ACCESS_POLICY_REALIZATION = NAPMS / "contexts" / "access_policy_realization"
 AUTHORITY_MANAGEMENT = NAPMS / "contexts" / "authority_management"
-APPLICATION_CATALOGUE = NAPMS / "application_catalogue"
+APPLICATION_CATALOGUE = NAPMS / "contexts" / "application_catalogue"
 RESOURCE_CATALOGUE = NAPMS / "contexts" / "resource_catalogue"
 CONNECTIVITY_REQUIREMENTS = NAPMS / "contexts" / "connectivity_requirements"
 CONNECTIVITY_DECISION = NAPMS / "contexts" / "connectivity_decision"
@@ -19,7 +19,7 @@ REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
 POLICY_EXPORT = NAPMS / "policy_export"
 SCOPED_CONNECTIVITY_INVENTORY = NAPMS / "scoped_connectivity_inventory"
 RUNTIME = NAPMS / "runtime"
-APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "adapters" / "http"
+APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "presentation" / "http"
 RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "presentation" / "http"
 APPLICATION_CATALOGUE_HTTP_SUPPORT = APPLICATION_CATALOGUE_HTTP / "support.py"
 RESOURCE_CATALOGUE_HTTP_SUPPORT = RESOURCE_CATALOGUE_HTTP / "support.py"
@@ -245,7 +245,7 @@ POSTGRES_SCHEMA_OWNERS = (
         "napms_authority",
     ),
     (
-        NAPMS / "application_catalogue" / "adapters" / "postgres",
+        APPLICATION_CATALOGUE / "infrastructure" / "persistence" / "postgres",
         "napms_application_catalogue",
     ),
     (
@@ -301,7 +301,7 @@ BOUNDED_CONTEXT_CORES = (
     ),
     (
         APPLICATION_CATALOGUE,
-        "napms.application_catalogue",
+        "napms.contexts.application_catalogue",
     ),
     (
         RESOURCE_CATALOGUE,
@@ -351,6 +351,10 @@ def test_access_policy_realization_core_has_no_outer_layer_dependencies():
 
 def test_authority_management_has_no_legacy_package():
     assert not (NAPMS / "authority_management").exists()
+
+
+def test_application_catalogue_has_no_legacy_package():
+    assert not (NAPMS / "application_catalogue").exists()
 
 
 def test_authority_management_core_has_no_outer_layer_dependencies():

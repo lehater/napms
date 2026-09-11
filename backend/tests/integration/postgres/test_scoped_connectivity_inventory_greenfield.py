@@ -13,7 +13,7 @@ from napms.access_policy.domain.model import (
     ProposalProvenance,
     RuleSemanticIdentity,
 )
-from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import JsonDcsProjectionCodec
 from napms.composition.config import ApplicationConfig, PostgresConfig
 from napms.composition.greenfield_postgres import (
     apply_greenfield_migrations,

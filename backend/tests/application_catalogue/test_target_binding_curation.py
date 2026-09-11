@@ -1,19 +1,19 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from napms.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.binding_curation import (
     DeploymentBindingMutationResult,
 )
-from napms.application_catalogue.application.structure_curation import CatalogueMutationOutcome
-from napms.application_catalogue.application.target_binding_curation import (
+from napms.contexts.application_catalogue.application.structure_curation import CatalogueMutationOutcome
+from napms.contexts.application_catalogue.application.target_binding_curation import (
     CreateDeploymentInteractionResourceBinding,
     CreateDeploymentInteractionResourceBindingCommand,
     EndDeploymentInteractionResourceBinding,
     EndDeploymentInteractionResourceBindingCommand,
 )
-from napms.application_catalogue.application.target_curation import TargetMutationOutcome
-from napms.application_catalogue.domain.model import DeploymentResourceBinding
-from napms.application_catalogue.domain.target_model import (
+from napms.contexts.application_catalogue.application.target_curation import TargetMutationOutcome
+from napms.contexts.application_catalogue.domain.model import DeploymentResourceBinding
+from napms.contexts.application_catalogue.domain.target_model import (
     DeploymentInteraction,
     DeploymentInteractionCompatibility,
     DeploymentInteractionResourceBinding,

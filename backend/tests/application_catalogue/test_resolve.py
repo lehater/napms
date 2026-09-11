@@ -3,18 +3,18 @@ from uuid import UUID
 
 from napms.access_policy.application.ports import InteractionOutcome
 from napms.access_policy.domain.model import RuleSemanticIdentity
-from napms.application_catalogue.adapters.access_policy import (
+from napms.contexts.application_catalogue.infrastructure.integrations.access_policy import (
     AccessPolicyCommunicationCatalogueAdapter,
 )
-from napms.application_catalogue.adapters.policy_export import (
+from napms.contexts.application_catalogue.infrastructure.integrations.policy_export import (
     PolicyExportApplicationCatalogueAdapter,
 )
-from napms.application_catalogue.application.resolve import (
+from napms.contexts.application_catalogue.application.resolve import (
     CatalogueResolutionOutcome,
     ResolveApplicationProjection,
     ValidateDirectedInteraction,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     DcsRevision,
     DeploymentResourceBinding,
     DirectedInteractionIdentity,

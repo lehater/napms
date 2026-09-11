@@ -19,7 +19,7 @@ from napms.contexts.access_policy_realization.domain.model import (
     ResolutionStatus,
     TechnicalAccessPredicate,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     DcsRevision,
     DeploymentResourceBinding,
 )

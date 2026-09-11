@@ -34,7 +34,7 @@ from napms.contexts.access_policy_realization.domain.realization import (
     ReconciliationStatus,
     RequiredSemanticChange,
 )
-from napms.application_catalogue.adapters.dcs_json_codec import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import (
     JsonDcsProjectionCodec,
 )
 from napms.composition.access_policy_realization_postgres import (

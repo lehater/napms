@@ -45,7 +45,7 @@ from napms.access_policy.domain.model import (
     OperationalState,
     RuleSemanticIdentity,
 )
-from napms.application_catalogue.adapters.dcs_json_codec import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import (
     JsonDcsProjectionCodec,
 )
 from napms.composition.config import ApplicationConfig, PostgresConfig

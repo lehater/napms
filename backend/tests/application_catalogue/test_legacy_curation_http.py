@@ -7,14 +7,14 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from napms.application_catalogue.application.curation import (
+from napms.contexts.application_catalogue.application.curation import (
     CreateApplicationOutcome,
     CreateApplicationResult,
 )
-from napms.application_catalogue.adapters.http.legacy_curation import (
+from napms.contexts.application_catalogue.presentation.http.legacy_curation import (
     create_application_catalogue_curation_router,
 )
-from napms.application_catalogue.domain.model import Application
+from napms.contexts.application_catalogue.domain.model import Application
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
 from napms.runtime.http_api import PublicApiError
 

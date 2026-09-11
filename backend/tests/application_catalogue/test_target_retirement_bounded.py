@@ -1,23 +1,23 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from napms.application_catalogue.application.ports import (
+from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
 )
-from napms.application_catalogue.application.target_curation import TargetMutationOutcome
-from napms.application_catalogue.application.target_lifecycle import (
+from napms.contexts.application_catalogue.application.target_curation import TargetMutationOutcome
+from napms.contexts.application_catalogue.application.target_lifecycle import (
     RetireApplicationDefinitionCommand,
     RetirementDependencyKind,
     RetirementMutationResult,
 )
-from napms.application_catalogue.application.target_ports import ActiveDependencyReference
-from napms.application_catalogue.application.target_retirement import (
+from napms.contexts.application_catalogue.application.target_ports import ActiveDependencyReference
+from napms.contexts.application_catalogue.application.target_retirement import (
     BoundedRetirementService,
     RetirementSubjectKind,
     TargetRetirementDependencyGroup,
 )
-from napms.application_catalogue.domain.model import Application, CatalogueLifecycleState
+from napms.contexts.application_catalogue.domain.model import Application, CatalogueLifecycleState
 
 
 NOW = datetime(2026, 9, 11, 0, 0, tzinfo=timezone.utc)

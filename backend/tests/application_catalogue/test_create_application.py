@@ -1,18 +1,18 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from napms.application_catalogue.application.curation import (
+from napms.contexts.application_catalogue.application.curation import (
     CreateApplication,
     CreateApplicationCommand,
     CreateApplicationOutcome,
 )
-from napms.application_catalogue.application.ports import (
+from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
     ApplicationCatalogueCommandReceipt,
     CatalogueIdempotencyConflict,
 )
-from napms.application_catalogue.domain.model import Application
+from napms.contexts.application_catalogue.domain.model import Application
 
 
 NOW = datetime(2026, 9, 10, 11, 0, tzinfo=timezone.utc)

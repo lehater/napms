@@ -3,10 +3,10 @@ from uuid import UUID
 import pytest
 from psycopg import Error as PsycopgError
 
-from napms.application_catalogue.adapters.postgres.transactional_curation_repository import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres.transactional_curation_repository import (
     TransactionalPostgresApplicationCatalogueCurationRepository,
 )
-from napms.application_catalogue.application.ports import (
+from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueCommandReceipt,
     CataloguePersistenceError,
     CataloguePersistenceOutcomeUnknown,

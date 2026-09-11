@@ -8,7 +8,7 @@ from napms.access_policy.application.ports import (
     ConnectivityDecision as AccessPolicyConnectivityDecision,
     DecisionOutcome as AccessPolicyDecisionOutcome,
 )
-from napms.application_catalogue.application.describe_interactions import (
+from napms.contexts.application_catalogue.application.describe_interactions import (
     DirectedInteractionDescription,
 )
 from napms.contexts.connectivity_decision.application.ports import (

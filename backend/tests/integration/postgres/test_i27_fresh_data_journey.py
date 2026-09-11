@@ -6,22 +6,22 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.binding_curation import (
     CreateDeploymentResourceBindingCommand,
 )
-from napms.application_catalogue.application.curation import (
+from napms.contexts.application_catalogue.application.curation import (
     CreateApplicationCommand,
 )
-from napms.application_catalogue.application.dcs_curation import (
+from napms.contexts.application_catalogue.application.dcs_curation import (
     CreateDcsRevisionCommand,
 )
-from napms.application_catalogue.application.deployment_curation import (
+from napms.contexts.application_catalogue.application.deployment_curation import (
     CreateComponentDeploymentCommand,
 )
-from napms.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.structure_curation import (
     CreateComponentCommand,
 )
-from napms.application_catalogue.domain.communication import (
+from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,
     DcsPortConstraint,
     DcsPortRange,

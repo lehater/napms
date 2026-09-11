@@ -7,25 +7,25 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
-from napms.application_catalogue.adapters.http.application_workspace import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import JsonDcsProjectionCodec
+from napms.contexts.application_catalogue.presentation.http.application_workspace import (
     create_catalogue_application_workspace_router,
 )
-from napms.application_catalogue.application.curation_detail import (
+from napms.contexts.application_catalogue.application.curation_detail import (
     ApplicationCatalogueTreeDetail,
     ComponentCatalogueDetail,
     ComponentDeploymentCatalogueDetail,
     DcsCatalogueSummary,
 )
-from napms.application_catalogue.application.deployment_curation import (
+from napms.contexts.application_catalogue.application.deployment_curation import (
     ComponentDeploymentMutationResult,
 )
-from napms.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.structure_curation import (
     ApplicationMutationResult,
     CatalogueMutationOutcome,
     ComponentMutationResult,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     Application,
     CatalogueLifecycleState,
     Component,

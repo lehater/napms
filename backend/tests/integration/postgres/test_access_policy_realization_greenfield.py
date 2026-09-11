@@ -19,10 +19,10 @@ from napms.contexts.access_policy_realization.application.resolve import (
 from napms.contexts.access_policy_realization.domain.model import (
     ResolutionStatus,
 )
-from napms.application_catalogue.adapters.dcs_json_codec import (
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import (
     JsonDcsProjectionCodec,
 )
-from napms.application_catalogue.adapters.postgres import (
+from napms.contexts.application_catalogue.infrastructure.persistence.postgres import (
     PostgresApplicationCatalogueRepository,
 )
 from napms.composition.config import (

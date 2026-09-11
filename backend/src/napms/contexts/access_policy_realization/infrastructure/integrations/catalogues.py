@@ -17,10 +17,10 @@ from napms.contexts.access_policy_realization.domain.model import (
     TechnicalRegionFragment,
     require_aware,
 )
-from napms.application_catalogue.application.ports import (
+from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueRepository,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     DcsRevision,
     DeploymentResourceBinding,
 )

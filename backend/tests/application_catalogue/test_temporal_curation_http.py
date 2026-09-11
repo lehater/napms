@@ -7,16 +7,16 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from napms.application_catalogue.adapters.http.legacy_temporal import (
+from napms.contexts.application_catalogue.presentation.http.legacy_temporal import (
     create_application_catalogue_temporal_router,
 )
-from napms.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.binding_curation import (
     DeploymentBindingMutationResult,
 )
-from napms.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.structure_curation import (
     CatalogueMutationOutcome,
 )
-from napms.application_catalogue.domain.model import DeploymentResourceBinding
+from napms.contexts.application_catalogue.domain.model import DeploymentResourceBinding
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
 from napms.runtime.http_api import PublicApiError
 

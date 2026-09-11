@@ -10,8 +10,8 @@ from napms.access_policy.application.select_effective_policy import (
     SelectEffectiveDesiredPolicy,
 )
 from napms.access_policy.domain.model import RuleSemanticIdentity
-from napms.application_catalogue.application.ports import CataloguePersistenceError
-from napms.application_catalogue.domain.model import DirectedInteractionIdentity
+from napms.contexts.application_catalogue.application.ports import CataloguePersistenceError
+from napms.contexts.application_catalogue.domain.model import DirectedInteractionIdentity
 from napms.policy_export.application.export_snapshot import (
     AssembleExportSnapshot,
     SnapshotAssemblyOutcome,

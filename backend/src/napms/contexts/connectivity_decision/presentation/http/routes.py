@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
-from napms.application_catalogue.application.ports import CataloguePersistenceError
-from napms.application_catalogue.domain.model import DirectedInteractionIdentity
+from napms.contexts.application_catalogue.application.ports import CataloguePersistenceError
+from napms.contexts.application_catalogue.domain.model import DirectedInteractionIdentity
 from napms.contexts.connectivity_decision.application.options import (
     DecisionInteractionDiscoveryOutcome,
     DiscoverDecisionInteractions,

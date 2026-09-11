@@ -1,31 +1,31 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from napms.application_catalogue.application.ports import (
+from napms.contexts.application_catalogue.application.ports import (
     ApplicationCatalogueAuthorityCheck,
     ApplicationCatalogueAuthorityOutcome,
 )
-from napms.application_catalogue.application.target_curation import TargetMutationOutcome
-from napms.application_catalogue.application.target_lifecycle import (
+from napms.contexts.application_catalogue.application.target_curation import TargetMutationOutcome
+from napms.contexts.application_catalogue.application.target_lifecycle import (
     RetireDeploymentInteraction,
     RetireDeploymentInteractionCommand,
     RetirementDependencyKind,
     TargetRetirementDependencies,
 )
-from napms.application_catalogue.application.target_ports import ActiveDependencyReference
-from napms.application_catalogue.domain.communication import (
+from napms.contexts.application_catalogue.application.target_ports import ActiveDependencyReference
+from napms.contexts.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,
     DcsPortConstraint,
     DcsPortRange,
 )
-from napms.application_catalogue.domain.model import (
+from napms.contexts.application_catalogue.domain.model import (
     Application,
     CatalogueLifecycleState,
     Component,
     ComponentDeployment,
     DeploymentResourceBinding,
 )
-from napms.application_catalogue.domain.target_model import (
+from napms.contexts.application_catalogue.domain.target_model import (
     ApplicationDeployment,
     DeploymentInteraction,
     DeploymentInteractionCompatibility,

@@ -59,27 +59,27 @@ MIGRATIONS: tuple[Migration, ...] = (
     ),
     Migration(
         "application-catalogue/0001",
-        "napms.application_catalogue.adapters.postgres",
+        "napms.contexts.application_catalogue.infrastructure.persistence.postgres",
         "migrations/0001_application_catalogue.sql",
     ),
     Migration(
         "application-catalogue/0002",
-        "napms.application_catalogue.adapters.postgres",
+        "napms.contexts.application_catalogue.infrastructure.persistence.postgres",
         "migrations/0002_display_metadata.sql",
     ),
     Migration(
         "application-catalogue/0003",
-        "napms.application_catalogue.adapters.postgres",
+        "napms.contexts.application_catalogue.infrastructure.persistence.postgres",
         "migrations/0003_catalogue_hierarchy.sql",
     ),
     Migration(
         "application-catalogue/0004",
-        "napms.application_catalogue.adapters.postgres",
+        "napms.contexts.application_catalogue.infrastructure.persistence.postgres",
         "migrations/0004_curation_write_support.sql",
     ),
     Migration(
         "application-catalogue/0005",
-        "napms.application_catalogue.adapters.postgres",
+        "napms.contexts.application_catalogue.infrastructure.persistence.postgres",
         "migrations/0005_application_catalogue_target.sql",
     ),
     Migration(

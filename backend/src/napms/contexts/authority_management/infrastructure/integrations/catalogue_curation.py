@@ -1,4 +1,4 @@
-from napms.application_catalogue.application.ports import (
+from napms.contexts.application_catalogue.application.ports import (
     APPLICATION_CATALOGUE_AUTHORITY_SCOPE,
     APPLICATION_CATALOGUE_CURATION_ACTION,
     ApplicationCatalogueAuthorityCheck,

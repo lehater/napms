@@ -4,7 +4,7 @@ from typing import Iterator
 
 import psycopg
 
-from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
+from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import JsonDcsProjectionCodec
 from napms.composition.config import ApplicationConfig
 from napms.composition.greenfield_postgres import open_greenfield_scope
 from napms.contexts.network_enforcement_placement.application.network_context import ReadNetworkContext

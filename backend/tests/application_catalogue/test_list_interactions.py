@@ -2,8 +2,8 @@ from uuid import UUID
 
 import pytest
 
-from napms.application_catalogue.application.list_interactions import ListDirectedInteractions
-from napms.application_catalogue.domain.model import DcsRevision
+from napms.contexts.application_catalogue.application.list_interactions import ListDirectedInteractions
+from napms.contexts.application_catalogue.domain.model import DcsRevision
 
 
 def _revision(index):
