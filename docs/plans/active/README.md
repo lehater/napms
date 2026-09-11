@@ -10,9 +10,8 @@ Read first:
 - `docs/architecture/code-structure.md`
 - `docs/engineering/code-structure-refactoring-roadmap.md`
 - `docs/plans/active/PLAN-I32-code-structure-refactoring.md`
-- `docs/engineering/current-state.md`
 
-Expand to current `runtime/`, `composition/` or architecture-test code only when validating a concrete structural claim. Do not begin production-code relocation during WP-0.
+Expand to `docs/engineering/current-state.md`, current `runtime/`, `composition/` or architecture-test code only when validating a concrete structural claim. Do not begin production-code relocation during WP-0.
 
 ## Blockers
 
