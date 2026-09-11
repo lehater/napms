@@ -8,12 +8,12 @@ from napms.contexts.resource_catalogue.application.ports import (
     ResourceCatalogueRepository,
 )
 from napms.contexts.resource_catalogue.domain.model import ResourceRealizationVersion
-from napms.scoped_connectivity_inventory.application.model import (
+from napms.workflows.scoped_connectivity_inventory.application.model import (
     EndpointSnapshot,
     RealizationState,
     ResourceSnapshot,
 )
-from napms.scoped_connectivity_inventory.application.ports import (
+from napms.workflows.scoped_connectivity_inventory.application.ports import (
     DependencyAvailability,
     LocalResourcePage,
     LocalResourceReadResult,

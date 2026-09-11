@@ -12,11 +12,11 @@ from napms.contexts.connectivity_decision.domain.model import (
     DecisionSubject,
     DecisionValidity,
 )
-from napms.scoped_connectivity_inventory.application.model import (
+from napms.workflows.scoped_connectivity_inventory.application.model import (
     DecisionSummaryState,
     InteractionIdentity,
 )
-from napms.scoped_connectivity_inventory.application.ports import (
+from napms.workflows.scoped_connectivity_inventory.application.ports import (
     DependencyAvailability,
 )
 

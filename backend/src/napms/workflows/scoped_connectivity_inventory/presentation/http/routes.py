@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Query, Request
 
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
 from napms.runtime.http_support import PublicApiError, authenticated_actor, set_outcome
-from napms.scoped_connectivity_inventory.application.read import (
+from napms.workflows.scoped_connectivity_inventory.application.read import (
     InventoryQueryOutcome,
     ScopeDiscoveryQueryOutcome,
 )

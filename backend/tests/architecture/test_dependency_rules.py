@@ -18,7 +18,7 @@ NETWORK_ENVIRONMENT_OPERATIONS = NAPMS / "contexts" / "network_environment_opera
 WORKFLOWS = NAPMS / "workflows"
 REQUIREMENT_POLICY_ALIGNMENT = WORKFLOWS / "requirement_policy_alignment"
 POLICY_EXPORT = WORKFLOWS / "policy_export"
-SCOPED_CONNECTIVITY_INVENTORY = NAPMS / "scoped_connectivity_inventory"
+SCOPED_CONNECTIVITY_INVENTORY = WORKFLOWS / "scoped_connectivity_inventory"
 RUNTIME = NAPMS / "runtime"
 APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "presentation" / "http"
 RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "presentation" / "http"
@@ -36,7 +36,9 @@ REQUIREMENT_POLICY_ALIGNMENT_HTTP = (
 )
 POLICY_EXPORT_HTTP = POLICY_EXPORT / "presentation" / "http" / "routes.py"
 POLICY_EXPORT_HTTP_JSON = POLICY_EXPORT / "presentation" / "http" / "json.py"
-SCOPED_CONNECTIVITY_HTTP = SCOPED_CONNECTIVITY_INVENTORY / "adapters" / "http.py"
+SCOPED_CONNECTIVITY_HTTP = (
+    SCOPED_CONNECTIVITY_INVENTORY / "presentation" / "http" / "routes.py"
+)
 PROCESS_HTTP = RUNTIME / "http_api.py"
 
 DOMAIN_LAYERS = (
@@ -211,7 +213,7 @@ def test_process_http_has_no_feature_endpoint_implementation():
         "napms.contexts.connectivity_decision.domain",
         "napms.workflows.requirement_policy_alignment.application",
         "napms.workflows.policy_export.application",
-        "napms.scoped_connectivity_inventory.application",
+        "napms.workflows.scoped_connectivity_inventory.application",
     )
     assert all(
         not module.startswith(forbidden_prefixes)
@@ -344,7 +346,11 @@ def test_requirement_policy_alignment_uses_final_workflow_namespace():
 
 def test_workflow_application_has_no_outer_layer_dependencies():
     violations = []
-    for workflow in (REQUIREMENT_POLICY_ALIGNMENT, POLICY_EXPORT):
+    for workflow in (
+        REQUIREMENT_POLICY_ALIGNMENT,
+        POLICY_EXPORT,
+        SCOPED_CONNECTIVITY_INVENTORY,
+    ):
         for path in (workflow / "application").rglob("*.py"):
             for module in imported_modules(path):
                 if ".infrastructure" in module or ".presentation" in module:
@@ -355,6 +361,11 @@ def test_workflow_application_has_no_outer_layer_dependencies():
 def test_policy_export_uses_final_workflow_namespace():
     assert POLICY_EXPORT.is_dir()
     assert not (NAPMS / "policy_export").exists()
+
+
+def test_scoped_connectivity_inventory_uses_final_workflow_namespace():
+    assert SCOPED_CONNECTIVITY_INVENTORY.is_dir()
+    assert not (NAPMS / "scoped_connectivity_inventory").exists()
 
 
 def test_access_policy_has_no_legacy_package():

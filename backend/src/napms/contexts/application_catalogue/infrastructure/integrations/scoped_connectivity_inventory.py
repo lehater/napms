@@ -11,13 +11,13 @@ from napms.workflows.policy_export.application.normalization_ports import (
 from napms.workflows.policy_export.application.normalization_types import (
     PortConstraintKind,
 )
-from napms.scoped_connectivity_inventory.application.model import (
+from napms.workflows.scoped_connectivity_inventory.application.model import (
     BoundComponentSnapshot,
     ComponentResourceBindingSnapshot,
     InteractionIdentity,
     InteractionSnapshot,
 )
-from napms.scoped_connectivity_inventory.application.ports import (
+from napms.workflows.scoped_connectivity_inventory.application.ports import (
     BoundComponentReadResult,
     ComponentResourceBindingReadResult,
     DependencyAvailability,

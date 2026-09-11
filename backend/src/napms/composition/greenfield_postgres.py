@@ -103,7 +103,7 @@ from napms.contexts.resource_catalogue.application.list_scope_resources import (
     ListResourcesInResponsibilityScope,
 )
 from napms.contexts.resource_catalogue.application.resolve import ResolveResourceRealization
-from napms.scoped_connectivity_inventory.application.read import (
+from napms.workflows.scoped_connectivity_inventory.application.read import (
     DiscoverScopedConnectivityScopes,
     ReadScopedConnectivityInventory,
 )

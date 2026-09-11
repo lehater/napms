@@ -38,7 +38,7 @@ from napms.workflows.policy_export.application.normalization_types import (
     PortRange,
 )
 from napms.workflows.policy_export.application.ports import ApplicationProjectionOutcome
-from napms.scoped_connectivity_inventory.application.ports import (
+from napms.workflows.scoped_connectivity_inventory.application.ports import (
     DependencyAvailability,
 )
 

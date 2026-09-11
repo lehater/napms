@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from napms.scoped_connectivity_inventory.application.model import (
+from napms.workflows.scoped_connectivity_inventory.application.model import (
     ComponentInventoryItem,
     ConnectivityRelationshipItem,
     CoverageSummary,
@@ -22,7 +22,7 @@ from napms.scoped_connectivity_inventory.application.model import (
     ScopedConnectivityInventoryPage,
     require_aware,
 )
-from napms.scoped_connectivity_inventory.application.ports import (
+from napms.workflows.scoped_connectivity_inventory.application.ports import (
     DecisionSummaryPort,
     DependencyAvailability,
     PolicySummaryPort,

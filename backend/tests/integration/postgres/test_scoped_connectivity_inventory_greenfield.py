@@ -41,7 +41,7 @@ from napms.workflows.policy_export.application.normalization_types import (
     PortConstraint,
     PortRange,
 )
-from napms.scoped_connectivity_inventory.application.model import (
+from napms.workflows.scoped_connectivity_inventory.application.model import (
     CoverageSummary,
     DecisionSummaryState,
     Direction,
@@ -50,7 +50,7 @@ from napms.scoped_connectivity_inventory.application.model import (
     RequirementCurrent,
     RuleExists,
 )
-from napms.scoped_connectivity_inventory.application.read import (
+from napms.workflows.scoped_connectivity_inventory.application.read import (
     InventoryQueryOutcome,
 )
 

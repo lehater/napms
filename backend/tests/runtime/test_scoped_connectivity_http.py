@@ -16,7 +16,7 @@ from napms.runtime.auth import (
     hash_local_password,
 )
 from napms.runtime.http_api import HttpApiDependencies, create_http_api
-from napms.scoped_connectivity_inventory.application.model import (
+from napms.workflows.scoped_connectivity_inventory.application.model import (
     ComponentInventoryItem,
     ConnectivityRelationshipItem,
     CoverageSummary,
@@ -36,7 +36,7 @@ from napms.scoped_connectivity_inventory.application.model import (
     RuleExists,
     ScopedConnectivityInventoryPage,
 )
-from napms.scoped_connectivity_inventory.application.read import (
+from napms.workflows.scoped_connectivity_inventory.application.read import (
     InventoryQueryOutcome,
     ScopedConnectivityInventoryResult,
     ScopeDiscoveryQueryOutcome,

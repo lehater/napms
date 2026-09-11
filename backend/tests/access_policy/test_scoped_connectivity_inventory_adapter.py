@@ -13,13 +13,13 @@ from napms.contexts.access_policy.domain.model import (
     OperationalState,
     RuleSemanticIdentity,
 )
-from napms.scoped_connectivity_inventory.application.model import (
+from napms.workflows.scoped_connectivity_inventory.application.model import (
     EffectiveAtAsOf,
     InteractionIdentity,
     PolicyOperationalState,
     RuleExists,
 )
-from napms.scoped_connectivity_inventory.application.ports import (
+from napms.workflows.scoped_connectivity_inventory.application.ports import (
     DependencyAvailability,
 )
 

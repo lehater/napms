@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Protocol
 from uuid import UUID
 
-from napms.scoped_connectivity_inventory.application.model import (
+from napms.workflows.scoped_connectivity_inventory.application.model import (
     BoundComponentSnapshot,
     ComponentResourceBindingSnapshot,
     DecisionSummary,
