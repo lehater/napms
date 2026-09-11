@@ -1,6 +1,6 @@
 from psycopg import Connection, Error as PsycopgError
 
-from napms.contexts.application_catalogue.application.participant_discovery import (
+from napms.contexts.application_catalogue.application.discovery.participants import (
     ApplicationCatalogueParticipant,
 )
 from napms.contexts.application_catalogue.application.ports import CataloguePersistenceError

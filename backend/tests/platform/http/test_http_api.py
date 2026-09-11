@@ -14,7 +14,7 @@ from napms.contexts.access_policy.application.ports import (
     ProposalScopeOptions,
     TernaryOutcome,
 )
-from napms.contexts.application_catalogue.application.describe_interactions import (
+from napms.contexts.application_catalogue.application.discovery.describe_interactions import (
     DirectedInteractionDescription,
 )
 from napms.contexts.application_catalogue.application.ports import CataloguePersistenceError

@@ -31,28 +31,28 @@ from napms.contexts.application_catalogue.infrastructure.persistence.postgres.tr
 from napms.contexts.application_catalogue.infrastructure.integrations.resource_binding_target import (
     ResourceCatalogueBindingTargetAdapter,
 )
-from napms.contexts.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.curation.bindings import (
     CreateDeploymentResourceBinding,
     EndDeploymentResourceBinding,
 )
-from napms.contexts.application_catalogue.application.curation import CreateApplication
-from napms.contexts.application_catalogue.application.curation_detail import (
+from napms.contexts.application_catalogue.application.curation.create_application import CreateApplication
+from napms.contexts.application_catalogue.application.discovery.catalogue_detail import (
     ReadApplicationCatalogueTreeDetail,
 )
-from napms.contexts.application_catalogue.application.curation_read import (
+from napms.contexts.application_catalogue.application.discovery.catalogue import (
     ListApplicationCatalogue,
     ReadApplicationCatalogueDetail,
 )
-from napms.contexts.application_catalogue.application.dcs_curation import CreateDcsRevision
-from napms.contexts.application_catalogue.application.deployment_curation import (
+from napms.contexts.application_catalogue.application.curation.dcs import CreateDcsRevision
+from napms.contexts.application_catalogue.application.curation.deployments import (
     CreateComponentDeployment,
     RenameComponentDeployment,
     RetireComponentDeployment,
 )
-from napms.contexts.application_catalogue.application.participant_discovery import (
+from napms.contexts.application_catalogue.application.discovery.participants import (
     ListApplicationCatalogueParticipants,
 )
-from napms.contexts.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.curation.structure import (
     CreateComponent,
     RenameApplication,
     RenameComponent,

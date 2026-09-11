@@ -22,7 +22,7 @@ from napms.contexts.access_policy.domain.model import (
     ProposalProvenance,
     RuleSemanticIdentity,
 )
-from napms.contexts.application_catalogue.application.describe_interactions import (
+from napms.contexts.application_catalogue.application.discovery.describe_interactions import (
     DirectedInteractionDescription,
 )
 from napms.platform.auth.local import (

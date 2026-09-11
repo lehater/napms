@@ -40,7 +40,7 @@ M1 backend repository boundary
 
 ## M5 — Capability-oriented internals
 
-Status: `active` on branch `refactor/m5-capability-internals`.
+Status: `Application Catalogue implementation complete; awaiting architectural review` on branch `refactor/m5-capability-internals`.
 
 M5 refines only application layers where actual change locality shows independent responsibilities. File size alone is not a reason to split. M5 is one milestone PR; each accepted context refinement is an atomic commit and hosted gates run once at the end.
 
@@ -104,6 +104,16 @@ Rules:
 - move matching unit tests into `tests/application_catalogue/curation`, `discovery`, or `target` where the ownership is unambiguous; integration tests remain under `tests/integration`;
 - add architecture guards for the explicit capability boundaries.
 
+Implementation evidence:
+- application root contains only `__init__.py`, `ports.py`, and the three capability packages;
+- all mapped flat modules are absent and all consumers use final imports;
+- cross-capability dependency guards enforce the accepted direction;
+- targeted Application Catalogue tests: 151 passed;
+- architecture tests: 67 passed;
+- `make test`: 810 passed, 141 deselected;
+- `make harness-check`: passed;
+- `make knowledge-check`: passed.
+
 ### Re-evaluation after ACC
 
 Resource Catalogue is the only current secondary candidate: `curation`, `realization`, and `responsibility/scope` appear to be separate change axes. Do not move it until the ACC slice is reviewed. Access Policy and the remaining contexts/workflows currently do not justify additional package depth.
@@ -118,4 +128,4 @@ None.
 
 ## Next
 
-Execute only the Application Catalogue capability slice above as one atomic commit, run targeted/architecture plus full core/harness/knowledge checks, push, and stop for architectural review. Do not start Resource Catalogue, M6, or create a PR.
+Review the Application Catalogue capability slice. Do not start Resource Catalogue, M6, or create a PR before that review.

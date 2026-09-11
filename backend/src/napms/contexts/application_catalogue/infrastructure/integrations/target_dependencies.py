@@ -2,7 +2,7 @@ from napms.contexts.access_policy.application.active_dependency_references impor
     AccessRuleDependencySubject,
     ReadActiveAccessRuleReferences,
 )
-from napms.contexts.application_catalogue.application.target_ports import (
+from napms.contexts.application_catalogue.application.target.ports import (
     ActiveDependencyReference,
     ActiveDependencySummary,
 )

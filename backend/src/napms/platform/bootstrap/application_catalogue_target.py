@@ -28,23 +28,23 @@ from napms.contexts.application_catalogue.infrastructure.persistence.postgres.tr
 from napms.contexts.application_catalogue.infrastructure.integrations.resource_binding_target import (
     ResourceCatalogueBindingTargetAdapter,
 )
-from napms.contexts.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.curation.bindings import (
     CreateDeploymentResourceBinding,
     EndDeploymentResourceBinding,
 )
-from napms.contexts.application_catalogue.application.curation import CreateApplication
-from napms.contexts.application_catalogue.application.target_binding_curation import (
+from napms.contexts.application_catalogue.application.curation.create_application import CreateApplication
+from napms.contexts.application_catalogue.application.target.bindings import (
     CreateDeploymentInteractionResourceBinding,
     EndDeploymentInteractionResourceBinding,
 )
-from napms.contexts.application_catalogue.application.target_curation import (
+from napms.contexts.application_catalogue.application.target.curation import (
     CreateApplicationDeployment,
     CreateInteractionDefinition,
     SelectDeploymentInteraction,
     UpdateInteractionDefinitionEndpoints,
     UpdateInteractionDefinitionTraffic,
 )
-from napms.contexts.application_catalogue.application.target_lifecycle import (
+from napms.contexts.application_catalogue.application.target.lifecycle import (
     RetireApplicationDefinition,
     RetireApplicationDeployment,
     RetireComponentTarget,
@@ -52,20 +52,20 @@ from napms.contexts.application_catalogue.application.target_lifecycle import (
     RetireInteractionDefinition,
     TargetRetirementDependencies,
 )
-from napms.contexts.application_catalogue.application.target_metadata_curation import (
+from napms.contexts.application_catalogue.application.target.metadata import (
     UpdateApplicationDefinitionMetadata,
     UpdateApplicationDeploymentContext,
     UpdateComponentMetadata,
 )
-from napms.contexts.application_catalogue.application.target_retirement import (
+from napms.contexts.application_catalogue.application.target.retirement import (
     BoundedRetirementService,
     RetirementSubjectKind,
     TargetRetirementDependencyReader,
 )
-from napms.contexts.application_catalogue.application.target_selection_read import (
+from napms.contexts.application_catalogue.application.target.selection import (
     ReadDeploymentInteraction,
 )
-from napms.contexts.application_catalogue.application.target_structure_curation import (
+from napms.contexts.application_catalogue.application.target.structure import (
     CreateTargetComponent,
 )
 from napms.contexts.authority_management.infrastructure.integrations.catalogue_curation import (

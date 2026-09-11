@@ -10,10 +10,10 @@ from fastapi.testclient import TestClient
 from napms.contexts.application_catalogue.presentation.http.legacy_temporal import (
     create_application_catalogue_temporal_router,
 )
-from napms.contexts.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.curation.bindings import (
     DeploymentBindingMutationResult,
 )
-from napms.contexts.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.curation.structure import (
     CatalogueMutationOutcome,
 )
 from napms.contexts.application_catalogue.domain.model import DeploymentResourceBinding

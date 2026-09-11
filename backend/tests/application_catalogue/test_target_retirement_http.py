@@ -10,10 +10,10 @@ from fastapi.testclient import TestClient
 from napms.contexts.application_catalogue.presentation.http.target_retirement import (
     create_catalogue_target_retirement_router,
 )
-from napms.contexts.application_catalogue.application.target_curation import TargetMutationOutcome
-from napms.contexts.application_catalogue.application.target_lifecycle import RetirementDependencyKind
-from napms.contexts.application_catalogue.application.target_ports import ActiveDependencyReference
-from napms.contexts.application_catalogue.application.target_retirement import (
+from napms.contexts.application_catalogue.application.target.curation import TargetMutationOutcome
+from napms.contexts.application_catalogue.application.target.lifecycle import RetirementDependencyKind
+from napms.contexts.application_catalogue.application.target.ports import ActiveDependencyReference
+from napms.contexts.application_catalogue.application.target.retirement import (
     RetirementSubjectKind,
     TargetRetirementDependencyGroup,
     TargetRetirementMutationResult,

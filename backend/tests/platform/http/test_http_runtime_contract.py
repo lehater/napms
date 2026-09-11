@@ -18,7 +18,7 @@ from napms.contexts.access_policy.application.ports import (
     TernaryOutcome,
 )
 from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
-from napms.contexts.application_catalogue.application.describe_interactions import (
+from napms.contexts.application_catalogue.application.discovery.describe_interactions import (
     DirectedInteractionDescription,
 )
 from napms.workflows.policy_export.application.normalization_types import (

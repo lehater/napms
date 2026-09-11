@@ -1,4 +1,4 @@
-from napms.contexts.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.curation.bindings import (
     BindingTargetOutcome,
 )
 from napms.contexts.resource_catalogue.application.ports import (

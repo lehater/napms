@@ -11,16 +11,16 @@ from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_c
 from napms.contexts.application_catalogue.presentation.http.application_workspace import (
     create_catalogue_application_workspace_router,
 )
-from napms.contexts.application_catalogue.application.curation_detail import (
+from napms.contexts.application_catalogue.application.discovery.catalogue_detail import (
     ApplicationCatalogueTreeDetail,
     ComponentCatalogueDetail,
     ComponentDeploymentCatalogueDetail,
     DcsCatalogueSummary,
 )
-from napms.contexts.application_catalogue.application.deployment_curation import (
+from napms.contexts.application_catalogue.application.curation.deployments import (
     ComponentDeploymentMutationResult,
 )
-from napms.contexts.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.curation.structure import (
     ApplicationMutationResult,
     CatalogueMutationOutcome,
     ComponentMutationResult,

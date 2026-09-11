@@ -11,24 +11,24 @@ from napms.contexts.application_catalogue.presentation.http.legacy_curation impo
     _traffic_alternative,
 )
 from napms.contexts.application_catalogue.presentation.http.support import require_aware as _require_aware
-from napms.contexts.application_catalogue.application.curation import CreateApplicationCommand
-from napms.contexts.application_catalogue.application.target_binding_curation import (
+from napms.contexts.application_catalogue.application.curation.create_application import CreateApplicationCommand
+from napms.contexts.application_catalogue.application.target.bindings import (
     CreateDeploymentInteractionResourceBindingCommand,
     EndDeploymentInteractionResourceBindingCommand,
 )
-from napms.contexts.application_catalogue.application.target_curation import (
+from napms.contexts.application_catalogue.application.target.curation import (
     CreateApplicationDeploymentCommand,
     CreateInteractionDefinitionCommand,
     SelectDeploymentInteractionCommand,
     UpdateInteractionDefinitionEndpointsCommand,
     UpdateInteractionDefinitionTrafficCommand,
 )
-from napms.contexts.application_catalogue.application.target_metadata_curation import (
+from napms.contexts.application_catalogue.application.target.metadata import (
     UpdateApplicationDefinitionMetadataCommand,
     UpdateApplicationDeploymentContextCommand,
     UpdateComponentMetadataCommand,
 )
-from napms.contexts.application_catalogue.application.target_structure_curation import (
+from napms.contexts.application_catalogue.application.target.structure import (
     CreateTargetComponentCommand,
 )
 from napms.contexts.application_catalogue.domain.communication import (

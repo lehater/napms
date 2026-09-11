@@ -4,12 +4,12 @@ from uuid import UUID
 from psycopg import Error as PsycopgError
 
 from napms.contexts.application_catalogue.application.ports import CataloguePersistenceError
-from napms.contexts.application_catalogue.application.target_lifecycle import RetirementDependencyKind
-from napms.contexts.application_catalogue.application.target_ports import (
+from napms.contexts.application_catalogue.application.target.lifecycle import RetirementDependencyKind
+from napms.contexts.application_catalogue.application.target.ports import (
     ActiveDependencyReference,
     ActiveDependencySummary,
 )
-from napms.contexts.application_catalogue.application.target_retirement import RetirementSubjectKind
+from napms.contexts.application_catalogue.application.target.retirement import RetirementSubjectKind
 
 
 class PostgresApplicationCatalogueRetirementDependencyQuery:

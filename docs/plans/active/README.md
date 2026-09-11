@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M5 — split Application Catalogue application layer into `curation / discovery / target` capabilities.
+Current task: M5 — Application Catalogue capability slice implemented; awaiting architectural review.
 
 ## Working set
 
@@ -19,10 +19,10 @@ None.
 
 ## Gate
 
-The ACC slice must be structural only: mapped flat application modules move under `curation`, `discovery`, or `target`; root `application/ports.py` remains the shared context-wide contract surface; old flat mapped modules disappear; no compatibility facades remain. `target` may depend on root ports/domain but not `curation` or `discovery`; `curation` and `discovery` must not import `target`. All consumers/tests use final imports and architecture tests enforce these boundaries.
+The ACC application root now contains only `__init__.py`, `ports.py`, and `curation / discovery / target`; mapped flat modules are absent; all consumers use final imports; unit tests with unambiguous ownership follow the capability taxonomy. Architecture guards enforce root topology, flat-module removal, and the accepted cross-capability dependency direction. Validation: targeted Application Catalogue 151 passed; architecture 67 passed; `make test` 810 passed, 141 deselected; harness and knowledge checks passed.
 
 Hosted PR gates remain deferred until the complete M5 milestone review.
 
 ## Next
 
-Execute only the Application Catalogue capability slice as one atomic commit, run targeted/architecture plus full core/harness/knowledge checks, push, and stop for architectural review. Do not start Resource Catalogue, M6, or create a PR.
+Perform architectural review of the Application Catalogue capability slice. Do not start Resource Catalogue, M6, or create a PR before that review.

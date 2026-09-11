@@ -5,7 +5,7 @@ from typing import Callable
 from fastapi import APIRouter, Header, Request
 from pydantic import BaseModel, ConfigDict, Field
 
-from napms.contexts.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.curation.bindings import (
     EndDeploymentResourceBindingCommand,
 )
 from napms.contexts.application_catalogue.presentation.http.legacy_curation import _binding_dto

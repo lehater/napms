@@ -6,19 +6,19 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.contexts.application_catalogue.application.binding_curation import (
+from napms.contexts.application_catalogue.application.curation.bindings import (
     CreateDeploymentResourceBindingCommand,
 )
-from napms.contexts.application_catalogue.application.curation import (
+from napms.contexts.application_catalogue.application.curation.create_application import (
     CreateApplicationCommand,
 )
-from napms.contexts.application_catalogue.application.dcs_curation import (
+from napms.contexts.application_catalogue.application.curation.dcs import (
     CreateDcsRevisionCommand,
 )
-from napms.contexts.application_catalogue.application.deployment_curation import (
+from napms.contexts.application_catalogue.application.curation.deployments import (
     CreateComponentDeploymentCommand,
 )
-from napms.contexts.application_catalogue.application.structure_curation import (
+from napms.contexts.application_catalogue.application.curation.structure import (
     CreateComponentCommand,
 )
 from napms.contexts.application_catalogue.domain.communication import (
