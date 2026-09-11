@@ -77,15 +77,19 @@ export function DataTableHeadCell({
   sortDirection?: "asc" | "desc" | null
   ariaLabel?: string
 }) {
+  const ariaSort = sortDirection === "asc" ? "ascending" : sortDirection === "desc" ? "descending" : "none"
+
   return (
-    <th className={`px-[var(--napms-table-cell-x)] ${className}`}>
+    <th
+      className={`px-[var(--napms-table-cell-x)] ${className}`}
+      aria-sort={onSort ? ariaSort : undefined}
+    >
       {onSort ? (
         <button
           type="button"
           className="group inline-flex min-h-7 items-center gap-1 rounded px-1 text-left hover:bg-[var(--napms-color-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--napms-color-primary-border)]"
           onClick={onSort}
           aria-label={ariaLabel}
-          aria-sort={sortDirection === "asc" ? "ascending" : sortDirection === "desc" ? "descending" : "none"}
         >
           <span>{children}</span>
           {sortDirection === "asc" ? (
