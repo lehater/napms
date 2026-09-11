@@ -1,8 +1,8 @@
 name: knowledge gate
 
 on:
-  pull_request:
-    types: [opened, reopened, ready_for_review, synchronize]
+  push:
+    branches: [main]
     paths:
       - "docs/domain/**"
       - "docs/requirements/**"
@@ -11,15 +11,13 @@ on:
       - "tools/validate_domain_model.py"
       - "Makefile"
       - ".github/workflows/knowledge.yml"
-  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   validate:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
