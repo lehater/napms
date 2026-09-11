@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
+  <title id="title">NAPMS Resource History reference</title>
+  <desc id="desc">Read-only temporal timeline for Resource realization, scope affiliation and responsibility facts.</desc>
+  <defs><style>
+    .bg{fill:#f8fafc}.side{fill:#111827}.side2{fill:#1f2937}.card{fill:#fff;stroke:#dce3ec;stroke-width:1}.line{stroke:#e2e8f0;stroke-width:1}.timeline{stroke:#bfdbfe;stroke-width:3}.txt{font-family:Inter,Arial,sans-serif;fill:#172033}.muted{font-family:Inter,Arial,sans-serif;fill:#64748b}.small{font-size:12px}.body{font-size:14px}.label{font-size:11px;font-weight:700;letter-spacing:.7px}.h1{font-size:27px;font-weight:700}.h2{font-size:16px;font-weight:700}.bold{font-weight:700}.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.control{fill:#fff;stroke:#cbd5e1}.green{fill:#ecfdf5}.greenText{font-family:Inter,Arial,sans-serif;fill:#047857;font-size:12px;font-weight:700}.nav{font-family:Inter,Arial,sans-serif;fill:#cbd5e1;font-size:14px}.navActive{fill:#fff;font-weight:700}
+  </style></defs>
+  <rect class="bg" width="1440" height="900"/><rect class="side" width="228" height="900"/>
+  <text x="28" y="42" class="txt" style="fill:#fff;font-size:19px;font-weight:800">NAPMS</text><text x="28" y="82" class="muted label" style="fill:#64748b">CATALOGUES</text><rect x="16" y="98" width="196" height="38" rx="7" class="side2"/><text x="32" y="123" class="nav navActive">Resources</text><text x="32" y="164" class="nav">Applications</text>
+  <g transform="translate(270 48)">
+    <text x="0" y="0" class="txt body bold" style="fill:#2563eb">← Back to resources</text>
+    <text x="0" y="54" class="txt h1">api-gateway</text><rect x="190" y="31" width="72" height="26" rx="13" class="green"/><text x="205" y="49" class="greenText">● Active</text>
+    <text x="0" y="80" class="muted small">Resource reference: </text><text x="118" y="80" class="muted small mono">res-a31d2f…</text>
+    <rect x="1010" y="31" width="112" height="38" rx="7" class="control"/><text x="1036" y="55" class="txt body bold">Actions ▾</text>
+    <line x1="0" y1="118" x2="1122" y2="118" class="line"/>
+    <text x="18" y="151" class="muted body bold">Overview</text><text x="120" y="151" class="txt body bold" style="fill:#2563eb">History</text><text x="195" y="151" class="muted body bold">Technical details</text><line x1="104" y1="166" x2="170" y2="166" stroke="#2563eb" stroke-width="3"/>
+
+    <rect x="0" y="192" width="1122" height="640" rx="10" class="card"/>
+    <text x="24" y="230" class="txt h2">Resource history</text><text x="24" y="254" class="muted small">Temporal realization, scope-affiliation and responsibility changes.</text>
+    <text x="914" y="230" class="muted small">◷ State at:</text><text x="981" y="230" class="txt small bold">Now</text>
+
+    <text x="74" y="304" class="muted label">SEPTEMBER 2026</text><line x1="50" y1="326" x2="50" y2="760" class="timeline"/>
+
+    <circle cx="50" cy="356" r="7" fill="#2563eb" stroke="#fff" stroke-width="3"/>
+    <rect x="74" y="330" width="1000" height="104" rx="8" class="card"/><text x="94" y="360" class="txt body bold">Technical realization started</text><text x="904" y="360" class="muted small">Sep 11, 18:02</text><text x="94" y="386" class="txt body mono">10.20.30.40, 10.20.30.41</text><text x="94" y="410" class="muted small mono">Fact fact-13f… · v3</text>
+
+    <circle cx="50" cy="474" r="7" fill="#2563eb" stroke="#fff" stroke-width="3"/>
+    <rect x="74" y="448" width="1000" height="96" rx="8" class="card"/><text x="94" y="478" class="txt body bold">Responsibility assigned</text><text x="904" y="478" class="muted small">Sep 11, 17:50</text><text x="94" y="505" class="txt body">Technical owner · Platform Team</text><text x="94" y="528" class="muted small">platform@example.test</text>
+
+    <circle cx="50" cy="584" r="7" fill="#2563eb" stroke="#fff" stroke-width="3"/>
+    <rect x="74" y="558" width="1000" height="88" rx="8" class="card"/><text x="94" y="588" class="txt body bold">Scope affiliation added</text><text x="904" y="588" class="muted small">Sep 11, 17:45</text><text x="94" y="615" class="txt body">Payments</text>
+
+    <circle cx="50" cy="694" r="7" fill="#2563eb" stroke="#fff" stroke-width="3"/>
+    <rect x="74" y="668" width="1000" height="104" rx="8" class="card"/><text x="94" y="698" class="txt body bold">Technical realization ended</text><text x="904" y="698" class="muted small">Sep 10, 09:20</text><text x="94" y="724" class="txt body mono">10.20.10.14</text><text x="94" y="748" class="muted small mono">End provenance prov-end-9d…</text>
+
+    <text x="74" y="806" class="muted small">Timeline rows are derived from temporal facts; they are not asserted as domain events.</text>
+  </g>
+</svg>
