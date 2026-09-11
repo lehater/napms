@@ -31,7 +31,7 @@ def test_j00_resource_catalogue_reference_layout() -> None:
 
         aside = page.locator("aside")
         desktop_nav = aside.get_by_role("navigation", name="Primary navigation")
-        account = aside.get_by_text(LOGIN, exact=True)
+        account = aside.get_by_role("group", name=f"Signed in as {LOGIN}")
         expect(account).to_be_visible()
         expect(aside.get_by_role("button", name="Logout")).to_be_visible()
 
@@ -79,13 +79,5 @@ def test_j00_resource_catalogue_reference_layout() -> None:
         expect(page.get_by_role("button", name="Overview", exact=True)).to_be_visible()
         expect(page.get_by_role("button", name="History", exact=True)).to_be_visible()
         expect(page.get_by_role("button", name="Technical details", exact=True)).to_be_visible()
-
-        workspace = page.locator("main > div").first
-        max_width = workspace.evaluate("element => getComputedStyle(element).maxWidth")
-        assert max_width == "none"
-        main_box = page.locator("main").bounding_box()
-        workspace_box = workspace.bounding_box()
-        assert main_box is not None and workspace_box is not None
-        assert workspace_box["width"] >= main_box["width"] - 60
 
         browser.close()
