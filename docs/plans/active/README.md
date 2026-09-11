@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M2 — final milestone PR and hosted gates.
+Current task: M3 — move the first four simple workflows under `napms.workflows` as atomic commits.
 
 ## Working set
 
@@ -11,7 +11,7 @@ Read first:
 - `docs/architecture/code-structure.md`
 - `docs/engineering/target-code-structure-migration-roadmap.md`
 
-Expand only if the architectural decision rationale is needed: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
+Expand only if needed: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
 
 ## Blockers
 
@@ -19,8 +19,10 @@ None.
 
 ## Gate
 
-All ten bounded contexts are under `napms.contexts`; legacy top-level context packages are absent; architecture, core, harness and knowledge checks pass; configured PostgreSQL evidence is 141 passed / 0 skipped. The remaining M2 gate is the final hosted PR suite.
+Each moved workflow must exist only under `napms.workflows`; HTTP must be under `presentation/http`; application orchestration stays under `application`; all consumers and tests must use final imports; architecture tests must protect the new workflow namespace. Existing `composition/` may receive import-only repairs in this package but is not relocated yet.
+
+Hosted PR gates remain deferred until complete M3 milestone review.
 
 ## Next
 
-Open the final M2 milestone PR, run required hosted gates, and squash-merge if green. Do not start M3 before M2 is merged.
+Move `requirement_policy_alignment`, `policy_export`, `scoped_connectivity_inventory`, then `network_operator_view`, one atomic commit each. Run package checks, push, and stop for architectural review. Do not start `traffic_analysis`, composition drain, or M4.
