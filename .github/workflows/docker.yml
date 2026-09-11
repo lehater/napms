@@ -20,6 +20,26 @@ on:
       - "backend/pyproject.toml"
       - "Makefile"
       - ".github/workflows/docker.yml"
+  pull_request:
+    types: [ready_for_review]
+    branches: [main]
+    paths:
+      - "backend/Dockerfile"
+      - "backend/.dockerignore"
+      - "compose.yaml"
+      - ".env.example"
+      - "web/**"
+      - "backend/src/napms/platform/**"
+      - "backend/src/napms/contexts/**/infrastructure/persistence/postgres/migrations/**"
+      - "tools/dev_compose.py"
+      - "tools/local_start.py"
+      - "tools/local_status.py"
+      - "tools/local_postgres_backup.py"
+      - "tools/prepare_local_postgres.py"
+      - "tools/verify_local_postgres_auth.py"
+      - "backend/pyproject.toml"
+      - "Makefile"
+      - ".github/workflows/docker.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

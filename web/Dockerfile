@@ -6,6 +6,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
 COPY index.html tsconfig.json vite.config.ts components.json ./
+COPY scripts ./scripts
 COPY src ./src
 
 RUN npm run build
