@@ -4,15 +4,15 @@ on:
   pull_request:
     types: [ready_for_review]
     paths:
-      - "src/napms/access_policy/adapters/postgres/**"
-      - "src/napms/authority_management/**"
-      - "src/napms/application_catalogue/**"
-      - "src/napms/resource_catalogue/**"
-      - "src/napms/technical_access_evidence/**"
-      - "src/napms/network_enforcement_placement/adapters/postgres/**"
-      - "src/napms/composition/**"
-      - "tests/integration/postgres/**"
-      - "pyproject.toml"
+      - "backend/src/napms/access_policy/adapters/postgres/**"
+      - "backend/src/napms/authority_management/**"
+      - "backend/src/napms/application_catalogue/**"
+      - "backend/src/napms/resource_catalogue/**"
+      - "backend/src/napms/technical_access_evidence/**"
+      - "backend/src/napms/network_enforcement_placement/adapters/postgres/**"
+      - "backend/src/napms/composition/**"
+      - "backend/tests/integration/postgres/**"
+      - "backend/pyproject.toml"
       - "Makefile"
       - ".github/workflows/postgres.yml"
   workflow_dispatch:
@@ -46,5 +46,6 @@ jobs:
         with:
           python-version: "3.10"
           cache: pip
-      - run: python -m pip install -e ".[dev,postgres]"
+          cache-dependency-path: backend/pyproject.toml
+      - run: python -m pip install -e "backend[dev,postgres]"
       - run: make postgres-test

@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M1 — Repository backend boundary.
+Current task: M1 — Repository backend boundary; implementation complete, awaiting architectural review and final hosted gates.
 
 ## Working set
 
@@ -15,12 +15,12 @@ Expand only if the architectural decision rationale is needed: `docs/decisions/A
 
 ## Blockers
 
-None.
+Final hosted PR gates are pending because the M1 branch is intentionally not yet represented by a PR.
 
 ## Gate
 
-M1 is behavior-preserving repository movement. Required evidence is defined in the active plan: backend/core, harness, knowledge, affected Docker/integration checks and final hosted PR gates.
+M1 remains the active gate. Local backend/core, harness, knowledge, Docker build and PostgreSQL integration evidence passes; architectural review and final hosted PR gates remain before stage closure.
 
 ## Next
 
-Execute M1 exactly as defined in `PLAN-target-code-structure-migration.md`. Do not start M2 semantic-module moves in the same stage.
+Review the M1 repository-boundary migration and run final hosted PR gates. Do not select or start M2 until that review closes M1.

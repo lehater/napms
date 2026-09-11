@@ -3,7 +3,7 @@ name: napms-local
 x-backend: &backend
   image: napms-api:local
   build:
-    context: .
+    context: backend
     dockerfile: Dockerfile
   init: true
   security_opt:

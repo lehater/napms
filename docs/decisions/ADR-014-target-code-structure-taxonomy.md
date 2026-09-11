@@ -120,7 +120,7 @@ This classification preserves current semantic ownership. Reclassification requi
 
 ## Alternatives
 
-- Keep semantic modules directly under `src/napms/`: rejected as final target because bounded contexts, workflows and process mechanics remain visually peer-level.
+- Keep semantic modules directly under `backend/src/napms/`: rejected as final target because bounded contexts, workflows and process mechanics remain visually peer-level.
 - Global `domain/application/infrastructure` directories: rejected because they scatter bounded contexts across technical layers and weaken semantic ownership.
 - Service per bounded context: rejected; no accepted topology driver requires distributed deployment.
 

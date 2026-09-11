@@ -13,7 +13,7 @@ Define the module/dependency boundary for desired enforcement derivation and des
 I20 extends the existing module:
 
 ```text
-src/napms/access_policy_realization/
+backend/src/napms/access_policy_realization/
     domain/
         model.py              # existing I18 values
         algebra.py            # shared exact technical algebra

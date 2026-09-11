@@ -58,7 +58,7 @@ See `docs/engineering/local-docker-runtime.md` for the topology, credential boun
 ## Native development
 
 ```bash
-python -m pip install -e ".[dev,postgres,runtime]"
+python -m pip install -e "backend[dev,postgres,runtime]"
 make test
 ```
 
@@ -75,9 +75,10 @@ npm run build
 ## Repository layout
 
 ```text
-src/napms/                 product code
+backend/src/napms/         product code
+backend/pyproject.toml     backend package and test configuration
 web/                       React Web UI
-tests/                     executable specifications and integration tests
+backend/tests/             executable specifications and integration tests
 docs/domain/               living DDD model
 docs/requirements/         accepted product requirements
 docs/architecture/         architecture contracts

@@ -196,22 +196,22 @@ Any exact/partial/ambiguous/unresolved domain interpretation is I18 behavior and
 
 | Example | Primary executable evidence |
 | --- | --- |
-| E1 Configured capture | `tests/integration/postgres/test_technical_access_evidence.py::test_round_trip_preserves_full_source_qualified_evidence` |
-| E2 Identical retry | `tests/technical_access_evidence/test_core.py::test_identical_retry_returns_existing_ids_and_recorded_at`; dedicated TAE composition durable retry proof |
-| E3 Conflicting retry | `tests/technical_access_evidence/test_core.py::test_same_capture_with_different_payload_is_conflict`; PostgreSQL conflict test |
-| E4 Duplicate entries | `tests/technical_access_evidence/test_core.py::test_duplicate_entry_payloads_are_preserved`; PostgreSQL round-trip |
-| E5 Unknown source time | `tests/integration/postgres/test_technical_access_evidence.py::test_empty_unknown_time_capture_round_trips` |
-| E6 Traffic-derived window/action | `tests/technical_access_evidence/test_core.py::test_configured_block_and_traffic_derived_action_absence_are_preserved`; PostgreSQL window/list proof |
-| E7 Invalid time window | `tests/technical_access_evidence/test_core.py::test_evidence_time_keeps_unknown_and_recorded_time_distinct` |
+| E1 Configured capture | `backend/tests/integration/postgres/test_technical_access_evidence.py::test_round_trip_preserves_full_source_qualified_evidence` |
+| E2 Identical retry | `backend/tests/technical_access_evidence/test_core.py::test_identical_retry_returns_existing_ids_and_recorded_at`; dedicated TAE composition durable retry proof |
+| E3 Conflicting retry | `backend/tests/technical_access_evidence/test_core.py::test_same_capture_with_different_payload_is_conflict`; PostgreSQL conflict test |
+| E4 Duplicate entries | `backend/tests/technical_access_evidence/test_core.py::test_duplicate_entry_payloads_are_preserved`; PostgreSQL round-trip |
+| E5 Unknown source time | `backend/tests/integration/postgres/test_technical_access_evidence.py::test_empty_unknown_time_capture_round_trips` |
+| E6 Traffic-derived window/action | `backend/tests/technical_access_evidence/test_core.py::test_configured_block_and_traffic_derived_action_absence_are_preserved`; PostgreSQL window/list proof |
+| E7 Invalid time window | `backend/tests/technical_access_evidence/test_core.py::test_evidence_time_keeps_unknown_and_recorded_time_distinct` |
 | E8 Exact normalization | core canonicalization tests + strict local-import protocol/port tests |
-| E9 No silent partial normalization | `tests/technical_access_evidence/test_local_import.py::test_local_import_rejects_one_invalid_entry_before_any_record_command_exists`; duplicate/unsupported-field rejection; dedicated composition no-side-effect failure proof |
-| E10 Empty capture | `tests/integration/postgres/test_technical_access_evidence.py::test_empty_unknown_time_capture_round_trips` |
+| E9 No silent partial normalization | `backend/tests/technical_access_evidence/test_local_import.py::test_local_import_rejects_one_invalid_entry_before_any_record_command_exists`; duplicate/unsupported-field rejection; dedicated composition no-side-effect failure proof |
+| E10 Empty capture | `backend/tests/integration/postgres/test_technical_access_evidence.py::test_empty_unknown_time_capture_round_trips` |
 | E11 Optional factual action | `test_configured_block_and_traffic_derived_action_absence_are_preserved`; local-import action tests |
 | E12 Source order provenance | PostgreSQL round-trip preserves source positions; retry equality includes factual position |
 | E13 Source scope isolation | bounded-context architecture dependency tests; TAE core imports no Authority Management/Resource/NEP context |
-| E14 No current winner | `tests/technical_access_evidence/test_core.py::test_list_keeps_multiple_captures_without_selecting_current_truth` |
+| E14 No current winner | `backend/tests/technical_access_evidence/test_core.py::test_list_keeps_multiple_captures_without_selecting_current_truth` |
 | E15 Persistence uncertainty | core commit-unknown test + PostgreSQL repository commit-failure test |
-| E16 No Access Policy/Decision side effect | `tests/integration/postgres/test_technical_access_evidence_greenfield.py::test_local_import_records_and_reads_back_durable_evidence` |
+| E16 No Access Policy/Decision side effect | `backend/tests/integration/postgres/test_technical_access_evidence_greenfield.py::test_local_import_records_and_reads_back_durable_evidence` |
 | E17 No technical-to-domain resolution | bounded-context architecture tests + TAE read DTOs expose evidence facts only |
 
 This table records proof locations; it does not transfer semantic ownership from the canonical Tactical DDD/requirements to tests.

@@ -11,7 +11,7 @@ Define the first module/dependency boundary for Network Enforcement Placement wh
 ## Target module
 
 ```text
-src/napms/network_enforcement_placement/
+backend/src/napms/network_enforcement_placement/
     domain/
         model.py
         selection.py

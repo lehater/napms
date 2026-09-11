@@ -4,13 +4,13 @@ on:
   pull_request:
     types: [ready_for_review]
     paths:
-      - "src/**"
-      - "tests/access_policy/**"
-      - "tests/application_catalogue/**"
-      - "tests/authority_management/**"
-      - "tests/runtime/**"
-      - "tests/architecture/**"
-      - "pyproject.toml"
+      - "backend/src/**"
+      - "backend/tests/access_policy/**"
+      - "backend/tests/application_catalogue/**"
+      - "backend/tests/authority_management/**"
+      - "backend/tests/runtime/**"
+      - "backend/tests/architecture/**"
+      - "backend/pyproject.toml"
       - "Makefile"
       - ".github/workflows/ci.yml"
   workflow_dispatch:
@@ -28,5 +28,6 @@ jobs:
         with:
           python-version: "3.10"
           cache: pip
-      - run: python -m pip install -e ".[dev,postgres,runtime]"
+          cache-dependency-path: backend/pyproject.toml
+      - run: python -m pip install -e "backend[dev,postgres,runtime]"
       - run: make test
