@@ -1,8 +1,8 @@
 # Current target architecture
 
-Status: `accepted current target through I27 Catalogue Curation for the supported local deployment`.
+Status: `accepted current target through I31 Application Catalogue migration for the supported local deployment`.
 
-Date: 2026-09-10.
+Date: 2026-09-11.
 
 ## Purpose
 
@@ -55,7 +55,7 @@ Current first-class semantic modules include:
 - Network Enforcement Placement;
 - Network Environment Operations.
 
-Non-peer application/read compositions include Requirement-to-Policy Alignment, policy export/snapshot normalization, Scoped Connectivity Inventory, Network Operator Realization View and Traffic Analysis Checker. Catalogue curation is not another bounded context: I27 adds write/read application seams inside ACC and RC and exposes them through outer adapters.
+Non-peer application/read compositions include Requirement-to-Policy Alignment, policy export/snapshot normalization, Scoped Connectivity Inventory, Network Operator Realization View and Traffic Analysis Checker. I31 changes the ACC authoring/read model inside the existing bounded context; it does not introduce another bounded context.
 
 ## Current runtime boundary
 
@@ -79,7 +79,7 @@ Authenticated actor identity originates from the server/session boundary, not re
 
 Authentication identity does not grant business authority. Resource responsibility/contact facts and Resource Scope Affiliation are also not authority facts.
 
-For I27 catalogue mutation the owning adapters select fixed administrative authority contexts:
+Catalogue mutation uses fixed server-selected administrative authority contexts:
 
 ```text
 ACC -> CurateApplicationCatalogue @ application-catalogue
@@ -88,34 +88,68 @@ RC  -> CurateResourceCatalogue    @ resource-catalogue
 
 The caller cannot replace these with a selected Responsibility Scope. Catalogue visibility, `ReadScopedConnectivity`, Resource Scope Affiliation and Resource Responsibility do not imply either curation permission.
 
-## Catalogue Curation — I27
+## Application Communication Catalogue — I31
 
-Feature boundary: `docs/architecture/catalogue-curation-boundary.md`.
+Canonical domain model: `docs/domain/application-communication-catalogue/tactical-model.md`.
+Feature boundary: `docs/architecture/application-catalogue-target-boundary.md`.
 
-I27 closes catalogue write capability inside the existing ACC/RC owners; it does not introduce a shared Catalogue aggregate/service.
-
-```text
-Web catalogue workspace
-  -> authenticated task-oriented HTTP route
-  -> ACC or RC application command/query
-  -> catalogue-owned Authority admission port
-  -> domain invariant
-  -> owner-specific PostgreSQL UoW
-```
-
-### Owner boundaries
-
-Application Communication Catalogue owns:
+The current ACC authoring model is:
 
 ```text
-Application
+Application Definition
   -> Component
-      -> Component Deployment
-          -> temporal Deployment Resource Binding
-          -> immutable DCS participation/revisions
+  -> Interaction Definition
+
+Application Deployment
+  -> Application Definition
+  -> Company / Environment / Scope context
+  -> selected Deployment Interaction
+      -> interaction-scoped Source Resource set
+      -> interaction-scoped Destination Resource set
+      -> internal compatibility projection
 ```
 
-Resource Catalogue owns:
+Application Definition reuses the stable Application identity. Application Deployment and Deployment Interaction are first-class current identities. Company, Environment and Scope are context/correlation values; they do not define identity or authority.
+
+Interaction Definition owns current reusable vendor-neutral traffic intent. Deployment Interaction selects that Definition without endpoint/traffic override. Resource membership belongs to one Deployment Interaction side, so the same Component may resolve to different Resource sets in different interactions.
+
+### Downstream compatibility boundary
+
+Existing downstream contexts keep their semantic identity shape:
+
+```text
+sourceComponentDeploymentId
+destinationComponentDeploymentId
+dcsContractRevisionId
+```
+
+Each Deployment Interaction has stable internal compatibility Component Deployment identities for Source and Destination plus a current immutable DCS revision. ACC adapters expose the resulting `DirectedInteractionIdentity` to Connectivity Requirements, Connectivity Decision and Access Policy without importing target ACC domain types into those contexts.
+
+Compatibility identities are backend implementation identities. Current Product API/Web authoring does not require users to understand or assemble them.
+
+A permitted Interaction Definition traffic edit creates replacement immutable DCS snapshots for all Active Deployment Interactions selecting it. Previous DCS revisions and historical downstream references are preserved. Active/effective Requirement, final/effective Decision or active/effective Rule dependencies block unsafe traffic edits and relevant retirements through explicit dependency ports.
+
+### Resource binding and read composition
+
+Current authoring addresses Resource membership by:
+
+```text
+deploymentInteractionId + side + resourceReference
+```
+
+ACC validates Resource state through Resource Catalogue-owned contracts. The compatibility persistence adapter realizes current membership through the stable compatibility side required by existing downstream Resource resolution.
+
+Deployment Resource-set read models may combine ACC membership with RC display/scope facts at one explicit `asOf`. This is query-only composition with server paging/search/filter/sort; it transfers no mutation or lifecycle ownership.
+
+### Lifecycle and legacy truth
+
+Application Definition, Component, Interaction Definition, Application Deployment and Deployment Interaction use terminal `Active -> Retired` lifecycle. Retirement is non-cascading and blocked by active dependants/references. Normal product hard delete is absent.
+
+Existing pre-I31 Component Deployments, DCS revisions and Deployment Resource Bindings remain valid historical/legacy ACC truth. They are not automatically synthesized into Application Deployments because required Company/Environment/Scope and interaction ownership cannot be inferred safely.
+
+## Resource Catalogue — I27 retained boundary
+
+Resource Catalogue continues to own:
 
 ```text
 Resource
@@ -124,53 +158,7 @@ Resource
   -> temporal Resource Responsibility/contact
 ```
 
-The Web/API does not become a second catalogue owner.
-
-### Cross-context binding
-
-A Deployment Resource Binding is ACC-owned. ACC validates an RC Resource through a consuming projection port/adaptor. The command mutates only ACC state; it does not read/write RC tables directly and does not use a distributed ACC+RC transaction.
-
-```text
-ACC binding command
-  -> DeploymentBindingResourceTargetPort
-  -> RC-owned adapter/projection
-  -> Active | Missing | Inactive | Unknown
-```
-
-Uncertainty fails closed.
-
-### Identity, lifecycle and temporal history
-
-Application, Component, Component Deployment and Resource have stable identities independent from presentation labels. Existing Deployment/DCS identities are preserved through migration.
-
-Historical truth is not maintained through generic delete/update semantics:
-- identity lifecycle uses explicit retirement;
-- temporal realization/affiliation/responsibility/binding uses create/end/replace semantics;
-- DCS revisions are immutable;
-- creation provenance is preserved and later retirement/end provenance is recorded separately.
-
-Optimistic `expectedVersion` and idempotent retry are separate controls. Durable command receipts prevent duplicate command effects; version checks prevent lost updates.
-
-Known SQL failure before commit is distinct from an ambiguous commit acknowledgement.
-
-### DCS authoring
-
-The ACC application layer owns vendor-neutral communication authoring semantics. HTTP/Web never treats serialized projection bytes or vendor ACL syntax as the DCS domain model.
-
-Normal UI selection of source/destination uses backend discovery of fully Active Application -> Component -> Deployment chains. NAPMS-owned relationships are not composed from manually pasted UUIDs in the ordinary workflow.
-
-### External correlation references
-
-NAPMS does not currently own a Responsibility Scope registry or Person/Team directory. ADR-011 therefore allows explicit local-first input of those external correlation references where no registry adapter exists. Such references do not create a new identity owner, Company/Organization aggregate or action authority.
-
-### Read models
-
-Owner-specific curation projections may optimize human workflows without duplicating authoritative state. In particular the Resources workspace read projection combines RC-owned current facts at one logical `asOf` to provide:
-- effective Responsibility Scope filtering;
-- search over Resource and current responsibility/contact presentation data;
-- current realization/scope/responsibility/contact completeness indicators.
-
-Those indicators are query projections, not Resource aggregate state.
+Resources workspace and owner-specific command/query seams remain as implemented by I27. Resource responsibility/contact and scope affiliation remain separate from mutation authority.
 
 ## Technical Access Evidence
 
@@ -216,35 +204,11 @@ Rendered Configuration
 
 The supported target remains deterministic in-process/stub-first. Real Cisco transport, production credentials/rollback and durable operation audit require later concrete environment evidence.
 
-## Network Operator Realization View — I25
+## Read compositions
 
-The Realization workspace is a non-peer read composition. It owns no authoritative business state and preserves explicit stage availability. Missing evidence or operation history remains unavailable/unknown rather than fabricated success.
+Scoped Connectivity Inventory, Network Operator Realization View and Traffic Analysis Checker remain non-peer read/application compositions. A composition consumes explicit owner/application ports, owns orchestration only, does not create copied business truth, and represents missing/ambiguous contributors explicitly.
 
-Feature contract: `docs/architecture/network-operator-realization-view.md`.
-
-## Traffic Analysis Checker — I26
-
-Checker remains a non-peer read composition from a technical tuple back toward domain and operational context:
-
-```text
-source/destination technical tuple + asOf
-    -> RC reverse resolution
-    -> ACC context
-    -> Scoped Connectivity summaries
-    -> unordered Network Context candidates
-    -> stored Configured TAE matching
-    -> Resource Responsibility/contact
-```
-
-No Checker aggregate/table is introduced. Ambiguity, partial data and missing evidence remain explicit; configured technical entries never imply `Allowed`.
-
-## Cross-context application compositions
-
-A composition consumes explicit owner/application ports, owns orchestration only, does not create copied business truth, and represents missing/ambiguous contributors explicitly.
-
-This rule applies to Scoped Connectivity Inventory, Requirement-to-Policy Alignment, APR compositions, Network Operator Realization View, Traffic Analysis Checker and the ACC-to-RC validation seam used for Deployment Resource Binding.
-
-Operational tooling may inspect/start/backup/restore the selected runtime but does not acquire semantic ownership of module data.
+Traffic Analysis continues to resolve a technical tuple through RC, ACC context, scoped Connectivity summaries, unordered Network Context candidates, stored TAE evidence and Resource responsibility/contact. Configured evidence never implies `Allowed`.
 
 ## Security/integrity guardrails
 
@@ -255,7 +219,9 @@ Architecture must preserve:
 - explicit logical-time validity where required;
 - catalogue visibility/responsibility/scope affiliation separate from mutation authority;
 - no caller-selected catalogue administrative authority scope;
-- immutable DCS revisions and stable catalogue identities across migration;
+- stable Application/Component identities and immutable historical DCS/downstream references across I31;
+- compatibility Component Deployment/DCS IDs remain internal to the ACC compatibility boundary;
+- interaction-scoped Resource membership is not widened into global Component-to-Resource identity;
 - no destructive catalogue maintenance that erases referenced historical truth;
 - no silent semantic broadening/narrowing in normalization/rendering;
 - no false Verified outcome from transport acceptance alone;
@@ -270,14 +236,16 @@ Architecture must preserve:
 
 ## Revisit triggers
 
-Revisit topology or add infrastructure only when accepted evidence requires it, such as concrete external identity/catalogue-source synchronization, organization/stewardship hierarchy, fine-grained catalogue visibility, a real Cisco transport contract, calibrated path/telemetry evidence, durable NEO audit/rollback, measured workload/performance needs, independent availability/security constraints or an environment requiring public TLS/HA/external secret management.
+Revisit topology or add infrastructure only when accepted evidence requires it, such as concrete external identity/catalogue-source synchronization, organization/stewardship hierarchy, fine-grained catalogue visibility, Application Definition versioning/overrides, a real Cisco transport contract, calibrated path/telemetry evidence, durable NEO audit/rollback, measured workload/performance needs, independent availability/security constraints or an environment requiring public TLS/HA/external secret management.
 
 ## Canonical references
 
+- ACC Tactical DDD: `docs/domain/application-communication-catalogue/tactical-model.md`;
+- Application Catalogue product/architecture: `docs/requirements/application-catalogue-target.md`, `docs/architecture/application-catalogue-target-boundary.md`;
+- Application Catalogue decisions: `docs/decisions/ADR-012-application-definition-deployment-model.md`, `docs/decisions/ADR-013-i31-application-catalogue-compatibility-and-reference-semantics.md`;
+- Resource catalogue curation: `docs/architecture/catalogue-curation-boundary.md`, `docs/requirements/catalogue-curation.md`;
 - semantic ownership: `docs/domain/strategic-model.md`, `docs/domain/semantic-ownership.md`;
-- catalogue curation: `docs/architecture/catalogue-curation-boundary.md`, `docs/requirements/catalogue-curation.md`;
 - Resource role/responsibility: `docs/domain/resource-role-model.md`;
-- command/HTTP catalogue contracts: `docs/engineering/catalogue-curation-command-contract.md`, `docs/engineering/catalogue-curation-http-api-contract.md`;
 - Network Context: `docs/architecture/network-context-candidate-boundary.md`;
 - current runtime/product state: `docs/engineering/current-state.md`;
 - local operator workflow: `docs/engineering/local-product-operator-runbook.md`;
