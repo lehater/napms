@@ -43,6 +43,8 @@
 
   --napms-sidebar-width: 232px;
   --napms-page-gap: 14px;
+  --napms-page-width-content: 1180px;
+  --napms-page-width-narrow: 980px;
   --napms-table-header-height: 40px;
   --napms-table-row-height: 40px;
   --napms-table-body-min-height: 0px;
