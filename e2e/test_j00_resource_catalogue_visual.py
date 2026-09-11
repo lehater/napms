@@ -2,11 +2,6 @@ import os
 
 from playwright.sync_api import expect, sync_playwright
 
-from e2e.screenshot_regression import (
-    application_main_fingerprint,
-    assert_resource_screen_fingerprints,
-)
-
 
 BASE_URL = os.environ.get("NAPMS_E2E_BASE_URL", "http://127.0.0.1:8080")
 LOGIN = os.environ.get("NAPMS_E2E_LOGIN", "local-admin")
@@ -34,9 +29,18 @@ def test_j00_resource_catalogue_reference_layout() -> None:
         page.get_by_label("Password").fill(PASSWORD)
         page.get_by_role("button", name="Sign in").click()
 
-        desktop_nav = page.locator("aside").get_by_role(
-            "navigation", name="Primary navigation"
-        )
+        aside = page.locator("aside")
+        desktop_nav = aside.get_by_role("navigation", name="Primary navigation")
+        account = aside.get_by_text(LOGIN, exact=True)
+        expect(account).to_be_visible()
+        expect(aside.get_by_role("button", name="Logout")).to_be_visible()
+
+        aside_box = aside.bounding_box()
+        account_box = account.bounding_box()
+        assert aside_box is not None and account_box is not None
+        assert 228 <= aside_box["width"] <= 236
+        assert account_box["y"] > aside_box["height"] * 0.8
+
         _create_resource(page, desktop_nav, "Visual Resource Alpha")
         _create_resource(page, desktop_nav, "Visual Resource Beta")
 
@@ -46,6 +50,42 @@ def test_j00_resource_catalogue_reference_layout() -> None:
         expect(page.get_by_role("cell", name="Visual Resource Beta", exact=True)).to_be_visible()
         expect(page.get_by_label("Select all resources on this page")).to_be_visible()
 
-        screenshots = {"resource-catalogue": application_main_fingerprint(page)}
-        assert_resource_screen_fingerprints(screenshots)
+        name_header = page.locator("th[aria-sort='ascending']").filter(has_text="Name")
+        expect(name_header).to_be_visible()
+        name_header.get_by_role("button").click()
+        expect(name_header).to_have_attribute("aria-sort", "descending")
+        name_header.get_by_role("button").click()
+        expect(name_header).to_have_attribute("aria-sort", "ascending")
+
+        for label, count in (
+            ("All", 2),
+            ("Active", 2),
+            ("Retired", 0),
+            ("No address", 2),
+            ("No responsibility", 2),
+            ("No scope", 2),
+        ):
+            expect(page.get_by_role("button", name=f"{label} {count}", exact=True)).to_be_visible()
+
+        expect(page.get_by_text("Showing 1–2 of 2", exact=True)).to_be_visible()
+        rows_per_page = page.get_by_label("Rows per page")
+        expect(rows_per_page).to_have_value("50")
+        expect(page.get_by_role("button", name="Previous page")).to_be_disabled()
+        expect(page.get_by_role("button", name="Next page")).to_be_disabled()
+        expect(page.get_by_role("button", name="1", exact=True)).to_have_attribute("aria-current", "page")
+
+        page.get_by_role("cell", name="Visual Resource Alpha", exact=True).get_by_role("button").click()
+        expect(page.get_by_role("heading", name="Visual Resource Alpha", exact=True)).to_be_visible()
+        expect(page.get_by_role("button", name="Overview", exact=True)).to_be_visible()
+        expect(page.get_by_role("button", name="History", exact=True)).to_be_visible()
+        expect(page.get_by_role("button", name="Technical details", exact=True)).to_be_visible()
+
+        workspace = page.locator("main > div").first
+        max_width = workspace.evaluate("element => getComputedStyle(element).maxWidth")
+        assert max_width == "none"
+        main_box = page.locator("main").bounding_box()
+        workspace_box = workspace.bounding_box()
+        assert main_box is not None and workspace_box is not None
+        assert workspace_box["width"] >= main_box["width"] - 60
+
         browser.close()
