@@ -36,11 +36,11 @@ export function CatalogueIdentity({
   const readable = name?.trim()
   return (
     <div>
-      <div className="font-medium text-[#172033]">
+      <div className="font-medium text-[var(--napms-color-text-primary)]">
         {readable || shortId(id)}
       </div>
       {readable ? (
-        <div className="mt-0.5 font-mono text-[11px] text-[#64748B]">
+        <div className="mt-0.5 font-mono text-xs text-[var(--napms-color-text-secondary)]">
           {shortId(id)}
         </div>
       ) : null}
