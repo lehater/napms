@@ -15,11 +15,17 @@ CONNECTIVITY_DECISION = NAPMS / "connectivity_decision"
 TECHNICAL_ACCESS_EVIDENCE = NAPMS / "technical_access_evidence"
 NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "network_enforcement_placement"
 REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
+POLICY_EXPORT = NAPMS / "policy_export"
+SCOPED_CONNECTIVITY_INVENTORY = NAPMS / "scoped_connectivity_inventory"
 RUNTIME = NAPMS / "runtime"
 APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "adapters" / "http"
 RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "adapters" / "http"
 CONNECTIVITY_REQUIREMENTS_HTTP = CONNECTIVITY_REQUIREMENTS / "adapters" / "http.py"
 CONNECTIVITY_DECISION_HTTP = CONNECTIVITY_DECISION / "adapters" / "http.py"
+ACCESS_POLICY_HTTP = ACCESS_POLICY / "adapters" / "http.py"
+REQUIREMENT_POLICY_ALIGNMENT_HTTP = REQUIREMENT_POLICY_ALIGNMENT / "adapters" / "http.py"
+POLICY_EXPORT_HTTP = POLICY_EXPORT / "adapters" / "http.py"
+SCOPED_CONNECTIVITY_HTTP = SCOPED_CONNECTIVITY_INVENTORY / "adapters" / "http.py"
 PROCESS_HTTP = RUNTIME / "http_api.py"
 LEGACY_PROCESS_HTTP = RUNTIME / "legacy_http_api.py"
 
@@ -45,7 +51,7 @@ APPLICATION_LAYERS = (
     TECHNICAL_ACCESS_EVIDENCE / "application",
     NETWORK_ENFORCEMENT_PLACEMENT / "application",
     REQUIREMENT_POLICY_ALIGNMENT / "application",
-    NAPMS / "policy_export" / "application",
+    POLICY_EXPORT / "application",
 )
 CORE_LAYERS = DOMAIN_LAYERS + APPLICATION_LAYERS
 
@@ -66,6 +72,47 @@ def imported_modules(path):
             yield from (alias.name for alias in node.names)
         elif isinstance(node, ast.ImportFrom) and node.module:
             yield node.module
+
+
+def _route_names(path: Path, receiver: str) -> set[str]:
+    names = set()
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    for node in ast.walk(tree):
+        for decorator in getattr(node, "decorator_list", ()):
+            if not (
+                isinstance(decorator, ast.Call)
+                and isinstance(decorator.func, ast.Attribute)
+                and isinstance(decorator.func.value, ast.Name)
+                and decorator.func.value.id == receiver
+            ):
+                continue
+            for keyword in decorator.keywords:
+                if (
+                    keyword.arg == "name"
+                    and isinstance(keyword.value, ast.Constant)
+                    and isinstance(keyword.value.value, str)
+                ):
+                    names.add(keyword.value.value)
+    return names
+
+
+def _assigned_string_set(path: Path, variable_name: str) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(
+            isinstance(target, ast.Name) and target.id == variable_name
+            for target in node.targets
+        ):
+            continue
+        if isinstance(node.value, ast.Set):
+            return {
+                item.value
+                for item in node.value.elts
+                if isinstance(item, ast.Constant) and isinstance(item.value, str)
+            }
+    raise AssertionError(f"{variable_name} must be a literal string set")
 
 
 def test_core_has_no_infrastructure_framework_imports():
@@ -126,35 +173,49 @@ def test_catalogue_owner_http_packages_exist():
     assert RESOURCE_CATALOGUE_HTTP.is_dir()
 
 
-def test_connectivity_requirements_http_is_owner_local():
-    assert CONNECTIVITY_REQUIREMENTS_HTTP.is_file()
+def test_feature_http_is_owner_local():
+    for path in (
+        ACCESS_POLICY_HTTP,
+        CONNECTIVITY_REQUIREMENTS_HTTP,
+        CONNECTIVITY_DECISION_HTTP,
+        REQUIREMENT_POLICY_ALIGNMENT_HTTP,
+        POLICY_EXPORT_HTTP,
+        SCOPED_CONNECTIVITY_HTTP,
+    ):
+        assert path.is_file()
     assert LEGACY_PROCESS_HTTP.is_file()
+
+
+def test_process_http_has_no_feature_endpoint_implementation():
     process_source = PROCESS_HTTP.read_text(encoding="utf-8")
-    assert "/api/v1/connectivity-requirements" not in process_source
+    assert "/api/v1/" not in process_source
+    forbidden_prefixes = (
+        "napms.access_policy.application",
+        "napms.access_policy.domain",
+        "napms.connectivity_requirements.application",
+        "napms.connectivity_requirements.domain",
+        "napms.connectivity_decision.application",
+        "napms.connectivity_decision.domain",
+        "napms.requirement_policy_alignment.application",
+        "napms.policy_export.application",
+        "napms.scoped_connectivity_inventory.application",
+    )
     assert all(
-        not module.startswith(
-            (
-                "napms.connectivity_requirements.application",
-                "napms.connectivity_requirements.domain",
-            )
-        )
+        not module.startswith(forbidden_prefixes)
         for module in imported_modules(PROCESS_HTTP)
     )
 
 
-def test_connectivity_decision_http_is_owner_local():
-    assert CONNECTIVITY_DECISION_HTTP.is_file()
-    process_source = PROCESS_HTTP.read_text(encoding="utf-8")
-    assert "/api/v1/connectivity-decisions" not in process_source
-    assert all(
-        not module.startswith(
-            (
-                "napms.connectivity_decision.application",
-                "napms.connectivity_decision.domain",
-            )
-        )
-        for module in imported_modules(PROCESS_HTTP)
-    )
+def test_legacy_http_has_only_process_routes_after_migration_filter():
+    migrated = _assigned_string_set(PROCESS_HTTP, "_MIGRATED_ROUTE_NAMES")
+    legacy_routes = _route_names(LEGACY_PROCESS_HTTP, "app")
+    assert legacy_routes - migrated == {
+        "CreateSession",
+        "GetSession",
+        "DeleteSession",
+        "Liveness",
+        "Readiness",
+    }
 
 
 POSTGRES_SCHEMA_OWNERS = (
