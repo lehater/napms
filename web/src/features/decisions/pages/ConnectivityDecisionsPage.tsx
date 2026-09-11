@@ -1,26 +1,30 @@
-import { useEffect, useMemo, useState } from "react"
-import { ChevronRight, Plus, Search, Trash2 } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Plus } from "lucide-react"
 
-import { ApiError } from "@/lib/api"
-import { listConnectivityDecisionInteractions, listConnectivityDecisions, listConnectivityDecisionScopes, recordConnectivityDecision, type ConnectivityDecisionDto, type ConnectivityDecisionOutcome, type DecisionEvidenceReferenceDto } from "@/features/decisions/api"
+import { Button } from "@/design-system/components/Button"
+import { Field, Input, Select, Textarea } from "@/design-system/components/Field"
+import { CatalogueInteractionSelector } from "@/features/catalogues/components/CatalogueInteractionSelector"
+import { shortId } from "@/features/catalogues/components/CatalogueIdentity"
 import type { ProposalInteraction } from "@/features/catalogues/model/interaction"
 import {
-  CatalogueIdentity,
-  displayName,
-  shortId,
-  trafficAlternativeText,
-} from "@/features/catalogues/components/CatalogueIdentity"
-import { Button } from "@/components/ui/Button"
-import { Field, Select } from "@/components/ui/Field"
+  listConnectivityDecisionInteractions,
+  listConnectivityDecisions,
+  listConnectivityDecisionScopes,
+  recordConnectivityDecision,
+  type ConnectivityDecisionDto,
+  type ConnectivityDecisionOutcome,
+  type DecisionEvidenceReferenceDto,
+} from "@/features/decisions/api"
+import {
+  DecisionEvidenceFields,
+  type DecisionEvidenceDraft,
+} from "@/features/decisions/components/DecisionEvidenceFields"
+import { DecisionsTable } from "@/features/decisions/components/DecisionsTable"
+import { ApiError } from "@/lib/api"
 import {
   nowLocalDateTimeInput,
   toOffsetAwareIso,
 } from "@/lib/datetime"
-
-type EvidenceDraft = {
-  kind: string
-  reference: string
-}
 
 type DecisionListState = {
   page: number
@@ -32,36 +36,8 @@ type DecisionListState = {
   error: ApiError | null
 }
 
-function outcomeClasses(outcome: ConnectivityDecisionOutcome) {
-  return outcome === "Allowed"
-    ? "border-green-200 bg-green-50 text-green-800"
-    : "border-red-200 bg-red-50 text-red-800"
-}
-
-function validityText(decision: ConnectivityDecisionDto) {
-  return decision.validity.validUntil
-    ? `${decision.validity.validFrom} → ${decision.validity.validUntil}`
-    : `${decision.validity.validFrom} → open-ended`
-}
-
-function optionLabel(name: string | null | undefined, id: string) {
-  const readable = name?.trim()
-  return readable ? `${readable} · ${shortId(id)}` : shortId(id)
-}
-
-function dcsLabel(item: ProposalInteraction) {
-  const base = optionLabel(
-    item.catalogue?.dcsDisplayName,
-    item.dcsContractRevisionId,
-  )
-  const alternatives = item.catalogue?.trafficAlternatives ?? []
-  return alternatives.length > 0
-    ? `${base} — ${alternatives.map(trafficAlternativeText).join(" | ")}`
-    : base
-}
-
 function normalizeEvidence(
-  evidence: EvidenceDraft[],
+  evidence: DecisionEvidenceDraft[],
 ): DecisionEvidenceReferenceDto[] | null {
   const populated = evidence.filter(
     (item) => item.kind.trim() || item.reference.trim(),
@@ -120,7 +96,7 @@ export function ConnectivityDecisionsPage({
   const [validUntil, setValidUntil] = useState("")
   const [reasonCode, setReasonCode] = useState("")
   const [reasonText, setReasonText] = useState("")
-  const [evidence, setEvidence] = useState<EvidenceDraft[]>([
+  const [evidence, setEvidence] = useState<DecisionEvidenceDraft[]>([
     { kind: "", reference: "" },
   ])
   const [recording, setRecording] = useState(false)
@@ -276,55 +252,6 @@ export function ConnectivityDecisionsPage({
     }
   }, [scope, interactionPage, search])
 
-  const sourceOptions = useMemo(() => {
-    const values = new Map<string, string | null | undefined>()
-    for (const item of interactions) {
-      if (!values.has(item.sourceComponentDeploymentId)) {
-        values.set(
-          item.sourceComponentDeploymentId,
-          item.catalogue?.sourceDisplayName,
-        )
-      }
-    }
-    return [...values.entries()]
-  }, [interactions])
-
-  const destinationOptions = useMemo(() => {
-    const values = new Map<string, string | null | undefined>()
-    for (const item of interactions) {
-      if (item.sourceComponentDeploymentId !== source) continue
-      if (!values.has(item.destinationComponentDeploymentId)) {
-        values.set(
-          item.destinationComponentDeploymentId,
-          item.catalogue?.destinationDisplayName,
-        )
-      }
-    }
-    return [...values.entries()]
-  }, [interactions, source])
-
-  const dcsOptions = useMemo(
-    () =>
-      interactions.filter(
-        (item) =>
-          item.sourceComponentDeploymentId === source &&
-          item.destinationComponentDeploymentId === destination,
-      ),
-    [interactions, source, destination],
-  )
-
-  function updateEvidence(
-    index: number,
-    field: keyof EvidenceDraft,
-    value: string,
-  ) {
-    setEvidence((current) =>
-      current.map((item, itemIndex) =>
-        itemIndex === index ? { ...item, [field]: value } : item,
-      ),
-    )
-  }
-
   function resetRecordForm() {
     setSource("")
     setDestination("")
@@ -479,77 +406,10 @@ export function ConnectivityDecisionsPage({
               </div>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[1050px] text-left text-sm">
-                <thead className="bg-[#F8FAFC] text-xs uppercase tracking-wide text-[#64748B]">
-                  <tr>
-                    <th className="px-4 py-3 font-semibold">Subject</th>
-                    <th className="px-4 py-3 font-semibold">Scope</th>
-                    <th className="px-4 py-3 font-semibold">Outcome</th>
-                    <th className="px-4 py-3 font-semibold">Validity</th>
-                    <th className="px-4 py-3 font-semibold">Supersession</th>
-                    <th className="w-12 px-4 py-3" aria-label="Open" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {visibleDecisions.map((decision) => (
-                    <tr
-                      key={decision.decisionId}
-                      className="border-t border-[#E2E8F0] align-top hover:bg-[#F8FAFC]"
-                    >
-                      <td className="px-4 py-3">
-                        <div className="grid gap-2">
-                          <CatalogueIdentity
-                            name={decision.catalogue?.sourceDisplayName}
-                            id={decision.subject.sourceComponentDeploymentId}
-                          />
-                          <div className="text-xs font-semibold text-[#64748B]">
-                            to
-                          </div>
-                          <CatalogueIdentity
-                            name={decision.catalogue?.destinationDisplayName}
-                            id={decision.subject.destinationComponentDeploymentId}
-                          />
-                          <div className="text-xs text-[#475569]">
-                            Access:{" "}
-                            {displayName(
-                              decision.catalogue?.dcsDisplayName,
-                              decision.subject.dcsContractRevisionId,
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">{decision.governanceScope}</td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${outcomeClasses(decision.outcome)}`}
-                        >
-                          {decision.outcome}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-[#475569]">
-                        {validityText(decision)}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-[#475569]">
-                        {decision.supersedesDecisionId
-                          ? `Supersedes ${shortId(decision.supersedesDecisionId)}`
-                          : "Original"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          type="button"
-                          aria-label={`Open Decision ${decision.decisionId}`}
-                          className="grid size-8 place-items-center rounded-md text-[#64748B] hover:bg-[#E2E8F0]"
-                          onClick={() => onOpenDecision(decision.decisionId)}
-                        >
-                          <ChevronRight className="size-4" aria-hidden="true" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DecisionsTable
+              decisions={visibleDecisions}
+              onOpenDecision={onOpenDecision}
+            />
           )}
 
           <div className="flex justify-end gap-2 border-t border-[#E2E8F0] px-5 py-4">
@@ -623,30 +483,33 @@ export function ConnectivityDecisionsPage({
                   {loadingScopes ? "Loading scopes…" : "Select scope"}
                 </option>
                 {scopes.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
+                  <option key={value} value={value}>{value}</option>
                 ))}
               </Select>
             </Field>
 
-            <Field label="Search exact ACC interaction">
-              <div className="relative">
-                <Search
-                  className="pointer-events-none absolute left-3 top-3 size-4 text-[#94A3B8]"
-                  aria-hidden="true"
-                />
-                <input
-                  type="search"
-                  value={searchInput}
-                  maxLength={256}
-                  onChange={(event) => setSearchInput(event.target.value)}
-                  disabled={!scope}
-                  className="min-h-10 w-full rounded-md border border-[#CBD5E1] pl-9 pr-3 text-sm disabled:bg-[#F8FAFC]"
-                  placeholder="Search interactions"
-                />
-              </div>
-            </Field>
+            <CatalogueInteractionSelector
+              interactions={interactions}
+              searchInput={searchInput}
+              onSearchInputChange={setSearchInput}
+              searchDisabled={!scope}
+              searchLabel="Search exact ACC interaction"
+              loading={loadingInteractions}
+              disabled={!scope}
+              source={source}
+              onSourceChange={(value) => {
+                setSource(value)
+                setDestination("")
+                setDcs("")
+              }}
+              destination={destination}
+              onDestinationChange={(value) => {
+                setDestination(value)
+                setDcs("")
+              }}
+              dcs={dcs}
+              onDcsChange={setDcs}
+            />
 
             <div className="flex items-center justify-between text-xs text-[#64748B]">
               <span>
@@ -675,64 +538,6 @@ export function ConnectivityDecisionsPage({
               </div>
             </div>
 
-            <Field label="Source Component Deployment">
-              <Select
-                value={source}
-                onChange={(event) => {
-                  setSource(event.target.value)
-                  setDestination("")
-                  setDcs("")
-                }}
-                disabled={!scope || loadingInteractions}
-                required
-              >
-                <option value="">Select source</option>
-                {sourceOptions.map(([id, name]) => (
-                  <option key={id} value={id}>
-                    {optionLabel(name, id)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-
-            <Field label="Destination Component Deployment">
-              <Select
-                value={destination}
-                onChange={(event) => {
-                  setDestination(event.target.value)
-                  setDcs("")
-                }}
-                disabled={!source || loadingInteractions}
-                required
-              >
-                <option value="">Select destination</option>
-                {destinationOptions.map(([id, name]) => (
-                  <option key={id} value={id}>
-                    {optionLabel(name, id)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-
-            <Field label="DCS / Access">
-              <Select
-                value={dcs}
-                onChange={(event) => setDcs(event.target.value)}
-                disabled={!destination || loadingInteractions}
-                required
-              >
-                <option value="">Select access</option>
-                {dcsOptions.map((item) => (
-                  <option
-                    key={item.dcsContractRevisionId}
-                    value={item.dcsContractRevisionId}
-                  >
-                    {dcsLabel(item)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-
             <Field label="Final outcome">
               <Select
                 value={outcome}
@@ -748,110 +553,43 @@ export function ConnectivityDecisionsPage({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Valid from">
-                <input
+                <Input
                   type="datetime-local"
                   step="1"
                   value={validFrom}
                   onChange={(event) => setValidFrom(event.target.value)}
-                  className="min-h-10 w-full rounded-md border border-[#CBD5E1] px-3 py-2 text-sm"
                   required
                 />
               </Field>
               <Field label="Valid until" hint="Optional; leave empty for open-ended validity.">
-                <input
+                <Input
                   type="datetime-local"
                   step="1"
                   value={validUntil}
                   onChange={(event) => setValidUntil(event.target.value)}
-                  className="min-h-10 w-full rounded-md border border-[#CBD5E1] px-3 py-2 text-sm"
                 />
               </Field>
             </div>
 
             <Field label="Reason code">
-              <input
+              <Input
                 value={reasonCode}
                 maxLength={256}
                 onChange={(event) => setReasonCode(event.target.value)}
-                className="min-h-10 w-full rounded-md border border-[#CBD5E1] px-3 py-2 text-sm"
                 required
               />
             </Field>
 
             <Field label="Reason">
-              <textarea
+              <Textarea
                 value={reasonText}
                 maxLength={4096}
                 onChange={(event) => setReasonText(event.target.value)}
-                className="min-h-24 w-full rounded-md border border-[#CBD5E1] px-3 py-2 text-sm"
                 required
               />
             </Field>
 
-            <div className="grid gap-3">
-              <div>
-                <div className="text-sm font-medium text-[#334155]">
-                  Evidence references
-                </div>
-                <div className="mt-1 text-xs text-[#64748B]">
-                  Optional references only. Evidence content remains outside this
-                  workspace.
-                </div>
-              </div>
-              {evidence.map((item, index) => (
-                <div
-                  key={index}
-                  className="grid gap-2 rounded-md border border-[#E2E8F0] p-3"
-                >
-                  <input
-                    value={item.kind}
-                    maxLength={256}
-                    onChange={(event) =>
-                      updateEvidence(index, "kind", event.target.value)
-                    }
-                    className="min-h-10 w-full rounded-md border border-[#CBD5E1] px-3 py-2 text-sm"
-                    placeholder="Kind"
-                    aria-label={`Evidence ${index + 1} kind`}
-                  />
-                  <input
-                    value={item.reference}
-                    maxLength={2048}
-                    onChange={(event) =>
-                      updateEvidence(index, "reference", event.target.value)
-                    }
-                    className="min-h-10 w-full rounded-md border border-[#CBD5E1] px-3 py-2 text-sm"
-                    placeholder="Reference"
-                    aria-label={`Evidence ${index + 1} reference`}
-                  />
-                  {evidence.length > 1 ? (
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-1 justify-self-start text-xs font-semibold text-[#64748B] hover:text-[#172033]"
-                      onClick={() =>
-                        setEvidence((current) =>
-                          current.filter((_, itemIndex) => itemIndex !== index),
-                        )
-                      }
-                    >
-                      <Trash2 className="size-3.5" aria-hidden="true" />
-                      Remove
-                    </button>
-                  ) : null}
-                </div>
-              ))}
-              <button
-                type="button"
-                className="justify-self-start text-xs font-semibold text-[#2563EB]"
-                onClick={() =>
-                  setEvidence((current) => [
-                    ...current,
-                    { kind: "", reference: "" },
-                  ])
-                }
-              >
-                Add evidence reference
-              </button>
-            </div>
+            <DecisionEvidenceFields evidence={evidence} onChange={setEvidence} />
 
             <Button
               type="submit"
