@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Plus } from "lucide-react"
 
+import { Alert } from "@/design-system/components/Alert"
 import { Button } from "@/design-system/components/Button"
 import { Field, Input, Select, Textarea } from "@/design-system/components/Field"
 import { CatalogueInteractionSelector } from "@/features/catalogues/components/CatalogueInteractionSelector"
@@ -126,16 +127,16 @@ export function DecisionRecordingPanel({ onRecorded }: { onRecorded: () => void 
   }
 
   return (
-    <form onSubmit={submit} className="self-start rounded-lg border border-[#E2E8F0] bg-white p-5">
-      <div className="mb-5 flex items-center gap-2"><Plus className="size-4 text-[#2563EB]" aria-hidden="true" /><h2 className="text-base font-semibold text-[#172033]">Record final Decision</h2></div>
-      {ambiguousDecideScopes.length > 0 ? <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{ambiguousDecideScopes.length} DecideConnectivity scope(s) are ambiguous and cannot be selected.</div> : null}
-      {!loadingScopes && scopes.length === 0 ? <div className="mb-4 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-sm text-[#475569]">No unambiguous DecideConnectivity scope is currently admitted. Read access to Decisions is independent.</div> : null}
-      {recordError ? <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800"><div className="font-semibold">{recordError.code}</div><div className="mt-1">{recordError.message}</div></div> : null}
-      {recordMessage ? <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">{recordMessage}</div> : null}
+    <form onSubmit={submit} className="self-start rounded-[var(--napms-surface-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] p-5 shadow-[var(--napms-surface-shadow)]">
+      <div className="mb-5 flex items-center gap-2"><Plus className="size-4 text-[var(--napms-color-primary)]" aria-hidden="true" /><h2 className="text-base font-semibold text-[var(--napms-color-text-primary)]">Record final Decision</h2></div>
+      {ambiguousDecideScopes.length > 0 ? <Alert tone="warning" className="mb-4">{ambiguousDecideScopes.length} DecideConnectivity scope(s) are ambiguous and cannot be selected.</Alert> : null}
+      {!loadingScopes && scopes.length === 0 ? <Alert className="mb-4">No unambiguous DecideConnectivity scope is currently admitted. Read access to Decisions is independent.</Alert> : null}
+      {recordError ? <Alert role="alert" tone="danger" className="mb-4"><div className="font-semibold">{recordError.code}</div><div className="mt-1">{recordError.message}</div></Alert> : null}
+      {recordMessage ? <Alert role="status" tone="success" className="mb-4">{recordMessage}</Alert> : null}
       <div className="grid gap-4">
         <Field label="Decision Governance Scope"><Select value={scope} onChange={(event) => { setScope(event.target.value); setInteractionPage(1) }} disabled={loadingScopes || scopes.length === 0} required><option value="">{loadingScopes ? "Loading scopes…" : "Select scope"}</option>{scopes.map((value) => <option key={value} value={value}>{value}</option>)}</Select></Field>
         <CatalogueInteractionSelector interactions={interactions} searchInput={searchInput} onSearchInputChange={setSearchInput} searchDisabled={!scope} searchLabel="Search exact ACC interaction" loading={loadingInteractions} disabled={!scope} source={source} onSourceChange={(value) => { setSource(value); setDestination(""); setDcs("") }} destination={destination} onDestinationChange={(value) => { setDestination(value); setDcs("") }} dcs={dcs} onDcsChange={setDcs} />
-        <div className="flex items-center justify-between text-xs text-[#64748B]"><span>Interaction page {interactionPage}{loadingInteractions ? " · loading" : ""}</span><div className="flex gap-2"><button type="button" className="font-semibold text-[#2563EB] disabled:text-[#94A3B8]" disabled={interactionPage === 1 || loadingInteractions} onClick={() => setInteractionPage((value) => Math.max(1, value - 1))}>Previous</button><button type="button" className="font-semibold text-[#2563EB] disabled:text-[#94A3B8]" disabled={!hasMoreInteractions || loadingInteractions} onClick={() => setInteractionPage((value) => value + 1)}>Next</button></div></div>
+        <div className="flex items-center justify-between text-xs text-[var(--napms-color-text-secondary)]"><span>Interaction page {interactionPage}{loadingInteractions ? " · loading" : ""}</span><div className="flex gap-2"><button type="button" className="font-semibold text-[var(--napms-color-primary)] disabled:text-[var(--napms-color-text-muted)]" disabled={interactionPage === 1 || loadingInteractions} onClick={() => setInteractionPage((value) => Math.max(1, value - 1))}>Previous</button><button type="button" className="font-semibold text-[var(--napms-color-primary)] disabled:text-[var(--napms-color-text-muted)]" disabled={!hasMoreInteractions || loadingInteractions} onClick={() => setInteractionPage((value) => value + 1)}>Next</button></div></div>
         <Field label="Final outcome"><Select value={outcome} onChange={(event) => setOutcome(event.target.value as ConnectivityDecisionOutcome)} required><option value="Allowed">Allowed</option><option value="NotAllowed">NotAllowed</option></Select></Field>
         <div className="grid gap-4 sm:grid-cols-2"><Field label="Valid from"><Input type="datetime-local" step="1" value={validFrom} onChange={(event) => setValidFrom(event.target.value)} required /></Field><Field label="Valid until" hint="Optional; leave empty for open-ended validity."><Input type="datetime-local" step="1" value={validUntil} onChange={(event) => setValidUntil(event.target.value)} /></Field></div>
         <Field label="Reason code"><Input value={reasonCode} maxLength={256} onChange={(event) => setReasonCode(event.target.value)} required /></Field>
