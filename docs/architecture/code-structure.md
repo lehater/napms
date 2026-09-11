@@ -6,6 +6,7 @@ Date: 2026-09-11.
 
 Decision: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
 Migration history: `docs/engineering/target-code-structure-migration-roadmap.md`.
+Web UI composition guidance: `docs/ui/component-composition.md`.
 
 ## Purpose
 
@@ -146,23 +147,34 @@ Technical reuse belongs in the narrow owning platform/library capability. Semant
 
 ## Frontend taxonomy
 
-`web/` is a React outer adapter with feature-first locality:
+`web/` is a React outer adapter with feature-first locality and one explicit generic UI owner:
 
 ```text
 web/src/
-  app/                    # application bootstrap/routing/shell
+  app/                         # application bootstrap/routing/shell
+  design-system/
+    primitives/                # smallest stable visual/layout building blocks
+    components/                # generic reusable controls and focused visuals
+    layout/                    # application/page geometry
+    patterns/                  # reusable generic/product UI compositions
   features/<feature>/
     api/
     model/
-    components/
-    pages/
-  components/ui/          # genuinely shared visual primitives
-  lib/                    # genuinely shared technical helpers
+    components/                # feature-owned presentation/domain-to-visual mapping
+    pages/                     # screen/use-case orchestration roots
+  components/ui/               # transitional existing generic controls; migrate when touched
+  lib/                         # genuinely shared technical helpers
 ```
 
 Create only feature subdirectories that have actual contents. Feature DTOs, request mapping, session/auth operations and behavior stay with their explicit feature owner. `lib/` remains technical, including shared HTTP transport/error handling and other non-semantic helpers. `app/` owns bootstrap, routing and application shell composition.
 
-Cross-feature semantic reuse imports from the explicit owning feature; do not recreate a root API barrel or generic `shared/model` package.
+`design-system/` is the durable owner of generic visual primitives, reusable controls, application/page geometry and reusable product UI patterns. Generic design-system code must not encode NAPMS domain states or feature vocabulary. Domain-to-visual mapping and reusable domain presentation stay under the owning feature's `components/`.
+
+`components/ui/` is transitional current structure rather than a second permanent generic-component ownership model. When a generic control is touched by the component-composition migration and its ownership is clear, move it to `design-system/components/`, migrate callers directly and remove the old owner without compatibility facades.
+
+Feature pages are screen composition/use-case orchestration roots. They compose design-system patterns and feature components rather than defining local copies of generic controls, status visuals, dialog geometry or repeated feature presentation.
+
+Cross-feature semantic reuse imports from the explicit owning feature; do not recreate a root API barrel or generic `shared/model` package. Detailed extraction/ownership rules live in `docs/ui/component-composition.md`.
 
 ## Structural change rules
 
@@ -197,6 +209,22 @@ process/runtime mechanics?
 then
   -> domain / application / infrastructure / presentation
   -> capability/use case when further decomposition is justified
+```
+
+For Web UI changes:
+
+```text
+generic visual/control/layout behavior?
+  -> design-system
+
+feature/domain presentation?
+  -> features/<owner>/components
+
+screen/use-case orchestration?
+  -> features/<owner>/pages
+
+pure shared technical helper?
+  -> lib
 ```
 
 No generic composition bucket, process feature ownership, cross-context domain imports or global technical-layer tree is accepted.
