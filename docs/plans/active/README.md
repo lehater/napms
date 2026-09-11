@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: migrate NAPMS to the accepted final backend and Web taxonomy without product/domain semantic change.
-Current task: M6 implementation complete; awaiting architectural review.
+Current task: M6 architectural review complete; final hosted PR gates pending.
 
 ## Working set
 
@@ -11,16 +11,14 @@ Read first:
 - `docs/architecture/code-structure.md`
 - `docs/engineering/target-code-structure-migration-roadmap.md`
 
-Expand only if needed: current `web/src` files being moved.
-
 ## Blockers
 
 None.
 
 ## Gate
 
-M6 Web locality is implemented in two atomic commits. The final source taxonomy and architecture guards pass, as do Web build, full non-PostgreSQL tests, harness/knowledge checks, and all three browser journeys. Architectural review remains the local exit before opening the M6 PR.
+M6 implementation and architectural review are complete. Final Web taxonomy is `app / features / components/ui / lib`; the legacy root API/application files and feature-specific root components are absent. Architecture guards pass. Validation: `make web-check` passed; architecture 72 passed; `make test` 815 passed with 141 deselected; harness and knowledge checks passed; local Docker browser journeys 3 passed. The J03 change only synchronizes with the existing debounce search request and preserves all journey assertions.
 
 ## Next
 
-Perform the M6 architectural review. Do not open the M6 PR or start M7 before that review passes.
+Open the final M6 milestone PR, mark it ready once, run required hosted gates, and squash-merge if green. Do not start M7 before M6 is merged.
