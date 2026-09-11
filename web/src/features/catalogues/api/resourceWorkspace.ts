@@ -7,6 +7,10 @@ export type ResourceWorkspaceDataState =
   | "missing-scope"
   | "missing-responsibility"
 
+export type ResourceWorkspaceLifecycle = "active" | "retired" | "all"
+export type ResourceWorkspaceSortBy = "name" | "reference" | "lifecycle"
+export type ResourceWorkspaceSortDirection = "asc" | "desc"
+
 export type ResourceWorkspaceItemDto = ResourceDto & {
   currentFacts: {
     hasRealization: boolean
@@ -24,9 +28,21 @@ export type ResourceWorkspacePageDto = {
   page: number
   pageSize: number
   hasMore: boolean
+  total: number
+  counts: {
+    all: number
+    active: number
+    retired: number
+    missingAddress: number
+    missingScope: number
+    missingResponsibility: number
+  }
   asOf: string
   responsibilityScope: string | null
   dataState: string | null
+  lifecycle: ResourceWorkspaceLifecycle
+  sortBy: ResourceWorkspaceSortBy
+  sortDirection: ResourceWorkspaceSortDirection
 }
 
 async function request<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
@@ -64,16 +80,24 @@ export function listCatalogueResourceWorkspace(
   search = "",
   responsibilityScope = "",
   options: {
-    includeRetired?: boolean
+    pageSize?: number
+    lifecycle?: ResourceWorkspaceLifecycle
     dataState?: ResourceWorkspaceDataState
+    sortBy?: ResourceWorkspaceSortBy
+    sortDirection?: ResourceWorkspaceSortDirection
   } = {},
 ): Promise<ResourceWorkspacePageDto> {
-  const params = new URLSearchParams({ page: String(page), pageSize: "50" })
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(options.pageSize ?? 50),
+    lifecycle: options.lifecycle ?? "active",
+    sortBy: options.sortBy ?? "name",
+    sortDirection: options.sortDirection ?? "asc",
+  })
   if (search.trim()) params.set("search", search.trim())
   if (responsibilityScope.trim()) {
     params.set("responsibilityScope", responsibilityScope.trim())
   }
-  if (options.includeRetired) params.set("includeRetired", "true")
   if (options.dataState) params.set("dataState", options.dataState)
   return request(`/api/v1/catalogues/resource-workspace?${params}`)
 }
