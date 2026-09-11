@@ -35,56 +35,82 @@ M1 backend repository boundary
 
 - M1 — complete in `f0e281e`.
 - M2 — complete in PR #74, squash merge `91eb009c2338697458ba3874836c93cc044f753a`.
-- M3 — complete in PR #75, squash merge `18787e3f790368dec8d57078b47c7b6454e85b5d`; all required hosted gates passed.
+- M3 — complete in PR #75, squash merge `18787e3f790368dec8d57078b47c7b6454e85b5d`.
+- M4 — complete in PR #76, squash merge `a2caf39587c111fe97341686ff92fbeb9d30599d`; all required hosted gates passed.
 
-## M4 — Platform consolidation
+## M5 — Capability-oriented internals
 
-Status: `implementation and architectural review complete; final hosted PR gates pending` on branch `refactor/m4-platform-consolidation`.
+Status: `active` on branch `refactor/m5-capability-internals`.
 
-Goal: remove legacy top-level `napms.bootstrap` and `napms.runtime`, leaving process/runtime mechanics only under `napms.platform`.
+M5 refines only application layers where actual change locality shows independent responsibilities. File size alone is not a reason to split. M5 is one milestone PR; each accepted context refinement is an atomic commit and hosted gates run once at the end.
 
-Accepted ownership:
-- authentication/session and enterprise identity mechanics -> `platform/auth/`;
-- generic HTTP shell, public HTTP support, correlation/error/logging/session endpoints -> `platform/http/`;
-- executable assembly, process configuration and HTTP entrypoint -> `platform/bootstrap/`;
-- migration runner and migration CLI -> `platform/database/`;
-- existing M3 wiring modules already under `platform/bootstrap/` remain there;
-- local demo seeding remains an explicit local-dev bootstrap utility; it is fixture/operational setup, not authoritative product/domain behavior;
-- no context/workflow core may import platform;
-- platform may depend outward on concrete context/workflow adapters for executable assembly but owns no feature/domain truth.
+### First accepted slice — Application Catalogue
 
-Implemented target:
+Application Catalogue has sufficient evidence for capability decomposition: its application layer contains separate curation, discovery/read, and accepted I31 Application Catalogue Target responsibilities. The split is intentionally coarse; do not create one folder per use case.
+
+Target application shape:
 
 ```text
-napms/platform/
-  auth/
-  bootstrap/
-  database/
-  http/
+contexts/application_catalogue/application/
+  __init__.py
+  ports.py
+  curation/
+  discovery/
+  target/
 ```
 
-Legacy top-level `napms.bootstrap`, `napms.runtime`, and `napms.composition` are absent. Production package top level is only `contexts / workflows / platform` plus package metadata. Test taxonomy was aligned under `tests/platform` and old `tests/bootstrap`, `tests/runtime`, and `tests/composition` locations were removed.
+`curation/` owns the pre-I31/general catalogue mutation use cases still retained for compatibility and shared catalogue truth.
 
-Validation before final PR:
-- targeted auth: 13 passed;
-- platform + architecture: 183 passed;
-- `make test`: 807 passed, 141 deselected;
-- `make harness-check`: passed;
-- `make knowledge-check`: passed;
-- PostgreSQL 16 `make postgres-test`: 141 passed, no skipped;
-- `docker compose config`: passed;
-- `docker compose build`: passed.
+`discovery/` owns catalogue/detail/participant/interaction discovery and resolve-oriented reads.
 
-Final architectural review confirms:
-- `platform/http` imports no bounded context or workflow modules;
-- feature HTTP wiring/error registration lives in `platform/bootstrap/http_process.py`;
-- context domain/application and workflow application code do not import `napms.platform`;
-- console entrypoints use final platform namespaces;
-- process/runtime mechanics are fully consolidated under `napms.platform` without compatibility shims.
+`target/` owns the accepted I31 Application Catalogue Target application contract and use cases. `target` is accepted requirement terminology, not a temporary generic bucket.
+
+Mapping:
+
+```text
+curation.py                       -> curation/create_application.py
+curation_mutation.py              -> curation/mutation.py
+application_structure_curation.py -> curation/application_structure.py
+component_structure_curation.py   -> curation/component_structure.py
+dcs_curation.py                   -> curation/dcs.py
+deployment_curation.py            -> curation/deployments.py
+binding_curation.py               -> curation/bindings.py
+structure_curation.py             -> curation/structure.py
+
+curation_detail.py                -> discovery/catalogue_detail.py
+curation_read.py                  -> discovery/catalogue.py
+describe_interactions.py          -> discovery/describe_interactions.py
+list_interactions.py              -> discovery/list_interactions.py
+participant_discovery.py          -> discovery/participants.py
+resolve.py                        -> discovery/resolve.py
+
+target_curation.py                -> target/curation.py
+target_metadata_curation.py       -> target/metadata.py
+target_structure_curation.py      -> target/structure.py
+target_binding_curation.py        -> target/bindings.py
+target_lifecycle.py               -> target/lifecycle.py
+target_retirement.py              -> target/retirement.py
+target_read.py                    -> target/read.py
+target_selection_read.py          -> target/selection.py
+target_ports.py                   -> target/ports.py
+```
+
+Rules:
+- preserve behavior and public application types; this slice is structural only;
+- `application/ports.py` remains the context-wide application contract surface used by more than one capability;
+- `target/` may depend on root `ports.py` and domain, but must not import `curation/` or `discovery/`;
+- `curation/` and `discovery/` must not import `target/`;
+- presentation/infrastructure/bootstrap consumers update directly to final imports; no compatibility facades;
+- move matching unit tests into `tests/application_catalogue/curation`, `discovery`, or `target` where the ownership is unambiguous; integration tests remain under `tests/integration`;
+- add architecture guards for the explicit capability boundaries.
+
+### Re-evaluation after ACC
+
+Resource Catalogue is the only current secondary candidate: `curation`, `realization`, and `responsibility/scope` appear to be separate change axes. Do not move it until the ACC slice is reviewed. Access Policy and the remaining contexts/workflows currently do not justify additional package depth.
 
 ## Exit criteria
 
-M4 closes when the final milestone PR passes all required hosted gates and is squash-merged to `main`.
+M5 closes when every accepted capability split is behavior-preserving, newly explicit capability boundaries are protected by architecture/locality tests, full local/integration checks pass, and one final M5 PR passes required hosted gates.
 
 ## Blockers
 
@@ -92,4 +118,4 @@ None.
 
 ## Next
 
-Open the final M4 milestone PR, run required hosted gates, and squash-merge if green. Do not start M5 or make material changes after the final gate without returning the PR to draft and gating again.
+Execute only the Application Catalogue capability slice above as one atomic commit, run targeted/architecture plus full core/harness/knowledge checks, push, and stop for architectural review. Do not start Resource Catalogue, M6, or create a PR.
