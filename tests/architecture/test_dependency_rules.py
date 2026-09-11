@@ -17,6 +17,7 @@ NETWORK_ENFORCEMENT_PLACEMENT = NAPMS / "network_enforcement_placement"
 REQUIREMENT_POLICY_ALIGNMENT = NAPMS / "requirement_policy_alignment"
 RUNTIME = NAPMS / "runtime"
 APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "adapters" / "http"
+RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "adapters" / "http"
 
 DOMAIN_LAYERS = (
     ACCESS_POLICY / "domain",
@@ -98,6 +99,27 @@ def test_application_catalogue_target_http_is_owner_local():
     assert (APPLICATION_CATALOGUE_HTTP / "target_retirement.py").is_file()
     assert not (RUNTIME / "catalogue_target_http.py").exists()
     assert not (RUNTIME / "catalogue_target_retirement_http.py").exists()
+
+
+def test_catalogue_http_endpoints_are_not_implemented_in_runtime():
+    violations = []
+    for path in RUNTIME.glob("catalogue_*_http.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            for decorator in getattr(node, "decorator_list", ()):
+                if (
+                    isinstance(decorator, ast.Call)
+                    and isinstance(decorator.func, ast.Attribute)
+                    and isinstance(decorator.func.value, ast.Name)
+                    and decorator.func.value.id == "router"
+                ):
+                    violations.append((path, decorator.func.attr))
+    assert violations == []
+
+
+def test_catalogue_owner_http_packages_exist():
+    assert APPLICATION_CATALOGUE_HTTP.is_dir()
+    assert RESOURCE_CATALOGUE_HTTP.is_dir()
 
 
 POSTGRES_SCHEMA_OWNERS = (
