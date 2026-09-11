@@ -2,7 +2,6 @@ import { useState } from "react"
 
 import { Button } from "@/design-system/components/Button"
 import { Field, Input, Select, Textarea } from "@/design-system/components/Field"
-import { Surface } from "@/design-system/primitives/Surface"
 
 export type RequestConnectivityDraft = {
   applicabilityKind: "Ongoing" | "AbsoluteWindow"
@@ -36,7 +35,10 @@ export function RequestConnectivityForm({
   }
 
   return (
-    <Surface as="form" onSubmit={submit} className="p-5">
+    <form
+      onSubmit={submit}
+      className="rounded-[var(--napms-surface-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] p-5 shadow-[var(--napms-surface-shadow)]"
+    >
       <h2 className="text-base font-semibold text-[var(--napms-color-text-primary)]">
         {needExists ? "Confirm access proposal" : "Business need"}
       </h2>
@@ -113,6 +115,6 @@ export function RequestConnectivityForm({
           Request access
         </Button>
       </div>
-    </Surface>
+    </form>
   )
 }
