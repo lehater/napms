@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M5 — Application Catalogue capability slice implemented; awaiting architectural review.
+Current task: M5 — implementation and architectural review complete; final PostgreSQL evidence before milestone PR.
 
 ## Working set
 
@@ -19,10 +19,10 @@ None.
 
 ## Gate
 
-The ACC application root now contains only `__init__.py`, `ports.py`, and `curation / discovery / target`; mapped flat modules are absent; all consumers use final imports; unit tests with unambiguous ownership follow the capability taxonomy. Architecture guards enforce root topology, flat-module removal, and the accepted cross-capability dependency direction. Validation: targeted Application Catalogue 151 passed; architecture 67 passed; `make test` 810 passed, 141 deselected; harness and knowledge checks passed.
+The accepted M5 scope is only the Application Catalogue capability split into `curation / discovery / target`. Architectural review passed: final root topology is explicit, legacy flat modules are absent, cross-capability direction is enforced, and Resource Catalogue was deliberately left unsplit because current change locality does not justify extra package boundaries. Validation already passed: targeted ACC 151, architecture 67, `make test` 810 with 141 deselected, harness and knowledge checks.
 
-Hosted PR gates remain deferred until the complete M5 milestone review.
+A real PostgreSQL integration run without skips is still required before the final M5 PR. Hosted gates remain deferred until that evidence is green.
 
 ## Next
 
-Perform architectural review of the Application Catalogue capability slice. Do not start Resource Catalogue, M6, or create a PR before that review.
+Run `make postgres-test` against configured PostgreSQL. If all integration tests pass without skips, open the final M5 milestone PR and run hosted gates. Do not start M6 before M5 is merged.
