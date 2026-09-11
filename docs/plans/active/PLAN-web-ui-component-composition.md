@@ -1,6 +1,6 @@
 # Web UI Component Composition Integration
 
-Status: `active`.
+Status: `active`
 
 ## Goal
 
@@ -25,8 +25,8 @@ Integrate the completed Web UI component-composition migration from branch `docs
 
 ## Blockers
 
-Current blocker is the final hosted gate. The first Harness run exposed an invalid active-plan capsule shape; that repository-process defect is being corrected on the same branch before re-gating.
+Current blocker is the final hosted gate. Earlier Harness runs exposed active-plan metadata/capsule format defects; those repository-process defects are corrected on the same branch before re-gating.
 
 ## Next
 
-Correct the active resume capsule, request the final hosted gate again, inspect Web/Harness results and logs, fix any remaining failures on the same branch, then squash merge PR #91 when green.
+Request the final hosted gate again, inspect Web/Harness results and logs, fix any remaining failures on the same branch, then squash merge PR #91 when green.
