@@ -1,4 +1,3 @@
-import ast
 from pathlib import Path
 
 
@@ -36,16 +35,5 @@ def test_structure_mutations_are_split_by_owner():
     assert "class RenameApplication" not in component_source
 
 
-def test_structure_exports_contain_no_use_case_implementation():
-    tree = ast.parse(STRUCTURE_EXPORTS.read_text(encoding="utf-8"))
-    implementation_nodes = (
-        ast.ClassDef,
-        ast.FunctionDef,
-        ast.AsyncFunctionDef,
-    )
-    violations = [
-        node.name
-        for node in tree.body
-        if isinstance(node, implementation_nodes)
-    ]
-    assert violations == []
+def test_pre_m5_structure_facade_is_absent():
+    assert not STRUCTURE_EXPORTS.exists()

@@ -4,6 +4,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parents[2]
 NAPMS = ROOT / "src" / "napms"
+CONTEXTS = NAPMS / "contexts"
 
 ACCESS_POLICY = NAPMS / "contexts" / "access_policy"
 ACCESS_POLICY_REALIZATION = NAPMS / "contexts" / "access_policy_realization"
@@ -96,6 +97,20 @@ FORBIDDEN_INFRASTRUCTURE_ROOTS = (
     "uvicorn",
 )
 
+CONTEXT_ROOT_ENTRIES = {
+    "__init__.py",
+    "domain",
+    "application",
+    "infrastructure",
+    "presentation",
+}
+WORKFLOW_ROOT_ENTRIES = {
+    "__init__.py",
+    "application",
+    "infrastructure",
+    "presentation",
+}
+
 
 def imported_modules(path):
     tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -138,38 +153,69 @@ def test_core_has_no_infrastructure_framework_imports():
     assert violations == []
 
 
-def test_domain_layers_do_not_depend_on_application_or_adapters():
+def test_domain_layers_do_not_depend_on_application_or_outer_layers():
     violations = []
     for layer in DOMAIN_LAYERS:
         for path in layer.rglob("*.py"):
             for module in imported_modules(path):
-                if ".application" in module or ".adapters" in module:
+                if (
+                    ".application" in module
+                    or ".infrastructure" in module
+                    or ".presentation" in module
+                ):
                     violations.append((path, module))
     assert violations == []
 
 
-def test_core_does_not_depend_on_adapter_layer():
+def test_context_core_has_no_outer_layer_dependencies():
     violations = []
-    for layer in CORE_LAYERS:
-        for path in layer.rglob("*.py"):
-            for module in imported_modules(path):
-                if ".adapters" in module:
-                    violations.append((path, module))
+    for context in CONTEXTS.iterdir():
+        if not context.is_dir() or context.name == "__pycache__":
+            continue
+        for layer_name in ("domain", "application"):
+            for path in (context / layer_name).rglob("*.py"):
+                for module in imported_modules(path):
+                    if ".infrastructure" in module or ".presentation" in module:
+                        violations.append((path, module))
     assert violations == []
 
 
-def test_semantic_owner_adapters_do_not_depend_on_process_http_assembly():
+def test_context_roots_use_only_final_layers():
     violations = []
-    adapter_roots = sorted(
-        path / "adapters"
-        for path in NAPMS.iterdir()
-        if path.is_dir() and (path / "adapters").is_dir()
-    )
-    for adapter_root in adapter_roots:
-        for path in adapter_root.rglob("*.py"):
-            for module in imported_modules(path):
-                if module == "napms.platform.http.api":
-                    violations.append((path, module))
+    for context in CONTEXTS.iterdir():
+        if not context.is_dir() or context.name == "__pycache__":
+            continue
+        unexpected = {
+            path.name
+            for path in context.iterdir()
+            if path.name != "__pycache__" and path.name not in CONTEXT_ROOT_ENTRIES
+        }
+        if unexpected:
+            violations.append((context, unexpected))
+    assert violations == []
+
+
+def test_workflow_roots_use_only_final_layers():
+    violations = []
+    for workflow in WORKFLOWS.iterdir():
+        if not workflow.is_dir() or workflow.name == "__pycache__":
+            continue
+        unexpected = {
+            path.name
+            for path in workflow.iterdir()
+            if path.name != "__pycache__" and path.name not in WORKFLOW_ROOT_ENTRIES
+        }
+        if unexpected:
+            violations.append((workflow, unexpected))
+    assert violations == []
+
+
+def test_forbidden_structural_buckets_are_absent_globally():
+    violations = [
+        path
+        for path in NAPMS.rglob("*")
+        if path.is_dir() and path.name in {"adapters", "composition"}
+    ]
     assert violations == []
 
 
@@ -248,15 +294,6 @@ def test_process_http_has_only_direct_process_routes():
         "Liveness",
         "Readiness",
     }
-
-
-def test_semantic_adapters_do_not_import_process_http_api():
-    violations = []
-    for path in NAPMS.glob("*/adapters/**/*.py"):
-        for module in imported_modules(path):
-            if module == "napms.platform.http.api":
-                violations.append((path, module))
-    assert violations == []
 
 
 POSTGRES_SCHEMA_OWNERS = (
@@ -354,15 +391,6 @@ BOUNDED_CONTEXT_CORES = (
 )
 
 
-def test_network_environment_operations_has_no_legacy_package():
-    assert not (NAPMS / "network_environment_operations").exists()
-
-
-def test_requirement_policy_alignment_uses_final_workflow_namespace():
-    assert REQUIREMENT_POLICY_ALIGNMENT.is_dir()
-    assert not (NAPMS / "requirement_policy_alignment").exists()
-
-
 def test_workflow_application_has_no_outer_layer_dependencies():
     violations = []
     for workflow in (
@@ -404,154 +432,6 @@ def test_acc_target_read_model_has_no_resource_catalogue_sql():
     assert "napms_resource_catalogue" not in ACC_TARGET_READ_MODEL.read_text(
         encoding="utf-8"
     )
-
-
-def test_policy_export_uses_final_workflow_namespace():
-    assert POLICY_EXPORT.is_dir()
-    assert not (NAPMS / "policy_export").exists()
-
-
-def test_scoped_connectivity_inventory_uses_final_workflow_namespace():
-    assert SCOPED_CONNECTIVITY_INVENTORY.is_dir()
-    assert not (NAPMS / "scoped_connectivity_inventory").exists()
-
-
-def test_network_operator_view_uses_final_workflow_namespace():
-    assert NETWORK_OPERATOR_VIEW.is_dir()
-    assert not (NAPMS / "network_operator_view").exists()
-
-
-def test_traffic_analysis_uses_final_workflow_namespace():
-    assert TRAFFIC_ANALYSIS.is_dir()
-    assert not (NAPMS / "traffic_analysis").exists()
-
-
-def test_generic_composition_package_is_absent():
-    assert not (NAPMS / "composition").exists()
-
-
-def test_access_policy_has_no_legacy_package():
-    assert not (NAPMS / "access_policy").exists()
-
-
-def test_access_policy_realization_has_no_legacy_package():
-    assert not (NAPMS / "access_policy_realization").exists()
-
-
-def test_access_policy_realization_core_has_no_outer_layer_dependencies():
-    violations = []
-    for layer_name in ("domain", "application"):
-        layer = ACCESS_POLICY_REALIZATION / layer_name
-        for path in layer.rglob("*.py"):
-            for module in imported_modules(path):
-                if ".infrastructure" in module or ".presentation" in module:
-                    violations.append((path, module))
-    assert violations == []
-
-
-def test_authority_management_has_no_legacy_package():
-    assert not (NAPMS / "authority_management").exists()
-
-
-def test_application_catalogue_has_no_legacy_package():
-    assert not (NAPMS / "application_catalogue").exists()
-
-
-def test_authority_management_core_has_no_outer_layer_dependencies():
-    violations = []
-    for layer_name in ("domain", "application"):
-        layer = AUTHORITY_MANAGEMENT / layer_name
-        for path in layer.rglob("*.py"):
-            for module in imported_modules(path):
-                if ".infrastructure" in module or ".presentation" in module:
-                    violations.append((path, module))
-    assert violations == []
-
-
-def test_resource_catalogue_has_no_legacy_package():
-    assert not (NAPMS / "resource_catalogue").exists()
-
-
-def test_resource_catalogue_core_has_no_outer_layer_dependencies():
-    violations = []
-    for layer_name in ("domain", "application"):
-        layer = RESOURCE_CATALOGUE / layer_name
-        for path in layer.rglob("*.py"):
-            for module in imported_modules(path):
-                if ".infrastructure" in module or ".presentation" in module:
-                    violations.append((path, module))
-    assert violations == []
-
-
-def test_technical_access_evidence_has_no_legacy_package():
-    assert not (NAPMS / "technical_access_evidence").exists()
-
-
-def test_network_enforcement_placement_has_no_legacy_package():
-    assert not (NAPMS / "network_enforcement_placement").exists()
-
-
-def test_connectivity_requirements_has_no_legacy_package():
-    assert not (NAPMS / "connectivity_requirements").exists()
-
-
-def test_connectivity_requirements_core_has_no_outer_layer_dependencies():
-    violations = []
-    for layer_name in ("domain", "application"):
-        layer = CONNECTIVITY_REQUIREMENTS / layer_name
-        for path in layer.rglob("*.py"):
-            for module in imported_modules(path):
-                if ".infrastructure" in module or ".presentation" in module:
-                    violations.append((path, module))
-    assert violations == []
-
-
-def test_connectivity_decision_has_no_legacy_package():
-    assert not (NAPMS / "connectivity_decision").exists()
-
-
-def test_connectivity_decision_core_has_no_outer_layer_dependencies():
-    violations = []
-    for layer_name in ("domain", "application"):
-        layer = CONNECTIVITY_DECISION / layer_name
-        for path in layer.rglob("*.py"):
-            for module in imported_modules(path):
-                if ".infrastructure" in module or ".presentation" in module:
-                    violations.append((path, module))
-    assert violations == []
-
-
-def test_network_enforcement_placement_core_has_no_outer_layer_dependencies():
-    violations = []
-    for layer_name in ("domain", "application"):
-        layer = NETWORK_ENFORCEMENT_PLACEMENT / layer_name
-        for path in layer.rglob("*.py"):
-            for module in imported_modules(path):
-                if ".infrastructure" in module or ".presentation" in module:
-                    violations.append((path, module))
-    assert violations == []
-
-
-def test_technical_access_evidence_core_has_no_outer_layer_dependencies():
-    violations = []
-    for layer_name in ("domain", "application"):
-        layer = TECHNICAL_ACCESS_EVIDENCE / layer_name
-        for path in layer.rglob("*.py"):
-            for module in imported_modules(path):
-                if ".infrastructure" in module or ".presentation" in module:
-                    violations.append((path, module))
-    assert violations == []
-
-
-def test_network_environment_operations_core_has_no_outer_layer_dependencies():
-    violations = []
-    for layer_name in ("domain", "application"):
-        layer = NETWORK_ENVIRONMENT_OPERATIONS / layer_name
-        for path in layer.rglob("*.py"):
-            for module in imported_modules(path):
-                if ".infrastructure" in module or ".presentation" in module:
-                    violations.append((path, module))
-    assert violations == []
 
 
 def test_bounded_context_core_does_not_import_another_bounded_context():
