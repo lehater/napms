@@ -24,6 +24,12 @@
   --napms-color-danger-dot: #ef4444;
   --napms-color-danger-bg: #fef2f2;
 
+  --napms-color-nav-bg: #0b1628;
+  --napms-color-nav-active: #172e50;
+  --napms-color-nav-text: #d9e4f2;
+  --napms-color-nav-muted: #8fa6c2;
+  --napms-color-nav-divider: rgb(255 255 255 / 10%);
+
   --napms-control-height: 42px;
   --napms-control-height-sm: 34px;
   --napms-control-radius: 6px;
@@ -32,6 +38,7 @@
   --napms-checkbox-size: 16px;
   --napms-icon-size-control: 16px;
 
+  --napms-sidebar-width: 232px;
   --napms-page-gap: 20px;
   --napms-table-header-height: 44px;
   --napms-table-row-height: 62px;
