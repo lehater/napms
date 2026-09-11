@@ -46,15 +46,17 @@ def test_j00_resource_catalogue_reference_layout() -> None:
 
         desktop_nav.get_by_role("button", name="Resources").click()
         expect(page.get_by_role("heading", name="Resource Catalogue", exact=True)).to_be_visible()
+        search = page.get_by_label("Search resources")
+        search.fill("Visual Resource")
         expect(page.get_by_role("cell", name="Visual Resource Alpha", exact=True)).to_be_visible()
         expect(page.get_by_role("cell", name="Visual Resource Beta", exact=True)).to_be_visible()
         expect(page.get_by_label("Select all resources on this page")).to_be_visible()
 
-        name_header = page.locator("th[aria-sort='ascending']").filter(has_text="Name")
-        expect(name_header).to_be_visible()
-        name_header.get_by_role("button").click()
+        name_header = page.get_by_role("columnheader", name="Sort by name")
+        expect(name_header).to_have_attribute("aria-sort", "ascending")
+        name_header.get_by_role("button", name="Sort by name").click()
         expect(name_header).to_have_attribute("aria-sort", "descending")
-        name_header.get_by_role("button").click()
+        name_header.get_by_role("button", name="Sort by name").click()
         expect(name_header).to_have_attribute("aria-sort", "ascending")
 
         for label, count in (
