@@ -18,7 +18,7 @@ import {
 } from "@/features/catalogues/api/resourceWorkspace"
 
 const controlClass =
-  "min-h-10 w-full rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none transition focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
+  "h-[42px] min-h-[42px] w-full rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none transition focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
 
 function errorFrom(caught: unknown, fallback: string) {
   return caught instanceof ApiError
@@ -34,7 +34,7 @@ function DataState({ item }: { item: ResourceWorkspaceItemDto }) {
 
   if (missing.length === 0) {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
         <CheckCircle2 className="size-3.5" aria-hidden="true" />
         No missing facts
       </span>
@@ -46,7 +46,7 @@ function DataState({ item }: { item: ResourceWorkspaceItemDto }) {
       {missing.map((label) => (
         <span
           key={label}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700"
         >
           <AlertTriangle className="size-3.5" aria-hidden="true" />
           {label}
@@ -60,7 +60,7 @@ function LifecycleBadge({ value }: { value: string }) {
   const active = value === "Active"
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold ${
+      className={`inline-flex h-[25px] items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold ${
         active
           ? "bg-emerald-50 text-emerald-700"
           : "bg-slate-100 text-slate-600"
@@ -79,13 +79,13 @@ function ScopeChips({ values }: { values: string[] }) {
       {values.slice(0, 2).map((value) => (
         <span
           key={value}
-          className="rounded bg-[#EFF6FF] px-2 py-0.5 text-xs font-medium text-[#1D4ED8]"
+          className="inline-flex h-6 items-center rounded bg-[#EFF6FF] px-2 text-xs font-semibold text-[#1D4ED8]"
         >
           {value}
         </span>
       ))}
       {values.length > 2 ? (
-        <span className="rounded bg-[#F1F5F9] px-2 py-0.5 text-xs text-[#64748B]">
+        <span className="inline-flex h-6 items-center rounded bg-[#F1F5F9] px-2 text-xs text-[#64748B]">
           +{values.length - 2}
         </span>
       ) : null}
@@ -189,29 +189,32 @@ export function ResourcesPage({
   }
 
   return (
-    <div className="mx-auto grid max-w-[1480px] gap-5">
+    <div className="grid w-full gap-5">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#172033]">Resource Catalogue</h1>
+          <h1 className="text-[27px] font-bold leading-8 text-[#172033]">Resource Catalogue</h1>
           <p className="mt-1 text-sm text-[#64748B]">
             Find and manage network-relevant resources.
           </p>
         </div>
-        <Button onClick={() => setShowCreate(true)}>
+        <Button
+          className="h-[42px] min-h-[42px] px-5"
+          onClick={() => setShowCreate(true)}
+        >
           <Plus className="size-4" aria-hidden="true" />
           New resource
         </Button>
       </header>
 
-      <section className="overflow-hidden rounded-lg border border-[#DCE3EC] bg-white shadow-sm">
-        <form className="border-b border-[#E2E8F0] p-4" onSubmit={applySearch}>
+      <section className="overflow-hidden rounded-[10px] border border-[#DCE3EC] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+        <form className="border-b border-[#E2E8F0] p-5" onSubmit={applySearch}>
           <div className="relative">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#94A3B8]"
+              className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#94A3B8]"
               aria-hidden="true"
             />
             <input
-              className={`${controlClass} pl-10`}
+              className={`${controlClass} pl-11`}
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="Search by name, reference, address, scope or owner…"
@@ -219,9 +222,9 @@ export function ResourcesPage({
             />
           </div>
 
-          <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(13rem,1fr)_11rem_13rem_auto_auto]">
+          <div className="mt-5 grid gap-3 lg:grid-cols-[290px_155px_230px_84px_auto] lg:gap-5">
             <div>
-              <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[#64748B]">
+              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.07em] text-[#64748B]">
                 Scope
               </label>
               <input
@@ -237,7 +240,7 @@ export function ResourcesPage({
                 ))}
               </datalist>
             </div>
-            <label className="grid gap-1 text-[11px] font-semibold uppercase tracking-wide text-[#64748B]">
+            <label className="grid gap-2 text-[11px] font-bold uppercase tracking-[0.07em] text-[#64748B]">
               Lifecycle
               <select
                 className={controlClass}
@@ -251,7 +254,7 @@ export function ResourcesPage({
                 <option value="all">All</option>
               </select>
             </label>
-            <label className="grid gap-1 text-[11px] font-semibold uppercase tracking-wide text-[#64748B]">
+            <label className="grid gap-2 text-[11px] font-bold uppercase tracking-[0.07em] text-[#64748B]">
               Data state
               <select
                 className={controlClass}
@@ -266,13 +269,17 @@ export function ResourcesPage({
                 <option value="missing-responsibility">Missing responsibility</option>
               </select>
             </label>
-            <Button type="submit" variant="secondary" className="self-end">
+            <Button
+              type="submit"
+              variant="secondary"
+              className="h-[42px] min-h-[42px] self-end px-4"
+            >
               Apply
             </Button>
             <Button
               type="button"
               variant="ghost"
-              className="self-end"
+              className="h-[42px] min-h-[42px] self-end justify-start px-1 lg:justify-center"
               onClick={resetFilters}
             >
               Reset
@@ -280,7 +287,7 @@ export function ResourcesPage({
           </div>
         </form>
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-[#E2E8F0] px-4 py-3">
+        <div className="flex min-h-[48px] flex-wrap items-center gap-3 border-b border-[#E2E8F0] px-5 py-2.5">
           {[
             ["", "All"],
             ["missing-address", "No address"],
@@ -291,7 +298,7 @@ export function ResourcesPage({
               key={value}
               type="button"
               onClick={() => updateDataState(value as ResourceWorkspaceDataState)}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+              className={`h-7 rounded-full border px-4 text-xs font-semibold transition ${
                 dataState === value
                   ? "border-[#93C5FD] bg-[#EFF6FF] text-[#1D4ED8]"
                   : "border-[#E2E8F0] bg-white text-[#64748B] hover:bg-[#F8FAFC]"
@@ -303,43 +310,54 @@ export function ResourcesPage({
         </div>
 
         {loading ? (
-          <div className="p-8 text-sm text-[#64748B]">Loading resources…</div>
+          <div className="flex min-h-[456px] items-start p-8 text-sm text-[#64748B]">
+            Loading resources…
+          </div>
         ) : error ? (
-          <div className="p-8">
+          <div className="min-h-[456px] p-8">
             <p className="text-sm text-red-700">{error.message}</p>
             <Button className="mt-3" variant="secondary" onClick={() => void load()}>
               Retry
             </Button>
           </div>
         ) : items.length === 0 ? (
-          <div className="p-10 text-center">
+          <div className="flex min-h-[456px] flex-col items-center justify-center p-10 text-center">
             <div className="text-sm font-semibold text-[#172033]">No resources found</div>
             <p className="mt-1 text-sm text-[#64748B]">
               Change the search or filters, or create a new resource.
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1000px] border-collapse text-left text-sm">
-              <thead className="bg-[#F8FAFC] text-[11px] font-semibold uppercase tracking-wide text-[#64748B]">
-                <tr className="border-b border-[#E2E8F0]">
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Reference</th>
-                  <th className="px-4 py-3">Addresses</th>
-                  <th className="px-4 py-3">Scope(s)</th>
-                  <th className="px-4 py-3">Technical owner</th>
-                  <th className="px-4 py-3">Lifecycle</th>
-                  <th className="px-4 py-3">Data state</th>
+          <div className="min-h-[456px] overflow-x-auto">
+            <table className="w-full min-w-[1148px] table-fixed border-collapse text-left text-sm">
+              <colgroup>
+                <col style={{ width: "15.7%" }} />
+                <col style={{ width: "12.2%" }} />
+                <col style={{ width: "16%" }} />
+                <col style={{ width: "14.5%" }} />
+                <col style={{ width: "16.7%" }} />
+                <col style={{ width: "9.7%" }} />
+                <col style={{ width: "15.2%" }} />
+              </colgroup>
+              <thead className="bg-[#F8FAFC] text-[11px] font-bold uppercase tracking-[0.07em] text-[#64748B]">
+                <tr className="h-11 border-b border-[#E2E8F0]">
+                  <th className="px-5">Name</th>
+                  <th className="px-5">Reference</th>
+                  <th className="px-5">Addresses</th>
+                  <th className="px-5">Scope(s)</th>
+                  <th className="px-5">Technical owner</th>
+                  <th className="px-5">Lifecycle</th>
+                  <th className="px-5">Data state</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E2E8F0]">
                 {items.map((item) => (
                   <tr
                     key={item.resourceReference}
-                    className="cursor-pointer bg-white transition hover:bg-[#F8FAFC]"
+                    className="h-[62px] cursor-pointer bg-white transition hover:bg-[#F8FAFC]"
                     onClick={() => onOpenResource(item.resourceReference)}
                   >
-                    <td className="px-4 py-3.5 align-top">
+                    <td className="px-5 py-3 align-middle">
                       <button
                         type="button"
                         className="font-semibold text-[#2563EB] hover:underline"
@@ -351,10 +369,10 @@ export function ResourcesPage({
                         {item.displayName || shortId(item.resourceReference)}
                       </button>
                     </td>
-                    <td className="px-4 py-3.5 align-top font-mono text-xs text-[#64748B]">
+                    <td className="px-5 py-3 align-middle font-mono text-xs text-[#64748B]">
                       {shortId(item.resourceReference)}
                     </td>
-                    <td className="px-4 py-3.5 align-top">
+                    <td className="px-5 py-3 align-middle">
                       {item.currentAddresses.length === 0 ? (
                         <span className="text-[#94A3B8]">—</span>
                       ) : (
@@ -370,18 +388,18 @@ export function ResourcesPage({
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3.5 align-top">
+                    <td className="px-5 py-3 align-middle">
                       <ScopeChips values={item.currentScopes} />
                     </td>
-                    <td className="px-4 py-3.5 align-top text-[#334155]">
+                    <td className="px-5 py-3 align-middle text-[#334155]">
                       {item.technicalOwners.length > 0
                         ? item.technicalOwners.join(", ")
                         : <span className="text-[#94A3B8]">—</span>}
                     </td>
-                    <td className="px-4 py-3.5 align-top">
+                    <td className="px-5 py-3 align-middle">
                       <LifecycleBadge value={item.lifecycle} />
                     </td>
-                    <td className="px-4 py-3.5 align-top">
+                    <td className="px-5 py-3 align-middle">
                       <DataState item={item} />
                     </td>
                   </tr>
@@ -391,23 +409,25 @@ export function ResourcesPage({
           </div>
         )}
 
-        <div className="flex items-center justify-between border-t border-[#E2E8F0] px-4 py-3">
+        <div className="flex min-h-[62px] items-center justify-between border-t border-[#E2E8F0] px-5 py-3.5">
           <span className="text-xs text-[#64748B]">
             Page {page} · up to 50 resources per page
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <Button
               variant="secondary"
+              className="h-[34px] min-h-[34px] px-3 py-1.5 text-xs"
               disabled={page <= 1 || loading}
               onClick={() => onPageChange(page - 1)}
             >
               Previous
             </Button>
-            <span className="flex size-9 items-center justify-center rounded-md border border-[#93C5FD] bg-[#EFF6FF] text-sm font-semibold text-[#1D4ED8]">
+            <span className="flex size-[34px] items-center justify-center rounded-md border border-[#93C5FD] bg-[#EFF6FF] text-xs font-semibold text-[#1D4ED8]">
               {page}
             </span>
             <Button
               variant="secondary"
+              className="h-[34px] min-h-[34px] px-3 py-1.5 text-xs"
               disabled={!hasMore || loading}
               onClick={() => onPageChange(page + 1)}
             >
@@ -419,21 +439,21 @@ export function ResourcesPage({
 
       {showCreate ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4"
           role="presentation"
           onMouseDown={(event) => {
             if (event.currentTarget === event.target && !creating) setShowCreate(false)
           }}
         >
           <div
-            className="w-full max-w-lg rounded-xl border border-[#E2E8F0] bg-white shadow-2xl"
+            className="w-full max-w-[500px] overflow-hidden rounded-xl border border-[#DCE3EC] bg-white shadow-2xl"
             role="dialog"
             aria-modal="true"
             aria-labelledby="create-resource-title"
           >
-            <div className="flex items-start justify-between border-b border-[#E2E8F0] px-5 py-4">
+            <div className="flex min-h-[89px] items-start justify-between border-b border-[#E2E8F0] px-7 py-6">
               <div>
-                <h2 id="create-resource-title" className="font-semibold text-[#172033]">
+                <h2 id="create-resource-title" className="text-lg font-bold text-[#172033]">
                   New resource
                 </h2>
                 <p className="mt-1 text-xs text-[#64748B]">
@@ -442,7 +462,7 @@ export function ResourcesPage({
               </div>
               <button
                 type="button"
-                className="rounded-md p-2 text-[#64748B] hover:bg-[#F1F5F9]"
+                className="rounded-md p-1.5 text-[#64748B] hover:bg-[#F1F5F9]"
                 onClick={() => setShowCreate(false)}
                 disabled={creating}
                 aria-label="Close"
@@ -450,31 +470,39 @@ export function ResourcesPage({
                 <X className="size-4" aria-hidden="true" />
               </button>
             </div>
-            <form className="p-5" onSubmit={create}>
-              <label className="grid gap-1.5 text-sm font-medium text-[#172033]">
-                Display name
-                <input
-                  className={controlClass}
-                  value={displayName}
-                  onChange={(event) => setDisplayName(event.target.value)}
-                  placeholder="api-gateway"
-                  maxLength={256}
-                  autoFocus
-                />
-              </label>
-              {createError ? (
-                <p className="mt-3 text-sm text-red-700">{createError.message}</p>
-              ) : null}
-              <div className="mt-5 flex justify-end gap-2">
+            <form onSubmit={create}>
+              <div className="px-7 py-8">
+                <label className="grid gap-3 text-sm font-semibold text-[#172033]">
+                  Display name
+                  <input
+                    className={`${controlClass} h-11 min-h-11`}
+                    value={displayName}
+                    onChange={(event) => setDisplayName(event.target.value)}
+                    placeholder="api-gateway"
+                    maxLength={256}
+                    autoFocus
+                  />
+                </label>
+                <p className="mt-6 text-xs leading-5 text-[#64748B]">
+                  Resource identity can exist before realization, scope affiliation or responsibility facts are added.
+                </p>
+                {createError ? (
+                  <p className="mt-3 text-sm text-red-700">{createError.message}</p>
+                ) : null}
+              </div>
+              <div className="flex min-h-[74px] justify-end gap-3 border-t border-[#E2E8F0] px-7 py-[18px]">
                 <Button
                   type="button"
                   variant="secondary"
+                  className="h-[38px] min-h-[38px]"
                   disabled={creating}
                   onClick={() => setShowCreate(false)}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" loading={creating}>Create resource</Button>
+                <Button type="submit" className="h-[38px] min-h-[38px]" loading={creating}>
+                  Create resource
+                </Button>
               </div>
             </form>
           </div>
