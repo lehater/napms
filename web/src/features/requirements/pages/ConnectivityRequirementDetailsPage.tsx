@@ -1,33 +1,37 @@
 import { useEffect, useState } from "react"
 import { ArrowLeft, CircleAlert } from "lucide-react"
 
-import { ApiError } from "@/lib/api"
-import { getConnectivityRequirement, getConnectivityRequirementAlignment, retireConnectivityRequirement, setConnectivityRequirementApplicability, setConnectivityRequirementJustification, type ConnectivityRequirementDetailResponse, type RequirementApplicability, type RequirementPolicyAlignmentDetail, type RequirementPolicyAlignmentStatus } from "@/features/requirements/api"
+import { Button } from "@/design-system/components/Button"
+import { Field, Input, Select, Textarea } from "@/design-system/components/Field"
+import { DetailSection } from "@/design-system/patterns/detail/Detail"
+import { displayName } from "@/features/catalogues/components/CatalogueIdentity"
 import {
-  CatalogueIdentity,
-  displayName,
-  trafficAlternativeText,
-} from "@/features/catalogues/components/CatalogueIdentity"
-import { Button } from "@/components/ui/Button"
-import { Field, Select } from "@/components/ui/Field"
+  getConnectivityRequirement,
+  getConnectivityRequirementAlignment,
+  retireConnectivityRequirement,
+  setConnectivityRequirementApplicability,
+  setConnectivityRequirementJustification,
+  type ConnectivityRequirementDetailResponse,
+  type RequirementApplicability,
+  type RequirementPolicyAlignmentDetail,
+  type RequirementPolicyAlignmentStatus,
+} from "@/features/requirements/api"
+import {
+  RequirementHistorySections,
+  RequirementInteractionSection,
+  RequirementProvenanceSection,
+  applicabilityDisplay,
+} from "@/features/requirements/components/RequirementDetailSections"
+import {
+  RequirementAlignmentStatus,
+  RequirementLifecycleStatus,
+} from "@/features/requirements/components/RequirementStatus"
+import { ApiError } from "@/lib/api"
 import {
   nowLocalDateTimeInput,
   toLocalDateTimeInput,
   toOffsetAwareIso,
 } from "@/lib/datetime"
-
-function alignmentClasses(status: RequirementPolicyAlignmentStatus) {
-  switch (status) {
-    case "Covered":
-      return "border-green-200 bg-green-50 text-green-800"
-    case "Uncovered":
-      return "border-amber-200 bg-amber-50 text-amber-900"
-    case "NotCurrent":
-      return "border-slate-200 bg-slate-100 text-slate-700"
-    case "Unknown":
-      return "border-red-200 bg-red-50 text-red-800"
-  }
-}
 
 function alignmentExplanation(status: RequirementPolicyAlignmentStatus) {
   switch (status) {
@@ -40,12 +44,6 @@ function alignmentExplanation(status: RequirementPolicyAlignmentStatus) {
     case "Unknown":
       return "Authoritative policy coverage cannot be established safely at this time."
   }
-}
-
-function applicabilityText(value: RequirementApplicability) {
-  return value.kind === "Ongoing"
-    ? "Ongoing"
-    : `${value.start} → ${value.end}`
 }
 
 export function ConnectivityRequirementDetailsPage({
@@ -349,79 +347,48 @@ export function ConnectivityRequirementDetailsPage({
         </div>
       ) : requirement && detail && interaction ? (
         <div className="grid gap-6">
-          <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 md:p-6">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <h2 className="text-base font-semibold text-[#172033]">
-                  Policy coverage
-                </h2>
-                <p className="mt-1 max-w-3xl text-sm text-[#64748B]">
-                  Derived from this Requirement and effective Access Policy at one explicit logical time. It does not report configured/observed access.
-                </p>
-              </div>
+          <DetailSection
+            title="Policy coverage"
+            actions={
               <Field label="Alignment as of">
-                <input
+                <Input
                   type="datetime-local"
                   step="1"
                   value={alignmentAsOf}
                   onChange={(event) => setAlignmentAsOf(event.target.value)}
-                  className="min-h-10 rounded-md border border-[#CBD5E1] px-3 py-2 text-sm"
                 />
               </Field>
-            </div>
-
+            }
+          >
+            <p className="max-w-3xl text-sm text-[var(--napms-color-text-secondary)]">
+              Derived from this Requirement and effective Access Policy at one explicit logical time. It does not report configured/observed access.
+            </p>
             {alignmentError ? (
               <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
                 <div className="font-semibold">{alignmentError.code}</div>
                 <div className="mt-1">{alignmentError.message}</div>
               </div>
             ) : loadingAlignment ? (
-              <div className="mt-4 text-sm text-[#64748B]">
+              <div className="mt-4 text-sm text-[var(--napms-color-text-secondary)]">
                 Loading policy coverage…
               </div>
             ) : alignment ? (
               <div className="mt-4">
-                <span
-                  className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${alignmentClasses(alignment.status)}`}
-                >
-                  {alignment.status}
-                </span>
-                <p className="mt-3 text-sm text-[#475569]">
+                <RequirementAlignmentStatus status={alignment.status} />
+                <p className="mt-3 text-sm text-[var(--napms-color-text-body)]">
                   {alignmentExplanation(alignment.status)}
                 </p>
-                <div className="mt-2 text-xs text-[#64748B]">
+                <div className="mt-2 text-xs text-[var(--napms-color-text-secondary)]">
                   asOf {alignment.asOf}
                 </div>
               </div>
             ) : null}
-          </section>
+          </DetailSection>
 
-          <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 md:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h2 className="text-base font-semibold text-[#172033]">
-                  Requirement lifecycle
-                </h2>
-                <div className="mt-3 flex items-center gap-3">
-                  <span
-                    className={
-                      requirement.lifecycleState === "Active"
-                        ? "inline-flex rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-800"
-                        : "inline-flex rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700"
-                    }
-                  >
-                    {requirement.lifecycleState}
-                  </span>
-                  <span className="text-xs text-[#64748B]">
-                    aggregate version {requirement.version}
-                  </span>
-                </div>
-                <p className="mt-3 max-w-3xl text-sm text-[#64748B]">
-                  This lifecycle records whether the need remains current. It is not an
-                  approval or connectivity-decision status.
-                </p>
-              </div>
-              {requirement.lifecycleState === "Active" &&
+          <DetailSection
+            title="Requirement lifecycle"
+            actions={
+              requirement.lifecycleState === "Active" &&
               detail.capabilities.retire === "Permitted" ? (
                 <Button
                   variant="secondary"
@@ -430,100 +397,28 @@ export function ConnectivityRequirementDetailsPage({
                 >
                   Retire Requirement
                 </Button>
-              ) : null}
+              ) : null
+            }
+          >
+            <div className="flex items-center gap-3">
+              <RequirementLifecycleStatus state={requirement.lifecycleState} />
+              <span className="text-xs text-[var(--napms-color-text-secondary)]">
+                aggregate version {requirement.version}
+              </span>
             </div>
-          </section>
+            <p className="mt-3 max-w-3xl text-sm text-[var(--napms-color-text-secondary)]">
+              This lifecycle records whether the need remains current. It is not an approval or connectivity-decision status.
+            </p>
+          </DetailSection>
 
-          <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 md:p-6">
-            <h2 className="text-base font-semibold text-[#172033]">
-              Required semantic interaction
-            </h2>
-            <dl className="mt-4 grid gap-5 lg:grid-cols-2">
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
-                  Source Component Deployment
-                </dt>
-                <dd className="mt-1">
-                  <CatalogueIdentity
-                    name={requirement.catalogue?.sourceDisplayName}
-                    id={interaction.sourceComponentDeploymentId}
-                  />
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
-                  Destination Component Deployment
-                </dt>
-                <dd className="mt-1">
-                  <CatalogueIdentity
-                    name={requirement.catalogue?.destinationDisplayName}
-                    id={interaction.destinationComponentDeploymentId}
-                  />
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
-                  DCS revision
-                </dt>
-                <dd className="mt-1">
-                  <CatalogueIdentity
-                    name={requirement.catalogue?.dcsDisplayName}
-                    id={interaction.dcsContractRevisionId}
-                  />
-                  {(requirement.catalogue?.trafficAlternatives.length ?? 0) > 0 ? (
-                    <div className="mt-2 grid gap-1 text-xs text-[#64748B]">
-                      {requirement.catalogue?.trafficAlternatives.map(
-                        (alternative, index) => (
-                          <div key={index}>
-                            {trafficAlternativeText(alternative)}
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  ) : null}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
-                  Dependent Component Deployment
-                </dt>
-                <dd className="mt-1">
-                  {requirement.dependentComponentDeploymentId ===
-                  interaction.sourceComponentDeploymentId ? (
-                    <CatalogueIdentity
-                      name={requirement.catalogue?.sourceDisplayName}
-                      id={requirement.dependentComponentDeploymentId}
-                    />
-                  ) : (
-                    <CatalogueIdentity
-                      name={requirement.catalogue?.destinationDisplayName}
-                      id={requirement.dependentComponentDeploymentId}
-                    />
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
-                  Requirement Governance Scope
-                </dt>
-                <dd className="mt-1 text-sm">{requirement.governanceScope}</dd>
-              </div>
-            </dl>
-          </section>
+          <RequirementInteractionSection requirement={requirement} />
 
-          <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 md:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h2 className="text-base font-semibold text-[#172033]">
-                  Applicability
-                </h2>
-                <p className="mt-1 text-sm text-[#64748B]">
-                  Current: {applicabilityText(requirement.applicability)}
-                </p>
-                <div className="mt-1 text-xs text-[#64748B]">
-                  mutation: {detail.capabilities.setApplicability}
-                </div>
-              </div>
+          <DetailSection title="Applicability">
+            <p className="text-sm text-[var(--napms-color-text-secondary)]">
+              Current: {applicabilityDisplay(requirement.applicability)}
+            </p>
+            <div className="mt-1 text-xs text-[var(--napms-color-text-secondary)]">
+              mutation: {detail.capabilities.setApplicability}
             </div>
 
             <div className="mt-5 grid gap-4">
@@ -548,7 +443,7 @@ export function ConnectivityRequirementDetailsPage({
               {applicabilityKind === "AbsoluteWindow" ? (
                 <div className="grid gap-4 md:grid-cols-2">
                   <Field label="Start">
-                    <input
+                    <Input
                       type="datetime-local"
                       step="1"
                       value={windowStart}
@@ -557,11 +452,10 @@ export function ConnectivityRequirementDetailsPage({
                         requirement.lifecycleState === "Retired" ||
                         detail.capabilities.setApplicability !== "Permitted"
                       }
-                      className="min-h-10 rounded-md border border-[#CBD5E1] px-3 py-2 text-sm disabled:bg-[#F8FAFC]"
                     />
                   </Field>
                   <Field label="End">
-                    <input
+                    <Input
                       type="datetime-local"
                       step="1"
                       value={windowEnd}
@@ -570,7 +464,6 @@ export function ConnectivityRequirementDetailsPage({
                         requirement.lifecycleState === "Retired" ||
                         detail.capabilities.setApplicability !== "Permitted"
                       }
-                      className="min-h-10 rounded-md border border-[#CBD5E1] px-3 py-2 text-sm disabled:bg-[#F8FAFC]"
                     />
                   </Field>
                 </div>
@@ -592,16 +485,14 @@ export function ConnectivityRequirementDetailsPage({
                 </div>
               ) : null}
             </div>
-          </section>
+          </DetailSection>
 
-          <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 md:p-6">
-            <h2 className="text-base font-semibold text-[#172033]">
-              Business justification
-            </h2>
-            <p className="mt-1 text-xs text-[#64748B]">
+          <DetailSection title="Business justification">
+            <p className="text-xs text-[var(--napms-color-text-secondary)]">
               mutation: {detail.capabilities.setJustification}
             </p>
-            <textarea
+            <Textarea
+              className="mt-4"
               value={justification}
               onChange={(event) => setJustification(event.target.value)}
               rows={4}
@@ -610,7 +501,6 @@ export function ConnectivityRequirementDetailsPage({
                 requirement.lifecycleState === "Retired" ||
                 detail.capabilities.setJustification !== "Permitted"
               }
-              className="mt-4 w-full rounded-md border border-[#CBD5E1] px-3 py-2 text-sm disabled:bg-[#F8FAFC]"
             />
             {requirement.lifecycleState === "Active" &&
             detail.capabilities.setJustification === "Permitted" ? (
@@ -624,135 +514,10 @@ export function ConnectivityRequirementDetailsPage({
                 </Button>
               </div>
             ) : null}
-          </section>
+          </DetailSection>
 
-          <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 md:p-6">
-            <h2 className="text-base font-semibold text-[#172033]">
-              Declaration provenance
-            </h2>
-            <dl className="mt-4 grid gap-4 text-sm lg:grid-cols-2">
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
-                  Actor
-                </dt>
-                <dd className="mt-1">
-                  {requirement.declarationProvenance.actorId}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
-                  Effective time
-                </dt>
-                <dd className="mt-1">
-                  {requirement.declarationProvenance.effectiveTime}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
-                  Authority reference
-                </dt>
-                <dd className="mt-1 break-all font-mono text-xs">
-                  {requirement.declarationProvenance.authorityReference}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-[#64748B]">
-                  Catalogue reference
-                </dt>
-                <dd className="mt-1 break-all font-mono text-xs">
-                  {requirement.declarationProvenance.catalogueReference ?? "—"}
-                </dd>
-              </div>
-            </dl>
-          </section>
-
-          <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 md:p-6">
-            <h2 className="text-base font-semibold text-[#172033]">
-              Applicability history
-            </h2>
-            {requirement.applicabilityHistory.length === 0 ? (
-              <p className="mt-3 text-sm text-[#64748B]">
-                No applicability changes have been recorded.
-              </p>
-            ) : (
-              <div className="mt-4 grid gap-3">
-                {requirement.applicabilityHistory.map((change, index) => (
-                  <div
-                    key={`${change.effectiveTime}-app-${index}`}
-                    className="rounded-md border border-[#E2E8F0] p-3 text-sm"
-                  >
-                    <div>
-                      {applicabilityText(change.previousApplicability)} →{" "}
-                      {applicabilityText(change.newApplicability)}
-                    </div>
-                    <div className="mt-1 text-xs text-[#64748B]">
-                      {change.actorId} · {change.effectiveTime} ·{" "}
-                      {change.authorityReference}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 md:p-6">
-            <h2 className="text-base font-semibold text-[#172033]">
-              Justification history
-            </h2>
-            {requirement.justificationHistory.length === 0 ? (
-              <p className="mt-3 text-sm text-[#64748B]">
-                No justification changes have been recorded.
-              </p>
-            ) : (
-              <div className="mt-4 grid gap-3">
-                {requirement.justificationHistory.map((change, index) => (
-                  <div
-                    key={`${change.effectiveTime}-reason-${index}`}
-                    className="rounded-md border border-[#E2E8F0] p-3 text-sm"
-                  >
-                    <div>
-                      <span className="text-[#64748B]">
-                        {change.previousJustification}
-                      </span>{" "}
-                      → {change.newJustification}
-                    </div>
-                    <div className="mt-1 text-xs text-[#64748B]">
-                      {change.actorId} · {change.effectiveTime} ·{" "}
-                      {change.authorityReference}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 md:p-6">
-            <h2 className="text-base font-semibold text-[#172033]">
-              Lifecycle history
-            </h2>
-            {requirement.lifecycleHistory.length === 0 ? (
-              <p className="mt-3 text-sm text-[#64748B]">
-                Requirement has not been retired.
-              </p>
-            ) : (
-              <div className="mt-4 grid gap-3">
-                {requirement.lifecycleHistory.map((change, index) => (
-                  <div
-                    key={`${change.effectiveTime}-life-${index}`}
-                    className="rounded-md border border-[#E2E8F0] p-3 text-sm"
-                  >
-                    <div>
-                      {change.fromState} → {change.toState}
-                    </div>
-                    <div className="mt-1 text-xs text-[#64748B]">
-                      {change.actorId} · {change.effectiveTime} ·{" "}
-                      {change.authorityReference}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+          <RequirementProvenanceSection requirement={requirement} />
+          <RequirementHistorySections requirement={requirement} />
         </div>
       ) : null}
     </div>

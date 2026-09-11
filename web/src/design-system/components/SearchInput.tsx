@@ -1,7 +1,7 @@
 import { Search } from "lucide-react"
 import type { InputHTMLAttributes } from "react"
 
-import { Input } from "@/components/ui/Field"
+import { Input } from "@/design-system/components/Field"
 
 export function SearchInput({
   className = "",

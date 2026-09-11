@@ -16,6 +16,21 @@ on:
       - "backend/tests/evals/**"
       - "Makefile"
       - ".github/workflows/harness.yml"
+  pull_request:
+    types: [ready_for_review]
+    paths:
+      - "AGENTS.md"
+      - "backend/src/AGENTS.md"
+      - "docs/AGENTS.md"
+      - ".agents/**"
+      - "docs/process/**"
+      - "docs/plans/**"
+      - "tools/validate_harness.py"
+      - "tools/validate_plans.py"
+      - "tools/validate_skill_routing.py"
+      - "backend/tests/evals/**"
+      - "Makefile"
+      - ".github/workflows/harness.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
