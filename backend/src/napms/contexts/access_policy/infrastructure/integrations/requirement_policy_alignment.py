@@ -1,8 +1,8 @@
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AccessRulePersistenceError,
     AccessRuleRepository,
 )
-from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 from napms.requirement_policy_alignment.application.model import (
     AlignmentSemanticIdentity,
 )

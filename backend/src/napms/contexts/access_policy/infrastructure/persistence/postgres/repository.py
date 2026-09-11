@@ -3,15 +3,15 @@ from uuid import UUID
 from psycopg import Connection, Error as PsycopgError
 from psycopg.errors import UniqueViolation
 
-from napms.access_policy.application.inventory_summary import (
+from napms.contexts.access_policy.application.inventory_summary import (
     AccessRuleInventorySnapshot,
 )
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AccessRuleCommitOutcomeUnknown,
     AccessRulePersistenceError,
     RuleSemanticIdentityConflict,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,

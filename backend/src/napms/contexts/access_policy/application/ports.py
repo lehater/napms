@@ -4,10 +4,10 @@ from enum import Enum
 from typing import Protocol
 from uuid import UUID
 
-from napms.access_policy.application.inventory_summary import (
+from napms.contexts.access_policy.application.inventory_summary import (
     AccessRuleInventorySnapshot,
 )
-from napms.access_policy.domain.model import AccessRule, RuleSemanticIdentity
+from napms.contexts.access_policy.domain.model import AccessRule, RuleSemanticIdentity
 
 
 class AuthorityAction(str, Enum):

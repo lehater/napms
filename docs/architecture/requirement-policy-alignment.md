@@ -20,7 +20,7 @@ backend/src/napms/requirement_policy_alignment/
 backend/src/napms/connectivity_requirements/adapters/
     requirement_policy_alignment.py
 
-backend/src/napms/access_policy/adapters/
+backend/src/napms/contexts/access_policy/infrastructure/integrations/
     requirement_policy_alignment.py
 ```
 

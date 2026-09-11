@@ -9,13 +9,13 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.adapters.postgres import PostgresAccessRuleRepository
-from napms.access_policy.application.materialize_rule import (
+from napms.contexts.access_policy.infrastructure.persistence.postgres import PostgresAccessRuleRepository
+from napms.contexts.access_policy.application.materialize_rule import (
     MaterializationOutcome,
     MaterializeAllowedAccessRule,
     SubmitAccessRuleProposal,
 )
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AccessRuleCommitOutcomeUnknown,
     AccessRulePersistenceError,
     AuthorityAction,
@@ -27,22 +27,22 @@ from napms.access_policy.application.ports import (
     RuleSemanticIdentityConflict,
     TernaryOutcome,
 )
-from napms.access_policy.application.select_effective_policy import (
+from napms.contexts.access_policy.application.select_effective_policy import (
     EffectivePolicySelectionOutcome,
     SelectAccessPolicyEffectiveDesiredPolicy,
     SelectEffectiveDesiredPolicy,
 )
-from napms.access_policy.application.set_effective_window import (
+from napms.contexts.access_policy.application.set_effective_window import (
     EffectiveWindowMutationOutcome,
     SetAccessRuleEffectiveWindow,
     SetRuleEffectiveWindow,
 )
-from napms.access_policy.application.set_operational_state import (
+from napms.contexts.access_policy.application.set_operational_state import (
     OperationalStateMutationOutcome,
     SetAccessRuleOperationalState,
     SetRuleOperationalState,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,
@@ -68,7 +68,7 @@ def postgres_dsn():
 
 @pytest.fixture(scope="session", autouse=True)
 def migrated_schema(postgres_dsn):
-    migrations = files("napms.access_policy.adapters.postgres").joinpath("migrations")
+    migrations = files("napms.contexts.access_policy.infrastructure.persistence.postgres").joinpath("migrations")
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:
         for migration in sorted(
             (path for path in migrations.iterdir() if path.name.endswith(".sql")),

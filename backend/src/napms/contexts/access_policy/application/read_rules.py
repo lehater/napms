@@ -3,14 +3,14 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AccessRuleReadAuthorityDiscoveryPort,
     AccessRuleRepository,
     AuthorityAction,
     AuthorityPort,
     TernaryOutcome,
 )
-from napms.access_policy.domain.model import AccessRule
+from napms.contexts.access_policy.domain.model import AccessRule
 
 
 class AccessRuleDetailOutcome(str, Enum):

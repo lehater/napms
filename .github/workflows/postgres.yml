@@ -4,9 +4,9 @@ on:
   pull_request:
     types: [ready_for_review]
     paths:
-      - "backend/src/napms/access_policy/adapters/postgres/**"
+      - "backend/src/napms/contexts/access_policy/infrastructure/persistence/postgres/**"
       - "backend/src/napms/authority_management/**"
-      - "backend/src/napms/application_catalogue/**"
+      - "backend/src/napms/contexts/application_catalogue/**"
       - "backend/src/napms/resource_catalogue/**"
       - "backend/src/napms/technical_access_evidence/**"
       - "backend/src/napms/network_enforcement_placement/adapters/postgres/**"

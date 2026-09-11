@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).parents[2]
 NAPMS = ROOT / "src" / "napms"
 
-ACCESS_POLICY = NAPMS / "access_policy"
+ACCESS_POLICY = NAPMS / "contexts" / "access_policy"
 ACCESS_POLICY_REALIZATION = NAPMS / "contexts" / "access_policy_realization"
 AUTHORITY_MANAGEMENT = NAPMS / "contexts" / "authority_management"
 APPLICATION_CATALOGUE = NAPMS / "contexts" / "application_catalogue"
@@ -29,7 +29,7 @@ CONNECTIVITY_REQUIREMENTS_HTTP = (
 CONNECTIVITY_DECISION_HTTP = (
     CONNECTIVITY_DECISION / "presentation" / "http" / "routes.py"
 )
-ACCESS_POLICY_HTTP = ACCESS_POLICY / "adapters" / "http.py"
+ACCESS_POLICY_HTTP = ACCESS_POLICY / "presentation" / "http" / "routes.py"
 REQUIREMENT_POLICY_ALIGNMENT_HTTP = REQUIREMENT_POLICY_ALIGNMENT / "adapters" / "http.py"
 POLICY_EXPORT_HTTP = POLICY_EXPORT / "adapters" / "http.py"
 POLICY_EXPORT_HTTP_JSON = POLICY_EXPORT / "adapters" / "http_json.py"
@@ -200,8 +200,8 @@ def test_feature_http_is_owner_local():
 
 def test_process_http_has_no_feature_endpoint_implementation():
     forbidden_prefixes = (
-        "napms.access_policy.application",
-        "napms.access_policy.domain",
+        "napms.contexts.access_policy.application",
+        "napms.contexts.access_policy.domain",
         "napms.contexts.connectivity_requirements.application",
         "napms.contexts.connectivity_requirements.domain",
         "napms.contexts.connectivity_decision.application",
@@ -237,7 +237,7 @@ def test_semantic_adapters_do_not_import_process_http_api():
 
 POSTGRES_SCHEMA_OWNERS = (
     (
-        NAPMS / "access_policy" / "adapters" / "postgres",
+        ACCESS_POLICY / "infrastructure" / "persistence" / "postgres",
         "napms_access_policy",
     ),
     (
@@ -289,7 +289,7 @@ def test_postgres_modules_do_not_read_or_reference_other_module_schemas():
 BOUNDED_CONTEXT_CORES = (
     (
         ACCESS_POLICY,
-        "napms.access_policy",
+        "napms.contexts.access_policy",
     ),
     (
         ACCESS_POLICY_REALIZATION,
@@ -332,6 +332,10 @@ BOUNDED_CONTEXT_CORES = (
 
 def test_network_environment_operations_has_no_legacy_package():
     assert not (NAPMS / "network_environment_operations").exists()
+
+
+def test_access_policy_has_no_legacy_package():
+    assert not (NAPMS / "access_policy").exists()
 
 
 def test_access_policy_realization_has_no_legacy_package():
@@ -477,7 +481,7 @@ def test_alignment_application_does_not_import_source_bounded_contexts():
             if module.startswith(
                 (
                     "napms.contexts.connectivity_requirements",
-                    "napms.access_policy",
+                    "napms.contexts.access_policy",
                 )
             ):
                 violations.append((path, module))

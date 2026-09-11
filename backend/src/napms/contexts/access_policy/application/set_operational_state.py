@@ -3,79 +3,79 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AccessRuleRepository,
     AuthorityAction,
     AuthorityPort,
     TernaryOutcome,
 )
-from napms.access_policy.domain.model import AccessRule, EffectiveWindow
+from napms.contexts.access_policy.domain.model import AccessRule, OperationalState
 
 
-class EffectiveWindowMutationOutcome(str, Enum):
+class OperationalStateMutationOutcome(str, Enum):
     UPDATED = "Updated"
     RULE_NOT_FOUND = "RuleNotFound"
     AUTHORITY_DENIED = "AuthorityDenied"
     AUTHORITY_UNKNOWN = "AuthorityUnknown"
-    ALREADY_IN_REQUESTED_WINDOW = "AlreadyInRequestedWindow"
+    ALREADY_IN_REQUESTED_STATE = "AlreadyInRequestedState"
 
 
 @dataclass(frozen=True, slots=True)
-class SetRuleEffectiveWindow:
+class SetRuleOperationalState:
     rule_id: UUID
-    window: EffectiveWindow | None
+    target_state: OperationalState
     actor_id: str
     effective_time: datetime
 
 
 @dataclass(frozen=True, slots=True)
-class EffectiveWindowMutationResult:
-    outcome: EffectiveWindowMutationOutcome
+class OperationalStateMutationResult:
+    outcome: OperationalStateMutationOutcome
     rule: AccessRule | None = None
 
 
-class SetAccessRuleEffectiveWindow:
+class SetAccessRuleOperationalState:
     def __init__(self, *, authority: AuthorityPort, rules: AccessRuleRepository) -> None:
         self._authority = authority
         self._rules = rules
 
-    def execute(self, command: SetRuleEffectiveWindow) -> EffectiveWindowMutationResult:
+    def execute(self, command: SetRuleOperationalState) -> OperationalStateMutationResult:
         rule = self._rules.get_by_id(command.rule_id)
         if rule is None:
-            return EffectiveWindowMutationResult(
-                EffectiveWindowMutationOutcome.RULE_NOT_FOUND
+            return OperationalStateMutationResult(
+                OperationalStateMutationOutcome.RULE_NOT_FOUND
             )
 
         authority = self._authority.check(
             actor_id=command.actor_id,
-            action=AuthorityAction.SET_RULE_EFFECTIVE_WINDOW,
+            action=AuthorityAction.SET_RULE_OPERATIONAL_STATE,
             scope=rule.governance_scope,
             effective_time=command.effective_time,
         )
         if authority.outcome is TernaryOutcome.DENIED:
-            return EffectiveWindowMutationResult(
-                EffectiveWindowMutationOutcome.AUTHORITY_DENIED
+            return OperationalStateMutationResult(
+                OperationalStateMutationOutcome.AUTHORITY_DENIED
             )
         if authority.outcome is TernaryOutcome.UNKNOWN or authority.authority_reference is None:
-            return EffectiveWindowMutationResult(
-                EffectiveWindowMutationOutcome.AUTHORITY_UNKNOWN
+            return OperationalStateMutationResult(
+                OperationalStateMutationOutcome.AUTHORITY_UNKNOWN
             )
 
-        if rule.effective_window == command.window:
-            return EffectiveWindowMutationResult(
-                EffectiveWindowMutationOutcome.ALREADY_IN_REQUESTED_WINDOW,
+        if rule.operational_state is command.target_state:
+            return OperationalStateMutationResult(
+                OperationalStateMutationOutcome.ALREADY_IN_REQUESTED_STATE,
                 rule,
             )
 
-        updated = rule.with_effective_window(
-            window=command.window,
+        updated = rule.with_operational_state(
+            target_state=command.target_state,
             actor_id=command.actor_id,
             effective_time=command.effective_time,
             authority_reference=authority.authority_reference,
         )
         self._rules.save(updated)
         self._rules.commit()
-        return EffectiveWindowMutationResult(
-            EffectiveWindowMutationOutcome.UPDATED,
+        return OperationalStateMutationResult(
+            OperationalStateMutationOutcome.UPDATED,
             updated,
         )

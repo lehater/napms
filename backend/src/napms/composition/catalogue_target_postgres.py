@@ -4,7 +4,7 @@ from typing import Iterator
 
 import psycopg
 
-from napms.access_policy.adapters.postgres.application_catalogue_dependency_query import (
+from napms.contexts.access_policy.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresAccessRuleDependencyQuery,
 )
 from napms.contexts.application_catalogue.infrastructure.local.curation_support import (

@@ -7,39 +7,39 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
-from napms.access_policy.application.materialize_rule import (
+from napms.contexts.access_policy.application.materialize_rule import (
     MaterializationOutcome,
     MaterializeAllowedAccessRule,
     SubmitAccessRuleProposal,
 )
-from napms.access_policy.application.ports import ConnectivityDecisionPort
-from napms.access_policy.application.proposal_options import (
+from napms.contexts.access_policy.application.ports import ConnectivityDecisionPort
+from napms.contexts.access_policy.application.proposal_options import (
     DiscoverProposalInteractions,
     DiscoverProposalScopes,
     ProposalInteractionDiscoveryOutcome,
 )
-from napms.access_policy.application.read_rules import (
+from napms.contexts.access_policy.application.read_rules import (
     AccessRuleDetailOutcome,
     GetAuthorizedAccessRule,
     ListAuthorizedAccessRules,
 )
-from napms.access_policy.application.select_effective_policy import (
+from napms.contexts.access_policy.application.select_effective_policy import (
     DiscoverEffectivePolicyScopes,
     EffectivePolicySelectionOutcome,
     SelectAccessPolicyEffectiveDesiredPolicy,
     SelectEffectiveDesiredPolicy,
 )
-from napms.access_policy.application.set_effective_window import (
+from napms.contexts.access_policy.application.set_effective_window import (
     EffectiveWindowMutationOutcome,
     SetAccessRuleEffectiveWindow,
     SetRuleEffectiveWindow,
 )
-from napms.access_policy.application.set_operational_state import (
+from napms.contexts.access_policy.application.set_operational_state import (
     OperationalStateMutationOutcome,
     SetAccessRuleOperationalState,
     SetRuleOperationalState,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     EffectiveWindow,
     OperationalState,

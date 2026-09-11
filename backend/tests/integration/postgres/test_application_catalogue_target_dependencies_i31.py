@@ -7,10 +7,10 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.adapters.postgres.application_catalogue_dependency_query import (
+from napms.contexts.access_policy.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresAccessRuleDependencyQuery,
 )
-from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 from napms.contexts.connectivity_decision.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityDecisionDependencyQuery,
 )
@@ -47,7 +47,7 @@ def migrated_dependencies(postgres_dsn):
         for package in (
             "napms.contexts.connectivity_requirements.infrastructure.persistence.postgres",
             "napms.contexts.connectivity_decision.infrastructure.persistence.postgres",
-            "napms.access_policy.adapters.postgres",
+            "napms.contexts.access_policy.infrastructure.persistence.postgres",
         ):
             migrations = files(package).joinpath("migrations")
             for migration in sorted(

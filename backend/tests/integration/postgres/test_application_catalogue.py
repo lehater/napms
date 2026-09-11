@@ -7,8 +7,8 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.application.ports import InteractionOutcome
-from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.access_policy.application.ports import InteractionOutcome
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 from napms.contexts.application_catalogue.infrastructure.integrations.access_policy import (
     AccessPolicyCommunicationCatalogueAdapter,
     AccessPolicyProposalInteractionCatalogueAdapter,

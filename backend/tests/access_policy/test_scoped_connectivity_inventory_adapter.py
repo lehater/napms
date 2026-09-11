@@ -1,14 +1,14 @@
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from napms.access_policy.adapters.scoped_connectivity_inventory import (
+from napms.contexts.access_policy.infrastructure.integrations.scoped_connectivity_inventory import (
     AccessPolicyScopedConnectivityAdapter,
 )
-from napms.access_policy.application.inventory_summary import (
+from napms.contexts.access_policy.application.inventory_summary import (
     AccessRuleInventorySnapshot,
 )
-from napms.access_policy.application.ports import AccessRulePersistenceError
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.application.ports import AccessRulePersistenceError
+from napms.contexts.access_policy.domain.model import (
     EffectiveWindow,
     OperationalState,
     RuleSemanticIdentity,

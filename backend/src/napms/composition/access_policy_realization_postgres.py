@@ -2,7 +2,7 @@ from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass
 from typing import Iterator
 
-from napms.access_policy.application.select_effective_policy import (
+from napms.contexts.access_policy.application.select_effective_policy import (
     SelectAccessPolicyEffectiveDesiredPolicy,
 )
 from napms.contexts.access_policy_realization.infrastructure.integrations.catalogues import (

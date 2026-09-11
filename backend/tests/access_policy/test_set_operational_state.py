@@ -4,18 +4,18 @@ from uuid import UUID
 
 import pytest
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AccessRulePersistenceError,
     AuthorityAction,
     AuthorityCheck,
     TernaryOutcome,
 )
-from napms.access_policy.application.set_operational_state import (
+from napms.contexts.access_policy.application.set_operational_state import (
     OperationalStateMutationOutcome,
     SetAccessRuleOperationalState,
     SetRuleOperationalState,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,

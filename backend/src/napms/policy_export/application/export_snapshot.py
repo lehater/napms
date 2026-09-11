@@ -3,11 +3,11 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from napms.access_policy.application.select_effective_policy import (
+from napms.contexts.access_policy.application.select_effective_policy import (
     EffectivePolicySelectionOutcome,
     EffectivePolicySelectionResult,
 )
-from napms.access_policy.domain.model import AccessRule
+from napms.contexts.access_policy.domain.model import AccessRule
 from napms.policy_export.application.ports import (
     ApplicationCommunicationProjectionPort,
     ApplicationProjectionFact,

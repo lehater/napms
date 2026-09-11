@@ -4,11 +4,11 @@ from typing import Iterator
 
 import psycopg
 
-from napms.access_policy.adapters.postgres import PostgresAccessRuleRepository
-from napms.access_policy.adapters.requirement_policy_alignment import (
+from napms.contexts.access_policy.infrastructure.persistence.postgres import PostgresAccessRuleRepository
+from napms.contexts.access_policy.infrastructure.integrations.requirement_policy_alignment import (
     AccessPolicyAlignmentAdapter,
 )
-from napms.access_policy.adapters.scoped_connectivity_inventory import (
+from napms.contexts.access_policy.infrastructure.integrations.scoped_connectivity_inventory import (
     AccessPolicyScopedConnectivityAdapter,
 )
 from napms.contexts.application_catalogue.infrastructure.integrations.access_policy import (

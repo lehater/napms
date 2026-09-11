@@ -1,6 +1,6 @@
 from itertools import product
 
-from napms.access_policy.application.select_effective_policy import (
+from napms.contexts.access_policy.application.select_effective_policy import (
     EffectivePolicySelectionOutcome,
     SelectEffectiveDesiredPolicy,
 )

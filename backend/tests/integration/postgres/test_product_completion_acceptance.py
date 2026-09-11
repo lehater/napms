@@ -6,10 +6,10 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.adapters.connectivity_decision import (
+from napms.contexts.access_policy.infrastructure.integrations.connectivity_decision import (
     ConnectivityDecisionConsumerAdapter,
 )
-from napms.access_policy.application.materialize_rule import (
+from napms.contexts.access_policy.application.materialize_rule import (
     MaterializationOutcome,
     MaterializeAllowedAccessRule,
     SubmitAccessRuleProposal,

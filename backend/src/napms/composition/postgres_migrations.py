@@ -39,17 +39,17 @@ class Migration:
 MIGRATIONS: tuple[Migration, ...] = (
     Migration(
         "access-policy/0001",
-        "napms.access_policy.adapters.postgres",
+        "napms.contexts.access_policy.infrastructure.persistence.postgres",
         "migrations/0001_access_rules.sql",
     ),
     Migration(
         "access-policy/0002",
-        "napms.access_policy.adapters.postgres",
+        "napms.contexts.access_policy.infrastructure.persistence.postgres",
         "migrations/0002_rule_state_transitions.sql",
     ),
     Migration(
         "access-policy/0003",
-        "napms.access_policy.adapters.postgres",
+        "napms.contexts.access_policy.infrastructure.persistence.postgres",
         "migrations/0003_effective_windows.sql",
     ),
     Migration(

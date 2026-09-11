@@ -7,7 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import napms.runtime.http_api as http_api_module
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AccessRuleCommitOutcomeUnknown,
     AccessRulePersistenceError,
     AuthorityCheck,
@@ -17,7 +17,7 @@ from napms.access_policy.application.ports import (
     InteractionOutcome,
     TernaryOutcome,
 )
-from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 from napms.contexts.application_catalogue.application.describe_interactions import (
     DirectedInteractionDescription,
 )

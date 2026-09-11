@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi.testclient import TestClient
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AuthorityCheck,
     ConnectivityDecision,
     DecisionOutcome,
@@ -169,7 +169,7 @@ class Scope:
 
 
 def _identity():
-    from napms.access_policy.domain.model import RuleSemanticIdentity
+    from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 
     return RuleSemanticIdentity(SOURCE, DESTINATION, DCS)
 

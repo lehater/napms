@@ -6,7 +6,7 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 from napms.composition.config import ApplicationConfig, PostgresConfig
 from napms.composition.greenfield_postgres import (
     apply_greenfield_migrations,

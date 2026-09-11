@@ -1,9 +1,9 @@
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     InteractionCheck,
     InteractionOutcome,
     ProposalInteractionPage,
 )
-from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 from napms.contexts.application_catalogue.application.list_interactions import (
     ListDirectedInteractions,
 )

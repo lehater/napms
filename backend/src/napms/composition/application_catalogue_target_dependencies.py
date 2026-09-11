@@ -1,7 +1,7 @@
-from napms.access_policy.adapters.postgres.application_catalogue_dependency_query import (
+from napms.contexts.access_policy.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresAccessRuleDependencyQuery,
 )
-from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 from napms.contexts.application_catalogue.application.target_ports import (
     ActiveDependencyReference,
     ActiveDependencySummary,

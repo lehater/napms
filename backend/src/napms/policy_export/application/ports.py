@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Protocol
 
-from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 
 
 class ApplicationProjectionOutcome(str, Enum):

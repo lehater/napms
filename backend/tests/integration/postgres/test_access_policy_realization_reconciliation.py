@@ -7,21 +7,21 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.application.materialize_rule import (
+from napms.contexts.access_policy.application.materialize_rule import (
     MaterializationOutcome,
     MaterializeAllowedAccessRule,
     SubmitAccessRuleProposal,
 )
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     ConnectivityDecision,
     DecisionOutcome,
 )
-from napms.access_policy.application.set_operational_state import (
+from napms.contexts.access_policy.application.set_operational_state import (
     OperationalStateMutationOutcome,
     SetAccessRuleOperationalState,
     SetRuleOperationalState,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     OperationalState,
 )
 from napms.contexts.access_policy_realization.application.ports import (

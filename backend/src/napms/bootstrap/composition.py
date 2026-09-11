@@ -4,10 +4,10 @@ from typing import Callable
 import psycopg
 from fastapi import FastAPI
 
-from napms.access_policy.adapters.connectivity_decision import (
+from napms.contexts.access_policy.infrastructure.integrations.connectivity_decision import (
     ConnectivityDecisionConsumerAdapter,
 )
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     ConnectivityDecision as AccessPolicyConnectivityDecision,
     ConnectivityDecisionPort,
     DecisionOutcome as AccessPolicyDecisionOutcome,

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     EffectiveWindow,
     OperationalState,
     RuleSemanticIdentity,

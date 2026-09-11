@@ -1,8 +1,8 @@
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     ConnectivityDecision as AccessPolicyConnectivityDecision,
 )
-from napms.access_policy.application.ports import DecisionOutcome as AccessPolicyDecisionOutcome
-from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.access_policy.application.ports import DecisionOutcome as AccessPolicyDecisionOutcome
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 from napms.contexts.connectivity_decision.application.select import (
     SelectEffectiveConnectivityDecision,
     SelectionOutcome,

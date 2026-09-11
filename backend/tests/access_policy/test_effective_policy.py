@@ -4,25 +4,25 @@ from uuid import UUID
 
 import pytest
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AccessRulePersistenceError,
     AuthorityAction,
     AuthorityCheck,
     EffectivePolicyReadScopeOptions,
     TernaryOutcome,
 )
-from napms.access_policy.application.select_effective_policy import (
+from napms.contexts.access_policy.application.select_effective_policy import (
     DiscoverEffectivePolicyScopes,
     EffectivePolicySelectionOutcome,
     SelectAccessPolicyEffectiveDesiredPolicy,
     SelectEffectiveDesiredPolicy,
 )
-from napms.access_policy.application.set_effective_window import (
+from napms.contexts.access_policy.application.set_effective_window import (
     EffectiveWindowMutationOutcome,
     SetAccessRuleEffectiveWindow,
     SetRuleEffectiveWindow,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,

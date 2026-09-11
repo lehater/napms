@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AuthorityAction,
     AuthorityPort,
     ProposalAuthorityDiscoveryPort,

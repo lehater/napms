@@ -6,11 +6,11 @@ import pytest
 
 psycopg = pytest.importorskip("psycopg")
 
-from napms.access_policy.application.read_rules import (
+from napms.contexts.access_policy.application.read_rules import (
     AccessRuleDetailOutcome,
     GetAuthorizedAccessRule,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,

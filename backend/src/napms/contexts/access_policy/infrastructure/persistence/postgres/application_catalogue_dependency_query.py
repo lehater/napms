@@ -2,8 +2,8 @@ from datetime import datetime
 
 from psycopg import Error as PsycopgError
 
-from napms.access_policy.application.ports import AccessRulePersistenceError
-from napms.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.access_policy.application.ports import AccessRulePersistenceError
+from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 
 
 class PostgresAccessRuleDependencyQuery:

@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AccessRuleRepository,
     AuthorityAction,
     AuthorityPort,
@@ -14,7 +14,7 @@ from napms.access_policy.application.ports import (
     RuleSemanticIdentityConflict,
     TernaryOutcome,
 )
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     AccessRule,
     ConnectivityDecisionResult,
     DecisionReference,

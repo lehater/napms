@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from napms.access_policy.domain.model import (
+from napms.contexts.access_policy.domain.model import (
     EffectiveWindow,
     OperationalState,
     RuleSemanticIdentity,

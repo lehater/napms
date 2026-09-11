@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from napms.access_policy.application.ports import AuthorityAction, TernaryOutcome
+from napms.contexts.access_policy.application.ports import AuthorityAction, TernaryOutcome
 from napms.contexts.authority_management.infrastructure.integrations.access_policy import (
     AccessPolicyAuthorityAdapter,
 )

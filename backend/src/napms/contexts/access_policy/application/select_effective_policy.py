@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AccessRulePersistenceError,
     AccessRuleRepository,
     EffectivePolicyReadAuthorityDiscoveryPort,
@@ -11,7 +11,7 @@ from napms.access_policy.application.ports import (
     AuthorityPort,
     TernaryOutcome,
 )
-from napms.access_policy.domain.model import AccessRule, DomainInvariantError
+from napms.contexts.access_policy.domain.model import AccessRule, DomainInvariantError
 
 
 class EffectivePolicySelectionOutcome(str, Enum):

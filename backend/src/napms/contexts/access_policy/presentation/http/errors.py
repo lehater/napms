@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 
-from napms.access_policy.application.ports import (
+from napms.contexts.access_policy.application.ports import (
     AccessRuleCommitOutcomeUnknown,
     AccessRulePersistenceError,
 )
