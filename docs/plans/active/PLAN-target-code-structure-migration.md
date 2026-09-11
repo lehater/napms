@@ -38,7 +38,7 @@ M1 backend repository boundary
 
 ## M3 — Workflows and generic composition removal
 
-Status: `active` on branch `refactor/m3-workflows-composition`.
+Status: `implementation and architectural review complete; final hosted PR gates pending` on branch `refactor/m3-workflows-composition`.
 
 M3 is one milestone PR. Hosted gates run once on the complete milestone.
 
@@ -56,51 +56,40 @@ Completed workflow moves:
 2. `policy_export` — `53177891fb94f7e93c372ae3b73110bea15b44d8`
 3. `scoped_connectivity_inventory` — `5f44a077c56170c813f8300e267fa2aed3bea896`
 4. `network_operator_view` — `75a7fb2934f411a20ecd4e637661b917ed2894e6`
+5. `traffic_analysis` — `e17eb0b`
 
-Validation after the first package:
-- targeted + architecture: 95 / 158 / 70 / 63 passed respectively;
-- `make test`: 801 passed, 141 deselected;
+Composition ownership resolution:
+- `application_catalogue_target_dependencies.py` moved to ACC-owned `infrastructure/integrations` and now consumes peer application contracts;
+- `application_catalogue_target_read_postgres.py` moved to ACC-owned `infrastructure/read_models/postgres`;
+- Resource Catalogue enrichment/filtering/paging now goes through a Resource Catalogue application contract and owner-local PostgreSQL implementation; ACC no longer reads `napms_resource_catalogue` SQL directly;
+- pure executable assembly/config moved to `platform/bootstrap`;
+- migration runner moved to `platform/database`;
+- generic `napms.composition` is deleted.
+
+Validation evidence before final PR:
+- targeted workflow/architecture/bootstrap checks passed;
+- `make test`: 806 passed;
 - `make harness-check`: passed;
-- `make knowledge-check`: passed.
+- `make knowledge-check`: passed;
+- PostgreSQL 16 `make postgres-test`: 141 passed.
 
-### Final M3 work package
-
-Move `traffic_analysis` to `napms.workflows.traffic_analysis` and fully drain `napms.composition`.
-
-Ownership decisions:
-- workflow application -> `workflows/traffic_analysis/application/`;
-- workflow HTTP -> `workflows/traffic_analysis/presentation/http/`;
-- workflow-owned outbound adapters -> `workflows/traffic_analysis/infrastructure/`;
-- pure executable `open_*_scope` and service assembly -> `platform/bootstrap/`;
-- runtime configuration currently in `composition/config.py` -> `platform/bootstrap/config.py`;
-- PostgreSQL migration runner -> `platform/database/migrations.py`;
-- `application_catalogue_target_dependencies.py` is ACC-owned integration logic, not platform wiring: move it under `contexts/application_catalogue/infrastructure/integrations/` and replace direct peer domain/infrastructure dependencies with explicit peer application contracts;
-- `application_catalogue_target_read_postgres.py` is an ACC-owned read model: move it under `contexts/application_catalogue/infrastructure/read_models/postgres/`; remove its direct Resource Catalogue schema join by using an explicit Resource Catalogue application contract for resource display/scope filtering and paging;
-- do not create a sixth workflow merely to hide these ACC concerns;
-- no context may import another context's domain; cross-context use must go through application contracts/ports;
-- platform bootstrap owns wiring only, not feature mapping/query behavior.
-
-Expected pure wiring moves from `composition/`:
-- `access_policy_realization_postgres.py` -> `platform/bootstrap/access_policy_realization.py`;
-- `catalogue_curation_postgres.py` -> `platform/bootstrap/catalogue_curation.py`;
-- `catalogue_target_postgres.py` -> `platform/bootstrap/application_catalogue_target.py`;
-- `greenfield_postgres.py` -> `platform/bootstrap/greenfield.py`;
-- `network_enforcement_placement_postgres.py` -> `platform/bootstrap/network_enforcement_placement.py`;
-- `network_environment_operations_stub.py` -> `platform/bootstrap/network_environment_operations.py`;
-- `network_operator_view_postgres.py` -> `platform/bootstrap/network_operator_view.py`;
-- `technical_access_evidence_postgres.py` -> `platform/bootstrap/technical_access_evidence.py`;
-- `traffic_analysis_postgres.py` -> `platform/bootstrap/traffic_analysis.py`.
-
-The final package must delete `backend/src/napms/composition/` and the legacy top-level `traffic_analysis/` package.
+Final architectural review confirms:
+- all five workflows exist only under `napms.workflows`;
+- workflow application layers do not import infrastructure/presentation;
+- workflows do not import context persistence internals;
+- ACC target integrations use peer application contracts rather than peer domain/infrastructure;
+- ACC target read-model contains no Resource Catalogue schema SQL;
+- generic `napms.composition` is absent;
+- platform additions in M3 are wiring/config/database mechanics only; top-level `bootstrap/` and `runtime/` remain intentionally transitional until M4.
 
 ## Exit criteria
 
-M3 closes when all five workflows are under `napms.workflows`, legacy top-level workflow packages are absent, generic `napms.composition` is deleted, ACC cross-context read/dependency integrations use application contracts rather than peer domain/persistence internals, workflow application layers do not depend on outer layers, architecture tests prohibit workflow persistence bypass, full local/PostgreSQL checks pass, and one final M3 PR passes required hosted gates.
+M3 closes when the final milestone PR passes all required hosted gates and is squash-merged to `main`.
 
 ## Blockers
 
-None. The ownership conflict exposed by the old ACC composition files is resolved by the decisions above.
+None.
 
 ## Next
 
-Execute the final M3 work package only. Run targeted/architecture checks during the package, then full core/harness/knowledge and configured PostgreSQL checks. Push and stop for final M3 architectural review. Do not start M4 or create the PR before that review.
+Open the final M3 milestone PR, run required hosted gates, and squash-merge if green. Do not start M4 or make material changes after the final gate without returning the PR to draft and gating again.
