@@ -56,8 +56,8 @@ const namedColor = /(?:^|[\s"'`])(?:bg|text|border|ring|outline|fill|stroke)-(?:
 const rawHexColor = /#[0-9a-fA-F]{3,8}\b/
 const localPageWidth = /(?:^|[\s"'`])max-w-\[(?:\d+(?:\.\d+)?)(?:px|rem|em|vw|%)\](?=$|[\s"'`:/])/m
 const arbitraryTypography = /(?:^|[\s"'`])text-\[(?:\d+(?:\.\d+)?)(?:px|rem|em)\](?=$|[\s"'`:/])/m
-const arbitraryRadius = /(?:^|[\s"'`])rounded-\[[^\]]+\](?=$|[\s"'`:/])/m
-const arbitraryShadow = /(?:^|[\s"'`])shadow-\[[^\]]+\](?=$|[\s"'`:/])/m
+const arbitraryRadius = /(?:^|[\s"'`])rounded-\[(?!var\()[^\]]+\](?=$|[\s"'`:/])/m
+const arbitraryShadow = /(?:^|[\s"'`])shadow-\[(?!var\()[^\]]+\](?=$|[\s"'`:/])/m
 
 for (const path of await sourceFiles(featureRoot)) {
   const content = await readFile(path, "utf8")
