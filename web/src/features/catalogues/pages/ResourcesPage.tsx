@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react"
 import { Plus } from "lucide-react"
 
 import { Button } from "@/design-system/components/Button"
-import { Select } from "@/design-system/components/Field"
 import { Checkbox } from "@/design-system/components/Checkbox"
 import {
   DataTable,
@@ -15,6 +14,7 @@ import {
   DataTableSelectionCell,
   DataTableSelectionHead,
 } from "@/design-system/components/DataTable"
+import { Select } from "@/design-system/components/Field"
 import { FilterChip } from "@/design-system/components/FilterChip"
 import { EmptyState, ErrorState, LoadingState } from "@/design-system/components/PageState"
 import { SearchInput } from "@/design-system/components/SearchInput"
@@ -48,6 +48,7 @@ import { CatalogueLifecycleStatus } from "@/features/catalogues/components/Catal
 import { CreateResourceDialog } from "@/features/catalogues/components/CreateResourceDialog"
 import { ResourceDataState } from "@/features/catalogues/components/ResourceDataState"
 import { ApiError } from "@/lib/api"
+import { useDebouncedValue } from "@/lib/useDebouncedValue"
 
 function errorFrom(caught: unknown, fallback: string) {
   return caught instanceof ApiError
@@ -90,6 +91,7 @@ export function ResourcesPage({
   const [sortBy, setSortBy] = useState<ResourceWorkspaceSortBy>("name")
   const [sortDirection, setSortDirection] = useState<ResourceWorkspaceSortDirection>("asc")
   const [showCreate, setShowCreate] = useState(false)
+  const debouncedSearch = useDebouncedValue(searchInput.trim(), 250)
 
   const visibleScopes = useMemo(
     () => Array.from(new Set(items.flatMap((item) => item.currentScopes))).sort(),
@@ -132,14 +134,10 @@ export function ResourcesPage({
   }, [page, search, scopeFilter, lifecycle, dataState, pageSize, sortBy, sortDirection])
 
   useEffect(() => {
-    const nextSearch = searchInput.trim()
-    if (nextSearch === search) return
-    const timeout = window.setTimeout(() => {
-      if (page !== 1) onPageChange(1)
-      setSearch(nextSearch)
-    }, 250)
-    return () => window.clearTimeout(timeout)
-  }, [page, search, searchInput, onPageChange])
+    if (debouncedSearch === search) return
+    if (page !== 1) onPageChange(1)
+    setSearch(debouncedSearch)
+  }, [debouncedSearch, onPageChange, page, search])
 
   useEffect(() => {
     const visible = new Set(visibleReferences)
