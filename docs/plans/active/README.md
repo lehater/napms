@@ -2,16 +2,16 @@
 
 Current: `PLAN-I32-code-structure-refactoring.md`
 Goal: align physical code ownership with the accepted context-first Clean/Hexagonal architecture without changing product/domain semantics.
-Current task: WP-3 — finalize the M6 Connectivity Requirements API locality pilot in PR #67.
+Current task: WP-3 — localize the Connectivity Decisions Web API slice.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-I32-code-structure-refactoring.md`
-- `web/src/features/requirements/api.ts`
+- `web/src/api.ts`
 - `tests/architecture/test_web_feature_locality.py`
 
-Expand only to `web/src/api.ts`, shared Web transport, or failed Web/browser tests when required. Do not refactor `App.tsx` or other feature pages by size alone.
+Expand only to `web/src/features/decisions/`, shared Web transport/types, or failed gates required by this slice. Do not load Rules/Policy/Connectivity or `App.tsx` by default.
 
 ## Blockers
 
@@ -19,8 +19,8 @@ None known.
 
 ## Gate
 
-Requirement-specific API implementation is feature-local. Root `api.ts` may retain compatibility exports and genuinely shared types, but no Requirement DTO/query/command implementation. Shared request/error handling lives in `web/src/lib/api.ts`. Web, Harness and relevant browser/runtime gates must be green on the final head.
+Decision-specific DTO/query/command implementation must be feature-local. Root `api.ts` may retain compatibility exports and genuinely shared types but no Decision implementation. Preserve API/UX behavior; Web, Harness, Core and relevant browser/runtime gates must remain green.
 
 ## Next
 
-Resolve only final-gate failures for PR #67, evaluate whether the pilot improves locality without compensating indirection, and do not select another M6 hotspot until that evaluation is complete.
+Create `features/decisions/api.ts`, remove Decision implementation from root `api.ts`, extend locality protection, and validate before selecting another M6 slice.
