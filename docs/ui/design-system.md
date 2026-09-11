@@ -96,6 +96,7 @@ The reference slice is reviewed from top-left to bottom-right. Each item must be
 - [x] full-width application workspace;
 - [x] page title, description and primary action;
 - [x] full-width search with leading icon;
+- [x] search applies server-side after a short debounce and still submits immediately on Enter;
 - [x] labeled compact filter controls;
 - [x] reset action without an extra visible Apply button;
 - [x] quick-filter chips;
@@ -130,6 +131,12 @@ The unchecked items are deliberate semantic/read-model gaps, not invitations to 
 - Empty technical values use a neutral dash unless the domain explicitly defines an error state.
 - Tags, lifecycle/status indicators and diagnostic indicators are separate visual concepts.
 - Loading, error and empty results are distinct shared page states.
+
+## Visual regression guard
+
+The canonical Resource Catalogue layout is protected by `e2e/test_j00_resource_catalogue_visual.py` at a `1440x1000` viewport. The test fingerprints the rendered `main` workspace after creating deterministic Resource rows and compares it with the accepted browser baseline in `e2e/screenshot_regression.py`.
+
+The fingerprint is a regression guard, not the source of design truth. Rebaseline it only after a deliberate comparison with the accepted concept-board reference and the canonical UI/domain contracts. A changed fingerprint caused by an intentional global shell/design-system change must be reviewed together with other affected reference fingerprints rather than silently accepted.
 
 ## Tokens
 
