@@ -29,43 +29,40 @@ Current structural evidence:
 
 Responsibility: establish the canonical structural target and bounded migration sequence before production-code moves.
 
-Outputs:
-- context-first / layers-second target made explicit;
-- feature HTTP ownership rule made explicit;
-- process/bootstrap responsibility separated from feature adapters;
-- cross-context composition ownership protected from cosmetic relocation;
-- no-big-bang migration rule;
-- ordered M1-M6 roadmap with M1 as a reversible Application Catalogue HTTP pilot;
-- durable Harness recovery state points to I32 WP-0.
+Outcome: completed and integrated through PR #64. The repository now has a canonical context-first / layers-second code-structure contract and an ordered I32 roadmap.
+
+## WP-1 — backend structural migration
+
+Responsibility: execute roadmap stages M1-M4 in one working branch and one Draft PR while retaining stage-local gates and stop conditions.
+
+Execution model:
+- one branch / Draft PR accumulates M1-M4;
+- each stage ends in a coherent checkpoint commit and the smallest applicable local validation;
+- M2 begins only after M1 demonstrates better ownership locality without compensating indirection;
+- M3/M4 may be revised from evidence discovered by earlier stages;
+- final hosted gates validate the complete accumulated backend diff before squash integration to `main`.
+
+Stage sequence:
+1. M1 — move the two I31 target Catalogue HTTP routers into `application_catalogue/adapters/http/` and add executable boundary protection;
+2. M2 — classify and relocate remaining Catalogue HTTP to ACC, RC or an explicit composition owner;
+3. M3 — decompose `runtime/http_api.py` by semantic owner/read composition until feature endpoint/DTO/mapping code no longer accumulates there;
+4. M4 — classify `runtime/composition.py`, `composition/*` and configuration responsibilities and converge on one obvious bootstrap/composition surface without moving accepted cross-context read composition into false ownership.
 
 Non-goals:
-- no production-code relocation in WP-0;
-- no API, domain, persistence or Web behavior change;
+- no product/domain semantic change;
+- no API contract redesign for folder convenience;
 - no new bounded context/service/database;
 - no `src/napms/modules/` nesting;
-- no arbitrary large-file splitting.
+- no arbitrary large-file splitting;
+- M5 backend granularity cleanup and M6 Web locality remain separate later work.
 
-Local exit: architecture, roadmap, navigation and active resume state agree; applicable Harness/knowledge gates are green; branch diff is documentation/Harness-state only.
-
-## Later work packages
-
-The ordered M1-M6 sequence and their gates are owned by `docs/engineering/code-structure-refactoring-roadmap.md`. Only the currently selected work package is expanded here when coordination detail is required.
-
-The next candidate after WP-0 is M1, the Application Catalogue HTTP pilot:
-
-```text
-runtime/catalogue_target_http.py
-runtime/catalogue_target_retirement_http.py
-  -> application_catalogue/adapters/http/
-```
-
-M1 must preserve HTTP/API semantics and add executable architecture protection for the migrated boundary. M2 is not started until M1 demonstrates improved ownership locality without compensating indirection.
+Local exits are owned by the roadmap. A stage does not advance while it has an unresolved P0/P1 architecture finding or a failing applicable deterministic gate.
 
 ## Exit criteria
 
-I32 exits only when the roadmap completion criterion is satisfied: feature code is reliably discoverable from its semantic owner, runtime/bootstrap is assembly-oriented, architecture tests protect migrated boundaries and current product journeys remain behaviorally unchanged.
+WP-1 exits when M1-M4 satisfy their roadmap local exits, the accumulated backend diff preserves current behavior, architecture tests protect migrated ownership boundaries, and applicable final hosted gates pass on the Ready-for-review PR head.
 
-For the current WP-0, exit is limited to the documentation/Harness contract described above; completing WP-0 does not imply I32 completion.
+I32 as a whole remains open for separately selected M5/M6 only if evidence after WP-1 shows those stages still provide useful locality improvement.
 
 ## Blockers
 
@@ -73,4 +70,4 @@ None known.
 
 ## Next
 
-Complete WP-0 documentation/navigation, run the applicable Harness/knowledge checks, self-review the branch diff, then integrate WP-0 through one squash PR. After integration, recover from `main` and select M1 as the current work package.
+Execute M1 in `i32/backend-structure-refactoring`: move the two target Catalogue HTTP routers without behavior change, update imports/tests, add the smallest architecture guard, then validate the pilot before continuing M2 in the same Draft PR.

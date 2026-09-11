@@ -6,12 +6,12 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
+from napms.application_catalogue.adapters.http.discovery import create_catalogue_discovery_router
 from napms.application_catalogue.application.participant_discovery import (
     ApplicationCatalogueParticipant,
     ApplicationCatalogueParticipantPage,
 )
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.catalogue_discovery_http import create_catalogue_discovery_router
 from napms.runtime.http_api import PublicApiError
 
 

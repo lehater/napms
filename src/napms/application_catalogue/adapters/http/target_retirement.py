@@ -16,10 +16,16 @@ from napms.application_catalogue.application.target_lifecycle import (
     RetirementDependencyKind,
 )
 from napms.application_catalogue.application.target_retirement import RetirementSubjectKind
+from napms.application_catalogue.adapters.http.target import (
+    _dependency_details,
+    _require_target_success,
+)
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.catalogue_curation_http import _require_actor, _require_aware
-from napms.runtime.catalogue_target_http import _dependency_details, _require_target_success
 from napms.runtime.http_api import PublicApiError
+from napms.runtime.http_support import (
+    require_actor as _require_actor,
+    require_aware as _require_aware,
+)
 
 
 class RetirementSubjectPath(str, Enum):

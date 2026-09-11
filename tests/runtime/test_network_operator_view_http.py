@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from napms.network_operator_view.adapters.http import create_network_operator_view_router
 from napms.network_operator_view.application import (
     Availability,
     NetworkOperatorRealizationView,
@@ -14,7 +15,6 @@ from napms.network_operator_view.application import (
     Stage,
 )
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.network_operator_view_http import create_network_operator_view_router
 
 NOW = datetime(2026, 9, 10, 8, 0, tzinfo=timezone.utc)
 

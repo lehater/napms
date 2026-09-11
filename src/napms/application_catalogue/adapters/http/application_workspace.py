@@ -7,6 +7,12 @@ from fastapi import APIRouter, Header, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 
 from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
+from napms.application_catalogue.adapters.http.legacy_curation import (
+    _application_dto,
+    _binding_dto,
+    _component_dto,
+    _deployment_dto,
+)
 from napms.application_catalogue.application.deployment_curation import (
     RenameComponentDeploymentCommand,
     RetireComponentDeploymentCommand,
@@ -19,17 +25,13 @@ from napms.application_catalogue.application.structure_curation import (
 )
 from napms.policy_export.application.normalization_ports import DcsProjectionDecodeError
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.catalogue_curation_http import (
-    _application_dto,
-    _binding_dto,
-    _component_dto,
-    _deployment_dto,
-    _mutation_response,
-    _require_actor,
-    _require_aware,
-    _require_success,
-)
 from napms.runtime.http_api import PublicApiError
+from napms.runtime.http_support import (
+    mutation_response,
+    require_actor,
+    require_aware,
+    require_mutation_success,
+)
 from napms.runtime.normalized_policy_json import port_constraint_json
 
 
@@ -75,9 +77,9 @@ def create_catalogue_application_workspace_router(
         includeRetiredComponents: bool = Query(False),
         includeRetiredDeployments: bool = Query(False),
     ):
-        _require_actor(sessions, request)
+        require_actor(sessions, request)
         as_of = asOf or clock()
-        _require_aware(as_of, "asOf")
+        require_aware(as_of, "asOf")
         with open_scope() as scope:
             result = scope.applications.read_application_tree.execute(
                 application_id=application_id,
@@ -103,7 +105,7 @@ def create_catalogue_application_workspace_router(
         request: Request,
         idempotency_key: str = Header(alias="Idempotency-Key", min_length=1, max_length=256),
     ):
-        actor_id = _require_actor(sessions, request)
+        actor_id = require_actor(sessions, request)
         with open_scope() as scope:
             result = scope.applications.rename_application.execute(
                 RenameApplicationCommand(
@@ -115,8 +117,8 @@ def create_catalogue_application_workspace_router(
                     idempotency_key=idempotency_key,
                 )
             )
-        _require_success(result.outcome)
-        return _mutation_response(
+        require_mutation_success(result.outcome)
+        return mutation_response(
             result.outcome,
             {"application": _application_dto(result.application)},
         )
@@ -131,7 +133,7 @@ def create_catalogue_application_workspace_router(
         request: Request,
         idempotency_key: str = Header(alias="Idempotency-Key", min_length=1, max_length=256),
     ):
-        actor_id = _require_actor(sessions, request)
+        actor_id = require_actor(sessions, request)
         with open_scope() as scope:
             result = scope.applications.retire_application.execute(
                 RetireApplicationCommand(
@@ -142,8 +144,8 @@ def create_catalogue_application_workspace_router(
                     idempotency_key=idempotency_key,
                 )
             )
-        _require_success(result.outcome)
-        return _mutation_response(
+        require_mutation_success(result.outcome)
+        return mutation_response(
             result.outcome,
             {"application": _application_dto(result.application)},
         )
@@ -158,7 +160,7 @@ def create_catalogue_application_workspace_router(
         request: Request,
         idempotency_key: str = Header(alias="Idempotency-Key", min_length=1, max_length=256),
     ):
-        actor_id = _require_actor(sessions, request)
+        actor_id = require_actor(sessions, request)
         with open_scope() as scope:
             result = scope.applications.rename_component.execute(
                 RenameComponentCommand(
@@ -170,8 +172,8 @@ def create_catalogue_application_workspace_router(
                     idempotency_key=idempotency_key,
                 )
             )
-        _require_success(result.outcome)
-        return _mutation_response(
+        require_mutation_success(result.outcome)
+        return mutation_response(
             result.outcome,
             {"component": _component_dto(result.component)},
         )
@@ -186,7 +188,7 @@ def create_catalogue_application_workspace_router(
         request: Request,
         idempotency_key: str = Header(alias="Idempotency-Key", min_length=1, max_length=256),
     ):
-        actor_id = _require_actor(sessions, request)
+        actor_id = require_actor(sessions, request)
         with open_scope() as scope:
             result = scope.applications.retire_component.execute(
                 RetireComponentCommand(
@@ -197,8 +199,8 @@ def create_catalogue_application_workspace_router(
                     idempotency_key=idempotency_key,
                 )
             )
-        _require_success(result.outcome)
-        return _mutation_response(
+        require_mutation_success(result.outcome)
+        return mutation_response(
             result.outcome,
             {"component": _component_dto(result.component)},
         )
@@ -213,7 +215,7 @@ def create_catalogue_application_workspace_router(
         request: Request,
         idempotency_key: str = Header(alias="Idempotency-Key", min_length=1, max_length=256),
     ):
-        actor_id = _require_actor(sessions, request)
+        actor_id = require_actor(sessions, request)
         with open_scope() as scope:
             result = scope.applications.rename_component_deployment.execute(
                 RenameComponentDeploymentCommand(
@@ -225,8 +227,8 @@ def create_catalogue_application_workspace_router(
                     idempotency_key=idempotency_key,
                 )
             )
-        _require_success(result.outcome)
-        return _mutation_response(
+        require_mutation_success(result.outcome)
+        return mutation_response(
             result.outcome,
             {"deployment": _deployment_dto(result.deployment)},
         )
@@ -241,7 +243,7 @@ def create_catalogue_application_workspace_router(
         request: Request,
         idempotency_key: str = Header(alias="Idempotency-Key", min_length=1, max_length=256),
     ):
-        actor_id = _require_actor(sessions, request)
+        actor_id = require_actor(sessions, request)
         with open_scope() as scope:
             result = scope.applications.retire_component_deployment.execute(
                 RetireComponentDeploymentCommand(
@@ -252,8 +254,8 @@ def create_catalogue_application_workspace_router(
                     idempotency_key=idempotency_key,
                 )
             )
-        _require_success(result.outcome)
-        return _mutation_response(
+        require_mutation_success(result.outcome)
+        return mutation_response(
             result.outcome,
             {"deployment": _deployment_dto(result.deployment)},
         )
