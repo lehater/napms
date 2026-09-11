@@ -7,6 +7,9 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
+from napms.application_catalogue.adapters.http.target_retirement import (
+    create_catalogue_target_retirement_router,
+)
 from napms.application_catalogue.application.target_curation import TargetMutationOutcome
 from napms.application_catalogue.application.target_lifecycle import RetirementDependencyKind
 from napms.application_catalogue.application.target_ports import ActiveDependencyReference
@@ -18,9 +21,6 @@ from napms.application_catalogue.application.target_retirement import (
 from napms.application_catalogue.domain.model import Application, CatalogueLifecycleState
 from napms.application_catalogue.domain.target_model import DeploymentInteraction
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.catalogue_target_retirement_http import (
-    create_catalogue_target_retirement_router,
-)
 from napms.runtime.http_api import PublicApiError
 
 
