@@ -150,6 +150,7 @@ from napms.runtime.auth import (
     InMemorySessionStore,
     LocalPasswordAuthenticator,
 )
+from napms.runtime.http_support import PublicApiError, SESSION_COOKIE_NAME
 from napms.policy_export.adapters.http_json import (
     normalized_policy_export_json,
     port_constraint_json,
@@ -161,7 +162,6 @@ from napms.scoped_connectivity_inventory.application.read import (
 )
 
 
-SESSION_COOKIE_NAME = "napms_session"
 CORRELATION_HEADER = "X-Correlation-ID"
 _CORRELATION_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 _LOGGER = logging.getLogger("napms.runtime.http")
@@ -302,22 +302,6 @@ class SetRequirementJustificationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     justification: str = Field(min_length=1, max_length=4096)
-
-
-class PublicApiError(Exception):
-    def __init__(
-        self,
-        *,
-        status_code: int,
-        code: str,
-        message: str,
-        details: dict[str, Any] | None = None,
-    ) -> None:
-        super().__init__(code)
-        self.status_code = status_code
-        self.code = code
-        self.message = message
-        self.details = details
 
 
 def configure_json_logging(*, level: int = logging.INFO) -> None:

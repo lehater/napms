@@ -2,13 +2,12 @@
 
 from napms.runtime.legacy_http_api import (
     CORRELATION_HEADER,
-    SESSION_COOKIE_NAME,
     HttpApiDependencies,
-    PublicApiError,
     _LOGGER,
     configure_json_logging,
     create_http_api as _create_legacy_http_api,
 )
+from napms.runtime.http_support import PublicApiError, SESSION_COOKIE_NAME
 
 
 _MIGRATED_ROUTE_NAMES = {

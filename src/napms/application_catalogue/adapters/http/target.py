@@ -36,7 +36,7 @@ from napms.application_catalogue.domain.communication import (
 )
 from napms.application_catalogue.domain.target_model import DeploymentInteractionSide
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_api import PublicApiError
+from napms.runtime.http_support import PublicApiError
 from napms.runtime.http_support import require_actor as _require_actor
 from napms.runtime.http_support import require_aware as _require_aware
 

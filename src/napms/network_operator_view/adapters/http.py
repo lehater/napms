@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 
 from napms.network_operator_view.application import ReadOutcome
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_api import SESSION_COOKIE_NAME
+from napms.runtime.http_support import SESSION_COOKIE_NAME
 
 
 def create_network_operator_view_router(

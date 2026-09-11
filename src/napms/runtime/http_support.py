@@ -1,10 +1,29 @@
 from datetime import datetime
+from typing import Any
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.http_api import PublicApiError, SESSION_COOKIE_NAME
+
+
+SESSION_COOKIE_NAME = "napms_session"
+
+
+class PublicApiError(Exception):
+    def __init__(
+        self,
+        *,
+        status_code: int,
+        code: str,
+        message: str,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(code)
+        self.status_code = status_code
+        self.code = code
+        self.message = message
+        self.details = details
 
 
 SUCCESS_OUTCOMES = {"Created", "Updated", "Resolved"}

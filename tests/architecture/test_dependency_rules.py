@@ -146,6 +146,21 @@ def test_core_does_not_depend_on_adapter_layer():
     assert violations == []
 
 
+def test_semantic_owner_adapters_do_not_depend_on_process_http_assembly():
+    violations = []
+    adapter_roots = sorted(
+        path / "adapters"
+        for path in NAPMS.iterdir()
+        if path.is_dir() and (path / "adapters").is_dir()
+    )
+    for adapter_root in adapter_roots:
+        for path in adapter_root.rglob("*.py"):
+            for module in imported_modules(path):
+                if module == "napms.runtime.http_api":
+                    violations.append((path, module))
+    assert violations == []
+
+
 def test_application_catalogue_target_http_is_owner_local():
     assert (APPLICATION_CATALOGUE_HTTP / "target.py").is_file()
     assert (APPLICATION_CATALOGUE_HTTP / "target_retirement.py").is_file()
