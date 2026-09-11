@@ -10,7 +10,7 @@ APPLICATION_SCREEN_BASELINES: dict[str, str] = {
     "deployment-connectivity": "90008530c2ca928199914b11806c802c489b9241946a942a1c261c6281030001",
 }
 RESOURCE_SCREEN_BASELINES: dict[str, str] = {
-    "resource-catalogue": "",
+    "resource-catalogue": "c816c416b00068062b2bb091a968a96ed01e900ed15e989a911a811ac88c4004",
 }
 MAX_HAMMING_DISTANCE = 6
 
@@ -29,31 +29,41 @@ def application_main_fingerprint(page: Page) -> str:
     return f"{bits:064x}"
 
 
-def assert_application_screen_fingerprints(actual: dict[str, str]) -> None:
-    missing = [name for name, value in APPLICATION_SCREEN_BASELINES.items() if not value]
+def _assert_screen_fingerprints(
+    *,
+    family: str,
+    expected: dict[str, str],
+    actual: dict[str, str],
+) -> None:
+    missing = [name for name, value in expected.items() if not value]
     if missing:
-        generated = ", ".join(f"{name}={actual[name]}" for name in APPLICATION_SCREEN_BASELINES)
-        raise AssertionError(f"Set Application screenshot baselines: {generated}")
+        generated = ", ".join(f"{name}={actual[name]}" for name in expected)
+        raise AssertionError(f"Set {family} screenshot baselines: {generated}")
 
-    for name, expected in APPLICATION_SCREEN_BASELINES.items():
+    regressions: list[str] = []
+    for name, baseline in expected.items():
         observed = actual[name]
-        distance = (int(expected, 16) ^ int(observed, 16)).bit_count()
-        assert distance <= MAX_HAMMING_DISTANCE, (
-            f"Application screenshot regression for {name}: "
-            f"distance={distance}, expected={expected}, observed={observed}"
-        )
+        distance = (int(baseline, 16) ^ int(observed, 16)).bit_count()
+        if distance > MAX_HAMMING_DISTANCE:
+            regressions.append(
+                f"{name}: distance={distance}, expected={baseline}, observed={observed}"
+            )
+
+    if regressions:
+        raise AssertionError(f"{family} screenshot regressions: " + " | ".join(regressions))
+
+
+def assert_application_screen_fingerprints(actual: dict[str, str]) -> None:
+    _assert_screen_fingerprints(
+        family="Application",
+        expected=APPLICATION_SCREEN_BASELINES,
+        actual=actual,
+    )
 
 
 def assert_resource_screen_fingerprints(actual: dict[str, str]) -> None:
-    missing = [name for name, value in RESOURCE_SCREEN_BASELINES.items() if not value]
-    if missing:
-        generated = ", ".join(f"{name}={actual[name]}" for name in RESOURCE_SCREEN_BASELINES)
-        raise AssertionError(f"Set Resource screenshot baselines: {generated}")
-
-    for name, expected in RESOURCE_SCREEN_BASELINES.items():
-        observed = actual[name]
-        distance = (int(expected, 16) ^ int(observed, 16)).bit_count()
-        assert distance <= MAX_HAMMING_DISTANCE, (
-            f"Resource screenshot regression for {name}: "
-            f"distance={distance}, expected={expected}, observed={observed}"
-        )
+    _assert_screen_fingerprints(
+        family="Resource",
+        expected=RESOURCE_SCREEN_BASELINES,
+        actual=actual,
+    )
