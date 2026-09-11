@@ -27,6 +27,7 @@ class PostgresResourceCatalogueListQuery:
         search: str | None,
         include_retired: bool,
         responsibility_scope: str | None,
+        data_state: str | None,
         as_of: datetime,
     ) -> tuple[ResourceCatalogueListItem, ...]:
         conditions = ["(%(include_retired)s OR r.lifecycle_state = 'Active')"]
@@ -36,6 +37,34 @@ class PostgresResourceCatalogueListQuery:
             "offset": offset,
             "limit": limit,
         }
+
+        effective_realization = """
+            EXISTS (
+                SELECT 1
+                FROM napms_resource_catalogue.resource_realization_versions rr
+                WHERE rr.resource_reference = r.resource_reference
+                  AND rr.valid_from <= %(as_of)s
+                  AND (rr.valid_to IS NULL OR %(as_of)s < rr.valid_to)
+            )
+        """
+        effective_scope = """
+            EXISTS (
+                SELECT 1
+                FROM napms_resource_catalogue.resource_scope_affiliations rsa
+                WHERE rsa.resource_reference = r.resource_reference
+                  AND rsa.valid_from <= %(as_of)s
+                  AND (rsa.valid_to IS NULL OR %(as_of)s < rsa.valid_to)
+            )
+        """
+        effective_responsibility = """
+            EXISTS (
+                SELECT 1
+                FROM napms_resource_catalogue.resource_responsibilities rsp
+                WHERE rsp.resource_reference = r.resource_reference
+                  AND rsp.valid_from <= %(as_of)s
+                  AND (rsp.valid_to IS NULL OR %(as_of)s < rsp.valid_to)
+            )
+        """
 
         if responsibility_scope is not None:
             conditions.append(
@@ -51,6 +80,13 @@ class PostgresResourceCatalogueListQuery:
                 """
             )
             params["scope"] = responsibility_scope
+
+        if data_state == "missing-address":
+            conditions.append(f"NOT ({effective_realization})")
+        elif data_state == "missing-scope":
+            conditions.append(f"NOT ({effective_scope})")
+        elif data_state == "missing-responsibility":
+            conditions.append(f"NOT ({effective_responsibility})")
 
         if search is not None:
             conditions.append(
@@ -70,6 +106,24 @@ class PostgresResourceCatalogueListQuery:
                               OR rsp.contact ILIKE %(pattern)s
                           )
                     )
+                    OR EXISTS (
+                        SELECT 1
+                        FROM napms_resource_catalogue.resource_scope_affiliations rsa
+                        WHERE rsa.resource_reference = r.resource_reference
+                          AND rsa.valid_from <= %(as_of)s
+                          AND (rsa.valid_to IS NULL OR %(as_of)s < rsa.valid_to)
+                          AND rsa.responsibility_scope ILIKE %(pattern)s
+                    )
+                    OR EXISTS (
+                        SELECT 1
+                        FROM napms_resource_catalogue.resource_realization_versions rr
+                        JOIN napms_resource_catalogue.resource_endpoints e
+                          ON e.fact_reference = rr.fact_reference
+                        WHERE rr.resource_reference = r.resource_reference
+                          AND rr.valid_from <= %(as_of)s
+                          AND (rr.valid_to IS NULL OR %(as_of)s < rr.valid_to)
+                          AND e.technical_address ILIKE %(pattern)s
+                    )
                 )
                 """
             )
@@ -86,27 +140,9 @@ class PostgresResourceCatalogueListQuery:
                     r.lifecycle_state,
                     r.retirement_provenance_reference,
                     r.version,
-                    EXISTS (
-                        SELECT 1
-                        FROM napms_resource_catalogue.resource_realization_versions rr
-                        WHERE rr.resource_reference = r.resource_reference
-                          AND rr.valid_from <= %(as_of)s
-                          AND (rr.valid_to IS NULL OR %(as_of)s < rr.valid_to)
-                    ) AS has_effective_realization,
-                    EXISTS (
-                        SELECT 1
-                        FROM napms_resource_catalogue.resource_scope_affiliations rsa
-                        WHERE rsa.resource_reference = r.resource_reference
-                          AND rsa.valid_from <= %(as_of)s
-                          AND (rsa.valid_to IS NULL OR %(as_of)s < rsa.valid_to)
-                    ) AS has_effective_scope_affiliation,
-                    EXISTS (
-                        SELECT 1
-                        FROM napms_resource_catalogue.resource_responsibilities rsp
-                        WHERE rsp.resource_reference = r.resource_reference
-                          AND rsp.valid_from <= %(as_of)s
-                          AND (rsp.valid_to IS NULL OR %(as_of)s < rsp.valid_to)
-                    ) AS has_effective_responsibility,
+                    {effective_realization} AS has_effective_realization,
+                    {effective_scope} AS has_effective_scope_affiliation,
+                    {effective_responsibility} AS has_effective_responsibility,
                     EXISTS (
                         SELECT 1
                         FROM napms_resource_catalogue.resource_responsibilities rsp
@@ -115,7 +151,34 @@ class PostgresResourceCatalogueListQuery:
                           AND (rsp.valid_to IS NULL OR %(as_of)s < rsp.valid_to)
                           AND rsp.contact IS NOT NULL
                           AND btrim(rsp.contact) <> ''
-                    ) AS has_effective_contact
+                    ) AS has_effective_contact,
+                    ARRAY(
+                        SELECT DISTINCT e.technical_address
+                        FROM napms_resource_catalogue.resource_realization_versions rr
+                        JOIN napms_resource_catalogue.resource_endpoints e
+                          ON e.fact_reference = rr.fact_reference
+                        WHERE rr.resource_reference = r.resource_reference
+                          AND rr.valid_from <= %(as_of)s
+                          AND (rr.valid_to IS NULL OR %(as_of)s < rr.valid_to)
+                        ORDER BY e.technical_address
+                    ) AS current_addresses,
+                    ARRAY(
+                        SELECT DISTINCT rsa.responsibility_scope
+                        FROM napms_resource_catalogue.resource_scope_affiliations rsa
+                        WHERE rsa.resource_reference = r.resource_reference
+                          AND rsa.valid_from <= %(as_of)s
+                          AND (rsa.valid_to IS NULL OR %(as_of)s < rsa.valid_to)
+                        ORDER BY rsa.responsibility_scope
+                    ) AS current_scopes,
+                    ARRAY(
+                        SELECT DISTINCT rsp.display_name
+                        FROM napms_resource_catalogue.resource_responsibilities rsp
+                        WHERE rsp.resource_reference = r.resource_reference
+                          AND rsp.role = 'TechnicalOwner'
+                          AND rsp.valid_from <= %(as_of)s
+                          AND (rsp.valid_to IS NULL OR %(as_of)s < rsp.valid_to)
+                        ORDER BY rsp.display_name
+                    ) AS technical_owners
                 FROM napms_resource_catalogue.resources r
                 WHERE {where_sql}
                 ORDER BY r.display_name NULLS LAST, r.resource_reference
@@ -150,4 +213,7 @@ class PostgresResourceCatalogueListQuery:
             has_effective_scope_affiliation=bool(row[7]),
             has_effective_responsibility=bool(row[8]),
             has_effective_contact=bool(row[9]),
+            current_addresses=tuple(row[10] or ()),
+            current_scopes=tuple(row[11] or ()),
+            technical_owners=tuple(row[12] or ()),
         )
