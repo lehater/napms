@@ -109,7 +109,7 @@ def _add_deployment(page: Page) -> None:
 
 def _add_resource_to_current_set(page: Page, resource_name: str) -> None:
     page.get_by_role("button", name="Add resource", exact=True).click()
-    panel = page.get_by_role("heading", name="Add resource", exact=True).locator("xpath=..")
+    panel = page.get_by_role("group", name="Add resource", exact=True)
     panel.get_by_label("Search Resource Catalogue").fill(resource_name)
     panel.get_by_role("button", name="Search", exact=True).click()
     choice = panel.get_by_role("button").filter(has_text=resource_name)
