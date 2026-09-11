@@ -8,6 +8,9 @@ from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
 from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
+from napms.application_catalogue.adapters.http.application_workspace import (
+    create_catalogue_application_workspace_router,
+)
 from napms.application_catalogue.application.curation_detail import (
     ApplicationCatalogueTreeDetail,
     ComponentCatalogueDetail,
@@ -34,9 +37,6 @@ from napms.policy_export.application.normalization_types import (
     PortRange,
 )
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.catalogue_application_workspace_http import (
-    create_catalogue_application_workspace_router,
-)
 from napms.runtime.http_api import PublicApiError
 
 
