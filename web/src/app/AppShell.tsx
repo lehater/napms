@@ -77,7 +77,11 @@ export function AppShell({
           <button type="button" className={navClass("realization")} aria-current={activeNav === "realization" ? "page" : undefined} onClick={() => onNavigate("realization")}><Activity className="size-4" aria-hidden="true" />Realization</button>
         </nav>
         <div className="border-t border-[var(--napms-color-nav-divider)] p-3">
-          <div className="flex items-center gap-3 rounded-[var(--napms-control-radius)] px-3 py-2.5">
+          <div
+            role="group"
+            aria-label={`Signed in as ${actor.login}`}
+            className="flex items-center gap-3 rounded-[var(--napms-control-radius)] px-3 py-2.5"
+          >
             <div className="grid size-8 shrink-0 place-items-center rounded-full bg-white/10 text-xs font-bold text-white">{actor.login.slice(0, 1).toUpperCase()}</div>
             <div className="min-w-0 flex-1"><div className="truncate text-sm font-semibold text-white">{actor.login}</div><div className="truncate text-xs text-[var(--napms-color-nav-muted)]">{actor.actorId}</div></div>
             <button type="button" className="rounded-[var(--napms-control-radius)] p-2 text-[var(--napms-color-nav-muted)] hover:bg-white/5 hover:text-white" onClick={() => void onLogout()} aria-label="Logout"><LogOut className="size-4" aria-hidden="true" /></button>
