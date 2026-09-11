@@ -30,9 +30,7 @@ export function PolicyViewControls({
       setAmbiguousScopes([])
       setScope("")
       setLoading(false)
-      return () => {
-        active = false
-      }
+      return () => { active = false }
     }
 
     setLoading(true)
@@ -43,32 +41,18 @@ export function PolicyViewControls({
         const values = result.scopes.map((item) => item.scope)
         setScopes(values)
         setAmbiguousScopes(result.ambiguousScopes.map((item) => item.scope))
-        setScope((current) =>
-          values.includes(current)
-            ? current
-            : values.length === 1
-              ? values[0]
-              : "",
-        )
+        setScope((current) => values.includes(current) ? current : values.length === 1 ? values[0] : "")
       })
       .catch((caught) => {
         if (!active) return
         setScopes([])
         setAmbiguousScopes([])
         setScope("")
-        setError(
-          caught instanceof ApiError
-            ? caught
-            : new ApiError(500, "InternalError", "Policy scopes could not be loaded."),
-        )
+        setError(caught instanceof ApiError ? caught : new ApiError(500, "InternalError", "Policy scopes could not be loaded."))
       })
-      .finally(() => {
-        if (active) setLoading(false)
-      })
+      .finally(() => { if (active) setLoading(false) })
 
-    return () => {
-      active = false
-    }
+    return () => { active = false }
   }, [asOf])
 
   async function submit(event: React.FormEvent) {
@@ -77,16 +61,12 @@ export function PolicyViewControls({
     try {
       await onRun(scope, toOffsetAwareIso(asOf))
     } catch (caught) {
-      setError(
-        caught instanceof ApiError
-          ? caught
-          : new ApiError(422, "InvalidAsOf", "Select a valid date and time."),
-      )
+      setError(caught instanceof ApiError ? caught : new ApiError(422, "InvalidAsOf", "Select a valid date and time."))
     }
   }
 
   return (
-    <form onSubmit={submit} className="rounded-lg border border-[#E2E8F0] bg-white p-5 md:p-6">
+    <form onSubmit={submit} className="rounded-[var(--napms-surface-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] p-5 shadow-[var(--napms-surface-shadow)] md:p-6">
       <div className="grid gap-4 lg:grid-cols-[minmax(220px,1fr)_minmax(260px,1fr)_auto] lg:items-end">
         <Field label="Governance scope">
           <Select value={scope} onChange={(event) => setScope(event.target.value)} disabled={loading} required>
@@ -99,8 +79,8 @@ export function PolicyViewControls({
         </Field>
         <Button type="submit" loading={running} disabled={!scope || !asOf}>Run view</Button>
       </div>
-      {ambiguousScopes.length > 0 ? <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{ambiguousScopes.length} scope(s) have ambiguous ReadEffectiveDesiredPolicy authority and remain fail-closed.</div> : null}
-      {error ? <div role="alert" className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800"><div className="font-semibold">{error.code}</div><div className="mt-1">{error.message}</div>{error.correlationId ? <div className="mt-2 text-xs">Correlation: {error.correlationId}</div> : null}</div> : null}
+      {ambiguousScopes.length > 0 ? <div className="mt-4 rounded-[var(--napms-control-radius)] border border-[var(--napms-color-warning-dot)] bg-[var(--napms-color-warning-bg)] p-3 text-sm text-[var(--napms-color-warning)]">{ambiguousScopes.length} scope(s) have ambiguous ReadEffectiveDesiredPolicy authority and remain fail-closed.</div> : null}
+      {error ? <div role="alert" className="mt-4 rounded-[var(--napms-control-radius)] border border-[var(--napms-color-danger-dot)] bg-[var(--napms-color-danger-bg)] p-3 text-sm text-[var(--napms-color-danger)]"><div className="font-semibold">{error.code}</div><div className="mt-1">{error.message}</div>{error.correlationId ? <div className="mt-2 text-xs">Correlation: {error.correlationId}</div> : null}</div> : null}
     </form>
   )
 }
