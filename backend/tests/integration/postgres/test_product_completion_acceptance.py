@@ -24,15 +24,15 @@ from napms.contexts.access_policy_realization.domain.realization import (
     RequiredSemanticChange,
 )
 from napms.contexts.access_policy_realization.domain.rendering import RenderStatus
-from napms.composition.access_policy_realization_postgres import (
+from napms.platform.bootstrap.access_policy_realization import (
     open_access_policy_realization_scope,
 )
-from napms.composition.config import ApplicationConfig, PostgresConfig
-from napms.composition.greenfield_postgres import open_greenfield_scope
-from napms.composition.network_environment_operations_stub import (
+from napms.platform.bootstrap.config import ApplicationConfig, PostgresConfig
+from napms.platform.bootstrap.greenfield import open_greenfield_scope
+from napms.platform.bootstrap.network_environment_operations import (
     open_network_environment_operations_stub_scope,
 )
-from napms.composition.postgres_migrations import apply_greenfield_migrations
+from napms.platform.database.migrations import apply_greenfield_migrations
 from napms.contexts.connectivity_decision.application.record import (
     RecordConnectivityDecision,
     RecordDecision,

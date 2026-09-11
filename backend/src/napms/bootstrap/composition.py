@@ -29,13 +29,13 @@ from napms.contexts.application_catalogue.presentation.http.target_retirement im
     create_catalogue_target_retirement_router,
 )
 from napms.bootstrap.config import HttpRuntimeConfig
-from napms.composition.catalogue_curation_postgres import open_catalogue_curation_scope
-from napms.composition.catalogue_target_postgres import open_catalogue_target_scope
-from napms.composition.greenfield_postgres import open_greenfield_scope
-from napms.composition.network_operator_view_postgres import (
+from napms.platform.bootstrap.catalogue_curation import open_catalogue_curation_scope
+from napms.platform.bootstrap.application_catalogue_target import open_catalogue_target_scope
+from napms.platform.bootstrap.greenfield import open_greenfield_scope
+from napms.platform.bootstrap.network_operator_view import (
     open_network_operator_view_scope,
 )
-from napms.composition.traffic_analysis_postgres import open_traffic_analysis_scope
+from napms.platform.bootstrap.traffic_analysis import open_traffic_analysis_scope
 from napms.contexts.connectivity_decision.infrastructure.persistence.postgres import (
     PostgresConnectivityDecisionRepository,
 )

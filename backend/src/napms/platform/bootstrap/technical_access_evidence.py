@@ -4,7 +4,7 @@ from typing import Iterator
 
 import psycopg
 
-from napms.composition.config import ApplicationConfig
+from napms.platform.bootstrap.config import ApplicationConfig
 from napms.contexts.technical_access_evidence.infrastructure.persistence.postgres import (
     PostgresTechnicalAccessEvidenceRepository,
 )

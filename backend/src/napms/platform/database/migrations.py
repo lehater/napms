@@ -5,7 +5,7 @@ from typing import Iterable
 
 import psycopg
 
-from napms.composition.config import ApplicationConfig
+from napms.platform.bootstrap.config import ApplicationConfig
 
 
 _MIGRATION_LOCK_ID = 711_011_001

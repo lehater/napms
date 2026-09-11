@@ -32,8 +32,9 @@ def test_bootstrap_main_targets_bootstrap_module():
     assert "napms.runtime.main:app" not in source
 
 
-def test_composition_support_remains_separate_from_executable_bootstrap():
-    composition = NAPMS / "composition"
-    assert (composition / "greenfield_postgres.py").is_file()
-    assert (composition / "postgres_migrations.py").is_file()
+def test_platform_support_is_separate_from_legacy_executable_bootstrap():
+    platform = NAPMS / "platform"
+    assert (platform / "bootstrap" / "greenfield.py").is_file()
+    assert (platform / "database" / "migrations.py").is_file()
+    assert not (NAPMS / "composition").exists()
     assert (BOOTSTRAP / "composition.py").is_file()

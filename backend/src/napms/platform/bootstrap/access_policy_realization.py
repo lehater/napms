@@ -30,14 +30,14 @@ from napms.contexts.access_policy_realization.application.reconcile import (
 from napms.contexts.access_policy_realization.application.render import (
     RenderConfiguration,
 )
-from napms.composition.config import ApplicationConfig
-from napms.composition.greenfield_postgres import (
+from napms.platform.bootstrap.config import ApplicationConfig
+from napms.platform.bootstrap.greenfield import (
     open_greenfield_scope,
 )
-from napms.composition.network_enforcement_placement_postgres import (
+from napms.platform.bootstrap.network_enforcement_placement import (
     open_network_enforcement_placement_scope,
 )
-from napms.composition.technical_access_evidence_postgres import (
+from napms.platform.bootstrap.technical_access_evidence import (
     open_technical_access_evidence_scope,
 )
 from napms.workflows.policy_export.application.export_snapshot import (

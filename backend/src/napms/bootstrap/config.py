@@ -2,7 +2,7 @@ import os
 from dataclasses import dataclass, field
 from typing import Mapping
 
-from napms.composition.config import (
+from napms.platform.bootstrap.config import (
     ApplicationConfig,
     ConfigurationError,
     load_application_config,

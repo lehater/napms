@@ -34,7 +34,7 @@ from napms.contexts.connectivity_decision.domain.model import (
     DecisionSubject,
     DecisionValidity,
 )
-from napms.composition.postgres_migrations import apply_postgres_migrations
+from napms.platform.database.migrations import apply_postgres_migrations
 
 
 pytestmark = pytest.mark.postgres

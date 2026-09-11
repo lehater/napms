@@ -67,7 +67,7 @@ from napms.contexts.authority_management.infrastructure.persistence.postgres imp
     PostgresAuthorityAssignmentRepository,
 )
 from napms.contexts.authority_management.application.check_authority import CheckAuthority
-from napms.composition.config import ApplicationConfig
+from napms.platform.bootstrap.config import ApplicationConfig
 from napms.contexts.resource_catalogue.infrastructure.local.curation_support import (
     LocalResourceCatalogueIdentityFactory,
     LocalResourceCatalogueProvenanceFactory,

@@ -426,6 +426,10 @@ def test_traffic_analysis_uses_final_workflow_namespace():
     assert not (NAPMS / "traffic_analysis").exists()
 
 
+def test_generic_composition_package_is_absent():
+    assert not (NAPMS / "composition").exists()
+
+
 def test_access_policy_has_no_legacy_package():
     assert not (NAPMS / "access_policy").exists()
 

@@ -11,10 +11,10 @@ from napms.contexts.authority_management.infrastructure.persistence.postgres imp
     PostgresAuthorityAssignmentRepository,
 )
 from napms.contexts.authority_management.application.check_authority import CheckAuthority
-from napms.composition.access_policy_realization_postgres import (
+from napms.platform.bootstrap.access_policy_realization import (
     open_access_policy_realization_scope,
 )
-from napms.composition.config import ApplicationConfig
+from napms.platform.bootstrap.config import ApplicationConfig
 from napms.workflows.network_operator_view.application.read import ReadNetworkOperatorRealization
 
 

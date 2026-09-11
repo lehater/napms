@@ -37,23 +37,23 @@ from napms.contexts.access_policy_realization.domain.realization import (
 from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_codec import (
     JsonDcsProjectionCodec,
 )
-from napms.composition.access_policy_realization_postgres import (
+from napms.platform.bootstrap.access_policy_realization import (
     open_access_policy_realization_scope,
 )
-from napms.composition.config import (
+from napms.platform.bootstrap.config import (
     ApplicationConfig,
     PostgresConfig,
 )
-from napms.composition.greenfield_postgres import (
+from napms.platform.bootstrap.greenfield import (
     open_greenfield_scope,
 )
-from napms.composition.network_enforcement_placement_postgres import (
+from napms.platform.bootstrap.network_enforcement_placement import (
     open_network_enforcement_placement_scope,
 )
-from napms.composition.postgres_migrations import (
+from napms.platform.database.migrations import (
     apply_greenfield_migrations,
 )
-from napms.composition.technical_access_evidence_postgres import (
+from napms.platform.bootstrap.technical_access_evidence import (
     open_technical_access_evidence_scope,
 )
 from napms.contexts.network_enforcement_placement.presentation.imports.local_json import (

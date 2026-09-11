@@ -18,8 +18,8 @@ from napms.contexts.access_policy.domain.model import (
     ProposalProvenance,
     RuleSemanticIdentity,
 )
-from napms.composition.config import ApplicationConfig, PostgresConfig
-from napms.composition.greenfield_postgres import (
+from napms.platform.bootstrap.config import ApplicationConfig, PostgresConfig
+from napms.platform.bootstrap.greenfield import (
     apply_greenfield_migrations,
     open_greenfield_scope,
 )

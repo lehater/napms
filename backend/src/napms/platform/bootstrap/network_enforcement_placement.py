@@ -4,7 +4,7 @@ from typing import Iterator
 
 import psycopg
 
-from napms.composition.config import ApplicationConfig
+from napms.platform.bootstrap.config import ApplicationConfig
 from napms.contexts.network_enforcement_placement.infrastructure.persistence.postgres import (
     PostgresPlacementKnowledgeRepository,
 )

@@ -25,14 +25,14 @@ from napms.contexts.application_catalogue.infrastructure.integrations.dcs_json_c
 from napms.contexts.application_catalogue.infrastructure.persistence.postgres import (
     PostgresApplicationCatalogueRepository,
 )
-from napms.composition.config import (
+from napms.platform.bootstrap.config import (
     ApplicationConfig,
     PostgresConfig,
 )
-from napms.composition.greenfield_postgres import (
+from napms.platform.bootstrap.greenfield import (
     apply_greenfield_migrations,
 )
-from napms.composition.technical_access_evidence_postgres import (
+from napms.platform.bootstrap.technical_access_evidence import (
     open_technical_access_evidence_scope,
 )
 from napms.workflows.policy_export.application.normalization_types import (

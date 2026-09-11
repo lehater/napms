@@ -69,7 +69,7 @@ from napms.contexts.authority_management.application.check_authority import Chec
 from napms.contexts.authority_management.application.list_scopes import (
     ListEffectiveAuthorityScopes,
 )
-from napms.composition.config import ApplicationConfig
+from napms.platform.bootstrap.config import ApplicationConfig
 from napms.contexts.connectivity_decision.infrastructure.persistence.postgres import (
     PostgresConnectivityDecisionRepository,
 )
@@ -89,7 +89,7 @@ from napms.contexts.connectivity_requirements.application.read import (
     GetAuthorizedRequirement,
     ListConnectivityRequirements,
 )
-from napms.composition.postgres_migrations import apply_greenfield_migrations
+from napms.platform.database.migrations import apply_greenfield_migrations
 from napms.contexts.resource_catalogue.infrastructure.integrations.policy_export import (
     PolicyExportResourceCatalogueAdapter,
 )

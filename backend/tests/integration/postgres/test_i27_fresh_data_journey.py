@@ -26,11 +26,11 @@ from napms.contexts.application_catalogue.domain.communication import (
     DcsPortConstraint,
     DcsPortRange,
 )
-from napms.composition.catalogue_curation_postgres import (
+from napms.platform.bootstrap.catalogue_curation import (
     open_catalogue_curation_scope,
 )
-from napms.composition.config import ApplicationConfig, PostgresConfig
-from napms.composition.greenfield_postgres import (
+from napms.platform.bootstrap.config import ApplicationConfig, PostgresConfig
+from napms.platform.bootstrap.greenfield import (
     apply_greenfield_migrations,
     open_greenfield_scope,
 )

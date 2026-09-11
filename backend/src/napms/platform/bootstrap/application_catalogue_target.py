@@ -83,7 +83,7 @@ from napms.contexts.application_catalogue.infrastructure.integrations.target_dep
 from napms.contexts.application_catalogue.infrastructure.read_models.postgres.target import (
     PostgresApplicationCatalogueTargetReadModel,
 )
-from napms.composition.config import ApplicationConfig
+from napms.platform.bootstrap.config import ApplicationConfig
 from napms.contexts.connectivity_decision.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityDecisionDependencyQuery,
 )

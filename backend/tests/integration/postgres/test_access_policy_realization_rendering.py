@@ -10,14 +10,14 @@ from napms.contexts.access_policy_realization.infrastructure.rendering.cisco_asa
 from napms.contexts.access_policy_realization.domain.rendering import (
     RenderStatus,
 )
-from napms.composition.access_policy_realization_postgres import (
+from napms.platform.bootstrap.access_policy_realization import (
     open_access_policy_realization_scope,
 )
-from napms.composition.config import (
+from napms.platform.bootstrap.config import (
     ApplicationConfig,
     PostgresConfig,
 )
-from napms.composition.postgres_migrations import (
+from napms.platform.database.migrations import (
     apply_greenfield_migrations,
 )
 from tests.integration.postgres import (
