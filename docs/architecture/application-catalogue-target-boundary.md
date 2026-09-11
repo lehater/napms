@@ -1,12 +1,12 @@
 # Application Catalogue Target Boundary
 
-Status: `accepted for I31; implementation pending`.
+Status: `accepted and implemented through I31`.
 
 Date: 2026-09-10.
 
 ## Purpose
 
-Define how the ADR-012 target Application Catalogue is introduced without changing existing downstream bounded-context identities or transferring semantic ownership between contexts.
+Define how the ADR-012 Application Catalogue model is implemented without changing existing downstream bounded-context identities or transferring semantic ownership between contexts.
 
 ## Ownership
 
@@ -34,7 +34,7 @@ destinationComponentDeploymentId
 dcsContractRevisionId
 ```
 
-ACC exposes target-authored current interactions through an adapter from `DeploymentInteraction` to the existing `DirectedInteractionIdentity` contract.
+ACC exposes current target-authored interactions through an adapter from `DeploymentInteraction` to the existing `DirectedInteractionIdentity` contract.
 
 The mapping is:
 
@@ -51,15 +51,15 @@ No downstream context imports `ApplicationDeployment` or `DeploymentInteraction`
 
 ## Resource resolution
 
-The existing ACC resolution flow may continue resolving the compatibility source/destination Component Deployment IDs to temporal Resource bindings.
+The existing ACC resolution flow continues resolving the compatibility source/destination Component Deployment IDs to temporal Resource bindings.
 
-Target application services create/end those compatibility bindings from stronger target commands scoped by:
+Target application services create/end those compatibility bindings from stronger commands scoped by:
 
 ```text
 deploymentInteractionId + side + resourceReference
 ```
 
-The persistence adapter is responsible for translating target binding ownership into the compatibility rows required by the existing resolver.
+The persistence adapter translates target binding ownership into the compatibility rows required by the existing resolver.
 
 Resource-set UI rows combine ACC-owned effective membership with Resource Catalogue-owned display data and effective Responsibility Scope. This is a read-composition concern, not a transfer of ownership.
 
@@ -71,7 +71,7 @@ The I31 bounded query projection may therefore compose owner schemas at the comp
 - applies search/filter/sort/paging and totals in the server query rather than loading an unbounded child collection;
 - is not an ACC or RC persistence adapter and does not permit either bounded context to read the other's schema.
 
-If owner schemas later move to separate stores, this query composition can be replaced by owner query ports or a derived read store without changing ACC identity or the public target authoring contract.
+If owner schemas later move to separate stores, this query composition can be replaced by owner query ports or a derived read store without changing ACC identity or the public authoring contract.
 
 ## Traffic projection
 
@@ -103,7 +103,7 @@ stable reference
 optional display/reference metadata
 ```
 
-The target dependency summary groups these results and provides counts/drill-downs. Peer business lifecycle remains defined by the peer context; ACC does not infer active/effective state from foreign database columns.
+The dependency summary groups these results and provides counts/drill-downs. Peer business lifecycle remains defined by the peer context; ACC does not infer active/effective state from foreign database columns.
 
 ## External correlation values
 
@@ -120,11 +120,11 @@ Future directory/company/scope discovery is implemented through optional adapter
 
 Pre-I31 Component Deployment/DCS/binding rows remain readable by existing downstream adapters.
 
-Target-created compatibility Component Deployments are distinguishable in persistence through an explicit mapping to `deploymentInteractionId` and side. The implementation must not identify them by display-name convention.
+Target-created compatibility Component Deployments are distinguishable in persistence through an explicit mapping to `deploymentInteractionId` and side. The implementation does not identify them by display-name convention.
 
-Legacy rows without that mapping remain legacy truth. They are not synthesized into target Application Deployments.
+Legacy rows without that mapping remain legacy truth. They are not synthesized into Application Deployments.
 
-During coexistence, existing downstream interaction discovery may return both legacy interactions and target compatibility interactions as required by current product flows. Target catalogue Web/API authoring uses target identities only.
+During coexistence, existing downstream interaction discovery may return both legacy interactions and target compatibility interactions as required by current product flows. Catalogue Web/API authoring uses target identities only.
 
 ## Dependency direction
 
@@ -142,7 +142,7 @@ ACC + RC read facts
       -> target HTTP read model
 ```
 
-The implementation must preserve inward dependency direction and avoid shared mutable domain models.
+The implementation preserves inward dependency direction and avoids shared mutable domain models.
 
 ## Consequences
 
@@ -151,4 +151,4 @@ The implementation must preserve inward dependency direction and avoid shared mu
 - cross-context blockers are explicit port calls rather than direct persistence coupling;
 - bounded cross-context UI projections may be composed outside owner adapters without transferring mutation semantics;
 - target Resource binding semantics reuse existing proven downstream resolution mechanics;
-- optional enterprise reference discovery can be added later without changing the target domain model.
+- optional enterprise reference discovery can be added later without changing the current domain model.
