@@ -1,6 +1,26 @@
 import { ApiError, request } from "@/lib/api"
 
 export { ApiError } from "@/lib/api"
+export {
+  declareConnectivityRequirement,
+  getConnectivityRequirement,
+  getConnectivityRequirementAlignment,
+  listConnectivityRequirementAlignment,
+  listConnectivityRequirementInteractions,
+  listConnectivityRequirements,
+  listConnectivityRequirementScopes,
+  retireConnectivityRequirement,
+  setConnectivityRequirementApplicability,
+  setConnectivityRequirementJustification,
+  type ConnectivityRequirementDetailResponse,
+  type ConnectivityRequirementDto,
+  type ConnectivityRequirementListPage,
+  type RequirementApplicability,
+  type RequirementPolicyAlignmentDetail,
+  type RequirementPolicyAlignmentItem,
+  type RequirementPolicyAlignmentPage,
+  type RequirementPolicyAlignmentStatus,
+} from "@/features/requirements/api"
 
 export type Actor = {
   actorId: string
