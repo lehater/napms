@@ -1,20 +1,34 @@
 import { useEffect, useMemo, useState } from "react"
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Plus,
-  Search,
-  X,
-} from "lucide-react"
+import { Plus, X } from "lucide-react"
 
 import { Button } from "@/components/ui/Button"
 import { Input, Select } from "@/components/ui/Field"
-import { FilterChip } from "@/design-system/components/FilterChip"
+import { Checkbox } from "@/design-system/components/Checkbox"
 import {
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHeadCell,
+  DataTableHeader,
+  DataTableHeaderRow,
+  DataTableRow,
+  DataTableSelectionCell,
+  DataTableSelectionHead,
+} from "@/design-system/components/DataTable"
+import { FilterChip } from "@/design-system/components/FilterChip"
+import { IssueIndicator } from "@/design-system/components/IssueIndicator"
+import { EmptyState, ErrorState, LoadingState } from "@/design-system/components/PageState"
+import { SearchInput } from "@/design-system/components/SearchInput"
+import { StatusPill } from "@/design-system/components/StatusPill"
+import { TagList } from "@/design-system/components/Tag"
+import {
+  CatalogueFilterBar,
+  CatalogueFilterField,
   CataloguePage,
   CataloguePagination,
-  CatalogueQuickFilters,
   CatalogueSurface,
+  CatalogueToolbar,
+  CatalogueViewBar,
 } from "@/design-system/patterns/catalogue/CataloguePage"
 import { createCatalogueResource } from "@/features/catalogues/api/catalogue"
 import {
@@ -38,72 +52,23 @@ function DataState({ item }: { item: ResourceWorkspaceItemDto }) {
   if (!item.currentFacts.hasResponsibility) missing.push("No responsibility")
 
   if (missing.length === 0) {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--napms-color-success)]">
-        <CheckCircle2 className="size-3.5" aria-hidden="true" />
-        No missing facts
-      </span>
-    )
+    return <IssueIndicator tone="success">No missing facts</IssueIndicator>
   }
 
   return (
     <div className="grid gap-1">
       {missing.map((label) => (
-        <span
-          key={label}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--napms-color-warning)]"
-        >
-          <AlertTriangle className="size-3.5" aria-hidden="true" />
-          {label}
-        </span>
+        <IssueIndicator key={label}>{label}</IssueIndicator>
       ))}
     </div>
   )
 }
 
 function LifecycleBadge({ value }: { value: string }) {
-  const active = value === "Active"
   return (
-    <span
-      className={`inline-flex h-[25px] items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold ${
-        active
-          ? "bg-[var(--napms-color-success-bg)] text-[var(--napms-color-success)]"
-          : "bg-[var(--napms-color-surface-muted)] text-[var(--napms-color-text-secondary)]"
-      }`}
-    >
-      <span
-        className={`size-1.5 rounded-full ${
-          active
-            ? "bg-[var(--napms-color-success-dot)]"
-            : "bg-[var(--napms-color-text-muted)]"
-        }`}
-      />
+    <StatusPill tone={value === "Active" ? "positive" : "neutral"}>
       {value}
-    </span>
-  )
-}
-
-function ScopeChips({ values }: { values: string[] }) {
-  if (values.length === 0) {
-    return <span className="text-[var(--napms-color-text-muted)]">—</span>
-  }
-
-  return (
-    <div className="flex flex-wrap gap-1">
-      {values.slice(0, 2).map((value) => (
-        <span
-          key={value}
-          className="inline-flex h-6 items-center rounded bg-[var(--napms-color-primary-subtle)] px-2 text-xs font-semibold text-[var(--napms-color-primary-hover)]"
-        >
-          {value}
-        </span>
-      ))}
-      {values.length > 2 ? (
-        <span className="inline-flex h-6 items-center rounded bg-[var(--napms-color-surface-muted)] px-2 text-xs text-[var(--napms-color-text-secondary)]">
-          +{values.length - 2}
-        </span>
-      ) : null}
-    </div>
+    </StatusPill>
   )
 }
 
@@ -120,6 +85,7 @@ export function ResourcesPage({
   const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<ApiError | null>(null)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
 
   const [searchInput, setSearchInput] = useState("")
   const [search, setSearch] = useState("")
@@ -137,6 +103,15 @@ export function ResourcesPage({
     () => Array.from(new Set(items.flatMap((item) => item.currentScopes))).sort(),
     [items],
   )
+
+  const visibleReferences = useMemo(
+    () => items.map((item) => item.resourceReference),
+    [items],
+  )
+  const allVisibleSelected =
+    visibleReferences.length > 0 && visibleReferences.every((reference) => selected.has(reference))
+  const someVisibleSelected =
+    !allVisibleSelected && visibleReferences.some((reference) => selected.has(reference))
 
   async function load() {
     setLoading(true)
@@ -163,6 +138,11 @@ export function ResourcesPage({
   useEffect(() => {
     void load()
   }, [page, search, scopeFilter, lifecycle, dataState])
+
+  useEffect(() => {
+    const visible = new Set(visibleReferences)
+    setSelected((current) => new Set([...current].filter((reference) => visible.has(reference))))
+  }, [visibleReferences])
 
   async function create(event: React.FormEvent) {
     event.preventDefault()
@@ -202,96 +182,93 @@ export function ResourcesPage({
     if (page !== 1) onPageChange(1)
   }
 
+  function toggleResource(reference: string, checked: boolean) {
+    setSelected((current) => {
+      const next = new Set(current)
+      if (checked) next.add(reference)
+      else next.delete(reference)
+      return next
+    })
+  }
+
+  function toggleAllVisible(checked: boolean) {
+    setSelected(checked ? new Set(visibleReferences) : new Set())
+  }
+
   return (
     <CataloguePage
       title="Resource Catalogue"
       description="Find and manage network-relevant resources."
       actions={
         <Button onClick={() => setShowCreate(true)}>
-          <Plus className="size-4" aria-hidden="true" />
+          <Plus className="size-[var(--napms-icon-size-control)]" aria-hidden="true" />
           New resource
         </Button>
       }
     >
       <CatalogueSurface>
-        <form
-          className="border-b border-[var(--napms-color-border)] p-5"
-          onSubmit={applySearch}
-        >
-          <div className="relative">
-            <Search
-              className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--napms-color-text-muted)]"
-              aria-hidden="true"
-            />
-            <Input
-              className="pl-11"
+        <form onSubmit={applySearch}>
+          <CatalogueToolbar>
+            <SearchInput
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="Search by name, reference, address, scope or owner…"
               aria-label="Search resources"
             />
-          </div>
 
-          <div className="mt-5 grid gap-3 xl:grid-cols-[290px_155px_230px_84px_auto] xl:gap-5">
-            <label className="grid gap-2 text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--napms-color-text-secondary)]">
-              Scope
-              <Input
-                value={scopeInput}
-                onChange={(event) => setScopeInput(event.target.value)}
-                placeholder="All scopes"
-                list="resource-scope-options"
-              />
-              <datalist id="resource-scope-options">
-                {visibleScopes.map((scope) => (
-                  <option key={scope} value={scope} />
-                ))}
-              </datalist>
-            </label>
+            <CatalogueFilterBar>
+              <CatalogueFilterField label="Scope" className="xl:w-[290px]">
+                <Input
+                  value={scopeInput}
+                  onChange={(event) => setScopeInput(event.target.value)}
+                  placeholder="All scopes"
+                  list="resource-scope-options"
+                />
+                <datalist id="resource-scope-options">
+                  {visibleScopes.map((scope) => (
+                    <option key={scope} value={scope} />
+                  ))}
+                </datalist>
+              </CatalogueFilterField>
 
-            <label className="grid gap-2 text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--napms-color-text-secondary)]">
-              Lifecycle
-              <Select
-                value={lifecycle}
-                onChange={(event) => {
-                  if (page !== 1) onPageChange(1)
-                  setLifecycle(event.target.value as "active" | "all")
-                }}
-              >
-                <option value="active">Active</option>
-                <option value="all">All</option>
-              </Select>
-            </label>
+              <CatalogueFilterField label="Lifecycle" className="xl:w-[155px]">
+                <Select
+                  value={lifecycle}
+                  onChange={(event) => {
+                    if (page !== 1) onPageChange(1)
+                    setLifecycle(event.target.value as "active" | "all")
+                  }}
+                >
+                  <option value="active">Active</option>
+                  <option value="all">All</option>
+                </Select>
+              </CatalogueFilterField>
 
-            <label className="grid gap-2 text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--napms-color-text-secondary)]">
-              Data state
-              <Select
-                value={dataState}
-                onChange={(event) =>
-                  updateDataState(event.target.value as ResourceWorkspaceDataState)
-                }
-              >
-                <option value="">All</option>
-                <option value="missing-address">Missing address</option>
-                <option value="missing-scope">Missing scope</option>
-                <option value="missing-responsibility">Missing responsibility</option>
-              </Select>
-            </label>
+              <CatalogueFilterField label="Data state" className="xl:w-[230px]">
+                <Select
+                  value={dataState}
+                  onChange={(event) =>
+                    updateDataState(event.target.value as ResourceWorkspaceDataState)
+                  }
+                >
+                  <option value="">All</option>
+                  <option value="missing-address">Missing address</option>
+                  <option value="missing-scope">Missing scope</option>
+                  <option value="missing-responsibility">Missing responsibility</option>
+                </Select>
+              </CatalogueFilterField>
 
-            <Button type="submit" variant="secondary" className="self-end px-4">
-              Apply
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="self-end justify-start px-1 xl:justify-center"
-              onClick={resetFilters}
-            >
-              Reset
-            </Button>
-          </div>
+              <Button type="submit" variant="secondary" className="px-4">
+                Apply
+              </Button>
+              <Button type="button" variant="ghost" className="px-1" onClick={resetFilters}>
+                Reset
+              </Button>
+            </CatalogueFilterBar>
+          </CatalogueToolbar>
         </form>
 
-        <CatalogueQuickFilters>
+        <CatalogueViewBar>
           {[
             ["", "All"],
             ["missing-address", "No address"],
@@ -306,74 +283,75 @@ export function ResourcesPage({
               {label}
             </FilterChip>
           ))}
-        </CatalogueQuickFilters>
+        </CatalogueViewBar>
 
         {loading ? (
-          <div className="flex min-h-[456px] items-start p-8 text-sm text-[var(--napms-color-text-secondary)]">
-            Loading resources…
-          </div>
+          <LoadingState>Loading resources…</LoadingState>
         ) : error ? (
-          <div className="min-h-[456px] p-8">
-            <p className="text-sm text-[var(--napms-color-danger)]">{error.message}</p>
-            <Button className="mt-3" variant="secondary" onClick={() => void load()}>
-              Retry
-            </Button>
-          </div>
+          <ErrorState message={error.message} onRetry={() => void load()} />
         ) : items.length === 0 ? (
-          <div className="flex min-h-[456px] flex-col items-center justify-center p-10 text-center">
-            <div className="text-sm font-semibold text-[var(--napms-color-text-primary)]">
-              No resources found
-            </div>
-            <p className="mt-1 text-sm text-[var(--napms-color-text-secondary)]">
-              Change the search or filters, or create a new resource.
-            </p>
-          </div>
+          <EmptyState
+            title="No resources found"
+            description="Change the search or filters, or create a new resource."
+          />
         ) : (
-          <div className="min-h-[456px] overflow-x-auto">
-            <table className="w-full min-w-[1148px] table-fixed border-collapse text-left text-sm">
-              <colgroup>
-                <col style={{ width: "15.7%" }} />
-                <col style={{ width: "12.2%" }} />
-                <col style={{ width: "16%" }} />
-                <col style={{ width: "14.5%" }} />
-                <col style={{ width: "16.7%" }} />
-                <col style={{ width: "9.7%" }} />
-                <col style={{ width: "15.2%" }} />
-              </colgroup>
-              <thead className="bg-[var(--napms-color-surface-subtle)] text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--napms-color-text-secondary)]">
-                <tr className="h-11 border-b border-[var(--napms-color-border)]">
-                  <th className="px-5">Name</th>
-                  <th className="px-5">Reference</th>
-                  <th className="px-5">Addresses</th>
-                  <th className="px-5">Scope(s)</th>
-                  <th className="px-5">Technical owner</th>
-                  <th className="px-5">Lifecycle</th>
-                  <th className="px-5">Data state</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--napms-color-border)]">
-                {items.map((item) => (
-                  <tr
-                    key={item.resourceReference}
-                    className="h-[62px] cursor-pointer bg-[var(--napms-color-surface)] transition hover:bg-[var(--napms-color-surface-subtle)]"
-                    onClick={() => onOpenResource(item.resourceReference)}
-                  >
-                    <td className="px-5 py-3 align-middle">
+          <DataTable minWidth={1200}>
+            <colgroup>
+              <col style={{ width: "52px" }} />
+              <col style={{ width: "15.1%" }} />
+              <col style={{ width: "11.8%" }} />
+              <col style={{ width: "15.5%" }} />
+              <col style={{ width: "14%" }} />
+              <col style={{ width: "16.2%" }} />
+              <col style={{ width: "9.4%" }} />
+              <col style={{ width: "18%" }} />
+            </colgroup>
+            <DataTableHeader>
+              <DataTableHeaderRow>
+                <DataTableSelectionHead>
+                  <Checkbox
+                    checked={allVisibleSelected}
+                    indeterminate={someVisibleSelected}
+                    onChange={(event) => toggleAllVisible(event.target.checked)}
+                    aria-label="Select all resources on this page"
+                  />
+                </DataTableSelectionHead>
+                <DataTableHeadCell>Name</DataTableHeadCell>
+                <DataTableHeadCell>Reference</DataTableHeadCell>
+                <DataTableHeadCell>Addresses</DataTableHeadCell>
+                <DataTableHeadCell>Scope(s)</DataTableHeadCell>
+                <DataTableHeadCell>Technical owner</DataTableHeadCell>
+                <DataTableHeadCell>Lifecycle</DataTableHeadCell>
+                <DataTableHeadCell>Data state</DataTableHeadCell>
+              </DataTableHeaderRow>
+            </DataTableHeader>
+            <DataTableBody>
+              {items.map((item) => {
+                const isSelected = selected.has(item.resourceReference)
+                return (
+                  <DataTableRow key={item.resourceReference} selected={isSelected}>
+                    <DataTableSelectionCell>
+                      <Checkbox
+                        checked={isSelected}
+                        onChange={(event) =>
+                          toggleResource(item.resourceReference, event.target.checked)
+                        }
+                        aria-label={`Select ${item.displayName || shortId(item.resourceReference)}`}
+                      />
+                    </DataTableSelectionCell>
+                    <DataTableCell>
                       <button
                         type="button"
                         className="font-semibold text-[var(--napms-color-primary)] hover:underline"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          onOpenResource(item.resourceReference)
-                        }}
+                        onClick={() => onOpenResource(item.resourceReference)}
                       >
                         {item.displayName || shortId(item.resourceReference)}
                       </button>
-                    </td>
-                    <td className="px-5 py-3 align-middle font-mono text-xs text-[var(--napms-color-text-secondary)]">
+                    </DataTableCell>
+                    <DataTableCell className="font-mono text-xs text-[var(--napms-color-text-secondary)]">
                       {shortId(item.resourceReference)}
-                    </td>
-                    <td className="px-5 py-3 align-middle">
+                    </DataTableCell>
+                    <DataTableCell>
                       {item.currentAddresses.length === 0 ? (
                         <span className="text-[var(--napms-color-text-muted)]">—</span>
                       ) : (
@@ -388,33 +366,34 @@ export function ResourcesPage({
                           ) : null}
                         </div>
                       )}
-                    </td>
-                    <td className="px-5 py-3 align-middle">
-                      <ScopeChips values={item.currentScopes} />
-                    </td>
-                    <td className="px-5 py-3 align-middle text-[var(--napms-color-text-body)]">
+                    </DataTableCell>
+                    <DataTableCell>
+                      <TagList values={item.currentScopes} />
+                    </DataTableCell>
+                    <DataTableCell className="text-[var(--napms-color-text-body)]">
                       {item.technicalOwners.length > 0 ? (
                         item.technicalOwners.join(", ")
                       ) : (
                         <span className="text-[var(--napms-color-text-muted)]">—</span>
                       )}
-                    </td>
-                    <td className="px-5 py-3 align-middle">
+                    </DataTableCell>
+                    <DataTableCell>
                       <LifecycleBadge value={item.lifecycle} />
-                    </td>
-                    <td className="px-5 py-3 align-middle">
+                    </DataTableCell>
+                    <DataTableCell>
                       <DataState item={item} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </DataTableCell>
+                  </DataTableRow>
+                )
+              })}
+            </DataTableBody>
+          </DataTable>
         )}
 
         <CataloguePagination>
           <span className="text-xs text-[var(--napms-color-text-secondary)]">
             Page {page} · up to 50 resources per page
+            {selected.size > 0 ? ` · ${selected.size} selected` : ""}
           </span>
           <div className="flex items-center gap-2.5">
             <Button
@@ -456,10 +435,7 @@ export function ResourcesPage({
           >
             <div className="flex min-h-[89px] items-start justify-between border-b border-[var(--napms-color-border)] px-7 py-6">
               <div>
-                <h2
-                  id="create-resource-title"
-                  className="text-lg font-bold text-[var(--napms-color-text-primary)]"
-                >
+                <h2 id="create-resource-title" className="text-lg font-bold text-[var(--napms-color-text-primary)]">
                   New resource
                 </h2>
                 <p className="mt-1 text-xs text-[var(--napms-color-text-secondary)]">
@@ -473,7 +449,7 @@ export function ResourcesPage({
                 disabled={creating}
                 aria-label="Close"
               >
-                <X className="size-4" aria-hidden="true" />
+                <X className="size-[var(--napms-icon-size-control)]" aria-hidden="true" />
               </button>
             </div>
             <form onSubmit={create}>
@@ -492,9 +468,7 @@ export function ResourcesPage({
                   Resource identity can exist before realization, scope affiliation or responsibility facts are added.
                 </p>
                 {createError ? (
-                  <p className="mt-3 text-sm text-[var(--napms-color-danger)]">
-                    {createError.message}
-                  </p>
+                  <p className="mt-3 text-sm text-[var(--napms-color-danger)]">{createError.message}</p>
                 ) : null}
               </div>
               <div className="flex min-h-[74px] justify-end gap-3 border-t border-[var(--napms-color-border)] px-7 py-[18px]">
