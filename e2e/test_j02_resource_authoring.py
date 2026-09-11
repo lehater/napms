@@ -96,7 +96,6 @@ def test_j02_resource_authoring_survives_correction_reopen_and_retirement() -> N
             page.get_by_role("heading", name="Resource Catalogue", exact=True, level=1)
         ).to_be_visible()
         page.get_by_label("Search resources").fill("Orders Database Primary")
-        page.get_by_role("button", name="Apply", exact=True).click()
         result = page.locator("main").get_by_role("button").filter(
             has_text="Orders Database Primary"
         )
@@ -148,7 +147,6 @@ def test_j02_resource_authoring_survives_correction_reopen_and_retirement() -> N
         # presented as current work.
         desktop_nav.get_by_role("button", name="Resources").click()
         page.get_by_label("Search resources").fill("Orders Database Primary")
-        page.get_by_role("button", name="Apply", exact=True).click()
         expect(page.get_by_text("No resources found", exact=True)).to_be_visible()
 
         browser.close()
