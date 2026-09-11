@@ -20,33 +20,34 @@ Canonical architecture and execution inputs:
 
 ## WP-0 — structure contract
 
-Outcome: completed and integrated through PR #64. The repository has a canonical context-first / layers-second code-structure contract and ordered I32 roadmap.
+Outcome: completed and integrated through PR #64.
 
 ## WP-1 — backend structural migration
 
-Outcome: completed and squash-integrated through PR #65 (`a90b866`). M1-M4 moved feature HTTP beside semantic owners, reduced active runtime HTTP to process assembly, and established `napms.bootstrap` as the executable composition root. Final Core, Harness, PostgreSQL, Docker runtime and browser journey gates were green.
+Outcome: completed and squash-integrated through PR #65 (`a90b866`). M1-M4 aligned feature HTTP ownership and established `napms.bootstrap` as the executable composition root.
 
 ## WP-2 — demonstrated backend granularity
 
-Responsibility: execute M5 only where post-WP-1 evidence shows unrelated use cases still share an editing/search context.
+Outcome: completed and squash-integrated through PR #66 (`62c77f6`). The mixed Application/Component structure mutation hotspot was split by owner; no second M5 split was justified by evidence.
 
-Outcome: completed in PR #66 as one evidence-driven pilot.
-- `structure_curation.py` mixed Application mutation/lifecycle use cases with Component mutation/lifecycle use cases.
-- implementation is now split into `application_structure_curation.py` and `component_structure_curation.py`;
-- genuinely shared outcome/authority/fingerprint plumbing lives in `curation_mutation.py`;
-- `structure_curation.py` is a small compatibility-export facade so unrelated callers do not need churn in the same increment;
-- an architecture test prevents use-case implementation from returning to the shared facade;
-- Core, PostgreSQL, Harness and browser journey gates were green on the implementation head.
+## WP-3 — demonstrated Web locality
 
-M5 stop condition was evaluated against the other prominent ACC candidates. `deployment_curation.py` is cohesive around Component Deployment lifecycle; `binding_curation.py` is cohesive around Deployment↔Resource binding lifecycle. File size alone is not evidence for another split, so no second backend hotspot is selected.
+Responsibility: execute M6 only where a concrete feature still depends on root/shared files because feature-specific responsibility is misplaced.
 
-M6 Web locality remains separate.
+Selected pilot: Connectivity Requirements API ownership.
+- `web/src/api.ts` currently owns Requirement DTOs, commands, queries and Requirement↔Policy alignment operations together with unrelated Decisions, Rules, Policy and Connectivity APIs;
+- `web/src/features/requirements/` has pages but no feature-local API/model boundary;
+- moving Requirement-specific API implementation beside the feature means future Requirement API changes no longer require editing root `api.ts`;
+- generic HTTP error/request behavior and genuinely cross-feature interaction DTOs may remain shared;
+- compatibility exports are allowed when they avoid unrelated churn, provided Requirement implementation itself is feature-local.
+
+`App.tsx` routing is not selected merely because it is large: process-level route composition is a legitimate root responsibility unless a concrete feature-routing concern proves otherwise.
 
 ## Exit criteria
 
-WP-2 exits when the selected split reduces mixed-responsibility editing/search context, preserves domain/API/persistence/authority/concurrency/idempotency behavior, has executable locality protection, and applicable Core/PostgreSQL/Harness/browser gates pass. These criteria are satisfied by PR #66.
+WP-3 exits when Requirement-specific DTO/query/command/alignment implementation is owned under `features/requirements`, root `api.ts` contains no Requirement implementation, behavior is unchanged, feature/root boundaries are executable where useful, and Web plus relevant browser journeys are green.
 
-I32 remains open only for a separately selected M6 Web-locality increment if current Web evidence shows a similarly useful locality improvement.
+I32 completes after WP-3 if no further Web hotspot has equivalent misplaced-responsibility evidence.
 
 ## Blockers
 
@@ -54,4 +55,4 @@ None known.
 
 ## Next
 
-Finalize and squash-integrate PR #66. After integration, evaluate M6 against current Web structure; select a Web pilot only when a concrete feature change still requires crossing root/shared files because of misplaced responsibility rather than file size alone.
+On `i32/web-requirements-api-locality`, move Requirement-specific API implementation from root `web/src/api.ts` into `web/src/features/requirements/`, retain only shared transport/types at shared scope, add the smallest locality guard, and validate Web/browser gates before considering any other Web hotspot.
