@@ -42,7 +42,7 @@ def create_scoped_connectivity_inventory_router(
         if result.outcome is ScopeDiscoveryQueryOutcome.UNAVAILABLE:
             raise PublicApiError(
                 status_code=503,
-                code="ScopedConnectivityUnavailable",
+                code="ScopedConnectivityUnavailable", dependency="ScopedConnectivityInventory",
                 message="Connectivity scope information is unavailable.",
             )
 
@@ -111,6 +111,11 @@ def create_scoped_connectivity_inventory_router(
                 status_code=status_code,
                 code=code,
                 message=message,
+                dependency=(
+                    "AuthorityManagement"
+                    if code in {"AuthorityDenied", "AuthorityUnknown"}
+                    else "ScopedConnectivityInventory"
+                ),
             )
 
         assert result.page is not None

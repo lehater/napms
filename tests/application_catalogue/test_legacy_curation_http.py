@@ -11,9 +11,11 @@ from napms.application_catalogue.application.curation import (
     CreateApplicationOutcome,
     CreateApplicationResult,
 )
+from napms.application_catalogue.adapters.http.legacy_curation import (
+    create_application_catalogue_curation_router,
+)
 from napms.application_catalogue.domain.model import Application
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.catalogue_curation_http import create_catalogue_curation_router
 from napms.runtime.http_api import PublicApiError
 
 
@@ -64,7 +66,7 @@ def client_for():
         )
 
     app.include_router(
-        create_catalogue_curation_router(
+        create_application_catalogue_curation_router(
             sessions=sessions,
             open_scope=open_scope,
             clock=lambda: NOW,

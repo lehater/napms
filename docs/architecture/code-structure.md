@@ -1,6 +1,6 @@
 # Code Structure
 
-Status: `accepted target for I32 structural refactoring; no product/domain semantic change`.
+Status: `accepted current architecture; no product/domain semantic change`.
 
 Date: 2026-09-11.
 
@@ -68,33 +68,39 @@ application_catalogue/
       mapping.py
 ```
 
-A router may be split further by use case when size or change locality demonstrates the need. File size alone is not a reason to introduce abstractions.
+A router may be split further by use case when change locality demonstrates the need. File size alone is not a reason to introduce abstractions.
 
-`runtime`/bootstrap must not become the owner of feature DTOs, endpoint logic, feature error mapping or feature-specific router implementations.
+Feature routers, DTO and error mappings, and feature serializers belong to their semantic owners. `runtime` and `bootstrap` must not become their owner.
 
 ## Cross-context read/application compositions
 
-Existing non-peer compositions remain explicit compositions rather than being moved into a bounded-context adapter for cosmetic locality.
+Existing non-peer compositions remain explicit under `src/napms/composition/` rather than being moved into a bounded-context adapter for cosmetic locality.
 
 A composition may consume multiple owner/application ports and may implement query-only technical composition where accepted architecture explicitly permits it, but it does not acquire authoritative business ownership.
 
-I32 must inventory current `src/napms/composition/*` responsibilities before deciding their final package locations. In particular, accepted cross-schema query composition must not be moved into an owner-specific PostgreSQL adapter if that would imply false ownership or violate schema-boundary rules.
+Accepted cross-schema query composition must not be moved into an owner-specific PostgreSQL adapter if that would imply false ownership or violate schema-boundary rules.
 
-## Process composition
+## Runtime and bootstrap ownership
 
-The target process boundary is a small bootstrap surface responsible only for executable assembly and runtime configuration, conceptually:
+`runtime/` is limited to genuine process/runtime concerns:
+
+- authentication and session support;
+- the process HTTP shell;
+- generic transport support;
+- the accepted enterprise identity seam.
+
+`bootstrap/` owns executable assembly, configuration, migrations and local seed:
 
 ```text
 src/napms/bootstrap/
   app.py
   config.py
-  auth.py          # process authentication/session implementation when applicable
   migrations.py
   local_seed.py
   wiring/          # only when decomposition is justified by concrete wiring size
 ```
 
-Migration from current `runtime/` and `composition/` is staged. The exact final location of each composition helper is determined by responsibility, not by a bulk directory rename.
+Legacy runtime feature facades and `legacy_http_api.py` are absent. Feature code is registered by executable composition without making the process shell its semantic owner.
 
 ## Frontend
 
@@ -117,27 +123,18 @@ web/src/
 
 Feature-local code stays local until reuse is demonstrated. Global `api.ts` is limited over time to shared transport mechanics; feature DTO/request mapping belongs at the feature API boundary.
 
-## Migration constraints
+## Structural change constraints
 
-- No big-bang package relocation.
-- One coherent ownership slice per stage/PR.
 - Structural moves must preserve public behavior and historical semantics.
 - Prefer move/import cleanup before opportunistic redesign.
 - Add architecture tests when a migrated boundary can be expressed as an executable rule.
 - Keep compatibility shims only when they reduce migration risk; remove them once no longer needed.
 - Do not introduce `src/napms/modules/`; existing top-level semantic modules are already sufficiently explicit and another nesting level would add import churn without ownership value.
+- Further structural work requires new, concrete ownership or change-locality evidence; completed cleanup is not a reason for automatic continuation.
 
-## Current hotspots driving I32
+## Current structural baseline
 
-The initial migration is justified by current structure, notably:
-
-- `src/napms/runtime/http_api.py` aggregating HTTP concerns across multiple contexts;
-- feature-specific `runtime/*_http.py`, including large Catalogue routers;
-- overlapping responsibilities between `src/napms/runtime/composition.py` and `src/napms/composition/*`;
-- separate runtime/composition configuration surfaces;
-- large backend/Web files where change locality should be evaluated after ownership boundaries are corrected.
-
-These are engineering structure concerns, not evidence that the accepted DDD model or modular-monolith topology is wrong.
+The semantic-module-first structure, owner-local feature adapters, explicit cross-context compositions, small runtime process surface and bootstrap-owned executable assembly are the accepted baseline. Architecture tests protect boundaries that can be expressed mechanically.
 
 ## Success condition
 

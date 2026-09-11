@@ -51,7 +51,7 @@ def create_requirement_policy_alignment_router(
         if result.outcome is AlignmentQueryOutcome.UNAVAILABLE:
             raise PublicApiError(
                 status_code=503,
-                code="AlignmentUnavailable",
+                code="AlignmentUnavailable", dependency="RequirementPolicyAlignment",
                 message="Requirement-to-policy alignment is unavailable.",
             )
 
@@ -134,6 +134,11 @@ def create_requirement_policy_alignment_router(
                 status_code=status_code,
                 code=code,
                 message=message,
+                dependency=(
+                    "AuthorityManagement"
+                    if code in {"AuthorityDenied", "AuthorityUnknown"}
+                    else "RequirementPolicyAlignment"
+                ),
             )
 
         assert result.status is not None

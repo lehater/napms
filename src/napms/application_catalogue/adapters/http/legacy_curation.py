@@ -15,6 +15,12 @@ from napms.application_catalogue.application.deployment_curation import (
     CreateComponentDeploymentCommand,
 )
 from napms.application_catalogue.application.structure_curation import CreateComponentCommand
+from napms.application_catalogue.adapters.http.support import (
+    mutation_response,
+    require_aware,
+    require_interval,
+    require_mutation_success,
+)
 from napms.application_catalogue.domain.communication import (
     AuthoredDcsTrafficAlternative,
     DcsPortConstraint,
@@ -22,13 +28,9 @@ from napms.application_catalogue.domain.communication import (
     DcsPortRange,
 )
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_api import PublicApiError
 from napms.runtime.http_support import (
-    mutation_response,
+    PublicApiError,
     require_actor,
-    require_aware,
-    require_interval,
-    require_mutation_success,
 )
 
 

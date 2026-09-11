@@ -2,7 +2,7 @@ from uuid import UUID
 
 import pytest
 
-from napms.runtime.local_seed import seed_local_demo
+from napms.bootstrap.local_seed import seed_local_demo
 
 
 class FakeConnection:

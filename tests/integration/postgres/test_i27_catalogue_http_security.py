@@ -12,8 +12,10 @@ from napms.composition.catalogue_curation_postgres import open_catalogue_curatio
 from napms.composition.config import ApplicationConfig, PostgresConfig
 from napms.composition.greenfield_postgres import apply_greenfield_migrations
 from napms.resource_catalogue.application.curation import CreateResourceCommand
+from napms.resource_catalogue.adapters.http.curation import (
+    create_resource_catalogue_curation_router,
+)
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore
-from napms.runtime.catalogue_curation_http import create_catalogue_curation_router
 from napms.runtime.http_api import PublicApiError
 
 
@@ -125,7 +127,7 @@ def test_authenticated_reader_can_read_catalogue_but_backend_denies_mutation(
         )
 
     app.include_router(
-        create_catalogue_curation_router(
+        create_resource_catalogue_curation_router(
             sessions=sessions,
             open_scope=open_scope,
             clock=lambda: NOW,

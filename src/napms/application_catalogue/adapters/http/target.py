@@ -6,6 +6,11 @@ from uuid import UUID
 from fastapi import APIRouter, Header, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 
+from napms.application_catalogue.adapters.http.legacy_curation import (
+    DcsTrafficAlternativeValue,
+    _traffic_alternative,
+)
+from napms.application_catalogue.adapters.http.support import require_aware as _require_aware
 from napms.application_catalogue.application.curation import CreateApplicationCommand
 from napms.application_catalogue.application.target_binding_curation import (
     CreateDeploymentInteractionResourceBindingCommand,
@@ -32,13 +37,8 @@ from napms.application_catalogue.domain.communication import (
 )
 from napms.application_catalogue.domain.target_model import DeploymentInteractionSide
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.catalogue_curation_http import (
-    DcsTrafficAlternativeValue,
-    _require_actor,
-    _require_aware,
-    _traffic_alternative,
-)
-from napms.runtime.http_api import PublicApiError
+from napms.runtime.http_support import PublicApiError
+from napms.runtime.http_support import require_actor as _require_actor
 
 
 _SUCCESS_OUTCOMES = {"Created", "Updated", "Resolved"}
@@ -1002,7 +1002,20 @@ def _require_target_success(result) -> None:
         outcome,
         (503, "CatalogueUnavailable", "The Application Catalogue operation failed."),
     )
-    raise PublicApiError(status_code=status_code, code=code, message=message)
+    raise PublicApiError(
+        status_code=status_code,
+        code=code,
+        message=message,
+        dependency=(
+            "AuthorityManagement"
+            if code in {"AuthorityDenied", "AuthorityUnknown"}
+            else (
+                "ApplicationCommunicationCatalogue"
+                if code == "CatalogueUnavailable"
+                else None
+            )
+        ),
+    )
 
 
 def _dependency_details(result) -> list[dict]:

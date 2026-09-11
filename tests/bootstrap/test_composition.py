@@ -1,7 +1,7 @@
+from napms.bootstrap.composition import build_local_dev_http_api
+from napms.bootstrap.config import HttpRuntimeConfig
 from napms.composition.config import ApplicationConfig, PostgresConfig
 from napms.runtime.auth import LocalCredential, hash_local_password
-from napms.runtime.composition import build_local_dev_http_api
-from napms.runtime.config import HttpRuntimeConfig
 
 
 def _config(environment="local-dev"):

@@ -13,7 +13,7 @@ from napms.policy_export.application.normalization_types import (
     SuccessfulNormalizedPolicyExport,
 )
 from napms.policy_export.application.ports import ResourceReference
-from napms.runtime.normalized_policy_json import normalized_policy_export_json
+from napms.policy_export.adapters.http_json import normalized_policy_export_json
 
 
 AS_OF = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)

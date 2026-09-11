@@ -13,6 +13,11 @@ from napms.application_catalogue.adapters.http.legacy_curation import (
     _component_dto,
     _deployment_dto,
 )
+from napms.application_catalogue.adapters.http.support import (
+    mutation_response,
+    require_aware,
+    require_mutation_success,
+)
 from napms.application_catalogue.application.deployment_curation import (
     RenameComponentDeploymentCommand,
     RetireComponentDeploymentCommand,
@@ -25,14 +30,11 @@ from napms.application_catalogue.application.structure_curation import (
 )
 from napms.policy_export.application.normalization_ports import DcsProjectionDecodeError
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_api import PublicApiError
 from napms.runtime.http_support import (
-    mutation_response,
+    PublicApiError,
     require_actor,
-    require_aware,
-    require_mutation_success,
 )
-from napms.runtime.normalized_policy_json import port_constraint_json
+from napms.policy_export.adapters.http_json import port_constraint_json
 
 
 class RenameCatalogueEntityRequest(BaseModel):

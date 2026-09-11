@@ -5,7 +5,7 @@ from typing import Callable
 from fastapi import APIRouter, HTTPException, Query, Request
 
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_api import SESSION_COOKIE_NAME
+from napms.runtime.http_support import SESSION_COOKIE_NAME
 from napms.traffic_analysis.application.model import (
     TrafficAnalysisInvariantError,
     TrafficAnalysisQuery,

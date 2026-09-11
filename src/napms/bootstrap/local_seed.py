@@ -5,12 +5,12 @@ import psycopg
 from psycopg.types.json import Jsonb
 
 from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectionCodec
+from napms.bootstrap.config import load_local_seed_config
 from napms.policy_export.application.normalization_types import (
     DcsTrafficAlternative,
     PortConstraint,
     PortRange,
 )
-from napms.runtime.config import load_local_seed_config
 
 
 _SCOPE = "local-demo"

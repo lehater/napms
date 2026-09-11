@@ -4,7 +4,7 @@ from typing import Callable
 from fastapi import APIRouter, Query, Request
 
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_api import PublicApiError, SESSION_COOKIE_NAME
+from napms.runtime.http_support import PublicApiError, SESSION_COOKIE_NAME
 
 
 def create_catalogue_discovery_router(
