@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M1 — Repository backend boundary; implementation complete, awaiting architectural review and final hosted gates.
+Current task: M1 — Repository backend boundary; implementation and architectural review complete, final hosted gates pending on PR #73.
 
 ## Working set
 
@@ -15,12 +15,12 @@ Expand only if the architectural decision rationale is needed: `docs/decisions/A
 
 ## Blockers
 
-Final hosted PR gates are pending because the M1 branch is intentionally not yet represented by a PR.
+Final hosted PR gates for M1 are pending. Local J03 failed with `Record Decision` disabled, while the latest pre-M1 hosted browser journey on PR #71 passed; use the hosted M1 journey gate as the authoritative reproduction check.
 
 ## Gate
 
-M1 remains the active gate. Local backend/core, harness, knowledge, Docker build and PostgreSQL integration evidence passes; architectural review and final hosted PR gates remain before stage closure.
+M1 remains active until PR #73 hosted gates pass. Local backend/core, harness, knowledge, Docker build and PostgreSQL integration evidence passes; the reviewed diff is mechanical with no intended semantic change.
 
 ## Next
 
-Review the M1 repository-boundary migration and run final hosted PR gates. Do not select or start M2 until that review closes M1.
+Run the final hosted gates and squash-merge PR #73 if green. Then execute M2 first on `network_environment_operations`: dependency review found only the explicit composition stub and `network_operator_view` as production consumers outside the context, making it the lowest-coupling bounded-context migration candidate. Do not start M2 before M1 merges.
