@@ -47,115 +47,57 @@ M1 backend repository boundary
 
 ## M6 — Web final locality
 
-Status: `M6 implementation complete; awaiting architectural review` on branch `refactor/m6-web-locality`.
-
-Goal: make the frontend feature-local without creating a new generic shared semantic layer.
+Status: `implementation and architectural review complete; final hosted PR gates pending` on branch `refactor/m6-web-locality`.
 
 Final source shape:
 
 ```text
 web/src/
   app/
-    main.tsx
-    App.tsx
-    routing.ts
-    AppShell.tsx
-    index.css
   features/<feature>/
-    api/          # only when the feature has HTTP/request mapping
-    model/        # only when the feature has owned shared types/pure model helpers
-    components/   # feature-owned reusable UI
-    pages/        # routable feature pages
+    api/          # when present
+    model/        # when present
+    components/   # when present
+    pages/        # when present
   components/
-    ui/           # genuinely shared visual primitives only
+    ui/
   lib/
-    api.ts        # shared transport + ApiError only
-    datetime.ts
   vite-env.d.ts
 ```
 
-Create only feature subdirectories that have actual contents.
+Accepted ownership:
+- application bootstrap, hash routing, shell and global CSS live under `app/`;
+- root `api.ts` is deleted rather than replaced by another barrel;
+- `lib/api.ts` owns only shared HTTP transport and `ApiError`;
+- auth session/API/model are feature-local under `features/auth`;
+- catalogue interaction/presentation DTOs are owned by `features/catalogues/model`;
+- `RuleDto` is owned by `features/rules/model`;
+- proposal API/result/page are owned by `features/proposals`;
+- catalogue-specific reusable UI is under `features/catalogues/components`;
+- root `components/` contains only shared visual primitives in `ui/`;
+- cross-feature semantic reuse imports from the explicit owning feature; there is no generic shared semantic model package.
 
-### Accepted root ownership
-
-- `App.tsx` -> `app/App.tsx`.
-- hash route parsing/types/navigation -> `app/routing.ts`.
-- `components/layout/AppShell.tsx` -> `app/AppShell.tsx`.
-- `main.tsx` and global `index.css` -> `app/`; update `web/index.html` entrypoint.
-- root `api.ts` is deleted, not moved or replaced by another barrel.
-- `components/catalogue/CatalogueIdentity.tsx` -> `features/catalogues/components/CatalogueIdentity.tsx`.
-- after M6, root `components/` contains only `ui/`.
-
-### Accepted API/model ownership
-
-Shared technical HTTP transport and `ApiError` stay in `lib/api.ts`. Feature code imports them directly; no root API facade remains.
-
-Authentication/session:
-- `Actor` -> `features/auth/model/actor.ts`;
-- `login/getSession/logout` -> `features/auth/api/session.ts`;
-- `LoginPage.tsx` -> `features/auth/pages/LoginPage.tsx`.
-
-Catalogue interaction/presentation model:
-- `PortConstraintDto`, `TrafficAlternativeDto`, `CataloguePresentation`, `ProposalInteraction`, and `ProposalInteractionPage` -> `features/catalogues/model/interaction.ts`;
-- target catalogue APIs reuse the same `PortConstraintDto` / `TrafficAlternativeDto` instead of keeping a second definition.
-
-Access Rule model:
-- `RuleDto` -> `features/rules/model/rule.ts`;
-- rule API and proposal/policy consumers import it from the Rules owner.
-
-Proposal feature:
-- proposal request functions -> `features/proposals/api/index.ts`;
-- `ProposalResult` -> `features/proposals/model/result.ts`;
-- `ComposeConnectivityPage.tsx` -> `features/proposals/pages/ComposeConnectivityPage.tsx`.
-
-The tiny `{ scope: string }` response DTO is intentionally kept local to each consuming feature API. Do not create a shared semantic `Scope`/DTO package merely to deduplicate that shape.
-
-### Feature locality normalization
-
-For every existing feature:
-- `api.ts` -> `api/index.ts`;
-- `model.ts` -> `model/index.ts`;
-- `*Page.tsx` -> `pages/`;
-- other feature-owned `.tsx` -> `components/`.
-
-Catalogue-specific mapping:
-
-```text
-catalogueApi.ts                       -> api/catalogue.ts
-resourceWorkspaceApi.ts               -> api/resourceWorkspace.ts
-targetCatalogueApi.ts                 -> api/targetCatalogue.ts
-targetCatalogueCommands.ts            -> api/targetCommands.ts
-targetCatalogueDependencies.ts        -> api/targetDependencies.ts
-targetDeploymentInteractionLifecycle.ts -> api/targetDeploymentInteractionLifecycle.ts
-targetPresentation.ts                 -> model/targetPresentation.ts
-```
-
-All catalogue `*Page.tsx` files move to `pages/`; all remaining catalogue `.tsx` files move to `components/`.
-
-Policy `PolicyViewControls.tsx` is a feature component; all other non-page feature UI follows the same rule.
-
-### Guardrails
-
-- no product/UI behavior change;
-- no redesign of routing semantics or URLs;
-- no new framework/router dependency;
-- root/shared code must not contain feature DTOs or feature request functions;
-- `lib/` remains technical only;
-- cross-feature semantic reuse imports from the explicit owning feature, never from a new `shared/model` bucket;
-- no compatibility barrel at `web/src/api.ts` or old feature paths;
-- update all imports directly to final paths.
-
-Add repository architecture enforcement for at least:
-- `web/src` root contains only `app`, `features`, `components`, `lib`, `vite-env.d.ts`;
+Architecture review confirms:
+- `web/src` root contains only `app`, `features`, `components`, `lib`, and `vite-env.d.ts`;
 - root `components` contains only `ui`;
-- root `api.ts`, root `App.tsx`, root `main.tsx`, root `index.css`, `components/layout`, and `components/catalogue` are absent;
-- each feature root contains only the applicable `api / model / components / pages` directories;
-- no frontend source imports `@/api`;
-- `lib` does not import from `features` or `app`.
+- legacy root `api.ts`, `App.tsx`, `main.tsx`, `index.css`, `components/layout`, and `components/catalogue` are absent;
+- feature roots contain only applicable `api / model / components / pages` directories;
+- frontend source no longer imports `@/api`;
+- `lib/` does not depend on `app/` or `features/`;
+- routing URLs and product/UI behavior remain unchanged;
+- the J03 browser change only waits for the existing debounce search HTTP response before selection and does not weaken journey assertions.
+
+Validation evidence:
+- `make web-check`: passed;
+- architecture tests: 72 passed;
+- `make test`: 815 passed, 141 deselected;
+- `make harness-check`: passed;
+- `make knowledge-check`: passed;
+- local Docker browser journeys: 3 passed.
 
 ## Exit criteria
 
-M6 closes when final Web locality is implemented without behavior change, architecture/locality guards pass, `make web-check`, repository checks relevant to the new guard, and affected browser journeys pass, and one final M6 PR passes all required hosted gates.
+M6 closes when the reviewed Web locality remains behavior-preserving and one final M6 PR passes all required hosted gates.
 
 ## Blockers
 
@@ -163,4 +105,4 @@ None.
 
 ## Next
 
-Implement M6 in two atomic commits: first root app/API ownership cleanup, then complete feature directory normalization and enforcement. Run local gates, review the complete milestone, then open one M6 PR and run hosted gates once. Do not start M7 before M6 is squash-merged.
+Open one M6 milestone PR, mark it ready once, run the required hosted gates, and squash-merge if all pass. Do not start M7 before M6 is merged.
