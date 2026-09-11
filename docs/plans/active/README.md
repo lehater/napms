@@ -2,16 +2,17 @@
 
 Current: `PLAN-I32-code-structure-refactoring.md`
 Goal: align physical code ownership with the accepted context-first Clean/Hexagonal architecture without changing product/domain semantics.
-Current task: WP-2 — finalize and integrate the completed M5 backend granularity pilot in PR #66.
+Current task: WP-3 — execute the M6 Connectivity Requirements API locality pilot.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-I32-code-structure-refactoring.md`
-- `src/napms/application_catalogue/application/structure_curation.py`
-- `tests/architecture/test_application_catalogue_granularity.py`
+- `web/src/api.ts`
+- `web/src/features/requirements/ConnectivityRequirementsPage.tsx`
+- `web/src/features/requirements/ConnectivityRequirementDetailsPage.tsx`
 
-Expand only to PR #66 gate failures if any. Do not start another backend split or M6 Web work in this PR.
+Expand only to shared Web transport/types and relevant Web/browser tests required by this extraction. Do not refactor `App.tsx` or other feature pages by size alone.
 
 ## Blockers
 
@@ -19,8 +20,8 @@ None known.
 
 ## Gate
 
-The M5 pilot is implemented and evaluated. Application vs Component structure mutation implementation is owner-specific; the compatibility facade contains no use-case implementation. Core, PostgreSQL, Harness and browser journey gates must be green on the final Ready-for-review head before squash integration.
+Requirement-specific API implementation must become feature-local without API/UX behavior changes. Root `api.ts` may retain compatibility exports and genuinely shared transport/types, but no Requirement implementation. Web checks, Harness and relevant browser journeys must remain green.
 
 ## Next
 
-Squash-integrate PR #66 when the final gate is green. Then evaluate M6 Web locality separately and select a Web pilot only from concrete misplaced-responsibility evidence.
+Create the feature-local Requirements API boundary, reduce root `api.ts` to shared/compatibility responsibility for this slice, add a locality guard, then validate the pilot before considering any other M6 hotspot.
