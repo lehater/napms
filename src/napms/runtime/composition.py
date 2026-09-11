@@ -12,6 +12,10 @@ from napms.access_policy.application.ports import (
     ConnectivityDecisionPort,
     DecisionOutcome as AccessPolicyDecisionOutcome,
 )
+from napms.application_catalogue.adapters.http.target import create_catalogue_target_router
+from napms.application_catalogue.adapters.http.target_retirement import (
+    create_catalogue_target_retirement_router,
+)
 from napms.application_catalogue.domain.model import CatalogueInvariantError
 from napms.composition.catalogue_curation_postgres import (
     open_catalogue_curation_scope,
@@ -38,10 +42,6 @@ from napms.runtime.catalogue_discovery_http import create_catalogue_discovery_ro
 from napms.runtime.catalogue_error_http import catalogue_invariant_error_handler
 from napms.runtime.catalogue_resource_workspace_http import (
     create_catalogue_resource_workspace_router,
-)
-from napms.runtime.catalogue_target_http import create_catalogue_target_router
-from napms.runtime.catalogue_target_retirement_http import (
-    create_catalogue_target_retirement_router,
 )
 from napms.runtime.catalogue_temporal_curation_http import (
     create_catalogue_temporal_curation_router,
