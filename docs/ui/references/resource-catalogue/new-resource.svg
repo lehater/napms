@@ -1,16 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" role="img" aria-labelledby="title desc">
-  <title id="title">NAPMS New Resource dialog reference</title>
-  <desc id="desc">Compact modal for creating a Resource with an optional display name and server-generated stable reference.</desc>
-  <defs><style>
-    .bg{fill:#eef2f7}.shade{fill:#0f172a;opacity:.30}.card{fill:#fff;stroke:#dce3ec;stroke-width:1}.line{stroke:#e2e8f0;stroke-width:1}.txt{font-family:Inter,Arial,sans-serif;fill:#172033}.muted{font-family:Inter,Arial,sans-serif;fill:#64748b}.small{font-size:12px}.body{font-size:14px}.h1{font-size:18px;font-weight:700}.bold{font-weight:700}.control{fill:#fff;stroke:#cbd5e1}.btn{fill:#2563eb}.btnText{font-family:Inter,Arial,sans-serif;fill:#fff;font-size:13px;font-weight:700}
-  </style></defs>
-  <rect class="bg" width="1000" height="620"/><rect class="shade" width="1000" height="620"/>
-  <rect x="250" y="135" width="500" height="350" rx="12" class="card"/>
-  <text x="278" y="178" class="txt h1">New resource</text><text x="278" y="202" class="muted small">NAPMS generates the stable resource reference.</text><text x="716" y="178" class="muted body">×</text>
-  <line x1="250" y1="224" x2="750" y2="224" class="line"/>
-  <text x="278" y="269" class="txt body bold">Display name</text><rect x="278" y="286" width="444" height="44" rx="7" class="control"/><text x="294" y="314" class="muted body">api-gateway</text>
-  <text x="278" y="360" class="muted small">Resource identity can exist before realization, scope affiliation or responsibility facts are added.</text>
-  <line x1="250" y1="410" x2="750" y2="410" class="line"/>
-  <rect x="512" y="434" width="90" height="38" rx="7" class="control"/><text x="534" y="458" class="txt body bold">Cancel</text>
-  <rect x="614" y="434" width="108" height="38" rx="7" class="btn"/><text x="629" y="458" class="btnText">Create resource</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="49" viewBox="0 0 180 49" role="img"><title>Accepted Resource Catalogue visual reference</title><desc>Exact crop from the user-supplied Resource Catalogue concept board, resized for documentation.</desc><image width="180" height="49" href="data:image/webp;base64,UklGRtwBAABXRUJQVlA4INABAAAQDgCdASq0ADEAPpFGnUslo6KhqBK4OLASCWUA1dmK/A6yXqAzB31gNMoOwHNzjWj5LmnY/xxGh6Czu4c3Xz0llTvPJ3rCP34Tv/uN/2qpw35g/aYxSIFh4tGSKQhnbCE3iF3LRNP1TvzkYoJesze4CLgwd6XeFrOAAP76hC+cMHy6NJVADH9S7KJKYi2R0ko/7KOQrtn9dV/GQd0faV8OAXby0NyA2PY6dAy+fwE3xj7b7ABuL+LMXnLiEDeIfLwSBqJw2r3iwd1zbngBOSIxl41YmpiaPIjvwLmy9/KPAYG4I4iFcHgYoxQ0vbzUUJP3dwzovxyqsy6S1P2ru3PLRQMCG73VBBn8i8UZf5BnndlcAbSUQHIDHzazjRU4/cFE3AZYTpCKz5K913HcZO61lIDibedJNaQWiVilC60tWhy9xkbUM5I08Hwfyx2mp/rUH0Pmf6Z2hytuqbJZ9KLaKBVUqr3UfSvLJhG+CjOp5QqkbQFRpAAs2ztPPXf9rhaEnDhucsgh3SHoB//QH96wQb2FRubmQSZ3GaDkxRA7mO6QzXFsoevPRIax6C0r8m0xQnqz9rTMi6vqhmKNBzeU93xMlvZMsZXbu82mEAAAAA=="/></svg>
