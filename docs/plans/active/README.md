@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: migrate NAPMS to the accepted final `contexts / workflows / platform` taxonomy without product/domain semantic change.
-Current task: M2 — the `technical_access_evidence` and `network_enforcement_placement` work package is complete on the milestone branch and awaits architectural review.
+Current task: M2 — migrate `connectivity_requirements` and `connectivity_decision` as two atomic context commits on the milestone branch.
 
 ## Working set
 
@@ -15,14 +15,14 @@ Expand only if the architectural decision rationale is needed: `docs/decisions/A
 
 ## Blockers
 
-Local PostgreSQL execution evidence is unavailable: `make postgres-test` completed successfully but skipped all 141 tests because the PostgreSQL test environment was not configured.
+None for the current work package. A configured PostgreSQL run is still required before the final M2 PR can close the milestone.
 
 ## Gate
 
-Both contexts use only the final `napms.contexts` namespace, all consumers are updated, architecture boundaries are enforced, and targeted/core/harness/knowledge checks are green. PostgreSQL tests remain to be exercised in a configured environment.
+Each context must exist only under `napms.contexts`, all consumers and migration/package-data references must use the final namespace, architecture tests must enforce the boundary, and targeted tests must pass. Run `make test`, harness and knowledge checks after the two-context package.
 
-Hosted PR gates are deferred until the complete M2 milestone is ready for one final PR.
+Hosted PR gates remain deferred until the complete M2 milestone is ready for one final PR.
 
 ## Next
 
-Review the completed `technical_access_evidence` and `network_enforcement_placement` work package. Do not select another context or start M3 before that review.
+Migrate `connectivity_requirements` first, then `connectivity_decision`, one atomic commit per context. Stop after the two-context package for architectural review; do not start M3.
