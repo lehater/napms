@@ -21,6 +21,16 @@ POLICY_EXPORT = WORKFLOWS / "policy_export"
 SCOPED_CONNECTIVITY_INVENTORY = WORKFLOWS / "scoped_connectivity_inventory"
 NETWORK_OPERATOR_VIEW = WORKFLOWS / "network_operator_view"
 TRAFFIC_ANALYSIS = WORKFLOWS / "traffic_analysis"
+ACC_TARGET_INTEGRATIONS = (
+    APPLICATION_CATALOGUE / "infrastructure" / "integrations" / "target_dependencies.py"
+)
+ACC_TARGET_READ_MODEL = (
+    APPLICATION_CATALOGUE
+    / "infrastructure"
+    / "read_models"
+    / "postgres"
+    / "target.py"
+)
 RUNTIME = NAPMS / "runtime"
 APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "presentation" / "http"
 RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "presentation" / "http"
@@ -367,6 +377,33 @@ def test_workflow_application_has_no_outer_layer_dependencies():
                 if ".infrastructure" in module or ".presentation" in module:
                     violations.append((path, module))
     assert violations == []
+
+
+def test_workflows_do_not_import_context_persistence_internals():
+    violations = []
+    for path in WORKFLOWS.rglob("*.py"):
+        for module in imported_modules(path):
+            if module.startswith("napms.contexts.") and ".infrastructure.persistence" in module:
+                violations.append((path, module))
+    assert violations == []
+
+
+def test_acc_target_integrations_use_only_peer_application_contracts():
+    violations = []
+    for module in imported_modules(ACC_TARGET_INTEGRATIONS):
+        if not module.startswith("napms.contexts."):
+            continue
+        if module.startswith("napms.contexts.application_catalogue."):
+            continue
+        if ".domain" in module or ".infrastructure" in module:
+            violations.append(module)
+    assert violations == []
+
+
+def test_acc_target_read_model_has_no_resource_catalogue_sql():
+    assert "napms_resource_catalogue" not in ACC_TARGET_READ_MODEL.read_text(
+        encoding="utf-8"
+    )
 
 
 def test_policy_export_uses_final_workflow_namespace():

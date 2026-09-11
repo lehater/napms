@@ -3,7 +3,9 @@ from datetime import datetime
 from psycopg import Error as PsycopgError
 
 from napms.contexts.connectivity_requirements.application.ports import RequirementPersistenceError
-from napms.contexts.connectivity_requirements.domain.model import RequiredSemanticInteraction
+from napms.contexts.connectivity_requirements.application.active_dependency_references import (
+    ConnectivityRequirementDependencySubject,
+)
 
 
 class PostgresConnectivityRequirementDependencyQuery:
@@ -15,7 +17,7 @@ class PostgresConnectivityRequirementDependencyQuery:
     def page(
         self,
         *,
-        subjects: tuple[RequiredSemanticInteraction, ...],
+        subjects: tuple[ConnectivityRequirementDependencySubject, ...],
         as_of: datetime,
         offset: int,
         limit: int,
@@ -70,7 +72,7 @@ class PostgresConnectivityRequirementDependencyQuery:
             raise RequirementPersistenceError() from exc
 
 
-def _values(subjects: tuple[RequiredSemanticInteraction, ...]) -> tuple[str, tuple]:
+def _values(subjects: tuple[ConnectivityRequirementDependencySubject, ...]) -> tuple[str, tuple]:
     sql = ", ".join("(%s::uuid, %s::uuid, %s::uuid)" for _ in subjects)
     params: list[object] = []
     for subject in subjects:

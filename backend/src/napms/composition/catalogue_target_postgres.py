@@ -7,6 +7,9 @@ import psycopg
 from napms.contexts.access_policy.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresAccessRuleDependencyQuery,
 )
+from napms.contexts.access_policy.application.active_dependency_references import (
+    ReadActiveAccessRuleReferences,
+)
 from napms.contexts.application_catalogue.infrastructure.local.curation_support import (
     LocalApplicationCatalogueIdentityFactory,
     LocalApplicationCatalogueProvenanceFactory,
@@ -72,20 +75,32 @@ from napms.contexts.authority_management.infrastructure.persistence.postgres imp
     PostgresAuthorityAssignmentRepository,
 )
 from napms.contexts.authority_management.application.check_authority import CheckAuthority
-from napms.composition.application_catalogue_target_dependencies import (
+from napms.contexts.application_catalogue.infrastructure.integrations.target_dependencies import (
     AccessRuleDependencyAdapter,
     ConnectivityDecisionDependencyAdapter,
     ConnectivityRequirementDependencyAdapter,
 )
-from napms.composition.application_catalogue_target_read_postgres import (
+from napms.contexts.application_catalogue.infrastructure.read_models.postgres.target import (
     PostgresApplicationCatalogueTargetReadModel,
 )
 from napms.composition.config import ApplicationConfig
 from napms.contexts.connectivity_decision.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityDecisionDependencyQuery,
 )
+from napms.contexts.connectivity_decision.application.active_dependency_references import (
+    ReadActiveConnectivityDecisionReferences,
+)
 from napms.contexts.connectivity_requirements.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityRequirementDependencyQuery,
+)
+from napms.contexts.connectivity_requirements.application.active_dependency_references import (
+    ReadActiveConnectivityRequirementReferences,
+)
+from napms.contexts.resource_catalogue.application.read_resource_references import (
+    ReadResourceReferences,
+)
+from napms.contexts.resource_catalogue.infrastructure.persistence.postgres.resource_reference_query import (
+    PostgresResourceReferenceQuery,
 )
 from napms.contexts.resource_catalogue.infrastructure.persistence.postgres.transactional_curation_repository import (
     TransactionalPostgresResourceCatalogueCurationRepository,
@@ -153,13 +168,19 @@ def open_catalogue_target_scope(
         traffic = JsonDcsAuthoringProjectionEncoder()
 
         requirements = ConnectivityRequirementDependencyAdapter(
-            PostgresConnectivityRequirementDependencyQuery(application_connection)
+            ReadActiveConnectivityRequirementReferences(
+                query=PostgresConnectivityRequirementDependencyQuery(application_connection)
+            )
         )
         decisions = ConnectivityDecisionDependencyAdapter(
-            PostgresConnectivityDecisionDependencyQuery(application_connection)
+            ReadActiveConnectivityDecisionReferences(
+                query=PostgresConnectivityDecisionDependencyQuery(application_connection)
+            )
         )
         access_rules = AccessRuleDependencyAdapter(
-            PostgresAccessRuleDependencyQuery(application_connection)
+            ReadActiveAccessRuleReferences(
+                query=PostgresAccessRuleDependencyQuery(application_connection)
+            )
         )
         lifecycle_dependencies = TargetRetirementDependencies(
             catalogue=application_repository,
@@ -222,7 +243,12 @@ def open_catalogue_target_scope(
         )
 
         services = TargetApplicationCatalogueServices(
-            read=PostgresApplicationCatalogueTargetReadModel(application_connection),
+            read=PostgresApplicationCatalogueTargetReadModel(
+                application_connection,
+                resources=ReadResourceReferences(
+                    query=PostgresResourceReferenceQuery(resource_connection)
+                ),
+            ),
             deployment_interaction_read=ReadDeploymentInteraction(
                 catalogue=application_repository
             ),

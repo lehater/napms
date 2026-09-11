@@ -34,6 +34,12 @@ from napms.contexts.application_catalogue.domain.target_model import (
     DeploymentInteractionSide,
     InteractionDefinition,
 )
+from napms.contexts.resource_catalogue.application.ports import (
+    ResourceCataloguePersistenceError,
+)
+from napms.contexts.resource_catalogue.application.read_resource_references import (
+    ReadResourceReferences,
+)
 from napms.workflows.policy_export.application.normalization_ports import DcsProjectionDecodeError
 
 
@@ -45,8 +51,9 @@ class PostgresApplicationCatalogueTargetReadModel:
     persistence adapters; lifecycle and mutation decisions remain owner-specific.
     """
 
-    def __init__(self, connection) -> None:
+    def __init__(self, connection, *, resources: ReadResourceReferences) -> None:
         self._connection = connection
+        self._resources = resources
         self._traffic = JsonDcsAuthoringProjectionEncoder()
 
     def list_definitions(
@@ -681,116 +688,64 @@ class PostgresApplicationCatalogueTargetReadModel:
             offset=offset, limit=limit, search=search, sort=sort
         )
         scope_reference = _optional(scope_reference)
-        pattern = _pattern(search)
         where = """
             s.deployment_interaction_id = %s
             AND s.side = %s
             AND b.valid_from <= %s
             AND (b.valid_to IS NULL OR %s < b.valid_to)
-            AND (
-                %s::text IS NULL
-                OR r.resource_reference ILIKE %s
-                OR r.display_name ILIKE %s
-            )
-            AND (
-                %s::text IS NULL OR EXISTS (
-                    SELECT 1
-                      FROM napms_resource_catalogue.resource_scope_affiliations rsa
-                     WHERE rsa.resource_reference = r.resource_reference
-                       AND rsa.responsibility_scope = %s
-                       AND rsa.valid_from <= %s
-                       AND (rsa.valid_to IS NULL OR %s < rsa.valid_to)
-                )
-            )
         """
         params = (
             deployment_interaction_id,
             side.value,
             as_of,
             as_of,
-            search,
-            pattern,
-            pattern,
-            scope_reference,
-            scope_reference,
-            as_of,
-            as_of,
         )
         joins = """
-            FROM napms_application_catalogue.deployment_interaction_compatibility_sides s
+              FROM napms_application_catalogue.deployment_interaction_compatibility_sides s
             JOIN napms_application_catalogue.deployment_resource_bindings b
               ON b.component_deployment_id = s.component_deployment_id
-            JOIN napms_resource_catalogue.resources r
-              ON r.resource_reference = b.resource_reference
         """
-        scope_sort = """
-            COALESCE((
-                SELECT min(rsa.responsibility_scope)
-                  FROM napms_resource_catalogue.resource_scope_affiliations rsa
-                 WHERE rsa.resource_reference = r.resource_reference
-                   AND rsa.valid_from <= %s
-                   AND (rsa.valid_to IS NULL OR %s < rsa.valid_to)
-            ), '')
-        """
-        if sort.lstrip("-") == "scope":
-            order = _order(
-                sort,
-                {"scope": (scope_sort,)},
-                default=("COALESCE(r.display_name, r.resource_reference)",),
-                tie="r.resource_reference",
-            )
-            order_params: tuple[object, ...] = (as_of, as_of)
-        else:
-            order = _order(
-                sort,
-                {"resource": ("COALESCE(r.display_name, r.resource_reference)",)},
-                default=("COALESCE(r.display_name, r.resource_reference)",),
-                tie="r.resource_reference",
-            )
-            order_params = ()
         try:
-            total = self._scalar(
-                f"SELECT count(DISTINCT r.resource_reference) {joins} WHERE {where}",
-                params,
-            )
-            rows = self._fetchall(
+            bindings = self._fetchall(
                 f"""
-                SELECT b.reference_id, b.version, r.resource_reference,
-                       b.valid_from, b.valid_to, r.display_name,
-                       ARRAY(
-                           SELECT DISTINCT rsa.responsibility_scope
-                             FROM napms_resource_catalogue.resource_scope_affiliations rsa
-                            WHERE rsa.resource_reference = r.resource_reference
-                              AND rsa.valid_from <= %s
-                              AND (rsa.valid_to IS NULL OR %s < rsa.valid_to)
-                            ORDER BY rsa.responsibility_scope
-                       ) AS scope_references
+                SELECT b.reference_id, b.version, b.resource_reference,
+                       b.valid_from, b.valid_to
                   {joins}
                  WHERE {where}
-                 GROUP BY b.reference_id, b.version, r.resource_reference,
-                          b.valid_from, b.valid_to, r.display_name
-                 ORDER BY {order}
-                 OFFSET %s LIMIT %s
                 """,
-                (as_of, as_of) + params + order_params + (offset, limit),
+                params,
+            )
+            binding_by_resource = {row[2]: row for row in bindings}
+            resources = self._resources.page(
+                candidate_resource_references=tuple(binding_by_resource),
+                as_of=as_of,
+                search=search,
+                scope_reference=scope_reference,
+                sort=sort,
+                offset=offset,
+                limit=limit,
             )
             return ResourceSetPage(
                 items=tuple(
                     ResourceSetMember(
-                        binding_reference=row[0],
-                        binding_version=row[1],
-                        resource_reference=row[2],
-                        valid_from=row[3],
-                        valid_to=row[4],
-                        display_name=row[5],
-                        scope_references=tuple(row[6]),
+                        binding_reference=binding_by_resource[item.resource_reference][0],
+                        binding_version=binding_by_resource[item.resource_reference][1],
+                        resource_reference=item.resource_reference,
+                        valid_from=binding_by_resource[item.resource_reference][3],
+                        valid_to=binding_by_resource[item.resource_reference][4],
+                        display_name=item.display_name,
+                        scope_references=item.effective_scope_references,
                     )
-                    for row in rows
+                    for item in resources.items
                 ),
-                page=TargetPage(offset, limit, total),
+                page=TargetPage(offset, limit, resources.total),
                 as_of=as_of,
             )
-        except (PsycopgError, CatalogueInvariantError) as exc:
+        except (
+            PsycopgError,
+            CatalogueInvariantError,
+            ResourceCataloguePersistenceError,
+        ) as exc:
             raise CataloguePersistenceError("target resource-set projection failed") from exc
 
     def _interaction(self, row) -> InteractionDefinition:

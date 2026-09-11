@@ -3,7 +3,9 @@ from datetime import datetime
 from psycopg import Error as PsycopgError
 
 from napms.contexts.access_policy.application.ports import AccessRulePersistenceError
-from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
+from napms.contexts.access_policy.application.active_dependency_references import (
+    AccessRuleDependencySubject,
+)
 
 
 class PostgresAccessRuleDependencyQuery:
@@ -15,7 +17,7 @@ class PostgresAccessRuleDependencyQuery:
     def page(
         self,
         *,
-        subjects: tuple[RuleSemanticIdentity, ...],
+        subjects: tuple[AccessRuleDependencySubject, ...],
         as_of: datetime,
         offset: int,
         limit: int,
@@ -70,7 +72,7 @@ class PostgresAccessRuleDependencyQuery:
             raise AccessRulePersistenceError() from exc
 
 
-def _values(subjects: tuple[RuleSemanticIdentity, ...]) -> tuple[str, tuple]:
+def _values(subjects: tuple[AccessRuleDependencySubject, ...]) -> tuple[str, tuple]:
     sql = ", ".join("(%s::uuid, %s::uuid, %s::uuid)" for _ in subjects)
     params: list[object] = []
     for subject in subjects:

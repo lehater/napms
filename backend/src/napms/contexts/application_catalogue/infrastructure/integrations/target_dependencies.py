@@ -1,24 +1,24 @@
-from napms.contexts.access_policy.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
-    PostgresAccessRuleDependencyQuery,
+from napms.contexts.access_policy.application.active_dependency_references import (
+    AccessRuleDependencySubject,
+    ReadActiveAccessRuleReferences,
 )
-from napms.contexts.access_policy.domain.model import RuleSemanticIdentity
 from napms.contexts.application_catalogue.application.target_ports import (
     ActiveDependencyReference,
     ActiveDependencySummary,
 )
 from napms.contexts.application_catalogue.domain.model import DirectedInteractionIdentity
-from napms.contexts.connectivity_decision.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
-    PostgresConnectivityDecisionDependencyQuery,
+from napms.contexts.connectivity_decision.application.active_dependency_references import (
+    ConnectivityDecisionDependencySubject,
+    ReadActiveConnectivityDecisionReferences,
 )
-from napms.contexts.connectivity_decision.domain.model import DecisionSubject
-from napms.contexts.connectivity_requirements.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
-    PostgresConnectivityRequirementDependencyQuery,
+from napms.contexts.connectivity_requirements.application.active_dependency_references import (
+    ConnectivityRequirementDependencySubject,
+    ReadActiveConnectivityRequirementReferences,
 )
-from napms.contexts.connectivity_requirements.domain.model import RequiredSemanticInteraction
 
 
 class ConnectivityRequirementDependencyAdapter:
-    def __init__(self, query: PostgresConnectivityRequirementDependencyQuery) -> None:
+    def __init__(self, query: ReadActiveConnectivityRequirementReferences) -> None:
         self._query = query
 
     def summarize_active_references(self, *, subjects, as_of, preview_limit):
@@ -53,7 +53,7 @@ class ConnectivityRequirementDependencyAdapter:
 
 
 class ConnectivityDecisionDependencyAdapter:
-    def __init__(self, query: PostgresConnectivityDecisionDependencyQuery) -> None:
+    def __init__(self, query: ReadActiveConnectivityDecisionReferences) -> None:
         self._query = query
 
     def summarize_active_references(self, *, subjects, as_of, preview_limit):
@@ -83,7 +83,7 @@ class ConnectivityDecisionDependencyAdapter:
 
 
 class AccessRuleDependencyAdapter:
-    def __init__(self, query: PostgresAccessRuleDependencyQuery) -> None:
+    def __init__(self, query: ReadActiveAccessRuleReferences) -> None:
         self._query = query
 
     def summarize_active_references(self, *, subjects, as_of, preview_limit):
@@ -118,24 +118,24 @@ def _unique(
     return tuple(dict.fromkeys(subjects))
 
 
-def _requirement_subject(value: DirectedInteractionIdentity) -> RequiredSemanticInteraction:
-    return RequiredSemanticInteraction(
+def _requirement_subject(value: DirectedInteractionIdentity) -> ConnectivityRequirementDependencySubject:
+    return ConnectivityRequirementDependencySubject(
         source_component_deployment_id=value.source_component_deployment_id,
         destination_component_deployment_id=value.destination_component_deployment_id,
         dcs_contract_revision_id=value.dcs_contract_revision_id,
     )
 
 
-def _decision_subject(value: DirectedInteractionIdentity) -> DecisionSubject:
-    return DecisionSubject(
+def _decision_subject(value: DirectedInteractionIdentity) -> ConnectivityDecisionDependencySubject:
+    return ConnectivityDecisionDependencySubject(
         source_component_deployment_id=value.source_component_deployment_id,
         destination_component_deployment_id=value.destination_component_deployment_id,
         dcs_contract_revision_id=value.dcs_contract_revision_id,
     )
 
 
-def _rule_subject(value: DirectedInteractionIdentity) -> RuleSemanticIdentity:
-    return RuleSemanticIdentity(
+def _rule_subject(value: DirectedInteractionIdentity) -> AccessRuleDependencySubject:
+    return AccessRuleDependencySubject(
         source_component_deployment_id=value.source_component_deployment_id,
         destination_component_deployment_id=value.destination_component_deployment_id,
         dcs_contract_revision_id=value.dcs_contract_revision_id,
