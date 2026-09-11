@@ -25,8 +25,8 @@ from napms.application_catalogue.application.structure_curation import (
 )
 from napms.policy_export.application.normalization_ports import DcsProjectionDecodeError
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_support import PublicApiError
 from napms.runtime.http_support import (
+    PublicApiError,
     mutation_response,
     require_actor,
     require_aware,

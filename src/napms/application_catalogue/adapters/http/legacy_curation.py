@@ -22,8 +22,8 @@ from napms.application_catalogue.domain.communication import (
     DcsPortRange,
 )
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_support import PublicApiError
 from napms.runtime.http_support import (
+    PublicApiError,
     mutation_response,
     require_actor,
     require_aware,

@@ -146,13 +146,13 @@ def create_connectivity_decision_router(
         if result.outcome is DecisionInteractionDiscoveryOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
                 status_code=403,
-                code="AuthorityDenied",
+                code="AuthorityDenied", dependency="AuthorityManagement",
                 message="The requested operation is not permitted.",
             )
         if result.outcome is DecisionInteractionDiscoveryOutcome.AUTHORITY_UNKNOWN:
             raise PublicApiError(
                 status_code=409,
-                code="AuthorityUnknown",
+                code="AuthorityUnknown", dependency="AuthorityManagement",
                 message="Authority for the requested operation is ambiguous or unavailable.",
             )
 
@@ -296,7 +296,16 @@ def create_connectivity_decision_router(
             ),
         }
         status_code, code, message = mapping[result.outcome]
-        raise PublicApiError(status_code=status_code, code=code, message=message)
+        raise PublicApiError(
+            status_code=status_code,
+            code=code,
+            message=message,
+            dependency=(
+                "AuthorityManagement"
+                if code in {"AuthorityDenied", "AuthorityUnknown"}
+                else None
+            ),
+        )
 
     @router.get(
         "/api/v1/connectivity-decisions",
@@ -380,13 +389,13 @@ def create_connectivity_decision_router(
         if result.outcome is DecisionDetailOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
                 status_code=403,
-                code="AuthorityDenied",
+                code="AuthorityDenied", dependency="AuthorityManagement",
                 message="The requested operation is not permitted.",
             )
         if result.outcome is DecisionDetailOutcome.AUTHORITY_UNKNOWN:
             raise PublicApiError(
                 status_code=409,
-                code="AuthorityUnknown",
+                code="AuthorityUnknown", dependency="AuthorityManagement",
                 message="Authority for the requested operation is ambiguous or unavailable.",
             )
 

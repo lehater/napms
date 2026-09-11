@@ -21,8 +21,8 @@ from napms.resource_catalogue.domain.responsibility import (
     ResourceResponsibilityRole,
 )
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_support import PublicApiError
 from napms.runtime.http_support import (
+    PublicApiError,
     mutation_response,
     require_actor,
     require_aware,

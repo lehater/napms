@@ -28,7 +28,6 @@ POLICY_EXPORT_HTTP = POLICY_EXPORT / "adapters" / "http.py"
 POLICY_EXPORT_HTTP_JSON = POLICY_EXPORT / "adapters" / "http_json.py"
 SCOPED_CONNECTIVITY_HTTP = SCOPED_CONNECTIVITY_INVENTORY / "adapters" / "http.py"
 PROCESS_HTTP = RUNTIME / "http_api.py"
-LEGACY_PROCESS_HTTP = RUNTIME / "legacy_http_api.py"
 
 DOMAIN_LAYERS = (
     ACCESS_POLICY / "domain",
@@ -95,25 +94,6 @@ def _route_names(path: Path, receiver: str) -> set[str]:
                 ):
                     names.add(keyword.value.value)
     return names
-
-
-def _assigned_string_set(path: Path, variable_name: str) -> set[str]:
-    tree = ast.parse(path.read_text(encoding="utf-8"))
-    for node in tree.body:
-        if not isinstance(node, ast.Assign):
-            continue
-        if not any(
-            isinstance(target, ast.Name) and target.id == variable_name
-            for target in node.targets
-        ):
-            continue
-        if isinstance(node.value, ast.Set):
-            return {
-                item.value
-                for item in node.value.elts
-                if isinstance(item, ast.Constant) and isinstance(item.value, str)
-            }
-    raise AssertionError(f"{variable_name} must be a literal string set")
 
 
 def test_core_has_no_infrastructure_framework_imports():
@@ -192,12 +172,10 @@ def test_feature_http_is_owner_local():
         SCOPED_CONNECTIVITY_HTTP,
     ):
         assert path.is_file()
-    assert LEGACY_PROCESS_HTTP.is_file()
+    assert not (RUNTIME / "legacy_http_api.py").exists()
 
 
 def test_process_http_has_no_feature_endpoint_implementation():
-    process_source = PROCESS_HTTP.read_text(encoding="utf-8")
-    assert "/api/v1/" not in process_source
     forbidden_prefixes = (
         "napms.access_policy.application",
         "napms.access_policy.domain",
@@ -215,16 +193,23 @@ def test_process_http_has_no_feature_endpoint_implementation():
     )
 
 
-def test_legacy_http_has_only_process_routes_after_migration_filter():
-    migrated = _assigned_string_set(PROCESS_HTTP, "_MIGRATED_ROUTE_NAMES")
-    legacy_routes = _route_names(LEGACY_PROCESS_HTTP, "app")
-    assert legacy_routes - migrated == {
+def test_process_http_has_only_direct_process_routes():
+    assert _route_names(PROCESS_HTTP, "app") == {
         "CreateSession",
         "GetSession",
         "DeleteSession",
         "Liveness",
         "Readiness",
     }
+
+
+def test_semantic_adapters_do_not_import_process_http_api():
+    violations = []
+    for path in NAPMS.glob("*/adapters/**/*.py"):
+        for module in imported_modules(path):
+            if module == "napms.runtime.http_api":
+                violations.append((path, module))
+    assert violations == []
 
 
 POSTGRES_SCHEMA_OWNERS = (

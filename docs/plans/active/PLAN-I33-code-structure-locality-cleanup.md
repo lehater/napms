@@ -35,35 +35,31 @@ Canonical inputs:
 - Bind all production consumers and serializer tests directly to the owner-local adapter.
 - Add an architecture guard that protects the owner-local serializer location.
 
-## Current slice S4
+## Completed slice S4
 
-- Make `runtime/http_support.py` own the shared HTTP transport primitives
-  `SESSION_COOKIE_NAME` and `PublicApiError`.
-- Keep the temporary `runtime/http_api.py` compatibility surface while binding
-  semantic-owner adapters directly to `napms.runtime.http_support`.
-- Add an architecture guard preventing first-class semantic module adapters from
-  depending on process HTTP assembly.
+- Make `runtime/http_support.py` own shared HTTP transport primitives.
+- Bind semantic-owner adapters directly to `napms.runtime.http_support`.
+- Prevent semantic module adapters from depending on process HTTP assembly.
 
-Goal: owner-local HTTP adapters no longer depend on `runtime.http_api` process
-assembly for transport primitives.
+## Completed slice S5
 
-## S4 explicit non-goals
+- Replace the legacy HTTP monolith with a process-only runtime shell.
+- Keep only session, middleware/error boundary, logging, liveness/readiness and executable HTTP assembly in process runtime.
+- Localize feature exception mappings in semantic-owner adapters.
+- Register owner-local error handlers and routers from process composition.
+- Remove the legacy HTTP module and migration filtering mechanism.
 
-- Do not remove `legacy_http_api.py`.
-- Do not change routes, error JSON or session behavior.
-- Do not move `HttpApiDependencies`.
-- Do not rework logging or middleware.
-- Do not change domain/application semantics.
+## Explicit non-goals
+
+- Do not change product, domain, API, session, cookie, correlation, logging, readiness or persistence semantics.
+- Do not expand architectural scope beyond HTTP ownership/locality cleanup.
 
 ## Exit criteria
 
-- `http_support.py` owns `SESSION_COOKIE_NAME` and `PublicApiError` without
-  importing `napms.runtime.http_api`.
-- `legacy_http_api.py` and the temporary `http_api.py` compatibility surface use
-  those shared primitives.
-- Semantic-owner adapters do not import `napms.runtime.http_api`, enforced by an
-  architecture test.
-- Runtime behavior remains unchanged under targeted tests.
+- `src/napms/runtime/http_api.py` contains only process responsibilities and direct process routes.
+- Feature routers and exception mappings live with their semantic owners.
+- Semantic adapters do not import process HTTP assembly.
+- The legacy HTTP module and migration filtering mechanism are absent.
 - `make check` passes.
 
 ## Blockers
@@ -72,4 +68,4 @@ None known.
 
 ## Next
 
-Coordinator reviews the pushed S4 branch and selects the next evidence-backed slice.
+Coordinator reviews completed S5 and selects the next evidence-backed slice.

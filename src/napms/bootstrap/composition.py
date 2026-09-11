@@ -18,9 +18,6 @@ from napms.application_catalogue.adapters.http.application_workspace import (
 from napms.application_catalogue.adapters.http.discovery import (
     create_catalogue_discovery_router,
 )
-from napms.application_catalogue.adapters.http.errors import (
-    catalogue_invariant_error_handler,
-)
 from napms.application_catalogue.adapters.http.legacy_curation import (
     create_application_catalogue_curation_router,
 )
@@ -31,7 +28,6 @@ from napms.application_catalogue.adapters.http.target import create_catalogue_ta
 from napms.application_catalogue.adapters.http.target_retirement import (
     create_catalogue_target_retirement_router,
 )
-from napms.application_catalogue.domain.model import CatalogueInvariantError
 from napms.bootstrap.config import HttpRuntimeConfig
 from napms.composition.catalogue_curation_postgres import open_catalogue_curation_scope
 from napms.composition.catalogue_target_postgres import open_catalogue_target_scope
@@ -137,10 +133,6 @@ def build_http_api(
             readiness=readiness_probe or default_readiness,
             secure_cookie=False,
         )
-    )
-    app.add_exception_handler(
-        CatalogueInvariantError,
-        catalogue_invariant_error_handler,
     )
     app.include_router(
         create_network_operator_view_router(

@@ -21,8 +21,8 @@ from napms.application_catalogue.adapters.http.target import (
     _require_target_success,
 )
 from napms.runtime.auth import InMemorySessionStore
-from napms.runtime.http_support import PublicApiError
 from napms.runtime.http_support import (
+    PublicApiError,
     require_actor as _require_actor,
     require_aware as _require_aware,
 )

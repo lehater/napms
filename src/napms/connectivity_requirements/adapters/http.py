@@ -168,13 +168,13 @@ def create_connectivity_requirements_router(
         if result.outcome is RequiredInteractionDiscoveryOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
                 status_code=403,
-                code="AuthorityDenied",
+                code="AuthorityDenied", dependency="AuthorityManagement",
                 message="The requested operation is not permitted.",
             )
         if result.outcome is RequiredInteractionDiscoveryOutcome.AUTHORITY_UNKNOWN:
             raise PublicApiError(
                 status_code=409,
-                code="AuthorityUnknown",
+                code="AuthorityUnknown", dependency="AuthorityManagement",
                 message="Authority for the requested operation is ambiguous or unavailable.",
             )
 
@@ -292,7 +292,17 @@ def create_connectivity_requirements_router(
             ),
         }
         status_code, code, message = mapping[result.outcome]
-        raise PublicApiError(status_code=status_code, code=code, message=message)
+        raise PublicApiError(
+            status_code=status_code,
+            code=code,
+            message=message,
+            dependency={
+                "AuthorityDenied": "AuthorityManagement",
+                "AuthorityUnknown": "AuthorityManagement",
+                "InteractionInvalid": "ApplicationCommunicationCatalogue",
+                "InteractionUnknown": "ApplicationCommunicationCatalogue",
+            }.get(code),
+        )
 
     @router.get(
         "/api/v1/connectivity-requirements",
@@ -379,13 +389,13 @@ def create_connectivity_requirements_router(
         if result.outcome is RequirementDetailOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
                 status_code=403,
-                code="AuthorityDenied",
+                code="AuthorityDenied", dependency="AuthorityManagement",
                 message="The requested operation is not permitted.",
             )
         if result.outcome is RequirementDetailOutcome.AUTHORITY_UNKNOWN:
             raise PublicApiError(
                 status_code=409,
-                code="AuthorityUnknown",
+                code="AuthorityUnknown", dependency="AuthorityManagement",
                 message="Authority for the requested operation is ambiguous or unavailable.",
             )
 
@@ -448,13 +458,13 @@ def create_connectivity_requirements_router(
         if result.outcome is ApplicabilityMutationOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
                 status_code=403,
-                code="AuthorityDenied",
+                code="AuthorityDenied", dependency="AuthorityManagement",
                 message="The requested operation is not permitted.",
             )
         if result.outcome is ApplicabilityMutationOutcome.AUTHORITY_UNKNOWN:
             raise PublicApiError(
                 status_code=409,
-                code="AuthorityUnknown",
+                code="AuthorityUnknown", dependency="AuthorityManagement",
                 message="Authority for the requested operation is ambiguous or unavailable.",
             )
         if result.outcome is ApplicabilityMutationOutcome.REQUIREMENT_RETIRED:
@@ -521,13 +531,13 @@ def create_connectivity_requirements_router(
         if result.outcome is JustificationMutationOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
                 status_code=403,
-                code="AuthorityDenied",
+                code="AuthorityDenied", dependency="AuthorityManagement",
                 message="The requested operation is not permitted.",
             )
         if result.outcome is JustificationMutationOutcome.AUTHORITY_UNKNOWN:
             raise PublicApiError(
                 status_code=409,
-                code="AuthorityUnknown",
+                code="AuthorityUnknown", dependency="AuthorityManagement",
                 message="Authority for the requested operation is ambiguous or unavailable.",
             )
         if result.outcome is JustificationMutationOutcome.REQUIREMENT_RETIRED:
@@ -598,13 +608,13 @@ def create_connectivity_requirements_router(
         if result.outcome is RetirementOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
                 status_code=403,
-                code="AuthorityDenied",
+                code="AuthorityDenied", dependency="AuthorityManagement",
                 message="The requested operation is not permitted.",
             )
         if result.outcome is RetirementOutcome.AUTHORITY_UNKNOWN:
             raise PublicApiError(
                 status_code=409,
-                code="AuthorityUnknown",
+                code="AuthorityUnknown", dependency="AuthorityManagement",
                 message="Authority for the requested operation is ambiguous or unavailable.",
             )
 

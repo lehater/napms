@@ -158,13 +158,13 @@ def create_access_policy_router(
         if result.outcome is ProposalInteractionDiscoveryOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
                 status_code=403,
-                code="AuthorityDenied",
+                code="AuthorityDenied", dependency="AuthorityManagement",
                 message="The requested operation is not permitted.",
             )
         if result.outcome is ProposalInteractionDiscoveryOutcome.AUTHORITY_UNKNOWN:
             raise PublicApiError(
                 status_code=409,
-                code="AuthorityUnknown",
+                code="AuthorityUnknown", dependency="AuthorityManagement",
                 message="Authority for the requested operation is ambiguous or unavailable.",
             )
         assert result.page is not None
@@ -281,7 +281,20 @@ def create_access_policy_router(
             ),
         }
         status_code, code, message = mapping[result.outcome]
-        raise PublicApiError(status_code=status_code, code=code, message=message)
+        dependency = {
+            "AuthorityDenied": "AuthorityManagement",
+            "AuthorityUnknown": "AuthorityManagement",
+            "InteractionInvalid": "ApplicationCommunicationCatalogue",
+            "InteractionUnknown": "ApplicationCommunicationCatalogue",
+            "DecisionUnknown": "ConnectivityDecision",
+            "DecisionSubjectMismatch": "ConnectivityDecision",
+        }[code]
+        raise PublicApiError(
+            status_code=status_code,
+            code=code,
+            message=message,
+            dependency=dependency,
+        )
 
     @router.get("/api/v1/access-rules", name="ListAccessRules")
     def list_access_rules(
@@ -359,13 +372,13 @@ def create_access_policy_router(
         if result.outcome is AccessRuleDetailOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
                 status_code=403,
-                code="AuthorityDenied",
+                code="AuthorityDenied", dependency="AuthorityManagement",
                 message="The requested operation is not permitted.",
             )
         if result.outcome is AccessRuleDetailOutcome.AUTHORITY_UNKNOWN:
             raise PublicApiError(
                 status_code=409,
-                code="AuthorityUnknown",
+                code="AuthorityUnknown", dependency="AuthorityManagement",
                 message="Authority for the requested operation is ambiguous or unavailable.",
             )
 
@@ -417,13 +430,13 @@ def create_access_policy_router(
         if result.outcome is OperationalStateMutationOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
                 status_code=403,
-                code="AuthorityDenied",
+                code="AuthorityDenied", dependency="AuthorityManagement",
                 message="The requested operation is not permitted.",
             )
         if result.outcome is OperationalStateMutationOutcome.AUTHORITY_UNKNOWN:
             raise PublicApiError(
                 status_code=409,
-                code="AuthorityUnknown",
+                code="AuthorityUnknown", dependency="AuthorityManagement",
                 message="Authority for the requested operation is ambiguous or unavailable.",
             )
 
@@ -494,13 +507,13 @@ def create_access_policy_router(
         if result.outcome is EffectiveWindowMutationOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
                 status_code=403,
-                code="AuthorityDenied",
+                code="AuthorityDenied", dependency="AuthorityManagement",
                 message="The requested operation is not permitted.",
             )
         if result.outcome is EffectiveWindowMutationOutcome.AUTHORITY_UNKNOWN:
             raise PublicApiError(
                 status_code=409,
-                code="AuthorityUnknown",
+                code="AuthorityUnknown", dependency="AuthorityManagement",
                 message="Authority for the requested operation is ambiguous or unavailable.",
             )
 
@@ -587,13 +600,13 @@ def create_access_policy_router(
         if selection.outcome is EffectivePolicySelectionOutcome.AUTHORITY_DENIED:
             raise PublicApiError(
                 status_code=403,
-                code="AuthorityDenied",
+                code="AuthorityDenied", dependency="AuthorityManagement",
                 message="The requested operation is not permitted.",
             )
         if selection.outcome is EffectivePolicySelectionOutcome.AUTHORITY_UNKNOWN:
             raise PublicApiError(
                 status_code=409,
-                code="AuthorityUnknown",
+                code="AuthorityUnknown", dependency="AuthorityManagement",
                 message="Authority for the requested operation is ambiguous or unavailable.",
             )
 

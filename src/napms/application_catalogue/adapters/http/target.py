@@ -1002,7 +1002,20 @@ def _require_target_success(result) -> None:
         outcome,
         (503, "CatalogueUnavailable", "The Application Catalogue operation failed."),
     )
-    raise PublicApiError(status_code=status_code, code=code, message=message)
+    raise PublicApiError(
+        status_code=status_code,
+        code=code,
+        message=message,
+        dependency=(
+            "AuthorityManagement"
+            if code in {"AuthorityDenied", "AuthorityUnknown"}
+            else (
+                "ApplicationCommunicationCatalogue"
+                if code == "CatalogueUnavailable"
+                else None
+            )
+        ),
+    )
 
 
 def _dependency_details(result) -> list[dict]:

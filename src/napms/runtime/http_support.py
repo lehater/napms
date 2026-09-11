@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Any
+from uuid import uuid4
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -18,15 +19,39 @@ class PublicApiError(Exception):
         code: str,
         message: str,
         details: dict[str, Any] | None = None,
+        dependency: str | None = None,
     ) -> None:
         super().__init__(code)
         self.status_code = status_code
         self.code = code
         self.message = message
         self.details = details
+        self.dependency = dependency
 
 
 SUCCESS_OUTCOMES = {"Created", "Updated", "Resolved"}
+
+
+def error_response(
+    request: Request,
+    *,
+    status_code: int,
+    code: str,
+    message: str,
+    details: dict | None = None,
+    dependency: str | None = None,
+) -> JSONResponse:
+    request.state.semantic_outcome = code
+    if dependency is not None and not getattr(request.state, "dependency", None):
+        request.state.dependency = dependency
+    error = {
+        "code": code,
+        "message": message,
+        "correlationId": getattr(request.state, "correlation_id", str(uuid4())),
+    }
+    if details is not None:
+        error["details"] = details
+    return JSONResponse(status_code=status_code, content={"error": error})
 
 
 def authenticated_actor(
