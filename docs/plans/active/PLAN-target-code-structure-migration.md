@@ -39,7 +39,7 @@ M1 backend repository boundary
 
 ## M4 — Platform consolidation
 
-Status: `implementation complete; awaiting architectural review` on branch `refactor/m4-platform-consolidation`.
+Status: `implementation and architectural review complete; final hosted PR gates pending` on branch `refactor/m4-platform-consolidation`.
 
 Goal: remove legacy top-level `napms.bootstrap` and `napms.runtime`, leaving process/runtime mechanics only under `napms.platform`.
 
@@ -53,35 +53,38 @@ Accepted ownership:
 - no context/workflow core may import platform;
 - platform may depend outward on concrete context/workflow adapters for executable assembly but owns no feature/domain truth.
 
-Target moves:
+Implemented target:
 
 ```text
-napms/runtime/auth.py
-  -> napms/platform/auth/local.py
-napms/runtime/enterprise_identity.py
-  -> napms/platform/auth/enterprise_identity.py
-napms/runtime/http_api.py
-  -> napms/platform/http/api.py
-napms/runtime/http_support.py
-  -> napms/platform/http/support.py
-
-napms/bootstrap/composition.py
-  -> napms/platform/bootstrap/http_process.py
-napms/bootstrap/config.py
-  -> merge into napms/platform/bootstrap/config.py
-napms/bootstrap/main.py
-  -> napms/platform/bootstrap/main.py
-napms/bootstrap/local_seed.py
-  -> napms/platform/bootstrap/local_seed.py
-napms/bootstrap/migrations.py
-  -> napms/platform/database/cli.py
+napms/platform/
+  auth/
+  bootstrap/
+  database/
+  http/
 ```
 
-Update package entrypoints, all consumers/tests, CI/Compose references and architecture guards in the same milestone. Do not introduce compatibility shims unless a concrete integration need appears.
+Legacy top-level `napms.bootstrap`, `napms.runtime`, and `napms.composition` are absent. Production package top level is only `contexts / workflows / platform` plus package metadata. Test taxonomy was aligned under `tests/platform` and old `tests/bootstrap`, `tests/runtime`, and `tests/composition` locations were removed.
+
+Validation before final PR:
+- targeted auth: 13 passed;
+- platform + architecture: 183 passed;
+- `make test`: 807 passed, 141 deselected;
+- `make harness-check`: passed;
+- `make knowledge-check`: passed;
+- PostgreSQL 16 `make postgres-test`: 141 passed, no skipped;
+- `docker compose config`: passed;
+- `docker compose build`: passed.
+
+Final architectural review confirms:
+- `platform/http` imports no bounded context or workflow modules;
+- feature HTTP wiring/error registration lives in `platform/bootstrap/http_process.py`;
+- context domain/application and workflow application code do not import `napms.platform`;
+- console entrypoints use final platform namespaces;
+- process/runtime mechanics are fully consolidated under `napms.platform` without compatibility shims.
 
 ## Exit criteria
 
-M4 closes when legacy top-level `napms.bootstrap` and `napms.runtime` are absent; process shell is fully under `napms.platform`; platform contains no authoritative feature/domain behavior; core code does not import platform; local/full/PostgreSQL checks pass; and the final M4 PR passes required hosted gates.
+M4 closes when the final milestone PR passes all required hosted gates and is squash-merged to `main`.
 
 ## Blockers
 
@@ -89,4 +92,4 @@ None.
 
 ## Next
 
-Perform final M4 architectural review. Do not start M5 or create the PR before that review.
+Open the final M4 milestone PR, run required hosted gates, and squash-merge if green. Do not start M5 or make material changes after the final gate without returning the PR to draft and gating again.
