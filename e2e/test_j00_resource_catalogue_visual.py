@@ -80,4 +80,12 @@ def test_j00_resource_catalogue_reference_layout() -> None:
         expect(page.get_by_role("button", name="History", exact=True)).to_be_visible()
         expect(page.get_by_role("button", name="Technical details", exact=True)).to_be_visible()
 
+        workspace = page.locator("main > div").first
+        max_width = workspace.evaluate("element => getComputedStyle(element).maxWidth")
+        assert max_width == "none"
+        main_box = page.locator("main").bounding_box()
+        workspace_box = workspace.bounding_box()
+        assert main_box is not None and workspace_box is not None
+        assert workspace_box["width"] >= main_box["width"] - 60
+
         browser.close()
