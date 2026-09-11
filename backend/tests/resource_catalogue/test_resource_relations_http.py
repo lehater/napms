@@ -6,20 +6,20 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from napms.resource_catalogue.application._temporal_curation import (
+from napms.contexts.resource_catalogue.application._temporal_curation import (
     TemporalCurationOutcome,
 )
-from napms.resource_catalogue.adapters.http.curation import (
+from napms.contexts.resource_catalogue.presentation.http.curation import (
     create_resource_catalogue_curation_router,
 )
-from napms.resource_catalogue.application.responsibility_curation import (
+from napms.contexts.resource_catalogue.application.responsibility_curation import (
     ResponsibilityMutationResult,
 )
-from napms.resource_catalogue.application.scope_affiliation_curation import (
+from napms.contexts.resource_catalogue.application.scope_affiliation_curation import (
     ScopeAffiliationMutationResult,
 )
-from napms.resource_catalogue.domain.model import ResourceScopeAffiliation
-from napms.resource_catalogue.domain.responsibility import (
+from napms.contexts.resource_catalogue.domain.model import ResourceScopeAffiliation
+from napms.contexts.resource_catalogue.domain.responsibility import (
     ResponsiblePartyKind,
     ResourceResponsibility,
     ResourceResponsibilityRole,

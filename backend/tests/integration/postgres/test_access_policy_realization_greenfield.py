@@ -40,7 +40,7 @@ from napms.policy_export.application.normalization_types import (
     PortConstraint,
     PortRange,
 )
-from napms.resource_catalogue.adapters.postgres import (
+from napms.contexts.resource_catalogue.infrastructure.persistence.postgres import (
     PostgresResourceCatalogueRepository,
 )
 from napms.contexts.technical_access_evidence.presentation.imports.local_json import (

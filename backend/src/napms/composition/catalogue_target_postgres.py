@@ -87,7 +87,7 @@ from napms.contexts.connectivity_decision.infrastructure.persistence.postgres.ap
 from napms.contexts.connectivity_requirements.infrastructure.persistence.postgres.application_catalogue_dependency_query import (
     PostgresConnectivityRequirementDependencyQuery,
 )
-from napms.resource_catalogue.adapters.postgres.transactional_curation_repository import (
+from napms.contexts.resource_catalogue.infrastructure.persistence.postgres.transactional_curation_repository import (
     TransactionalPostgresResourceCatalogueCurationRepository,
 )
 

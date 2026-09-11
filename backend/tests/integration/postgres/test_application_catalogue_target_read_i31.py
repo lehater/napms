@@ -54,7 +54,7 @@ def migrated_catalogues(postgres_dsn):
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:
         for package in (
             "napms.application_catalogue.adapters.postgres",
-            "napms.resource_catalogue.adapters.postgres",
+            "napms.contexts.resource_catalogue.infrastructure.persistence.postgres",
         ):
             migrations = files(package).joinpath("migrations")
             for migration in sorted(

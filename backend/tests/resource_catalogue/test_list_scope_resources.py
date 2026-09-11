@@ -2,10 +2,10 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from napms.resource_catalogue.application.list_scope_resources import (
+from napms.contexts.resource_catalogue.application.list_scope_resources import (
     ListResourcesInResponsibilityScope,
 )
-from napms.resource_catalogue.domain.model import (
+from napms.contexts.resource_catalogue.domain.model import (
     ResourceCatalogueInvariantError,
     ResourceScopeAffiliation,
 )

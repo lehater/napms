@@ -8,13 +8,13 @@ from napms.application_catalogue.adapters.dcs_json_codec import JsonDcsProjectio
 from napms.composition.config import ApplicationConfig
 from napms.composition.greenfield_postgres import open_greenfield_scope
 from napms.contexts.network_enforcement_placement.application.network_context import ReadNetworkContext
-from napms.resource_catalogue.adapters.local_responsibility import (
+from napms.contexts.resource_catalogue.infrastructure.local.responsibility import (
     LocalDemoResourceResponsibilityAdapter,
 )
-from napms.resource_catalogue.application.resolve_address import (
+from napms.contexts.resource_catalogue.application.resolve_address import (
     ResolveResourcesByTechnicalAddress,
 )
-from napms.resource_catalogue.application.responsibility import (
+from napms.contexts.resource_catalogue.application.responsibility import (
     ReadResourceResponsibilities,
 )
 from napms.contexts.technical_access_evidence.infrastructure.persistence.postgres import (

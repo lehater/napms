@@ -7,10 +7,10 @@ psycopg = pytest.importorskip("psycopg")
 
 from napms.composition.config import ApplicationConfig, PostgresConfig
 from napms.composition.greenfield_postgres import apply_greenfield_migrations
-from napms.resource_catalogue.adapters.postgres.transactional_curation_repository import (
+from napms.contexts.resource_catalogue.infrastructure.persistence.postgres.transactional_curation_repository import (
     TransactionalPostgresResourceCatalogueCurationRepository,
 )
-from napms.resource_catalogue.application.curation_read import ListResourceCatalogue
+from napms.contexts.resource_catalogue.application.curation_read import ListResourceCatalogue
 
 
 pytestmark = pytest.mark.postgres

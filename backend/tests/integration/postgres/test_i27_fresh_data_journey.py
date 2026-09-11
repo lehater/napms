@@ -43,17 +43,17 @@ from napms.contexts.connectivity_requirements.domain.model import (
     RequiredSemanticInteraction,
     RequirementApplicability,
 )
-from napms.resource_catalogue.application.curation import CreateResourceCommand
-from napms.resource_catalogue.application.realization_curation import (
+from napms.contexts.resource_catalogue.application.curation import CreateResourceCommand
+from napms.contexts.resource_catalogue.application.realization_curation import (
     CreateResourceRealizationCommand,
 )
-from napms.resource_catalogue.application.responsibility_curation import (
+from napms.contexts.resource_catalogue.application.responsibility_curation import (
     CreateResponsibilityCommand,
 )
-from napms.resource_catalogue.application.scope_affiliation_curation import (
+from napms.contexts.resource_catalogue.application.scope_affiliation_curation import (
     CreateScopeAffiliationCommand,
 )
-from napms.resource_catalogue.domain.responsibility import (
+from napms.contexts.resource_catalogue.domain.responsibility import (
     ResponsiblePartyKind,
     ResourceResponsibilityRole,
 )

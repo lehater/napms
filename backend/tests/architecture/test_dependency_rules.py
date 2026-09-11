@@ -9,7 +9,7 @@ ACCESS_POLICY = NAPMS / "access_policy"
 ACCESS_POLICY_REALIZATION = NAPMS / "access_policy_realization"
 AUTHORITY_MANAGEMENT = NAPMS / "contexts" / "authority_management"
 APPLICATION_CATALOGUE = NAPMS / "application_catalogue"
-RESOURCE_CATALOGUE = NAPMS / "resource_catalogue"
+RESOURCE_CATALOGUE = NAPMS / "contexts" / "resource_catalogue"
 CONNECTIVITY_REQUIREMENTS = NAPMS / "contexts" / "connectivity_requirements"
 CONNECTIVITY_DECISION = NAPMS / "contexts" / "connectivity_decision"
 TECHNICAL_ACCESS_EVIDENCE = NAPMS / "contexts" / "technical_access_evidence"
@@ -20,7 +20,7 @@ POLICY_EXPORT = NAPMS / "policy_export"
 SCOPED_CONNECTIVITY_INVENTORY = NAPMS / "scoped_connectivity_inventory"
 RUNTIME = NAPMS / "runtime"
 APPLICATION_CATALOGUE_HTTP = APPLICATION_CATALOGUE / "adapters" / "http"
-RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "adapters" / "http"
+RESOURCE_CATALOGUE_HTTP = RESOURCE_CATALOGUE / "presentation" / "http"
 APPLICATION_CATALOGUE_HTTP_SUPPORT = APPLICATION_CATALOGUE_HTTP / "support.py"
 RESOURCE_CATALOGUE_HTTP_SUPPORT = RESOURCE_CATALOGUE_HTTP / "support.py"
 CONNECTIVITY_REQUIREMENTS_HTTP = (
@@ -249,7 +249,7 @@ POSTGRES_SCHEMA_OWNERS = (
         "napms_application_catalogue",
     ),
     (
-        NAPMS / "resource_catalogue" / "adapters" / "postgres",
+        RESOURCE_CATALOGUE / "infrastructure" / "persistence" / "postgres",
         "napms_resource_catalogue",
     ),
     (
@@ -305,7 +305,7 @@ BOUNDED_CONTEXT_CORES = (
     ),
     (
         RESOURCE_CATALOGUE,
-        "napms.resource_catalogue",
+        "napms.contexts.resource_catalogue",
     ),
     (
         CONNECTIVITY_REQUIREMENTS,
@@ -342,6 +342,21 @@ def test_authority_management_core_has_no_outer_layer_dependencies():
     violations = []
     for layer_name in ("domain", "application"):
         layer = AUTHORITY_MANAGEMENT / layer_name
+        for path in layer.rglob("*.py"):
+            for module in imported_modules(path):
+                if ".infrastructure" in module or ".presentation" in module:
+                    violations.append((path, module))
+    assert violations == []
+
+
+def test_resource_catalogue_has_no_legacy_package():
+    assert not (NAPMS / "resource_catalogue").exists()
+
+
+def test_resource_catalogue_core_has_no_outer_layer_dependencies():
+    violations = []
+    for layer_name in ("domain", "application"):
+        layer = RESOURCE_CATALOGUE / layer_name
         for path in layer.rglob("*.py"):
             for module in imported_modules(path):
                 if ".infrastructure" in module or ".presentation" in module:

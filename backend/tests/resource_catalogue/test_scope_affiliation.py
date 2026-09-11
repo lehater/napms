@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from napms.resource_catalogue.domain.model import (
+from napms.contexts.resource_catalogue.domain.model import (
     ResourceCatalogueInvariantError,
     ResourceScopeAffiliation,
 )

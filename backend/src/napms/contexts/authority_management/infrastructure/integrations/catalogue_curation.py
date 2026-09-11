@@ -8,7 +8,7 @@ from napms.contexts.authority_management.application.check_authority import (
     AuthorityOutcome,
     CheckAuthority,
 )
-from napms.resource_catalogue.application.ports import (
+from napms.contexts.resource_catalogue.application.ports import (
     RESOURCE_CATALOGUE_AUTHORITY_SCOPE,
     RESOURCE_CATALOGUE_CURATION_ACTION,
     ResourceCatalogueAuthorityCheck,

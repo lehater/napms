@@ -2,11 +2,11 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from napms.resource_catalogue.application.curation_read import (
+from napms.contexts.resource_catalogue.application.curation_read import (
     ListResourceCatalogue,
     ReadResourceCatalogueDetail,
 )
-from napms.resource_catalogue.domain.model import (
+from napms.contexts.resource_catalogue.domain.model import (
     EndpointAddress,
     Resource,
     ResourceCatalogueInvariantError,
@@ -14,7 +14,7 @@ from napms.resource_catalogue.domain.model import (
     ResourceRealizationVersion,
     ResourceScopeAffiliation,
 )
-from napms.resource_catalogue.domain.responsibility import (
+from napms.contexts.resource_catalogue.domain.responsibility import (
     ResponsiblePartyKind,
     ResourceResponsibility,
     ResourceResponsibilityRole,

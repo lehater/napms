@@ -68,19 +68,19 @@ from napms.application_catalogue.domain.communication import (
     DcsPortRange,
 )
 from napms.application_catalogue.domain.target_model import DeploymentInteractionSide
-from napms.resource_catalogue.adapters.curation_support import (
+from napms.contexts.resource_catalogue.infrastructure.local.curation_support import (
     LocalResourceCatalogueIdentityFactory,
     LocalResourceCatalogueProvenanceFactory,
 )
-from napms.resource_catalogue.adapters.postgres import (
+from napms.contexts.resource_catalogue.infrastructure.persistence.postgres import (
     PostgresResourceCatalogueCurationRepository,
 )
-from napms.resource_catalogue.application.curation import (
+from napms.contexts.resource_catalogue.application.curation import (
     CreateResource,
     CreateResourceCommand,
     CreateResourceOutcome,
 )
-from napms.resource_catalogue.application.ports import (
+from napms.contexts.resource_catalogue.application.ports import (
     ResourceCatalogueAuthorityCheck,
     ResourceCatalogueAuthorityOutcome,
 )
@@ -103,7 +103,7 @@ def migrated_catalogues(postgres_dsn):
     with psycopg.connect(postgres_dsn, autocommit=True) as connection:
         for package in (
             "napms.application_catalogue.adapters.postgres",
-            "napms.resource_catalogue.adapters.postgres",
+            "napms.contexts.resource_catalogue.infrastructure.persistence.postgres",
         ):
             migrations = files(package).joinpath("migrations")
             for migration in sorted(

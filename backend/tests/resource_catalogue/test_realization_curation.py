@@ -1,17 +1,17 @@
 from datetime import datetime, timezone
 
-from napms.resource_catalogue.application._temporal_curation import TemporalCurationOutcome
-from napms.resource_catalogue.application.ports import (
+from napms.contexts.resource_catalogue.application._temporal_curation import TemporalCurationOutcome
+from napms.contexts.resource_catalogue.application.ports import (
     ResourceCatalogueAuthorityCheck,
     ResourceCatalogueAuthorityOutcome,
 )
-from napms.resource_catalogue.application.realization_curation import (
+from napms.contexts.resource_catalogue.application.realization_curation import (
     CreateResourceRealization,
     CreateResourceRealizationCommand,
     ReplaceResourceRealization,
     ReplaceResourceRealizationCommand,
 )
-from napms.resource_catalogue.domain.model import (
+from napms.contexts.resource_catalogue.domain.model import (
     EndpointAddress,
     Resource,
     ResourceRealizationVersion,

@@ -42,13 +42,13 @@ from napms.contexts.connectivity_decision.infrastructure.persistence.postgres im
 from napms.contexts.connectivity_decision.application.ports import DecisionPersistenceError
 from napms.contexts.connectivity_decision.application.select import SelectEffectiveConnectivityDecision
 from napms.network_operator_view.adapters.http import create_network_operator_view_router
-from napms.resource_catalogue.adapters.http.curation import (
+from napms.contexts.resource_catalogue.presentation.http.curation import (
     create_resource_catalogue_curation_router,
 )
-from napms.resource_catalogue.adapters.http.temporal import (
+from napms.contexts.resource_catalogue.presentation.http.temporal import (
     create_resource_catalogue_temporal_router,
 )
-from napms.resource_catalogue.adapters.http.workspace import (
+from napms.contexts.resource_catalogue.presentation.http.workspace import (
     create_catalogue_resource_workspace_router,
 )
 from napms.runtime.auth import InMemorySessionStore, LocalPasswordAuthenticator

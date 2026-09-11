@@ -33,10 +33,10 @@ from napms.policy_export.application.normalization_types import (
     PortConstraint,
     PortConstraintKind,
 )
-from napms.resource_catalogue.application.ports import (
+from napms.contexts.resource_catalogue.application.ports import (
     ResourceCatalogueRepository,
 )
-from napms.resource_catalogue.domain.model import (
+from napms.contexts.resource_catalogue.domain.model import (
     ResourceRealizationVersion,
 )
 

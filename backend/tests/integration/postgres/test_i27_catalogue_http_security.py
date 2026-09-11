@@ -11,8 +11,8 @@ from fastapi.testclient import TestClient
 from napms.composition.catalogue_curation_postgres import open_catalogue_curation_scope
 from napms.composition.config import ApplicationConfig, PostgresConfig
 from napms.composition.greenfield_postgres import apply_greenfield_migrations
-from napms.resource_catalogue.application.curation import CreateResourceCommand
-from napms.resource_catalogue.adapters.http.curation import (
+from napms.contexts.resource_catalogue.application.curation import CreateResourceCommand
+from napms.contexts.resource_catalogue.presentation.http.curation import (
     create_resource_catalogue_curation_router,
 )
 from napms.runtime.auth import AuthenticatedActor, InMemorySessionStore

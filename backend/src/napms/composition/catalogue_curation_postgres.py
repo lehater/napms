@@ -68,34 +68,34 @@ from napms.contexts.authority_management.infrastructure.persistence.postgres imp
 )
 from napms.contexts.authority_management.application.check_authority import CheckAuthority
 from napms.composition.config import ApplicationConfig
-from napms.resource_catalogue.adapters.curation_support import (
+from napms.contexts.resource_catalogue.infrastructure.local.curation_support import (
     LocalResourceCatalogueIdentityFactory,
     LocalResourceCatalogueProvenanceFactory,
 )
-from napms.resource_catalogue.adapters.postgres.curation_repository import (
+from napms.contexts.resource_catalogue.infrastructure.persistence.postgres.curation_repository import (
     PostgresResourceCatalogueCurationRepository,
 )
-from napms.resource_catalogue.adapters.postgres.transactional_curation_repository import (
+from napms.contexts.resource_catalogue.infrastructure.persistence.postgres.transactional_curation_repository import (
     TransactionalPostgresResourceCatalogueCurationRepository,
 )
-from napms.resource_catalogue.application.curation import (
+from napms.contexts.resource_catalogue.application.curation import (
     CreateResource,
     RenameResource,
     RetireResource,
 )
-from napms.resource_catalogue.application.curation_read import (
+from napms.contexts.resource_catalogue.application.curation_read import (
     ListResourceCatalogue,
     ReadResourceCatalogueDetail,
 )
-from napms.resource_catalogue.application.realization_curation import (
+from napms.contexts.resource_catalogue.application.realization_curation import (
     CreateResourceRealization,
     ReplaceResourceRealization,
 )
-from napms.resource_catalogue.application.responsibility_curation import (
+from napms.contexts.resource_catalogue.application.responsibility_curation import (
     CreateResourceResponsibility,
     EndResourceResponsibility,
 )
-from napms.resource_catalogue.application.scope_affiliation_curation import (
+from napms.contexts.resource_catalogue.application.scope_affiliation_curation import (
     CreateResourceScopeAffiliation,
     EndResourceScopeAffiliation,
 )

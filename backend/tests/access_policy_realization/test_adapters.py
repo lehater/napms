@@ -31,7 +31,7 @@ from napms.policy_export.application.normalization_types import (
     PortConstraint as DcsPortConstraint,
     PortRange as DcsPortRange,
 )
-from napms.resource_catalogue.domain.model import (
+from napms.contexts.resource_catalogue.domain.model import (
     EndpointAddress,
     ResourceRealizationVersion,
 )

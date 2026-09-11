@@ -1,10 +1,10 @@
 from napms.application_catalogue.application.binding_curation import (
     BindingTargetOutcome,
 )
-from napms.resource_catalogue.application.ports import (
+from napms.contexts.resource_catalogue.application.ports import (
     ResourceCataloguePersistenceError,
 )
-from napms.resource_catalogue.domain.model import ResourceLifecycleState
+from napms.contexts.resource_catalogue.domain.model import ResourceLifecycleState
 
 
 class ResourceCatalogueBindingTargetAdapter:

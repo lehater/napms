@@ -11,7 +11,7 @@ from napms.contexts.authority_management.infrastructure.integrations.catalogue_c
 )
 from napms.contexts.authority_management.application.check_authority import CheckAuthority
 from napms.contexts.authority_management.domain.model import AuthorityAssignment
-from napms.resource_catalogue.application.ports import (
+from napms.contexts.resource_catalogue.application.ports import (
     RESOURCE_CATALOGUE_AUTHORITY_SCOPE,
     RESOURCE_CATALOGUE_CURATION_ACTION,
     ResourceCatalogueAuthorityOutcome,
