@@ -1,10 +1,10 @@
 # Application Catalogue target wireframes
 
-Status: `accepted target; implementation pending`.
+Status: `accepted and implemented through I31`.
 
 Date: 2026-09-10.
 
-These wireframes define screen structure and information priority for the I31 Application Catalogue target. They are not pixel-perfect visual specifications.
+These wireframes define screen structure and information priority for the I31 Application Catalogue. They are not pixel-perfect visual specifications.
 
 ## 1. Applications / Definitions
 
@@ -222,6 +222,8 @@ Counts are clickable and open the corresponding dependency list.
 
 No hard-delete action exists in the MVP.
 
-## Visual-regression follow-up
+## Visual-regression coverage
 
-After implementation, representative deterministic fixtures for these screens should be covered by browser screenshot tests. The screenshots validate rendering against the accepted layout; this document and the accepted domain/UX specs remain the semantic source of truth.
+Representative accepted Application Catalogue layouts are protected by the browser screenshot-regression contract in `e2e/screenshot_regression.py`. The regression uses deterministic pixel-derived fingerprints for Definitions list, Definition Interactions and Deployment Connectivity after the end-to-end target journey succeeds.
+
+This document and the accepted domain/UX specs remain the semantic source of truth; screenshot evidence guards rendering regressions rather than defining product semantics.

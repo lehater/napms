@@ -82,7 +82,11 @@ export function ResourceMembershipPanel({
   }
 
   return (
-    <div className="grid gap-4 border-b border-[#E2E8F0] bg-[#F8FAFC] p-5">
+    <div
+      role="group"
+      aria-label="Add resource"
+      className="grid gap-4 border-b border-[#E2E8F0] bg-[#F8FAFC] p-5"
+    >
       <div>
         <h3 className="font-semibold text-[#172033]">Add resource</h3>
         <p className="mt-1 text-xs text-[#64748B]">

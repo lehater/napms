@@ -6,12 +6,12 @@ Completed/superseded plans are removed after their durable outcomes are absorbed
 
 Long-range ordered sequencing is canonicalized outside `active/` when it is broader than the current execution stage.
 
-Current selected roadmap:
-- `docs/engineering/application-catalogue-target-migration-roadmap.md` — I31 Application Catalogue target migration.
+No implementation roadmap is currently selected.
 
 Completed roadmap/history references include:
+- `docs/engineering/application-catalogue-target-migration-roadmap.md` — completed I31 Application Catalogue target migration;
 - `docs/engineering/catalogue-curation-roadmap.md` — completed I27 Catalogue Curation;
 - `docs/engineering/traffic-analysis-checker-roadmap.md` — I26;
 - `docs/engineering/post-wave1-product-completion-roadmap.md` — completed I13-I25 product-completion sequence.
 
-Only the selected current increment receives a detailed `PLAN-*.md` under `active/`.
+Only a selected current increment receives a detailed `PLAN-*.md` under `active/`.

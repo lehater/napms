@@ -1,10 +1,10 @@
 # Application Catalogue target UX
 
-Status: `accepted target; implementation pending`.
+Status: `accepted and implemented through I31`.
 
 Date: 2026-09-10.
 
-Canonical target domain decision: `docs/decisions/ADR-012-application-definition-deployment-model.md`.
+Canonical domain decision: `docs/decisions/ADR-012-application-definition-deployment-model.md`.
 
 Canonical screen-layout contract: `docs/ui/application-catalogue-wireframes.md`.
 
