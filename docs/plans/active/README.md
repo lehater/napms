@@ -2,25 +2,25 @@
 
 Current: `PLAN-I32-code-structure-refactoring.md`
 Goal: align physical code ownership with the accepted context-first Clean/Hexagonal architecture without changing product/domain semantics.
-Current task: WP-1 — validate the completed M1-M4 backend structural migration in PR #65 and fix only gate regressions.
+Current task: WP-2 — finalize and integrate the completed M5 backend granularity pilot in PR #66.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-I32-code-structure-refactoring.md`
-- `src/napms/bootstrap/composition.py`
-- `tests/architecture/test_bootstrap_structure.py`
+- `src/napms/application_catalogue/application/structure_curation.py`
+- `tests/architecture/test_application_catalogue_granularity.py`
 
-Expand only to the failing gate's owner-local HTTP/adapters/tests, `runtime/http_api.py` / `legacy_http_api.py`, or the smallest Harness file needed to diagnose a reported failure. Do not load M5/M6 work by default.
+Expand only to PR #66 gate failures if any. Do not start another backend split or M6 Web work in this PR.
 
 ## Blockers
 
-Final hosted gates are running; failures are treated as concrete WP-1 blockers until resolved.
+None known.
 
 ## Gate
 
-M1-M4 are implemented in PR #65 and the PR is Ready for review. The final gate is the repository's hosted Ready-for-review workflow set. Preserve behavior/API semantics and fix only failures caused by this structural migration. Harness plan validation, architecture rules, core tests, PostgreSQL persistence, Docker local runtime, and browser journey checks must be green before squash integration.
+The M5 pilot is implemented and evaluated. Application vs Component structure mutation implementation is owner-specific; the compatibility facade contains no use-case implementation. Core, PostgreSQL, Harness and browser journey gates must be green on the final Ready-for-review head before squash integration.
 
 ## Next
 
-Re-run the final gate after each targeted fix. When all required hosted checks are green, record WP-1 completion and prepare the single squash integration; keep M5 backend granularity and M6 Web locality out of this PR.
+Squash-integrate PR #66 when the final gate is green. Then evaluate M6 Web locality separately and select a Web pilot only from concrete misplaced-responsibility evidence.

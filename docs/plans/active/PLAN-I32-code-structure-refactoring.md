@@ -18,51 +18,35 @@ Canonical architecture and execution inputs:
 - `AGENTS.md`, `src/AGENTS.md`, `web/AGENTS.md`;
 - `docs/process/working-loop.md`.
 
-Current structural evidence:
-- `src/napms/runtime/`;
-- `src/napms/composition/`;
-- `src/napms/application_catalogue/`;
-- `tests/architecture/test_dependency_rules.py`;
-- `web/src/`.
-
 ## WP-0 — structure contract
 
-Responsibility: establish the canonical structural target and bounded migration sequence before production-code moves.
-
-Outcome: completed and integrated through PR #64. The repository now has a canonical context-first / layers-second code-structure contract and an ordered I32 roadmap.
+Outcome: completed and integrated through PR #64. The repository has a canonical context-first / layers-second code-structure contract and ordered I32 roadmap.
 
 ## WP-1 — backend structural migration
 
-Responsibility: execute roadmap stages M1-M4 in one working branch and one Draft PR while retaining stage-local gates and stop conditions.
+Outcome: completed and squash-integrated through PR #65 (`a90b866`). M1-M4 moved feature HTTP beside semantic owners, reduced active runtime HTTP to process assembly, and established `napms.bootstrap` as the executable composition root. Final Core, Harness, PostgreSQL, Docker runtime and browser journey gates were green.
 
-Execution model:
-- one branch / Draft PR accumulates M1-M4;
-- each stage ends in a coherent checkpoint commit and the smallest applicable local validation;
-- M2 begins only after M1 demonstrates better ownership locality without compensating indirection;
-- M3/M4 may be revised from evidence discovered by earlier stages;
-- final hosted gates validate the complete accumulated backend diff before squash integration to `main`.
+## WP-2 — demonstrated backend granularity
 
-Stage sequence:
-1. M1 — move the two I31 target Catalogue HTTP routers into `application_catalogue/adapters/http/` and add executable boundary protection;
-2. M2 — classify and relocate remaining Catalogue HTTP to ACC, RC or an explicit composition owner;
-3. M3 — decompose `runtime/http_api.py` by semantic owner/read composition until feature endpoint/DTO/mapping code no longer accumulates there;
-4. M4 — classify `runtime/composition.py`, `composition/*` and configuration responsibilities and converge on one obvious bootstrap/composition surface without moving accepted cross-context read composition into false ownership.
+Responsibility: execute M5 only where post-WP-1 evidence shows unrelated use cases still share an editing/search context.
 
-Non-goals:
-- no product/domain semantic change;
-- no API contract redesign for folder convenience;
-- no new bounded context/service/database;
-- no `src/napms/modules/` nesting;
-- no arbitrary large-file splitting;
-- M5 backend granularity cleanup and M6 Web locality remain separate later work.
+Outcome: completed in PR #66 as one evidence-driven pilot.
+- `structure_curation.py` mixed Application mutation/lifecycle use cases with Component mutation/lifecycle use cases.
+- implementation is now split into `application_structure_curation.py` and `component_structure_curation.py`;
+- genuinely shared outcome/authority/fingerprint plumbing lives in `curation_mutation.py`;
+- `structure_curation.py` is a small compatibility-export facade so unrelated callers do not need churn in the same increment;
+- an architecture test prevents use-case implementation from returning to the shared facade;
+- Core, PostgreSQL, Harness and browser journey gates were green on the implementation head.
 
-Local exits are owned by the roadmap. A stage does not advance while it has an unresolved P0/P1 architecture finding or a failing applicable deterministic gate.
+M5 stop condition was evaluated against the other prominent ACC candidates. `deployment_curation.py` is cohesive around Component Deployment lifecycle; `binding_curation.py` is cohesive around Deployment↔Resource binding lifecycle. File size alone is not evidence for another split, so no second backend hotspot is selected.
+
+M6 Web locality remains separate.
 
 ## Exit criteria
 
-WP-1 exits when M1-M4 satisfy their roadmap local exits, the accumulated backend diff preserves current behavior, architecture tests protect migrated ownership boundaries, and applicable final hosted gates pass on the Ready-for-review PR head.
+WP-2 exits when the selected split reduces mixed-responsibility editing/search context, preserves domain/API/persistence/authority/concurrency/idempotency behavior, has executable locality protection, and applicable Core/PostgreSQL/Harness/browser gates pass. These criteria are satisfied by PR #66.
 
-I32 as a whole remains open for separately selected M5/M6 only if evidence after WP-1 shows those stages still provide useful locality improvement.
+I32 remains open only for a separately selected M6 Web-locality increment if current Web evidence shows a similarly useful locality improvement.
 
 ## Blockers
 
@@ -70,4 +54,4 @@ None known.
 
 ## Next
 
-Execute M1 in `i32/backend-structure-refactoring`: move the two target Catalogue HTTP routers without behavior change, update imports/tests, add the smallest architecture guard, then validate the pilot before continuing M2 in the same Draft PR.
+Finalize and squash-integrate PR #66. After integration, evaluate M6 against current Web structure; select a Web pilot only when a concrete feature change still requires crossing root/shared files because of misplaced responsibility rather than file size alone.
