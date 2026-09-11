@@ -2,7 +2,7 @@
 
 Current: `PLAN-target-code-structure-migration.md`
 Goal: finish the structural migration and leave final backend/Web taxonomy protected by executable rules.
-Current task: M7 — purge structural compatibility debt and strengthen final enforcement.
+Current task: M7 implementation complete; awaiting architectural review.
 
 ## Working set
 
@@ -17,8 +17,8 @@ None.
 
 ## Gate
 
-M1-M6 are merged. Backend production top-level is already exactly `contexts / workflows / platform`; Web is already `app / features / components/ui / lib`. M7 audit found a pre-M5 ACC curation re-export facade, transitional dependency-port fallbacks, vacuous legacy adapter checks, and structure docs that still describe migration-era state. Accepted product/domain compatibility is not part of this purge.
+M1-M6 are merged. M7 removed the pre-M5 ACC curation facade and transitional dependency-port fallbacks, replaced vacuous legacy checks with final generic taxonomy enforcement, and aligned canonical structure guidance with the repository. Backend, Web, Harness, Knowledge, PostgreSQL 16, Docker and J01/J02/J03 local gates pass.
 
 ## Next
 
-Implement the final M7 purge/enforcement package, run full local validation including real PostgreSQL and browser/runtime evidence, push, and stop for architectural review. Do not create the final PR or retire the active plan yet.
+Perform the M7 architectural review. Do not create the final PR or retire the active plan yet.

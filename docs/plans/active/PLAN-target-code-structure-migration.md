@@ -75,4 +75,4 @@ None.
 
 ## Next
 
-Implement the M7 purge/enforcement package on `refactor/m7-final-enforcement`, run the complete local gate, then stop for architectural review. Do not create the final PR or retire the active plan before that review.
+M7 implementation complete; awaiting architectural review. The complete local gate passes. Do not create the final PR or retire the active plan before that review.

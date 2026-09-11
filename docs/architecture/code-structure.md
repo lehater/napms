@@ -1,6 +1,6 @@
 # Code Structure
 
-Status: `accepted target architecture; migration in progress`.
+Status: `accepted current architecture`.
 
 Date: 2026-09-11.
 
@@ -14,7 +14,7 @@ Make path structure answer three questions without repository-wide search:
 2. which semantic capability owns the change;
 3. which Clean Architecture layer contains it.
 
-## Repository target
+## Repository structure
 
 ```text
 napms/
@@ -37,7 +37,7 @@ napms/
   README.md
 ```
 
-The root Makefile remains the stable repository-level command surface. Backend packaging and backend tests belong under `backend/`; cross-system E2E stays repository-level.
+This is the current physical repository structure. The root Makefile remains the stable repository-level command surface. Backend packaging and backend tests belong under `backend/`; cross-system E2E stays repository-level.
 
 ## Backend taxonomy
 
@@ -144,7 +144,7 @@ Do not create a general shared business-model/utilities package.
 
 Technical reuse belongs in the narrow owning platform/library capability. Semantic reuse stays behind explicit owner contracts. A true DDD Shared Kernel requires a separate accepted architecture/domain decision.
 
-## Frontend target
+## Frontend taxonomy
 
 `web/` remains a React outer adapter with feature-first locality:
 
@@ -168,15 +168,15 @@ Feature DTO/request mapping and behavior stay feature-local. Root/shared API cod
 - Move code directly toward final ownership; do not create new transitional architectural categories.
 - Move matching tests with their implementation boundary.
 - Add/update architecture tests whenever a migrated boundary is mechanically enforceable.
-- Temporary compatibility shims are allowed only to keep integrated stages working and must be removed by the final migration stage.
+- Migration compatibility facades and transitional import/port shims are forbidden in the final structure.
 - File size alone is not a decomposition rule; use responsibility and change coupling.
 - A physical move must not silently imply semantic ownership transfer.
 
-## Migration state
+## Enforcement
 
-The current implementation still contains legacy top-level semantic modules plus `composition/`, `runtime/` and `bootstrap/`. Those are migration inputs, not the final target.
+The production backend package contains only `contexts/`, `workflows/` and `platform/` at its semantic top level. Context and workflow roots admit only their applicable layers described above; `adapters/` and generic `composition/` directories are forbidden throughout `backend/src/napms/`.
 
-The ordered `AS-IS -> TO-BE` map, stage sequence and gates are owned by `docs/engineering/target-code-structure-migration-roadmap.md`. The currently selected stage is owned by `docs/plans/active/`.
+Architecture tests enforce this taxonomy together with dependency direction, cross-context isolation, persistence ownership, platform HTTP neutrality and feature-local Web ownership. Historical migration roadmaps provide provenance only and do not define the current structure.
 
 ## Success condition
 
