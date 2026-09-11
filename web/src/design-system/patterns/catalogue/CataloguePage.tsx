@@ -87,14 +87,11 @@ export function CataloguePagination({ children }: { children: React.ReactNode })
 
 function pageSlots(page: number, pageCount: number): Array<number | "ellipsis-left" | "ellipsis-right"> {
   if (pageCount <= 7) return Array.from({ length: pageCount }, (_, index) => index + 1)
-  const slots: Array<number | "ellipsis-left" | "ellipsis-right"> = [1]
-  const start = Math.max(2, page - 2)
-  const end = Math.min(pageCount - 1, page + 2)
-  if (start > 2) slots.push("ellipsis-left")
-  for (let value = start; value <= end; value += 1) slots.push(value)
-  if (end < pageCount - 1) slots.push("ellipsis-right")
-  slots.push(pageCount)
-  return slots
+  if (page <= 3) return [1, 2, 3, 4, 5, "ellipsis-right", pageCount]
+  if (page >= pageCount - 2) {
+    return [1, "ellipsis-left", pageCount - 4, pageCount - 3, pageCount - 2, pageCount - 1, pageCount]
+  }
+  return [1, "ellipsis-left", page - 1, page, page + 1, "ellipsis-right", pageCount]
 }
 
 export function CataloguePaginationControls({
