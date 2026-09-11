@@ -3,6 +3,11 @@ import re
 
 from playwright.sync_api import Page, expect, sync_playwright
 
+from e2e.screenshot_regression import (
+    application_main_fingerprint,
+    assert_application_screen_fingerprints,
+)
+
 
 BASE_URL = os.environ.get("NAPMS_E2E_BASE_URL", "http://127.0.0.1:8080")
 LOGIN = os.environ.get("NAPMS_E2E_LOGIN", "local-admin")
@@ -419,5 +424,33 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
                 "cell", name="Active · effective", exact=True
             )
         ).to_be_visible()
+
+        # Representative accepted Application Catalogue layouts are guarded by a
+        # pixel-derived fingerprint after the full target/downstream journey succeeds.
+        screenshots: dict[str, str] = {}
+        desktop_nav.get_by_role("button", name="Applications").click()
+        page.get_by_placeholder("Search definitions").fill("Order Management Platform")
+        page.get_by_role("button", name="Apply", exact=True).click()
+        definition_row = page.get_by_role(
+            "row",
+            name=re.compile(r"Order Management Platform.*Commerce.*3.*2.*1"),
+        )
+        expect(definition_row).to_have_count(1)
+        screenshots["definitions-list"] = application_main_fingerprint(page)
+
+        definition_row.click()
+        page.get_by_role("button", name="Interactions", exact=True).click()
+        expect(page.get_by_role("cell", name="TCP (443)", exact=True)).to_be_visible()
+        expect(page.get_by_role("cell", name="TCP (5432)", exact=True)).to_be_visible()
+        screenshots["definition-interactions"] = application_main_fingerprint(page)
+
+        page.get_by_role("button", name="Deployments", exact=True).click()
+        deployment_row = _deployment_row(page)
+        expect(deployment_row.get_by_role("cell", name="2 / 2", exact=True)).to_be_visible()
+        deployment_row.click()
+        expect(page.get_by_role("heading", name="Connectivity 2 / 2", exact=True)).to_be_visible()
+        expect(page.get_by_role("button", name="1 resource", exact=True)).to_have_count(2)
+        screenshots["deployment-connectivity"] = application_main_fingerprint(page)
+        assert_application_screen_fingerprints(screenshots)
 
         browser.close()
