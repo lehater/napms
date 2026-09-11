@@ -55,9 +55,14 @@ class ResourceCatalogueDetail:
     effective_scope_affiliations: tuple[ResourceScopeAffiliation, ...]
     effective_responsibilities: tuple[ResourceResponsibility, ...]
     as_of: datetime
-    realization_history: tuple[ResourceRealizationVersion, ...] = ()
-    scope_affiliation_history: tuple[ResourceScopeAffiliation, ...] = ()
-    responsibility_history: tuple[ResourceResponsibility, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class ResourceCatalogueHistory:
+    resource: Resource
+    realizations: tuple[ResourceRealizationVersion, ...]
+    scope_affiliations: tuple[ResourceScopeAffiliation, ...]
+    responsibilities: tuple[ResourceResponsibility, ...]
 
 
 class ResourceCatalogueCurationReadPort(Protocol):
@@ -228,17 +233,22 @@ class ReadResourceCatalogueDetail:
     def __init__(self, *, catalogue: ResourceCatalogueCurationReadPort) -> None:
         self._catalogue = catalogue
 
+    @staticmethod
+    def _reference(resource_reference: str) -> str:
+        reference = resource_reference.strip() if resource_reference else ""
+        if not reference:
+            raise ResourceCatalogueInvariantError(
+                "resource_reference must be non-empty"
+            )
+        return reference
+
     def execute(
         self,
         *,
         resource_reference: str,
         as_of: datetime,
     ) -> ResourceCatalogueDetail | None:
-        reference = resource_reference.strip() if resource_reference else ""
-        if not reference:
-            raise ResourceCatalogueInvariantError(
-                "resource_reference must be non-empty"
-            )
+        reference = self._reference(resource_reference)
         if not is_aware(as_of):
             raise ResourceCatalogueInvariantError("as_of must be offset-aware")
 
@@ -271,25 +281,6 @@ class ReadResourceCatalogueDetail:
             if item.is_effective_at(as_of)
         )
 
-        list_realizations = getattr(self._catalogue, "list_realizations", None)
-        list_affiliations = getattr(self._catalogue, "list_scope_affiliations", None)
-        list_responsibilities = getattr(self._catalogue, "list_responsibilities", None)
-        realization_history = (
-            tuple(list_realizations(resource_reference=reference))
-            if callable(list_realizations)
-            else realizations
-        )
-        affiliation_history = (
-            tuple(list_affiliations(resource_reference=reference))
-            if callable(list_affiliations)
-            else affiliations
-        )
-        responsibility_history = (
-            tuple(list_responsibilities(resource_reference=reference))
-            if callable(list_responsibilities)
-            else responsibilities
-        )
-
         return ResourceCatalogueDetail(
             resource=resource,
             effective_realizations=tuple(
@@ -315,23 +306,43 @@ class ReadResourceCatalogueDetail:
                 )
             ),
             as_of=as_of,
-            realization_history=tuple(
+        )
+
+    def execute_history(
+        self,
+        *,
+        resource_reference: str,
+    ) -> ResourceCatalogueHistory | None:
+        reference = self._reference(resource_reference)
+        resource = self._catalogue.get_resource(reference)
+        if resource is None:
+            return None
+
+        return ResourceCatalogueHistory(
+            resource=resource,
+            realizations=tuple(
                 sorted(
-                    realization_history,
+                    self._catalogue.list_realizations(
+                        resource_reference=reference,
+                    ),
                     key=lambda item: (item.valid_from, item.fact_reference),
                     reverse=True,
                 )
             ),
-            scope_affiliation_history=tuple(
+            scope_affiliations=tuple(
                 sorted(
-                    affiliation_history,
+                    self._catalogue.list_scope_affiliations(
+                        resource_reference=reference,
+                    ),
                     key=lambda item: (item.valid_from, item.affiliation_reference),
                     reverse=True,
                 )
             ),
-            responsibility_history=tuple(
+            responsibilities=tuple(
                 sorted(
-                    responsibility_history,
+                    self._catalogue.list_responsibilities(
+                        resource_reference=reference,
+                    ),
                     key=lambda item: (item.valid_from, item.assignment_reference),
                     reverse=True,
                 )
