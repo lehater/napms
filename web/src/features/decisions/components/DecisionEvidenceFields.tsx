@@ -29,17 +29,17 @@ export function DecisionEvidenceFields({
   return (
     <div className="grid gap-3">
       <div>
-        <div className="text-sm font-medium text-[#334155]">
+        <div className="text-sm font-medium text-[var(--napms-color-text-body)]">
           Evidence references
         </div>
-        <div className="mt-1 text-xs text-[#64748B]">
+        <div className="mt-1 text-xs text-[var(--napms-color-text-secondary)]">
           Optional references only. Evidence content remains outside this workspace.
         </div>
       </div>
       {evidence.map((item, index) => (
         <div
           key={index}
-          className="grid gap-2 rounded-md border border-[#E2E8F0] p-3"
+          className="grid gap-2 rounded-[var(--napms-control-radius)] border border-[var(--napms-color-border)] p-3"
         >
           <Input
             value={item.kind}
@@ -58,7 +58,7 @@ export function DecisionEvidenceFields({
           {evidence.length > 1 ? (
             <button
               type="button"
-              className="inline-flex items-center gap-1 justify-self-start text-xs font-semibold text-[#64748B] hover:text-[#172033]"
+              className="inline-flex items-center gap-1 justify-self-start text-xs font-semibold text-[var(--napms-color-text-secondary)] hover:text-[var(--napms-color-text-primary)]"
               onClick={() =>
                 onChange(evidence.filter((_, itemIndex) => itemIndex !== index))
               }
@@ -71,7 +71,7 @@ export function DecisionEvidenceFields({
       ))}
       <button
         type="button"
-        className="justify-self-start text-xs font-semibold text-[#2563EB]"
+        className="justify-self-start text-xs font-semibold text-[var(--napms-color-primary)] hover:text-[var(--napms-color-primary-hover)]"
         onClick={() => onChange([...evidence, { kind: "", reference: "" }])}
       >
         Add evidence reference
