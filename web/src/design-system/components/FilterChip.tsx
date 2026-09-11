@@ -10,10 +10,10 @@ export function FilterChip({
     <button
       type="button"
       aria-pressed={selected}
-      className={`h-7 rounded-full border px-4 text-xs font-semibold transition ${
+      className={`h-7 rounded-full border px-3 text-[11px] font-medium transition ${
         selected
           ? "border-[var(--napms-color-primary-border)] bg-[var(--napms-color-primary-subtle)] text-[var(--napms-color-primary-hover)]"
-          : "border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] text-[var(--napms-color-text-secondary)] hover:bg-[var(--napms-color-surface-subtle)]"
+          : "border-transparent bg-[var(--napms-color-surface-muted)] text-[var(--napms-color-text-secondary)] hover:border-[var(--napms-color-border)] hover:bg-[var(--napms-color-surface)]"
       } ${className}`}
       {...props}
     >
