@@ -1,12 +1,15 @@
 # Active execution
 
-Current: none.
-No implementation increment is selected.
+Current: Target Code Structure Migration.
+Selected next stage: M1 — Repository backend boundary.
 
 ## Working set
 
-- Canonical structure: `docs/architecture/code-structure.md`.
-- Completed structural roadmap: `docs/engineering/code-structure-refactoring-roadmap.md`.
+- Decision: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
+- Canonical target: `docs/architecture/code-structure.md`.
+- Long-range roadmap: `docs/engineering/target-code-structure-migration-roadmap.md`.
+- Active plan: `docs/plans/active/PLAN-target-code-structure-migration.md`.
+- Current implementation baseline: `docs/architecture/current-architecture.md`.
 
 ## Blockers
 
@@ -14,8 +17,8 @@ None.
 
 ## Gate
 
-No active execution gate.
+M1 is behavior-preserving repository movement. Required evidence is defined in the active plan: backend/core, harness, knowledge, affected Docker/integration checks and final hosted PR gates.
 
 ## Next
 
-Select a new product, domain or architecture increment only from new evidence. Do not continue I33 cleanup automatically.
+Execute M1 exactly as defined in `PLAN-target-code-structure-migration.md`. Do not start M2 semantic-module moves in the same stage.
