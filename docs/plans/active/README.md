@@ -2,16 +2,16 @@
 
 Current: `PLAN-I32-code-structure-refactoring.md`
 Goal: align physical code ownership with the accepted context-first Clean/Hexagonal architecture without changing product/domain semantics.
-Current task: WP-3 — localize the Connectivity Decisions Web API slice.
+Current task: WP-3 — localize the Access Rules Web API slice.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/PLAN-I32-code-structure-refactoring.md`
-- `web/src/api.ts`
+- `web/src/features/rules/api.ts`
 - `tests/architecture/test_web_feature_locality.py`
 
-Expand only to `web/src/features/decisions/`, shared Web transport/types, or failed gates required by this slice. Do not load Rules/Policy/Connectivity or `App.tsx` by default.
+Expand only to root `web/src/api.ts`, shared Web transport/types, or failed gates required by this slice. Do not load Policy/scoped Connectivity/Proposals/Auth or `App.tsx` by default.
 
 ## Blockers
 
@@ -19,8 +19,8 @@ None known.
 
 ## Gate
 
-Decision-specific DTO/query/command implementation must be feature-local. Root `api.ts` may retain compatibility exports and genuinely shared types but no Decision implementation. Preserve API/UX behavior; Web, Harness, Core and relevant browser/runtime gates must remain green.
+Rule-specific list/detail/query/mutation implementation must be feature-local. Shared `RuleDto` may remain shared because other features consume it. Root `api.ts` may retain compatibility exports but no Access Rule endpoint implementation. Preserve API/UX behavior; Web, Harness, Core and relevant browser/runtime gates must remain green.
 
 ## Next
 
-Create `features/decisions/api.ts`, remove Decision implementation from root `api.ts`, extend locality protection, and validate before selecting another M6 slice.
+Validate the Rules API extraction and locality guard; resolve only slice-specific failures, then evaluate the next remaining root API responsibility.
