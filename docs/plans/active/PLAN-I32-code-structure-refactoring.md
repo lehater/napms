@@ -24,30 +24,33 @@ Outcome: completed and integrated through PR #64.
 
 ## WP-1 — backend structural migration
 
-Outcome: completed and squash-integrated through PR #65 (`a90b866`). M1-M4 aligned feature HTTP ownership and established `napms.bootstrap` as the executable composition root.
+Outcome: completed through PR #65 (`a90b866`). M1-M4 aligned feature HTTP ownership and established `napms.bootstrap` as the executable composition root.
 
 ## WP-2 — demonstrated backend granularity
 
-Outcome: completed and squash-integrated through PR #66 (`62c77f6`). The mixed Application/Component structure mutation hotspot was split by owner; no second M5 split was justified by evidence.
+Outcome: completed through PR #66 (`62c77f6`). The mixed Application/Component structure mutation hotspot was split by owner; no second backend split was justified by evidence.
 
 ## WP-3 — demonstrated Web locality
 
-Responsibility: execute M6 only where a concrete feature still depends on root/shared files because feature-specific responsibility is misplaced.
+M6 is executed incrementally only where root/shared files still own feature-specific API responsibility.
 
-Selected pilot: Connectivity Requirements API ownership.
-- `web/src/api.ts` currently owns Requirement DTOs, commands, queries and Requirement↔Policy alignment operations together with unrelated Decisions, Rules, Policy and Connectivity APIs;
-- `web/src/features/requirements/` has pages but no feature-local API/model boundary;
-- moving Requirement-specific API implementation beside the feature means future Requirement API changes no longer require editing root `api.ts`;
-- generic HTTP error/request behavior and genuinely cross-feature interaction DTOs may remain shared;
-- compatibility exports are allowed when they avoid unrelated churn, provided Requirement implementation itself is feature-local.
+Completed slice: Connectivity Requirements, PR #67 (`e59bb4d`). Requirement DTO/query/command/alignment implementation is now under `features/requirements`; shared request/error handling lives in `lib/api.ts`; root `api.ts` retains compatibility exports only for that slice. Core, Web, Harness, Docker and browser gates were green.
 
-`App.tsx` routing is not selected merely because it is large: process-level route composition is a legitimate root responsibility unless a concrete feature-routing concern proves otherwise.
+Current slice: Connectivity Decisions.
+- Decision DTOs, queries and commands still live in root `web/src/api.ts`;
+- both pages under `web/src/features/decisions/` consume those operations;
+- move Decision-specific implementation beside the feature using the proven shared-transport + compatibility-export pattern;
+- preserve API/UX behavior and avoid page rewrites unrelated to ownership.
+
+Equivalent remaining root API slices (Rules, Policy, scoped Connectivity, Proposals/Auth) are not part of this increment and must be evaluated separately after Decisions.
+
+`App.tsx` routing remains a legitimate application-composition responsibility and is not selected by size alone.
 
 ## Exit criteria
 
-WP-3 exits when Requirement-specific DTO/query/command/alignment implementation is owned under `features/requirements`, root `api.ts` contains no Requirement implementation, behavior is unchanged, feature/root boundaries are executable where useful, and Web plus relevant browser journeys are green.
+The current slice exits when Decision-specific DTO/query/command implementation is feature-local, root `api.ts` contains compatibility exports but no Decision implementation, locality protection is executable, and applicable Web/Harness/Core/browser/runtime gates are green.
 
-I32 completes after WP-3 if no further Web hotspot has equivalent misplaced-responsibility evidence.
+I32 completes only when remaining root API responsibilities are either feature-local or explicitly justified as genuinely shared/application-level.
 
 ## Blockers
 
@@ -55,4 +58,4 @@ None known.
 
 ## Next
 
-On `i32/web-requirements-api-locality`, move Requirement-specific API implementation from root `web/src/api.ts` into `web/src/features/requirements/`, retain only shared transport/types at shared scope, add the smallest locality guard, and validate Web/browser gates before considering any other Web hotspot.
+On `i32/web-decisions-api-locality`, move Decision-specific API implementation into `web/src/features/decisions/api.ts`, extend the Web locality guard, validate the final gates, then evaluate the next remaining root API slice.
