@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from napms.application_catalogue.adapters.http.errors import (
+    catalogue_invariant_error_handler,
+)
 from napms.application_catalogue.domain.model import CatalogueInvariantError
-from napms.runtime.catalogue_error_http import catalogue_invariant_error_handler
 
 
 def test_catalogue_invariant_is_exposed_as_structured_422():
