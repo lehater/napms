@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useState } from "react"
 import { ArrowRight, Plus } from "lucide-react"
 
-import { ApiError } from "@/lib/api"
-import { shortId } from "@/features/catalogues/components/CatalogueIdentity"
-import { Button } from "@/components/ui/Button"
+import { Button } from "@/design-system/components/Button"
+import { Field, Input, Select } from "@/design-system/components/Field"
+import { Surface } from "@/design-system/primitives/Surface"
 import {
   createCatalogueDcsRevision,
   listCatalogueApplicationParticipants,
   type ApplicationCatalogueParticipantDto,
 } from "@/features/catalogues/api/catalogue"
-
-const inputClass =
-  "min-h-10 w-full rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
+import { shortId } from "@/features/catalogues/components/CatalogueIdentity"
+import { ApiError } from "@/lib/api"
+import { useDebouncedValue } from "@/lib/useDebouncedValue"
 
 function errorFrom(caught: unknown, fallback: string) {
   return caught instanceof ApiError
@@ -20,8 +20,7 @@ function errorFrom(caught: unknown, fallback: string) {
 }
 
 function participantLabel(item: ApplicationCatalogueParticipantDto) {
-  const deployment =
-    item.deploymentDisplayName?.trim() || shortId(item.componentDeploymentId)
+  const deployment = item.deploymentDisplayName?.trim() || shortId(item.componentDeploymentId)
   return `${item.applicationDisplayName} / ${item.componentDisplayName} / ${deployment}`
 }
 
@@ -33,10 +32,8 @@ export function DcsAuthoringPanel({
   onCreated: () => Promise<void>
 }) {
   const [searchInput, setSearchInput] = useState("")
-  const [search, setSearch] = useState("")
-  const [participants, setParticipants] = useState<
-    ApplicationCatalogueParticipantDto[]
-  >([])
+  const search = useDebouncedValue(searchInput.trim(), 250)
+  const [participants, setParticipants] = useState<ApplicationCatalogueParticipantDto[]>([])
   const [hasMore, setHasMore] = useState(false)
   const [loadingParticipants, setLoadingParticipants] = useState(true)
   const [sourceId, setSourceId] = useState("")
@@ -48,11 +45,6 @@ export function DcsAuthoringPanel({
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<ApiError | null>(null)
   const [message, setMessage] = useState<string | null>(null)
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setSearch(searchInput.trim()), 250)
-    return () => window.clearTimeout(timer)
-  }, [searchInput])
 
   useEffect(() => {
     let active = true
@@ -68,48 +60,26 @@ export function DcsAuthoringPanel({
         if (!active) return
         setParticipants([])
         setHasMore(false)
-        setError(
-          errorFrom(caught, "Application participants could not be loaded."),
-        )
+        setError(errorFrom(caught, "Application participants could not be loaded."))
       })
-      .finally(() => {
-        if (active) setLoadingParticipants(false)
-      })
-    return () => {
-      active = false
-    }
+      .finally(() => { if (active) setLoadingParticipants(false) })
+    return () => { active = false }
   }, [search])
 
   const orderedParticipants = useMemo(
-    () =>
-      [...participants].sort((left, right) => {
-        const leftLocal = left.applicationId === currentApplicationId ? 0 : 1
-        const rightLocal = right.applicationId === currentApplicationId ? 0 : 1
-        return (
-          leftLocal - rightLocal ||
-          participantLabel(left).localeCompare(participantLabel(right))
-        )
-      }),
+    () => [...participants].sort((left, right) => {
+      const leftLocal = left.applicationId === currentApplicationId ? 0 : 1
+      const rightLocal = right.applicationId === currentApplicationId ? 0 : 1
+      return leftLocal - rightLocal || participantLabel(left).localeCompare(participantLabel(right))
+    }),
     [currentApplicationId, participants],
   )
 
   async function submit(event: React.FormEvent) {
     event.preventDefault()
     const port = Number(destinationPort)
-    if (
-      !sourceId ||
-      !destinationId ||
-      !Number.isInteger(port) ||
-      port < 0 ||
-      port > 65535
-    ) {
-      setError(
-        new ApiError(
-          422,
-          "ValidationError",
-          "Select source and destination deployments and enter a port within 0..65535.",
-        ),
-      )
+    if (!sourceId || !destinationId || !Number.isInteger(port) || port < 0 || port > 65535) {
+      setError(new ApiError(422, "ValidationError", "Select source and destination deployments and enter a port within 0..65535."))
       return
     }
 
@@ -125,9 +95,7 @@ export function DcsAuthoringPanel({
         destinationPort: port,
         serviceReference: serviceReference.trim() || null,
       })
-      setMessage(
-        `Communication specification ${revision.displayName || shortId(revision.revisionId)} created.`,
-      )
+      setMessage(`Communication specification ${revision.displayName || shortId(revision.revisionId)} created.`)
       setDisplayName("")
       setServiceReference("")
       await onCreated()
@@ -139,158 +107,58 @@ export function DcsAuthoringPanel({
   }
 
   return (
-    <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
+    <Surface className="p-5">
       <div className="mb-4 flex items-center gap-2">
-        <Plus className="size-4 text-[#2563EB]" aria-hidden="true" />
+        <Plus className="size-4 text-[var(--napms-color-primary)]" aria-hidden="true" />
         <div>
-          <h2 className="font-semibold text-[#172033]">
-            Add communication specification
-          </h2>
-          <p className="mt-1 text-xs text-[#64748B]">
-            Choose Active deployments from the catalogue; stable IDs are resolved by the backend discovery projection.
-          </p>
+          <h2 className="font-semibold text-[var(--napms-color-text-primary)]">Add communication specification</h2>
+          <p className="mt-1 text-xs text-[var(--napms-color-text-secondary)]">Choose Active deployments from the catalogue; stable IDs are resolved by the backend discovery projection.</p>
         </div>
       </div>
 
       <form className="grid gap-4" onSubmit={submit}>
-        <label className="grid gap-2 text-sm font-medium text-[#334155]">
-          <span>Find participant</span>
-          <input
-            className={inputClass}
-            value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
-            placeholder="Application, component or deployment"
-            maxLength={256}
-          />
-          {hasMore ? (
-            <span className="text-xs font-normal text-[#64748B]">
-              More matches exist. Refine the search to narrow the participant list.
-            </span>
-          ) : null}
-        </label>
+        <Field
+          label="Find participant"
+          hint={hasMore ? "More matches exist. Refine the search to narrow the participant list." : undefined}
+        >
+          <Input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Application, component or deployment" maxLength={256} />
+        </Field>
 
         <div className="grid gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-end">
-          <label className="grid gap-2 text-sm font-medium text-[#334155]">
-            <span>Source deployment</span>
-            <select
-              className={inputClass}
-              value={sourceId}
-              onChange={(event) => setSourceId(event.target.value)}
-              disabled={loadingParticipants}
-            >
-              <option value="">
-                {loadingParticipants ? "Loading participants…" : "Select source…"}
-              </option>
-              {orderedParticipants.map((item) => (
-                <option
-                  key={`source:${item.componentDeploymentId}`}
-                  value={item.componentDeploymentId}
-                >
-                  {participantLabel(item)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <ArrowRight
-            className="mx-auto mb-3 hidden size-5 text-[#94A3B8] lg:block"
-            aria-hidden="true"
-          />
-
-          <label className="grid gap-2 text-sm font-medium text-[#334155]">
-            <span>Destination deployment</span>
-            <select
-              className={inputClass}
-              value={destinationId}
-              onChange={(event) => setDestinationId(event.target.value)}
-              disabled={loadingParticipants}
-            >
-              <option value="">
-                {loadingParticipants
-                  ? "Loading participants…"
-                  : "Select destination…"}
-              </option>
-              {orderedParticipants.map((item) => (
-                <option
-                  key={`destination:${item.componentDeploymentId}`}
-                  value={item.componentDeploymentId}
-                >
-                  {participantLabel(item)}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Field label="Source deployment">
+            <Select value={sourceId} onChange={(event) => setSourceId(event.target.value)} disabled={loadingParticipants}>
+              <option value="">{loadingParticipants ? "Loading participants…" : "Select source…"}</option>
+              {orderedParticipants.map((item) => <option key={`source:${item.componentDeploymentId}`} value={item.componentDeploymentId}>{participantLabel(item)}</option>)}
+            </Select>
+          </Field>
+          <ArrowRight className="mx-auto mb-3 hidden size-5 text-[var(--napms-color-text-muted)] lg:block" aria-hidden="true" />
+          <Field label="Destination deployment">
+            <Select value={destinationId} onChange={(event) => setDestinationId(event.target.value)} disabled={loadingParticipants}>
+              <option value="">{loadingParticipants ? "Loading participants…" : "Select destination…"}</option>
+              {orderedParticipants.map((item) => <option key={`destination:${item.componentDeploymentId}`} value={item.componentDeploymentId}>{participantLabel(item)}</option>)}
+            </Select>
+          </Field>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <label className="grid gap-2 text-sm font-medium text-[#334155]">
-            <span>Label</span>
-            <input
-              className={inputClass}
-              value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
-              placeholder="HTTPS Orders API"
-              maxLength={256}
-            />
-          </label>
-
-          <label className="grid gap-2 text-sm font-medium text-[#334155]">
-            <span>Protocol</span>
-            <select
-              className={inputClass}
-              value={protocol}
-              onChange={(event) =>
-                setProtocol(event.target.value as "tcp" | "udp")
-              }
-            >
-              <option value="tcp">TCP</option>
-              <option value="udp">UDP</option>
-            </select>
-          </label>
-
-          <label className="grid gap-2 text-sm font-medium text-[#334155]">
-            <span>Destination port</span>
-            <input
-              className={inputClass}
-              type="number"
-              min={0}
-              max={65535}
-              step={1}
-              value={destinationPort}
-              onChange={(event) => setDestinationPort(event.target.value)}
-            />
-          </label>
-
-          <label className="grid gap-2 text-sm font-medium text-[#334155]">
-            <span>Service reference</span>
-            <input
-              className={inputClass}
-              value={serviceReference}
-              onChange={(event) => setServiceReference(event.target.value)}
-              placeholder="Optional"
-              maxLength={256}
-            />
-          </label>
+          <Field label="Label"><Input value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="HTTPS Orders API" maxLength={256} /></Field>
+          <Field label="Protocol">
+            <Select value={protocol} onChange={(event) => setProtocol(event.target.value as "tcp" | "udp")}>
+              <option value="tcp">TCP</option><option value="udp">UDP</option>
+            </Select>
+          </Field>
+          <Field label="Destination port"><Input type="number" min={0} max={65535} step={1} value={destinationPort} onChange={(event) => setDestinationPort(event.target.value)} /></Field>
+          <Field label="Service reference"><Input value={serviceReference} onChange={(event) => setServiceReference(event.target.value)} placeholder="Optional" maxLength={256} /></Field>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs text-[#64748B]">
-            Creating a specification creates a new immutable DCS revision; existing revisions are not edited in place.
-          </p>
-          <Button
-            type="submit"
-            loading={creating}
-            disabled={!sourceId || !destinationId || !destinationPort.trim()}
-          >
-            Create specification
-          </Button>
+          <p className="text-xs text-[var(--napms-color-text-secondary)]">Creating a specification creates a new immutable DCS revision; existing revisions are not edited in place.</p>
+          <Button type="submit" loading={creating} disabled={!sourceId || !destinationId || !destinationPort.trim()}>Create specification</Button>
         </div>
       </form>
 
-      {error ? <p className="mt-3 text-sm text-red-700">{error.message}</p> : null}
-      {message ? (
-        <p className="mt-3 text-sm text-green-700">{message}</p>
-      ) : null}
-    </section>
+      {error ? <p className="mt-3 text-sm text-[var(--napms-color-danger)]">{error.message}</p> : null}
+      {message ? <p className="mt-3 text-sm text-[var(--napms-color-success)]">{message}</p> : null}
+    </Surface>
   )
 }
