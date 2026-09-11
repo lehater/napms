@@ -19,7 +19,7 @@ import { FilterChip } from "@/design-system/components/FilterChip"
 import { IssueIndicator } from "@/design-system/components/IssueIndicator"
 import { EmptyState, ErrorState, LoadingState } from "@/design-system/components/PageState"
 import { SearchInput } from "@/design-system/components/SearchInput"
-import { StatusPill } from "@/design-system/components/StatusPill"
+import { StatusIndicator } from "@/design-system/components/StatusIndicator"
 import { TagList } from "@/design-system/components/Tag"
 import {
   EmptyValue,
@@ -52,29 +52,33 @@ function errorFrom(caught: unknown, fallback: string) {
 }
 
 function DataState({ item }: { item: ResourceWorkspaceItemDto }) {
-  const missing: string[] = []
-  if (!item.currentFacts.hasRealization) missing.push("No address")
-  if (!item.currentFacts.hasScopeAffiliation) missing.push("No scope")
-  if (!item.currentFacts.hasResponsibility) missing.push("No responsibility")
+  const missing: Array<{ label: string; tone: "warning" | "danger" }> = []
+  if (!item.currentFacts.hasRealization) missing.push({ label: "No address", tone: "danger" })
+  if (!item.currentFacts.hasScopeAffiliation) missing.push({ label: "No scope", tone: "warning" })
+  if (!item.currentFacts.hasResponsibility) {
+    missing.push({ label: "No responsibility", tone: "warning" })
+  }
 
   if (missing.length === 0) {
     return <IssueIndicator tone="success">No missing facts</IssueIndicator>
   }
 
   return (
-    <div className="grid gap-1">
-      {missing.map((label) => (
-        <IssueIndicator key={label}>{label}</IssueIndicator>
+    <div className="grid gap-0.5">
+      {missing.map(({ label, tone }) => (
+        <IssueIndicator key={label} tone={tone}>
+          {label}
+        </IssueIndicator>
       ))}
     </div>
   )
 }
 
-function LifecycleBadge({ value }: { value: string }) {
+function LifecycleIndicator({ value }: { value: string }) {
   return (
-    <StatusPill tone={value === "Active" ? "positive" : "neutral"}>
+    <StatusIndicator tone={value === "Active" ? "positive" : "critical"}>
       {value}
-    </StatusPill>
+    </StatusIndicator>
   )
 }
 
@@ -174,7 +178,12 @@ export function ResourcesPage({
     event.preventDefault()
     if (page !== 1) onPageChange(1)
     setSearch(searchInput.trim())
-    setScopeFilter(scopeInput.trim())
+  }
+
+  function updateScope(next: string) {
+    if (page !== 1) onPageChange(1)
+    setScopeInput(next)
+    setScopeFilter(next)
   }
 
   function updateDataState(next: ResourceWorkspaceDataState) {
@@ -222,15 +231,15 @@ export function ResourcesPage({
             <SearchInput
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search by name, reference, address, scope or owner…"
+              placeholder="Search by name, reference, address, owner…"
               aria-label="Search resources"
             />
 
             <CatalogueFilterBar>
-              <CatalogueFilterField label="Scope" className="xl:w-[290px]">
+              <CatalogueFilterField label="Scope" className="xl:w-[170px]">
                 <Select
                   value={scopeInput}
-                  onChange={(event) => setScopeInput(event.target.value)}
+                  onChange={(event) => updateScope(event.target.value)}
                   aria-label="Filter resources by scope"
                 >
                   <option value="">All scopes</option>
@@ -242,7 +251,7 @@ export function ResourcesPage({
                 </Select>
               </CatalogueFilterField>
 
-              <CatalogueFilterField label="Lifecycle" className="xl:w-[155px]">
+              <CatalogueFilterField label="Lifecycle" className="xl:w-[170px]">
                 <Select
                   value={lifecycle}
                   onChange={(event) => {
@@ -255,7 +264,7 @@ export function ResourcesPage({
                 </Select>
               </CatalogueFilterField>
 
-              <CatalogueFilterField label="Data state" className="xl:w-[230px]">
+              <CatalogueFilterField label="Data state" className="xl:w-[170px]">
                 <Select
                   value={dataState}
                   onChange={(event) =>
@@ -269,10 +278,13 @@ export function ResourcesPage({
                 </Select>
               </CatalogueFilterField>
 
-              <Button type="submit" variant="secondary" className="px-4">
-                Apply
-              </Button>
-              <Button type="button" variant="ghost" className="px-1" onClick={resetFilters}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="xl:ml-auto"
+                onClick={resetFilters}
+              >
                 Reset
               </Button>
             </CatalogueFilterBar>
@@ -306,16 +318,16 @@ export function ResourcesPage({
             description="Change the search or filters, or create a new resource."
           />
         ) : (
-          <DataTable minWidth={1200}>
+          <DataTable minWidth={1120}>
             <colgroup>
               <col style={{ width: "var(--napms-table-selection-column)" }} />
-              <col style={{ width: "15.1%" }} />
-              <col style={{ width: "11.8%" }} />
-              <col style={{ width: "15.5%" }} />
+              <col style={{ width: "15%" }} />
+              <col style={{ width: "12%" }} />
+              <col style={{ width: "16%" }} />
+              <col style={{ width: "17%" }} />
+              <col style={{ width: "16%" }} />
+              <col style={{ width: "10%" }} />
               <col style={{ width: "14%" }} />
-              <col style={{ width: "16.2%" }} />
-              <col style={{ width: "9.4%" }} />
-              <col style={{ width: "18%" }} />
             </colgroup>
             <DataTableHeader>
               <DataTableHeaderRow>
@@ -368,7 +380,7 @@ export function ResourcesPage({
                       {item.technicalOwners.length > 0 ? item.technicalOwners.join(", ") : <EmptyValue />}
                     </DataTableCell>
                     <DataTableCell>
-                      <LifecycleBadge value={item.lifecycle} />
+                      <LifecycleIndicator value={item.lifecycle} />
                     </DataTableCell>
                     <DataTableCell>
                       <DataState item={item} />
@@ -381,11 +393,11 @@ export function ResourcesPage({
         )}
 
         <CataloguePagination>
-          <span className="text-xs text-[var(--napms-color-text-secondary)]">
+          <span className="text-[11px] text-[var(--napms-color-text-secondary)]">
             Page {page} · up to 50 resources per page
             {selected.size > 0 ? ` · ${selected.size} selected` : ""}
           </span>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <Button
               variant="secondary"
               size="sm"
@@ -394,7 +406,7 @@ export function ResourcesPage({
             >
               Previous
             </Button>
-            <span className="flex size-[var(--napms-control-height-sm)] items-center justify-center rounded-[var(--napms-control-radius)] border border-[var(--napms-color-primary-border)] bg-[var(--napms-color-primary-subtle)] text-xs font-semibold text-[var(--napms-color-primary-hover)]">
+            <span className="flex size-[var(--napms-control-height-sm)] items-center justify-center rounded-[var(--napms-control-radius)] border border-[var(--napms-color-primary-border)] bg-[var(--napms-color-primary-subtle)] text-[11px] font-semibold text-[var(--napms-color-primary-hover)]">
               {page}
             </span>
             <Button
