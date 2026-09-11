@@ -32,7 +32,7 @@ def test_j02_resource_authoring_survives_correction_reopen_and_retirement() -> N
         )
         desktop_nav.get_by_role("button", name="Resources").click()
         expect(
-            page.get_by_role("heading", name="Resource Catalogue", exact=True)
+            page.get_by_role("heading", name="Resource Catalogue", exact=True, level=1)
         ).to_be_visible()
 
         page.get_by_role("button", name="New resource", exact=True).click()
@@ -93,7 +93,7 @@ def test_j02_resource_authoring_survives_correction_reopen_and_retirement() -> N
         desktop_nav.get_by_role("button", name="Connectivity").click()
         desktop_nav.get_by_role("button", name="Resources").click()
         expect(
-            page.get_by_role("heading", name="Resource Catalogue", exact=True)
+            page.get_by_role("heading", name="Resource Catalogue", exact=True, level=1)
         ).to_be_visible()
         page.get_by_label("Search resources").fill("Orders Database Primary")
         page.get_by_role("button", name="Apply", exact=True).click()
@@ -139,7 +139,7 @@ def test_j02_resource_authoring_survives_correction_reopen_and_retirement() -> N
         _accept_next_dialog(page)
         _open_actions(page)
         page.get_by_role("button", name="Retire resource", exact=True).click()
-        expect(page.get_by_text("Retired", exact=True)).to_be_visible()
+        expect(page.locator("header").get_by_text("Retired", exact=True)).to_be_visible()
         _open_actions(page)
         expect(page.get_by_role("button", name="Rename", exact=True)).to_have_count(0)
         page.get_by_role("button", name="Actions", exact=True).click()
