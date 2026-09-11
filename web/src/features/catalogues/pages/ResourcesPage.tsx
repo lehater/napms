@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
-import { Plus, X } from "lucide-react"
+import { Plus } from "lucide-react"
 
-import { Button } from "@/components/ui/Button"
-import { Input, Select } from "@/components/ui/Field"
+import { Button } from "@/design-system/components/Button"
+import { Select } from "@/design-system/components/Field"
 import { Checkbox } from "@/design-system/components/Checkbox"
 import {
   DataTable,
@@ -16,10 +16,8 @@ import {
   DataTableSelectionHead,
 } from "@/design-system/components/DataTable"
 import { FilterChip } from "@/design-system/components/FilterChip"
-import { IssueIndicator } from "@/design-system/components/IssueIndicator"
 import { EmptyState, ErrorState, LoadingState } from "@/design-system/components/PageState"
 import { SearchInput } from "@/design-system/components/SearchInput"
-import { StatusIndicator } from "@/design-system/components/StatusIndicator"
 import { TagList } from "@/design-system/components/Tag"
 import {
   EmptyValue,
@@ -46,39 +44,15 @@ import {
   type ResourceWorkspaceSortDirection,
 } from "@/features/catalogues/api/resourceWorkspace"
 import { shortId } from "@/features/catalogues/components/CatalogueIdentity"
+import { CatalogueLifecycleStatus } from "@/features/catalogues/components/CatalogueLifecycleStatus"
+import { CreateResourceDialog } from "@/features/catalogues/components/CreateResourceDialog"
+import { ResourceDataState } from "@/features/catalogues/components/ResourceDataState"
 import { ApiError } from "@/lib/api"
 
 function errorFrom(caught: unknown, fallback: string) {
   return caught instanceof ApiError
     ? caught
     : new ApiError(500, "InternalError", fallback)
-}
-
-function DataState({ item }: { item: ResourceWorkspaceItemDto }) {
-  const missing: Array<{ label: string; tone: "warning" | "danger" }> = []
-  if (!item.currentFacts.hasRealization) missing.push({ label: "No address", tone: "danger" })
-  if (!item.currentFacts.hasScopeAffiliation) missing.push({ label: "No scope", tone: "warning" })
-  if (!item.currentFacts.hasResponsibility) missing.push({ label: "No responsibility", tone: "warning" })
-
-  if (missing.length === 0) {
-    return <IssueIndicator tone="success">No missing facts</IssueIndicator>
-  }
-
-  return (
-    <div className="grid gap-0.5">
-      {missing.map(({ label, tone }) => (
-        <IssueIndicator key={label} tone={tone}>{label}</IssueIndicator>
-      ))}
-    </div>
-  )
-}
-
-function LifecycleIndicator({ value }: { value: string }) {
-  return (
-    <StatusIndicator tone={value === "Active" ? "positive" : "critical"}>
-      {value}
-    </StatusIndicator>
-  )
 }
 
 const emptyCounts = {
@@ -115,11 +89,7 @@ export function ResourcesPage({
   const [pageSize, setPageSize] = useState(50)
   const [sortBy, setSortBy] = useState<ResourceWorkspaceSortBy>("name")
   const [sortDirection, setSortDirection] = useState<ResourceWorkspaceSortDirection>("asc")
-
   const [showCreate, setShowCreate] = useState(false)
-  const [displayName, setDisplayName] = useState("")
-  const [creating, setCreating] = useState(false)
-  const [createError, setCreateError] = useState<ApiError | null>(null)
 
   const visibleScopes = useMemo(
     () => Array.from(new Set(items.flatMap((item) => item.currentScopes))).sort(),
@@ -176,19 +146,13 @@ export function ResourcesPage({
     setSelected((current) => new Set([...current].filter((reference) => visible.has(reference))))
   }, [visibleReferences])
 
-  async function create(event: React.FormEvent) {
-    event.preventDefault()
-    setCreating(true)
-    setCreateError(null)
+  async function createResource(displayName: string | null) {
     try {
-      const created = await createCatalogueResource(displayName.trim() || null)
-      setDisplayName("")
-      setShowCreate(false)
+      const created = await createCatalogueResource(displayName)
       onOpenResource(created.resourceReference)
+      return null
     } catch (caught) {
-      setCreateError(errorFrom(caught, "Resource could not be created."))
-    } finally {
-      setCreating(false)
+      return errorFrom(caught, "Resource could not be created.").message
     }
   }
 
@@ -381,8 +345,8 @@ export function ResourcesPage({
                     <DataTableCell><TechnicalValueList values={item.currentAddresses} /></DataTableCell>
                     <DataTableCell><TagList values={item.currentScopes} /></DataTableCell>
                     <DataTableCell className="text-[var(--napms-color-text-body)]">{item.technicalOwners.length > 0 ? item.technicalOwners.join(", ") : <EmptyValue />}</DataTableCell>
-                    <DataTableCell><LifecycleIndicator value={item.lifecycle} /></DataTableCell>
-                    <DataTableCell><DataState item={item} /></DataTableCell>
+                    <DataTableCell><CatalogueLifecycleStatus value={item.lifecycle} /></DataTableCell>
+                    <DataTableCell><ResourceDataState item={item} /></DataTableCell>
                   </DataTableRow>
                 )
               })}
@@ -403,30 +367,11 @@ export function ResourcesPage({
         />
       </CatalogueSurface>
 
-      {showCreate ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target && !creating) setShowCreate(false) }}>
-          <div className="w-full max-w-[500px] overflow-hidden rounded-xl border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="create-resource-title">
-            <div className="flex items-start justify-between border-b border-[var(--napms-color-border)] px-7 py-6">
-              <div>
-                <h2 id="create-resource-title" className="text-lg font-semibold text-[var(--napms-color-text-primary)]">New resource</h2>
-                <p className="mt-1 text-sm text-[var(--napms-color-text-secondary)]">Create the Resource identity first. Current facts can be added from its detail page.</p>
-              </div>
-              <Button type="button" variant="ghost" size="sm" aria-label="Close new resource dialog" disabled={creating} onClick={() => setShowCreate(false)}><X className="size-4" aria-hidden="true" /></Button>
-            </div>
-            <form className="grid gap-5 px-7 py-6" onSubmit={create}>
-              <label className="grid gap-2 text-sm font-medium text-[var(--napms-color-text-body)]">
-                Display name
-                <Input autoFocus value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Optional resource name" maxLength={256} />
-              </label>
-              {createError ? <p className="text-sm text-[var(--napms-color-danger)]">{createError.message}</p> : null}
-              <div className="flex justify-end gap-2 border-t border-[var(--napms-color-border)] pt-5">
-                <Button type="button" variant="secondary" disabled={creating} onClick={() => setShowCreate(false)}>Cancel</Button>
-                <Button type="submit" loading={creating}>Create resource</Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
+      <CreateResourceDialog
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        onCreate={createResource}
+      />
     </CataloguePage>
   )
 }
