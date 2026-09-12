@@ -8,7 +8,7 @@ Date: 2026-09-12.
 
 Revalidate the target domain model and ERD for the remaining core MVP contexts before further implementation work. The review must distinguish domain facts and accepted decisions from current tactical/code structure so existing implementation mistakes are not promoted into the target model.
 
-Application Communication Catalogue is already locked by ADR-015 and is consumed here only through its published contract. Connectivity Requirements and Connectivity Decision are excluded from MVP by ADR-016.
+Application Communication Catalogue is already locked by ADR-015 and is consumed here only through its published contract. Connectivity Requirements and Connectivity Decision are excluded from MVP by ADR-016. The MVP Network Enforcement Placement boundary/output contract is locked by ADR-017.
 
 ## Scope and order
 
@@ -19,7 +19,7 @@ Review in dependency order:
 3. **Network Enforcement Placement**
 4. **Access Policy Realization**
 
-`Network Enforcement Placement` is the context currently responsible for selecting/reporting relevant enforcement objects/placements for a traffic relation. The review must verify whether its domain output is correctly modeled as devices, logical firewalls, candidates, placements, or another concept; the existing implementation name/result must not be assumed correct.
+For NEP, ADR-017 has already resolved the primary target question: MVP output is an unordered device-candidate set enriched with source-supported ingress/egress interface context and zero-or-more policy/ACL attachment locators. A candidate is not a proven traversal and the candidate set is not a route.
 
 ## MVP exclusions and fixed boundaries
 
@@ -99,14 +99,25 @@ Must resolve at least:
 
 ### 3. Network Enforcement Placement
 
-Must resolve at least:
+ADR-017 fixes the following target semantics:
 
-- whether the context owns network path knowledge, enforcement candidates, selected placement, logical firewall identity, or some combination;
-- distinction between physical/network device, provider realization, Logical Firewall and Enforcement Attachment;
-- exact input traffic relation and output contract;
-- semantics of unordered candidate sets versus proven path/order;
-- what is persisted owner truth versus derived selection/query result;
-- whether the current model incorrectly conflates "device list" with enforcement placement.
+- input semantic unit is one exact technical `sourceAddress + destinationAddress + asOf` Traffic Relation; batch API is allowed but does not change per-pair domain semantics;
+- output is an unordered `EnforcementCandidate[]`, not a path;
+- candidate membership means relevance-to-inspect, not proven traversal;
+- each candidate identifies the provider/device and may correlate a Logical Firewall;
+- each candidate may expose source-supported ingress/egress interface refs;
+- each candidate exposes `PolicyAttachment[0..N]` with policy ref/name plus attachment kind/interface/direction where applicable;
+- vendor-specific policy attachment topology is preserved; Cisco ingress/global/egress is an example, not a universal rule;
+- NEP owns policy location/locator metadata, while Technical Access Evidence owns ACL/policy contents;
+- `providerDeviceRef + policyRef/policyName` is the downstream correlation seam to configured evidence;
+- proven-path I19 semantics remain optional stronger/current-runtime capability, not an MVP prerequisite.
+
+The remaining NEP review must resolve:
+
+- exact identity/lifecycle/persistence status of candidate-supporting device, interface and policy-attachment facts;
+- whether `PolicyAttachment` is owner truth, source projection or query result for each supported source type;
+- source/provenance/temporal completeness rules for candidate/interface/policy facts;
+- target-vs-current implementation gap and migration plan from the existing I19/I26 models.
 
 ### 4. Access Policy Realization
 
@@ -117,7 +128,8 @@ Must resolve at least:
 - whether it is correctly a bounded context or should be treated as application/domain composition;
 - authoritative facts, derived facts and persistence ownership;
 - mapping from semantic Access Rule to current Resource/Endpoint realization;
-- use of Network Enforcement Placement outputs;
+- use of ADR-017 NEP candidate/interface/policy-attachment outputs;
+- correlation of NEP policy locators with Technical Access Evidence policy contents;
 - reconciliation/configuration-generation boundaries;
 - whether current entities are true domain identities or transient projections/results.
 
@@ -136,7 +148,7 @@ For each reviewed context, produce:
 
 ## Completion gate
 
-This review is complete only when all four contexts have accepted target ERDs that are mutually consistent with ADR-015, ADR-016 and with each other's published boundaries, and the repository clearly distinguishes:
+This review is complete only when all four contexts have accepted target ERDs that are mutually consistent with ADR-015, ADR-016, ADR-017 and with each other's published boundaries, and the repository clearly distinguishes:
 
 ```text
 accepted target domain model

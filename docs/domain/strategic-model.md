@@ -2,7 +2,7 @@
 
 Status: `accepted living baseline`.
 
-Source baseline: DDD-BDM-010, extended by I13-I20 accepted domain closure.
+Source baseline: DDD-BDM-010, extended by accepted MVP decisions through ADR-017.
 
 This document defines model/language/responsibility boundaries. It does not define services, databases, teams or deployment units.
 
@@ -16,7 +16,7 @@ This document defines model/language/responsibility boundaries. It does not defi
 | **Authority Management** | who may perform a domain action for scope/time? | scoped actor/action authority, Responsibility Assignment, delegation/transfer/revocation and accountability |
 | **Resource Catalogue** | what access-domain resources exist, to which responsibility scopes do they belong, and how are they realized? | Resource/Endpoint identity, time-qualified Resource Scope Affiliation, current/historical realization and access-relevant lifecycle facts |
 | **Application Communication Catalogue** | which application/component interactions are structurally valid? | Application/Component/Deployment/DCS identities and protocol/port contracts |
-| **Network Enforcement Placement** | where is traffic subject to enforcement? | forwarding/path knowledge, Logical Firewall correspondence and enforcement attachments |
+| **Network Enforcement Placement** | which enforcement devices and policy attachment points are relevant candidates for a technical source/destination pair? | unordered candidate relevance, source-supported ingress/egress interface context, policy/ACL attachment locators, Logical Firewall correlation, provenance and knowledge gaps |
 | **Technical Access Evidence** | what technical access material did a source report? | immutable source-qualified normalized technical evidence with source/scope/time/provenance; no authorization/currentness claim |
 | **Access Policy Realization** | how does authorized/domain access correspond to technical enforcement? | technical↔domain resolution, enforcement-policy derivation/optimization and desired-vs-configured reconciliation |
 
@@ -40,6 +40,8 @@ Access Policy <----- Authority Management
 ```
 
 An Access Rule is therefore the MVP authorization truth. Separate required-but-not-authorized and `Allowed | NotAllowed` decision lifecycles are post-MVP concerns.
+
+ADR-017 defines the MVP Network Enforcement Placement contract as an unordered candidate set. NEP must not infer a forwarding route from indirect relevance evidence. For every candidate it may expose source-supported ingress/egress interface references and zero-or-more policy/ACL attachment locators. Configured policy contents remain owned by Technical Access Evidence.
 
 ## Historical Wave-1 participation
 
@@ -70,7 +72,7 @@ Technical Access Evidence has the I17 Tactical DDD, framework-free core, module-
 
 Access Policy Realization now has the I18 Technical-to-Domain Access Resolution slice: one framework-free consumer-independent coverage algebra over explicit TAE/RC/ACC projections, with exact remainder, ambiguity and predicate-relevant Unknown semantics and no independent persistence.
 
-Network Enforcement Placement has the implemented I19 Tactical DDD/runtime slice: exact endpoint-pair Traffic Relation, normalized ordered path Traversal Points, stable Logical Firewall identity, temporal provider correspondence, temporal Enforcement Attachments and fail-closed Enforcement Selection.
+Network Enforcement Placement has the implemented I19 stronger Tactical DDD/runtime slice with exact endpoint-pair Traffic Relation, normalized ordered path Traversal Points, stable Logical Firewall identity, temporal provider correspondence, temporal Enforcement Attachments and fail-closed Enforcement Selection. I26 added weaker unordered candidate semantics. ADR-017 makes the candidate contract, enriched with relevant interfaces and policy/ACL attachment locators, the MVP target; the proven-path model remains optional stronger/current-runtime capability.
 
 Access Policy Realization now also has the implemented I20 derivation/reconciliation slice. Effective desired Access Policy + shared I18 domain resolution + NEP placement are correlated with explicitly selected configured evidence only through an exact managed reconciliation-scope/source contract. Complete Add/Remove/Replace/No-op claims require same-target/same-managed-partition correlation, exact time and trustworthy configured effective-policy completeness. The implementation remains derived on demand through owner-preserving adapters/owner-backed PostgreSQL composition with no APR persistence; I21 rendering and I22 execution remain downstream.
 
@@ -115,6 +117,8 @@ Technical Access Evidence ---> Access Policy Realization <--- Access Policy
                          Network Enforcement Placement
 ```
 
+NEP and TAE correlate at the downstream composition boundary through source-qualified device/policy locators; NEP owns relevance/location, while TAE owns configured policy contents.
+
 ## Full-domain / post-MVP-capable dependency map
 
 ```text
@@ -148,6 +152,8 @@ Technical Access Evidence ---> Access Policy Realization <--- Access Policy
 - Connectivity Requirements and Connectivity Decision are outside MVP scope per ADR-016.
 - Access Policy owns authoritative Access Rule identity/state and is the MVP authorization truth.
 - Resource Scope Affiliation does not imply actor authority; actor authority for a scope does not imply Resource membership.
+- NEP candidate membership does not prove traffic traversal or route order.
+- NEP owns device/interface/policy attachment relevance, not ACL/policy contents.
 - Technical evidence is not authorization.
 - Technical realization changes do not redefine Rule semantic identity.
 - If post-MVP Requirement/Decision capabilities are reintroduced, they must not redefine existing Access Rule semantic identity.
