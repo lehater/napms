@@ -19,14 +19,17 @@ For one Web task:
 
 - group code by feature/use case;
 - treat `src/design-system/` as the durable owner of generic visual primitives, reusable controls, layout and product UI patterns;
+- treat `src/design-system/tokens.css` as the single owner of reusable visual constants: palette, semantic state colors, typography micro-sizes, control/surface geometry, page-width presets, table geometry and shadows;
+- feature code may compose layout (`grid`, `flex`, gaps, responsive arrangement), but must not own raw palette values, duplicate reusable visual measurements, local page-width constants, numeric table-width contracts, or independent radius/shadow definitions;
+- page width is selected semantically through `PageWorkspace` (`fluid`, `content`, `narrow`), not by feature-local fixed `max-width` values;
+- table minimum width is selected semantically through `DataTable` width presets (`compact`, `standard`, `wide`, `extra-wide`), with the actual values owned by tokens;
 - `src/components/ui/` is compatibility-only: files there may delegate to design-system components but must not own independent visual implementation; do not add new generic components there;
 - keep domain-to-visual mapping and reusable domain presentation under the owning feature's `components/`;
 - keep feature pages focused on screen/use-case orchestration and composition;
 - when semantic interaction presentation is shared across features, reuse it from the explicit semantic owner rather than duplicating it in a generic shared package;
 - compose feature pages from existing design-system patterns before introducing page-local geometry/styling;
-- page-root arbitrary `max-width` is not allowed for operational/data workspaces; use semantic constrained layouts only for forms, dialogs or readable prose;
-- do not introduce raw color literals in feature code when a semantic design token exists;
-- do not recreate shared buttons, inputs, tables, status visuals, tags or loading/error/empty states locally;
+- do not introduce raw color literals or Tailwind palette colors in feature code; add/reuse a semantic token or design-system component instead;
+- do not recreate shared buttons, inputs, tables, alerts, status visuals, tags or loading/error/empty states locally;
 - keep transport DTO/request mapping at the frontend API boundary;
 - extend shared patterns only after demonstrated reusable need; avoid giant universal page components;
 - extract technical hooks only after equivalent lifecycle semantics are demonstrated by at least two consumers;
@@ -35,4 +38,4 @@ For one Web task:
 
 ## Validation
 
-Run `npm run build` (or `make web-check` from the repository root) for Web changes. The build includes the UI ownership-boundary check.
+Run `npm run build` (or `make web-check` from the repository root) for Web changes. The build includes the UI ownership-boundary check, which rejects feature-level legacy UI ownership, raw palette/design constants, local fixed page widths, numeric table-width contracts, and manual HTML tables.
