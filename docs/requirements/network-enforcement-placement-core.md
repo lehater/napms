@@ -1,114 +1,189 @@
-# Network Enforcement Placement Core Requirements — I19 + I26 extension
+# Network Enforcement Placement Core Requirements
 
-Status: `accepted through I26 Network Context semantic re-entry`.
+Status: `accepted MVP target by ADR-017; implementation migration pending`.
 
-Date: 2026-09-10.
+Date: 2026-09-12.
+
+Decision: `../decisions/ADR-017-nep-candidate-policy-attachment-contract.md`.
 
 ## Purpose
 
-Specify observable behavior for Network Enforcement Placement (NEP), preserving the original I19 proven-path capability while adding the weaker candidate-set Network Context contract required by Checker.
+Specify observable MVP behavior for Network Enforcement Placement (NEP): for one exact technical source/destination address pair and explicit logical time, return the unordered set of enforcement-device candidates relevant enough to inspect and the source-supported interface/policy attachment information required by downstream consumers.
 
-## REQ-NEP-001 — Select placement at explicit logical time
+A proven forwarding path is an optional stronger capability, not an MVP prerequisite.
 
-Given one exact source/destination IP pair and an offset-aware `asOf`, NAPMS may derive an Enforcement Selection from NEP-owned forwarding/path, Logical Firewall correspondence and Enforcement Attachment knowledge when a source can prove the stronger I19 path contract.
+## REQ-NEP-001 — Evaluate one technical pair at explicit logical time
 
-It shall not infer `asOf` from wall-clock “now” or persistence recording order.
+The domain input is one exact source address, one exact destination address and an offset-aware `asOf`.
 
-## REQ-NEP-002 — Keep Logical Firewall identity independent
+An API/application service may batch many pairs for efficiency, but every pair shall be evaluated independently and shall produce its own result.
 
-NAPMS shall preserve Logical Firewall identity independently from provider/device realization, Resource identity and Enforcement Attachment identity.
+NAPMS shall not infer `asOf` from wall-clock “now” or persistence recording order.
+
+## REQ-NEP-002 — Candidate set is the primary MVP output
+
+NEP shall return zero or more `EnforcementCandidate` values for the queried pair/time.
+
+Candidate-set semantics:
+
+- candidate membership means the source considers the device/enforcement identity relevant enough to inspect;
+- candidates have no semantic order;
+- a candidate is not proof that traffic traverses that device;
+- the set may be incomplete;
+- the set may contain false positives;
+- absence of a candidate does not prove no forwarding path or no enforcement;
+- source-supported relevance/quality may be preserved as opaque source meaning, but NAPMS shall not manufacture a probability/confidence score.
+
+## REQ-NEP-003 — Keep Logical Firewall identity independent
+
+Where a candidate can be correlated to a stable Logical Firewall, NAPMS shall preserve that identity independently from provider/device realization, Resource identity and policy attachment identity.
 
 Provider replacement shall not automatically create a different Logical Firewall.
 
-## REQ-NEP-003 — Require complete forwarding knowledge for proven-path claims
+## REQ-NEP-004 — Expose candidate device identity
 
-A successful complete I19 path-based selection shall require source knowledge that is complete for the exact source/destination pair under the represented forwarding model.
+Every candidate shall expose a source-qualified `providerDeviceRef` or equivalent stable provider/device locator sufficient for downstream correlation.
 
-Missing path knowledge, an unrepresented forwarding discriminator, or unsupported multipath semantics shall produce `Unknown`, not a guessed path.
+Where available, NEP may additionally expose `logicalFirewallRef` without replacing the provider/device locator required for configured-evidence lookup.
 
-This requirement applies only to the stronger proven-path capability. It shall not prevent a weaker Network Context source from returning unordered relevant candidates under REQ-NEP-011.
+## REQ-NEP-005 — Expose source-supported ingress and egress interface context
 
-## REQ-NEP-004 — Distinguish no path from no enforcement
+For each candidate, NEP may expose:
 
-When using the stronger path contract, NAPMS shall distinguish:
-- `NoForwardingPath`: a source positively establishes that no forwarding path exists for an explicit effective validity interval and attributable provenance;
-- `NoEnforcement`: a complete path exists and complete attachment/correspondence knowledge proves no enforcement attachment applies.
+```text
+ingressInterfaceRef?
+egressInterfaceRef?
+```
 
-Absence of evidence shall not produce either state.
+These values shall be returned only when supported by source facts.
 
-An empty or incomplete Network Context candidate set shall not be promoted to either conclusion.
+They describe candidate context and shall not be presented as proof of actual packet traversal.
 
-## REQ-NEP-005 — Validate attachment through correspondence
+Missing/ambiguous interface knowledge shall remain explicit rather than be invented.
 
-A path-selected Enforcement Attachment shall be effective at `asOf`, shall reference an effective Logical Firewall, and shall have an effective Logical Firewall Correspondence to the same provider realization traversed at the exact Path Attachment.
+## REQ-NEP-006 — Expose all known relevant policy attachments
 
-A relevant attachment with missing/uncertain correspondence shall fail closed as `Unknown` for claims that require proven placement.
+For each candidate, NEP shall expose every policy/ACL attachment known by the source to be relevant for the queried pair/candidate combination.
 
-## REQ-NEP-006 — Preserve multiple enforcement points when path is proven
+Cardinality is:
 
-A complete proven path may contain more than one unambiguous enforcement point. NAPMS shall return each placement occurrence in path order with Logical Firewall, attachment, provider/path reference and provenance.
+```text
+EnforcementCandidate -> PolicyAttachment [0..N]
+```
 
-It shall not collapse distinct traversal positions into one firewall name.
+A candidate with no known relevant policy attachment is valid and shall not be silently dropped.
 
-This ordering is not inherited by the candidate-set Network Context contract.
+## REQ-NEP-007 — Policy attachment must be locatable downstream
 
-## REQ-NEP-007 — Do not choose an ambiguity winner
+A `PolicyAttachment` shall expose enough source-qualified locator information to retrieve corresponding configured policy evidence where that evidence exists.
 
-If one traversed normalized provider/path-attachment point maps to more than one distinct effective Logical Firewall placement, NAPMS shall return `Ambiguous`, preserve all competing placements, and select no winner.
+The target fields are:
 
-Equivalent duplicate provenance for the same placement shall not create ambiguity.
+```text
+policyRef?
+policyName?
+attachmentKind
+interfaceRef?
+direction?
+```
 
-Candidate-set consumers shall likewise preserve competing candidates rather than selecting an arbitrary winner.
+At least one source-supported policy locator (`policyRef` and/or `policyName`) shall be present when an attachment is returned.
 
-## REQ-NEP-008 — Preserve temporal history and provenance
+## REQ-NEP-008 — Preserve vendor-specific attachment topology
 
-Forwarding/path facts, Network Context candidate facts, Logical Firewall correspondences and Enforcement Attachments shall preserve attributable source/provenance and explicit effective time where owned by their source contract.
+NEP shall not require a fixed Cisco-only attachment topology.
 
-Corrections/supersession shall not erase historical explainability.
+A Cisco-like source may expose:
 
-## REQ-NEP-009 — Keep placement/context independent from policy state
+- ingress-interface / inbound policy;
+- global policy;
+- egress-interface / outbound policy.
 
-Network relevance and placement shall be independent from:
+Another vendor/source may expose only a global policy or another source-specific set.
+
+Normalized `attachmentKind` may include `ingress`, `global`, `egress` and `vendor-specific`. A global/non-interface policy shall not require an interface reference.
+
+## REQ-NEP-009 — NEP owns policy location, not policy contents
+
+NEP shall return policy locators/attachment metadata only.
+
+NEP shall not copy, parse or own configured ACL/policy entries.
+
+Technical Access Evidence remains the owner of captured/imported/configured policy contents and provenance.
+
+A downstream composition may correlate NEP to Technical Access Evidence using:
+
+```text
+providerDeviceRef
++ policyRef and/or policyName
+```
+
+## REQ-NEP-010 — Preserve provenance and knowledge gaps
+
+Candidate relevance, interface facts and policy-attachment facts shall preserve attributable source/provenance and explicit effective time where supported by their source contracts.
+
+Missing, ambiguous or contradictory relevant knowledge shall be exposed as knowledge gaps rather than silently resolved by representation order or wall-clock recency.
+
+## REQ-NEP-011 — Candidate completeness is not path completeness
+
+A source may state that its candidate enumeration is complete for the represented pair/time.
+
+Such completeness means only that the source claims to have enumerated its own relevant candidate set. It shall not mean:
+
+- candidates form a route;
+- every candidate is a true positive;
+- traversal order is known;
+- traffic definitely traverses every candidate;
+- absence of a candidate proves no forwarding/no enforcement.
+
+## REQ-NEP-012 — Candidate output is independent from policy state
+
+Network relevance and attachment location shall be independent from:
+
 - Access Rule authorization/state;
 - Technical Access Evidence action/configured content;
 - desired-vs-configured reconciliation;
 - vendor rendering/execution.
 
-NEP shall not create or mutate Access Rules, Connectivity Decisions, TAE evidence or APR reconciliation state.
+NEP shall not create or mutate Access Rules, TAE evidence or reconciliation state.
 
-## REQ-NEP-010 — Forwarding limitations are fail-closed
+## REQ-NEP-013 — Proven path is optional stronger knowledge
 
-The first executable Traffic Relation uses exact source and destination IP addresses.
+The existing I19 `ForwardingPath` / ordered `TraversalPoint` capability may remain available for sources that can truthfully prove it.
 
-If a source claims a proven path and the selected environment requires VRF/routing-instance, protocol/port, policy-routing, service-chain, ECMP or another unrepresented dimension to determine that path truthfully, the adapter shall report an explicit knowledge gap and the proven-path selection shall be `Unknown` until the model is extended.
+MVP consumers shall not require it and NEP shall never infer a path from an unordered candidate set.
 
-A weaker source may still report unordered relevant candidates if its own source contract supports that claim.
+If a source claims proven path semantics but required forwarding dimensions are unavailable or unsupported, that stronger result shall fail closed rather than guess.
 
-## REQ-NEP-011 — Network Context may expose an unordered candidate set
+## REQ-NEP-014 — Do not convert candidate relevance into route assertions
 
-NAPMS shall support a Network Context read contract that returns zero or more source-supported relevant network/enforcement candidates for an exact source/destination pair and explicit `asOf` without asserting a forwarding path.
+The following invariants are mandatory:
 
-Candidate-set semantics:
-- candidate membership means only that the source considers the provider realization/enforcement identity relevant to the queried traffic;
-- candidates have no semantic sequence;
-- a candidate is not proof that traffic traverses that device;
-- the set may be incomplete;
-- the set may contain false positives;
-- source-supported relevance/quality may be exposed as opaque source meaning, but NAPMS shall not manufacture a probability or confidence score;
-- candidate provenance and knowledge gaps shall remain attributable.
+```text
+candidate != proven traversal
+candidate set != route
+candidate representation order != traversal order
+```
 
-## REQ-NEP-012 — Candidate completeness is not path completeness
+UI/API wording shall preserve this distinction.
 
-`completeForPair` on a Network Context candidate result, when supplied, means only that the contributing source claims to have enumerated its relevant candidate set for that pair/time.
+## REQ-NEP-015 — NEP does not perform reconciliation or configuration generation
 
-It shall not mean:
-- that the candidates form a route;
-- that every candidate is a true positive;
-- that traversal order is known;
-- that absence of a candidate proves no forwarding or no enforcement.
+NEP shall not:
 
-## REQ-NEP-013 — Proven path remains an optional stronger capability
+- decide whether configured policy satisfies desired policy;
+- produce Add/Remove/Replace/No-op;
+- render vendor configuration;
+- execute provider/device changes.
 
-The I19 `ForwardingPath` / ordered `TraversalPoint` / path-based `EnforcementSelection` model remains valid for sources that can truthfully prove it.
+Those capabilities consume NEP output downstream.
 
-Consumers whose requirement needs only relevant devices, including Checker, shall depend on the weaker unordered Network Context contract and shall not require or expose path ordering merely because a stronger source happens to exist.
+## Acceptance examples
+
+1. A pair returns three unordered device candidates; no route order is asserted.
+2. One candidate returns an ingress interface, egress interface and three policy attachments: ingress, global and egress.
+3. Another vendor candidate returns only one global policy attachment and no interface-bound policy.
+4. A candidate with known device relevance but unknown interfaces returns the device plus explicit knowledge gaps, not fabricated interface values.
+5. A candidate with zero relevant policy attachments remains in the result.
+6. A downstream consumer can use `providerDeviceRef + policyRef/policyName` to query matching Technical Access Evidence without NEP returning ACL entries.
+7. An unordered candidate set cannot be promoted to a proven forwarding path.
