@@ -32,7 +32,7 @@ export function DeploymentResourceSetTable({
   onConfirmEnd: (item: ResourceSetMemberDto) => void
 }) {
   return (
-    <DataTable minWidth={760}>
+    <DataTable width="compact">
       <DataTableHeader>
         <DataTableHeaderRow>
           <DataTableHeadCell>Resource</DataTableHeadCell>
