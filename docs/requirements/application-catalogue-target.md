@@ -1,14 +1,16 @@
 # Application Catalogue Target Requirements
 
-Status: `accepted and implemented through I31`.
+Status: `superseded as target by ADR-015; retained as implemented I31 behavior`.
 
 Date: 2026-09-10.
+
+> The accepted future ACC requirements are now `application-catalogue-domain-target.md` and ADR-015. This document remains the observable requirements record for the existing I31 implementation and must not be used to extend `ApplicationDeployment` / `DeploymentInteraction` as the future domain model.
 
 ## Purpose
 
 Define the user-observable Application Catalogue behavior selected by ADR-012 and the migration safety constraints closed by ADR-013.
 
-This requirement supersedes the I27 Application-side curation UX/structure. Resource Catalogue behavior from I27 remains unchanged unless separately amended.
+This requirement superseded the I27 Application-side curation UX/structure. Resource Catalogue behavior from I27 remained unchanged unless separately amended.
 
 ## User model
 
@@ -163,9 +165,9 @@ Existing Application Catalogue mutation authority remains authoritative.
 
 Authenticated identity, owner correlation, Company, Environment, Scope and Resource responsibility are business/context data and do not themselves grant mutation authority.
 
-## Acceptance
+## Historical I31 acceptance
 
-I31 acceptance proves at least:
+I31 acceptance proved at least:
 
 1. create a Definition and Components;
 2. create Interaction Definitions with multiple traffic alternatives;
@@ -177,3 +179,5 @@ I31 acceptance proves at least:
 8. block unsafe traffic edit or retirement when active dependencies exist and expose dependency counts/drill-down;
 9. keep normal lists free of Retired entities and hard-delete actions;
 10. keep large lists bounded through server-side paging/search/filter/sort.
+
+These are historical I31 acceptance criteria, not ADR-015 target criteria.

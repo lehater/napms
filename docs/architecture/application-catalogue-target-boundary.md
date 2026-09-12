@@ -1,8 +1,10 @@
 # Application Catalogue Target Boundary
 
-Status: `accepted and implemented through I31`.
+Status: `superseded as target by ADR-015; retained as implemented I31 architecture`.
 
 Date: 2026-09-10.
+
+> This document explains the current I31 architecture boundary. The accepted future ACC domain boundary is now ADR-015 plus `docs/domain/application-communication-catalogue/target-model.md`. In particular, `ApplicationDeployment`, `DeploymentInteraction` and interaction-scoped Resource bindings must not be treated as future target concepts.
 
 ## Purpose
 
@@ -10,7 +12,7 @@ Define how the ADR-012 Application Catalogue model is implemented without changi
 
 ## Ownership
 
-Application Communication Catalogue owns:
+The implemented I31 Application Communication Catalogue owns:
 
 - Application Definition, Component and Interaction Definition identity/structure;
 - Application Deployment and Deployment Interaction identity/structure;
@@ -34,7 +36,7 @@ destinationComponentDeploymentId
 dcsContractRevisionId
 ```
 
-ACC exposes current target-authored interactions through an adapter from `DeploymentInteraction` to the existing `DirectedInteractionIdentity` contract.
+The I31 implementation exposes target-authored interactions through an adapter from `DeploymentInteraction` to the existing `DirectedInteractionIdentity` contract.
 
 The mapping is:
 
@@ -53,13 +55,13 @@ No downstream context imports `ApplicationDeployment` or `DeploymentInteraction`
 
 The existing ACC resolution flow continues resolving the compatibility source/destination Component Deployment IDs to temporal Resource bindings.
 
-Target application services create/end those compatibility bindings from stronger commands scoped by:
+I31 application services create/end those compatibility bindings from stronger commands scoped by:
 
 ```text
 deploymentInteractionId + side + resourceReference
 ```
 
-The persistence adapter translates target binding ownership into the compatibility rows required by the existing resolver.
+The persistence adapter translates I31 binding ownership into the compatibility rows required by the existing resolver.
 
 Resource-set UI rows combine ACC-owned effective membership with Resource Catalogue-owned display data and effective Responsibility Scope. This is a read-composition concern, not a transfer of ownership.
 
@@ -75,9 +77,9 @@ If owner schemas later move to separate stores, this query composition can be re
 
 ## Traffic projection
 
-Interaction Definition traffic is current ACC truth. DCS revision remains immutable downstream snapshot truth.
+Interaction Definition traffic is current I31 ACC truth. DCS revision remains immutable downstream snapshot truth.
 
-When a permitted traffic edit affects Active Deployment Interactions, ACC application logic creates replacement current DCS snapshots for all affected interactions before the operation succeeds. Existing downstream references are never rewritten.
+When a permitted traffic edit affects Active Deployment Interactions, I31 ACC application logic creates replacement current DCS snapshots for all affected interactions before the operation succeeds. Existing downstream references are never rewritten.
 
 Traffic edit admission consumes dependency ports owned by ACC application code:
 
@@ -107,7 +109,7 @@ The dependency summary groups these results and provides counts/drill-downs. Pee
 
 ## External correlation values
 
-Application owner, Application Deployment company and Application Deployment scope are correlation/reference data only.
+Application owner, Application Deployment company and Application Deployment scope are I31 correlation/reference data only.
 
 - Company is not introduced as a NAPMS aggregate.
 - Responsibility Scope remains externally owned as established by ADR-011.
@@ -120,11 +122,11 @@ Future directory/company/scope discovery is implemented through optional adapter
 
 Pre-I31 Component Deployment/DCS/binding rows remain readable by existing downstream adapters.
 
-Target-created compatibility Component Deployments are distinguishable in persistence through an explicit mapping to `deploymentInteractionId` and side. The implementation does not identify them by display-name convention.
+I31-created compatibility Component Deployments are distinguishable in persistence through an explicit mapping to `deploymentInteractionId` and side. The implementation does not identify them by display-name convention.
 
 Legacy rows without that mapping remain legacy truth. They are not synthesized into Application Deployments.
 
-During coexistence, existing downstream interaction discovery may return both legacy interactions and target compatibility interactions as required by current product flows. Catalogue Web/API authoring uses target identities only.
+During coexistence, existing downstream interaction discovery may return both legacy interactions and I31 compatibility interactions as required by current product flows. Catalogue Web/API authoring uses I31 identities only.
 
 ## Dependency direction
 
@@ -144,11 +146,13 @@ ACC + RC read facts
 
 The implementation preserves inward dependency direction and avoids shared mutable domain models.
 
-## Consequences
+## Historical I31 consequences
 
-- I31 changes the ACC user/write model without a cross-context identity migration;
-- compatibility logic remains an ACC adapter/application concern rather than leaking into Web or peer domains;
-- cross-context blockers are explicit port calls rather than direct persistence coupling;
-- bounded cross-context UI projections may be composed outside owner adapters without transferring mutation semantics;
-- target Resource binding semantics reuse existing proven downstream resolution mechanics;
-- optional enterprise reference discovery can be added later without changing the current domain model.
+- I31 changed the ACC user/write model without a cross-context identity migration;
+- compatibility logic remained an ACC adapter/application concern rather than leaking into Web or peer domains;
+- cross-context blockers were explicit port calls rather than direct persistence coupling;
+- bounded cross-context UI projections could be composed outside owner adapters without transferring mutation semantics;
+- target Resource binding semantics reused existing downstream resolution mechanics;
+- optional enterprise reference discovery could be added without changing the I31 domain model.
+
+For future target design, ADR-015 is authoritative.
