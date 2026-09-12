@@ -29,7 +29,7 @@ export function DeploymentConnectivityTable({
   onConfirmRemove: (deploymentInteractionId: string) => void
 }) {
   return (
-    <DataTable minWidth={1120}>
+    <DataTable width="wide">
       <DataTableHeader>
         <DataTableHeaderRow>
           <DataTableHeadCell>Source component</DataTableHeadCell>
