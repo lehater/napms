@@ -1,8 +1,10 @@
 # ADR-012 — Application Definition and Deployment Model
 
-Status: `accepted and implemented through I31`.
+Status: `superseded as target by ADR-015; retained as implemented I31 history`.
 
 Date: 2026-09-10.
+
+> ADR-015 replaces the target semantics of this ADR. In particular, the accepted target now deploys Components through `ComponentDeployment`; it does not use `ApplicationDeployment` / `DeploymentInteraction` as target domain concepts. This document remains authoritative only for explaining the existing I31 implementation and its history.
 
 ## Context
 
@@ -149,8 +151,12 @@ Before code migration, a separate implementation design must define how `Applica
 
 ## Consequences
 
-- deployment semantics match the product mental model: deploy one Application, use any subset of its defined interactions;
-- resource realization is contextual to each selected interaction;
-- Deployment UI remains compact for hundreds/thousands of interactions and resources;
-- no exceptions, overlays, Definition revisions or hard-delete workflow are required in the first implementation;
-- current I27 runtime remains valid until the target model is implemented and canonical current-state documents are updated.
+Historical I31 consequences were:
+
+- deployment semantics matched the then-selected product mental model: deploy one Application, use any subset of its defined interactions;
+- resource realization was contextual to each selected interaction;
+- Deployment UI remained compact for hundreds/thousands of interactions and resources;
+- no exceptions, overlays, Definition revisions or hard-delete workflow were required in the first implementation;
+- the I27 runtime remained valid until the I31 target was implemented.
+
+These target conclusions are superseded by ADR-015. They remain here to explain why the current I31 runtime has its present structure.
