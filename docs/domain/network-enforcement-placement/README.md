@@ -15,11 +15,13 @@ The MVP contract is:
 AnalyzeTrafficPairs(TrafficPair[])
     -> per pair: unordered FirewallCandidate[]
         -> Firewall
-        -> resolved source/destination interfaces when available
-        -> relevant AccessListLocator[0..N]
+        -> every relevant firewall-local interface branch
+        -> distinct AccessListLocator(accessListName)[] across those branches
 ```
 
-Base candidate relevance is derived from each Firewall's current local routing state. Active user override rules may then change the result with precedence:
+Base candidate relevance is derived from each Firewall's current local routing state. ECMP/multipath is preserved as multiple local branches; NEP does not choose one arbitrary route. Routing contexts such as VRFs are retained when present.
+
+Active user override rules may change the result with precedence:
 
 ```text
 Include > Exclude > Routing
@@ -27,9 +29,11 @@ Include > Exclude > Routing
 
 Candidate membership means relevance-to-inspect, not proven end-to-end traversal. The candidate set is not a route.
 
-NEP owns the Firewall catalogue/profile, current NEP-relevant routing/interface state, the effective reachability projection, candidate override rules, candidate calculation and relevant ACL/policy locators. Technical Access Evidence owns configured policy contents.
+`Firewall` is the NEP unit of account. Its MVP state is simply `Active | Inactive`, administered through the Web UI. No separate physical Device or Firewall lifecycle-command model is required.
 
-NEP and TAE acquire source data independently and only to the depth required by their own semantics; refreshing NEP routing state must not require fetching complete ACL bodies.
+NEP keeps only current routing/interface state, derives a persisted reachability projection for set-based batch evaluation, and logs route lookup/current-state misses rather than creating extra domain lifecycle concepts.
+
+NEP owns relevant ACL/policy-name selection but not ACL bodies. Technical Access Evidence owns configured policy contents. NEP and TAE acquire source data independently and only to the depth required by their own semantics; refreshing NEP routing state must not require fetching complete ACL bodies.
 
 ## Current/stronger runtime capability
 
