@@ -10,13 +10,13 @@ Canonical model: `../domain/network-enforcement-placement/target-tactical-model.
 
 ## Purpose
 
-Specify observable MVP behavior for Network Enforcement Placement (NEP): process a batch of technical source/destination address pairs against the current known firewall state, derive an unordered firewall candidate set from local routing plus explicit overrides, and expose the ACL/policy locators required by downstream configured-evidence consumers.
+For each technical source/destination pair, identify the unordered set of known Firewalls that may be relevant, preserve every firewall-local routing branch that may carry the traffic, and expose the distinct ACL/policy names that must be inspected downstream.
 
 A candidate is relevance-to-inspect, not proof of end-to-end traversal.
 
-## REQ-NEP-001 — Evaluate a batch of technical address pairs
+## REQ-NEP-001 — Batch technical address pairs
 
-The application input shall support one or more independent pairs:
+The application shall accept `TrafficPair[1..N]`:
 
 ```text
 TrafficPair
@@ -25,101 +25,118 @@ TrafficPair
     destinationAddress
 ```
 
-Each pair shall produce its own result. Batch evaluation exists for efficient set-based processing and does not merge the semantics of different pairs.
+Each pair produces its own result. MVP evaluation uses current NEP state and does not require `asOf`.
 
-The MVP query shall evaluate current successfully collected NEP state and shall not require an `asOf` input.
+## REQ-NEP-002 — Firewall is the unit of account
 
-## REQ-NEP-002 — Firewall is the NEP unit of account
+NEP shall own a catalogue of:
 
-NEP shall own a catalogue of `Firewall` identities sufficient for acquisition and candidate analysis.
+```text
+Firewall
+    firewallId
+    name
+    managementAddress
+    platformType
+    state: Active | Inactive
+```
 
-The MVP shall not require a separate physical Device/chassis domain entity.
+No separate physical Device/chassis entity is required for MVP.
 
-A Firewall profile shall contain at least the stable firewall identity, human-readable name, management address and source/platform information needed to select the appropriate adapter.
+`Active` Firewalls participate in polling and candidate calculation. `Inactive` Firewalls remain configured but are ignored. Administrators may change this state directly through the Web UI; no separate domain lifecycle command model is required.
 
-Connection/polling profile data may be stored with the Firewall as value semantics. Secret material shall remain external and be referenced opaquely.
+## REQ-NEP-003 — Per-Firewall connection and acquisition settings
 
-Exact Firewall lifecycle commands are deferred from this requirement set.
+The Firewall profile shall support the minimal independently configurable settings needed by current acquisition use cases:
 
-## REQ-NEP-003 — Support per-Firewall acquisition settings
+```text
+ConnectionSettings
+    connectTimeout
+    operationTimeout
 
-A Firewall may require source-specific connection and acquisition settings, including at least:
+AcquisitionPolicy
+    routingPollInterval?
+    policyBindingPollInterval?
+```
 
-- connection establishment timeout;
-- operation timeout;
-- routing refresh interval;
-- separately configurable policy-binding/locator refresh interval when that source slice is collected independently.
+Different Firewalls may use materially different values. Secret material shall remain external and be referenced opaquely.
 
-The design shall permit different Firewalls to use materially different intervals/timeouts.
+Retry/backoff/error-policy design is not required by this MVP model.
 
-A missing scheduled interval may represent on-demand acquisition only.
+## REQ-NEP-004 — Keep only current routing/interface state
 
-## REQ-NEP-004 — Keep only current NEP network state
+NEP shall retain only the latest successfully collected state required for candidate analysis. Historical NEP routing/configuration snapshots are not MVP domain history.
 
-NEP shall retain only the latest successfully collected state required for MVP candidate analysis.
+Current state shall retain `collectedAt`.
 
-Historical routing/configuration snapshots are not NEP domain history in the MVP.
+## REQ-NEP-005 — Replace routing state atomically
 
-Current-state metadata shall preserve `collectedAt` so the age of the data is observable.
-
-## REQ-NEP-005 — Replace current state atomically
-
-A refresh shall build and validate a complete replacement before making it visible.
-
-Current routing/interface state and the effective reachability projection derived from it shall switch as one logical version. Consumers shall not observe a mixture of old/new routing data from one refresh.
+A routing refresh shall build and validate a complete replacement before publishing it. Current routing/interface facts and all effective reachability projections derived from them shall switch as one logical version.
 
 The superseded version may be discarded after successful switching.
 
-## REQ-NEP-006 — Derive a persisted effective reachability index
+## REQ-NEP-006 — Persist routing-context-aware effective reachability
 
-NEP shall derive a persisted query projection from the current routing state in which supported routing overlaps/precedence have already been resolved:
+NEP shall derive a persisted query projection from current routing facts after normal prefix precedence is resolved.
+
+Conceptual shape:
 
 ```text
 EffectiveReachabilitySegment
     firewallId
-    routingContext?
+    routingContextRef?
     addressFamily
     addressFrom
     addressTo
-    interfaceRef
+    interfaces[1..N]
 ```
 
-Within one Firewall/routing-context/address-family projection, effective segments shall not overlap.
+Within one Firewall + routing context + address family, effective address segments shall not overlap.
 
-The projection shall be rebuildable and shall not become authoritative routing truth.
+A segment may resolve to more than one interface for ECMP/multipath. Implementations may normalize the interface set into child rows.
 
-Unsupported/ambiguous routing semantics shall not be resolved by arbitrary representation order.
+The projection is rebuildable and is not authoritative routing truth.
 
-## REQ-NEP-007 — Calculate routing candidates from local interface resolution
+## REQ-NEP-007 — Preserve VRF/routing context
 
-For each Firewall and Traffic Pair, NEP shall resolve source and destination addresses against the current effective reachability projection.
+When source routing data contains routing contexts such as VRFs, NEP shall preserve the context reference in current routing facts and effective reachability.
 
-Base routing semantics are:
+The current `TrafficPair` contract has no routing-context selector. Therefore NEP shall evaluate all applicable routing contexts unless a future stronger input contract supplies one.
+
+## REQ-NEP-008 — Preserve all multipath local branches
+
+For each Firewall, Traffic Pair and routing context, resolve source and destination to sets of effective interfaces and evaluate the local combinations:
 
 ```text
-both addresses resolve
-AND sourceInterface != destinationInterface
-    => RoutingCandidate = true
-
-otherwise
-    => RoutingCandidate = false
+localBranches = sourceInterfaces × destinationInterfaces
 ```
 
-An unresolved source or destination is an ordinary routing `NotCandidate` result and shall not be treated as an analysis failure.
+A branch is routing-relevant when:
 
-## REQ-NEP-008 — Evaluate candidate selection set-wise
+```text
+sourceInterface != destinationInterface
+```
 
-The intended target implementation shall support set-based database evaluation over the global effective reachability projection for all requested pairs/firewalls.
+The Firewall is a routing candidate when at least one routing-relevant branch exists.
 
-The design shall not require a backend/Python loop that independently walks every Firewall routing table for every pair.
+NEP shall not arbitrarily select one ECMP/equal-cost interface. Every routing-relevant branch shall remain available for ACL/policy-locator resolution.
 
-This is an implementation-shape requirement for scalability and does not change the domain result.
+## REQ-NEP-009 — Route lookup miss does not block overrides
 
-## REQ-NEP-009 — Support user-authored candidate override rules
+If source and/or destination does not resolve in an otherwise available current routing state, routing contributes `false` for that Firewall/pair and the condition shall be diagnosed/logged.
 
-NEP shall own `CandidateOverrideRule` entities targeted at a Firewall.
+Override evaluation shall still run.
 
-MVP rule shape:
+No separate public/domain `NetworkResolution` lifecycle object is required.
+
+## REQ-NEP-010 — Missing current routing state is diagnosed and skipped
+
+If an Active Firewall has no current routing state, MVP candidate calculation shall not add it to the candidate set merely because the state is unknown.
+
+The condition shall be diagnosed/logged, e.g. `CURRENT_ROUTING_STATE_MISSING`.
+
+## REQ-NEP-011 — Candidate overrides
+
+NEP shall own:
 
 ```text
 CandidateOverrideRule
@@ -134,148 +151,113 @@ CandidateOverrideRule
     destinationInterfaceRef?
 ```
 
-An empty match field shall mean `ANY`.
+Empty fields mean `ANY`. Only Active rules participate.
 
-Only Active rules shall participate in calculation.
+Address conditions match the queried pair directly. Interface conditions shall match only when there exists a resolved local branch in one routing context satisfying all specified interface conditions.
 
-## REQ-NEP-010 — Match all non-empty override conditions
-
-An override rule shall match only when every non-empty condition matches the evaluated pair/local interface resolution.
-
-If an interface condition is non-empty but the corresponding interface was not resolved, that interface condition shall not match.
-
-An override with no interface conditions may therefore still match when routing could not resolve source and/or destination.
-
-## REQ-NEP-011 — Apply deterministic override precedence
+## REQ-NEP-012 — Override precedence
 
 Candidate precedence shall be:
 
 ```text
-Include > Exclude > RoutingCandidate
+Include > Exclude > Routing
 ```
 
-If at least one matching Include rule exists, the Firewall shall be a candidate regardless of RoutingCandidate or matching Exclude rules.
+A matching Include wins over matching Exclude and routing result. Otherwise matching Exclude wins. Otherwise the routing result is used.
 
-Otherwise, if at least one matching Exclude rule exists, the Firewall shall not be a candidate.
+A matching Include may override a route lookup miss inside a valid current state. It does not manufacture current routing state when none exists.
 
-Otherwise, the final result shall equal RoutingCandidate.
+## REQ-NEP-013 — Candidate output is unordered and not a route
 
-## REQ-NEP-012 — Candidate set is unordered and does not prove traversal
+Candidate membership means relevant enough to inspect. Candidate ordering has no route meaning and shall never be promoted to a proven forwarding path.
 
-For each pair, NEP shall return zero or more `FirewallCandidate` values.
+## REQ-NEP-014 — Expose local branches needed for policy selection
 
-Candidate semantics:
-
-- candidate means relevant enough to inspect;
-- candidate order has no route meaning;
-- candidate membership does not prove end-to-end traversal;
-- a missing candidate does not by itself prove there is no end-to-end path;
-- the candidate set shall never be promoted to a proven route merely by representation order.
-
-## REQ-NEP-013 — Expose local interface resolution
-
-A candidate result shall expose the source and destination interface references resolved from the current Firewall state when available:
+For a routing-derived candidate, NEP shall preserve every routing-relevant local branch used for policy selection:
 
 ```text
-sourceInterfaceRef?
-destinationInterfaceRef?
+LocalBranch
+    routingContextRef?
+    sourceInterfaceRef
+    destinationInterfaceRef
 ```
 
-They are local Firewall interpretation used for candidate/policy-locator resolution, not an assertion of global traversal order.
+These are firewall-local resolution facts, not proof of global traversal.
 
-An Include override may create a candidate even when one or both interfaces are unresolved.
+An Include override may create a candidate without resolved local branches when its matching conditions do not require them.
 
-## REQ-NEP-014 — Expose relevant ACL/policy locators only
+## REQ-NEP-015 — Return every distinct relevant ACL/policy name
 
-For each candidate, NEP shall expose zero or more locators for ACL/policy objects that the supported Firewall adapter determines are relevant for the pair:
+For each candidate, the supported Firewall adapter shall evaluate every relevant local branch and return the distinct union of ACL/policy names required by those branches:
 
 ```text
 AccessListLocator
     accessListName
-    accessListRef?
 ```
 
-At least one usable source-supported locator shall be present for each returned list.
+NEP shall not assume that equal-cost/parallel branches use the same ACL even when that is common in practice.
 
-A candidate with zero relevant locators is valid and shall not be silently dropped.
+A stable `accessListRef` is not part of the MVP contract until a concrete source/consumer requires it.
 
-## REQ-NEP-015 — Keep vendor attachment topology outside the core unless required
+## REQ-NEP-016 — Keep attachment topology outside the core
 
-The MVP domain shall not require `attachmentKind`, `direction`, `evaluationPosition`, ingress/global/egress classification or a universal interface-binding topology.
+MVP does not require `attachmentKind`, `direction`, `evaluationPosition`, ingress/global/egress classification or a universal interface-binding topology.
 
-Vendor/source-specific logic may use those facts internally to determine the correct locator set, but the domain output shall expose only the locators required by current consumers.
+Vendor adapters may use such details internally to determine the correct access-list-name set.
 
-A future consumer requirement may extend this contract explicitly.
+## REQ-NEP-017 — NEP owns policy selection, not policy contents
 
-## REQ-NEP-016 — NEP owns policy location/selection, not policy contents
+NEP shall not copy, parse or own configured ACL/policy bodies or entries.
 
-NEP shall not copy, parse or own configured ACL/policy entries.
+Technical Access Evidence remains the owner of configured policy contents/evidence. Downstream composition may use `firewallId + accessListName` plus source-specific adapter correlation to locate/acquire those contents.
 
-Technical Access Evidence remains the owner of captured/imported/configured policy bodies, normalized predicates/actions and their provenance.
-
-Downstream composition/source acquisition may correlate configured evidence using Firewall/source identity plus `AccessListLocator`.
-
-## REQ-NEP-017 — Acquire NEP and TAE source data independently
+## REQ-NEP-018 — Acquire NEP and TAE source data independently
 
 Refreshing NEP routing state shall not require collecting complete ACL/policy bodies.
 
-NEP acquisition shall read only the source slices it needs, such as:
-
-- interfaces;
-- routing;
-- minimal policy-binding/locator metadata required to resolve relevant ACL/policy names.
-
-TAE shall acquire configured ACL/policy bodies independently when those contents are needed, ideally only for the selected policy locators where the vendor/source permits targeted reads.
+NEP acquisition reads only the slices it needs, including interfaces, routing, and minimal policy-binding/locator metadata. TAE acquires ACL/policy bodies independently and should use targeted reads when supported by the source.
 
 The two acquisitions may differ in schedule, trigger, timeout, source command/API and capture identity.
 
-## REQ-NEP-018 — Preserve current-state collection metadata
+## REQ-NEP-019 — Set-based candidate evaluation
 
-Current NEP state shall preserve at least `collectedAt` for freshness/explainability.
+The target implementation shall support set-based database evaluation over the shared effective reachability projection for all requested pairs/firewalls.
 
-`collectedAt` shall not be presented as historical query time or as an automatic proof that state is fresh enough for every consumer.
+It shall not require a backend loop that independently walks every Firewall routing table for every pair.
 
-Any stricter freshness contract belongs to a concrete consumer/source requirement.
+## REQ-NEP-020 — Current-state diagnostics
 
-## REQ-NEP-019 — Keep Resource Catalogue identity independent
+At minimum the implementation shall make these operational conditions observable in logs/diagnostics:
 
-A Firewall shall not automatically become a Resource Catalogue `Resource` merely because it is infrastructure.
+```text
+CURRENT_ROUTING_STATE_MISSING
+ROUTE_LOOKUP_MISS
+```
 
-NEP Firewall identity and Resource Catalogue Resource identity remain independent unless a future explicit cross-context correspondence use case requires a relation.
+Diagnostics do not introduce a new domain state machine in MVP.
 
-NEP shall not become a generic infrastructure/CMDB catalogue.
+## REQ-NEP-021 — Context boundaries
 
-## REQ-NEP-020 — Keep stronger proven-path capability optional
+A Firewall is not automatically a Resource Catalogue `Resource`. NEP is not a generic CMDB.
 
-The existing I19 `ForwardingPath` / ordered `TraversalPoint` capability may remain available during migration or for future sources that can truthfully prove it.
+The existing stronger I19 `ForwardingPath` capability may remain during migration or for future proven-path sources, but MVP consumers shall not require it.
 
-MVP candidate consumers shall not require it and NEP shall never infer a proven path from candidate membership.
-
-## REQ-NEP-021 — Do not perform reconciliation or configuration generation
-
-NEP shall not:
-
-- decide whether configured policy satisfies desired policy;
-- produce Add/Remove/Replace/No-op;
-- render vendor configuration;
-- execute provider/device changes.
-
-Those are downstream concerns.
+NEP shall not perform desired-vs-configured reconciliation, configuration generation or execution.
 
 ## Acceptance examples
 
-1. One request containing 10 source/destination pairs is evaluated set-wise and returns an independent unordered candidate list for every pair.
-2. Firewall A resolves source to interface `inside` and destination to `outside`; absent overrides it is a candidate.
-3. Firewall B resolves both addresses to the same interface; absent overrides it is not a candidate.
-4. Firewall C cannot resolve the destination, so routing says NotCandidate; a matching Include rule with wildcard interfaces still makes it a candidate.
-5. A matching Include and Exclude rule both apply; Include wins.
-6. A rule with `sourceInterfaceRef=inside` does not match when source interface resolution is absent.
-7. An override rule with all optional match fields empty applies to every pair for its Firewall while Active.
-8. Routing prefixes overlap in the source routing state; the effective reachability projection contains non-overlapping winning address segments.
-9. A routing refresh atomically replaces the old current routing state and its reachability projection; no historical NEP snapshot is retained after successful replacement.
-10. One Firewall configured with static routing is refreshed infrequently while another with dynamic routing has a short routing interval.
-11. A Firewall with high-latency connectivity uses a larger connection timeout than other Firewalls.
-12. Candidate analysis returns `ACL-IN`, `GLOBAL-POLICY` and `ACL-OUT` as three opaque access-list locators without exposing why/how each is attached.
-13. TAE subsequently fetches/records the bodies of only the selected ACLs; NEP routing refresh did not fetch those bodies.
-14. A candidate with no applicable ACL/policy locator remains a candidate with an empty locator list.
-15. Candidate result ordering is never interpreted as a forwarding route.
+1. Ten pairs are evaluated set-wise and each receives its own unordered candidate list.
+2. A Firewall resolves source to `inside` and destination to `outside`; it is a routing candidate.
+3. Both addresses resolve only to the same interface; absent overrides, it is not a routing candidate.
+4. Destination route lookup misses, so routing contributes false; a wildcard-interface Include override still includes the Firewall.
+5. An Active Firewall has never been successfully polled; it is skipped and `CURRENT_ROUTING_STATE_MISSING` is logged.
+6. Include and Exclude both match; Include wins.
+7. An all-wildcard Active Include rule applies to every pair for its Firewall when current routing state exists.
+8. A route segment has ECMP interfaces `wan1` and `wan2`; both branches are preserved rather than choosing one.
+9. Branch `inside -> wan1` uses `ACL-A`, while `inside -> wan2` uses `ACL-B`; result contains both ACL names.
+10. Both ECMP branches use `ACL-A`; result contains `ACL-A` once after deduplication.
+11. Two VRFs resolve the same destination differently; both routing-context branches are evaluated because the input pair does not select a VRF.
+12. Routing refresh atomically replaces old state and its reachability projection; no historical NEP snapshot remains.
+13. A static-routing Firewall is refreshed infrequently while a dynamic-routing Firewall uses a short routing interval.
+14. A high-latency Firewall uses larger connection/operation timeouts.
+15. NEP routing refresh does not fetch ACL bodies; TAE obtains selected ACL contents separately.
