@@ -1,8 +1,10 @@
 # ADR-013 — I31 Application Catalogue Compatibility and Reference Semantics
 
-Status: `accepted`.
+Status: `superseded as target by ADR-015; retained as implemented I31 history`.
 
 Date: 2026-09-10.
+
+> ADR-015 replaces this ADR as future ACC target semantics. The compatibility projection through `ApplicationDeployment` / `DeploymentInteraction` remains relevant only to the existing I31 implementation and historical migration explanation. New design work must use the ADR-015 published subject based on Component Deployments plus an immutable Interaction Contract Revision.
 
 ## Context
 
@@ -28,13 +30,13 @@ dcsContractRevisionId
 
 Historical Connectivity Requirements, Connectivity Decisions, Access Rules and policy/export facts must not be rewritten. The accepted target also introduces Application/Component metadata and Deployment Company/Environment/Scope fields without introducing a Company/Organization or directory bounded context.
 
-This ADR closes the blocking I31 M0 choices required before implementation.
+This ADR closed the blocking I31 M0 choices required before that implementation.
 
-## Decision
+## Historical I31 decision
 
 ### 1. Preserve the existing downstream semantic triple as an ACC compatibility contract
 
-`DeploymentInteraction` is the target user-facing selected interaction identity. For each Active Deployment Interaction, ACC owns an internal compatibility projection:
+`DeploymentInteraction` is the I31 user-facing selected interaction identity. For each Active Deployment Interaction, ACC owns an internal compatibility projection:
 
 ```text
 DeploymentInteraction
@@ -46,9 +48,9 @@ DeploymentInteraction
 
 The two compatibility Component Deployment identities are server-owned and stable for the lifetime of that Deployment Interaction. They are unique per Deployment Interaction side; they are not shared merely because two interactions use the same Component.
 
-This uniqueness is required because ADR-012 allows the same Component to bind to different Resource sets in different Deployment Interactions.
+This uniqueness was required because ADR-012 allowed the same Component to bind to different Resource sets in different Deployment Interactions.
 
-Compatibility Component Deployment IDs are implementation identities. New target Web/API authoring does not expose them as concepts the user must understand or assemble.
+Compatibility Component Deployment IDs are implementation identities. New target Web/API authoring did not expose them as concepts the user must understand or assemble.
 
 ### 2. Interaction-scoped Resource bindings project through compatibility sides
 
@@ -64,7 +66,7 @@ An Interaction Definition owns stable source and destination Component reference
 
 Changing either endpoint in place is allowed only while the Interaction Definition has no Active Deployment Interaction selections. Once selected by an Active Application Deployment, endpoint replacement would change the meaning of existing compatibility side identities and is therefore blocked.
 
-When endpoint change is blocked, the normal workflow is:
+When endpoint change is blocked, the normal I31 workflow is:
 
 1. create another Interaction Definition with the desired endpoints;
 2. remove/retire affected Deployment Interactions after their active dependencies are cleared;
@@ -97,7 +99,7 @@ When no such active/effective downstream references exist, traffic edit may upda
 
 ### 5. Target metadata is catalogue descriptive/correlation data, not new identity ownership
 
-The target fields required by the accepted wireframes have these semantics.
+The I31 fields required by the accepted wireframes had these semantics.
 
 #### Application Definition
 
@@ -140,7 +142,7 @@ Future registry/discovery adapters may replace explicit local-first text entry w
 
 ### 6. Lifecycle uses active-reference blockers, not hard deletion
 
-The target lifecycle remains terminal:
+The I31 lifecycle remains terminal:
 
 ```text
 Active -> Retired
@@ -150,7 +152,7 @@ Normal hard delete remains absent.
 
 Retirement is blocked by active dependants/references. Historical references do not block retirement.
 
-Required blocker sets are:
+Required I31 blocker sets are:
 
 ```text
 Application Definition
@@ -207,9 +209,9 @@ Automatic promotion is unsafe because legacy rows may connect different Applicat
 
 Existing Application and Component identities may continue to appear as target Definitions/Components because their identity meaning is compatible. Their pre-I31 Component Deployments/DCS/bindings remain legacy ACC truth and continue to satisfy existing downstream references.
 
-During coexistence:
+During I31 coexistence:
 
-- target authoring creates only the new Application Deployment / Deployment Interaction model;
+- target authoring creates only the Application Deployment / Deployment Interaction model;
 - target Web does not expose legacy Component Deployment as the deployment unit;
 - existing legacy rows remain available to downstream compatibility reads;
 - legacy active Component Deployments may block Component retirement and must be exposed as a dependency class rather than silently ignored;
@@ -217,13 +219,14 @@ During coexistence:
 
 No legacy display name is used to invent Company, Environment, Scope, target Deployment or Interaction Definition identity.
 
-## Consequences
+## Historical consequences
 
-- existing downstream contexts keep their semantic identity types and historical rows unchanged;
-- target interaction-scoped Resource sets work because each Deployment Interaction owns distinct compatibility sides;
-- traffic edits preserve immutable DCS history and fail safely when active downstream truth would become stale;
-- structural endpoint replacement cannot silently change compatibility identity meaning;
-- accepted wireframe metadata can be implemented without inventing Company/Organization/Party registries or authority coupling;
-- retirement becomes explainable and consistently blocked by active references;
-- legacy I27 runtime truth can coexist with target-created truth without fabricated migration semantics;
-- I31 M1 can implement the target Domain/Application model without requiring downstream bounded-context rewrites.
+- existing downstream contexts kept their semantic identity types and historical rows unchanged;
+- I31 interaction-scoped Resource sets worked because each Deployment Interaction owned distinct compatibility sides;
+- traffic edits preserved immutable DCS history and failed safely when active downstream truth would become stale;
+- structural endpoint replacement could not silently change compatibility identity meaning;
+- accepted wireframe metadata could be implemented without inventing Company/Organization/Party registries or authority coupling;
+- retirement became explainable and consistently blocked by active references;
+- legacy I27 runtime truth could coexist with target-created truth without fabricated migration semantics.
+
+For future target semantics, ADR-015 is authoritative.
