@@ -1,15 +1,30 @@
 import { ArrowDown, ArrowUp } from "lucide-react"
 
+type DataTableWidth = "compact" | "standard" | "wide" | "extra-wide"
+
+const tableWidth: Record<DataTableWidth, string> = {
+  compact: "var(--napms-table-min-width-compact)",
+  standard: "var(--napms-table-min-width-standard)",
+  wide: "var(--napms-table-min-width-wide)",
+  "extra-wide": "var(--napms-table-min-width-extra-wide)",
+}
+
 export function DataTable({
   children,
-  minWidth = 1180,
+  width = "wide",
+  minWidth,
 }: {
   children: React.ReactNode
+  width?: DataTableWidth
+  /** @deprecated Use the semantic width preset. */
   minWidth?: number
 }) {
   return (
     <div className="mt-3 min-h-[var(--napms-table-body-min-height)] overflow-x-auto rounded-[var(--napms-surface-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] shadow-[var(--napms-surface-shadow)]">
-      <table className="w-full table-fixed border-collapse text-left text-[12px]" style={{ minWidth }}>
+      <table
+        className="w-full table-fixed border-collapse text-left text-[12px]"
+        style={{ minWidth: minWidth ?? tableWidth[width] }}
+      >
         {children}
       </table>
     </div>
