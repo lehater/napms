@@ -36,7 +36,7 @@ export function AccessRuleDetailSections({ detail, onOpenDecision }: { detail: R
 
     <DetailSection title="State history">
       {rule.stateHistory.length === 0 ? <p className="text-sm text-[var(--napms-color-text-secondary)]">No operational-state transitions have been recorded.</p> : (
-        <DataTable minWidth={760}>
+        <DataTable width="compact">
           <DataTableHeader><DataTableHeaderRow><DataTableHeadCell>Transition</DataTableHeadCell><DataTableHeadCell>Actor</DataTableHeadCell><DataTableHeadCell>Effective time</DataTableHeadCell><DataTableHeadCell>Authority</DataTableHeadCell></DataTableHeaderRow></DataTableHeader>
           <DataTableBody>{rule.stateHistory.map((item, index) => <DataTableRow key={`${item.effectiveTime}-${index}`}><DataTableCell>{item.fromState} → {item.toState}</DataTableCell><DataTableCell>{item.actorId}</DataTableCell><DataTableCell>{item.effectiveTime}</DataTableCell><DataTableCell className="font-mono text-xs">{item.authorityReference}</DataTableCell></DataTableRow>)}</DataTableBody>
         </DataTable>
@@ -45,7 +45,7 @@ export function AccessRuleDetailSections({ detail, onOpenDecision }: { detail: R
 
     <DetailSection title="EffectiveWindow history">
       {rule.effectiveWindowHistory.length === 0 ? <p className="text-sm text-[var(--napms-color-text-secondary)]">No EffectiveWindow changes have been recorded.</p> : (
-        <DataTable minWidth={880}>
+        <DataTable width="standard">
           <DataTableHeader><DataTableHeaderRow><DataTableHeadCell>Previous</DataTableHeadCell><DataTableHeadCell>New</DataTableHeadCell><DataTableHeadCell>Actor</DataTableHeadCell><DataTableHeadCell>Effective time</DataTableHeadCell><DataTableHeadCell>Authority</DataTableHeadCell></DataTableHeaderRow></DataTableHeader>
           <DataTableBody>{rule.effectiveWindowHistory.map((item, index) => <DataTableRow key={`${item.effectiveTime}-window-${index}`}><DataTableCell className="text-xs">{item.previousWindow ? `${item.previousWindow.start} → ${item.previousWindow.end}` : "No restriction"}</DataTableCell><DataTableCell className="text-xs">{item.newWindow ? `${item.newWindow.start} → ${item.newWindow.end}` : "No restriction"}</DataTableCell><DataTableCell>{item.actorId}</DataTableCell><DataTableCell>{item.effectiveTime}</DataTableCell><DataTableCell className="font-mono text-xs">{item.authorityReference}</DataTableCell></DataTableRow>)}</DataTableBody>
         </DataTable>
