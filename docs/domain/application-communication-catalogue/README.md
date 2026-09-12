@@ -6,7 +6,8 @@ The accepted ACC target is defined by:
 
 - `../../decisions/ADR-015-acc-component-deployment-and-atomic-interaction-contract.md` — normative domain decision: Component is the deployment unit; interaction traffic is an atomic immutable contract; ACC publishes the concrete directed-interaction identity;
 - `target-model.md` — canonical target domain model and ERD;
-- `../../requirements/application-catalogue-domain-target.md` — target requirements and acceptance invariants.
+- `../../requirements/application-catalogue-domain-target.md` — target requirements and acceptance invariants;
+- `../../engineering/application-catalogue-domain-migration-roadmap.md` — implementation migration gates.
 
 The target is **accepted but not yet implemented**. Implementation work must conform to ADR-015 and the target model rather than extending the I31 `ApplicationDeployment` / `DeploymentInteraction` model.
 
