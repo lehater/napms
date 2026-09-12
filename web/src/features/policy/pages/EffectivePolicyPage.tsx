@@ -1,19 +1,15 @@
 import { useState } from "react"
 
-import { ApiError } from "@/lib/api"
+import { EmptyState, ErrorState } from "@/design-system/components/PageState"
+import { PageHeader } from "@/design-system/layout/PageHeader"
+import { PageWorkspace } from "@/design-system/layout/PageWorkspace"
+import { Surface } from "@/design-system/primitives/Surface"
 import { getEffectiveDesiredPolicy, type EffectivePolicyResponse } from "@/features/policy/api"
-import {
-  CatalogueIdentity,
-  shortId,
-} from "@/features/catalogues/components/CatalogueIdentity"
-import { StatusBadge } from "@/components/ui/StatusBadge"
+import { EffectivePolicyTable } from "@/features/policy/components/EffectivePolicyTable"
 import { PolicyViewControls } from "@/features/policy/components/PolicyViewControls"
+import { ApiError } from "@/lib/api"
 
-export function EffectivePolicyPage({
-  onOpenRule,
-}: {
-  onOpenRule: (ruleId: string) => void
-}) {
+export function EffectivePolicyPage({ onOpenRule }: { onOpenRule: (ruleId: string) => void }) {
   const [result, setResult] = useState<EffectivePolicyResponse | null>(null)
   const [error, setError] = useState<ApiError | null>(null)
   const [running, setRunning] = useState(false)
@@ -25,121 +21,26 @@ export function EffectivePolicyPage({
       setResult(await getEffectiveDesiredPolicy(scope, asOf))
     } catch (caught) {
       setResult(null)
-      setError(
-        caught instanceof ApiError
-          ? caught
-          : new ApiError(500, "InternalError", "Effective policy could not be loaded."),
-      )
+      setError(caught instanceof ApiError ? caught : new ApiError(500, "InternalError", "Effective policy could not be loaded."))
     } finally {
       setRunning(false)
     }
   }
 
   return (
-    <div className="mx-auto max-w-[1280px]">
-      <header className="mb-6">
-        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
-          Policy Views
-        </div>
-        <h1 className="text-[28px] font-bold tracking-tight text-[#172033]">
-          Effective Desired Policy
-        </h1>
-        <p className="mt-2 max-w-3xl text-sm text-[#64748B]">
-          Authoritative Rules that contribute desired effect for one governance scope
-          at one explicit instant.
-        </p>
-      </header>
-
+    <PageWorkspace>
+      <PageHeader title="Effective Desired Policy" description="Authoritative Rules that contribute desired effect for one governance scope at one explicit instant." />
       <PolicyViewControls onRun={run} running={running} />
-
-      {error ? (
-        <div
-          role="alert"
-          className="mt-5 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800"
-        >
-          <div className="font-semibold">{error.code}</div>
-          <div className="mt-1">{error.message}</div>
-          {error.correlationId ? (
-            <div className="mt-2 text-xs">Correlation: {error.correlationId}</div>
-          ) : null}
-        </div>
-      ) : null}
-
+      {error ? <ErrorState message={`${error.code}: ${error.message}${error.correlationId ? ` · Correlation: ${error.correlationId}` : ""}`} /> : null}
       {result ? (
-        <section className="mt-5 overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
-          <div className="border-b border-[#E2E8F0] px-5 py-4">
-            <div className="font-semibold text-[#172033]">{result.scope}</div>
-            <div className="mt-1 text-xs text-[#64748B]">
-              asOf {result.asOf} · authority {result.authorityReference}
-            </div>
+        <Surface className="min-w-0 overflow-hidden">
+          <div className="border-b border-[var(--napms-color-border)] px-5 py-4">
+            <div className="font-semibold text-[var(--napms-color-text-primary)]">{result.scope}</div>
+            <div className="mt-1 text-xs text-[var(--napms-color-text-secondary)]">asOf {result.asOf} · authority {result.authorityReference}</div>
           </div>
-
-          {result.rules.length === 0 ? (
-            <div className="p-10 text-center text-sm text-[#64748B]">
-              Authorized selection is empty at this instant.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[980px] text-left text-sm">
-                <thead className="bg-[#F8FAFC] text-xs uppercase tracking-wide text-[#64748B]">
-                  <tr>
-                    <th className="px-5 py-3 font-semibold">Rule</th>
-                    <th className="px-5 py-3 font-semibold">Source</th>
-                    <th className="px-5 py-3 font-semibold">Destination</th>
-                    <th className="px-5 py-3 font-semibold">DCS revision</th>
-                    <th className="px-5 py-3 font-semibold">State</th>
-                    <th className="px-5 py-3 font-semibold">Effective window</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.rules.map((rule) => (
-                    <tr
-                      key={rule.ruleId}
-                      className="border-t border-[#E2E8F0] hover:bg-[#F8FAFC]"
-                    >
-                      <td className="px-5 py-3">
-                        <button
-                          type="button"
-                          className="font-mono text-xs text-[#2563EB] hover:underline"
-                          onClick={() => onOpenRule(rule.ruleId)}
-                        >
-                          {shortId(rule.ruleId)}
-                        </button>
-                      </td>
-                      <td className="px-5 py-3">
-                        <CatalogueIdentity
-                          name={rule.catalogue?.sourceDisplayName}
-                          id={rule.semanticIdentity.sourceComponentDeploymentId}
-                        />
-                      </td>
-                      <td className="px-5 py-3">
-                        <CatalogueIdentity
-                          name={rule.catalogue?.destinationDisplayName}
-                          id={rule.semanticIdentity.destinationComponentDeploymentId}
-                        />
-                      </td>
-                      <td className="px-5 py-3">
-                        <CatalogueIdentity
-                          name={rule.catalogue?.dcsDisplayName}
-                          id={rule.semanticIdentity.dcsContractRevisionId}
-                        />
-                      </td>
-                      <td className="px-5 py-3">
-                        <StatusBadge value={rule.operationalState} />
-                      </td>
-                      <td className="px-5 py-3 text-xs text-[#475569]">
-                        {rule.effectiveWindow
-                          ? `${rule.effectiveWindow.start} → ${rule.effectiveWindow.end}`
-                          : "No restriction"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
+          {result.rules.length === 0 ? <EmptyState title="Authorized selection is empty at this instant" /> : <EffectivePolicyTable rules={result.rules} onOpenRule={onOpenRule} />}
+        </Surface>
       ) : null}
-    </div>
+    </PageWorkspace>
   )
 }

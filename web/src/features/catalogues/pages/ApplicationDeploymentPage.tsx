@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react"
-import { ArrowLeft, Pencil, Plus, Search } from "lucide-react"
+import { ArrowLeft, Pencil, Plus } from "lucide-react"
 
-import { ApiError } from "@/lib/api"
-import { Button } from "@/components/ui/Button"
-import { AddDeploymentInteractionPanel } from "@/features/catalogues/components/AddDeploymentInteractionPanel"
-import { CataloguePager } from "@/features/catalogues/components/CataloguePager"
-import { DependencyBlockPanel } from "@/features/catalogues/components/DependencyBlockPanel"
-import { DeploymentEditPanel } from "@/features/catalogues/components/TargetCatalogueEditPanels"
+import { Button } from "@/design-system/components/Button"
+import { Input } from "@/design-system/components/Field"
+import { EmptyState, ErrorState, LoadingState } from "@/design-system/components/PageState"
+import { SearchInput } from "@/design-system/components/SearchInput"
+import { PageHeader } from "@/design-system/layout/PageHeader"
+import { PageWorkspace } from "@/design-system/layout/PageWorkspace"
+import {
+  CatalogueFilterBar,
+  CatalogueFilterField,
+  CataloguePaginationControls,
+  CatalogueToolbar,
+} from "@/design-system/patterns/catalogue/CataloguePage"
+import { DetailRow, DetailSection } from "@/design-system/patterns/detail/Detail"
 import {
   retireDeploymentInteraction,
   TargetCatalogueApiError,
@@ -21,10 +28,11 @@ import {
   type DeploymentConnectivityDto,
   type DeploymentInteractionSide,
 } from "@/features/catalogues/api/targetCatalogue"
-import { resourceCount, trafficSummary } from "@/features/catalogues/model/targetPresentation"
-
-const inputClass =
-  "min-h-10 min-w-0 rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
+import { AddDeploymentInteractionPanel } from "@/features/catalogues/components/AddDeploymentInteractionPanel"
+import { DependencyBlockPanel } from "@/features/catalogues/components/DependencyBlockPanel"
+import { DeploymentConnectivityTable } from "@/features/catalogues/components/DeploymentConnectivityTable"
+import { DeploymentEditPanel } from "@/features/catalogues/components/TargetCatalogueEditPanels"
+import { ApiError } from "@/lib/api"
 
 function errorFrom(caught: unknown, fallback: string) {
   return caught instanceof ApiError ? caught : new ApiError(500, "InternalError", fallback)
@@ -90,17 +98,16 @@ export function ApplicationDeploymentPage({
     let active = true
     setConnectivityLoading(true)
     setConnectivityError(null)
-    void listDeploymentConnectivity({ applicationDeploymentId: deploymentId, page, search, protocol })
+    void listDeploymentConnectivity({ applicationDeploymentId: deploymentId, page, pageSize, search, protocol })
       .then((result) => {
         if (!active) return
         setConnectivity(result.items)
         setFilteredTotal(result.total)
-        setPageSize(result.pageSize)
       })
       .catch((caught) => { if (active) setConnectivityError(errorFrom(caught, "Connectivity could not be loaded.")) })
       .finally(() => { if (active) setConnectivityLoading(false) })
     return () => { active = false }
-  }, [deploymentId, page, search, protocol, reloadToken])
+  }, [deploymentId, page, pageSize, search, protocol, reloadToken])
 
   function refreshDeployment() {
     setPage(1)
@@ -137,39 +144,109 @@ export function ApplicationDeploymentPage({
     }
   }
 
-  if (detailLoading) return <div className="mx-auto max-w-7xl"><section className="rounded-lg border border-[#E2E8F0] bg-white p-6 text-sm text-[#64748B]">Loading deployment…</section></div>
-  if (detailError) return <div className="mx-auto max-w-7xl"><section className="rounded-lg border border-[#E2E8F0] bg-white p-6 text-sm text-red-700">{detailError.message}</section></div>
+  if (detailLoading || detailError) {
+    return (
+      <PageWorkspace>
+        {detailLoading ? <LoadingState>Loading deployment…</LoadingState> : <ErrorState message={detailError?.message ?? "Application Deployment could not be loaded."} />}
+      </PageWorkspace>
+    )
+  }
   if (!deployment) return null
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-5">
-      <div><Button variant="ghost" className="-ml-3" onClick={onBack}><ArrowLeft className="size-4" aria-hidden="true" />Deployments</Button></div>
+    <PageWorkspace>
+      <div>
+        <Button variant="ghost" size="sm" onClick={onBack}>
+          <ArrowLeft className="size-4" aria-hidden="true" />Deployments
+        </Button>
+      </div>
 
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div><div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#64748B]">Applications / Deployments</div><h1 className="mt-1 text-2xl font-bold text-[#172033]">{applicationName ?? "Application"} — {deployment.companyReference} / {deployment.environment}</h1></div>
-        <Button variant="secondary" onClick={() => setEditOpen((value) => !value)}><Pencil className="size-4" aria-hidden="true" />Edit</Button>
-      </header>
+      <PageHeader
+        title={`${applicationName ?? "Application"} — ${deployment.companyReference} / ${deployment.environment}`}
+        description="Application deployment and its selected connectivity."
+        actions={
+          <Button variant="secondary" onClick={() => setEditOpen((value) => !value)}>
+            <Pencil className="size-[var(--napms-icon-size-control)]" aria-hidden="true" />Edit
+          </Button>
+        }
+      />
 
-      {editOpen ? <DeploymentEditPanel deployment={deployment} onChanged={(updated) => { setDeployment(updated); setEditOpen(false); refreshDeployment() }} onRetired={onBack} onCancel={() => setEditOpen(false)} /> : null}
+      {editOpen ? (
+        <DeploymentEditPanel
+          deployment={deployment}
+          onChanged={(updated) => { setDeployment(updated); setEditOpen(false); refreshDeployment() }}
+          onRetired={onBack}
+          onCancel={() => setEditOpen(false)}
+        />
+      ) : null}
 
-      <section className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm">
-        <dl className="grid gap-4 md:grid-cols-4"><div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Application</dt><dd className="mt-1 text-sm font-medium text-[#172033]">{applicationName ?? "—"}</dd></div><div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Company</dt><dd className="mt-1 text-sm text-[#172033]">{deployment.companyReference}</dd></div><div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Environment</dt><dd className="mt-1 text-sm text-[#172033]">{deployment.environment}</dd></div><div><dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Scope</dt><dd className="mt-1 text-sm text-[#172033]">{deployment.scopeReference}</dd></div></dl>
-      </section>
+      <DetailSection title="Deployment">
+        <div className="grid gap-x-8 md:grid-cols-2 xl:grid-cols-4">
+          <DetailRow label="Application" labelWidthClassName="grid-cols-1">{applicationName ?? "—"}</DetailRow>
+          <DetailRow label="Company" labelWidthClassName="grid-cols-1">{deployment.companyReference}</DetailRow>
+          <DetailRow label="Environment" labelWidthClassName="grid-cols-1">{deployment.environment}</DetailRow>
+          <DetailRow label="Scope" labelWidthClassName="grid-cols-1">{deployment.scopeReference}</DetailRow>
+        </div>
+      </DetailSection>
 
-      <section className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
-        <div className="flex items-center justify-between gap-4 border-b border-[#E2E8F0] px-5 py-4"><div><h2 className="font-semibold text-[#172033]">Connectivity {selectedTotal} / {definedTotal}</h2><p className="mt-1 text-xs text-[#64748B]">Selected Interaction Definitions in this deployment.</p></div><Button onClick={() => setAddOpen((value) => !value)}><Plus className="size-4" aria-hidden="true" />Add interaction</Button></div>
+      <DetailSection
+        title={`Connectivity ${selectedTotal} / ${definedTotal}`}
+        actions={<Button size="sm" onClick={() => setAddOpen((value) => !value)}><Plus className="size-4" aria-hidden="true" />Add interaction</Button>}
+      >
+        <p className="mb-3 text-xs text-[var(--napms-color-text-secondary)]">Selected Interaction Definitions in this deployment.</p>
+
         {addOpen ? <AddDeploymentInteractionPanel deploymentId={deploymentId} onCancel={() => setAddOpen(false)} onChanged={refreshDeployment} /> : null}
 
-        <form className="grid gap-2 border-b border-[#E2E8F0] p-4 sm:grid-cols-[minmax(14rem,1fr)_10rem_auto]" onSubmit={(event) => { event.preventDefault(); setPage(1); setSearch(draftSearch.trim()); setProtocol(draftProtocol.trim()) }}><div className="relative min-w-0"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-[#94A3B8]" aria-hidden="true" /><input className={`${inputClass} w-full pl-9`} value={draftSearch} onChange={(event) => setDraftSearch(event.target.value)} placeholder="Search connectivity" aria-label="Search connectivity" /></div><input className={inputClass} value={draftProtocol} onChange={(event) => setDraftProtocol(event.target.value)} placeholder="Protocol" aria-label="Protocol" /><Button type="submit" variant="secondary">Apply</Button></form>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault()
+            setPage(1)
+            setSearch(draftSearch.trim())
+            setProtocol(draftProtocol.trim())
+          }}
+        >
+          <CatalogueToolbar>
+            <SearchInput value={draftSearch} onChange={(event) => setDraftSearch(event.target.value)} placeholder="Search connectivity" aria-label="Search connectivity" />
+            <CatalogueFilterBar>
+              <CatalogueFilterField label="Protocol" className="xl:w-[190px]">
+                <Input value={draftProtocol} onChange={(event) => setDraftProtocol(event.target.value)} aria-label="Protocol" />
+              </CatalogueFilterField>
+              <Button type="submit" variant="secondary" size="sm" className="xl:ml-auto">Apply</Button>
+            </CatalogueFilterBar>
+          </CatalogueToolbar>
+        </form>
 
-        {removeError ? <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">{removeError}</div> : null}
+        {removeError ? <div className="my-3 rounded-[var(--napms-control-radius)] border border-[var(--napms-color-danger-dot)] bg-[var(--napms-color-danger-bg)] px-4 py-3 text-sm text-[var(--napms-color-danger)]">{removeError}</div> : null}
         {removeBlockers && removeBlockerSubject ? <DependencyBlockPanel groups={removeBlockers} subjectKind="deployment-interaction" subjectId={removeBlockerSubject} onClose={() => { setRemoveBlockers(null); setRemoveBlockerSubject(null) }} /> : null}
 
-        {connectivityLoading ? <div className="p-6 text-sm text-[#64748B]">Loading connectivity…</div> : connectivityError ? <div className="p-6 text-sm text-red-700">{connectivityError.message}</div> : connectivity.length === 0 ? <div className="p-6 text-sm text-[#64748B]">No interactions match the current view.</div> : (
-          <div className="overflow-x-auto"><table className="w-full min-w-[1120px] text-left text-sm"><thead className="bg-[#F8FAFC] text-xs font-semibold uppercase tracking-wide text-[#64748B]"><tr><th className="px-5 py-3">Source component</th><th className="px-5 py-3 text-right">Source resources</th><th className="px-5 py-3">Destination component</th><th className="px-5 py-3 text-right">Destination resources</th><th className="px-5 py-3">Traffic</th><th className="w-44 px-5 py-3" /></tr></thead><tbody className="divide-y divide-[#E2E8F0]">{connectivity.map((item) => <tr key={item.deploymentInteractionId}><td className="px-5 py-3 font-semibold text-[#172033]">{item.sourceComponent.displayName}</td><td className="px-5 py-3 text-right tabular-nums"><button type="button" className="font-semibold text-[#2563EB] hover:underline" onClick={() => onOpenResources(item.deploymentInteractionId, "Source")}>{resourceCount(item.sourceComponent.resourceCount)}</button></td><td className="px-5 py-3 font-semibold text-[#172033]">{item.destinationComponent.displayName}</td><td className="px-5 py-3 text-right tabular-nums"><button type="button" className="font-semibold text-[#2563EB] hover:underline" onClick={() => onOpenResources(item.deploymentInteractionId, "Destination")}>{resourceCount(item.destinationComponent.resourceCount)}</button></td><td className="px-5 py-3 text-[#475569]">{trafficSummary(item.trafficAlternatives)}</td><td className="px-5 py-3 text-right">{removingId === item.deploymentInteractionId ? <div className="flex justify-end gap-2"><Button variant="ghost" disabled={removing} onClick={() => setRemovingId(null)}>Cancel</Button><Button variant="secondary" loading={removing} onClick={() => void removeInteraction(item.deploymentInteractionId)}>Confirm remove</Button></div> : <Button variant="ghost" onClick={() => setRemovingId(item.deploymentInteractionId)}>Remove from deployment</Button>}</td></tr>)}</tbody></table></div>
+        {connectivityLoading ? (
+          <LoadingState>Loading connectivity…</LoadingState>
+        ) : connectivityError ? (
+          <ErrorState message={connectivityError.message} />
+        ) : connectivity.length === 0 ? (
+          <EmptyState title="No interactions match the current view" />
+        ) : (
+          <DeploymentConnectivityTable
+            items={connectivity}
+            removingId={removingId}
+            removing={removing}
+            onOpenResources={onOpenResources}
+            onRequestRemove={setRemovingId}
+            onCancelRemove={() => setRemovingId(null)}
+            onConfirmRemove={(interactionId) => void removeInteraction(interactionId)}
+          />
         )}
-        {!connectivityLoading && !connectivityError ? <CataloguePager page={page} pageSize={pageSize} total={filteredTotal} onPageChange={setPage} /> : null}
-      </section>
-    </div>
+
+        {!connectivityLoading && !connectivityError ? (
+          <CataloguePaginationControls
+            page={page}
+            pageSize={pageSize}
+            total={filteredTotal}
+            onPageChange={setPage}
+            onPageSizeChange={(nextPageSize) => { setPageSize(nextPageSize); setPage(1) }}
+          />
+        ) : null}
+      </DetailSection>
+    </PageWorkspace>
   )
 }

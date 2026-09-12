@@ -1,7 +1,7 @@
 import { useMemo } from "react"
-import { Search } from "lucide-react"
 
 import { Field, Select } from "@/design-system/components/Field"
+import { SearchInput } from "@/design-system/components/SearchInput"
 import {
   shortId,
   trafficAlternativeText,
@@ -98,21 +98,14 @@ export function CatalogueInteractionSelector({
   return (
     <>
       <Field label={searchLabel}>
-        <div className="relative">
-          <Search
-            className="pointer-events-none absolute left-3 top-3 size-4 text-[#94A3B8]"
-            aria-hidden="true"
-          />
-          <input
-            type="search"
-            value={searchInput}
-            maxLength={256}
-            onChange={(event) => onSearchInputChange(event.target.value)}
-            disabled={searchDisabled}
-            placeholder={searchPlaceholder}
-            className="min-h-10 w-full rounded-md border border-[#CBD5E1] py-2 pl-9 pr-3 text-sm disabled:bg-[#F8FAFC]"
-          />
-        </div>
+        <SearchInput
+          type="search"
+          value={searchInput}
+          maxLength={256}
+          onChange={(event) => onSearchInputChange(event.target.value)}
+          disabled={searchDisabled}
+          placeholder={searchPlaceholder}
+        />
       </Field>
 
       <Field label="Source Component Deployment">

@@ -303,7 +303,7 @@ export function ResourcesPage({
         ) : items.length === 0 ? (
           <EmptyState title="No resources found" description="Change the search or filters, or create a new resource." />
         ) : (
-          <DataTable minWidth={1120}>
+          <DataTable width="wide">
             <colgroup>
               <col style={{ width: "var(--napms-table-selection-column)" }} />
               <col style={{ width: "15%" }} />

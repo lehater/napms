@@ -1,8 +1,14 @@
-import { DetailRow, DetailSection } from "@/design-system/patterns/detail/Detail"
 import {
-  CatalogueIdentity,
-  trafficAlternativeText,
-} from "@/features/catalogues/components/CatalogueIdentity"
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHeadCell,
+  DataTableHeader,
+  DataTableHeaderRow,
+  DataTableRow,
+} from "@/design-system/components/DataTable"
+import { DetailRow, DetailSection } from "@/design-system/patterns/detail/Detail"
+import { CatalogueIdentity, trafficAlternativeText } from "@/features/catalogues/components/CatalogueIdentity"
 import type { RuleDetailResponse } from "@/features/rules/api"
 
 export function AccessRuleDetailSections({ detail, onOpenDecision }: { detail: RuleDetailResponse; onOpenDecision: (decisionId: string) => void }) {
@@ -12,9 +18,9 @@ export function AccessRuleDetailSections({ detail, onOpenDecision }: { detail: R
       <div className="grid gap-4 lg:grid-cols-2">
         <DetailRow label="Source Component Deployment"><CatalogueIdentity name={rule.catalogue?.sourceDisplayName} id={rule.semanticIdentity.sourceComponentDeploymentId} /></DetailRow>
         <DetailRow label="Destination Component Deployment"><CatalogueIdentity name={rule.catalogue?.destinationDisplayName} id={rule.semanticIdentity.destinationComponentDeploymentId} /></DetailRow>
-        <DetailRow label="DCS revision"><CatalogueIdentity name={rule.catalogue?.dcsDisplayName} id={rule.semanticIdentity.dcsContractRevisionId} />{(rule.catalogue?.trafficAlternatives.length ?? 0) > 0 ? <div className="mt-2 grid gap-1 text-xs text-[#64748B]">{rule.catalogue?.trafficAlternatives.map((alternative, index) => <div key={index}>{trafficAlternativeText(alternative)}</div>)}</div> : null}</DetailRow>
+        <DetailRow label="DCS revision"><CatalogueIdentity name={rule.catalogue?.dcsDisplayName} id={rule.semanticIdentity.dcsContractRevisionId} />{(rule.catalogue?.trafficAlternatives.length ?? 0) > 0 ? <div className="mt-2 grid gap-1 text-xs text-[var(--napms-color-text-secondary)]">{rule.catalogue?.trafficAlternatives.map((alternative, index) => <div key={index}>{trafficAlternativeText(alternative)}</div>)}</div> : null}</DetailRow>
         <DetailRow label="Governance scope">{rule.governanceScope}</DetailRow>
-        <DetailRow label="Decision reference">{rule.decisionReference ? <button type="button" className="break-all font-mono text-xs text-[#2563EB] hover:underline" onClick={() => onOpenDecision(rule.decisionReference as string)}>{rule.decisionReference}</button> : "—"}</DetailRow>
+        <DetailRow label="Decision reference">{rule.decisionReference ? <button type="button" className="break-all font-mono text-xs text-[var(--napms-color-primary)] hover:underline" onClick={() => onOpenDecision(rule.decisionReference as string)}>{rule.decisionReference}</button> : "—"}</DetailRow>
         <DetailRow label="Effective window">{rule.effectiveWindow ? `${rule.effectiveWindow.start} → ${rule.effectiveWindow.end}` : "No restriction"}</DetailRow>
       </div>
     </DetailSection>
@@ -29,11 +35,21 @@ export function AccessRuleDetailSections({ detail, onOpenDecision }: { detail: R
     </DetailSection>
 
     <DetailSection title="State history">
-      {rule.stateHistory.length === 0 ? <p className="text-sm text-[#64748B]">No operational-state transitions have been recorded.</p> : <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="text-xs uppercase tracking-wide text-[#64748B]"><tr><th className="pb-3 font-semibold">Transition</th><th className="pb-3 font-semibold">Actor</th><th className="pb-3 font-semibold">Effective time</th><th className="pb-3 font-semibold">Authority</th></tr></thead><tbody>{rule.stateHistory.map((item, index) => <tr key={`${item.effectiveTime}-${index}`} className="border-t border-[#E2E8F0]"><td className="py-3">{item.fromState} → {item.toState}</td><td className="py-3">{item.actorId}</td><td className="py-3">{item.effectiveTime}</td><td className="py-3 font-mono text-xs">{item.authorityReference}</td></tr>)}</tbody></table></div>}
+      {rule.stateHistory.length === 0 ? <p className="text-sm text-[var(--napms-color-text-secondary)]">No operational-state transitions have been recorded.</p> : (
+        <DataTable width="compact">
+          <DataTableHeader><DataTableHeaderRow><DataTableHeadCell>Transition</DataTableHeadCell><DataTableHeadCell>Actor</DataTableHeadCell><DataTableHeadCell>Effective time</DataTableHeadCell><DataTableHeadCell>Authority</DataTableHeadCell></DataTableHeaderRow></DataTableHeader>
+          <DataTableBody>{rule.stateHistory.map((item, index) => <DataTableRow key={`${item.effectiveTime}-${index}`}><DataTableCell>{item.fromState} → {item.toState}</DataTableCell><DataTableCell>{item.actorId}</DataTableCell><DataTableCell>{item.effectiveTime}</DataTableCell><DataTableCell className="font-mono text-xs">{item.authorityReference}</DataTableCell></DataTableRow>)}</DataTableBody>
+        </DataTable>
+      )}
     </DetailSection>
 
     <DetailSection title="EffectiveWindow history">
-      {rule.effectiveWindowHistory.length === 0 ? <p className="text-sm text-[#64748B]">No EffectiveWindow changes have been recorded.</p> : <div className="overflow-x-auto"><table className="w-full min-w-[880px] text-left text-sm"><thead className="text-xs uppercase tracking-wide text-[#64748B]"><tr><th className="pb-3 font-semibold">Previous</th><th className="pb-3 font-semibold">New</th><th className="pb-3 font-semibold">Actor</th><th className="pb-3 font-semibold">Effective time</th><th className="pb-3 font-semibold">Authority</th></tr></thead><tbody>{rule.effectiveWindowHistory.map((item, index) => <tr key={`${item.effectiveTime}-window-${index}`} className="border-t border-[#E2E8F0]"><td className="py-3 text-xs">{item.previousWindow ? `${item.previousWindow.start} → ${item.previousWindow.end}` : "No restriction"}</td><td className="py-3 text-xs">{item.newWindow ? `${item.newWindow.start} → ${item.newWindow.end}` : "No restriction"}</td><td className="py-3">{item.actorId}</td><td className="py-3">{item.effectiveTime}</td><td className="py-3 font-mono text-xs">{item.authorityReference}</td></tr>)}</tbody></table></div>}
+      {rule.effectiveWindowHistory.length === 0 ? <p className="text-sm text-[var(--napms-color-text-secondary)]">No EffectiveWindow changes have been recorded.</p> : (
+        <DataTable width="standard">
+          <DataTableHeader><DataTableHeaderRow><DataTableHeadCell>Previous</DataTableHeadCell><DataTableHeadCell>New</DataTableHeadCell><DataTableHeadCell>Actor</DataTableHeadCell><DataTableHeadCell>Effective time</DataTableHeadCell><DataTableHeadCell>Authority</DataTableHeadCell></DataTableHeaderRow></DataTableHeader>
+          <DataTableBody>{rule.effectiveWindowHistory.map((item, index) => <DataTableRow key={`${item.effectiveTime}-window-${index}`}><DataTableCell className="text-xs">{item.previousWindow ? `${item.previousWindow.start} → ${item.previousWindow.end}` : "No restriction"}</DataTableCell><DataTableCell className="text-xs">{item.newWindow ? `${item.newWindow.start} → ${item.newWindow.end}` : "No restriction"}</DataTableCell><DataTableCell>{item.actorId}</DataTableCell><DataTableCell>{item.effectiveTime}</DataTableCell><DataTableCell className="font-mono text-xs">{item.authorityReference}</DataTableCell></DataTableRow>)}</DataTableBody>
+        </DataTable>
+      )}
     </DetailSection>
   </>
 }

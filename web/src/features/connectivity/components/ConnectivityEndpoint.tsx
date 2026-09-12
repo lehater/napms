@@ -29,7 +29,7 @@ export function ConnectivityRemoteSide({
         {componentName?.trim() || componentId}
       </div>
       {componentName?.trim() ? (
-        <div className="mt-0.5 font-mono text-[11px] text-[var(--napms-color-text-muted)]">
+        <div className="mt-0.5 font-mono text-[var(--napms-font-size-caption)] text-[var(--napms-color-text-muted)]">
           {componentId}
         </div>
       ) : null}

@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react"
-import { Search, X } from "lucide-react"
+import { X } from "lucide-react"
 
-import { ApiError } from "@/lib/api"
-import { Button } from "@/components/ui/Button"
-import type {
-  PortConstraintDto,
-  TrafficAlternativeDto,
-} from "@/features/catalogues/model/interaction"
-import { DependencyBlockPanel } from "@/features/catalogues/components/DependencyBlockPanel"
+import { Button } from "@/design-system/components/Button"
+import { Input } from "@/design-system/components/Field"
+import { SearchInput } from "@/design-system/components/SearchInput"
 import {
   retireInteractionDefinition,
   TargetCatalogueApiError,
@@ -20,9 +16,12 @@ import {
   listApplicationComponents,
   type ApplicationComponentDto,
 } from "@/features/catalogues/api/targetCatalogue"
-
-const inputClass =
-  "min-h-10 w-full rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#172033] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
+import { DependencyBlockPanel } from "@/features/catalogues/components/DependencyBlockPanel"
+import type {
+  PortConstraintDto,
+  TrafficAlternativeDto,
+} from "@/features/catalogues/model/interaction"
+import { ApiError } from "@/lib/api"
 
 type Choice = { id: string; name: string }
 type TrafficDraft = {
@@ -114,33 +113,38 @@ function ComponentSearch({
     setLoading(true)
     setError(null)
     void listApplicationComponents({ applicationId, page: 1, pageSize: 20, search })
-      .then((result) => {
-        if (active) setItems(result.items)
-      })
+      .then((result) => { if (active) setItems(result.items) })
       .catch((caught) => {
         if (active) setError(caught instanceof ApiError ? caught : new ApiError(500, "InternalError", "Components could not be loaded."))
       })
-      .finally(() => {
-        if (active) setLoading(false)
-      })
+      .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [applicationId, search])
 
   return (
     <div className="grid gap-2">
-      <div className="rounded-md border border-[#BFDBFE] bg-[#EFF6FF] px-3 py-2 text-sm font-semibold text-[#1D4ED8]">{selected.name}</div>
+      <div className="rounded-[var(--napms-control-radius)] border border-[var(--napms-color-primary-border)] bg-[var(--napms-color-primary-subtle)] px-3 py-2 text-sm font-semibold text-[var(--napms-color-primary-hover)]">
+        {selected.name}
+      </div>
       <form className="flex gap-2" onSubmit={(event) => { event.preventDefault(); setSearch(draft.trim()) }}>
-        <div className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute left-3 top-3 size-4 text-[#94A3B8]" aria-hidden="true" />
-          <input className={`${inputClass} pl-9`} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Search components" aria-label="Search components" />
-        </div>
+        <SearchInput value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Search components" aria-label="Search components" />
         <Button type="submit" variant="secondary">Search</Button>
       </form>
-      {loading ? <div className="text-xs text-[#64748B]">Loading…</div> : error ? <div className="text-xs text-red-700">{error.message}</div> : (
-        <div className="max-h-40 overflow-y-auto rounded-md border border-[#E2E8F0] bg-white">
+      {loading ? (
+        <div className="text-xs text-[var(--napms-color-text-secondary)]">Loading…</div>
+      ) : error ? (
+        <div className="text-xs text-[var(--napms-color-danger)]">{error.message}</div>
+      ) : (
+        <div className="max-h-40 overflow-y-auto rounded-[var(--napms-control-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)]">
           {items.map((item) => (
-            <button key={item.componentId} type="button" className="block w-full border-b border-[#F1F5F9] px-3 py-2 text-left text-sm last:border-0 hover:bg-[#F8FAFC]" onClick={() => onSelect({ id: item.componentId, name: item.displayName })}>
-              <span className="font-semibold text-[#172033]">{item.displayName}</span>{item.componentType ? <span className="ml-2 text-xs text-[#64748B]">{item.componentType}</span> : null}
+            <button
+              key={item.componentId}
+              type="button"
+              className="block w-full border-b border-[var(--napms-color-surface-muted)] px-3 py-2 text-left text-sm last:border-0 hover:bg-[var(--napms-color-surface-subtle)]"
+              onClick={() => onSelect({ id: item.componentId, name: item.displayName })}
+            >
+              <span className="font-semibold text-[var(--napms-color-text-primary)]">{item.displayName}</span>
+              {item.componentType ? <span className="ml-2 text-xs text-[var(--napms-color-text-secondary)]">{item.componentType}</span> : null}
             </button>
           ))}
         </div>
@@ -235,34 +239,52 @@ export function InteractionDefinitionEditPanel({
   }
 
   return (
-    <div className="grid gap-5 border-b border-[#E2E8F0] bg-[#F8FAFC] p-5">
+    <div className="my-3 grid gap-5 rounded-[var(--napms-control-radius)] bg-[var(--napms-color-surface-subtle)] p-4">
       <section className="grid gap-3">
-        <div><h3 className="font-semibold text-[#172033]">Endpoints</h3><p className="mt-1 text-xs text-[#64748B]">Saved independently from traffic.</p></div>
-        <div className="grid gap-4 lg:grid-cols-2"><ComponentSearch applicationId={current.applicationId} selected={source} onSelect={setSource} /><ComponentSearch applicationId={current.applicationId} selected={destination} onSelect={setDestination} /></div>
-        {endpointError ? <div className="text-sm text-red-700">{endpointError}</div> : null}
+        <div>
+          <h3 className="font-semibold text-[var(--napms-color-text-primary)]">Endpoints</h3>
+          <p className="mt-1 text-xs text-[var(--napms-color-text-secondary)]">Saved independently from traffic.</p>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ComponentSearch applicationId={current.applicationId} selected={source} onSelect={setSource} />
+          <ComponentSearch applicationId={current.applicationId} selected={destination} onSelect={setDestination} />
+        </div>
+        {endpointError ? <div className="text-sm text-[var(--napms-color-danger)]">{endpointError}</div> : null}
         <div className="flex justify-end"><Button loading={savingEndpoints} onClick={() => void saveEndpoints()}>Save endpoints</Button></div>
       </section>
 
-      <section className="grid gap-3 border-t border-[#E2E8F0] pt-5">
-        <div className="flex items-center justify-between"><div><h3 className="font-semibold text-[#172033]">Traffic</h3><p className="mt-1 text-xs text-[#64748B]">Saved as the Interaction Definition traffic truth.</p></div><Button variant="secondary" onClick={() => { setRows((currentRows) => [...currentRows, { key: nextKey, protocol: "tcp", sourcePorts: "any", destinationPorts: "443", serviceReference: "" }]); setNextKey((value) => value + 1) }}>Add traffic row</Button></div>
+      <section className="grid gap-3 border-t border-[var(--napms-color-border)] pt-5">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="font-semibold text-[var(--napms-color-text-primary)]">Traffic</h3>
+            <p className="mt-1 text-xs text-[var(--napms-color-text-secondary)]">Saved as the Interaction Definition traffic truth.</p>
+          </div>
+          <Button variant="secondary" size="sm" onClick={() => { setRows((currentRows) => [...currentRows, { key: nextKey, protocol: "tcp", sourcePorts: "any", destinationPorts: "443", serviceReference: "" }]); setNextKey((value) => value + 1) }}>Add traffic row</Button>
+        </div>
         {rows.map((row) => (
-          <div key={row.key} className="grid gap-2 rounded-md border border-[#E2E8F0] bg-white p-3 md:grid-cols-[8rem_1fr_1fr_1fr_auto]">
-            <input className={inputClass} value={row.protocol} onChange={(event) => setRows((currentRows) => currentRows.map((item) => item.key === row.key ? { ...item, protocol: event.target.value } : item))} aria-label="Protocol" />
-            <input className={inputClass} value={row.sourcePorts} onChange={(event) => setRows((currentRows) => currentRows.map((item) => item.key === row.key ? { ...item, sourcePorts: event.target.value } : item))} aria-label="Source ports" />
-            <input className={inputClass} value={row.destinationPorts} onChange={(event) => setRows((currentRows) => currentRows.map((item) => item.key === row.key ? { ...item, destinationPorts: event.target.value } : item))} aria-label="Destination ports" />
-            <input className={inputClass} value={row.serviceReference} onChange={(event) => setRows((currentRows) => currentRows.map((item) => item.key === row.key ? { ...item, serviceReference: event.target.value } : item))} placeholder="Service" aria-label="Service reference" />
-            <Button variant="ghost" disabled={rows.length === 1} onClick={() => setRows((currentRows) => currentRows.filter((item) => item.key !== row.key))} aria-label="Remove traffic row"><X className="size-4" /></Button>
+          <div key={row.key} className="grid gap-2 rounded-[var(--napms-control-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] p-3 md:grid-cols-[8rem_1fr_1fr_1fr_auto]">
+            <Input value={row.protocol} onChange={(event) => setRows((currentRows) => currentRows.map((item) => item.key === row.key ? { ...item, protocol: event.target.value } : item))} aria-label="Protocol" />
+            <Input value={row.sourcePorts} onChange={(event) => setRows((currentRows) => currentRows.map((item) => item.key === row.key ? { ...item, sourcePorts: event.target.value } : item))} aria-label="Source ports" />
+            <Input value={row.destinationPorts} onChange={(event) => setRows((currentRows) => currentRows.map((item) => item.key === row.key ? { ...item, destinationPorts: event.target.value } : item))} aria-label="Destination ports" />
+            <Input value={row.serviceReference} onChange={(event) => setRows((currentRows) => currentRows.map((item) => item.key === row.key ? { ...item, serviceReference: event.target.value } : item))} placeholder="Service" aria-label="Service reference" />
+            <Button variant="ghost" disabled={rows.length === 1} onClick={() => setRows((currentRows) => currentRows.filter((item) => item.key !== row.key))} aria-label="Remove traffic row"><X className="size-4" aria-hidden="true" /></Button>
           </div>
         ))}
-        {trafficError ? <div className="text-sm text-red-700">{trafficError}</div> : null}
+        {trafficError ? <div className="text-sm text-[var(--napms-color-danger)]">{trafficError}</div> : null}
         {trafficBlockers ? <DependencyBlockPanel groups={trafficBlockers} onClose={() => setTrafficBlockers(null)} /> : null}
         <div className="flex justify-end"><Button loading={savingTraffic} onClick={() => void saveTraffic()}>Save traffic</Button></div>
       </section>
 
-      <section className="flex flex-wrap items-center justify-between gap-2 border-t border-[#E2E8F0] pt-5">
+      <section className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--napms-color-border)] pt-5">
         <div>
-          {retireError ? <div className="mb-2 text-sm text-red-700">{retireError}</div> : null}
-          {confirmRetire ? <div className="flex items-center gap-2"><span className="text-sm text-[#64748B]">Retire this Interaction Definition?</span><Button variant="secondary" onClick={() => setConfirmRetire(false)}>Cancel</Button><Button loading={retiring} onClick={() => void retire()}>Retire</Button></div> : <Button variant="ghost" onClick={() => setConfirmRetire(true)}>Retire interaction</Button>}
+          {retireError ? <div className="mb-2 text-sm text-[var(--napms-color-danger)]">{retireError}</div> : null}
+          {confirmRetire ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[var(--napms-color-text-secondary)]">Retire this Interaction Definition?</span>
+              <Button variant="secondary" onClick={() => setConfirmRetire(false)}>Cancel</Button>
+              <Button loading={retiring} onClick={() => void retire()}>Retire</Button>
+            </div>
+          ) : <Button variant="ghost" onClick={() => setConfirmRetire(true)}>Retire interaction</Button>}
         </div>
         <Button variant="secondary" onClick={onCancel}>Close editor</Button>
       </section>

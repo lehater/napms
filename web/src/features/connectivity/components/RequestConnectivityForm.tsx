@@ -37,9 +37,9 @@ export function RequestConnectivityForm({
   return (
     <form
       onSubmit={submit}
-      className="rounded-lg border border-[#E2E8F0] bg-white p-5"
+      className="rounded-[var(--napms-surface-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] p-5 shadow-[var(--napms-surface-shadow)]"
     >
-      <h2 className="text-base font-semibold text-[#172033]">
+      <h2 className="text-base font-semibold text-[var(--napms-color-text-primary)]">
         {needExists ? "Confirm access proposal" : "Business need"}
       </h2>
 
@@ -96,7 +96,7 @@ export function RequestConnectivityForm({
           </Field>
         </div>
       ) : (
-        <p className="mt-2 text-sm text-[#64748B]">
+        <p className="mt-2 text-sm text-[var(--napms-color-text-secondary)]">
           The existing current Connectivity Requirement remains the need record.
           Requesting access does not change it.
         </p>

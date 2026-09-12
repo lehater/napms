@@ -1,17 +1,26 @@
 import { ArrowDown, ArrowUp } from "lucide-react"
 
+type DataTableWidth = "compact" | "standard" | "wide" | "extra-wide"
+
+const tableWidth: Record<DataTableWidth, string> = {
+  compact: "var(--napms-table-min-width-compact)",
+  standard: "var(--napms-table-min-width-standard)",
+  wide: "var(--napms-table-min-width-wide)",
+  "extra-wide": "var(--napms-table-min-width-extra-wide)",
+}
+
 export function DataTable({
   children,
-  minWidth = 1180,
+  width = "wide",
 }: {
   children: React.ReactNode
-  minWidth?: number
+  width?: DataTableWidth
 }) {
   return (
     <div className="mt-3 min-h-[var(--napms-table-body-min-height)] overflow-x-auto rounded-[var(--napms-surface-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] shadow-[var(--napms-surface-shadow)]">
       <table
-        className="w-full table-fixed border-collapse text-left text-[12px]"
-        style={{ minWidth }}
+        className="w-full table-fixed border-collapse text-left text-[var(--napms-font-size-table)]"
+        style={{ minWidth: tableWidth[width] }}
       >
         {children}
       </table>
@@ -20,11 +29,7 @@ export function DataTable({
 }
 
 export function DataTableHeader({ children }: { children: React.ReactNode }) {
-  return (
-    <thead className="bg-[var(--napms-color-surface-subtle)] text-[10px] font-semibold text-[var(--napms-color-text-body)]">
-      {children}
-    </thead>
-  )
+  return <thead className="bg-[var(--napms-color-surface-subtle)] text-[var(--napms-font-size-micro)] font-semibold text-[var(--napms-color-text-body)]">{children}</thead>
 }
 
 export function DataTableBody({ children }: { children: React.ReactNode }) {
@@ -32,31 +37,22 @@ export function DataTableBody({ children }: { children: React.ReactNode }) {
 }
 
 export function DataTableHeaderRow({ children }: { children: React.ReactNode }) {
-  return (
-    <tr className="h-[var(--napms-table-header-height)] border-b border-[var(--napms-color-border)]">
-      {children}
-    </tr>
-  )
+  return <tr className="h-[var(--napms-table-header-height)] border-b border-[var(--napms-color-border)]">{children}</tr>
 }
 
 export function DataTableRow({
   children,
   selected = false,
   onClick,
-}: {
-  children: React.ReactNode
+  className = "",
+  ...props
+}: React.HTMLAttributes<HTMLTableRowElement> & {
   selected?: boolean
-  onClick?: () => void
 }) {
   return (
     <tr
-      className={`h-[var(--napms-table-row-height)] bg-[var(--napms-color-surface)] transition ${
-        onClick ? "cursor-pointer" : ""
-      } ${
-        selected
-          ? "bg-[var(--napms-color-primary-subtle)]"
-          : "hover:bg-[var(--napms-color-surface-subtle)]"
-      }`}
+      {...props}
+      className={`h-[var(--napms-table-row-height)] bg-[var(--napms-color-surface)] transition ${onClick ? "cursor-pointer" : ""} ${selected ? "bg-[var(--napms-color-primary-subtle)]" : "hover:bg-[var(--napms-color-surface-subtle)]"} ${className}`}
       onClick={onClick}
     >
       {children}
@@ -70,39 +66,21 @@ export function DataTableHeadCell({
   onSort,
   sortDirection = null,
   ariaLabel,
-}: {
-  children?: React.ReactNode
-  className?: string
+  ...props
+}: React.ThHTMLAttributes<HTMLTableCellElement> & {
   onSort?: () => void
   sortDirection?: "asc" | "desc" | null
   ariaLabel?: string
 }) {
   const ariaSort = sortDirection === "asc" ? "ascending" : sortDirection === "desc" ? "descending" : "none"
-
   return (
-    <th
-      className={`px-[var(--napms-table-cell-x)] ${className}`}
-      aria-sort={onSort ? ariaSort : undefined}
-    >
+    <th {...props} className={`px-[var(--napms-table-cell-x)] ${className}`} aria-sort={onSort ? ariaSort : props["aria-sort"]}>
       {onSort ? (
-        <button
-          type="button"
-          className="group inline-flex min-h-7 items-center gap-1 rounded px-1 text-left hover:bg-[var(--napms-color-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--napms-color-primary-border)]"
-          onClick={onSort}
-          aria-label={ariaLabel}
-        >
+        <button type="button" className="group inline-flex min-h-7 items-center gap-1 rounded px-1 text-left hover:bg-[var(--napms-color-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--napms-color-primary-border)]" onClick={onSort} aria-label={ariaLabel}>
           <span>{children}</span>
-          {sortDirection === "asc" ? (
-            <ArrowUp className="size-3" aria-hidden="true" />
-          ) : sortDirection === "desc" ? (
-            <ArrowDown className="size-3" aria-hidden="true" />
-          ) : (
-            <span className="w-3 opacity-0 transition-opacity group-hover:opacity-40" aria-hidden="true">↕</span>
-          )}
+          {sortDirection === "asc" ? <ArrowUp className="size-3" aria-hidden="true" /> : sortDirection === "desc" ? <ArrowDown className="size-3" aria-hidden="true" /> : <span className="w-3 opacity-0 transition-opacity group-hover:opacity-40" aria-hidden="true">↕</span>}
         </button>
-      ) : (
-        children
-      )}
+      ) : children}
     </th>
   )
 }
@@ -110,37 +88,15 @@ export function DataTableHeadCell({
 export function DataTableCell({
   children,
   className = "",
-}: {
-  children?: React.ReactNode
-  className?: string
-}) {
-  return (
-    <td
-      className={`px-[var(--napms-table-cell-x)] py-[var(--napms-table-cell-y)] align-middle ${className}`}
-    >
-      {children}
-    </td>
-  )
+  ...props
+}: React.TdHTMLAttributes<HTMLTableCellElement>) {
+  return <td {...props} className={`px-[var(--napms-table-cell-x)] py-[var(--napms-table-cell-y)] align-middle ${className}`}>{children}</td>
 }
 
 export function DataTableSelectionCell({ children }: { children: React.ReactNode }) {
-  return (
-    <td
-      className="w-[var(--napms-table-selection-column)] px-[var(--napms-table-cell-x)] py-[var(--napms-table-cell-y)] align-middle"
-      onClick={(event) => event.stopPropagation()}
-    >
-      {children}
-    </td>
-  )
+  return <td className="w-[var(--napms-table-selection-column)] px-[var(--napms-table-cell-x)] py-[var(--napms-table-cell-y)] align-middle" onClick={(event) => event.stopPropagation()}>{children}</td>
 }
 
 export function DataTableSelectionHead({ children }: { children: React.ReactNode }) {
-  return (
-    <th
-      className="w-[var(--napms-table-selection-column)] px-[var(--napms-table-cell-x)]"
-      onClick={(event) => event.stopPropagation()}
-    >
-      {children}
-    </th>
-  )
+  return <th className="w-[var(--napms-table-selection-column)] px-[var(--napms-table-cell-x)]" onClick={(event) => event.stopPropagation()}>{children}</th>
 }

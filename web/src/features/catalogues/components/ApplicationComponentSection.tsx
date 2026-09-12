@@ -81,7 +81,7 @@ export function ApplicationComponentSection({
               <Boxes className="size-4 text-[var(--napms-color-text-secondary)]" aria-hidden="true" />
               <h2 className="font-semibold text-[var(--napms-color-text-primary)]">{component.displayName}</h2>
             </div>
-            <div className="mt-1 font-mono text-[11px] text-[var(--napms-color-text-secondary)]">
+            <div className="mt-1 font-mono text-[var(--napms-font-size-caption)] text-[var(--napms-color-text-secondary)]">
               {component.componentId} · v{component.version}
             </div>
           </div>
@@ -141,7 +141,7 @@ export function ApplicationComponentSection({
                     <div className="font-semibold text-[var(--napms-color-text-primary)]">
                       {deployment.displayName || `Deployment ${shortId(deployment.componentDeploymentId)}`}
                     </div>
-                    <div className="mt-1 font-mono text-[11px] text-[var(--napms-color-text-secondary)]">
+                    <div className="mt-1 font-mono text-[var(--napms-font-size-caption)] text-[var(--napms-color-text-secondary)]">
                       {deployment.componentDeploymentId} · v{deployment.version}
                     </div>
                   </div>
@@ -259,7 +259,7 @@ export function ApplicationComponentSection({
                                   ))}
                                 </div>
                               )}
-                              <div className="mt-2 font-mono text-[10px] text-[var(--napms-color-text-muted)]">revision {revision.revisionId}</div>
+                              <div className="mt-2 font-mono text-[var(--napms-font-size-micro)] text-[var(--napms-color-text-muted)]">revision {revision.revisionId}</div>
                             </div>
                           )
                         })}

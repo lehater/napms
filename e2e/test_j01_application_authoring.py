@@ -107,7 +107,7 @@ def _add_interaction(
 
 
 def _add_deployment(page: Page) -> None:
-    page.get_by_role("button", name="Deployments", exact=True).click()
+    page.get_by_role("tab", name="Deployments", exact=True).click()
     page.get_by_role("button", name="Add deployment").click()
     form = _create_form(page)
     form.get_by_label("Company").fill("Company A")
@@ -212,8 +212,8 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
 
         desktop_nav.get_by_role("button", name="Applications").click()
         expect(page.get_by_role("heading", name="Applications", exact=True)).to_be_visible()
-        expect(page.get_by_role("button", name="Definitions", exact=True)).to_be_visible()
-        expect(page.get_by_role("button", name="Deployments", exact=True)).to_be_visible()
+        expect(page.get_by_role("tab", name="Definitions", exact=True)).to_be_visible()
+        expect(page.get_by_role("tab", name="Deployments", exact=True)).to_be_visible()
 
         page.get_by_role("button", name="Add application").click()
         create_application = page.get_by_role(
@@ -227,12 +227,12 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
             page.get_by_role("heading", name="Order Management", exact=True)
         ).to_be_visible()
 
-        page.get_by_role("button", name="Components", exact=True).click()
+        page.get_by_role("tab", name="Components", exact=True).click()
         _add_component(page, "Web UI")
         _add_component(page, "Orders API")
         _add_component(page, "Database", component_type="Database")
 
-        page.get_by_role("button", name="Interactions", exact=True).click()
+        page.get_by_role("tab", name="Interactions", exact=True).click()
         _add_interaction(
             page,
             source="Web UI",
@@ -304,16 +304,16 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
         expect(row).to_have_count(1)
         row.click()
 
-        page.get_by_role("button", name="Components", exact=True).click()
+        page.get_by_role("tab", name="Components", exact=True).click()
         expect(_component_row(page, "Web UI", "Service")).to_have_count(1)
         expect(_component_row(page, "Orders API", "Service")).to_have_count(1)
         expect(_component_row(page, "Database", "Database")).to_have_count(1)
 
-        page.get_by_role("button", name="Interactions", exact=True).click()
+        page.get_by_role("tab", name="Interactions", exact=True).click()
         expect(page.get_by_role("cell", name="TCP (443)", exact=True)).to_be_visible()
         expect(page.get_by_role("cell", name="TCP (5432)", exact=True)).to_be_visible()
 
-        page.get_by_role("button", name="Deployments", exact=True).click()
+        page.get_by_role("tab", name="Deployments", exact=True).click()
         deployment_row = _deployment_row(page)
         expect(deployment_row).to_have_count(1)
         expect(deployment_row.get_by_role("cell", name="Production", exact=True)).to_be_visible()
@@ -348,7 +348,12 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
             "Target-authored Web UI requires the Orders API for checkout."
         )
         page.get_by_role("button", name="Request access", exact=True).click()
-        expect(page.get_by_text("DecisionUnknown", exact=True)).to_be_visible()
+        expect(
+            page.get_by_text(
+                "DecisionUnknown: The connectivity decision is currently unavailable.",
+                exact=True,
+            )
+        ).to_be_visible()
         expect(
             page.get_by_text(
                 "The Connectivity Requirement was recorded before the later access step failed.",
@@ -446,12 +451,12 @@ def test_j01_target_application_authoring_survives_correction_and_reopen() -> No
         screenshots["definitions-list"] = application_main_fingerprint(page)
 
         definition_row.click()
-        page.get_by_role("button", name="Interactions", exact=True).click()
+        page.get_by_role("tab", name="Interactions", exact=True).click()
         expect(page.get_by_role("cell", name="TCP (443)", exact=True)).to_be_visible()
         expect(page.get_by_role("cell", name="TCP (5432)", exact=True)).to_be_visible()
         screenshots["definition-interactions"] = application_main_fingerprint(page)
 
-        page.get_by_role("button", name="Deployments", exact=True).click()
+        page.get_by_role("tab", name="Deployments", exact=True).click()
         deployment_row = _deployment_row(page)
         expect(deployment_row.get_by_role("cell", name="2 / 2", exact=True)).to_be_visible()
         deployment_row.click()

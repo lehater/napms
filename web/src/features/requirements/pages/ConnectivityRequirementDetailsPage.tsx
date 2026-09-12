@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react"
-import { ArrowLeft, CircleAlert } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 
+import { Alert } from "@/design-system/components/Alert"
 import { Button } from "@/design-system/components/Button"
 import { Field, Input, Select, Textarea } from "@/design-system/components/Field"
+import { PageWorkspace } from "@/design-system/layout/PageWorkspace"
 import { DetailSection } from "@/design-system/patterns/detail/Detail"
 import { displayName } from "@/features/catalogues/components/CatalogueIdentity"
 import {
@@ -277,23 +279,23 @@ export function ConnectivityRequirementDetailsPage({
   const interaction = requirement?.requiredInteraction
 
   return (
-    <div className="mx-auto max-w-[1180px]">
-      <div className="mb-4">
+    <PageWorkspace width="content">
+      <div>
         <Button variant="ghost" onClick={onBack}>
           <ArrowLeft className="size-4" aria-hidden="true" />
           My Connectivity Needs
         </Button>
       </div>
 
-      <header className="mb-6">
-        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
+      <header>
+        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--napms-color-text-secondary)]">
           Connectivity Needs / Requirement Details
         </div>
-        <h1 className="break-all text-[28px] font-bold tracking-tight text-[#172033]">
+        <h1 className="break-all text-2xl font-bold tracking-tight text-[var(--napms-color-text-primary)]">
           {requirementId}
         </h1>
         {requirement && interaction ? (
-          <p className="mt-2 text-sm text-[#64748B]">
+          <p className="mt-2 text-sm text-[var(--napms-color-text-secondary)]">
             {displayName(
               requirement.catalogue?.sourceDisplayName,
               interaction.sourceComponentDeploymentId,
@@ -313,36 +315,19 @@ export function ConnectivityRequirementDetailsPage({
       </header>
 
       {error ? (
-        <div
-          role="alert"
-          className="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800"
-        >
-          <div className="flex gap-3">
-            <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            <div>
-              <div className="font-semibold">{error.code}</div>
-              <div className="mt-1">{error.message}</div>
-              {error.correlationId ? (
-                <div className="mt-2 text-xs">
-                  Correlation: {error.correlationId}
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </div>
+        <Alert role="alert" tone="danger">
+          <div className="font-semibold">{error.code}</div>
+          <div className="mt-1">{error.message}</div>
+          {error.correlationId ? (
+            <div className="mt-2 text-xs">Correlation: {error.correlationId}</div>
+          ) : null}
+        </Alert>
       ) : null}
 
-      {message ? (
-        <div
-          role="status"
-          className="mb-4 rounded-md border border-green-200 bg-green-50 p-4 text-sm text-green-800"
-        >
-          {message}
-        </div>
-      ) : null}
+      {message ? <Alert role="status" tone="success">{message}</Alert> : null}
 
       {loading && !detail ? (
-        <div className="rounded-lg border border-[#E2E8F0] bg-white p-8 text-sm text-[#64748B]">
+        <div className="rounded-[var(--napms-surface-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] p-8 text-sm text-[var(--napms-color-text-secondary)] shadow-[var(--napms-surface-shadow)]">
           Loading Connectivity Requirement…
         </div>
       ) : requirement && detail && interaction ? (
@@ -364,10 +349,10 @@ export function ConnectivityRequirementDetailsPage({
               Derived from this Requirement and effective Access Policy at one explicit logical time. It does not report configured/observed access.
             </p>
             {alignmentError ? (
-              <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+              <Alert role="alert" tone="danger" className="mt-4">
                 <div className="font-semibold">{alignmentError.code}</div>
                 <div className="mt-1">{alignmentError.message}</div>
-              </div>
+              </Alert>
             ) : loadingAlignment ? (
               <div className="mt-4 text-sm text-[var(--napms-color-text-secondary)]">
                 Loading policy coverage…
@@ -520,6 +505,6 @@ export function ConnectivityRequirementDetailsPage({
           <RequirementHistorySections requirement={requirement} />
         </div>
       ) : null}
-    </div>
+    </PageWorkspace>
   )
 }
