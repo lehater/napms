@@ -1,8 +1,12 @@
 # ADR-017 — NEP Candidate and Policy Attachment Contract
 
-Status: `accepted; implementation migration pending`.
+Status: `superseded for MVP target by ADR-018; retained as decision history`.
 
 Date: 2026-09-12.
+
+Superseded by: `ADR-018-nep-firewall-current-state-candidate-model.md`.
+
+ADR-017 remains useful as the decision that first made the unordered candidate set primary over the I19 proven-path model. ADR-018 subsequently revalidated the Tactical DDD and supersedes the candidate identity, query-time, interface/attachment and acquisition details below where they conflict.
 
 ## Context
 
