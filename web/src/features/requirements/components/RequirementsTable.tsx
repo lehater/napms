@@ -32,7 +32,7 @@ export function RequirementsTable({
   onOpenRequirement: (requirementId: string) => void
 }) {
   return (
-    <DataTable minWidth={980}>
+    <DataTable width="standard">
       <DataTableHeader>
         <DataTableHeaderRow>
           <DataTableHeadCell>Interaction</DataTableHeadCell>
