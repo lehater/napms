@@ -12,18 +12,15 @@ const tableWidth: Record<DataTableWidth, string> = {
 export function DataTable({
   children,
   width = "wide",
-  minWidth,
 }: {
   children: React.ReactNode
   width?: DataTableWidth
-  /** @deprecated Use the semantic width preset. */
-  minWidth?: number
 }) {
   return (
     <div className="mt-3 min-h-[var(--napms-table-body-min-height)] overflow-x-auto rounded-[var(--napms-surface-radius)] border border-[var(--napms-color-border)] bg-[var(--napms-color-surface)] shadow-[var(--napms-surface-shadow)]">
       <table
-        className="w-full table-fixed border-collapse text-left text-[12px]"
-        style={{ minWidth: minWidth ?? tableWidth[width] }}
+        className="w-full table-fixed border-collapse text-left text-[var(--napms-font-size-table)]"
+        style={{ minWidth: tableWidth[width] }}
       >
         {children}
       </table>
@@ -32,7 +29,7 @@ export function DataTable({
 }
 
 export function DataTableHeader({ children }: { children: React.ReactNode }) {
-  return <thead className="bg-[var(--napms-color-surface-subtle)] text-[10px] font-semibold text-[var(--napms-color-text-body)]">{children}</thead>
+  return <thead className="bg-[var(--napms-color-surface-subtle)] text-[var(--napms-font-size-micro)] font-semibold text-[var(--napms-color-text-body)]">{children}</thead>
 }
 
 export function DataTableBody({ children }: { children: React.ReactNode }) {
