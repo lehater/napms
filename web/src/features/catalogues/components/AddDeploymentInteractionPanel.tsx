@@ -152,7 +152,7 @@ export function AddDeploymentInteractionPanel({
       ) : items.length === 0 ? (
         <EmptyState title="No additional interactions are available" />
       ) : (
-        <DataTable minWidth={760}>
+        <DataTable width="compact">
           <DataTableHeader>
             <DataTableHeaderRow>
               <DataTableHeadCell className="w-16">Use</DataTableHeadCell>
