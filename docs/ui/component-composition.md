@@ -25,6 +25,12 @@ Higher layers compose lower layers. Generic layers do not depend on feature/doma
 
 ## Ownership
 
+### Visual tokens
+
+`web/src/design-system/tokens.css` is the source of truth for reusable visual constants. It owns the palette and semantic state colors, typography micro-sizes, radii, shadows, control/surface dimensions, page-width presets, and table geometry.
+
+Feature code may choose semantic presentation and compose layout, but it must not carry raw visual constants that establish a parallel theme or geometry system. If a reusable visual value is needed, add or reuse a token and consume it through a design-system primitive/component/pattern where practical.
+
 ### Design-system primitives
 
 Own the smallest stable visual/layout building blocks.
@@ -39,19 +45,19 @@ They do not know NAPMS domain vocabulary.
 
 Own reusable generic controls and focused visual components used across unrelated features.
 
-Examples include buttons, inputs/selects, checkbox, table pieces, search input, tags, status indicators and loading/error/empty states.
+Examples include buttons, inputs/selects, checkbox, table pieces, search input, alerts, tags, status indicators and loading/error/empty states.
 
 A generic component may expose semantic visual tones such as positive/warning/critical/neutral. It must not expose business states such as `Allowed`, `Covered`, `Required`, `RetiredApplication`, or `NoFinalDecision`.
 
 ### Design-system layout
 
-Own stable page/application geometry such as workspace and page-header structure.
+Own stable page/application geometry such as workspace and page-header structure. Page width is selected by semantic `PageWorkspace` presets (`fluid`, `content`, `narrow`); feature pages do not define their own fixed page widths.
 
 ### Design-system patterns
 
 Own reusable compositions of generic components with stable interaction/layout semantics.
 
-Examples may include catalogue toolbars/paging, dialog shells, detail sections/rows and inline-edit interaction after concrete reuse is demonstrated.
+Examples may include list/catalogue toolbars and paging, dialog shells, detail sections/rows and inline-edit interaction after concrete reuse is demonstrated.
 
 Patterns provide focused composition slots. They must not become universal prop-driven page/form/CRUD frameworks.
 
@@ -91,6 +97,9 @@ Reuse is demonstrated, not predicted. Prefer a second concrete consumer before e
 
 - Prefer children/slots and small focused props over inheritance and large mode/variant matrices.
 - Keep domain-to-tone mapping in feature code; render through generic status/tag primitives.
+- Keep visual constants in `tokens.css`; do not use raw hex/RGB colors, Tailwind palette colors, local fixed page widths, repeated arbitrary typography/radius/shadow values, or numeric table-width contracts in feature code.
+- Feature code may use structural layout utilities such as `grid`, `flex`, gaps and responsive arrangement where those describe screen composition rather than reusable visual-system constants.
+- Use semantic `DataTable` width presets (`compact`, `standard`, `wide`, `extra-wide`); their concrete minimum widths are token-owned.
 - Keep server-backed filtering, sorting and paging semantics with the feature/read model; generic UI patterns own presentation and interaction contracts only.
 - Keep feature-specific forms as feature components even when they use a generic dialog shell.
 - Extract technical hooks only when lifecycle, cancellation, error and refresh semantics are genuinely equivalent across at least two consumers.
@@ -113,6 +122,8 @@ Large file size alone does not require splitting. Split when a unit has an indep
 Avoid:
 
 - page-local copies of buttons/inputs/status badges/tables/page states;
+- raw palette/design constants in feature JSX;
+- page-local fixed width systems or numeric table geometry;
 - a generic design-system component containing NAPMS domain vocabulary;
 - a giant `EntityPage`, `CRUDPage`, `UniversalForm` or equivalent abstraction;
 - root-level `shared/model` business types;
@@ -127,6 +138,8 @@ For new or changed UI:
 - Is the page limited to screen/use-case orchestration plus truly local details?
 - Is reusable domain presentation under the owning feature's `components/`?
 - Is generic visual behavior composed from the design system?
+- Are reusable visual constants owned by `tokens.css` rather than feature code?
+- Are page and table widths selected through semantic presets rather than local numbers?
 - Does any proposed shared component contain domain vocabulary that should remain feature-owned?
 - Is an abstraction supported by demonstrated reuse or a stable primitive contract?
 - Can the same result be achieved by composing smaller existing components instead of adding a universal mode-driven component?
