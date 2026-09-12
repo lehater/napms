@@ -58,6 +58,7 @@ const localPageWidth = /(?:^|[\s"'`])max-w-\[(?:\d+(?:\.\d+)?)(?:px|rem|em|vw|%)
 const arbitraryTypography = /(?:^|[\s"'`])text-\[(?:\d+(?:\.\d+)?)(?:px|rem|em)\](?=$|[\s"'`:/])/m
 const arbitraryRadius = /(?:^|[\s"'`])rounded-\[(?!var\()[^\]]+\](?=$|[\s"'`:/])/m
 const arbitraryShadow = /(?:^|[\s"'`])shadow-\[(?!var\()[^\]]+\](?=$|[\s"'`:/])/m
+const numericDataTableWidth = /<DataTable\b[^>]*\bminWidth=\{\s*\d+\s*\}/m
 
 for (const path of await sourceFiles(featureRoot)) {
   const content = await readFile(path, "utf8")
@@ -80,6 +81,9 @@ for (const path of await sourceFiles(featureRoot)) {
   }
   if (arbitraryRadius.test(content) || arbitraryShadow.test(content)) {
     failures.push(`${displayPath}: arbitrary radius/shadow values belong in design-system tokens/components`)
+  }
+  if (numericDataTableWidth.test(content)) {
+    failures.push(`${displayPath}: DataTable geometry must use a semantic width preset, not a numeric minWidth`)
   }
   if (/<table\b/i.test(content)) {
     failures.push(`${displayPath}: feature tables must compose the shared DataTable pattern`)
