@@ -23,7 +23,7 @@ export function ApplicationComponentsTable({
   onEdit: (item: ApplicationComponentDto) => void
 }) {
   return (
-    <DataTable minWidth={760}>
+    <DataTable width="compact">
       <DataTableHeader>
         <DataTableHeaderRow>
           <DataTableHeadCell>Name</DataTableHeadCell>
@@ -54,7 +54,7 @@ export function InteractionDefinitionsTable({
   onEdit: (item: InteractionDefinitionSummaryDto) => void
 }) {
   return (
-    <DataTable minWidth={840}>
+    <DataTable width="standard">
       <DataTableHeader>
         <DataTableHeaderRow>
           <DataTableHeadCell>Source</DataTableHeadCell>
@@ -87,7 +87,7 @@ export function ApplicationDeploymentsTable({
   onOpen: (deploymentId: string) => void
 }) {
   return (
-    <DataTable minWidth={760}>
+    <DataTable width="compact">
       <DataTableHeader>
         <DataTableHeaderRow>
           <DataTableHeadCell>Company</DataTableHeadCell>
