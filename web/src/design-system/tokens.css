@@ -53,6 +53,10 @@
   --napms-page-width-content: 1180px;
   --napms-page-width-narrow: 980px;
   --napms-auth-card-width: 420px;
+  --napms-table-min-width-compact: 760px;
+  --napms-table-min-width-standard: 980px;
+  --napms-table-min-width-wide: 1180px;
+  --napms-table-min-width-extra-wide: 1420px;
   --napms-table-header-height: 40px;
   --napms-table-row-height: 40px;
   --napms-table-body-min-height: 0px;
