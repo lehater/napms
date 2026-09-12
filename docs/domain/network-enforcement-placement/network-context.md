@@ -1,102 +1,150 @@
-# Network Context Candidate Set — I26
+# Network Enforcement Placement — MVP Candidate Contract
 
-Status: `accepted I26 WP0 Tactical DDD extension`.
+Status: `accepted MVP target by ADR-017; implementation migration pending`.
 
-Date: 2026-09-10.
+Date: 2026-09-12.
+
+Decision: `../../decisions/ADR-017-nep-candidate-policy-attachment-contract.md`.
 
 ## Purpose
 
-Extend Network Enforcement Placement with a weaker read/query concept for sources that can identify network/enforcement objects relevant to a source/destination pair but cannot prove a forwarding path or traversal order.
+For one technical source/destination address pair and explicit logical time, identify the unordered set of enforcement-device candidates that are relevant enough to inspect, and expose the source-supported interface and policy/ACL attachment information needed by downstream consumers.
 
-This extension does not supersede the I19 `ForwardingPath` model. A proven path remains a stronger optional capability for sources that can truthfully supply it.
+NEP does not claim a forwarding path unless a separate stronger source can actually prove one.
 
-## Ubiquitous language
+## Traffic Relation
 
-**Network Context** is source-supported knowledge about network/enforcement objects relevant to one Traffic Relation at one logical time.
+Domain semantics are per pair:
 
-A **Network Context Candidate** is one provider/device or enforcement identity that a contributing source says is relevant to that Traffic Relation.
+```text
+TrafficRelation
+    sourceAddress
+    destinationAddress
+    asOf
+```
 
-Candidate membership means only relevance according to the source contract. It is not a claim that:
-- traffic definitely traverses the candidate;
-- the candidate occupies a particular position;
-- the candidate is necessary or sufficient for connectivity;
-- an Access Rule exists;
-- configured technical access exists;
-- the candidate is a true positive.
+An outer API/application service may batch many pairs, but each pair is evaluated independently.
 
-## Ownership
+## Enforcement Candidate
 
-Network Enforcement Placement owns:
-- the normalized candidate-set read semantics;
-- stable Logical Firewall identity where a candidate can be correlated to it;
-- provider realization and Enforcement Attachment correspondence already owned by NEP;
-- attributable candidate provenance and Network Context knowledge gaps.
+An `EnforcementCandidate` means only that the source considers a device/enforcement identity relevant to the queried pair.
 
-NEP does not own:
-- application/domain endpoint resolution;
-- requirement/decision/policy meaning;
-- configured firewall rules or snapshots;
-- resource owners/support contacts;
-- consumer-specific Checker presentation.
+It is not proof that traffic traverses the device and carries no semantic ordering.
 
-## Candidate identity and shape
+Target shape:
 
-A candidate contains at minimum:
-- `ProviderRealizationReference`;
-- one or more provenance references.
+```text
+EnforcementCandidate
+    providerDeviceRef
+    logicalFirewallRef?
+    ingressInterfaceRef?
+    egressInterfaceRef?
+    policyAttachments[]
+    provenance
+    knowledgeGaps[]
+```
 
-Where the source/correspondence facts support them, it may additionally contain:
-- `LogicalFirewallId`;
-- `EnforcementAttachmentId`;
-- `PathAttachmentReference` as an attachment identity, not a traversal-position claim;
-- an opaque source relevance/quality label.
+`ingressInterfaceRef` and `egressInterfaceRef` are returned only when supported by source facts. They describe candidate context, not proven traversal.
 
-The source relevance label is preserved as source meaning. NEP does not convert it into a numeric probability or universal confidence scale.
+## Policy Attachment
+
+For each candidate, NEP exposes zero or more policy/ACL attachments that are relevant **if traffic traverses that candidate**.
+
+```text
+PolicyAttachment
+    policyRef?
+    policyName?
+    attachmentKind
+    interfaceRef?
+    direction?
+```
+
+`attachmentKind` is source-normalized only to the degree supported by the vendor/source contract. Expected values include:
+
+```text
+ingress
+global
+egress
+vendor-specific
+```
+
+A Cisco-like source may expose ingress-interface inbound ACL, global ACL and egress-interface outbound ACL. Another vendor may expose only a global policy or a different set of attachment locations.
+
+The model therefore does not require exactly three attachment points and does not force non-Cisco devices into Cisco semantics.
+
+## Integration with Technical Access Evidence
+
+NEP returns policy locators, not policy contents.
+
+A downstream composition may use:
+
+```text
+providerDeviceRef
++ policyRef and/or policyName
+```
+
+to retrieve configured ACL/policy evidence from Technical Access Evidence.
+
+Technical Access Evidence owns the captured/imported/configured policy entries and provenance. NEP does not copy or interpret those entries.
 
 ## Candidate-set semantics
 
-A `NetworkContextSnapshot` contains:
-- zero or more candidates;
-- `completeForPair`;
-- zero or more knowledge gaps.
-
-Candidate representation is canonicalized only for deterministic output. Canonical sorting has no network/path semantics.
-
-`completeForPair` means only that the contributing source claims its candidate enumeration is complete for the represented pair/time. It does not imply that every candidate is a true positive.
-
-An empty candidate set therefore means only “this source returned no candidates”. It is not `NoForwardingPath` or `NoEnforcement` unless a separately stronger source proves those states.
-
-## Relationship to I19 proven path
+A candidate result contains:
 
 ```text
-weaker capability
-TrafficRelation -> NetworkContextCandidate[]
-
-stronger optional capability
-TrafficRelation -> ForwardingPath -> ordered TraversalPoint[] -> EnforcementPlacement[]
+TrafficRelation
++ EnforcementCandidate[]
++ result provenance
++ knowledge gaps
 ```
 
-A source that can prove a path may be adapted to the weaker candidate contract by discarding traversal order. The reverse conversion is forbidden: an unordered candidate set cannot be promoted to a `ForwardingPath`.
+Invariants:
 
-## Temporal semantics
+- candidate output is unordered;
+- `candidate != proven traversal`;
+- candidate set is not a route;
+- absence of a candidate does not prove no path or no enforcement;
+- candidates may be incomplete or false-positive according to source quality;
+- no universal probability/confidence score is invented;
+- missing interface/policy knowledge is preserved as a knowledge gap;
+- each candidate exposes every policy attachment known by the source to be relevant for that pair/candidate combination;
+- policy attachment cardinality is `0..N`.
 
-Every read requires explicit offset-aware `asOf`.
+## Relationship to the implemented I19 path model
 
-Candidate facts and supporting correspondence facts use their owning temporal/source contracts. Missing or conflicting time knowledge is preserved as a knowledge gap rather than resolved by wall-clock ordering.
+The existing I19 model remains a valid stronger optional/current-runtime capability when a source can truthfully prove a path:
 
-## Consumer relationship
+```text
+TrafficRelation -> ForwardingPath -> ordered TraversalPoint[]
+```
 
-Checker consumes the weaker candidate-set contract because its requirement is to show relevant devices and related evidence, not to assert a route.
+It is not the MVP prerequisite and must not be synthesized from candidate evidence.
 
-APR or another consumer that requires proven placement may continue to consume the stronger I19 path-based contract.
+For MVP consumers:
 
-This difference is consumer requirement strength, not a new Bounded Context.
+```text
+TrafficRelation -> EnforcementCandidate[]
+```
 
-## Invariants
+is the primary NEP contract.
 
-- no semantic ordering of candidates;
-- no invented probability/confidence;
-- no false `NoEnforcement` from absence of candidate evidence;
-- provenance is mandatory per candidate;
-- duplicate-equivalent candidate identity is rejected/canonicalized before exposure;
-- candidate-set knowledge does not authorize or prove configured access.
+## Ownership boundary
+
+NEP owns:
+
+- candidate relevance semantics;
+- source-supported candidate ingress/egress interface context;
+- source-supported policy/ACL attachment location and locator metadata;
+- Logical Firewall correlation where available;
+- candidate provenance and knowledge gaps.
+
+NEP does not own:
+
+- Resource or application-domain endpoint identity;
+- desired Access Rule state;
+- ACL/policy contents;
+- configured technical evidence;
+- desired-vs-configured reconciliation;
+- Add/Remove/Replace/No-op decisions;
+- vendor configuration rendering;
+- device execution.
