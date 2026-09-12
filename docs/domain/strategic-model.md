@@ -12,13 +12,34 @@ This document defines model/language/responsibility boundaries. It does not defi
 |---|---|---|
 | **Connectivity Requirements** | what semantic connectivity is needed? | connectivity-need identity/lifecycle, required interaction, applicability and justification/provenance |
 | **Connectivity Decision** | may this exact proposed semantic connectivity be used as permission for Access Policy materialization? | immutable final Allowed/NotAllowed decision identity, scope, validity, reason/provenance and supersession |
-| **Access Policy** | what network access is authorized to exist? | authoritative Access Rule identity, uniqueness/idempotency, properties, Active/Inactive, decision consumption and desired-policy projections |
+| **Access Policy** | what network access is authorized to exist? | authoritative Access Rule identity, uniqueness/idempotency, properties, Active/Inactive and desired-policy projections |
 | **Authority Management** | who may perform a domain action for scope/time? | scoped actor/action authority, Responsibility Assignment, delegation/transfer/revocation and accountability |
 | **Resource Catalogue** | what access-domain resources exist, to which responsibility scopes do they belong, and how are they realized? | Resource/Endpoint identity, time-qualified Resource Scope Affiliation, current/historical realization and access-relevant lifecycle facts |
 | **Application Communication Catalogue** | which application/component interactions are structurally valid? | Application/Component/Deployment/DCS identities and protocol/port contracts |
 | **Network Enforcement Placement** | where is traffic subject to enforcement? | forwarding/path knowledge, Logical Firewall correspondence and enforcement attachments |
 | **Technical Access Evidence** | what technical access material did a source report? | immutable source-qualified normalized technical evidence with source/scope/time/provenance; no authorization/currentness claim |
 | **Access Policy Realization** | how does authorized/domain access correspond to technical enforcement? | technical↔domain resolution, enforcement-policy derivation/optimization and desired-vs-configured reconciliation |
+
+## MVP scope
+
+ADR-016 removes the following contexts from the MVP target:
+
+- **Connectivity Requirements**;
+- **Connectivity Decision**.
+
+They remain valid strategic concepts for possible post-MVP growth, but MVP use cases, APIs, UI, persistence and target-context contracts must not depend on them.
+
+For MVP, authorization flows directly from an Authority Management-admitted action over a valid ACC-published interaction subject to an authoritative Access Rule:
+
+```text
+Application Communication Catalogue
+        |
+        | valid DirectedInteractionIdentity
+        v
+Access Policy <----- Authority Management
+```
+
+An Access Rule is therefore the MVP authorization truth. Separate required-but-not-authorized and `Allowed | NotAllowed` decision lifecycles are post-MVP concerns.
 
 ## Historical Wave-1 participation
 
@@ -29,11 +50,11 @@ Wave 1 directly used:
 - Resource Catalogue;
 - an external Connectivity Decision semantic seam.
 
-That seam was intentionally deferred during Wave 1 and is superseded by the I15 first-class Connectivity Decision context.
+That seam was intentionally deferred during Wave 1 and was later implemented as the I15 first-class Connectivity Decision context. ADR-016 subsequently removes that context from the MVP target while preserving the implementation as current/historical runtime until cleanup.
 
-## Current semantic participation through I20
+## Implemented semantic participation through I20
 
-Current accepted semantic owners participating in implemented product flow include:
+The implemented product flow historically/currently includes:
 - Connectivity Requirements;
 - Connectivity Decision;
 - Access Policy;
@@ -42,6 +63,8 @@ Current accepted semantic owners participating in implemented product flow inclu
 - Resource Catalogue;
 - Technical Access Evidence;
 - Access Policy Realization.
+
+This list describes implemented/runtime participation, not MVP target scope.
 
 Technical Access Evidence has the I17 Tactical DDD, framework-free core, module-owned PostgreSQL persistence and strict local/import proof. It remains independent from authorization and from technical-to-domain interpretation.
 
@@ -69,11 +92,30 @@ The shared Responsibility Scope reference correlates the facts; it does not merg
 - Authority Management owns whether actor A may perform action X for scope S at time T.
 - current catalogue visibility is independent from both.
 - one Resource may belong to multiple responsibility scopes without changing Resource identity.
-- changing Resource Scope Affiliation does not silently rewrite Requirement, Decision or Rule governance scope.
+- changing Resource Scope Affiliation does not silently rewrite stored governance scope.
 
-`Scoped Connectivity Inventory` is a non-peer application/read composition over these owners plus ACC, Connectivity Requirements, Connectivity Decision and Access Policy.
+`Scoped Connectivity Inventory` is a non-peer application/read composition. Its MVP form must not require Connectivity Requirements or Connectivity Decision.
 
-## Core dependency map
+## MVP dependency map
+
+```text
+Access Policy <----- Application Communication Catalogue
+    ^
+    |
+    +----- Authority Management
+    |
+Resource Catalogue
+
+Technical Access Evidence ---> Access Policy Realization <--- Access Policy
+                                      ^
+                                      |
+                    Resource Catalogue + Application Communication Catalogue
+                                      ^
+                                      |
+                         Network Enforcement Placement
+```
+
+## Full-domain / post-MVP-capable dependency map
 
 ```text
 Connectivity Requirements
@@ -103,13 +145,10 @@ Technical Access Evidence ---> Access Policy Realization <--- Access Policy
 ## Rules
 
 - A Bounded Context is not a service/deployment unit.
-- Declared connectivity need is not authorization.
-- Connectivity Decision owns final decision reason/validity/supersession; Access Policy does not.
-- Proposal authority does not imply decision authority.
+- Connectivity Requirements and Connectivity Decision are outside MVP scope per ADR-016.
+- Access Policy owns authoritative Access Rule identity/state and is the MVP authorization truth.
 - Resource Scope Affiliation does not imply actor authority; actor authority for a scope does not imply Resource membership.
-- A Decision may reference a Connectivity Requirement as evidence; `Required != Allowed`.
-- Access Policy owns authoritative Access Rule identity/state.
-- Decision expiry/supersession does not silently mutate an existing Access Rule.
 - Technical evidence is not authorization.
 - Technical realization changes do not redefine Rule semantic identity.
+- If post-MVP Requirement/Decision capabilities are reintroduced, they must not redefine existing Access Rule semantic identity.
 - Strategic DDD is revisited when new evidence changes language, lifecycle, authority or responsibility boundaries.
