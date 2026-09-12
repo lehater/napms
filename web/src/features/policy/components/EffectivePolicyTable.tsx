@@ -19,7 +19,7 @@ export function EffectivePolicyTable({
   onOpenRule: (ruleId: string) => void
 }) {
   return (
-    <DataTable minWidth={980}>
+    <DataTable width="standard">
       <DataTableHeader>
         <DataTableHeaderRow>
           <DataTableHeadCell>Rule</DataTableHeadCell>
