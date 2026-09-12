@@ -82,7 +82,7 @@ export function AccessRulesPage({
         ) : rules.length === 0 ? (
           <EmptyState title="No visible Access Rules" description="No authoritative Rules are currently visible through your read authority." />
         ) : (
-          <DataTable minWidth={920}>
+          <DataTable width="standard">
             <DataTableHeader>
               <DataTableHeaderRow>
                 <DataTableHeadCell>Rule ID</DataTableHeadCell>
