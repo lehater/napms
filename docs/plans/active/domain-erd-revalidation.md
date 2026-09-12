@@ -6,9 +6,9 @@ Date: 2026-09-12.
 
 ## Goal
 
-Revalidate the target domain model and ERD for the remaining core contexts before further implementation work. The review must distinguish domain facts and accepted decisions from current tactical/code structure so existing implementation mistakes are not promoted into the target model.
+Revalidate the target domain model and ERD for the remaining core MVP contexts before further implementation work. The review must distinguish domain facts and accepted decisions from current tactical/code structure so existing implementation mistakes are not promoted into the target model.
 
-Application Communication Catalogue is already locked by ADR-015 and is consumed here only through its published contract.
+Application Communication Catalogue is already locked by ADR-015 and is consumed here only through its published contract. Connectivity Requirements and Connectivity Decision are excluded from MVP by ADR-016.
 
 ## Scope and order
 
@@ -21,14 +21,16 @@ Review in dependency order:
 
 `Network Enforcement Placement` is the context currently responsible for selecting/reporting relevant enforcement objects/placements for a traffic relation. The review must verify whether its domain output is correctly modeled as devices, logical firewalls, candidates, placements, or another concept; the existing implementation name/result must not be assumed correct.
 
-## Explicitly deferred
+## MVP exclusions and fixed boundaries
 
-Do not redesign in this pass:
+Do not redesign as MVP contexts in this pass:
 
-- **Connectivity Requirements** — determination/declaration of connectivity need;
-- **Connectivity Decision** — approval / Allowed vs NotAllowed decision;
+- **Connectivity Requirements** — excluded from MVP by ADR-016;
+- **Connectivity Decision** — excluded from MVP by ADR-016;
 - **Authority Management** — except opaque references/contracts required to describe another context boundary;
 - **Application Communication Catalogue** — ADR-015 is the accepted target and is not reopened by this review.
+
+Target MVP models must not require Requirement or Decision records for normal Rule creation, UI, API or persistence flows.
 
 No runtime migration is authorized by this plan. Domain decisions are locked first; implementation follows only after the corresponding context review is accepted.
 
@@ -89,10 +91,11 @@ Must resolve at least:
 - exact Access Rule aggregate/root and identity;
 - consumption of the ACC-published subject:
   `sourceComponentDeploymentRef + destinationComponentDeploymentRef + interactionContractRevisionRef`;
-- which policy facts belong to Rule versus Decision/Requirement/realization;
-- Rule lifecycle, effective window and governance scope;
+- direct Rule creation/materialization under Authority Management admission, without mandatory Requirement or Decision records;
+- Rule lifecycle, effective window, governance scope and minimum creation provenance;
 - persistence form of external ACC references and absence of peer-schema FK coupling;
-- whether any current Access Policy entities/projections are accidental implementation artifacts.
+- which current Decision/Requirement-related fields or dependencies are now non-MVP implementation artifacts;
+- whether any other current Access Policy entities/projections are accidental implementation artifacts.
 
 ### 3. Network Enforcement Placement
 
@@ -133,7 +136,7 @@ For each reviewed context, produce:
 
 ## Completion gate
 
-This review is complete only when all four contexts have accepted target ERDs that are mutually consistent with ADR-015 and with each other's published boundaries, and the repository clearly distinguishes:
+This review is complete only when all four contexts have accepted target ERDs that are mutually consistent with ADR-015, ADR-016 and with each other's published boundaries, and the repository clearly distinguishes:
 
 ```text
 accepted target domain model
