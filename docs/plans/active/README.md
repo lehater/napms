@@ -4,7 +4,7 @@ Current: `PLAN-web-ui-convergence.md`
 
 Goal: converge routed Web UI screens on the shared design-system composition model and remove parallel legacy layout paths left after #91.
 
-Current task: finish the repository-wide UI tail audit, then migrate confirmed legacy consumers in coherent groups without weakening feature semantics.
+Current task: finish convergence enforcement and validate the final routed Web UI on one hosted-gate head.
 
 ## Working set
 
@@ -12,14 +12,13 @@ Read first:
 - `docs/plans/active/PLAN-web-ui-convergence.md`
 - `web/AGENTS.md`
 - `docs/ui/component-composition.md`
-- `docs/ui/design-system.md`
 - `web/scripts/check-ui-boundaries.mjs`
 
-Expand to routed `web/src/features/**` pages/components and their existing design-system owners as the audit identifies concrete tails.
+Expand to `docs/ui/design-system.md` or routed feature/design-system files only when a concrete UI rule or failing check requires them.
 
 ## Blockers
 
-None. The previous #91 active capsule remained stale on `main`; this increment replaces it.
+None.
 
 ## Gate
 
@@ -27,4 +26,4 @@ Keep the PR draft while implementation is accumulating. Mark Ready only when the
 
 ## Next
 
-Count and classify local page shells, width constraints, manual tables/pagers/forms, compatibility imports, raw visual constants, and dead duplicate screens; migrate them to shared composition, strengthen boundary enforcement, then run the final gate.
+Run the strict UI ownership/build check, then Web, Harness, Docker runtime, and browser journey on one head. Resolve any failure before active-plan cleanup and the final re-gate.
