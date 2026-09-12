@@ -10,13 +10,11 @@ Canonical Tactical DDD: `target-tactical-model.md`.
 
 ## Purpose
 
-For a batch of technical source/destination address pairs, identify the unordered set of known firewalls that are relevant enough to inspect and expose the local interface resolution and ACL/policy locators required by downstream consumers.
+For a batch of technical source/destination pairs, identify the unordered set of known Firewalls that are relevant enough to inspect, preserve every firewall-local interface branch that may carry the traffic, and expose the ACL/policy names required by downstream consumers.
 
-The target query evaluates the current successfully collected NEP state. It does not require a proven end-to-end forwarding path and does not take historical `asOf` input in the MVP.
+NEP does not prove an end-to-end forwarding path and does not select one optimal route.
 
-## Traffic Pair
-
-Application input is:
+## Input
 
 ```text
 TrafficPair[]
@@ -27,38 +25,70 @@ TrafficPair
     destinationAddress
 ```
 
-Each pair is evaluated independently even when many pairs are processed in one set-based request.
+Each pair is evaluated independently. MVP uses current successfully collected state and has no `asOf` input.
 
 ## Firewall
 
-`Firewall` is the NEP unit of account. It is one independently addressed/analyzed firewall context with its own routing/interface/policy-binding semantics.
-
-NEP does not model a separate physical Device entity in the MVP.
-
-The Firewall profile contains the information required to select a source adapter and acquire NEP state, including management address, platform type, connection/profile reference, connection timeouts and per-firewall acquisition policy.
-
-Exact Firewall lifecycle commands are deferred.
-
-## Base candidate calculation
-
-For each Firewall and Traffic Pair, NEP resolves source and destination addresses against the Firewall's persisted effective reachability projection.
+`Firewall` is the NEP unit of account. No separate physical Device entity is required for MVP.
 
 ```text
-both resolve
-AND sourceInterface != destinationInterface
-    => RoutingCandidate = true
-
-otherwise
-    => RoutingCandidate = false
+Firewall
+    firewallId
+    name
+    managementAddress
+    platformType
+    state: Active | Inactive
 ```
 
-Missing source/destination resolution is therefore a routing `NotCandidate`, not an error. Override evaluation still runs.
+`Active` participates in polling/candidate calculation. `Inactive` is retained but ignored. The administrator changes this state directly through the Web UI.
 
-A candidate means only that the Firewall is relevant enough to inspect. It does not prove actual end-to-end traversal and candidate ordering has no route meaning.
+The Firewall profile also contains connection/profile reference, connection timeouts and per-firewall acquisition intervals.
+
+## Current routing state
+
+NEP stores only the latest successful routing/interface state plus `collectedAt`. Historical NEP routing snapshots are not retained as domain history.
+
+Refresh builds and validates the new state and its reachability projection, then switches them atomically.
+
+## Effective reachability
+
+Routing precedence is normalized into a persisted query projection. Routing contexts such as VRFs are preserved when present.
+
+Conceptually:
+
+```text
+EffectiveReachabilitySegment
+    firewallId
+    routingContextRef?
+    addressFamily
+    addressFrom
+    addressTo
+    interfaces[1..N]
+```
+
+Address segments do not overlap within one Firewall/context/address-family scope. A segment may reference multiple interfaces for ECMP/multipath.
+
+NEP never chooses one arbitrary ECMP winner.
+
+## Candidate calculation
+
+For every routing context:
+
+```text
+sourceInterfaces = resolve(sourceAddress)
+destinationInterfaces = resolve(destinationAddress)
+localBranches = sourceInterfaces × destinationInterfaces
+```
+
+A branch is routing-relevant when source and destination interfaces differ. A Firewall is a routing candidate if at least one routing-relevant branch exists.
+
+All routing-relevant branches are retained for ACL/policy selection.
+
+If route lookup for source or destination misses in an otherwise valid current state, routing contributes false and the miss is logged. Override evaluation still runs.
+
+If an Active Firewall has no current routing state, it is skipped for MVP candidate calculation and the condition is logged/diagnosed.
 
 ## Candidate override rules
-
-NEP owns user-authored rules:
 
 ```text
 CandidateOverrideRule
@@ -73,55 +103,30 @@ CandidateOverrideRule
     destinationInterfaceRef?
 ```
 
-Empty match fields mean `ANY`.
+Empty fields mean `ANY`. Only Active rules participate.
 
-A rule matches when every non-empty condition matches. A non-empty interface condition does not match when that interface could not be resolved.
+Interface conditions match only if one resolved local branch in one routing context satisfies all specified interface conditions.
 
-Only Active rules participate.
-
-Decision precedence is:
+Decision precedence:
 
 ```text
-Include > Exclude > RoutingCandidate
+Include > Exclude > Routing
 ```
 
-Therefore a matching Include rule can include a Firewall even when routing produced `false` or could not resolve one/both addresses.
+A matching Include may override a route lookup miss in valid current state. It does not manufacture current state when the Firewall has never been successfully collected.
 
-## Current routing state and reachability index
+## Access-list result
 
-NEP stores only the latest successfully collected state required by the current MVP. Historical NEP routing snapshots are not retained as domain history.
-
-Routing refresh stores current interfaces/routing facts plus `collectedAt`, derives a persisted effective reachability projection, validates the complete replacement, and atomically switches the current state/projection as one logical version.
-
-The effective projection contains non-overlapping segments after supported routing precedence is resolved:
-
-```text
-EffectiveReachabilitySegment
-    firewallId
-    routingContext?
-    addressFamily
-    addressFrom
-    addressTo
-    interfaceRef
-```
-
-It is a rebuildable query optimization, not authoritative routing truth.
-
-The intended implementation performs set-based SQL lookup across the global reachability table for all input pairs/firewalls instead of looping through firewall routing tables in backend code.
-
-## Access List Locator
-
-For each selected candidate, NEP returns zero or more policy/ACL locators:
+For each candidate, the platform adapter evaluates every retained local branch and returns the distinct union of applicable ACL/policy names:
 
 ```text
 AccessListLocator
     accessListName
-    accessListRef?
 ```
 
-The current domain does not require attachment kind, direction, evaluation position or ingress/global/egress classification. Those are source/vendor adapter mechanics unless a future consumer introduces a concrete need for them.
+NEP does not assume parallel branches use the same ACL, even when that is common operationally.
 
-The adapter is responsible for returning the complete locator set relevant to the pair/firewall under its supported platform semantics.
+MVP does not require stable `accessListRef`, attachment kind, direction, evaluation position, or ingress/global/egress classification. Those details remain adapter knowledge until a concrete consumer needs them.
 
 ## Target result
 
@@ -133,28 +138,26 @@ TrafficPairResult
 FirewallCandidate
     firewallId
     firewallName
-    sourceInterfaceRef?
-    destinationInterfaceRef?
+    localBranches[]
     accessLists[]
     decisionReason
+
+LocalBranch
+    routingContextRef?
+    sourceInterfaceRef
+    destinationInterfaceRef
+
+AccessListLocator
+    accessListName
 ```
 
-Candidate output is unordered.
+Candidate output is unordered and is not a route.
 
-Useful explanation reasons include:
+## Independent acquisition
 
-```text
-IncludedByRouting
-ExcludedByRouting
-IncludedByOverride
-ExcludedByOverride
-```
+NEP and Technical Access Evidence acquire source data independently.
 
-## Independent source acquisition
-
-NEP and Technical Access Evidence acquire source material independently.
-
-NEP reads only what NEP needs:
+NEP reads only:
 
 ```text
 interfaces
@@ -162,53 +165,58 @@ routing
 minimal policy-binding/locator metadata
 ```
 
-TAE independently reads configured policy/ACL bodies when configured evidence is required, ideally only for selected policy locators.
+TAE independently reads ACL/policy bodies when configured evidence is required, ideally only for the selected access-list names where the platform permits targeted reads.
 
-The two acquisitions may use different schedules, source commands, timeouts and capture identities. A shared transport/client implementation does not merge domain ownership.
+The acquisitions may have different schedules, commands/APIs, timeouts and capture identities.
 
-## Integration with Technical Access Evidence
+## Per-Firewall acquisition profile
 
-NEP returns Firewall + `AccessListLocator` information, not policy contents.
+Minimum current settings:
 
-Technical Access Evidence owns captured/imported/configured ACL/policy entries and their provenance. A downstream composition/source adapter uses the Firewall/source correlation plus locator to find or acquire corresponding configured evidence.
+```text
+ConnectionSettings
+    connectTimeout
+    operationTimeout
 
-## Candidate-set invariants
+AcquisitionPolicy
+    routingPollInterval?
+    policyBindingPollInterval?
+```
 
-- candidate output is unordered;
+This permits static-routing Firewalls to be refreshed rarely and dynamic-routing Firewalls more frequently, while high-latency links may use larger timeouts.
+
+Retry/backoff/error-policy details are deferred.
+
+## Diagnostics
+
+At minimum these conditions are made observable in logs/diagnostics:
+
+```text
+CURRENT_ROUTING_STATE_MISSING
+ROUTE_LOOKUP_MISS
+```
+
+No separate NetworkResolution domain lifecycle/state machine is introduced.
+
+## Invariants
+
 - `candidate != proven traversal`;
-- candidate set is not a route;
-- absence of a candidate does not prove no end-to-end forwarding path;
-- candidate relevance is derived from current routing plus explicit overrides;
+- candidate set is unordered and is not a route;
+- `Firewall` is the unit of account;
+- no separate physical Device is required by MVP;
+- current state only; no historical NEP routing snapshots;
+- routing state + derived reachability switch atomically;
+- VRF/routing context is preserved when present;
+- ECMP/multipath interfaces and branches are preserved, not collapsed;
+- any routing-relevant branch may make the Firewall a routing candidate;
 - `Include > Exclude > Routing`;
-- zero relevant access-list locators is a valid result;
-- NEP does not copy or interpret ACL/policy bodies;
-- `collectedAt` describes age of current state and is not historical query time.
+- route lookup miss does not block overrides;
+- missing current routing state is diagnosed and skipped;
+- ACL applicability is evaluated on every retained branch;
+- final ACL result is the distinct union of names across branches;
+- NEP does not own ACL/policy bodies;
+- NEP and TAE acquisition are independent.
 
-## Relationship to the implemented I19 path model
+## Relationship to I19
 
-The existing I19 `ForwardingPath`/`TraversalPoint` model remains optional stronger/current-runtime capability for a source that can truthfully prove an ordered path.
-
-It is not an MVP prerequisite and must never be synthesized from candidate evidence.
-
-## Ownership boundary
-
-NEP owns:
-
-- Firewall identity/profile required for NEP acquisition;
-- current routing/interface knowledge required for candidate selection;
-- effective reachability projection;
-- candidate override rules;
-- candidate relevance calculation;
-- source/destination interface resolution;
-- relevant ACL/policy locator result.
-
-NEP does not own:
-
-- Resource/application-domain endpoint identity;
-- a generic physical-device/CMDB catalogue;
-- historical NEP routing snapshots;
-- configured ACL/policy contents;
-- desired Access Rule state;
-- desired-vs-configured reconciliation;
-- Add/Remove/Replace/No-op decisions;
-- vendor rendering or provider/device execution.
+The existing I19 `ForwardingPath`/`TraversalPoint` model remains an optional stronger/current-runtime capability for sources that can truthfully prove an ordered path. It is not an MVP prerequisite and must not be synthesized from candidate evidence.
