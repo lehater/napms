@@ -28,7 +28,7 @@ export function DecisionsTable({
   onOpenDecision: (decisionId: string) => void
 }) {
   return (
-    <DataTable minWidth={1050}>
+    <DataTable width="wide">
       <DataTableHeader>
         <DataTableHeaderRow>
           <DataTableHeadCell>Subject</DataTableHeadCell>
