@@ -162,7 +162,7 @@ export function ConnectivityPage({
         ) : !inventory || inventory.items.length === 0 ? (
           <EmptyState title="No resources in this scope" description="No Resource is effectively affiliated with the selected responsibility scope at this time." />
         ) : (
-          <DataTable minWidth={1180}>
+          <DataTable width="wide">
             <DataTableHeader>
               <DataTableHeaderRow>
                 <DataTableHeadCell className="w-[220px]">Component</DataTableHeadCell>
