@@ -209,7 +209,7 @@ export function ApplicationCataloguePage({
           definitions.length === 0 ? (
             <EmptyState title="No application definitions" description="Change the filters or add an application." />
           ) : (
-            <DataTable minWidth={760}>
+            <DataTable width="compact">
               <DataTableHeader>
                 <DataTableHeaderRow>
                   <DataTableHeadCell>Name</DataTableHeadCell>
@@ -237,7 +237,7 @@ export function ApplicationCataloguePage({
         ) : deployments.length === 0 ? (
           <EmptyState title="No application deployments" description="Change the filters or create a deployment from an application definition." />
         ) : (
-          <DataTable minWidth={920}>
+          <DataTable width="standard">
             <DataTableHeader>
               <DataTableHeaderRow>
                 <DataTableHeadCell>Application</DataTableHeadCell>
