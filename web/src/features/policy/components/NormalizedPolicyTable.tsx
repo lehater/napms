@@ -18,7 +18,7 @@ function renderPorts(value: PortConstraintDto): string {
 
 export function NormalizedPolicyTable({ rows }: { rows: NormalizedPolicyResponse["rows"] }) {
   return (
-    <DataTable minWidth={1420}>
+    <DataTable width="extra-wide">
       <DataTableHeader>
         <DataTableHeaderRow>
           <DataTableHeadCell>Rule</DataTableHeadCell>
