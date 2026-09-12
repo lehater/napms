@@ -73,7 +73,12 @@ def test_j03_requirement_decision_and_rule_remain_independent_authoritative_stat
         # Requirement creation is not authorization. Without a trustworthy final
         # Decision, proposal materialization must fail closed and preserve the need.
         expect(page.get_by_text("Access authorized", exact=True)).to_have_count(0)
-        expect(page.get_by_text("DecisionUnknown", exact=True)).to_be_visible()
+        expect(
+            page.get_by_text(
+                "DecisionUnknown: The connectivity decision is currently unavailable.",
+                exact=True,
+            )
+        ).to_be_visible()
         expect(
             page.get_by_text(
                 "The Connectivity Requirement was recorded before the later access step failed.",
