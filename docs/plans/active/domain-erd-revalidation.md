@@ -2,13 +2,13 @@
 
 Status: `active planning / model review`.
 
-Date: 2026-09-12.
+Date: 2026-09-13.
 
 ## Goal
 
 Revalidate the target domain model and ERD for the remaining core MVP contexts before further implementation work. The review must distinguish domain facts and accepted decisions from current tactical/code structure so existing implementation mistakes are not promoted into the target model.
 
-Application Communication Catalogue is already locked by ADR-015 and is consumed here only through its published contract. Connectivity Requirements and Connectivity Decision are excluded from MVP by ADR-016. The MVP Network Enforcement Placement boundary/output contract is locked by ADR-017.
+Application Communication Catalogue is already locked by ADR-015 and is consumed here only through its published contract. Connectivity Requirements and Connectivity Decision are excluded from MVP by ADR-016. The MVP Network Enforcement Placement boundary has now been revalidated and locked by ADR-018 plus `docs/domain/network-enforcement-placement/target-tactical-model.md`.
 
 ## Scope and order
 
@@ -16,10 +16,10 @@ Review in dependency order:
 
 1. **Resource Catalogue**
 2. **Access Policy**
-3. **Network Enforcement Placement**
+3. **Network Enforcement Placement** — target Tactical DDD/ERD revalidated; implementation migration follows separately
 4. **Access Policy Realization**
 
-For NEP, ADR-017 has already resolved the primary target question: MVP output is an unordered device-candidate set enriched with source-supported ingress/egress interface context and zero-or-more policy/ACL attachment locators. A candidate is not a proven traversal and the candidate set is not a route.
+For NEP, ADR-018 resolves the primary target model: Firewall is the NEP unit of account; batch technical pairs are evaluated against current routing state; ECMP/multipath branches and routing contexts such as VRFs are preserved; local routing provides the baseline candidate signal; Active override rules apply with `Include > Exclude > Routing`; relevant ACL/policy output is the distinct union of names across all retained local branches; NEP and TAE acquire source data independently.
 
 ## MVP exclusions and fixed boundaries
 
@@ -99,25 +99,41 @@ Must resolve at least:
 
 ### 3. Network Enforcement Placement
 
-ADR-017 fixes the following target semantics:
+ADR-018 and the canonical target Tactical DDD now fix the MVP semantics:
 
-- input semantic unit is one exact technical `sourceAddress + destinationAddress + asOf` Traffic Relation; batch API is allowed but does not change per-pair domain semantics;
-- output is an unordered `EnforcementCandidate[]`, not a path;
-- candidate membership means relevance-to-inspect, not proven traversal;
-- each candidate identifies the provider/device and may correlate a Logical Firewall;
-- each candidate may expose source-supported ingress/egress interface refs;
-- each candidate exposes `PolicyAttachment[0..N]` with policy ref/name plus attachment kind/interface/direction where applicable;
-- vendor-specific policy attachment topology is preserved; Cisco ingress/global/egress is an example, not a universal rule;
-- NEP owns policy location/locator metadata, while Technical Access Evidence owns ACL/policy contents;
-- `providerDeviceRef + policyRef/policyName` is the downstream correlation seam to configured evidence;
-- proven-path I19 semantics remain optional stronger/current-runtime capability, not an MVP prerequisite.
+- `Firewall` is the NEP unit of account; no separate physical Device entity is required;
+- Firewall MVP state is `Active | Inactive`, administered directly through Web UI; no separate lifecycle-command model is required;
+- Firewall profile carries management address, platform discriminator, opaque credential/profile reference, connection timeouts and independent polling intervals;
+- input is `TrafficPair[1..N]`; MVP candidate queries do not take `asOf`;
+- only current successfully collected NEP state is retained; historical network snapshots are not MVP domain history;
+- routing/interface refresh and derived reachability switch atomically;
+- effective reachability is routing-context-aware and preserves VRF/context references when present;
+- effective address segments are non-overlapping per Firewall/context/address family, while one segment may map to multiple interfaces for ECMP/multipath;
+- candidate evaluation preserves all local source-interface/destination-interface branches rather than selecting one route;
+- a Firewall is a routing candidate when at least one retained branch crosses different interfaces;
+- route lookup misses contribute routing false, are logged, and do not suppress override evaluation;
+- missing current routing state is logged and the Firewall is skipped for MVP candidate calculation;
+- `CandidateOverrideRule` has optional source/destination ranges/interfaces where empty means ANY;
+- only Active override rules participate and precedence is `Include > Exclude > Routing`;
+- ACL/policy applicability is evaluated for every retained local branch;
+- output locator is currently `AccessListLocator(accessListName)` only; final result is the distinct union across branches;
+- attachment kind/direction/evaluation topology is adapter knowledge, not core domain state;
+- NEP acquisition reads only interfaces/routing/minimal locator-binding metadata required by NEP;
+- TAE independently acquires ACL/policy bodies when configured evidence is required;
+- current-state `collectedAt` is preserved for age/explainability;
+- Resource Catalogue Resource identity remains independent from Firewall identity;
+- I19 proven-path semantics remain optional stronger/current-runtime capability, not an MVP prerequisite.
 
-The remaining NEP review must resolve:
+Canonical document:
 
-- exact identity/lifecycle/persistence status of candidate-supporting device, interface and policy-attachment facts;
-- whether `PolicyAttachment` is owner truth, source projection or query result for each supported source type;
-- source/provenance/temporal completeness rules for candidate/interface/policy facts;
-- target-vs-current implementation gap and migration plan from the existing I19/I26 models.
+- `docs/domain/network-enforcement-placement/target-tactical-model.md`
+
+The target NEP ERD is considered locked for this review. Remaining work is implementation planning rather than unresolved core domain semantics:
+
+- concrete secret/profile storage;
+- retry/backoff/scheduler failure handling;
+- vendor-specific PBR or other source semantics only when a supported adapter actually requires them;
+- migration roadmap from current I19/I26 code/persistence to the accepted target.
 
 ### 4. Access Policy Realization
 
@@ -128,8 +144,8 @@ Must resolve at least:
 - whether it is correctly a bounded context or should be treated as application/domain composition;
 - authoritative facts, derived facts and persistence ownership;
 - mapping from semantic Access Rule to current Resource/Endpoint realization;
-- use of ADR-017 NEP candidate/interface/policy-attachment outputs;
-- correlation of NEP policy locators with Technical Access Evidence policy contents;
+- use of ADR-018 NEP Firewall candidate/local-branch/access-list outputs;
+- correlation of NEP locators with Technical Access Evidence policy contents;
 - reconciliation/configuration-generation boundaries;
 - whether current entities are true domain identities or transient projections/results.
 
@@ -148,7 +164,7 @@ For each reviewed context, produce:
 
 ## Completion gate
 
-This review is complete only when all four contexts have accepted target ERDs that are mutually consistent with ADR-015, ADR-016, ADR-017 and with each other's published boundaries, and the repository clearly distinguishes:
+This review is complete only when all four contexts have accepted target ERDs that are mutually consistent with ADR-015, ADR-016, ADR-018 and with each other's published boundaries, and the repository clearly distinguishes:
 
 ```text
 accepted target domain model
