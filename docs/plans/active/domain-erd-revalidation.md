@@ -10,14 +10,27 @@ Revalidate the target domain model and ERD for the remaining core MVP contexts b
 
 Application Communication Catalogue is already locked by ADR-015 and is consumed here only through its published contract. Connectivity Requirements and Connectivity Decision are excluded from MVP by ADR-016. The MVP Network Enforcement Placement boundary has now been revalidated and locked by ADR-018 plus `docs/domain/network-enforcement-placement/target-tactical-model.md`.
 
+This plan may discover more work than should be solved in one pass. When a bounded context has a concrete ordered future sequence worth preserving, capture it under `docs/engineering/roadmaps/` and park it there instead of keeping that context artificially active.
+
+## Inputs
+
+Primary process and planning inputs:
+
+- `docs/process/decision-protocol.md`;
+- `docs/process/domain-change-protocol.md`;
+- `docs/process/plan-lifecycle.md`;
+- `docs/engineering/roadmaps/README.md`.
+
+For each selected context, its canonical domain/requirements/architecture/ADR sources are the semantic inputs. Current runtime code is migration evidence only after target semantics are established.
+
 ## Scope and order
 
-Review in dependency order:
+Review candidates in dependency-aware order, but allow project-level prioritization to select which context is examined next:
 
 1. **Resource Catalogue**
 2. **Access Policy**
 3. **Network Enforcement Placement** — target Tactical DDD/ERD revalidated; implementation migration follows separately
-4. **Access Policy Realization**
+4. **Access Policy Realization** — problem framing reset and future work parked in a context-local roadmap
 
 For NEP, ADR-018 resolves the primary target model: Firewall is the NEP unit of account; batch technical pairs are evaluated against current routing state; ECMP/multipath branches and routing contexts such as VRFs are preserved; local routing provides the baseline candidate signal; Active override rules apply with `Include > Exclude > Routing`; relevant ACL/policy output is the distinct union of names across all retained local branches; NEP and TAE acquire source data independently.
 
@@ -32,7 +45,7 @@ Do not redesign as MVP contexts in this pass:
 
 Target MVP models must not require Requirement or Decision records for normal Rule creation, UI, API or persistence flows.
 
-No runtime migration is authorized by this plan. Domain decisions are locked first; implementation follows only after the corresponding context review is accepted.
+No runtime migration is authorized by this plan. Domain decisions are locked first; implementation follows only after the corresponding context review is accepted and any context-local roadmap opens its implementation gate.
 
 ## Review method for each context
 
@@ -65,11 +78,13 @@ For every context, complete the following before changing code:
    - list semantic mismatches separately from harmless implementation detail;
    - rank blocking mismatches P0/P1/P2/P3 where useful.
 
-6. **Lock the result**
-   - publish one canonical target-model document with PlantUML ERD;
+6. **Lock or park the result**
+   - publish one canonical target-model document with PlantUML ERD when the model is ready to lock;
    - create an ADR when the review makes a consequential architectural/domain decision that requires one;
    - record unresolved questions explicitly rather than inventing semantics;
-   - create a separate migration roadmap only after the target model is accepted.
+   - when substantial ordered work remains, create/update a context-local roadmap under `docs/engineering/roadmaps/` with an explicit resume point;
+   - do not keep a context-specific `PLAN-*.md` active merely to remember parked work;
+   - create a migration roadmap only after the target model is accepted.
 
 ## Context-specific questions
 
@@ -137,18 +152,21 @@ The target NEP ERD is considered locked for this review. Remaining work is imple
 
 ### 4. Access Policy Realization
 
-APR is assumed to remain a separate bounded context. Its single current problem statement and design direction is:
+APR remains a separate bounded context. Its single current problem statement and design direction is:
 
 - `docs/domain/access-policy-realization/README.md`.
 
 Do not recover APR semantics from removed documentation or from current runtime types. Current runtime code is migration evidence only after the target model is established.
 
-The remaining APR review is governed by:
+APR is currently **parked**, not active execution. Its durable future sequence is:
 
-- durable ordered roadmap: `docs/engineering/access-policy-realization-design-roadmap.md`;
-- selected current stage: `docs/plans/active/PLAN-access-policy-realization-design.md`.
+- `docs/engineering/roadmaps/access-policy-realization.md`.
 
-The roadmap must resolve, in order:
+Resume point when APR is selected again:
+
+- **D1 — cross-context target/required/configured input-output contracts**.
+
+The parked roadmap preserves, in order:
 
 1. cross-context target/required/configured contracts;
 2. effective-access-space semantics, comparison scope and completeness;
@@ -159,11 +177,11 @@ The roadmap must resolve, in order:
 7. canonical Tactical DDD/ERD/persistence decisions;
 8. target-vs-current gap report and implementation migration roadmap.
 
-No APR implementation work is authorized until the roadmap reaches its implementation gate.
+No APR implementation work is authorized while its roadmap is parked or before its implementation gate is reached.
 
 ## Required deliverables
 
-For each reviewed context, produce:
+For each reviewed context, produce as appropriate:
 
 - one concise boundary/ownership table;
 - one canonical target ERD in PlantUML;
@@ -172,17 +190,42 @@ For each reviewed context, produce:
 - list of accepted invariants;
 - list of unresolved questions;
 - target-vs-current implementation gap report;
-- ADR and migration roadmap only where the review changes the accepted model.
+- ADR when consequential decisions require one;
+- a context-local roadmap under `docs/engineering/roadmaps/` when concrete unresolved future work should survive a workstream switch;
+- migration roadmap only after the target model is accepted.
+
+## Blockers
+
+No repository blocker is currently recorded. A context-specific task starts only after the next bounded context/workstream is selected and its canonical inputs are identified.
 
 ## Completion gate
 
-This review is complete only when all four contexts have accepted target ERDs that are mutually consistent with ADR-015, ADR-016, ADR-018 and with each other's published boundaries, and the repository clearly distinguishes:
+This review is complete only when the selected core contexts have either:
+
+- an accepted target model/ERD with no blocking semantic unknowns for the intended next step; or
+- an explicitly parked context-local roadmap that preserves the unresolved ordered work and keeps implementation closed.
+
+The repository must clearly distinguish:
 
 ```text
 accepted target domain model
+!= parked future context work
+!= current active execution
 != current tactical/runtime implementation
 != cross-context read composition
 != migration compatibility structure
 ```
 
-For APR specifically, completion also requires the D7 target-model gate from `docs/engineering/access-policy-realization-design-roadmap.md`; implementation planning remains D8 and does not reopen the target semantics by convenience.
+For APR specifically, target-model completion requires the D7 gate from `docs/engineering/roadmaps/access-policy-realization.md`; implementation planning remains D8 and does not reopen target semantics by convenience.
+
+## Exit criteria
+
+This active review plan can be retired when:
+
+- every context selected for this discovery pass has either been locked or parked with a durable roadmap;
+- no selected context depends on an active-plan file merely to preserve future work;
+- the active resume capsule can move to a project-wide prioritization/implementation plan or to `Current: none.` without losing context-local work.
+
+## Next
+
+Select the next bounded context/workstream for discovery/revalidation. APR does not need to be read unless it is deliberately resumed; its roadmap is parked under `docs/engineering/roadmaps/`.
