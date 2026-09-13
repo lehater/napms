@@ -1,33 +1,31 @@
 # Domain-change re-entry protocol
 
-Use this protocol when implementation, testing or new requirements reveal a possible semantic change.
+Use this focused protocol when implementation, testing or new requirements reveal a possible semantic change.
+
+The top-level progression/gate semantics live in `docs/process/change-lifecycle.md`. This file does not define a parallel lifecycle; it helps determine which domain layer must be reopened.
 
 ## Classify the highest affected layer
 
 ```text
 implementation detail only
-    -> code/tests
+    -> Implementation Readiness / code-tests impact
 
 accepted behavior or quality expectation changes
-    -> requirements
-       -> architecture impact
-       -> code/tests
+    -> Requirements
+       -> revalidate dependent Domain/Architecture/Implementation stages
 
 aggregate/invariant/semantic identity/lifecycle changes inside one BC
-    -> Tactical DDD
-       -> requirements/contracts impact
-       -> architecture impact if material
-       -> code/tests
+    -> Tactical Domain Design
+       -> revalidate requirements/contracts impact where applicable
+       -> revalidate Architecture/Implementation stages
 
 language, responsibility, authority or lifecycle boundary changes between BCs
-    -> Strategic DDD
-       -> requirements
-       -> architecture/ADRs
-       -> Tactical DDD
-       -> code/tests
+    -> Strategic Domain Design
+       -> revalidate affected requirements/contracts
+       -> revalidate Architecture/Tactical Domain/Implementation stages
 ```
 
-Do not let a lower layer silently solve an upstream semantic unknown.
+Do not let a lower layer silently solve an upstream semantic unknown. Record the problem and return `REOPEN(stage)` through the change lifecycle when an earlier stage owns the missing truth.
 
 ## Strategic DDD re-entry trigger
 
