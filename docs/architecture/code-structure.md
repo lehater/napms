@@ -1,8 +1,8 @@
 # Code Structure
 
-Status: `accepted current architecture`.
+Status: `accepted current architecture; APR legacy workflow pending migration`.
 
-Date: 2026-09-11.
+Date: 2026-09-13.
 
 Decision: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
 Migration history: `docs/engineering/target-code-structure-migration-roadmap.md`.
@@ -75,6 +75,8 @@ Accepted contexts:
 - `resource_catalogue`;
 - `technical_access_evidence`.
 
+The physical `access_policy_realization` package currently contains implementation from the superseded APR model. Its current classes/use cases are migration input only; semantic target ownership is defined by `docs/domain/access-policy-realization/README.md` until a new Tactical DDD is accepted.
+
 ### `workflows/`
 
 Contains explicit cross-context application/read orchestration that owns no authoritative business truth.
@@ -86,12 +88,13 @@ workflows/<workflow>/
   presentation/
 ```
 
-Accepted workflows:
+Current target workflows:
 - `requirement_policy_alignment`;
 - `policy_export`;
 - `scoped_connectivity_inventory`;
-- `network_operator_view`;
 - `traffic_analysis`.
+
+The physical `network_operator_view` workflow remains in the runtime as legacy APR-dependent implementation pending migration. It is not a current target workflow contract and must not be used to infer redesigned APR stages, statuses or inputs.
 
 A workflow may own orchestration-specific projections/read models. It consumes bounded-context application contracts/ports rather than context-owned persistence internals. If a workflow acquires independent identity, lifecycle or invariants, reconsider its bounded-context classification explicitly.
 
@@ -185,6 +188,7 @@ Cross-feature semantic reuse imports from the explicit owning feature; do not re
 - Structural compatibility facades, transitional import shims and generic ownership buckets are forbidden.
 - File size alone is not a decomposition rule; use responsibility and change coupling.
 - A physical move must not silently imply semantic ownership transfer.
+- Existing APR/runtime packages explicitly marked migration-only are exceptions to target-semantic inference: their presence does not make their old vocabulary current architecture.
 
 ## Enforcement
 
