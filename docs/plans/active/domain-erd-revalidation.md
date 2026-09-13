@@ -44,9 +44,9 @@ For every context, complete the following before changing code:
    - identify upstream/downstream bounded-context contracts.
 
 2. **Evidence and provenance**
-   - inspect Strategic DDD, accepted requirements/ADRs and preserved reconstruction evidence;
+   - inspect current Strategic DDD, accepted target decisions and owner contracts;
    - classify each important statement as domain fact, accepted target decision, derived invariant, or tactical implementation choice;
-   - use current code/tactical model only to detect drift, not as automatic target truth.
+   - use current code only to detect migration/gap implications, not as automatic target truth.
 
 3. **Canonical ERD**
    - define entities, value objects and derived projections;
@@ -61,13 +61,13 @@ For every context, complete the following before changing code:
    - identify any duplicated foreign truth or hidden shared aggregate.
 
 5. **Current-state gap**
-   - compare accepted target ERD with current Tactical DDD, persistence schema and code;
+   - compare accepted target ERD with current persistence/code only after target semantics are established;
    - list semantic mismatches separately from harmless implementation detail;
    - rank blocking mismatches P0/P1/P2/P3 where useful.
 
 6. **Lock the result**
    - publish one canonical target-model document with PlantUML ERD;
-   - create/supersede an ADR when the review changes an accepted decision;
+   - create an ADR when the review makes a consequential architectural/domain decision that requires one;
    - record unresolved questions explicitly rather than inventing semantics;
    - create a separate migration roadmap only after the target model is accepted.
 
@@ -122,7 +122,7 @@ ADR-018 and the canonical target Tactical DDD now fix the MVP semantics:
 - TAE independently acquires ACL/policy bodies when configured evidence is required;
 - current-state `collectedAt` is preserved for age/explainability;
 - Resource Catalogue Resource identity remains independent from Firewall identity;
-- I19 proven-path semantics remain optional stronger/current-runtime capability, not an MVP prerequisite.
+- stronger proven-path semantics are optional and are not an MVP prerequisite.
 
 Canonical document:
 
@@ -133,21 +133,46 @@ The target NEP ERD is considered locked for this review. Remaining work is imple
 - concrete secret/profile storage;
 - retry/backoff/scheduler failure handling;
 - vendor-specific PBR or other source semantics only when a supported adapter actually requires them;
-- migration roadmap from current I19/I26 code/persistence to the accepted target.
+- migration roadmap from current code/persistence to the accepted target.
 
 ### 4. Access Policy Realization
 
-Review last because it composes facts from the previous contexts.
+APR is assumed to remain a separate bounded context. Its single current problem statement and design direction is:
 
-Must resolve at least:
+- `docs/domain/access-policy-realization/README.md`.
 
-- whether it is correctly a bounded context or should be treated as application/domain composition;
-- authoritative facts, derived facts and persistence ownership;
-- mapping from semantic Access Rule to current Resource/Endpoint realization;
-- use of ADR-018 NEP Firewall candidate/local-branch/access-list outputs;
-- correlation of NEP locators with Technical Access Evidence policy contents;
-- reconciliation/configuration-generation boundaries;
-- whether current entities are true domain identities or transient projections/results.
+Do not recover APR semantics from removed documentation or from current runtime types. Current runtime code is migration evidence only after the target model is established.
+
+The APR review must resolve at least:
+
+- exact input contract for one target-specific required effective policy;
+- exact input contract for one comparable configured effective-policy snapshot;
+- opaque target identity/correlation required by APR without importing NEP target-selection semantics;
+- effective technical access-space representation and exact equality/intersection/difference semantics;
+- comparison-scope and completeness rules required for a confident realization assessment;
+- separation between Realization Assessment and authoritative Semantic Delta;
+- separation between Semantic Delta and Policy Change Design;
+- semantics of pre-change verification of the proposed resulting policy;
+- supporting technical-to-domain/business attribution needed for explanation without coupling it unnecessarily to technical equality;
+- rendering boundary and whether full-target and change-oriented rendering are both required;
+- data-local computation contract for very large policies;
+- published cross-context projections needed to compute close to data without depending on peer-private schemas;
+- whether PostgreSQL exact set/range computation is sufficient for the accepted effective-policy model or a symbolic engine is eventually required;
+- which APR results are purely derived values/worksets and whether any future use case establishes an independent durable lifecycle;
+- canonical entities/value objects/derived projections and the resulting ERD only after the semantic contracts above are fixed.
+
+Current design sequence:
+
+```text
+cross-context inputs/outputs
+    -> effective-access-space semantics + completeness
+    -> semantic computation/data-local boundary
+    -> policy change design
+    -> proposed-change verification
+    -> rendering
+    -> Tactical DDD / ERD / persistence
+    -> runtime migration plan
+```
 
 ## Required deliverables
 
