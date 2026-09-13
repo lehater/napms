@@ -92,6 +92,8 @@ def main() -> int:
         ROOT / "docs" / "architecture" / "README.md",
         ROOT / "docs" / "architecture" / "current-architecture.md",
         ROOT / "backend" / "tests" / "evals" / "skill-routing-cases.json",
+        ROOT / "backend" / "tests" / "evals" / "lifecycle-transition-cases.json",
+        ROOT / "tools" / "validate_lifecycle_transitions.py",
         ROOT / ".github" / "workflows" / "harness.yml",
     ]
     required.extend(ROOT / "docs" / "process" / name for name in LIFECYCLE_PROTOCOLS)
@@ -117,6 +119,10 @@ def main() -> int:
             "## CI execution map",
             ".github/workflows/",
             "workflow_dispatch",
+            "Lifecycle stage: IMPLEMENTATION",
+            "Implementation authorization: G4 PASS",
+            "Authorized scope",
+            "Authorization basis",
         ]:
             if marker not in text:
                 errors.append(
@@ -169,6 +175,20 @@ def main() -> int:
                     f"{marker}"
                 )
 
+    plan_lifecycle = ROOT / "docs" / "process" / "plan-lifecycle.md"
+    if plan_lifecycle.is_file():
+        text = plan_lifecycle.read_text(encoding="utf-8-sig")
+        for marker in [
+            "## Lifecycle execution lease",
+            "Lifecycle stage:",
+            "Implementation authorization:",
+            "Authorized scope:",
+            "Authorization basis:",
+            "revokes the G4 lease",
+        ]:
+            if marker not in text:
+                errors.append(f"plan-lifecycle.md missing execution-lease marker: {marker}")
+
     execute_work_package = SKILLS / "execute-work-package" / "SKILL.md"
     if execute_work_package.is_file():
         text = execute_work_package.read_text(encoding="utf-8-sig")
@@ -178,10 +198,13 @@ def main() -> int:
             "Read the full current plan only",
             "canonical truth and refresh the capsule",
             "context rollover",
+            "Implementation authorization: G4 PASS",
+            "Authorized scope",
+            "Authorization basis",
         ]:
             if marker not in text:
                 errors.append(
-                    f"execute-work-package missing recovery marker: {marker}"
+                    f"execute-work-package missing recovery/lease marker: {marker}"
                 )
 
     implement_slice = SKILLS / "implement-slice" / "SKILL.md"
@@ -191,6 +214,11 @@ def main() -> int:
             "S4 Implementation Readiness",
             "G4",
             "REOPEN(S3)",
+            "Lifecycle stage: IMPLEMENTATION",
+            "Implementation authorization: G4 PASS",
+            "Authorized scope",
+            "Authorization basis",
+            "revoke the affected implementation lease",
         ]:
             if marker not in text:
                 errors.append(
