@@ -16,6 +16,48 @@ A fresh session must be able to recover the current task without reading prior c
 
 The full `PLAN-*.md` is the coordination artifact for work-package definitions/dependencies, overall goal, plan-level inputs, blockers, exit criteria and future stages. It does not own the mutable current-task pointer and is not mandatory startup context for ordinary execution.
 
+## Context roadmaps versus active plans
+
+A bounded context may have a durable context-specific roadmap even when no work on that context is currently active.
+
+Use:
+
+```text
+docs/engineering/roadmaps/<context>.md
+    = durable ordered future work for one bounded context
+
+docs/plans/active/PLAN-*.md
+    = only the work package being executed now
+```
+
+A context roadmap is appropriate when discovery/design has identified a useful ordered sequence of unresolved design, migration or implementation work that must survive a workstream switch. It is not domain truth and must link to the canonical domain/requirements/architecture/decision artifacts that own semantics.
+
+A context roadmap may be `active`, `parked` or `complete` as an engineering planning artifact. `parked` means:
+- the roadmap remains valid future guidance;
+- its next stage/re-entry point is recorded;
+- its implementation/design gates remain explicit;
+- no active `PLAN-*.md` is kept merely to remember the parked work;
+- `docs/plans/active/README.md` points to another current plan or to `Current: none.`.
+
+When switching away from a context:
+1. absorb accepted semantic decisions into their canonical owners;
+2. update the context roadmap with current state, next stage and any revisit trigger;
+3. remove the context's active `PLAN-*.md` after the current execution state no longer needs it;
+4. update the active resume capsule to the newly selected workstream or `Current: none.`.
+
+When resuming a parked context:
+1. read its canonical context truth first;
+2. read the context roadmap to recover ordered future work and the recorded next stage;
+3. revalidate any upstream dependencies that may have changed;
+4. create/select a new active `PLAN-*.md` for the stage actually being executed;
+5. update `docs/plans/active/README.md` to that active stage.
+
+Project-wide roadmaps and context roadmaps are different planning levels. A later project-wide roadmap may use context roadmaps as inputs to prioritize or sequence work across bounded contexts; it does not make every context roadmap active and does not replace their local detail.
+
+Do not create empty roadmap placeholders merely to mirror the list of bounded contexts. Add a context roadmap when concrete unresolved work has been identified and preserving its sequence has value.
+
+The context-roadmap registry and naming convention live in `docs/engineering/roadmaps/README.md`.
+
 ## Rules
 
 - Keep only current/planned execution artifacts under `docs/plans/active/`.
