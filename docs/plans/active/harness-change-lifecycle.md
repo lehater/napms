@@ -16,7 +16,9 @@ Design and evolve the repository Harness so a change can move from need/requirem
   - rework/reopen/block behavior;
   - problem/unknown accumulation without invention;
   - no-progress protection;
-  - minimal context loading and reliable rollover.
+  - minimal context loading and reliable rollover;
+  - durable gate provenance and scoped implementation authorization;
+  - executable lifecycle regression coverage.
 
 ## Work packages
 
@@ -57,22 +59,22 @@ Stage ownership follows statement meaning rather than file location, so mixed-le
 
 Automate only structural invariants that do not require semantic judgement.
 
-Status: structurally implemented, execution pending. `tools/validate_harness.py` checks lifecycle-protocol presence/discoverability and key Skill boundaries; `tools/validate_plans.py` enforces resume locality/context budget and rejects `Read first` entries that duplicate routed `AGENTS.md`/Skill content. Semantic gate verdicts remain judgement work.
+Status: active and previously validated. `tools/validate_harness.py` checks lifecycle-protocol presence/discoverability and key Skill boundaries; `tools/validate_plans.py` enforces resume locality/context budget. Hosted Harness run `34756958245` passed the pre-review baseline on head `38baa0b7c53620290094fe8393118493d18f67c8`.
 
-The Harness workflow now exposes `workflow_dispatch` so repository capability exists for an intermediate hosted gate. The current connected GitHub tool can read and re-run existing workflow runs but cannot dispatch a new workflow, so actual validation execution remains pending.
+Current remediation extends this layer with lifecycle-lease validation and `tools/validate_lifecycle_transitions.py`. Semantic gate verdicts still remain judgement work; validators enforce only states/transitions that can be checked deterministically.
 
 ### H6 — Real-change dry runs
 
 Exercise the lifecycle/context model against representative repository changes and refine only demonstrated gaps.
 
-Status: representative dry runs completed far enough to remove known P1 routing defects. Findings corrected:
+Status: representative dry runs completed far enough to remove known routing defects. Findings corrected:
 - Strategic/Tactical switching inside S2 is an internal reroute, not top-level `REOPEN`;
 - Strategic boundary/contract changes force revalidation of dependent Tactical assumptions before G2;
 - upstream reopen during implementation suspends the affected slice and requires a fresh G4 before resumption;
 - `execute-work-package` cannot bypass S4/G4 to reach `implement-slice`;
 - a real `policy_export` peer-domain import case showed that S3 can distinguish a structural architecture leak from a missing semantic contract requiring `REOPEN(S2)`.
 
-Direct S3, direct S4 and S0->S1 paths did not expose additional P1 routing defects: later-stage direct entry is valid only when the required upstream guarantees already exist and remain applicable.
+Direct S3, direct S4 and S0->S1 paths did not expose additional routing defects: later-stage direct entry is valid only when the required upstream guarantees already exist and remain applicable.
 
 ### H7 — Context-cost and recovery audit
 
@@ -87,11 +89,31 @@ Results:
 - fresh-session recovery succeeds from root routing -> capsule -> primary Skill -> minimal `Read first` without loading `change-lifecycle.md` for ordinary work;
 - `Read first` no longer repeats the primary Skill, and plan validation prevents routed AGENTS/Skill duplication;
 - local self-containment inside one stage protocol is preferred over cross-file DRY when it reduces working-context fan-out;
-- final manual review of `execute-work-package`, `implement-slice` and `architecture-review` found no remaining lifecycle bypass.
+- manual review of `execute-work-package`, `implement-slice` and `architecture-review` found no remaining known lifecycle bypass at that baseline.
+
+### H8 — Review remediation: gate provenance and executable lifecycle
+
+Close the key defects found by the Harness architecture review: prose-only G4 authorization, weak durable provenance and missing transition regressions.
+
+Status: in progress.
+
+Implemented in this increment:
+- mandatory compact lifecycle lease in `docs/plans/active/README.md` for current non-trivial work;
+- `IMPLEMENTATION` execution mode only after G4, without adding a new semantic design stage;
+- scoped `G4 PASS` authorization with explicit `Authorized scope` and `Authorization basis`;
+- automatic conceptual revocation of that lease on applicable upstream reopen/dirty assumptions;
+- `execute-work-package` and `implement-slice` require the scoped lease before code execution;
+- root `AGENTS.md` implementation order now requires that lease rather than merely "accepted behavior";
+- `tools/validate_plans.py` rejects implementation state without a valid scoped lease and rejects G4 authorization outside implementation;
+- `backend/tests/evals/lifecycle-transition-cases.json` captures PASS/REWORK/BLOCKED/direct-entry/REOPEN/dirty/G4-revocation cases;
+- `tools/validate_lifecycle_transitions.py` executes those transition invariants;
+- `make harness-check` and Harness workflow path filters include the new regression surface.
+
+Remaining closure: run hosted Harness CI on the final remediation head and fix only concrete failures.
 
 ## Blockers
 
-No semantic/context Harness blocker is known. Deterministic `make harness-check` execution is the remaining gate. Repository manual-dispatch capability now exists, but the current GitHub connector has no action to dispatch a new workflow; the current shell environment also could not resolve `github.com` for a temporary checkout.
+No external blocker. The current remediation is not accepted until deterministic Harness validation passes on its final head.
 
 ## Exit criteria
 
@@ -101,10 +123,12 @@ No semantic/context Harness blocker is known. Deterministic `make harness-check`
 - no material Harness state depends on conversation history;
 - the model stops rather than loops when evidence/decisions do not progress;
 - deterministic validators enforce structural routing without pretending to decide semantic gates;
+- G4 implementation permission is scoped, durable, revocable and mechanically distinguishable from pre-code states;
+- lifecycle transition regressions cover the key direct-entry/reopen/dirty paths;
 - real-change dry runs reveal no unresolved P0/P1 Harness contradiction;
 - context-cost/recovery audit reveals no unresolved P0/P1 progressive-disclosure defect;
-- deterministic Harness validation has actually executed before this workstream is declared complete.
+- deterministic Harness validation has executed successfully on the final remediation head before this workstream is treated as accepted.
 
 ## Next
 
-Do not expand the lifecycle further without a demonstrated defect. Execute `make harness-check` on `harness/change-lifecycle` when an execution surface is available, fix any deterministic failures, then perform the final branch review. Do not merge to `main` unless explicitly requested.
+Run hosted `make harness-check` on PR #101 for the current remediation head, inspect the complete result/logs, fix only concrete failures, and rerun until green. Keep PR #101 draft except when toggling Ready specifically to request the hosted gate. Do not merge to `main` unless explicitly requested.
