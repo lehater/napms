@@ -59,9 +59,9 @@ Stage ownership follows statement meaning rather than file location, so mixed-le
 
 Automate only structural invariants that do not require semantic judgement.
 
-Status: active and previously validated. `tools/validate_harness.py` checks lifecycle-protocol presence/discoverability and key Skill boundaries; `tools/validate_plans.py` enforces resume locality/context budget. Hosted Harness run `34756958245` passed the pre-review baseline on head `38baa0b7c53620290094fe8393118493d18f67c8`.
+Status: active and validated. `tools/validate_harness.py` checks lifecycle-protocol presence/discoverability and key Skill boundaries; `tools/validate_plans.py` enforces resume locality/context budget and the lifecycle execution lease; `tools/validate_lifecycle_transitions.py` validates the executable lifecycle regression corpus. Semantic gate verdicts remain judgement work.
 
-Current remediation extends this layer with lifecycle-lease validation and `tools/validate_lifecycle_transitions.py`. Semantic gate verdicts still remain judgement work; validators enforce only states/transitions that can be checked deterministically.
+Hosted Harness run `34757555810` passed all deterministic Harness checks after review remediation.
 
 ### H6 — Real-change dry runs
 
@@ -83,37 +83,35 @@ Validate that the lifecycle remains usable without context overload and that a f
 Status: passed manual/repository-structure review with no known P0/P1 progressive-disclosure defect.
 
 Results:
-- stage protocols remain lazy-loaded; each is roughly 4.6–9.5 KiB;
-- `change-lifecycle.md` is heavier (~14 KiB) and remains transition-only;
+- stage protocols remain lazy-loaded;
+- `change-lifecycle.md` remains transition-only;
 - no generic shared stage framework was introduced because it would add a mandatory indirection/load to every stage;
 - fresh-session recovery succeeds from root routing -> capsule -> primary Skill -> minimal `Read first` without loading `change-lifecycle.md` for ordinary work;
-- `Read first` no longer repeats the primary Skill, and plan validation prevents routed AGENTS/Skill duplication;
-- local self-containment inside one stage protocol is preferred over cross-file DRY when it reduces working-context fan-out;
-- manual review of `execute-work-package`, `implement-slice` and `architecture-review` found no remaining known lifecycle bypass at that baseline.
+- plan validation enforces a 6 KiB capsule, at most five `Read first` files, at most 24 KiB total startup working set and no routed AGENTS/Skill duplication;
+- hosted run `34757515972` demonstrated that this context budget catches real Harness regressions rather than being documentation only.
 
 ### H8 — Review remediation: gate provenance and executable lifecycle
 
 Close the key defects found by the Harness architecture review: prose-only G4 authorization, weak durable provenance and missing transition regressions.
 
-Status: in progress.
+Status: accepted after hosted deterministic validation.
 
-Implemented in this increment:
+Implemented:
 - mandatory compact lifecycle lease in `docs/plans/active/README.md` for current non-trivial work;
 - `IMPLEMENTATION` execution mode only after G4, without adding a new semantic design stage;
 - scoped `G4 PASS` authorization with explicit `Authorized scope` and `Authorization basis`;
-- automatic conceptual revocation of that lease on applicable upstream reopen/dirty assumptions;
+- applicable upstream reopen/dirty assumptions revoke that lease before affected implementation resumes;
 - `execute-work-package` and `implement-slice` require the scoped lease before code execution;
-- root `AGENTS.md` implementation order now requires that lease rather than merely "accepted behavior";
+- root `AGENTS.md` implementation order requires the lease rather than merely "accepted behavior";
 - `tools/validate_plans.py` rejects implementation state without a valid scoped lease and rejects G4 authorization outside implementation;
 - `backend/tests/evals/lifecycle-transition-cases.json` captures PASS/REWORK/BLOCKED/direct-entry/REOPEN/dirty/G4-revocation cases;
-- `tools/validate_lifecycle_transitions.py` executes those transition invariants;
-- `make harness-check` and Harness workflow path filters include the new regression surface.
-
-Remaining closure: run hosted Harness CI on the final remediation head and fix only concrete failures.
+- `tools/validate_lifecycle_transitions.py` executes 15 transition regression cases, including invalid combined/later-stage reopen targets;
+- `make harness-check` and Harness workflow path filters include the lifecycle regression surface;
+- hosted run `34757555810` passed `validate_harness.py`, `validate_plans.py`, `validate_skill_routing.py` and `validate_lifecycle_transitions.py`.
 
 ## Blockers
 
-No external blocker. The current remediation is not accepted until deterministic Harness validation passes on its final head.
+No known P0/P1 Harness blocker remains from this review. The active capsule will be updated with the accepted remediation result and the final recorded head will receive one last hosted Harness gate.
 
 ## Exit criteria
 
@@ -127,8 +125,8 @@ No external blocker. The current remediation is not accepted until deterministic
 - lifecycle transition regressions cover the key direct-entry/reopen/dirty paths;
 - real-change dry runs reveal no unresolved P0/P1 Harness contradiction;
 - context-cost/recovery audit reveals no unresolved P0/P1 progressive-disclosure defect;
-- deterministic Harness validation has executed successfully on the final remediation head before this workstream is treated as accepted.
+- deterministic Harness validation has executed successfully on the final recorded remediation head before the branch baseline is treated as validated.
 
 ## Next
 
-Run hosted `make harness-check` on PR #101 for the current remediation head, inspect the complete result/logs, fix only concrete failures, and rerun until green. Keep PR #101 draft except when toggling Ready specifically to request the hosted gate. Do not merge to `main` unless explicitly requested.
+After the final recorded-head Harness gate passes, keep PR #101 in draft and preserve this branch as the isolated Harness workstream. Do not expand the lifecycle speculatively; reopen design only when a real task demonstrates a concrete defect. Do not merge to `main` unless explicitly requested.
