@@ -67,7 +67,7 @@ Example: `routing state and derived reachability become visible atomically` may 
 For the affected semantic question:
 
 1. **State the invariant/identity/lifecycle question.** Do not begin from a class/table proposal.
-2. **Confirm ownership.** Verify the accepted context owns the fact/decision. If ownership is unclear or cross-context, return to Strategic DDD rather than stretching the tactical model.
+2. **Confirm ownership.** Verify the accepted context owns the fact/decision. If ownership is unclear or cross-context, reroute within S2 to Strategic DDD rather than stretching the tactical model.
 3. **Confirm requirement pressure.** Identify which accepted behavior or context responsibility requires the tactical concept. `REOPEN(S1)` when behavior itself is unsettled.
 4. **Define semantic identity.** State what makes the concept the same/different over time and which identifiers are semantic versus technical.
 5. **Define lifecycle.** State meaningful states, transitions, creation/retirement/replacement semantics only where required.
@@ -76,7 +76,7 @@ For the affected semantic question:
 8. **Define domain operations/facts.** Express decisions and effects in domain language; avoid service/API signatures unless needed only as examples.
 9. **Challenge implementation leakage.** For every persistence/technology-shaped statement ask whether changing the mechanism would change domain meaning. If not, route it downstream.
 10. **Challenge over-modelling.** Remove entities/state machines/commands that do not own independent identity, lifecycle or invariant.
-11. **Resolve/route unknowns.** Use `decision-protocol.md`; reopen Strategic DDD when context ownership is wrong/unclear; reopen S1 when product behavior is missing.
+11. **Resolve/route unknowns.** Use `decision-protocol.md`; reroute within S2 to Strategic DDD when context ownership is wrong/unclear; `REOPEN(S1)` when product behavior is missing.
 12. **Update the smallest canonical domain owner first** and evaluate tactical coherence.
 
 ## Tactical coherence checks
@@ -110,10 +110,12 @@ Tactical work is coherent for the affected scope when:
 
 - `PASS` — return to `domain-design-stage.md` for final G2 evaluation.
 - `REWORK` — correct the affected tactical semantic delta.
-- `REOPEN Strategic DDD` — responsibility/context boundary or cross-context contract is the real problem.
+- `REROUTE Strategic DDD` — remain in S2, but move to `strategic-ddd-convergence.md` because responsibility/context boundary/cross-context contract is the real problem.
 - `REOPEN(S1)` — required product behavior/authority/quality expectation is unsettled.
 - `REOPEN(S0)` — the problem/evidence premise is invalid or contradictory.
 - `BLOCKED` — required semantic/business decision cannot be derived from current accepted truth/evidence.
+
+`REOPEN(stage)` is reserved for top-level lifecycle stages S0-S4. Strategic and Tactical DDD are internal S2 routes, so switching between them is not a lifecycle reopen and does not by itself dirty S1.
 
 ## Mixed-level canonical artifacts
 
@@ -149,5 +151,5 @@ Do not preload Strategic DDD convergence when the context boundary is already ac
 - `domain-design-stage.md` owns S2 routing and final G2.
 - `strategic-ddd-convergence.md` owns Strategic DDD convergence when ownership/boundary/relationship is under question.
 - `requirements-stage.md` owns product-behavior guarantees.
-- `change-lifecycle.md` owns stage transitions/reopen/dirty/no-progress semantics.
+- `change-lifecycle.md` owns top-level stage transitions/reopen/dirty/no-progress semantics.
 - S3 Architecture owns realization mechanisms intentionally excluded here.
