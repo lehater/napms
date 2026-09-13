@@ -4,13 +4,15 @@ Status: `implementation-oriented UI contract`.
 
 ## Purpose
 
-Checker is the technical-to-domain lookup workspace for an explicit traffic tuple:
+Checker is the technical traffic analysis and attribution workspace for an explicit traffic tuple:
 
 ```text
 source address + destination address + protocol + port/range + asOf
 ```
 
-It presents the full available picture without collapsing owner facts into one generic status.
+It presents the available cross-context picture without collapsing owner facts into one generic status.
+
+Checker terminology does not define the target Access Policy Realization domain model. APR target semantics are owned by `docs/domain/access-policy-realization/README.md` while revalidation is active.
 
 ## Screen structure
 
@@ -33,7 +35,7 @@ Result tabs:
 ## Overview
 
 Overview shows the compact cross-layer summary:
-- source/destination resolution state;
+- source/destination attribution state;
 - resolved resource/component/service context;
 - requirement, decision, Access Rule and effective-policy summaries;
 - relevant network-device candidate count;
@@ -43,19 +45,19 @@ Overview shows the compact cross-layer summary:
 
 ## Network Context
 
-Network Context is an unordered list of relevant candidate devices/enforcement identities.
+Network Context is an unordered list of relevant candidate devices/enforcement identities for this Checker use case.
 
 The UI shall never render candidates as a route or implied sequence. Deterministic list ordering has no network meaning.
 
 For each candidate, show when available:
 - device/provider realization identity;
-- Logical Firewall / Enforcement Attachment identity;
+- target/policy locator information published by the network-context source;
 - source relevance label without invented probability;
 - provenance;
-- last applicable configured-evidence snapshot;
+- applicable stored configured-evidence snapshot;
 - configured technical entries that match/cover/overlap the query.
 
-The view shall state that candidate membership is not proof that traffic traverses the device and that an empty candidate set is not proof of no forwarding/no enforcement.
+These Checker presentation semantics do not become APR target-selection semantics. APR receives supplied targets and does not reevaluate why they were selected.
 
 ## Evidence
 
@@ -67,9 +69,9 @@ For a selected snapshot show:
 - captured time when known;
 - recorded time;
 - matching technical entries;
-- match relationship such as `Exact`, `CoversQuery`, `CoveredByQuery`, `Overlap` or `Unknown`.
+- match relationship such as `Exact`, `CoversQuery`, `CoveredByQuery`, `Overlap` or `Unknown` when supported by the Checker matching contract.
 
-The UI shall describe the snapshot as last-known configured evidence, not current device state. It may show neutral age-at-analysis but shall not invent a stale/fresh policy threshold.
+The UI shall describe the snapshot as stored configured evidence, not guaranteed current device state. It may show neutral age-at-analysis but shall not invent a stale/fresh policy threshold.
 
 No applicable snapshot is `Unavailable/Unknown` evidence, not proof that no matching configured rule exists on the live device.
 
@@ -100,9 +102,9 @@ Multiple matching semantic connectivity projections are preserved and displayed 
 
 ## Historical mode
 
-All reads use explicit `asOf`.
+All reads use explicit `asOf` where the owning source supports historical selection.
 
-Evidence captured or recorded after `asOf` shall not be shown as applicable to that historical analysis.
+Evidence captured or recorded after `asOf` shall not be presented as applicable to that historical analysis unless the owning evidence-time contract explicitly supports it.
 
 Mutation actions are outside I26 Checker.
 
@@ -111,7 +113,7 @@ Mutation actions are outside I26 Checker.
 The supported local target uses:
 - PostgreSQL Resource Catalogue / Application Communication / Requirement / Decision / Access Policy data;
 - PostgreSQL stored TAE configured snapshots;
-- deterministic local Network Context candidate source;
+- deterministic local Network Context source where applicable;
 - deterministic local Resource Responsibility source.
 
-These stubs are explicit seams for absent external sources; they are not claims of enterprise/device integration.
+These local sources are explicit seams for absent external systems; they are not claims of enterprise/device integration.
