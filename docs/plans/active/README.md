@@ -8,9 +8,9 @@ Current task: close review findings around durable gate provenance, scoped G4 au
 
 Lifecycle stage: `META`
 
-Stage state: `IN_PROGRESS`
+Stage state: `GATE_FAILED`
 
-Lifecycle basis: Harness architecture review findings on durable gate provenance, scoped G4 authorization and lifecycle regression coverage; current work is isolated to `harness/change-lifecycle`.
+Lifecycle basis: Hosted Harness run `34757515972` executed the remediation and failed only the active-plan context budget because the temporary `Read first` set exceeded 24 KiB.
 
 Implementation authorization: `none`
 
@@ -22,29 +22,30 @@ Authorization basis: `none`
 
 Read first:
 - `docs/plans/active/harness-change-lifecycle.md`
-- `docs/process/plan-lifecycle.md`
 - `tools/validate_plans.py`
 
 Expand only if needed:
+- `docs/process/plan-lifecycle.md` when changing lifecycle-lease semantics;
 - `docs/process/change-lifecycle.md` for transition/authorization semantics;
 - `.agents/skills/execute-work-package/SKILL.md` and `.agents/skills/implement-slice/SKILL.md` for execution routing;
-- lifecycle eval/validator files while adding regression coverage.
+- lifecycle eval/validator files while diagnosing regression coverage.
 
 ## Recovery facts
 
 - All current Harness design changes belong only to branch `harness/change-lifecycle`; do not update or merge to `main` unless explicitly requested later.
 - PR #101 exists only as the hosted CI surface for this branch and must remain unmerged unless explicitly requested later.
-- Hosted Harness run 34756958245 passed `make harness-check` on head `38baa0b7c53620290094fe8393118493d18f67c8` before the current review-remediation changes.
-- The review identified the remaining key P1 class: lifecycle/G4 guarantees were stronger in prose than in durable machine-checked state.
-- `plan-lifecycle.md` now defines a compact mandatory lifecycle lease in the capsule.
-- G4 authorization is scoped to one implementation slice/scope, requires an explicit basis, and is revoked by applicable upstream reopen/dirty state.
-- `IMPLEMENTATION` is an execution mode after G4, not a new semantic design stage.
-- `execute-work-package` and `implement-slice` now require the current scoped lease before routing/executing code changes.
+- Hosted Harness run `34756958245` passed the pre-remediation baseline on head `38baa0b7c53620290094fe8393118493d18f67c8`.
+- Review remediation introduced a mandatory compact lifecycle lease, scoped/revocable G4 authorization and transition regression coverage.
+- `execute-work-package` and `implement-slice` require the current scoped lease before routing/executing code changes.
+- `validate_plans.py` now mechanically rejects IMPLEMENTATION without G4 and G4 outside IMPLEMENTATION.
+- `validate_lifecycle_transitions.py` covers PASS/REWORK/BLOCKED/direct-entry/REOPEN/dirty/G4-revocation invariants and runs under `make harness-check`.
+- Hosted run `34757515972` passed `validate_harness.py`; `validate_plans.py` correctly rejected the remediation capsule because its three `Read first` files totaled 30,741 bytes against the 24 KiB budget.
+- The fix is to keep `plan-lifecycle.md` lazy for this validator/CI task rather than weakening the context budget.
 - No product/domain/runtime code has been changed by this Harness workstream.
 
 ## Blockers
 
-No external blocker. Deterministic validation must be extended and rerun after the lifecycle-lease changes.
+No external blocker. The deterministic gate must be rerun after the context-budget correction.
 
 ## Gate
 
@@ -52,4 +53,4 @@ Do not treat the remediation as accepted until hosted `make harness-check` passe
 
 ## Next
 
-Extend `validate_plans.py` for the lifecycle lease, add executable transition regression cases, wire them into `make harness-check`, then run PR #101 CI and fix only concrete failures.
+Rerun PR #101 Harness CI on this reduced working set, inspect the complete result/logs, and fix only concrete failures. If green, record acceptance and rerun once on the final recorded head.
