@@ -28,4 +28,6 @@ npm run dev
 
 Vite proxies `/api` and `/health` to `127.0.0.1:8000`.
 
-Current authenticated workspaces cover Connectivity, Needs, Decisions, Rules, Effective Desired Policy, Normalized Policy export and the read-only network-operator Realization view. Authority remains enforced by backend owner use cases; navigation does not grant business authority.
+Current accepted workspaces cover Connectivity, Needs, Decisions, Rules, Effective Desired Policy and Normalized Policy export. The runtime may still expose the older read-only `Realization` screen while APR migration is pending; its existing stages/statuses are legacy implementation behavior and are not the target Access Policy Realization contract. Current APR semantics are defined only by `docs/domain/access-policy-realization/README.md` until the redesign is locked.
+
+Authority remains enforced by backend owner use cases; navigation does not grant business authority.
