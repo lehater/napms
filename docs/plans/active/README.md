@@ -1,40 +1,46 @@
 # Active execution
 
-Current: `domain-erd-revalidation.md` — bounded-context discovery/model revalidation before implementation.
+Current: `harness-change-lifecycle.md` — isolated Harness lifecycle/context-management design on branch `harness/change-lifecycle`.
 
-Goal: identify and lock target domain problems/models context by context, preserve unresolved future work as context-local problem registers, and avoid implementing against unresolved or obsolete semantics.
+Goal: define a coherent stage/gate change lifecycle from need to implementation readiness and a paired context lifecycle that loads only the minimum rules/artifacts required for the current task.
 
-Current task: APR discovery is parked with a durable context problem register; select the next bounded context/workstream to review.
+Current task: challenge and refine the upper-level lifecycle/context model before designing detailed per-stage methodologies.
 
 ## Working set
 
 Read first:
-- `docs/plans/active/domain-erd-revalidation.md`;
-- `docs/engineering/context-problems/README.md`;
-- `docs/process/plan-lifecycle.md`.
+- `docs/plans/active/harness-change-lifecycle.md`;
+- `docs/process/change-lifecycle.md`;
+- `.agents/skills/agent-harness-design/SKILL.md`;
+- `docs/process/README.md`.
 
 Expand only if needed:
-- the canonical domain/requirements/architecture artifacts for the next selected context;
-- `docs/engineering/context-problems/access-policy-realization.md` only when resuming APR.
+- `docs/process/domain-change-protocol.md` when checking semantic re-entry overlap;
+- `docs/process/working-loop.md` when checking checkpoint/session rollover mechanics;
+- `docs/process/plan-lifecycle.md` when checking active-state/problem-register ownership;
+- `AGENTS.md` when changing repository startup/routing rules.
 
 ## Recovery facts
 
-- Access Policy Realization is not active execution now.
-- APR canonical semantic framing remains `docs/domain/access-policy-realization/README.md`.
-- APR unresolved future work is parked at `docs/engineering/context-problems/access-policy-realization.md`.
-- The APR register records problems and real dependencies but deliberately does not impose a total execution order.
-- A parked context problem register never authorizes implementation and does not require an active `PLAN-*.md`.
-- Create a context roadmap only if a future selected workstream has an evidence-backed ordering worth preserving.
-- New context problem registers are created only after concrete unresolved work is identified; do not create empty placeholders.
+- All current Harness design changes belong only to branch `harness/change-lifecycle`; do not update or merge to `main` unless explicitly requested later.
+- `docs/process/change-lifecycle.md` is the current top-level progression model; treat it as a draft to challenge, not as unquestionable truth.
+- The model separates Change Lifecycle from Context Lifecycle while keeping them coordinated.
+- Gate outcomes are `PASS`, `REWORK`, `REOPEN(stage)` and `BLOCKED`.
+- Earlier-stage changes mark dependent downstream stages `DIRTY` until revalidated.
+- Missing upstream truth must become an explicit problem/unknown; lower layers must not invent it.
+- Repetition without changed evidence/model/problem/decision state is a no-progress blockage, not permission to loop.
+- Context loading is progressive: kernel/routing -> current stage protocol -> primary Skill -> minimal working set -> lazy evidence.
+- Durable accepted truth, open problems and current execution state must be promoted out of conversation history before rollover.
+- Detailed Requirements/DDD/Architecture/Implementation-Readiness methodologies are intentionally deferred until the upper-level model is coherent.
 
 ## Blockers
 
-No repository blocker. The next bounded context/workstream must be selected before a context-specific active task is created.
+No external blocker. The current design risk is over-expanding rules before the lifecycle/context kernel is stable.
 
 ## Gate
 
-No context runtime migration is authorized merely by discovery or by a parked problem register. Lock the applicable canonical semantics and satisfy the selected context's design gate first.
+Do not proceed to detailed per-stage methodology until the top-level lifecycle has unambiguous progression/re-entry/block semantics, explicit context loading/unloading behavior, non-overlapping ownership with existing process protocols, and recoverability from a fresh session.
 
 ## Next
 
-Select the next bounded context for discovery/revalidation, work from its canonical truth, and capture its unresolved problems/gaps/dependencies under `docs/engineering/context-problems/` when enough concrete work has been identified to preserve.
+Review the lifecycle as a state-transition model, find contradictions or missing transitions, then make only the smallest alignment changes needed in `AGENTS.md`, `working-loop.md` and `plan-lifecycle.md` before expanding the methodology.
