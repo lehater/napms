@@ -23,9 +23,9 @@ Authorization basis: `none`
 Read first:
 - `docs/plans/active/domain-erd-revalidation.md`
 - `docs/engineering/context-problems/README.md`
-- `docs/process/plan-lifecycle.md`
 
 Expand only if needed:
+- `docs/process/plan-lifecycle.md` when execution-state persistence or parking mechanics are being changed;
 - the canonical domain/requirements/architecture artifacts for the next selected context;
 - `docs/engineering/context-problems/access-policy-realization.md` only when resuming APR;
 - `docs/process/domain-design-stage.md` when S2 routing or G2 evaluation is active.
