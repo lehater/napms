@@ -200,7 +200,7 @@ A gate may pass with P2/P3 findings when its required guarantees are otherwise s
 
 ## Context lifecycle
 
-The change lifecycle is paired with a context lifecycle so agents do not preload every rule and artifact.
+The change lifecycle owns context-level invariants around stage transitions; `working-loop.md` owns the detailed checkpoint, rollover, promotion/discard and fresh-session recovery procedure.
 
 Use progressive disclosure:
 
@@ -213,57 +213,11 @@ L4 evidence loaded only on demonstrated need
 L5 ephemeral analysis in the current conversation/session
 ```
 
-A repository index or link may tell the agent where knowledge exists without loading its full content.
+Keep transition context separate from ordinary working context. Load this protocol when entering/reopening a stage, evaluating a gate, propagating invalidation or resolving routing ambiguity; otherwise recover from the capsule, primary Skill and minimal working set.
 
-### Transition context vs working context
+At a material transition, persist accepted truth/problems/current execution state before discarding conversational context. Stage changes and material reopens are strong rollover checkpoints, but not mandatory session boundaries.
 
-Keep stage-transition knowledge separate from ordinary task execution:
-
-- **transition context** is needed to enter/reopen a stage, evaluate a gate, propagate dirty state or select the next stage;
-- **working context** contains only the current stage/task method, scoped instructions, minimal project artifacts and evidence actually required for the task.
-
-After a transition is recorded in durable state, a fresh working session should not need to carry the entire top-level lifecycle protocol unless another transition decision is being made.
-
-### Startup
-
-For a fresh session, preserve the repository's established routing order:
-
-1. read the root repository agent map (`AGENTS.md`);
-2. read the active resume capsule;
-3. read the nearest scoped `AGENTS.md` when one applies;
-4. determine the current task/stage/gate from the capsule and load the smallest applicable primary Skill;
-5. load the capsule's minimal `Read first` working set;
-6. load the relevant transition/stage protocol only when the task requires stage routing, gate evaluation, reopen/invalidation or when the capsule explicitly names it;
-7. expand evidence lazily when the current problem demonstrates the need.
-
-Do not preload protocols for future stages. Do not load the top-level lifecycle on every ordinary implementation/review task merely because it exists.
-
-### Promotion and discard
-
-Before changing stage/workstream or when context becomes costly, classify current conversational knowledge:
-
-- accepted product/domain/architecture truth -> canonical artifact;
-- unresolved material problem -> durable problem register or active plan state as appropriate;
-- current task/stage/gate/next action -> active resume capsule;
-- current lifecycle/implementation authorization basis -> compact references in the resume capsule;
-- evidence references worth preserving -> canonical artifact/problem record/plan as appropriate;
-- temporary reasoning, tool dumps, duplicated explanation, rejected exploration -> discard.
-
-No durable project fact or blocker may exist only in conversation history.
-
-### Rollover
-
-A fresh session is the reliable unload mechanism for model context. After durable promotion/checkpointing, prefer rollover when:
-
-- the semantic stage changes;
-- the workstream/task changes materially;
-- loaded evidence/rules no longer belong to the current task;
-- the conversation is dominated by stale exploration or large tool output;
-- continuing would require carrying substantially more context than a fresh session reconstructed from durable state.
-
-Stage transition is therefore a strong rollover checkpoint, but not an unconditional requirement: if the existing conversation remains small and relevant, work may continue. The durable resume state must nevertheless be sufficient for a fresh session at any material transition.
-
-A successful rollover must be able to resume without rereading the previous conversation.
+For the exact rollover/recovery sequence and checkpoint mechanics, use `docs/process/working-loop.md`. Do not duplicate that algorithm here.
 
 ## Exit to implementation
 
@@ -298,4 +252,4 @@ The implementation-ready state must be strong enough that the implementer is not
 - `working-loop.md` owns branch/checkpoint/validation/session execution mechanics.
 - `plan-lifecycle.md` owns durable active execution state, scoped G4 lease and parked problem/roadmap semantics.
 
-This protocol owns stage progression, gate outcomes, upstream reopen/dirty propagation, no-progress handling and the minimal-context lifecycle around that progression.
+This protocol owns stage progression, gate outcomes, upstream reopen/dirty propagation, no-progress handling and context-level transition invariants.
