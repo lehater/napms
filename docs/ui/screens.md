@@ -1,17 +1,14 @@
 # Web UI screen map
 
-Status: `current through I27 Catalogue Curation`.
+Status: `current non-APR screens through I27 Catalogue Curation; APR operator surface under revalidation`.
 
 Canonical product semantics:
 - `docs/requirements/web-ui-requirements.md`;
 - feature requirements under `docs/requirements/`;
 - feature boundaries under `docs/architecture/`.
 
-Accepted next Applications target, not yet implemented:
-- `docs/ui/application-catalogue-target.md`;
-- `docs/decisions/ADR-012-application-definition-deployment-model.md`.
-
-The screen descriptions below remain current implemented I27 truth until the target model is implemented and absorbed.
+APR target framing:
+- `docs/domain/access-policy-realization/README.md`.
 
 ## Login
 
@@ -33,16 +30,16 @@ Contextual Add connectivity uses backend discovery and reuses known local contex
 
 ## Checker
 
-Technical traffic analysis entry point.
+Technical traffic analysis and attribution entry point.
 
 Input: source/destination address, protocol/port semantics and `asOf`. Output groups:
-- Overview/address resolution;
-- Network Context candidates;
+- Overview/address/resource attribution;
+- Network Context information;
 - policy/governance matches;
 - Ownership/Resource Responsibility;
 - stored configured Evidence.
 
-Ambiguous/historical/unknown resolution and missing evidence remain explicit. Candidate devices are not rendered as a proven ordered path.
+Ambiguous/historical/unknown attribution and missing evidence remain explicit. Checker-specific network-context presentation does not define APR target-selection semantics.
 
 ## Applications
 
@@ -102,11 +99,15 @@ Read effective desired policy for one authorized scope and `asOf`. Authorized em
 
 Normalized technical policy view preserving semantic correlation, DCS traffic alternatives, realization, `asOf` and provenance.
 
-## Realization
+## Access Policy Realization
 
-Implemented operator workspace over desired policy, placement, configured evidence, reconciliation, rendering and available execution result. Stage availability is explicit; missing evidence/history is not fabricated as success.
+No target APR screen contract is currently accepted. The existing runtime `Realization` screen is legacy implementation/migration material and must not be used as the specification for the redesigned APR bounded context.
+
+The target screen model will be defined only after APR realization assessment, semantic delta, policy-change design, verification and rendering contracts are accepted.
 
 ## Navigation
+
+Accepted non-APR navigation:
 
 ```text
 OVERVIEW
@@ -123,9 +124,8 @@ POLICY
   Rules
   Effective
   Export
-
-OPERATIONS
-  Realization
 ```
 
-Future screens may be marked Planned only when backed by accepted scope and must not expose fake actions/data.
+A legacy runtime may still expose `OPERATIONS -> Realization` until implementation migration. Its current contents are not target semantics.
+
+Future screens may be added only when backed by accepted scope and must not expose fake actions/data.
