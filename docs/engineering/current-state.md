@@ -1,12 +1,12 @@
 # Current implementation state
 
-Status: `I31 Application Catalogue migration accepted and implemented for the supported local target`.
+Status: `I31 Application Catalogue migration accepted and implemented for the supported local target; APR target semantics under active revalidation`.
 
-Date: 2026-09-11.
+Date: 2026-09-13.
 
-Current execution pointer: `docs/plans/active/README.md`. No active implementation plan remains after I31 absorption.
+Current execution pointer: `docs/plans/active/README.md`.
 
-This file is a capability snapshot, not an increment-by-increment changelog. Detailed history lives in Git; roadmap status lives in the corresponding engineering roadmaps.
+This file is a capability snapshot, not an increment-by-increment changelog. It must not be used to infer target APR semantics from existing runtime code.
 
 ## Capability snapshot
 
@@ -21,16 +21,14 @@ This file is a capability snapshot, not an increment-by-increment changelog. Det
 | Connectivity Decision | accepted first-class bounded context | PostgreSQL-backed immutable final Decision runtime with exact subject/scope/time selection, supersession and fail-closed persistence semantics | Decisions workspace plus coarse Decision state in Connectivity and Checker |
 | Policy export / normalization | accepted | coherent snapshot + vendor-neutral normalized policy JSON | Normalized Policy |
 | Scoped Connectivity Inventory | accepted owner-preserving application composition | framework-free read composition with module-owned PostgreSQL adapters; no independent persistence | primary Connectivity workspace and policy/governance input to Checker |
-| Technical Access Evidence | accepted through I26 | Domain/Application/Ports + TAE-owned PostgreSQL + strict local JSON import adapter; shared backend technical-predicate matching | consumed by Realization and Checker |
-| Network Enforcement Placement | accepted through I26 | proven ForwardingPath remains optional stronger capability; baseline Network Context candidate-set contract is unordered, provenance-bearing and may be incomplete/false-positive | consumed by Realization and Checker Network Context |
-| Access Policy Realization | accepted through I21 | owner-preserving AP/RC/ACC/NEP/TAE composition; derived on demand; Cisco ASA renderer outer adapter | Realization read-only operator workspace |
-| Network Environment Operations | accepted I22 stub-first Tactical DDD | deterministic in-process target stub + in-memory operation repository; no real Cisco transport or crash-durable audit claim | operation stage in Realization when actual result exists |
-| Network Operator Realization View | accepted I25 read composition | authority-first PostgreSQL owner-preserving composition + authenticated HTTP router | Realization workspace with explicit stage availability and Rule navigation |
-| Traffic Analysis Checker | accepted I26 read composition | no independent persistence; RC reverse resolution + ACC bindings + Scoped Connectivity summaries + Network Context + stored TAE + Resource Responsibility | Checker workspace |
+| Technical Access Evidence | accepted | Domain/Application/Ports + TAE-owned PostgreSQL + strict local JSON import adapter | consumed through explicit downstream contracts |
+| Network Enforcement Placement | accepted target by ADR-018; runtime migration pending where required | current-state Firewall/routing/interface/override model and policy-locator contract are normative; older stronger runtime path capabilities are not APR input semantics | target/candidate information for downstream consumers |
+| Access Policy Realization | **target under active revalidation** | existing runtime implementation remains migration code only; it is not a source of target semantics | no APR product contract is normative beyond `docs/domain/access-policy-realization/README.md` |
+| Network Environment Operations | accepted stub-first Tactical DDD | deterministic in-process target stub + in-memory operation repository; no real Cisco transport or crash-durable audit claim | controlled operation evidence where explicitly invoked |
+| Traffic Analysis Checker | accepted read composition | no independent persistence; RC reverse resolution + ACC bindings + Scoped Connectivity summaries + Network Context + stored TAE + Resource Responsibility | Checker workspace |
 | Catalogue Curation | accepted through I31 | RC curation from I27 plus current ACC target commands/read models, PostgreSQL UoWs, authenticated task-oriented HTTP API, optimistic concurrency and durable idempotency receipts | `CATALOGUES -> Applications / Resources` |
-| End-to-end product acceptance | accepted through I31 evidence | target-authored Application interaction proven through Requirement -> final Decision -> Access Rule; prior I25 execution chain retained | self-service onboarding, governance and explainability paths |
-| Optional external identity/source extension | accepted I23 dormant seam | source-neutral verified external identity mapping proof; no primary runtime wiring | none |
-| Local deployment and operations | accepted I24/I25 local target | password/SCRAM PostgreSQL, repeatable non-mutating startup, logical backup/clean restore, migrations, diagnostics, container hardening and locked Web dependency graph | Make targets, operator runbook and Web UI |
+| Optional external identity/source extension | accepted dormant seam | source-neutral verified external identity mapping proof; no primary runtime wiring | none |
+| Local deployment and operations | accepted local target | password/SCRAM PostgreSQL, repeatable non-mutating startup, logical backup/clean restore, migrations, diagnostics, container hardening and locked Web dependency graph | Make targets, operator runbook and Web UI |
 
 ## Current runtime boundary
 
@@ -110,38 +108,31 @@ Authority Management owns catalogue mutation admission through:
 
 Catalogue visibility, Resource Scope Affiliation, Resource Responsibility, Application owner reference, Deployment Company/Environment/Scope and `ReadScopedConnectivity` do not imply catalogue mutation authority.
 
-## Existing full-chain boundaries
+## Access Policy Realization revalidation boundary
 
-The supported deterministic execution chain remains:
+APR target semantics must be read only from:
 
-```text
-Connectivity Requirement
-    -> immutable Connectivity Decision
-    -> Access Rule
-    -> effective desired policy
-    -> placement / technical realization
-    -> reconciliation
-    -> rendering
-    -> deterministic controlled execution
-    -> post-change verification (`Verified`)
-```
+- `docs/domain/access-policy-realization/README.md`.
 
-This proves orchestration semantics with the existing deterministic NEO target stub; it does not claim real Cisco/device transport compatibility.
-
-I31 adds the current fresh-input acceptance:
+The target direction is:
 
 ```text
-Resource curation
-    + Application Definition / Components / Interaction Definition
-    + Application Deployment / selected Deployment Interaction
-    + interaction-side Resource membership
-    -> Scoped Connectivity compatibility interaction
-    -> Connectivity Requirement
-    -> final Allowed Connectivity Decision
-    -> materialized Access Rule
+supplied target + required effective policy
+                +
+comparable configured effective policy
+                |
+                v
+realization assessment
+    -> exact semantic delta
+    -> policy change design
+    -> pre-change semantic verification
+    -> semantics-preserving rendering
+    -> downstream operational execution
 ```
 
-J03 separately preserves the existing downstream/demo regression path so the target acceptance does not replace independent legacy/downstream coverage.
+Existing APR runtime types, routes, tests and read compositions are not target-domain evidence. They remain implementation/migration material until a new Tactical DDD and migration plan are accepted.
+
+In particular, target selection/relevance remains upstream, and large policy-space comparison is expected to be data-local behind APR semantic contracts rather than requiring full application-memory materialization.
 
 ## Visual regression evidence
 
@@ -164,36 +155,24 @@ The semantic assertions execute before screenshot comparison. Screenshot evidenc
 - DCS revision is immutable application communication snapshot truth, not a firewall rule row.
 - technical realization changes do not redefine Resource or ACC business identity.
 - technical evidence is not authorization or desired policy.
-- Logical Firewall identity remains independent from provider/device realization, Resource and Enforcement Attachment identity.
-- Network Context candidate membership is not a proven path/order/traversal fact.
+- NEP target relevance is not APR policy-realization semantics.
+- APR compares effective policy behavior, not raw rule/configuration decomposition.
+- semantic delta is not a concrete policy edit plan.
 - rendered configuration is derived representation, not evidence of provider/device application.
-- transport/apply acceptance is not semantic verification; `Verified` requires matching post-check evidence.
-- Unknown apply is fail-closed and is not blindly retried.
+- transport/apply acceptance is not semantic verification; downstream operational verification requires matching post-check evidence.
 - authentication identity does not grant business authority.
-- external Responsibility Scope / Person / Team / Company correlation references do not create NAPMS authority.
-- cross-context composition consumes owner ports and does not acquire peer persistence ownership.
+- cross-context composition consumes owner contracts and does not acquire peer persistence ownership.
+- physical PostgreSQL colocation does not authorize cross-context private-table coupling.
 - Legacy/MSSQL, external catalogue sync and real provider/device transport remain non-current dependencies.
 - Web dependency changes must keep package intent and lockfile consistent.
 
-## Validation state
-
-The I31 implementation head `82a1d284056e9b89fdf627d516e10bef67cb5056` passed all six applicable hosted gates before canonical absorption:
-- core gate;
-- PostgreSQL persistence gate;
-- Web gate;
-- harness gate;
-- Docker local runtime gate;
-- browser journey gate, including target-authored downstream acceptance and screenshot regression.
-
-The documentation-final head is revalidated before squash integration.
-
 ## Current execution
 
-I31 Application Catalogue migration is absorbed for the supported local target. No further implementation increment is selected by this snapshot.
+I31 Application Catalogue migration is absorbed for the supported local target.
+
+APR is the active domain-design/revalidation area. No implementation migration should promote existing APR runtime semantics until the target contracts and Tactical DDD are accepted.
 
 Future catalogue expansion requires a new accepted requirement. Explicit non-current candidates include Application Definition versioning, Deployment-specific interaction overrides, explicit legacy-to-Deployment migration with sufficient business input, bulk import/edit, external catalogue/CMDB synchronization, organization/company hierarchy management, fine-grained catalogue visibility, generic custom fields and catalogue approval workflow.
-
-I27 Resource Catalogue curation, I26 Traffic Analysis Checker, I25 Product Completion, I24 Local Deployment and Operational Hardening, I23 Optional Integration Extension Skeleton, I22 Network Environment Operations, I21 Configuration Rendering, I20 Reconciliation, I19 Network Enforcement Placement, I18 Technical-to-Domain Access Resolution, I17 Technical Access Evidence, I16B Connectivity Decision Runtime/Workflow and earlier increments remain complete and absorbed.
 
 ## Canonical references
 
@@ -202,10 +181,11 @@ Use the smallest relevant set:
 - current Application Catalogue requirement: `docs/requirements/application-catalogue-target.md`;
 - current Application Catalogue architecture: `docs/architecture/application-catalogue-target-boundary.md`;
 - I31 compatibility decisions: `docs/decisions/ADR-012-application-definition-deployment-model.md`, `docs/decisions/ADR-013-i31-application-catalogue-compatibility-and-reference-semantics.md`;
-- current Application Catalogue UX: `docs/ui/application-catalogue-target.md`, `docs/ui/application-catalogue-wireframes.md`;
 - Resource catalogue curation: `docs/requirements/catalogue-curation.md`, `docs/architecture/catalogue-curation-boundary.md`;
 - Strategic ownership: `docs/domain/strategic-model.md`, `docs/domain/semantic-ownership.md`;
 - Resource responsibility boundary: `docs/domain/resource-role-model.md`;
+- Network Enforcement Placement target: `docs/domain/network-enforcement-placement/target-tactical-model.md`;
+- Access Policy Realization current framing: `docs/domain/access-policy-realization/README.md`;
 - Traffic Analysis boundary: `docs/requirements/traffic-analysis-checker.md`, `docs/architecture/network-context-candidate-boundary.md`;
 - current target architecture: `docs/architecture/current-architecture.md`;
 - local operator procedure: `docs/engineering/local-product-operator-runbook.md`;
