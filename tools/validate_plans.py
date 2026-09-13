@@ -63,6 +63,10 @@ REQUIRED_PLAN_HEADINGS = (
 PATH_BULLET_RE = re.compile(r"^\s*-\s+`([^`]+)`(?:\s+.*)?$")
 
 
+def _active_plan_paths() -> list[Path]:
+    return sorted(path for path in ACTIVE.glob("*.md") if path != INDEX)
+
+
 def _section(text: str, heading: str) -> str | None:
     lines = text.splitlines()
     try:
@@ -217,6 +221,8 @@ def _validate_lifecycle_lease(capsule: str) -> list[str]:
 
 def main() -> int:
     errors: list[str] = []
+    active_plans = _active_plan_paths()
+
     if not INDEX.is_file():
         errors.append("missing docs/plans/active/README.md")
     else:
@@ -232,9 +238,9 @@ def main() -> int:
                 "active plan index must contain Current: `<plan-file>` or Current: none."
             )
         elif match.group(2):
-            if any(ACTIVE.glob("PLAN-*.md")):
+            if active_plans:
                 errors.append(
-                    "Current: none requires no PLAN-*.md files under active/"
+                    "Current: none requires no plan files under docs/plans/active/"
                 )
         else:
             for marker in REQUIRED_CAPSULE_MARKERS:
@@ -297,16 +303,16 @@ def main() -> int:
                                 "does not define that work package"
                             )
 
-    for path in ACTIVE.glob("PLAN-*.md"):
+    for path in active_plans:
         text = path.read_text(encoding="utf-8-sig")
-        match = STATUS_RE.search(text)
-        if (
-            match
-            and match.group(1)
-            .strip()
-            .lower()
-            .startswith(("complete", "completed", "superseded"))
-        ):
+        status_match = STATUS_RE.search(text)
+        if not status_match:
+            errors.append(
+                f"{path.relative_to(ROOT)}: active plan artifact must declare Status"
+            )
+            continue
+        status = status_match.group(1).strip().lower()
+        if status.startswith(("complete", "completed", "superseded")):
             errors.append(
                 f"{path.relative_to(ROOT)}: inactive history must be removed "
                 "from active/"
