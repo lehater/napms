@@ -57,7 +57,9 @@ Stage ownership follows statement meaning rather than file location, so mixed-le
 
 Automate only structural invariants that do not require semantic judgement.
 
-Status: started. `tools/validate_harness.py` checks lifecycle-protocol presence/discoverability and key Skill boundaries such as S3 review routing and G4-before-implementation. Semantic gate verdicts remain judgement work.
+Status: structurally implemented, execution pending. `tools/validate_harness.py` checks lifecycle-protocol presence/discoverability and key Skill boundaries; `tools/validate_plans.py` enforces resume locality/context budget and rejects `Read first` entries that duplicate routed `AGENTS.md`/Skill content. Semantic gate verdicts remain judgement work.
+
+The Harness workflow now exposes `workflow_dispatch` so repository capability exists for an intermediate hosted gate. The current connected GitHub tool can read and re-run existing workflow runs but cannot dispatch a new workflow, so actual validation execution remains pending.
 
 ### H6 — Real-change dry runs
 
@@ -76,17 +78,20 @@ Direct S3, direct S4 and S0->S1 paths did not expose additional P1 routing defec
 
 Validate that the lifecycle remains usable without context overload and that a fresh session can recover the next task from durable state.
 
-Status: active. Current process files are intentionally lazy-loaded. Stage protocols are roughly 4.6–9.5 KiB each; `change-lifecycle.md` is heavier (~14 KiB) and therefore must remain transition-only. Do not introduce a generic shared stage framework merely to deduplicate prose if doing so forces every stage to load another file.
+Status: passed manual/repository-structure review with no known P0/P1 progressive-disclosure defect.
 
-Audit next:
-- fresh-session recovery from root routing + capsule + one Skill;
-- whether `Read first` remains minimal after transition work;
-- duplicated rules that create conflicting ownership rather than harmless local self-containment;
-- whether any validator/file-size budget is justified by repeated evidence rather than arbitrary limits.
+Results:
+- stage protocols remain lazy-loaded; each is roughly 4.6–9.5 KiB;
+- `change-lifecycle.md` is heavier (~14 KiB) and remains transition-only;
+- no generic shared stage framework was introduced because it would add a mandatory indirection/load to every stage;
+- fresh-session recovery succeeds from root routing -> capsule -> primary Skill -> minimal `Read first` without loading `change-lifecycle.md` for ordinary work;
+- `Read first` no longer repeats the primary Skill, and plan validation prevents routed AGENTS/Skill duplication;
+- local self-containment inside one stage protocol is preferred over cross-file DRY when it reduces working-context fan-out;
+- final manual review of `execute-work-package`, `implement-slice` and `architecture-review` found no remaining lifecycle bypass.
 
 ## Blockers
 
-No semantic Harness blocker is known. Deterministic `make harness-check` execution is still pending because the current GitHub workflow has no `workflow_dispatch` and the current shell environment cannot obtain the branch through GitHub network resolution.
+No semantic/context Harness blocker is known. Deterministic `make harness-check` execution is the remaining gate. Repository manual-dispatch capability now exists, but the current GitHub connector has no action to dispatch a new workflow; the current shell environment also could not resolve `github.com` for a temporary checkout.
 
 ## Exit criteria
 
@@ -102,4 +107,4 @@ No semantic Harness blocker is known. Deterministic `make harness-check` executi
 
 ## Next
 
-Run a fresh-session recovery/context-cost audit using only the durable startup path. Remove only demonstrated duplication or excessive startup loading. Keep `make harness-check` explicitly pending until an execution surface is available.
+Do not expand the lifecycle further without a demonstrated defect. Execute `make harness-check` on `harness/change-lifecycle` when an execution surface is available, fix any deterministic failures, then perform the final branch review. Do not merge to `main` unless explicitly requested.
