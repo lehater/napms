@@ -56,7 +56,7 @@ Administrators may change this state directly; no additional domain lifecycle is
 
 The acquisition behavior needed by NEP shall be independently configurable per Firewall, including polling interval, stale-data threshold and connection/operation timeouts.
 
-This requirement does not prescribe commands, sessions, polling implementation or adapter strategy. Secret material remains external and is referenced opaquely when required.
+This requirement constrains externally configurable behavior but does not prescribe commands, sessions, polling implementation or adapter strategy. Secret material remains external and is referenced opaquely when required.
 
 ## REQ-NEP-005 — Latest successful state
 
@@ -64,13 +64,15 @@ NEP shall calculate from the latest successfully acquired network state availabl
 
 The MVP does not require historical network-state snapshots as domain history.
 
-## REQ-NEP-006 — State required for the NEP decision
+## REQ-NEP-006 — Consistent freshness provenance for decision data
 
-The acquired state used by the current NEP use case shall contain the routing/interface facts and ACL/policy binding/name facts necessary to determine candidates and relevant policy names, with one `collectedAt` representing that logical acquisition state.
+NEP shall have the routing/interface facts and ACL/policy binding/name facts necessary to determine candidates and relevant policy names.
 
-Configured ACL/policy bodies are not required to perform the NEP decision and shall not be required as part of this acquisition state.
+When network state contributes to an EnforcementLocation result, the result shall expose one unambiguous `snapshotCollectedAt` freshness value for the network facts used by that result. The system shall not present one freshness date while silently combining decision-critical network facts whose freshness is incompatible with that date.
 
-How an adapter obtains these facts — commands, APIs, one or several reads, one session or another source-specific mechanism — is not prescribed by Requirements.
+Configured ACL/policy bodies are not required to perform the current NEP decision.
+
+Requirements do not prescribe how this consistency is achieved. Whether routing/interface facts and ACL binding/name facts are read in one poll, one logical refresh, one session, several commands/APIs or another source-specific mechanism belongs to later design/architecture.
 
 ## REQ-NEP-007 — Stale state remains usable
 
@@ -147,7 +149,7 @@ Every returned EnforcementLocation shall carry metadata describing the result ra
 
 `decisionSource` shall be `Routing` when routing determined candidate membership and `IncludeOverride` when a matching Include override determined it.
 
-`snapshotCollectedAt` shall contain the date of the network-state snapshot used to accompany the result. It is `null` when no applicable snapshot exists, for example when a routing-independent Include override creates a candidate before any successful acquisition.
+`snapshotCollectedAt` shall contain the freshness date of the network state used for the result. It is `null` when no applicable network snapshot exists, for example when a routing-independent Include override creates a candidate before any successful acquisition.
 
 The age/date of the override rule itself shall not be substituted for network-data freshness.
 
@@ -192,14 +194,15 @@ Operational acquisition failures and state diagnostics belong to NEP observabili
 9. ECMP alternatives `inside -> wan1` and `inside -> wan2` are both considered. If they use `ACL-A` and `ACL-B`, both names are returned; if both use `ACL-A`, it is returned once.
 10. A candidate Firewall with no relevant ACL/policy binding is still returned with `accessListNames=[]`.
 11. Two VRFs resolve the same destination differently; both are considered because TrafficPair does not select a VRF.
-12. A week-old latest successful snapshot is still used normally; `CURRENT_STATE_STALE` is diagnosed and its `collectedAt` is returned in metadata.
+12. A week-old latest successful snapshot is still used normally; `CURRENT_STATE_STALE` is diagnosed and its freshness date is returned in metadata.
 13. A new acquisition fails but an older successful snapshot exists; NEP continues calculating from the older snapshot.
 14. One Firewall has no usable routing state; calculation for other Firewalls and other pairs still completes.
 15. Different Firewalls may have different polling, staleness and timeout settings without Requirements prescribing how acquisition is implemented.
 16. NEP can answer its candidate/policy-name use case without acquiring ACL/policy bodies.
+17. Network facts used in one result do not claim a single `snapshotCollectedAt` unless that date truthfully represents their freshness; the mechanism that guarantees this consistency is left to later design.
 
 ## G1 result
 
-For the current NEP slice, the observable requirements above are coherent enough for Domain Design without selecting persistence, adapter/session, database, API or internal local-branch representation mechanisms.
+For the current NEP slice, the observable requirements above are coherent enough for Domain Design without selecting acquisition coordination, persistence, adapter/session, database, API implementation or internal local-branch representation mechanisms.
 
 `G1 PASS` — proceed to S2 Domain Design when work resumes.
