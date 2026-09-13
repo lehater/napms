@@ -20,17 +20,15 @@ Authorization basis: `none`
 
 ## Working set
 
-When resuming NEP, read first:
+Read first:
+- `docs/plans/active/domain-erd-revalidation.md`
+- `docs/engineering/context-problems/README.md`
+
+Expand only when the selected bounded-context slice requires it. If NEP is resumed, additionally read:
 - `docs/requirements/network-enforcement-placement-core.md`
 - `docs/domain/network-enforcement-placement/target-tactical-model.md`
 - `docs/architecture/network-enforcement-placement-boundary.md`
 - `docs/process/domain-design-stage.md`
-
-For project-level context selection, read:
-- `docs/plans/active/domain-erd-revalidation.md`
-- `docs/engineering/context-problems/README.md`
-
-Expand only when demonstrated need requires it.
 
 ## NEP recovery facts
 
