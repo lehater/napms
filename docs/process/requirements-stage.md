@@ -53,20 +53,40 @@ S1 must not decide merely to unblock later work:
 
 If such a decision is actually required product truth, state the observable constraint rather than the implementation mechanism.
 
+A concrete suggestion made during requirements discussion is not automatically a requirement. Before recording it, classify it with `decision-protocol.md` on both axes:
+
+1. semantic owner/lifecycle level;
+2. decision status/obligation.
+
+An implementation or architecture suggestion may be explicit and even accepted while still belonging to S3/S4. S1 shall preserve any independent observable requirement and route the realization choice to its actual owner rather than promoting it into the requirement family.
+
+Example:
+
+```text
+User discussion: "read routing and ACL names together so they have one update date"
+
+S1 question: what externally observable freshness/provenance must downstream receive?
+S3 question: should acquisition form one logical snapshot, separate snapshots, one session, multiple commands, etc.?
+```
+
+If the first is accepted and the second is only proposed, write only the first into S1 requirements and preserve the second as a later-stage proposal. If both are explicitly accepted, they are still recorded in their respective semantic owners.
+
 ## Working loop
 
 For the behavior under change:
 
 1. **State the requirement boundary.** Identify actor/initiator, trigger or starting condition, intended outcome and affected requirement family.
-2. **Separate fact from assumption.** Mark material statements as accepted/known, hypothesis, unknown or conflict using `decision-protocol.md`.
-3. **Express observable behavior.** Describe what must be true from the relevant actor/system boundary, not how code achieves it.
-4. **Cover material alternatives.** Add failure, denial, absence, unknown, timeout, concurrency, cancellation or partial-state behavior only when it changes the product contract.
-5. **State quality constraints.** Capture performance, security, audit/provenance, temporal, consistency or availability expectations only where they constrain downstream design.
-6. **Check semantic leakage.** Remove architecture/implementation choices masquerading as requirements. Preserve external compatibility constraints when genuinely required.
-7. **Check internal coherence.** Look for contradictory outcomes, undefined authority/scope, impossible combinations, ambiguous terms and requirements that cannot be observed or verified.
-8. **Resolve or route unknowns.** Resolve from canonical evidence; ask/escalate blocking product choices; register non-blocking deferred questions instead of inventing answers.
-9. **Update the owning requirement artifact first.** Do not make the active plan or conversation the durable owner of accepted behavior.
-10. **Evaluate G1.** Rework only the affected behavior delta. If G1 exposes an upstream problem-definition/evidence gap, `REOPEN(S0)`.
+2. **Classify every material statement.** Apply both axes from `decision-protocol.md`: semantic owner/stage and decision status/obligation. Do this before turning conversation wording into canonical requirements.
+3. **Separate fact from assumption.** Mark material statements as accepted/known, constraint, proposal, hypothesis, unknown or conflict.
+4. **Express observable behavior.** Describe what must be true from the relevant actor/system boundary, not how code achieves it.
+5. **Split behavior from realization.** When one discussion statement contains both, preserve the observable constraint in S1 and route architecture/implementation detail to S3/S4 unless the concrete representation is itself an accepted external contract.
+6. **Cover material alternatives.** Add failure, denial, absence, unknown, timeout, concurrency, cancellation or partial-state behavior only when it changes the product contract.
+7. **State quality constraints.** Capture performance, security, audit/provenance, temporal, consistency or availability expectations only where they constrain downstream design.
+8. **Check semantic leakage.** Remove architecture/implementation choices masquerading as requirements. Preserve external compatibility constraints when genuinely required.
+9. **Check internal coherence.** Look for contradictory outcomes, undefined authority/scope, impossible combinations, ambiguous terms and requirements that cannot be observed or verified.
+10. **Resolve or route unknowns.** Resolve from canonical evidence; ask/escalate blocking product choices; register non-blocking deferred questions instead of inventing answers.
+11. **Update the owning requirement artifact first.** Do not make the active plan or conversation the durable owner of accepted behavior.
+12. **Evaluate G1.** Rework only the affected behavior delta. If G1 exposes an upstream problem-definition/evidence gap, `REOPEN(S0)`.
 
 ## Existing mixed-level artifacts
 
@@ -95,6 +115,8 @@ A material requirement should be sufficiently:
 - **complete enough** — material negative/unknown/temporal/authority behavior is stated where omission would force downstream invention;
 - **traceable** — the reason/evidence or accepted decision can be located when consequential.
 
+A requirement fails the non-prescriptive check when its only justification is that a suggested realization seems convenient. Explicit user wording does not waive this check; the statement must still belong to S1 semantically.
+
 Do not demand exhaustive specification of behavior irrelevant to the current change. Completeness is gate-relative, not encyclopedic.
 
 ## Outputs
@@ -105,6 +127,8 @@ S1 produces only the durable outputs needed by downstream work:
 - acceptance examples/scenarios where they materially disambiguate behavior;
 - explicit open problems/deferrals with owner and revisit trigger;
 - concise lifecycle/capsule state needed to resume or transition.
+
+Later-stage proposals discovered while discussing requirements may be preserved only in their correct owner/problem register when they are consequential enough to survive; do not copy them into requirements merely as memory storage.
 
 Do not create a separate requirements packet merely to mirror the stage if an existing requirement family is the correct owner.
 
@@ -118,6 +142,7 @@ Do not create a separate requirements packet merely to mirror the stage if an ex
 - material temporal/quality/security constraints are explicit where they constrain the model;
 - accepted requirements do not contain unresolved P0/P1 contradictions for this scope;
 - no downstream product decision is being hidden as an unspecified implementation choice;
+- no architecture/implementation proposal has been promoted into S1 merely because it was explicit, concrete or convenient;
 - lower-level design choices found in mixed artifacts are not being mistaken for S1 guarantees without revalidation;
 - remaining unknowns are explicitly classified as non-blocking for G1 with a known later owner/revisit trigger.
 
@@ -159,7 +184,7 @@ When G1 passes or S1 becomes blocked/parked:
 ## Relationship to other protocols
 
 - `change-lifecycle.md` owns entry, gate transition, `REOPEN`, dirty propagation and no-progress semantics.
-- `decision-protocol.md` owns known/hypothesis/unknown/conflict handling.
+- `decision-protocol.md` owns semantic-level plus decision-status classification and unknown/conflict handling.
 - `domain-change-protocol.md` may route later findings back into S1 but does not define requirements quality.
 - `plan-lifecycle.md` owns durable current execution/problem parking state.
 - `working-loop.md` owns checkpoint/rollover/validation execution mechanics.
