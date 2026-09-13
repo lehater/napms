@@ -6,7 +6,7 @@ Date: 2026-09-09.
 
 ## Purpose
 
-Define the first module/dependency boundary for Technical Access Evidence while keeping source/provider parsing outside domain meaning and preventing I18-I20 semantics from leaking into I17.
+Define the first module/dependency boundary for Technical Access Evidence while keeping source/provider parsing outside domain meaning and preventing downstream policy-realization semantics from leaking into I17.
 
 ## Module boundary
 
@@ -52,7 +52,7 @@ In particular it does not import:
 - Network Enforcement Placement;
 - Access Policy Realization.
 
-Future I18 Access Policy Realization consumes TAE through its own consumer projection/port. TAE does not depend outward on the consumer.
+Downstream consumers such as Access Policy Realization consume TAE only through explicit consumer/source integration projections/contracts. TAE does not depend outward on those consumers.
 
 ## Source adapter boundary
 
@@ -152,7 +152,7 @@ If a public/operator transport is introduced later in I17, it must first add an 
 - no import of Policy Export `NormalizedPolicyRow` or its desired-policy types;
 - shared low-level value semantics may be duplicated locally until a real stable shared kernel is justified;
 - no hidden Resource/ACC lookup during evidence recording;
-- no Logical Firewall/device-placement inference in TAE;
+- no Firewall/target-placement inference in TAE;
 - no current/fresh winner selection without accepted freshness semantics;
 - no generic event bus/ingestion platform before a concrete consumer requires it.
 
