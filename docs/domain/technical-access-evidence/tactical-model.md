@@ -12,9 +12,9 @@ TAE owns the source-qualified claim that technical access material was reported,
 
 It does not own:
 - whether access is required or authorized;
-- whether a technical predicate maps to a domain interaction;
+- business/domain interpretation of technical access;
 - where traffic is enforced;
-- whether desired policy is realized;
+- whether required target policy is realized;
 - vendor rendering or device mutation.
 
 Core invariants:
@@ -22,7 +22,7 @@ Core invariants:
 ```text
 Evidence != Authorization
 Evidence != Desired Policy
-Evidence != Domain Access Resolution
+Evidence != Policy Realization
 Evidence != Enforcement Placement
 Recorded Evidence != Current/Fresh Evidence
 ```
@@ -58,7 +58,7 @@ The namespace prevents accidental collisions between unrelated source systems/ad
 
 The reference identifies the concrete reporting/derivation/import source. It is not automatically:
 - a Resource Catalogue identity;
-- a Logical Firewall identity;
+- a Firewall/target identity;
 - a device/provider identity owned by Network Enforcement Placement.
 
 Cross-context correspondence is introduced only when its owning context accepts it.
@@ -69,7 +69,7 @@ Mandatory opaque source-defined collection boundary.
 
 Examples may later represent a controller policy package, device context, traffic observation query, or imported dataset, but I17 does not standardize those meanings.
 
-`SourceScopeReference` is explicitly not an Authority Management Responsibility Scope and not a Network Enforcement Placement Logical Firewall identity.
+`SourceScopeReference` is explicitly not an Authority Management Responsibility Scope and not a Network Enforcement Placement identity.
 
 ### SourceCaptureReference
 
@@ -314,7 +314,7 @@ Supported list filters may include:
 
 I17 intentionally exposes no `GetCurrentEvidence`, `GetFreshEvidence` or automatic winner selection across multiple captures.
 
-Selecting evidence for technical-to-domain resolution/reconciliation belongs to a later accepted consumer contract.
+Selection of evidence for any downstream semantic consumer belongs to that consumer/source integration contract.
 
 ## Provenance minimum
 
@@ -342,19 +342,17 @@ Raw source payload persistence is not mandatory domain state. A source/provenanc
 
 TAE introduces no universal `Fresh | Stale` state, TTL or automatic current winner.
 
-I20 resolves its first reconciliation need without changing that ownership: the consumer explicitly selects one Configured Evidence Set and a complete first-slice comparison requires `EvidenceTime.Instant == reconciliation asOf`.
-
-`RecordedAt`, latest/nearest capture and age heuristics do not establish currentness.
+A downstream consumer that requires evidence at a particular effective time must state that requirement in an explicit source/consumer contract. `RecordedAt`, latest/nearest capture and age heuristics do not establish currentness by themselves.
 
 Revisit TAE only when a concrete production source has an accepted source-qualified validity/currentness fact that must itself be preserved as evidence rather than interpreted by one consumer.
 
-### Coverage — consumer/source contract for I20, not universal TAE state
+### Coverage — consumer/source contract, not universal TAE state
 
 `SourceScopeReference` records the boundary for which material was collected/reported.
 
-TAE still does not infer `Complete | Partial` merely from a scope reference or empty/non-empty set.
+TAE does not infer `Complete | Partial` merely from a scope reference or empty/non-empty set.
 
-I20 requires a separate trusted Managed Reconciliation Scope/source contract before it can claim a selected configured capture is a complete **effective Permit set** for the exact target/policy partition. That completeness belongs to the reconciliation/source interpretation unless a future evidence source exposes an authoritative capture-completeness fact that TAE itself must preserve.
+A downstream consumer such as Access Policy Realization may require an explicit trusted contract proving that selected configured evidence represents a complete effective-policy view for a particular target/comparison scope. That completeness belongs to the source/consumer interpretation unless a future evidence source exposes an authoritative capture-completeness fact that TAE itself must preserve.
 
 An empty TAE set therefore remains only an empty evidence capture outside such an accepted consumer/source contract.
 
@@ -390,4 +388,4 @@ A human-facing ingest/read workspace and AM actions are added only when a concre
 11. Empty evidence set does not imply absence without coverage semantics.
 12. I17 selects no globally current/fresh evidence.
 13. Partial normalization is not reported as a successful complete capture.
-14. Technical-to-domain resolution, placement and reconciliation remain outside TAE.
+14. Policy realization, target selection and provider execution remain outside TAE.

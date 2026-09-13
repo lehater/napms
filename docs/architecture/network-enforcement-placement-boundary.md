@@ -1,12 +1,14 @@
 # Network Enforcement Placement Boundary — I19
 
-Status: `accepted I19 WP-0 architecture contract`.
+Status: `accepted historical implementation boundary; current NEP target semantics are owned by ADR-018 and target Tactical DDD`.
 
-Date: 2026-09-09.
+Date: 2026-09-13.
 
 ## Purpose
 
-Define the first module/dependency boundary for Network Enforcement Placement while keeping provider mechanics outside the core and I20 Access Policy Realization semantics downstream.
+Document the existing NEP module/dependency boundary while keeping provider mechanics outside the core and Access Policy Realization policy semantics downstream.
+
+This file does not define APR inputs or target-selection semantics for APR. Current NEP target semantics are canonical in `docs/domain/network-enforcement-placement/target-tactical-model.md`; APR consumes the published target-specific outcome without importing NEP reasoning.
 
 ## Target module
 
@@ -36,7 +38,7 @@ outer adapters / composition
     |
     +--> provider/network source parsing
     +--> PostgreSQL persistence
-    +--> optional RC/ACC projection for domain-attributable proof
+    +--> optional owner projections where needed
 ```
 
 Rules:
@@ -47,112 +49,39 @@ Rules:
 - APR/RC/ACC/TAE do not become dependencies of NEP Domain/Application;
 - no peer-owned SQL/table access.
 
-## Application query
+## Existing runtime query
 
-`SelectEnforcement` receives:
-- exact source IP;
-- exact destination IP;
-- explicit offset-aware `asOf`;
-- optional opaque caller provenance.
+The existing runtime still contains the older `SelectEnforcement` query shape and stronger placement knowledge structures. They are implementation/migration material, not the current APR contract and not a reason to reproduce their status vocabulary downstream.
 
-It obtains one NEP-owned `PlacementKnowledgeSnapshot` from a consumer-owned knowledge port.
-
-## Placement knowledge port
-
-Minimum shape:
-
-```text
-load_for(source_ip, destination_ip, asOf)
-    -> PlacementKnowledgeSnapshot
-         path | noForwardingPath
-         logicalFirewalls[]
-         correspondences[]
-         attachments[]
-         completeForPair
-         completeForAttachments
-         knowledgeGaps[]
-```
-
-The port may be backed by NEP-owned PostgreSQL facts plus source-specific adapters. It must not convert missing data into false absence.
-
-## First durable adapter
-
-The first concrete acquisition path may be a strict local JSON import used only as trusted composition proof.
-
-It must:
-- reject duplicate JSON object keys;
-- reject unknown fields;
-- require explicit source/capture/provenance;
-- require offset-aware validity timestamps;
-- represent path completeness explicitly;
-- reject multiple path alternatives as unsupported rather than picking one;
-- normalize provider-native references into opaque source-qualified NEP references.
-
-It is not a public human API and does not imply Authority Management semantics.
+The accepted current NEP target is defined by ADR-018 and `docs/domain/network-enforcement-placement/target-tactical-model.md`.
 
 ## PostgreSQL ownership
 
-I19 uses one NEP-owned schema: `napms_network_enforcement_placement`.
+NEP owns its persistence schema and acquisition/runtime state. No Access Policy, APR, RC, ACC or TAE private tables are read directly by NEP core.
 
-The first durable shape is an immutable **relation-scoped knowledge capture envelope**:
-- source + capture identity;
-- exact source/destination endpoint pair;
-- explicit capture validity;
-- normalized Forwarding Path or positive NoForwardingPath fact;
-- Logical Firewall, correspondence and Enforcement Attachment facts;
-- completeness/provenance.
+Cross-context consumers receive published NEP outputs/contracts rather than navigating NEP persistence.
 
-The envelope is persistence/source-acquisition mechanics, not a new peer aggregate or replacement for Logical Firewall identity.
+## APR boundary
 
-The first adapter deliberately requires at most one effective capture for one exact endpoint pair/time. Zero effective captures or overlapping effective captures fail closed as `Unknown`; it never chooses the latest by RecordedAt. This is sufficient for the trusted local I19 proof and remains reversible.
+APR receives the target/policy-locator information selected upstream. APR does not:
+- rerun NEP routing/candidate logic;
+- classify why a target was relevant;
+- reinterpret route/candidate ambiguity;
+- infer a different target from NEP internal evidence.
 
-Revisit trigger:
-- the first real integration requiring independent multi-source path/firewall/attachment knowledge composition. At that point introduce source-specific merge/authority semantics before combining facts; do not silently broaden this capture adapter.
-
-No Access Policy, APR, RC, ACC or TAE tables are read directly.
-
-## Composition proof
-
-The smallest accepted end-to-end proof is:
-
-```text
-strict local NEP knowledge import
-    -> NEP-owned PostgreSQL
-    -> SelectEnforcement(exact endpoint pair, asOf)
-    -> Placed / NoEnforcement / NoForwardingPath / Ambiguous / Unknown
-```
-
-A domain-attributable test may carry an opaque Domain Interaction/Resource provenance reference into the query, but NEP core does not import those owner types.
-
-## Failure semantics
-
-- invalid input invariant -> explicit domain/application error;
-- missing/incomplete relevant knowledge -> successful `Unknown` result with gaps;
-- positively known no route -> `NoForwardingPath`;
-- complete route with complete zero attachment -> `NoEnforcement`;
-- non-unique Logical Firewall at a traversed attachment -> `Ambiguous`;
-- persistence corruption/commit uncertainty -> fail closed; never report a complete selection.
+Once a target-specific contract crosses the boundary, APR's concern is required-vs-configured effective policy realization for that supplied target.
 
 ## Runtime scope
 
-I19 requires no:
-- public HTTP route;
-- Web workspace;
-- background scheduler;
-- vendor renderer;
-- provider mutation client.
+NEP core does not require APR rendering, APR reconciliation or provider mutation clients.
 
-A later operator workflow can consume the same application contract without changing NEP meaning.
+A later operator workflow may consume NEP application contracts without changing ownership.
 
-## Validation
+## Validation guardrails
 
-Required executable proof:
 - framework-free Domain/Application boundary;
-- exact logical-time validation;
-- provider/LF identity separation;
-- ordered multi-placement selection;
-- `NoForwardingPath != NoEnforcement != Unknown`;
-- ambiguity with no winner;
-- strict import rejection;
-- module-owned PostgreSQL and no cross-context SQL;
-- no Access Policy/Decision/TAE/APR side effects.
+- provider/Firewall identity separation according to the accepted target model;
+- explicit uncertainty rather than invented target certainty;
+- module-owned persistence and no cross-context SQL;
+- no Access Policy/Decision/TAE/APR side effects;
+- no downstream context may treat an internal NEP runtime status vocabulary as its own domain model.

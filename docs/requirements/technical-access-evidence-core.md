@@ -6,7 +6,7 @@ Date: 2026-09-09.
 
 ## Purpose
 
-Define the first executable product behavior for Technical Access Evidence without choosing vendor syntax, device APIs, deployment topology, technical-to-domain resolution or reconciliation.
+Define the first executable product behavior for Technical Access Evidence without choosing vendor syntax, device APIs, deployment topology or downstream policy-realization semantics.
 
 ## REQ-TAE-001 — Own source-qualified technical evidence
 
@@ -70,7 +70,7 @@ The reference describes the source collection boundary only.
 It shall not automatically be interpreted as:
 - Authority Management Responsibility Scope;
 - Resource Catalogue ownership scope;
-- Network Enforcement Placement Logical Firewall;
+- Network Enforcement Placement target identity;
 - Access Policy governance scope.
 
 ## REQ-TAE-006 — Keep source time distinct from recording time
@@ -160,7 +160,7 @@ Every entry shall preserve its generated identity and optional native source ent
 
 Raw source payload is not mandatory TAE domain state, but the concrete adapter must preserve enough source qualification/reference for traceability.
 
-## REQ-TAE-014 — Query durable evidence without realization semantics
+## REQ-TAE-014 — Query durable evidence without downstream realization semantics
 
 The first read capability shall support:
 - get by Evidence Set ID;
@@ -170,9 +170,10 @@ The first read capability shall support:
 Reads shall return evidence facts only.
 
 They shall not:
-- map predicates to ACC/RC domain interactions;
-- select enforcement placement;
-- compute desired-vs-configured status;
+- assign application/business meaning to predicates;
+- select enforcement targets;
+- compute required-vs-configured realization status;
+- design policy changes;
 - render vendor configuration.
 
 ## REQ-TAE-015 — Persistence uncertainty is explicit

@@ -16,6 +16,83 @@ A fresh session must be able to recover the current task without reading prior c
 
 The full `PLAN-*.md` is the coordination artifact for work-package definitions/dependencies, overall goal, plan-level inputs, blockers, exit criteria and future stages. It does not own the mutable current-task pointer and is not mandatory startup context for ordinary execution.
 
+## Context problem registers, roadmaps and active plans
+
+Three planning artifacts serve different purposes and must not be collapsed into one.
+
+```text
+docs/engineering/context-problems/<context>.md
+    = durable record of unresolved context-local problems, gaps, questions and blockers
+
+docs/engineering/roadmaps/<context>.md
+    = optional durable sequence only when an evidence-backed ordering is worth preserving
+
+docs/plans/active/PLAN-*.md
+    = only the work package being executed now
+```
+
+### Context problem register — default parking artifact
+
+After discovery/revalidation of a bounded context, preserve unresolved work primarily as a **context problem register** rather than inventing a roadmap.
+
+A problem register records what remains unresolved without asserting a total execution order. It may capture only causal dependencies that are actually known.
+
+Use it to preserve:
+- accepted/fixed starting constraints needed to understand the gaps;
+- open design/domain/architecture problems;
+- open questions or decisions;
+- known target-versus-current gaps;
+- actual dependencies between problems;
+- implementation blockers/gates;
+- evidence still needed;
+- revisit triggers.
+
+A problem register is not domain truth, not prioritization and not current execution state. Semantic decisions belong in their canonical domain/requirements/architecture/decision owner first; the register then removes or updates the corresponding open item.
+
+Do not encode speculative sequencing such as `P1 -> P2 -> P3` merely because the questions were discovered in that order. Record `P2 depends on P1` only when solving P2 genuinely requires P1.
+
+The context-problem registry and naming convention live in `docs/engineering/context-problems/README.md`.
+
+### Context roadmap — optional, not default
+
+Create a context roadmap only when there is a durable, evidence-backed reason to preserve an ordered sequence, for example:
+- hard technical or semantic dependencies impose an order;
+- an accepted migration must cross explicit compatibility stages;
+- rollout/rollback constraints require staged execution;
+- a committed delivery sequence remains useful current engineering truth.
+
+A roadmap is expected to become stale more readily than a problem register. Revalidate its assumptions before using it to select work. If its sequence is no longer justified, collapse durable unresolved content back into the context problem register and remove/supersede the roadmap rather than maintaining fictional order.
+
+Do not create a roadmap merely to list all known future work.
+
+### Active plan — current execution only
+
+`docs/plans/active/` contains only selected current/planned execution artifacts. A parked context does not keep an active `PLAN-*.md` merely to remember unresolved work.
+
+When switching away from a context:
+1. absorb accepted semantic decisions into their canonical owners;
+2. update its context problem register with remaining gaps/questions/dependencies/blockers;
+3. update an existing roadmap only if its ordering remains justified;
+4. remove the context's active `PLAN-*.md` after current execution state no longer needs it;
+5. update the active resume capsule to the newly selected workstream or `Current: none.`.
+
+When resuming a context:
+1. read its canonical context truth first;
+2. read its problem register to recover unresolved work;
+3. revalidate affected dependencies/evidence because they may have changed while parked;
+4. consult a context roadmap only if one exists and its ordering is still valid;
+5. select the concrete problem/increment to execute;
+6. create/select a new active `PLAN-*.md` for that work;
+7. update `docs/plans/active/README.md`.
+
+### Project-wide planning
+
+A project-wide roadmap may use context problem registers as planning inputs to choose priorities and cross-context sequencing.
+
+Project-wide prioritization owns the order in which contexts/problems are tackled. It should reference context-local problem detail instead of copying it. A global priority does not automatically become a context-local roadmap, and a context problem register never makes work active.
+
+Do not create empty problem-register or roadmap placeholders merely to mirror the list of bounded contexts. Create a register after concrete unresolved work has been discovered; create a roadmap only after concrete sequencing has been justified.
+
 ## Rules
 
 - Keep only current/planned execution artifacts under `docs/plans/active/`.

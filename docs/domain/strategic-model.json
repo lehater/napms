@@ -1,6 +1,6 @@
 {
   "model_id": "NAPMS-DDD-001",
-  "source_baseline": "DDD-BDM-010 + I13-I16A accepted extensions",
+  "source_baseline": "DDD-BDM-010 + accepted MVP extensions",
   "status": "accepted",
   "bounded_contexts": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "name": "Access Policy",
-      "responsibility": "Authoritative Access Rule identity, uniqueness/idempotency, properties, Active/Inactive, connectivity-decision consumption and desired-policy projections."
+      "responsibility": "Authoritative Access Rule identity, uniqueness/idempotency, properties, Active/Inactive and desired-policy projections."
     },
     {
       "name": "Authority Management",
@@ -29,15 +29,15 @@
     },
     {
       "name": "Network Enforcement Placement",
-      "responsibility": "Forwarding/path and enforcement placement/relevance semantics."
+      "responsibility": "Current network-state and override based enforcement-target relevance plus applicable policy/ACL locators."
     },
     {
       "name": "Technical Access Evidence",
-      "responsibility": "Normalized source-qualified technical access evidence with provenance/time/freshness/coverage."
+      "responsibility": "Normalized source-qualified technical access evidence with provenance/time/source scope and no authorization claim."
     },
     {
       "name": "Access Policy Realization",
-      "responsibility": "Technical-to-domain correspondence, enforcement-policy derivation and desired-vs-configured reconciliation."
+      "responsibility": "Effective-policy realization assessment, exact semantic reconciliation, policy-change design, pre-change semantic verification and semantics-preserving target rendering for a given policy target."
     }
   ],
   "wave1_direct_participants": [
@@ -64,6 +64,8 @@
     "Decision expiry or supersession does not silently mutate an existing Access Rule.",
     "Technical evidence does not authorize access.",
     "Access Policy owns authoritative Access Rule identity and operational state.",
+    "Network Enforcement Placement owns target relevance; Access Policy Realization does not reevaluate why a target was selected.",
+    "Access Policy Realization compares effective policy semantics rather than raw configuration representation.",
     "Technical realization changes do not redefine Rule semantic identity."
   ]
 }

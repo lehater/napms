@@ -2,11 +2,11 @@
 
 Status: `accepted`.
 
-Date: 2026-09-11.
+Date: 2026-09-11; current module-classification note updated 2026-09-13.
 
 ## Context
 
-The current semantic-module-first layout preserves DDD ownership, but top-level backend paths still mix three different architectural kinds: bounded contexts, cross-context application/read compositions, and process/runtime mechanics. Generic `composition`, `runtime` and `adapters` paths also hide responsibility.
+The semantic-module-first layout preserves DDD ownership, but top-level backend paths can mix three different architectural kinds: bounded contexts, cross-context application/read compositions, and process/runtime mechanics. Generic `composition`, `runtime` and `adapters` paths also hide responsibility.
 
 The target is optimized for long-term readability and boundary enforcement rather than migration cost.
 
@@ -109,12 +109,13 @@ Bounded contexts:
 - Resource Catalogue;
 - Technical Access Evidence.
 
-Cross-context workflows:
+Target cross-context workflows:
 - Requirement-to-Policy Alignment;
 - Policy Export / snapshot normalization;
 - Scoped Connectivity Inventory;
-- Network Operator Realization View;
 - Traffic Analysis Checker.
+
+The physical `network_operator_view` workflow is legacy runtime code tied to the superseded APR model. It is migration material, not a current target workflow contract. Any replacement operator workflow must be derived from the redesigned APR contracts.
 
 This classification preserves current semantic ownership. Reclassification requires domain/architecture evidence, not folder convenience.
 
@@ -134,9 +135,8 @@ Positive:
 
 Costs:
 - substantial import/test/CI/Docker path churn during migration;
-- temporary compatibility shims may be required;
 - architecture tests and agent guidance must evolve with each migration stage.
 
 ## Migration
 
-The ordered migration and stage gates are defined in `docs/engineering/target-code-structure-migration-roadmap.md`. Active execution state is kept only under `docs/plans/active/`.
+The physical migration history is summarized in `docs/engineering/target-code-structure-migration-roadmap.md`. Current target semantics are defined by current domain/architecture documents rather than by legacy physical packages that remain pending migration.

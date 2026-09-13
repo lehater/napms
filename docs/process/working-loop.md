@@ -41,9 +41,10 @@ Prefer rollover when:
 
 Before rollover:
 1. absorb durable product/domain/architecture decisions into their canonical artifacts;
-2. update `docs/plans/active/README.md` with the current task, minimal working set, blockers, gate and next action;
-3. checkpoint coherent code on the working branch when losing it would be costly;
-4. preserve only durable constraints/results, not full reasoning trails, tool output or rejected exploration.
+2. when switching away from a bounded context with unresolved work, update its `docs/engineering/context-problems/<context>.md` register with remaining problems/gaps/real dependencies/blockers; update a roadmap only if an evidence-backed order still needs to be preserved;
+3. update `docs/plans/active/README.md` with the current task, minimal working set, blockers, gate and next action;
+4. checkpoint coherent code on the working branch when losing it would be costly;
+5. preserve only durable constraints/results, not full reasoning trails, tool output or rejected exploration.
 
 A fresh session recovers in this order:
 
@@ -56,6 +57,8 @@ root AGENTS.md
 ```
 
 Read the full active plan only when planning/coordination/stage transition or missing material context requires it.
+
+When a parked context is deliberately resumed, canonical context truth comes first, then its context problem register; any roadmap is secondary and must be revalidated before its ordering is trusted.
 
 ## Side chats and parallel work
 

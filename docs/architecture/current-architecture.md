@@ -1,8 +1,8 @@
 # Current target architecture
 
-Status: `accepted current target through I31 Application Catalogue migration for the supported local deployment`.
+Status: `accepted current target through I31 Application Catalogue migration for the supported local deployment; APR target architecture under revalidation`.
 
-Date: 2026-09-11.
+Date: 2026-09-13.
 
 ## Purpose
 
@@ -55,7 +55,7 @@ Current first-class semantic modules include:
 - Network Enforcement Placement;
 - Network Environment Operations.
 
-Non-peer application/read compositions include Requirement-to-Policy Alignment, policy export/snapshot normalization, Scoped Connectivity Inventory, Network Operator Realization View and Traffic Analysis Checker. I31 changes the ACC authoring/read model inside the existing bounded context; it does not introduce another bounded context.
+Non-peer application/read compositions include Requirement-to-Policy Alignment, policy export/snapshot normalization, Scoped Connectivity Inventory and Traffic Analysis Checker. The former Network Operator Realization View is not a current target contract while APR is being redesigned. I31 changes the ACC authoring/read model inside the existing bounded context; it does not introduce another bounded context.
 
 ## Current runtime boundary
 
@@ -162,34 +162,58 @@ Resources workspace and owner-specific command/query seams remain as implemented
 
 ## Technical Access Evidence
 
-TAE owns immutable source-qualified technical evidence, not authorization or realization truth. Source-specific parsing/collection remains adapters. APR and Traffic Analysis consume TAE through consumer-owned projections.
+TAE owns immutable source-qualified technical evidence, not authorization or realization truth. Source-specific parsing/collection remains adapters. APR and Traffic Analysis consume TAE only through explicit consumer-facing/published projections or contracts.
 
 Configured data presented by Checker is stored TAE evidence. Checker never performs a synchronous live firewall/device read and never promotes configured evidence to authorization truth.
 
 ## Network Enforcement Placement / Network Context
 
-NEP owns Logical Firewall identity, temporal provider correspondence, Enforcement Attachment semantics and stronger forwarding/placement knowledge where available.
+NEP owns enforcement-target relevance and the policy/ACL locators associated with returned Firewalls under its accepted target model. Stronger forwarding/path knowledge may exist independently, but downstream APR does not reinterpret target-selection reasoning.
 
-A proven `ForwardingPath` is stronger than the baseline unordered Network Context candidate set. Candidate membership may be incomplete/false-positive and is not proof of traversal, order, authorization or configured state.
+Canonical NEP target: `docs/domain/network-enforcement-placement/target-tactical-model.md`.
 
-Feature boundary: `docs/architecture/network-context-candidate-boundary.md`.
+## Access Policy Realization
 
-## Access Policy Realization / Network Environment Operations
+Canonical current APR problem statement: `docs/domain/access-policy-realization/README.md`.
 
-APR remains framework-free and owner-preserving:
+APR architecture is being redesigned around target-specific effective-policy comparison:
 
 ```text
-effective Access Policy + RC/ACC + NEP
-    -> Desired Enforcement Policy
-configured TAE + managed-scope contract
-    -> Configured Enforcement Snapshot
-    -> reconciliation
-Desired Enforcement Policy
-    -> target renderer
-    -> Rendered | Unsupported | Unknown
+published target-specific required effective policy
+                    +
+published comparable configured effective policy
+                    |
+                    v
+       APR semantic computation boundary
+                    |
+                    +--> realization assessment
+                    +--> exact common / missing / excess
+                    +--> policy change design
+                    +--> proposed-change semantic verification
+                    +--> semantics-preserving rendering
+                    |
+                    v
+       Network Environment Operations
 ```
 
+The architectural requirements for this design are:
+
+- target relevance/selection is upstream and is not reevaluated by APR;
+- APR compares effective access behavior, not raw rule/configuration identity;
+- semantic delta is distinct from concrete policy change design;
+- proposed resulting policy is semantically verified before operational execution;
+- rendering cannot broaden or narrow verified intent;
+- very large policy sets must not be required to cross into the application process as complete object graphs;
+- heavy policy-space computation should remain data-local behind an APR-owned semantic contract;
+- a PostgreSQL-backed semantic engine is a valid first implementation candidate, not a domain requirement;
+- owner-published projections/contracts may be physically co-located for performance, but APR must not depend on peer-private persistence structure;
+- derived indexes/worksets used for computation do not become authoritative upstream truth.
+
 Rendered configuration does not prove application to a target.
+
+The existing APR runtime modules and legacy Realization read workflow remain implementation/migration material only until the redesigned target contracts are accepted.
+
+## Network Environment Operations
 
 NEO remains a separate downstream boundary:
 
@@ -206,9 +230,11 @@ The supported target remains deterministic in-process/stub-first. Real Cisco tra
 
 ## Read compositions
 
-Scoped Connectivity Inventory, Network Operator Realization View and Traffic Analysis Checker remain non-peer read/application compositions. A composition consumes explicit owner/application ports, owns orchestration only, does not create copied business truth, and represents missing/ambiguous contributors explicitly.
+Scoped Connectivity Inventory and Traffic Analysis Checker remain non-peer read/application compositions. A composition consumes explicit owner/application ports, owns orchestration only, does not create copied business truth, and represents missing/ambiguous contributors explicitly.
 
-Traffic Analysis continues to resolve a technical tuple through RC, ACC context, scoped Connectivity summaries, unordered Network Context candidates, stored TAE evidence and Resource responsibility/contact. Configured evidence never implies `Allowed`.
+Traffic Analysis may combine RC, ACC context, scoped Connectivity summaries, Network Context/NEP information, stored TAE evidence and Resource responsibility/contact. Configured evidence never implies `Allowed`.
+
+Any future APR operator read model must be designed from the new APR contracts rather than preserving the removed Network Operator Realization View contract.
 
 ## Security/integrity guardrails
 
@@ -223,7 +249,7 @@ Architecture must preserve:
 - compatibility Component Deployment/DCS IDs remain internal to the ACC compatibility boundary;
 - interaction-scoped Resource membership is not widened into global Component-to-Resource identity;
 - no destructive catalogue maintenance that erases referenced historical truth;
-- no silent semantic broadening/narrowing in normalization/rendering;
+- no silent semantic broadening/narrowing in normalization/reconciliation/rendering;
 - no false Verified outcome from transport acceptance alone;
 - operation idempotency and optimistic concurrency for mutation;
 - authentication identity separate from business authority;
@@ -231,7 +257,7 @@ Architecture must preserve:
 - no PostgreSQL network trust in the supported local Compose path;
 - startup/status probes do not mutate business state;
 - missing/ambiguous evidence never becomes success;
-- Network Context candidates never become fabricated path/order facts;
+- APR target inputs never become an excuse to reproduce upstream target-selection semantics inside APR;
 - Web dependency changes keep package intent and lockfile consistent.
 
 ## Revisit triggers
@@ -246,7 +272,8 @@ Revisit topology or add infrastructure only when accepted evidence requires it, 
 - Resource catalogue curation: `docs/architecture/catalogue-curation-boundary.md`, `docs/requirements/catalogue-curation.md`;
 - semantic ownership: `docs/domain/strategic-model.md`, `docs/domain/semantic-ownership.md`;
 - Resource role/responsibility: `docs/domain/resource-role-model.md`;
-- Network Context: `docs/architecture/network-context-candidate-boundary.md`;
+- Network Enforcement Placement target: `docs/domain/network-enforcement-placement/target-tactical-model.md`;
+- Access Policy Realization current framing: `docs/domain/access-policy-realization/README.md`;
 - current runtime/product state: `docs/engineering/current-state.md`;
 - local operator workflow: `docs/engineering/local-product-operator-runbook.md`;
 - active work only: `docs/plans/active/README.md`.

@@ -6,16 +6,16 @@ Start with the smallest relevant artifact:
 
 - `current-architecture.md` — cross-cutting target structure, dependency/ownership rules, runtime boundary and architecture drivers.
 - `code-structure.md` — current backend/Web physical taxonomy, ownership boundaries and executable structural enforcement.
-- `application-catalogue-target-boundary.md` — I31 target ACC compatibility projection, cross-context dependency ports and external-correlation boundary.
+- `application-catalogue-target-boundary.md` — target ACC compatibility projection, cross-context dependency ports and external-correlation boundary.
 - `connectivity-requirements-boundary.md` — Connectivity Requirements boundary.
 - `requirement-policy-alignment.md` — Requirement-to-Policy Alignment composition.
 - `connectivity-decision-boundary.md` — Connectivity Decision boundary.
 - `scoped-connectivity-inventory.md` — Scoped Connectivity Inventory composition.
 - `technical-access-evidence-boundary.md` — Technical Access Evidence boundary.
-- `access-policy-realization-resolution-boundary.md` — I18 Technical-to-Domain Access Resolution boundary.
-- `network-enforcement-placement-boundary.md` — I19 Network Enforcement Placement boundary.
-- `access-policy-realization-reconciliation-boundary.md` — I20 desired enforcement derivation/reconciliation boundary.
-- `enterprise-identity-authoritative-sources-boundary.md` — I23 local-first runtime with dormant external identity/source extension seams.
+- `network-enforcement-placement-boundary.md` — Network Enforcement Placement boundary.
+- `enterprise-identity-authoritative-sources-boundary.md` — local-first runtime with dormant external identity/source extension seams.
+
+Access Policy Realization architecture is currently being redesigned from the single problem statement in `../domain/access-policy-realization/README.md`. No separate APR architecture contract is current until that revalidation is completed.
 
 Consequential choices are recorded in `docs/decisions/`. Product behavior belongs in `docs/requirements/`; architecture should reference those contracts rather than restate them.
 

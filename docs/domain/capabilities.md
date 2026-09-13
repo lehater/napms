@@ -1,6 +1,6 @@
 # Domain capability ownership map
 
-Status: `accepted NAPMS-DDD-001 living capability map; source DDD-BDM-010 extended through implemented I20`.
+Status: `accepted NAPMS-DDD-001 living capability map`.
 
 A capability is not automatically a Bounded Context, service or deployment unit.
 
@@ -15,15 +15,16 @@ A capability is not automatically a Bounded Context, service or deployment unit.
 | Resource Scope Affiliation | which access-domain Resources belong to responsibility scope S at time T? | RC |
 | Resource knowledge | what access-domain Resource/Endpoint/current realization exists? | RC |
 | Application communication contract | what application/component/deployment/DCS semantics exist? | Application Communication Catalogue |
-| Network / Forwarding State | where can traffic traverse? | NEP |
-| Enforcement Selection | where is traffic evaluated? | NEP |
-| Technical Access Evidence Management | what normalized source-qualified technical access list was observed/derived/imported? | Technical Access Evidence |
-| Technical-to-Domain Access Resolution | what domain interaction(s) does a technical predicate represent/cover? | Access Policy Realization |
-| Enforcement Policy Derivation / Quality / Optimization | what enforcement policy does the domain consider correct/preferred? | Access Policy Realization |
-| Desired-vs-Configured Reconciliation | does configured evidence realize desired access and what semantic delta remains? | Access Policy Realization |
+| Enforcement Target Relevance | which Firewalls/policy locators are relevant for supplied technical traffic pairs? | NEP |
+| Technical Access Evidence Management | what normalized source-qualified technical access material was observed/derived/imported? | Technical Access Evidence |
+| Policy Realization Assessment | how exactly does configured effective access realize required effective access on a supplied target? | Access Policy Realization |
+| Semantic Policy Reconciliation | what effective access is common, missing and excessive for a comparable target policy? | Access Policy Realization |
+| Policy Change Design | what vendor-neutral policy edit should remove the semantic delta? | Access Policy Realization |
+| Proposed Change Verification | would the proposed resulting effective policy exactly satisfy the required policy without unintended access? | Access Policy Realization |
+| Target Policy Rendering | how is verified policy intent represented for a concrete target without changing semantics? | Access Policy Realization |
+| Technical Access Attribution / Explanation | what domain/business meaning can be attributed to a technical access region for explanation or diagnostics? | Access Policy Realization supporting capability |
 | Requirement-to-Policy Alignment | is current required connectivity covered by effective authorized policy? | non-peer composition over Connectivity Requirements + Access Policy |
 | Scoped Connectivity Inventory | what Resources are local to one admitted responsibility scope and how do their component interactions relate to need/decision/policy truth? | non-peer application composition over AM + RC + ACC + Connectivity Requirements + Connectivity Decision + Access Policy |
-| Access Rule Proposal Derivation | which resolved interactions not already represented should be surfaced as proposals? | non-peer application composition over APR + AP |
 | Connectivity Impact Analysis | what depends on connectivity and what is the consequence of loss under a scenario? | cross-context analysis; no peer BC accepted |
 | Source acquisition/parsing | obtain/parse traffic/device/file sources | adapter/mechanism |
 
@@ -76,7 +77,7 @@ Authority-to-declare != Requirement
 ConnectivityRequirement != AccessRequest/ticket
 ```
 
-I13 Tactical DDD now accepts:
+I13 Tactical DDD accepts:
 - stable surrogate `ConnectivityRequirementId`;
 - active semantic uniqueness by Requirement Governance Scope + Dependent Component Deployment + exact Required Semantic Interaction;
 - exact interaction = Source Component Deployment + Destination Component Deployment + immutable DCS revision;
@@ -86,84 +87,71 @@ I13 Tactical DDD now accepts:
 
 Advanced alternative/conditional requirement semantics remain deferred.
 
-## Network Enforcement Placement identity
+## Network Enforcement Placement
 
-Network / Forwarding State and Enforcement Selection are one NEP capability boundary for I19.
+NEP determines relevant Firewalls and applicable policy/ACL locators for supplied technical traffic pairs from current collected routing/interface state plus explicit active override rules.
 
-The first executable slice accepts:
-- one exact source/destination IP pair as an ephemeral Traffic Relation;
-- zero/one complete normalized Forwarding Path with ordered provider/path Traversal Points;
-- stable Logical Firewall identity independent from provider realization;
-- temporal Logical Firewall Correspondence and Enforcement Attachment;
-- selection `Placed | NoEnforcement | NoForwardingPath | Ambiguous | Unknown`.
+Its target semantics are defined by `docs/domain/network-enforcement-placement/target-tactical-model.md` and ADR-018.
 
-Multipath/ECMP and unrepresented forwarding discriminators remain explicit `Unknown` until a concrete environment requires and defines their semantics.
+APR consumes the target-specific outcome as upstream input and does not re-run or reinterpret NEP relevance reasoning.
 
-## Technical Access Evidence identity
+## Technical Access Evidence
 
-Configured, TrafficDerived and Imported evidence are `SAME_CAPABILITY` at the normalized evidence level. They share source-qualified normalized predicate semantics, provenance, source scope and explicit evidence-time representation. Evidence does not authorize desired access. Universal freshness/coverage/confidence semantics are not part of the I17 core; they remain deferred until a concrete source/consumer contract gives them trustworthy meaning.
+Configured, TrafficDerived and Imported evidence are one source-qualified evidence capability at the normalized evidence level. They share normalized predicate semantics, provenance, source scope and evidence-time representation. Evidence does not authorize desired access.
 
-## Technical-to-Domain Access Resolution identity
-
-Proposal-side and Reconciliation-side matching are `SAME_CAPABILITY`.
-
-> same Technical Access Predicate + same RC/Application Communication Catalogue/effective-time knowledge -> same Domain Access Resolution, independent of consumer.
-
-No consumer-specific resolution mode may change domain meaning.
-
-## Access Rule Proposal Derivation
-
-Proposal remains useful but non-peer while it has no independent identity, lifecycle, acceptance/rejection policy or authority.
+Completeness/currentness that a downstream comparison requires must be established by an explicit source/consumer contract; an evidence record does not acquire that meaning merely because it exists.
 
 ## Access Policy Realization
 
-This BC combines Technical-to-Domain Access Resolution, Enforcement Policy Derivation / Quality / Optimization and Desired-vs-Configured Reconciliation because one exact technical/domain coverage algebra must be used consistently in both directions.
+APR is a separate bounded context whose current canonical problem statement is:
 
-I18 accepts and implements the first shared resolution slice:
-- pairwise `Exact | Covers | CoveredBy | PartialOverlap | None`;
-- overall `Exact | Covered | Partial | Ambiguous | Unresolved | Unknown`;
-- exact unresolved technical remainder for supported exact-protocol predicates;
-- no winner selection under ambiguity;
-- explicit predicate-relevant Unknown;
-- exact `asOf` and attributable TAE/RC/ACC provenance;
-- one resolution meaning independent of proposal/reconciliation consumer.
+- `docs/domain/access-policy-realization/README.md`.
 
-Protocol Any remains an explicit first-slice Unknown until a protocol-wide port-applicability/difference model is accepted.
+Its target capability chain is:
 
-I20 accepts and implements the first enforcement derivation/reconciliation semantics:
-- one explicit `asOf` across desired policy, domain interpretation and NEP placement;
-- Enforcement Target = Logical Firewall + Enforcement Attachment;
-- desired technical fragments are business-correct only when shared I18 resolution shows they do not necessarily enable non-desired Domain Interactions;
-- configured reconciliation uses one explicitly selected TAE Configured capture, never an automatic latest/current winner;
-- complete configured comparison requires a trusted managed-scope/source contract establishing the same policy partition, effective Permit-set semantics and completeness;
-- exact `common | missing | extra` technical witnesses drive `No-op | Add | Remove | Replace`;
-- Unknown/Ambiguous precedence blocks confident delta when scope/time/source/evaluation/domain/placement meaning is incomplete;
-- “Replace” remains semantic delta, not vendor/device operation mechanics;
-- framework-free APR-owned ports and owner-preserving adapters compose Access Policy/Policy Export, RC/ACC, NEP and TAE without cross-context persistence;
-- PostgreSQL-backed acceptance proof covers complete No-op/Add/Remove/Replace, incomplete-contract Unknown and temporal target movement while APR results remain derived on demand.
+```text
+supplied target + required effective policy
+                +
+comparable configured effective policy
+                |
+                v
+Policy Realization Assessment
+                |
+                v
+Semantic Policy Reconciliation
+                |
+                v
+Policy Change Design
+                |
+                v
+Proposed Change Verification
+                |
+                v
+Target Policy Rendering
+```
 
-TAE keeps generic evidence ownership: I20 completeness/currentness is a consumer/source contract, not a new universal TAE state.
+Core direction:
 
-Requirement-to-Policy Alignment is deliberately outside APR: it compares `NEEDED` with effective `AUTHORIZED`; APR compares authorized/desired policy with technical realization/evidence.
+- compare **effective technical access semantics**, not textual rule/configuration identity;
+- preserve exact `common / missing / excess` policy-space meaning;
+- keep semantic delta distinct from the concrete change design;
+- verify proposed resulting policy semantics before execution;
+- keep target selection/relevance outside APR;
+- keep provider/device mutation execution outside APR;
+- allow technical-to-domain/business attribution as supporting explanation without making it the definition of technical policy equivalence;
+- keep large policy-space computation data-local behind APR semantic contracts rather than requiring complete object-graph hydration in the application process;
+- consume only published upstream contracts/projections even when data is physically co-located.
 
-I14 accepted Requirement-centric outcomes:
-- `Covered`;
-- `Uncovered`;
-- `NotCurrent`;
-- `Unknown`.
+The target Tactical DDD, ERD, persistence model and concrete computation engine are still under design.
 
-`Denied` remains deferred because current Access Policy truth does not persist a durable NotAllowed decision. Policy-centric orphan detection remains deferred until an operator view with accepted cross-scope authority semantics requires it.
-
-An actor admitted to `ReadConnectivityRequirement` may see the derived alignment status for that Requirement. Rule-level evidence/details remain separately protected by Access Policy read authority.
+Requirement-to-Policy Alignment is outside APR: it compares `NEEDED` with effective `AUTHORIZED`, while APR compares required target policy semantics with configured target policy semantics.
 
 ## Source acquisition and firewall semantics
 
-NetFlow/syslog capture, vendor polling/parsers, CSV/XLSX import and raw config storage remain adapters/mechanisms. Zones/interfaces/default deny belong to NEP/firewall interpretation, not Technical Access Evidence.
+NetFlow/syslog capture, vendor polling/parsers, CSV/XLSX import and raw config storage remain adapters/mechanisms. Provider-specific policy evaluation semantics must be normalized through an explicit owning/integration contract before APR may treat configured input as effective access semantics.
 
 ## Strategic DDD closure
 
-`DDD-BDM-010` remains the source Strategic DDD baseline. The living `NAPMS-DDD-001` model has since been extended by accepted Connectivity Requirements, Connectivity Decision and I16A responsibility-scope semantics. Historical DDD-BDM-010 evidence remains provenance rather than the count/name of the current living context set.
+`DDD-BDM-010` remains the source Strategic DDD baseline. The living `NAPMS-DDD-001` model has since been extended by accepted domain decisions. Historical reconstruction evidence remains provenance rather than current target truth.
 
-The legacy-reconstruction scorer was not rerun for the accepted DDD-BDM-010 baseline. No scorer metrics are claimed by the NAPMS living model; historical scoring evidence remains in the source reconstruction repository.
-
-Strategic DDD is closed for the current scope. This statement does not start or imply Tactical DDD.
+Strategic DDD is revisited when new evidence changes language, lifecycle, authority or responsibility boundaries.

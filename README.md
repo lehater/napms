@@ -6,7 +6,9 @@ Authoritative greenfield NAPMS product repository.
 
 ## Current implementation state
 
-NAPMS includes the current local product chain through Network Environment Operations, the optional external-integration seam from I23, and the hardened local deployment/recovery operating contract completed in I24. Canonical capability status lives in `docs/engineering/current-state.md`; roadmap sequencing lives in `docs/engineering/post-wave1-product-completion-roadmap.md`.
+NAPMS includes the current local product implementation through the accepted Application Catalogue target and supporting local runtime. Canonical capability status lives in `docs/engineering/current-state.md`.
+
+Access Policy Realization is currently under target-domain revalidation. Its only current problem statement is `docs/domain/access-policy-realization/README.md`; existing APR runtime code is migration material and must not be treated as target semantics.
 
 ## Local Docker start
 
