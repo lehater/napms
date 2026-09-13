@@ -21,9 +21,9 @@ Authorization basis: `none`
 ## Working set
 
 Read first:
-- `docs/plans/active/domain-erd-revalidation.md`;
-- `docs/engineering/context-problems/README.md`;
-- `docs/process/plan-lifecycle.md`.
+- `docs/plans/active/domain-erd-revalidation.md`
+- `docs/engineering/context-problems/README.md`
+- `docs/process/plan-lifecycle.md`
 
 Expand only if needed:
 - the canonical domain/requirements/architecture artifacts for the next selected context;
