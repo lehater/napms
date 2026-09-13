@@ -7,7 +7,9 @@ description: "Use when a new requirement, code finding, or design question may c
 
 Use `docs/process/domain-change-protocol.md` as the focused re-entry classifier.
 
-When the lifecycle routes work to S2, use `docs/process/domain-design-stage.md` for S2/G2 responsibility and routing. Load `docs/process/strategic-ddd-convergence.md` only when Strategic DDD is actually affected.
+When the lifecycle routes work to S2, use `docs/process/domain-design-stage.md` for S2/G2 responsibility and routing. Load:
+- `docs/process/strategic-ddd-convergence.md` only when Strategic DDD is actually affected;
+- `docs/process/tactical-ddd-stage.md` only when Tactical DDD work is active.
 
 ## Procedure
 
@@ -21,9 +23,10 @@ When the lifecycle routes work to S2, use `docs/process/domain-design-stage.md` 
 4. For S2 work, inspect only the smallest affected canonical domain/requirements/ADR evidence.
 5. Apply `docs/process/decision-protocol.md` to unknowns/conflicts.
 6. For Strategic DDD, require evidence of changed language, responsibility/decision ownership, independent lifecycle/invariants, authority boundary or context relationship; then run the strategic convergence protocol.
-7. Update the highest affected canonical artifact first.
-8. Return to the S2 gate and propagate only required deltas downstream after G2 passes.
-9. Run `make knowledge-check` plus code checks when implementation changes are later performed.
+7. For Tactical DDD, challenge semantic identity/lifecycle/invariant ownership and separate domain guarantees from persistence/framework realization using the tactical protocol.
+8. Update the highest affected canonical artifact first.
+9. Return to the S2 gate and propagate only required deltas downstream after G2 passes.
+10. Run `make knowledge-check` plus code checks when implementation changes are later performed.
 
 ## Guardrail
 
