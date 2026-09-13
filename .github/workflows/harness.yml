@@ -1,6 +1,7 @@
 name: harness gate
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
