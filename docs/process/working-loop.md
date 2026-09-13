@@ -32,6 +32,8 @@ Write a branch checkpoint when at least one is true:
 
 Do not checkpoint every wording/edit operation.
 
+At a checkpoint, harvest only consequential semantic results from the conversation before discarding temporary reasoning. Separate accepted truth from unresolved material discoveries. Preserve candidate journeys/use cases/capability or boundary clues only when losing them would harm later work, and route them to the smallest existing durable owner; do not persist conversation dumps, duplicate canonical truth or create a discovery artifact merely because an idea was mentioned.
+
 ## Upstream reopen during implementation
 
 If implementation or testing exposes a finding that requires `REOPEN(S0..S3)`:
@@ -64,11 +66,12 @@ A stage transition is a strong compaction point, not an automatic requirement to
 
 Before rollover:
 1. absorb durable product/domain/architecture decisions into their canonical artifacts;
-2. persist unresolved material problems in the smallest correct owner: current plan/capsule while active, a bounded-context problem register when parking context-local work, or another existing durable owner when justified;
-3. update `docs/plans/active/README.md` with the current task, lifecycle stage/state when material, minimal working set, blockers, gate and next action;
-4. checkpoint coherent branch work when losing it would be costly;
-5. preserve evidence references needed to resume without preserving full evidence/tool dumps;
-6. discard temporary reasoning, duplicated explanations, rejected exploration and task-local rules that no longer apply.
+2. harvest consequential unresolved discoveries from the active discussion and persist only those that must survive, using the smallest correct owner rather than a generic discovery log;
+3. persist unresolved material problems in the smallest correct owner: current plan/capsule while active, a bounded-context problem register when parking context-local work, or another existing durable owner when justified;
+4. update `docs/plans/active/README.md` with the current task, lifecycle stage/state when material, minimal working set, blockers, gate and next action;
+5. checkpoint coherent branch work when losing it would be costly;
+6. preserve evidence references needed to resume without preserving full evidence/tool dumps;
+7. discard temporary reasoning, duplicated explanations, rejected exploration, non-consequential candidate ideas and task-local rules that no longer apply.
 
 A fresh session recovers in this order:
 
