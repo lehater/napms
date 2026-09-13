@@ -203,7 +203,8 @@ def main() -> int:
         for marker in [
             "docs/process/architecture-stage.md",
             "G3",
-            "REOPEN(S1/S2)",
+            "REOPEN(S1)",
+            "REOPEN(S2)",
         ]:
             if marker not in text:
                 errors.append(
