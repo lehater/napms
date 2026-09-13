@@ -49,6 +49,15 @@ Enter **Tactical DDD** when the accepted context boundary remains stable but wor
 
 A class, table, API, service, framework, deployment unit or shared library is not by itself evidence for Strategic DDD.
 
+### Internal S2 dependency rule
+
+Strategic and Tactical DDD are not separate top-level lifecycle stages, but they do depend on each other.
+
+- A Tactical finding that puts responsibility/context boundary/cross-context contract in doubt reroutes the current S2 work to Strategic DDD; it does not `REOPEN(S2)` because S2 is already active.
+- A Strategic change to ownership/boundary/contract marks the affected Tactical assumptions inside S2 as requiring revalidation before G2 may pass.
+- Revalidate only Tactical concepts whose owner, identity, lifecycle, invariant or operation depends on the changed Strategic guarantee; unrelated context internals do not need a full remodel.
+- G2 is evaluated only after the affected Strategic and Tactical views are mutually coherent.
+
 ## Working loop
 
 1. State the semantic question without embedding an implementation answer.
@@ -57,9 +66,10 @@ A class, table, API, service, framework, deployment unit or shared library is no
 4. Resolve unknown/conflicting domain claims through `decision-protocol.md`.
 5. Update the highest affected domain owner first.
 6. Challenge the result against requirements and neighboring semantic ownership.
-7. Record unresolved material problems rather than widening DTOs/models to hide them.
-8. Rework only the affected semantic delta.
-9. Evaluate G2 for the affected scope.
+7. When Strategic ownership/boundaries changed, identify and revalidate only dependent Tactical semantics before G2.
+8. Record unresolved material problems rather than widening DTOs/models to hide them.
+9. Rework only the affected semantic delta.
+10. Evaluate G2 for the affected scope.
 
 When Strategic DDD is active, use `strategic-ddd-convergence.md` rather than treating the existing context map as unquestionable truth.
 
@@ -84,6 +94,7 @@ Architecture may constrain feasible realization, but if Architecture requires ch
 
 - each material authoritative domain fact/decision has an identifiable semantic owner;
 - relevant Bounded Context boundaries/relationships are coherent enough for the change;
+- affected Tactical assumptions have been revalidated after any Strategic ownership/boundary/contract change;
 - cross-context consumers can rely on explicit public semantic meaning rather than peer-private models;
 - identity/lifecycle/invariant ownership needed by the change is explicit;
 - derived/source/current state required by the change is classified well enough that Architecture need not guess what is authoritative;
@@ -125,7 +136,7 @@ On S2 closure/parking, promote accepted semantics to canonical `docs/domain/`/AD
 
 ## Relationship to other protocols
 
-- `change-lifecycle.md` owns stage transitions/reopen/dirty/no-progress semantics.
+- `change-lifecycle.md` owns top-level stage transitions/reopen/dirty/no-progress semantics.
 - `requirements-stage.md` owns S1/G1 product-behavior guarantees.
 - `strategic-ddd-convergence.md` owns iterative Strategic DDD boundary/context-map/contract convergence.
 - `tactical-ddd-stage.md` owns Tactical DDD identity/lifecycle/invariant coherence inside an accepted context boundary.
