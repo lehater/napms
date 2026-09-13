@@ -60,8 +60,19 @@
     "current_stage": "S4",
     "outcome": "REOPEN",
     "target_stage": "S2",
+    "dependent_stages": ["S3", "S4"],
     "expected_stage": "S2",
     "expected_dirty": ["S3", "S4"],
+    "expected_authorization": "none"
+  },
+  {
+    "id": "s4-reopen-s1-selective-dependency-invalidation",
+    "current_stage": "S4",
+    "outcome": "REOPEN",
+    "target_stage": "S1",
+    "dependent_stages": ["S2", "S4"],
+    "expected_stage": "S1",
+    "expected_dirty": ["S2", "S4"],
     "expected_authorization": "none"
   },
   {
@@ -69,6 +80,7 @@
     "current_stage": "IMPLEMENTATION",
     "outcome": "REOPEN",
     "target_stage": "S1",
+    "dependent_stages": ["S2", "S3", "S4"],
     "expected_stage": "S1",
     "expected_dirty": ["S2", "S3", "S4"],
     "expected_authorization": "none"
@@ -112,6 +124,7 @@
     "current_stage": "S2",
     "outcome": "REOPEN",
     "target_stage": "S3",
+    "dependent_stages": [],
     "expected_error": true
   },
   {
@@ -119,6 +132,15 @@
     "current_stage": "S4",
     "outcome": "REOPEN",
     "target_stage": "S1/S2",
+    "dependent_stages": [],
+    "expected_error": true
+  },
+  {
+    "id": "reopen-rejects-nondependent-upstream-stage",
+    "current_stage": "S4",
+    "outcome": "REOPEN",
+    "target_stage": "S2",
+    "dependent_stages": ["S1", "S4"],
     "expected_error": true
   }
 ]
