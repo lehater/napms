@@ -1,8 +1,8 @@
 # Current target architecture
 
-Status: `accepted current target through I31 Application Catalogue migration for the supported local deployment`.
+Status: `accepted current target through I31 Application Catalogue migration for the supported local deployment; APR target architecture under revalidation`.
 
-Date: 2026-09-11.
+Date: 2026-09-13.
 
 ## Purpose
 
@@ -55,7 +55,7 @@ Current first-class semantic modules include:
 - Network Enforcement Placement;
 - Network Environment Operations.
 
-Non-peer application/read compositions include Requirement-to-Policy Alignment, policy export/snapshot normalization, Scoped Connectivity Inventory, Network Operator Realization View and Traffic Analysis Checker. I31 changes the ACC authoring/read model inside the existing bounded context; it does not introduce another bounded context.
+Non-peer application/read compositions include Requirement-to-Policy Alignment, policy export/snapshot normalization, Scoped Connectivity Inventory and Traffic Analysis Checker. The former Network Operator Realization View is not a current target contract while APR is being redesigned. I31 changes the ACC authoring/read model inside the existing bounded context; it does not introduce another bounded context.
 
 ## Current runtime boundary
 
@@ -211,6 +211,8 @@ The architectural requirements for this design are:
 
 Rendered configuration does not prove application to a target.
 
+The existing APR runtime modules and legacy Realization read workflow remain implementation/migration material only until the redesigned target contracts are accepted.
+
 ## Network Environment Operations
 
 NEO remains a separate downstream boundary:
@@ -228,9 +230,11 @@ The supported target remains deterministic in-process/stub-first. Real Cisco tra
 
 ## Read compositions
 
-Scoped Connectivity Inventory, Network Operator Realization View and Traffic Analysis Checker remain non-peer read/application compositions. A composition consumes explicit owner/application ports, owns orchestration only, does not create copied business truth, and represents missing/ambiguous contributors explicitly.
+Scoped Connectivity Inventory and Traffic Analysis Checker remain non-peer read/application compositions. A composition consumes explicit owner/application ports, owns orchestration only, does not create copied business truth, and represents missing/ambiguous contributors explicitly.
 
 Traffic Analysis may combine RC, ACC context, scoped Connectivity summaries, Network Context/NEP information, stored TAE evidence and Resource responsibility/contact. Configured evidence never implies `Allowed`.
+
+Any future APR operator read model must be designed from the new APR contracts rather than preserving the removed Network Operator Realization View contract.
 
 ## Security/integrity guardrails
 
