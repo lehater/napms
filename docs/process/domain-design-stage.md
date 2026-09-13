@@ -63,6 +63,8 @@ A class, table, API, service, framework, deployment unit or shared library is no
 
 When Strategic DDD is active, use `strategic-ddd-convergence.md` rather than treating the existing context map as unquestionable truth.
 
+When Tactical DDD is active, use `tactical-ddd-stage.md` to challenge identity/lifecycle/invariant ownership and to separate domain guarantees from persistence/framework realization.
+
 ## Responsibility boundary
 
 S2 owns semantic/domain meaning. It does not choose:
@@ -84,6 +86,7 @@ Architecture may constrain feasible realization, but if Architecture requires ch
 - relevant Bounded Context boundaries/relationships are coherent enough for the change;
 - cross-context consumers can rely on explicit public semantic meaning rather than peer-private models;
 - identity/lifecycle/invariant ownership needed by the change is explicit;
+- derived/source/current state required by the change is classified well enough that Architecture need not guess what is authoritative;
 - no unresolved P0/P1 semantic ownership contradiction remains;
 - accepted domain meaning satisfies G1 behavior without importing architecture choices as domain facts;
 - remaining domain unknowns are explicitly non-blocking with a known revisit trigger/owner.
@@ -112,6 +115,7 @@ root AGENTS.md
 -> this protocol for S2 routing/G2
 -> smallest affected domain artifact(s)
 -> strategic convergence protocol only for Strategic DDD work
+-> tactical protocol only for Tactical DDD work
 -> requirements/ADR/evidence only on demonstrated need
 ```
 
@@ -124,5 +128,6 @@ On S2 closure/parking, promote accepted semantics to canonical `docs/domain/`/AD
 - `change-lifecycle.md` owns stage transitions/reopen/dirty/no-progress semantics.
 - `requirements-stage.md` owns S1/G1 product-behavior guarantees.
 - `strategic-ddd-convergence.md` owns iterative Strategic DDD boundary/context-map/contract convergence.
+- `tactical-ddd-stage.md` owns Tactical DDD identity/lifecycle/invariant coherence inside an accepted context boundary.
 - `domain-change-protocol.md` is the focused re-entry classifier used when findings arise from lower layers.
 - `decision-protocol.md` owns unknown/conflict handling.
