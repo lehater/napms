@@ -18,7 +18,7 @@ Use this Skill as a judgement-heavy review inside `S3 Architecture` or when impl
 7. unnecessary infrastructure/distribution/abstraction;
 8. consistency with accepted ADRs and active plan gate.
 
-When a finding requires a missing product/domain decision, route it upstream with `REOPEN(S1/S2)` rather than proposing an architecture workaround. When the issue is an architecture-owned realization deficiency, keep it in S3 as `REWORK`.
+When a finding requires a missing product decision, use `REOPEN(S1)`. When it requires missing/wrong domain semantics or ownership, use `REOPEN(S2)`. Do not encode ambiguous combined reopen targets. When the issue is an architecture-owned realization deficiency, keep it in S3 as `REWORK`.
 
 ## Output
 
