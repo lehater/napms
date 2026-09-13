@@ -23,6 +23,8 @@ The resume capsule is a non-authoritative recovery cache. If a capsule summary c
 
 Do not scan `docs/baseline/` or completed historical Wave-1 material unless the task explicitly requires history or provenance.
 
+Use `docs/process/change-lifecycle.md` only when entering/routing a non-trivial change, evaluating a lifecycle gate, reopening an upstream stage or propagating invalidation; do not preload it for ordinary task execution when the capsule already makes the current task/stage unambiguous.
+
 Use `docs/process/decision-protocol.md` when a material answer is missing or conflicting.
 
 ## Source-of-truth map
