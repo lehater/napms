@@ -1,6 +1,6 @@
 # Semantic Ownership
 
-Status: `accepted NAPMS-DDD-001 / I22 current semantic ownership`.
+Status: `accepted NAPMS-DDD-001 current semantic ownership`.
 
 This file defines semantic ownership, not runtime/service ownership.
 
@@ -17,9 +17,9 @@ This file defines semantic ownership, not runtime/service ownership.
 | Resource/Endpoint/current address realization | **Resource Catalogue** | trusted inventory/network facts | Resource/Endpoint/current realization |
 | scoped resource-centric connectivity inventory | **non-peer application composition** | AM + RC + ACC + Connectivity Requirements + Connectivity Decision + Access Policy | Scoped Connectivity Inventory |
 | application/component communication contract | **Application Communication Catalogue** | authorized catalogue sources | Application/Component/DCS/Deployment |
-| forwarding and enforcement relevance | **Network Enforcement Placement** | provider/network observations + corrections | path/Logical Firewall/Enforcement Attachment semantics |
+| enforcement-target relevance and applicable policy/ACL locators | **Network Enforcement Placement** | current routing/interface state + configured candidate overrides + source-specific locator bindings | Firewall candidate/target references + policy locators |
 | normalized source-qualified technical access evidence | **Technical Access Evidence** | device/traffic/import adapters and external sources | Technical Access Evidence Set / Entry |
-| technical↔domain access correspondence, enforcement realization and target representation equivalence | **Access Policy Realization** | I18 resolution: TAE + RC + Application Communication Catalogue; I20 derivation/reconciliation: Access Policy + NEP + explicitly selected/configured TAE projection + source/scope contract; I21 rendering: accepted desired enforcement intent + renderer contract | Domain Access Resolution / desired enforcement policy / Policy Reconciliation / Rendered Configuration |
+| effective-policy realization assessment, semantic delta, change design, pre-change semantic verification and target representation equivalence | **Access Policy Realization** | target-specific required-policy contract + comparable configured effective-policy contract | Realization Assessment / Semantic Delta / Policy Change Design / Verification Result / Rendered Configuration |
 | provider/device operation identity, concurrency, mutation outcome and execution provenance | **Network Environment Operations** | rendered configuration projection + Authority Management mutation admission + target/provider observations | Network Operation Result |
 
 ## Responsibility Scope / Resource affiliation ownership
@@ -86,7 +86,7 @@ Technical Access Evidence owns the claim:
 
 > source X provided or allowed us to derive technical access material Y for scope/time T.
 
-It does not own the truth that Y is desired, authorized or domain-valid.
+It does not own the truth that Y is desired, authorized or correctly realized.
 
 Evidence kinds:
 
@@ -100,20 +100,41 @@ Source-specific parsing/collection is outside the BC.
 
 ## Network Enforcement Placement authority
 
-Network Enforcement Placement owns the claim:
+Network Enforcement Placement owns target relevance for supplied technical traffic pairs using its current network-state and override semantics. It also owns the applicable policy/ACL locator information needed to identify the relevant policy surface on a returned Firewall.
 
-> for exact endpoint-pair traffic relation R at logical time T, normalized forwarding knowledge places traffic through path P, whose provider/path attachment points correspond to Logical Firewall enforcement placements E.
+NEP does not own authorization, configured policy contents, desired-vs-configured reconciliation, policy change design, rendering or provider execution.
 
-It owns normalized forwarding/path meaning, Logical Firewall identity, temporal provider correspondence, Enforcement Attachment and Enforcement Selection. It does not own authorization, desired-vs-configured satisfaction, vendor configuration or provider execution.
+Once a target/policy locator has been supplied downstream, APR does not reevaluate why NEP selected it.
 
 ## Access Policy Realization authority
 
-Access Policy Realization owns the interpretation/decision layer above evidence and the exact target representation of accepted desired enforcement intent. I21 rendering remains derived on demand and does not prove device application.
+Access Policy Realization owns the semantic comparison and transformation layer for one supplied technical policy target:
+
+```text
+required effective access
+        versus
+configured effective access
+```
+
+APR owns:
+
+- realization assessment for trustworthy comparable inputs;
+- exact `common / missing / excess` semantic delta;
+- policy-change design over that delta;
+- semantic pre-change verification of the proposed resulting policy;
+- semantics-preserving target-specific rendering;
+- supporting explanation/attribution of technical access where required by an APR use case.
+
+APR does not own target relevance, Access Rule authorization, catalogue identities, evidence source truth or provider/device mutation execution.
+
+APR results are derived unless a later accepted product lifecycle establishes independent durable APR state. Data-local indexes/worksets used to compute large policy spaces do not become authoritative peer business truth.
+
+Canonical APR framing: `docs/domain/access-policy-realization/README.md`.
 
 ## Network Environment Operations authority
 
 Network Environment Operations owns the provider/device operation lifecycle downstream of rendering:
-- NEO-owned `OperationTarget` is a projection of the upstream enforcement target, not a redefinition of APR/NEP identity;
+- NEO-owned `OperationTarget` is a projection of the upstream technical target, not a redefinition of its identity;
 - `operation_id` binds exactly one target + artifact digest and is the first-slice idempotency key;
 - mutation authority is consumed through an explicit Authority Management-facing port and read access does not imply mutation permission;
 - pre-check/current target revision and conditional apply provide optimistic concurrency;
@@ -123,7 +144,7 @@ Network Environment Operations owns the provider/device operation lifecycle down
 - Unknown apply is never converted into success and is not blindly retried;
 - operation provenance preserves pre/apply/post evidence and correlation.
 
-The current I22 executable adapter is a deterministic in-process stub because no real lab is available. Stub success proves the operation semantics only; it is not evidence of real Cisco ASA transport compatibility. The first slice uses an in-memory operation repository and therefore does not claim crash-durable execution audit.
+The current executable adapter is a deterministic in-process stub because no real lab is available. Stub success proves the operation semantics only; it is not evidence of real Cisco transport compatibility. The current in-memory operation repository does not claim crash-durable execution audit.
 
 ## Proposal ownership
 
@@ -138,14 +159,17 @@ Decision exists: Allowed | NotAllowed
 Rule exists
 Active / Inactive
 Technical evidence exists
-Domain resolution known / ambiguous / unresolved
-Enforcement policy derived
-Configured evidence observed
-Satisfied
+Target relevance established upstream
+Required effective target policy available
+Configured effective target policy available
+Realization assessment computed
+Semantic delta computed
+Policy change designed
+Proposed resulting policy semantically verified
 Rendered representation exists
 Network operation attempted
 Applied response observed
 Verified target state observed
 ```
 
-A rendered representation does not imply provider/device application, and an apply response does not imply verification. No Requirement, evidence or proposal silently becomes authorization.
+No Requirement, evidence, target selection, reconciliation result, rendered representation or apply response silently becomes another context's authoritative truth.
