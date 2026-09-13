@@ -6,11 +6,11 @@ Completed/superseded plans are removed after their durable outcomes are absorbed
 
 Long-range ordered sequencing is canonicalized outside `active/` only when it remains valid current engineering truth.
 
-Current active execution: `docs/plans/active/PLAN-access-policy-realization-design.md`.
+Bounded-context roadmaps that must survive workstream switches live under `docs/engineering/roadmaps/` and follow `docs/process/plan-lifecycle.md`. A parked context roadmap does not make that context active and does not justify keeping a `PLAN-*.md` under `active/`.
 
-Parent context-review frame: `docs/plans/active/domain-erd-revalidation.md`.
+Current active execution: `docs/plans/active/domain-erd-revalidation.md`.
 
-Current APR long-range design sequence: `docs/engineering/access-policy-realization-design-roadmap.md`.
+Context-roadmap registry: `docs/engineering/roadmaps/README.md`.
 
 Completed roadmap references that remain useful include:
 - `docs/engineering/target-code-structure-migration-roadmap.md` — completed M0-M7 migration to `backend/src/napms/{contexts,workflows,platform}` and final Web locality;
@@ -19,6 +19,6 @@ Completed roadmap references that remain useful include:
 - `docs/engineering/catalogue-curation-roadmap.md` — completed I27 Catalogue Curation;
 - `docs/engineering/traffic-analysis-checker-roadmap.md` — I26.
 
-Obsolete APR design history is not retained as a current roadmap. The only current APR problem statement is `docs/domain/access-policy-realization/README.md`.
+Obsolete APR design history is not retained. The current APR semantic framing is `docs/domain/access-policy-realization/README.md`; its parked future sequence is `docs/engineering/roadmaps/access-policy-realization.md`.
 
 Only a selected current increment receives a detailed `PLAN-*.md` under `active/`.
