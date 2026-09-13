@@ -4,11 +4,11 @@ Current: `harness-change-lifecycle.md`
 
 Goal: validate a coherent stage/gate change lifecycle from problem evidence to implementation readiness together with a paired context lifecycle that loads only the minimum rules/artifacts required for the current task.
 
-Current task: fix the concrete Harness CI failure in active-plan validation, then rerun the hosted Harness gate on PR #101 without changing product/domain/runtime code.
+Current task: preserve the validated Harness lifecycle/context baseline on `harness/change-lifecycle` and change it only when a new real use exposes a concrete defect or extension need.
 
-Lifecycle stage: Harness meta-design / deterministic validation.
+Lifecycle stage: Harness meta-design / validated baseline.
 
-Stage state: `GATE_FAILED`.
+Stage state: `ACCEPTED`.
 
 ## Working set
 
@@ -30,19 +30,19 @@ Expand only if needed:
 - `tools/validate_harness.py` checks structural lifecycle routing/discoverability; `tools/validate_plans.py` checks resume locality/context budget. They do not decide semantic gate correctness.
 - `.github/workflows/harness.yml` exposes `workflow_dispatch` and runs `make harness-check`.
 - PR #101 exists only to exercise hosted CI for this branch; it must not be merged to `main` unless explicitly requested later.
-- Hosted Harness run 34756842433 executed `make harness-check`: `validate_harness.py` passed; `validate_plans.py` failed because the capsule `Current:` line contained descriptive text after the backticked plan filename.
-- Hosted Harness run 34756887237 progressed past `Current:` validation and failed because `Read first` bullets had trailing semicolons immediately after the backticked paths; the validator requires plain backticked repository-file bullets.
-- The concrete fix is to keep `Current:` as an exact pointer and `Read first` as plain path bullets; descriptive context belongs elsewhere in the capsule.
+- Hosted Harness run 34756842433 found the first capsule syntax defect (`Current:` was not an exact pointer).
+- Hosted Harness run 34756887237 found the second capsule syntax defect (`Read first` bullets had trailing semicolons).
+- Hosted Harness run 34756922628 on head `d2b8e2b08be15817599fad0975687c64f660ee68` passed `make harness-check` completely: `validate_harness.py`, `validate_plans.py`, and `validate_skill_routing.py` all passed.
 - No product/domain/runtime code has been changed by this Harness workstream.
 
 ## Blockers
 
-No external blocker. The current deterministic gate failed on concrete active-plan format defects that are being corrected in this branch.
+No known Harness blocker.
 
 ## Gate
 
-Keep this workstream open until `make harness-check` executes successfully on the current `harness/change-lifecycle` head. Any failure must be fixed in this branch and rechecked. No merge to `main` is authorized.
+Deterministic Harness gate passed on hosted run 34756922628 for the current validated baseline. Any future Harness change must rerun the applicable gate before being treated as validated. No merge to `main` is authorized.
 
 ## Next
 
-Rerun the hosted Harness gate after this active-plan correction, inspect the complete result/logs, and fix only concrete failures. If the gate passes, record the successful run and return the PR to draft while Harness design work remains open.
+Keep PR #101 in draft and continue using `harness/change-lifecycle` as the isolated Harness workstream. Reopen lifecycle design only when a real task demonstrates a concrete routing, context-loading, gate or methodology gap.
