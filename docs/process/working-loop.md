@@ -1,24 +1,14 @@
 # Working loop
 
-## Persistence model
+Use this protocol for branch execution, checkpoints, validation and context/session rollover. It owns execution mechanics; `change-lifecycle.md` owns stage/gate semantics and only points here when a lifecycle transition creates a checkpoint or rollover need.
 
-```text
-active conversation
-    = disposable execution context
-
-docs/plans/active/README.md
-    = durable resume state for the current task
-
-working branch / worktree
-    = durable code checkpoints/WIP/fixups as needed
-
-main
-    = curated semantic history through squash merge
-```
+## Branch discipline
 
 Agents/chats must not commit directly to `main`.
 
-## Checkpoint triggers
+Work on a task-specific branch/worktree. Keep the branch rebased/checked against the relevant current base before final integration when concurrent work may have changed canonical inputs.
+
+## Checkpoints
 
 Write a branch checkpoint when at least one is true:
 - a coherent semantic increment is complete;
@@ -45,6 +35,8 @@ Independent slices may continue only when their guarantees do not depend on the 
 A checkpoint made before upstream re-entry is recoverable WIP, not evidence that the implementation is still valid.
 
 ## Context rollover
+
+This section is the canonical execution procedure for session/context rollover. `change-lifecycle.md` defines when lifecycle transitions make rollover useful; it must not grow a second detailed recovery procedure.
 
 Starting a fresh chat/session is a normal context-management operation, not a failure.
 
@@ -94,36 +86,3 @@ If two chats must write concurrently:
 - before integration, re-check the relevant branch base and revalidate any canonical inputs that changed since the task base.
 
 Do not introduce multi-agent coordination machinery for ordinary sequential work.
-
-## Validation execution
-
-Repository-local checks and GitHub Actions are two execution surfaces for the same deterministic repository gates.
-
-Normal editing loop:
-1. run the smallest applicable local check when the agent environment supports it;
-2. fix known failures before requesting the final hosted gate;
-3. use the applicable workflow's `workflow_dispatch` as an intermediate fallback only when local execution is unavailable and the current GitHub capability can dispatch it;
-4. inspect hosted run/job status and logs before recording PASS evidence.
-
-Before declaring a gate unexecutable, inspect `.github/workflows/` to determine:
-- which workflow owns the affected area;
-- its exact command;
-- its path filters and event trigger;
-- whether `workflow_dispatch` is available.
-
-Do not confuse capability absence with CI absence. If the current connector/runtime can read Actions but cannot start a new workflow, record that tool limitation explicitly and preserve the pending gate in the active capsule.
-
-## Integration
-
-One PR should represent one coherent semantic stage. Accumulate branch commits freely enough for safety/review, then squash merge.
-
-For expensive GitHub Actions, keep the PR draft while work is accumulating. Repository CI is triggered when the PR is marked ready for review, not on ordinary branch pushes.
-
-Treat `Ready for review` as a request for the final hosted gate, not as a per-fix test button:
-- before marking ready, run the applicable repository-local checks and batch known fixes;
-- if local execution is unavailable, an explicit `workflow_dispatch` run of the same gate may provide the intermediate evidence without changing PR review state;
-- if a deterministic gate failure requires material changes, return the PR to draft once, batch the corrections, rerun the applicable local checks, then mark ready once for a fresh gate;
-- if an isolated hosted job fails for a transient/flaky infrastructure reason and no repository change is required, rerun the failed job/workflow instead of toggling Draft/Ready;
-- avoid repeated Draft -> Ready cycles for individual fixes: each cycle reevaluates the accumulated PR path diff and can restart every applicable hosted gate.
-
-Hosted gates validate the complete affected PR scope. Local editing may use the smallest applicable checks, but the final gate must not rely only on the last commit delta.
