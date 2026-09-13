@@ -24,7 +24,7 @@ Design and evolve the repository Harness so a change can move from need/requirem
 
 Define stages, gates, stage states, PASS/REWORK/REOPEN/BLOCKED, dirty propagation, problem handling and no-progress semantics.
 
-Status: coherent baseline captured in `docs/process/change-lifecycle.md`. `ACCEPTED` is upstream-relative; `REOPEN` invalidates only dependent downstream guarantees; no-progress and blocking semantics are explicit. Continue to change this kernel only when stage-methodology use exposes a concrete defect.
+Status: coherent baseline captured in `docs/process/change-lifecycle.md`. `ACCEPTED` is upstream-relative; `REOPEN` invalidates only dependent downstream guarantees; no-progress and blocking semantics are explicit. Continue to change this kernel only when real stage use exposes a concrete defect.
 
 ### H2 — Context lifecycle
 
@@ -36,34 +36,58 @@ Status: coherent baseline captured and aligned with `AGENTS.md`, `working-loop.m
 
 Align existing protocols/Skills with the lifecycle and remove overlapping progression models.
 
-Status: top-level alignment complete enough for the next increment. `domain-change-protocol.md` is a focused re-entry helper; `decision-protocol.md` owns known/hypothesis/unknown/conflict semantics; `working-loop.md` owns execution/checkpoint/rollover mechanics; `plan-lifecycle.md` owns durable execution state; `agent-harness-design` routes lifecycle design work.
+Status: top-level alignment complete enough for real-use validation. `domain-change-protocol.md` is a focused re-entry helper; `decision-protocol.md` owns known/hypothesis/unknown/conflict semantics; `working-loop.md` owns execution/checkpoint/rollover mechanics; `plan-lifecycle.md` owns durable execution state; review/execution Skills now defer stage progression to the lifecycle protocols.
 
 ### H4 — Stage methodology design
 
-Design the internal methods/gates for Requirements, Strategic/Tactical Domain Design, Architecture and Implementation Readiness without inflating the always-loaded kernel.
+Design the minimum reusable methods/gates without inflating the always-loaded kernel.
 
-Status: started. Use Requirements as the first real test of the stage-methodology boundary. Add a dedicated protocol only because no existing requirements methodology owns this work; defer a new Skill until repeated judgement-heavy routing demonstrates one is needed.
+Status: initial pre-code chain captured:
+- `problem-evidence-stage.md` — S0/G0;
+- `requirements-stage.md` — S1/G1;
+- `domain-design-stage.md` — S2/G2 routing;
+- `strategic-ddd-convergence.md` — Strategic DDD convergence;
+- `tactical-ddd-stage.md` — Tactical DDD coherence;
+- `architecture-stage.md` — S3/G3;
+- `implementation-readiness-stage.md` — S4/G4.
+
+These remain hypotheses to validate through real changes. Existing mixed-level requirements/domain artifacts demonstrated that stage ownership must follow statement meaning rather than file location.
 
 ### H5 — Deterministic validation
 
-After the lifecycle/stage formats stabilize through real use, identify which invariants can be checked by `make harness-check`/knowledge validators rather than prose judgement.
+Automate only structural invariants that do not require semantic judgement.
 
-Status: not started by design. Existing validators remain authoritative for their current contracts; do not prematurely encode draft lifecycle fields as mandatory.
+Status: started. `tools/validate_harness.py` now checks lifecycle-protocol presence/discoverability and key Skill boundaries such as S3 review routing and G4-before-implementation. Do not automate semantic gate verdicts or require draft lifecycle metadata universally before repeated use proves the contract.
+
+### H6 — Real-change dry runs
+
+Exercise the lifecycle/context model against representative repository changes and refine only demonstrated gaps.
+
+Target cases:
+- raw/ambiguous need requiring S0 -> S1;
+- product behavior change requiring S1 -> S2;
+- Strategic DDD boundary/contract change;
+- Tactical-only invariant/identity change;
+- architecture-only change;
+- implementation-only change entering directly at S4;
+- lower-stage finding causing multi-stage `REOPEN` and dirty revalidation.
+
+Status: next active design increment.
 
 ## Blockers
 
-No external blocker. The main risk is turning every stage methodology into global startup context. New stage protocols must remain lazy-loaded and must not duplicate project truth.
+No external blocker. The primary risk is further rule growth without evidence. New protocols/Skills/validators should now be added only when a dry run demonstrates a concrete gap.
 
 ## Exit criteria
 
 - upper-level Change Lifecycle and Context Lifecycle are coherent and non-overlapping with existing process ownership;
+- S0-S4/G0-G4 responsibilities and reopen boundaries work on representative real changes;
 - startup/recovery requires only a minimal capsule plus current protocol/Skill/working set;
 - no material Harness state depends on conversation history;
-- the model defines how to stop rather than loop when evidence/decisions do not progress;
-- each major pre-code stage has a clear responsibility, method boundary and gate without duplicating canonical product truth;
-- applicable Harness checks are identified and executed when the current tool/runtime permits it;
-- deterministic validation additions are justified by stable repeated invariants rather than draft prose.
+- the model stops rather than loops when evidence/decisions do not progress;
+- deterministic validators enforce structural routing without pretending to decide semantic gates;
+- real-change dry runs reveal no unresolved P0/P1 Harness contradiction.
 
 ## Next
 
-Design the Requirements stage protocol as the first stage-methodology increment: define its inputs, responsibility, working loop, outputs, gate guarantees, reopen/block behavior and minimal context contract. Then challenge it against the top-level lifecycle before moving to Domain Design.
+Run representative real-change dry runs through the lifecycle, record only concrete Harness findings, and refine routing/context budgets/reopen semantics where the runs demonstrate a problem. Do not expand methodology speculatively.
