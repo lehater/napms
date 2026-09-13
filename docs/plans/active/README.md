@@ -13,8 +13,8 @@ Stage state: `GATE_FAILED`.
 ## Working set
 
 Read first:
-- `docs/plans/active/harness-change-lifecycle.md`;
-- `.github/workflows/harness.yml`.
+- `docs/plans/active/harness-change-lifecycle.md`
+- `.github/workflows/harness.yml`
 
 Expand only if needed:
 - `tools/validate_harness.py` and `tools/validate_plans.py` when diagnosing a deterministic failure;
@@ -30,13 +30,14 @@ Expand only if needed:
 - `tools/validate_harness.py` checks structural lifecycle routing/discoverability; `tools/validate_plans.py` checks resume locality/context budget. They do not decide semantic gate correctness.
 - `.github/workflows/harness.yml` exposes `workflow_dispatch` and runs `make harness-check`.
 - PR #101 exists only to exercise hosted CI for this branch; it must not be merged to `main` unless explicitly requested later.
-- Hosted Harness run 34756842433 executed `make harness-check`: `validate_harness.py` passed; `validate_plans.py` failed because the capsule `Current:` line contained descriptive text after the backticked plan filename, violating its exact syntax contract.
-- The concrete fix is to keep `Current:` as an exact pointer and move descriptive context elsewhere in the capsule.
+- Hosted Harness run 34756842433 executed `make harness-check`: `validate_harness.py` passed; `validate_plans.py` failed because the capsule `Current:` line contained descriptive text after the backticked plan filename.
+- Hosted Harness run 34756887237 progressed past `Current:` validation and failed because `Read first` bullets had trailing semicolons immediately after the backticked paths; the validator requires plain backticked repository-file bullets.
+- The concrete fix is to keep `Current:` as an exact pointer and `Read first` as plain path bullets; descriptive context belongs elsewhere in the capsule.
 - No product/domain/runtime code has been changed by this Harness workstream.
 
 ## Blockers
 
-No external blocker. The current deterministic gate failed on a concrete active-plan format defect that is being corrected in this branch.
+No external blocker. The current deterministic gate failed on concrete active-plan format defects that are being corrected in this branch.
 
 ## Gate
 
