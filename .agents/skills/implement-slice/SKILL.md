@@ -18,20 +18,21 @@ Use this Skill only after the applicable `S4 Implementation Readiness` / G4 gate
 
 1. Confirm G4 authorized the requested implementation scope and required checks are known.
 2. Confirm the requested behavior is already accepted at the required semantic level.
-3. If implementation would change behavior, identity, lifecycle, ownership or BC responsibility, stop lower-layer invention and `REOPEN(S1/S2)` through the lifecycle/domain-change workflow.
-4. If implementation exposes missing responsibility placement, data ownership, dependency direction or consistency architecture, `REOPEN(S3)` rather than improvising locally.
-5. Implement inside-out:
+3. If implementation would change product behavior/quality expectations, use `REOPEN(S1)` rather than deciding it locally.
+4. If implementation would change semantic identity, lifecycle, invariant, ownership or Bounded Context responsibility/contract, use `REOPEN(S2)` through the domain-change workflow.
+5. If implementation exposes missing responsibility placement, data ownership, dependency direction or consistency architecture, use `REOPEN(S3)` rather than improvising locally.
+6. Implement inside-out:
    ```text
    Domain -> Application + consuming Ports -> tests -> adapters only when active gate permits
    ```
-6. Preserve fail-closed behavior, identity invariants and explicit outcomes.
-7. Add/adjust tests before claiming behavior is complete.
-8. Run the relevant local checks (`make test` at minimum for core changes).
-9. Review dependency direction and claims-vs-evidence.
-10. Classify material findings P0-P3; do not close the slice with P0/P1 open.
+7. Preserve fail-closed behavior, identity invariants and explicit outcomes.
+8. Add/adjust tests before claiming behavior is complete.
+9. Run the relevant local checks (`make test` at minimum for core changes).
+10. Review dependency direction and claims-vs-evidence.
+11. Classify material findings P0-P3; do not close the slice with P0/P1 open.
 
 ## Guardrails
 
 No framework/DB/transport/config/logging/DI-container dependency in Domain. Infrastructure may not be introduced to compensate for unclear core semantics.
 
-Implementation evidence may invalidate an accepted upstream guarantee; when that happens, persist the finding and reopen the owning stage instead of patching around it.
+Implementation evidence may invalidate an accepted upstream guarantee; when that happens, persist the finding and reopen the single owning lifecycle stage instead of patching around it.
