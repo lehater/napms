@@ -40,6 +40,36 @@ Current runtime code and removed APR I18/I20/I21 documentation are migration evi
 - Peer-private persistence is not a cross-context integration contract.
 - Materialized worksets/indexes remain derived unless a future accepted lifecycle says otherwise.
 
+## Stakeholder evidence
+
+The following observations were harvested from stakeholder discussion on 2026-09-13. They are **non-authoritative source evidence**: useful input for APR-P01/P03/P05 and later Requirements/Domain work, but not accepted requirements or domain truth by themselves.
+
+Observed / normalized evidence:
+
+- A natural user-facing comparison result is scoped to a concrete firewall and a concrete access list, and explains what access is missing and what access is excess.
+- Users may ask for several materially different outcomes around the same realization data, including:
+  - the semantic difference for a specific firewall/access list;
+  - a correction for a specific firewall/access list;
+  - a check or correction for a specific source-destination pair, optionally constrained by service, on a specific firewall;
+  - an audit of a firewall/access list.
+- The semantic difference may be consumed without applying a change: for pair-access verification, audit/reporting, or preparation of recommended changes for another person.
+- A comparison result may be used as input to produce configuration that brings the access list into the required state.
+- "Implemented correctly" primarily means semantic correctness of effective behavior: everything that must be allowed is allowed, everything that must be denied is denied, and there is neither unintended access nor unintended blocking.
+- Semantic correctness and configuration optimality are distinct. A configuration may be semantically correct while still being structurally or operationally suboptimal.
+- Raw or structural rule comparison is insufficient where deny rules, ordering, nested groups/objects, default action, or similar constructs affect effective behavior; comparison must reason over normalized effective access semantics.
+
+Candidate interpretations to revisit only in their owning lifecycle stage:
+
+- possible use-case candidates: access-list realization audit, pair accessibility check, and preparation of remediation recommendations;
+- a possible multi-actor journey exists where one user obtains the difference and prepares recommended changes for another person; any review/approval step remains a hypothesis until supported by further evidence;
+- firewall + access-list scope is strong evidence for a user-facing result boundary, but does **not** by itself establish APR aggregate identity, persistence partitioning, or internal computational unit.
+
+Relevant open problems:
+
+- APR-P01: evidence favors firewall + access-list as a natural user result/correlation scope, while the canonical comparison key remains unresolved until S1/S2 acceptance.
+- APR-P03: evidence strongly supports effective semantic allow/deny equivalence rather than raw rule equality; exact technical-region semantics remain unresolved.
+- APR-P05: semantic delta has independent user value beyond remediation, and remediation/config generation is a separate downstream outcome; the concrete change-design vocabulary remains unresolved.
+
 ## Open problems
 
 Problem IDs are stable references only. They do not encode priority or sequence.
