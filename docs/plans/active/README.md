@@ -14,7 +14,6 @@ Stage state: `IN_PROGRESS`.
 
 Read first:
 - `docs/plans/active/harness-change-lifecycle.md`;
-- `.agents/skills/agent-harness-design/SKILL.md`;
 - `docs/process/plan-lifecycle.md`.
 
 Expand only if needed:
@@ -22,7 +21,7 @@ Expand only if needed:
 - the one stage protocol exercised by a concrete recovery test;
 - `docs/process/working-loop.md` when checking rollover/checkpoint execution;
 - `docs/process/README.md` when checking process discoverability;
-- `tools/validate_harness.py` when changing deterministic structural validation.
+- `tools/validate_harness.py` or `tools/validate_plans.py` when changing deterministic structural/context-budget validation.
 
 ## Recovery facts
 
@@ -37,7 +36,8 @@ Expand only if needed:
 - Repetition without changed evidence/model/problem/decision state is a no-progress blockage.
 - Stage protocols are lazy-loaded; the top-level lifecycle is a transition protocol, not permanent working context.
 - Stage protocols are roughly 4.6–9.5 KiB; `change-lifecycle.md` is ~14 KiB and should be loaded only for transitions/gates/reopen.
-- `tools/validate_harness.py` checks only structural routing/discoverability boundaries, not semantic gate correctness.
+- `Read first` must not repeat root/scoped `AGENTS.md` or the primary Skill already loaded by routing.
+- `tools/validate_harness.py` checks structural routing/discoverability boundaries; `tools/validate_plans.py` checks resume locality/context budget, not semantic gate correctness.
 - Dry runs corrected four P1 defects: ambiguous Strategic/Tactical `REOPEN`, missing Tactical revalidation after Strategic change, missing implementation-WIP suspension on upstream reopen, and an execution-path G4 bypass.
 - Direct S3, direct S4 and S0->S1 dry runs exposed no additional P1 routing defect.
 
@@ -55,4 +55,4 @@ Do not declare the Harness lifecycle stable until fresh-session recovery/context
 
 ## Next
 
-Recover the task using only root routing, this capsule, the Harness Skill and the minimal `Read first` set. Check whether any additional file is required before a concrete question demonstrates need; remove only demonstrated duplication or startup loading. Keep `make harness-check` explicitly pending until it can actually run.
+Recover the task using only root routing, this capsule, the primary Harness Skill selected by routing, and the minimal `Read first` set. Check whether any additional file is required before a concrete question demonstrates need; remove only demonstrated duplication or startup loading. Keep `make harness-check` explicitly pending until it can actually run.
