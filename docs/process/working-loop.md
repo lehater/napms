@@ -8,6 +8,9 @@ Use this protocol for branch execution, checkpoints, validation and context/sess
 active conversation
     = disposable execution context
 
+consequential stakeholder evidence
+    = durable source evidence when worth preserving, non-authoritative by itself
+
 docs/plans/active/README.md
     = durable resume state for the current task
 
@@ -19,6 +22,8 @@ main
 ```
 
 Agents/chats must not commit directly to `main`.
+
+Stakeholder evidence is preserved more aggressively than interpretations but loaded more conservatively than canonical truth. Normal startup must not preload historical evidence. Search/load only evidence relevant to the current problem, contradiction or synthesis task.
 
 ## Checkpoint triggers
 
@@ -32,7 +37,15 @@ Write a branch checkpoint when at least one is true:
 
 Do not checkpoint every wording/edit operation.
 
-At a checkpoint, harvest only consequential semantic results from the conversation before discarding temporary reasoning. Separate accepted truth from unresolved material discoveries. Preserve candidate journeys/use cases/capability or boundary clues only when losing them would harm later work, and route them to the smallest existing durable owner; do not persist conversation dumps, duplicate canonical truth or create a discovery artifact merely because an idea was mentioned.
+At a checkpoint, harvest the active discussion before discarding temporary reasoning:
+- accepted product/domain/architecture truth goes to its canonical owner;
+- consequential stakeholder evidence is preserved separately enough to be reinterpreted later;
+- unresolved material discoveries remain explicitly non-authoritative;
+- candidate journeys/use cases/capability or boundary clues are preserved only when losing them would harm later work.
+
+A stakeholder answer or example may contain evidence beyond the immediate question it resolved. Check for additional problem/goal/usage/workaround/risk/edge-case information before discarding the conversation. Do not persist conversation dumps, duplicated canonical truth or every incidental example.
+
+Route preserved evidence/discovery to the smallest existing durable owner. If a growing evidence set is repeatedly reused across workstreams or no existing owner can contain it without becoming a mixed archive, treat that as a signal to design a dedicated evidence owner deliberately; do not invent an ad-hoc repository path during ordinary checkpointing.
 
 ## Upstream reopen during implementation
 
@@ -66,11 +79,11 @@ A stage transition is a strong compaction point, not an automatic requirement to
 
 Before rollover:
 1. absorb durable product/domain/architecture decisions into their canonical artifacts;
-2. harvest consequential unresolved discoveries from the active discussion and persist only those that must survive, using the smallest correct owner rather than a generic discovery log;
-3. persist unresolved material problems in the smallest correct owner: current plan/capsule while active, a bounded-context problem register when parking context-local work, or another existing durable owner when justified;
+2. harvest consequential stakeholder evidence and unresolved discoveries from the active discussion; preserve compact source observations separately from their current interpretation when later reinterpretation may matter;
+3. persist only material unresolved problems/discoveries in the smallest correct owner: current plan/capsule while active, a bounded-context problem register when parking context-local work, or another existing durable owner when justified;
 4. update `docs/plans/active/README.md` with the current task, lifecycle stage/state when material, minimal working set, blockers, gate and next action;
 5. checkpoint coherent branch work when losing it would be costly;
-6. preserve evidence references needed to resume without preserving full evidence/tool dumps;
+6. preserve evidence references needed to resume or later synthesize without preserving full transcript/tool dumps;
 7. discard temporary reasoning, duplicated explanations, rejected exploration, non-consequential candidate ideas and task-local rules that no longer apply.
 
 A fresh session recovers in this order:
@@ -86,13 +99,13 @@ root AGENTS.md
 
 Read the full active plan only when planning/coordination/stage transition or missing material context requires it.
 
-Do not automatically reload the top-level change lifecycle or protocols from completed stages during ordinary work. The resume capsule should carry the resulting stage/gate state; transition protocols are loaded again when routing, gate evaluation, reopen/invalidation or ambiguity requires them.
+Do not automatically reload the top-level change lifecycle, protocols or historical evidence from completed stages during ordinary work. The resume capsule should carry the resulting stage/gate state; transition protocols and source evidence are loaded again only when routing, gate evaluation, reopen/invalidation, ambiguity or explicit synthesis requires them.
 
-When a parked context is deliberately resumed, canonical context truth comes first, then its context problem register; any roadmap is secondary and must be revalidated before its ordering is trusted.
+When a parked context is deliberately resumed, canonical context truth comes first, then its context problem register; any roadmap/evidence corpus is secondary and must be revalidated before its ordering or interpretation is trusted.
 
 ## Side chats and parallel work
 
-A second chat opened for analysis, research or review is read-only by default. Its useful result should be returned as findings or absorbed by the write owner into canonical state.
+A second chat opened for analysis, research or review is read-only by default. Its useful result should be returned as findings or absorbed by the write owner into canonical state/source evidence as appropriate.
 
 If two chats must write concurrently:
 - use separate branches/worktrees;
