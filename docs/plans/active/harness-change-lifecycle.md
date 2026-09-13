@@ -1,8 +1,6 @@
 # Harness change-lifecycle design
 
-## Status
-
-Active on branch `harness/change-lifecycle`. This workstream is intentionally isolated from `main` and is not authorized for merge there unless explicitly requested later.
+Status: `active`
 
 ## Goal
 
@@ -19,22 +17,6 @@ Design and evolve the repository Harness so a change can move from need/requirem
   - problem/unknown accumulation without invention;
   - no-progress protection;
   - minimal context loading and reliable rollover.
-
-## Current stage
-
-Harness meta-design: top-level lifecycle and context-management model.
-
-## Current gate
-
-The upper-level Harness model is coherent enough to begin designing individual stage methodologies only when:
-
-- one top-level lifecycle owns stage/gate progression;
-- gate outcomes and upstream reopen semantics are unambiguous;
-- blocked/unknown handling prevents invention;
-- repeated work has a no-progress stop condition;
-- context startup, lazy loading, durable promotion and rollover are explicit;
-- existing process protocols have non-overlapping ownership under that model;
-- a fresh session can recover this workstream without prior conversation history.
 
 ## Work packages
 
