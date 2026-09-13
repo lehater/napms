@@ -5,6 +5,7 @@ This directory contains the minimal reusable protocols used by repository agents
 Read only what the current task requires:
 
 - `change-lifecycle.md` — top-level stage/gate progression from need to implementation readiness, including reopen/block handling and minimal-context lifecycle. Load for routing/transitions/gate work, not every ordinary task.
+- `problem-evidence-stage.md` — S0 problem/evidence framing and G0. Load only when the trigger/problem is not yet sufficiently framed for Requirements.
 - `requirements-stage.md` — S1 Requirements methodology and G1 guarantees. Load only while requirements work or G1 evaluation is active.
 - `domain-design-stage.md` — S2 Domain Design routing and final G2 guarantees.
 - `strategic-ddd-convergence.md` — Strategic DDD convergence. Load only when context ownership/boundary/relationship is actually under question.
