@@ -24,7 +24,7 @@ Design and evolve the repository Harness so a change can move from need/requirem
 
 Define stages, gates, stage states, PASS/REWORK/REOPEN/BLOCKED, dirty propagation, problem handling and no-progress semantics.
 
-Status: coherent baseline captured in `docs/process/change-lifecycle.md`. `ACCEPTED` is upstream-relative; `REOPEN` invalidates only dependent downstream guarantees; no-progress and blocking semantics are explicit. Continue to change this kernel only when real stage use exposes a concrete defect.
+Status: coherent baseline captured in `docs/process/change-lifecycle.md`. `ACCEPTED` is upstream-relative; `REOPEN` invalidates only dependent downstream guarantees; no-progress and blocking semantics are explicit. Change this kernel only when real stage use exposes a concrete defect.
 
 ### H2 — Context lifecycle
 
@@ -36,7 +36,7 @@ Status: coherent baseline captured and aligned with `AGENTS.md`, `working-loop.m
 
 Align existing protocols/Skills with the lifecycle and remove overlapping progression models.
 
-Status: top-level alignment complete enough for real-use validation. `domain-change-protocol.md` is a focused re-entry helper; `decision-protocol.md` owns known/hypothesis/unknown/conflict semantics; `working-loop.md` owns execution/checkpoint/rollover mechanics; `plan-lifecycle.md` owns durable execution state; review/execution Skills now defer stage progression to the lifecycle protocols.
+Status: aligned. `domain-change-protocol.md` is a focused re-entry helper; `decision-protocol.md` owns known/hypothesis/unknown/conflict semantics; `working-loop.md` owns execution/checkpoint/rollover mechanics; `plan-lifecycle.md` owns durable execution state; review/execution Skills defer stage progression to the lifecycle protocols.
 
 ### H4 — Stage methodology design
 
@@ -51,32 +51,42 @@ Status: initial pre-code chain captured:
 - `architecture-stage.md` — S3/G3;
 - `implementation-readiness-stage.md` — S4/G4.
 
-These remain hypotheses to validate through real changes. Existing mixed-level requirements/domain artifacts demonstrated that stage ownership must follow statement meaning rather than file location.
+Stage ownership follows statement meaning rather than file location, so mixed-level legacy/current artifacts can be revalidated incrementally without mass documentation migration.
 
 ### H5 — Deterministic validation
 
 Automate only structural invariants that do not require semantic judgement.
 
-Status: started. `tools/validate_harness.py` now checks lifecycle-protocol presence/discoverability and key Skill boundaries such as S3 review routing and G4-before-implementation. Do not automate semantic gate verdicts or require draft lifecycle metadata universally before repeated use proves the contract.
+Status: started. `tools/validate_harness.py` checks lifecycle-protocol presence/discoverability and key Skill boundaries such as S3 review routing and G4-before-implementation. Semantic gate verdicts remain judgement work.
 
 ### H6 — Real-change dry runs
 
 Exercise the lifecycle/context model against representative repository changes and refine only demonstrated gaps.
 
-Target cases:
-- raw/ambiguous need requiring S0 -> S1;
-- product behavior change requiring S1 -> S2;
-- Strategic DDD boundary/contract change;
-- Tactical-only invariant/identity change;
-- architecture-only change;
-- implementation-only change entering directly at S4;
-- lower-stage finding causing multi-stage `REOPEN` and dirty revalidation.
+Status: representative dry runs completed far enough to remove known P1 routing defects. Findings corrected:
+- Strategic/Tactical switching inside S2 is an internal reroute, not top-level `REOPEN`;
+- Strategic boundary/contract changes force revalidation of dependent Tactical assumptions before G2;
+- upstream reopen during implementation suspends the affected slice and requires a fresh G4 before resumption;
+- `execute-work-package` cannot bypass S4/G4 to reach `implement-slice`;
+- a real `policy_export` peer-domain import case showed that S3 can distinguish a structural architecture leak from a missing semantic contract requiring `REOPEN(S2)`.
 
-Status: next active design increment.
+Direct S3, direct S4 and S0->S1 paths did not expose additional P1 routing defects: later-stage direct entry is valid only when the required upstream guarantees already exist and remain applicable.
+
+### H7 — Context-cost and recovery audit
+
+Validate that the lifecycle remains usable without context overload and that a fresh session can recover the next task from durable state.
+
+Status: active. Current process files are intentionally lazy-loaded. Stage protocols are roughly 4.6–9.5 KiB each; `change-lifecycle.md` is heavier (~14 KiB) and therefore must remain transition-only. Do not introduce a generic shared stage framework merely to deduplicate prose if doing so forces every stage to load another file.
+
+Audit next:
+- fresh-session recovery from root routing + capsule + one Skill;
+- whether `Read first` remains minimal after transition work;
+- duplicated rules that create conflicting ownership rather than harmless local self-containment;
+- whether any validator/file-size budget is justified by repeated evidence rather than arbitrary limits.
 
 ## Blockers
 
-No external blocker. The primary risk is further rule growth without evidence. New protocols/Skills/validators should now be added only when a dry run demonstrates a concrete gap.
+No semantic Harness blocker is known. Deterministic `make harness-check` execution is still pending because the current GitHub workflow has no `workflow_dispatch` and the current shell environment cannot obtain the branch through GitHub network resolution.
 
 ## Exit criteria
 
@@ -86,8 +96,10 @@ No external blocker. The primary risk is further rule growth without evidence. N
 - no material Harness state depends on conversation history;
 - the model stops rather than loops when evidence/decisions do not progress;
 - deterministic validators enforce structural routing without pretending to decide semantic gates;
-- real-change dry runs reveal no unresolved P0/P1 Harness contradiction.
+- real-change dry runs reveal no unresolved P0/P1 Harness contradiction;
+- context-cost/recovery audit reveals no unresolved P0/P1 progressive-disclosure defect;
+- deterministic Harness validation has actually executed before this workstream is declared complete.
 
 ## Next
 
-Run representative real-change dry runs through the lifecycle, record only concrete Harness findings, and refine routing/context budgets/reopen semantics where the runs demonstrate a problem. Do not expand methodology speculatively.
+Run a fresh-session recovery/context-cost audit using only the durable startup path. Remove only demonstrated duplication or excessive startup loading. Keep `make harness-check` explicitly pending until an execution surface is available.
