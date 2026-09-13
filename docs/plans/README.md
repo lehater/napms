@@ -4,13 +4,13 @@ Current non-trivial execution lives under `active/`.
 
 Completed/superseded plans are removed after their durable outcomes are absorbed into canonical repository truth. Git history is the plan history.
 
-Long-range ordered sequencing is canonicalized outside `active/` only when it remains valid current engineering truth.
+Unresolved bounded-context work that must survive a workstream switch lives primarily under `docs/engineering/context-problems/` and follows `docs/process/plan-lifecycle.md`. A context problem register records problems, gaps, real dependencies and blockers without making that context active and without asserting a total execution order.
 
-Bounded-context roadmaps that must survive workstream switches live under `docs/engineering/roadmaps/` and follow `docs/process/plan-lifecycle.md`. A parked context roadmap does not make that context active and does not justify keeping a `PLAN-*.md` under `active/`.
+Long-range ordered sequencing is canonicalized outside `active/` only when the order itself remains useful current engineering truth. Context roadmaps are optional and should not be created merely to list future work.
 
 Current active execution: `docs/plans/active/domain-erd-revalidation.md`.
 
-Context-roadmap registry: `docs/engineering/roadmaps/README.md`.
+Context-problem registry: `docs/engineering/context-problems/README.md`.
 
 Completed roadmap references that remain useful include:
 - `docs/engineering/target-code-structure-migration-roadmap.md` — completed M0-M7 migration to `backend/src/napms/{contexts,workflows,platform}` and final Web locality;
@@ -19,6 +19,6 @@ Completed roadmap references that remain useful include:
 - `docs/engineering/catalogue-curation-roadmap.md` — completed I27 Catalogue Curation;
 - `docs/engineering/traffic-analysis-checker-roadmap.md` — I26.
 
-Obsolete APR design history is not retained. The current APR semantic framing is `docs/domain/access-policy-realization/README.md`; its parked future sequence is `docs/engineering/roadmaps/access-policy-realization.md`.
+Obsolete APR design history is not retained. The current APR semantic framing is `docs/domain/access-policy-realization/README.md`; its unresolved work is parked in `docs/engineering/context-problems/access-policy-realization.md`.
 
 Only a selected current increment receives a detailed `PLAN-*.md` under `active/`.
