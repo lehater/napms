@@ -51,11 +51,12 @@ Those belong to later stages after G0.
 3. **Collect the smallest decisive evidence.** Do not scan the repository broadly if the problem can already be framed.
 4. **Separate epistemic states.** Use `decision-protocol.md` for known/hypothesis/unknown/conflict.
 5. **State the desired outcome.** Express why the change matters, not how the system should implement it.
-6. **Identify material constraints/non-goals.** Preserve externally fixed constraints; do not invent internal ones.
-7. **Resolve obvious evidence conflicts.** Prefer canonical truth or explicit owner evidence; keep unresolved conflicts visible.
-8. **Classify blocking questions.** Ask/escalate only questions required to move honestly into Requirements; defer unrelated curiosity.
-9. **Update the smallest durable problem owner** (active plan/problem register/issue-like artifact as appropriate) only when the problem must survive the conversation.
-10. **Evaluate G0.**
+6. **Capture consequential usage evidence.** When stakeholder discussion reveals a materially distinct actor/consumer goal, journey or possible use of an outcome, preserve only enough of it to avoid losing later Requirements work. Keep it candidate/non-authoritative unless its owning stage accepts it; do not expand every mention into a full journey map or requirement set.
+7. **Identify material constraints/non-goals.** Preserve externally fixed constraints; do not invent internal ones.
+8. **Resolve obvious evidence conflicts.** Prefer canonical truth or explicit owner evidence; keep unresolved conflicts visible.
+9. **Classify blocking questions.** Ask/escalate only questions required to move honestly into Requirements; defer unrelated curiosity.
+10. **Update the smallest durable problem owner** (active plan/problem register/issue-like artifact as appropriate) only when the problem or consequential discovery must survive the conversation. Do not create a new discovery artifact when an existing owner is sufficient.
+11. **Evaluate G0.**
 
 ## G0 — Problem understood
 
@@ -69,7 +70,7 @@ Those belong to later stages after G0.
 - no unresolved P0/P1 contradiction prevents knowing what problem is being solved;
 - remaining unknowns are either requirements questions or explicitly non-blocking.
 
-G0 does **not** require knowing the final behavior, domain model or architecture.
+G0 does **not** require knowing the final behavior, complete journey/use-case inventory, domain model or architecture. Material usage discoveries already surfaced in the active discussion should not be silently lost merely because they are not needed to pass G0.
 
 ### G0 outcomes
 
