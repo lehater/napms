@@ -6,6 +6,10 @@ Goal: define a coherent stage/gate change lifecycle from need to implementation 
 
 Current task: challenge and refine the upper-level lifecycle/context model before designing detailed per-stage methodologies.
 
+Lifecycle stage: Harness meta-design / lifecycle-kernel validation.
+
+Stage state: `IN_PROGRESS`.
+
 ## Working set
 
 Read first:
@@ -26,10 +30,11 @@ Expand only if needed:
 - `docs/process/change-lifecycle.md` is the current top-level progression model; treat it as a draft to challenge, not as unquestionable truth.
 - The model separates Change Lifecycle from Context Lifecycle while keeping them coordinated.
 - Gate outcomes are `PASS`, `REWORK`, `REOPEN(stage)` and `BLOCKED`.
-- Earlier-stage changes mark dependent downstream stages `DIRTY` until revalidated.
+- `ACCEPTED` is relative to the upstream guarantees used when the gate passed; changed dependent guarantees make downstream stages `DIRTY` until revalidated.
 - Missing upstream truth must become an explicit problem/unknown; lower layers must not invent it.
 - Repetition without changed evidence/model/problem/decision state is a no-progress blockage, not permission to loop.
-- Context loading is progressive: kernel/routing -> current stage protocol -> primary Skill -> minimal working set -> lazy evidence.
+- The top-level lifecycle is a transition protocol, not a rule set to preload into every ordinary task context.
+- Context loading is progressive: repository routing/capsule -> scoped instructions -> primary Skill -> minimal working set -> transition protocol/evidence only when needed.
 - Durable accepted truth, open problems and current execution state must be promoted out of conversation history before rollover.
 - Detailed Requirements/DDD/Architecture/Implementation-Readiness methodologies are intentionally deferred until the upper-level model is coherent.
 
@@ -43,4 +48,4 @@ Do not proceed to detailed per-stage methodology until the top-level lifecycle h
 
 ## Next
 
-Review the lifecycle as a state-transition model, find contradictions or missing transitions, then make only the smallest alignment changes needed in `AGENTS.md`, `working-loop.md` and `plan-lifecycle.md` before expanding the methodology.
+Complete a transition-table review of `PASS` / `REWORK` / `REOPEN` / `BLOCKED`, then decide whether the lifecycle kernel is coherent enough to move into the first stage methodology without adding more global rules.
