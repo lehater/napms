@@ -8,7 +8,7 @@ Legacy/reconstruction evidence lives outside this repository and does not define
 
 ## Progressive startup
 
-Do not preload the whole repository. Conversation history is execution history, not project state.
+Do not preload the whole repository. Conversation history is execution history, not project state. Consequential stakeholder evidence that must survive a conversation is harvested at existing checkpoints into the smallest correct durable owner; it remains non-authoritative until accepted by its owning lifecycle stage.
 
 For non-trivial work read, in order:
 1. this file;
