@@ -73,6 +73,8 @@ If the first is accepted and the second is only proposed, write only the first i
 
 Journeys and use cases are discovery views over product intent, not automatic requirements or architecture boundaries. When discussion exposes several independently useful outcomes, distinguish the candidate use cases before flattening them into requirements. One use case may participate in several journeys, and one use case may later require several capabilities; none of those facts by itself creates a Bounded Context.
 
+Stakeholder answers and examples are reusable evidence, not merely responses to the immediate question that elicited them. A concrete example may simultaneously clarify an accepted behavior, reveal a separate usage outcome, expose an edge case or remain useful source evidence for later re-interpretation. Keep those roles separate rather than forcing the example into one requirement.
+
 ## Working loop
 
 For the behavior under change:
@@ -80,17 +82,18 @@ For the behavior under change:
 1. **State the requirement boundary.** Identify actor/initiator, trigger or starting condition, intended outcome and affected requirement family.
 2. **Separate materially distinct use cases when needed.** If the discussion contains independently useful outcomes, identify only the smallest set needed to avoid merging different product goals. Keep candidate/deferred uses non-authoritative until accepted; do not build an exhaustive journey map unless the current decision requires it.
 3. **Classify every material statement.** Apply both axes from `decision-protocol.md`: semantic owner/stage and decision status/obligation. Do this before turning conversation wording into canonical requirements.
-4. **Separate fact from assumption.** Mark material statements as accepted/known, constraint, proposal, hypothesis, unknown or conflict.
-5. **Express observable behavior.** Describe what must be true from the relevant actor/system boundary, not how code achieves it.
-6. **Split behavior from realization.** When one discussion statement contains both, preserve the observable constraint in S1 and route architecture/implementation detail to S3/S4 unless the concrete representation is itself an accepted external contract.
-7. **Cover material alternatives.** Add failure, denial, absence, unknown, timeout, concurrency, cancellation or partial-state behavior only when it changes the product contract.
-8. **State quality constraints.** Capture performance, security, audit/provenance, temporal, consistency or availability expectations only where they constrain downstream design.
-9. **Check semantic leakage.** Remove architecture/implementation choices masquerading as requirements. Preserve external compatibility constraints when genuinely required.
-10. **Check internal coherence.** Look for contradictory outcomes, undefined authority/scope, impossible combinations, ambiguous terms and requirements that cannot be observed or verified.
-11. **Resolve or route unknowns.** Resolve from canonical evidence; ask/escalate blocking product choices; register non-blocking deferred questions instead of inventing answers.
-12. **Preserve consequential deferred usage discoveries.** Candidate journeys/use cases/capability clues that are not accepted S1 behavior belong only in the smallest existing durable owner (for example the active problem/capsule or a parked context problem register) when losing them would harm later work. Do not use `docs/requirements/` as memory storage.
-13. **Update the owning requirement artifact first.** Do not make the active plan or conversation the durable owner of accepted behavior.
-14. **Evaluate G1.** Rework only the affected behavior delta. If G1 exposes an upstream problem-definition/evidence gap, `REOPEN(S0)`.
+4. **Separate source evidence from interpretation.** When a stakeholder answer/example resolves the current question but also reveals other consequential problems, usage context, workarounds, risks, edge cases or goals, preserve those observations independently enough to reinterpret later; do not treat the requirement wording as a substitute for the original evidence.
+5. **Separate fact from assumption.** Mark material statements as accepted/known, constraint, proposal, hypothesis, unknown or conflict.
+6. **Express observable behavior.** Describe what must be true from the relevant actor/system boundary, not how code achieves it.
+7. **Split behavior from realization.** When one discussion statement contains both, preserve the observable constraint in S1 and route architecture/implementation detail to S3/S4 unless the concrete representation is itself an accepted external contract.
+8. **Cover material alternatives.** Add failure, denial, absence, unknown, timeout, concurrency, cancellation or partial-state behavior only when it changes the product contract.
+9. **State quality constraints.** Capture performance, security, audit/provenance, temporal, consistency or availability expectations only where they constrain downstream design.
+10. **Check semantic leakage.** Remove architecture/implementation choices masquerading as requirements. Preserve external compatibility constraints when genuinely required.
+11. **Check internal coherence.** Look for contradictory outcomes, undefined authority/scope, impossible combinations, ambiguous terms and requirements that cannot be observed or verified.
+12. **Resolve or route unknowns.** Resolve from canonical evidence; ask/escalate blocking product choices; register non-blocking deferred questions instead of inventing answers.
+13. **Preserve consequential deferred evidence/discovery.** Stakeholder evidence plus candidate journeys/use cases/capability clues that are not accepted S1 behavior belong only in the smallest existing durable owner (for example the active problem/capsule or a parked context problem register) when losing them would harm later work. Do not use `docs/requirements/` as memory storage.
+14. **Update the owning requirement artifact first.** Do not make the active plan or conversation the durable owner of accepted behavior.
+15. **Evaluate G1.** Rework only the affected behavior delta. If G1 exposes an upstream problem-definition/evidence gap, `REOPEN(S0)`.
 
 ## Existing mixed-level artifacts
 
@@ -132,7 +135,7 @@ S1 produces only the durable outputs needed by downstream work:
 - explicit open problems/deferrals with owner and revisit trigger;
 - concise lifecycle/capsule state needed to resume or transition.
 
-Later-stage proposals and candidate journeys/use cases/capability clues discovered while discussing requirements may be preserved only in their correct owner/problem register when they are consequential enough to survive; do not copy them into requirements merely as memory storage and do not create a permanent discovery report by default.
+Later-stage proposals, stakeholder evidence and candidate journeys/use cases/capability clues discovered while discussing requirements may be preserved only in their correct owner/problem register when they are consequential enough to survive; do not copy them into requirements merely as memory storage and do not create a permanent discovery/evidence report by default.
 
 Do not create a separate requirements packet merely to mirror the stage if an existing requirement family is the correct owner.
 
@@ -148,7 +151,7 @@ Do not create a separate requirements packet merely to mirror the stage if an ex
 - no downstream product decision is being hidden as an unspecified implementation choice;
 - no architecture/implementation proposal has been promoted into S1 merely because it was explicit, concrete or convenient;
 - lower-level design choices found in mixed artifacts are not being mistaken for S1 guarantees without revalidation;
-- materially distinct usage outcomes surfaced in the active S1 discussion are either represented by accepted behavior, explicitly deferred/routed, or deliberately discarded as non-consequential rather than silently merged or lost;
+- materially distinct usage outcomes and reusable stakeholder evidence surfaced in the active S1 discussion are either represented by accepted behavior, explicitly preserved/routed, or deliberately discarded as non-consequential rather than silently merged or lost;
 - remaining unknowns are explicitly classified as non-blocking for G1 with a known later owner/revisit trigger.
 
 A document existing, examples existing, or tests currently passing do not by themselves constitute G1 PASS.
@@ -176,20 +179,20 @@ root AGENTS.md
 -> evidence/domain constraints only on demonstrated need
 ```
 
-Do not preload all requirement families, DDD documentation, architecture or code. Do not preload all known journeys/use cases merely because discovery evidence exists; load only those needed by the current behavior question.
+Do not preload all requirement families, DDD documentation, architecture, code or historical stakeholder evidence. Do not preload all known journeys/use cases merely because discovery evidence exists; search/load only what the current behavior question requires.
 
 When G1 passes or S1 becomes blocked/parked:
 
 - promote accepted behavior to `docs/requirements/`;
-- persist unresolved material questions and consequential deferred usage discoveries in the smallest correct current planning/problem owner;
+- persist unresolved material questions plus consequential stakeholder evidence/deferred usage discoveries in the smallest correct current planning/problem owner;
 - update lifecycle stage/state/gate/next action in the resume capsule;
-- discard exploration and evidence already compressed into accepted requirements;
+- discard temporary reasoning and duplicated explanation while retaining source-evidence references that may be needed for later reinterpretation;
 - prefer session rollover when moving into Domain Design if the Requirements conversation has accumulated substantial task-specific context.
 
 ## Relationship to other protocols
 
 - `change-lifecycle.md` owns entry, gate transition, `REOPEN`, dirty propagation and no-progress semantics.
-- `decision-protocol.md` owns semantic-level plus decision-status classification and unknown/conflict handling.
+- `decision-protocol.md` owns semantic-level plus decision-status classification, stakeholder-evidence separation and unknown/conflict handling.
 - `domain-change-protocol.md` may route later findings back into S1 but does not define requirements quality.
 - `plan-lifecycle.md` owns durable current execution/problem parking state.
 - `working-loop.md` owns checkpoint/rollover/validation execution mechanics.
