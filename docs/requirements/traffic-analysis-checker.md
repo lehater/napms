@@ -23,17 +23,19 @@ Checker shall accept:
 
 The first UI may use exact host addresses while the read contract remains extensible to CIDR/range predicates.
 
-## REQ-CHK-002 — Resolve technical identities to domain context
+## REQ-CHK-002 — Attribute technical identities to domain context
 
-Checker shall resolve the queried technical endpoints, when supported by current catalogue facts, to the corresponding Endpoint, Resource and application/component context.
+Checker shall resolve or attribute the queried technical endpoints, when supported by current catalogue facts, to the corresponding Endpoint, Resource and application/component context.
 
-Resolution shall distinguish at least:
-- resolved;
+The composed result shall distinguish at least:
+- resolved/attributed;
 - ambiguous;
 - unknown;
 - historical/not-current.
 
 Ambiguity or missing mapping shall not be converted into an authorization claim.
+
+This requirement is a Checker explanation need. It does not define the target APR technical-policy equality or reconciliation model.
 
 ## REQ-CHK-003 — Present the governance/policy chain without collapsing owners
 
@@ -49,6 +51,8 @@ The product shall not claim that the candidates form a proven forwarding path, s
 
 The candidate set may be incomplete and may contain false positives. Where source semantics permit, Checker shall expose relevance/quality, provenance, ambiguity and knowledge-gap information rather than hide uncertainty.
 
+These presentation semantics belong to Checker/Network Context and must not be copied into APR target-policy reconciliation semantics.
+
 ## REQ-CHK-005 — Show technical rule evidence per network candidate
 
 For each relevant enforcement/network candidate, Checker shall present technical access entries from stored Technical Access Evidence that match or overlap the query.
@@ -57,7 +61,7 @@ Checker shall not synchronously query live firewalls or devices to obtain rule l
 
 ## REQ-CHK-006 — Evidence is snapshot-based and explicitly dated
 
-Configured technical rules shown by Checker shall come from the latest applicable stored evidence snapshot available for the requested `asOf`.
+Configured technical rules shown by Checker shall come from an applicable stored evidence snapshot selected according to the Checker evidence-source contract for the requested `asOf`.
 
 The result shall expose, when available:
 - evidence/snapshot reference;
@@ -67,7 +71,7 @@ The result shall expose, when available:
 - provenance;
 - source completeness/knowledge limitations.
 
-The UI shall present such rules as last-known evidence, not as a guaranteed live device state.
+The UI shall present such rules as stored evidence, not as a guaranteed live device state.
 
 ## REQ-CHK-007 — Traffic matching supports containment and overlap
 
@@ -76,6 +80,8 @@ Rule/evidence matching shall not require literal tuple equality.
 The backend shall provide deterministic matching semantics sufficient to distinguish exact coverage, broader/narrower containment, partial overlap, no match and unknown/ambiguous cases across supported address/protocol/port predicates.
 
 The Web UI shall consume this semantic result rather than reimplement packet-set algebra independently.
+
+This local Checker matching requirement does not establish a canonical APR Tactical DDD model; APR effective-policy semantics are designed separately.
 
 ## REQ-CHK-008 — Present operational ownership/contact context
 
@@ -118,8 +124,8 @@ The UI shall be implementable first against deterministic fixtures/stubs so that
 ## REQ-CHK-012 — Required first-slice states
 
 The first implementation shall exercise, at minimum:
-- fully resolved traffic with matching policy and evidence;
-- ambiguous or unknown technical-to-domain resolution;
+- traffic with attributable domain/policy context and matching evidence;
+- ambiguous or unknown technical attribution;
 - multiple relevant network candidates;
 - candidate with weak/possible relevance;
 - matching configured evidence with explicit snapshot time;
@@ -138,4 +144,5 @@ The Checker requirement does not require:
 - automatic remediation;
 - hard-coded user job-title roles;
 - automatic freshness trust decisions without an accepted freshness policy;
-- a new Checker bounded context or independent persistence of composed truth.
+- a new Checker bounded context or independent persistence of composed truth;
+- adoption of any superseded APR resolution/reconciliation vocabulary as current APR target semantics.
