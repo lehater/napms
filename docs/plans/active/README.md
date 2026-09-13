@@ -32,20 +32,26 @@ Expand only if needed:
 - A Strategic ownership/boundary/contract change requires revalidation of only dependent Tactical assumptions before G2.
 - `REOPEN(stage)` targets one top-level owner stage; dependent downstream acceptances become dirty and must be revalidated.
 - If implementation triggers an upstream reopen, stop the affected slice, preserve WIP only as recoverable branch state, and do not resume until G4 is revalidated.
+- `execute-work-package` must not route into `implement-slice` before applicable S4/G4 authorization.
 - Missing upstream truth becomes an explicit problem/unknown; lower layers must not invent it.
 - Repetition without changed evidence/model/problem/decision state is a no-progress blockage.
 - Stage protocols are lazy-loaded; the top-level lifecycle is a transition protocol, not permanent working context.
 - `tools/validate_harness.py` checks only structural routing/discoverability boundaries, not semantic gate correctness.
-- Dry runs so far found and corrected ambiguous internal S2 reopen semantics and implementation-WIP behavior on upstream reopen.
+- Dry runs found and corrected: ambiguous Strategic/Tactical `REOPEN`, missing Tactical revalidation after Strategic change, missing implementation-WIP suspension on upstream reopen, and an execution-path G4 bypass.
+- A real `policy_export` peer-domain import dry run confirmed S3 can distinguish a pure architecture leak from a missing semantic contract that requires `REOPEN(S2)`.
 
 ## Blockers
 
-No external blocker. `make harness-check` is not executable through the current GitHub connector because the harness workflow has no `workflow_dispatch`; do not claim the deterministic gate passed without an execution surface.
+No semantic Harness blocker is known. The deterministic `make harness-check` gate is still pending because:
+- `.github/workflows/harness.yml` has no `workflow_dispatch`, so the current GitHub connector cannot start an intermediate run;
+- the current shell runtime cannot resolve `github.com`, so a temporary branch checkout for local `make harness-check` failed before repository execution.
+
+Do not claim the deterministic gate passed until an execution surface becomes available.
 
 ## Gate
 
-Do not declare the Harness lifecycle stable until representative dry runs cover direct-entry and reopen paths without unresolved P0/P1 routing/context defects. Do not add new global rules merely for completeness.
+Do not declare the Harness lifecycle stable until representative dry runs cover direct-entry and reopen paths without unresolved P0/P1 routing/context defects and the deterministic Harness validation has actually executed. Do not add new global rules merely for completeness.
 
 ## Next
 
-Continue dry runs for direct S3, direct S4, S0->S1 and multi-stage reopen cases; capture only demonstrated Harness defects, then review the accumulated branch diff and deterministic validation surface.
+Continue the remaining direct-entry/S0 dry runs, then review the accumulated branch diff for duplication/context cost. Execute `make harness-check` when an execution surface is available; otherwise keep the deterministic gate explicitly pending.
