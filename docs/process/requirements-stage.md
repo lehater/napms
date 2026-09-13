@@ -46,9 +46,10 @@ S1 must not decide merely to unblock later work:
 - aggregate/entity/value-object structure;
 - internal domain identity implementation;
 - ports/adapters/service boundaries;
-- database schema;
+- database schema or persistence projection shape;
 - API shape unless the API itself is an accepted external product contract;
-- framework/deployment/infrastructure choice.
+- framework/deployment/infrastructure choice;
+- algorithm/database execution strategy unless it is itself an externally required quality constraint.
 
 If such a decision is actually required product truth, state the observable constraint rather than the implementation mechanism.
 
@@ -66,6 +67,20 @@ For the behavior under change:
 8. **Resolve or route unknowns.** Resolve from canonical evidence; ask/escalate blocking product choices; register non-blocking deferred questions instead of inventing answers.
 9. **Update the owning requirement artifact first.** Do not make the active plan or conversation the durable owner of accepted behavior.
 10. **Evaluate G1.** Rework only the affected behavior delta. If G1 exposes an upstream problem-definition/evidence gap, `REOPEN(S0)`.
+
+## Existing mixed-level artifacts
+
+The lifecycle classifies statements by semantic ownership, not entire files by filename.
+
+Existing requirement files may contain historical domain or architecture/implementation decisions mixed with product behavior. When such a file is touched:
+
+1. classify only the statements material to the current change;
+2. preserve accepted behavior needed by S1;
+3. treat lower-level design statements as constraints/evidence for their owning later stage, not automatically as G1 guarantees;
+4. move or restate them in the correct canonical owner when the current change actually requires revalidation;
+5. do not start a repository-wide documentation migration merely to make old files structurally pure.
+
+A later-stage choice that has become an intentional product contract may remain represented as a requirement only if its externally observable constraint is explicit. The implementation mechanism itself should still live with its proper owner.
 
 ## Requirement quality checks
 
@@ -103,6 +118,7 @@ Do not create a separate requirements packet merely to mirror the stage if an ex
 - material temporal/quality/security constraints are explicit where they constrain the model;
 - accepted requirements do not contain unresolved P0/P1 contradictions for this scope;
 - no downstream product decision is being hidden as an unspecified implementation choice;
+- lower-level design choices found in mixed artifacts are not being mistaken for S1 guarantees without revalidation;
 - remaining unknowns are explicitly classified as non-blocking for G1 with a known later owner/revisit trigger.
 
 A document existing, examples existing, or tests currently passing do not by themselves constitute G1 PASS.
