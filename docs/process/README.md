@@ -6,6 +6,9 @@ Read only what the current task requires:
 
 - `change-lifecycle.md` — top-level stage/gate progression from need to implementation readiness, including reopen/block handling and minimal-context lifecycle. Load for routing/transitions/gate work, not every ordinary task.
 - `requirements-stage.md` — S1 Requirements methodology and G1 guarantees. Load only while requirements work or G1 evaluation is active.
+- `domain-design-stage.md` — S2 Domain Design routing and final G2 guarantees.
+- `strategic-ddd-convergence.md` — Strategic DDD convergence. Load only when context ownership/boundary/relationship is actually under question.
+- `tactical-ddd-stage.md` — Tactical DDD identity/lifecycle/invariant methodology. Load only for tactical work inside an accepted context boundary.
 - `working-loop.md` — branch/checkpoint/squash semantics for evolving work.
 - `decision-protocol.md` — no-invention and unknown-resolution rules.
 - `domain-change-protocol.md` — focused domain re-entry guidance when implementation findings may change accepted semantics.
