@@ -7,6 +7,6 @@ Read only what the current task requires:
 - `working-loop.md` — branch/checkpoint/squash semantics for evolving work.
 - `decision-protocol.md` — no-invention and unknown-resolution rules.
 - `domain-change-protocol.md` — how implementation findings re-enter requirements/DDD/architecture.
-- `plan-lifecycle.md` — how current execution state is persisted/resumed and how bounded-context roadmaps are parked/resumed without making them active work.
+- `plan-lifecycle.md` — how current execution state is persisted/resumed, how unresolved bounded-context problems are parked, and when an ordered roadmap is justified.
 
 Project truth belongs in the domain/requirements/architecture/engineering areas, not here.
