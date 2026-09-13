@@ -111,6 +111,17 @@ def _validate_read_first(paths: list[str]) -> list[str]:
             errors.append(f"Read first path must be repository-relative: {value}")
             continue
 
+        if relative.name == "AGENTS.md" or (
+            len(relative.parts) >= 3
+            and relative.parts[0] == ".agents"
+            and relative.parts[1] == "skills"
+            and relative.name == "SKILL.md"
+        ):
+            errors.append(
+                "Read first must not duplicate routed AGENTS/Skill content: "
+                + value
+            )
+
         candidate = (ROOT / relative).resolve()
         if candidate != root and root not in candidate.parents:
             errors.append(f"Read first path escapes repository root: {value}")
