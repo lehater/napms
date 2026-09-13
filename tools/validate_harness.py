@@ -21,6 +21,15 @@ REQUIRED_SKILLS = {
     "agent-harness-design",
     "skill-design",
 }
+LIFECYCLE_PROTOCOLS = (
+    "change-lifecycle.md",
+    "requirements-stage.md",
+    "domain-design-stage.md",
+    "strategic-ddd-convergence.md",
+    "tactical-ddd-stage.md",
+    "architecture-stage.md",
+    "implementation-readiness-stage.md",
+)
 
 
 def parse_skill(path: Path) -> tuple[str, str]:
@@ -84,6 +93,7 @@ def main() -> int:
         ROOT / "backend" / "tests" / "evals" / "skill-routing-cases.json",
         ROOT / ".github" / "workflows" / "harness.yml",
     ]
+    required.extend(ROOT / "docs" / "process" / name for name in LIFECYCLE_PROTOCOLS)
     for path in required:
         if not path.is_file():
             errors.append(
@@ -96,6 +106,7 @@ def main() -> int:
         for marker in [
             ".agents/skills/",
             "docs/plans/active/README.md",
+            "docs/process/change-lifecycle.md",
             "Read the full current",
             "PLAN-*.md",
             "non-authoritative recovery cache",
@@ -127,6 +138,19 @@ def main() -> int:
         if len(text.encode("utf-8")) > 12 * 1024:
             errors.append("AGENTS.md exceeds 12 KiB; keep it map-like")
 
+    process_index = ROOT / "docs" / "process" / "README.md"
+    if process_index.is_file():
+        text = process_index.read_text(encoding="utf-8-sig")
+        for protocol in LIFECYCLE_PROTOCOLS:
+            if f"`{protocol}`" not in text:
+                errors.append(
+                    f"docs/process/README.md missing lifecycle protocol route: {protocol}"
+                )
+        if "Do not preload all protocols" not in text:
+            errors.append(
+                "docs/process/README.md must preserve progressive-disclosure routing"
+            )
+
     working_loop = ROOT / "docs" / "process" / "working-loop.md"
     if working_loop.is_file():
         text = working_loop.read_text(encoding="utf-8-sig")
@@ -157,6 +181,32 @@ def main() -> int:
             if marker not in text:
                 errors.append(
                     f"execute-work-package missing recovery marker: {marker}"
+                )
+
+    implement_slice = SKILLS / "implement-slice" / "SKILL.md"
+    if implement_slice.is_file():
+        text = implement_slice.read_text(encoding="utf-8-sig")
+        for marker in [
+            "S4 Implementation Readiness",
+            "G4",
+            "REOPEN(S3)",
+        ]:
+            if marker not in text:
+                errors.append(
+                    f"implement-slice missing lifecycle boundary marker: {marker}"
+                )
+
+    architecture_review = SKILLS / "architecture-review" / "SKILL.md"
+    if architecture_review.is_file():
+        text = architecture_review.read_text(encoding="utf-8-sig")
+        for marker in [
+            "docs/process/architecture-stage.md",
+            "G3",
+            "REOPEN(S1/S2)",
+        ]:
+            if marker not in text:
+                errors.append(
+                    f"architecture-review missing S3 routing marker: {marker}"
                 )
 
     skill_paths = sorted(SKILLS.glob("*/SKILL.md")) if SKILLS.is_dir() else []
