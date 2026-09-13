@@ -345,111 +345,74 @@ Technical access-list evidence obtained from a file/external source.
 
 ## Access Policy Realization
 
-### Technical Access Predicate
-The technical communication/access region described by source/destination ranges and protocol/service constraints.
+The canonical current APR framing is `docs/domain/access-policy-realization/README.md`.
 
-### Domain Access Resolution
-Canonical interpretation of one Technical Access Predicate in the application/resource domain.
+### Policy Target Reference
+Opaque reference to the technical policy target supplied to APR by an upstream contract.
 
-Contains:
+APR uses the reference to correlate required/configured policy work. It does not reinterpret why the target was selected.
 
-- exact/covered Domain Interactions;
-- partial overlap relations;
-- unresolved technical remainder;
-- ambiguity/unknown;
-- effective-time/provenance facts.
+### Target Required Policy
+Target-specific statement of the effective technical access semantics that are required to exist for one comparison scope/snapshot.
 
-### Domain Interaction
-A resolved concrete domain interaction identified by Source Component Deployment + Destination Component Deployment + matching DCS. It is not automatically an Access Rule.
+It carries an opaque target reference, required-policy reference or effective access projection, comparison/snapshot information and provenance.
 
-### Access Correspondence
-Exact relation between one technical region fragment and one Domain Interaction technical region fragment:
+### Configured Policy Snapshot
+Target-specific configured policy input used for comparison.
 
-```text
-Exact
-Covers
-CoveredBy
-PartialOverlap
-None
-```
+For a complete APR conclusion it must represent a trustworthy effective configured-policy view for the same target/comparison scope and carry explicit snapshot/evidence and completeness semantics.
 
-### Resolution Status
-Overall Domain Access Resolution classification:
+### Technical Region
+One region of source-neutral technical access space across dimensions such as:
 
 ```text
-Exact
-Covered
-Partial
-Ambiguous
-Unresolved
-Unknown
+source address space
+x destination address space
+x protocol
+x source port space
+x destination port space
 ```
 
-`Ambiguous` means one technical overlap maps to more than one distinct Domain Interaction and no winner is selected. `Unknown` means predicate-relevant RC/ACC knowledge or accepted technical algebra is insufficient for a complete conclusion.
+### Effective Technical Access Space
+The effective set/union of Technical Regions represented by a policy for a supplied target/comparison scope.
 
-### Unresolved Technical Remainder
-Canonical technical region not resolved by known Domain Interaction overlap. With complete supported knowledge it is the exact set difference between the input predicate and all overlap witnesses. Under `Unknown`, remainder completeness is not claimed.
+Policy equality is equality of effective behavior, not equality of rule text, rule count, provider-native identity or object decomposition.
 
-### Business-Optimal Enforcement Policy
-The enforcement-policy semantics that the domain considers correct/preferred for relevant enforcement points.
+### Realization Assessment
+Derived summary describing how completely configured effective access realizes required effective access for a trustworthy comparable target/scope.
 
-For the first I20 slice, “optimal” means exact business-correct technical coverage with no silent broadening/narrowing plus canonical union/deduplication. It does not claim globally minimum rule count, vendor-object efficiency or execution ordering.
+The exact status vocabulary is not yet locked; likely distinctions include exact realization, missing required access, excessive configured access, both kinds of difference, and insufficient knowledge.
 
-### Enforcement Target
-I20 target at which desired/configured enforcement semantics are compared:
+### Semantic Delta
+Exact semantic relationship between required and configured effective access:
 
 ```text
-Logical Firewall
-+ Enforcement Attachment
+common  = required ∩ configured
+missing = required - configured
+excess  = configured - required
 ```
 
-Provider realization/path/traversal data is provenance, not target identity.
+Semantic Delta describes **what policy behavior differs**. It is not a device command and not a concrete edit plan.
 
-### Managed Reconciliation Scope
-APR correlation value proving one Access Policy governance scope and one Enforcement Target are being compared with configured evidence from the same managed policy partition.
+### Policy Change Design
+Vendor-neutral design for changing the existing target policy so that the semantic delta is removed.
 
-It is not a TAE Source Scope, Authority Management scope or persisted aggregate. Complete comparison requires an explicit trusted source/scope contract; matching names or “same firewall” is insufficient.
+Change design is distinct from Semantic Delta because the same missing/excess access may be implemented by different structural edits: reuse/modify existing policy material, create new material, narrow it or remove it.
 
-### Configured Enforcement Snapshot
-APR-owned projection of one explicitly selected TAE Configured capture plus its managed-scope/source contract.
+### Verification Result
+Derived result of comparing the effective semantics of a proposed resulting policy with the required effective policy before operational execution.
 
-For a complete first-slice comparison it represents exact effective Permit regions for the same managed scope at `EvidenceTime.Instant(asOf)` and carries explicit completeness/evaluation provenance.
+Verification may expose remaining missing access and introduced/remaining excess access.
 
-TAE evidence alone does not imply this snapshot is current or complete.
+### Rendered Configuration
+Target/provider-specific representation produced from verified vendor-neutral intent.
 
-### Policy Reconciliation
-Capability inside Access Policy Realization that compares canonical desired and configured effective Permit regions for one Managed Reconciliation Scope.
+Rendering must preserve the verified policy semantics. A rendered artifact does not prove that a device has applied it.
 
-Status:
+### Technical Access Attribution
+Supporting explanation that relates a technical access region to application/resource/domain meaning where such attribution is required for explanation or diagnostics.
 
-```text
-Satisfied
-Drift
-Ambiguous
-Unknown
-```
-
-Exact witnesses:
-
-```text
-common  = desired ∩ configured
-missing = desired - configured
-extra   = configured - desired
-```
-
-### Required Semantic Change
-
-```text
-No-op    # missing empty, extra empty
-Add      # missing non-empty, extra empty
-Remove   # missing empty, extra non-empty
-Replace  # missing non-empty, extra non-empty
-```
-
-The classification is vendor-neutral semantic delta. `Replace` does not promise one device/vendor replace operation; I21/I22 own rendering/execution mechanics.
-
-### Policy Algebra
-Internal APR semantics for exact overlap, containment, coverage, equivalence, canonical union, semantic difference and witnesses.
+Technical attribution is distinct from the definition of technical policy equality.
 
 ## Scoped Connectivity Inventory
 
@@ -484,7 +447,6 @@ It has no Rule ID, operational state or authorization.
 
 ```text
 Technical Access Evidence
-!= Domain Access Resolution
 != Access Rule Proposal
 != Access Rule
 ```
@@ -558,12 +520,16 @@ Zone/interface/default deny/evaluation behavior belong to NEP/enforcement semant
 
 ```text
 Evidence observed/derived
-Domain meaning resolved
 Proposal exists
 Rule exists
 Authorized
 Active/Inactive
-Enforcement policy derived
-Configured evidence observed
-Satisfied
+Target relevance established upstream
+Required effective target policy available
+Configured effective target policy available
+Realization assessment computed
+Semantic delta computed
+Policy change designed
+Proposed resulting policy verified
+Rendered representation exists
 ```
