@@ -6,7 +6,11 @@ Completed/superseded plans are removed after their durable outcomes are absorbed
 
 Long-range ordered sequencing is canonicalized outside `active/` only when it remains valid current engineering truth.
 
-Current active execution: `docs/plans/active/domain-erd-revalidation.md`.
+Current active execution: `docs/plans/active/PLAN-access-policy-realization-design.md`.
+
+Parent context-review frame: `docs/plans/active/domain-erd-revalidation.md`.
+
+Current APR long-range design sequence: `docs/engineering/access-policy-realization-design-roadmap.md`.
 
 Completed roadmap references that remain useful include:
 - `docs/engineering/target-code-structure-migration-roadmap.md` — completed M0-M7 migration to `backend/src/napms/{contexts,workflows,platform}` and final Web locality;
