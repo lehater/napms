@@ -205,5 +205,23 @@
       "user-journey-validation",
       "domain-model-change"
     ]
+  },
+  {
+    "id": "stakeholder-evidence-themes",
+    "prompt": "Проанализируй накопленные разговоры и сохранённые свидетельства пользователей по Access Policy: найди повторяющиеся проблемы, способы использования, противоречия и кандидаты use case, не превращая их автоматически в требования.",
+    "expected_skill": "stakeholder-evidence-synthesis",
+    "not_expected_skills": [
+      "agent-harness-design",
+      "user-journey-validation"
+    ]
+  },
+  {
+    "id": "stakeholder-evidence-reinterpret",
+    "prompt": "Собери сохранённые stakeholder examples по этой проблемной области и заново выведи возможные journeys, requirement candidates и capability clues, сохранив исходные свидетельства отдельно от интерпретаций.",
+    "expected_skill": "stakeholder-evidence-synthesis",
+    "not_expected_skills": [
+      "domain-model-change",
+      "resolve-decision"
+    ]
   }
 ]
