@@ -9,6 +9,8 @@ Read only what the current task requires:
 - `domain-design-stage.md` — S2 Domain Design routing and final G2 guarantees.
 - `strategic-ddd-convergence.md` — Strategic DDD convergence. Load only when context ownership/boundary/relationship is actually under question.
 - `tactical-ddd-stage.md` — Tactical DDD identity/lifecycle/invariant methodology. Load only for tactical work inside an accepted context boundary.
+- `architecture-stage.md` — S3 architecture design methodology and G3 guarantees. Load only while architecture work/gate is active.
+- `implementation-readiness-stage.md` — S4 pre-code impact/slicing/test/migration methodology and G4 authorization gate.
 - `working-loop.md` — branch/checkpoint/squash semantics for evolving work.
 - `decision-protocol.md` — no-invention and unknown-resolution rules.
 - `domain-change-protocol.md` — focused domain re-entry guidance when implementation findings may change accepted semantics.
