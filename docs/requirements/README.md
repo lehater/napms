@@ -11,13 +11,13 @@ Use the smallest requirement family that owns the behavior under change:
 - `connectivity-decision-core.md` + acceptance examples — Connectivity Decision.
 - `scoped-connectivity-inventory.md` — resource-centric cross-context inventory/product behavior.
 - `technical-access-evidence-core.md` — source-qualified Technical Access Evidence recording/query behavior.
-- `technical-domain-access-resolution.md` + acceptance examples — I18 Technical-to-Domain Access Resolution.
-- `network-enforcement-placement-core.md` — I19 Network Enforcement Placement behavior.
-- `access-policy-realization-reconciliation.md` + acceptance examples — I20 desired enforcement derivation and desired-vs-configured reconciliation.
-- `enterprise-identity-authoritative-sources.md` — I23 local-first operation plus optional external identity/source extension seams.
-- `catalogue-curation.md` + acceptance/security contracts — implemented I27 Resource/Application catalogue curation baseline.
-- `application-catalogue-target.md` — accepted I31 Application Definition / Application Deployment product behavior and migration-safety requirements.
+- `network-enforcement-placement-core.md` — Network Enforcement Placement behavior.
+- `enterprise-identity-authoritative-sources.md` — local-first operation plus optional external identity/source extension seams.
+- `catalogue-curation.md` + acceptance/security contracts — implemented Resource/Application catalogue curation baseline.
+- `application-catalogue-target.md` — accepted Application Definition / Application Deployment product behavior and migration-safety requirements.
 - `web-ui-requirements.md` — product-facing Web UI information architecture and interaction requirements.
+
+Access Policy Realization requirements are currently being revalidated from the single problem statement in `../domain/access-policy-realization/README.md`. Do not use removed APR requirement families as target behavior.
 
 Historical Wave-1 G2 requirement packets are not living product truth. Their accepted outcomes were absorbed into the current files above, DDD/ADRs, implementation and executable evidence; provenance remains in `docs/baseline/` and Git history.
 
