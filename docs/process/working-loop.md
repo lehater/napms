@@ -30,6 +30,20 @@ Write a branch checkpoint when at least one is true:
 
 Do not checkpoint every wording/edit operation.
 
+## Upstream reopen during implementation
+
+If implementation or testing exposes a finding that requires `REOPEN(S0..S3)`:
+
+1. stop the affected implementation slice; do not continue semantic-affecting edits while its upstream guarantees are dirty;
+2. preserve useful WIP on the working branch when losing it would be costly, but do not treat that WIP as accepted target truth;
+3. record the finding and reopen reason in the active capsule/appropriate problem owner;
+4. move to the owning upstream stage and revalidate dependent downstream stages in lifecycle order;
+5. return to the affected implementation slice only after S4/G4 has been revalidated and implementation is authorized again.
+
+Independent slices may continue only when their guarantees do not depend on the reopened decision and that independence is explicit enough to avoid hidden coupling.
+
+A checkpoint made before upstream re-entry is recoverable WIP, not evidence that the implementation is still valid.
+
 ## Context rollover
 
 Starting a fresh chat/session is a normal context-management operation, not a failure.
