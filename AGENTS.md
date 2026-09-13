@@ -32,7 +32,7 @@ Use `docs/process/decision-protocol.md` when a material answer is missing or con
 - `docs/architecture/` — current target architecture and ownership constraints.
 - `docs/decisions/` — consequential ADRs.
 - `docs/engineering/` — implementation contracts/policies and engineering state.
-- `docs/engineering/roadmaps/` — durable bounded-context roadmaps that may remain parked between workstreams; they are not the current execution pointer or domain truth.
+- `docs/engineering/context-problems/` — durable bounded-context problem/gap registers for unresolved future work; they are not domain truth, prioritization or current execution state.
 - `docs/ui/` — current implementation-oriented UI guidance derived from accepted requirements.
 - `docs/plans/active/` — current execution state only.
 - `docs/process/` — reusable repository working protocols.
@@ -52,7 +52,7 @@ When layers disagree materially, do not silently choose the code. Resolve the hi
 - Ordinary branch pushes must not trigger hosted Actions.
 - If material changes are required after the final PR gate, return the PR to draft and gate again when ready.
 - Git history is the archive for completed plans/superseded working artifacts.
-- Use `docs/process/plan-lifecycle.md` when parking/resuming bounded-context roadmaps or changing the active execution pointer.
+- Use `docs/process/plan-lifecycle.md` when parking/resuming bounded-context problem registers, admitting an optional roadmap, or changing the active execution pointer.
 
 ## CI execution map
 
