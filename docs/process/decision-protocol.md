@@ -38,6 +38,31 @@ Every material statement must also be distinguishable as:
 
 `proposal` and `hypothesis` are both non-authoritative. A proposal is primarily a candidate To-Be choice; a hypothesis is primarily a belief to validate. Neither may be written as accepted truth before the owning stage accepts it.
 
+## Stakeholder evidence
+
+Stakeholder/user statements about problems, goals, usage, examples, workarounds, constraints, risks and operating context are **source evidence**. They are valuable even when the speaker has not formulated a requirement correctly and even when the current interpretation later changes.
+
+Source evidence is not itself canonical product/domain truth:
+
+```text
+stakeholder statement != accepted requirement
+stakeholder example != accepted use case
+repeated evidence != automatic acceptance
+proposed realization != underlying need
+```
+
+When consequential evidence must survive the conversation, preserve a compact evidence atom with enough provenance to reinterpret it later. Prefer:
+
+- source/date or equivalent provenance;
+- affected topic/problem area;
+- the observed problem/usage statement normalized without changing its meaning;
+- a short verbatim fragment only when exact wording is materially useful;
+- contradiction/supersession note when known.
+
+Keep interpretation separate. A later analysis may derive journey/use-case candidates, requirement candidates, capability clues or boundary hypotheses from the same evidence without rewriting the original observation.
+
+Do not persist full chat transcripts merely as evidence. Conversation history is disposable execution context; consequential stakeholder evidence extracted from it may be durable.
+
 ## Discovery entity classification
 
 The kind of thing discovered in a discussion is separate from both lifecycle ownership and decision status. A material statement may describe, for example, a problem/goal, journey, use case, requirement, capability, Bounded Context candidate or architecture choice.
@@ -56,13 +81,14 @@ Journeys, use cases and capabilities may be useful evidence for later requiremen
 
 For every consequential statement ask, in order:
 
-1. **What semantic question does this statement answer?** Problem, required behavior, domain meaning, architecture/design, or implementation?
-2. **What kind of discovery entity is it, when that distinction matters?** For example journey/use case/capability/boundary candidate; do not invent an entity taxonomy when the statement does not need one.
-3. **How obligatory is it?** Accepted/known, constraint, proposal, hypothesis, unknown or conflict?
-4. **Who can accept it?** Identify the stage/owner whose gate may promote it to canonical truth.
-5. **What higher-level constraint, if any, is independent of this realization?** Preserve that separately.
+1. **What was actually observed/stated?** Preserve source evidence separately when later reinterpretation may matter.
+2. **What semantic question does this statement answer?** Problem, required behavior, domain meaning, architecture/design, or implementation?
+3. **What kind of discovery entity is it, when that distinction matters?** For example journey/use case/capability/boundary candidate; do not invent an entity taxonomy when the statement does not need one.
+4. **How obligatory is it?** Accepted/known, constraint, proposal, hypothesis, unknown or conflict?
+5. **Who can accept it?** Identify the stage/owner whose gate may promote it to canonical truth.
+6. **What higher-level constraint, if any, is independent of this realization?** Preserve that separately.
 
-User wording such as "давайте сделаем X", "будем читать вместе" or "можно хранить так" does not by itself establish S1 requirement ownership. First classify the semantic level; then determine whether the wording is an accepted choice, proposal or hypothesis at that level.
+User wording such as "давайте сделаем X", "будем читать вместе" or "можно хранить так" does not by itself establish S1 requirement ownership. First preserve any independent need/evidence, then classify the semantic level and determine whether the suggested choice is accepted, proposed or hypothetical at that level.
 
 ## No-invention rule
 
@@ -96,4 +122,4 @@ When a later-stage accepted choice creates a new externally observable constrain
 
 Consequential target choices belong in the canonical artifact owned by their semantic level or in an ADR when appropriate. Chat transcripts are not canonical decisions.
 
-When recording a mixed discussion, split accepted statements by owner instead of copying the conversation verbatim into one requirements/domain/architecture document. Preserve consequential unresolved discoveries only in the smallest existing durable owner; do not retain conversation dumps or create permanent discovery reports merely for memory.
+When recording a mixed discussion, split accepted statements by owner instead of copying the conversation verbatim into one requirements/domain/architecture document. Preserve consequential unresolved discoveries and stakeholder evidence only in the smallest correct durable owner; do not retain conversation dumps or create permanent discovery reports merely for memory.
