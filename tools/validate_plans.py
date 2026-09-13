@@ -16,12 +16,12 @@ READ_FIRST_MAX_FILES = 5
 READ_FIRST_MAX_BYTES = 24 * 1024
 
 CURRENT_RE = re.compile(
-    r"^Current:\s+(?:`([^`]+)`|(none)\.?)\s*$",
+    r"^Current:\s+(?:`([^`]+)`(?:\s+.+)?|(none)\.?)\s*$",
     re.MULTILINE | re.IGNORECASE,
 )
 CURRENT_TASK_RE = re.compile(r"^Current task:\s+(.+?)\s*$", re.MULTILINE)
 WORK_PACKAGE_RE = re.compile(r"\b(WP-\d+)\b")
-STATUS_RE = re.compile(r"^Status:\s+`([^`]+)`\s*$", re.MULTILINE)
+STATUS_RE = re.compile(r"^Status:\s+`([^`]+)`\.?\s*$", re.MULTILINE)
 LIFECYCLE_STAGE_RE = re.compile(
     r"^Lifecycle stage:\s+`(S0|S1|S2|S3|S4|IMPLEMENTATION|META)`\s*$",
     re.MULTILINE,
