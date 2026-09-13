@@ -10,7 +10,7 @@ Revalidate the target domain model and ERD for the remaining core MVP contexts b
 
 Application Communication Catalogue is already locked by ADR-015 and is consumed here only through its published contract. Connectivity Requirements and Connectivity Decision are excluded from MVP by ADR-016. The MVP Network Enforcement Placement boundary has now been revalidated and locked by ADR-018 plus `docs/domain/network-enforcement-placement/target-tactical-model.md`.
 
-This plan may discover more work than should be solved in one pass. When a bounded context has a concrete ordered future sequence worth preserving, capture it under `docs/engineering/roadmaps/` and park it there instead of keeping that context artificially active.
+This plan may discover more work than should be solved in one pass. Preserve unresolved context-local problems, gaps, real dependencies and blockers under `docs/engineering/context-problems/` instead of inventing an ordered roadmap merely to remember future work.
 
 ## Inputs
 
@@ -19,18 +19,20 @@ Primary process and planning inputs:
 - `docs/process/decision-protocol.md`;
 - `docs/process/domain-change-protocol.md`;
 - `docs/process/plan-lifecycle.md`;
-- `docs/engineering/roadmaps/README.md`.
+- `docs/engineering/context-problems/README.md`.
 
 For each selected context, its canonical domain/requirements/architecture/ADR sources are the semantic inputs. Current runtime code is migration evidence only after target semantics are established.
 
-## Scope and order
+## Review candidates
 
-Review candidates in dependency-aware order, but allow project-level prioritization to select which context is examined next:
+The discovery pass currently concerns:
 
-1. **Resource Catalogue**
-2. **Access Policy**
-3. **Network Enforcement Placement** — target Tactical DDD/ERD revalidated; implementation migration follows separately
-4. **Access Policy Realization** — problem framing reset and future work parked in a context-local roadmap
+- **Resource Catalogue**;
+- **Access Policy**;
+- **Network Enforcement Placement** — target Tactical DDD/ERD revalidated; implementation migration follows separately;
+- **Access Policy Realization** — problem framing reset and unresolved future work parked in a context problem register.
+
+This list is not a project execution roadmap. The next context is selected by the active/project-level planning decision. Record only genuine causal dependencies between context problems.
 
 For NEP, ADR-018 resolves the primary target model: Firewall is the NEP unit of account; batch technical pairs are evaluated against current routing state; ECMP/multipath branches and routing contexts such as VRFs are preserved; local routing provides the baseline candidate signal; Active override rules apply with `Include > Exclude > Routing`; relevant ACL/policy output is the distinct union of names across all retained local branches; NEP and TAE acquire source data independently.
 
@@ -45,7 +47,7 @@ Do not redesign as MVP contexts in this pass:
 
 Target MVP models must not require Requirement or Decision records for normal Rule creation, UI, API or persistence flows.
 
-No runtime migration is authorized by this plan. Domain decisions are locked first; implementation follows only after the corresponding context review is accepted and any context-local roadmap opens its implementation gate.
+No runtime migration is authorized by this plan. Domain decisions are locked first; implementation follows only after the corresponding context review is accepted and the selected active work has an explicit implementation gate.
 
 ## Review method for each context
 
@@ -62,7 +64,7 @@ For every context, complete the following before changing code:
    - use current code only to detect migration/gap implications, not as automatic target truth.
 
 3. **Canonical ERD**
-   - define entities, value objects and derived projections;
+   - define entities, value objects and derived projections when the model is ready to lock;
    - define identity and lifecycle;
    - define cardinalities and temporal relations;
    - distinguish persisted facts from derived/read-model data;
@@ -74,21 +76,22 @@ For every context, complete the following before changing code:
    - identify any duplicated foreign truth or hidden shared aggregate.
 
 5. **Current-state gap**
-   - compare accepted target ERD with current persistence/code only after target semantics are established;
+   - compare accepted target semantics with current persistence/code only after target meaning is established;
    - list semantic mismatches separately from harmless implementation detail;
    - rank blocking mismatches P0/P1/P2/P3 where useful.
 
 6. **Lock or park the result**
-   - publish one canonical target-model document with PlantUML ERD when the model is ready to lock;
+   - publish/update canonical target-model artifacts when semantics are ready to lock;
    - create an ADR when the review makes a consequential architectural/domain decision that requires one;
    - record unresolved questions explicitly rather than inventing semantics;
-   - when substantial ordered work remains, create/update a context-local roadmap under `docs/engineering/roadmaps/` with an explicit resume point;
-   - do not keep a context-specific `PLAN-*.md` active merely to remember parked work;
-   - create a migration roadmap only after the target model is accepted.
+   - create/update a context problem register under `docs/engineering/context-problems/` when unresolved work should survive a workstream switch;
+   - record only real dependencies between unresolved problems, not a total execution order;
+   - create a roadmap only if an ordered migration/delivery sequence becomes evidence-backed and worth preserving;
+   - do not keep a context-specific `PLAN-*.md` active merely to remember parked work.
 
 ## Context-specific questions
 
-### 1. Resource Catalogue
+### Resource Catalogue
 
 Must resolve at least:
 
@@ -99,7 +102,7 @@ Must resolve at least:
 - scope affiliation and responsibility relations versus Resource identity;
 - the unresolved ADR-015 question of whether `ComponentDeployment` may additionally bind to a specific Resource Endpoint.
 
-### 2. Access Policy
+### Access Policy
 
 Must resolve at least:
 
@@ -112,7 +115,7 @@ Must resolve at least:
 - which current Decision/Requirement-related fields or dependencies are now non-MVP implementation artifacts;
 - whether any other current Access Policy entities/projections are accidental implementation artifacts.
 
-### 3. Network Enforcement Placement
+### Network Enforcement Placement
 
 ADR-018 and the canonical target Tactical DDD now fix the MVP semantics:
 
@@ -143,14 +146,14 @@ Canonical document:
 
 - `docs/domain/network-enforcement-placement/target-tactical-model.md`
 
-The target NEP ERD is considered locked for this review. Remaining work is implementation planning rather than unresolved core domain semantics:
+The target NEP ERD is considered locked for this review. Remaining unresolved implementation concerns should be captured as context problems rather than treated as an implicit roadmap, including:
 
 - concrete secret/profile storage;
 - retry/backoff/scheduler failure handling;
 - vendor-specific PBR or other source semantics only when a supported adapter actually requires them;
-- migration roadmap from current code/persistence to the accepted target.
+- current-code/persistence migration gaps.
 
-### 4. Access Policy Realization
+### Access Policy Realization
 
 APR remains a separate bounded context. Its single current problem statement and design direction is:
 
@@ -158,41 +161,40 @@ APR remains a separate bounded context. Its single current problem statement and
 
 Do not recover APR semantics from removed documentation or from current runtime types. Current runtime code is migration evidence only after the target model is established.
 
-APR is currently **parked**, not active execution. Its durable future sequence is:
+APR is currently **not active execution**. Its unresolved problem space is preserved at:
 
-- `docs/engineering/roadmaps/access-policy-realization.md`.
+- `docs/engineering/context-problems/access-policy-realization.md`.
 
-Resume point when APR is selected again:
+The register includes, without imposing total order:
 
-- **D1 — cross-context target/required/configured input-output contracts**.
+- comparison key and required/configured cross-context contracts;
+- configured effective-policy normalization ownership;
+- effective-access-space semantics, comparison scope and completeness;
+- data-local semantic computation at large scale;
+- semantic delta versus policy change design;
+- proposed-change semantic verification;
+- rendering and APR-to-NEO handoff;
+- technical-to-domain explanation/attribution;
+- canonical Tactical DDD/ERD/persistence decisions;
+- target-versus-current implementation gaps and eventual migration.
 
-The parked roadmap preserves, in order:
-
-1. cross-context target/required/configured contracts;
-2. effective-access-space semantics, comparison scope and completeness;
-3. semantic computation/data-local boundary;
-4. policy change design;
-5. proposed-change verification;
-6. rendering and APR-to-NEO handoff;
-7. canonical Tactical DDD/ERD/persistence decisions;
-8. target-vs-current gap report and implementation migration roadmap.
-
-No APR implementation work is authorized while its roadmap is parked or before its implementation gate is reached.
+No APR implementation work is authorized merely because these problems are recorded. A future active plan selects the concrete problem/increment after revalidating dependencies.
 
 ## Required deliverables
 
 For each reviewed context, produce as appropriate:
 
-- one concise boundary/ownership table;
-- one canonical target ERD in PlantUML;
-- entity/value-object field and identity table;
-- cross-context contract table;
-- list of accepted invariants;
-- list of unresolved questions;
-- target-vs-current implementation gap report;
+- concise boundary/ownership clarification;
+- canonical target model/ERD when sufficiently resolved;
+- entity/value-object field and identity decisions where applicable;
+- cross-context contract decisions;
+- accepted invariants;
+- unresolved questions/problems;
+- known target-versus-current gaps;
+- real dependencies and implementation blockers;
 - ADR when consequential decisions require one;
-- a context-local roadmap under `docs/engineering/roadmaps/` when concrete unresolved future work should survive a workstream switch;
-- migration roadmap only after the target model is accepted.
+- a context problem register when unresolved future work should survive a workstream switch;
+- an ordered roadmap only when sequence itself is justified by accepted dependencies/migration/rollout constraints.
 
 ## Blockers
 
@@ -200,32 +202,31 @@ No repository blocker is currently recorded. A context-specific task starts only
 
 ## Completion gate
 
-This review is complete only when the selected core contexts have either:
+This review is complete only when each context selected for this discovery pass has either:
 
 - an accepted target model/ERD with no blocking semantic unknowns for the intended next step; or
-- an explicitly parked context-local roadmap that preserves the unresolved ordered work and keeps implementation closed.
+- an explicit context problem register preserving remaining unresolved work, real dependencies and implementation blockers without requiring an active plan.
 
 The repository must clearly distinguish:
 
 ```text
 accepted target domain model
-!= parked future context work
+!= unresolved context problem register
+!= optional evidence-backed roadmap
 != current active execution
 != current tactical/runtime implementation
 != cross-context read composition
 != migration compatibility structure
 ```
 
-For APR specifically, target-model completion requires the D7 gate from `docs/engineering/roadmaps/access-policy-realization.md`; implementation planning remains D8 and does not reopen target semantics by convenience.
-
 ## Exit criteria
 
 This active review plan can be retired when:
 
-- every context selected for this discovery pass has either been locked or parked with a durable roadmap;
+- every context selected for this discovery pass has either been sufficiently locked or has its unresolved work captured in a durable problem register;
 - no selected context depends on an active-plan file merely to preserve future work;
-- the active resume capsule can move to a project-wide prioritization/implementation plan or to `Current: none.` without losing context-local work.
+- project-wide planning can choose priorities using the context problem registers without needing old chat history.
 
 ## Next
 
-Select the next bounded context/workstream for discovery/revalidation. APR does not need to be read unless it is deliberately resumed; its roadmap is parked under `docs/engineering/roadmaps/`.
+Select the next bounded context/workstream for discovery/revalidation. APR does not need to be read unless it is deliberately resumed; its unresolved work is parked under `docs/engineering/context-problems/`.
