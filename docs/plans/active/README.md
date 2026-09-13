@@ -11,10 +11,10 @@ Current task: challenge and refine the upper-level lifecycle/context model befor
 Read first:
 - `docs/plans/active/harness-change-lifecycle.md`;
 - `docs/process/change-lifecycle.md`;
-- `.agents/skills/agent-harness-design/SKILL.md`;
-- `docs/process/README.md`.
+- `.agents/skills/agent-harness-design/SKILL.md`.
 
 Expand only if needed:
+- `docs/process/README.md` when changing protocol routing/indexing;
 - `docs/process/domain-change-protocol.md` when checking semantic re-entry overlap;
 - `docs/process/working-loop.md` when checking checkpoint/session rollover mechanics;
 - `docs/process/plan-lifecycle.md` when checking active-state/problem-register ownership;
