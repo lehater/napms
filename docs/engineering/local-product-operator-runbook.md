@@ -1,12 +1,14 @@
 # Local product operator runbook
 
-Status: `accepted supported-local operator workflow`.
+Status: `accepted supported-local operator workflow; APR operator workflow under revalidation`.
 
-Date: 2026-09-10.
+Date: 2026-09-13.
 
 ## Purpose
 
-Describe the supported local NAPMS operator path from startup through policy inspection and realization evidence. This runbook does not add product semantics and does not imply enterprise deployment or real-device integration.
+Describe the supported local NAPMS operator path for current accepted product capabilities. This runbook does not add product semantics and does not imply enterprise deployment or real-device integration.
+
+Access Policy Realization target semantics and its future operator workflow are currently defined only by the problem framing in `docs/domain/access-policy-realization/README.md`. The existing legacy Realization runtime must not be used as a target specification.
 
 ## Start and verify the local product
 
@@ -27,9 +29,9 @@ make dev-logs
 
 `dev-status` is the supported local liveness/readiness/PostgreSQL diagnostic path. Startup/status probes do not create or mutate business state.
 
-## Supported product journey
+## Supported current product journey
 
-The primary local browser journey is:
+The current non-APR browser journey includes:
 
 ```text
 Connectivity
@@ -38,18 +40,11 @@ Connectivity
   -> inspect/record Connectivity Decision
   -> inspect authoritative Access Rule
   -> inspect Effective Desired Policy / Normalized Policy
-  -> inspect Realization
 ```
 
-`Realization` is a read-only network/security operator projection. It may show desired policy/enforcement placement/rendered configuration as `Available` while reconciliation or controlled-operation evidence remains `NotAvailable` when the runtime has no selected configured-evidence/managed-scope input or actual NEO operation result. `Unknown` is preserved when required semantic input is ambiguous or incomplete. These states must not be reinterpreted as success.
+APR-specific realization assessment, semantic delta, policy-change design, pre-change verification and rendering will receive a new operator workflow only after their target contracts are accepted.
 
-Explainability navigation follows existing owner pages:
-
-```text
-Realization -> Access Rule -> Connectivity Decision -> Connectivity Requirement
-```
-
-Each owner page performs its own read authorization. The projection does not create copied authoritative state.
+The runtime may still contain an older read-only `Realization` screen while migration is pending. Its stage/status vocabulary is legacy implementation behavior and is not normative documentation.
 
 ## Recovery and upgrade
 
@@ -82,4 +77,4 @@ The supported local product does not claim:
 - performance/SLA guarantees without an accepted workload target;
 - generic dashboard, global search, bulk mutation or additional export surfaces without a demonstrated operator requirement.
 
-The deterministic NEO target stub proves controlled-execution orchestration semantics only. Full-chain acceptance evidence exists in the PostgreSQL integration suite; the interactive runtime must still report unavailable stages truthfully when their actual owning inputs/results do not exist.
+The deterministic NEO target stub proves its currently implemented operation mechanics only. It does not establish the redesigned APR semantic model or a real device-integration claim.
