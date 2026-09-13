@@ -1,8 +1,8 @@
 # Web UI requirements
 
-Status: `accepted current product/UX direction through I27 Catalogue Curation`.
+Status: `accepted current product/UX direction through I27 Catalogue Curation; APR operator surface under revalidation`.
 
-Date: 2026-09-10.
+Date: 2026-09-13.
 
 ## Purpose
 
@@ -19,8 +19,10 @@ Login
   -> Connectivity / Checker
   -> selected responsibility scope when relevant
   -> Resources and bound application deployments
-  -> Need / Decision / Policy / Realization
+  -> Need / Decision / Policy
 ```
+
+APR operator workflows are currently being redefined from `docs/domain/access-policy-realization/README.md` and are not inferred from the existing legacy Realization screen.
 
 I27 also makes the catalogue truth behind those workflows self-service:
 
@@ -62,7 +64,7 @@ Fine-grained foreign catalogue visibility remains deferred unless separately req
 
 ## Information architecture
 
-Current primary navigation:
+Current primary navigation for accepted non-APR surfaces:
 
 ```text
 OVERVIEW
@@ -79,12 +81,11 @@ POLICY
   Rules
   Effective
   Export
-
-OPERATIONS
-  Realization
 ```
 
-Do not present implemented areas as Planned. Future navigation may appear only when backed by accepted scope, explicitly marked Planned and unable to perform fake actions or display fabricated data.
+The existing runtime may still expose a legacy `Realization` route while APR migration is pending. That route is not a normative target UI contract and its old stage model must not be used to infer APR domain semantics.
+
+Do not present implemented areas as Planned. Future APR navigation may be accepted only after the target use cases and read/mutation authority are designed.
 
 ## Connectivity
 
@@ -102,15 +103,15 @@ Resource
 
 Resources/Deployments with zero connectivity remain visible. Direction is relative to the local side. Human-readable DCS/service meaning leads; protocol/ports and stable IDs are secondary technical details.
 
-Need, Decision, Policy and Realization must never be collapsed into one generic status.
+Need, Decision, Policy and any later realization assessment must never be collapsed into one generic status.
 
 Contextual Add connectivity reuses known local scope/resource/deployment and uses backend discovery for valid remote/DCS choices. The UI must not assemble arbitrary stable-ID combinations.
 
 ## Checker
 
-Checker is the technical-entry workspace for a traffic tuple. It presents owner-preserving Resource/Application context, policy summaries, unordered Network Context candidates, stored configured Technical Access Evidence and Resource Responsibility/contact information.
+Checker is the technical-entry workspace for a traffic tuple. It presents owner-preserving Resource/Application context, policy summaries, Network Context information, stored configured Technical Access Evidence and Resource Responsibility/contact information.
 
-It must preserve ambiguous/historical/unknown address resolution, missing evidence and candidate-set uncertainty. Candidate membership is not shown as a proven network path and configured evidence is not shown as authorization.
+It must preserve ambiguous/historical/unknown address attribution and missing evidence. Configured evidence is not shown as authorization. Checker-specific network-context uncertainty does not define APR target-selection semantics.
 
 ## Applications catalogue
 
@@ -174,9 +175,11 @@ Rules presents authoritative Access Rules admitted through their own read author
 
 Effective answers what desired policy applies for an authorized scope/time. Export exposes the normalized technical representation while preserving correlation, realization, DCS semantics, `asOf` and provenance. Neither surface invents configured/device state.
 
-## Realization
+## Access Policy Realization UI
 
-Realization is an implemented read/operator workspace. It shows stage availability across desired policy, placement, configured evidence, reconciliation, rendering and available operation result. Missing inputs/history remain `NotAvailable`/`Unknown`; transport acceptance is never presented as semantic verification.
+No target APR screen/stage contract is currently accepted beyond the domain framing in `docs/domain/access-policy-realization/README.md`.
+
+The eventual UI must be derived from accepted APR use cases such as realization assessment, semantic delta inspection, policy-change design and verification. It must not preserve old stage/status vocabulary merely because current runtime code or the legacy Realization screen contains it.
 
 ## Catalogue mutation UX
 
@@ -211,4 +214,5 @@ Current Web direction does not introduce:
 - vendor firewall configuration authoring inside catalogue forms;
 - fabricated graph/path semantics;
 - fake metrics/dashboard data;
-- duplicated business truth in frontend state.
+- duplicated business truth in frontend state;
+- preservation of superseded APR UI stages/statuses as target semantics.
