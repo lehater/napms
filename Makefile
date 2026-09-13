@@ -43,6 +43,7 @@ harness-check:
 	python tools/validate_harness.py
 	python tools/validate_plans.py
 	python tools/validate_skill_routing.py
+	python tools/validate_lifecycle_transitions.py
 
 knowledge-check:
 	python tools/validate_domain_model.py

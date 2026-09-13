@@ -23,6 +23,8 @@ The resume capsule is a non-authoritative recovery cache. If a capsule summary c
 
 Do not scan `docs/baseline/` or completed historical Wave-1 material unless the task explicitly requires history or provenance.
 
+Use `docs/process/change-lifecycle.md` only when entering/routing a non-trivial change, evaluating a lifecycle gate, reopening an upstream stage or propagating invalidation; do not preload it for ordinary task execution when the capsule already makes the current task/stage unambiguous.
+
 Use `docs/process/decision-protocol.md` when a material answer is missing or conflicting.
 
 ## Source-of-truth map
@@ -34,7 +36,7 @@ Use `docs/process/decision-protocol.md` when a material answer is missing or con
 - `docs/engineering/` — implementation contracts/policies and engineering state.
 - `docs/engineering/context-problems/` — durable bounded-context problem/gap registers for unresolved future work; they are not domain truth, prioritization or current execution state.
 - `docs/ui/` — current implementation-oriented UI guidance derived from accepted requirements.
-- `docs/plans/active/` — current execution state only.
+- `docs/plans/active/` — current execution state only, including the lifecycle execution lease for non-trivial work.
 - `docs/process/` — reusable repository working protocols.
 - `docs/baseline/` — accepted snapshots/provenance; not the normal edit target.
 - `backend/src/` + `backend/tests/` — backend implementation and executable evidence.
@@ -52,7 +54,7 @@ When layers disagree materially, do not silently choose the code. Resolve the hi
 - Ordinary branch pushes must not trigger hosted Actions.
 - If material changes are required after the final PR gate, return the PR to draft and gate again when ready.
 - Git history is the archive for completed plans/superseded working artifacts.
-- Use `docs/process/plan-lifecycle.md` when parking/resuming bounded-context problem registers, admitting an optional roadmap, or changing the active execution pointer.
+- Use `docs/process/plan-lifecycle.md` when parking/resuming bounded-context problem registers, admitting an optional roadmap, or changing the active execution pointer/lifecycle lease.
 
 ## CI execution map
 
@@ -90,14 +92,20 @@ A Bounded Context is not automatically a service, database, team or deployment u
 
 ## Implementation order
 
-For accepted behavior:
-1. Domain + Application + Ports;
+For non-trivial implementation work, code modification starts only when the active resume capsule carries:
+- `Lifecycle stage: IMPLEMENTATION`;
+- `Implementation authorization: G4 PASS`;
+- an `Authorized scope` covering the requested slice;
+- an `Authorization basis` proving the applicable G4/upstream guarantees.
+
+Within that authorized scope implement inside-out:
+1. Domain + Application + consuming Ports;
 2. core/architecture tests;
 3. core gate;
-4. infrastructure only when the active plan permits it;
+4. infrastructure only when the active gate permits it;
 5. integration/acceptance proof.
 
-The current plan owns whether the infrastructure gate is open or closed; do not duplicate dynamic plan status here.
+If the requested code change falls outside the authorized scope, or implementation exposes a missing/dirty upstream guarantee, return to the owning lifecycle stage and obtain a new applicable G4 lease before continuing the affected slice.
 
 ## Skills
 
@@ -109,7 +117,7 @@ Use the smallest applicable Skill. Extend an existing Skill before creating an o
 
 Use the check matching the touched area:
 - `make test` — product/core tests;
-- `make harness-check` — AGENTS/Skills/process/plans/routing;
+- `make harness-check` — AGENTS/Skills/process/plans/routing/lifecycle transitions;
 - `make knowledge-check` — living domain-model invariants;
 - `make check` — backend/core + harness + knowledge checks;
 - `make web-check` — Web TypeScript/build check.
