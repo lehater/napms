@@ -23,6 +23,7 @@ REQUIRED_SKILLS = {
 }
 LIFECYCLE_PROTOCOLS = (
     "change-lifecycle.md",
+    "problem-evidence-stage.md",
     "requirements-stage.md",
     "domain-design-stage.md",
     "strategic-ddd-convergence.md",
