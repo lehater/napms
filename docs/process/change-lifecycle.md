@@ -15,6 +15,7 @@ This protocol is primarily a **transition protocol**: use it when entering a cha
 3. If an accepted upstream guarantee changes materially, every dependent downstream acceptance becomes `DIRTY` until revalidated.
 4. If accepted repository truth and available evidence are insufficient, materialize the unknown as a problem, resolve or escalate it explicitly, and stop at the affected gate when it is blocking.
 5. Repeating the same work without new evidence, model change, problem-state change or decision-state change is a blockage, not progress.
+6. Implementation permission is scoped: a G4 acceptance authorizes only the implementation scope it evaluated and is revoked when a required upstream guarantee becomes dirty.
 
 ## Lifecycle stages
 
@@ -31,12 +32,12 @@ S3 Architecture
   -> G3
 S4 Implementation Readiness
   -> G4
-CODE CHANGE PERMITTED
+IMPLEMENTATION EXECUTION PERMITTED FOR THE G4 SCOPE
 ```
 
 The sequence is not a waterfall. Work enters at the earliest affected stage, and later work may reopen any earlier stage whose guarantees prove incomplete or wrong.
 
-Each stage has exactly four conceptual elements:
+Each semantic stage has exactly four conceptual elements:
 
 ```text
 Inputs -> Work -> Outputs -> Gate
@@ -44,7 +45,9 @@ Inputs -> Work -> Outputs -> Gate
 
 A gate evaluates whether the stage's knowledge is sufficiently coherent and complete for the next stage to rely on it. The existence of a document does not itself satisfy a gate.
 
-Detailed stage decomposition (for example Strategic vs Tactical Domain Design) belongs to the stage methodology. The top-level lifecycle should gain another stage only when a distinct cross-project gate and dependency boundary are demonstrated.
+Detailed stage decomposition (for example Strategic vs Tactical Domain Design) belongs to the stage methodology. The top-level lifecycle should gain another semantic stage only when a distinct cross-project gate and dependency boundary are demonstrated.
+
+`IMPLEMENTATION` is an execution mode after G4, not a sixth semantic design stage.
 
 ## Stage routing
 
@@ -69,8 +72,11 @@ A gate produces one of four outcomes.
 The stage is sufficient for the next stage to rely on its guarantees.
 
 - mark the stage `ACCEPTED` against its current upstream inputs;
+- record a concise `Lifecycle basis` in the active capsule that points to the accepted canonical/gate evidence supporting the state;
 - close or downgrade gate findings that no longer block its guarantees;
 - continue to the next required or dirty downstream stage.
+
+For G4 specifically, PASS additionally creates a scoped implementation authorization as described under **Exit to implementation**.
 
 ### REWORK
 
@@ -88,12 +94,15 @@ Do not restart the whole stage when a smaller delta is sufficient.
 The current stage exposed an invalid, incomplete or missing guarantee owned by an earlier stage.
 
 - record the reason and affected problem;
+- revoke any active G4 implementation authorization whose basis depends on the reopened guarantee;
 - move the target owner stage to `IN_PROGRESS` (or `BLOCKED` when external knowledge is immediately required);
 - mark every stage downstream of that owner whose accepted result depends on the changed/missing guarantee `DIRTY`, including the stage that detected the problem;
 - return to the owner stage;
 - after that stage passes, revalidate dirty downstream stages in dependency order before relying on their previous acceptance.
 
 A reopen may target any earlier stage, not only the immediately preceding one. Do not mark unrelated downstream work dirty merely because it is later in the conceptual sequence; invalidation follows actual dependency on the changed guarantee.
+
+Top-level `REOPEN(stage)` targets only S0-S4. Strategic/Tactical switching inside S2 is an internal S2 reroute, not a top-level reopen.
 
 ### BLOCKED
 
@@ -126,6 +135,8 @@ Important distinctions:
 - `ACCEPTED` is always relative to the upstream guarantees used when the gate passed.
 
 When a dirty stage is revisited, first determine whether its previous output still satisfies the new upstream guarantees. Reuse it if valid; rework only the affected delta.
+
+The active capsule's `Lifecycle basis` is the compact durable pointer to those current assumptions/evidence. It is not a substitute for canonical truth and must be refreshed when its referenced assumptions change.
 
 ## Problem and unknown handling
 
@@ -234,6 +245,7 @@ Before changing stage/workstream or when context becomes costly, classify curren
 - accepted product/domain/architecture truth -> canonical artifact;
 - unresolved material problem -> durable problem register or active plan state as appropriate;
 - current task/stage/gate/next action -> active resume capsule;
+- current lifecycle/implementation authorization basis -> compact references in the resume capsule;
 - evidence references worth preserving -> canonical artifact/problem record/plan as appropriate;
 - temporary reasoning, tool dumps, duplicated explanation, rejected exploration -> discard.
 
@@ -255,19 +267,35 @@ A successful rollover must be able to resume without rereading the previous conv
 
 ## Exit to implementation
 
-Code modification is authorized only when the applicable implementation-readiness gate passes for a change that requires upstream semantic/architectural work.
+G4 does not create a repository-wide permission to edit code. It creates a **scoped implementation lease** for the exact slice/scope evaluated by S4.
 
-For a legitimately implementation-only change entering at S4, G4 is still the gate that establishes that no missing upstream guarantee is being invented and that the implementation scope/checks are understood.
+After G4 PASS:
+
+1. record the accepted S4/G4 result and required upstream/canonical references in the active plan/capsule;
+2. move the capsule execution mode to `Lifecycle stage: IMPLEMENTATION`;
+3. set `Implementation authorization: G4 PASS`;
+4. set a non-`none` `Authorized scope` that identifies the implementation slice/scope;
+5. set a non-`none` `Authorization basis` that identifies the G4/upstream evidence the authorization depends on;
+6. only then route to an implementation Skill.
+
+For a legitimately implementation-only change entering at S4, G4 is still required and creates the same scoped lease.
+
+An implementation Skill must refuse or route back to S4 when:
+
+- no G4 lease exists;
+- the requested work is outside `Authorized scope`;
+- the authorization basis is missing/stale/dirty;
+- implementation evidence exposes a new upstream decision.
+
+If implementation invalidates a required upstream guarantee, revoke the lease before reopening the owning stage. Preserve WIP only as recoverable branch state; do not resume the affected implementation scope until dependent stages are revalidated and a new applicable G4 lease exists.
 
 The implementation-ready state must be strong enough that the implementer is not expected to invent unresolved requirements, domain ownership or architecture decisions while editing code.
-
-Implementation may still discover new evidence. If that evidence invalidates an earlier guarantee, use `REOPEN(stage)` and return through the lifecycle rather than patching around the semantic gap.
 
 ## Relationship to other process protocols
 
 - `decision-protocol.md` defines how known/hypothesis/unknown/conflict states are handled when resolving a problem.
 - `domain-change-protocol.md` provides focused domain re-entry guidance and should align with this lifecycle rather than create a parallel progression model.
 - `working-loop.md` owns branch/checkpoint/validation/session execution mechanics.
-- `plan-lifecycle.md` owns durable active execution state and parked problem/roadmap semantics.
+- `plan-lifecycle.md` owns durable active execution state, scoped G4 lease and parked problem/roadmap semantics.
 
 This protocol owns stage progression, gate outcomes, upstream reopen/dirty propagation, no-progress handling and the minimal-context lifecycle around that progression.
