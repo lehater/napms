@@ -4,55 +4,45 @@ Current: `harness-change-lifecycle.md` — isolated Harness lifecycle/context-ma
 
 Goal: validate a coherent stage/gate change lifecycle from problem evidence to implementation readiness together with a paired context lifecycle that loads only the minimum rules/artifacts required for the current task.
 
-Current task: audit fresh-session recovery and context cost after the lifecycle dry runs; remove only demonstrated startup/routing duplication.
+Current task: hold the lifecycle/context design stable and execute the deterministic Harness gate when an execution surface is available; change the model only if that gate or a new real use exposes a concrete defect.
 
-Lifecycle stage: Harness meta-design / context-cost and recovery audit.
+Lifecycle stage: Harness meta-design / deterministic validation.
 
-Stage state: `IN_PROGRESS`.
+Stage state: `BLOCKED`.
 
 ## Working set
 
 Read first:
 - `docs/plans/active/harness-change-lifecycle.md`;
-- `docs/process/plan-lifecycle.md`.
+- `.github/workflows/harness.yml`.
 
 Expand only if needed:
-- `docs/process/change-lifecycle.md` only for an actual transition/gate/reopen question;
-- the one stage protocol exercised by a concrete recovery test;
-- `docs/process/working-loop.md` when checking rollover/checkpoint execution;
-- `docs/process/README.md` when checking process discoverability;
-- `tools/validate_harness.py` or `tools/validate_plans.py` when changing deterministic structural/context-budget validation.
+- `tools/validate_harness.py` and `tools/validate_plans.py` when diagnosing a deterministic failure;
+- `docs/process/change-lifecycle.md` only if a new transition/reopen defect is demonstrated;
+- the one affected Skill/protocol when a validation failure points to it.
 
 ## Recovery facts
 
 - All current Harness design changes belong only to branch `harness/change-lifecycle`; do not update or merge to `main` unless explicitly requested later.
-- The lifecycle has S0 Problem/Evidence -> S1 Requirements -> S2 Domain Design -> S3 Architecture -> S4 Implementation Readiness -> G4 code authorization.
-- S2 contains Strategic and Tactical routes; switching between them is an internal S2 reroute, not top-level `REOPEN`.
-- A Strategic ownership/boundary/contract change requires revalidation of only dependent Tactical assumptions before G2.
-- `REOPEN(stage)` targets one top-level owner stage; dependent downstream acceptances become dirty and must be revalidated.
-- If implementation triggers an upstream reopen, stop the affected slice, preserve WIP only as recoverable branch state, and do not resume until G4 is revalidated.
-- `execute-work-package` must not route into `implement-slice` before applicable S4/G4 authorization.
-- Missing upstream truth becomes an explicit problem/unknown; lower layers must not invent it.
-- Repetition without changed evidence/model/problem/decision state is a no-progress blockage.
-- Stage protocols are lazy-loaded; the top-level lifecycle is a transition protocol, not permanent working context.
-- Stage protocols are roughly 4.6–9.5 KiB; `change-lifecycle.md` is ~14 KiB and should be loaded only for transitions/gates/reopen.
-- `Read first` must not repeat root/scoped `AGENTS.md` or the primary Skill already loaded by routing.
-- `tools/validate_harness.py` checks structural routing/discoverability boundaries; `tools/validate_plans.py` checks resume locality/context budget, not semantic gate correctness.
-- Dry runs corrected four P1 defects: ambiguous Strategic/Tactical `REOPEN`, missing Tactical revalidation after Strategic change, missing implementation-WIP suspension on upstream reopen, and an execution-path G4 bypass.
-- Direct S3, direct S4 and S0->S1 dry runs exposed no additional P1 routing defect.
+- S0-S4/G0-G4, Strategic/Tactical S2 routing, upstream reopen/dirty propagation and G4-before-code semantics have passed representative manual dry runs with no known P0/P1 Harness defect.
+- Fresh-session/context-cost audit passed manual review: stage protocols are lazy-loaded, `change-lifecycle.md` is transition-only, and `Read first` does not duplicate routed AGENTS/Skill content.
+- `execute-work-package`, `implement-slice` and `architecture-review` have been checked for lifecycle bypasses; none remain known.
+- `tools/validate_harness.py` checks structural lifecycle routing/discoverability; `tools/validate_plans.py` checks resume locality/context budget. They do not decide semantic gate correctness.
+- `.github/workflows/harness.yml` now exposes `workflow_dispatch` and runs `make harness-check`.
+- The current GitHub connector can inspect/re-run existing workflow runs but cannot dispatch a new one.
+- The current shell environment previously could not resolve `github.com`, so it could not obtain the branch for local execution.
+- No product/domain/runtime code has been changed by this Harness workstream.
 
 ## Blockers
 
-No semantic Harness blocker is known. The deterministic `make harness-check` gate is still pending because:
-- `.github/workflows/harness.yml` has no `workflow_dispatch`, so the current GitHub connector cannot start an intermediate run;
-- the current shell runtime could not resolve `github.com`, so a temporary branch checkout for local `make harness-check` failed before repository execution.
+The only known blocker is deterministic execution of `make harness-check` on this branch. Repository capability now exists through `workflow_dispatch`, but the current connected GitHub tool cannot initiate a new workflow run and the current shell checkout path is unavailable.
 
-Do not claim the deterministic gate passed until an execution surface becomes available.
+Do not claim the gate passed until it actually executes.
 
 ## Gate
 
-Do not declare the Harness lifecycle stable until fresh-session recovery/context-cost audit reveals no unresolved P0/P1 progressive-disclosure defect and the deterministic Harness validation has actually executed.
+Keep this workstream open until `make harness-check` has executed successfully on `harness/change-lifecycle`. Any failure must be fixed in this branch and rechecked. No merge to `main` is authorized.
 
 ## Next
 
-Recover the task using only root routing, this capsule, the primary Harness Skill selected by routing, and the minimal `Read first` set. Check whether any additional file is required before a concrete question demonstrates need; remove only demonstrated duplication or startup loading. Keep `make harness-check` explicitly pending until it can actually run.
+When an execution surface becomes available, run the Harness workflow (or local `make harness-check`) against `harness/change-lifecycle`, inspect failures/logs, fix only concrete issues, and record the result here. Until then, do not expand the lifecycle speculatively.
