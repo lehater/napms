@@ -143,36 +143,23 @@ APR is assumed to remain a separate bounded context. Its single current problem 
 
 Do not recover APR semantics from removed documentation or from current runtime types. Current runtime code is migration evidence only after the target model is established.
 
-The APR review must resolve at least:
+The remaining APR review is governed by:
 
-- exact input contract for one target-specific required effective policy;
-- exact input contract for one comparable configured effective-policy snapshot;
-- opaque target identity/correlation required by APR without importing NEP target-selection semantics;
-- effective technical access-space representation and exact equality/intersection/difference semantics;
-- comparison-scope and completeness rules required for a confident realization assessment;
-- separation between Realization Assessment and authoritative Semantic Delta;
-- separation between Semantic Delta and Policy Change Design;
-- semantics of pre-change verification of the proposed resulting policy;
-- supporting technical-to-domain/business attribution needed for explanation without coupling it unnecessarily to technical equality;
-- rendering boundary and whether full-target and change-oriented rendering are both required;
-- data-local computation contract for very large policies;
-- published cross-context projections needed to compute close to data without depending on peer-private schemas;
-- whether PostgreSQL exact set/range computation is sufficient for the accepted effective-policy model or a symbolic engine is eventually required;
-- which APR results are purely derived values/worksets and whether any future use case establishes an independent durable lifecycle;
-- canonical entities/value objects/derived projections and the resulting ERD only after the semantic contracts above are fixed.
+- durable ordered roadmap: `docs/engineering/access-policy-realization-design-roadmap.md`;
+- selected current stage: `docs/plans/active/PLAN-access-policy-realization-design.md`.
 
-Current design sequence:
+The roadmap must resolve, in order:
 
-```text
-cross-context inputs/outputs
-    -> effective-access-space semantics + completeness
-    -> semantic computation/data-local boundary
-    -> policy change design
-    -> proposed-change verification
-    -> rendering
-    -> Tactical DDD / ERD / persistence
-    -> runtime migration plan
-```
+1. cross-context target/required/configured contracts;
+2. effective-access-space semantics, comparison scope and completeness;
+3. semantic computation/data-local boundary;
+4. policy change design;
+5. proposed-change verification;
+6. rendering and APR-to-NEO handoff;
+7. canonical Tactical DDD/ERD/persistence decisions;
+8. target-vs-current gap report and implementation migration roadmap.
+
+No APR implementation work is authorized until the roadmap reaches its implementation gate.
 
 ## Required deliverables
 
@@ -197,3 +184,5 @@ accepted target domain model
 != cross-context read composition
 != migration compatibility structure
 ```
+
+For APR specifically, completion also requires the D7 target-model gate from `docs/engineering/access-policy-realization-design-roadmap.md`; implementation planning remains D8 and does not reopen the target semantics by convenience.
