@@ -8,13 +8,30 @@ A fresh session must be able to recover the current task without reading prior c
 - current plan;
 - goal;
 - current task;
+- current lifecycle stage/state when the change lifecycle applies;
 - minimal working set;
 - compact recovery facts that materially constrain the task;
 - blockers;
 - current gate;
 - next action.
 
-The full `PLAN-*.md` is the coordination artifact for work-package definitions/dependencies, overall goal, plan-level inputs, blockers, exit criteria and future stages. It does not own the mutable current-task pointer and is not mandatory startup context for ordinary execution.
+The full `PLAN-*.md` is the coordination artifact for work-package definitions/dependencies, overall goal, plan-level inputs, blockers, exit criteria and future stages. It does not own the mutable current-task/stage pointer and is not mandatory startup context for ordinary execution.
+
+## Lifecycle state in the capsule
+
+When `docs/process/change-lifecycle.md` applies, keep the mutable lifecycle pointer in the resume capsule rather than duplicating it across plans/protocols.
+
+The capsule should make these facts easy to recover when material:
+
+```text
+Lifecycle stage: S<n> <stage name>
+Stage state: IN_PROGRESS | BLOCKED | GATE_FAILED | ACCEPTED | DIRTY
+Current gate: G<n> or the gate/question currently being evaluated
+```
+
+Only the current/selected stage needs to be explicit in the capsule. Do not serialize a full state machine or duplicate every downstream state unless it is necessary to resume the current task. Dirty/blocking consequences that matter later belong in the relevant plan/problem record and can be loaded lazily.
+
+A stage transition, `REOPEN`, material blocker, or gate result is a material execution-state change and should refresh the capsule before a rollover or task handoff.
 
 ## Context problem registers, roadmaps and active plans
 
@@ -97,11 +114,11 @@ Do not create empty problem-register or roadmap placeholders merely to mirror th
 
 - Keep only current/planned execution artifacts under `docs/plans/active/`.
 - One plan is current unless the index explicitly declares independent parallel work.
-- `docs/plans/active/README.md` is the only owner of the current task/stage.
-- Keep the resume capsule compact; it is a startup index, not a second plan.
+- `docs/plans/active/README.md` is the only owner of the mutable current task/stage/state pointer.
+- Keep the resume capsule compact; it is a startup index, not a second plan or a serialized process history.
 - The capsule's `Read first` working set names only the files a fresh session should inspect before doing the current task. Expand beyond it only when evidence requires more context.
 - Capsule recovery facts are non-authoritative summaries. Canonical domain/requirements/architecture/engineering artifacts win on conflict; refresh a stale capsule immediately.
-- When current task, blocker, gate or next action changes materially, update the capsule.
+- When current task, stage/state, blocker, gate or next action changes materially, update the capsule.
 - When a completed plan has been absorbed and the next increment has not yet been selected, the index may state `Current: none.`; in that state no `PLAN-*.md` file remains under `active/`.
 - A completed plan is absorbed into canonical product/domain/architecture/engineering truth and removed from `active/`.
 - Git history preserves completed plan history.
@@ -129,7 +146,7 @@ When `Current` is not `none`, `docs/plans/active/README.md` must make these fiel
 - `## Gate`
 - `## Next`
 
-Working mode / primary Skill and a compact recovery-facts section are encouraged when they reduce rediscovery.
+Lifecycle stage/state, working mode / primary Skill and a compact recovery-facts section are encouraged when they reduce rediscovery. They should become mandatory only after the lifecycle format has survived real use and a deterministic validator can enforce them without adding noise to trivial/non-lifecycle tasks.
 
 ## Minimum plan contract
 
