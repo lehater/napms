@@ -1,6 +1,6 @@
 # Active execution
 
-Current: Strategic DDD recomposition after breadth-first capability G1 revalidation.
+Current: `domain-erd-revalidation.md`
 
 Goal: regroup accepted capabilities into coherent Bounded Contexts and contracts without preserving superseded Connectivity Requirements / Connectivity Decision boundaries merely because they existed previously.
 
