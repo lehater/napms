@@ -39,6 +39,8 @@ The following observations were harvested from project stakeholder discussions a
 - If subsets of traffic need to be independently applicable, authorized, stopped or otherwise managed, they should be represented as separate Interactions rather than bundled merely because the same technical endpoints are involved.
 - Interaction purpose/description is useful, especially for non-standard communication. No Interaction type/classification taxonomy is required without a concrete use case.
 - Application communication semantics and technical network realization are separate concerns: current IP address realization must not define Deployment identity.
+- For MVP, a Deployment is associated with a Resource rather than with an individual ResourceEndpoint.
+- For MVP technical realization, an authorized interaction between two Deployments applies to all current Endpoints of the Resource associated with each Deployment. This may deliberately produce a broader intermediate technical candidate set; later enforcement-target/policy scoping may remove combinations that are not relevant to a particular firewall/policy attachment.
 
 ## Resource catalogue revalidation evidence
 
@@ -176,6 +178,7 @@ The following are S1 candidates requiring explicit Requirements-stage acceptance
 - Business relevance/criticality should be usable in impact and cleanup decisions where authoritative business context exists; exact scoring/propagation behavior is unresolved.
 - Technical policy optimization that preserves required/effective semantics must remain distinguishable from business-driven rationalization that intentionally changes required access because the underlying need changed.
 - Realization/audit results should be usable independently of remediation when the user's goal is analysis, accessibility checking or reporting.
+- For MVP, when an authorized interaction references a Deployment associated with a Resource, technical realization should consider every current ResourceEndpoint of that Resource rather than requiring the Deployment to select one Endpoint explicitly.
 
 ## Important non-inferences
 
@@ -193,7 +196,8 @@ Do not infer from this evidence that:
 - technical cleanup and business-driven removal share one optimization objective;
 - Resource requires speculative classifiers beyond attributes supported by concrete current use cases;
 - Resource Owner or Administrator implies individual-person identity or security authorization;
-- Resource Catalogue is responsible for discovering or computing NAT translation.
+- Resource Catalogue is responsible for discovering or computing NAT translation;
+- the MVP Deployment-to-Resource association proves that endpoint-level deployment binding is never needed later.
 
 ## Unknowns / evidence gaps
 
@@ -209,7 +213,8 @@ Later conversations or domain analysis should clarify, when relevant:
 - whether a remediation/change plan has an independent durable/editable/approvable lifecycle;
 - exact ownership of provider-specific policy interpretation versus raw device acquisition;
 - authoritative freshness/completeness semantics for observed device state;
-- exact temporal/history contract for Site, Owner, Administrator and Endpoint address changes beyond the accepted need for basic history.
+- exact temporal/history contract for Site, Owner, Administrator and Endpoint address changes beyond the accepted need for basic history;
+- whether future scenarios require Deployment-to-Endpoint binding or another finer-grained realization mechanism beyond the MVP Deployment-to-Resource rule.
 
 ## Routing for future work
 
