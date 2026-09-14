@@ -40,6 +40,12 @@
       "responsibility": "Normalized required-vs-configured policy realization assessment, semantic reconciliation, vendor-neutral policy-change design and proposed-result semantic verification for a supplied comparable target; provider rendering ownership remains under revalidation."
     }
   ],
+  "wave1_direct_participants": [
+    "Access Policy",
+    "Authority Management",
+    "Application Communication Catalogue",
+    "Resource Catalogue"
+  ],
   "current_direct_participants": [
     "Business Connectivity",
     "Access Governance",
