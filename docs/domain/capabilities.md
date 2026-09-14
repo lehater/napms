@@ -1,157 +1,177 @@
 # Domain capability ownership map
 
-Status: `accepted NAPMS-DDD-001 living capability map`.
+Status: `S2 strategic revalidation in progress`.
 
-A capability is not automatically a Bounded Context, service or deployment unit.
+A capability is not automatically a Bounded Context, service or deployment unit. The current target ownership follows the 2026-09-14 G1 revalidation and ADR-019.
 
-## Current capabilities
+## Current target capabilities
 
 | Capability | Business question / outcome | Semantic owner / disposition |
 |---|---|---|
-| Connectivity Requirement Management | what semantic connectivity is needed by an identified dependent concern under defined applicability conditions? | **Connectivity Requirements** |
-| Access Rule governance | what concrete Access Rule exists, with what state/authorization? | Access Policy |
-| Desired-policy projections | which Rules are authorized/effective? | Access Policy |
-| Domain Responsibility Assignment | who may perform which access-domain responsibility? | AM |
-| Resource Scope Affiliation | which access-domain Resources belong to responsibility scope S at time T? | RC |
-| Resource knowledge | what access-domain Resource/Endpoint/current realization exists? | RC |
-| Application communication contract | what application/component/deployment/DCS semantics exist? | Application Communication Catalogue |
-| Enforcement Target Relevance | which Firewalls/policy locators are relevant for supplied technical traffic pairs? | NEP |
-| Technical Access Evidence Management | what normalized source-qualified technical access material was observed/derived/imported? | Technical Access Evidence |
-| Policy Realization Assessment | how exactly does configured effective access realize required effective access on a supplied target? | Access Policy Realization |
-| Semantic Policy Reconciliation | what effective access is common, missing and excessive for a comparable target policy? | Access Policy Realization |
-| Policy Change Design | what vendor-neutral policy edit should remove the semantic delta? | Access Policy Realization |
-| Proposed Change Verification | would the proposed resulting effective policy exactly satisfy the required policy without unintended access? | Access Policy Realization |
-| Target Policy Rendering | how is verified policy intent represented for a concrete target without changing semantics? | Access Policy Realization |
-| Technical Access Attribution / Explanation | what domain/business meaning can be attributed to a technical access region for explanation or diagnostics? | Access Policy Realization supporting capability |
-| Requirement-to-Policy Alignment | is current required connectivity covered by effective authorized policy? | non-peer composition over Connectivity Requirements + Access Policy |
-| Scoped Connectivity Inventory | what Resources are local to one admitted responsibility scope and how do their component interactions relate to need/decision/policy truth? | non-peer application composition over AM + RC + ACC + Connectivity Requirements + Connectivity Decision + Access Policy |
+| Business Process Management | what business process supplies the context/responsibility for connectivity need? | **Business Connectivity** |
+| Connectivity Need Management | what application-semantic connectivity does a business process need, independently of authorization? | **Business Connectivity** |
+| Business Attribution | which known Process/Need explains an observed or authorized interaction? | **Business Connectivity** |
+| Business Justification Reconciliation | which authorization/observed interaction lacks current known business justification, or which Need lacks concrete authorization? | **Business Connectivity** supplies business truth; cross-context composition may derive findings |
+| Access Request Submission | what concrete deployed interaction is requesting authorization under which business justification? | **Access Governance** |
+| Approval Obligation Determination | which source/destination consent obligations must be satisfied? | **Access Governance** |
+| Side Approval / Rejection | what did the authorized representative of one side decide, when and on what authority basis? | **Access Governance** |
+| Bilateral Approval Evaluation | have all required side-consent obligations been satisfied? | **Access Governance** |
+| Authorization Grant / Withdrawal | is current consent granted for the exact subject, and has either side withdrawn it? | **Access Governance** |
+| Governance History | what Requests, side decisions, grants and withdrawals explain current/past authorization? | **Access Governance** |
+| Effective Authority Evaluation | may actor A perform action X for scope S at time T? | **Authority Management** |
+| Group / Role / Scope Assignment | how is actor/action/scope authority established and administered? | **Authority Management** |
+| Current Policy Rule Governance | what authoritative semantic Policy Rule currently exists for an authorized subject? | **Access Policy** |
+| Effective Authorized Policy | which semantic Policy Rules are currently effective? | **Access Policy** |
+| Resource Scope Affiliation | which access-domain Resources belong to responsibility scope S at time T? | **Resource Catalogue** |
+| Resource / Endpoint Knowledge | what Resource exists and how is it currently technically realized? | **Resource Catalogue** |
+| Application Communication Contract | what application/component interaction semantics and immutable traffic contract exist? | **Application Communication Catalogue** |
+| Component Deployment Knowledge | which concrete Component is deployed on which Resource? | **Application Communication Catalogue**; exactly one Resource per ComponentDeployment in MVP |
+| Enforcement Target Relevance | which Firewalls/policy locators are relevant for supplied technical traffic pairs? | **Network Enforcement Placement** |
+| Technical Access Evidence Management | what normalized source-qualified technical access material was observed/derived/imported? | **Technical Access Evidence** |
+| Policy Realization Assessment | how does configured effective access realize required effective access on a supplied comparable target? | **Access Policy Realization** |
+| Semantic Policy Reconciliation | what effective access is common, missing and excessive for a comparable target policy? | **Access Policy Realization** |
+| Policy Change Design | what vendor-neutral policy change removes the semantic delta? | **Access Policy Realization** |
+| Proposed Change Verification | would the proposed resulting effective policy exactly satisfy the required policy without unintended access? | **Access Policy Realization** |
+| Target Policy Rendering | how is verified intent represented for a concrete provider/target? | ownership `DIRTY`; must be revalidated before APR target closure |
+| Technical Access Attribution / Explanation | what domain/business meaning can be attributed to technical access for explanation/diagnostics? | cross-context/supporting capability; final owner depends on the consuming explanation use case |
+| Scoped Connectivity Inventory | what Resources are local to a selected admitted scope and what independent Need/Governance/Policy/Realization truth can be summarized? | non-peer application/read composition over AM + RC + ACC + Business Connectivity + Access Governance + Access Policy + realization sources |
 | Connectivity Impact Analysis | what depends on connectivity and what is the consequence of loss under a scenario? | cross-context analysis; no peer BC accepted |
 | Source acquisition/parsing | obtain/parse traffic/device/file sources | adapter/mechanism |
 
+## Business Connectivity
+
+Business Connectivity owns enduring business-purpose truth, not permission.
+
+Strategic invariants:
+
+```text
+Needed != Authorized
+Needed != Realized
+ConnectivityNeed != AccessRequest
+```
+
+A Connectivity Need:
+
+- is application-semantic rather than Deployment/IP-semantic;
+- is backed by a Business Process;
+- may survive concrete deployment/address replacement;
+- may lead to several concrete Access Requests;
+- may coexist with no current authorization;
+- may disappear without rewriting request/approval history.
+
+Observed brownfield traffic may be recognized before Process/Need attribution exists; Business Connectivity may later provide attribution without fabricating a Process during ingestion.
+
+## Access Governance
+
+Access Governance owns concrete consent workflow/history, not business Need or current Policy Rule state.
+
+Strategic invariants:
+
+```text
+Grant = source consent AND destination consent
+Revoke = source withdrawal OR destination withdrawal
+Need != Grant
+Grant/Withdrawal != PolicyRule
+```
+
+The same actor may satisfy both approval obligations only when Authority Management independently admits that actor for both side/scope actions.
+
+A rejected Request remains governance history and does not create a deny Policy Rule.
+
+Access Governance publishes grant/withdrawal semantics for an exact deployed interaction subject to Access Policy.
+
+## Authority Management
+
+Authority Management owns effective actor/action/scope/time authority and the private mechanics that establish it.
+
+Resource owner/administrator facts do not automatically grant security actions. Consumers such as Access Governance depend on an effective admission result and sufficient authority provenance, not on role/group internals.
+
+## Access Policy
+
+Access Policy owns current authoritative Policy Rule truth and effective authorized-policy projection.
+
+It consumes Access Governance grant/withdrawal semantics and trusted ACC subject identity. It does not run bilateral approval workflow and does not convert rejection into desired deny policy.
+
+Several Needs/Requests may provide provenance for one semantic current Rule.
+
 ## Responsibility scope and Resource affiliation
 
-I16A accepts two independent capabilities around one stable scope reference:
+Two independent capabilities use a stable Responsibility Scope reference:
 
 ```text
 Resource Scope Affiliation
     Resource Catalogue
     -> which Resources belong to scope S at time T?
 
-Domain Responsibility Assignment
+Effective Authority Evaluation
     Authority Management
-    -> which actions may actor A perform for scope S at time T?
+    -> may actor A perform action X for scope S at time T?
 ```
 
-Resource Scope Affiliation is time-qualified and non-identity. One Resource may be effectively affiliated with more than one Responsibility Scope when overlapping responsibility is real.
+Resource affiliation is non-identity and does not grant authority. Actor authority does not manufacture Resource membership.
 
-The relation does not itself grant authority and does not define catalogue visibility.
-
-Authority Management adds independent action `ReadScopedConnectivity` for selecting/reading one responsibility scope as the local context of the owner workspace. Other reads/mutations remain independently admitted.
-
-The first I16A model introduces no standalone Scope aggregate, hierarchy or lifecycle. A Responsibility Scope is a stable scope reference shared for correlation; Resource Catalogue owns Resource membership, while Authority Management owns actor/action eligibility.
-
-## Scoped Connectivity Inventory
-
-Scoped Connectivity Inventory is a non-peer application/read composition.
-
-It answers:
-
-> for one actor-admitted Responsibility Scope and logical time, which Resources are local, what Component Deployments are bound to them, with whom do they interact, and what independent Need/Decision/Policy truth can be safely summarized?
-
-It creates no authoritative `ConnectivityStatus`, does not duplicate source-context truth and is not a new Bounded Context.
-
-## Connectivity Requirement Management
-
-Domain-owner confirmed on 2026-09-08:
-
-- system/resource owners may declare connectivity need for their owned scope;
-- declaring need does not authorize access;
-- a different user with corresponding policy/security authority must approve or deny access.
-
-Strategic invariants:
+## Governance-chain contracts
 
 ```text
-Required != Authorized
-Required != Configured/Observed
-Authority-to-declare != Requirement
-ConnectivityRequirement != AccessRequest/ticket
+Business Connectivity
+    -- Process-backed Need / justification --> Access Governance
+
+Authority Management
+    -- effective actor/action/scope authority --> Access Governance
+
+Application Communication Catalogue
+    -- exact deployed Interaction subject --> Access Governance / Access Policy
+
+Access Governance
+    -- AuthorizationGranted / AuthorizationWithdrawn --> Access Policy
 ```
 
-I13 Tactical DDD accepts:
-- stable surrogate `ConnectivityRequirementId`;
-- active semantic uniqueness by Requirement Governance Scope + Dependent Component Deployment + exact Required Semantic Interaction;
-- exact interaction = Source Component Deployment + Destination Component Deployment + immutable DCS revision;
-- Applicability = Ongoing or absolute half-open window;
-- lifecycle = `Active -> Retired`;
-- justification/applicability mutable; dependent/interaction immutable.
+Each consumer must use the published semantic result rather than re-derive the provider's decision from peer-private entities/state.
 
-Advanced alternative/conditional requirement semantics remain deferred.
+## Legacy CR/CD disposition
+
+`Connectivity Requirements` and `Connectivity Decision` remain historical/current-runtime concepts but are not current target semantic owners.
+
+Useful capability content has moved as follows:
+
+```text
+Connectivity Requirements
+    -> Business Connectivity / Connectivity Need Management
+
+Connectivity Decision
+    -> Access Governance / side consent + bilateral grant/revocation
+```
+
+Legacy Requirement-to-Policy Alignment terminology must be revalidated against the new `Needed` vs `Authorized` owners before target reuse.
 
 ## Network Enforcement Placement
 
-NEP determines relevant Firewalls and applicable policy/ACL locators for supplied technical traffic pairs from current collected routing/interface state plus explicit active override rules.
-
-Its target semantics are defined by `docs/domain/network-enforcement-placement/target-tactical-model.md` and ADR-018.
-
-APR consumes the target-specific outcome as upstream input and does not re-run or reinterpret NEP relevance reasoning.
+NEP determines relevant Firewalls and policy/ACL locators for supplied technical traffic pairs from current collected network state plus explicit active overrides. APR consumes this result and does not re-run placement relevance reasoning.
 
 ## Technical Access Evidence
 
-Configured, TrafficDerived and Imported evidence are one source-qualified evidence capability at the normalized evidence level. They share normalized predicate semantics, provenance, source scope and evidence-time representation. Evidence does not authorize desired access.
-
-Completeness/currentness that a downstream comparison requires must be established by an explicit source/consumer contract; an evidence record does not acquire that meaning merely because it exists.
+Configured, TrafficDerived and Imported evidence are source-qualified technical evidence. Evidence does not authorize desired access. Completeness/currentness required for a comparison must come from an explicit source/consumer contract.
 
 ## Access Policy Realization
 
-APR is a separate bounded context whose current canonical problem statement is:
+APR remains a separate Bounded Context for target-specific required-vs-configured semantic reconciliation and policy-change reasoning.
 
-- `docs/domain/access-policy-realization/README.md`.
-
-Its target capability chain is:
+Current stable direction:
 
 ```text
-supplied target + required effective policy
-                +
-comparable configured effective policy
-                |
-                v
-Policy Realization Assessment
-                |
-                v
-Semantic Policy Reconciliation
-                |
-                v
-Policy Change Design
-                |
-                v
-Proposed Change Verification
-                |
-                v
-Target Policy Rendering
+supplied comparable target
++ normalized required effective policy
++ normalized configured effective policy
+        -> realization assessment
+        -> common / missing / excess
+        -> vendor-neutral change design
+        -> proposed-result semantic verification
 ```
 
-Core direction:
+Provider-specific rendering ownership is still `DIRTY` and must be resolved before APR strategic/tactical closure. Network mutation execution remains downstream.
 
-- compare **effective technical access semantics**, not textual rule/configuration identity;
-- preserve exact `common / missing / excess` policy-space meaning;
-- keep semantic delta distinct from the concrete change design;
-- verify proposed resulting policy semantics before execution;
-- keep target selection/relevance outside APR;
-- keep provider/device mutation execution outside APR;
-- allow technical-to-domain/business attribution as supporting explanation without making it the definition of technical policy equivalence;
-- keep large policy-space computation data-local behind APR semantic contracts rather than requiring complete object-graph hydration in the application process;
-- consume only published upstream contracts/projections even when data is physically co-located.
+## Strategic DDD status
 
-The target Tactical DDD, ERD, persistence model and concrete computation engine are still under design.
+ADR-019 establishes Business Connectivity and Access Governance as separate target Bounded Contexts and leaves Authority Management and Access Policy independent.
 
-Requirement-to-Policy Alignment is outside APR: it compares `NEEDED` with effective `AUTHORIZED`, while APR compares required target policy semantics with configured target policy semantics.
-
-## Source acquisition and firewall semantics
-
-NetFlow/syslog capture, vendor polling/parsers, CSV/XLSX import and raw config storage remain adapters/mechanisms. Provider-specific policy evaluation semantics must be normalized through an explicit owning/integration contract before APR may treat configured input as effective access semantics.
-
-## Strategic DDD closure
-
-`DDD-BDM-010` remains the source Strategic DDD baseline. The living `NAPMS-DDD-001` model has since been extended by accepted domain decisions. Historical reconstruction evidence remains provenance rather than current target truth.
-
-Strategic DDD is revisited when new evidence changes language, lifecycle, authority or responsibility boundaries.
+Remaining strategic questions include semantic-to-technical required-policy materialization ownership and provider-specific normalization/rendering boundaries. Strategic DDD continues only for those affected edges; the old CR/CD grouping is no longer an open alternative.
