@@ -1,7 +1,7 @@
 {
   "model_id": "NAPMS-DDD-001",
   "source_baseline": "DDD-BDM-010 + 2026-09-14 G1 revalidation + ADR-019",
-  "status": "s2-strategic-revalidation-in-progress",
+  "status": "accepted",
   "bounded_contexts": [
     {
       "name": "Business Connectivity",
