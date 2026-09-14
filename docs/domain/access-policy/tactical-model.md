@@ -1,201 +1,198 @@
-# Access Policy tactical model
+# Access Policy — target Tactical DDD model
 
-Status: `accepted through I9 Access Rule workspace read semantics`.
+Status: `S2 target candidate`.
 
-Date: 2026-09-09.
+Date: 2026-09-14.
 
-## Scope
+Accepted behavior: `docs/requirements/access-policy-core.md`.
 
-This model defines the Access Policy consistency model required for proposal decision consumption, idempotent Rule materialization, authorized `Active <-> Inactive` mutation, the first declarative effective condition and effective desired-policy selection. Deferred Decision Domain, catalogue aggregates, recurring schedule semantics and normalized export projection are not designed here.
+Strategic owner: **Access Policy** per ADR-019.
 
-## Value objects
+## Purpose
 
-### RuleSemanticIdentity
+Own current authoritative semantic Policy Rule truth after Access Governance has granted or withdrawn authorization for an exact deployed interaction subject.
 
-Immutable value:
+Access Policy does not own the Request/approval/revocation workflow that produces those authorization facts.
 
-`SourceComponentDeploymentId + DestinationComponentDeploymentId + DcsContractRevisionId`
+## RuleSemanticIdentity
 
-Equality is structural over those three stable identities. Technical address realization, actor ownership, governance scope and operational schedule are not members.
+Immutable value object:
 
-### ConnectivityDecisionRef
+```text
+sourceComponentDeploymentRef
++ destinationComponentDeploymentRef
++ interactionContractRevisionRef
+```
 
-Carries exact `RuleSemanticIdentity`, `Allowed|NotAllowed`, and opaque decision/provenance reference where available. It does not expose internal decision policy/workflow.
+Equality is structural over those three trusted ACC identities.
 
-### RuleGovernanceScope
+Not part of semantic identity:
+- ResourceEndpoint/IP realization;
+- actor identity;
+- business Process/Need references;
+- AccessRequest identity;
+- approval history;
+- provider/firewall realization.
 
-Stable non-identity scope under which Authority Management evaluates actions on one authoritative AccessRule.
+Changing either ComponentDeployment or the Interaction contract revision yields a different semantic subject. Address/Endpoint changes on the same Resource do not.
 
-For materialization from `SubmitAccessRuleProposal`, the accepted proposal `authorityScope` becomes the materialized Rule's `RuleGovernanceScope`.
+## PolicyRule
 
-Rules:
-- it is not part of `RuleSemanticIdentity`;
-- later assignment/delegation/transfer/revocation changes which actors are authorized for that scope without silently changing the Rule's governance scope;
-- ownership/responsibility changes do not silently rebind Rule governance scope;
-- a later operation cannot substitute caller-supplied scope for the Rule's stored governance scope.
+### Identity
 
-### EffectiveWindow
+`PolicyRuleId` is a stable domain identity for one authoritative Rule record associated with one immutable `RuleSemanticIdentity`.
 
-Optional absolute time condition on one AccessRule:
+For one exact semantic identity there shall be at most one authoritative current Policy Rule meaning.
 
-`EffectiveWindow(start, end)`
+Repeated/concurrent processing of equivalent authorization grants must resolve that same Rule identity rather than create duplicates.
 
-Invariants:
-- `start` and `end` are offset-aware instants;
-- `start < end`;
-- it permits effect exactly when `start <= asOf < end`;
-- absence means no time-window restriction;
-- it does not mutate stored OperationalState.
+### Authoritative facts
 
-Recurring/calendar/cron/frequency-duration semantics are not part of the first I4 condition vocabulary.
+Minimum target facts:
 
-## Entity / aggregate boundary
-
-### AccessRule
-
-Aggregate root and authoritative business identity:
-- `RuleId` stable surrogate identity;
+- stable `PolicyRuleId`;
 - immutable `RuleSemanticIdentity`;
-- stable non-identity `RuleGovernanceScope`;
-- `OperationalState = Active|Inactive`;
-- Connectivity Decision correlation/provenance;
-- proposal/authority/catalogue provenance;
-- business audit/provenance required by accepted behavior;
-- optional `EffectiveWindow`;
-- EffectiveWindow property-change audit/history.
+- current authorization effectiveness derived from the latest accepted Access Governance grant/withdrawal basis;
+- correlation/provenance sufficient to explain the authorization basis that established or withdrew current effect;
+- historical correlation sufficient to explain prior authorization epochs without copying the Access Governance journal.
 
-Invariants:
-- semantic identity cannot change after materialization;
-- Rule governance scope does not silently change through actor/ownership/responsibility changes;
-- operational-state transition preserves RuleId, RuleSemanticIdentity, RuleGovernanceScope and Connectivity Decision correlation;
-- setting/changing/removing EffectiveWindow preserves the same identities/decision;
-- EffectiveWindow evaluation is pure for an explicit logical `asOf` and does not consult hidden wall-clock time.
+The Rule may retain stable identity across withdrawal and later explicit reauthorization, but exact revision/reactivation representation is not fixed by current requirements. The invariant is one authoritative semantic Rule meaning per subject and no silent reauthorization.
 
-## Materialization domain operation
+## Authorization basis consumption
 
-`materialize_or_resolve(AllowedDecision)` is an application/domain operation over the Access Policy authoritative repository/transaction boundary:
+Access Policy consumes only explicit Access Governance semantic facts for the exact subject:
 
-1. reject any decision not Allowed;
-2. verify decision subject is the exact proposed semantic identity supplied by the use case;
-3. find Rule by unique semantic identity;
-4. if found, return existing Rule unchanged;
-5. otherwise create Rule with new RuleId, state Active, accepted proposal authority scope as RuleGovernanceScope and decision correlation;
-6. commit under authoritative uniqueness constraint on RuleSemanticIdentity;
-7. on concurrent uniqueness race, resolve the winning existing Rule and return the same RuleId if its identity is exact.
+```text
+AuthorizationGranted(subject, provenance)
+AuthorizationWithdrawn(subject, provenance)
+```
 
-The database uniqueness constraint is a persistence enforcement of the domain invariant, not the source of its meaning.
+### Grant
 
-## Access Rule workspace read
+On a valid `AuthorizationGranted` for subject S:
 
-Semantic queries:
+1. validate exact subject identity;
+2. resolve the authoritative Rule for S or create it if none exists;
+3. establish S as currently effectively authorized under that explicit grant basis;
+4. preserve enough provenance/correlation to explain the transition;
+5. repeated delivery of the same grant basis is idempotent;
+6. concurrent equivalent first grants cannot create multiple authoritative Rules for S.
 
-`ListAccessRules(actor, effectiveTime, page, pageSize)`
+### Withdrawal
 
-`GetAccessRule(ruleId, actor, effectiveTime)`
+On a valid `AuthorizationWithdrawn` for subject S:
 
-Authority action: `ReadAccessRule`.
+1. resolve the authoritative Rule for S if it exists;
+2. make S no longer contribute to current effective authorized policy;
+3. preserve Rule identity and historical authorization provenance;
+4. do not rewrite historical Request/approval facts;
+5. do not create a semantic deny Rule;
+6. do not allow an old historical grant to make the subject effective again without a new explicit Access Governance authorization action.
 
-Behavior:
-1. workspace read authority is evaluated independently from mutation authority;
-2. list returns only authoritative Rules whose stored `RuleGovernanceScope` is covered by one unambiguous effective `ReadAccessRule` authority assignment for the actor/effective time;
-3. ambiguous read authority fails closed for that scope and does not expose Rules from it;
-4. detail loads the authoritative Rule by RuleId, then evaluates `ReadAccessRule` against that Rule's stored governance scope;
-5. denied/unknown/missing read authority returns no Rule data;
-6. read authority does not imply `SetRuleOperationalState` or `SetRuleEffectiveWindow`;
-7. a details response may separately expose admitted actions only after their own Authority Management checks;
-8. list paging is over the authorized Rule set and must not require the caller to supply a trusted governance scope.
+If no Rule exists for a withdrawal subject, the operation must not invent an authorized Rule. Exact diagnostic/idempotent non-result is an application concern as long as authoritative state remains not authorized.
 
-Reading a Rule does not change Rule identity, state, EffectiveWindow, decision correlation or business audit.
+## Current effective authorization
 
-## Operational-state mutation
+The target domain distinction is:
 
-Semantic command:
+```text
+Rule exists historically
+!=
+Rule currently contributes to effective authorized policy
+```
 
-`SetRuleOperationalState(ruleId, Active|Inactive)`
+A Rule contributes to effective authorized policy only when a valid current Access Governance authorization basis exists and any later accepted applicability constraints are satisfied.
 
-Application/domain behavior:
+The previous `Active | Inactive` operational state and `EffectiveWindow` model are not carried forward automatically as target truth. They remain current-state evidence until a specific accepted behavior justifies equivalent target semantics.
 
-1. load the authoritative Rule by RuleId;
-2. evaluate current/effective Authority Management permission for action `SetRuleOperationalState` using the Rule's stored `RuleGovernanceScope` and requested effective time;
-3. denied/unknown authority fails closed and produces no state/audit mutation;
-4. target state equal to current state produces explicit `AlreadyInRequestedState`; it is not an accepted transition and creates no audit record;
-5. `Active -> Inactive` and `Inactive -> Active` are the only accepted transitions;
-6. accepted transition preserves RuleId, RuleSemanticIdentity, RuleGovernanceScope and Connectivity Decision correlation;
-7. accepted transition records business audit/provenance sufficient to reconstruct who/when/what: RuleId, from state, to state, actor, effective action time, evaluated RuleGovernanceScope and Authority Management provenance/reference;
-8. state change and its audit record belong to one authoritative persistence transaction; failure cannot be reported as successful mutation.
+Time-bounded authorization is a valid product direction, but exact state/window/revision representation remains deferred.
 
-A technical log timestamp is not a substitute for the effective business action time/audit record.
+## Business justification provenance
 
-## EffectiveWindow mutation
+Several Connectivity Needs and several approved Requests may support the same semantic Policy Rule.
 
-Semantic command:
+Access Policy may retain correlation references needed to explain authorization provenance, but:
 
-`SetRuleEffectiveWindow(ruleId, window|None, actor, effectiveTime)`
+- Connectivity Need identity/lifecycle remains Business Connectivity truth;
+- Request/side-decision/grant history remains Access Governance truth;
+- losing one Need does not by itself withdraw the Rule;
+- rejection of a Request does not create a deny Rule;
+- loss of all current known Needs is a reconciliation finding, not automatic Access Policy revocation unless a later policy explicitly requires it.
 
-Behavior:
+## Public semantic projection
 
-1. load authoritative Rule by RuleId;
-2. evaluate Authority Management action `SetRuleEffectiveWindow` using the stored RuleGovernanceScope and effective action time;
-3. denied/unknown/missing authority provenance fails closed;
-4. requested value equal to current value returns explicit no accepted change and creates no audit;
-5. accepted change preserves RuleId, RuleSemanticIdentity, RuleGovernanceScope, OperationalState and Connectivity Decision correlation;
-6. accepted change records RuleId, old/new window, actor, effective action time, governance scope and authority provenance/reference;
-7. property change and its audit commit atomically;
-8. no new Connectivity Decision is required solely for this property change.
+Access Policy shall publish current effective authorized semantic Rules for admitted consumers.
 
-## Effective desired-policy selection
+Conceptually:
 
-Semantic query/application command:
+```text
+EffectiveAuthorizedPolicy(asOf/context)
+    -> PolicyRule[0..N]
+```
 
-`SelectEffectiveDesiredPolicy(scope, asOf, actor)`
+Each selected Rule supplies its stable semantic subject and authorization provenance/freshness semantics required by the consumer contract.
 
-where `scope` is one RuleGovernanceScope.
+Technical translation to ResourceEndpoint/IP prefixes, protocol/port predicates, enforcement locations, provider rules or rendered configuration is downstream and does not alter Rule identity.
 
-Behavior:
+## Cross-context contracts
 
-1. Authority Management evaluates action `ReadEffectiveDesiredPolicy` for the requested scope and `asOf`;
-2. denied/unknown/missing authority provenance returns no policy data;
-3. Access Policy considers only authoritative Rules whose stored RuleGovernanceScope equals the authorized requested scope;
-4. an `Inactive` Rule is excluded;
-5. an `Active` Rule with no EffectiveWindow is included;
-6. an `Active` Rule with EffectiveWindow is included exactly when `start <= asOf < end`;
-7. the first implementation selects one governance scope at a time and accepts no arbitrary vendor/device/technical membership filters.
+### ACC -> Access Policy
 
-This is an Access Policy semantic selection only; Resource Catalogue/Application Communication Catalogue realization and normalized rows belong to later increments.
+Provides trusted `RuleSemanticIdentity` references and immutable interaction-contract meaning.
 
-## Commands
+### Access Governance -> Access Policy
 
-- `SubmitAccessRuleProposal(sourceDeploymentId, destinationDeploymentId, dcsRevisionId, actor, scope, effectiveTime)`;
-- internal application step `ConsumeConnectivityDecision(proposalSubject, decision)`;
-- `MaterializeOrResolveAllowedRule(subject, decisionRef)`;
-- `ListAccessRules(actor, effectiveTime, page, pageSize)`;
-- `GetAccessRule(ruleId, actor, effectiveTime)`;
-- `SetRuleOperationalState(ruleId, targetState, actor, effectiveTime)`;
-- `SetRuleEffectiveWindow(ruleId, window|None, actor, effectiveTime)`;
-- `SelectEffectiveDesiredPolicy(scope, asOf, actor)`.
+Provides `AuthorizationGranted` / `AuthorizationWithdrawn` facts for the exact subject. Access Policy must not inspect peer-private Request/ApprovalObligation/SideDecision state to recompute bilateral consent.
 
-No domain event is required merely for ceremony. Event-driven topology is not implied.
+### Business Connectivity -> Access Policy
 
-## Concurrency
+No direct authorization dependency is required. Business Need/provenance may be correlated for explanation/reconciliation, but Need existence is not permission.
 
-Correctness requirement for materialization is linearizable enough at the Access Policy authoritative uniqueness boundary that concurrent/retried Allowed materializations for the same semantic identity yield one RuleId and no duplicate authoritative Rules.
+### Authority Management -> Access Policy
 
-Operational-state and EffectiveWindow mutations each require one authoritative transactional write boundary so business property state and the corresponding accepted-change audit are committed together. Detailed optimistic/pessimistic locking mechanics are infrastructure choices unless evidence requires stronger semantics.
+Authority Management may admit Access Policy read/administrative actions required by product use cases. Such authority is independent from Access Governance approval authority.
 
-## Errors / non-results
+## Concurrency / uniqueness invariant
 
-- authority denied/unknown -> action rejected;
-- structurally invalid/unknown interaction -> no valid proposal;
-- decision NotAllowed -> no Rule;
-- decision subject mismatch -> invariant violation/rejected operation;
-- unknown Rule for workspace detail -> explicit not-found outcome, no Rule data;
-- denied/unknown `ReadAccessRule` -> no Rule data;
-- unknown Rule for state mutation -> explicit not-found outcome, no audit;
-- same operational state requested -> explicit `AlreadyInRequestedState`, no audit;
-- same EffectiveWindow requested -> explicit no accepted property change, no audit;
-- denied/unknown effective-policy read authority -> no selected policy data;
-- persistence/transient failure -> no reported successful materialization or mutation unless authoritative outcome is established consistently.
+The semantic invariant is:
 
-## Later model growth
+> one exact RuleSemanticIdentity resolves to one authoritative PolicyRule identity.
 
-Recurring schedule/periodicity semantics remain deferred until a material accepted example requires them. Normalized export reads effective Access Policy selection but does not mutate Rule identity.
+The implementation must enforce first-materialization/idempotency strongly enough that retries/concurrency do not create duplicate authoritative Rules. Database unique constraints/locking are implementation mechanisms, not the source of the invariant.
+
+## Authoritative vs derived state
+
+Authoritative in Access Policy:
+- PolicyRule identity;
+- immutable RuleSemanticIdentity;
+- current semantic authorization effectiveness according to consumed grant/withdrawal facts;
+- Access Policy-owned provenance/correlation required to explain that current/historical Rule state.
+
+External truth:
+- ACC subject validity/meaning;
+- Access Governance request/decision/consent history;
+- Business Connectivity Need/Process truth;
+- Resource technical realization;
+- actor authority.
+
+Derived/downstream:
+- technical traffic predicates;
+- enforcement targets;
+- configured-vs-required reconciliation;
+- rendered/provider configuration.
+
+## Explicit non-goals
+
+- bilateral approval workflow;
+- durable `NotAllowed` rule created from rejection;
+- Resource/IP identity inside RuleSemanticIdentity;
+- provider/firewall rule identity;
+- preserving previous `Active/Inactive`, proposal or single ConnectivityDecision concepts solely because current code has them.
+
+## Remaining non-blocking questions
+
+- whether one long-lived PolicyRule or explicit authorization revisions best represent repeated grant/withdraw/regrant epochs;
+- exact time-bounded authorization semantics and representation;
+- any independently user-controlled administrative suspension capability, if later required;
+- exact read-governance scope model after Access Governance/Authority Management revalidation;
+- precise provenance projection needed by UI/audit consumers.
