@@ -26,6 +26,7 @@
     {"name":"Provider Policy Interpretation","responsibility":"Translate provider-native configured policy into comparable ConfiguredEffectivePolicySnapshot with explicit scope, completeness, provenance and unsupported-semantics outcome."},
     {"name":"Provider Policy Rendering","responsibility":"Translate APR-verified vendor-neutral intent into a semantically equivalent TargetPolicyArtifact or fail closed when unsupported."}
   ],
+  "external_seams": [],
   "invariants": [
     "Bounded Context is not a deployment unit.",
     "Business Need does not authorize access.",
