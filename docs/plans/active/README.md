@@ -1,16 +1,16 @@
 # Active execution
 
-Current: breadth-first capability revalidation before Strategic DDD recomposition.
+Current: Strategic DDD recomposition after breadth-first capability G1 revalidation.
 
-Goal: establish one coherent accepted S1 product contract across business need, access governance, Access Policy and realization semantics before later domain boundaries are reused or redesigned.
+Goal: regroup accepted capabilities into coherent Bounded Contexts and contracts without preserving superseded Connectivity Requirements / Connectivity Decision boundaries merely because they existed previously.
 
-Current task: consolidate the 2026-09-14 G1 passports with older accepted requirements that still encode superseded Connectivity Requirements / Connectivity Decision and Deployment↔Resource assumptions.
+Current task: start S2 from the revalidated G1 contracts and determine semantic ownership/context boundaries for Business Connectivity, Access Governance, Authority Management, Access Policy, catalogue truth and realization/reconciliation.
 
-Lifecycle stage: `S1`
+Lifecycle stage: `S2`
 
-Stage state: `IN_PROGRESS`
+Stage state: `NOT_STARTED`
 
-Lifecycle basis: stakeholder-confirmed capability semantics are preserved in `docs/engineering/context-problems/capability-revalidation-checkpoint-2026-09-14.md`; `business-connectivity-g1.md`, `access-governance-g1.md` and `policy-realization-reconciliation-g1.md` are coherent, but `access-policy-core.md` and `application-catalogue-domain-target.md` still conflict with those accepted semantics. Existing Strategic DDD/capability ownership and APR rendering design are downstream `DIRTY` artifacts, not S1 truth.
+Lifecycle basis: breadth-first capability `G1 PASS` on branch `docs/g1-capability-revalidation-review`. Current accepted S1 owners are `business-connectivity-g1.md`, `access-governance-g1.md`, `access-policy-core.md`, `application-catalogue-domain-target.md`, `policy-realization-reconciliation-g1.md` and the revalidated `scoped-connectivity-inventory.md`. The 2026-09-14 stakeholder checkpoint remains source evidence. Legacy CR/CD/I14 packets and current runtime/API behavior do not override these requirements.
 
 Implementation authorization: `none`
 
@@ -21,71 +21,79 @@ Authorization basis: `none`
 ## Working set
 
 Read first:
-- `docs/engineering/context-problems/capability-revalidation-checkpoint-2026-09-14.md`
 - `docs/requirements/business-connectivity-g1.md`
 - `docs/requirements/access-governance-g1.md`
-- `docs/requirements/policy-realization-reconciliation-g1.md`
 - `docs/requirements/access-policy-core.md`
 - `docs/requirements/application-catalogue-domain-target.md`
-- `docs/process/requirements-stage.md`
+- `docs/requirements/policy-realization-reconciliation-g1.md`
+- `docs/requirements/scoped-connectivity-inventory.md`
+- `docs/engineering/context-problems/capability-revalidation-checkpoint-2026-09-14.md`
+- `docs/process/domain-design-stage.md`
 
-Load S2/domain artifacts only to identify downstream invalidation; do not use them to override accepted S1 behavior.
+Then inspect the current Strategic DDD/capability/context-map artifacts only as `DIRTY` downstream models to be revalidated, not as constraints that can override G1.
 
-## Current G1 findings
+## G1 closure
 
-### P1 — Access Policy requirement conflict
+Breadth-first capability G1 is accepted for the current scope.
 
-`docs/requirements/access-policy-core.md` still consumes one final `Connectivity Decision Allowed | NotAllowed` contract. The accepted access-governance semantics now require bilateral source/destination consent and explicit withdrawal semantics before current Policy Rule truth is derived.
+Resolved P1 requirement conflicts:
 
-Required action: revalidate Access Policy observable behavior against authorization grant/withdrawal semantics while preserving compatible Rule identity/deduplication guarantees.
+1. **Access Policy single Decision dependency** — `docs/requirements/access-policy-core.md` now consumes bilateral authorization grant/withdrawal semantics rather than one global `Allowed | NotAllowed` Decision.
+2. **ComponentDeployment Resource cardinality** — `docs/requirements/application-catalogue-domain-target.md` now requires exactly one Resource per ComponentDeployment for MVP; Resource movement creates a different concrete deployment subject.
+3. **Scoped Connectivity legacy orchestration** — `docs/requirements/scoped-connectivity-inventory.md` and examples now compose Need, bilateral Access Governance, Policy Rule authorization and realization rather than `Requirement -> Proposal -> Decision -> Rule`.
+4. **Requirements routing ambiguity** — `docs/requirements/README.md` now distinguishes current target owners from legacy/dirty packets.
 
-### P1 — ComponentDeployment Resource-binding conflict
+No blocking S1 stakeholder unknown remains for entering Strategic DDD. Remaining unknowns are S2/later choices and are preserved in the capability checkpoint.
 
-`docs/requirements/application-catalogue-domain-target.md` / ADR-015 currently allow zero or more Resource bindings per ComponentDeployment. The latest accepted MVP evidence requires each concrete ComponentDeployment to belong to exactly one Resource, with Resource association mandatory at creation and Resource movement not silently carrying authorization to a different concrete deployment.
+## Downstream DIRTY artifacts
 
-Required action: revalidate the ACC target requirement before relying on ADR-015 as current S1 truth.
+At least the following must be revalidated in S2/later because their accepted assumptions depend on superseded S1 truth:
 
-### Downstream DIRTY artifacts
-
-The new S1 semantics invalidate assumptions in later-stage artifacts, including:
-- `docs/domain/strategic-model.md` — old CR/CD BC exclusion and direct AM→Access Policy MVP authorization path;
+- `docs/domain/strategic-model.md` — old CR/CD BC structure, ADR-016 MVP exclusion and direct AM→Access Policy authorization path;
 - `docs/domain/capabilities.md` — old capability ownership/grouping around Connectivity Requirements/Decision;
-- `docs/domain/access-policy-realization/README.md` — provider-specific rendering remains inside APR framing despite the newer normalized/provider-boundary direction.
-
-Do not repair these S2/S3 artifacts until the current G1 requirement conflicts are consolidated and G1 is re-evaluated.
+- `docs/domain/connectivity-decision-model.md` and Connectivity Requirements tactical material — legacy domain realization, not current G1 target;
+- `docs/domain/access-policy/tactical-model.md` — single Decision consumption and current state/window mechanics require revalidation against bilateral grant/withdrawal semantics;
+- `docs/decisions/ADR-015-acc-component-deployment-and-atomic-interaction-contract.md` plus ACC target domain model — zero/many Resource-binding assumption is dirty;
+- `docs/domain/access-policy-realization/README.md` — provider-specific rendering ownership must be revalidated against the normalized/provider-boundary direction;
+- UI/API/current implementation artifacts that expose old Requirement/Decision/proposal workflows are migration evidence only until later gates.
 
 ## NEP parked recovery state
 
 NEP remains independently checkpointed after `G1 PASS`:
-- `S0 Problem/Evidence` passed G0;
-- `S1 Requirements` passed G1;
 - accepted behavior is in `docs/requirements/network-enforcement-placement-core.md`;
-- next NEP stage is S2 Domain Design revalidation;
+- its next stage is S2 Domain Design revalidation;
 - no runtime migration or implementation is authorized.
 
-If NEP is resumed later, compare its existing target model/ADR against accepted S1 requirements rather than assuming the older S2 model remains valid unchanged.
+NEP does not need to be the first S2 slice. Strategic capability/context regrouping should establish upstream ownership/contracts before affected Tactical DDD is resumed.
 
 ## Other recovery facts
 
 - Access Policy Realization implementation remains parked and unauthorized.
 - APR unresolved future work remains at `docs/engineering/context-problems/access-policy-realization.md`.
-- A completed gate for one slice does not authorize implementation or force other slices to the same lifecycle stage.
-- Strategic DDD is intentionally deferred until the breadth-first G1 contract is coherent enough to support BC regrouping.
+- Requirement-to-Policy Alignment and legacy CR/CD packets remain historical/current-state evidence and require explicit revalidation before reuse.
+- No G4 implementation lease exists.
 
 ## Blockers
 
-No external stakeholder decision is currently required for the two blocking S1 conflicts. Existing 2026-09-14 accepted evidence supplies the product semantics needed for requirements consolidation.
+No repository blocker for starting S2 Strategic DDD.
 
 ## Gate
 
-Breadth-first capability G1: `REWORK`.
+Breadth-first capability `G1 PASS`.
 
-Blocking P1 findings:
-1. Access Policy still depends on the superseded single Decision contract.
-2. ACC ComponentDeployment Resource cardinality contradicts the latest accepted MVP behavior.
-
-NEP remains separately at `G1 PASS` and is not reopened by this cross-capability review unless its own accepted requirements later change.
+Next gate: `G2` after Strategic/Tactical Domain Design is sufficiently revalidated for the selected scope.
 
 ## Next
 
-Rework the two conflicting S1 requirement owners, then run the G1 consistency gate again. If G1 passes, enter S2 Strategic DDD to regroup capabilities and rebuild the Context Map from the accepted passports; only then resume Tactical DDD for affected bounded contexts.
+Start S2 with capability cohesion/ownership analysis:
+
+```text
+accepted capabilities
+    -> semantic ownership / invariants
+    -> candidate Bounded Context grouping
+    -> upstream/downstream contracts
+    -> Context Map
+    -> Tactical DDD only for contexts selected after the strategic boundary is coherent
+```
+
+First S2 question: determine whether Business Connectivity and Access Governance are separate semantic owners/Bounded Contexts or parts of a larger cohesive governance context, while keeping Authority Management and Access Policy responsibilities distinct unless evidence proves otherwise.
