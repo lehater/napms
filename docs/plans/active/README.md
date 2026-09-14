@@ -4,13 +4,13 @@ Current: `domain-erd-revalidation.md`
 
 Goal: converge revalidated capabilities into coherent Strategic/Tactical DDD before affected Architecture or implementation proceeds.
 
-Current task: select the next S2 slice after completing required-policy materialization ownership and Resource realization semantics.
+Current task: select the next S2 slice after completing provider-policy interpretation/rendering ownership.
 
 Lifecycle stage: `S2`
 
 Stage state: `NOT_STARTED`
 
-Lifecycle basis: governance-chain S2 and required-policy materialization S2 have `G2 PASS`. ADR-019 establishes Business Connectivity / Access Governance boundaries. ADR-020 establishes Required Policy Materialization as a non-peer derived composition over Access Policy, ACC, Resource Catalogue and NEP. Resource Catalogue target realization now defines stable ResourceEndpoint identity plus separate current corporate-visible address/prefix realization. No G3/G4 or implementation authorization exists.
+Lifecycle basis: ADR-019, ADR-020 and ADR-021 each have G2 PASS for their completed S2 slices; no G3/G4 or implementation authorization exists.
 
 Implementation authorization: `none`
 
@@ -21,67 +21,58 @@ Authorization basis: `none`
 ## Working set
 
 Read first:
-- `docs/domain/strategic-model.md`
-- `docs/requirements/policy-realization-reconciliation-g1.md`
-- `docs/process/domain-design-stage.md`
+- `docs/domain/access-policy-realization/README.md`
+- `docs/process/tactical-ddd-stage.md`
 
-## Completed governance-chain S2
+Expand when needed:
+- `docs/engineering/context-problems/access-policy-realization.md` for the specific APR-P03/P04/P05/P06/P08/P09/P10 question under review;
+- provider/TAE/NEO artifacts only when the active tactical question requires them.
 
-```text
-Business Connectivity
-    -- Process-backed Need --> Access Governance
-Authority Management
-    -- effective authority --> Access Governance
-ACC
-    -- deployed Interaction subject --> Access Governance / Access Policy
-Access Governance
-    -- AuthorizationGranted / AuthorizationWithdrawn --> Access Policy
-```
+## Completed S2 slices
 
-Critical invariant: revocation changes current consent for the semantic AuthorizationSubject; old approved Requests cannot silently reauthorize it.
+- governance chain — `G2 PASS` (ADR-019);
+- required-policy materialization — `G2 PASS` (ADR-020);
+- provider configured-policy interpretation/rendering boundary — `G2 PASS` for strategic ownership/contracts (ADR-021).
 
-Gate: `G2 PASS`.
-
-## Completed required-policy materialization S2
-
-ADR-020 resolves the previously unnamed seam:
+## Completed provider-policy boundary S2
 
 ```text
-Access Policy effective Rules
-+ ACC Interaction traffic
-+ Resource Catalogue current Endpoint/address realization
-        -> normalized required technical predicates
-        -> NEP candidate target/policy locators
-        -> TargetRequiredPolicy
-        -> APR
+provider/device configuration
+    -> Provider Policy Interpreter          [adapter/integration]
+    -> ConfiguredEffectivePolicySnapshot    [source-neutral projection]
+
+TargetRequiredPolicy
++ ConfiguredEffectivePolicySnapshot
+    -> APR                                  [BC]
+       assessment / common-missing-excess
+       vendor-neutral change design
+       semantic verification
+    -> VerifiedChangeIntent
+    -> Provider Policy Renderer             [adapter/integration]
+    -> TargetPolicyArtifact
+    -> NEO                                  [BC]
 ```
 
-Ownership result: **derived non-peer composition**, not a new Bounded Context.
+Ownership results:
 
-Resource Catalogue target realization:
+- provider interpretation is not a new BC and is not TAE domain ownership;
+- TAE remains immutable source-qualified evidence and does not decide APR currentness/completeness;
+- APR core remains provider-neutral;
+- provider rendering is not APR domain ownership;
+- semantic equivalence of rendered output is mandatory, while proof mechanism belongs to Architecture;
+- NEO executes a supplied target artifact and does not reinterpret policy meaning;
+- unsupported/incomplete provider semantics fail closed.
 
-```text
-Resource
-    -> ResourceEndpoint [0..N]
-        -> current corporate-visible address/prefix [0..1]
-```
-
-Endpoint identity survives address changes. Missing address/placement/locator produces explicit `unresolved`; it is not empty required policy and not APR drift.
-
-Predicate deduplication preserves all contributing Policy Rule provenance. Revocation recomputes aggregate required policy rather than deleting a historical firewall row.
-
-Materialization may rely on the accepted public NEP result contract without declaring NEP's separate internal S2 revalidation complete.
-
-Gate: `G2 PASS` for the materialization slice.
+APR-P02 and APR-P07 strategic ownership questions are resolved by ADR-021. Their architecture/implementation mechanics remain downstream.
 
 ## Remaining dirty areas
 
-- provider-specific configured-policy interpretation/normalization boundary;
-- provider-specific rendering boundary between APR and execution adapters/NEO;
-- NEP internal S2 revalidation against accepted G1 requirements when selected;
-- migration of legacy Requirement/Decision/Proposal/UI/API/runtime artifacts;
+- APR Tactical DDD: effective technical-region vocabulary/edge cases, change-design vocabulary, proposed-change verification, computation model and final ERD;
+- NEP internal S2 revalidation against accepted G1 requirements;
 - responsibility-scope change consequences for existing authorization;
-- richer deferred governance semantics only when a concrete use case requires them.
+- Process organizational-responsibility integration semantics;
+- migration of legacy Requirement/Decision/Proposal/UI/API/runtime artifacts;
+- S3 architecture for provider interpreter/renderer, completeness contracts, semantic-equivalence proof and target-artifact handoff.
 
 ## Blockers
 
@@ -93,22 +84,14 @@ Governance chain: `G2 PASS`.
 
 Required Policy Materialization: `G2 PASS`.
 
+Provider policy boundary: `G2 PASS` for S2 ownership/contracts.
+
 Next selected slice: `S2 NOT_STARTED`.
 
 No implementation lease exists.
 
 ## Next
 
-Revalidate the provider boundary around configured effective-policy semantics and rendering:
+Resume **APR Tactical DDD** from provider-neutral contracts, beginning with APR-P03 effective technical access-space semantics and exact comparison/completeness behavior. This is the next dependency for change design/verification and later S3 data-local computation.
 
-```text
-provider/device configuration evidence
-    -> provider-specific effective-policy interpretation
-    -> normalized configured effective policy
-        -> APR comparison/change design/verification
-    -> verified vendor-neutral change
-    -> provider-specific rendering
-    -> NEO execution
-```
-
-First question: whether effective-policy interpretation and target rendering are adapter/integration responsibilities around APR or require a separate semantic owner, while preserving APR's vendor-neutral effective-policy algebra.
+NEP internal S2 remains separately available and does not block APR's provider-neutral semantic model because APR consumes only the accepted public NEP target/locator contract.

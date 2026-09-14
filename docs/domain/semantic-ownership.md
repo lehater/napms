@@ -1,104 +1,65 @@
 # Semantic Ownership
 
-Status: `S2 revalidated through required-policy materialization`.
+Status: `S2 revalidated through provider-policy boundaries`.
 
 This file defines semantic ownership, not runtime/service ownership.
 
 ## Ownership map
 
-| Knowledge / decision | Semantic owner | Upstream authority / source | Primary result |
-|---|---|---|---|
-| Business Process meaning/responsibility and application-semantic Connectivity Need | **Business Connectivity** | business/stakeholder inputs + ACC Interaction meaning | Business Process / Connectivity Need |
-| concrete Access Request, side obligations/decisions, bilateral grant/withdrawal | **Access Governance** | Process-backed Need + deployed Interaction + Authority Management | governance history / Authorization Granted or Withdrawn |
-| current authoritative Policy Rule truth and effective semantic authorization | **Access Policy** | Access Governance + trusted ACC subject | Policy Rule / effective authorized policy |
-| scoped actor/action authority | **Authority Management** | group/role/scope assignment semantics | Effective Authority |
-| Resource/Endpoint identity, current corporate-visible address realization and scope affiliation | **Resource Catalogue** | trusted catalogue/network inventory facts | Resource / ResourceEndpoint / current realization |
-| application/component/ComponentDeployment/Interaction contract | **Application Communication Catalogue** | authorized catalogue sources | deployed Interaction subject + immutable traffic contract |
-| normalized required technical predicate derived from one or more effective Policy Rules | **non-peer Required Policy Materialization composition** | Access Policy + ACC + Resource Catalogue | derived normalized predicate + contributing Rule refs |
-| candidate enforcement target and policy locator for technical pair | **Network Enforcement Placement** | routing/interface state + overrides + locator bindings | candidate Firewall / policy locators |
-| target-specific aggregate required effective policy | **non-peer Required Policy Materialization composition** | normalized required predicates + NEP result | TargetRequiredPolicy or unresolved materialization |
-| normalized source-qualified technical access evidence | **Technical Access Evidence** | device/traffic/import sources | Technical Access Evidence |
-| effective-policy realization assessment, semantic delta, change design and proposed-result verification | **Access Policy Realization** | TargetRequiredPolicy + comparable configured effective policy | Assessment / Delta / Change Design / Verification |
-| provider-specific rendering | `DIRTY` / owner under revalidation | verified vendor-neutral intent + provider semantics | target representation |
-| provider/device mutation lifecycle and execution provenance | **Network Environment Operations** | target representation + Authority Management + provider observations | Network Operation Result |
+| Knowledge / decision | Semantic owner | Primary result |
+|---|---|---|
+| Business Process / Connectivity Need | **Business Connectivity** | Need / justification |
+| bilateral request/consent/grant/withdrawal | **Access Governance** | governance history / Authorization Granted or Withdrawn |
+| effective actor/action/scope authority | **Authority Management** | Effective Authority |
+| current semantic authorization | **Access Policy** | Policy Rule / effective authorized policy |
+| Resource/Endpoint/current corporate-visible address | **Resource Catalogue** | current realization |
+| ComponentDeployment/Interaction traffic contract | **Application Communication Catalogue** | deployed Interaction subject |
+| normalized required technical predicates / target required policy | **non-peer Required Policy Materialization** | TargetRequiredPolicy or unresolved |
+| candidate enforcement target/policy locator | **Network Enforcement Placement** | candidate target/locator |
+| source-qualified technical evidence | **Technical Access Evidence** | TechnicalAccessEvidenceSet |
+| provider-native configured policy -> normalized effective configured policy | **provider interpretation adapter/integration capability** | ConfiguredEffectivePolicySnapshot |
+| required-vs-configured comparison, delta, vendor-neutral change design, proposed-result semantic verification | **Access Policy Realization** | Assessment / Delta / VerifiedChangeIntent |
+| verified vendor-neutral intent -> provider target representation | **provider rendering adapter/integration capability** | TargetPolicyArtifact |
+| controlled provider/device mutation lifecycle | **Network Environment Operations** | NetworkOperation result/provenance |
 
-## Required Policy Materialization ownership
+## Provider interpretation ownership
 
-Required Policy Materialization is explicitly **not a peer Bounded Context**. It is derived composition that owns only the meaning of its derived result and provenance, never the source truths used to compute it.
-
-Conceptual derivation:
+Provider interpretation owns representation translation, not business/domain truth:
 
 ```text
-Effective Policy Rule
-    -> source/destination ComponentDeployment refs
-    -> exactly one Resource per Deployment
-    -> every current ResourceEndpoint
-    -> current corporate-visible address/prefix when present
-    + immutable Interaction traffic semantics
-    => normalized required technical predicates
-
-technical address pair
-    -> NEP
-    -> candidate firewall + policy locator
-
-all predicates for same comparable target/locator
-    => TargetRequiredPolicy
+ProviderPolicyState
++ ProviderSemantics
++ comparison scope
+    -> ConfiguredEffectivePolicySnapshot
 ```
 
-### Derived-result invariants
+It must exactly account for supported provider-specific ordering, deny/default behavior, objects/groups, protocol/service aliases and other constructs that affect effective access. It fails closed when exact interpretation cannot be established.
 
-- materialization must be deterministic for an explicit set of upstream facts/logical time;
-- it does not reinterpret whether a Policy Rule is authorized;
-- it does not own Deployment, Resource, Endpoint, address, Interaction or NEP target identity;
-- deduplicating the same normalized predicate preserves every contributing semantic Policy Rule reference/provenance;
-- revoking one Rule removes only its contribution; a predicate survives when another effective Rule still requires it;
-- candidate placement is exactly the NEP result; materialization does not reconstruct routing/path semantics;
-- APR receives only comparable target-specific required policy and does not reconstruct this chain itself.
+The projection carries comparable target/policy scope, source-neutral effective permit space, provenance/time, explicit completeness, interpreter identity/version and unsupported-semantics outcome.
 
-### Unresolved materialization
+`Complete` is a source/interpreter contract for the explicit comparison scope. `Incomplete | Unknown` cannot be interpreted as an empty configured policy.
 
-A semantic authorization may be valid but not technically materializable. Such cases remain explicit `unresolved` when required input is absent/ambiguous, including missing current address realization or missing comparable policy locator.
+## TAE boundary
 
-`unresolved` is not:
+TAE owns immutable source-qualified evidence. It may persist provider-derived normalized entries, but it does not own:
+
+- current configured-policy selection for APR;
+- completeness for an APR comparison unit;
+- provider effective-policy evaluation across ordered/default/object semantics;
+- target/policy comparison correlation.
+
+Configured-effective-policy publication is therefore not a TAE aggregate/lifecycle.
+
+## APR ownership
+
+APR consumes:
 
 ```text
-empty required policy
-APR missing
-APR excess
-realized
+TargetRequiredPolicy
+ConfiguredEffectivePolicySnapshot
 ```
 
-APR comparison begins only when the required side and configured side can refer to the same comparable target/scope.
-
-## Resource Catalogue realization authority
-
-Resource Catalogue owns:
-
-```text
-Resource
-    -> ResourceEndpoint [0..N]
-        -> current corporate-visible AddressRealization [0..1]
-```
-
-`ResourceEndpoint` is a stable logical L3 presence. Address changes do not change Endpoint identity. Resource/Endpoint may exist before address assignment.
-
-For MVP one Endpoint has at most one current address/prefix. Resource Catalogue records the address/prefix meaningful in corporate access-management space; NAT discovery/calculation is external.
-
-Canonical target contract: `docs/domain/resource-catalogue/target-realization-model.md`.
-
-## Governance ownership
-
-Business Connectivity owns Need, Access Governance owns bilateral consent history/current grant-withdrawal semantics, Authority Management owns effective action authority, and Access Policy owns current Policy Rule truth. None of these truths imply another.
-
-## Network Enforcement Placement authority
-
-NEP owns candidate target/policy-locator relevance for supplied technical source/destination pairs. Candidate relevance is not proof of end-to-end traversal. Materialization and APR must not second-guess this decision.
-
-A candidate Firewall with no policy locator remains a real NEP result but is unresolved for a concrete target-policy comparison.
-
-## Access Policy Realization authority
-
-APR owns normalized comparison of `TargetRequiredPolicy` against comparable configured effective policy, including exact:
+and owns the source-neutral semantic relationship:
 
 ```text
 common  = required ∩ configured
@@ -106,7 +67,30 @@ missing = required - configured
 excess  = configured - required
 ```
 
-It also owns vendor-neutral change design and semantic verification of the proposed result. Provider rendering remains a separate unresolved boundary.
+APR also owns vendor-neutral change design and semantic verification of the proposed resulting effective policy.
+
+APR does not own provider syntax/evaluation mechanics or provider rendering implementation.
+
+## Provider rendering ownership
+
+Provider rendering translates already verified vendor-neutral intent:
+
+```text
+VerifiedChangeIntent
++ provider/target capabilities
++ base target revision/correlation
+    -> TargetPolicyArtifact
+```
+
+It owns representation translation/capability checks only. It cannot redefine desired semantics.
+
+A successful renderer must establish semantic equivalence for the supported provider semantics. If that cannot be established, rendering fails closed. The architecture may prove equivalence by deterministic construction, round-trip interpretation, simulation or another mechanism later; S2 owns the guarantee, not the mechanism.
+
+## NEO boundary
+
+NEO owns execution identity, mutation authority admission, concurrency/preconditions, apply outcome and operation provenance for the supplied artifact. NEO does not reinterpret policy meaning.
+
+Apply success does not imply convergence. Subsequent provider state is observed/interpreted again and compared against required policy.
 
 ## Independent truth dimensions
 
@@ -114,20 +98,16 @@ It also owns vendor-neutral change design and semantic verification of the propo
 Observed
 Recognized
 Needed
-Requested
-Side consent/rejection history
-Authorization granted/withdrawn
-Policy Rule effective
-Technical materialization resolved/unresolved
-Target relevance established
-TargetRequiredPolicy available
-Configured effective policy available
+Requested / bilateral consent
+Authorized Policy Rule
+Required technical policy materialized/unresolved
+Configured effective policy complete/incomplete/unknown
 Realization common/missing/excess
-Change designed
-Proposed result verified
-Target representation rendered
+Vendor-neutral change designed
+Proposed semantic result verified
+Provider artifact rendered / unsupported
 Network operation attempted
-Convergence post-check observed
+Subsequent convergence observed
 ```
 
 No dimension silently becomes another context's authoritative truth.

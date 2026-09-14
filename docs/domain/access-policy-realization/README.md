@@ -1,161 +1,48 @@
 # Access Policy Realization — Problem Statement and Design Directions
 
-Status: `active design / requirements framing`.
+Status: `active Tactical DDD; strategic provider boundaries resolved by ADR-021`.
 
-Date: 2026-09-13.
+Date: 2026-09-14.
 
-This file is the single current semantic framing source for the Access Policy Realization (APR) bounded context while its target Tactical DDD is being designed.
-
-APR remains a separate bounded context. Its final Tactical DDD, ERD, persistence model, computation-engine contract and migration design are not yet locked.
-
-Unresolved design problems are tracked separately at:
-
-- `docs/engineering/context-problems/access-policy-realization.md`.
-
-That problem register is not domain truth and does not impose project priority or a total execution order.
+APR remains a separate Bounded Context. Its final Tactical DDD, ERD, persistence/computation model and migration design are not yet locked.
 
 ## Problem statement
 
-APR owns the following problem:
+For one comparable technical policy target, APR determines how exactly configured effective access realizes required effective access, identifies semantic difference, designs a vendor-neutral policy change, and verifies the proposed resulting semantics before provider rendering/execution.
 
-> For a given technical policy target, determine how completely and exactly the currently configured effective access policy realizes the required technical access policy, identify the semantic difference, design the policy change needed to remove that difference, and verify that the proposed change preserves the required access semantics before rendering or execution.
+APR reasons over **source-neutral effective access semantics**, not raw firewall text, native rule identity or rule count.
 
-The unit of comparison is **effective access semantics**, not textual firewall configuration, provider-native rule identity, ACL line identity or rule count.
+## Inputs
 
-APR therefore reasons about:
+### TargetRequiredPolicy
 
-```text
-required effective access
-        versus
-configured effective access
-```
+Published by Required Policy Materialization (ADR-020): target/policy correlation + normalized required effective permit space + provenance/time.
 
-and must be able to answer:
+### ConfiguredEffectivePolicySnapshot
 
-- what required access is already realized;
-- what required access is missing;
-- what configured access is excessive relative to the required policy;
-- what semantic difference exists between the two policies;
-- what policy change should remove that difference;
-- whether the proposed resulting policy would exactly realize the required policy;
-- how verified intent can be rendered for a concrete target without changing its semantics.
-
-## Context boundary
-
-### Upstream target selection is not APR responsibility
-
-APR receives a technical policy target through an upstream contract. It does not interpret or reevaluate why that target was selected.
-
-APR does not own:
-
-- candidate relevance;
-- forwarding-path or routing analysis;
-- route existence;
-- path confidence;
-- target-selection ambiguity;
-- selection of another device or policy attachment instead of the received target.
-
-Conceptually:
+Published by a provider interpretation adapter/integration capability (ADR-021):
 
 ```text
-upstream placement/composition
-        |
-        | target + required policy
-        v
-Access Policy Realization
+ConfiguredEffectivePolicySnapshot
+    targetRef
+    policyLocator / comparisonScope
+    effectivePermitSpace
+    sourceCapture/evidence references
+    evidence/effective time
+    completeness: Complete | Incomplete | Unknown
+    interpreter identity/version
+    unsupportedSemantics[]
 ```
 
-For APR, the received target/correlation is an input to policy-realization work, not evidence to reconstruct upstream placement semantics.
+APR does not parse provider-native policy syntax. Provider ordering, deny/default behavior, objects/groups, aliases and other source-specific constructs must already have been interpreted exactly into the source-neutral projection.
 
-### Authorization and catalogue truth remain upstream
+`Incomplete | Unknown` configured input cannot be treated as an empty policy or used for a complete realization conclusion.
 
-APR does not own authoritative Access Rule identity/state, application/component communication contracts, Resource identity/realization, network placement truth or collected technical evidence.
+TAE may preserve source-qualified evidence but does not own current configured-policy publication/completeness.
 
-It consumes published contracts/projections needed to construct the required and configured sides of one comparable target policy.
+## Core semantic algebra
 
-### Execution remains downstream
-
-APR may produce verified and rendered policy intent, but it does not own:
-
-- target connection/session lifecycle;
-- device mutation execution;
-- retries/backoff;
-- operational concurrency control;
-- rollback mechanics;
-- post-apply operation lifecycle.
-
-These remain Network Environment Operations concerns.
-
-## Conceptual inputs
-
-Final contracts are still to be designed. The required shape is conceptual.
-
-### Target Required Policy
-
-A target-specific required policy associates one opaque technical target reference/correlation with the effective access semantics expected to exist on that target.
-
-```text
-TargetRequiredPolicy
-    targetRef / comparison correlation
-    requiredPolicyRef / required effective access
-    scope or snapshot identity
-    logical/effective time where required
-    provenance
-```
-
-APR core does not need placement/topology meaning in order to compare policy behavior.
-
-### Configured Policy Snapshot
-
-APR also consumes the configured policy state for the same comparable target/scope.
-
-```text
-ConfiguredPolicySnapshot
-    targetRef / comparison correlation
-    configuredPolicyRef
-    configured effective access
-    snapshot/evidence identity
-    completeness contract
-    provenance
-```
-
-The configured side must represent **effective policy semantics** for the comparison scope.
-
-Raw ordered ACL entries, vendor objects, implicit defaults, rule-order behavior, NAT-dependent behavior or other source-specific constructs must not be compared as though textual rule equality were equivalent to effective access equality.
-
-The exact ownership and contract for normalization from provider-specific policy to comparable source-neutral effective access remains an open design problem.
-
-## Conceptual outputs
-
-APR results are derived from the selected target/input policies. Current output directions are:
-
-```text
-RealizationAssessment
-SemanticDelta
-PolicyChangeDesign
-VerificationResult
-RenderedConfiguration
-```
-
-Final names, identities and persistence/lifecycle decisions remain open until Tactical DDD is locked.
-
-## Effective technical access space
-
-The core semantic abstraction is an **effective technical access space**.
-
-For the current network-policy problem, one technical region is conceptually defined across dimensions such as:
-
-```text
-source address space
-x destination address space
-x protocol
-x source port space
-x destination port space
-```
-
-A target policy denotes the effective set/union of such regions for the relevant comparison scope.
-
-APR reconciliation semantics require exact operations equivalent to:
+For complete comparable inputs:
 
 ```text
 common  = required ∩ configured
@@ -163,243 +50,80 @@ missing = required - configured
 excess  = configured - required
 ```
 
-These equations define domain meaning independently from storage representation or computation algorithm.
+Policies are semantically equivalent when they denote the same effective permit space even when their native decomposition differs.
 
-Two policies are semantically equivalent when they describe the same effective access space even if their rule decomposition differs. One rule covering a `/24`, for example, may be semantically equivalent to two rules covering its two `/25` halves when all other dimensions and effective behavior are equal.
+## APR responsibilities
 
-Raw rule identity, textual equality, object decomposition and rule count are therefore not policy-semantic equality.
+APR owns:
 
-## Stable design requirements
+- comparability validation for its two published inputs;
+- exact effective-policy algebra;
+- realization assessment;
+- exact Semantic Delta;
+- vendor-neutral Policy Change Design;
+- semantic verification of the proposed resulting effective policy;
+- provenance/explainability of derived results;
+- a source-neutral `VerifiedChangeIntent` result suitable for downstream provider rendering.
 
-The following requirements constrain the target model. Detailed unresolved choices belong in the context problem register.
+APR does not own:
 
-### APR-DIR-001 — Treat target selection as upstream truth
+- authorization or Policy Rule governance;
+- Resource/ACC truth;
+- NEP target selection/relevance;
+- provider-native configured-policy interpretation;
+- provider-specific rendering implementation;
+- provider/device mutation lifecycle.
 
-APR consumes target-specific required-policy input without reevaluating candidate, routing, path or placement semantics.
+## Provider rendering handoff
 
-No APR result reinterprets target relevance.
-
-### APR-DIR-002 — Compare effective behavior, not configuration text
-
-APR reconciliation compares effective access semantics.
-
-Semantically equivalent policies compare as equivalent even when represented by different rule counts, address decompositions, policy objects or provider-native identities.
-
-### APR-DIR-003 — Preserve exact policy-space algebra
-
-For complete comparable inputs, APR computes exact `common`, `missing` and `excess` policy space without semantic widening or narrowing.
-
-Every computation strategy must preserve the same observable algebra.
-
-### APR-DIR-004 — Separate assessment from semantic delta
-
-APR distinguishes:
-
-- classification of realization state; and
-- the exact semantic difference that explains the state.
-
-A realization status is a summary. The semantic delta is the authoritative explanation of the difference.
-
-### APR-DIR-005 — Separate semantic delta from policy change design
-
-`missing` and `excess` describe **what semantics differ**. They do not by themselves prescribe the best edit to the existing rulebase.
-
-Policy Change Design is a separate concern and may choose strategies such as reuse/modify/create/narrow/remove only when the accepted design can prove their correctness.
-
-The domain model must not collapse semantic difference and concrete policy editing into one concept.
-
-### APR-DIR-006 — Verify proposed changes before execution
-
-APR supports evaluating the effective semantics of a proposed resulting policy and comparing them with the required policy.
-
-Conceptually:
+ADR-021 places provider rendering outside APR core:
 
 ```text
-effective(configured + proposedChange)
-        versus
-required effective policy
+VerifiedChangeIntent
++ target/provider capabilities
++ base target revision/correlation
+    -> Provider Policy Renderer
+    -> TargetPolicyArtifact
+    -> NEO
 ```
 
-Verification exposes remaining missing access and introduced or remaining excess access.
+Rendering is an adapter/integration capability. It may not widen, narrow or reinterpret verified intent.
 
-Operational mutation remains outside APR.
+A successful rendering path must establish semantic equivalence of the target representation for the supported provider semantics. If equivalence cannot be established, rendering fails closed and NEO receives no executable artifact.
 
-### APR-DIR-007 — Keep rendering downstream of semantic design and verification
+The proof mechanism belongs to Architecture: deterministic construction, round-trip interpretation, provider simulation or another validated mechanism may satisfy the invariant.
 
-Provider/vendor rendering remains downstream from semantic reconciliation/change design and must not broaden, narrow or reinterpret verified semantic intent.
+## NEO handoff
 
-The exact renderer input contract remains an open design question.
+NEO owns operation identity, mutation authority, concurrency/pre-check, apply outcome and execution provenance for the supplied `TargetPolicyArtifact`. NEO does not rewrite policy semantics.
 
-### APR-DIR-008 — Keep technical-to-domain attribution as supporting explanation
+An apply success is not convergence proof. Subsequent provider state must be collected/interpreted into another `ConfiguredEffectivePolicySnapshot` and compared again.
 
-APR needs explanation/attribution capability for answering which domain interaction or business meaning corresponds to technical access regions.
+## Scale direction
 
-This is distinct from pure technical policy equivalence. Technical reconciliation must not depend on attribution unless a concrete invariant requires that dependency.
+APR must support very large policy spaces without mandatory full in-memory hydration. Data-local computation/worksets/indexes may be used behind APR semantic contracts. Such state remains derived unless a future accepted lifecycle establishes independent durable business meaning.
 
-### APR-DIR-009 — Do not require materialization of massive policy sets in application memory
+## Stable constraints
 
-APR must be designed for very large policy datasets.
+- target selection is upstream truth;
+- comparison uses effective semantics, not configuration text;
+- exact `common/missing/excess` algebra is preserved;
+- assessment, delta, change design and verification remain distinct concepts;
+- provider interpretation/rendering fail closed when semantics are unsupported;
+- empty evidence is not proof of empty configured policy without explicit completeness;
+- APR does not navigate peer-private persistence merely for performance;
+- current APR provider-renderer code is migration evidence, not target domain ownership.
 
-The target architecture shall not require complete required/configured policy sets to be hydrated into Python/domain-object collections merely to compute intersection and difference.
+## Open Tactical DDD work
 
-Large-set operations should execute **data-locally**, close to persisted/indexed policy representation, returning compact assessment metadata plus paged/streamed delta details as required.
+Still unresolved:
 
-### APR-DIR-010 — Hide computation strategy behind APR semantics
+- final technical-region/value vocabulary and edge cases (APR-P03);
+- data-local semantic computation contract (APR-P04);
+- vendor-neutral change-design vocabulary (APR-P05);
+- proposed-change simulation/verification contract (APR-P06);
+- attribution/explanation semantics (APR-P08);
+- final APR Tactical DDD/ERD/persistence classification (APR-P09);
+- target-versus-current migration plan (APR-P10).
 
-Implementation technology is not the domain definition.
-
-The application/domain boundary should express policy assessment, comparison, simulation and delta access in APR language through a semantic computation boundary.
-
-A PostgreSQL-backed implementation is a valid candidate. If later semantics or scale require BDD/FDD/atomic predicates or another symbolic representation, the domain contract should remain stable.
-
-### APR-DIR-011 — Preserve bounded-context ownership during data-local processing
-
-Performance requirements do not justify unrestricted SQL navigation through another bounded context's private persistence schema.
-
-Data-local integration uses explicit published projections/contracts or another stable owner-provided integration boundary.
-
-Physical co-location in one PostgreSQL instance does not create a shared domain model.
-
-### APR-DIR-012 — Require trustworthy comparison scope and completeness
-
-A complete realization conclusion is valid only when required and configured sides represent the same comparison unit/scope and the configured side is complete for that contract.
-
-Completeness must be explicit. Empty evidence alone does not prove an empty effective policy.
-
-### APR-DIR-013 — Preserve provenance and explainability
-
-Derived APR results preserve references sufficient to explain:
-
-- which required-policy input/snapshot was used;
-- which target/comparison key was used;
-- which configured-policy snapshot/evidence was used;
-- which logical/evidence time was used where relevant;
-- how semantic delta results trace back to contributing inputs.
-
-External references remain external; APR does not turn them into authoritative peer-context identities.
-
-### APR-DIR-014 — Derived computation may be materialized without becoming authoritative truth
-
-APR results are derived by default.
-
-For scale, pagination, rendering, repeatability or reuse, implementations may materialize reconciliation runs, policy-space indexes or delta worksets.
-
-Such state remains derived/computational unless a future product requirement introduces an independent APR lifecycle, for example an editable/approvable change plan.
-
-## Use-case directions
-
-### Assess Policy Realization
-
-Answer:
-
-> How completely and exactly is the required effective policy realized on this target?
-
-Final status vocabulary remains open, but must be derived from exact semantic difference plus comparability/completeness knowledge rather than from rule-text matching.
-
-### Reconcile Policy
-
-Compute the exact semantic relationship:
-
-```text
-common
-missing
-excess
-```
-
-For large results, expose compact result references and paged/streamed or data-local delta consumption rather than constructing a giant in-memory object graph.
-
-### Design Policy Change
-
-Translate semantic difference into vendor-neutral change intent/design for the existing policy while remaining distinct from reconciliation.
-
-### Verify Proposed Change
-
-Evaluate the effective semantics of the proposed resulting policy before execution and prove whether it matches the required policy.
-
-This is semantic pre-change verification, not operational post-deployment verification.
-
-### Render Verified Intent
-
-Convert verified vendor-neutral intent into a target/provider-specific representation while preserving semantic equivalence.
-
-### Explain / Attribute Technical Access
-
-Support business/domain attribution of technical access regions for explanation and diagnostics without redefining technical policy equality.
-
-### Future: Policy Optimization
-
-Redundant, shadowed, overly broad and unused policy material is a natural future capability, but it remains outside the current core until its own use cases and invariants are accepted.
-
-## Scale and data-local computation
-
-Expected data volume is an architectural driver.
-
-Preferred shape:
-
-```text
-APR application use case
-        |
-        v
-APR semantic computation boundary
-        |
-        v
-data-local engine
-        |
-        +-- published required effective-policy projection/reference
-        +-- published configured effective-policy projection/reference
-        +-- exact comparison/index/workset
-        |
-        v
-compact assessment result / delta reference
-```
-
-The application process should normally receive references, status/summary metadata, counts/measures where useful and requested pages/fragments. It should not need the complete policy on every call.
-
-PostgreSQL is a reasonable candidate when both policy sides are already represented as canonical effective technical regions supporting exact relational/range operations.
-
-If ordered ACL semantics, deny/default behavior, nested objects, NAT-dependent semantics or other constructs make relational representation unsafe or inefficient, a specialized symbolic engine may be required. Semantic correctness and measured scale determine that choice.
-
-## Cross-context data boundary
-
-APR needs fast access to upstream facts without coupling to peer persistence internals.
-
-The target design should evaluate explicit APR-facing contracts for:
-
-```text
-required effective-policy projection
-configured effective-policy projection
-target-to-policy correlation
-```
-
-Rules:
-
-1. the owning bounded context defines the meaning of each published projection;
-2. APR consumes the published contract, not private persistence structure;
-3. projections may be physically co-located for performance;
-4. derived/indexed copies carry snapshot/freshness/provenance semantics;
-5. cross-context database foreign keys must not create a hidden shared aggregate.
-
-## Explicit non-goals of the current framing
-
-This document does not yet define:
-
-- final APR aggregate roots;
-- final canonical ERD;
-- final physical table/view/materialized-view layout;
-- final semantic-engine interface;
-- PostgreSQL range/index strategy;
-- adoption of BDD/FDD/atomic-predicate techniques;
-- exact ownership of provider-specific normalization to effective policy;
-- final policy-change operation vocabulary;
-- approval/edit lifecycle for change plans;
-- final renderer input contract;
-- migration patches to current runtime code;
-- public API/UI design.
-
-## Open design work
-
-The unresolved problem set is maintained in:
-
-- `docs/engineering/context-problems/access-policy-realization.md`.
-
-That register records open questions, known gaps, real dependencies, blockers, evidence needs and revisit triggers. It intentionally does not turn the discovery order of those questions into an execution roadmap.
+APR-P02 and APR-P07 strategic ownership questions are resolved by ADR-021. Architecture details of provider adapters/artifact format remain downstream.
