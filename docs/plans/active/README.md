@@ -10,25 +10,28 @@ Lifecycle stage: `S2`
 
 Stage state: `NOT_STARTED`
 
+Lifecycle basis: ADR-019, ADR-020 and ADR-021 each have G2 PASS for their completed S2 slices; no G3/G4 or implementation authorization exists.
+
 Implementation authorization: `none`
 
 Authorized scope: `none`
 
 Authorization basis: `none`
 
-## Lifecycle basis
+## Working set
 
-Completed S2 slices:
+Read first:
+- `docs/domain/access-policy-realization/README.md`
+- `docs/engineering/context-problems/access-policy-realization.md`
+- `docs/process/tactical-ddd-stage.md`
+
+## Completed S2 slices
 
 - governance chain — `G2 PASS` (ADR-019);
 - required-policy materialization — `G2 PASS` (ADR-020);
 - provider configured-policy interpretation/rendering boundary — `G2 PASS` for strategic ownership/contracts (ADR-021).
 
-No G3/G4 or implementation authorization exists.
-
 ## Completed provider-policy boundary S2
-
-ADR-021 resolves the previously dirty boundary:
 
 ```text
 provider/device configuration
@@ -53,7 +56,7 @@ Ownership results:
 - TAE remains immutable source-qualified evidence and does not decide APR currentness/completeness;
 - APR core remains provider-neutral;
 - provider rendering is not APR domain ownership;
-- semantic equivalence of rendered output is mandatory, while the proof mechanism belongs to Architecture;
+- semantic equivalence of rendered output is mandatory, while proof mechanism belongs to Architecture;
 - NEO executes a supplied target artifact and does not reinterpret policy meaning;
 - unsupported/incomplete provider semantics fail closed.
 
@@ -86,8 +89,6 @@ No implementation lease exists.
 
 ## Next
 
-The end-to-end ownership chain is now stable enough that further S2 work can proceed independently by context.
-
-Preferred next slice: resume **APR Tactical DDD** from provider-neutral contracts, beginning with APR-P03 effective technical access-space semantics and the exact comparison/completeness model. This is the next dependency for change design/verification and later S3 data-local computation.
+Resume **APR Tactical DDD** from provider-neutral contracts, beginning with APR-P03 effective technical access-space semantics and exact comparison/completeness behavior. This is the next dependency for change design/verification and later S3 data-local computation.
 
 NEP internal S2 remains separately available and does not block APR's provider-neutral semantic model because APR consumes only the accepted public NEP target/locator contract.
