@@ -1,6 +1,6 @@
 # Resource Role Model
 
-Status: `canonical Strategic DDD summary for access-relevant Resources, provider realizations, responsibility and enforcement identities`.
+Status: `canonical Strategic DDD summary for access-relevant Resources, provider realizations, responsibility and enforcement identities; revalidated by the 2026-09-14 global Strategic convergence pass`.
 
 ## Purpose
 
@@ -91,11 +91,13 @@ Owns who may curate, administer, approve, plan, execute or otherwise act for the
 
 Authority Management does **not** own which Resources belong to a Responsibility Scope or who is an operational Resource contact. It evaluates actor/action eligibility for the same stable scope reference; Resource Catalogue owns Resource-to-scope affiliation and Resource Responsibility facts.
 
-I16A adds an independent workspace-read action `ReadScopedConnectivity`. It admits using one Responsibility Scope as the actor's local workspace context. It does not imply Requirement/Decision/Rule detail read or any mutation action.
+I16A adds an independent workspace-read action `ReadScopedConnectivity`. It admits using one Responsibility Scope as the actor's local workspace context. It does not imply Access Governance/Policy detail read or any mutation action.
 
 ### Network Environment Operations
 
-Owns provider-facing acquisition/diagnostic/mutation mechanics where product scope uses them. It does not own normalized RC/NEP/TAE truth.
+Network Environment Operations is a target Bounded Context. It owns controlled provider-facing mutation operation identity/lifecycle, action-specific mutation-authority admission, concurrency/preconditions, operation outcome and execution provenance for supplied target artifacts.
+
+Acquisition/diagnostic adapters may support several contexts, but NEO does not own normalized RC/NEP/TAE truth, policy meaning or placement.
 
 ## Management-plane access
 
@@ -103,12 +105,12 @@ Access **to** a firewall/network device management service is ordinary governed 
 
 It must remain distinct from traffic **through** the same device's enforcement role.
 
-The current Access Rule semantics still use the normal application-backed identity:
+The current semantic authorization subject still uses the normal application-backed identity:
 
 ```text
 Source Component Deployment
 + Destination Component Deployment
-+ Directed Communication Specification
++ Interaction Contract Revision
 ```
 
 ## Organizational relations
@@ -142,15 +144,15 @@ These relations may refer to related organizational concepts but have different 
 - Authority Management answers **whether actor A may perform action X for scope S at time T**.
 - current catalogue visibility answers only whether catalogue metadata may be discovered/read; it does not create responsibility or authority.
 
-Ownership, stewardship, Resource Responsibilities, Resource Scope Affiliations and Responsibility Assignments are temporal relations to existing domain subjects, not identity-defining fields of Resource, Application, Component, Component Deployment or Access Rule merely because an actor or organizational relation changes.
+Ownership, stewardship, Resource Responsibilities, Resource Scope Affiliations and Responsibility Assignments are temporal relations to existing domain subjects, not identity-defining fields of Resource, Application, Component, Component Deployment or Policy Rule merely because an actor or organizational relation changes.
 
 ```text
 ownership / responsibility / Resource Scope Affiliation change
 != domain entity identity change
-!= Access Rule identity change
+!= Policy Rule identity change
 ```
 
-Such a change may alter who should be contacted, may require responsibility review, and may become an input to a future Connectivity Decision re-evaluation if that domain defines it as decision-relevant. It must not silently manufacture a new identity or action authority.
+Such a change may alter who should be contacted or require responsibility review. Whether it also requires Access Governance warning, reapproval or current-consent withdrawal is a separate product-behavior decision and must not be invented by Resource Catalogue or Authority Management.
 
 ## Responsibility-scope consequences
 
@@ -165,9 +167,11 @@ actor
 
 Resource Responsibility is orthogonal to that derivation. Being listed as Service Owner or Operations Contact does not by itself place a Resource in a scope and does not give the listed party a NAPMS action right.
 
-Other domain actions remain independently authorized. In particular, local-workspace membership does not itself permit declaring a Requirement, deciding connectivity, mutating a Rule or reading protected business details.
+Other domain actions remain independently authorized. In particular, local-workspace membership does not itself permit creating/editing Connectivity Need truth, submitting/approving/revoking Access Governance actions, changing Policy Rule truth or reading protected business/governance details.
 
-Existing Requirement Governance Scope, Decision Governance Scope and Rule Governance Scope are stored context on those entities. A later Resource Scope Affiliation or Resource Responsibility change must not silently rebind those stored scopes.
+For the current target, an Access Request preserves the source/destination governance scope references used for its approval obligations, and SideDecision provenance records the scope/authority basis used at decision time. A later Resource Scope Affiliation or Resource Responsibility change does not rewrite historical Requests/decisions and does not silently rebind their recorded scopes.
+
+Whether a later affiliation/responsibility change should warn, require reapproval or withdraw current bilateral consent is intentionally unresolved product behavior. When a concrete use case requires that consequence, re-enter S1/Access Governance rather than deriving it from Resource Catalogue or Authority Management semantics.
 
 A Resource with no effective Resource Scope Affiliation is still a Resource and remains catalogue-readable under the current global catalogue visibility baseline; it simply cannot appear as a local Resource for that scope.
 
@@ -179,7 +183,7 @@ This projection supports operational questions such as whom a network engineer s
 
 ## Lifecycle consequences
 
-A Resource affiliation/address/site/lifecycle/responsibility change may trigger responsibility review, Network Context/enforcement re-evaluation and Access Policy Realization without changing the semantic identity of an existing Access Rule.
+A Resource affiliation/address/site/lifecycle/responsibility change may trigger responsibility review, Network Context/enforcement re-evaluation and Access Policy Realization without changing the semantic identity of an existing Policy Rule.
 
 Retiring/replacing provider infrastructure does not silently migrate policy authority, Logical Firewall identity or every responsibility assignment.
 
