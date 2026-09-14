@@ -22,8 +22,11 @@ Authorization basis: `none`
 
 Read first:
 - `docs/domain/access-policy-realization/README.md`
-- `docs/engineering/context-problems/access-policy-realization.md`
 - `docs/process/tactical-ddd-stage.md`
+
+Expand when needed:
+- `docs/engineering/context-problems/access-policy-realization.md` for the specific APR-P03/P04/P05/P06/P08/P09/P10 question under review;
+- provider/TAE/NEO artifacts only when the active tactical question requires them.
 
 ## Completed S2 slices
 
