@@ -1,35 +1,35 @@
 {
   "model_id": "NAPMS-DDD-001",
-  "source_baseline": "DDD-BDM-010 + accepted MVP extensions",
-  "status": "accepted",
+  "source_baseline": "DDD-BDM-010 + 2026-09-14 G1 revalidation + ADR-019",
+  "status": "s2-strategic-revalidation-in-progress",
   "bounded_contexts": [
     {
-      "name": "Connectivity Requirements",
-      "responsibility": "Connectivity-need identity/lifecycle, required semantic interaction, applicability and justification/provenance."
+      "name": "Business Connectivity",
+      "responsibility": "Business Process meaning/responsibility, application-semantic Connectivity Need, business attribution and justification reconciliation."
     },
     {
-      "name": "Connectivity Decision",
-      "responsibility": "Immutable final Allowed/NotAllowed decision identity, governance scope, validity, reason/provenance and supersession for exact proposed Rule semantic identity."
+      "name": "Access Governance",
+      "responsibility": "Access Request history, source/destination approval obligations, side decisions, bilateral authorization grant, withdrawal/revocation and governance provenance."
     },
     {
       "name": "Access Policy",
-      "responsibility": "Authoritative Access Rule identity, uniqueness/idempotency, properties, Active/Inactive and desired-policy projections."
+      "responsibility": "Authoritative current Policy Rule truth, semantic uniqueness/idempotency and effective authorized-policy projections."
     },
     {
       "name": "Authority Management",
-      "responsibility": "Scoped actor/action authority for domain actions by scope/effective time, including Responsibility Assignment, delegation, transfer/revocation and accountability."
+      "responsibility": "Effective scoped actor/action authority and the role/group/scope assignment semantics that establish it."
     },
     {
       "name": "Resource Catalogue",
-      "responsibility": "Access-domain Resource/Endpoint identity, time-qualified Resource Scope Affiliation, access-relevant lifecycle/affiliation facts and current/historical technical realization."
+      "responsibility": "Resource/Endpoint identity, time-qualified Resource Scope Affiliation, access-relevant lifecycle facts and current/historical technical realization."
     },
     {
       "name": "Application Communication Catalogue",
-      "responsibility": "Application/Component/Deployment/DCS communication semantics and structural validity."
+      "responsibility": "Application/Component/ComponentDeployment/Interaction identities and immutable interaction traffic contracts."
     },
     {
       "name": "Network Enforcement Placement",
-      "responsibility": "Current network-state and override based enforcement-target relevance plus applicable policy/ACL locators."
+      "responsibility": "Current network-state and override based candidate enforcement-location relevance plus applicable policy/ACL locators."
     },
     {
       "name": "Technical Access Evidence",
@@ -37,35 +37,44 @@
     },
     {
       "name": "Access Policy Realization",
-      "responsibility": "Effective-policy realization assessment, exact semantic reconciliation, policy-change design, pre-change semantic verification and semantics-preserving target rendering for a given policy target."
+      "responsibility": "Normalized required-vs-configured policy realization assessment, semantic reconciliation, vendor-neutral policy-change design and proposed-result semantic verification for a supplied comparable target; provider rendering ownership remains under revalidation."
     }
   ],
-  "wave1_direct_participants": [
+  "current_direct_participants": [
+    "Business Connectivity",
+    "Access Governance",
     "Access Policy",
     "Authority Management",
     "Application Communication Catalogue",
     "Resource Catalogue"
   ],
-  "current_direct_participants": [
-    "Connectivity Requirements",
-    "Connectivity Decision",
-    "Access Policy",
-    "Authority Management",
-    "Application Communication Catalogue",
-    "Resource Catalogue"
+  "legacy_contexts": [
+    {
+      "name": "Connectivity Requirements",
+      "disposition": "superseded target boundary; useful Need semantics moved to Business Connectivity"
+    },
+    {
+      "name": "Connectivity Decision",
+      "disposition": "superseded target boundary; side-decision/grant/revocation semantics moved to Access Governance"
+    }
   ],
   "external_seams": [],
   "invariants": [
     "Bounded Context is not a deployment unit.",
-    "Connectivity need does not authorize access.",
-    "Proposal authority does not imply decision authority.",
+    "Business Need does not authorize access.",
+    "Grant requires source-side and destination-side consent.",
+    "Either authorized side may withdraw its current consent without the other side approving the withdrawal.",
+    "Authority Management owns effective actor/action/scope authority; consuming contexts own decisions made using that authority.",
+    "Access Governance owns bilateral consent history; Access Policy owns current authoritative Policy Rule truth.",
     "Resource Scope Affiliation does not imply actor authority, and actor authority for a scope does not imply Resource membership.",
-    "Connectivity Decision owns final decision reason, validity and supersession.",
-    "Decision expiry or supersession does not silently mutate an existing Access Rule.",
     "Technical evidence does not authorize access.",
-    "Access Policy owns authoritative Access Rule identity and operational state.",
-    "Network Enforcement Placement owns target relevance; Access Policy Realization does not reevaluate why a target was selected.",
-    "Access Policy Realization compares effective policy semantics rather than raw configuration representation.",
-    "Technical realization changes do not redefine Rule semantic identity."
+    "Network Enforcement Placement owns candidate enforcement-location relevance; Access Policy Realization does not reevaluate why a target was selected.",
+    "Access Policy Realization compares normalized effective policy semantics rather than raw configuration representation.",
+    "Technical realization changes do not redefine semantic authorization identity."
+  ],
+  "open_strategic_questions": [
+    "Owner of semantic-to-technical required-policy materialization.",
+    "Provider-specific effective-policy normalization and rendering boundaries.",
+    "Responsibility-scope change consequences for existing authorization."
   ]
 }
