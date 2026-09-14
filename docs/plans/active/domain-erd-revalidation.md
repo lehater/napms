@@ -10,6 +10,17 @@ Revalidate only the domain scopes whose accepted S1 semantics or upstream contra
 
 Current runtime/code/schema remain migration evidence, not automatic target truth.
 
+## Inputs
+
+Primary lifecycle/method inputs:
+
+- `docs/process/domain-design-stage.md`;
+- `docs/process/strategic-ddd-convergence.md` when a boundary/owner is uncertain;
+- `docs/process/tactical-ddd-stage.md` when identities/lifecycles/invariants inside an accepted boundary are active;
+- the smallest G1 requirement passports and canonical domain/ADR artifacts needed by the selected slice.
+
+Do not preload legacy CR/CD artifacts unless a migration/current-state question specifically requires them.
+
 ## Current accepted baseline
 
 Breadth-first capability G1 is accepted.
@@ -36,7 +47,7 @@ Strategic DDD accepted:
 
 ```text
 Business Connectivity
-    -- Process-backed Need --> Access Governance
+    -- Process-backed Need / justification --> Access Governance
 
 Authority Management
     -- effective action authority --> Access Governance
@@ -127,7 +138,20 @@ For each selected slice:
 7. pass G2 only when Architecture no longer has to invent ownership/identity/lifecycle/invariants;
 8. do not authorize implementation without later G3/G4.
 
-## Current next slice
+## Blockers
+
+No repository blocker is recorded for starting the next S2 slice. The remaining questions are domain-design work, not external missing evidence at this checkpoint.
+
+## Exit criteria
+
+This active revalidation can be retired when every selected/dirty domain slice either:
+
+- has a G2-coherent target boundary/tactical model sufficient for its intended next step; or
+- is parked in a durable context-problem register with explicit blockers/revisit triggers.
+
+No implementation is authorized merely by retiring this plan.
+
+## Next
 
 Revalidate ownership and contract for **semantic-to-technical required-policy materialization** between Access Policy/ACC/Resource Catalogue/NEP and APR.
 
