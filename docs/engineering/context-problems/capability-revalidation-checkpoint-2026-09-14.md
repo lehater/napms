@@ -281,6 +281,69 @@ Old `Connectivity Decision` contains useful decision authority, approve/reject, 
 
 ADR-016 and the strategic model must therefore be revalidated before being used to exclude request/approval capabilities from the product.
 
+## G1 consistency review — 2026-09-14
+
+The stakeholder semantics above are coherent, but the repository still contains accepted/canonical artifacts that encode superseded assumptions. The breadth-first G1 transition therefore remains `REWORK` until the current requirements layer has one non-contradictory observable contract. Later-stage artifacts depending on the changed requirements are `DIRTY` and must be revalidated after G1 passes.
+
+### P1 — Access Policy still consumes the superseded single Decision model
+
+`docs/requirements/access-policy-core.md` currently says that `Connectivity Decision` owns one final `Allowed | NotAllowed` result and that Access Policy materializes a Rule from `Allowed`.
+
+This conflicts with the accepted bilateral model:
+
+```text
+source-side consent
+AND destination-side consent
+    -> authorization grant
+    -> current Policy Rule truth
+```
+
+Required S1 action: revalidate `access-policy-core.md` so it consumes authorization grant/withdrawal semantics from Access Governance rather than the legacy single `Connectivity Decision` contract. Preserve Rule identity/deduplication behavior only where it remains compatible with the new authorization lifecycle.
+
+### P1 — ACC target allows zero-or-many Resource bindings, while current MVP evidence requires exactly one Resource
+
+`docs/requirements/application-catalogue-domain-target.md` / ADR-015 currently define `ComponentDeployment` with zero or more temporal `DeploymentResourceBinding` facts and explicitly accept multiple effective Resource bindings.
+
+The 2026-09-14 stakeholder checkpoint instead requires:
+
+```text
+ComponentDeployment -> exactly one Resource
+```
+
+with Resource binding mandatory at Deployment creation and moving a Component to another Resource treated as a new concrete deployment/authorization subject.
+
+Required S1 action: revalidate the ACC target requirement and ADR-015 assumption. Do not carry the old zero-or-many binding rule forward merely for migration compatibility.
+
+### P1 — Strategic DDD and capability ownership encode superseded CR/CD boundaries
+
+`docs/domain/strategic-model.md` still treats Connectivity Requirements and Connectivity Decision as established Bounded Contexts, excludes them from MVP via ADR-016, and models MVP authorization as Authority Management acting directly on Access Policy.
+
+`docs/domain/capabilities.md` still assigns connectivity-need semantics to `Connectivity Requirements` and describes the old requirement/decision composition.
+
+These are S2 owners, not S1 requirements owners. They must not be rewritten during G1 merely to make the documents agree. Mark them `DIRTY` because the new accepted G1 semantics changed their upstream guarantees. After G1 passes, Strategic DDD must regroup capabilities from the current passports rather than preserve the previous BC names.
+
+### P1 — APR rendering boundary conflicts with the latest provider-boundary direction
+
+`docs/domain/access-policy-realization/README.md` currently includes `Render Verified Intent` / provider-specific rendering inside APR's problem framing. The latest G1 checkpoint states that vendor-specific configuration belongs at integration boundaries and identifies APR/TAE documents that place provider rendering inside APR as dirty candidates.
+
+This does not require G1 to invent the final renderer owner. It does require the later APR design to be marked `DIRTY` and revalidated against the accepted normalized-policy boundary before its next S2/S3 gate.
+
+### Gate consequence
+
+Current breadth-first G1 status:
+
+```text
+Business Connectivity passport              coherent
+Access Governance passport                  coherent
+Policy Realization/Reconciliation passport  coherent
+Access Policy legacy requirement             REWORK required
+ACC Deployment↔Resource target requirement  REWORK required
+Strategic DDD / capability map              DIRTY downstream S2
+APR rendering boundary                      DIRTY downstream design
+```
+
+No new stakeholder decision is required to resolve the first two S1 conflicts: the accepted 2026-09-14 evidence already supplies the higher-priority product semantics. The next work is requirements consolidation, followed by a G1 gate check. Only after that should Strategic DDD/Context Map recomposition begin.
+
 ## Explicit unknowns retained for later stages
 
 - final Bounded Context grouping and Context Map;
