@@ -1,6 +1,6 @@
 # Access Governance — target Tactical DDD model
 
-Status: `S2 target candidate`.
+Status: `S2 accepted for governance-chain slice; Resource Scope Affiliation input revalidated by the 2026-09-14 global Strategic convergence pass`.
 
 Date: 2026-09-14.
 
@@ -10,7 +10,7 @@ Accepted behavior: `docs/requirements/access-governance-g1.md`.
 
 ## Purpose
 
-Own explainable bilateral security consent for one concrete deployed interaction while keeping business Need, actor authority evaluation and current Policy Rule truth in their respective contexts.
+Own explainable bilateral security consent for one concrete deployed interaction while keeping business Need, Resource responsibility-scope facts, actor authority evaluation and current Policy Rule truth in their respective contexts.
 
 The core question is:
 
@@ -50,7 +50,7 @@ Once submitted, a Request preserves at least:
 - source/destination governance scope references required for the approval obligations;
 - resulting side decisions/provenance or references to them.
 
-Later Need/Process metadata changes do not rewrite the submitted Request.
+Later Need/Process metadata changes do not rewrite the submitted Request. Later Resource Scope Affiliation changes also do not rewrite the governance scopes historically used by the Request/decisions.
 
 ### Lifecycle meaning
 
@@ -86,7 +86,8 @@ Required invariants:
 3. One approved side cannot authorize the Request while the other is unresolved.
 4. A rejection of either required side prevents that Request from becoming Approved.
 5. The same actor may satisfy both only when Authority Management independently admits that actor for each obligation's action/scope.
-6. Owner/administrator Resource metadata is never substituted for effective approval authority.
+6. Owner/administrator/Resource Responsibility metadata is never substituted for effective approval authority.
+7. Resource Catalogue scope affiliation is responsibility context, not actor authority; Authority Management admission is still required for the selected side scope.
 
 ## SideDecision
 
@@ -187,18 +188,21 @@ A future implementation may realize this boundary in different storage shapes as
 Inputs:
 - trusted AuthorizationSubject from ACC references;
 - current Process-backed Connectivity Need/business basis from Business Connectivity;
+- effective Resource Scope Affiliation facts for the source/destination Resources from Resource Catalogue at the selected logical time;
 - requester identity;
-- admitted request authority for source scope.
+- admitted request authority for the selected source scope.
 
 Result:
-- new AccessRequest with SourceSide and DestinationSide obligations.
+- new AccessRequest with SourceSide and DestinationSide obligations and the governance scopes used for those obligations preserved as historical basis.
+
+If Resource scope facts are absent, ambiguous for the required selection rule, or otherwise unresolved, Access Governance must not manufacture a scope from Resource owner/contact metadata. Exact selection behavior for legitimately overlapping affiliations remains deferred until accepted product behavior requires it.
 
 ### Decide side
 
 Inputs:
 - pending Request/side obligation;
 - actor/outcome/reason;
-- effective authority result and provenance for that side/scope/time.
+- effective authority result and provenance for that recorded side/scope/time.
 
 Result:
 - immutable SideDecision;
@@ -212,7 +216,7 @@ Inputs:
 - AuthorizationSubject;
 - side;
 - actor/reason;
-- effective revoke authority/provenance.
+- effective revoke authority/provenance for the applicable current governance scope according to accepted product behavior.
 
 Result:
 - that side's current consent withdrawn;
@@ -239,9 +243,19 @@ Need is justification, not permission.
 
 Consumes trusted exact AuthorizationSubject references. Access Governance does not own ComponentDeployment/Interaction lifecycle.
 
+The ComponentDeployments expose opaque ResourceRefs needed to obtain responsibility-scope facts from Resource Catalogue; ACC does not own those scope facts.
+
+### Resource Catalogue -> Access Governance
+
+Consumes effective Resource Scope Affiliation facts for each source/destination Resource at the relevant logical time, including validity/provenance sufficient to distinguish no affiliation, one applicable affiliation, legitimate overlap and integrity ambiguity where material.
+
+Resource Catalogue owns affiliation truth. Access Governance owns obligation/scope-selection behavior. A Resource Responsibility/owner/administrator fact is not an approval-scope or authority substitute.
+
 ### Authority Management -> Access Governance
 
 Consumes effective actor/action/scope/time result plus sufficient authority provenance. Role/group internals remain private to Authority Management.
+
+Resource Scope Affiliation and Effective Authority may use the same stable `ResponsibilityScopeRef`, but neither context derives its truth from the other.
 
 ### Access Governance -> Access Policy
 
@@ -266,6 +280,7 @@ Authoritative in Access Governance:
 External truth:
 - Need/Process meaning;
 - ComponentDeployment/Interaction identity;
+- Resource Scope Affiliation;
 - actor authority;
 - Policy Rule state.
 
@@ -276,7 +291,7 @@ Derived:
 ## Explicit non-goals
 
 - business Need lifecycle;
-- Resource/Endpoint address realization;
+- Resource/Endpoint address realization or Resource Scope Affiliation ownership;
 - role/group membership resolution;
 - current Policy Rule lifecycle;
 - firewall/network realization;
@@ -289,5 +304,5 @@ Derived:
 - request cancellation/expiry behavior;
 - whether SideDecision requires an externally addressable standalone ID;
 - how overlapping responsibility scopes select the applicable side approval scope;
-- policy for responsibility-scope changes after authorization;
+- product policy for responsibility-scope changes after authorization (warning/reapproval/withdrawal); this re-enters S1 when a concrete behavior is required;
 - exact naming of the subject-level current-consent aggregate/entity in implementation.
