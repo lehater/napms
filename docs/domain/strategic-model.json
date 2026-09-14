@@ -1,68 +1,26 @@
 {
   "model_id": "NAPMS-DDD-001",
-  "source_baseline": "DDD-BDM-010 + 2026-09-14 G1 revalidation + ADR-019",
+  "source_baseline": "DDD-BDM-010 + 2026-09-14 G1 revalidation + ADR-019 + ADR-020",
   "status": "accepted",
   "bounded_contexts": [
-    {
-      "name": "Business Connectivity",
-      "responsibility": "Business Process meaning/responsibility, application-semantic Connectivity Need, business attribution and justification reconciliation."
-    },
-    {
-      "name": "Access Governance",
-      "responsibility": "Access Request history, source/destination approval obligations, side decisions, bilateral authorization grant, withdrawal/revocation and governance provenance."
-    },
-    {
-      "name": "Access Policy",
-      "responsibility": "Authoritative current Policy Rule truth, semantic uniqueness/idempotency and effective authorized-policy projections."
-    },
-    {
-      "name": "Authority Management",
-      "responsibility": "Effective scoped actor/action authority and the role/group/scope assignment semantics that establish it."
-    },
-    {
-      "name": "Resource Catalogue",
-      "responsibility": "Resource/Endpoint identity, time-qualified Resource Scope Affiliation, access-relevant lifecycle facts and current/historical technical realization."
-    },
-    {
-      "name": "Application Communication Catalogue",
-      "responsibility": "Application/Component/ComponentDeployment/Interaction identities and immutable interaction traffic contracts."
-    },
-    {
-      "name": "Network Enforcement Placement",
-      "responsibility": "Current network-state and override based candidate enforcement-location relevance plus applicable policy/ACL locators."
-    },
-    {
-      "name": "Technical Access Evidence",
-      "responsibility": "Normalized source-qualified technical access evidence with provenance/time/source scope and no authorization claim."
-    },
-    {
-      "name": "Access Policy Realization",
-      "responsibility": "Normalized required-vs-configured policy realization assessment, semantic reconciliation, vendor-neutral policy-change design and proposed-result semantic verification for a supplied comparable target; provider rendering ownership remains under revalidation."
-    }
+    {"name":"Business Connectivity","responsibility":"Business Process meaning/responsibility, application-semantic Connectivity Need, business attribution and justification reconciliation."},
+    {"name":"Access Governance","responsibility":"Access Request history, source/destination approval obligations, side decisions, bilateral authorization grant, withdrawal/revocation and governance provenance."},
+    {"name":"Access Policy","responsibility":"Authoritative current Policy Rule truth, semantic uniqueness/idempotency and effective authorized-policy projections."},
+    {"name":"Authority Management","responsibility":"Effective scoped actor/action authority and the role/group/scope assignment semantics that establish it."},
+    {"name":"Resource Catalogue","responsibility":"Resource/Endpoint identity, time-qualified Resource Scope Affiliation, access-relevant lifecycle facts and current/historical corporate-visible address realization."},
+    {"name":"Application Communication Catalogue","responsibility":"Application/Component/ComponentDeployment/Interaction identities and immutable interaction traffic contracts."},
+    {"name":"Network Enforcement Placement","responsibility":"Current network-state and override based candidate enforcement-location relevance plus applicable policy/ACL locators."},
+    {"name":"Technical Access Evidence","responsibility":"Normalized source-qualified technical access evidence with provenance/time/source scope and no authorization claim."},
+    {"name":"Access Policy Realization","responsibility":"Normalized required-vs-configured policy realization assessment, semantic reconciliation, vendor-neutral policy-change design and proposed-result semantic verification for a supplied comparable target; provider rendering ownership remains under revalidation."}
   ],
-  "wave1_direct_participants": [
-    "Access Policy",
-    "Authority Management",
-    "Application Communication Catalogue",
-    "Resource Catalogue"
-  ],
-  "current_direct_participants": [
-    "Business Connectivity",
-    "Access Governance",
-    "Access Policy",
-    "Authority Management",
-    "Application Communication Catalogue",
-    "Resource Catalogue"
-  ],
+  "wave1_direct_participants": ["Access Policy","Authority Management","Application Communication Catalogue","Resource Catalogue"],
+  "current_direct_participants": ["Business Connectivity","Access Governance","Access Policy","Authority Management","Application Communication Catalogue","Resource Catalogue"],
   "legacy_contexts": [
-    {
-      "name": "Connectivity Requirements",
-      "disposition": "superseded target boundary; useful Need semantics moved to Business Connectivity"
-    },
-    {
-      "name": "Connectivity Decision",
-      "disposition": "superseded target boundary; side-decision/grant/revocation semantics moved to Access Governance"
-    }
+    {"name":"Connectivity Requirements","disposition":"superseded target boundary; useful Need semantics moved to Business Connectivity"},
+    {"name":"Connectivity Decision","disposition":"superseded target boundary; side-decision/grant/revocation semantics moved to Access Governance"}
+  ],
+  "derived_compositions": [
+    {"name":"Required Policy Materialization","responsibility":"Derive normalized required technical predicates and target-specific required effective policy from Access Policy, ACC, Resource Catalogue and NEP published contracts; unresolved inputs remain explicit."}
   ],
   "external_seams": [],
   "invariants": [
@@ -73,13 +31,15 @@
     "Authority Management owns effective actor/action/scope authority; consuming contexts own decisions made using that authority.",
     "Access Governance owns bilateral consent history; Access Policy owns current authoritative Policy Rule truth.",
     "Resource Scope Affiliation does not imply actor authority, and actor authority for a scope does not imply Resource membership.",
+    "ResourceEndpoint identity is stable across address changes; corporate-visible address realization is a separate Resource Catalogue fact.",
+    "Required Policy Materialization is a derived non-peer composition and does not own upstream source truth.",
+    "Unresolved materialization is not an empty required policy or APR drift.",
     "Technical evidence does not authorize access.",
     "Network Enforcement Placement owns candidate enforcement-location relevance; Access Policy Realization does not reevaluate why a target was selected.",
     "Access Policy Realization compares normalized effective policy semantics rather than raw configuration representation.",
     "Technical realization changes do not redefine semantic authorization identity."
   ],
   "open_strategic_questions": [
-    "Owner of semantic-to-technical required-policy materialization.",
     "Provider-specific effective-policy normalization and rendering boundaries.",
     "Responsibility-scope change consequences for existing authorization."
   ]
