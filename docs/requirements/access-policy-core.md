@@ -1,160 +1,141 @@
 # Access Policy product requirements
 
-Status: `accepted current behavior`.
+Status: `G1 revalidated target behavior; S2 lifecycle/details pending`.
 
-Date: 2026-09-09.
+Date: 2026-09-14.
 
 ## Purpose
 
-Define the current product behavior from application-backed connectivity proposal through authoritative Access Rule management and effective desired-policy selection.
+Define externally observable Access Policy behavior after access governance has established or withdrawn authorization for one concrete semantic interaction subject.
 
-Domain identity, invariants and command semantics are owned by `docs/domain/access-policy/tactical-model.md`. Connectivity Decision meaning is owned by its own context. This document owns externally observable Access Policy behavior.
+Access Policy owns current authoritative Policy Rule truth and effective authorized-policy projection. Access request submission, bilateral approval/rejection, consent withdrawal and governance history are owned upstream by Access Governance and are not reimplemented inside Access Policy.
 
-## Proposal composition
+Exact aggregates, state machines, persistence and command mechanics remain S2 work.
 
-An actor may propose connectivity only when Authority Management admits the proposal action for the relevant governance scope and effective time.
+## Authorization subject
 
-A valid proposal is formed from trusted Application Communication Catalogue facts and identifies exactly:
-
-```text
-Source Component Deployment
-+ Destination Component Deployment
-+ immutable DCS revision
-```
-
-The selected DCS must describe the directed interaction. The client must not create arbitrary identifier combinations and the product must not infer structural validity from technical addresses.
-
-A proposal:
-- is not an Access Rule;
-- has no desired-policy effect by existing;
-- does not imply a final connectivity decision.
-
-## Decision consumption and materialization
-
-Connectivity Decision owns the final business result for the exact proposed subject.
+A Policy Rule refers to one exact semantic subject published from trusted catalogue facts:
 
 ```text
-Allowed
-    -> materialize or resolve authoritative Access Rule
-
-NotAllowed
-    -> no Access Rule materialization
+source Component Deployment
++ destination Component Deployment
++ immutable Interaction Contract Revision
 ```
+
+The referenced interaction revision must describe the directed interaction between the parent Components of the two Deployments.
+
+Technical ResourceEndpoint/IP realization is not part of Policy Rule semantic identity. Address or Endpoint changes on the same Resource do not by themselves create a different authorization subject.
+
+Changing either Deployment or materially changing the interaction contract requires a different authorization subject and renewed authorization.
+
+## Authorization consumption
+
+Access Policy consumes authorization semantics produced by Access Governance for the exact subject.
+
+For ordinary access, a grant exists only after the required source-side and destination-side approval obligations are both satisfied with valid authority. A pending, rejected, ambiguous or authority-unknown request is not authorization.
+
+Conceptually:
+
+```text
+source-side consent
+AND destination-side consent
+        -> Authorization Grant
+        -> current authoritative Policy Rule truth
+
+source-side withdrawal
+OR destination-side withdrawal
+        -> Authorization Withdrawal
+        -> subject is no longer effectively authorized
+```
+
+Access Policy must not infer authorization from Resource ownership/administration, Connectivity Need existence, IP addresses or a legacy single global `Allowed | NotAllowed` decision.
+
+## Authoritative Policy Rule
+
+For one exact semantic subject there shall be at most one authoritative current Policy Rule meaning.
 
 Requirements:
-- the consumed Decision subject must match the exact proposal semantic identity;
-- an unknown/unavailable/ambiguous Decision is not permission and is not `NotAllowed`;
-- proposal authority does not imply decision authority;
-- Connectivity Requirement existence does not imply `Allowed`.
 
-The current target Decision model is defined by `docs/requirements/connectivity-decision-core.md` and ADR-005. Historical external-port deferral is not current product truth.
+- the first effective authorization for a subject establishes an authoritative Rule with stable identity;
+- repeated or concurrent processing of equivalent authorization grants must resolve the same authoritative Rule rather than create duplicates;
+- multiple Connectivity Needs and multiple approved Requests may justify/provenance the same Rule without creating duplicate current Rules;
+- a rejected Request creates no deny Policy Rule;
+- Request/approval history is not encoded as duplicate Policy Rules;
+- technical address/Endpoint changes do not redefine Rule identity;
+- later governance-scope/responsibility metadata changes do not silently rewrite historical authorization provenance.
 
-## Authoritative Access Rule
+A withdrawal makes the subject no longer effectively authorized even though historical approvals and the Rule's historical identity/provenance remain explainable. Exact reactivation/revision/state representation is intentionally deferred to S2.
 
-For one exact semantic identity there is at most one authoritative Access Rule.
+## Effective authorized policy
 
-On the first successful Allowed materialization:
-- a stable Rule ID is created;
-- Operational State is `Active`;
-- the accepted proposal governance scope becomes the Rule Governance Scope;
-- Decision and proposal/authority/catalogue provenance required for explanation are retained.
+Access Policy shall expose the current effective set of semantically authorized Policy Rules for an admitted query scope/time.
 
-Retries and concurrent identical Allowed materializations must resolve the same authoritative Rule and Rule ID. They must not create duplicate authoritative Rules.
+The projection must distinguish:
 
-The following do not redefine Rule semantic identity:
-- technical address/endpoint changes;
-- responsibility/ownership changes;
-- Rule Governance Scope;
-- Operational State;
-- EffectiveWindow.
+- an authorized empty result;
+- denied authority;
+- unknown/ambiguous authority;
+- technical/persistence failure.
 
-## Authorized reads
+A Rule contributes to effective authorized policy only while a valid current authorization basis exists for its semantic subject and any accepted applicability constraints are satisfied.
 
-Access Rule read authority is independent from mutation authority.
+Time-bounded authorization is supported as product semantics, but this G1 requirement does not freeze one `EffectiveWindow`, state-machine or storage representation. S2 must choose a model that preserves the observable rule above.
 
-The product must support:
-- authorized paged Rule listing over scopes unambiguously admitted by `ReadAccessRule`;
-- authorized Rule detail by Rule ID using the Rule's stored governance scope;
-- explicit not-found, denied and authority-unknown outcomes without leaking Rule data.
+Effective authorized-policy selection is Access Policy truth. Translation to Resource/Endpoint/address predicates, placement, configured-policy comparison, rendering and network execution are downstream concerns.
 
-Read permission alone does not imply permission to change Rule state or EffectiveWindow.
+## Authorized reads and actions
 
-## Operational State
+Read authority is independent from mutation/governance authority.
 
-The current Rule operational state is:
+The product shall:
 
-```text
-Active | Inactive
-```
+- expose Rule data only when the actor is admitted for the relevant action/scope;
+- distinguish not-found, denied and authority-unknown outcomes without leaking Rule data;
+- keep request initiation, side approval/revocation, Policy Rule administration and network execution independently authorizable even when one actor holds several permissions.
 
-An admitted state mutation:
-- uses the authoritative Rule's stored governance scope;
-- preserves Rule ID, semantic identity, Decision correlation and governance scope;
-- records attributable business audit/provenance;
-- commits state and audit consistently.
+Authority Management owns effective actor/action/scope evaluation. Access Policy consumes that result rather than inferring permission from owner/administrator metadata.
 
-Requesting the already-current state is an explicit no-op and does not create a transition audit record.
+## Provenance and history
 
-No approval/request lifecycle is encoded into Operational State.
+Policy Rule truth shall preserve enough correlation/provenance to explain why the subject is or was authorized without replacing the Access Governance journal.
 
-## EffectiveWindow
+At minimum, the system must be able to correlate current/historical Rule authorization with the relevant authorization grant/withdrawal basis and semantic subject.
 
-A Rule may have no EffectiveWindow or one absolute offset-aware half-open window:
+Later loss of an approver's role must not rewrite a historically valid approval or Rule provenance.
 
-```text
-[start, end)
-```
-
-Requirements:
-- `start < end`;
-- changing/clearing the window requires its own admitted action;
-- changing the window does not change Rule identity, Operational State or Decision correlation;
-- an accepted change records business audit/provenance;
-- requesting the current value is a no-op without new audit.
-
-Recurring schedule semantics are deferred until accepted product examples require them.
-
-## Effective desired policy
-
-The product can select effective desired policy for one admitted Rule Governance Scope and one explicit `asOf`.
-
-A Rule contributes only when:
-- it belongs to the selected scope;
-- it is `Active`;
-- it has no EffectiveWindow, or `start <= asOf < end`.
-
-Denied/unknown authority returns no policy data. An authorized empty policy is a valid empty result and is distinct from denied/unknown/technical failure.
-
-Effective desired-policy selection is Access Policy truth. Technical realization and normalized export are downstream concerns.
+Operational logs do not replace durable business provenance.
 
 ## Failure and safety behavior
 
-The system fails closed for authority, catalogue, Decision or persistence uncertainty.
+The system fails closed when authorization or semantic-subject validity is unknown or ambiguous.
 
 In particular:
-- denied/unknown proposal authority -> no valid proposal;
-- structurally invalid/unknown interaction -> no valid proposal;
-- `NotAllowed` -> valid business result, no Rule;
-- Decision subject mismatch/ambiguity -> no Rule;
-- uncertain persistence outcome is not reported as success unless the authoritative result is established;
-- client-supplied actor identity, mutation time or replacement governance scope are not trusted as authority.
 
-Operational logs do not replace durable business audit/provenance.
+- pending/incomplete bilateral approval -> no authorization;
+- either-side rejection -> no authorization grant;
+- unknown/ambiguous authority -> no successful authorization transition;
+- authorization subject mismatch -> no Rule materialization/change;
+- structurally invalid/unknown interaction subject -> no Rule materialization;
+- uncertain persistence outcome is not reported as success unless the authoritative result is established.
 
 ## Acceptance examples
 
-1. Repeating the same exact Allowed proposal resolves one Rule ID.
-2. Two concurrent identical Allowed materializations leave one authoritative Rule.
-3. Changing Source, Destination or immutable DCS revision creates a different semantic subject.
-4. `NotAllowed` creates no Rule.
-5. An `Inactive` Rule remains authoritative but contributes no effective desired policy.
-6. An Active Rule contributes only inside its EffectiveWindow when one exists.
-7. A user allowed to read a Rule but not mutate it receives Rule data with mutation capability independently denied.
-8. Technical endpoint changes do not create a new Access Rule.
+1. The source side approves but the destination side is pending: no effective Policy Rule authorization exists yet.
+2. Both required sides approve the same subject: one authoritative Rule becomes current authorization truth.
+3. Reprocessing the same grant or processing concurrent equivalent grants does not create duplicate Rules.
+4. A rejected Request creates no deny Rule.
+5. Several approved Requests/Needs for the same subject may correlate to one current Rule.
+6. Either authorized side withdraws consent: the subject stops contributing to effective authorized policy without rewriting the original approved Request as rejected.
+7. A later address or Endpoint change on the same Resource does not create a new Rule.
+8. Replacing a source or destination Component Deployment requires renewed authorization for the new subject.
+9. An authorized Rule whose technical address/placement evidence is currently unavailable remains semantic authorization truth; downstream realization reports it as unresolved rather than silently dropping it.
 
 ## Canonical references
 
-- domain semantics: `docs/domain/access-policy/tactical-model.md`;
-- final Decision semantics: `docs/requirements/connectivity-decision-core.md`, ADR-005;
-- architecture: `docs/architecture/current-architecture.md`;
-- HTTP/runtime realization: `docs/engineering/http-api-contract.md`, `docs/engineering/current-state.md`.
+- bilateral governance behavior: `docs/requirements/access-governance-g1.md`;
+- business justification/Need behavior: `docs/requirements/business-connectivity-g1.md`;
+- catalogue subject semantics: `docs/requirements/application-catalogue-domain-target.md`;
+- realization/reconciliation behavior: `docs/requirements/policy-realization-reconciliation-g1.md`;
+- current revalidation checkpoint: `docs/engineering/context-problems/capability-revalidation-checkpoint-2026-09-14.md`.
+
+Older Connectivity Decision `Allowed | NotAllowed` requirements and ADR-005 remain historical/current-implementation evidence only where they conflict with this revalidated target behavior.
