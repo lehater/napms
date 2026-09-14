@@ -1,6 +1,6 @@
 # Application Communication Catalogue — Target Domain Model
 
-Status: `accepted target; implementation pending`.
+Status: `S2 revalidated target; implementation pending`.
 
 Decision: `../../decisions/ADR-015-acc-component-deployment-and-atomic-interaction-contract.md`.
 
@@ -11,8 +11,7 @@ This document is the canonical target domain model for Application Communication
 ```text
 ApplicationDefinition
   -> Component
-      -> ComponentDeployment
-          -> DeploymentResourceBinding -> ResourceRef
+      -> ComponentDeployment -> exactly one ResourceRef
 
 ApplicationDefinition
   -> InteractionDefinition
@@ -24,73 +23,63 @@ ApplicationDefinition
 
 ### ApplicationDefinition
 
-Stable ACC-owned identity that groups Components and their declared interactions.
+Stable ACC-owned identity grouping Components and their declared interactions.
 
-Minimum facts:
+Minimum semantic facts:
 
 ```text
 applicationId
 name
 description?
-lifecycle
+lifecycle when later required
 ```
 
 ### Component
 
-Stable ACC-owned deployable application role inside exactly one Application Definition.
+Stable ACC-owned deployable application role inside one Application Definition.
 
-Minimum facts:
+Minimum semantic facts:
 
 ```text
 componentId
 applicationId
 name
 description?
-lifecycle
 ```
 
 The parent Application is immutable for the Component lifetime.
 
 ### ComponentDeployment
 
-Concrete deployment of one Component.
+Concrete deployment of one Component on one Resource.
 
-Minimum facts:
+Minimum semantic facts:
 
 ```text
 componentDeploymentId
 componentId
-name?
-lifecycle
-```
-
-The parent Component is immutable. Resource placement is not part of Component Deployment identity.
-
-### DeploymentResourceBinding
-
-Temporal ACC-owned relation between one Component Deployment and one Resource Catalogue Resource reference.
-
-Minimum facts:
-
-```text
-bindingId
-componentDeploymentId
 resourceRef
-validFrom
-validUntil?
+name?
 ```
 
-`resourceRef` is opaque. ACC does not own Resource attributes.
+Invariants:
 
-One Component Deployment may have zero, one or many effective Resource bindings.
+- parent Component is immutable;
+- `resourceRef` is mandatory at creation;
+- exactly one ResourceRef belongs to one ComponentDeployment in MVP;
+- ResourceRef is stable for that deployment lifetime;
+- moving the Component to another Resource creates a different ComponentDeployment;
+- Resource Endpoint/address changes on the same Resource do not change ComponentDeployment identity.
 
-No endpoint-specific binding is defined yet.
+`resourceRef` is an opaque Resource Catalogue identifier. ACC does not own Resource attributes or endpoint/address realization.
+
+No endpoint-specific deployment binding is defined yet.
 
 ### InteractionDefinition
 
-Stable ACC-owned directed communication definition between two Components of one Application Definition.
+Stable ACC-owned directed communication definition between two Components.
 
-Minimum facts:
+Minimum semantic facts:
 
 ```text
 interactionId
@@ -98,14 +87,13 @@ applicationId
 sourceComponentId
 destinationComponentId
 name?
-lifecycle
 ```
 
 ### InteractionContractRevision
 
 Immutable decision-relevant communication contract revision of one Interaction Definition.
 
-Minimum facts:
+Minimum semantic facts:
 
 ```text
 revisionId
@@ -114,15 +102,13 @@ revisionNumber
 createdAt
 ```
 
-A revision has one or more `TrafficAlternative` values and is immutable after creation.
-
-Changing decision-relevant traffic creates a new revision.
+A revision has one or more `TrafficAlternative` values and is immutable after creation. Changing decision-relevant traffic creates a new revision.
 
 ### TrafficAlternative
 
 One vendor-neutral traffic selector inside an immutable interaction contract revision.
 
-Minimum facts:
+Minimum semantic facts:
 
 ```text
 trafficAlternativeId
@@ -132,9 +118,7 @@ sourcePorts
 destinationPorts
 ```
 
-All alternatives of one revision form one atomic contract. Consumers cannot select only part of them.
-
-If traffic subsets require independent authorization/lifecycle/applicability, they are modeled as separate Interaction Definitions.
+All alternatives in one revision form one atomic contract. Consumers cannot authorize only part of them. Independently governed traffic subsets are separate Interaction Definitions.
 
 ## Published semantic contract
 
@@ -148,9 +132,9 @@ DirectedInteractionIdentity {
 }
 ```
 
-It is a value contract, not a separate required aggregate/table.
+This is a value contract, not a required separate aggregate/table.
 
-ACC must validate before publishing:
+ACC validates:
 
 ```text
 sourceDeployment.componentId == interaction.sourceComponentId
@@ -160,17 +144,28 @@ revision.interactionId == interaction.interactionId
 
 Consumers treat all three identifiers as opaque ACC references.
 
-## Cross-context persistence rule
+## Resource realization semantics
 
-A consumer may physically store the published value as ordinary columns in its own table:
+For MVP:
 
 ```text
-source_component_deployment_ref UUID
-destination_component_deployment_ref UUID
-interaction_contract_revision_ref UUID
+ComponentDeployment -> exactly one Resource
+Resource -> ResourceEndpoint[0..N]
+ResourceEndpoint -> current address realization
 ```
 
-These are not SQL foreign keys into ACC tables. Cross-context validity is established through ACC contracts/adapters, not shared-schema referential integrity.
+Only the first relation is ACC truth; Endpoint/address truth belongs to Resource Catalogue.
+
+Consequences:
+
+- an authorization subject can exist while Endpoint/address realization is unresolved;
+- address changes on the same Resource do not alter ComponentDeployment/interaction identity;
+- moving the Component to another Resource produces a new ComponentDeployment and therefore a different concrete authorization subject;
+- replicas on distinct Resources are distinct ComponentDeployments rather than one deployment with several Resource bindings.
+
+## Cross-context persistence rule
+
+A consumer may physically store the published subject references in its own persistence, but they are not domain foreign keys into ACC tables. Cross-context validity is established via published ACC contracts/adapters.
 
 ## Normative PlantUML
 
@@ -197,16 +192,8 @@ package "Application Communication Catalogue" {
     * deployment_id : UUID
     --
     component_id : UUID
-    name : String?
-  }
-
-  entity DeploymentResourceBinding {
-    * binding_id : UUID
-    --
-    deployment_id : UUID
     resource_ref : UUID <<opaque external ref>>
-    valid_from : Instant
-    valid_until : Instant?
+    name : String?
   }
 
   entity InteractionDefinition {
@@ -236,7 +223,6 @@ package "Application Communication Catalogue" {
 
   ApplicationDefinition ||--|{ Component
   Component ||--o{ ComponentDeployment
-  ComponentDeployment ||--o{ DeploymentResourceBinding
 
   ApplicationDefinition ||--o{ InteractionDefinition
   Component ||--o{ InteractionDefinition : source
@@ -249,10 +235,8 @@ package "Application Communication Catalogue" {
 
 ## Deferred questions
 
-The following are deliberately not part of this target yet:
-
-- `ComponentDeployment -> ResourceEndpoint` binding;
+- optional ComponentDeployment -> ResourceEndpoint binding;
 - network-context-dependent endpoint visibility and NAT exposure;
-- Access Policy internal aggregate/table model;
-- Resource Catalogue internal endpoint redesign;
-- migration implementation from I31 Application Deployment / Deployment Interaction.
+- migration implementation from I31 ApplicationDeployment / DeploymentInteraction and previous multi-binding assumptions;
+- persistence/repository structure;
+- richer lifecycle states not required by current G1 behavior.
