@@ -21,16 +21,15 @@ Authorization basis: `none`
 ## Working set
 
 Read first:
-- `docs/requirements/business-connectivity-g1.md`
+- `docs/engineering/context-problems/capability-revalidation-checkpoint-2026-09-14.md`
 - `docs/requirements/access-governance-g1.md`
 - `docs/requirements/access-policy-core.md`
 - `docs/requirements/application-catalogue-domain-target.md`
-- `docs/requirements/policy-realization-reconciliation-g1.md`
-- `docs/requirements/scoped-connectivity-inventory.md`
-- `docs/engineering/context-problems/capability-revalidation-checkpoint-2026-09-14.md`
 - `docs/process/domain-design-stage.md`
 
-Then inspect the current Strategic DDD/capability/context-map artifacts only as `DIRTY` downstream models to be revalidated, not as constraints that can override G1.
+## Expand when needed
+
+Load `business-connectivity-g1.md`, `policy-realization-reconciliation-g1.md`, `scoped-connectivity-inventory.md` and current Strategic DDD/capability/context-map artifacts only when the active S2 question requires them. Treat existing S2 models as `DIRTY` downstream artifacts to be revalidated, not as constraints that can override G1.
 
 ## G1 closure
 
