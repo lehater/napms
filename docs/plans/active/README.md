@@ -1,16 +1,16 @@
 # Active execution
 
-Current: `domain-erd-revalidation.md` — bounded-context discovery/model revalidation before implementation.
+Current: breadth-first capability revalidation before Strategic DDD recomposition.
 
-Goal: identify and lock target domain problems/models context by context, preserve unresolved future work as context-local problem registers, and avoid implementing against unresolved or obsolete semantics.
+Goal: establish one coherent accepted S1 product contract across business need, access governance, Access Policy and realization semantics before later domain boundaries are reused or redesigned.
 
-Current task: no bounded-context slice is actively being advanced on this branch. The NEP slice is checkpointed after `G1 PASS`; another bounded context may be selected independently.
+Current task: consolidate the 2026-09-14 G1 passports with older accepted requirements that still encode superseded Connectivity Requirements / Connectivity Decision and Deployment↔Resource assumptions.
 
-Lifecycle stage: `S2`
+Lifecycle stage: `S1`
 
-Stage state: `NOT_STARTED`
+Stage state: `IN_PROGRESS`
 
-Lifecycle basis: NEP `S0/G0` and `S1/G1` are complete for the current slice; `docs/requirements/network-enforcement-placement-core.md` is the canonical accepted S1 owner. S2 Domain Design has not yet been revalidated against those requirements.
+Lifecycle basis: stakeholder-confirmed capability semantics are preserved in `docs/engineering/context-problems/capability-revalidation-checkpoint-2026-09-14.md`; `business-connectivity-g1.md`, `access-governance-g1.md` and `policy-realization-reconciliation-g1.md` are coherent, but `access-policy-core.md` and `application-catalogue-domain-target.md` still conflict with those accepted semantics. Existing Strategic DDD/capability ownership and APR rendering design are downstream `DIRTY` artifacts, not S1 truth.
 
 Implementation authorization: `none`
 
@@ -21,53 +21,71 @@ Authorization basis: `none`
 ## Working set
 
 Read first:
-- `docs/plans/active/domain-erd-revalidation.md`
-- `docs/engineering/context-problems/README.md`
+- `docs/engineering/context-problems/capability-revalidation-checkpoint-2026-09-14.md`
+- `docs/requirements/business-connectivity-g1.md`
+- `docs/requirements/access-governance-g1.md`
+- `docs/requirements/policy-realization-reconciliation-g1.md`
+- `docs/requirements/access-policy-core.md`
+- `docs/requirements/application-catalogue-domain-target.md`
+- `docs/process/requirements-stage.md`
 
-Expand only when the selected bounded-context slice requires it. If NEP is resumed, additionally read:
-- `docs/requirements/network-enforcement-placement-core.md`
-- `docs/domain/network-enforcement-placement/target-tactical-model.md`
-- `docs/architecture/network-enforcement-placement-boundary.md`
-- `docs/process/domain-design-stage.md`
+Load S2/domain artifacts only to identify downstream invalidation; do not use them to override accepted S1 behavior.
 
-## NEP recovery facts
+## Current G1 findings
 
-- `S0 Problem/Evidence` passed G0 for this slice.
-- Accepted problem: for each technical source/destination pair, determine every known Firewall that is a candidate enforcement location and the ACL/policy names where that pair may be affected. Candidate relevance is not proof of an end-to-end forwarding path.
-- `S1 Requirements` passed G1. The accepted behavior is in `docs/requirements/network-enforcement-placement-core.md`.
-- The public result is `TrafficPairResult -> EnforcementLocation[0..N]`, where each location contains `firewallId`, `accessListNames[0..N]` and metadata with `snapshotCollectedAt?` plus `decisionSource`.
-- Candidate membership uses `Include > Exclude > Routing`; routing alternatives/VRFs/ECMP are all considered, and a routing-independent Include may create a candidate even with no network snapshot.
-- A candidate remains in the result even with no ACL/policy name.
-- Snapshot staleness is diagnostic only in MVP; the latest successful usable state continues to drive the result and its freshness is exposed downstream.
-- Local branches/interfaces/attachment topology are decision evidence, not required public output for this use case.
-- NEP owns enforcement-location selection, not ACL bodies, desired policy change, reconciliation, rendering or execution.
-- No runtime migration or implementation is authorized.
+### P1 — Access Policy requirement conflict
 
-## Later-stage design input discovered during S1
+`docs/requirements/access-policy-core.md` still consumes one final `Connectivity Decision Allowed | NotAllowed` contract. The accepted access-governance semantics now require bilateral source/destination consent and explicit withdrawal semantics before current Policy Rule truth is derived.
 
-The user explicitly preferred routing/interface facts and ACL binding/name facts for this use case to be refreshed together so that the result has one coherent freshness date rather than mixed-age decision data.
+Required action: revalidate Access Policy observable behavior against authorization grant/withdrawal semantics while preserving compatible Rule identity/deduplication guarantees.
 
-This is **not an S1 implementation requirement**. S1 requires truthful, unambiguous freshness provenance in the observable result. The acquisition coordination mechanism — one logical refresh/poll, session/command arrangement, storage swap and related realization — belongs to S3 Architecture/Design and must be revalidated there rather than being silently promoted into Requirements.
+### P1 — ComponentDeployment Resource-binding conflict
 
-## Harness evidence from this slice
+`docs/requirements/application-catalogue-domain-target.md` / ADR-015 currently allow zero or more Resource bindings per ComponentDeployment. The latest accepted MVP evidence requires each concrete ComponentDeployment to belong to exactly one Resource, with Resource association mandatory at creation and Resource movement not silently carrying authorization to a different concrete deployment.
 
-The NEP S1 discussion exposed a Harness defect: an explicit user proposal about realization can be incorrectly written as a higher-level requirement. The corresponding Harness correction is isolated on branch `harness/semantic-level-classification`; it classifies statements independently by semantic owner/stage and by decision status/obligation.
+Required action: revalidate the ACC target requirement before relying on ADR-015 as current S1 truth.
+
+### Downstream DIRTY artifacts
+
+The new S1 semantics invalidate assumptions in later-stage artifacts, including:
+- `docs/domain/strategic-model.md` — old CR/CD BC exclusion and direct AM→Access Policy MVP authorization path;
+- `docs/domain/capabilities.md` — old capability ownership/grouping around Connectivity Requirements/Decision;
+- `docs/domain/access-policy-realization/README.md` — provider-specific rendering remains inside APR framing despite the newer normalized/provider-boundary direction.
+
+Do not repair these S2/S3 artifacts until the current G1 requirement conflicts are consolidated and G1 is re-evaluated.
+
+## NEP parked recovery state
+
+NEP remains independently checkpointed after `G1 PASS`:
+- `S0 Problem/Evidence` passed G0;
+- `S1 Requirements` passed G1;
+- accepted behavior is in `docs/requirements/network-enforcement-placement-core.md`;
+- next NEP stage is S2 Domain Design revalidation;
+- no runtime migration or implementation is authorized.
+
+If NEP is resumed later, compare its existing target model/ADR against accepted S1 requirements rather than assuming the older S2 model remains valid unchanged.
 
 ## Other recovery facts
 
-- Access Policy Realization remains parked and is not active execution.
+- Access Policy Realization implementation remains parked and unauthorized.
 - APR unresolved future work remains at `docs/engineering/context-problems/access-policy-realization.md`.
-- A parked context or completed gate does not authorize implementation.
-- Another bounded-context slice may enter S0/S1 while NEP waits at S2; lifecycle progression is scoped per slice rather than globally synchronized across contexts.
+- A completed gate for one slice does not authorize implementation or force other slices to the same lifecycle stage.
+- Strategic DDD is intentionally deferred until the breadth-first G1 contract is coherent enough to support BC regrouping.
 
 ## Blockers
 
-No repository blocker. NEP can resume at S2 when selected; another bounded context can be selected and started independently.
+No external stakeholder decision is currently required for the two blocking S1 conflicts. Existing 2026-09-14 accepted evidence supplies the product semantics needed for requirements consolidation.
 
 ## Gate
 
-`NEP G1 PASS`. Next NEP gate is G2 after Domain Design revalidation. There is no G4 implementation lease.
+Breadth-first capability G1: `REWORK`.
+
+Blocking P1 findings:
+1. Access Policy still depends on the superseded single Decision contract.
+2. ACC ComponentDeployment Resource cardinality contradicts the latest accepted MVP behavior.
+
+NEP remains separately at `G1 PASS` and is not reopened by this cross-capability review unless its own accepted requirements later change.
 
 ## Next
 
-Select the next bounded-context slice. If NEP is resumed, start from S2 and compare the existing domain model/ADR against the newly accepted S1 requirements instead of assuming the previous NEP target model remains valid unchanged.
+Rework the two conflicting S1 requirement owners, then run the G1 consistency gate again. If G1 passes, enter S2 Strategic DDD to regroup capabilities and rebuild the Context Map from the accepted passports; only then resume Tactical DDD for affected bounded contexts.
