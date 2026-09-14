@@ -1,10 +1,12 @@
 # NAPMS Strategic DDD model
 
-Status: `S2 strategic revalidation accepted through provider-policy boundaries`.
+Status: `S2 global Strategic DDD convergence accepted; Tactical revalidation remains active where noted`.
 
-Source baseline: DDD-BDM-010, revalidated by 2026-09-14 G1 requirements, ADR-019, ADR-020 and ADR-021.
+Source baseline: DDD-BDM-010, revalidated by 2026-09-14 G1 requirements, ADR-019, ADR-020, ADR-021 and the 2026-09-14 global Strategic convergence pass.
 
 This document defines model/language/responsibility boundaries. It does not define services, databases, teams or deployment units.
+
+Canonical relationship map: `context-map.md`.
 
 ## Current target Bounded Contexts
 
@@ -19,6 +21,7 @@ This document defines model/language/responsibility boundaries. It does not defi
 | **Network Enforcement Placement** | where may a technical pair be enforced? | candidate Firewall/policy-locator relevance |
 | **Technical Access Evidence** | what source-qualified technical material was observed/imported? | immutable normalized evidence with source/time/provenance |
 | **Access Policy Realization** | how does configured effective access compare with required effective access? | source-neutral realization assessment, semantic delta, vendor-neutral change design and proposed-result verification |
+| **Network Environment Operations** | how is one verified target mutation executed and explained? | controlled mutation operation identity, authority admission, precondition/concurrency checks, outcome and execution provenance |
 
 `Connectivity Requirements` and `Connectivity Decision` remain legacy/current-state boundaries, not current target BCs.
 
@@ -39,12 +42,16 @@ Authority Management
     -- effective authority --> Access Governance
 ACC
     -- deployed Interaction subject --> Access Governance / Access Policy
+Resource Catalogue
+    -- effective Resource Scope Affiliation --> Access Governance
 Access Governance
     -- AuthorizationGranted / AuthorizationWithdrawn --> Access Policy
 ```
 
 `Grant = source consent AND destination consent`.
 `Revoke = source withdrawal OR destination withdrawal`.
+
+Resource Catalogue owns which Responsibility Scope affiliations are effective for a Resource at a logical time. Access Governance owns how those scope facts establish source/destination approval obligations. Authority Management owns whether an Actor may perform the corresponding action for a selected scope/time. Resource responsibility/contact or owner/administrator metadata is not approval authority.
 
 ## Resource realization contract
 
@@ -57,6 +64,8 @@ Resource
 ```
 
 Endpoint identity survives address changes. Missing current address remains valid catalogue truth and produces unresolved downstream materialization rather than silent omission.
+
+ACC binds one ComponentDeployment to exactly one opaque ResourceRef for its lifetime in the current target. Resource Catalogue remains authoritative for Resource/Endpoint/address truth.
 
 ## Required Policy Materialization
 
@@ -140,9 +149,17 @@ If equivalence cannot be established, rendering fails closed and no executable a
 
 ## Network Environment Operations boundary
 
+Network Environment Operations is a target Bounded Context. Its separate semantic boundary is justified by its own operation identity, mutation-authority admission, optimistic-concurrency/precondition boundary, failure/recovery vocabulary and audit lifecycle.
+
 NEO owns controlled target mutation lifecycle, authority admission, precondition/concurrency checks, apply outcome and operation provenance for a supplied `TargetPolicyArtifact`.
 
-NEO does not reinterpret policy semantics or repair unsupported renderer output. Apply success is not convergence proof; post-change configured policy must later be interpreted and compared again.
+NEO does not reinterpret policy semantics, repair unsupported renderer output or re-decide Network Enforcement Placement. Apply success is not convergence proof; post-change configured policy must later be interpreted and compared again.
+
+## Technical Access Evidence boundary
+
+TAE owns immutable source-qualified technical evidence. A capture carries its source/scope/capture identity, evidence time, recorded provenance and normalized source-faithful entries.
+
+TAE does not assert universal currentness/completeness and does not become authorization, desired policy, placement or realization truth. Any consumer requiring freshness/currentness/completeness establishes that meaning in its own source/consumer contract.
 
 ## End-to-end realization chain
 
@@ -182,12 +199,26 @@ provider/device state
  -> APR convergence comparison
 ```
 
+## External seams
+
+Current strategic external seams are:
+
+- **provider/network-device environment** — source/target for routing, configured policy, technical observation and controlled mutation; provider-native meaning is isolated through adapters;
+- **optional external identity provider** — may establish a source-qualified identity that maps to one NAPMS Actor; it never grants business authority directly;
+- **optional enterprise source systems** — may later supply Authority Management, ACC, Resource Catalogue or organizational-responsibility reference data through context-owned import/projection seams.
+
+The supported product remains local-first. No concrete enterprise IdP, directory, CMDB, organization registry or synchronization protocol is required until a future accepted requirement selects one.
+
+Business Connectivity may carry source-neutral organizational-responsibility references for Business Process explanation/governance correlation. An external organizational unit is not automatically a NAPMS Responsibility Scope and cannot silently grant Authority Management permissions.
+
 ## Strategic invariants
 
 - A Bounded Context is not a service/deployment unit.
 - Business Need, consent, Policy Rule truth, technical materialization and realization are separate dimensions.
 - Authority Management owns effective action authority; consumers own decisions made using that authority.
+- Resource Catalogue owns Resource Scope Affiliation; the same `ResponsibilityScopeRef` may correlate authority without making affiliation equal authority.
 - ResourceEndpoint identity is stable across address changes.
+- ACC owns ComponentDeployment -> ResourceRef binding; Resource Catalogue owns the referenced Resource/Endpoint realization.
 - Required Policy Materialization is derived composition, not peer domain truth.
 - unresolved materialization is not empty required policy or realization drift.
 - technical evidence is not authorization and is not automatically current/complete configured policy.
@@ -195,10 +226,26 @@ provider/device state
 - provider interpretation/rendering are adapter/integration capabilities around source-neutral contracts, not peer BCs.
 - APR core remains provider-neutral and owns effective-policy algebra/change semantics, not provider syntax.
 - rendering must preserve verified semantics; unsupported semantics fail closed.
-- NEO owns execution lifecycle, not policy reinterpretation.
+- NEO is a Bounded Context owning execution lifecycle, not policy reinterpretation or placement.
 - technical realization changes do not redefine semantic authorization identity.
 
-## Remaining strategic questions
+## Global Strategic convergence disposition
 
-- whether responsibility-scope changes require warning, reapproval or automatic revocation;
-- exact Process organizational-responsibility contract with external enterprise structure.
+The 2026-09-14 global boundary/relationship pass is `PASS` for the current target scope. The canonical relationship details and challenge result are in `context-map.md`.
+
+Closed strategic gaps include:
+
+- Network Environment Operations normalized into the target BC set;
+- explicit Resource Catalogue -> Access Governance contract for effective responsibility-scope facts;
+- explicit external seams and local-first ownership boundaries;
+- one canonical Context Map for all material current relationships.
+
+The following remain deliberately deferred without blocking strategic convergence:
+
+- whether a later Resource Scope Affiliation/responsibility change causes warning, reapproval or automatic withdrawal of existing authorization;
+- how Access Governance selects among simultaneously applicable overlapping responsibility scopes;
+- exact organization-reference/provider shape when a concrete external enterprise organization source is required.
+
+The first two are Access Governance/product-behavior questions and must re-enter S1 when a use case requires behavior not already accepted. The last is an optional external-source detail and re-enters Strategic DDD only if a concrete source changes ownership/language boundaries.
+
+Strategic convergence does not imply global `G2 PASS`: context-local Tactical DDD must still converge wherever identity/lifecycle/invariant work remains dirty.
