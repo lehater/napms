@@ -1,49 +1,41 @@
 # ADR-005 — Connectivity Decision as a first-class bounded context
 
-Status: `accepted`.
+Status: `superseded by ADR-019`.
 
 Date: 2026-09-09.
 
-## Context
+Superseded: 2026-09-14 after G1 revalidation established bilateral source/destination consent, explicit revocation and governance history as required behavior.
 
-ADR-003 deliberately kept Connectivity Decision as an external/deferred semantic port during Wave 1 because decision identity, reasons, authority, validity and lifecycle were unknown.
+## Historical context
 
-I13/I14 established durable Connectivity Requirements and explicit Requirement-to-Policy Alignment. The post-Wave-1 roadmap now requires NAPMS to explain/manage why an exact proposal becomes Allowed or NotAllowed and to replace the local deterministic allow adapter.
+ADR-003 had deferred Connectivity Decision semantics during Wave 1. ADR-005 later introduced a first-class `Connectivity Decision` Bounded Context so the implemented product could replace a deterministic allow adapter with durable explainable `Allowed | NotAllowed` decisions.
 
-The revisit trigger from ADR-003 is therefore met.
+The accepted model used one immutable final Decision for one exact subject/scope/time, with reason/provenance and supersession. It explicitly deferred pending approval, quorum/separation-of-duties and revocation semantics because those requirements were not then established.
 
-## Decision
+## Why it was superseded
 
-Promote **Connectivity Decision** to a first-class Bounded Context.
+The 2026-09-14 stakeholder/G1 revalidation established materially different semantics:
 
-The context owns immutable final Decision records with:
-- stable DecisionId;
-- exact RuleSemanticIdentity subject;
-- Decision Governance Scope equal to the accepted proposal authority scope in the first model;
-- outcome `Allowed | NotAllowed`;
-- explicit validity;
-- mandatory reason/provenance;
-- optional evidence references;
-- immutable supersession history.
+- every ordinary access request requires independent source-side and destination-side approval obligations;
+- grant requires both sides' consent;
+- either side may withdraw current consent unilaterally;
+- rejection of a pending request and revocation of existing authorization are different facts;
+- historical approval provenance survives later role loss/revocation;
+- a single global `Allowed | NotAllowed` record is insufficient to represent this lifecycle.
 
-Authority Management independently admits `DecideConnectivity` and `ReadConnectivityDecision`.
+The old Connectivity Decision boundary therefore no longer owns the target authorization semantics.
 
-A deciding principal may be human or automated. No pending approval lifecycle, quorum or SoD is introduced without a concrete accepted requirement.
+## Superseding model
 
-Access Policy consumes only one effective final Decision for exact subject/scope/logical time and continues to own Access Rule state/lifecycle.
+ADR-019 assigns:
 
-## Consequences
+- Process-backed application-semantic Need to **Business Connectivity**;
+- Request, side decisions, bilateral grant, revocation and governance history to **Access Governance**;
+- effective actor/action/scope authority to **Authority Management**;
+- current authoritative Policy Rule truth to **Access Policy**.
 
-- I16B can implement a durable local Decision provider without inventing domain semantics in adapters;
-- `local-dev:allowed` is no longer a valid normal-product decision mechanism;
-- Connectivity Requirements can be referenced as evidence without becoming authorization;
-- decision history is explainable and immutable;
-- proposal authority and decision authority remain independent;
-- later Decision expiry/supersession does not silently mutate existing Access Rules;
-- richer approval/case/revocation semantics remain explicit future changes, not hidden assumptions.
+Existing Connectivity Decision code/data remain migration/current-state evidence until later implementation work retires or transforms them.
 
-## Supersedes
+## Historical relation to ADR-003
 
-This ADR supersedes ADR-003 for current target architecture.
-
-ADR-003 remains historical evidence of the Wave-1 deferral.
+ADR-005 superseded ADR-003 for the 2026-09-09 model. ADR-019 now supersedes ADR-005 for the current target model; ADR-003/ADR-005 remain provenance for how the authorization model evolved.
