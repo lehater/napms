@@ -1,232 +1,158 @@
-# Domain ERD Revalidation Plan
+# Domain Revalidation Plan
 
-Status: `active planning / model review`.
+Status: `active domain revalidation`.
 
-Date: 2026-09-13.
+Date: 2026-09-14.
 
 ## Goal
 
-Revalidate the target domain model and ERD for the remaining core MVP contexts before further implementation work. The review must distinguish domain facts and accepted decisions from current tactical/code structure so existing implementation mistakes are not promoted into the target model.
+Revalidate only the domain scopes whose accepted S1 semantics or upstream contracts changed, lock coherent Strategic/Tactical DDD before Architecture/implementation, and keep unrelated completed contexts parked.
 
-Application Communication Catalogue is already locked by ADR-015 and is consumed here only through its published contract. Connectivity Requirements and Connectivity Decision are excluded from MVP by ADR-016. The MVP Network Enforcement Placement boundary has now been revalidated and locked by ADR-018 plus `docs/domain/network-enforcement-placement/target-tactical-model.md`.
-
-This plan may discover more work than should be solved in one pass. Preserve unresolved context-local problems, gaps, real dependencies and blockers under `docs/engineering/context-problems/` instead of inventing an ordered roadmap merely to remember future work.
+Current runtime/code/schema remain migration evidence, not automatic target truth.
 
 ## Inputs
 
-Primary process and planning inputs:
+Primary lifecycle/method inputs:
 
-- `docs/process/decision-protocol.md`;
-- `docs/process/domain-change-protocol.md`;
-- `docs/process/plan-lifecycle.md`;
-- `docs/engineering/context-problems/README.md`.
+- `docs/process/domain-design-stage.md`;
+- `docs/process/strategic-ddd-convergence.md` when a boundary/owner is uncertain;
+- `docs/process/tactical-ddd-stage.md` when identities/lifecycles/invariants inside an accepted boundary are active;
+- the smallest G1 requirement passports and canonical domain/ADR artifacts needed by the selected slice.
 
-For each selected context, its canonical domain/requirements/architecture/ADR sources are the semantic inputs. Current runtime code is migration evidence only after target semantics are established.
+Do not preload legacy CR/CD artifacts unless a migration/current-state question specifically requires them.
 
-## Review candidates
+## Current accepted baseline
 
-The discovery pass currently concerns:
+Breadth-first capability G1 is accepted.
 
-- **Resource Catalogue**;
-- **Access Policy**;
-- **Network Enforcement Placement** — target Tactical DDD/ERD revalidated; implementation migration follows separately;
-- **Access Policy Realization** — problem framing reset and unresolved future work parked in a context problem register.
+Current target strategic owners include:
 
-This list is not a project execution roadmap. The next context is selected by the active/project-level planning decision. Record only genuine causal dependencies between context problems.
+- **Business Connectivity** — Business Process, Connectivity Need, business attribution/justification;
+- **Access Governance** — Access Request, bilateral consent, grant/withdrawal and governance history;
+- **Authority Management** — effective actor/action/scope authority;
+- **Access Policy** — current authoritative Policy Rule truth;
+- **Application Communication Catalogue** — concrete ComponentDeployment + immutable Interaction subject;
+- **Resource Catalogue** — Resource/Endpoint/current realization;
+- **Network Enforcement Placement** — candidate enforcement locations/policy locators;
+- **Technical Access Evidence** — normalized source-qualified technical evidence;
+- **Access Policy Realization** — required-vs-configured semantic reconciliation/change reasoning, with some downstream ownership still dirty.
 
-For NEP, ADR-018 resolves the primary target model: Firewall is the NEP unit of account; batch technical pairs are evaluated against current routing state; ECMP/multipath branches and routing contexts such as VRFs are preserved; local routing provides the baseline candidate signal; Active override rules apply with `Include > Exclude > Routing`; relevant ACL/policy output is the distinct union of names across all retained local branches; NEP and TAE acquire source data independently.
+ADR-019 supersedes the target-boundary assumptions that preserved/excluded the old `Connectivity Requirements` / `Connectivity Decision` model. Those names remain legacy/current-state evidence, not current target Bounded Contexts.
 
-## MVP exclusions and fixed boundaries
+ADR-015 is amended: in MVP each ComponentDeployment belongs to exactly one Resource for its lifetime; moving the Component to another Resource creates another ComponentDeployment.
 
-Do not redesign as MVP contexts in this pass:
+## Completed S2 slice — governance chain
 
-- **Connectivity Requirements** — excluded from MVP by ADR-016;
-- **Connectivity Decision** — excluded from MVP by ADR-016;
-- **Authority Management** — except opaque references/contracts required to describe another context boundary;
-- **Application Communication Catalogue** — ADR-015 is the accepted target and is not reopened by this review.
+Strategic DDD accepted:
 
-Target MVP models must not require Requirement or Decision records for normal Rule creation, UI, API or persistence flows.
+```text
+Business Connectivity
+    -- Process-backed Need / justification --> Access Governance
 
-No runtime migration is authorized by this plan. Domain decisions are locked first; implementation follows only after the corresponding context review is accepted and the selected active work has an explicit implementation gate.
+Authority Management
+    -- effective action authority --> Access Governance
 
-## Review method for each context
+ACC
+    -- concrete deployed Interaction subject --> Access Governance / Access Policy
 
-For every context, complete the following before changing code:
+Access Governance
+    -- AuthorizationGranted / AuthorizationWithdrawn --> Access Policy
+```
 
-1. **Purpose and boundary**
-   - state the business question owned by the context;
-   - list what it explicitly does not own;
-   - identify upstream/downstream bounded-context contracts.
+Tactical DDD accepted for the current slice:
 
-2. **Evidence and provenance**
-   - inspect current Strategic DDD, accepted target decisions and owner contracts;
-   - classify each important statement as domain fact, accepted target decision, derived invariant, or tactical implementation choice;
-   - use current code only to detect migration/gap implications, not as automatic target truth.
+- `docs/domain/business-connectivity/target-tactical-model.md`;
+- `docs/domain/access-governance/target-tactical-model.md`;
+- `docs/domain/access-policy/tactical-model.md` revalidated against grant/withdrawal semantics;
+- `docs/domain/application-communication-catalogue/target-model.md` revalidated for exactly-one-Resource deployment semantics.
 
-3. **Canonical ERD**
-   - define entities, value objects and derived projections when the model is ready to lock;
-   - define identity and lifecycle;
-   - define cardinalities and temporal relations;
-   - distinguish persisted facts from derived/read-model data;
-   - mark external references explicitly.
+Core invariants:
 
-4. **Bounded-context coupling**
-   - verify that cross-context relationships use published contracts / opaque stable identifiers rather than peer table navigation;
-   - avoid cross-schema SQL foreign keys as a domain integration mechanism;
-   - identify any duplicated foreign truth or hidden shared aggregate.
+- Need is application-semantic business truth, not permission;
+- Access Request is one explicit authorization attempt and historical evidence;
+- current bilateral consent is subject-level state, not one historical Request;
+- grant requires source AND destination consent;
+- withdrawal by either side removes current authorization and old approved Requests do not silently restore it;
+- Access Policy consumes grant/withdrawal facts and owns one authoritative Rule meaning per semantic subject;
+- address/Endpoint changes on the same Resource do not change authorization identity;
+- Resource movement creates a different ComponentDeployment and requires renewed authorization.
 
-5. **Current-state gap**
-   - compare accepted target semantics with current persistence/code only after target meaning is established;
-   - list semantic mismatches separately from harmless implementation detail;
-   - rank blocking mismatches P0/P1/P2/P3 where useful.
+Governance-chain S2 result: `G2 PASS` for this affected scope.
 
-6. **Lock or park the result**
-   - publish/update canonical target-model artifacts when semantics are ready to lock;
-   - create an ADR when the review makes a consequential architectural/domain decision that requires one;
-   - record unresolved questions explicitly rather than inventing semantics;
-   - create/update a context problem register under `docs/engineering/context-problems/` when unresolved work should survive a workstream switch;
-   - record only real dependencies between unresolved problems, not a total execution order;
-   - create a roadmap only if an ordered migration/delivery sequence becomes evidence-backed and worth preserving;
-   - do not keep a context-specific `PLAN-*.md` active merely to remember parked work.
+## Parked/deferred questions from this slice
 
-## Context-specific questions
+These are not blockers for the accepted core invariants:
 
-### Resource Catalogue
+- Process criticality scale and richer Process lifecycle;
+- exact Need applicability/time representation and duplicate declaration policy;
+- Access Request cancellation/expiry;
+- time-bounded authorization representation;
+- overlapping-scope selection rules;
+- responsibility-scope-change consequences for existing authorization;
+- exact Rule revision/reactivation representation;
+- endpoint-specific ComponentDeployment binding.
 
-Must resolve at least:
+Reopen the smallest owning stage when a concrete use case requires one of them.
 
-- exact meaning and identity of `Resource`;
-- `ResourceEndpoint` semantics: address, interface, exposure, or another concept;
-- whether one endpoint can have multiple address realizations and whether those are temporal;
-- how network-context-dependent reachability and NAT relate to Resource truth;
-- scope affiliation and responsibility relations versus Resource identity;
-- the unresolved ADR-015 question of whether `ComponentDeployment` may additionally bind to a specific Resource Endpoint.
+## Remaining dirty domain areas
 
-### Access Policy
+### Semantic-to-technical required-policy materialization
 
-Must resolve at least:
+Still unresolved:
 
-- exact Access Rule aggregate/root and identity;
-- consumption of the ACC-published subject:
-  `sourceComponentDeploymentRef + destinationComponentDeploymentRef + interactionContractRevisionRef`;
-- direct Rule creation/materialization under Authority Management admission, without mandatory Requirement or Decision records;
-- Rule lifecycle, effective window, governance scope and minimum creation provenance;
-- persistence form of external ACC references and absence of peer-schema FK coupling;
-- which current Decision/Requirement-related fields or dependencies are now non-MVP implementation artifacts;
-- whether any other current Access Policy entities/projections are accidental implementation artifacts.
+```text
+Effective semantic Policy Rules
+    -> Deployment / Resource / Endpoint realization
+    -> Interaction traffic contract
+    -> normalized technical predicates
+    -> NEP candidate enforcement locations / locators
+    -> target-specific required effective policy
+```
 
-### Network Enforcement Placement
+The final semantic owner/boundary for this materialization/projection must be established before downstream Architecture guesses it.
 
-ADR-018 and the canonical target Tactical DDD now fix the MVP semantics:
+### Access Policy Realization / provider boundary
 
-- `Firewall` is the NEP unit of account; no separate physical Device entity is required;
-- Firewall MVP state is `Active | Inactive`, administered directly through Web UI; no separate lifecycle-command model is required;
-- Firewall profile carries management address, platform discriminator, opaque credential/profile reference, connection timeouts and independent polling intervals;
-- input is `TrafficPair[1..N]`; MVP candidate queries do not take `asOf`;
-- only current successfully collected NEP state is retained; historical network snapshots are not MVP domain history;
-- routing/interface refresh and derived reachability switch atomically;
-- effective reachability is routing-context-aware and preserves VRF/context references when present;
-- effective address segments are non-overlapping per Firewall/context/address family, while one segment may map to multiple interfaces for ECMP/multipath;
-- candidate evaluation preserves all local source-interface/destination-interface branches rather than selecting one route;
-- a Firewall is a routing candidate when at least one retained branch crosses different interfaces;
-- route lookup misses contribute routing false, are logged, and do not suppress override evaluation;
-- missing current routing state is logged and the Firewall is skipped for MVP candidate calculation;
-- `CandidateOverrideRule` has optional source/destination ranges/interfaces where empty means ANY;
-- only Active override rules participate and precedence is `Include > Exclude > Routing`;
-- ACL/policy applicability is evaluated for every retained local branch;
-- output locator is currently `AccessListLocator(accessListName)` only; final result is the distinct union across branches;
-- attachment kind/direction/evaluation topology is adapter knowledge, not core domain state;
-- NEP acquisition reads only interfaces/routing/minimal locator-binding metadata required by NEP;
-- TAE independently acquires ACL/policy bodies when configured evidence is required;
-- current-state `collectedAt` is preserved for age/explainability;
-- Resource Catalogue Resource identity remains independent from Firewall identity;
-- stronger proven-path semantics are optional and are not an MVP prerequisite.
+APR's stable responsibility is normalized required-vs-configured reconciliation and semantic change reasoning for a supplied comparable target.
 
-Canonical document:
+Provider-specific normalization/rendering ownership remains dirty and must be revalidated separately from APR's semantic core.
 
-- `docs/domain/network-enforcement-placement/target-tactical-model.md`
+### Legacy runtime/domain artifacts
 
-The target NEP ERD is considered locked for this review. Remaining unresolved implementation concerns should be captured as context problems rather than treated as an implicit roadmap, including:
+Old Connectivity Requirements/Decision, Proposal and related UI/API/persistence are migration/current-state evidence. Their removal/transformation is S4/implementation work only after affected target design and architecture are accepted.
 
-- concrete secret/profile storage;
-- retry/backoff/scheduler failure handling;
-- vendor-specific PBR or other source semantics only when a supported adapter actually requires them;
-- current-code/persistence migration gaps.
+### Other independent slices
 
-### Access Policy Realization
+NEP remains separately checkpointed after G1 and can resume S2 against its accepted requirements when selected. Resource Catalogue/APR context-problem registers remain available for independent workstreams.
 
-APR remains a separate bounded context. Its single current problem statement and design direction is:
+## Review method
 
-- `docs/domain/access-policy-realization/README.md`.
+For each selected slice:
 
-Do not recover APR semantics from removed documentation or from current runtime types. Current runtime code is migration evidence only after the target model is established.
-
-APR is currently **not active execution**. Its unresolved problem space is preserved at:
-
-- `docs/engineering/context-problems/access-policy-realization.md`.
-
-The register includes, without imposing total order:
-
-- comparison key and required/configured cross-context contracts;
-- configured effective-policy normalization ownership;
-- effective-access-space semantics, comparison scope and completeness;
-- data-local semantic computation at large scale;
-- semantic delta versus policy change design;
-- proposed-change semantic verification;
-- rendering and APR-to-NEO handoff;
-- technical-to-domain explanation/attribution;
-- canonical Tactical DDD/ERD/persistence decisions;
-- target-versus-current implementation gaps and eventual migration.
-
-No APR implementation work is authorized merely because these problems are recorded. A future active plan selects the concrete problem/increment after revalidating dependencies.
-
-## Required deliverables
-
-For each reviewed context, produce as appropriate:
-
-- concise boundary/ownership clarification;
-- canonical target model/ERD when sufficiently resolved;
-- entity/value-object field and identity decisions where applicable;
-- cross-context contract decisions;
-- accepted invariants;
-- unresolved questions/problems;
-- known target-versus-current gaps;
-- real dependencies and implementation blockers;
-- ADR when consequential decisions require one;
-- a context problem register when unresolved future work should survive a workstream switch;
-- an ordered roadmap only when sequence itself is justified by accepted dependencies/migration/rollout constraints.
+1. identify the smallest semantic question and accepted G1 pressure;
+2. route to Strategic or Tactical DDD;
+3. update the highest affected semantic owner first;
+4. make cross-context contracts explicit before peer internals;
+5. revalidate only dependent Tactical semantics;
+6. record P0/P1 blockers explicitly;
+7. pass G2 only when Architecture no longer has to invent ownership/identity/lifecycle/invariants;
+8. do not authorize implementation without later G3/G4.
 
 ## Blockers
 
-No repository blocker is currently recorded. A context-specific task starts only after the next bounded context/workstream is selected and its canonical inputs are identified.
-
-## Completion gate
-
-This review is complete only when each context selected for this discovery pass has either:
-
-- an accepted target model/ERD with no blocking semantic unknowns for the intended next step; or
-- an explicit context problem register preserving remaining unresolved work, real dependencies and implementation blockers without requiring an active plan.
-
-The repository must clearly distinguish:
-
-```text
-accepted target domain model
-!= unresolved context problem register
-!= optional evidence-backed roadmap
-!= current active execution
-!= current tactical/runtime implementation
-!= cross-context read composition
-!= migration compatibility structure
-```
+No repository blocker is recorded for starting the next S2 slice. The remaining questions are domain-design work, not external missing evidence at this checkpoint.
 
 ## Exit criteria
 
-This active review plan can be retired when:
+This active revalidation can be retired when every selected/dirty domain slice either:
 
-- every context selected for this discovery pass has either been sufficiently locked or has its unresolved work captured in a durable problem register;
-- no selected context depends on an active-plan file merely to preserve future work;
-- project-wide planning can choose priorities using the context problem registers without needing old chat history.
+- has a G2-coherent target boundary/tactical model sufficient for its intended next step; or
+- is parked in a durable context-problem register with explicit blockers/revisit triggers.
+
+No implementation is authorized merely by retiring this plan.
 
 ## Next
 
-Select the next bounded context/workstream for discovery/revalidation. APR does not need to be read unless it is deliberately resumed; its unresolved work is parked under `docs/engineering/context-problems/`.
+Revalidate ownership and contract for **semantic-to-technical required-policy materialization** between Access Policy/ACC/Resource Catalogue/NEP and APR.
+
+Do not reopen the governance-chain Tactical models unless this materialization analysis exposes an actual contradiction in their accepted guarantees.

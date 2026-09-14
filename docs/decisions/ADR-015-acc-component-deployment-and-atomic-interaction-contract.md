@@ -1,29 +1,29 @@
 # ADR-015 — ACC Component Deployment and Atomic Interaction Contract
 
-Status: `accepted; implementation pending`.
+Status: `accepted; amended 2026-09-14; implementation pending`.
 
 Date: 2026-09-12.
+Amended: 2026-09-14 after G1 revalidation fixed `ComponentDeployment -> exactly one Resource` for MVP.
 
 ## Context
 
-The implemented I31 Application Communication Catalogue authoring model treats `ApplicationDeployment` as the deployment unit and scopes Resource bindings to selected `DeploymentInteraction` sides. Further domain review established a different business meaning:
+The implemented I31 Application Communication Catalogue authoring model treats `ApplicationDeployment` as the deployment unit and scopes Resource bindings to selected interaction sides. Domain review established the target meanings:
 
-- an Application is a reusable definition/grouping;
-- a Component is the deployable application role;
-- a concrete deployment is therefore a `ComponentDeployment`;
+- Application is a reusable definition/grouping;
+- Component is the deployable application role;
+- `ComponentDeployment` is one concrete deployment of one Component on one Resource;
 - communication is defined between Components;
-- the traffic declared for one interaction contract is the complete minimum sufficient set for that interaction and is consumed atomically;
-- technical Resource realization must not become part of Access Policy semantic identity.
-
-The target must also preserve bounded-context independence. Access Policy must not navigate ACC tables or depend on ACC persistence schema merely because its Rule subject contains ACC-owned identities.
+- one interaction contract revision is the complete atomic traffic contract consumed by authorization;
+- Resource Endpoint/address realization is not part of Access Policy semantic identity;
+- bounded contexts exchange opaque stable semantic references rather than cross-schema navigation.
 
 This ADR supersedes ADR-012 and ADR-013 as target ACC domain design. Those ADRs remain historical records of the implemented I31 model until migration is completed.
+
+The original 2026-09-12 version allowed zero/many temporal Resource bindings per ComponentDeployment. Stakeholder G1 revalidation on 2026-09-14 rejected that target interpretation for MVP: a concrete ComponentDeployment must belong to exactly one Resource, Resource association is mandatory at creation, and moving the Component to another Resource creates a different ComponentDeployment/authorization subject.
 
 ## Decision
 
 ### 1. Component is the deployment unit
-
-The target ACC structure is:
 
 ```text
 ApplicationDefinition
@@ -31,82 +31,60 @@ ApplicationDefinition
       -> ComponentDeployment
 ```
 
-`ComponentDeployment` means one concrete deployment/instance/grouping of a Component that can participate in governed communication.
+A `ComponentDeployment` means one concrete deployment/instance of a Component that participates in governed communication.
 
-An Application as a whole is not the deployment unit in the target model. `ApplicationDeployment` and `DeploymentInteraction` are not target domain concepts.
+It has a stable ACC-owned identity and immutable parent Component for its lifetime.
 
-A `ComponentDeployment` has a stable ACC-owned identity and an immutable parent `Component` for its lifetime.
+### 2. Each ComponentDeployment belongs to exactly one Resource in MVP
 
-### 2. Resource realization is separate from Component Deployment identity
-
-A Component Deployment is related to Resource Catalogue through a separate temporal relation:
+Target relation:
 
 ```text
 ComponentDeployment
-  -> DeploymentResourceBinding [0..N]
-      -> ResourceRef
+    -> exactly one ResourceRef
 ```
 
-`ResourceRef` is an opaque stable Resource Catalogue identifier. Resource identity and Resource facts remain owned by Resource Catalogue.
+`ResourceRef` is an opaque stable Resource Catalogue identifier. Resource identity/facts remain owned by Resource Catalogue.
 
-The relation is not part of Component Deployment identity and not part of interaction/policy semantic identity. Changing, ending or adding Resource bindings does not by itself create a new Component Deployment or a new interaction subject.
+Required semantics:
 
-The target permits more than one effective Resource binding for one Component Deployment; this supports replicas, clusters and other multi-resource realizations without changing the deployment identity model.
+- ResourceRef is mandatory when ComponentDeployment is created;
+- ResourceRef remains stable for that ComponentDeployment lifetime;
+- moving the Component to another Resource is represented by a different ComponentDeployment, not by silently rebinding the existing one;
+- Resource Endpoint additions/removals and address changes on the same Resource do not create a different ComponentDeployment;
+- Resource/Endpoint/address facts are not members of the published interaction identity beyond the opaque ComponentDeployment reference.
 
-### 3. Endpoint-specific deployment binding is intentionally unresolved
+Replica/cluster deployment across several Resources is represented by several concrete ComponentDeployments when each Resource is a distinct deployed authorization participant. The target does not use one multi-Resource ComponentDeployment to collapse those concrete subjects.
 
-This ADR does **not** decide whether a Component Deployment may additionally bind to a specific `ResourceEndpoint` or network exposure.
+### 3. Endpoint-specific deployment binding remains unresolved
 
-The base fact is only:
+This ADR does not decide whether a ComponentDeployment additionally binds to a specific `ResourceEndpoint` or network exposure.
 
-```text
-ComponentDeployment -> Resource
-```
+Open later questions include network-context-dependent visibility, NAT and a Component listening only on a subset of Resource endpoints.
 
-The following remain a separate domain question:
-
-- a Resource having multiple addresses/interfaces;
-- different addresses being reachable from different network contexts;
-- NAT or other translated exposure;
-- a Component listening only on a subset of Resource endpoints.
-
-No implementation may infer `ComponentDeployment -> ResourceEndpoint` identity or ownership from this ADR.
+No implementation may infer endpoint identity from this ADR.
 
 ### 4. Interaction Definition is between Components
 
-An `InteractionDefinition` belongs to one Application Definition and identifies a directed relation:
+An `InteractionDefinition` identifies a directed relation:
 
 ```text
 source Component -> destination Component
 ```
 
-Both endpoints are ACC-owned Component identities.
+The decision-relevant communication contract is an immutable `InteractionContractRevision` with one or more vendor-neutral `TrafficAlternative` values.
 
-The concrete communication contract is represented by an immutable `InteractionContractRevision` belonging to the Interaction Definition.
-
-```text
-InteractionDefinition
-  -> InteractionContractRevision [1..N over history]
-      -> TrafficAlternative [1..N]
-```
-
-Each revision is immutable and has a stable ACC-owned identifier.
-
-Changing decision-relevant traffic creates another immutable revision. Existing references to an older revision are never rewritten.
+Changing decision-relevant traffic creates another immutable revision; existing references are never rewritten.
 
 ### 5. One interaction contract revision is atomic
 
-All `TrafficAlternative` entries belonging to one `InteractionContractRevision` form one minimum sufficient communication contract.
+All `TrafficAlternative` entries in one revision form one minimum sufficient communication contract.
 
-A consumer selects/authorizes the revision **as a whole**. Partial selection of its traffic alternatives is not valid domain behavior.
-
-If two traffic subsets need independent lifecycle, approval, authorization or applicability, they are modeled as separate `InteractionDefinition`s rather than as selectable subsets of one contract.
-
-This is a normative invariant, not a UI convention.
+Consumers authorize/select the revision as a whole. Independently governed traffic subsets require separate Interaction Definitions rather than selectable fragments of one revision.
 
 ### 6. ACC publishes one semantic subject value
 
-For a concrete interaction between deployed Components, ACC validates and publishes a `DirectedInteractionIdentity` value:
+For concrete deployed communication ACC validates and publishes:
 
 ```text
 DirectedInteractionIdentity =
@@ -123,23 +101,17 @@ destinationDeployment.component == interaction.destinationComponent
 revision belongs to interaction
 ```
 
-The published value is not a new aggregate or required persistence table. It is a value/contract composed of three stable ACC-owned identifiers.
+This is a semantic value contract, not a required aggregate/table.
 
-### 7. Bounded-context references are opaque IDs, not cross-schema foreign keys
+### 7. Cross-context references are opaque IDs
 
-A consuming bounded context may persist the three values of `DirectedInteractionIdentity` in its own storage, for example as three UUID columns, but must treat them as opaque ACC references.
+Consumers may persist ACC references in their own stores but must treat them as opaque IDs. There is no domain requirement for SQL foreign keys into ACC-owned tables or shared-schema navigation.
 
-There is no SQL foreign key from a consumer-owned table to ACC-owned tables and no requirement that bounded contexts share one database schema.
+Cross-context validity is established through ACC-owned contracts/adapters.
 
-Cross-context validity is established through ACC-owned application/API contracts, not by direct navigation of foreign tables.
+### 8. Traffic/address realization is not copied into authorization identity
 
-This ADR defines only the ACC-published boundary. It does not redesign Access Policy, Connectivity Requirements, Connectivity Decision or Resource Catalogue internals.
-
-### 8. Traffic is not copied into Access Policy identity
-
-Protocol/port alternatives remain ACC-owned interaction-contract facts. The published semantic subject references the immutable contract revision instead of copying a selectable traffic subset into the consumer identity.
-
-Technical Resource/Endpoint/address realization is resolved separately and must not redefine this semantic subject.
+Protocol/port alternatives remain ACC-owned revision facts. Resource Endpoint/address realization is resolved separately through Resource Catalogue and downstream materialization.
 
 ## Target domain shape
 
@@ -148,9 +120,7 @@ ApplicationDefinition
   |
   +-- Component
   |     |
-  |     +-- ComponentDeployment
-  |             |
-  |             +-- DeploymentResourceBinding --> ResourceRef
+  |     +-- ComponentDeployment --> exactly one ResourceRef
   |
   +-- InteractionDefinition
           |
@@ -159,8 +129,6 @@ ApplicationDefinition
           +-- InteractionContractRevision
                   |
                   +-- TrafficAlternative [1..N]
-
-ACC published contract:
 
 DirectedInteractionIdentity
   = source ComponentDeployment
@@ -171,29 +139,31 @@ DirectedInteractionIdentity
 ## Required invariants
 
 1. `ComponentDeployment.componentId` is immutable.
-2. Resource binding changes do not change `ComponentDeploymentId`.
-3. Resource/Endpoint/address facts are not part of `DirectedInteractionIdentity`.
-4. An `InteractionDefinition` is directed from one Component to another.
-5. An `InteractionContractRevision` is immutable.
-6. A contract revision contains at least one traffic alternative.
-7. A contract revision is consumed atomically; traffic subset selection is forbidden.
-8. Source/destination deployments must belong to the Components declared by the Interaction Definition.
-9. The published subject is exactly `(sourceDeploymentRef, destinationDeploymentRef, interactionContractRevisionRef)`.
-10. Cross-bounded-context persistence uses opaque stable IDs and no cross-schema SQL foreign keys.
+2. Each ComponentDeployment has exactly one ResourceRef in MVP.
+3. `ComponentDeployment.resourceRef` is immutable for that deployment lifetime.
+4. Moving a Component to another Resource creates another ComponentDeployment.
+5. Endpoint/address changes on the same Resource do not change ComponentDeployment identity.
+6. Resource/Endpoint/address facts are not part of `DirectedInteractionIdentity` except indirectly through the stable deployment identity.
+7. InteractionDefinition is directed from one Component to another.
+8. InteractionContractRevision is immutable and contains at least one TrafficAlternative.
+9. A contract revision is consumed atomically; traffic subset selection is forbidden.
+10. source/destination deployments must belong to the Components declared by the Interaction Definition.
+11. published subject is exactly `(sourceDeploymentRef, destinationDeploymentRef, interactionContractRevisionRef)`.
+12. cross-context persistence uses opaque stable IDs and no required cross-schema SQL foreign keys.
 
 ## Explicitly deferred
 
-- binding Component Deployment to a specific Resource Endpoint/network exposure;
-- Resource Catalogue endpoint/address model changes;
-- Access Policy aggregate/table redesign beyond consuming the published ACC subject;
-- migration mechanics from implemented I31 `ApplicationDeployment` / `DeploymentInteraction` rows;
-- final UI migration from current I31 screens;
-- exact aggregate boundaries and repository layout inside ACC Tactical DDD.
+- ComponentDeployment-to-ResourceEndpoint binding;
+- network-context/NAT endpoint semantics;
+- migration from current I31 ApplicationDeployment/DeploymentInteraction and any previous multi-binding representation;
+- final UI migration;
+- persistence/repository realization details.
 
 ## Consequences
 
-- the domain language matches the operational fact that Components, not whole Applications, are deployed;
-- interaction traffic has one unambiguous authorization granularity;
-- Resource movement/replication remains technical realization rather than policy identity;
-- peer bounded contexts depend on one stable ACC semantic contract instead of ACC persistence structure;
-- the current I31 implementation is no longer the target and requires an explicit migration before code can be considered conformant.
+- authorization subject corresponds to concrete deployed participants rather than an abstract multi-Resource grouping;
+- Resource movement cannot silently transfer existing authorization;
+- address/Endpoint changes on the same Resource remain technical realization changes;
+- interaction traffic keeps one unambiguous atomic authorization granularity;
+- consumers depend on a stable ACC semantic contract rather than ACC persistence structure;
+- current I31 runtime remains migration evidence until explicitly conformed to this target.

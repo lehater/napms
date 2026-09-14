@@ -1,6 +1,6 @@
 # Semantic Ownership
 
-Status: `accepted NAPMS-DDD-001 current semantic ownership`.
+Status: `S2 strategic revalidation in progress`.
 
 This file defines semantic ownership, not runtime/service ownership.
 
@@ -8,168 +8,214 @@ This file defines semantic ownership, not runtime/service ownership.
 
 | Knowledge / decision | Semantic owner | Upstream authority / source | Primary result |
 |---|---|---|---|
-| semantic connectivity need identity/lifecycle/applicability/justification | **Connectivity Requirements** | AM-authorized responsible actor + ACC interaction facts | Connectivity Requirement |
-| final permission decision for exact proposed connectivity, including reason/validity/supersession | **Connectivity Decision** | AM-authorized deciding principal + proposal subject + referenced evidence | Connectivity Decision |
-| requirement-to-policy coverage status | **non-peer application composition** | Connectivity Requirements + effective Access Policy | Covered / Uncovered / NotCurrent / Unknown |
-| Access Rule identity/properties/state/authorization | **Access Policy** | effective Allowed Connectivity Decision + catalogue facts + AM-authorized operation | Access Rule + desired projections |
-| scoped actor authority/eligibility | **Authority Management** | assignment/delegation/transfer/revocation decisions | Effective Authority / Responsibility Assignment |
+| Business Process meaning/responsibility used for connectivity justification | **Business Connectivity** | stakeholder/business catalogue inputs | Business Process |
+| application-semantic connectivity Need, applicability and justification | **Business Connectivity** | Business Process + ACC Interaction meaning | Connectivity Need |
+| business attribution / missing-justification finding | **Business Connectivity** or non-peer composition using its truth | Process/Need truth + recognized/authorized interaction reference | Attribution / reconciliation finding |
+| concrete Access Request and source/destination approval obligations | **Access Governance** | Process-backed Need + trusted deployed-interaction subject | Access Request + Approval Obligations |
+| side approve/reject decision and historical authority provenance | **Access Governance** | Authority Management effective authority + Request subject | Side Decision |
+| bilateral current authorization grant / withdrawal | **Access Governance** | side-consent history and revocation action | Authorization Granted / Withdrawn |
+| current authoritative Policy Rule truth and effective semantic authorization projection | **Access Policy** | Access Governance grant/withdrawal + trusted ACC subject | Policy Rule + effective authorized policy |
+| scoped actor/action authority and assignment semantics | **Authority Management** | group/role/scope membership/assignment decisions | Effective Authority / assignment facts |
 | Resource membership in one responsibility scope/time | **Resource Catalogue** | authoritative organizational/resource affiliation facts | Resource Scope Affiliation |
 | Resource/Endpoint/current address realization | **Resource Catalogue** | trusted inventory/network facts | Resource/Endpoint/current realization |
-| scoped resource-centric connectivity inventory | **non-peer application composition** | AM + RC + ACC + Connectivity Requirements + Connectivity Decision + Access Policy | Scoped Connectivity Inventory |
-| application/component communication contract | **Application Communication Catalogue** | authorized catalogue sources | Application/Component/DCS/Deployment |
-| enforcement-target relevance and applicable policy/ACL locators | **Network Enforcement Placement** | current routing/interface state + configured candidate overrides + source-specific locator bindings | Firewall candidate/target references + policy locators |
+| application/component communication contract and concrete ComponentDeployment identity | **Application Communication Catalogue** | authorized catalogue sources | Application/Component/ComponentDeployment/Interaction Contract |
+| scoped resource-centric connectivity inventory | **non-peer application composition** | AM + RC + ACC + Business Connectivity + Access Governance + Access Policy + realization sources | Scoped Connectivity Inventory |
+| enforcement-target relevance and applicable policy/ACL locators | **Network Enforcement Placement** | current routing/interface state + candidate overrides + locator bindings | Firewall candidate/target refs + policy locators |
 | normalized source-qualified technical access evidence | **Technical Access Evidence** | device/traffic/import adapters and external sources | Technical Access Evidence Set / Entry |
-| effective-policy realization assessment, semantic delta, change design, pre-change semantic verification and target representation equivalence | **Access Policy Realization** | target-specific required-policy contract + comparable configured effective-policy contract | Realization Assessment / Semantic Delta / Policy Change Design / Verification Result / Rendered Configuration |
-| provider/device operation identity, concurrency, mutation outcome and execution provenance | **Network Environment Operations** | rendered configuration projection + Authority Management mutation admission + target/provider observations | Network Operation Result |
+| effective-policy realization assessment, semantic delta, vendor-neutral change design and proposed-result semantic verification | **Access Policy Realization** | target-specific required policy + comparable configured effective policy | Assessment / Delta / Change Design / Verification |
+| provider-specific target rendering | `DIRTY` / owner under revalidation | verified vendor-neutral intent + provider semantics | target representation |
+| provider/device operation identity, concurrency, mutation outcome and execution provenance | **Network Environment Operations** | target representation + Authority Management mutation admission + target/provider observations | Network Operation Result |
+
+## Business Connectivity authority
+
+Business Connectivity owns the claim:
+
+> Business Process P currently requires application-semantic Interaction I from dependent participant/role D under the stated applicability/justification.
+
+It does not own:
+
+- concrete ComponentDeployment authorization;
+- source/destination consent;
+- Policy Rule state;
+- technical realization.
+
+A Need may survive deployment replacement or access revocation while the business requirement remains. Need existence therefore cannot be used as proof of authorization.
+
+## Access Governance authority
+
+Access Governance owns the governance claim for one concrete deployed authorization subject:
+
+```text
+source ComponentDeployment
++ destination ComponentDeployment
++ stable Interaction meaning
+```
+
+It owns:
+
+- Request history;
+- source/destination approval obligations;
+- side approve/reject decisions;
+- bilateral grant evaluation;
+- current consent withdrawal/revocation;
+- sufficient provenance to explain who decided for which side, when, and on what authority basis.
+
+Strategic rules:
+
+```text
+Grant  = source consent AND destination consent
+Revoke = source withdrawal OR destination withdrawal
+```
+
+A rejected Request is governance history, not a deny Policy Rule. Revocation does not delete the underlying Connectivity Need or rewrite the original approved Request as rejected.
+
+## Authority Management ownership
+
+Authority Management owns whether Actor A may perform action X for Scope S at logical time T and the private assignment/group/role mechanics that establish that result.
+
+Consumers receive an effective authority result such as:
+
+```text
+admitted | denied | unknown/ambiguous
+```
+
+plus sufficient provenance where audit requires it.
+
+Access Governance and other consumers must not infer permission from Resource owner/administrator metadata or peer into role/group internals.
+
+## Access Policy ownership
+
+Access Policy owns current authoritative Policy Rule truth and effective authorized-policy projection.
+
+It consumes Access Governance authorization grant/withdrawal semantics for an exact trusted subject and does not re-run bilateral consent logic.
+
+Several Needs and several approved Requests may support one current semantic Policy Rule. Rejected Requests do not create semantic deny Rules.
 
 ## Responsibility Scope / Resource affiliation ownership
 
-I16A separates two truths that share the same stable scope reference:
+Two independent truths share a stable scope reference:
 
 ```text
 Resource Catalogue:
 Resource --Resource Scope Affiliation--> Responsibility Scope
 
 Authority Management:
-Actor --Responsibility Assignment(action,time)--> Responsibility Scope
+Actor --effective authority(action,time)--> Responsibility Scope
 ```
 
-Resource Catalogue owns whether Resource R belongs to Responsibility Scope S at logical time T.
+Resource Catalogue owns whether Resource R belongs to Scope S at time T.
+Authority Management owns whether Actor A may perform action X for Scope S at time T.
+Neither truth implies the other.
 
-Authority Management owns whether Actor A may perform action X for Scope S at logical time T.
-
-Neither truth implies the other:
-
-```text
-Resource in scope
-!= actor authorized
-
-actor authorized for scope
-!= Resource in scope
-```
-
-Current global catalogue visibility is a third independent concern. A foreign Resource may be readable without being local to the actor's selected responsibility scope.
-
-The first workspace-specific Authority action is `ReadScopedConnectivity`. It admits use of one scope as local workspace context only. It does not imply any Requirement/Decision/Rule detail read or mutation action.
+Current global catalogue visibility remains a third independent concern.
 
 ## Scoped Connectivity Inventory ownership
 
-Scoped Connectivity Inventory is a non-peer application/read composition.
+Scoped Connectivity Inventory is a non-peer application/read composition. It correlates trusted facts from the authoritative contexts and owns no new business identity/lifecycle/status.
 
-It correlates:
-- `ReadScopedConnectivity` scope admission from Authority Management;
-- effective Resource Scope Affiliations and Resource realization from Resource Catalogue;
-- Component Deployment / DeploymentResourceBinding / DCS from Application Communication Catalogue;
-- accepted safe summaries from Connectivity Requirements, Connectivity Decision and Access Policy.
+It may summarize independently:
 
-It owns no new business identity, lifecycle, status or persistence truth.
+- local Resource/ComponentDeployment/Interaction context;
+- business Need/justification state;
+- Access Governance request/approval/revocation state;
+- Access Policy current effective authorization;
+- technical realization/reconciliation.
 
-## Connectivity Decision authority
+No summary dimension may be inferred from another (for example Need != Authorized, Authorized != Realized).
 
-Connectivity Decision owns the claim:
+## Primary governance-chain contracts
 
-> for exact proposed subject R in governance scope S, final decision D was Allowed/NotAllowed, for validity V, for reason/provenance P.
+### Business Connectivity -> Access Governance
 
-It does not own:
-- whether connectivity is required;
-- who has decision authority;
-- Access Rule state/lifecycle;
-- catalogue/resource truth.
+Provides Process-backed Connectivity Need / business-justification meaning for a deliberate request. Access Governance must preserve the justification basis used historically and must not treat Need as consent.
 
-Authority Management owns `DecideConnectivity` / `ReadConnectivityDecision` eligibility.
+### Application Communication Catalogue -> Access Governance / Access Policy
 
-Connectivity Requirements may supply evidence of need, but `Required != Authorized`.
+Provides exact deployed-interaction identity:
+
+```text
+sourceComponentDeploymentRef
++ destinationComponentDeploymentRef
++ interactionContractRevisionRef
+```
+
+ComponentDeployment is bound to exactly one Resource for MVP. Endpoint/address realization remains Resource Catalogue truth.
+
+### Authority Management -> Access Governance
+
+Provides effective request/approve/revoke action authority for the relevant actor/scope/time plus needed audit provenance.
+
+### Access Governance -> Access Policy
+
+Provides semantic authorization transitions such as:
+
+```text
+AuthorizationGranted(subject, provenance)
+AuthorizationWithdrawn(subject, provenance)
+```
+
+It does not publish peer-private Request state as Access Policy domain state.
 
 ## Technical Access Evidence authority
 
-Technical Access Evidence owns the claim:
-
-> source X provided or allowed us to derive technical access material Y for scope/time T.
-
-It does not own the truth that Y is desired, authorized or correctly realized.
-
-Evidence kinds:
-
-```text
-Configured
-TrafficDerived
-Imported
-```
-
-Source-specific parsing/collection is outside the BC.
+Technical Access Evidence owns the claim that source X provided or allowed NAPMS to derive technical access material Y for scope/time T. It does not own whether Y is desired, authorized or correctly realized.
 
 ## Network Enforcement Placement authority
 
-Network Enforcement Placement owns target relevance for supplied technical traffic pairs using its current network-state and override semantics. It also owns the applicable policy/ACL locator information needed to identify the relevant policy surface on a returned Firewall.
+NEP owns candidate enforcement-location relevance and applicable policy/ACL locator information for supplied technical traffic pairs. It does not own authorization, configured policy contents, desired-vs-configured reconciliation, rendering or provider execution.
 
-NEP does not own authorization, configured policy contents, desired-vs-configured reconciliation, policy change design, rendering or provider execution.
-
-Once a target/policy locator has been supplied downstream, APR does not reevaluate why NEP selected it.
+APR must not reevaluate why NEP selected a target.
 
 ## Access Policy Realization authority
 
-Access Policy Realization owns the semantic comparison and transformation layer for one supplied technical policy target:
+APR owns normalized required-vs-configured effective-policy comparison for a supplied comparable target, including:
 
-```text
-required effective access
-        versus
-configured effective access
-```
-
-APR owns:
-
-- realization assessment for trustworthy comparable inputs;
+- realization assessment;
 - exact `common / missing / excess` semantic delta;
-- policy-change design over that delta;
-- semantic pre-change verification of the proposed resulting policy;
-- semantics-preserving target-specific rendering;
-- supporting explanation/attribution of technical access where required by an APR use case.
+- vendor-neutral policy-change design;
+- semantic verification of the proposed resulting effective policy.
 
-APR does not own target relevance, Access Rule authorization, catalogue identities, evidence source truth or provider/device mutation execution.
+Provider-specific rendering is currently a `DIRTY` strategic ownership question and is not treated as settled APR truth by this document.
 
-APR results are derived unless a later accepted product lifecycle establishes independent durable APR state. Data-local indexes/worksets used to compute large policy spaces do not become authoritative peer business truth.
-
-Canonical APR framing: `docs/domain/access-policy-realization/README.md`.
+APR does not own target relevance, Policy Rule authorization, catalogue identity, evidence source truth or provider/device mutation execution.
 
 ## Network Environment Operations authority
 
-Network Environment Operations owns the provider/device operation lifecycle downstream of rendering:
-- NEO-owned `OperationTarget` is a projection of the upstream technical target, not a redefinition of its identity;
-- `operation_id` binds exactly one target + artifact digest and is the first-slice idempotency key;
-- mutation authority is consumed through an explicit Authority Management-facing port and read access does not imply mutation permission;
-- pre-check/current target revision and conditional apply provide optimistic concurrency;
-- apply result is distinct from final verification;
-- final outcomes are `Verified | PreconditionFailed | Rejected | Drift | Unknown`;
-- `Verified` requires post-check evidence matching the requested artifact digest;
-- Unknown apply is never converted into success and is not blindly retried;
-- operation provenance preserves pre/apply/post evidence and correlation.
+Network Environment Operations owns provider/device operation lifecycle, idempotency/concurrency, mutation outcome and execution provenance downstream of an accepted target representation.
 
-The current executable adapter is a deterministic in-process stub because no real lab is available. Stub success proves the operation semantics only; it is not evidence of real Cisco transport compatibility. The current in-memory operation repository does not claim crash-durable execution audit.
+Apply response remains distinct from final convergence verification. Unknown apply is never silently converted to success.
 
-## Proposal ownership
+## Legacy ownership disposition
 
-Access Rule Proposal is an application-level handoff. It carries an exact candidate Rule semantic identity and accepted proposal authority scope. It owns no final permission decision and no authoritative Rule ID/state.
+The old target claims are superseded:
+
+```text
+Connectivity Requirements -> Business Connectivity
+Connectivity Decision     -> Access Governance
+```
+
+Legacy `ConnectivityRequirement`, `ConnectivityDecision`, Access Rule Proposal and related runtime models remain migration/current-state evidence until later Tactical/Architecture/Implementation work replaces or retires them. They are not target ownership merely because they exist in code.
 
 ## Independent truth dimensions
 
 ```text
-Connectivity requirement exists
-Proposal exists
-Decision exists: Allowed | NotAllowed
-Rule exists
-Active / Inactive
-Technical evidence exists
-Target relevance established upstream
-Required effective target policy available
-Configured effective target policy available
-Realization assessment computed
-Semantic delta computed
+Observed interaction/evidence
+Recognized application interaction
+Business Need exists
+Access Request exists
+Source-side decision exists
+Destination-side decision exists
+Authorization currently granted / withdrawn
+Policy Rule exists / contributes to effective authorization
+Required technical policy materializable / unresolved
+Target relevance established
+Configured effective policy available
+Realization common / missing / excess computed
 Policy change designed
-Proposed resulting policy semantically verified
-Rendered representation exists
+Proposed result verified
+Target representation rendered
 Network operation attempted
-Applied response observed
-Verified target state observed
+Convergence post-check observed
 ```
 
-No Requirement, evidence, target selection, reconciliation result, rendered representation or apply response silently becomes another context's authoritative truth.
+No fact at one dimension silently becomes another context's authoritative truth.
