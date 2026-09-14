@@ -1,7 +1,8 @@
 {
   "model_id": "NAPMS-DDD-001",
-  "source_baseline": "DDD-BDM-010 + 2026-09-14 G1 revalidation + ADR-019 + ADR-020 + ADR-021",
+  "source_baseline": "DDD-BDM-010 + 2026-09-14 G1 revalidation + ADR-019 + ADR-020 + ADR-021 + global Strategic convergence pass",
   "status": "accepted",
+  "context_map": "docs/domain/context-map.md",
   "bounded_contexts": [
     {"name":"Business Connectivity","responsibility":"Business Process meaning/responsibility, application-semantic Connectivity Need, business attribution and justification reconciliation."},
     {"name":"Access Governance","responsibility":"Access Request history, source/destination approval obligations, side decisions, bilateral authorization grant, withdrawal/revocation and governance provenance."},
@@ -11,7 +12,8 @@
     {"name":"Application Communication Catalogue","responsibility":"Application/Component/ComponentDeployment/Interaction identities and immutable interaction traffic contracts."},
     {"name":"Network Enforcement Placement","responsibility":"Candidate enforcement-location relevance plus applicable policy/ACL locators."},
     {"name":"Technical Access Evidence","responsibility":"Normalized source-qualified technical evidence with provenance/time/source scope and no authorization/current-policy claim."},
-    {"name":"Access Policy Realization","responsibility":"Source-neutral required-vs-configured effective-policy assessment, semantic reconciliation, vendor-neutral change design and proposed-result semantic verification."}
+    {"name":"Access Policy Realization","responsibility":"Source-neutral required-vs-configured effective-policy assessment, semantic reconciliation, vendor-neutral change design and proposed-result semantic verification."},
+    {"name":"Network Environment Operations","responsibility":"Controlled provider/device mutation operation identity, mutation-authority admission, concurrency/preconditions, outcome and execution provenance for supplied target artifacts."}
   ],
   "wave1_direct_participants": ["Access Policy","Authority Management","Application Communication Catalogue","Resource Catalogue"],
   "current_direct_participants": ["Business Connectivity","Access Governance","Access Policy","Authority Management","Application Communication Catalogue","Resource Catalogue"],
@@ -26,23 +28,30 @@
     {"name":"Provider Policy Interpretation","responsibility":"Translate provider-native configured policy into comparable ConfiguredEffectivePolicySnapshot with explicit scope, completeness, provenance and unsupported-semantics outcome."},
     {"name":"Provider Policy Rendering","responsibility":"Translate APR-verified vendor-neutral intent into a semantically equivalent TargetPolicyArtifact or fail closed when unsupported."}
   ],
-  "external_seams": [],
+  "external_seams": [
+    "Provider / network-device environment",
+    "Optional external identity provider",
+    "Optional enterprise source systems"
+  ],
   "invariants": [
     "Bounded Context is not a deployment unit.",
     "Business Need does not authorize access.",
     "Grant requires source-side and destination-side consent; either authorized side may withdraw current consent.",
     "Authority Management owns effective action authority; consumers own decisions made using that authority.",
+    "Resource Catalogue owns Resource Scope Affiliation; a shared ResponsibilityScope reference does not make affiliation equal authority.",
     "Required Policy Materialization is derived composition; unresolved is not empty required policy or APR drift.",
     "Technical evidence is not authorization and is not automatically current/complete configured policy.",
     "NEP owns candidate enforcement-location relevance.",
     "Provider interpretation/rendering are adapter/integration capabilities, not peer Bounded Contexts.",
     "APR core remains provider-neutral and compares source-neutral effective policy semantics.",
     "Rendering must preserve verified semantics and fail closed when equivalence cannot be established.",
-    "NEO owns execution lifecycle, not policy reinterpretation.",
+    "Network Environment Operations is a Bounded Context owning execution lifecycle, not policy reinterpretation or placement.",
     "Technical realization changes do not redefine semantic authorization identity."
   ],
-  "open_strategic_questions": [
-    "Responsibility-scope change consequences for existing authorization.",
-    "Exact Process organizational-responsibility contract with external enterprise structure."
+  "open_strategic_questions": [],
+  "deferred_nonblocking_questions": [
+    "Whether a later Resource Scope Affiliation/responsibility change causes warning, reapproval or automatic withdrawal of existing authorization; route to S1 when concrete behavior is required.",
+    "How Access Governance selects among simultaneously applicable overlapping responsibility scopes; route to S1/Tactical DDD when a concrete use case requires the rule.",
+    "Exact organization-reference/provider shape when a concrete external enterprise organization source is required."
   ]
 }

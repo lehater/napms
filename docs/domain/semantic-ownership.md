@@ -1,8 +1,10 @@
 # Semantic Ownership
 
-Status: `S2 revalidated through provider-policy boundaries`.
+Status: `S2 globally revalidated at Strategic level; Tactical work remains active where recorded`.
 
 This file defines semantic ownership, not runtime/service ownership.
+
+Canonical relationship map: `context-map.md`.
 
 ## Ownership map
 
@@ -12,7 +14,8 @@ This file defines semantic ownership, not runtime/service ownership.
 | bilateral request/consent/grant/withdrawal | **Access Governance** | governance history / Authorization Granted or Withdrawn |
 | effective actor/action/scope authority | **Authority Management** | Effective Authority |
 | current semantic authorization | **Access Policy** | Policy Rule / effective authorized policy |
-| Resource/Endpoint/current corporate-visible address | **Resource Catalogue** | current realization |
+| Resource/Endpoint/current corporate-visible address | **Resource Catalogue** | current/historical realization |
+| Resource Scope Affiliation / Resource Responsibility | **Resource Catalogue** | effective scope-affiliation and operational responsibility/contact facts |
 | ComponentDeployment/Interaction traffic contract | **Application Communication Catalogue** | deployed Interaction subject |
 | normalized required technical predicates / target required policy | **non-peer Required Policy Materialization** | TargetRequiredPolicy or unresolved |
 | candidate enforcement target/policy locator | **Network Enforcement Placement** | candidate target/locator |
@@ -21,6 +24,24 @@ This file defines semantic ownership, not runtime/service ownership.
 | required-vs-configured comparison, delta, vendor-neutral change design, proposed-result semantic verification | **Access Policy Realization** | Assessment / Delta / VerifiedChangeIntent |
 | verified vendor-neutral intent -> provider target representation | **provider rendering adapter/integration capability** | TargetPolicyArtifact |
 | controlled provider/device mutation lifecycle | **Network Environment Operations** | NetworkOperation result/provenance |
+
+## Responsibility-scope correlation
+
+`ResponsibilityScopeRef` is a stable correlation value, not a separate aggregate/Bounded Context in the current target.
+
+Independent truths share that reference:
+
+```text
+Resource Catalogue
+    Resource -> effective Resource Scope Affiliation -> ResponsibilityScopeRef
+
+Authority Management
+    Actor + Action + ResponsibilityScopeRef + Time -> Effective Authority
+```
+
+Access Governance may consume Resource Catalogue affiliation facts to establish/correlate source and destination governance obligations, then consume Authority Management admission for the corresponding actor/action/scope/time. Resource affiliation does not imply actor authority, and authority does not manufacture Resource affiliation.
+
+Resource Responsibility, owner and administrator/contact facts are operational/business responsibility facts and never substitute for Access Governance approval authority.
 
 ## Provider interpretation ownership
 
@@ -88,7 +109,7 @@ A successful renderer must establish semantic equivalence for the supported prov
 
 ## NEO boundary
 
-NEO owns execution identity, mutation authority admission, concurrency/preconditions, apply outcome and operation provenance for the supplied artifact. NEO does not reinterpret policy meaning.
+Network Environment Operations is a target Bounded Context. It owns execution identity, mutation authority admission, concurrency/preconditions, apply outcome and operation provenance for the supplied artifact. NEO does not reinterpret policy meaning or re-decide placement.
 
 Apply success does not imply convergence. Subsequent provider state is observed/interpreted again and compared against required policy.
 
