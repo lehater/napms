@@ -1,100 +1,80 @@
 # Domain capability ownership map
 
-Status: `S2 revalidated through required-policy materialization`.
+Status: `S2 revalidated through provider-policy boundaries`.
 
-A capability is not automatically a Bounded Context, service or deployment unit. Current target ownership follows the 2026-09-14 G1 revalidation, ADR-019 and ADR-020.
+A capability is not automatically a Bounded Context, service or deployment unit. Current target ownership follows the 2026-09-14 G1 revalidation plus ADR-019, ADR-020 and ADR-021.
 
 ## Current target capabilities
 
-| Capability | Business question / outcome | Semantic owner / disposition |
-|---|---|---|
-| Business Process Management | what business process supplies context/responsibility for connectivity need? | **Business Connectivity** |
-| Connectivity Need Management | what application-semantic connectivity does a business process need? | **Business Connectivity** |
-| Business Attribution / Justification Reconciliation | which interaction is justified by which Process/Need and where is justification missing? | **Business Connectivity** supplies truth; derived composition may correlate it |
-| Access Request / Approval Obligations / Side Decisions | what concrete deployed interaction seeks consent and what did each authorized side decide? | **Access Governance** |
-| Bilateral Grant / Withdrawal / Governance History | is current consent granted or withdrawn and what history explains it? | **Access Governance** |
-| Effective Authority Evaluation / Group-Role-Scope Assignment | may actor A perform X for scope S at T and how is that authority established? | **Authority Management** |
-| Current Policy Rule Governance / Effective Authorized Policy | what semantic network access is currently authorized? | **Access Policy** |
-| Resource Scope Affiliation | which Resources belong to scope S at time T? | **Resource Catalogue** |
-| Resource / Endpoint / Address Realization | what Resource/Endpoint exists and what corporate-visible address/prefix currently realizes it? | **Resource Catalogue** |
-| Application Communication Contract | what Component Interaction and immutable protocol/port contract exists? | **Application Communication Catalogue** |
-| Component Deployment Knowledge | which concrete Component is deployed on which Resource? | **Application Communication Catalogue**; exactly one Resource per ComponentDeployment in MVP |
-| Required Access Materialization | what normalized technical access follows from current semantic authorization and current catalogue realization? | **non-peer derived composition** over Access Policy + ACC + Resource Catalogue |
-| Enforcement Target Relevance | which Firewalls/policy locators are relevant for supplied technical pairs? | **Network Enforcement Placement** |
-| Target Required Policy Projection | what aggregate normalized required policy applies to each comparable enforcement target/locator? | **non-peer derived composition** using Required Access Materialization + NEP; ADR-020 |
-| Technical Access Evidence Management | what normalized source-qualified technical access material was observed/derived/imported? | **Technical Access Evidence** |
-| Policy Realization Assessment / Semantic Reconciliation | how does configured effective access compare with required effective access? | **Access Policy Realization** |
-| Policy Change Design / Proposed Change Verification | what vendor-neutral change removes the delta and would its result be semantically exact? | **Access Policy Realization** |
-| Target Policy Rendering | how is verified intent represented for a provider/target? | ownership `DIRTY`; revalidate separately |
-| Scoped Connectivity Inventory | what independent Need/Governance/Policy/Realization truth can be summarized for an admitted scope? | non-peer application/read composition |
-| Connectivity Impact Analysis | what depends on connectivity and what is the consequence of loss? | cross-context analysis; no peer BC accepted |
-| Source acquisition/parsing | obtain/parse traffic/device/file sources | adapter/mechanism |
+| Capability | Semantic owner / disposition |
+|---|---|
+| Business Process / Connectivity Need / business attribution | **Business Connectivity** |
+| Access Request / bilateral approval / grant / withdrawal / history | **Access Governance** |
+| Effective Authority / group-role-scope assignment | **Authority Management** |
+| Current Policy Rule / effective semantic authorization | **Access Policy** |
+| Resource / Endpoint / corporate-visible address realization | **Resource Catalogue** |
+| ComponentDeployment / Interaction / immutable traffic contract | **Application Communication Catalogue** |
+| Required Access Materialization | **non-peer derived composition** over Access Policy + ACC + Resource Catalogue |
+| Enforcement Target Relevance / policy locators | **Network Enforcement Placement** |
+| Target Required Policy Projection | **non-peer derived composition** using materialization + NEP |
+| Technical Access Evidence Management | **Technical Access Evidence** |
+| Provider Configured-Policy Interpretation | **adapter/integration capability** publishing `ConfiguredEffectivePolicySnapshot` |
+| Policy Realization Assessment / common-missing-excess | **Access Policy Realization** |
+| Vendor-neutral Policy Change Design / Proposed Result Verification | **Access Policy Realization** |
+| Provider Target Rendering | **adapter/integration capability** consuming `VerifiedChangeIntent` and publishing `TargetPolicyArtifact` |
+| Provider/device mutation lifecycle | **Network Environment Operations** |
+| Scoped Connectivity Inventory | non-peer application/read composition |
+| Connectivity Impact Analysis | cross-context analysis; no peer BC accepted |
 
-## Governance chain
+## Provider configured-policy interpretation
+
+ADR-021 places provider-specific interpretation outside APR core and outside TAE domain ownership.
 
 ```text
-Business Connectivity
-    -- Process-backed Need --> Access Governance
-
-Authority Management
-    -- effective actor/action/scope authority --> Access Governance
-
-ACC
-    -- deployed Interaction subject --> Access Governance / Access Policy
-
-Access Governance
-    -- AuthorizationGranted / AuthorizationWithdrawn --> Access Policy
+provider policy/configuration
++ provider semantics
++ explicit comparison scope
+    -> ConfiguredEffectivePolicySnapshot
 ```
 
-`Needed != Authorized`; a rejected Request is history, not desired deny policy.
+The interpreter resolves source-specific rule ordering, deny/default behavior, objects/groups, aliases and other supported provider semantics into source-neutral effective permit space.
 
-## Required Policy Materialization
+The published projection must carry target/policy correlation, provenance/time, explicit completeness (`Complete | Incomplete | Unknown`), interpreter identity/version and unsupported-semantics outcome. Unsupported/incomplete semantics fail closed for a complete realization conclusion.
 
-ADR-020 classifies required-policy materialization as a derived composition because it owns no independent source fact, decision, identity or business lifecycle.
+TAE may persist normalized source-qualified evidence but does not choose the current capture or assert APR comparison completeness.
+
+## APR
+
+APR consumes source-neutral comparable inputs:
 
 ```text
-Access Policy effective Rules
-+ ACC Interaction traffic contract
-+ Resource Catalogue current Endpoint/address realization
-        -> normalized required technical predicates
-        -> NEP technical source/destination pairs
-+ NEP candidate target/policy locators
-        -> TargetRequiredPolicy
-        -> APR
+TargetRequiredPolicy
+ConfiguredEffectivePolicySnapshot
 ```
 
-Rules:
+and owns exact effective-policy algebra, realization assessment, semantic delta, vendor-neutral change design and semantic verification of the proposed result.
 
-- every current source Endpoint address is combined with every current destination Endpoint address for the Rule subject;
-- complete immutable Interaction traffic semantics are applied atomically;
-- normalized predicates may have many contributing Policy Rules and deduplication preserves provenance;
-- target projection groups all required predicates for the same comparable `firewallId + policyLocator`;
-- a missing Resource/Endpoint/address/placement/locator produces explicit `unresolved`, not an empty policy and not APR drift;
-- revocation recomputes aggregate required policy rather than deleting a historical firewall row;
-- the composition uses published context contracts and does not navigate peer-private persistence.
+APR core does not own provider syntax, ordering, object expansion, default behavior or renderer implementation.
 
-## Resource realization
+## Provider rendering
 
-Resource Catalogue target realization is:
+ADR-021 places provider-specific rendering downstream of APR semantic verification and upstream of NEO execution:
 
 ```text
-Resource
-    -> ResourceEndpoint [0..N]
-        -> current corporate-visible address/prefix [0..1]
+VerifiedChangeIntent
++ target/provider capabilities
++ base revision/correlation
+    -> TargetPolicyArtifact
 ```
 
-Endpoint identity survives address changes. Resource Catalogue records the corporate-visible realization meaningful for access management and does not calculate NAT.
+Rendering is an adapter/integration capability. It translates representation only and must preserve verified semantics. Failure to establish semantic equivalence is a fail-closed outcome; no executable artifact is handed to NEO.
 
-## Network Enforcement Placement
+## NEO
 
-NEP alone decides candidate Firewall/policy-locator relevance for technical pairs. Materialization and APR must not reinterpret its routing/override reasoning. A candidate without a comparable policy locator remains visible as unresolved for target-policy comparison.
+NEO owns controlled target mutation lifecycle, mutation authority admission, concurrency/pre-check, apply outcome and operation provenance for a supplied target artifact. It does not reinterpret provider policy semantics or repair renderer output.
 
-## Access Policy Realization
+Apply success is not convergence proof. Subsequent provider state must be interpreted again and compared through APR.
 
-APR consumes a comparable `TargetRequiredPolicy` plus normalized configured effective policy and owns assessment, exact `common/missing/excess`, vendor-neutral change design and proposed-result semantic verification.
+## Strategic consequences
 
-Provider-specific configured-policy normalization/rendering remains the next dirty strategic boundary. Mutation execution remains downstream.
-
-## Legacy disposition
-
-`Connectivity Requirements` and `Connectivity Decision` are historical/current-runtime concepts, not target owners. Legacy Requirement-to-Policy Alignment terminology must not override current `Needed`, `Authorized`, `Materializable` and `Realized` dimensions.
+No new Bounded Context is introduced for provider interpretation or rendering. Provider-specific interpreter/renderer implementations may share libraries or adapter infrastructure, but this does not create a shared semantic owner.
