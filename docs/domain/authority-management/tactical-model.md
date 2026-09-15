@@ -1,14 +1,16 @@
-# Authority Management — Tactical DDD model
+# Authority Management — MVP Tactical DDD model
+
+Status: `S2 MVP Tactical model aligned 2026-09-15`.
 
 ## Purpose
 
-Authority Management answers one question:
+Own one question:
 
-> may this trusted Actor perform this Action for this Responsibility Scope at this effective time?
+> may this trusted Actor perform this Action for this Scope at this effective time?
 
-AM owns effective actor/action/scope authority and the assignment semantics needed to answer that question. It does not infer authority from Resource ownership, responsibility metadata, UI selection or application hierarchy.
+Authority Management (AM) owns effective actor/action/scope authority and the authority-assignment semantics needed to answer that question. It does not infer authority from Resource ownership, Resource responsibility metadata, UI selection or application hierarchy.
 
-## Correlation values
+## Core correlation values
 
 ```text
 ActorRef
@@ -18,9 +20,17 @@ ActionRef
 ResponsibilityScopeRef
 ```
 
-`ResponsibilityScopeRef` is a stable cross-context correlation value, not a separate Bounded Context. RC uses it for Resource Scope Affiliation, AM uses it for action authority, and AG correlates those independent truths when deriving approval obligations. AM does not own Resource-to-Scope membership.
+`ResponsibilityScopeRef` is a stable cross-context correlation value, not a separate Bounded Context.
+
+- RC uses it for Resource Scope Affiliation;
+- AM uses it for action authority;
+- AG correlates those independent truths when deriving approval obligations.
+
+AM does not own Resource-to-Scope membership.
 
 ## Authority model
+
+The MVP authority path is:
 
 ```text
 Actor
@@ -30,9 +40,9 @@ Actor
               -> EffectiveAuthority(actor, action, scope, time)
 ```
 
-Authority comes from role/group/scope assignment rather than Resource owner, administrator, contact or responsibility metadata.
+This supports the accepted distributed-governance rule that an employee gains approval/request/operation authority through role/group/scope assignment rather than by being listed as Resource owner/administrator/contact.
 
-## AuthorityRole
+## Entity — AuthorityRole
 
 ```text
 AuthorityRole {
@@ -41,11 +51,15 @@ AuthorityRole {
 }
 ```
 
-`roleRef` is stable role identity. Display names and descriptions do not define authority identity. A role owns action permissions; scope belongs to the assignment.
+`roleRef` is stable role identity. Role display names/descriptions do not define authority identity.
 
-Changing current role permissions changes current and subsequent effective authority. Consuming contexts preserve the authority evidence relevant to decisions they need to explain.
+The role contains only action permissions. Scope is attached by assignment, not embedded permanently into the role.
 
-## ActorGroupMembership
+Changing a Role's current permissions changes future/current effective authority but does not rewrite historical decisions that already preserved their authority evidence.
+
+Exact business role names are deliberately not frozen by Tactical DDD.
+
+## Temporal fact — ActorGroupMembership
 
 ```text
 ActorGroupMembership {
@@ -58,9 +72,13 @@ ActorGroupMembership {
 }
 ```
 
-A membership states that an Actor belongs to one Group during its effective interval. `membershipRef` is stable fact identity. Membership may originate in an external identity source, but AM retains the effective fact and its provenance without owning the external identity-system topology.
+A membership states that an Actor is a member of one Group during its effective interval.
 
-## GroupRoleScopeAssignment
+`membershipRef` is stable fact identity because authority decisions may need to explain which membership supported admission at a historical time.
+
+AM may obtain membership from an external authoritative identity source, but the effective membership fact consumed by AM must retain source/provenance. External identity-system topology is not AM domain ownership.
+
+## Temporal fact — GroupRoleScopeAssignment
 
 ```text
 GroupRoleScopeAssignment {
@@ -74,9 +92,13 @@ GroupRoleScopeAssignment {
 }
 ```
 
-The assignment grants one Role to one Group within exactly one Responsibility Scope for its effective interval. `assignmentRef` is stable fact identity. Resource identity does not belong in the assignment; Resource correlation is provided by RC `ResourceScopeAffiliation`.
+The assignment grants the Role to the Group within exactly one Responsibility Scope for its effective interval.
 
-## EffectiveAuthority
+`assignmentRef` is stable fact identity because admission evidence may need to refer to the exact assignment basis.
+
+No direct Resource identity belongs in this fact. Resources correlate through RC `ResourceScopeAffiliation`.
+
+## Derived value — EffectiveAuthority
 
 For one exact query:
 
@@ -87,14 +109,20 @@ AuthorityQuery {
     responsibilityScopeRef
     effectiveTime
 }
+```
 
+AM derives:
+
+```text
 EffectiveAuthority =
     Admitted(authorityEvidence)
   | Denied
   | Unknown
 ```
 
-`Admitted` requires at least one complete effective path:
+### Admitted
+
+`Admitted` requires at least one complete effective path at the query time:
 
 ```text
 ActorGroupMembership(actor, group)
@@ -102,15 +130,19 @@ AND GroupRoleScopeAssignment(group, role, scope)
 AND AuthorityRole(role).permittedActions contains action
 ```
 
-All matching positive bases may be retained in evidence. Duplicate positive paths do not create additional authority meaning.
+All matching positive bases for the same exact actor/action/scope may be retained in evidence. Duplicate positive paths do not create additional authority meaning.
 
-`Denied` means AM has sufficient authoritative knowledge and no effective path grants the requested action in the exact requested scope.
+### Denied
 
-`Unknown` means material membership, assignment or role evidence is unavailable, incomplete or unresolved. Consumers protecting approval or mutation fail closed on both `Denied` and `Unknown`.
+`Denied` means AM has sufficient authoritative knowledge for the query and no effective path grants the requested action in the exact requested scope.
 
-The authority model is positive-grant based. It contains no explicit deny assignments, deny precedence, policy-expression language, nested-group semantics or role inheritance. Under complete knowledge, absence of an effective positive grant is `Denied`.
+### Unknown
 
-## AuthorityEvidence
+`Unknown` means AM cannot establish a trustworthy admitted-or-denied answer because material membership/assignment/role evidence is unavailable, incomplete or unresolved.
+
+Consumers that protect mutation/approval must fail closed on both `Denied` and `Unknown`.
+
+## Authority evidence
 
 ```text
 AuthorityEvidence {
@@ -125,18 +157,28 @@ AuthorityEvidence {
 }
 ```
 
-`AuthorityEvidence` is an immutable derived explanation value, not an aggregate. A consuming context may preserve the evidence needed for its own durable decision provenance; later assignment changes do not rewrite an already made decision.
+This is an immutable derived explanation value, not a new aggregate.
+
+A consuming context may preserve the relevant evidence/reference in its own historical decision provenance. Later membership/role/assignment changes do not rewrite the historical fact that authority was valid at decision time.
 
 ## Scope discovery
+
+AM may also derive the set of scopes for which an Actor has effective authority for one Action at a time:
 
 ```text
 EffectiveScopes(actorRef, actionRef, effectiveTime)
     -> Set<ResponsibilityScopeRef> | Unknown
 ```
 
-Several authority paths to the same scope collapse to one scope value. When a use case requires exactly one selected scope, selection among several admitted scopes belongs to that use case; AM does not choose arbitrarily.
+The set contains distinct scope references; several authority paths to the same scope collapse to the same scope value.
+
+If a consuming use case requires the user to operate in exactly one selected scope, ambiguity between several admitted scopes is that use case's selection problem. AM does not arbitrarily choose one scope.
+
+A consumer may impose a stricter unique-basis rule for a particular accepted action contract, but that does not change the core meaning of effective authority.
 
 ## Domain operations
+
+Minimum semantic operations:
 
 ```text
 DefineRole / ChangeRolePermissions
@@ -146,17 +188,57 @@ EvaluateEffectiveAuthority
 ListEffectiveScopes
 ```
 
-These names express domain meaning rather than transport/API commands.
+These are domain meanings, not frozen API/command names.
 
 ## Invariants
 
 1. Authority is evaluated for an exact `(ActorRef, ActionRef, ResponsibilityScopeRef, effectiveTime)` tuple.
-2. Actor identity is trusted input from the authentication/session boundary; caller payload does not manufacture it.
+2. An Actor's authenticated identity is trusted input from the authentication/session boundary; caller payload does not manufacture ActorRef.
 3. Group membership alone grants no action.
 4. Role permission alone grants no action without an effective group/scope assignment and Actor membership.
-5. Assignment to one Responsibility Scope grants nothing in another scope.
-6. Resource Scope Affiliation, responsibility, owner, administrator or contact metadata never substitutes for AM authority.
-7. Distinct protected actions may use distinct ActionRefs even when one Actor holds several of them.
-8. `Unknown` never degrades to `Admitted`.
-9. AM does not decide AG bilateral obligation logic or NEO mutation outcome.
-10. AuthorityRole has stable identity and mutable current permissions; memberships and assignments are temporal facts; EffectiveAuthority and AuthorityEvidence are derived values.
+5. Assignment to one Responsibility Scope does not grant the same action in another scope.
+6. Resource Scope Affiliation/Responsibility/owner/admin/contact metadata never substitutes for AM authority.
+7. Request initiation, approval, withdrawal, catalogue curation, protected reads and network execution may use distinct ActionRefs even when one Actor holds several of them.
+8. Historical consuming decisions retain their authority evidence; later loss of authority changes current/future admission only.
+9. `Unknown` never degrades to `Admitted`.
+10. AM does not decide bilateral AG obligation logic or NEO mutation outcome; it only answers authority.
+
+## No explicit deny policy in MVP
+
+The accepted MVP authority model is positive grant by role assignment. It does not introduce explicit deny assignments, deny precedence, policy expressions or ABAC rule evaluation.
+
+Absence of an effective positive grant under complete knowledge is `Denied`.
+
+If explicit deny/precedence becomes a product requirement, it must be introduced as new authority semantics rather than inferred from missing assignments.
+
+## Lifecycle classification
+
+- AuthorityRole has stable identity and mutable current permitted-action meaning.
+- ActorGroupMembership and GroupRoleScopeAssignment are temporal authority facts with stable fact references and effective intervals.
+- EffectiveAuthority/AuthorityEvidence are derived immutable values for one query/time.
+- ResponsibilityScopeRef is correlation value, not AM-owned aggregate identity.
+
+No generic workflow/state machine is required.
+
+## Deliberately deferred
+
+- nested groups;
+- role inheritance/hierarchy;
+- explicit deny rules/precedence;
+- quorum/multi-actor authority policies;
+- attribute-expression/ABAC language;
+- Organizational Unit mapping to Responsibility Scope;
+- exact business role names such as whether approve and withdraw share one role;
+- enterprise IAM synchronization mechanism;
+- persistence/schema/transport representation.
+
+## Tactical coherence result
+
+AM now has sufficient target Tactical semantics for all current MVP consumers:
+
+- AG can ask whether an Actor may request/approve/withdraw for one Responsibility Scope and time;
+- AP/catalogue/workspaces can evaluate protected actions without inferring authority from ownership metadata;
+- NEO can require independent mutation authority;
+- historical decisions can retain authority basis without freezing current assignments forever;
+- unknown authority fails closed;
+- no future RBAC/ABAC framework is pre-built into the domain.
