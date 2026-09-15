@@ -1,81 +1,100 @@
 # Dependency injection and composition model
 
+Status: `accepted and exercised through I16B Connectivity Decision Runtime`.
+
+Date: 2026-09-09.
+
 ## Purpose
 
-Define dependency direction and runtime composition without coupling Domain/Application to infrastructure or framework mechanics.
+Define dependency direction and object composition without coupling core semantics to infrastructure/frameworks.
 
-## Composition rule
+## Decision
 
-Use explicit constructor injection for application dependencies. Domain objects have no dependency-injection/container awareness.
+Use **explicit constructor injection** for application dependencies. Domain objects have no dependency-injection/container awareness.
 
-Each executable process has an outer composition root responsible for:
+There is one outer **composition root** for each executable process. It owns:
+1. validated application configuration;
+2. centralized logging/observability setup when the runtime boundary is introduced;
+3. construction of concrete adapters;
+4. construction of application use cases with those adapters;
+5. attachment to the selected transport/scheduler/CLI entrypoint.
 
-1. validated runtime configuration;
-2. logging/observability setup;
-3. concrete adapter construction;
-4. application/use-case construction with those adapters;
-5. transport, scheduler or CLI attachment.
+The composition root depends inward. Domain/Application never import the composition root, DI container, HTTP framework primitives or adapter implementations.
 
-The composition root depends inward. Domain/Application never import the composition root, DI containers, HTTP framework primitives or concrete adapters.
+## Greenfield PostgreSQL composition
+
+The local-dev greenfield PostgreSQL composition constructs:
+- Authority Management PostgreSQL repository -> action-specific consumer adapters, including independent Decision Decide/Read authority;
+- Application Communication Catalogue PostgreSQL repository -> proposal, Decision, Requirements and policy-export consumer adapters;
+- Resource Catalogue PostgreSQL repository -> policy-export and Scoped Connectivity consumer adapters;
+- Access Policy PostgreSQL repository;
+- Connectivity Requirements PostgreSQL repository;
+- Connectivity Decision PostgreSQL repository -> Decision application use cases, Access Policy consumer projection and Scoped Connectivity coarse summary;
+- strict internal DCS projection codec/decoder.
+
+Each persisted bounded context uses its own repository/schema ownership. No application code performs cross-module SQL.
+
+ACC and RC use separate read-only `REPEATABLE READ` connections for one logical snapshot scope. Access Policy uses its own transactional connection. These are infrastructure mechanics and do not alter Domain/Application semantics.
+
+Connectivity Decision is a first-class bounded context with Decision-owned PostgreSQL persistence. The normal local runtime composes its durable repository and consumer adapters directly; it does not inject a deterministic Allowed provider.
 
 ## Ports
 
-Ports are owned by the consuming application/module. Cross-bounded-context translation belongs in outer adapters or explicitly owned composition/workflow code.
+Port protocols are owned by the consuming application/module. Cross-bounded-context translation belongs in outer adapters. A bounded context Domain/Application core does not import another bounded context core merely to share a convenient type.
 
-A bounded-context core does not import another bounded-context private model or persistence representation merely to share a convenient type. Cross-context contracts use the semantic references/projections published by the owning context.
+This rule is executable in architecture tests.
 
-No application module performs peer-context SQL or treats another context's repository as its own persistence port.
+## HTTP composition
 
-## Runtime composition
+The HTTP runtime composition owns:
+- validated `HttpRuntimeConfig`;
+- process-lifetime local authenticator and opaque in-memory session store;
+- request-lifetime greenfield PostgreSQL scope;
+- durable Decision participant and consumer dependencies supplied by that scope;
+- FastAPI transport attachment;
+- readiness probing.
 
-NAPMS runtime composition is explicit rather than service-locator based.
+Access Policy receives the Decision consumer through its own port. The normal runtime obtains that consumer from the greenfield scope. An explicit injected `ConnectivityDecisionPort` remains available only as focused composition/test plumbing and is not the normal local product path.
 
-- validated configuration is assembled before dependencies;
-- PostgreSQL repositories are constructed as outer adapters for the contexts they own;
-- application workflows receive only the ports/contracts they consume;
-- FastAPI is attached at the transport boundary;
-- Web/nginx is an outer static/runtime adapter and does not compose Domain/Application objects;
-- process/deployment sequencing does not alter inward dependency direction.
+## I11 local executable process roots
 
-Executable roots such as migration, local seed and HTTP runtime each build only the dependencies required for that process.
+Docker Compose introduces process orchestration, not a DI container.
+
+Python executable roots remain explicit:
+- `napms-migrate` -> typed application config -> tracked PostgreSQL migration runner;
+- `napms-seed-local` -> typed local seed config -> idempotent local demo seed;
+- `napms-http` -> typed HTTP runtime config -> existing greenfield composition + FastAPI.
+
+The Web image is an outer static/runtime adapter: nginx serves built React assets and proxies same-origin HTTP traffic. It does not compose Domain/Application objects.
+
+Compose dependency ordering (`postgres -> migrate -> seed -> api -> web`) is deployment/runtime sequencing and does not change inward dependency direction.
 
 ## Container policy
 
-No DI framework/container is required. A framework container, if present at the outermost runtime boundary, must not become a service locator passed into use cases.
+No DI framework/container is required. If one is later useful, it remains confined to composition and must not become a service locator passed into use cases.
 
 Forbidden:
-
 - `container.resolve(...)` inside Domain/Application;
-- global mutable dependency registries;
-- hidden module-level adapter singletons;
-- framework decorators/types required to instantiate core use cases;
-- peer-context repository injection that bypasses a public semantic contract.
+- global mutable dependency registry;
+- hidden module-level adapter singleton;
+- framework decorators/types required to instantiate core use cases.
 
 ## Lifetimes
 
-Default lifetime rules:
-
+Default rules:
 - immutable validated configuration: process lifetime;
 - logging configuration/factory: process lifetime;
-- stateless thread-safe adapters/clients: process lifetime when appropriate;
-- transaction/repository connection: operation or request lifetime;
+- stateless safe adapters/clients: process lifetime when appropriate;
+- transaction/repository connection: operation/request lifetime;
 - application use case: lifetime follows dependency safety;
 - domain values/aggregates: normal domain lifetime.
 
-A longer-lived dependency must not retain request/transaction state accidentally.
-
-## Transactions and context ownership
-
-A repository/transaction belongs to its semantic owner. Composition may coordinate several context calls but does not create implicit cross-context database ownership.
-
-Cross-context atomicity, snapshots or consistency requirements must be explicit Architecture contracts. They are not inferred from the fact that several repositories happen to use one PostgreSQL server.
-
 ## Tests
 
-Core tests construct use cases directly with fakes/in-memory implementations. Adapter integration tests prove concrete port contracts. Composition tests prove that executable roots wire real adapters to accepted ports without reversing dependencies.
-
-Architecture tests should mechanically protect dependency direction and prohibit peer-private imports or persistence bypasses where practical.
+Core tests construct use cases directly with fakes/in-memory implementations. PostgreSQL integration tests prove concrete adapter contracts. Composition tests prove the outer root wires real adapters to the accepted ports without reversing dependencies.
 
 ## Cross-cutting concerns
 
-Logging, metrics, tracing, retries, authentication and authorization do not become an all-purpose context/service locator. Runtime observability and authentication mechanics live at outer boundaries. Business authority remains an explicit semantic dependency owned by Authority Management.
+Logging, metrics, tracing, retries and authorization must not become an all-purpose context/service locator. Runtime observability belongs at the outer boundary. Business Authority remains an explicit semantic dependency.
+
+The I8 HTTP runtime implements the structured logging/correlation obligations in `docs/engineering/observability.md`; Domain/Application remain transport- and logging-framework-independent.

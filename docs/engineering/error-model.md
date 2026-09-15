@@ -1,55 +1,71 @@
 # Error and message model
 
+Status: `accepted engineering decision`.
+
+Date: 2026-09-08.
+
 ## Purpose
 
-Define failure semantics without coupling Domain/Application to HTTP, database-driver or provider exception types.
+Define failure semantics for the executable core and infrastructure boundaries without coupling Domain/Application to transport, database or vendor exception types.
 
-## Outcome rule
+## Decision
 
-Expected business/application outcomes are explicit typed results rather than exceptions. Examples include accepted/completed, denied/not-authorized, invalid input or semantic conflict, unresolved/unknown dependency truth, and precondition failure.
+The application distinguishes **expected business/application outcomes** from **exceptional defects or failed technical execution**.
 
-The exact outcome vocabulary belongs to the owning use case/domain contract. Generic infrastructure must not invent or reinterpret domain meaning.
+Expected outcomes are explicit typed results, not exceptions:
+- materialized;
+- existing Rule resolved idempotently;
+- connectivity NotAllowed;
+- authority denied;
+- required authority unknown/unavailable;
+- interaction invalid;
+- required interaction knowledge unknown/unavailable;
+- decision unknown/unavailable;
+- decision-subject mismatch / rejected inconsistent dependency answer.
 
-Domain exceptions are reserved for attempts to construct or mutate impossible domain state. They are not transport messages and are not normal business branching.
+Domain exceptions are reserved for attempts to construct or mutate an impossible domain state. They are not transport messages and are not used for normal business branching.
 
-Unexpected programming defects propagate to the application/runtime boundary, where they are correlated/logged and mapped to a generic external failure response.
+Unexpected programming defects are not converted into a business outcome. They propagate to the application boundary, where infrastructure later logs/correlates them and maps them to a generic failure response.
 
-Technical adapter failures are translated at the adapter/application boundary into infrastructure-neutral port semantics. Vendor, framework and driver exception classes do not enter Domain/Application contracts.
+Technical adapter failures are translated at the adapter/application boundary into port-level semantics. Vendor/driver exception classes do not enter Domain/Application contracts.
 
-## Fail-closed semantics
+Persistence failure is special: no materialization success may be reported unless the authoritative result is established.
 
-`Unknown` / `Unavailable` is distinct from a negative business answer. Where authoritative permission, completeness, identity or consistency is required, unresolved technical truth fails closed rather than being converted to denial, absence, an empty set or success.
+## I2 persistence exception contract
 
-Subject/correlation mismatch is an explicit conflict and is never silently repaired by substituting another object.
+The Access Policy repository port exposes infrastructure-neutral persistence failures:
 
-## Persistence uncertainty
+- `RuleSemanticIdentityConflict` — the authoritative semantic-identity unique constraint selected another Rule; application may resolve that winner by exact identity;
+- `AccessRulePersistenceError` — persistence execution failed and no application success is established;
+- `AccessRuleCommitOutcomeUnknown` — commit acknowledgement failed and the server-side outcome may be uncertain.
 
-No application success is reported unless authoritative persistence outcome is established.
+The PostgreSQL adapter translates only the named semantic-identity unique constraint to `RuleSemanticIdentityConflict`. A primary-key collision or other database failure is not misclassified as an idempotency race.
 
-Adapters distinguish semantic uniqueness/idempotency conflicts from general persistence failure and from unknown commit outcome. Only an explicitly named semantic uniqueness condition may be treated as an idempotency race. Primary-key collisions or unrelated database failures are not reclassified as successful duplicate resolution.
-
-When commit acknowledgement is uncertain, callers must not infer success or blindly repeat a non-idempotent mutation. Recovery/reconciliation uses the owning operation's explicit identity and current authoritative state.
+On `AccessRulePersistenceError` or `AccessRuleCommitOutcomeUnknown`, the current materialization use case returns no success; the exception propagates to the application boundary. An outer operation/composition layer may later perform authoritative recovery/reconciliation, but it must not infer success from the failed acknowledgement.
 
 ## Stable error identity
 
-Application outcomes are stable machine-readable semantic identities. Infrastructure failures use stable port-level execution identities. Public transport codes, when present, are symbolic application/transport contracts rather than Python/vendor exception class names.
+Application outcomes are the stable machine-readable business/non-success identity. Infrastructure failure classes are stable port-level execution identities, not user-facing messages.
 
-Transport adapters may map outcomes to HTTP/status/message forms but do not redefine their meaning.
+Transport adapters may later map an application outcome or infrastructure failure to HTTP/status/message, but they must not redefine domain meaning. Public error codes, if introduced, are symbolic codes rather than Python/vendor exception class names.
 
 ## Messages
 
-Core code does not own localized or user-facing prose. Core results carry semantic facts and safe references. Presentation adapters own wording.
+Core code does not own localized/user-facing prose. Core results carry semantic facts and safe references only. Presentation adapters own user-facing wording.
 
-User-facing messages never expose internal exception text/stack traces, credentials or connection strings, raw dependency payloads, database/driver/vendor details, or unrelated protected domain facts.
+Messages must never expose:
+- internal exception text or stack traces;
+- secrets/configuration values;
+- unrelated authority/catalogue/decision data;
+- database/driver/vendor details.
 
-Diagnostic detail belongs to internal observability subject to redaction policy.
+Diagnostic detail may be attached to internal observability context, subject to the logging policy.
 
 ## Invariants
 
-- expected semantic outcomes are explicit values;
-- unresolved authoritative truth is distinct from a negative result and fails closed when required;
-- dependency subject/correlation mismatch is never silently repaired;
-- failed or unknown mutation/persistence outcomes do not become success;
-- Domain/Application do not depend on HTTP status codes, FastAPI exceptions, database exceptions or external SDK exception classes;
-- infrastructure translation occurs at adapter/application boundaries;
-- presentation wording does not become domain error identity.
+- `NotAllowed` is a valid business result, never an infrastructure error.
+- `Unknown/Unavailable` is distinct from denied/not-allowed and always fails closed where permission/validity is required.
+- dependency subject mismatch is never silently repaired or substituted.
+- rejected/unknown outcomes leave authoritative Rule state unchanged.
+- Domain/Application do not depend on HTTP status codes, FastAPI exceptions, database exceptions or external SDK exception classes.
+- a database uniqueness failure is treated as idempotent Rule resolution only when it is specifically the authoritative `RuleSemanticIdentity` constraint.

@@ -1,10 +1,14 @@
 # Local PostgreSQL backup and recovery
 
+Status: `accepted I24 local recovery contract`.
+
+Date: 2026-09-10.
+
 ## Purpose
 
 Define the supported logical backup and clean-volume recovery procedure for the local Docker Compose deployment.
 
-This contract protects durable PostgreSQL state only. It is not a full machine, container-image or external-system snapshot.
+This contract protects durable PostgreSQL state only. It is not a full machine, container-image or external-provider snapshot.
 
 ## Backup
 
@@ -15,54 +19,60 @@ make dev-backup BACKUP=backups/napms.napms.dump
 ```
 
 The command:
-
 - runs PostgreSQL `pg_dump` in custom archive format;
 - excludes ownership/ACL portability details;
 - writes to a temporary host file first;
-- validates the archive with `pg_restore --list`;
+- validates the resulting archive with PostgreSQL `pg_restore --list`;
 - atomically replaces the requested backup path only after validation succeeds.
 
-Repository ignore rules exclude `backups/` and `*.napms.dump`.
+The default repository ignore rules exclude `backups/` and `*.napms.dump` so local backup archives are not accidentally committed.
 
 ## Restore
 
-Restore replaces the local PostgreSQL named volume and therefore requires explicit destructive confirmation:
+Restore replaces the entire local PostgreSQL named volume. It is therefore explicit and destructive:
 
 ```bash
 make dev-restore BACKUP=backups/napms.napms.dump CONFIRM_RESET=yes
 ```
 
-The restore tool validates the archive before deleting the volume. After validation and confirmation it:
+The restore tool validates the archive before volume deletion. Without the explicit confirmation the operation fails without changing the volume.
 
+After validation and confirmation it:
 1. stops the local stack and removes the PostgreSQL volume;
-2. creates a clean password-authenticated PostgreSQL volume;
-3. restores the archive with `pg_restore`;
-4. starts the normal local runtime;
-5. runs configured-password and wrong-password database verification.
+2. creates a fresh password-authenticated PostgreSQL volume;
+3. restores the custom-format archive with `pg_restore`;
+4. starts the normal restart-safe local runtime;
+5. runs the PostgreSQL configured-password/wrong-password verification.
 
-Normal startup migrations run after restoration. An already-current database has no pending migrations; an older compatible backup may be advanced by the current forward migration registry.
+The restore path intentionally uses normal migrations/startup after archive restoration. An already-current restored database should therefore report no pending migrations, while a future application version may apply forward migrations according to the normal migration contract.
 
 ## Recovery boundary
 
 Included:
-
-- durable PostgreSQL schemas and rows owned by NAPMS contexts/modules;
-- migration journal state in PostgreSQL;
-- all durable application state present in the database.
+- all durable PostgreSQL schemas and rows owned by NAPMS contexts;
+- migration journal state stored in PostgreSQL;
+- durable catalogue/resource/authority/policy/decision/evidence/placement state present in the database.
 
 Not included:
-
-- generated plaintext local credentials;
+- generated local UI or database plaintext credentials;
 - in-memory Web sessions;
-- in-memory operation state;
+- the current in-memory Network Environment Operations operation repository;
 - external device/provider state;
-- container images or host files outside PostgreSQL;
-- logs not persisted in PostgreSQL.
+- container images, Docker configuration or host files outside PostgreSQL;
+- logs that are not persisted in PostgreSQL.
 
-Successful restore proves recovery of NAPMS durable database truth, not ephemeral process state or external systems.
+A successful PostgreSQL restore therefore proves recovery of NAPMS durable database truth, not recovery of ephemeral process state or external systems.
 
-## Verification
+## Verification evidence
 
-The local Docker gate verifies backup/restore by preserving durable database state across logical dump, clean-volume replacement, restore and normal startup, then checking database authentication and expected durable-state equivalence.
+The Docker local-runtime gate executes an end-to-end recovery proof:
+1. create durable Access Rule state through the fresh product journey;
+2. record the durable Access Rule count;
+3. create and validate a logical backup;
+4. replace the PostgreSQL volume;
+5. restore the archive;
+6. start NAPMS through the restart-safe startup helper;
+7. confirm the durable Access Rule count matches the pre-backup value;
+8. confirm password-authenticated PostgreSQL remains enforced.
 
-The contract does not claim point-in-time recovery, physical replication or enterprise retention policy.
+This is the accepted first local recovery proof. It does not claim point-in-time recovery, physical replication or enterprise backup retention policy.
