@@ -1,6 +1,6 @@
 # First MVP DDD Convergence Checkpoint
 
-Status: `G2 PASS for the first MVP target DDD baseline — 2026-09-15`.
+Status: `G2 PASS for the first MVP target DDD baseline; TAE acquisition edge revalidated 2026-09-15`.
 
 ## Purpose
 
@@ -28,13 +28,17 @@ Access Policy + ACC + AD + RC + NEP
     -> Provider rendering boundary
     -> Network Environment Operations
 
+Technical Evidence Acquisition / Collectors
+    -> normalized source-qualified evidence
+    -> Technical Access Evidence
+
 Technical Access Evidence
     -> source-qualified technical evidence
 Provider Policy Interpreter
     -> configured effective policy for APR
 ```
 
-Required Policy Materialization is derived composition. Provider Policy Interpreter and Provider Policy Renderer are integration capabilities. They are not additional Bounded Contexts.
+Required Policy Materialization is derived composition. Provider Policy Interpreter, Provider Policy Renderer and Technical Evidence Acquisition/Collectors are integration/application capabilities. They are not additional Bounded Contexts.
 
 ## Target Bounded Context matrix
 
@@ -48,9 +52,9 @@ Required Policy Materialization is derived composition. Provider Policy Interpre
 | Application Communication Catalogue | `application-communication-catalogue/target-tactical-model.md` | PASS — Interaction identity and immutable InteractionContractRevision semantics explicit |
 | Application Deployment | `application-deployment/tactical-model.md` | PASS — deployment identity/continuity and zero/one/many placement-set semantics explicit |
 | Network Enforcement Placement | `network-enforcement-placement/target-tactical-model.md` | PASS — candidate Firewall/policy-locator relevance model explicit |
-| Technical Access Evidence | `technical-access-evidence/tactical-model.md` | PASS — source-qualified immutable evidence semantics remain compatible with PPI boundary |
+| Technical Access Evidence | `technical-access-evidence/tactical-model.md` | PASS — canonical normalized source-qualified evidence semantics explicit; collection initiation remains outside TAE |
 | Access Policy Realization | `access-policy-realization/tactical-model.md` | PASS — comparison/delta/additive intent are exact immutable/derived values; no invented aggregate |
-| Network Environment Operations | `network-environment-operations/tactical-model.md` | PASS — controlled mutation identity/authority/precondition/outcome semantics explicit |
+| Network Environment Operations | `network-environment-operations/tactical-model.md` | PASS — controlled mutation identity/authority/precondition/outcome semantics explicit; no general evidence-acquisition ownership |
 
 Implemented/current-state Tactical documents that conflict with these target owners are migration evidence only and do not redefine target semantics.
 
@@ -142,11 +146,31 @@ PASS.
 
 Candidate Firewall/access-list output means relevance-to-inspect/affect, not a proven route. Multiple candidates/locators are preserved and become independent comparison scopes.
 
+### Technical Evidence Acquisition -> TAE
+
+PASS.
+
+```text
+device/config acquisition ----\
+NetFlow/IPFIX collector -------+--> faithful normalization --> TAE
+file/import adapter -----------/
+```
+
+TAE owns the canonical normalized evidence vocabulary and immutable evidence history. Source-specific acquisition/collector capabilities own collection and faithful translation into the TAE contract.
+
+TAE does not own polling cadence, scheduling, retries, credentials or source transport. Those capabilities are not new Bounded Contexts.
+
+NEO is not the TAE read/acquisition gateway. NEO remains the controlled-mutation owner. Any shared provider/device access client or adapter layer between acquisition and NEO is an S3 Architecture question and is not required for G2.
+
 ### TAE / Provider Policy Interpreter
 
 PASS.
 
-TAE owns source-qualified evidence and deliberately does not select globally current/fresh/complete configured policy. Provider Policy Interpreter owns provider-native interpretation and publishes `ConfiguredEffectivePolicySnapshot` with explicit completeness/freshness/unsupported semantics for APR.
+TAE owns source-qualified normalized evidence and deliberately does not select globally current/fresh/complete configured policy.
+
+Provider Policy Interpreter owns provider-native interpretation and publishes `ConfiguredEffectivePolicySnapshot` with explicit completeness/freshness/unsupported semantics for APR. PPI may consume provider material directly, selected TAE configured evidence under an explicit source contract, or both.
+
+`TrafficDerived` evidence may feed recognition/reconciliation compositions instead. Recording evidence alone never creates authorization, desired policy, an ACL/access proposal or remediation intent.
 
 ### APR
 
@@ -177,7 +201,7 @@ PASS at the semantic boundary.
 
 Provider renderer is not APR domain ownership and may publish a TargetPolicyArtifact only when verified semantics can be represented equivalently. NEO owns controlled execution and does not reinterpret the intent/artifact. Immediate execution verification is not final semantic convergence.
 
-## Superseded conflicts closed in this convergence pass
+## Superseded conflicts closed in the DDD baseline
 
 The following formerly canonical/stale assumptions were removed from the target baseline:
 
@@ -191,7 +215,9 @@ The following formerly canonical/stale assumptions were removed from the target 
 - missing canonical Authority Management Tactical semantics;
 - old scoped-inventory/materialization requirements that reintroduced ComponentDeployment/Endpoint semantics.
 
-Git history and current runtime documents may still contain those meanings as migration/current-state evidence.
+The 2026-09-15 affected-edge revalidation additionally made explicit that TAE is not its own collector/scheduler and NEO is not a generic read gateway.
+
+Git history and current runtime documents may still contain superseded meanings as migration/current-state evidence.
 
 ## Explicit non-blocking deferrals
 
@@ -206,24 +232,27 @@ The first MVP DDD deliberately does not solve:
 - several simultaneous Resource addresses/interfaces/VIPs/deployment-specific exposure;
 - managed-policy ownership and automatic removal/narrowing of APR excess;
 - richer APR change vocabulary or durable remediation-plan lifecycle;
+- concrete acquisition polling/scheduling framework and shared provider/device access implementation between collectors and NEO;
 - provider transport, rollback, distributed transactions, persistence schemas or package structure.
 
 Each is reopened only when a concrete requirement/journey creates pressure. None is required to express the accepted first happy path.
 
 ## G2 evaluation
 
-`G2 PASS` for the first MVP target DDD baseline.
+`G2 PASS` for the first MVP target DDD baseline, including the revalidated TAE acquisition edge.
 
 Reasons:
 
 - every material authoritative domain fact/decision in the path has one identifiable semantic owner;
 - all 11 target Bounded Contexts have Tactical semantics sufficient for their MVP responsibilities;
 - relevant identities, sameness rules, current-vs-historical distinctions and invariants are explicit;
-- Strategic and Tactical models are mutually coherent after the ACC/AD/AM/APR revalidation;
+- TAE normalized evidence ownership is separate from acquisition orchestration and downstream interpretation;
+- NEO mutation ownership is separate from general evidence acquisition;
+- Strategic and Tactical models are mutually coherent after the affected-edge revalidation;
 - cross-context contracts expose public semantic meaning rather than peer-private models;
 - derived composition/integration capabilities are not promoted into false Bounded Contexts;
 - no known P0/P1 semantic ownership, identity, lifecycle or invariant contradiction remains;
-- remaining unknowns are explicitly outside the first MVP and carry clear revisit triggers;
+- remaining unknowns are explicitly outside the first MVP or belong to S3 Architecture and carry clear revisit triggers;
 - an eventual implementer need not invent domain meaning to understand the accepted target model.
 
 ## Stop condition
