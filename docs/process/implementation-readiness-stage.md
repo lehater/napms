@@ -2,136 +2,94 @@
 
 ## Purpose
 
-Use this protocol for lifecycle stage `S4 Implementation Readiness` before code modification begins.
+Use S4 before product-code modification begins.
 
 S4 answers:
 
-> What exactly must change in the current system, in what coherent slices, with which tests/migrations/compatibility constraints, so implementation can proceed without inventing requirements, domain semantics or architecture?
+> What exactly must change in the current system, in what coherent slices, with which migration/compatibility work and executable proof, so implementation does not invent requirements, domain semantics or architecture?
 
-S4 is still design/planning work. It does not authorize code edits until G4 passes.
+S4 is planning. Code edits remain forbidden until G4 passes for an explicit scope.
 
 ## Inputs
 
-Use the smallest applicable set of:
+Load only:
 
-- accepted upstream guarantees required by the change (G1/G2/G3 as applicable);
-- current architecture/ADR constraints;
+- current accepted upstream guarantees required by the change;
+- current architecture constraints;
 - affected current code/tests/schema/configuration as implementation evidence;
-- active plan/problem context;
-- migration/compatibility/operational constraints relevant to the concrete change.
+- active plan/capsule when execution state matters;
+- concrete operational/changeover constraints relevant to the selected slice.
 
-For a legitimately implementation-only change entering directly at S4, verify that no missing upstream semantic/architecture guarantee is required before proceeding.
+A direct-entry implementation-only change may start at S4 only when no earlier guarantee needs to change.
 
-## Responsibility boundary
-
-S4 may define:
+## What S4 owns
 
 - affected modules/files/packages/contracts;
-- current-to-target gap;
-- implementation slices and their dependency order;
-- exact code ownership location under accepted architecture;
-- migrations/data backfills/compatibility steps already implied by accepted architecture;
-- tests/evals/architecture checks required to prove the change;
-- rollout/rollback or migration checkpoints where material;
-- local risk and verification strategy;
-- which existing code is replaced/removed versus retained.
+- current-to-target implementation gaps;
+- small coherent implementation slices and true dependency order;
+- exact code ownership placement under current architecture;
+- schema/data/API/adapter transition work already implied by accepted architecture;
+- executable tests/evals/architecture/E2E/harness/knowledge checks;
+- rollout/rollback/changeover checkpoints when material;
+- local implementation risk;
+- code to replace/remove versus retain.
 
-S4 must not decide:
+S4 does not choose new product behavior, domain meaning/ownership, Bounded Context contracts or unaccepted architecture responsibility/data/dependency choices. Those reopen the owning upstream stage.
 
-- new product behavior;
-- new domain identity/lifecycle/invariant/ownership;
-- new Bounded Context relationship/semantic contract;
-- architecture responsibility/data-ownership/dependency-direction choices not already accepted.
+## Working loop
 
-If such a choice is discovered, reopen the owning upstream stage.
+1. Restate the exact accepted guarantees the implementation must realize.
+2. Inspect only current code/data/config/test paths that can implement or block those guarantees.
+3. Describe current-to-target gaps.
+4. Route any missing upstream decision through `REOPEN` instead of burying it in an implementation task.
+5. Choose the smallest vertical/coherent slices that can be implemented and verified independently.
+6. Order only real dependencies; do not create a long roadmap for independent work.
+7. Define required schema/data/API/adapter changeover steps and removal conditions.
+8. Define executable proof for every material slice.
+9. Remove speculative refactors, generic abstractions and unrelated cleanup.
+10. Confirm that an implementer can execute the slice without making a product/domain/architecture decision.
+11. Record the exact current implementation scope in the active plan/capsule and evaluate G4.
 
-## Implementation-impact loop
+## Traceability
 
-1. **Restate target guarantees.** Identify the accepted behavior/domain/architecture guarantees the implementation must realize.
-2. **Map affected current paths.** Inspect only code/tests/data/schema/configuration that can materially implement or block the target.
-3. **Describe current -> target gaps.** Separate missing behavior, obsolete behavior, structural migration and test gaps.
-4. **Classify each gap by owner.** If solving it requires upstream semantics/architecture, `REOPEN` rather than hiding the decision in an implementation task.
-5. **Choose implementation slices.** Prefer the smallest vertical/coherent increments that can be implemented and verified independently without temporary semantic contradictions.
-6. **Order only real dependencies.** Do not manufacture a long roadmap when slices are independent.
-7. **Define migration/compatibility work.** State schema/data/API/adapter transitions, coexistence constraints and removal conditions when relevant.
-8. **Define executable proof.** Identify unit/core/architecture/integration/E2E/harness/knowledge checks required by the affected scope.
-9. **Define completion evidence.** State what observable/testable result closes each slice and the overall change.
-10. **Challenge scope.** Remove speculative refactors, generic abstractions and unrelated cleanup.
-11. **Challenge readiness.** Ask whether an implementer can perform each slice without making a new product/domain/architecture decision.
-12. **Update active plan/working package** with the implementation scope and evaluate G4.
-
-## Traceability check
-
-For each material implementation slice, the chain should be recoverable:
+For each material slice the current chain must be recoverable:
 
 ```text
-accepted requirement / problem
+accepted requirement/problem
 -> domain guarantee when applicable
--> architecture decision/constraint when applicable
+-> architecture constraint when applicable
 -> implementation impact
 -> executable proof
 ```
 
-Not every trivial code line needs a traceability record. The chain is required for decisions whose ownership could otherwise be lost during implementation.
+This is not a request for a historical traceability archive; current canonical references and the active implementation plan are sufficient.
 
 ## G4 — Ready to implement
 
-`G4 PASS` means code modification is permitted for the affected scope because:
+`G4 PASS` means code modification is permitted only for the evaluated scope because:
 
-- required upstream guarantees are accepted and applicable;
-- affected code/data/contract boundaries are understood sufficiently;
-- current-to-target gaps are explicit;
-- implementation slices and real dependencies are identified;
-- migration/compatibility constraints are known where material;
-- required executable checks/evidence are identified;
-- no unresolved P0/P1 upstream decision is delegated to the implementer;
-- the planned implementation preserves accepted ownership/dependency direction;
-- the scope is small/coherent enough to execute and review.
+- required upstream guarantees are current and accepted;
+- affected boundaries are understood;
+- implementation gaps/slices/dependencies are explicit;
+- material changeover constraints are known;
+- executable proof is identified;
+- no P0/P1 upstream decision is delegated to the implementer;
+- accepted ownership/dependency direction is preserved;
+- the scope is coherent and reviewable.
 
-### G4 outcomes
+Outcomes:
 
-- `PASS` — code change is permitted for the accepted implementation scope; route execution to the applicable implementation Skill/work package.
-- `REWORK` — S4 impact/slicing/test/migration plan is insufficient but no upstream decision is missing.
-- `REOPEN(S3)` — responsibility placement, data ownership, dependency direction, consistency or migration architecture is unsettled.
-- `REOPEN(S2)` — semantic ownership/identity/lifecycle/invariant/contract is unsettled.
-- `REOPEN(S1)` — observable behavior/quality/authority expectation is unsettled.
-- `REOPEN(S0)` — the problem/evidence premise is invalid.
-- `BLOCKED` — required implementation evidence/constraint is unavailable and cannot currently be derived.
+- `PASS` — create the scoped implementation lease and route to the applicable implementation Skill;
+- `REWORK` — S4 planning/readiness is insufficient;
+- `REOPEN(S3|S2|S1|S0)` — an upstream guarantee is missing or wrong;
+- `BLOCKED` — required current implementation evidence/constraint is unavailable.
 
-## Direct-entry implementation-only changes
+## Direct-entry implementation-only check
 
-A task may enter at S4 when it genuinely changes only implementation realization under already accepted behavior/domain/architecture.
+Before G4 on a direct S4 entry, verify that observable behavior, semantic identity/lifecycle/invariants/ownership and architecture responsibility/dependency/data boundaries do not need to change. If any material answer is uncertain, reopen the earliest affected stage.
 
-Before G4 PASS, explicitly verify:
+## Context rule
 
-- no accepted behavior changes;
-- no semantic identity/lifecycle/invariant/ownership changes;
-- no architecture ownership/dependency/data-boundary changes;
-- existing upstream guarantees are sufficient for the change.
+Load root/scoped instructions, active capsule, this protocol while S4/G4 is active, the smallest current upstream artifacts needed for the slice, and only the affected code/tests/schema/configuration.
 
-If any answer is uncertain and material, reopen the earliest affected stage.
-
-## Context contract
-
-Normal S4 startup:
-
-```text
-root AGENTS.md
--> active resume capsule
--> scoped AGENTS.md
--> this protocol while S4/G4 is active
--> smallest accepted upstream artifacts needed for the slice
--> affected code/tests/schema/config only
--> implementation Skill only after G4 PASS
-```
-
-Do not preload all upstream documentation; use accepted references/capsule facts and open canonical artifacts only when the implementation impact requires them.
-
-After G4 PASS, compact transition context before implementation when useful: persist the accepted implementation scope, checks, blockers and next slice in the active capsule/plan, then let the implementation session load only what that slice needs.
-
-## Relationship to implementation Skills
-
-- `implement-slice` executes a domain/application vertical slice **after** G4; it does not replace G4.
-- `execute-work-package` executes an accepted work package and likewise must not silently decide missing upstream semantics.
-- implementation findings that invalidate accepted assumptions use `REOPEN(stage)` through `change-lifecycle.md`.
-- `working-loop.md` owns branch/checkpoint/validation/rollover mechanics during execution.
+Implementation Skills are loaded only after G4. The active capsule then carries the exact authorization scope and basis; superseded plans/work packages are removed rather than retained as execution history.
