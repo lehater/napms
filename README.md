@@ -2,13 +2,27 @@
 
 **Network Access Policy Management System**
 
-Authoritative greenfield NAPMS product repository.
+The repository working tree represents current project truth. Git history is the archive.
 
-## Current implementation state
+## Selected implementation MVP
 
-NAPMS includes the current local product implementation through the accepted Application Catalogue target and supporting local runtime. Canonical capability status lives in `docs/engineering/current-state.md`.
+The selected first implementation slice is defined by `docs/requirements/first-mvp-required-access-matrix.md`:
 
-Access Policy Realization is currently under target-domain revalidation. Its only current problem statement is `docs/domain/access-policy-realization/README.md`; existing APR runtime code is migration material and must not be treated as target semantics.
+```text
+ACC InteractionContractRevision
+        +
+AD ApplicationDeployment + ComponentPlacement
+        +
+RC Resource + AddressSpace
+        |
+        v
+Required Access Matrix
+        |
+        +--> table
+        `--> vendor-neutral export
+```
+
+The complete target domain remains defined by `docs/domain/strategic-model.md`. Current execution state is `docs/plans/active/README.md`.
 
 ## Local Docker start
 
@@ -17,10 +31,6 @@ Prerequisites: Docker Engine/Desktop with Docker Compose v2 and Python 3.
 ```bash
 make dev-up
 ```
-
-The command generates ephemeral local PostgreSQL and UI credentials in memory, prepares/rotates the local database role password, builds and starts PostgreSQL, tracked migrations, local demo seed, FastAPI and Web/nginx, runs only restart-safe authenticated readiness/session/read probes, verifies that PostgreSQL rejects an incorrect password, then prints the local URL and generated UI login credentials.
-
-Open the printed URL (default `http://127.0.0.1:8080`).
 
 Useful commands:
 
@@ -31,9 +41,7 @@ make dev-down
 make dev-reset
 ```
 
-`dev-status` prints Compose state and verifies public liveness/readiness plus PostgreSQL queryability. `dev-down` preserves the database volume. `dev-reset` deletes local database state. Re-running `make dev-up` against preserved state does not create or mutate application domain objects as part of its startup probe.
-
-A PostgreSQL volume created by the older pre-I24 host-`trust` configuration may fail the new authentication verification even though the application can connect. Back up needed data before recreating or explicitly migrating such a volume.
+`dev-down` preserves the database volume. `dev-reset` deletes local database state.
 
 ## Local backup and recovery
 
@@ -49,13 +57,7 @@ Restore into a clean replacement PostgreSQL volume:
 make dev-restore BACKUP=backups/napms.napms.dump CONFIRM_RESET=yes
 ```
 
-Restore is deliberately destructive and refuses to replace the volume without explicit confirmation. The archive is validated before volume deletion. See `docs/engineering/local-backup-recovery.md` for the exact recovery boundary and exclusions.
-
-Forward upgrades require a pre-upgrade backup and use the tracked migration runner before normal startup. Arbitrary reverse migrations are not supported. See `docs/engineering/local-upgrade-procedure.md`.
-
-For raw `docker compose up`, provide `NAPMS_POSTGRES_PASSWORD` and `NAPMS_LOCAL_AUTH_PASSWORD_HASH` outside version control. `.env.example` lists the supported overrides but intentionally contains no usable credentials.
-
-See `docs/engineering/local-docker-runtime.md` for the topology, credential boundary and explicit non-enterprise scope.
+See `docs/engineering/local-backup-recovery.md` and `docs/engineering/local-upgrade-procedure.md` for current operational contracts.
 
 ## Native development
 
@@ -78,14 +80,15 @@ npm run build
 
 ```text
 backend/src/napms/         product code
-backend/pyproject.toml     backend package and test configuration
-web/                       React Web UI
 backend/tests/             executable specifications and integration tests
-docs/domain/               living DDD model
-docs/requirements/         accepted product requirements
-docs/architecture/         architecture contracts
-docs/engineering/          engineering/runtime policies
-docs/plans/active/         current execution resume state / active plan when selected
+web/                       React Web UI
+docs/requirements/         current product contracts
+docs/domain/               current DDD model
+docs/architecture/         current architecture contracts
+docs/engineering/          current runtime/operational contracts
+docs/ui/                   current reusable UI guidance
+docs/plans/active/         current execution state
+docs/process/              repository working protocols
 ```
 
-See `AGENTS.md` and `docs/README.md` before changing domain or architecture semantics.
+See `AGENTS.md` and `docs/README.md` before changing product/domain/architecture semantics.

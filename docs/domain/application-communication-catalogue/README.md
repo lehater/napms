@@ -11,13 +11,13 @@ Current ACC target authority:
 - `../resource-catalogue/target-realization-model.md` — Resource AddressSpace owner;
 - `../context-map.md` — cross-context contracts.
 
-ADR-015 is retained as superseded rationale/history. It is no longer target authority for ACC-owned `ComponentDeployment` or `DirectedInteractionIdentity`.
+The superseded ACC-owned `ComponentDeployment` target explored in an earlier decision is not working-tree authority. Its still-valid consequences are represented in the current target documents above; the replaced decision itself remains available in Git history.
 
 ## Current implemented runtime
 
-`tactical-model.md` describes the implemented I31/current-state model. Its ACC-owned `ApplicationDeployment`, `DeploymentInteraction`, Resource bindings, compatibility ComponentDeployment identities and `DirectedInteractionIdentity` are runtime/migration facts, not target semantic ownership.
+`tactical-model.md` describes the implemented I31/as-built model. Its ACC-owned `ApplicationDeployment`, `DeploymentInteraction`, Resource bindings, compatibility ComponentDeployment identities and `DirectedInteractionIdentity` are current runtime/compatibility facts, not target semantic ownership.
 
-Historical ADR-012/013 and existing UI/architecture contracts may still describe that implementation and must be read as current-state/migration evidence.
+ADR-012 and ADR-013 are current as-built design decisions for that implementation. Existing UI/architecture/API contracts that describe I31 are likewise reconstruction authority for the as-built system while target ownership remains defined separately.
 
 ## Target boundary
 
@@ -29,4 +29,4 @@ RC:  Resource -> effective HostAddress | Prefix
 
 `Interaction` is the stable directed component-pair template. `InteractionContractRevision` is the immutable decision-relevant traffic snapshot. A material traffic change creates a new revision reference while preserving Interaction identity.
 
-Migration must preserve referenced historical truth without promoting legacy deployment identities back into ACC target ownership.
+Migration must preserve referenced historical truth without promoting compatibility deployment identities back into ACC target ownership.

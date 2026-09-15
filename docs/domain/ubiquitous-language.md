@@ -1,8 +1,6 @@
 # Ubiquitous Language
 
-Status: `current target strategic vocabulary; 2026-09-15`.
-
-This file is intentionally compact. Context-local Tactical vocabulary belongs in the owning context documentation. Legacy `Connectivity Requirement`, `Connectivity Decision`, ACC-owned `ComponentDeployment`, `DeploymentResourceBinding`, `DirectedInteractionIdentity` and `ResourceEndpoint` remain runtime/history terms only and are not current target vocabulary.
+This file contains current strategic vocabulary. Context-local Tactical vocabulary belongs in the owning context documentation. As-built compatibility terms remain documented in their as-built contracts but are not promoted into target ubiquitous language.
 
 ## Business Connectivity
 
@@ -26,30 +24,27 @@ This file is intentionally compact. Context-local Tactical vocabulary belongs in
 
 **Application Deployment** — stable logical deployment of one Application. Ordinary scaling, Resource migration and placement replacement do not change identity while logical deployment continuity is preserved.
 
-**Component Placement** — AD-owned fact that one Component of an Application Deployment is placed on one Resource.
+**Component Placement** — AD-owned fact that one Component of an Application Deployment is placed on one Resource:
 
 ```text
-ComponentPlacement
-    ApplicationDeploymentRef
-    ComponentRef
-    ResourceRef
+ComponentPlacement = (ComponentRef, ResourceRef)
 ```
 
-It is not automatically a process/container/pod/runtime instance.
+It is a relation value, not automatically a process/container/pod/runtime instance and not an independently identified placement aggregate in the current target model.
 
 ## Resource Catalogue
 
 **Resource** — stable access-domain resource identity whose lifecycle/realization matters to governed access.
 
-**Address Space** — current target network realization of one Resource at a logical time. At most one is effective for current scope:
+**Address Space** — current network realization of one Resource at a logical time:
 
 ```text
 HostAddress | Prefix
 ```
 
-Changing Address Space does not change Resource identity. Multiple simultaneous addresses/interfaces, endpoint purpose and VIP/exposure modelling are future extensions.
+Changing Address Space does not change Resource identity.
 
-**Resource Scope Affiliation** — time-qualified RC-owned relation from Resource to ResponsibilityScopeRef. It does not grant actor authority.
+**Resource Scope Affiliation** — RC-owned time-qualified relation from Resource to `ResponsibilityScopeRef`. It does not grant actor authority.
 
 **Resource Responsibility** — operational/business responsibility/contact fact for a Resource; not approval authority.
 
@@ -63,25 +58,31 @@ InteractionContractRevisionRef
 + destinationApplicationDeploymentRef
 ```
 
-It is intentionally independent from ComponentPlacement and Resource Address Space.
+It is intentionally independent from Component Placement and Resource Address Space.
 
 **Access Request** — one explicit attempt to obtain bilateral authorization for a governed subject under a business basis.
 
-**Approval Obligation** — source-side or destination-side consent obligation. Grant requires both sides; either side may withdraw current consent.
+**Approval Obligation** — source-side or destination-side consent obligation. Grant requires the accepted bilateral obligations; withdrawal follows Access Governance semantics.
 
 **Policy Rule** — Access Policy-owned authoritative current semantic authorization meaning for one governed subject.
 
 ## Authority Management
 
-**Responsibility Scope** — stable correlation reference shared semantically between RC affiliation and AM authority contracts; not a shared aggregate.
+**Responsibility Scope** — stable correlation reference shared semantically between RC affiliation and AM authority contracts; it is not a shared aggregate.
 
 **Effective Authority** — actor/action/scope/time admission result with provenance.
 
+## Required Access Matrix
+
+**Required Access Matrix** — vendor-neutral technical connectivity rows derived from an explicit set of `InteractionContractRevisionRef + sourceApplicationDeploymentRef + destinationApplicationDeploymentRef` subjects by expanding ACC traffic alternatives across current AD placements and RC Address Spaces.
+
+It is a technical connectivity view for the selected first implementation slice. It does **not** imply authorization, Access Policy truth, enforcement placement, configured state or realization.
+
 ## Realization
 
-**Required Policy Materialization** — non-peer derived composition of AP authorization, ACC traffic semantics, AD placements, RC Address Space and NEP target relevance.
+**Required Policy Materialization** — non-peer derived composition of Access Policy authorization, ACC traffic semantics, AD placements, RC Address Space and NEP target relevance.
 
-**Traffic Pair** — technical source/destination address-space pair used for enforcement-placement reasoning.
+**Traffic Pair** — technical source/destination Address Space pair used for enforcement-placement reasoning.
 
 **Target Required Policy** — target-specific normalized required effective policy produced by materialization.
 
@@ -89,14 +90,20 @@ It is intentionally independent from ComponentPlacement and Resource Address Spa
 
 **Semantic Delta** — `common = required ∩ configured`, `missing = required - configured`, `excess = configured - required`.
 
-**Verified Change Intent** — APR-owned vendor-neutral proposed change whose resulting semantics have been verified.
+**Verified Change Intent** — APR-owned vendor-neutral proposed change whose resulting additive semantics have been verified.
 
 **Target Policy Artifact** — provider-rendered representation of verified intent.
 
 **Network Operation** — NEO-owned controlled mutation attempt with authority, preconditions/concurrency, outcome and provenance.
 
-## Core distinction
+## Core distinctions
 
 ```text
-Observed != Recognized != Needed != Authorized != Materialized != Realized
+Observed != Recognized != Needed != Authorized != Materialized != Realized != Executed
 ```
+
+The Required Access Matrix is intentionally outside this authorization/realization ladder: it is a pre-authorization technical connectivity derivation from selected ACC/AD/RC facts.
+
+## As-built compatibility vocabulary
+
+Terms such as `Connectivity Requirement`, `Connectivity Decision`, ACC-owned compatibility `ComponentDeployment`, `DeploymentResourceBinding`, `DirectedInteractionIdentity`, `ResourceEndpoint` and legacy APR stage/status names may still exist in current as-built contracts and runtime compatibility paths. They remain documented where needed to reconstruct that implementation, but they do not replace the target vocabulary above.

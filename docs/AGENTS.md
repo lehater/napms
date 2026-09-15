@@ -4,38 +4,33 @@ Apply root `AGENTS.md` first.
 
 ## Canonical ownership
 
-- `domain/` — living Strategic/Tactical DDD: meaning, identity, lifecycle and semantic ownership.
-- `requirements/` — current accepted observable product/quality behavior.
-- `architecture/` — current target structure, dependency, consistency and runtime constraints.
-- `decisions/` — consequential ADRs and explicit supersession.
-- `engineering/` — implementation/runtime contracts, policies and capability snapshots.
-- `engineering/context-problems/` — durable bounded-context problem/gap registers for unresolved future work; they do not own semantic truth, prioritization or current execution state.
-- `engineering/roadmaps/` — optional ordered plans only when sequencing itself is useful current engineering truth.
-- `ui/` — implementation-oriented presentation/interaction guidance.
-- `plans/active/` — current execution state/coordination only.
-- `baseline/` — accepted historical snapshots/provenance, not current truth.
-- `process/` — reusable repository working protocols.
+Project documentation is a reconstructable specification, not only a backlog or record of unfinished work.
+
+- `requirements/` — current observable product/quality behavior, whether already implemented or still target-only.
+- `domain/` — current meaning, identity, lifecycle and semantic ownership.
+- `architecture/` — current as-built and target structural/runtime contracts. When they differ, label the distinction explicitly.
+- `decisions/` — design decisions still required to reproduce or safely evolve the current as-built/target system.
+- `engineering/` — current API, persistence, runtime, configuration, operational and implementation-facing contracts.
+- `ui/` — current product-facing screen/wireframe specifications plus reusable presentation/interaction guidance.
+- `plans/active/` — current execution state only.
+- `process/` — reusable working protocols.
+
+Git history is the archive for material that is no longer part of either current as-built or current target design: completed milestones, obsolete alternatives, superseded-only decision chains, migration diaries, audit snapshots and previous models.
+
+## Reconstruction rule
+
+Do not delete a requirement, architecture contract, ADR, engineering contract or UI specification merely because it has been implemented.
+
+Before deleting or absorbing project documentation, verify that the remaining working tree can still reconstruct the designed current system from zero without inventing product/domain/architecture decisions. If a document contains both historical narration and required current design, keep or rewrite the current design; remove only the historical narration.
 
 ## Layer discipline
 
-Keep one decision at its highest owning layer and link downward instead of retelling it.
+Requirements answer what observable behavior must hold. Domain answers what concepts mean and who owns them. Architecture answers how semantic owners compose and what structural/runtime constraints preserve correctness. Engineering defines current executable-facing contracts and runtime mechanics. UI defines current user-facing composition. Active plans describe only the selected current delta.
 
-- Requirements answer **what observable behavior/quality must hold**.
-- Domain answers **what the concepts mean and who owns them**.
-- Architecture answers **how semantic owners compose and what structural/runtime constraints preserve correctness**.
-- Context problem registers answer **what remains unresolved, what gaps exist, what actually depends on what, and what blocks implementation**; they do not impose priority or total order.
-- Engineering roadmaps answer **what ordered future work remains when that order is itself justified and worth preserving**; roadmaps are optional, not the default parking artifact.
-- UI answers **how accepted behavior is presented/interacted with**.
-- Active plans answer **what execution delta is current, blocked and next**.
-
-A lower layer may repeat a one-line invariant only when omission would make a local contract unsafe; otherwise link to the owner.
-
-Historical milestone packets must not remain in living `requirements/`, `architecture/` or `ui/` merely as archives. Absorb durable outcomes into current owners; keep provenance in `baseline/` and Git history.
+Keep truth at its highest owning layer and link downward instead of retelling it unnecessarily. As-built and target contracts may coexist when both are required; never let an as-built compatibility model silently override accepted target semantics.
 
 ## Knowledge discipline
 
-Classify material content as known/accepted, hypothesis, unknown or conflict. Do not turn an unknown into a convenient implementation assumption.
+Classify material content as accepted, hypothesis, unknown or conflict. Do not turn an unknown into an implementation assumption.
 
-When a code finding changes accepted behavior, domain language/ownership or architecture, update the highest affected canonical layer first, then propagate only the required delta downward.
-
-Completed/superseded execution artifacts do not remain as archives in the working tree; Git history preserves them. Context problem registers remain only while they describe current unresolved work. Roadmaps remain only while their ordering is still justified, per `docs/process/plan-lifecycle.md`.
+When implementation evidence conflicts with accepted behavior/domain/architecture, resolve the highest affected canonical layer. Runtime artifacts are evidence of as-built implementation, but production code is not a substitute for project documentation.

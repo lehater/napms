@@ -2,104 +2,78 @@
 
 ## Purpose
 
-Use this protocol for lifecycle stage `S0 Problem / Evidence` when the requested change is still an unclear need, observed defect, conflicting evidence, operational pain, external constraint or other trigger whose target behavior is not yet sufficiently framed for Requirements.
+Use S0 when a requested change is still an unclear need, observed defect, conflicting evidence, operational pain or external constraint whose target behavior is not yet sufficiently framed for Requirements.
 
 S0 answers:
 
-> What problem/change pressure is actually observed, for whom/where, what evidence supports it, what outcome is sought, and what remains unknown — without choosing the product/domain/architecture solution?
+> What problem/change pressure is observed, for whom/where, what current evidence supports it, what outcome is sought, and what remains unknown?
 
-S0 is not a requirements specification and must not invent target behavior merely to make the problem look complete.
+S0 does not choose detailed product behavior, domain ownership, architecture or implementation.
 
 ## Inputs
 
-Use only evidence relevant to framing the trigger:
+Use only evidence needed to frame the current trigger:
 
 - explicit user/stakeholder request;
-- stakeholder examples, workarounds and descriptions of real usage;
-- defect/incident/operational observation;
-- failing journey/test/log/runtime evidence;
-- external compatibility/security/regulatory constraint;
-- current product behavior where relevant;
-- conflicting canonical sources that triggered revalidation;
+- concrete examples or workarounds;
+- defect/incident/runtime/test evidence;
+- external compatibility/security/regulatory constraints;
+- current product/repository behavior where relevant;
+- current canonical contradictions that triggered revalidation;
 - a later-stage `REOPEN(S0)` reason.
-
-## Responsibility boundary
-
-S0 may establish:
-
-- affected actor/system/product surface;
-- observed current situation;
-- desired outcome at problem level;
-- evidence and provenance;
-- constraints already known to be externally fixed;
-- facts vs hypotheses vs unknowns;
-- scope boundaries and explicit non-goals when needed;
-- questions requiring stakeholder/product clarification.
-
-S0 must not choose:
-
-- detailed product behavior;
-- domain ownership/model;
-- architecture mechanism;
-- implementation approach.
-
-Those belong to later stages after G0.
 
 ## Working loop
 
-1. **State the trigger neutrally.** Describe what was requested/observed without embedding a preferred solution.
-2. **Identify the affected boundary.** Actor/system/surface/context only as far as evidence supports it.
-3. **Collect the smallest decisive evidence.** Do not scan the repository broadly if the problem can already be framed.
-4. **Separate epistemic states.** Use `decision-protocol.md` for known/hypothesis/unknown/conflict and keep stakeholder evidence separate from interpretation.
-5. **State the desired outcome.** Express why the change matters, not how the system should implement it.
-6. **Harvest consequential stakeholder evidence.** A stakeholder answer may reveal more than the question it was asked to resolve. Preserve material problems, goals, usage context, examples, workarounds, constraints, risks or independently useful outcomes that would remain valuable even if the current interpretation changes. Do not preserve the full conversation.
-7. **Capture consequential usage discoveries.** When evidence suggests a materially distinct actor/consumer goal, journey or possible use of an outcome, preserve only enough of the candidate to avoid losing later Requirements work. Keep it non-authoritative unless its owning stage accepts it; do not expand every mention into a full journey map or requirement set.
-8. **Identify material constraints/non-goals.** Preserve externally fixed constraints; do not invent internal ones.
-9. **Resolve obvious evidence conflicts.** Prefer canonical truth or explicit owner evidence for current accepted state, while keeping contradictory stakeholder evidence visible when it may matter to later revalidation.
-10. **Classify blocking questions.** Ask/escalate only questions required to move honestly into Requirements; defer unrelated curiosity.
-11. **Update the smallest durable problem owner** (active plan/problem register/issue-like artifact as appropriate) only when the problem, consequential source evidence or discovery must survive the conversation. Do not create a new evidence/discovery artifact when an existing owner is sufficient.
-12. **Evaluate G0.**
+1. State the trigger neutrally without embedding a preferred solution.
+2. Identify the affected actor/system/surface only as far as evidence supports it.
+3. Collect the smallest decisive current evidence.
+4. Separate accepted fact, constraint, hypothesis, unknown and conflict using `decision-protocol.md`.
+5. State the desired problem-level outcome rather than an implementation mechanism.
+6. Identify externally fixed constraints and explicit non-goals.
+7. Resolve evidence contradictions needed to know what problem is being solved.
+8. Ask/escalate only blocking questions required to enter Requirements honestly.
+9. When active execution must resume later, keep the unresolved blocker/current evidence reference in the active capsule or plan; do not create a permanent evidence archive.
+10. Evaluate G0.
+
+If a stakeholder example contains a requirement-relevant fact that remains true for the current target, absorb that fact into the appropriate current requirements artifact once S1 accepts it. Do not preserve transcript fragments or duplicate source-evidence documents merely for historical traceability.
 
 ## G0 — Problem understood
 
-`G0 PASS` means Requirements may begin because, for the affected scope:
+`G0 PASS` means S1 may begin because:
 
-- the observed problem/change trigger is explicit;
-- the desired outcome is distinguishable from a proposed solution;
-- material evidence/source is identifiable;
-- known facts, assumptions and unknowns are separated;
-- affected actor/surface/scope is clear enough to elicit behavior;
-- no unresolved P0/P1 contradiction prevents knowing what problem is being solved;
-- remaining unknowns are either requirements questions or explicitly non-blocking.
+- the current trigger/problem is explicit;
+- desired outcome is distinguishable from a proposed solution;
+- material current evidence/source can be identified;
+- facts, hypotheses, unknowns and conflicts are separated;
+- affected actor/surface/scope is clear enough to elicit observable behavior;
+- no P0/P1 contradiction prevents understanding the problem.
 
-G0 does **not** require knowing the final behavior, complete journey/use-case inventory, domain model or architecture. Material stakeholder evidence already surfaced in the active discussion should not be silently lost merely because it is not needed to pass G0.
+G0 does not require final behavior, a complete journey inventory, domain design or architecture.
 
-### G0 outcomes
+Outcomes:
 
-- `PASS` — proceed to S1 when requirements work is needed.
-- `REWORK` — S0 can improve problem framing/evidence with currently available responsibility/evidence.
-- `BLOCKED` — the problem cannot be framed without external clarification/evidence; register/ask instead of inventing.
+- `PASS` — proceed to S1 when requirements work is needed;
+- `REWORK` — S0 can improve framing with available evidence;
+- `BLOCKED` — current evidence is insufficient; require new evidence/owner clarification rather than inventing truth.
 
-S0 has no earlier lifecycle stage to reopen. A no-progress S0 blockage requires new evidence or external clarification.
+## Context rule
 
-## Context contract
-
-Normal S0 startup should be very small:
+Load only:
 
 ```text
 root AGENTS.md
--> active resume capsule when one exists
--> scoped AGENTS.md if applicable
--> this protocol only for active S0/G0 work
--> trigger/evidence directly relevant to the problem
--> canonical/project evidence only on demonstrated need
+-> active capsule when current execution depends on it
+-> scoped AGENTS.md when applicable
+-> this protocol for active S0/G0 work
+-> evidence directly relevant to the current problem
+-> other canonical project evidence only on demonstrated need
 ```
 
-Do not preload all historical stakeholder evidence, Requirements/DDD/Architecture methodologies or unrelated conversations before G0. Search/load additional evidence only when the current problem framing demonstrates the need.
+Do not preload old conversations or broad repository history.
 
-## Relationship to other protocols
+## Protocol ownership
 
-- `change-lifecycle.md` owns routing/transitions/no-progress semantics.
-- `decision-protocol.md` owns known/hypothesis/unknown/conflict handling and stakeholder-evidence interpretation boundaries.
-- `requirements-stage.md` owns S1 once G0 has framed the problem sufficiently.
-- `plan-lifecycle.md` owns durable current execution/problem parking mechanics.
+- `change-lifecycle.md` owns routing/transitions/no-progress behavior;
+- `decision-protocol.md` owns epistemic/semantic classification;
+- `requirements-stage.md` owns S1;
+- `plan-lifecycle.md` owns current active execution state.

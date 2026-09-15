@@ -1,10 +1,14 @@
 # ADR-012 — Application Definition and Deployment Model
 
-Status: `superseded as target by ADR-015; retained as implemented I31 history`.
+Status: `current as-built design decision`.
 
 Date: 2026-09-10.
 
-> ADR-015 replaces the target semantics of this ADR. In particular, the accepted target now deploys Components through `ComponentDeployment`; it does not use `ApplicationDeployment` / `DeploymentInteraction` as target domain concepts. This document remains authoritative only for explaining the existing I31 implementation and its history.
+## Role
+
+This ADR records the consequential design embodied by the current implemented Application Catalogue. It remains project documentation because reconstructing the current system requires this model, its trade-offs and its compatibility constraints.
+
+It governs reconstruction of the as-built I31 model. Current target semantics are owned by `docs/requirements/application-catalogue-domain-target.md`, `docs/domain/application-communication-catalogue/target-model.md`, `docs/domain/application-communication-catalogue/target-tactical-model.md`, `docs/domain/application-deployment/tactical-model.md` and the Strategic model.
 
 ## Context
 
@@ -24,9 +28,9 @@ Deployment Resource Binding
   -> Resource
 ```
 
-This is implemented and remains the current runtime contract. Product/UX design now requires a different deployment boundary: users deploy an Application as a whole, select a normal subset of interactions defined by that Application, and bind source/destination Resources in the context of each selected interaction.
+This was implemented and remained the runtime contract that I31 had to preserve while introducing a different user-facing deployment boundary: users deploy an Application as a whole, select a normal subset of interactions defined by that Application, and bind source/destination Resources in the context of each selected interaction.
 
-The target must stay KISS-oriented for the first iteration: no Application-definition versioning, no deployment overrides/exceptions and no hard delete.
+The design stays KISS-oriented: no Application-definition versioning, no deployment overrides/exceptions and no hard delete.
 
 ## Decision
 
@@ -57,7 +61,7 @@ UDP (443)
 
 ### Application Deployment
 
-`ApplicationDeployment` is the deployment unit.
+`ApplicationDeployment` is the implemented user-facing deployment unit.
 
 ```text
 Application Deployment
@@ -70,7 +74,7 @@ A Deployment may select any subset of the Application Definition's Interaction D
 
 A selected interaction keeps the Definition semantics unchanged. Source Component, destination Component, protocol and ports are not overridden in Deployment.
 
-If a different communication definition is required, it is represented by another Application Definition in this MVP.
+If a different communication definition is required, it is represented by another Application Definition in this implemented model.
 
 ### Interaction-scoped resource bindings
 
@@ -90,15 +94,15 @@ Bindings are not copied into Interaction Definition and are not global Component
 
 ### Versioning and overrides
 
-Application Definition versioning is deferred.
+Application Definition versioning is not part of the current implemented model.
 
-A Definition edit changes the current definition used by all active Deployments that select the affected Interaction Definition.
+A Definition edit changes the current definition used by all active Deployments that select the affected Interaction Definition, subject to the safety constraints in ADR-013 and the as-built ACC Tactical model.
 
-Deployment-specific traffic overrides and exceptions are deferred. No generic overlay/merge mechanism is introduced.
+Deployment-specific traffic overrides and exceptions are not part of the current implemented model. No generic overlay/merge mechanism exists.
 
 ### Lifecycle
 
-Normal product hard delete is absent in this MVP.
+Normal product hard delete is absent.
 
 Lifecycle is:
 
@@ -136,27 +140,38 @@ Large traffic sets use the same progressive disclosure rule: short sets may rend
 
 Potentially unbounded tables use server-side search/filter/sort/paging and fixed compact row presentation.
 
-## Compatibility with current I27 implementation
+## Compatibility with the pre-I31 implementation
 
-This ADR intentionally does not rewrite ADR-006 or ADR-009 retroactively. They describe the implemented I27 model accurately.
+This ADR does not rewrite ADR-006 or ADR-009 retroactively. They describe the preceding implemented model accurately.
 
-Implementation must reconcile these current contracts:
+I31 had to reconcile these existing contracts:
 
-- `ComponentDeployment` is currently the deployment identity consumed by downstream Connectivity Requirement, Decision and Access Rule semantics;
-- `DcsRevision` currently references source/destination `ComponentDeployment` identities;
-- `DeploymentResourceBinding` currently belongs directly to `ComponentDeployment`;
-- current Web requirements and screen map expose the I27 hierarchy.
+- `ComponentDeployment` was the deployment identity consumed by downstream Connectivity Requirement, Decision and Access Rule semantics;
+- `DcsRevision` referenced source/destination `ComponentDeployment` identities;
+- `DeploymentResourceBinding` belonged directly to `ComponentDeployment`;
+- the Web requirements and screen map exposed the I27 hierarchy.
 
-Before code migration, a separate implementation design must define how `ApplicationDeployment`, `InteractionDefinition`, `DeploymentInteraction` and interaction-scoped Resource bindings project into or replace the existing downstream semantic identities without silently rewriting historical policy truth.
+The implemented I31 compatibility design therefore had to define how `ApplicationDeployment`, `InteractionDefinition`, `DeploymentInteraction` and interaction-scoped Resource bindings project into the existing downstream semantic identities without silently rewriting historical policy truth. ADR-013 is that compatibility decision.
+
+## Relationship to current target
+
+The current target preserves the useful application/deployment concepts but assigns semantic ownership differently:
+
+- ACC owns Application, Component, Interaction and immutable `InteractionContractRevision`;
+- Application Deployment is a separate target Bounded Context;
+- target AD owns current `(ComponentRef, ResourceRef)` placement sets;
+- `DeploymentInteraction` and ACC-owned interaction-side Resource binding are as-built compatibility concepts rather than target semantic ownership;
+- the target governed subject uses exact `InteractionContractRevisionRef + sourceApplicationDeploymentRef + destinationApplicationDeploymentRef`.
+
+This distinction lets the current implementation be reconstructed without making its compatibility model the future domain model.
 
 ## Consequences
 
-Historical I31 consequences were:
+Current as-built consequences are:
 
-- deployment semantics matched the then-selected product mental model: deploy one Application, use any subset of its defined interactions;
-- resource realization was contextual to each selected interaction;
-- Deployment UI remained compact for hundreds/thousands of interactions and resources;
-- no exceptions, overlays, Definition revisions or hard-delete workflow were required in the first implementation;
-- the I27 runtime remained valid until the I31 target was implemented.
-
-These target conclusions are superseded by ADR-015. They remain here to explain why the current I31 runtime has its present structure.
+- deployment semantics match the implemented product mental model: deploy one Application, use any subset of its defined interactions;
+- resource realization is contextual to each selected interaction in the as-built catalogue;
+- Deployment UI remains compact for hundreds/thousands of interactions and resources;
+- no exceptions, overlays, Definition revisions or hard-delete workflow are required by the current implementation;
+- the pre-I31 downstream Component Deployment/DCS contracts remain valid through an explicit internal compatibility projection;
+- the current system can be reconstructed while target ACC/AD ownership remains independently documented.

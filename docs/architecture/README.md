@@ -1,21 +1,25 @@
 # Architecture map
 
-This directory contains current target architecture only.
+This directory contains the architecture required to reconstruct and evolve NAPMS. Both **as-built** and **target** architecture are current project truth when the implemented system intentionally differs from the accepted target.
 
-Start with the smallest relevant artifact:
+## Current as-built architecture
 
-- `current-architecture.md` — cross-cutting target structure, dependency/ownership rules, runtime boundary and architecture drivers.
-- `code-structure.md` — current backend/Web physical taxonomy, ownership boundaries and executable structural enforcement.
-- `application-catalogue-target-boundary.md` — target ACC compatibility projection, cross-context dependency ports and external-correlation boundary.
-- `scoped-connectivity-inventory.md` — target Scoped Connectivity Inventory application/read composition.
-- `technical-access-evidence-boundary.md` — Technical Access Evidence boundary.
-- `network-enforcement-placement-boundary.md` — Network Enforcement Placement boundary.
-- `enterprise-identity-authoritative-sources-boundary.md` — local-first runtime with dormant external identity/source extension seams.
+- `current-architecture.md` — integrated as-built application/runtime architecture and compatibility boundaries for the implemented product. Where it describes an older semantic model, it is implementation reconstruction truth, not target-domain authority.
+- `application-catalogue-target-boundary.md` — implemented Application Catalogue boundary and its target-facing ownership constraints.
+- `catalogue-curation-boundary.md` — catalogue composition, authority and persistence boundary used by the implemented curation product.
+- `scoped-connectivity-inventory.md` — implemented owner-preserving connectivity read composition.
+- `network-context-candidate-boundary.md` — implemented Checker/network-context composition boundary.
+- `network-enforcement-placement-boundary.md` — implemented/compatibility NEP architecture needed by existing product paths.
 
-Connectivity Requirements, Connectivity Decision and Requirement-to-Policy Alignment target architecture documents were removed after ADR-019/global Strategic convergence replaced those semantics with Business Connectivity, Access Governance and the current policy/materialization chain. Their executable remnants belong to current-state/migration documentation, not this target architecture index.
+## Current target / cross-cutting architecture
 
-Access Policy Realization architecture is currently being redesigned from the single problem statement in `../domain/access-policy-realization/README.md`. No separate APR architecture contract is current until that revalidation is completed.
+- `code-structure.md` — module/dependency taxonomy and structural guardrails.
+- `technical-access-evidence-boundary.md` — current TAE structural boundary.
+- `network-environment-operations-boundary.md` — current NEO structural boundary.
+- `enterprise-identity-authoritative-sources-boundary.md` — authoritative-source extension seams.
 
-Consequential choices are recorded in `docs/decisions/`. Product behavior belongs in `docs/requirements/`; architecture should reference those contracts rather than restate them.
+Target semantic authority remains with current `docs/domain/` and `docs/requirements/` owners. As-built architecture must not silently redefine those target semantics.
 
-Historical implementation/design packets are not current architecture. Git history is the archive; only migration-relevant current-state facts should remain in the working documentation corpus.
+There is not yet an accepted S3 architecture contract for the selected Required Access Matrix MVP. That architecture is the next lifecycle step and must remain scoped to ACC + AD + RC composition, table and export.
+
+Do not remove an as-built architecture contract merely because its capability has been implemented: it remains project documentation while it is needed to reconstruct the current system. Remove only architecture that no longer describes either current as-built or current target design.

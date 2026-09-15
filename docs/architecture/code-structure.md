@@ -1,20 +1,14 @@
-# Code Structure
+# Code structure
 
-Status: `accepted target architecture; first MVP vertical additions aligned 2026-09-15; physical migration pending`.
-
-Date: 2026-09-15.
+Status: `current target structure with explicit as-built compatibility boundaries`.
 
 Decision: `docs/decisions/ADR-014-target-code-structure-taxonomy.md`.
-First MVP vertical architecture: `docs/architecture/first-mvp-vertical.md`.
-Migration history: `docs/engineering/target-code-structure-migration-roadmap.md`.
-Web UI composition guidance: `docs/ui/component-composition.md`.
 
 ## Purpose
 
-Make path structure answer three questions without repository-wide search:
-1. is this authoritative domain ownership, cross-context orchestration, or technical execution;
-2. which semantic capability owns the change;
-3. which Clean Architecture layer contains it.
+Repository paths should make ownership and dependency direction visible without requiring code archaeology. A developer should be able to determine whether a change belongs to an authoritative semantic owner, a cross-context workflow, or technical process/runtime composition.
+
+The exact current implemented runtime structure is documented by `docs/architecture/current-architecture.md` and `docs/engineering/current-state.md`. This document defines the structural target and the rules that current/as-built compatibility code must respect.
 
 ## Repository structure
 
@@ -39,13 +33,13 @@ napms/
   README.md
 ```
 
-This is the repository-level structure. The root Makefile is the stable repository-level command surface. Backend packaging and backend tests belong under `backend/`; cross-system E2E stays repository-level.
+The root Makefile is the stable repository-level command surface. Backend packaging and backend tests belong under `backend/`; cross-system E2E remains repository-level.
 
 ## Backend taxonomy
 
 ### `contexts/`
 
-Contains bounded contexts and authoritative semantic owners.
+Authoritative semantic owners live under:
 
 ```text
 contexts/<context>/
@@ -55,37 +49,34 @@ contexts/<context>/
   presentation/
 ```
 
-Create only layers that have actual responsibility.
+Create only layers that have real responsibility.
 
-- `domain/` — model, invariants, domain services/events/errors.
-- `application/` — use cases, orchestration within the context, DTO/contracts and consumer-owned ports.
-- `infrastructure/` — persistence and outbound/integration implementations.
+- `domain/` — identities, invariants, domain values/services/events/errors;
+- `application/` — use cases, within-context orchestration, DTO/contracts and consumer-owned ports;
+- `infrastructure/` — persistence and outbound/integration implementations;
 - `presentation/` — inbound HTTP/CLI/other delivery adapters.
 
-Large application layers are decomposed by capability/use case only when responsibility and change locality justify it.
+Current target context owners are:
 
-Accepted target contexts:
 - `access_governance`;
 - `access_policy`;
 - `access_policy_realization`;
 - `application_catalogue`;
 - `application_deployment`;
 - `authority_management`;
-- `business_connectivity` when its target runtime replaces legacy Connectivity Requirements;
+- `business_connectivity`;
 - `network_enforcement_placement`;
 - `network_environment_operations`;
 - `resource_catalogue`;
 - `technical_access_evidence`.
 
-Legacy/current runtime packages `connectivity_decision` and `connectivity_requirements` remain migration sources only and are not target semantic owners.
+The physical runtime may still contain as-built compatibility modules such as `connectivity_requirements`, `connectivity_decision` or implementation derived from an older APR model. Their presence is part of the reconstructable current implementation, documented in the as-built architecture/contracts, but it does not make those packages target semantic owners.
 
-The physical repository does not yet contain all target context packages. In particular, `access_governance` and `application_deployment` are accepted semantic owners whose runtime migration is still pending. Their absence from the current tree must not be used to infer that legacy/current packages own the target semantics.
-
-The physical `access_policy_realization` package currently contains implementation from the superseded APR model. Its current classes/use cases are migration input only; target ownership and MVP contracts are defined by `docs/domain/access-policy-realization/README.md` and `docs/requirements/access-policy-realization-mvp.md`.
+One context never imports another context's private `domain` model merely for convenience. Cross-context interaction uses explicit application contracts/ports and opaque semantic references.
 
 ### `workflows/`
 
-Contains explicit cross-context application/read orchestration that owns no authoritative business truth.
+`workflows/` contains explicit cross-context application/read orchestration that owns no authoritative business truth.
 
 ```text
 workflows/<workflow>/
@@ -94,37 +85,30 @@ workflows/<workflow>/
   presentation/
 ```
 
-Accepted target workflows include:
-- `policy_realization` — first MVP technical realization orchestration from current AP Rule through RPM/PPI/APR/rendering/NEO;
-- `requirement_policy_alignment` where still applicable to retained runtime journeys;
-- `policy_export`;
-- `scoped_connectivity_inventory`;
-- `traffic_analysis`.
+Current as-built workflows include owner-preserving compositions such as policy export, scoped connectivity inventory and traffic analysis where documented by their architecture/engineering contracts.
 
-The physical `network_operator_view` workflow remains legacy APR-dependent implementation pending migration. It is not a target workflow contract and must not be used to infer redesigned APR stages, statuses or inputs.
+A workflow may own orchestration-specific read models or rebuildable projections. It does not acquire independent identity/lifecycle/invariants merely because it combines several contexts, and it does not read or mutate peer-private tables.
 
-A workflow may own orchestration-specific projections/read models. It consumes bounded-context application contracts/ports rather than context-owned persistence internals. If a workflow acquires independent identity, lifecycle or invariants, reconsider its bounded-context classification explicitly.
+The selected Required Access Matrix MVP is also cross-context composition over ACC + AD + RC. Its exact physical workflow/package name, API boundary, snapshot/consistency mechanism and export/UI adapter remain S3 decisions; no package name is canonical until that architecture is accepted.
 
-There is no generic `composition/` package. Workflow-specific implementation lives with the workflow; pure executable wiring lives in `platform/bootstrap`.
+### Compatibility and migration adapters
 
-### Migration adapters
-
-A migration adapter is allowed only when an accepted target contract must temporarily consume a superseded/current runtime representation and immediate big-bang migration would add unnecessary scope.
+A compatibility adapter is permitted when current as-built data/contracts must be translated into an accepted target contract without a big-bang rewrite.
 
 Rules:
 
-- it lives in the final consumer's `infrastructure/` layer or the current semantic owner's infrastructure layer, not in a new transitional top-level package;
-- it consumes the source owner's public application/read contract when available and never peer-private tables;
-- it may only narrow current data to accepted target meaning; ambiguous or unrepresentable state fails closed;
-- it must not establish independent business identity/lifecycle or become a second semantic owner;
-- it has an explicit removal trigger tied to the target owner/runtime becoming available;
-- it is not an import shim, compatibility façade for old callers, generic anti-corruption bucket or excuse to preserve superseded vocabulary in new target contracts.
+- it lives in the consumer's or semantic owner's outer/infrastructure layer, not in a new semantic top-level bucket;
+- it consumes public owner contracts where available, never peer-private persistence;
+- it may only translate/narrow to accepted meaning; ambiguous or unrepresentable state remains explicit/fail-closed where required;
+- it does not establish independent business identity/lifecycle;
+- it does not make compatibility vocabulary authoritative for new target contracts;
+- its existence and semantics must be documented while the current system depends on it.
 
-The first MVP vertical currently permits bounded migration adapters for ACC-backed deployment evidence and legacy RC realization only under the constraints in `docs/architecture/first-mvp-vertical.md`. NEP requires a real target query when current runtime cannot publish the accepted target result faithfully.
+Compatibility code is not historical while it remains required to reconstruct the current product.
 
 ### `platform/`
 
-Contains technical process/execution concerns only:
+`platform/` contains process/execution concerns only:
 
 ```text
 platform/
@@ -132,16 +116,10 @@ platform/
   auth/
   database/
   http/
-  observability/   # only when concrete shared responsibility exists
+  observability/   # when concrete shared responsibility exists
 ```
 
-Typical responsibilities:
-- executable dependency wiring;
-- process configuration;
-- migrations/process-level database support;
-- authentication/session infrastructure;
-- generic HTTP shell/support;
-- logging/metrics/tracing infrastructure.
+Typical responsibilities are executable dependency wiring, process configuration, migrations/process-level database support, authentication/session infrastructure, generic HTTP support and logging/metrics/tracing infrastructure.
 
 `platform` never owns feature behavior or domain semantics.
 
@@ -155,120 +133,82 @@ domain
 ```
 
 Rules:
+
 - Domain has no framework, persistence, transport, configuration, logging or DI dependencies.
-- Application depends on its Domain and explicit consumer-owned ports/contracts.
+- Application depends on its own Domain and explicit consumer-owned ports/contracts.
 - Infrastructure and Presentation depend inward.
 - Bootstrap may depend on concrete context/workflow outer layers to assemble the process.
-- One context does not import another context's `domain`.
 - Cross-context interaction uses explicit application contracts/ports.
 - Workflows do not bypass semantic ownership through direct reads/writes of context-owned persistence.
-- A cross-context local transaction, when explicitly accepted for a modular-monolith invariant, coordinates public application/repository operations without transferring table ownership or allowing peer SQL.
-- No service locator or global mutable dependency registry.
+- Physical PostgreSQL colocation does not create cross-context table ownership.
+- A cross-context transaction or coherent snapshot exists only when explicitly accepted by Architecture.
+- No service locator or global mutable dependency registry is allowed.
 
-## Shared code rule
+## Shared-code rule
 
-Do not create a general shared business-model/utilities package.
+Do not create a generic shared business-model/utilities package.
 
-Technical reuse belongs in the narrow owning platform/library capability. Semantic reuse stays behind explicit owner contracts. A true DDD Shared Kernel requires a separate accepted architecture/domain decision.
+Technical reuse belongs in a narrow platform/library capability. Semantic reuse stays behind explicit owner contracts. A true DDD Shared Kernel requires an explicit accepted domain/architecture decision.
 
 ## Provider integration capabilities
 
-Provider Policy Interpreter and Provider Policy Renderer are integration capabilities, not Bounded Contexts.
+Provider Policy Interpreter and Provider Policy Renderer are integration capabilities, not peer Bounded Contexts. Provider-specific parsing/rendering remains outside APR domain/application semantics.
 
-For the first MVP vertical their concrete adapters belong with the consuming workflow/infrastructure boundary or another narrow accepted integration owner; they must not create a new peer context merely to host provider syntax.
-
-Provider-specific parsing/rendering must remain outside APR domain/application semantics. If provider integration later becomes large enough to justify a dedicated technical package, that package remains an integration capability and still follows inward dependency rules.
+A provider adapter belongs at the narrow consuming workflow/infrastructure boundary unless a demonstrated technical responsibility justifies a dedicated integration package. Such a package still follows inward dependency rules and does not acquire policy-semantic ownership.
 
 ## Frontend taxonomy
 
-`web/` is a React outer adapter with feature-first locality and one explicit generic UI owner:
+The React Web adapter uses feature-first locality and one durable generic UI owner:
 
 ```text
 web/src/
-  app/                         # application bootstrap/routing/shell
+  app/                         # bootstrap, routing, shell
   design-system/
-    primitives/                # smallest stable visual/layout building blocks
-    components/                # generic reusable controls and focused visuals
-    layout/                    # application/page geometry
-    patterns/                  # reusable generic/product UI compositions
+    primitives/
+    components/
+    layout/
+    patterns/
   features/<feature>/
     api/
     model/
-    components/                # feature-owned presentation/domain-to-visual mapping
-    pages/                     # screen/use-case orchestration roots
-  components/ui/               # transitional existing generic controls; migrate when touched
+    components/
+    pages/
+  components/                  # reusable non-domain composition where justified
   lib/                         # genuinely shared technical helpers
 ```
 
-Create only feature subdirectories that have actual contents. Feature DTOs, request mapping, session/auth operations and behavior stay with their explicit feature owner. `lib/` remains technical, including shared HTTP transport/error handling and other non-semantic helpers. `app/` owns bootstrap, routing and application shell composition.
+Feature DTOs, request mapping and product presentation stay with the explicit feature owner. `lib/` remains technical. `app/` owns bootstrap/routing/application shell.
 
-`design-system/` is the durable owner of generic visual primitives, reusable controls, application/page geometry and reusable product UI patterns. Generic design-system code must not encode NAPMS domain states or feature vocabulary. Domain-to-visual mapping and reusable domain presentation stay under the owning feature's `components/`.
+`design-system/` owns generic visual primitives, reusable controls, application/page geometry and reusable UI patterns. It must not encode NAPMS domain states or feature vocabulary. Domain-to-visual mapping belongs to the owning feature.
 
-`components/ui/` is transitional current structure rather than a second permanent generic-component ownership model. When a generic control is touched by the component-composition migration and its ownership is clear, move it to `design-system/components/`, migrate callers directly and remove the old owner without compatibility facades.
-
-Feature pages are screen composition/use-case orchestration roots. They compose design-system patterns and feature components rather than defining local copies of generic controls, status visuals, dialog geometry or repeated feature presentation.
-
-Cross-feature semantic reuse imports from the explicit owning feature; do not recreate a root API barrel or generic `shared/model` package. Detailed extraction/ownership rules live in `docs/ui/component-composition.md`.
+Feature pages are screen/use-case orchestration roots. They compose design-system patterns and feature components rather than reimplementing generic controls or creating parallel styling systems. Detailed ownership/extraction rules live in `docs/ui/component-composition.md`.
 
 ## Structural change rules
 
-- Preserve accepted product/domain semantics unless a separate accepted change says otherwise.
-- Put new authoritative code directly under final ownership; do not create transitional semantic categories.
-- Migration adapters are permitted only under the bounded rule above and never become alternate semantic owners.
-- Move matching tests with their implementation boundary.
-- Add/update architecture tests whenever a boundary is mechanically enforceable.
-- Structural compatibility facades, transitional import shims and generic ownership buckets are forbidden.
+- Preserve accepted product/domain semantics unless the owning layer changes first.
+- Put new authoritative code directly under its final semantic owner.
+- Do not create transitional semantic top-level categories.
+- Keep as-built compatibility adapters only where the current design requires them and document their boundary.
+- Move matching tests with their implementation boundary when structure changes.
+- Add/update architecture tests for mechanically enforceable boundaries.
 - File size alone is not a decomposition rule; use responsibility and change coupling.
-- A physical move must not silently imply semantic ownership transfer.
-- Existing runtime packages explicitly marked migration-only are exceptions to target-semantic inference: their presence does not make their old vocabulary current architecture.
+- A physical move never silently transfers semantic ownership.
 
-## Enforcement
+## Mechanical enforcement
 
-The production backend package contains only `contexts/`, `workflows` and `platform/` at its semantic top level. Context and workflow roots admit only their applicable layers described above. `adapters/` and generic `composition/` directories are forbidden throughout `backend/src/napms/`.
+Architecture checks should protect at least:
 
-Architecture tests enforce this taxonomy together with dependency direction, cross-context isolation, persistence ownership, platform HTTP neutrality, capability boundaries and feature-local Web ownership. Historical migration roadmaps provide provenance only and do not define current target structure.
+- allowed semantic top-level package taxonomy;
+- Domain framework/persistence independence;
+- cross-context domain isolation;
+- consumer-owned port direction;
+- no peer-private persistence access;
+- provider-specific code outside source-neutral domain models;
+- design-system independence from feature/domain semantics;
+- feature-local Web ownership where applicable.
 
-When the first MVP vertical is implemented, architecture checks must also prevent:
+For the Required Access Matrix slice, S3 should add checks for whatever concrete ownership/package boundaries it accepts, especially preventing direct ACC/AD/RC private persistence access and accidental introduction of a new semantic `RequiredAccessMatrix` bounded context unless S2 explicitly changes.
 
-- workflow imports from peer `domain` packages;
-- direct workflow/peer SQL against ACC/AD/RC/AP/NEP-owned schemas;
-- provider renderer code under APR domain;
-- target contracts containing legacy ComponentDeployment, ResourceEndpoint, EnforcementAttachment or ManagedReconciliationScope identities;
-- a new RPM context/repository package.
+## Reconstruction rule
 
-## Success condition
-
-A normal change should be locatable as:
-
-```text
-business owner?
-  -> contexts/<context>
-
-cross-context scenario?
-  -> workflows/<workflow>
-
-process/runtime mechanics?
-  -> platform/<capability>
-
-then
-  -> domain / application / infrastructure / presentation
-  -> capability/use case when further decomposition is justified
-```
-
-For Web UI changes:
-
-```text
-generic visual/control/layout behavior?
-  -> design-system
-
-feature/domain presentation?
-  -> features/<owner>/components
-
-screen/use-case orchestration?
-  -> features/<owner>/pages
-
-pure shared technical helper?
-  -> lib
-```
-
-No generic composition bucket, process feature ownership, cross-context domain imports or global technical-layer tree is accepted.
+The combination of this target structure, `current-architecture.md`, current ADRs and engineering contracts must be sufficient to recreate both the designed as-built topology and the accepted target ownership boundaries. Do not delete structural documentation merely because the corresponding structure is already implemented.

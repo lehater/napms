@@ -1,34 +1,27 @@
-# NAPMS Web UI implementation guidance
+# NAPMS Web UI specification
 
-## Purpose
+This directory contains both reconstructable product UI specifications and reusable presentation/interaction guidance for the Web outer adapter.
 
-This directory owns implementation-oriented presentation and interaction guidance for the Web outer adapter.
+## Current as-built UI specifications
 
-Canonical product behavior is owned by `docs/requirements/web-ui-requirements.md` and feature requirements such as `docs/requirements/scoped-connectivity-inventory.md`. Domain meaning/authority remains owned by domain/application contracts.
+- `screens.md` — implemented product screen/navigation map and workspace responsibilities.
+- `application-catalogue-target.md` — implemented Applications catalogue interaction model.
+- `application-catalogue-wireframes.md` — implemented Application Catalogue screen structure.
+- `resource-catalogue-wireframes.md` — implemented Resource Catalogue screen structure.
+- `checker.md` — implemented Checker UI contract.
+- `references/` — visual references used by current UI specifications.
 
-When UI guidance would need to restate a business lifecycle, authority rule, semantic identity or cross-context status meaning, link to the canonical owner instead.
+These documents remain project documentation after implementation because they are required to reproduce the current designed UI. Where they describe compatibility vocabulary that differs from newer target domain semantics, they are as-built reconstruction contracts only.
 
-## Visual/implementation direction
+## Reusable current guidance
 
-- desktop-first enterprise/control-plane UI;
-- dark navy collapsible sidebar + light working area;
-- dense operational tables/forms over decorative dashboard cards;
-- readable catalogue labels first, stable IDs/DDD terms second;
-- React + TypeScript + Tailwind CSS + shadcn/ui;
-- accessibility target WCAG 2.2 AA;
-- extract shared visual abstractions only after demonstrated reuse.
+- `design-tokens.md` — visual tokens and density;
+- `layout.md` — shell/workspace layout;
+- `components.md` — reusable component responsibilities;
+- `component-composition.md` — composition boundaries;
+- `design-system.md` — reusable visual system;
+- `interaction-rules.md` — generic form/loading/error/navigation mechanics.
 
-## Files
+Product behavior is owned by `docs/requirements/`; semantic identity/lifecycle/authority is owned by `docs/domain/`. UI specifications must not invent those semantics.
 
-- `design-tokens.md` — color, typography, spacing and density.
-- `layout.md` — shell, workspace layout and responsive behavior.
-- `components.md` — reusable component responsibilities.
-- `screens.md` — screen-level presentation responsibilities.
-- `interaction-rules.md` — URL/tree-grid/form/loading/error interaction mechanics.
-- `application-catalogue-target.md` / `application-catalogue-wireframes.md` — accepted Application Catalogue target and screen wireframes.
-- `resource-catalogue-wireframes.md` — accepted Resource Catalogue screen/interaction wireframes, with linked SVG references.
-- `references/` — visual direction and implementation-reference images only; `references/resource-catalogue/` contains versioned Resource Catalogue SVG mockups.
-
-Execution sequencing does not belong here. Current UI work is selected by `docs/plans/active/README.md` / the active plan and the durable roadmap in `docs/engineering/`.
-
-Reference screenshots and SVG mockups define composition/palette/density direction only. Their sample entities/statuses are not independent NAPMS domain truth; the linked Markdown/canonical domain and requirements owners win on semantic conflicts.
+The selected Required Access Matrix MVP requires a practical table and downloadable export; its specific screen structure remains an S3/UI design decision and is not yet specified here.

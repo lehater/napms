@@ -1,40 +1,37 @@
 # Requirements map
 
-This directory is a working knowledge base for current accepted product and quality behavior. Superseded specifications are removed rather than retained beside target requirements. Git history is the archive.
+This directory contains current product and quality contracts. A requirement remains current project documentation after implementation if it is still required to reproduce the system's behavior.
 
-Use the smallest requirement family that owns the behavior under change:
+## Selected next implementation slice
 
-- `business-connectivity-g1.md` — current observable behavior for Business Process, Connectivity Need and brownfield business attribution.
-- `access-governance-g1.md` — current observable behavior for Access Request, bilateral source/destination approval, authority integration and withdrawal.
-- `access-policy-core.md` — authoritative Policy Rule truth and effective authorized-policy projection after Access Governance grant/withdrawal.
-- `application-catalogue-domain-target.md` — ACC Application/Component/Interaction plus immutable InteractionContractRevision behavior, and the accepted ACC/AD/RC ownership split.
-- `policy-realization-reconciliation-g1.md` — current semantic-to-technical materialization, normalized required/configured comparison and convergence behavior.
-- `scoped-connectivity-inventory.md` + acceptance examples — resource-centric composition over RC Resources, AD placements, Business Need, Access Governance, Access Policy and realization truth.
-- `policy-export-core.md` — coherent logical-as-of normalized desired-policy export; implementation-specific assumptions must be revalidated when downstream target design changes.
-- `technical-access-evidence-core.md` — source-qualified Technical Access Evidence recording/query behavior.
-- `network-enforcement-placement-core.md` — accepted Network Enforcement Placement behavior.
-- `enterprise-identity-authoritative-sources.md` — local-first operation plus optional external identity/source extension seams.
-- `catalogue-curation.md` + acceptance/security contracts — implemented Resource/Application catalogue curation behavior; current target ACC/AD/RC semantics win where legacy curation/runtime vocabulary differs.
-- `web-ui-requirements.md` — product-facing UI requirements; stale ComponentDeployment/endpoint terminology must not override current target domain contracts.
+- `first-mvp-required-access-matrix.md` — ACC + AD + RC -> global vendor-neutral Required Access Matrix -> table/export.
 
-Connectivity Requirements, Connectivity Decision and Requirement-to-Policy Alignment requirement packets were removed after revalidation replaced their target semantics with Business Connectivity, Access Governance and the current policy/materialization chain. Their runtime remnants are migration/current-state evidence only and must not be reintroduced as target requirements.
+## Current target contracts
 
-`application-catalogue-target.md` may remain only where it carries migration/current-state information not represented by the target ACC/AD model; target design must prefer `application-catalogue-domain-target.md` on conflict.
+- `application-catalogue-domain-target.md` — current ACC/AD/RC target behavior and ownership split.
+- `business-connectivity-g1.md` — Business Connectivity behavior.
+- `access-governance-g1.md` — Access Governance behavior.
+- `access-policy-core.md` — Access Policy behavior.
+- `network-enforcement-placement-core.md` — Network Enforcement Placement behavior.
+- `technical-access-evidence-core.md` + `technical-access-evidence-acceptance-examples.md` — Technical Access Evidence behavior.
+- `policy-realization-reconciliation-g1.md` + `access-policy-realization-mvp.md` — Access Policy Realization behavior.
+- `provider-policy-renderer-mvp.md` — provider rendering boundary.
+- `network-environment-operations.md` — Network Environment Operations behavior.
+- `enterprise-identity-authoritative-sources.md` — authoritative-source extension boundary.
 
-The consolidated stakeholder/G1 checkpoint is `../engineering/context-problems/capability-revalidation-checkpoint-2026-09-14.md`; it is provenance for the revalidation, not authority over later accepted requirement/domain corrections recorded on 2026-09-15.
+## Current as-built product contracts
 
-Current target Tactical DDD owners include:
+These remain because they describe implemented behavior that must be reproducible even where later target semantics differ:
 
-- `../domain/application-communication-catalogue/target-tactical-model.md`;
-- `../domain/application-deployment/tactical-model.md`;
-- `../domain/resource-catalogue/tactical-model.md`;
-- `../domain/business-connectivity/target-tactical-model.md`;
-- `../domain/access-governance/target-tactical-model.md`;
-- `../domain/access-policy/tactical-model.md`;
-- `../domain/authority-management/tactical-model.md`;
-- `../domain/network-enforcement-placement/target-tactical-model.md`;
-- `../domain/technical-access-evidence/tactical-model.md`;
-- `../domain/access-policy-realization/tactical-model.md`;
-- `../domain/network-environment-operations/tactical-model.md`.
+- `application-catalogue-target.md` — implemented Application Definition / Application Deployment product behavior.
+- `catalogue-curation.md` + security/acceptance examples — implemented Application/Resource catalogue curation behavior.
+- `scoped-connectivity-inventory.md` + acceptance examples — implemented resource-centric connectivity composition.
+- `traffic-analysis-checker.md` — implemented Checker behavior.
+- `policy-export-core.md` — implemented normalized desired-policy export behavior.
+- `web-ui-requirements.md` — current Web behavior, including explicit as-built compatibility boundaries.
 
-Requirements own observable behavior and quality outcomes. Do not promote S2 aggregate/state/storage choices or current implementation mechanics into requirements merely because they already exist.
+As-built contracts do not override newer target ownership or vocabulary. They document what must be reproduced when rebuilding the current system; target contracts document the accepted intended design.
+
+The selected implementation scope is narrower than both the complete target model and the already implemented product. That does not make either class of requirement historical.
+
+Git history is the archive only for requirements that no longer describe any current as-built or target behavior.

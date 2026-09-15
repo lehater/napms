@@ -1,28 +1,33 @@
-# NAPMS documentation map
+# NAPMS documentation
 
-The working tree keeps current truth separate by responsibility and keeps historical execution/design detail out of the normal agent surface.
+The working documentation tree is the project specification for the system as it exists and as it is currently designed to evolve. It must be sufficient to reconstruct the designed system from zero without inventing product, domain or architecture decisions.
 
-- `domain/` — living Strategic/Tactical DDD: meaning, identity, lifecycle and semantic ownership.
-- `requirements/` — current accepted product/quality behavior; use `requirements/README.md` to route to the smallest requirement family.
-- `architecture/` — current target structure/ownership/runtime constraints; use `architecture/README.md`.
-- `decisions/` — consequential ADRs, including explicit supersession history.
-- `engineering/` — implementation/runtime contracts, policies and capability snapshots.
-- `ui/` — implementation-oriented visual/interaction guidance derived from current requirements.
-- `plans/active/` — compact current execution capsule plus coordination plan.
-- `process/` — reusable development/agent protocols.
-- `baseline/` — accepted historical snapshots/provenance; not normal startup context.
+Two kinds of current truth may coexist and must be labelled explicitly:
 
-Historical Wave-1 G2/G3 working packets are preserved by baseline summaries and Git history rather than living beside current requirements/architecture.
+- **as-built** — the accepted design contract for capabilities that exist in the current product/runtime;
+- **target** — the accepted design contract for the current intended model when it differs from as-built or is not implemented yet.
 
-For a fresh non-trivial task use task-first recovery:
+Implemented does not mean historical. A requirement, architecture contract, API contract, persistence decision, UI specification or ADR remains in the working tree while it is required to reproduce the current designed system.
 
-```text
-root AGENTS.md
-  -> nearest scoped AGENTS.md
-  -> smallest applicable Skill
-  -> minimal task working set
-```
+Documentation ownership:
 
-Insert `docs/plans/active/README.md` after the root map only when the requested task resumes/continues current execution, depends on the current lifecycle/gate, or needs implementation authorization. Do not preload the current product workstream for unrelated audits, reviews, research or repository questions.
+- `requirements/` — current product and quality contracts, including implemented/as-built behavior and current target behavior;
+- `domain/` — current Strategic/Tactical DDD, semantic ownership and target/as-built domain contracts where both are needed;
+- `architecture/` — current as-built and target architecture, boundaries, composition and structural constraints;
+- `decisions/` — design decisions still required to understand or reproduce current as-built/target architecture; superseded-only decision history does not belong here;
+- `engineering/` — current API, persistence, runtime, configuration, operational and implementation-facing contracts;
+- `ui/` — current UI requirements, screen/wireframe specifications and reusable design guidance;
+- `plans/active/` — selected execution state only;
+- `process/` — reusable development and agent protocols.
 
-Read a full active PLAN only for planning/coordination/task transition or when the capsule lacks a material fact.
+The selected next implementation MVP is `requirements/first-mvp-required-access-matrix.md`; its execution state is `plans/active/README.md`. That narrower next slice does not invalidate project documentation for already implemented capabilities or for the broader accepted target model.
+
+Git history is the archive only for genuinely replaced material: superseded specifications that no longer describe any current as-built or target state, completed migrations, completed plans/checkpoints, audit snapshots and obsolete alternatives.
+
+## Reconstruction test
+
+Before deleting project documentation, ask:
+
+> If production code disappeared, would the remaining documentation still let a competent team reconstruct the designed current system and distinguish as-built from target without making a new product/domain/architecture decision?
+
+If the answer becomes no, the document or its still-required content must remain in the working project specification.

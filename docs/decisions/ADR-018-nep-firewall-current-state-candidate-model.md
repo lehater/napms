@@ -4,11 +4,9 @@ Status: `accepted target decision; implementation migration pending`.
 
 Date: 2026-09-13.
 
-Supersedes the MVP target portions of `ADR-017-nep-candidate-policy-attachment-contract.md` where this decision is more specific.
-
 ## Context
 
-ADR-017 established the important separation between an unordered candidate set and a proven forwarding path. Subsequent Tactical DDD review clarified the actual source semantics and the minimum information required by current consumers.
+Earlier NEP design established an important distinction that remains current: an unordered candidate enforcement set is not a proven forwarding path. Subsequent Tactical DDD review clarified the actual source semantics and the minimum information required by current consumers. This ADR contains the complete current decision; superseded predecessor decisions are not required as working-tree authority.
 
 The MVP evaluates batches of technical source/destination address pairs against a catalogue of firewalls. Candidate relevance is derived from each firewall's current local routing knowledge and may be overridden by user-authored rules.
 
@@ -272,4 +270,4 @@ The following do not block the target domain model:
 - concrete secret/profile storage mechanism;
 - retry/backoff and scheduler failure policy;
 - vendor-specific PBR or other routing semantics not yet required by supported adapters;
-- implementation migration from current I19/I26 persistence/code.
+- implementation migration from current NEP persistence/code.
