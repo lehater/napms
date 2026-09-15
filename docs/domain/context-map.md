@@ -1,6 +1,6 @@
 # NAPMS Context Map
 
-Status: `S2 MVP target relationship map aligned 2026-09-15`.
+Status: `S2 MVP target relationship map aligned with TAE acquisition boundary 2026-09-15`.
 
 Date: 2026-09-15.
 
@@ -26,18 +26,23 @@ flowchart LR
     RC -->|ResourceRef -> HostAddress or Prefix| RPM
     NEP[Network Enforcement Placement] --> RPM
     RPM -->|TargetRequiredPolicy| APR[Access Policy Realization]
-    DEV[Provider environment] --> PPI[Provider Policy Interpreter]
+
+    DEV[Provider / network environment] -->|provider-native policy/state| PPI[Provider Policy Interpreter]
     PPI -->|ConfiguredEffectivePolicySnapshot| APR
     APR -->|VerifiedChangeIntent| PPR[Provider Policy Renderer]
     PPR -->|TargetPolicyArtifact| NEO[Network Environment Operations]
     AM -->|mutation authority| NEO
     NEO -->|controlled mutation| DEV
-    DEV -->|source-qualified capture| TAE[Technical Access Evidence]
+
+    DEV -->|device/config/flow source material| ACQ[Technical Evidence Acquisition / Collectors]
+    EXT[Import / external technical sources] --> ACQ
+    ACQ -->|normalized source-qualified evidence| TAE[Technical Access Evidence]
+    TAE -.->|configured evidence when selected by source contract| PPI
 ```
 
 Arrows show semantic ownership/data flow, not synchronous transport or deployment topology. No Shared Kernel is accepted.
 
-Provider Policy Interpreter and Provider Policy Renderer are integration capabilities, not peer Bounded Contexts. Required Policy Materialization is a non-peer derived composition.
+Provider Policy Interpreter, Provider Policy Renderer and Technical Evidence Acquisition/Collectors are integration/application capabilities, not peer Bounded Contexts. Required Policy Materialization is a non-peer derived composition.
 
 ## Affected public contracts
 
@@ -186,11 +191,40 @@ TargetRequiredPolicy {
 
 Missing/incomplete upstream evidence, missing candidate target or missing policy locator is `unresolved`, never empty required policy.
 
+### Technical Evidence Acquisition / Collectors -> TAE
+
+Acquisition/collector capabilities initiate source collection outside the TAE domain boundary and publish source-qualified normalized evidence into TAE.
+
+Typical producers include:
+
+```text
+device/config collector
+NetFlow/IPFIX/flow collector
+file/import adapter
+other technical source adapters
+```
+
+TAE owns the normalized evidence language/invariants. Producers own faithful source-specific translation into that contract. TAE does not own polling cadence, scheduling, credentials, retry/backoff or source transport.
+
+These producer capabilities are not Bounded Contexts merely because they have application workflows or adapters.
+
+Network Environment Operations is not the acquisition/read gateway for TAE. NEO remains the owner of controlled target mutation. Whether acquisition and NEO share a concrete provider/device access library or adapter layer is an S3 Architecture concern and is intentionally not decided by this Context Map.
+
+### TAE -> evidence consumers
+
+TAE publishes immutable source-qualified evidence; consumers interpret it for their own responsibility.
+
+- configured evidence may be selected by an explicit source contract and consumed by Provider Policy Interpreter;
+- `TrafficDerived` evidence may feed recognition/reconciliation compositions;
+- historical evidence may feed audit/investigation views.
+
+TAE does not infer authorization, business need, desired policy, policy realization or change proposals from evidence.
+
 ### Provider Policy Interpreter -> APR
 
 PPI publishes `ConfiguredEffectivePolicySnapshot` for the exact same ComparisonScope, with explicit completeness and unsupported-semantics information. APR does not parse raw provider syntax.
 
-TAE may preserve source-qualified evidence but does not select current/complete configured-policy truth for APR.
+PPI may consume provider/source material directly, TAE configured evidence through an explicit source contract, or both. TAE does not select current/complete configured-policy truth for APR.
 
 ### APR -> Provider Policy Renderer
 
@@ -248,7 +282,7 @@ TargetPolicyArtifact
     -> NetworkOperation outcome
 ```
 
-NEO does not recompute APR intent or rewrite provider representation. Mutation requires explicit Authority Management admission and successful stale/concurrency pre-checks.
+NEO does not recompute APR intent, rewrite provider representation or act as a general evidence-acquisition service. Mutation requires explicit Authority Management admission and successful stale/concurrency pre-checks.
 
 `Applied` is only a transport/apply result. NEO `Verified` is immediate artifact/application verification, not final semantic convergence proof. Final convergence requires later provider observation/interpreter publication and APR comparison again.
 
@@ -298,11 +332,14 @@ The following are explicit non-blocking future extensions:
 - durable/editable APR remediation plans if a concrete user journey requires them;
 - several simultaneous Resource addresses/interfaces, endpoint purpose, VIP and deployment-specific exposure;
 - richer ApplicationDeployment lifecycle/history where observable behavior later requires it;
-- richer ACC revision workflow/version presentation beyond immutable contract snapshots.
+- richer ACC revision workflow/version presentation beyond immutable contract snapshots;
+- concrete acquisition scheduling/polling strategy and any shared provider/device access realization between collectors and NEO (S3 Architecture).
 
 ## Convergence result
 
 The first MVP semantic path is coherent across all target bounded contexts and non-peer integration/composition boundaries needed by it.
+
+The TAE acquisition clarification does not introduce a new Bounded Context or change TAE evidence identity/lifecycle. It makes the producer relationship explicit and keeps device-access realization out of S2.
 
 Known future cases are explicitly deferred or fail closed; they are not hidden as unresolved current behavior.
 
