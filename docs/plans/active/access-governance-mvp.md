@@ -15,6 +15,7 @@ Preserve the accepted bilateral model; do not design richer workflow, generalize
 Accepted behavior already retained in `docs/requirements/access-governance-g1.md`:
 
 - an Access Request applies a Process-backed Connectivity Need to a concrete source/destination ApplicationDeployment pair;
+- a deployment pair is selectable for a declared Interaction when each deployment can realize the corresponding endpoint Component and the current placements needed to determine approval obligations are resolvable;
 - source and destination approval obligations are independent;
 - grant requires both required sides;
 - either required side may reject a pending request;
@@ -31,23 +32,15 @@ ACC Interaction / Component semantics
 + RC Resource / ResourceScopeAffiliation / CurrentResourceRealization
 ```
 
-## Current S1 questions
+## S1 decisions
 
-### Q1 — selectable ApplicationDeployment pair
+### Q1 — selectable ApplicationDeployment pair — ACCEPTED
 
-Product behavior must state when a source/destination ApplicationDeployment pair may be selected for an Access Request using a declared Interaction.
+A pair is selectable when each ApplicationDeployment can realize the corresponding Interaction endpoint Component and the current placements needed to determine approval obligations are resolvable.
 
-Minimal candidate for owner decision, not yet accepted:
+For MVP this does not add cross-application compatibility rules, planned/future deployment semantics or fallback inference.
 
-```text
-A pair is selectable when each ApplicationDeployment can realize the corresponding
-Interaction endpoint Component and the current placements needed to determine
-approval obligations are resolvable.
-```
-
-Do not add cross-application compatibility rules, planned/future deployment semantics or fallback inference unless the MVP journey requires them.
-
-### Q2 — obligation change after placement/scope change
+### Q2 — obligation change after placement/scope change — CURRENT
 
 Unknown: when current placement or Resource Scope Affiliation changes alter the required approvers/scopes, does an existing authorization remain valid, require reapproval, suspend, or withdraw?
 
@@ -70,10 +63,10 @@ Do not freeze obligation cardinality or scope-precedence semantics until S1 acce
 
 ## Blockers
 
-The three questions above are S1 owner decisions. Repository evidence does not currently contain accepted answers.
+Q2 and Q3 remain S1 owner decisions. Repository evidence does not currently contain accepted answers.
 
 For MVP, prefer the smallest behavior that preserves bilateral authorization correctness and does not create a hidden automatic grant when placement/scope meaning changes.
 
 ## Next
 
-Resolve Q1 first as the minimum behavior needed to construct a valid governed subject. Promote only an explicit owner decision into `docs/requirements/access-governance-g1.md`; keep the candidate above non-authoritative until then.
+Resolve Q2. Promote only an explicit owner decision into `docs/requirements/access-governance-g1.md`. Then address Q3 only to the extent overlapping Responsibility Scopes are required by the first happy path.
