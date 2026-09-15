@@ -7,7 +7,6 @@ on:
       - "docs/domain/**"
       - "docs/requirements/**"
       - "docs/architecture/**"
-      - "docs/decisions/**"
       - "tools/validate_domain_model.py"
       - "Makefile"
       - ".github/workflows/knowledge.yml"
