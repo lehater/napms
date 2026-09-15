@@ -20,7 +20,7 @@ Documentation ownership:
 - `plans/active/` — selected execution state only;
 - `process/` — reusable development and agent protocols.
 
-The selected next implementation MVP is `requirements/first-mvp-required-access-matrix.md`; its execution state is `plans/active/README.md`. That narrower next slice does not invalidate project documentation for already implemented capabilities or for the broader accepted target model.
+The selected next implementation MVP is `requirements/first-mvp-vendor-neutral-policy-export.md`; its execution state is `plans/active/README.md`. The slice starts from current effective Access Policy truth and composes AP + ACC + AD + RC into one complete vendor-neutral table/export without firewall/device/provider context. That narrower next slice does not invalidate project documentation for already implemented capabilities or for the broader accepted target model.
 
 Git history is the archive only for genuinely replaced material: superseded specifications that no longer describe any current as-built or target state, completed migrations, completed plans/checkpoints, audit snapshots and obsolete alternatives.
 
