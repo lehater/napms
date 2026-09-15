@@ -2,37 +2,62 @@
   "model_id": "NAPMS-DDD-001",
   "source_baseline": "DDD-BDM-010 + 2026-09-14 G1 revalidation + ADR-019 + ADR-020 + ADR-021 + global Strategic convergence pass",
   "status": "accepted",
-  "context_map": "docs/domain/context-map.md",
-  "bounded_contexts": [
-    {"name":"Business Connectivity","responsibility":"Business Process meaning/responsibility, application-semantic Connectivity Need, business attribution and justification reconciliation."},
-    {"name":"Access Governance","responsibility":"Access Request history, source/destination approval obligations, side decisions, bilateral authorization grant, withdrawal/revocation and governance provenance."},
-    {"name":"Access Policy","responsibility":"Authoritative current Policy Rule truth and effective authorized-policy projection."},
-    {"name":"Authority Management","responsibility":"Effective scoped actor/action authority and role/group/scope assignment semantics."},
-    {"name":"Resource Catalogue","responsibility":"Resource/Endpoint identity, Resource Scope Affiliation and current/historical corporate-visible address realization."},
-    {"name":"Application Communication Catalogue","responsibility":"Application/Component/ComponentDeployment/Interaction identities and immutable interaction traffic contracts."},
-    {"name":"Network Enforcement Placement","responsibility":"Candidate enforcement-location relevance plus applicable policy/ACL locators."},
-    {"name":"Technical Access Evidence","responsibility":"Normalized source-qualified technical evidence with provenance/time/source scope and no authorization/current-policy claim."},
-    {"name":"Access Policy Realization","responsibility":"Source-neutral required-vs-configured effective-policy assessment, semantic reconciliation, vendor-neutral change design and proposed-result semantic verification."},
-    {"name":"Network Environment Operations","responsibility":"Controlled provider/device mutation operation identity, mutation-authority admission, concurrency/preconditions, outcome and execution provenance for supplied target artifacts."}
+  "canonical_authority": {
+    "responsibilities_and_boundaries": "docs/domain/strategic-model.md",
+    "relationships_and_contracts": "docs/domain/context-map.md",
+    "machine_readable_projection": "docs/domain/strategic-model.json"
+  },
+  "participants": [
+    {"id":"bc","kind":"bounded_context","name":"Business Connectivity","responsibility":"Business Process meaning/responsibility, application-semantic Connectivity Need, business attribution and justification reconciliation."},
+    {"id":"ag","kind":"bounded_context","name":"Access Governance","responsibility":"Access Request history, source/destination approval obligations, side decisions, bilateral authorization grant, withdrawal/revocation and governance provenance."},
+    {"id":"ap","kind":"bounded_context","name":"Access Policy","responsibility":"Authoritative current Policy Rule truth and effective authorized-policy projection."},
+    {"id":"am","kind":"bounded_context","name":"Authority Management","responsibility":"Effective scoped actor/action authority and role/group/scope assignment semantics."},
+    {"id":"rc","kind":"bounded_context","name":"Resource Catalogue","responsibility":"Resource/Endpoint identity, Resource Scope Affiliation and current/historical corporate-visible address realization."},
+    {"id":"acc","kind":"bounded_context","name":"Application Communication Catalogue","responsibility":"Application/Component/ComponentDeployment/Interaction identities and immutable interaction traffic contracts."},
+    {"id":"nep","kind":"bounded_context","name":"Network Enforcement Placement","responsibility":"Candidate enforcement-location relevance plus applicable policy/ACL locators."},
+    {"id":"tae","kind":"bounded_context","name":"Technical Access Evidence","responsibility":"Normalized source-qualified technical evidence with provenance/time/source scope and no authorization/current-policy claim."},
+    {"id":"apr","kind":"bounded_context","name":"Access Policy Realization","responsibility":"Source-neutral required-vs-configured effective-policy assessment, semantic reconciliation, vendor-neutral change design and proposed-result semantic verification."},
+    {"id":"neo","kind":"bounded_context","name":"Network Environment Operations","responsibility":"Controlled provider/device mutation operation identity, mutation-authority admission, concurrency/preconditions, outcome and execution provenance for supplied target artifacts."},
+    {"id":"rpm","kind":"derived_composition","name":"Required Policy Materialization","responsibility":"Derive normalized required technical predicates and target-specific required effective policy from Access Policy, ACC, Resource Catalogue and NEP published contracts; unresolved inputs remain explicit."},
+    {"id":"ppi","kind":"integration_capability","name":"Provider Policy Interpreter","responsibility":"Translate provider-native configured policy into comparable ConfiguredEffectivePolicySnapshot with explicit scope, completeness, provenance and unsupported-semantics outcome."},
+    {"id":"ppr","kind":"integration_capability","name":"Provider Policy Renderer","responsibility":"Translate APR-verified vendor-neutral intent into a semantically equivalent TargetPolicyArtifact or fail closed when unsupported."},
+    {"id":"sci","kind":"read_composition","name":"Scoped Connectivity Inventory","responsibility":"Compose owner-facing views from context-owned public facts without becoming a source of truth."},
+    {"id":"analysis","kind":"read_analysis_composition","name":"Connectivity Impact / technical analysis compositions","responsibility":"Combine accepted context facts/evidence for a concrete analysis without becoming a peer semantic owner."},
+    {"id":"provider","kind":"external_seam","name":"Provider / network-device environment"},
+    {"id":"idp","kind":"external_seam","name":"Optional external identity provider"},
+    {"id":"enterprise","kind":"external_seam","name":"Optional enterprise source systems"}
   ],
-  "wave1_direct_participants": ["Access Policy","Authority Management","Application Communication Catalogue","Resource Catalogue"],
-  "current_direct_participants": ["Business Connectivity","Access Governance","Access Policy","Authority Management","Application Communication Catalogue","Resource Catalogue"],
+  "bounded_contexts": ["bc","ag","ap","am","rc","acc","nep","tae","apr","neo"],
+  "wave1_direct_participants": ["ap","am","acc","rc"],
+  "current_direct_participants": ["bc","ag","ap","am","acc","rc"],
   "legacy_contexts": [
     {"name":"Connectivity Requirements","disposition":"superseded target boundary; Need semantics moved to Business Connectivity"},
     {"name":"Connectivity Decision","disposition":"superseded target boundary; bilateral consent/grant/revocation semantics moved to Access Governance"}
   ],
-  "derived_compositions": [
-    {"name":"Required Policy Materialization","responsibility":"Derive normalized required technical predicates and target-specific required effective policy from Access Policy, ACC, Resource Catalogue and NEP published contracts; unresolved inputs remain explicit."}
+  "relationships": [
+    {"source":"acc","target":"bc","contract":"InteractionRef / InteractionContractRevisionRef","purpose":"Let Connectivity Need refer to application-semantic communication without importing ACC internals."},
+    {"source":"bc","target":"ag","contract":"ConnectivityNeedRef + BusinessProcessRef + InteractionRef + justification status/basis","purpose":"Supply the business basis for a deliberate Access Request without making Need equal permission."},
+    {"source":"rc","target":"acc","contract":"opaque ResourceRef","purpose":"Bind one ComponentDeployment to exactly one Resource for its lifetime while RC retains realization ownership."},
+    {"source":"acc","target":"ag","contract":"DirectedInteractionIdentity","purpose":"Identify the exact deployed interaction being governed."},
+    {"source":"rc","target":"ag","contract":"ResourceRef + logicalTime -> effective ResourceScopeAffiliation[] with validity/provenance","purpose":"Supply responsibility-scope facts used to establish governance obligations."},
+    {"source":"am","target":"ag","contract":"EffectiveAuthority(actor, action, scope, time)","purpose":"Admit or deny governance actions without exposing role/group internals."},
+    {"source":"am","target":"rc","contract":"EffectiveAuthority(actor, action, scope, time)","purpose":"Admit protected Resource curation actions."},
+    {"source":"am","target":"acc","contract":"EffectiveAuthority(actor, action, scope, time)","purpose":"Admit protected ACC curation actions."},
+    {"source":"ag","target":"ap","contract":"AuthorizationGranted / AuthorizationWithdrawn","purpose":"Publish current semantic authorization changes without exporting request workflow internals."},
+    {"source":"ap","target":"rpm","contract":"effective Policy Rules with subject/provenance","purpose":"Provide current effective semantic authorization for technical materialization."},
+    {"source":"acc","target":"rpm","contract":"deployed Interaction, Resource references and immutable traffic contract","purpose":"Resolve authorized semantic subject to complete application traffic semantics."},
+    {"source":"rc","target":"rpm","contract":"ResourceEndpoint/current corporate-visible realization at logical time","purpose":"Resolve referenced Resources to current technical address realization."},
+    {"source":"nep","target":"rpm","contract":"TrafficPair -> FirewallCandidate[] -> AccessListLocator[]","purpose":"Identify candidate enforcement targets and comparable policy locators without claiming proven end-to-end path."},
+    {"source":"rpm","target":"apr","contract":"TargetRequiredPolicy","purpose":"Publish comparable target-specific required effective policy; unresolved remains separate."},
+    {"source":"provider","target":"ppi","contract":"provider-native configured policy for explicit comparison scope","purpose":"Supply external configured state for source-neutral interpretation."},
+    {"source":"ppi","target":"apr","contract":"ConfiguredEffectivePolicySnapshot","purpose":"Supply comparable configured effective permit space with completeness/provenance/unsupported semantics."},
+    {"source":"apr","target":"ppr","contract":"VerifiedChangeIntent + target/provider capability + base revision/correlation","purpose":"Translate verified source-neutral intent without changing policy meaning."},
+    {"source":"ppr","target":"neo","contract":"TargetPolicyArtifact","purpose":"Hand semantically equivalent target representation to controlled execution."},
+    {"source":"am","target":"neo","contract":"mutation EffectiveAuthority(actor, action, scope, time)","purpose":"Require independent action-specific mutation authority before apply."},
+    {"source":"neo","target":"provider","contract":"controlled target mutation attempt","purpose":"Execute one mutation with stable identity, preconditions/concurrency protection and explicit outcome/provenance."},
+    {"source":"provider","target":"tae","contract":"source-qualified capture","purpose":"Preserve immutable normalized technical evidence without asserting universal currentness/completeness."}
   ],
-  "integration_capabilities": [
-    {"name":"Provider Policy Interpretation","responsibility":"Translate provider-native configured policy into comparable ConfiguredEffectivePolicySnapshot with explicit scope, completeness, provenance and unsupported-semantics outcome."},
-    {"name":"Provider Policy Rendering","responsibility":"Translate APR-verified vendor-neutral intent into a semantically equivalent TargetPolicyArtifact or fail closed when unsupported."}
-  ],
-  "external_seams": [
-    "Provider / network-device environment",
-    "Optional external identity provider",
-    "Optional enterprise source systems"
-  ],
+  "evidence_relationship_policy": "TAE is an independent evidence owner. Provider Policy Interpreter or other consumers may reference TAE-preserved captures when useful, but configured provider state is not required to flow through TAE. TAE does not choose APR currentness/completeness or publish ConfiguredEffectivePolicySnapshot.",
   "invariants": [
     "Bounded Context is not a deployment unit.",
     "Business Need does not authorize access.",
