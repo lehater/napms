@@ -20,6 +20,8 @@ This directory contains the architecture required to reconstruct and evolve NAPM
 
 Target semantic authority remains with current `docs/domain/` and `docs/requirements/` owners. As-built architecture must not silently redefine those target semantics.
 
-There is not yet an accepted S3 architecture contract for the selected Required Access Matrix MVP. That architecture is the next lifecycle step and must remain scoped to ACC + AD + RC composition, table and export.
+There is not yet an accepted S3 architecture contract for the selected Full Vendor-Neutral Policy Export MVP. The selected target slice starts from current effective AP Policy Rules and composes AP + ACC + AD + RC into one complete table/CSV result containing source/destination AddressSpace, protocol and port/range semantics without firewall/device/provider context.
+
+Before S3, the changed selection requires a narrow S2 revalidation of the AP -> export composition and policy-creation handoff. Architecture must then remain scoped to owner-preserving policy materialization, coherent reads, table/export delivery and compatibility with the existing as-built normalized policy export.
 
 Do not remove an as-built architecture contract merely because its capability has been implemented: it remains project documentation while it is needed to reconstruct the current system. Remove only architecture that no longer describes either current as-built or current target design.
