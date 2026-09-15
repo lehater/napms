@@ -1,8 +1,8 @@
 # NAPMS Strategic DDD model
 
-Status: `S2 thin-vertical convergence through Access Governance / Access Policy / MVP RPM edge; broader extensions deferred`.
+Status: `S2 first MVP semantic vertical converged through NEO execution boundary; broader extensions deferred`.
 
-Source baseline: DDD-BDM-010, 2026-09-14 G1 revalidation, ADR-019/020/021, global Strategic convergence pass, and 2026-09-15 ACC/AD/RC/AG/AP/RPM clarification.
+Source baseline: DDD-BDM-010, 2026-09-14 G1 revalidation, ADR-019/020/021, global Strategic convergence pass, and 2026-09-15 ACC/AD/RC/AG/AP/RPM/APR/NEO clarification.
 
 Canonical relationship map: `context-map.md`.
 
@@ -19,16 +19,20 @@ Canonical relationship map: `context-map.md`.
 | **Application Deployment** | where are logical application deployments placed? | ApplicationDeployment identity/lifecycle and Component-to-Resource placement truth |
 | **Network Enforcement Placement** | where may a technical pair be enforced? | candidate Firewall/policy-locator relevance |
 | **Technical Access Evidence** | what source-qualified technical material was observed/imported? | immutable normalized evidence with source/time/provenance |
-| **Access Policy Realization** | how does configured effective access compare with required effective access? | source-neutral realization assessment, delta, change design and verification |
+| **Access Policy Realization** | how does configured effective access compare with required effective access? | source-neutral realization assessment, delta, accepted change design and verification |
 | **Network Environment Operations** | how is one verified target mutation executed and explained? | controlled mutation identity, authority, preconditions/concurrency, outcome/provenance |
 
 `Connectivity Requirements` and `Connectivity Decision` remain legacy/current-state boundaries, not target BCs.
 
+Provider Policy Interpreter and Provider Policy Renderer are integration capabilities, not peer Bounded Contexts. Required Policy Materialization is a non-peer derived composition.
+
 ## Core semantic ladder
 
 ```text
-Observed != Recognized != Needed != Authorized != Materialized != Realized
+Observed != Recognized != Needed != Authorized != Materialized != Realized != Executed
 ```
+
+Execution success still does not imply semantic convergence; convergence is established only by later normalized observation and comparison.
 
 ## Application / deployment / resource boundary
 
@@ -54,7 +58,7 @@ RC
 
 `ComponentPlacement` relates a Component to one Resource. It is not automatically a process/container/pod/runtime instance.
 
-For the current scope, RC owns at most one effective network `AddressSpace` per Resource at one logical time, represented as either one host address or one prefix. AD references only `ResourceRef`; it owns no address/endpoint selection. Address changes do not redefine Resource, ApplicationDeployment or governed-subject identity.
+For the current scope, RC owns at most one effective network `AddressSpace` per Resource at one logical time, represented as either one HostAddress or one Prefix. AD references only `ResourceRef`; it owns no address/endpoint selection. Address changes do not redefine Resource, ApplicationDeployment or governed-subject identity.
 
 Multiple simultaneous addresses/interfaces, endpoint purpose, VIPs and deployment-specific exposure are explicitly future extensions, not current open model obligations. `ResourceEndpoint` and `DeploymentEndpointBinding` are not current target concepts.
 
@@ -135,6 +139,80 @@ RC Prefix remains a first-class AddressSpace and is never expanded into hosts. T
 
 Consumer-local rebuildable projections may be introduced later for scale without moving source semantic ownership.
 
+## Access Policy Realization
+
+APR consumes complete comparable source-neutral required/configured permit semantics for exactly one `ComparisonScope = firewallId + accessListName`.
+
+```text
+common  = required ∩ configured
+missing = required - configured
+excess  = configured - required
+```
+
+`Realized` means both `missing` and `excess` are empty. `Drift` means either is non-empty. Incomplete, mismatched or unsupported inputs are `Uncomparable`, not drift.
+
+The accepted MVP remediation boundary is additive-only:
+
+```text
+missing -> VerifiedChangeIntent(ENSURE-PERMIT)
+excess  -> report/audit only; no automatic removal
+Realized -> no intent
+Uncomparable -> no intent
+```
+
+The target has no accepted managed-policy scope proving that NAPMS owns all configured permit space in an ACL. Automatic removal/narrowing is therefore explicitly deferred.
+
+The minimum source-neutral intent is:
+
+```text
+VerifiedChangeIntent {
+    comparisonScope
+    operation = ENSURE-PERMIT
+    permitSpace
+    baseConfiguredCorrelation
+    requiredPolicyProvenance
+    deltaProvenance
+    verificationEvidence
+}
+```
+
+APR owns semantic verification, not provider-native representation.
+
+## Provider rendering boundary
+
+Provider Policy Renderer is an integration capability implementing ADR-021:
+
+```text
+VerifiedChangeIntent
++ TargetProviderCapabilities
++ base target revision/correlation
+    -> TargetPolicyArtifact
+```
+
+A successful `TargetPolicyArtifact` carries target/comparison scope, base correlation, renderer identity/version, exact artifact payload/digest, equivalence evidence and intent provenance.
+
+The renderer may not broaden, narrow or reinterpret APR intent. Unsupported semantics or inability to establish semantic equivalence fails closed and yields no executable artifact.
+
+## Network Environment Operations
+
+NEO consumes the already-rendered `TargetPolicyArtifact` plus actor/authority/precondition context and owns one controlled `NetworkOperation` lifecycle.
+
+```text
+TargetPolicyArtifact
++ operationId
++ actor / mutation authority scope
++ expected/base revision correlation
+    -> authority check
+    -> pre-check
+    -> apply
+    -> immediate post-check
+    -> Verified | Rejected | PreconditionFailed | Drift | Unknown
+```
+
+NEO does not recompute authorization, APR change design or provider rendering. Unknown/stale authority or preconditions fail closed. Identical retries are idempotent; uncertain apply is never blindly retried.
+
+`Applied` is only a transport result. NEO `Verified` proves immediate artifact/application correspondence under the execution adapter contract, not final semantic convergence. Final convergence requires subsequent provider observation, configured-policy interpretation and APR comparison again.
+
 ## Strategic invariants
 
 - ACC owns Application, Component and Interaction semantics; not deployment placement.
@@ -145,9 +223,12 @@ Consumer-local rebuildable projections may be introduced later for scale without
 - technical realization change does not redefine semantic authorization identity.
 - Access Governance historical Request truth is distinct from current authorization truth.
 - Required Policy Materialization is derived composition; unresolved is not empty required policy/APR drift.
-- technical evidence is not authorization or automatically current/complete configured policy.
+- APR comparison is source-neutral exact effective permit-space algebra for complete comparable inputs.
+- MVP automatic remediation is additive-only on `missing`; `excess` is not removal authority.
 - provider interpretation/rendering remain adapters; APR core remains provider-neutral.
-- NEO owns execution lifecycle, not policy reinterpretation/placement.
+- provider rendering must prove semantic equivalence or fail closed.
+- NEO owns execution lifecycle, not policy reinterpretation/placement/rendering.
+- operation/application success is not final semantic convergence proof.
 - no Shared Kernel is accepted between target BCs.
 
 ## Deferred strategic extensions
@@ -156,12 +237,15 @@ The following are explicit future extensions rather than current blockers:
 
 - generalized approval semantics when several Responsibility Scopes apply to one governance side;
 - Prefix-aware NEP query/matching semantics;
-- multiple simultaneous Resource addresses/prefixes, interfaces, endpoint purpose, VIP and deployment-specific exposure.
+- multiple simultaneous Resource addresses/prefixes, interfaces, endpoint purpose, VIP and deployment-specific exposure;
+- managed-policy ownership/removal semantics for APR `excess`;
+- richer APR remediation/change-design vocabulary beyond additive `ENSURE-PERMIT`;
+- production provider transport, generic rollback and multi-target transaction semantics.
 
 ## Strategic convergence disposition
 
-The Application Deployment Boundary Challenge is `PASS`. The RC/AD network-address question is closed for the current scope by the minimal Resource-level AddressSpace rule. The former RC -> ACC deployment binding, ACC-owned `ComponentDeployment` subject and endpoint-based target realization are superseded.
+The first MVP semantic vertical is now coherent from ACC/AD/RC through AG/AP, HostAddress-based RPM, APR exact comparison/additive remediation, provider rendering and NEO controlled execution.
 
-The Access Governance MVP S1 questions are resolved for the first happy path and AG/AP Tactical edges are revalidated. RPM now has a deterministic HostAddress-based first vertical path plus explicit unresolved behavior for unsupported Prefix input.
+No known S1 product decision remains open for this happy path. Deferred cases are explicit and fail closed or stay outside the path instead of being approximated.
 
-Global G2 is not implied. Work continues by following the thin downstream vertical path and reopening only the affected edge when a concrete use case requires a deferred extension.
+Global G2 and implementation authorization are not implied. The next action should be an explicit implementation-authorization decision or a concrete affected-edge reopen, not more speculative domain expansion.
