@@ -14,14 +14,15 @@ The working tree keeps current truth separate by responsibility and keeps histor
 
 Historical Wave-1 G2/G3 working packets are preserved by baseline summaries and Git history rather than living beside current requirements/architecture.
 
-For a fresh non-trivial session use the repository recovery path:
+For a fresh non-trivial task use task-first recovery:
 
 ```text
 root AGENTS.md
-  -> docs/plans/active/README.md
   -> nearest scoped AGENTS.md
   -> smallest applicable Skill
-  -> capsule Read first working set
+  -> minimal task working set
 ```
+
+Insert `docs/plans/active/README.md` after the root map only when the requested task resumes/continues current execution, depends on the current lifecycle/gate, or needs implementation authorization. Do not preload the current product workstream for unrelated audits, reviews, research or repository questions.
 
 Read a full active PLAN only for planning/coordination/task transition or when the capsule lacks a material fact.
