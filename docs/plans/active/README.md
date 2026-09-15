@@ -1,6 +1,6 @@
 # Active execution
 
-Current: `MVP foundational domain convergence`.
+Current: `application-deployment-boundary.md`
 
 Lifecycle stage: `S2 Tactical DDD — minimal happy-path convergence`.
 
