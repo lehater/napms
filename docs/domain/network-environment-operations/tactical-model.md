@@ -1,6 +1,6 @@
 # Network Environment Operations — tactical model
 
-Status: `S2 MVP Tactical checkpoint; TargetPolicyArtifact handoff aligned 2026-09-15`.
+Status: `S2 MVP Tactical checkpoint; TargetPolicyArtifact and acquisition boundary aligned 2026-09-15`.
 
 Date: 2026-09-15.
 
@@ -8,7 +8,9 @@ Date: 2026-09-15.
 
 Network Environment Operations owns the lifecycle and outcome of one controlled target mutation attempt downstream of accepted provider rendering.
 
-A separate semantic boundary is justified because execution has its own operation identity, mutation authority, optimistic-concurrency boundary, failure/recovery vocabulary and audit lifecycle. It does not own Access Policy, APR change design, target placement or rendered configuration meaning.
+A separate semantic boundary is justified because execution has its own operation identity, mutation authority, optimistic-concurrency boundary, failure/recovery vocabulary and audit lifecycle. It does not own Access Policy, APR change design, target placement, rendered configuration meaning or general technical-evidence acquisition.
+
+NEO may read target state when that read is required to protect one mutation operation (for example a pre-check or immediate post-check). That does not make NEO the general device-read/acquisition gateway for TAE or other consumers.
 
 ## Input boundary
 
@@ -92,6 +94,8 @@ TargetPolicyArtifact
 
 If any required precondition is unknown or contradictory, mutation fails closed.
 
+Pre/post reads are scoped to the mutation operation. Continuous polling, evidence collection, NetFlow/IPFIX ingestion and historical capture storage belong outside NEO.
+
 ## Invariants
 
 1. One `operationId` binds exactly one target + artifact digest intent.
@@ -106,6 +110,7 @@ If any required precondition is unknown or contradictory, mutation fails closed.
 10. NEO never rewrites APR or renderer semantics for device convenience.
 11. Renderer failure/unsupported result cannot be converted into an executable operation.
 12. Post-operation semantic convergence is external to the NetworkOperation outcome and is re-established through observation/interpreter/APR comparison.
+13. NEO operation-scoped reads do not make NEO the semantic owner of technical-evidence acquisition.
 
 ## Mutation authority
 
@@ -173,12 +178,17 @@ This proves execution orchestration semantics only, not compatibility with any r
 - NEO owns controlled execution lifecycle/outcome.
 - NEP owns target relevance/placement meaning.
 - Provider Interpreter owns normalized configured effective-policy publication.
-- TAE may preserve independently sourced evidence but does not become NEO operation truth automatically.
+- TAE owns normalized source-qualified technical evidence and its immutable history.
+- acquisition/collector capabilities own source-specific collection/translation into the TAE evidence contract.
+- TAE evidence does not become NEO operation truth automatically.
+
+Whether NEO and acquisition capabilities share concrete device/provider access clients, protocol libraries or adapters is Architecture, not Tactical DDD.
 
 ## Deliberately deferred
 
 - production device transport;
 - credentials/secrets model;
+- concrete shared provider/device access realization with acquisition collectors;
 - generic rollback;
 - multi-target transaction/orchestration;
 - provider rendering inside NEO;
@@ -187,4 +197,6 @@ This proves execution orchestration semantics only, not compatibility with any r
 
 ## Tactical result
 
-The existing NEO execution model is coherent for the additive MVP path. No new domain entity or lifecycle is required beyond `NetworkOperation`; the main revalidation change is the explicit `TargetPolicyArtifact` input boundary and separation of immediate execution verification from later semantic convergence.
+The existing NEO execution model is coherent for the additive MVP path. No new domain entity or lifecycle is required beyond `NetworkOperation`.
+
+The acquisition clarification does not change NEO identity/lifecycle: NEO remains controlled mutation logic, while general technical evidence acquisition remains outside this Bounded Context.
