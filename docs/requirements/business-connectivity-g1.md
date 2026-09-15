@@ -1,47 +1,30 @@
-# Business Connectivity — G1 Requirements Passport
+# Business Connectivity requirements
 
-Status: `G1 revalidation candidate accepted at observable-behavior level; BC boundary not decided`.
+## Purpose
 
-Date/source: stakeholder revalidation, 2026-09-14.
+Make network access explainable by business purpose rather than only by technical addresses, ports or firewall rules.
 
-## Problem / outcome
+Business Connectivity owns the product semantics of Business Process, Connectivity Need and business justification/attribution used by governance and reconciliation.
 
-Network access must be explainable by business purpose rather than only by IP addresses, ports or firewall rules. Deliberate access requests require structured business justification; observed brownfield traffic may be attributed later.
+## Requirements
 
-## Observable requirements
+1. The system identifies and describes a Business Process as the business context that requires application connectivity.
+2. A Business Process may carry organizational responsibility and business importance/criticality information without implying that an organizational unit is a NAPMS Responsibility Scope.
+3. A Connectivity Need exists independently from a concrete Access Request.
+4. A Connectivity Need states that a Business Process requires an application-level Interaction from the perspective of a dependent participant/component role.
+5. A Connectivity Need is not identified by IP address, Resource identity, address, placement or concrete ApplicationDeployment.
+6. One Business Process may own many Connectivity Needs; the same Interaction may support Needs from many Processes.
+7. A Connectivity Need may survive Resource/address changes and ApplicationDeployment replacement while the same business requirement remains.
+8. One Connectivity Need may support multiple concrete Access Requests across deployments or over time.
+9. A deliberate Access Request has a Process-backed Connectivity Need at submission time.
+10. Observed technical communication may exist before Process/Need attribution is known. The system does not fabricate a Business Process merely to record or recognize technical evidence.
+11. Source and destination participants may contribute business attribution independently; one actor need not classify both sides.
+12. Current authorized access may acquire additional Process/Need justification without creating a duplicate Policy Rule solely for that justification.
+13. Loss of a known Connectivity Need does not rewrite historical Requests, approvals or already recorded provenance.
+14. Loss of all current known Connectivity Needs for an authorization is observable as a business-justification reconciliation condition; this requirement does not itself authorize automatic revocation.
 
-1. The system shall allow a Business Process to be identified and described as the business context that requires application connectivity.
-2. The system shall associate organizational responsibility with a Business Process without assuming that the organizational unit is identical to a NAPMS Responsibility Scope.
-3. The system shall support business importance/criticality information sufficient for downstream impact analysis; exact scoring and propagation rules remain unspecified.
-4. The system shall represent a Connectivity Need independently from a concrete Access Request.
-5. A Connectivity Need shall state that a Business Process requires an application-level Interaction from the perspective of a dependent participant/component role.
-6. A Need shall not be identified by IP address, ResourceEndpoint or concrete Deployment.
-7. One Process may have many Needs; the same Interaction may support Needs from many Processes.
-8. A Need may survive IP changes, Resource address changes and concrete Deployment replacement while the business requirement remains the same.
-9. One Need may lead to multiple concrete Access Requests over time or for different deployments.
-10. A deliberate Access Request shall have a Process-backed Need at submission time.
-11. Recognition of observed traffic shall be allowed before Process/Need attribution is known. The system shall not require a fabricated Process merely to recognize brownfield traffic.
-12. Source and destination participants may contribute attribution independently; one user need not classify both sides.
-13. A currently authorized access may later acquire additional Process/Need justification without requiring a duplicate Policy Rule solely for that justification.
-14. Loss of a known Need shall not rewrite historical Requests or approvals.
-15. Loss of all current known Needs for an authorization shall be distinguishable as a business-justification reconciliation condition. Automatic revocation is not required by this passport.
+## Current boundary
 
-## Important negative requirements
+Business Process modelling is not a BPMN/workflow engine. The current contract does not define process hierarchy, subprocess/activity execution, monetary valuation, automatic criticality propagation or proof of authorization from business attribution.
 
-- Business Process modelling does not imply a BPMN/workflow engine.
-- Process hierarchy, subprocess/activity modelling and monetary valuation are not currently required.
-- Process/Need is not proof of authorization.
-- Observed traffic is not proof of Need.
-- A destination-side Process is not mandatory merely because a source Process requests use of a shared service.
-- Process criticality does not automatically propagate through an unspecified max/inheritance algorithm.
-
-## Capability clues, not BC decisions
-
-- Business Process Management
-- Connectivity Need Management
-- Business Attribution
-- Business Impact / Justification Reconciliation
-
-## G1 status
-
-The product behavior above is coherent enough to proceed to later grouping/S2 work. Exact identities, aggregates, persistence, lifecycle state machines and context ownership remain intentionally open.
+A Process/Need expresses business purpose. Observed traffic is evidence rather than proof of Need, and a Need is justification rather than authorization.
