@@ -1,8 +1,8 @@
 # ADR-014 — Target code structure taxonomy
 
-Status: `accepted`.
+Status: `accepted current target decision`.
 
-Date: 2026-09-11; current module-classification note updated 2026-09-13.
+Date: 2026-09-11; target semantic classification aligned 2026-09-15.
 
 ## Context
 
@@ -95,29 +95,36 @@ Additional rules:
 - `platform` cannot become a product-feature owner;
 - `infrastructure` and `presentation` never define authoritative business semantics.
 
-## Current module classification
+## Target semantic classification
 
-Bounded contexts:
+Target bounded contexts are:
+- Business Connectivity;
+- Access Governance;
 - Access Policy;
-- Access Policy Realization;
-- Application Communication Catalogue;
 - Authority Management;
-- Connectivity Decision;
-- Connectivity Requirements;
-- Network Enforcement Placement;
-- Network Environment Operations;
 - Resource Catalogue;
-- Technical Access Evidence.
+- Application Communication Catalogue;
+- Application Deployment;
+- Network Enforcement Placement;
+- Technical Access Evidence;
+- Access Policy Realization;
+- Network Environment Operations.
 
-Target cross-context workflows:
-- Requirement-to-Policy Alignment;
+Provider Policy Interpreter, Provider Policy Renderer and Technical Evidence Acquisition/Collectors are integration/application capabilities rather than peer bounded contexts. Required Policy Materialization is a derived composition, not a bounded context.
+
+Current runtime packages such as `connectivity_requirements`, `connectivity_decision` and legacy APR/operator structures may remain as as-built compatibility or migration inputs while the target is not fully realized. Their physical presence does not make them target semantic owners.
+
+Target cross-context workflows/compositions include, where still applicable under current contracts:
+- Required Access Matrix composition for the selected first implementation slice;
+- Required Policy Materialization / policy-realization orchestration;
 - Policy Export / snapshot normalization;
 - Scoped Connectivity Inventory;
-- Traffic Analysis Checker.
+- Traffic Analysis Checker;
+- retained Requirement-to-Policy Alignment only while its as-built compatibility path remains required.
 
-The physical `network_operator_view` workflow is legacy runtime code tied to the superseded APR model. It is migration material, not a current target workflow contract. Any replacement operator workflow must be derived from the redesigned APR contracts.
+The physical `network_operator_view` workflow is legacy runtime code tied to a superseded APR model. It is as-built/migration material, not a target workflow contract. Any replacement operator workflow must be derived from the current APR contracts.
 
-This classification preserves current semantic ownership. Reclassification requires domain/architecture evidence, not folder convenience.
+This classification follows `docs/domain/strategic-model.md`, `docs/domain/context-map.md` and `docs/architecture/code-structure.md`. Reclassification requires domain/architecture evidence, not folder convenience.
 
 ## Alternatives
 
@@ -131,12 +138,14 @@ Positive:
 - path answers both "who owns this?" and "what architectural role is this?";
 - cross-context orchestration is explicit rather than hidden in generic composition code;
 - process mechanics cannot visually masquerade as semantic modules;
-- Clean Architecture remains local to each semantic owner.
+- Clean Architecture remains local to each semantic owner;
+- target ownership remains explicit even while compatibility runtime packages still exist.
 
 Costs:
-- substantial import/test/CI/Docker path churn during migration;
-- architecture tests and agent guidance must evolve with each migration stage.
+- substantial import/test/CI/Docker path churn can occur when physical migration is required;
+- architecture tests and agent guidance must evolve with accepted target structure;
+- as-built compatibility packages must be labelled rather than inferred as target ownership.
 
-## Migration
+## Reconstruction rule
 
-The physical migration history is summarized in `docs/engineering/target-code-structure-migration-roadmap.md`. Current target semantics are defined by current domain/architecture documents rather than by legacy physical packages that remain pending migration.
+This ADR defines target physical taxonomy. `docs/architecture/current-architecture.md` and current engineering/API contracts define the as-built runtime that must remain reconstructable during migration. Completed migration roadmaps are execution history and are not required as authority once their durable structural constraints are represented by this ADR and `docs/architecture/code-structure.md`.
