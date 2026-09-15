@@ -1,6 +1,12 @@
 # Ubiquitous Language
 
-This file contains current strategic vocabulary. Context-local Tactical vocabulary belongs in the owning context documentation.
+This file contains current strategic vocabulary. Context-local Tactical vocabulary belongs in the owning context documentation. As-built compatibility terms remain documented in their as-built contracts but are not promoted into target ubiquitous language.
+
+## Business Connectivity
+
+**Business Process** — business context that explains why connectivity is needed.
+
+**Connectivity Need** — application-semantic business requirement for an Interaction; not permission and not technical realization.
 
 ## Application Communication Catalogue
 
@@ -8,68 +14,96 @@ This file contains current strategic vocabulary. Context-local Tactical vocabula
 
 **Component** — stable application role inside one Application.
 
-**Interaction** — directed semantic communication template from one Component to another; contains no deployment, Resource or address identity.
+**Interaction** — directed semantic communication template from one Component to another. It contains no deployment, Resource or address identity.
 
-**Interaction Contract Revision** — immutable traffic-contract revision of an Interaction.
+**Interaction Contract Revision** — immutable decision-relevant traffic contract revision of an Interaction.
 
 **Traffic Alternative** — one vendor-neutral protocol/port selector inside an atomic Interaction Contract Revision.
 
 ## Application Deployment
 
-**Application Deployment** — stable logical deployment of one Application.
+**Application Deployment** — stable logical deployment of one Application. Ordinary scaling, Resource migration and placement replacement do not change identity while logical deployment continuity is preserved.
 
-**Component Placement** — AD-owned `(ComponentRef, ResourceRef)` relation inside an Application Deployment.
+**Component Placement** — AD-owned fact that one Component of an Application Deployment is placed on one Resource:
+
+```text
+ComponentPlacement = (ComponentRef, ResourceRef)
+```
+
+It is a relation value, not automatically a process/container/pod/runtime instance and not an independently identified placement aggregate in the current target model.
 
 ## Resource Catalogue
 
-**Resource** — stable access-domain resource identity.
+**Resource** — stable access-domain resource identity whose lifecycle/realization matters to governed access.
 
-**Address Space** — current Resource network realization: `HostAddress | Prefix`.
+**Address Space** — current network realization of one Resource at a logical time:
 
-**Resource Scope Affiliation** — RC-owned Resource-to-ResponsibilityScopeRef relation; it does not grant actor authority.
+```text
+HostAddress | Prefix
+```
 
-**Resource Responsibility** — responsibility/contact fact for a Resource; not approval authority.
+Changing Address Space does not change Resource identity.
 
-## Business Connectivity
+**Resource Scope Affiliation** — RC-owned time-qualified relation from Resource to `ResponsibilityScopeRef`. It does not grant actor authority.
 
-**Business Process** — business context explaining why connectivity is needed.
-
-**Connectivity Need** — application-semantic need for an Interaction; not permission or technical realization.
+**Resource Responsibility** — operational/business responsibility/contact fact for a Resource; not approval authority.
 
 ## Access Governance / Access Policy
 
-**Governed Interaction Subject** — `InteractionContractRevisionRef + sourceApplicationDeploymentRef + destinationApplicationDeploymentRef`.
+**Governed Interaction Subject** — semantic authorization subject:
 
-**Access Request** — explicit attempt to obtain bilateral authorization for a governed subject.
+```text
+InteractionContractRevisionRef
++ sourceApplicationDeploymentRef
++ destinationApplicationDeploymentRef
+```
 
-**Approval Obligation** — source-side or destination-side consent obligation.
+It is intentionally independent from Component Placement and Resource Address Space.
 
-**Policy Rule** — Access Policy-owned current semantic authorization meaning for one governed subject.
+**Access Request** — one explicit attempt to obtain bilateral authorization for a governed subject under a business basis.
+
+**Approval Obligation** — source-side or destination-side consent obligation. Grant requires the accepted bilateral obligations; withdrawal follows Access Governance semantics.
+
+**Policy Rule** — Access Policy-owned authoritative current semantic authorization meaning for one governed subject.
 
 ## Authority Management
 
-**Responsibility Scope** — stable correlation reference used by RC affiliation and AM authority contracts.
+**Responsibility Scope** — stable correlation reference shared semantically between RC affiliation and AM authority contracts; it is not a shared aggregate.
 
 **Effective Authority** — actor/action/scope/time admission result with provenance.
 
 ## Required Access Matrix
 
-**Required Access Matrix** — vendor-neutral technical connectivity rows derived directly from selected ACC interaction revisions, AD placements and RC AddressSpaces. It is the output of the first implementation MVP and does not imply authorization or enforcement placement.
+**Required Access Matrix** — vendor-neutral technical connectivity rows derived from an explicit set of `InteractionContractRevisionRef + sourceApplicationDeploymentRef + destinationApplicationDeploymentRef` subjects by expanding ACC traffic alternatives across current AD placements and RC Address Spaces.
+
+It is a technical connectivity view for the selected first implementation slice. It does **not** imply authorization, Access Policy truth, enforcement placement, configured state or realization.
 
 ## Realization
 
-**Required Policy Materialization** — derived composition of authorized policy with ACC/AD/RC facts and NEP target relevance.
+**Required Policy Materialization** — non-peer derived composition of Access Policy authorization, ACC traffic semantics, AD placements, RC Address Space and NEP target relevance.
 
-**Traffic Pair** — technical source/destination AddressSpace pair used for enforcement-placement reasoning.
+**Traffic Pair** — technical source/destination Address Space pair used for enforcement-placement reasoning.
 
-**Target Required Policy** — target-specific normalized required effective policy.
+**Target Required Policy** — target-specific normalized required effective policy produced by materialization.
 
-**Configured Effective Policy Snapshot** — provider-interpreted source-neutral configured effective policy for one comparison scope.
+**Configured Effective Policy Snapshot** — provider-interpreted source-neutral configured effective policy for an explicit comparison scope.
 
 **Semantic Delta** — `common = required ∩ configured`, `missing = required - configured`, `excess = configured - required`.
 
-**Verified Change Intent** — APR-owned vendor-neutral verified change intent.
+**Verified Change Intent** — APR-owned vendor-neutral proposed change whose resulting additive semantics have been verified.
 
 **Target Policy Artifact** — provider-rendered representation of verified intent.
 
-**Network Operation** — NEO-owned controlled mutation attempt with authority, preconditions, outcome and provenance.
+**Network Operation** — NEO-owned controlled mutation attempt with authority, preconditions/concurrency, outcome and provenance.
+
+## Core distinctions
+
+```text
+Observed != Recognized != Needed != Authorized != Materialized != Realized != Executed
+```
+
+The Required Access Matrix is intentionally outside this authorization/realization ladder: it is a pre-authorization technical connectivity derivation from selected ACC/AD/RC facts.
+
+## As-built compatibility vocabulary
+
+Terms such as `Connectivity Requirement`, `Connectivity Decision`, ACC-owned compatibility `ComponentDeployment`, `DeploymentResourceBinding`, `DirectedInteractionIdentity`, `ResourceEndpoint` and legacy APR stage/status names may still exist in current as-built contracts and runtime compatibility paths. They remain documented where needed to reconstruct that implementation, but they do not replace the target vocabulary above.
