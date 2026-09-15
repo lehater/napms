@@ -42,9 +42,23 @@ For MVP this does not add cross-application compatibility rules, planned/future 
 
 ### Q2 — obligation change after placement/scope change — CURRENT
 
-Unknown: when current placement or Resource Scope Affiliation changes alter the required approvers/scopes, does an existing authorization remain valid, require reapproval, suspend, or withdraw?
+Product decision still required. Minimal candidate for owner decision:
 
-This is product behavior and must not be invented by Tactical DDD.
+```text
+If a placement or Resource Scope Affiliation change does not change the effective
+approval obligations for the governed subject, current authorization remains valid.
+
+If the effective approval obligations materially change, the current authorization
+ceases to be effective and AG emits AuthorizationWithdrawn with provenance identifying
+the obligation-change cause. The subject may become authorized again only after the
+currently required obligations are approved.
+```
+
+For MVP, do not add a separate `Suspended` state. Do not treat an address or placement change alone as a withdrawal; the trigger is a material change of approval obligations.
+
+Prior approval history remains historical evidence and must not silently satisfy a changed obligation set. Whether an unchanged individual obligation may reuse still-valid consent is Tactical-open unless the happy path demonstrates the need.
+
+This candidate is non-authoritative until explicitly accepted at S1.
 
 ### Q3 — overlapping Responsibility Scopes
 
@@ -69,4 +83,4 @@ For MVP, prefer the smallest behavior that preserves bilateral authorization cor
 
 ## Next
 
-Resolve Q2. Promote only an explicit owner decision into `docs/requirements/access-governance-g1.md`. Then address Q3 only to the extent overlapping Responsibility Scopes are required by the first happy path.
+Obtain the Q2 owner decision. Promote it into `docs/requirements/access-governance-g1.md` only after explicit acceptance. Then address Q3 only to the extent overlapping Responsibility Scopes are required by the first happy path.
