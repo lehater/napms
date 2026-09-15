@@ -66,17 +66,13 @@ It is intentionally independent from Component Placement and Resource Address Sp
 
 **Policy Rule** — Access Policy-owned authoritative current semantic authorization meaning for one governed subject.
 
+**Vendor-Neutral Policy Export** — complete technical projection of the current effective AP policy set through ACC traffic semantics, AD placements and RC Address Spaces. It exposes access-list-oriented source/destination address, protocol and port/range meaning while remaining independent of firewall, device, ACL and provider syntax. It is a workflow/read composition and owns no Policy Rule truth.
+
 ## Authority Management
 
 **Responsibility Scope** — stable correlation reference shared semantically between RC affiliation and AM authority contracts; it is not a shared aggregate.
 
 **Effective Authority** — actor/action/scope/time admission result with provenance.
-
-## Required Access Matrix
-
-**Required Access Matrix** — vendor-neutral technical connectivity rows derived from an explicit set of `InteractionContractRevisionRef + sourceApplicationDeploymentRef + destinationApplicationDeploymentRef` subjects by expanding ACC traffic alternatives across current AD placements and RC Address Spaces.
-
-It is a technical connectivity view for the selected first implementation slice. It does **not** imply authorization, Access Policy truth, enforcement placement, configured state or realization.
 
 ## Realization
 
@@ -102,7 +98,7 @@ It is a technical connectivity view for the selected first implementation slice.
 Observed != Recognized != Needed != Authorized != Materialized != Realized != Executed
 ```
 
-The Required Access Matrix is intentionally outside this authorization/realization ladder: it is a pre-authorization technical connectivity derivation from selected ACC/AD/RC facts.
+The Vendor-Neutral Policy Export starts from current `Authorized` AP truth and materializes a complete technical read projection. It does not claim enforcement placement, configured reality, provider rendering, realization or execution.
 
 ## As-built compatibility vocabulary
 
