@@ -1,44 +1,31 @@
 # Application Deployment boundary convergence
 
-Status: `executed on branch; stale-reference audit and validation remain before main`.
+Status: `audit completed on branch; validation/review remains before main`.
 
 Date: 2026-09-15.
 
 ## Goal
 
-Converge ACC/AD/RC ownership and the minimum Resource network realization without speculative endpoint modelling.
-
-## Plan
-
-1. Add AD as owner of `ApplicationDeployment` and `ComponentPlacement`.
-2. Remove deployment/Resource-binding ownership from ACC.
-3. Keep RC authoritative for Resource identity, scope/responsibility and address realization.
-4. Use the minimum current RC realization: one effective `AddressSpace = HostAddress | Prefix` per Resource/time.
-5. Keep AD binding at `ComponentPlacement -> ResourceRef`; no endpoint/address selection in AD.
-6. Route RPM through ACC traffic semantics + AD placements + RC Resource AddressSpace + NEP placement.
-7. Replace old deployment-pair `DirectedInteractionIdentity` with `GovernedInteractionSubject` using InteractionContractRevision + source/destination ApplicationDeployment identities.
-8. Keep multi-address/interface/VIP/deployment-specific exposure as future extension only when a confirmed use case requires it.
-9. Audit remaining repository references to old ACC-owned deployment and ResourceEndpoint target semantics; classify target drift vs intentional legacy/current-state.
-10. Validate canonical docs/JSON and CI evidence. Do not merge to `main` until review is complete.
+Converge ACC/AD/RC ownership and minimum Resource network realization without speculative endpoint modelling.
 
 ## Executed
 
-- [x] AD boundary introduced;
-- [x] ACC deployment ownership removed from canonical target;
-- [x] old RC -> ACC deployment binding superseded;
-- [x] old `DirectedInteractionIdentity` superseded;
-- [x] RC target realization simplified from ResourceEndpoint to Resource-level HostAddress-or-Prefix;
-- [x] AD/RC network binding question closed for current scope;
-- [x] ACC target model aligned;
-- [x] application catalogue target requirements aligned with accepted AD split;
-- [x] strategic-model.md, context-map.md and strategic-model.json aligned;
-- [x] Tactical dependency order corrected to `ACC + RC -> AD -> AM`;
-- [ ] repository-wide stale-reference audit completed;
-- [ ] intentional legacy/current-state references marked where needed;
-- [ ] branch validation/CI evidence reviewed;
+- [x] AD owns `ApplicationDeployment` and `ComponentPlacement`;
+- [x] ACC owns Application/Component/Interaction only, not deployment/Resource binding;
+- [x] RC owns Resource and at most one effective `AddressSpace = HostAddress | Prefix` per Resource/time;
+- [x] AD binds `ComponentPlacement -> ResourceRef` only;
+- [x] RPM uses AP + ACC + AD + RC + NEP public contracts;
+- [x] old `DirectedInteractionIdentity` replaced by `GovernedInteractionSubject`;
+- [x] multi-address/interface/VIP/exposure explicitly deferred;
+- [x] repository-wide stale-reference audit completed and recorded in `docs/audits/application-deployment-stale-reference-audit-2026-09-15.md`;
+- [x] target/canonical documentation corrected;
+- [x] intentional runtime/history references classified;
+- [x] obsolete active revalidation plan removed;
+- [x] strategic-model validator aligned to current JSON projection;
+- [ ] execute/review `make knowledge-check` evidence;
 - [ ] ready-for-main decision.
 
-## Accepted current model
+## Current model
 
 ```text
 ACC Component / InteractionContractRevision
@@ -52,20 +39,18 @@ RC Resource -> effective AddressSpace [0..1]
                AddressSpace = HostAddress | Prefix
 ```
 
-No `ResourceEndpoint`, endpoint purpose, interface selection or deployment-specific exposure is part of the current target.
-
 ## Active S1 questions
 
 1. What product constraints determine selectable source/destination ApplicationDeployment pairs for an Access Request?
 2. If placement or Resource Scope Affiliation changes alter approval obligations, what happens to current authorization?
 3. When several Responsibility Scopes apply to one governance side, what approval obligations are required?
 
-## Tactical follow-up
+AG Tactical G2 for the affected subject/obligation slice is not valid until these are resolved.
 
-Foundational order:
+## Tactical follow-up
 
 ```text
 ACC + RC -> AD -> AM -> affected BC/AG/AP convergence
 ```
 
-Then continue RPM/NEP/TAE/APR/NEO. A future confirmed need for multiple addresses/interfaces reopens only the affected RC/AD/RPM edge rather than pre-loading endpoint abstractions now.
+Then continue RPM/NEP/TAE/APR/NEO. A future confirmed need for multiple addresses/interfaces reopens only the affected RC/AD/RPM edge.
