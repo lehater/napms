@@ -1,6 +1,6 @@
 # First MVP — Policy lifecycle and vendor-neutral export architecture
 
-Status: `S3 target architecture candidate 2026-09-16`.
+Status: `S3 target architecture accepted; G3 review candidate 2026-09-16`.
 
 ## Purpose
 
@@ -17,20 +17,21 @@ AM EffectiveAuthority
 AP PolicyRule + RuleChange governance/current-effect lifecycle
         |
         v
-current effective PolicyRule set
+all current effective target PolicyRules
         + ACC + AD + RC
         |
         v
 Full Vendor-Neutral Policy Export
-        -> JSON/table read model
-        -> CSV
+        -> immutable short-lived ExportResult
+        -> JSON/table
+        -> CSV from the same ExportResult
 ```
 
 This architecture is for the target path. Existing normalized-policy export and ACC compatibility deployment semantics remain as-built contracts until explicitly migrated.
 
 ## Architecture style
 
-Keep the existing modular monolith and Clean Architecture/Ports-and-Adapters direction:
+Keep the modular monolith and Clean Architecture/Ports-and-Adapters direction:
 
 ```text
 context domain
@@ -67,30 +68,23 @@ backend/src/napms/
     http/
 ```
 
-`access_governance/` is not a target context package. If any implementation-only package with that name exists during migration, it is compatibility code and must not own new target state.
+`access_governance/` is not a target context package. Any implementation-only package with that name during migration is compatibility code and cannot own new target state.
 
 ## Application Deployment realization
 
 ### New target context package
 
-Create `contexts/application_deployment/` as the semantic owner of target ComponentDeployment state:
+Create `contexts/application_deployment/` as semantic owner of target ComponentDeployment state:
 
 ```text
 application_deployment/
   domain/
-    model.py
   application/
-    ports.py
-    establish_component_deployment.py
-    retire_component_deployment.py
-    read_component_deployments.py
   infrastructure/
     persistence/postgres/
     integrations/
   presentation/http/
 ```
-
-Exact file splitting may vary during S4 while preserving these responsibilities.
 
 ### Application use cases
 
@@ -102,14 +96,13 @@ RetireComponentDeployment
 GetComponentDeployment
 ListComponentDeployments
 ResolveComponentDeployment
-FindActiveComponentDeploymentsByResource   # required by evidence recognition, not first export UI
 ```
 
-The first implementation slice need only expose the mutation/read surface required to establish the concrete deployments used by policy creation/export. Evidence-recognition-specific reads may remain a later adapter if that capability is not implemented in the slice.
+`FindActiveComponentDeploymentsByResource` belongs to the future Evidence Access Recognition adapter and is not required by the selected first export implementation slice.
 
 ### Consumer-owned outbound ports
 
-AD application code owns narrow ports for:
+AD application code owns narrow ports equivalent to:
 
 ```text
 ComponentCataloguePort
@@ -119,31 +112,30 @@ ResourceCataloguePort
     resolve_resource(ResourceRef)
 
 AuthorityPort
-    check(actor, CurateApplicationDeployment, scope, time)
+    check(actor, CurateApplicationDeployment, server-selected scope, time)
 ```
 
-These ports validate referenced owner truth without importing ACC/RC/AM domain models.
+These ports validate owner truth without importing ACC/RC/AM domain models.
 
 ### Persistence
 
-Target ComponentDeployment state has AD-owned persistence. It must not reuse the ACC compatibility ComponentDeployment table as its authoritative store.
+Target ComponentDeployment state has AD-owned persistence. It must not reuse the ACC compatibility ComponentDeployment table as authoritative target storage.
 
-Minimum persistence constraints:
+Required constraints:
 
-- stable `component_deployment_id` primary semantic identity;
-- exactly one `component_ref` and one `resource_ref` per row/aggregate state;
-- terminal lifecycle state sufficient for `Active -> Retired`;
-- concurrency/version protection for mutations;
-- no SQL foreign key from AD tables into ACC/RC-owned tables; references are opaque semantic values;
-- indexes supporting lookup by ComponentDeploymentId, ComponentRef and ResourceRef.
-
-No uniqueness constraint is added for `resource_ref` alone because the domain does not prohibit several ComponentDeployments on one Resource.
+- stable `component_deployment_id` semantic identity;
+- exactly one `component_ref` and one `resource_ref` per aggregate;
+- terminal lifecycle sufficient for `Active -> Retired`;
+- optimistic/concurrency versioning for mutation;
+- no SQL foreign keys into ACC/RC-owned tables;
+- indexes for lookup by ComponentDeploymentId, ComponentRef and ResourceRef;
+- no uniqueness constraint on ResourceRef alone, because multiple ComponentDeployments on one Resource are not prohibited by accepted domain truth.
 
 ## Access Policy realization
 
-### Evolve the existing `contexts/access_policy/` owner
+### Evolve the existing owner
 
-Do not create a second policy context/package. Replace target-facing application/domain behavior inside the existing semantic owner while retaining compatibility adapters needed by the as-built runtime.
+Evolve `contexts/access_policy/`; do not create a second policy context/package.
 
 Target domain state:
 
@@ -160,7 +152,7 @@ PolicyRule
 
 ### Target application use cases
 
-Minimum first-MVP application surface:
+Minimum first-MVP surface:
 
 ```text
 SubmitInitialRuleChange
@@ -173,13 +165,11 @@ ListPolicyRules
 ListCurrentEffectivePolicy
 ```
 
-`SubmitInitialRuleChange` resolves the directed pair and reuses the existing non-Retired Rule when one exists; it does not create duplicate Rules for the same pair.
-
-The first MVP invariant of at most one Pending RuleChange per Active Rule is checked by the aggregate and reinforced by persistence/concurrency protection.
+`SubmitInitialRuleChange` resolves the directed pair and reuses the existing non-Retired Rule if one exists; it never creates a second current Rule for the same pair.
 
 ### Consumer-owned ports
 
-Access Policy application code owns narrow semantic ports; concrete adapters may call BC/ACC/AD/RC/AM application contracts.
+AP application owns narrow semantic ports, implemented by adapters to BC/ACC/AD/RC/AM application contracts:
 
 ```text
 BusinessNeedPort
@@ -187,7 +177,7 @@ BusinessNeedPort
 
 InteractionRevisionPort
     resolve_revision(InteractionContractRevisionRef)
-    -> endpoint ComponentRefs + immutable traffic metadata/provenance
+    -> endpoint ComponentRefs + immutable traffic/provenance
 
 ComponentDeploymentPort
     resolve(ComponentDeploymentRef)
@@ -201,66 +191,84 @@ AuthorityPort
     check(actor, action, ResponsibilityScopeRef, time)
 ```
 
-AP never reads BC/ACC/AD/RC/AM tables directly.
+AP never reads peer tables directly.
 
 ### Aggregate transaction boundary
 
-One PolicyRule aggregate, including its RuleChanges and authorization/withdrawal history needed to preserve invariants, is persisted in one AP-owned transaction per mutation.
+One PolicyRule aggregate, including RuleChanges and authorization/withdrawal history needed by its invariants, is persisted in one AP-owned transaction per mutation.
 
-No distributed transaction is required with BC/ACC/AD/RC/AM. Their facts are read before the AP commit and the exact references/provenance/basis used for the decision are persisted with the RuleChange.
+No distributed transaction with BC/ACC/AD/RC/AM is required. Required owner facts are resolved before the AP commit and the exact references/provenance/approval basis used are persisted with the RuleChange.
 
-If a required owner read is Unknown/Unavailable/Ambiguous, submission/decision fails closed and no successful AP mutation is reported.
+Missing, Unknown, Unavailable or Ambiguous required input fails closed and produces no successful AP mutation.
 
-### Optimistic concurrency
+### Optimistic concurrency and uniqueness
 
-PolicyRule writes use an AP-owned aggregate version/optimistic concurrency check. This is required to prevent:
+PolicyRule writes use AP-owned optimistic concurrency.
 
-- two concurrent initial submissions from creating two current Rules for the same directed pair;
-- two RuleChanges becoming Pending concurrently despite the MVP invariant;
-- approval of a stale change after another transition changed the aggregate.
+The repository must enforce:
 
-The repository enforces one non-Retired Rule per directed pair. The concrete database mechanism may be a partial unique index or equivalent PostgreSQL constraint chosen in S4, but it must enforce the accepted uniqueness under races.
+- at most one non-Retired PolicyRule per directed ComponentDeployment pair under races;
+- at most one Pending RuleChange per Active Rule for the MVP;
+- stale approval/change operations cannot overwrite a newer aggregate version.
+
+A PostgreSQL partial unique index or equivalent mechanism may be selected in S4, but implementation must mechanically enforce the accepted invariants.
 
 ### Mutation idempotency and uncertain commits
 
-RuleChange identity distinguishes semantic attempts; transport retries must not accidentally create new attempts.
+RuleChange identity distinguishes semantic attempts; transport retries must not create another attempt.
 
-Mutation presentation therefore accepts an application-level idempotency key for create/change commands. The AP infrastructure stores command outcome correlation atomically with the aggregate mutation or provides an equivalent retry-safe mechanism.
+Create/change HTTP mutations use an application-level idempotency key. AP stores command/outcome correlation atomically with the aggregate change or provides an equivalent retry-safe mechanism.
 
-If commit outcome cannot be established, return an explicit uncertain/conflict outcome; do not blindly retry as a new RuleChange.
+If commit outcome cannot be established, return explicit uncertainty/conflict and permit retry only with the same idempotency identity. Never retry as a new RuleChange automatically.
 
-Exact HTTP header/field spelling may follow the repository's existing mutation conventions in S4, but the retry-safe semantic is mandatory.
+Exact header/field spelling follows the engineering error/mutation conventions in S4.
 
-### Rule-change decisions
+### Decisions and activation
 
-Source/destination approval operations re-resolve current AM authority for the applicable stored approval basis/scope and preserve the authority evidence used for the decision.
+Source/destination decisions re-check current AM authority for the stored applicable approval scope and preserve authority evidence.
 
-Approval does not require a peer AG service. The AP application service invokes the PolicyRule aggregate after owner facts/authority have been resolved.
+When both sides are approved and the change remains applicable, `RuleChange -> Approved` and `effectiveRevisionRef` update occur in the same AP transaction.
 
-When both sides are approved, activation of the RuleChange and update of `effectiveRevisionRef` happen in the same AP aggregate transaction.
+No peer Access Governance service exists in the target.
 
 ### Withdrawal
 
-Withdrawal is an AP mutation that clears current effectiveness and records provenance. It is not retirement and does not delete Rule/change history.
+Withdrawal clears current effectiveness and appends provenance/history in the same aggregate. It is not retirement and does not delete Rule/RuleChange history.
 
 A later reauthorization is a new RuleChange.
+
+## Full current effective-policy read
+
+The selected target export means **the complete current effective target PolicyRule set**, not a per-rule placement subset and not the legacy `scope + asOf` export.
+
+The target full-policy read is a privileged operation. Before the workflow reads target PolicyRules, the authenticated actor must be admitted by Authority Management for the existing `ReadEffectiveDesiredPolicy` action against a **server-selected application-level policy-read scope**. The scope is not client-supplied and is not part of PolicyRule identity or selection.
+
+After that admission, AP's `ListCurrentEffectivePolicy` returns all current effective target PolicyRules as one complete set. Failure/unknown authority yields no policy data and no partial scope-filtered export.
+
+The local bootstrap must provision the server-selected policy-read scope/action for authorized operators; exact seeded identifier text belongs to S4/engineering configuration, not request payloads.
+
+This target read contract is separate from the as-built endpoint's client-selected Rule Governance Scope contract.
 
 ## Target policy export workflow
 
 ### Reuse `workflows/policy_export/`
 
-The existing workflow package already represents the correct architectural kind: a cross-context read composition with no authoritative policy truth. Evolve it with a **target current-policy export path** rather than creating another top-level workflow.
+The existing package is the correct architectural kind: cross-context read composition with no authoritative policy truth. Add a target current-policy export path there rather than creating another top-level workflow.
 
-As-built `GET /api/v1/normalized-policy` and its logical-`asOf` compatibility implementation remain reconstructable until separately retired. The target path must not silently change that endpoint's established semantics.
+Keep as-built `GET /api/v1/normalized-policy` and its `scope + asOf` semantics unchanged until separately retired.
 
-### Workflow input contracts
+### Workflow-owned ports
 
-The target workflow application layer owns consumer-side ports:
+Target policy-export application owns projection ports equivalent to:
 
 ```text
+ExportAuthorityPort
+    check_full_policy_read(actor, current_time)
+    -> permitted | denied | unknown
+
 EffectivePolicyPort
-    list_current_effective_policy(...)
-    -> complete EffectivePolicyRule[] | denied | unknown | unavailable
+    list_all_current_effective_policy()
+    -> complete EffectivePolicyRule[] | unavailable
 
 RevisionProjectionPort
     resolve_revision(revisionRef)
@@ -275,33 +283,27 @@ ResourceRealizationPort
     -> AddressSpace? + provenance/currentness
 ```
 
-Adapters translate AP/ACC/AD/RC public application contracts into workflow-owned immutable projection values. The workflow imports no peer domain classes.
+Adapters translate AM/AP/ACC/AD/RC public application contracts into workflow-owned immutable projection values. Workflow application code imports no peer domain classes.
+
+AM participates only as a security guard; policy-row semantics remain AP + ACC + AD + RC.
 
 ### Materialization algorithm
 
-For every Rule returned by the complete current-effective-policy read:
+For every Rule in the complete current-effective-policy set:
 
-1. resolve its exact revision through ACC;
+1. resolve exact revision through ACC;
 2. resolve source/destination ComponentDeployments through AD;
-3. verify deployment Components match the ACC revision endpoints;
+3. verify deployment Components match revision Interaction endpoints;
 4. resolve each deployment's one Resource through RC;
-5. require a current Resource AddressSpace on both sides;
-6. emit one row per traffic alternative;
-7. preserve `PolicyRuleRef`, revision, ComponentDeployment and Resource provenance.
+5. require a current AddressSpace for both Resources;
+6. emit one row per complete traffic alternative;
+7. preserve PolicyRuleRef, revision, ComponentDeployment and Resource provenance.
 
 There is no source/destination placement Cartesian product.
 
-### Output model
-
-The workflow returns one immutable result:
+### Vendor-neutral row model
 
 ```text
-VendorNeutralPolicyExport {
-    capturedAt
-    rows[]
-    sourceSnapshotProvenance
-}
-
 VendorNeutralPolicyRow {
     sourceAddressSpace
     destinationAddressSpace
@@ -317,52 +319,80 @@ VendorNeutralPolicyRow {
 }
 ```
 
-`HostAddress` and `Prefix` are preserved as typed/source-neutral AddressSpace values. Export does not depend on NEP, Firewall, ACL locator, provider rendering or configured-state types.
+`HostAddress` and `Prefix` remain source-neutral typed values. The target export core has no dependency on NEP, Firewall, ACL locator, APR, provider renderer, NEO or configured-state types.
 
 ### Complete-or-unresolved
 
-One requested export has only these top-level semantic outcomes:
+One export creation attempt has only:
 
 ```text
-Success(complete VendorNeutralPolicyExport)
+Success(complete immutable ExportResult)
 Denied
-Unknown/Unavailable authority/input
+AuthorityUnknown
 Unresolved(diagnostics)
+Unavailable
 ```
 
-If any selected effective Rule cannot be materialized completely, the workflow does not publish a partial successful row set. Diagnostics may identify the failed Rule/input.
+Any unresolved selected Rule prevents a successful export result. Partial rows may exist only as internal diagnostics and are never published as a successful full policy.
 
-### Coherent current read
+## Coherent current snapshot
 
-The selected target MVP is current-state, not historical `asOf` export.
+The target MVP is current-state, not historical `asOf`.
 
-For the supported local PostgreSQL runtime, compose the target export inside one read-only `REPEATABLE READ` database transaction/snapshot shared by the owner adapters used by that workflow request. Each adapter still reads only its owner repository/schema contract; shared connection/snapshot is a consistency mechanism, not shared ownership.
+For the supported local PostgreSQL runtime, materialization runs inside one read-only `REPEATABLE READ` database snapshot shared by the AM/AP/ACC/AD/RC adapters used for the request. Each adapter still reads only its owner repository/schema; shared connection/snapshot is a consistency mechanism, not shared ownership.
 
-If a future owner moves to an external source that cannot participate in the transaction, its adapter must provide a version/currentness token sufficient for the workflow to establish one coherent capture; otherwise the export is Unresolved. S3 does not require distributed transactions.
+The workflow captures:
 
-The workflow records a capture timestamp plus source provenance/version references sufficient to explain the successful result.
+- capture time;
+- source owner/version/provenance references sufficient to explain the result;
+- complete materialized rows.
 
-### JSON/table and CSV
+If a future external owner cannot join this snapshot, its adapter must provide a version/currentness token sufficient to establish one coherent capture; otherwise export is Unresolved. No distributed transaction is required.
 
-One application result feeds both presentation forms:
+## Same-result table and CSV architecture
+
+The requirement that the displayed table and downloaded CSV represent the **same materialization result** is realized explicitly.
+
+A successful export creation stores a short-lived immutable workflow-owned artifact:
 
 ```text
-VendorNeutralPolicyExport
-    -> JSON DTO used by Web table
-    -> CSV serializer/download
+VendorNeutralPolicyExportResult {
+    exportId               # workflow/application identity, not domain identity
+    createdAt
+    expiresAt
+    rows[]
+    sourceSnapshotProvenance
+}
 ```
 
-The CSV adapter must serialize the already-materialized result and must not re-query owner contexts. Therefore table and CSV cannot diverge semantically because of a second live read.
+This is a non-authoritative read artifact owned by `workflows/policy_export`, not a Bounded Context or business aggregate.
 
-For the Web flow, the client obtains one export result/identifier or payload and downloads CSV for that same materialization. If implementation uses stateless immediate serialization, the JSON and CSV endpoints must share the exact captured result within one request flow rather than independently rebuilding policy.
+Store the result in workflow-owned PostgreSQL persistence after successful snapshot assembly. It may be removed by TTL/cleanup because AP/ACC/AD/RC remain authoritative and the result is reproducible from a later current snapshot.
 
-The concrete choice between short-lived server-side export result storage and same-request CSV streaming is S4 only if it does not change this same-result guarantee. For the first local MVP, prefer no durable export aggregate; a short-lived/non-authoritative application result is sufficient.
+Both table JSON and CSV read the stored result by `exportId`; neither re-queries owner contexts:
+
+```text
+POST /api/v1/vendor-neutral-policy-exports
+    -> assemble coherent full current policy
+    -> persist immutable short-lived ExportResult
+    -> return exportId + rows/metadata
+
+GET /api/v1/vendor-neutral-policy-exports/{exportId}
+    -> same stored rows for table/reload
+
+GET /api/v1/vendor-neutral-policy-exports/{exportId}.csv
+    -> serialize same stored rows
+```
+
+Expired/missing exportId is an explicit not-found/expired result and never triggers silent re-materialization under the same ID.
+
+This removes the prior S3 ambiguity around two live-read endpoints.
 
 ## HTTP/API boundary
 
-Keep the existing `/api/v1/normalized-policy` endpoint as as-built compatibility.
+Keep `/api/v1/normalized-policy` unchanged as an as-built compatibility endpoint.
 
-Introduce target-facing resources under a distinct surface so target semantics are not confused with the old `scope + asOf` contract:
+Target resource/use-case boundaries are:
 
 ```text
 /api/v1/component-deployments
@@ -371,13 +401,14 @@ Introduce target-facing resources under a distinct surface so target semantics a
 /api/v1/policy-rules/{policyRuleId}/changes/{ruleChangeId}/source-decision
 /api/v1/policy-rules/{policyRuleId}/changes/{ruleChangeId}/destination-decision
 /api/v1/policy-rules/{policyRuleId}/withdrawal
-/api/v1/vendor-neutral-policy
-/api/v1/vendor-neutral-policy.csv
+/api/v1/vendor-neutral-policy-exports
+/api/v1/vendor-neutral-policy-exports/{exportId}
+/api/v1/vendor-neutral-policy-exports/{exportId}.csv
 ```
 
-Exact HTTP verbs, DTO field spelling and pagination parameters are S4 engineering-contract work, but these resource/use-case boundaries are S3 constraints.
+Exact HTTP verbs, DTO casing, pagination and error-code spelling belong to S4 engineering contracts while preserving these use-case/resource boundaries.
 
-Authenticated actor identity and command time are server-owned values. Request payloads cannot supply trusted actor identity or authority evidence.
+Authenticated actor identity and command/current time are server-owned. Client payloads cannot supply trusted actor identity, trusted authority evidence or the server-selected full-policy read scope.
 
 ## Web boundary
 
@@ -389,97 +420,99 @@ features/policy-rules/
 features/policy-export/
 ```
 
-The UI may guide the user through Component Deployment creation, RuleChange submission/approval and policy export, but it never evaluates authority or effective-policy truth locally.
+The UI may guide users through deployment creation, RuleChange submission/approval and export, but never evaluates authority or effective-policy truth locally.
 
-The policy export table is server-produced semantic data. CSV is downloaded from the backend export surface rather than reconstructed from potentially paged/filterable browser rows.
+The policy table renders backend ExportResult rows. CSV is downloaded by `exportId`; it is not reconstructed from browser state or separately materialized.
 
 ## Evidence Access Recognition
 
-Evidence Access Recognition is accepted target domain composition but is **not required to implement the selected first vendor-neutral policy-export vertical** unless explicitly included by a later G4 scope.
+Evidence Access Recognition is accepted target composition but is outside the selected first vendor-neutral export implementation scope unless a later G4 explicitly includes it.
 
-When implemented, place it under an explicit workflow/application composition (for example `workflows/evidence_access_recognition/`) consuming TAE/RC/AD/ACC public ports and producing non-authoritative candidate values for AP. It must not write AP tables directly.
-
-This deferral prevents TAE/Evidence scope from widening the first implementation slice merely because the target model supports it.
+When implemented, place it under an explicit workflow such as `workflows/evidence_access_recognition/`, consuming TAE/RC/AD/ACC public ports and producing non-authoritative candidates for AP. It never writes AP persistence directly.
 
 ## As-built compatibility and migration
 
-### Do not reinterpret compatibility ComponentDeployment IDs
+### Compatibility ComponentDeployment IDs are not target AD IDs
 
-Current ACC compatibility `ComponentDeployment` identities are unique per DeploymentInteraction side and may represent Resource sets. Target AD ComponentDeployment means one concrete Component on one Resource.
+Current ACC compatibility ComponentDeployment identities are unique per DeploymentInteraction side and may represent Resource sets. Target AD ComponentDeployment means one concrete Component on one Resource.
 
 Therefore:
 
 - never cast/relabel old ACC compatibility IDs as target AD IDs;
-- never use the existing ACC compatibility table as target AD authoritative persistence;
+- never use ACC compatibility tables as target AD authoritative persistence;
 - no automatic one-to-one migration is assumed;
 - new target authoring creates AD-owned ComponentDeployment identities only.
 
-### Existing AccessRule rows
+### Existing AccessRule rows remain legacy unless explicitly migrated
 
-Current Access Policy rows use a semantic identity containing source compatibility ComponentDeployment + destination compatibility ComponentDeployment + DCS revision. That differs from target PolicyRule sameness where revision is state and ComponentDeployment meaning is different.
+Current AccessRule semantic identity includes source compatibility ComponentDeployment + destination compatibility ComponentDeployment + DCS revision. Target PolicyRule sameness differs: concrete AD deployment pair is stable and revision is state.
 
-Therefore old rows remain as-built compatibility truth. Do not silently migrate them into target PolicyRules without a lossless mapping accepted by migration design.
+Old rows therefore remain as-built compatibility truth. Do not silently migrate them into target PolicyRules without a separately accepted lossless mapping.
 
-The first target vertical may coexist with legacy rows/tables and expose the target API/read model from target-owned records only. Existing normalized-policy endpoint continues using its compatibility path.
+The first target vertical may coexist with legacy rows/tables and its new APIs/read models operate on target-owned records. Existing normalized-policy continues through the compatibility path.
 
 ### Removal condition
 
 Compatibility paths may be removed only when:
 
-- no current product/API/UI contract requires the old semantics;
-- all retained historical references remain explainable or have an explicitly accepted lossless migration;
-- engineering/current-state and as-built reconstruction docs are updated accordingly.
+- no current API/UI/product contract requires the old semantics;
+- retained historical references remain explainable or have an accepted lossless migration;
+- as-built engineering/architecture documentation is updated accordingly.
 
 ## Persistence/data ownership summary
 
 ```text
-ACC tables: ACC only
-AD target tables: AD only
-RC tables: RC only
-AP target tables: AP only
-legacy ACC/AP compatibility tables: compatibility owners only until migration
-policy_export: no authoritative business tables
+ACC tables                 -> ACC only
+AD target tables           -> AD only
+RC tables                  -> RC only
+AP target tables           -> AP only
+legacy ACC/AP tables       -> compatibility owners only
+policy_export_result table -> workflow-owned, non-authoritative, TTL/read artifact only
 ```
 
-A single PostgreSQL server may host all schemas/tables. Physical colocation never permits direct peer-table access.
+One PostgreSQL server may host all. Physical colocation never permits direct peer-table access.
 
-## Failure and authority semantics
+## Failure and security semantics
 
-- `Denied` and `Unknown` authority remain distinct and fail closed for protected mutations/reads.
-- Missing/ambiguous BC/ACC/AD/RC/AM input is never interpreted as a permissive default.
-- Unresolved target export is not an empty or partial successful export.
-- persistence commit uncertainty is explicit; mutation retry must be idempotent rather than producing duplicate RuleChanges/Rules.
-- compatibility adapter failures are explicit and may not manufacture target meaning from incomplete legacy data.
+- protected mutation/read uses server-authenticated actor identity;
+- Denied and Unknown authority remain distinct and fail closed;
+- client cannot select the privileged full-policy read scope;
+- missing/ambiguous BC/ACC/AD/RC/AM input is never a permissive default;
+- Unresolved export is not empty or partial success;
+- expired export result is not silently re-created under the same ID;
+- persistence commit uncertainty is explicit and mutations are retry-safe;
+- compatibility adapters may not manufacture target meaning from incomplete legacy state.
 
 ## Observability
 
-Operational logs/metrics may record use-case name, correlation/idempotency key, opaque Rule/Change/Deployment refs and outcome class. They must not become business provenance or leak secrets/raw credentials.
+Operational telemetry may contain use-case name, correlation/idempotency key, opaque Rule/Change/Deployment/export refs and outcome class. It must not substitute for domain provenance or leak credentials/secrets.
 
-Domain/business provenance required for audit is persisted in the owning context, not reconstructed from logs.
+Business provenance remains persisted in its semantic owner.
 
 ## Mechanical architecture checks
 
-Add/extend architecture tests so they can prove at least:
+Add/extend tests to prove at least:
 
-1. target `application_deployment.domain` imports no ACC/RC framework/persistence/domain implementation;
-2. `access_policy.domain` imports no BC/ACC/AD/RC/AM package outside its own domain primitives;
-3. AP application dependencies on peers are through AP-owned ports/contracts;
-4. policy-export application imports workflow-owned projection types/ports, not AP/ACC/AD/RC domain models;
-5. policy export has no imports from NEP/APR/NEO/provider packages for the vendor-neutral target path;
+1. `application_deployment.domain` imports no ACC/RC framework/persistence/private domain implementation;
+2. `access_policy.domain` imports no BC/ACC/AD/RC/AM package;
+3. AP application peer dependencies are through AP-owned ports/contracts;
+4. policy-export application imports workflow-owned projection contracts, not peer domain models;
+5. target vendor-neutral export has no NEP/APR/NEO/provider dependency;
 6. contexts do not read/write peer persistence adapters/tables;
-7. no target `access_governance` package is introduced as an authoritative owner;
+7. no authoritative target `access_governance` package is introduced;
 8. old ACC compatibility ComponentDeployment types are not imported into target AD/AP domain code;
-9. target API serializers remain presentation adapters rather than domain dependencies.
+9. `/api/v1/normalized-policy` compatibility behavior remains isolated from target export contracts;
+10. JSON and CSV serializers consume stored ExportResult rows and cannot initiate owner reads.
 
 ## S3 decisions left to S4
 
-S4 may choose only implementation-local details that do not change the architecture above, including:
+S4 may choose implementation-local details only, including:
 
-- exact file decomposition inside accepted packages;
-- concrete PostgreSQL table/column/index names while preserving required constraints;
-- exact HTTP verbs/DTO field casing/error codes consistent with the engineering error model;
-- exact transaction helper implementation for shared read snapshot;
-- exact short-lived representation used to guarantee JSON/CSV same-result serialization;
+- exact file decomposition within accepted packages;
+- concrete table/column/index names while preserving constraints;
+- exact HTTP verbs/DTO field casing/error-code spelling;
+- exact helper implementation for the shared `REPEATABLE READ` snapshot;
+- ExportResult TTL duration/cleanup scheduling within an operationally safe bound;
 - exact test file layout.
 
-S4 may not decide semantic identity, owner boundaries, whether revision belongs to Rule identity, whether to reuse compatibility IDs, or whether export may return partial success.
+S4 may not decide semantic identity, owner boundaries, whether revision belongs to Rule identity, whether compatibility IDs can be reused, whether export may return partial success, or whether table/CSV may rematerialize independently.
