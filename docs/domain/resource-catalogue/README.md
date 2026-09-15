@@ -3,9 +3,9 @@
 Current target owners:
 
 - `target-realization-model.md` — simplified Resource-level effective AddressSpace (`HostAddress | Prefix`) and the published materialization contract;
-- `tactical-model.md` — earlier I27 Resource lifecycle, temporal curation, scope affiliation, responsibility and compatible curation invariants.
+- `tactical-model.md` — current MVP Tactical DDD for Resource identity, address history/current realization, scope affiliation and responsibility.
 
-Where the older I27 endpoint/address representation conflicts with `target-realization-model.md`, the target realization model is authoritative. `ResourceEndpoint` is not part of the current target model.
+The current Resource Catalogue model deliberately has no `ResourceEndpoint`, interface, VIP/listener or address-set abstraction. Those concepts are introduced only if a confirmed use case requires them.
 
 Strategic Resource identity/role ownership remains in:
 

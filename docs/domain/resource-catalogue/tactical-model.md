@@ -1,259 +1,231 @@
-# Resource Catalogue Tactical Model for Curation
+# Resource Catalogue — Tactical Model
 
-Status: `accepted for I27 catalogue curation Stage 0`.
+Status: `S2 MVP tactical checkpoint`.
 
-Date: 2026-09-10.
+Date: 2026-09-15.
 
 ## Purpose
 
-Define the Resource Catalogue write semantics required for normal user-facing curation of access-relevant Resources without turning NAPMS into a generic asset inventory or merging catalogue data with Authority Management.
+Define the minimum Tactical DDD semantics Resource Catalogue must own for the MVP happy path while preserving the already accepted Resource curation, scope-affiliation and responsibility semantics.
 
-This document complements `docs/domain/resource-role-model.md`, which remains the strategic owner of Resource identity, Resource Scope Affiliation, Resource Responsibility and their relationship to authority.
+The current target realization contract in `target-realization-model.md` is authoritative. The former `ResourceRealizationVersion -> EndpointAddress+` model is superseded and is not part of the current target.
 
-## Product boundary
+## MVP modelling rule
 
-The curation slice manages only facts needed by governed network-access outcomes:
+Model only identities, invariants and operations required to express the accepted Resource semantics and the first end-to-end access-policy path.
 
-```text
-Resource
-  -> Resource Realization Version
-      -> Endpoint Address
-  -> Resource Scope Affiliation
-  -> Resource Responsibility
-```
+Do not introduce interfaces, endpoints, VIPs, listeners, deployment-specific exposure, provider-runtime identities, address-set aggregates or revision workflows until a confirmed use case requires them.
 
-Resource identity is independent from provider/device realization, Logical Firewall identity, Application/Component Deployment and organizational ownership.
-
-## Resource identity
+## Core model
 
 ```text
 Resource
-    resourceReference: stable non-empty string
-    displayName: optional non-empty string
+    ResourceId
+    displayName?
     lifecycle: Active | Retired
-    provenanceReference: non-empty string
+
+ResourceAddressFact
+    ResourceAddressFactId
+    ResourceRef
+    AddressSpace: HostAddress | Prefix
+    [validFrom, validUntil)
+    provenanceReference
+    endProvenanceReference?
+
+CurrentResourceRealization(ResourceRef, logicalTime)
+    -> AddressSpace? : HostAddress | Prefix
 ```
 
-`resourceReference` is server-owned for UI-created Resources in I27. Existing pre-I27 resource references remain unchanged.
+### Resource
 
-Display-name changes do not change Resource identity.
+`Resource` is the stable RC-owned semantic identity of an access-relevant resource.
 
-The Resource lifecycle is:
+`ResourceId` remains the same when the Resource is renamed, its address changes, its responsibility changes, its scope affiliation changes, or an Application Component is placed on or moved away from it.
+
+`ResourceRef` is the opaque cross-context reference to that identity. Consumers do not depend on RC storage keys or private realization records.
+
+The retained MVP lifecycle is:
 
 ```text
 Active -> Retired
 ```
 
-Retirement is terminal for the first curation slice and preserves historical realization, affiliation, responsibility, binding and policy references.
+Retirement preserves historical identity and facts. Richer lifecycle states and restoration semantics are deferred.
 
-Normal product workflows do not hard-delete Resource identity.
+### AddressSpace
 
-## Temporal fact provenance
+`AddressSpace` is a value object with exactly one of:
 
-Resource realization, scope affiliation and responsibility are historical facts. Their creation provenance and a later explicit end action are different business events and must remain distinguishable.
+```text
+HostAddress
+Prefix
+```
 
-For those fact types I27 therefore preserves:
+Its value is the corporate-visible address or prefix meaningful for access management. A Prefix remains a Prefix; RC does not expand it into hosts.
+
+AddressSpace has no independent identity or lifecycle.
+
+### ResourceAddressFact
+
+`ResourceAddressFact` records one authoritative address realization of one Resource for a validity interval.
+
+Its identity exists only to preserve historical fact/provenance continuity. It does not represent an endpoint, interface, listener or deployment binding.
+
+Changing the effective address does not change `ResourceId`. It ends the previous effective address fact, when one exists, and establishes another fact for the same Resource.
+
+For one Resource at one logical time, at most one ResourceAddressFact may be effective.
+
+Absence of an effective ResourceAddressFact is valid and means the current Resource realization has no resolved AddressSpace. It must remain distinguishable from an empty set of required access.
+
+Creation provenance and later end provenance are distinct business facts:
 
 ```text
 provenanceReference
-    source/provenance of the fact as created
+    provenance of the address fact as established
 
-endProvenanceReference: optional
-    provenance of a later explicit End/Replace action that established validUntil
+endProvenanceReference?
+    provenance of a later explicit replacement/end
 ```
 
-When a fact is created with a finite validity interval already known, `validUntil` may be present while `endProvenanceReference` is absent: the end instant is part of the original declaration.
+The exact persistence/versioning mechanism is not Tactical domain truth.
 
-When an open-ended fact is ended later by a curation command, the command must set both `validUntil` and `endProvenanceReference` in one semantic mutation. The original `provenanceReference` is not overwritten.
+## Authoritative versus derived state
 
-This distinction preserves business auditability without turning operational logs or command receipts into the source of domain provenance.
+Authoritative RC truth:
 
-## Resource realization
+- Resource identity and lifecycle;
+- ResourceAddressFact history;
+- Resource Scope Affiliation history;
+- Resource Responsibility history.
 
-The existing temporal `ResourceRealizationVersion` remains the owner of effective endpoint/address facts:
+Derived semantic projection:
 
 ```text
-Resource Realization Version
-    factReference
-    resourceReference
-    EndpointAddress+
-    [validFrom, validUntil)
-    provenanceReference
-    optional endProvenanceReference
+CurrentResourceRealization {
+    resourceRef
+    addressSpace? : HostAddress | Prefix
+    asOf
+    resolution/completeness
+    provenance/freshness reference
+}
 ```
 
-A realization version contains at least one Endpoint Address.
+`CurrentResourceRealization` is a published semantic projection over RC truth. It is not a second owner of Resource identity or address history.
 
-Changing the effective endpoint/address set is represented by ending the previous effective realization when applicable and creating another version. Historical rows are not rewritten merely to reflect current state.
+## Minimal address operations
 
-For one Resource at one logical time, the application layer must not accept overlapping authoritative realization versions that would make the current endpoint set ambiguous unless a later requirement explicitly models multiple simultaneous authoritative realizations.
-
-An explicit replacement that ends an existing open realization and creates its successor is one Resource Catalogue use case and must preserve the previous fact identity/provenance while recording the end provenance of the previous fact.
-
-## Endpoint Address
-
-```text
-Endpoint Address
-    endpointReference
-    technicalAddress
-```
-
-The endpoint reference is stable within its realization fact. The technical address is normalized and validated according to the accepted technical-address contract before persistence.
-
-I27 initially supports the address forms already consumed by the current Resource Catalogue/Checker implementation. Expanding the address algebra is a separate domain change.
-
-## Resource Scope Affiliation
-
-Existing semantics remain unchanged:
-
-```text
-Resource Scope Affiliation
-    affiliationReference
-    resourceReference
-    responsibilityScope
-    [validFrom, validUntil)
-    provenanceReference
-    optional endProvenanceReference
-```
-
-The relation controls which Resources belong to a responsibility-oriented workspace. It does not grant actor authority.
-
-For the same Resource + Responsibility Scope + logical time, at most one effective affiliation is accepted.
-
-Curation may create an affiliation or end an effective affiliation. Historical affiliations are not hard-deleted.
-
-An explicit end preserves the affiliation's creation provenance and records separate end provenance.
-
-## Resource Responsibility
-
-Existing I26 ownership/contact semantics remain independent from Authority Management:
-
-```text
-Resource Responsibility
-    resourceReference
-    responsiblePartyReference
-    partyKind: Person | Team
-    role: ServiceOwner | TechnicalOwner | OperationsContact | BusinessOwner
-    displayName
-    optional contactPoint
-    [validFrom, validUntil)
-    provenanceReference
-    optional endProvenanceReference
-```
-
-I27 curation may create responsibility assignments and end current assignments. It does not invent a mandatory single primary owner.
-
-Resource Responsibility does not place the Resource into a Responsibility Scope and does not grant NAPMS mutation permission.
-
-An explicit end preserves the assignment's creation provenance and records separate end provenance.
-
-## Lifecycle and mutation consequences
-
-### Retiring a Resource
-
-A Resource may be retired only after no new authoring path requires it as an active participant.
-
-Retirement:
-
-- removes the Resource from new binding/authoring selection where an active Resource is required;
-- preserves historical endpoint realization, scope affiliation, responsibility and Deployment Resource Binding references;
-- does not rewrite existing Requirement, Decision, Rule or realization history;
-- does not silently end Authority Management assignments because those belong to another context.
-
-Before Resource retirement, currently effective Resource Scope Affiliations and current Resource Responsibilities must be explicitly ended. I27 does not silently cascade those cross-record changes.
-
-A currently effective realization does not block retirement in I27. It remains historical/technical realization truth and downstream current projections that require an Active Resource must apply the Resource lifecycle contract explicitly.
-
-### Hard deletion
-
-Hard deletion is outside normal I27 product commands. Database/operator repair remains outside the product contract.
-
-## Temporal mutation/version consequences
-
-Resource identity and temporal relation rows use optimistic versioning for user-facing mutation.
-
-For an explicit end operation:
-
-```text
-open fact version N
-    -> validate expectedVersion == N
-    -> set validUntil
-    -> set endProvenanceReference
-    -> version N + 1
-```
-
-An already ended fact is not ended again under another command identity. Equivalent retry is handled by the application idempotency contract; a different later command attempting another end fails its state/concurrency precondition.
-
-## Command responsibility
-
-Expected Resource Catalogue command families after Stage 0 closure:
+The current Tactical responsibilities are intentionally small:
 
 ```text
 CreateResource
-RenameResource
-RetireResource
-
-CreateResourceRealization
-ReplaceResourceRealization
-
-CreateResourceScopeAffiliation
-EndResourceScopeAffiliation
-
-CreateResourceResponsibility
-EndResourceResponsibility
+SetResourceAddressSpace
+ReplaceResourceAddressSpace
 ```
 
-Exact command names may change during implementation; the semantic responsibilities above must remain explicit.
+`CreateResource` establishes Resource identity.
 
-## Query responsibility
+`SetResourceAddressSpace` establishes an address fact when no effective address fact exists for the requested logical time.
 
-The curation workspace needs read models for:
+`ReplaceResourceAddressSpace` atomically expresses the domain meaning “the previous effective address stops here and this address becomes effective here”, preserving provenance of both facts.
+
+Exact command/API names, transaction shape, optimistic-lock fields and database representation belong downstream unless a later requirement makes them semantic.
+
+Explicit address clearing without replacement is deferred until a confirmed user journey requires it. A Resource may still have no current address because none has been established or because historical validity has ended.
+
+## Resource Scope Affiliation
+
+The accepted semantics remain unchanged:
 
 ```text
-Resources
-  -> current endpoints/addresses
-  -> current scope affiliations
-  -> current responsibilities/contacts
-  -> bound Component Deployments where useful for impact/explainability
+ResourceScopeAffiliation
+    AffiliationId
+    ResourceRef
+    ResponsibilityScopeRef
+    [validFrom, validUntil)
+    provenanceReference
+    endProvenanceReference?
 ```
 
-Cross-context bound-deployment information may be composed as a read projection. Resource Catalogue does not own Component Deployment identity or binding semantics.
+It determines responsibility-oriented scope membership of a Resource. It does not grant actor authority.
 
-## Authority boundary
+For the same Resource + Responsibility Scope + logical time, at most one equivalent affiliation is effective.
 
-Catalogue mutation authority is evaluated separately by Authority Management.
+This concept is preserved because downstream governance depends on Resource scope meaning, but it is not expanded in the current RC MVP checkpoint.
 
-The following remain independent:
+## Resource Responsibility
+
+The accepted responsibility semantics also remain independent from Authority Management:
 
 ```text
-catalogue visibility
-Resource Scope Affiliation
-Resource Responsibility
-catalogue mutation authority
-Requirement/Decision/Rule authority
+ResourceResponsibility
+    ResourceRef
+    ResponsiblePartyRef
+    partyKind: Person | Team
+    role: ServiceOwner | TechnicalOwner | OperationsContact | BusinessOwner
+    displayName
+    contactPoint?
+    [validFrom, validUntil)
+    provenanceReference
+    endProvenanceReference?
 ```
 
-An actor may be a Service Owner or Technical Owner without being allowed to mutate the Resource Catalogue. Conversely, a catalogue curator may change catalogue facts without receiving policy-decision authority.
+Resource Responsibility records who is responsible for the Resource. It does not place the Resource into a Responsibility Scope and does not grant NAPMS mutation or policy-decision authority.
 
-## Compatibility with existing data
+The current MVP checkpoint does not add a mandatory primary owner or richer responsibility lifecycle.
 
-I27 must preserve every existing `resource_reference`, realization fact reference, endpoint reference and Resource Scope Affiliation reference unless a specific repair migration has independent evidence to change it.
+## Cross-context contract
 
-Schema extensions for display metadata/lifecycle/version control must use conservative defaults for existing rows and explicit migration provenance where a new fact is manufactured by migration.
+Application Deployment references only Resource identity:
 
-`endProvenanceReference` is nullable for migrated/pre-I27 rows. A historical finite `validUntil` without end provenance means the repository has no accepted evidence that the end was established by a later explicit I27 end command; migration must not manufacture an actor or authority source.
+```text
+AD ComponentPlacement.ResourceRef
+        -> RC Resource
+```
 
-The migration must not infer Resource responsibility, ownership, company, organization or scope membership from addresses or naming conventions.
+When technical policy materialization needs an address:
 
-## Concurrency
+```text
+ComponentPlacement.ResourceRef
+        -> CurrentResourceRealization(ResourceRef, logicalTime)
+        -> AddressSpace? = HostAddress | Prefix
+```
 
-Concurrent mutation must not silently overwrite Resource catalogue facts. The I27 command/ETag/idempotency contract applies consistently to Resource identity and mutable temporal relation state.
+AD does not copy or own the address. Address changes therefore do not change `ApplicationDeployment` or `ComponentPlacement` identity.
 
-## Consequences
+RC does not own Application, Component, Interaction, ApplicationDeployment, ComponentPlacement, authorization, Policy Rule or enforcement-device semantics.
 
-- Resources gain a safe user-facing write model without becoming generic CMDB assets;
-- temporal realization/affiliation/responsibility remain historical facts rather than mutable current-state columns;
-- creation provenance is not destroyed when a temporal fact is explicitly ended later;
-- resource identity remains stable when addresses, scope membership or responsible people change;
-- policy and authority boundaries remain independent;
-- HTTP/Web mutation remains downstream of owner-domain/application contracts.
+## Invariants for the current scope
+
+1. `ResourceId` is stable across address, placement, scope and responsibility changes.
+2. One Resource has at most one effective AddressSpace at one logical time.
+3. AddressSpace is exactly one HostAddress or one Prefix when resolved.
+4. Address history remains explainable through fact validity and provenance.
+5. A missing current AddressSpace is explicit unresolved realization, not an empty access requirement.
+6. Resource Scope Affiliation, Resource Responsibility and actor authority remain separate meanings.
+7. Cross-context consumers use opaque ResourceRef plus published RC projections, not RC-private fact identities.
+
+## Deliberately deferred beyond this MVP checkpoint
+
+- several simultaneous addresses/prefixes for one Resource;
+- interface or endpoint identity;
+- management/data-plane separation;
+- VIP/listener modelling;
+- deployment-specific network exposure;
+- NAT calculation;
+- generic CMDB/asset-inventory semantics;
+- richer Resource lifecycle/restoration;
+- explicit address clearing workflow unless demanded by a user journey;
+- persistence schema, ORM model, ETag/version columns and migration mechanism.
+
+## Tactical coherence result
+
+For the current RC scope:
+
+- identity is explicit (`ResourceId`, historical fact identity only where history requires it);
+- lifecycle is limited to the already accepted Resource retirement meaning;
+- the address invariant has one semantic owner, Resource Catalogue;
+- current realization is classified as a derived semantic projection;
+- endpoint/version-set implementation leakage has been removed from target Tactical semantics;
+- no new Strategic boundary or cross-context contract is required.
+
+This is sufficient for the MVP `ACC + RC -> AD` foundation. Additional RC modelling is reopened only when the vertical happy path exposes a concrete semantic gap.
