@@ -1,6 +1,6 @@
 # Resource Catalogue — Target realization semantics
 
-Status: `S2 simplified target accepted for current scope`.
+Status: `S2 simplified target accepted for current scope; Tactical MVP model aligned 2026-09-15`.
 
 Date: 2026-09-15.
 
@@ -58,6 +58,8 @@ The current target does **not** model several simultaneous addresses/prefixes, m
 
 This limitation is deliberate: the target model prefers one Resource -> one effective host-or-prefix realization over speculative endpoint abstractions.
 
-## Relationship to earlier curation model
+## Tactical alignment
 
-`tactical-model.md` contains accepted I27 curation/history semantics where compatible, but its `ResourceRealizationVersion -> EndpointAddress+` shape is an earlier implementation-oriented representation and is superseded for target network semantics by this document. Tactical RC revalidation must converge persistence and commands onto the simplified Resource-level AddressSpace without losing historical provenance.
+`tactical-model.md` now implements this target semantic shape with `ResourceAddressFact` history and a derived `CurrentResourceRealization` projection. The former I27 `ResourceRealizationVersion -> EndpointAddress+` representation is superseded for target semantics.
+
+Existing curation/history guarantees remain where compatible: stable Resource identity, temporal explainability/provenance, Resource Scope Affiliation and Resource Responsibility. Persistence/versioning mechanics remain downstream implementation concerns.
