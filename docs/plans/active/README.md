@@ -2,10 +2,10 @@
 
 Current: `access-governance-mvp.md`
 Goal: resolve the smallest Access Governance behavior needed to continue the MVP happy path from ACC/RC/AD into bilateral authorization and Access Policy handoff.
-Current task: resolve S1 Q1 — the minimal rule for selectable source/destination ApplicationDeployment pairs for an Access Request.
+Current task: resolve S1 Q2 — the consequence for an existing authorization when placement/scope changes alter approval obligations.
 Lifecycle stage: `S1`
 Stage state: `IN_PROGRESS`
-Lifecycle basis: `docs/requirements/access-governance-g1.md`, `docs/plans/active/access-governance-mvp.md`, and the completed 2026-09-15 ACC/RC/AD MVP foundation checkpoint.
+Lifecycle basis: `docs/requirements/access-governance-g1.md`, `docs/plans/active/access-governance-mvp.md`, and the accepted 2026-09-15 Q1 deployment-pair selection decision.
 Implementation authorization: `none`
 Authorized scope: `none`
 Authorization basis: `none`
@@ -43,7 +43,9 @@ RC Resource / ResourceScopeAffiliation / CurrentResourceRealization
 AG governed deployment pair + bilateral approval obligations
 ```
 
-The ACC/RC/AD foundation is coherent for the MVP: RC now uses Resource-level `AddressSpace = HostAddress | Prefix` with historical `ResourceAddressFact`; AD references only `ResourceRef`; no endpoint/interface/VIP binding is introduced.
+The ACC/RC/AD foundation is coherent for the MVP: RC uses Resource-level `AddressSpace = HostAddress | Prefix` with historical `ResourceAddressFact`; AD references only `ResourceRef`; no endpoint/interface/VIP binding is introduced.
+
+Accepted AG Q1: a source/destination ApplicationDeployment pair is selectable for a declared Interaction when each deployment can realize the corresponding endpoint Component and the current placements needed to determine approval obligations are resolvable.
 
 Preserved AG behavior: source and destination approval obligations are independent; grant requires both required sides; either side may later withdraw its consent; Authority Management owns actor/action/scope authority; Access Policy consumes grant/withdrawal.
 
@@ -51,18 +53,17 @@ Preserved AG behavior: source and destination approval obligations are independe
 
 S1 still requires owner decisions for:
 
-1. selectable source/destination ApplicationDeployment pairs;
-2. authorization consequence when placement/scope changes alter approval obligations;
-3. overlapping Responsibility Scopes on one side.
+1. authorization consequence when placement/scope changes alter approval obligations;
+2. overlapping Responsibility Scopes on one side.
 
-Q1 is current. A minimal candidate is recorded in the active plan but is non-authoritative until accepted.
+Q2 is current. Q3 should be resolved only if overlap is required by the first happy path; otherwise it may be explicitly deferred as non-blocking.
 
 ## Gate
 
-G1 remains open for the affected Access Governance behavior. Tactical AG revalidation must not freeze obligation cardinality or state transitions before the S1 questions are accepted or explicitly deferred as non-blocking.
+G1 remains open for the affected Access Governance behavior. Tactical AG revalidation must not freeze obligation cardinality or state transitions before Q2 is accepted and Q3 is accepted or explicitly deferred.
 
 No implementation authorization exists.
 
 ## Next
 
-Resolve Q1 with the smallest accepted selection rule sufficient for the MVP happy path, then resolve Q2. Treat Q3 only to the extent the first happy path actually encounters overlapping Responsibility Scopes.
+Resolve Q2 with the smallest behavior that prevents an authorization from remaining silently effective under materially changed approval obligations. Then resolve or explicitly defer Q3 for the MVP happy path.
