@@ -1,82 +1,100 @@
 # Application Deployment — strategic boundary
 
-Status: `Strategic boundary accepted; MVP Tactical model aligned 2026-09-15`.
+Status: `Strategic boundary revalidated 2026-09-16; Tactical model pending alignment`.
 
 ## Purpose
 
-Own the independently changing truth of which logical deployment of an Application exists and which access-domain Resources its Components are currently placed on.
+Own the independently changing truth of concrete deployed application Component instances and the Resource on which each instance is deployed.
 
 ## Ownership
 
-Application Deployment owns `ApplicationDeployment` identity/continuity, Component-to-Resource placement truth (`ComponentPlacement`), and publication of current placement facts needed by governance/materialization.
+Application Deployment owns `ComponentDeployment` identity/lifecycle and the exact relation from one ACC Component to one RC Resource for each concrete deployment instance.
 
-It does not own Application/Component/Interaction meaning (ACC), Resource identity/address/scope/responsibility (RC), authorization workflow (AG), Policy Rule truth (AP), enforcement placement (NEP), or provider runtime/container/orchestrator truth.
+It does not own Application/Component/Interaction meaning (ACC), Resource identity/address/scope/responsibility (RC), Policy Rule/governance lifecycle (Access Policy), enforcement placement (NEP), or provider runtime/container/orchestrator identity.
 
 ## Minimal strategic model
 
 ```text
-ApplicationDeployment
-    ApplicationDeploymentId
-    ApplicationRef
-    ComponentPlacements: Set<(ComponentRef, ResourceRef)>
+ComponentDeployment
+    ComponentDeploymentId
+    ComponentRef
+    ResourceRef
 ```
 
-A placed Component belongs to the Application referenced by its ApplicationDeployment. An ApplicationDeployment need not place every Component of the Application.
+For the first MVP:
 
-For the MVP Tactical model, `ComponentPlacement` is a relation value `(ComponentRef, ResourceRef)` inside the deployment's current placement set, not a separately identified entity. One Component may therefore be placed on zero, one or many distinct Resources; the exact same pair is not duplicated.
+- one Component Deployment references exactly one Component;
+- one Component Deployment references exactly one Resource;
+- deploying the same Component on another Resource creates another Component Deployment;
+- several Component Deployments of one Component may coexist and are independently selectable/governable;
+- replacing one deployment with another Resource-backed instance creates another Component Deployment rather than mutating a whole-Application placement set;
+- changing the Resource AddressSpace does not change ComponentDeployment identity because AddressSpace remains RC realization truth.
 
-## Identity and continuity rule
-
-`ApplicationDeployment` preserves identity while continuity of the same logical deployment is preserved. Ordinary horizontal scaling, Resource migration and Component placement replacement do not alone create a new ApplicationDeployment identity.
-
-The accepted first MVP does not require a `Planned/Running/Stopped/Retired` state machine, so richer lifecycle vocabulary remains explicitly deferred rather than invented by Tactical DDD.
+The target policy path requires no stable whole-Application `ApplicationDeployment` identity.
 
 ## Public relationships
 
 ```text
-ACC -> AD: ApplicationRef / ComponentRef
+ACC -> AD: ComponentRef
 RC  -> AD: opaque ResourceRef
-AM  -> AD: EffectiveAuthority(actor, action, scope, time)
-AD  -> AG: source/destination ApplicationDeploymentRef plus applicable current endpoint placements
-AD  -> RPM: complete applicable ComponentPlacement / ResourceRef set for the requested deployment/component
+AD  -> Access Policy: ComponentDeploymentRef -> ComponentRef + ResourceRef
+AD  -> Required Policy Materialization: ComponentDeploymentRef -> ComponentRef + ResourceRef
+AD  -> Evidence Access Recognition: ResourceRef -> matching ComponentDeploymentRef candidates
 ```
 
-A complete empty placement set is semantically different from an unavailable/unresolved placement result. Consumers must not treat missing evidence as an empty set.
+A missing/unavailable deployment resolution is semantically distinct from a known absence. Consumers must not fabricate a deployment from Resource metadata or ACC definitions.
+
+## Identity and continuity rule
+
+A Component Deployment is the identity of one concrete deployed Component instance for the access domain.
+
+Its `ComponentRef` and `ResourceRef` establish what is deployed and where for that deployment identity. Deploying the same Component on another Resource is a different instance and therefore a different Component Deployment.
+
+Resource address changes do not create another Component Deployment because the Resource itself remains the same.
+
+The exact lifecycle vocabulary (`Active`, `Retired`, etc.) and whether Component/Resource references are immutable fields or invariant-protected transitions are Tactical DDD questions. The first MVP does require historical/external references to remain explainable rather than being silently retargeted to another deployment instance.
 
 ## Resource/address binding decision
 
-For the current scope, AD has no endpoint or address binding concept. `ComponentPlacement` references exactly a Resource; RC resolves that Resource at a logical time to at most one effective `AddressSpace = HostAddress | Prefix`.
+For current scope, AD has no endpoint/address binding concept beyond Resource identity:
 
 ```text
-ComponentPlacement.ResourceRef
+ComponentDeployment.ResourceRef
         -> RC Resource
         -> effective HostAddress | Prefix
 ```
 
-Address changes do not change ApplicationDeployment or ComponentPlacement meaning. Multiple simultaneous addresses/interfaces, VIPs, management/data separation and deployment-specific network exposure are explicitly out of scope until a confirmed use case requires them.
+Multiple simultaneous addresses/interfaces, VIPs, management/data separation and deployment-specific network exposure are outside the current target.
 
-`ResourceEndpointRef`, `DeploymentEndpointBinding`, listener/interface and provider-runtime identities are therefore not part of the current target contract.
+`ResourceEndpointRef`, `DeploymentEndpointBinding` and provider-runtime identities are not part of the first target contract.
 
-## Governance implication
+## Policy implication
+
+One concrete policy connection refers directly to two Component Deployments:
 
 ```text
-GovernedInteractionSubject {
-    interactionContractRevisionRef
-    sourceApplicationDeploymentRef
-    destinationApplicationDeploymentRef
-}
+sourceComponentDeploymentRef
+    -> destinationComponentDeploymentRef
 ```
 
-This identity is deliberately above individual Component placements and technical addresses.
+The exact ACC Interaction Contract Revision supplies traffic semantics. Access Policy verifies each deployment's Component matches the corresponding Interaction endpoint.
 
-Accepted AG behavior already covers placement/scope changes: when they leave approval obligations materially unchanged, current authorization remains; when they materially change obligations, AG withdraws current authorization without changing governed-subject identity.
+A second deployment of the same Component on another Resource does not inherit policy automatically; it is a different concrete endpoint.
 
-AD does not own that decision. It publishes placement truth and preserves all applicable placements rather than selecting a convenient subset.
+## Evidence recognition implication
+
+Evidence Access Recognition may resolve an observed address to RC Resource identity and then ask AD which Component Deployment(s), if any, correspond to that Resource.
+
+If correlation is missing or ambiguous, recognition remains unresolved. AD does not decide that observed traffic is authorized or desired.
 
 ## Scale constraint
 
-AD publishes semantic placement facts; it must not force downstream consumers into per-object remote traversal at scale. Architecture may introduce rebuildable consumer-local projections/batches while AD remains the semantic owner.
+AD publishes semantic deployment facts; it must not force downstream consumers into peer-private persistence traversal. Architecture may introduce rebuildable consumer-local projections/batches while AD remains semantic owner.
+
+## Explicitly undecided
+
+The selected MVP does not require a rule about whether several different Component Deployments may share one Resource. That choice must not be inferred from the one-Resource-per-ComponentDeployment invariant.
 
 ## Tactical owner
 
-The canonical MVP Tactical model is `tactical-model.md`. It closes placement identity/multiplicity/current-set semantics for the first happy path while deliberately deferring runtime-instance, endpoint and richer lifecycle concepts.
+`tactical-model.md` must be revalidated against this boundary before G2 PASS.
