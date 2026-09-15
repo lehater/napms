@@ -1,70 +1,71 @@
 # Application Deployment boundary convergence
 
-Status: `executed on branch; review/audit pending before main`.
+Status: `executed on branch; stale-reference audit and validation remain before main`.
 
 Date: 2026-09-15.
 
 ## Goal
 
-Apply the accepted Application Deployment Boundary Challenge without leaking Tactical implementation choices into Strategic DDD.
+Converge ACC/AD/RC ownership and the minimum Resource network realization without speculative endpoint modelling.
 
 ## Plan
 
-1. Add **Application Deployment (AD)** as the target owner of logical `ApplicationDeployment` identity/lifecycle and Component-to-Resource placement truth.
-2. Remove deployment/placement ownership from **Application Communication Catalogue (ACC)** while retaining Application, Component, Interaction and immutable traffic-contract ownership.
-3. Keep **Resource Catalogue (RC)** authoritative for Resource identity/lifecycle, responsibility/scope and technical realization.
-4. Re-route affected Context Map edges: add ACC -> AD, RC -> AD, AD -> AG, AD -> RPM and AM -> AD; remove RC -> ACC deployment binding; narrow ACC -> AG/RPM.
-5. Replace deployment-pair `DirectedInteractionIdentity` with the strategic `GovernedInteractionSubject` composed from ACC InteractionContractRevision identity and source/destination AD ApplicationDeployment identities.
-6. Keep exact AD/RC network exposure and endpoint shape Tactical-open; do not promote `ResourceEndpointRef`, `DeploymentEndpointBinding`, Environment, listener/interface, VIP or provider runtime concepts without use-case evidence.
-7. Promote governance behavior exposed by migration/scope changes to active S1 questions instead of inventing policy in Tactical DDD.
-8. Align `strategic-model.md`, `context-map.md` and `strategic-model.json`.
-9. Audit remaining documentation/code references to old ACC-owned deployment semantics and classify them as target-documentation drift versus intentional legacy/runtime state.
-10. Do not merge/push to `main` until review and audit are complete.
+1. Add AD as owner of `ApplicationDeployment` and `ComponentPlacement`.
+2. Remove deployment/Resource-binding ownership from ACC.
+3. Keep RC authoritative for Resource identity, scope/responsibility and address realization.
+4. Use the minimum current RC realization: one effective `AddressSpace = HostAddress | Prefix` per Resource/time.
+5. Keep AD binding at `ComponentPlacement -> ResourceRef`; no endpoint/address selection in AD.
+6. Route RPM through ACC traffic semantics + AD placements + RC Resource AddressSpace + NEP placement.
+7. Replace old deployment-pair `DirectedInteractionIdentity` with `GovernedInteractionSubject` using InteractionContractRevision + source/destination ApplicationDeployment identities.
+8. Keep multi-address/interface/VIP/deployment-specific exposure as future extension only when a confirmed use case requires it.
+9. Audit remaining repository references to old ACC-owned deployment and ResourceEndpoint target semantics; classify target drift vs intentional legacy/current-state.
+10. Validate canonical docs/JSON and CI evidence. Do not merge to `main` until review is complete.
 
-## Executed changes
+## Executed
 
-- [x] branch `strategic/application-deployment-boundary` created from `main`;
-- [x] `strategic-model.md` updated to eleven target BCs and new ownership;
-- [x] `strategic-model.json` updated with participant/edge/invariant projection;
-- [x] `context-map.md` updated with affected-edge contracts and Mermaid flow;
-- [x] old strategic `RC -> ACC` deployment binding superseded;
-- [x] old ACC-owned `DirectedInteractionIdentity` superseded;
-- [x] S1 governance questions made explicit;
-- [x] Tactical-open network contract kept intentionally unresolved;
+- [x] AD boundary introduced;
+- [x] ACC deployment ownership removed from canonical target;
+- [x] old RC -> ACC deployment binding superseded;
+- [x] old `DirectedInteractionIdentity` superseded;
+- [x] RC target realization simplified from ResourceEndpoint to Resource-level HostAddress-or-Prefix;
+- [x] AD/RC network binding question closed for current scope;
+- [x] ACC target model aligned;
+- [x] application catalogue target requirements aligned with accepted AD split;
+- [x] strategic-model.md, context-map.md and strategic-model.json aligned;
+- [x] Tactical dependency order corrected to `ACC + RC -> AD -> AM`;
 - [ ] repository-wide stale-reference audit completed;
-- [ ] affected documentation classified/updated;
+- [ ] intentional legacy/current-state references marked where needed;
 - [ ] branch validation/CI evidence reviewed;
 - [ ] ready-for-main decision.
 
-## Accepted minimal AD semantics
+## Accepted current model
 
 ```text
-ApplicationDeployment
-    ApplicationDeploymentId
-    ApplicationRef
-
-ComponentPlacement
-    ApplicationDeploymentRef
-    ComponentRef
-    ResourceRef
+ACC Component / InteractionContractRevision
+        |
+        v
+AD ApplicationDeployment
+   ComponentPlacement -> ResourceRef
+        |
+        v
+RC Resource -> effective AddressSpace [0..1]
+               AddressSpace = HostAddress | Prefix
 ```
 
-Identity rule: an `ApplicationDeployment` preserves identity while continuity of the same logical deployment is preserved; ordinary scaling, migration and Component placement replacement do not alone create a new identity.
-
-`ComponentPlacement` is an access-domain placement fact, not automatically a process/container/pod/provider runtime instance.
+No `ResourceEndpoint`, endpoint purpose, interface selection or deployment-specific exposure is part of the current target.
 
 ## Active S1 questions
 
-1. What product constraints determine which source/destination `ApplicationDeployment` pair may be selected for an Access Request?
-2. If placement or Resource Scope Affiliation changes alter approval obligations, does existing authorization remain valid, require reapproval, warn, or withdraw?
+1. What product constraints determine selectable source/destination ApplicationDeployment pairs for an Access Request?
+2. If placement or Resource Scope Affiliation changes alter approval obligations, what happens to current authorization?
 3. When several Responsibility Scopes apply to one governance side, what approval obligations are required?
 
 ## Tactical follow-up
 
-After strategic documentation and stale-reference audit converge, resume Tactical DDD in the order:
+Foundational order:
 
 ```text
-RC -> AD -> ACC -> affected AG/AP contract convergence
+ACC + RC -> AD -> AM -> affected BC/AG/AP convergence
 ```
 
-Then continue downstream RPM/NEP/TAE/APR/NEO work. The exact RC/AD network-exposure contract must be discovered from use cases rather than inferred from the former `ResourceEndpoint` model.
+Then continue RPM/NEP/TAE/APR/NEO. A future confirmed need for multiple addresses/interfaces reopens only the affected RC/AD/RPM edge rather than pre-loading endpoint abstractions now.
