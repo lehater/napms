@@ -1,12 +1,12 @@
 # MVP vertical consistency checkpoint
 
-Status: `active cross-contract consistency pass`.
+Status: `completed — G2 PASS for first MVP semantic vertical`.
 
 Date: 2026-09-15.
 
-## Goal
+## Scope
 
-Check only the first accepted end-to-end MVP semantic path for contradictions or stale blockers before considering implementation authorization.
+The evaluated semantic path is:
 
 ```text
 ACC InteractionContractRevision
@@ -22,44 +22,38 @@ ACC InteractionContractRevision
     -> NEO controlled mutation
 ```
 
-## Accepted MVP boundaries to preserve
+## Preserved MVP boundaries
 
-- MVP means minimal happy path; extensions stay deferred until concrete pressure.
-- Governed subject = InteractionContractRevisionRef + source/destination ApplicationDeploymentRef.
-- AG requires exactly one applicable ResponsibilityScope per side for the first path.
-- Material approval-obligation change withdraws current authorization.
-- AP consumes only AuthorizationGranted / AuthorizationWithdrawn.
-- RPM is derived composition, not a Bounded Context.
-- current RPM -> NEP first path is HostAddress-to-HostAddress; Prefix remains unresolved, not expanded.
-- comparison scope = firewallId + accessListName.
-- APR comparison = exact common/missing/excess over complete comparable effective permit spaces.
-- MVP remediation is additive-only: ENSURE-PERMIT on missing; excess is report/audit only.
-- provider rendering must preserve verified semantics or fail closed.
-- NEO owns execution authority/preconditions/outcome and does not reinterpret policy.
+- governed subject = InteractionContractRevisionRef + source/destination ApplicationDeploymentRef;
+- AG first path requires exactly one applicable ResponsibilityScope per side;
+- material approval-obligation change withdraws current authorization;
+- AP consumes only AuthorizationGranted / AuthorizationWithdrawn;
+- RPM is derived composition, not a Bounded Context;
+- current RPM -> NEP first path is HostAddress-to-HostAddress; Prefix remains unresolved, not expanded;
+- comparison scope = firewallId + accessListName;
+- APR comparison = exact common/missing/excess over complete comparable effective permit spaces;
+- MVP remediation is additive-only: ENSURE-PERMIT on missing; excess is report/audit only;
+- provider rendering must preserve verified semantics or fail closed;
+- NEO owns execution authority/preconditions/outcome and does not reinterpret policy;
 - apply/operation success is not final semantic convergence proof.
 
-## Check scope
+## Findings resolved during pass
 
-Inspect canonical strategic/domain/requirements documents touched by these edges only.
+- removed stale statements that accepted AG questions were still open;
+- aligned canonical strategic status through APR / Provider Renderer / NEO rather than stopping at RPM;
+- aligned APR additive-remediation requirements and minimal VerifiedChangeIntent;
+- aligned Provider Policy Renderer boundary and TargetPolicyArtifact shape;
+- aligned NEO requirements/Tactical model to consume TargetPolicyArtifact while keeping mutation authority and convergence separate;
+- kept unresolved/empty/failure distinctions explicit across RPM/APR/renderer/NEO.
 
-Fix:
+## G2 result
 
-- stale statements that an already accepted question is still open;
-- identity/ownership contradictions;
-- inconsistent comparison/target keys;
-- accidental promotion of deferred behavior into the MVP;
-- missing fail-closed distinction that could turn unresolved into empty/success.
+`G2 PASS` for the first MVP semantic vertical.
 
-Do not:
+Architecture may rely on the accepted semantic ownership, identities, cross-context contracts, fail-closed boundaries and current MVP limitations above.
 
-- expand APR deeper Tactical backlog;
-- design production provider adapters;
-- solve Prefix-aware NEP;
-- add managed-policy removal semantics;
-- authorize implementation.
+This does not imply global G2 for unrelated scopes and does not authorize implementation.
 
-## Exit criteria
+## Next
 
-- no known P0/P1 semantic contradiction on the first vertical path;
-- active plan names the next actual step;
-- implementation remains unauthorized unless explicitly granted later.
+Proceed to S3 Architecture for this exact vertical slice. Define the smallest feasible realization, dependency direction, ports/adapters, consistency/failure behavior and migration from current runtime without reopening accepted semantics unless Architecture exposes a genuine contradiction.
