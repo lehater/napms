@@ -2,13 +2,13 @@
 
 Current: `PLAN-130-revalidate-policy-lifecycle.md`
 
-Goal: converge the target Strategic/Tactical DDD after G1 revalidation of concrete Component Deployment endpoints, rule revision changes, and evidence-derived access proposals.
+Goal: realize the G1/G2-accepted concrete Component Deployment, unified Policy Rule lifecycle and vendor-neutral export through an owner-preserving target architecture compatible with the current runtime.
 
-Current task: challenge the affected Bounded Context boundaries and public semantic contracts before Tactical DDD.
+Current task: define the selected first-MVP S3 architecture for AP lifecycle, AD ownership, policy export and as-built compatibility.
 
-Lifecycle stage: `S2`
+Lifecycle stage: `S3`
 Stage state: `IN_PROGRESS`
-Lifecycle basis: affected requirements passed G1 revalidation on 2026-09-16; the changed deployment identity and access lifecycle invalidate the accepted Strategic relationships that used whole-Application `ApplicationDeployment` and separate AG -> AP governed-subject handoff.
+Lifecycle basis: `docs/domain/mvp-ddd-convergence-checkpoint.md` records G2 PASS on 2026-09-16 for the revalidated target baseline.
 Implementation authorization: `none`
 Authorized scope: `none`
 Authorization basis: `none`
@@ -17,19 +17,19 @@ Authorization basis: `none`
 
 Read first:
 - `docs/plans/active/PLAN-130-revalidate-policy-lifecycle.md`
-- `docs/domain/strategic-model.md`
-- `docs/domain/context-map.md`
-- `docs/domain/strategic-model.json`
-- `docs/domain/semantic-ownership.md`
+- `docs/architecture/README.md`
+- `docs/architecture/code-structure.md`
+- `docs/architecture/current-architecture.md`
+- `docs/domain/mvp-ddd-convergence-checkpoint.md`
 
 ## Blockers
 
-None currently. Strategic DDD must decide whether governance-change history and current effective Policy Rule truth are one lifecycle owner or remain separate Bounded Contexts.
+None currently. S3 must make compatibility explicit because the implemented ACC compatibility `ComponentDeployment` has different ownership/identity semantics from target AD `ComponentDeployment`.
 
 ## Gate
 
-G2 — one coherent semantic owner for concrete deployment truth and the access-rule lifecycle; explicit public contracts; dependent Tactical models revalidated; no P0/P1 contradiction.
+G3 — feasible owner-preserving architecture with explicit ports, persistence ownership, consistency/failure semantics, compatibility/changeover path and no P0/P1 architecture contradiction.
 
 ## Next
 
-Converge the affected Strategic boundaries first, then revalidate only dependent Tactical models. Production-code implementation remains forbidden.
+Accept the target first-MVP architecture, challenge it with the architecture-review lenses, then enter S4 only after G3 PASS. Production-code implementation remains forbidden.
