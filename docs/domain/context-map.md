@@ -1,6 +1,6 @@
 # NAPMS Context Map
 
-Status: `S2 affected-edge convergence accepted for AD and minimal RC address realization; named AG behavior remains S1-open`.
+Status: `S2 thin-vertical convergence accepted through AG/AP and MVP RPM edge`.
 
 Date: 2026-09-15.
 
@@ -59,6 +59,8 @@ GovernedInteractionSubject {
 
 Scaling, ordinary placement replacement, Resource replacement and address change do not by themselves redefine this identity.
 
+For the MVP, the pair is selectable only when both endpoint Components can be realized by the selected ApplicationDeployments and each governance side resolves to exactly one distinct applicable Responsibility Scope. Zero or several applicable scopes fail closed.
+
 ### RC -> AG
 
 ```text
@@ -67,6 +69,17 @@ ResourceRef + logicalTime
 ```
 
 AG owns how these facts establish approval obligations.
+
+A material change of the resolved approval obligations causes AG to publish `AuthorizationWithdrawn`; materially unchanged obligations preserve current authorization. Historical approvals do not silently restore a withdrawn grant.
+
+### AG -> AP
+
+```text
+AuthorizationGranted(subject, provenance)
+AuthorizationWithdrawn(subject, provenance)
+```
+
+AP does not reconstruct bilateral governance. A later explicit grant may re-establish current authorization for the same subject.
 
 ### ACC -> RPM
 
@@ -95,7 +108,7 @@ ResourceRef + logicalTime
    }
 ```
 
-One Resource has at most one effective AddressSpace at a logical time. Missing realization is unresolved, not an empty address set. Prefixes are first-class and need not be expanded to hosts.
+One Resource has at most one effective AddressSpace at a logical time. Missing realization is unresolved, not an empty address set. Prefixes are first-class and are not expanded into hosts.
 
 `ResourceEndpoint`, endpoint purpose, multiple simultaneous addresses/interfaces, VIP and deployment-specific exposure are outside the current target model.
 
@@ -104,14 +117,41 @@ One Resource has at most one effective AddressSpace at a logical time. Missing r
 ```text
 TrafficPair
 -> FirewallCandidate[]
--> AccessListLocator[]
+   firewallId
+   accessListNames[]
+   freshness metadata
 ```
 
-Candidate membership is relevance-to-inspect, not proven path. Unknown/incomplete remains explicit.
+Candidate membership is relevance-to-inspect/affect, not a proven path. Multiple candidates are preserved; order has no route meaning.
+
+For the first end-to-end MVP vertical path, RPM calls this edge only with HostAddress-to-HostAddress pairs. If RC supplies a Prefix on either side, RPM returns unresolved until Prefix-aware NEP query/matching semantics are explicitly designed.
+
+A candidate with no access-list locator is valid NEP output but cannot form an RPM/APR comparison scope and therefore leaves the affected materialization unresolved.
 
 ### RPM -> APR and provider chain
 
-`TargetRequiredPolicy` carries comparison scope, normalized required predicates, contributing PolicyRule refs, freshness/provenance and logical/effective time. PPI publishes configured effective policy; APR owns required/configured delta and verified change intent; PPR renders; NEO executes with independent mutation authority. `Applied` is not convergence proof.
+RPM groups normalized required permit predicates by:
+
+```text
+ComparisonScope = firewallId + accessListName
+```
+
+and publishes only complete target-specific results:
+
+```text
+TargetRequiredPolicy {
+    comparisonScope
+    requiredPermitSpace
+    contributingPolicyRuleRefs
+    logicalTime
+    inputProvenance
+    inputFreshness
+}
+```
+
+Missing/incomplete upstream evidence, missing candidate target or missing policy locator is `unresolved`, never empty required policy.
+
+PPI publishes configured effective policy for the same comparison scope; APR owns required/configured delta and verified change intent; PPR renders; NEO executes with independent mutation authority. `Applied` is not convergence proof.
 
 ## Application Deployment boundary decision
 
@@ -143,12 +183,16 @@ AddressSpace = HostAddress | Prefix
 
 AD therefore needs no endpoint/network-exposure contract in the current scope. Future multi-address/interface requirements must reopen this affected edge rather than being pre-modelled now.
 
-## Active S1 questions
+## Deferred affected-edge extensions
 
-1. What product constraints determine selectable source/destination `ApplicationDeployment` pairs for an Access Request?
-2. If placement or Resource Scope Affiliation changes alter approval obligations, does current authorization remain valid, require reapproval, warn, or withdraw?
-3. When several Responsibility Scopes are simultaneously applicable to one governance side, what approval obligations are required?
+The following are explicit non-blocking future extensions:
+
+- generalized Access Governance behavior for several simultaneous Responsibility Scopes on one side;
+- Prefix-aware NEP TrafficPair semantics;
+- several simultaneous Resource addresses/interfaces, endpoint purpose, VIP and deployment-specific exposure.
 
 ## Convergence result
 
-Affected ownership/address edges are converged for current scope. No P0 ownership contradiction remains here. Foundational Tactical order is `ACC + RC -> AD -> AM`, followed by affected BC/AG/AP convergence and then downstream RPM/NEP/TAE/APR/NEO.
+The ACC/AD/RC foundation, Access Governance MVP behavior, AG/AP Tactical handoff and first HostAddress-based RPM vertical path are coherent for the current scope. No open S1 Access Governance blocker remains for the happy path.
+
+Global G2 is not implied. Continue downstream and reopen only the specific affected edge when a concrete deferred case becomes necessary.
