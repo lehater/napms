@@ -15,8 +15,8 @@ Read only what the current task requires:
 - `working-loop.md` — branch/checkpoint/validation plus the canonical detailed context rollover and fresh-session recovery procedure.
 - `decision-protocol.md` — no-invention and unknown-resolution rules.
 - `domain-change-protocol.md` — focused domain re-entry guidance when implementation findings may change accepted semantics.
-- `plan-lifecycle.md` — how current execution state is persisted/resumed, how unresolved bounded-context problems are parked, and when an ordered roadmap is justified.
+- `plan-lifecycle.md` — current execution-state persistence/resume and active-plan cleanup rules.
 
 Do not preload all protocols. Start from the repository agent map, scoped instructions and the smallest applicable Skill. Load the active resume capsule only when current execution/gate/authorization is relevant to the requested task, then expand to the minimal working set and additional evidence only when demonstrated necessary.
 
-Project truth belongs in the domain/requirements/architecture/engineering areas, not here.
+Project truth belongs in the current domain/requirements/architecture/engineering/UI owners, not in process documents. The process area defines how truth is changed, not a history of prior project states.
