@@ -115,12 +115,13 @@ Provider Policy Interpreter, Provider Policy Renderer and Technical Evidence Acq
 Current runtime packages such as `connectivity_requirements`, `connectivity_decision` and legacy APR/operator structures may remain as as-built compatibility or migration inputs while the target is not fully realized. Their physical presence does not make them target semantic owners.
 
 Target cross-context workflows/compositions include, where still applicable under current contracts:
-- Required Access Matrix composition for the selected first implementation slice;
+- Full Vendor-Neutral Policy Export for the selected first implementation slice, consuming current effective AP Policy Rules plus ACC/AD/RC owner contracts without firewall/device/provider context;
 - Required Policy Materialization / policy-realization orchestration;
-- Policy Export / snapshot normalization;
 - Scoped Connectivity Inventory;
 - Traffic Analysis Checker;
 - retained Requirement-to-Policy Alignment only while its as-built compatibility path remains required.
+
+The existing as-built Policy Export / snapshot-normalization workflow remains reconstruction truth and is the compatibility baseline for the selected target export slice; it does not become a bounded context.
 
 The physical `network_operator_view` workflow is legacy runtime code tied to a superseded APR model. It is as-built/migration material, not a target workflow contract. Any replacement operator workflow must be derived from the current APR contracts.
 

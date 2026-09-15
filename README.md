@@ -6,9 +6,11 @@ The repository working tree represents current project truth. Git history is the
 
 ## Selected implementation MVP
 
-The selected first implementation slice is defined by `docs/requirements/first-mvp-required-access-matrix.md`:
+The selected first implementation slice is defined by `docs/requirements/first-mvp-vendor-neutral-policy-export.md`:
 
 ```text
+AP current effective Policy Rules
+        +
 ACC InteractionContractRevision
         +
 AD ApplicationDeployment + ComponentPlacement
@@ -16,11 +18,13 @@ AD ApplicationDeployment + ComponentPlacement
 RC Resource + AddressSpace
         |
         v
-Required Access Matrix
+Full Vendor-Neutral Policy Export
         |
         +--> table
-        `--> vendor-neutral export
+        `--> CSV/vendor-neutral data
 ```
+
+The export contains access-list-oriented source/destination address, protocol and port/range semantics without firewall, device, ACL or provider context.
 
 The complete target domain remains defined by `docs/domain/strategic-model.md`. Current execution state is `docs/plans/active/README.md`.
 

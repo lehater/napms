@@ -2,11 +2,13 @@
 
 Current: none.
 
-The selected next implementation increment is the Required Access Matrix defined by `docs/requirements/first-mvp-required-access-matrix.md`.
+The selected next implementation increment is the Full Vendor-Neutral Policy Export defined by `docs/requirements/first-mvp-vendor-neutral-policy-export.md`.
 
 Current accepted product slice:
 
 ```text
+AP current effective Policy Rules
+        +
 ACC InteractionContractRevision
         +
 AD ApplicationDeployment + ComponentPlacement
@@ -14,14 +16,18 @@ AD ApplicationDeployment + ComponentPlacement
 RC Resource + AddressSpace
         |
         v
-Required Access Matrix
+Full Vendor-Neutral Policy Export
         |
         +--> table
-        `--> vendor-neutral export
+        `--> CSV/vendor-neutral data
 ```
 
-No S3 Architecture task is active yet. No implementation authorization exists.
+The exported policy must carry access-list-oriented source/destination address, protocol and port/range semantics while remaining independent of firewall, device, ACL and provider context.
+
+The previous AP-free Required Access Matrix selection is superseded.
+
+No product workstream is active yet. Because the selected slice now starts from authoritative Access Policy truth, the next lifecycle step is a narrow S2 revalidation of the AP -> export composition and policy-creation handoff before S3 Architecture starts. No implementation authorization exists.
 
 ## Next
 
-Enter S3 Architecture only for this selected slice when explicitly requested. Production-code implementation remains forbidden until S4 reaches G4 for an explicit scope.
+Enter S2 only for the selected AP + ACC + AD + RC export slice when explicitly started. Confirm that the export consumes public owner contracts, owns no independent policy truth and does not require NEP/device semantics. Then proceed through S3/S4. Production-code implementation remains forbidden until S4 reaches G4 for an explicit scope.
