@@ -16,11 +16,11 @@ When the lifecycle routes work to S2, use `docs/process/domain-design-stage.md` 
 1. State the observed trigger without turning it into a conclusion.
 2. Classify the highest affected layer: implementation, requirements/quality, Tactical DDD inside one BC, or Strategic DDD/context relationship.
 3. If Requirements are affected, `REOPEN(S1)` rather than deciding product behavior here.
-4. For S2 work, inspect only the smallest affected current domain and requirements evidence.
+4. For S2 work, inspect only the smallest affected current domain/requirements evidence plus any current ADR that materially constrains the semantic boundary.
 5. Apply `docs/process/decision-protocol.md` to material unknowns or conflicts.
 6. For Strategic DDD, require evidence of changed language, responsibility/decision ownership, independent lifecycle/invariants, authority boundary or context relationship. Treat candidate context groupings as candidates until the strategic convergence protocol accepts them.
 7. For Tactical DDD, challenge semantic identity, lifecycle and invariant ownership; keep domain guarantees separate from persistence/framework realization.
-8. Update the highest affected current owner first.
+8. Update the highest affected current owner first. Update or add an ADR only when the consequential choice/rationale itself remains required project knowledge under `decision-protocol.md`.
 9. Preserve unresolved consequential discoveries only in the smallest existing current owner when they must survive the session; do not create discovery archives or traceability histories.
 10. Return to the S2 gate and propagate only required deltas after G2 passes.
 11. Run `make knowledge-check` plus applicable code checks when implementation changes are later performed.
@@ -29,4 +29,4 @@ When the lifecycle routes work to S2, use `docs/process/domain-design-stage.md` 
 
 A journey, use case or capability is not automatically a Bounded Context. A class, database table, API, protocol, framework, deployment unit or code-sharing concern is not by itself a Bounded Context argument.
 
-Do not preload the whole strategic model, every context, or all known journeys/use cases when the semantic question is local. Expand only when the current boundary question demonstrates the need.
+Do not preload the whole strategic model, every context, all ADRs, or all known journeys/use cases when the semantic question is local. Expand only when the current boundary question demonstrates the need.
