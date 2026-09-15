@@ -1,27 +1,27 @@
 # Scoped Connectivity Inventory architecture boundary
 
-Status: `accepted current application-composition boundary`.
+Status: `G1-revalidated target application/read composition; legacy runtime migration pending`.
 
-Date: 2026-09-09.
+Date: 2026-09-15.
 
 ## Purpose
 
-Define how the resource-centric Connectivity workspace composes existing semantic owners while preserving their ownership, authority and failure boundaries.
+Define how the resource-centric Connectivity workspace composes current target semantic owners while preserving ownership, authority, temporal meaning and failure boundaries.
 
 Product behavior is owned by `docs/requirements/scoped-connectivity-inventory.md`. This document owns composition, consuming ports, evaluation order, batching and read-model constraints.
 
 Scoped Connectivity Inventory is not a Bounded Context, aggregate, database owner or source of copied business truth.
 
-## Composition
+## Target composition
 
 ```text
 Authority Management
 Resource Catalogue
 Application Communication Catalogue
-Connectivity Requirements
-Requirement-to-Policy Alignment
-Connectivity Decision
+Business Connectivity
+Access Governance
 Access Policy
+Access Policy Realization (when realization summary is requested)
         |
         v
 Scoped Connectivity Inventory application/read composition
@@ -30,7 +30,9 @@ Scoped Connectivity Inventory application/read composition
 HTTP / Web outer adapters
 ```
 
-Later dimensions may add Technical Access Evidence, Access Policy Realization and Network Enforcement Placement through the same owner-preserving pattern.
+Technical Access Evidence and Network Enforcement Placement may contribute only through accepted owner-preserving contracts required by a concrete read use case. Their presence does not make the inventory an owner of evidence, path or realization truth.
+
+Legacy Connectivity Requirements, Connectivity Decision and Requirement-to-Policy Alignment runtime modules are migration/current-state implementation details. They are not target semantic providers and must not be used to derive new domain contracts.
 
 ## Architectural rules
 
@@ -41,8 +43,9 @@ Later dimensions may add Technical Access Evidence, Access Policy Realization an
 5. Scope admission happens before local inventory data is returned.
 6. Independent enrichment failures preserve trustworthy base topology when the product contract permits partial results.
 7. Unknown/ambiguous contributor truth is represented explicitly, never converted into false absence.
-8. Catalogue visibility never substitutes for protected Requirement/Decision/Rule read contracts.
+8. Catalogue visibility never substitutes for protected Business Connectivity, Access Governance, Access Policy or realization read contracts.
 9. A persistent composite read store/cache is not required by default; add one only from measured workload/consistency evidence.
+10. `Needed`, governance/consent state, `Authorized`, `Materialized` and `Realized` remain distinct dimensions.
 
 ## Consumer-owned ports
 
@@ -54,108 +57,101 @@ The composition depends on narrow ports equivalent to:
 | page effective local Resource references by scope/asOf | Resource Catalogue |
 | batch Resource presentation/endpoint realization | Resource Catalogue |
 | batch Component Deployments bound to local Resources | Application Communication Catalogue |
-| batch exact DCS interactions for those deployments | Application Communication Catalogue |
-| coarse Requirement/currentness/alignment by exact interaction | Connectivity Requirements / Alignment composition |
-| coarse effective final Decision by exact subject/scope/asOf | Connectivity Decision |
-| coarse Rule existence/state/effectiveness by exact subject/asOf | Access Policy |
+| batch exact interactions for those deployments | Application Communication Catalogue |
+| coarse current Business Process / Connectivity Need justification | Business Connectivity |
+| coarse Access Request / bilateral governance state | Access Governance |
+| coarse current/effective Policy Rule authorization | Access Policy |
+| coarse realization/reconciliation result when available | Access Policy Realization |
 
-Port names are implementation-local. Their responsibilities and ownership boundaries are not.
-
-No adapter may replace these contracts with cross-module SQL joins.
+Port names are implementation-local. Their responsibilities and ownership boundaries are not. No adapter may replace these contracts with cross-module SQL joins.
 
 ## Evaluation order
 
-Recommended read flow:
+Recommended target read flow:
 
 1. authenticate actor outside the composition;
 2. validate offset-aware `asOf`;
 3. admit the selected scope through `ReadScopedConnectivity`;
 4. page local Resources through Resource Catalogue scope affiliation;
 5. batch-enrich local Resource presentation/realization;
-6. correlate effective ACC deployment bindings;
-7. expand exact ACC interactions for local Component Deployments;
-8. resolve remote Resource bindings/realization;
-9. enrich Need, Decision and Policy summaries independently.
+6. correlate effective ACC Component Deployments and exact interactions;
+7. resolve remote Resource context;
+8. enrich Business Need, Access Governance and Policy summaries independently;
+9. enrich APR realization summary only when the accepted product contract and authority allow it.
 
-Failure before local Resource admission returns no local inventory data.
-
-Failure in a later independent enrichment may keep trustworthy Resource/Component/interaction rows and mark only the affected dimension unavailable/unknown when allowed by the requirement contract.
+Failure before local Resource admission returns no local inventory data. Failure in a later independent enrichment may keep trustworthy Resource/Component/interaction rows and mark only the affected dimension unavailable/unknown when allowed by the product contract.
 
 ## Paging and batching
 
 Top-level paging is over effective local Resources so a Resource group is not split across pages.
 
-Potentially unbounded child/enrichment operations must be server-bounded and batch-oriented.
-
-The current ACC adapter applies a hard safety bound of 2000 rows to each child-enrichment batch. Exceeding that bound yields explicit partial/unavailable enrichment rather than silent truncation.
-
-Avoid N+1 owner calls where a bounded batch contract preserves the same semantics.
+Potentially unbounded child/enrichment operations must be server-bounded and batch-oriented. Avoid N+1 owner calls where a bounded batch contract preserves the same semantics.
 
 Search/filter/sort must not change semantic ownership or silently exclude required child data without an explicit product contract.
 
+Implementation-specific safety bounds belong to current-state/engineering documentation, not to this target semantic boundary.
+
 ## Read-model strategy
 
-The first implementation computes the inventory from owner facts at read time.
+The target composition does not require a persisted composite read model.
 
-A dedicated persisted read model may be introduced only when evidence establishes a material need such as:
-- measured query latency/volume;
-- source availability isolation;
-- repeatable snapshot needs not satisfied by current ports.
-
-If introduced, it remains derived projection state with explicit freshness/provenance; it does not become authoritative peer business truth.
+A dedicated persisted read model may be introduced only when evidence establishes a material need such as measured query latency/volume, source availability isolation, or repeatable snapshot needs not satisfied by current ports. If introduced, it remains derived projection state with explicit freshness/provenance; it does not become authoritative peer business truth.
 
 ## Request access orchestration boundary
 
-The current executable action starts only from an existing exact ACC-known interaction.
+The target action starts from a trusted ACC-known exact deployed interaction and a Process-backed Connectivity Need.
 
 The Web/application layer may orchestrate:
 
 ```text
-reuse selected scope + exact interaction
-    -> declare/reuse Connectivity Requirement
-    -> submit exact Access Rule Proposal
-    -> consume Decision
-    -> materialize/resolve Allowed Rule
+reuse selected scope + exact interaction + current Business Need
+    -> create/submit Access Request
+    -> collect required source-side and destination-side governance decisions
+    -> on effective grant, let Access Governance publish authorization
+    -> let Access Policy own resulting Policy Rule truth
 ```
 
-The orchestration must call existing application/domain commands. It must not write directly to Requirement, Decision or Access Policy persistence.
+The composition must not bypass Access Governance by materializing an Access Rule directly.
 
 It preserves:
-- `Required != Authorized`;
-- Proposal != Decision;
-- Decision != Access Rule.
-
-No persistent Access Request/process state is introduced by this composition.
-
-A Component with no ACC-known exact interaction cannot enter this command path until an accepted ACC/application capability supplies a trusted exact remote/DCS subject.
-
-## Runtime boundary
-
-Current runtime realization is:
 
 ```text
-Web
-  -> authenticated FastAPI outer adapter
-  -> Scoped Connectivity Inventory application composition
-  -> module-owned adapters/ports
-  -> module-owned PostgreSQL repositories
+Needed != Authorized
+Access Request != Policy Rule
+Authorized != Realized
 ```
 
-Transport DTOs, SQL schema and React state do not define the composition's semantic contract.
+Request initiation, each required approval/withdrawal action and later network mutation remain independently authorizable according to their owning contexts.
+
+A Component Deployment with no ACC-known exact interaction cannot enter this command path until ACC supplies a trusted exact remote/interaction contract.
+
+## Runtime migration boundary
+
+The repository still contains executable legacy Connectivity Requirements, Connectivity Decision and Requirement-to-Policy Alignment modules. They are evidence of current implementation and migration work only.
+
+Runtime adapters may temporarily translate target application intent to those modules while migration is incomplete, but:
+- legacy aggregate names and state machines do not become target contracts;
+- new target requirements must not cite legacy modules as semantic owners;
+- migration completion should remove obsolete adapters/modules rather than preserve them as parallel domain truth.
 
 ## Non-goals
 
 - new Connectivity Bounded Context;
 - cross-module persistence joins;
 - generic graph/CMDB engine;
-- duplicated Requirement/Decision/Rule details;
+- duplicated owner details;
 - generic distributed query platform;
 - persistent read store without evidence;
-- vendor/device execution semantics.
+- vendor/device execution semantics;
+- preservation of Connectivity Requirements, Connectivity Decision or Requirement-to-Policy Alignment as target concepts.
 
 ## Canonical references
 
 - product contract: `docs/requirements/scoped-connectivity-inventory.md`;
-- owner semantics: `docs/domain/semantic-ownership.md`, `docs/domain/resource-role-model.md`;
-- cross-cutting architecture: `docs/architecture/current-architecture.md`;
-- runtime/API details: `docs/engineering/http-api-contract.md`.
+- context relationships: `docs/domain/context-map.md`;
+- strategic ownership: `docs/domain/strategic-model.md`;
+- Business Connectivity: `docs/requirements/business-connectivity-g1.md`;
+- Access Governance: `docs/requirements/access-governance-g1.md`;
+- Access Policy: `docs/requirements/access-policy-core.md`;
+- realization/reconciliation: `docs/requirements/policy-realization-reconciliation-g1.md`;
+- runtime/current-state details: `docs/engineering/current-state.md` and `docs/engineering/http-api-contract.md`.
