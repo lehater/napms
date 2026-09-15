@@ -1,81 +1,105 @@
 # Application Catalogue Domain Target Requirements
 
-Status: `G1 behavior clarified; S2 ownership split aligned`.
+Status: `G1 revalidated for concrete Component deployment semantics 2026-09-16`.
 
-Date: 2026-09-15.
+Date: 2026-09-16.
 
 ## Scope
 
-These requirements define application communication semantics and the accepted separation between Application Communication Catalogue (ACC), Application Deployment (AD) and Resource Catalogue (RC).
+These requirements define observable application communication, component deployment and Resource realization behavior required by the selected first-MVP policy path. They do not prescribe aggregate, table, service or package boundaries.
 
 ## Requirements
 
-ACC shall:
+Application communication behavior shall:
 
 1. model an Application as a reusable definition containing Components;
-2. define each directed Interaction between a source Component and destination Component;
-3. keep Interaction independent from deployment, Resource and address realization;
-4. preserve decision-relevant interaction traffic as immutable `InteractionContractRevision` snapshots;
-5. require each contract revision to contain one or more vendor-neutral traffic alternatives;
-6. treat the complete set of alternatives in one revision as one atomic communication contract;
-7. require independently governed traffic subsets to be separate Interactions;
-8. publish stable opaque Application, Component, Interaction and InteractionContractRevision references.
+2. define each directed Interaction between a source Component and destination Component of the same Application;
+3. reject an Interaction whose source and destination Components belong to different Applications;
+4. keep Interaction meaning independent from deployment, Resource and address realization;
+5. preserve decision-relevant interaction traffic as immutable `InteractionContractRevision` snapshots;
+6. require each contract revision to contain one or more vendor-neutral traffic alternatives;
+7. treat the complete set of alternatives in one revision as one atomic communication contract;
+8. require independently governed traffic subsets to be separate Interactions;
+9. make a material traffic change create a new immutable revision while preserving the Interaction itself.
 
-AD shall:
+Component deployment behavior shall:
 
-9. model `ApplicationDeployment` as the stable logical deployment identity of one Application;
-10. model `ComponentPlacement` as the fact that a Component of that Application is placed on one Resource;
-11. allow ordinary scaling, Resource migration and placement replacement without changing ApplicationDeployment identity while logical deployment continuity is preserved;
-12. publish placement Resource references without copying Resource address realization.
+10. represent one concrete deployed instance of one Component on one Resource as one independently addressable Component Deployment;
+11. bind each Component Deployment to exactly one Component and exactly one Resource for the first MVP;
+12. create a different Component Deployment when the same Component is deployed on another Resource;
+13. allow several independently addressable Component Deployments of the same Component to coexist;
+14. not require a whole-Application logical deployment identity in order to create, govern or export access between concrete deployed Components;
+15. preserve enough identity to distinguish two otherwise identical Component instances deployed on different Resources;
+16. leave richer runtime/container/orchestrator instance semantics outside the first MVP unless separately required.
 
-RC shall:
+Resource behavior shall:
 
-13. own Resource identity and effective network AddressSpace;
-14. for the current scope, expose at most one effective AddressSpace per Resource at a logical time;
-15. represent that AddressSpace as either one `HostAddress` or one `Prefix`;
-16. allow address/prefix changes without changing Resource identity.
+17. own stable Resource identity/lifecycle independently from Component Deployment identity;
+18. for the current scope, expose at most one effective AddressSpace per Resource at a logical time;
+19. represent that AddressSpace as either one `HostAddress` or one `Prefix`;
+20. allow an address/prefix change without changing Resource identity.
 
-Governance shall identify the logical governed subject from:
+## Concrete access endpoint semantics
 
-```text
-InteractionContractRevisionRef
-+ sourceApplicationDeploymentRef
-+ destinationApplicationDeploymentRef
-```
+For access governance and policy export, the source and destination are concrete Component Deployments rather than whole-Application deployment plus a later placement expansion.
 
-Technical address realization is not part of that semantic subject identity.
-
-## Current deployment/resource/address semantics
+Conceptually:
 
 ```text
 ACC Component
-    -> AD ComponentPlacement
+    -> Component Deployment
         -> exactly one ResourceRef
             -> RC effective AddressSpace [0..1]
                 = HostAddress | Prefix
 ```
 
+Deploying the same Component on a second Resource produces a second independently selectable Component Deployment:
+
+```text
+Component A + Resource R1 -> ComponentDeployment 1
+Component A + Resource R2 -> ComponentDeployment 2
+```
+
+The first MVP does not infer that these two deployments share access policy merely because they reference the same Component.
+
 A Resource with no resolved current AddressSpace makes downstream technical materialization unresolved. A Prefix remains a Prefix and need not be expanded to individual hosts.
 
-## Explicit current limitation
+## Interaction revision behavior
 
-The current target does not model several simultaneous addresses/prefixes on one Resource, multiple interfaces, endpoint purpose, VIPs, deployment-specific exposure, `ResourceEndpoint` or `DeploymentEndpointBinding`. Those concepts require a future confirmed use case before entering the target model.
+An Interaction is the reusable directed communication definition between two Components of one Application. Its immutable revision fixes the exact traffic semantics for a decision or policy at a point in the lifecycle.
+
+Changing traffic such as TCP destination port `443 -> 8443` creates a new Interaction Contract Revision. Existing consumers of the older revision continue to refer to that older immutable revision until an accepted change explicitly moves them to the newer revision.
+
+A revision reference therefore identifies both the exact traffic contract and, through its owning Interaction, the corresponding source and destination Component definitions. Consumers need not carry a duplicate Interaction reference solely to recover that meaning.
+
+## Explicit current limitations
+
+The first MVP intentionally does not yet define:
+
+- several simultaneous addresses/prefixes on one Resource;
+- multiple interfaces or endpoint purpose;
+- VIPs or deployment-specific network exposure;
+- provider/container/pod identities;
+- whether several different Component Deployments may share one Resource simultaneously, because the selected policy/export behavior does not require that choice yet.
+
+These are not inferred from storage or implementation convenience.
 
 ## Acceptance invariants
 
-A conforming target must prove at least:
+A conforming target behavior must prove at least:
 
-- Interaction identity is Component-to-Component semantic identity and contains no deployment/Resource/address identity;
-- a ComponentPlacement references one Component and one Resource;
-- changing Resource address/prefix leaves Resource, ApplicationDeployment and governed-subject identity unchanged;
-- moving/replacing placements does not by itself create a new ApplicationDeployment while logical deployment continuity remains;
-- changing interaction traffic creates a new immutable contract revision;
-- a consumer cannot authorize only one traffic alternative from an atomic revision;
-- the published governed subject contains no ResourceEndpoint, IP address, protocol or port identity fields;
-- no consumer persistence adapter requires SQL foreign keys across BC-owned storage.
+- an Interaction never crosses Application boundaries;
+- changing traffic creates a new immutable Interaction Contract Revision without replacing the Interaction;
+- one Component Deployment identifies one Component deployed on one Resource;
+- deploying the same Component on another Resource produces another Component Deployment;
+- two Component Deployments of the same Component may participate in different access relationships;
+- changing a Resource address/prefix leaves Resource identity unchanged;
+- a consumer can resolve the endpoint Components and traffic semantics from the exact revision reference plus the concrete source/destination Component Deployment references;
+- missing Resource AddressSpace remains unresolved rather than becoming empty access;
+- no consumer persistence contract is required to use SQL foreign keys across semantic owners.
 
-## Superseded behavior
+## Relationship to current as-built behavior
 
-The 2026-09-14 requirement that ACC itself own `ComponentDeployment -> exactly one Resource`, that moving Resource necessarily create a new ComponentDeployment identity, and that ACC publish `DirectedInteractionIdentity{sourceComponentDeploymentRef, destinationComponentDeploymentRef, interactionContractRevisionRef}` is superseded by the accepted AD boundary and Interaction-template clarification.
+`application-catalogue-target.md`, ADR-012, ADR-013 and the implemented ACC compatibility model remain current **as-built reconstruction truth**. They may use `ApplicationDeployment`, `DeploymentInteraction` and compatibility `ComponentDeployment` concepts that do not define this target product behavior.
 
-Legacy runtime/migration artifacts may still use those terms and must be classified as current-state implementation rather than target domain truth.
+The target use of Component Deployment in this requirement is the concrete deployed Component instance required by current policy semantics. Its final Strategic owner, identity type and aggregate boundary are S2 decisions and must not be inferred from the as-built ACC compatibility implementation.
