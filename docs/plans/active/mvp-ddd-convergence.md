@@ -10,7 +10,7 @@ Finish the DDD needed by the first MVP vertical before any further code work.
 
 Result: **complete for the accepted first MVP happy path**.
 
-The earlier S3/S4 work remains non-authoritative downstream design evidence. The experimental target APR code already present in the branch was left unchanged and is frozen.
+The earlier attempted downstream S3/S4 plans were revoked after the project-owner instruction to complete DDD first. Their Git history remains available as non-authoritative evidence, but they are no longer active/current artifacts.
 
 ## Lifecycle correction
 
@@ -153,6 +153,6 @@ These reopen only on concrete requirement pressure.
 
 Do not continue to S3, S4 or implementation from this plan.
 
-No production code, tests, schemas, migrations, adapters, bootstrap, HTTP or UI changes are authorized. The existing experimental code remains untouched.
+No production code, tests, schemas, migrations, adapters, bootstrap, HTTP or UI changes are authorized. The branch diff against `main` is documentation-only at this checkpoint.
 
 A later architecture or implementation phase requires an explicit new project-owner request and a new downstream lifecycle decision from this G2 baseline.
