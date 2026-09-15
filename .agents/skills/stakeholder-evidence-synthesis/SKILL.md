@@ -1,55 +1,43 @@
 ---
 name: stakeholder-evidence-synthesis
-description: "Use when the task is to re-analyze accumulated stakeholder/user evidence across discussions or preserved sources to find recurring problems, usage patterns, journeys/use cases, requirement candidates, capability clues or boundary hypotheses. Do not use for routine stage-end evidence capture, ordinary S0/S1 elicitation, accepted UI journey validation, or Strategic DDD unless the prompt is explicitly about synthesizing the evidence corpus itself."
+description: "Use when the task explicitly asks to synthesize several current stakeholder/user evidence sources into problem themes, requirement candidates, capability clues or boundary hypotheses. Do not use for routine S0/S1 elicitation or as a reason to maintain a repository evidence archive."
 ---
 
 # Stakeholder Evidence Synthesis
 
 ## Responsibility
 
-Synthesize already preserved stakeholder/user evidence without turning frequency, wording or current interpretation into canonical truth.
+Synthesize the current evidence sources explicitly available to the task without turning frequency, wording or an earlier interpretation into accepted project truth.
 
-This Skill is deliberately lazy-loaded. Routine S0/S1 work captures consequential evidence through the stage protocols and `working-loop.md`; it does not invoke this Skill merely because a stakeholder gave an example.
+This Skill does not depend on a persistent repository evidence corpus. Git history and old conversations are not normal inputs. If the user supplies several current interviews/messages/files or asks to compare current evidence, use those sources directly.
 
 ## Inputs
 
-Start from the narrowest evidence scope that can answer the synthesis question:
+Load the narrowest current evidence set that can answer the question, plus current accepted requirements/domain truth only when needed for comparison.
 
-- current problem area/topic;
-- relevant preserved stakeholder evidence atoms or problem-register entries;
-- accepted requirements/domain truth only when needed to compare evidence against current interpretation;
-- provenance needed to distinguish independent observations from duplicated summaries.
-
-Do not preload all historical conversations, all problem registers, all journeys/use cases or the whole domain model.
+Do not preload unrelated conversations, historical repository states, all journeys/use cases or the whole domain model.
 
 ## Procedure
 
-1. **State the synthesis question.** Examples: identify recurring user problems, find independently useful outcomes, test requirement completeness, or look for capability/boundary clues.
-2. **Load narrowly.** Search/load only evidence for the affected topic and widen only when contradictions, gaps or cross-workstream reuse demonstrate the need.
-3. **Separate source from interpretation.** Preserve what stakeholders actually revealed independently from earlier requirement/domain conclusions.
-4. **Normalize without erasing differences.** Group equivalent observations, but retain materially different actors, contexts, constraints, minority cases and contradictions.
-5. **Distinguish repetition from duplication.** Multiple independent stakeholder observations strengthen evidence; copies/summaries of the same source do not.
-6. **Derive candidates, not truth.** Produce only the candidate views justified by the task: problem themes, journeys, use cases, requirement candidates, examples/scenarios, capability clues or Bounded Context hypotheses.
-7. **Classify each candidate.** Use `docs/process/decision-protocol.md` for semantic owner and accepted/constraint/proposal/hypothesis/unknown/conflict status.
-8. **Route to the owning stage.** S0 owns problem framing, S1 observable behavior, S2 domain meaning/boundaries. Do not accept cross-stage conclusions inside this Skill.
-9. **Persist minimally.** Update canonical artifacts only when the owning stage actually accepts a conclusion. Otherwise preserve only consequential synthesis findings in the smallest existing durable owner.
-10. **Discard working clustering.** Do not create a permanent synthesis report, global traceability graph or evidence taxonomy merely because the analysis was performed.
+1. State the synthesis question.
+2. Load only current sources relevant to that question.
+3. Separate source observation from interpretation.
+4. Group equivalent observations without erasing materially different actors, contexts, constraints or contradictions.
+5. Distinguish independent corroboration from copies/summaries of the same source.
+6. Produce candidates only: problem themes, journeys/use cases, requirements, capability clues or boundary hypotheses as applicable.
+7. Classify consequential candidates with `decision-protocol.md`.
+8. Route acceptance to the owning lifecycle stage: S0 problem framing, S1 observable behavior, S2 domain meaning/boundaries.
+9. Persist only conclusions accepted by their owning stage in current canonical artifacts.
+10. Discard working clustering after the current canonical owner absorbs any accepted result.
 
 ## Output
 
-Return a compact synthesis containing only what the current task needs, normally:
-
-- recurring/problem themes with supporting source references;
-- contradictions or weakly supported areas;
-- candidate journeys/use cases/requirements/capabilities/boundary clues as applicable;
-- semantic owner and decision status for each consequential candidate;
-- next owning lifecycle stage/action.
+Return only what the current task needs: supported themes, contradictions/weak areas, relevant candidates, their owner/status and the next owning lifecycle action.
 
 ## Guardrails
 
 - Evidence volume is not acceptance authority.
-- A stakeholder-proposed solution may reveal an underlying need without making the solution a requirement.
-- One example may support several later interpretations; do not copy it into every artifact.
-- Old evidence may be stale or superseded; retain provenance/time context where material.
-- This Skill does not validate whether an accepted UI journey works end-to-end; use `user-journey-validation` for that.
-- This Skill does not decide Bounded Context boundaries by itself; capability/boundary findings are evidence for S2 Strategic DDD.
+- A stakeholder-proposed solution may reveal a need without becoming a requirement.
+- Do not create transcript stores, synthesis archives, permanent evidence taxonomies or traceability graphs.
+- This Skill does not validate an implemented UI journey; use the journey-validation Skill for that.
+- This Skill does not decide Bounded Context boundaries by itself; boundary clues route to S2 Strategic DDD.
