@@ -41,9 +41,7 @@ Resource behavior shall:
 
 ## Concrete access endpoint semantics
 
-For access governance and policy export, the source and destination are concrete Component Deployments rather than whole-Application deployment plus a later placement expansion.
-
-Conceptually:
+For access governance and policy export, the source and destination are concrete Component Deployments rather than whole-Application deployment plus later placement expansion.
 
 ```text
 ACC Component
@@ -94,12 +92,22 @@ A conforming target behavior must prove at least:
 - deploying the same Component on another Resource produces another Component Deployment;
 - two Component Deployments of the same Component may participate in different access relationships;
 - changing a Resource address/prefix leaves Resource identity unchanged;
-- a consumer can resolve the endpoint Components and traffic semantics from the exact revision reference plus the concrete source/destination Component Deployment references;
+- a consumer can resolve endpoint Components and traffic semantics from the exact revision reference plus concrete source/destination Component Deployment references;
 - missing Resource AddressSpace remains unresolved rather than becoming empty access;
 - no consumer persistence contract is required to use SQL foreign keys across semantic owners.
 
+## Domain alignment
+
+S2 subsequently accepted:
+
+- **Application Communication Catalogue** as owner of Application/Component/Interaction/immutable revision meaning;
+- **Application Deployment** as owner of target `ComponentDeploymentId + ComponentRef + ResourceRef` identity/lifecycle;
+- **Resource Catalogue** as owner of Resource/AddressSpace/scope truth.
+
+See `docs/domain/application-deployment/tactical-model.md`, `docs/domain/application-communication-catalogue/target-tactical-model.md` and `docs/domain/resource-catalogue/tactical-model.md`.
+
 ## Relationship to current as-built behavior
 
-`application-catalogue-target.md`, ADR-012, ADR-013 and the implemented ACC compatibility model remain current **as-built reconstruction truth**. They may use `ApplicationDeployment`, `DeploymentInteraction` and compatibility `ComponentDeployment` concepts that do not define this target product behavior.
+`application-catalogue-target.md`, ADR-012, ADR-013 and the implemented ACC compatibility model remain current **as-built reconstruction truth**. They may use `ApplicationDeployment`, `DeploymentInteraction` and ACC-owned compatibility `ComponentDeployment` concepts that do not define this target product behavior.
 
-The target use of Component Deployment in this requirement is the concrete deployed Component instance required by current policy semantics. Its final Strategic owner, identity type and aggregate boundary are S2 decisions and must not be inferred from the as-built ACC compatibility implementation.
+The target `ComponentDeployment` belongs to Application Deployment and means one concrete Component-on-Resource instance. It must not be inferred from or conflated with the implemented ACC compatibility identity merely because the same term appears in both models.
