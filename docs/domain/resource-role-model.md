@@ -1,6 +1,6 @@
 # Resource Role Model
 
-Status: `Strategic summary aligned 2026-09-15`.
+Status: `Strategic summary aligned to MVP DDD 2026-09-15`.
 
 ## Resource inclusion rule
 
@@ -24,22 +24,30 @@ AddressSpace is technical realization, not Resource identity. Address/prefix cha
 AD, not RC, owns where application Components are placed:
 
 ```text
-ComponentPlacement -> opaque ResourceRef
+ApplicationDeployment
+    -> current Set<(ComponentRef, ResourceRef)>
 ```
 
-RC does not own Application/Component semantics or placement lifecycle. AD does not own Resource address realization.
+One Component may have zero, one or many current Resource placements in one logical ApplicationDeployment. RC does not own Application/Component semantics or placement continuity. AD does not own Resource address realization.
 
 ## Responsibility and authority
 
 `ResourceScopeAffiliation(ResourceRef, ResponsibilityScopeRef, validity, provenance)` is RC truth. `ResourceResponsibility` is operational/contact truth. Neither grants actor authority.
 
-Authority Management independently answers whether actor A may perform action X for scope S at time T. Access Governance owns how Resource scope facts establish bilateral approval obligations.
+Authority Management independently answers whether Actor A may perform Action X for Scope S at Time T. Access Governance owns how Resource scope facts establish bilateral approval obligations.
 
-Changing scope affiliation/responsibility does not rewrite historical governance facts. Whether it changes current authorization validity is an active S1 Access Governance question.
+Changing scope affiliation/responsibility does not rewrite historical governance facts.
+
+Accepted current-authorization behavior is:
+
+- if the resolved source/destination approval obligations remain materially unchanged, the current AG grant remains valid;
+- if they materially change, AG withdraws the current grant and publishes `AuthorizationWithdrawn`;
+- the governed subject identity itself does not change merely because placement/scope/address facts changed;
+- historical approvals do not silently restore authorization after withdrawal.
 
 ## Enforcement identity
 
-Logical Firewall / enforcement attachment identities remain Network Enforcement Placement truth and are distinct from Resource identity and provider/device realization.
+Firewall identity and policy-locator relevance remain Network Enforcement Placement truth and are distinct from Resource identity and provider/device realization.
 
 ## Governed subject consequence
 
