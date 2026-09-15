@@ -1,95 +1,67 @@
 # Web UI Component Composition
 
-Status: `accepted implementation guidance`.
+This document defines current ownership and composition rules for reusable React UI in NAPMS. Product/domain semantics remain owned by requirements/domain/architecture artifacts; visual tokens and shared interaction rules are owned by `docs/ui/design-system.md`.
 
-Roadmap: `docs/engineering/web-ui-component-composition-roadmap.md`.
-
-This document defines ownership and composition rules for reusable React UI in NAPMS. Product/domain semantics remain owned by canonical domain/requirements/architecture artifacts; visual tokens and detailed reference behavior remain owned by `docs/ui/design-system.md`.
-
-## Purpose
-
-Make a component's location communicate its responsibility and expected reuse boundary.
-
-The target dependency/composition direction is:
+## Composition direction
 
 ```text
 semantic tokens
   -> design-system primitives
     -> generic design-system components
-      -> reusable product/UI patterns
+      -> reusable UI patterns
         -> feature components
           -> feature pages
 ```
 
-Higher layers compose lower layers. Generic layers do not depend on feature/domain semantics.
+Higher layers compose lower layers. Generic layers do not depend on feature or domain semantics.
 
 ## Ownership
 
 ### Visual tokens
 
-`web/src/design-system/tokens.css` is the source of truth for reusable visual constants. It owns the palette and semantic state colors, typography micro-sizes, radii, shadows, control/surface dimensions, page-width presets, and table geometry.
+`web/src/design-system/tokens.css` owns reusable visual constants: palette and semantic-state colors, typography micro-sizes, radii, shadows, control/surface dimensions, page-width presets and table geometry.
 
-Feature code may choose semantic presentation and compose layout, but it must not carry raw visual constants that establish a parallel theme or geometry system. If a reusable visual value is needed, add or reuse a token and consume it through a design-system primitive/component/pattern where practical.
+Feature code may choose semantic presentation and screen layout but must not establish a parallel theme or geometry system.
 
-### Design-system primitives
+### Design-system primitives and components
 
-Own the smallest stable visual/layout building blocks.
+Primitives own the smallest stable visual/layout building blocks. Generic components own reusable controls and focused visual elements used across unrelated features.
 
-Inputs: generic content and visual props.
+They accept generic content and visual semantics and do not know NAPMS domain vocabulary. A generic component may expose tones such as positive/warning/critical/neutral; business states remain mapped in feature code.
 
-Outputs: token-based geometry/styling.
+### Design-system layout and patterns
 
-They do not know NAPMS domain vocabulary.
+Shared layout owns stable page/application geometry such as workspace and page-header structure. Reusable patterns own compositions with stable interaction/layout semantics such as catalogue toolbars, pagination, dialog shells and detail sections.
 
-### Design-system components
-
-Own reusable generic controls and focused visual components used across unrelated features.
-
-Examples include buttons, inputs/selects, checkbox, table pieces, search input, alerts, tags, status indicators and loading/error/empty states.
-
-A generic component may expose semantic visual tones such as positive/warning/critical/neutral. It must not expose business states such as `Allowed`, `Covered`, `Required`, `RetiredApplication`, or `NoFinalDecision`.
-
-### Design-system layout
-
-Own stable page/application geometry such as workspace and page-header structure. Page width is selected by semantic `PageWorkspace` presets (`fluid`, `content`, `narrow`); feature pages do not define their own fixed page widths.
-
-### Design-system patterns
-
-Own reusable compositions of generic components with stable interaction/layout semantics.
-
-Examples may include list/catalogue toolbars and paging, dialog shells, detail sections/rows and inline-edit interaction after concrete reuse is demonstrated.
-
-Patterns provide focused composition slots. They must not become universal prop-driven page/form/CRUD frameworks.
+Patterns provide focused composition slots. They do not become universal prop-driven page/form/CRUD frameworks.
 
 ### Feature components
 
-Own reusable presentation and domain-to-visual mapping within one feature.
+Feature components own reusable presentation and domain-to-visual mapping within one semantic feature. They may know feature DTO/view-model types and domain vocabulary.
 
-A feature component may know feature DTO/view-model types and domain vocabulary. Examples include `DecisionStatus`, `PolicyStatus`, `RequirementAlignment`, endpoint presentation or application/deployment cards.
-
-If another feature needs the same domain meaning, reuse it from the explicit semantic owner rather than copying it into a root shared namespace.
+When another feature needs the same domain meaning, reuse from the explicit semantic owner rather than copying the concept into a root shared namespace.
 
 ### Feature pages
 
-Own screen-level/use-case orchestration:
+Feature pages own screen/use-case orchestration:
 
-- load/select screen data;
-- coordinate feature actions;
-- integrate routing/navigation;
-- compose design-system patterns and feature components;
-- map screen events to feature API/application actions.
+- loading/selecting screen data;
+- coordinating feature actions;
+- routing/navigation integration;
+- composing shared patterns and feature components;
+- mapping screen events to feature API/application actions.
 
-Pages should not act as local component libraries. Page-local helper components are appropriate only when they are genuinely one-screen details with no stable independent responsibility.
+Pages are not local component libraries. Page-local helpers are appropriate only for genuinely one-screen details with no stable independent responsibility.
 
 ## Extraction decision
 
 Classify a candidate in this order:
 
-1. Domain-specific meaning -> feature component.
-2. Generic control/visual behavior useful across unrelated features -> design-system component.
-3. Stable reusable composition of generic UI -> design-system pattern.
-4. Pure technical React/helper behavior with no product semantics and genuine cross-feature reuse -> `lib/`.
-5. One consumer or unstable responsibility -> keep local.
+1. domain-specific meaning -> feature component;
+2. generic control/visual behavior useful across unrelated features -> design-system component;
+3. stable reusable composition of generic UI -> design-system pattern;
+4. pure technical React/helper behavior with no product semantics and demonstrated cross-feature reuse -> `lib/`;
+5. one consumer or unstable responsibility -> keep local.
 
 Reuse is demonstrated, not predicted. Prefer a second concrete consumer before extracting a composition pattern, except for an obviously stable primitive/control contract.
 
@@ -97,50 +69,31 @@ Reuse is demonstrated, not predicted. Prefer a second concrete consumer before e
 
 - Prefer children/slots and small focused props over inheritance and large mode/variant matrices.
 - Keep domain-to-tone mapping in feature code; render through generic status/tag primitives.
-- Keep visual constants in `tokens.css`; do not use raw hex/RGB colors, Tailwind palette colors, local fixed page widths, repeated arbitrary typography/radius/shadow values, or numeric table-width contracts in feature code.
-- Feature code may use structural layout utilities such as `grid`, `flex`, gaps and responsive arrangement where those describe screen composition rather than reusable visual-system constants.
-- Use semantic `DataTable` width presets (`compact`, `standard`, `wide`, `extra-wide`); their concrete minimum widths are token-owned.
-- Keep server-backed filtering, sorting and paging semantics with the feature/read model; generic UI patterns own presentation and interaction contracts only.
+- Keep visual constants in `tokens.css`; feature code does not own raw palette, fixed page widths or repeated geometry constants.
+- Structural `grid`, `flex`, gaps and responsive arrangement may remain feature-local when they describe one screen rather than a reusable design-system rule.
+- Keep server-backed filtering, sorting and paging semantics with the feature/read model; generic UI patterns own presentation and interaction only.
 - Keep feature-specific forms as feature components even when they use a generic dialog shell.
-- Extract technical hooks only when lifecycle, cancellation, error and refresh semantics are genuinely equivalent across at least two consumers.
-- Do not build an ad-hoc server-state framework through generic hooks. If server-state orchestration becomes a broad concern, evaluate that architecture/dependency explicitly.
+- Extract technical hooks only when lifecycle, cancellation, error and refresh semantics are genuinely equivalent across consumers.
+- Do not create an ad-hoc server-state framework through generic hooks.
 
-## Namespace rule
+## Namespace ownership
 
-`web/src/design-system/` is the durable owner of generic visual primitives, components, layout and reusable product UI patterns.
+`web/src/design-system/` is the durable owner of generic visual primitives, components, layout and reusable UI patterns.
 
-`web/src/components/ui/` is existing transitional structure. During the component-composition migration, move a generic control to `design-system/components/` when its ownership is touched and clear. Migrate consumers directly; do not create compatibility facades or preserve two permanent generic UI namespaces.
+`web/src/features/<feature>/` owns feature-specific presentation and screen orchestration. `web/src/lib/` owns genuinely generic technical helpers. `web/src/components/` may contain reusable composition that is not a design-system primitive and does not own domain semantics.
+
+No second generic visual ownership namespace is introduced alongside `web/src/design-system/`.
 
 ## Quality signals
 
-A healthy feature page reads primarily as orchestration and composition. Its JSX should expose the screen anatomy rather than reimplementing controls, badges, dialog frames or repeated sections.
+A healthy feature page reads primarily as orchestration and composition. Its JSX exposes screen anatomy rather than reimplementing controls, badges, dialog frames or repeated sections.
 
-Large file size alone does not require splitting. Split when a unit has an independent responsibility/change reason, is reused, or hides the page's screen-level composition.
+Large file size alone does not require splitting. Split when a unit has an independent responsibility/change reason, is reused, or hides page-level composition.
 
 ## Anti-patterns
 
-Avoid:
-
-- page-local copies of buttons/inputs/status badges/tables/page states;
-- raw palette/design constants in feature JSX;
-- page-local fixed width systems or numeric table geometry;
-- a generic design-system component containing NAPMS domain vocabulary;
-- a giant `EntityPage`, `CRUDPage`, `UniversalForm` or equivalent abstraction;
-- root-level `shared/model` business types;
-- hooks whose only purpose is to hide one page's state variables;
-- speculative abstractions created before stable responsibility is understood;
-- duplicated generic ownership between `components/ui` and `design-system/components`.
+Avoid page-local copies of shared controls/page states, raw design constants in feature JSX, feature-owned fixed-width systems, domain vocabulary in generic design-system components, giant universal entity/CRUD/form abstractions, root-level shared business types, hooks that only hide one page's state variables, and speculative abstractions created before responsibility is understood.
 
 ## Review checklist
 
-For new or changed UI:
-
-- Is the page limited to screen/use-case orchestration plus truly local details?
-- Is reusable domain presentation under the owning feature's `components/`?
-- Is generic visual behavior composed from the design system?
-- Are reusable visual constants owned by `tokens.css` rather than feature code?
-- Are page and table widths selected through semantic presets rather than local numbers?
-- Does any proposed shared component contain domain vocabulary that should remain feature-owned?
-- Is an abstraction supported by demonstrated reuse or a stable primitive contract?
-- Can the same result be achieved by composing smaller existing components instead of adding a universal mode-driven component?
-- Are user-visible semantics preserved unless a separate accepted product change says otherwise?
+For new or changed UI, verify that page code stays at use-case orchestration, reusable domain presentation remains feature-owned, generic visuals come from the design system, tokens own reusable constants, shared components contain no accidental domain vocabulary, abstractions have demonstrated responsibility/reuse, and user-visible semantics are unchanged unless the owning requirement changes.
