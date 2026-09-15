@@ -1,8 +1,8 @@
 # Resource Catalogue — Target realization semantics
 
-Status: `S2 simplified target accepted for current scope; Tactical MVP model aligned 2026-09-15`.
+Status: `S2 simplified target revalidated for current scope 2026-09-16`.
 
-Date: 2026-09-15.
+Date: 2026-09-16.
 
 ## Purpose
 
@@ -21,7 +21,7 @@ AddressSpace = HostAddress | Prefix
 
 For the current scope, one Resource has at most one effective `AddressSpace` at one logical time. When present, it is either one host address or one network prefix.
 
-`AddressSpace` is Resource Catalogue truth. Application Deployment references only `ResourceRef`; it does not copy an IP/prefix and does not select an endpoint.
+`AddressSpace` is Resource Catalogue truth. Application Deployment references only `ResourceRef` from each concrete `ComponentDeployment`; it does not copy an IP/prefix and does not select an endpoint.
 
 ## Address realization
 
@@ -30,6 +30,7 @@ Address realization is a temporal/current fact of the Resource, not Resource ide
 Current rules:
 
 - changing the effective host address or prefix does not change `ResourceId`;
+- it therefore does not change a ComponentDeployment that refers to the same Resource identity;
 - the value is the corporate-visible address/prefix meaningful for access management;
 - Resource Catalogue does not calculate NAT; it records the already meaningful corporate-visible realization;
 - absence of a current AddressSpace is valid and must be distinguishable from an empty set of required access;
@@ -48,9 +49,11 @@ CurrentResourceRealization
     provenance/freshness reference
 ```
 
-Required-policy materialization resolves each `ComponentPlacement.ResourceRef` through this contract. A missing/unresolved AddressSpace makes affected materialization unresolved; it is not silently omitted.
+Required-policy materialization resolves each source/destination `ComponentDeployment.ResourceRef` through this contract. A missing/unresolved AddressSpace makes affected materialization unresolved; it is not silently omitted.
 
 A Prefix remains a Prefix. Materialization is not required to enumerate every host address inside it.
+
+Evidence Access Recognition may also consume address-to-Resource correlation semantics where exact source qualification permits it. Ambiguous/missing correlation remains unresolved and does not create policy truth.
 
 ## Explicit current limitation
 
@@ -60,6 +63,6 @@ This limitation is deliberate: the target model prefers one Resource -> one effe
 
 ## Tactical alignment
 
-`tactical-model.md` now implements this target semantic shape with `ResourceAddressFact` history and a derived `CurrentResourceRealization` projection. The former I27 `ResourceRealizationVersion -> EndpointAddress+` representation is superseded for target semantics.
+`tactical-model.md` implements this target semantic shape with `ResourceAddressFact` history and a derived `CurrentResourceRealization` projection.
 
 Existing curation/history guarantees remain where compatible: stable Resource identity, temporal explainability/provenance, Resource Scope Affiliation and Resource Responsibility. Persistence/versioning mechanics remain downstream implementation concerns.
