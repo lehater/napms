@@ -1,6 +1,6 @@
 # Semantic Ownership
 
-Status: `S2 affected ownership aligned 2026-09-16; Tactical DDD pending revalidation`.
+Status: `S2 ownership and dependent Tactical DDD aligned; G2 PASS 2026-09-16`.
 
 Canonical relationships: `context-map.md`.
 
