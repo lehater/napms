@@ -26,9 +26,7 @@ Remain parked at design.
 
 Do not modify production code, tests, schemas, migrations, bootstrap, adapters, HTTP or UI unless the project owner explicitly starts a later downstream phase.
 
-The experimental target APR code already committed earlier on this branch is intentionally left in place and frozen. It is implementation evidence only, not canonical domain truth.
-
-The previous G4 Slice 1 lease remains revoked.
+The previous G4 Slice 1 lease remains revoked. The current branch diff against `main` contains documentation only; no backend implementation change is part of the accepted S2 result.
 
 Any later code work requires a new explicit progression through the applicable downstream lifecycle from this accepted G2 baseline.
 
