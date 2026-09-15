@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Validate structural coverage of NAPMS Skill routing examples."""
+"""Validate structure and coverage of the Skill-routing eval corpus.
+
+This is intentionally deterministic and does not execute a model. Actual model-routing
+observations are evaluated separately by tools/evaluate_skill_routing_results.py.
+"""
 
 from __future__ import annotations
 
@@ -49,13 +53,18 @@ def main() -> int:
 
         undercovered = sorted(skill for skill in skills if coverage[skill] < 2)
         if undercovered:
-            raise ValueError("each Skill needs at least two routing cases: " + ", ".join(undercovered))
+            raise ValueError(
+                "each Skill needs at least two corpus cases: " + ", ".join(undercovered)
+            )
 
     except (OSError, ValueError, json.JSONDecodeError) as exc:
-        print(f"Skill routing validation failed: {exc}", file=sys.stderr)
+        print(f"Skill routing corpus validation failed: {exc}", file=sys.stderr)
         return 1
 
-    print(f"Skill routing corpus OK: {len(cases)} cases for {len(skills)} skills")
+    print(
+        f"Skill routing corpus structurally valid: {len(cases)} cases for {len(skills)} skills; "
+        "model routing not executed"
+    )
     return 0
 
 
