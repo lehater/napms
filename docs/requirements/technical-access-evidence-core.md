@@ -1,128 +1,204 @@
-# Technical Access Evidence core requirements
+# Technical Access Evidence Core requirements — I17
+
+Status: `accepted I17 WP0 behavioral baseline`.
+
+Date: 2026-09-09.
 
 ## Purpose
 
-Define source-qualified durable technical-access evidence without choosing vendor syntax, device APIs, deployment topology or downstream policy-realization semantics.
+Define the first executable product behavior for Technical Access Evidence without choosing vendor syntax, device APIs, deployment topology or downstream policy-realization semantics.
 
-## Evidence ownership
+## REQ-TAE-001 — Own source-qualified technical evidence
 
-TAE owns immutable Technical Access Evidence Sets containing normalized entries qualified by evidence kind, source, source scope, source capture, source-time statement and NAPMS recording time.
+TAE shall own durable immutable Technical Access Evidence Sets containing normalized technical access entries qualified by:
+- evidence kind;
+- evidence source;
+- source scope;
+- source capture;
+- source-time statement;
+- NAPMS recording time.
 
-Recording evidence never asserts that represented access is required, authorized, desired or domain-valid.
+Recording evidence shall not assert that the represented access is required, authorized, desired or domain-valid.
 
-## Evidence kinds
+## REQ-TAE-002 — Support the accepted evidence kinds
 
-The current source-neutral vocabulary is:
+The first vocabulary is exactly:
+- `Configured`;
+- `TrafficDerived`;
+- `Imported`.
 
-```text
-Configured
-TrafficDerived
-Imported
-```
+Configured evidence reports configured material from a source.
+TrafficDerived evidence is derived from observed communication.
+Imported evidence comes from a file/external artifact.
 
-Kind describes evidence provenance/derivation. It does not imply completeness, freshness or authorization.
+Kind alone shall not imply completeness, freshness or authorization.
 
-## Identity and idempotency
+## REQ-TAE-003 — Stable set identity and capture idempotency
 
 Each Evidence Set has a generated stable `EvidenceSetId`.
 
-Semantic capture identity is:
+One semantic capture is identified by:
 
 ```text
 EvidenceSourceReference + SourceCaptureReference
 ```
 
-Retrying the same capture with identical source-qualified capture payload returns the existing set unchanged. Payload equality includes kind, source scope, EvidenceTime and a multiset of normalized source entry facts; incidental parser/list order is ignored while duplicate multiplicity and factual sourcePosition remain significant.
+Retrying the same capture with identical **source-qualified capture payload** returns the existing set.
 
-Generated Set/Entry IDs and retry-attempt recording time do not participate in payload equality. The same capture identity with a different source-qualified payload is a conflict and never overwrites the existing immutable set.
+Payload equality includes kind, source scope, Evidence Time and a multiset of normalized source entry facts. Incidental parser/list order is ignored; duplicate multiplicity and factual sourcePosition remain significant.
 
-Each entry has a generated stable `EvidenceEntryId`. TAE does not deduplicate entries by normalized predicate content because duplicate source rules/records may themselves be factual evidence.
+It excludes generated Set/Entry IDs and the retry attempt's recording time.
 
-## Source qualification
+The existing set keeps its original IDs and original `RecordedAt`.
 
-Every Evidence Set carries a mandatory opaque `SourceScopeReference` describing the source collection boundary. It is not automatically an Authority Management Responsibility Scope, RC ownership scope, NEP target identity or Access Policy governance scope.
+The same capture identity with different source-qualified payload is a conflict and shall not overwrite history.
 
-An optional source-native entry reference may be preserved for traceability.
+## REQ-TAE-004 — Preserve duplicate source entries
 
-## Time semantics
+Each Technical Access Entry has a generated stable `EvidenceEntryId`.
+
+TAE shall not deduplicate entries by normalized predicate content because duplicate rules/records can be factual source evidence.
+
+An optional source-native entry reference may be preserved as provenance.
+
+## REQ-TAE-005 — Keep source scope distinct from business/enforcement scope
+
+Each Evidence Set stores a mandatory opaque `SourceScopeReference`.
+
+The reference describes the source collection boundary only.
+
+It shall not automatically be interpreted as:
+- Authority Management Responsibility Scope;
+- Resource Catalogue ownership scope;
+- Network Enforcement Placement target identity;
+- Access Policy governance scope.
+
+## REQ-TAE-006 — Keep source time distinct from recording time
 
 Every Evidence Set stores:
+- mandatory offset-aware `RecordedAt`;
+- `EvidenceTime = Unknown | Instant | Window`.
 
-```text
-RecordedAt
-EvidenceTime = Unknown | Instant | Window
-```
+Known times are offset-aware and windows are valid half-open/ordered observation ranges with `start < end`.
 
-Known instants are offset-aware. A Window is ordered and half-open with `start < end`. Unknown source time remains unknown; `RecordedAt` is never substituted as source-effective or observation time.
+Unknown source time shall remain unknown. `RecordedAt` shall not be substituted as source-effective/observation time.
 
-## Normalized predicate
+## REQ-TAE-007 — Normalize the technical communication region
 
-Every entry expresses:
+Every entry shall express a normalized Technical Access Predicate containing:
+- source address constraint;
+- destination address constraint;
+- `ProtocolSelector = Any | IpProtocolNumber(0..255)`;
+- source port constraint;
+- destination port constraint.
 
-```text
-source address constraint
-destination address constraint
-ProtocolSelector = Any | IpProtocolNumber(0..255)
-source port constraint
-destination port constraint
-```
+Address constraints support Any or canonical IP ranges.
 
-Address constraints support `Any` or canonical IP ranges. Port constraints distinguish `NotApplicable`, `Any` and canonical ranges.
+Port constraints distinguish `NotApplicable`, `Any` and canonical ranges.
 
-Source/vendor protocol names normalize to exact IP protocol numbers. Multi-protocol source expressions may expand into several entries only when expansion preserves the represented technical region exactly.
+Source/vendor protocol names shall be normalized to exact IP protocol numbers. A multi-protocol source expression may be expanded into multiple entries only when that preserves the represented region exactly.
 
-When `ProtocolSelector = Any`, both source and destination port constraints are `Any`. For one exact protocol number, `NotApplicable | Any | Ranges` is used only when faithful to that source fact.
+When `ProtocolSelector = Any`, both source and destination port constraints shall be `Any`; `Any + Ranges` and `Any + NotApplicable` are invalid because they do not define one unambiguous cross-protocol technical region.
 
-Source-native service/object names remain provenance when they have no accepted source-neutral meaning. Normalization never broadens or narrows represented source semantics.
+For one exact protocol number, `NotApplicable | Any | Ranges` may be used only when faithful to that protocol/source fact.
 
-## Optional action and order
+Source-native service/object names are provenance, not predicate semantics in the first slice.
 
-An entry may preserve normalized `Permit | Block` and source position/order only when the source fact supports them faithfully. TrafficDerived evidence does not manufacture Permit/Block merely because communication occurred.
+Normalization shall not broaden or narrow represented source semantics.
 
-## Complete capture rule
+## REQ-TAE-008 — Store action/order only when factual
 
-A successfully recorded Evidence Set contains the complete set of entries accepted from that semantic capture under the current TAE contract.
+An entry may preserve:
+- normalized `Permit | Block` action;
+- source position/order.
 
-If any source item cannot be normalized faithfully, the capture is not reported as successfully recorded. The current contract has no partial-success capture semantics.
+These facts are optional and must be absent when the source cannot support a faithful mapping.
 
-A capture that produces zero normalized entries may be persisted as an empty Evidence Set. Without an explicit source/consumer completeness contract, empty evidence does not mean that no access is configured, no traffic occurred outside the observed boundary, or desired policy is satisfied.
+Observed traffic shall not manufacture a configured Permit/Block action merely because communication occurred.
 
-## Freshness, coverage and confidence
+## REQ-TAE-009 — Reject silent partial normalization
 
-TAE does not select one globally current/fresh Evidence Set and defines no universal `Fresh | Stale`, `Complete | Partial` or confidence scale.
+A successful Evidence Set represents the complete set of entries accepted from that capture under the first I17 contract.
 
-Queries may filter by source, source scope, kind and supported recorded/source-time ranges without turning recency into truth. Currentness, completeness and confidence exist only where a concrete source/consumer contract defines their meaning.
+If any source item cannot be normalized faithfully, the capture shall not be reported as a successfully recorded complete Evidence Set.
 
-`SourceScopeReference` is provenance, not a completeness claim.
+Future explicit partial-capture semantics require an accepted coverage model.
 
-## Provenance
+## REQ-TAE-010 — Allow empty evidence without claiming absence
 
-Every Evidence Set preserves source, capture, scope, kind, source-time and recording-time provenance. Every entry preserves generated identity plus factual optional native source reference/position.
+A source capture that produces zero normalized entries may be persisted as an empty Evidence Set.
 
-Raw source payload is not mandatory TAE state, but a concrete producer/integration must retain enough source qualification or reference for traceability.
+Without an accepted coverage/completeness claim, empty evidence shall not mean:
+- no access is configured;
+- no traffic occurred outside the observed boundary;
+- desired policy is satisfied.
 
-## Queries
+## REQ-TAE-011 — Do not invent current/fresh evidence
 
-TAE supports:
+I17 shall not expose a domain operation that automatically selects one globally current/fresh Evidence Set.
 
-```text
-GetTechnicalAccessEvidenceSet(evidenceSetId)
-FindTechnicalAccessEvidenceSet(source, captureReference)
-ListTechnicalAccessEvidenceSets(filters, page, pageSize)
-```
+Freshness thresholds and winner selection remain undefined until a source/consumer contract requires them.
 
-Reads expose evidence facts only. They do not assign business meaning, select enforcement targets, compute required-vs-configured realization, design policy changes or render provider configuration.
+Queries may filter evidence by source, source scope, kind and recorded/source time without converting recency into truth.
 
-## Persistence uncertainty
+## REQ-TAE-012 — Defer universal freshness/coverage/confidence vocabulary
 
-Recording reports success only when the authoritative immutable set outcome is established. Unknown commit outcome remains explicit uncertainty. Retry uses semantic capture identity to resolve authoritative state without creating an alternate version.
+The first slice shall not invent:
+- `Fresh | Stale`;
+- `Complete | Partial`;
+- a global confidence score.
 
-## Human workflow boundary
+These concepts may be added only with an accepted source/consumer meaning and revisit trigger.
 
-TAE core requires no human-facing ingest/read workflow merely to accept evidence from a trusted integration. Any operator action that is exposed to users requires its own accepted workflow and Authority Management admission.
+Source Scope is provenance, not a completeness claim.
 
-## Current references
+## REQ-TAE-013 — Preserve traceable provenance
 
-- Tactical semantics: `docs/domain/technical-access-evidence/tactical-model.md`.
-- Executable requirements examples: `docs/requirements/technical-access-evidence-acceptance-examples.md`.
-- Architecture boundary: `docs/architecture/technical-access-evidence-boundary.md`.
+Every Evidence Set shall preserve source/capture/scope/kind/time/recorded-at provenance.
+
+Every entry shall preserve its generated identity and optional native source entry reference/position.
+
+Raw source payload is not mandatory TAE domain state, but the concrete adapter must preserve enough source qualification/reference for traceability.
+
+## REQ-TAE-014 — Query durable evidence without downstream realization semantics
+
+The first read capability shall support:
+- get by Evidence Set ID;
+- find by source + capture reference;
+- paged listing/filtering of Evidence Sets.
+
+Reads shall return evidence facts only.
+
+They shall not:
+- assign application/business meaning to predicates;
+- select enforcement targets;
+- compute required-vs-configured realization status;
+- design policy changes;
+- render vendor configuration.
+
+## REQ-TAE-015 — Persistence uncertainty is explicit
+
+Recording shall not report success unless the authoritative immutable set outcome is established.
+
+A commit outcome that cannot be established shall be returned as explicit uncertainty.
+
+A retry must use source + capture identity so it can resolve the authoritative result without creating a silent alternate version.
+
+## REQ-TAE-016 — Keep human authority/workflow out until required
+
+I17 core does not require a new human-facing ingest/read workspace or new Authority Management actions.
+
+The first source path may be a trusted outer adapter/composition path.
+
+Human/operator actions require a separate accepted workflow and authority contract.
+
+## Trace
+
+Tactical semantics:
+- `docs/domain/technical-access-evidence/tactical-model.md`.
+
+Executable examples:
+- `docs/requirements/technical-access-evidence-acceptance-examples.md`.
+
+Architecture:
+- `docs/architecture/technical-access-evidence-boundary.md`.

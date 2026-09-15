@@ -1,12 +1,16 @@
-# External identity and authoritative-source boundary
+# Optional External Identity and Source Extension boundary
+
+Status: `accepted I23 optional-extension boundary`.
+
+Date: 2026-09-10.
 
 ## Responsibility
 
-Keep external identity and source integration outside NAPMS domain semantics while preserving the local-first runtime and bounded-context ownership.
+Keep future external identity/source integration architecturally possible without changing the current local-first runtime or promoting external systems to a product dependency.
 
-## Authentication path
+## Current operating model
 
-The primary runtime path is:
+The supported runtime remains:
 
 ```text
 local username/password
@@ -17,9 +21,13 @@ local username/password
     -> Authority Management action/scope admission
 ```
 
-Local authentication is a supported product mechanism, not a provider adapter hidden behind domain abstractions.
+Local authentication is not a temporary test-only mechanism. It is the primary current authentication path.
 
-An external authentication integration, when configured, terminates at the source-neutral seam:
+Authority Management, ACC and Resource Catalogue continue to use NAPMS-owned local state for the current product.
+
+## Optional external identity seam
+
+A future external adapter may terminate at the following dormant seam:
 
 ```text
 external authentication mechanism
@@ -31,17 +39,23 @@ external authentication mechanism
     -> existing session/application boundary
 ```
 
-Exactly one effective actor mapping is required. `Unmapped`, `Ambiguous` and `Unknown` fail closed. Domain and application modules do not depend on OIDC/OAuth/JWT/vendor SDK types.
+The seam is intentionally source-neutral. Domain/application modules shall not depend on OIDC/OAuth2/JWT/vendor SDK types.
+
+Exactly one effective actor mapping is required. `Unmapped`, `Ambiguous` and `Unknown` fail closed.
+
+The optional seam does not require a concrete IdP, HTTP callback route, persistent actor-mapping repository or provider configuration in I23.
 
 ## Authority boundary
 
 Authentication establishes actor identity only. Authority Management remains the owner of business permission.
 
-External claims, groups, roles or token scopes are source facts unless an Authority-owned import/mapping contract assigns them NAPMS authority meaning.
+No local or future external authentication adapter may answer business authorization itself.
 
-## External source boundary
+If a future IdP exposes groups/roles/claims, those values remain authentication-source facts until an explicit Authority-owned mapping/import requirement is accepted.
 
-For an external authoritative source:
+## Optional source-adapter seams
+
+For any future external source, the boundary is:
 
 ```text
 external source
@@ -51,27 +65,60 @@ external source
     -> context-owned repository/state
 ```
 
-Authority Management, Application Communication Catalogue and Resource Catalogue retain semantic ownership. There is no shared enterprise-source domain model and no direct cross-context ownership of source tables.
+Authority Management, ACC and Resource Catalogue each retain semantic ownership. There is no shared enterprise-source domain model and no direct cross-context source-table ownership.
 
-Source-specific synchronization, freshness, completeness and deletion semantics belong to the concrete integration contract. They are not inferred by generic infrastructure.
+I23 does not implement synchronization engines, schedulers, transport protocols, external schemas, completeness/deletion semantics or production source adapters.
+
+## Deterministic proof
+
+The only executable external-integration proof required by I23 is a deterministic in-process stub where useful.
+
+For identity, the existing skeleton proves:
+- provider-qualified external subject identity;
+- deterministic mapping;
+- `Mapped | Unmapped | Ambiguous | Unknown` outcomes;
+- fail-closed behavior.
+
+This proves an extension point only. It does not prove a real provider integration.
 
 ## Dependency direction
 
 ```text
 Domain
   <- Application / consuming ports
-      <- outer adapters
+      <- optional outer adapters
           <- runtime/composition
 ```
 
-Provider-specific adapters remain optional runtime composition. The local runtime does not depend on their presence.
+The default runtime need not instantiate optional external adapters at all.
 
-## Invariants
+## Consequences
 
-1. Local authentication remains independently operable.
-2. External identity maps to exactly one NAPMS actor or fails closed.
-3. Authentication does not grant business authority.
-4. Provider/protocol types remain outside Domain and application semantics.
-5. Each bounded context retains ownership of imported semantic state.
-6. External identifiers remain source/correlation identifiers unless the owning context explicitly defines stronger identity semantics.
-7. Shared technical integration infrastructure does not create shared domain ownership.
+Positive:
+- the current local product stays simple and self-contained;
+- future external integration has an explicit place to attach if ever required;
+- no speculative enterprise infrastructure or domain semantics are introduced;
+- business authorization remains independent from authentication mechanics.
+
+Trade-off:
+- real enterprise/provider compatibility is deliberately unimplemented and unproven;
+- any future concrete integration will require its own accepted requirements and adapter work.
+
+## Deferred until explicitly required
+
+- IdP vendor and OIDC/OAuth2 details;
+- external actor provisioning/mapping persistence;
+- external Authority source;
+- external ACC/Resource sources;
+- CMDB/directory integration;
+- Legacy/MSSQL bridge;
+- source synchronization/freshness/completeness/deletion behavior.
+
+None of these is a prerequisite for the current local NAPMS product.
+
+## References
+
+- requirements: `docs/requirements/enterprise-identity-authoritative-sources.md`;
+- cross-cutting architecture: `docs/architecture/current-architecture.md`;
+- semantic ownership: `docs/domain/semantic-ownership.md`;
+- execution pointer: `docs/plans/active/README.md`.

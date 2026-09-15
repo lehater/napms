@@ -1,14 +1,16 @@
-# Policy Realization Reconciliation requirements
+# Policy Realization Reconciliation — G1 Requirements Passport
 
-## Purpose
+Status: `G1 revalidated and aligned to current ACC/AD/RC/NEP/APR ownership 2026-09-15`.
 
-Keep semantic authorization, required technical policy, observed configured policy, reconciliation and execution as separate truths.
+## Problem / outcome
 
-## Required comparison behavior
+The system must distinguish what is semantically authorized from what the network currently realizes. Authorization, materialization, configured-policy observation, reconciliation and execution are separate truths.
 
-1. Current semantic authorization and configured technical realization are independent.
-2. Reconciliation distinguishes missing required access from configured access not explained by current required policy.
-3. Comparison operates on normalized effective permit semantics rather than raw provider ACL rows.
+## Observable requirements
+
+1. Current semantic authorization and configured technical realization shall remain independent truths.
+2. Reconciliation shall distinguish missing required access from technically present access not explained by current required policy.
+3. Comparison shall use normalized effective permit semantics, not raw provider ACL rows.
 4. For complete comparable permit spaces:
 
 ```text
@@ -17,17 +19,17 @@ missing = required - configured
 excess  = configured - required
 ```
 
-5. An authorized Policy Rule remains valid when technical materialization is unresolved; the realization result is unresolved/uncomparable rather than silently omitted.
+5. A semantically authorized Policy Rule remains valid when technical materialization is unresolved; the realization outcome is `Unresolved/Uncomparable`, not silent omission.
 6. Required technical policy is derived from the aggregate of all effective semantic authorizations.
-7. Equivalent technical predicates may be supported by several Policy Rules; technical deduplication preserves provenance.
-8. Withdrawal of one authorization does not remove technical access still required by another current authorization.
-9. Withdrawal or regrant changes required policy by recomputation, never by identifying one provider row as “owned” by one Policy Rule.
-10. Configured technical state carries enough completeness/freshness/provenance information for APR to determine whether comparison is trustworthy.
-11. Execution success does not prove semantic convergence; convergence requires later provider observation/interpretation and comparison.
+7. Equivalent technical predicates may be supported by several Policy Rules; deduplication preserves provenance.
+8. Withdrawal of one authorization shall not remove technical access still required by another current authorization.
+9. Withdrawal/regrant changes required policy by recomputation; it is never interpreted as “delete the ACL line originally created for this Rule”.
+10. Configured technical state carries freshness/provenance sufficient to distinguish trustworthy current evidence from stale/unknown evidence.
+11. Execution success does not prove semantic convergence; convergence requires later provider observation/interpretation and comparison again.
 12. `missing`, `excess`, `Realized`, `Drift`, `Uncomparable` and semantic authorization remain distinct meanings.
-13. Automatic remediation is additive-only for `missing`. `excess` is report/audit evidence and does not authorize automatic removal or narrowing.
+13. In the first MVP, automatic remediation is additive-only on `missing`; `excess` is report/audit evidence and does not authorize automatic removal/narrowing without a separately accepted managed-policy scope.
 
-## Semantic-to-technical materialization
+## Current semantic-to-technical materialization
 
 For one effective Access Policy Rule:
 
@@ -41,36 +43,43 @@ ACC InteractionContractRevision
     -> source/destination ComponentRef
     -> complete immutable trafficAlternatives
 
-AD source/destination ApplicationDeployment + endpoint Component
+AD source ApplicationDeployment + source Component
+    -> all current applicable ComponentPlacement(ResourceRef)
+
+AD destination ApplicationDeployment + destination Component
     -> all current applicable ComponentPlacement(ResourceRef)
 
 RC each ResourceRef
-    -> current AddressSpace [0..1] = HostAddress | Prefix
+    -> effective AddressSpace [0..1] = HostAddress | Prefix
 
 supported technical pairs
     -> NEP FirewallCandidate[] / accessListNames[]
     -> TargetRequiredPolicy[] grouped by ComparisonScope
 ```
 
-Every applicable placement is part of completeness. A complete empty placement set is distinct from unavailable or unresolved placement truth.
+Every applicable placement is part of completeness. Downstream materialization must not arbitrarily choose one Resource when a Component has several placements.
 
-The current materialization edge submits only `HostAddress -> HostAddress` pairs to NEP. A `Prefix` remains valid RC truth but makes that materialization unresolved; it is not expanded into host addresses merely to continue processing.
+A complete empty placement set and an unavailable/unresolved placement result are distinct.
 
-Current comparison scope:
+For the first end-to-end MVP edge, only `HostAddress -> HostAddress` pairs are submitted to NEP. `Prefix` remains valid RC truth but makes the current materialization unresolved; it is never expanded into hosts merely to continue the pipeline.
+
+The current comparison scope is:
 
 ```text
 ComparisonScope = firewallId + accessListName
 ```
 
-Missing candidate targets or missing policy locators leave affected materialization unresolved rather than producing an empty required policy.
+A missing candidate target or missing access-list locator leaves the affected required materialization unresolved rather than creating an empty policy.
 
 ## Configured-policy interpretation
 
-Provider ordering, deny/default behavior, objects/groups, aliases and native syntax are interpreted by the Provider Policy Interpreter before APR comparison.
+Provider ordering, deny/default behavior, objects/groups, aliases and native syntax are interpreted by the Provider Policy Interpreter integration capability before APR comparison.
 
-APR receives a `ConfiguredEffectivePolicySnapshot` with explicit comparison scope, completeness, unsupported-semantics information, freshness and provenance. TAE may record source-qualified evidence but does not choose the configured snapshot that APR treats as current and complete.
+APR receives a `ConfiguredEffectivePolicySnapshot` with explicit scope, completeness, unsupported-semantics information, freshness and provenance.
 
-## APR outcomes
+TAE may record source-qualified technical evidence but does not decide which evidence is the current complete configured-policy truth for APR.
+
+## APR outcome
 
 APR compares one complete `TargetRequiredPolicy` with one complete configured snapshot for the same ComparisonScope.
 
@@ -79,9 +88,9 @@ Realized <=> missing is empty AND excess is empty
 Drift    <=> missing is non-empty OR excess is non-empty
 ```
 
-Mismatched, incomplete, unknown or unsupported inputs are `Uncomparable`, not `Drift` or `Realized`.
+Mismatched/incomplete/unknown/unsupported inputs are `Uncomparable`, not `Drift` or `Realized`.
 
-## Remediation boundary
+## Current remediation boundary
 
 ```text
 missing != empty
@@ -95,19 +104,30 @@ Realized or Uncomparable
     -> no mutation intent
 ```
 
-An additive intent covers selected missing permit space and does not narrow already configured access. If excess also exists, additive remediation may satisfy required permits while excess remains. `Realized` still requires a new observation and comparison.
+An additive verified intent must cover the selected missing permit space and must not narrow already configured access. If `excess` also exists, additive remediation may satisfy all required permits while excess remains; final `Realized` still requires a new observation/comparison.
 
-## Ownership
+## Important negative requirements
+
+- `Authorized` is not `Realized`.
+- `Withdrawn` is not `RemovedFromFirewall`.
+- NEO success is not convergence proof.
+- one Policy Rule is not one provider ACL row.
+- unresolved materialization is not empty required policy.
+- incomplete configured evidence is not empty configured policy.
+- `excess` is not automatic deletion authority.
+- Resource address/placement changes do not redefine semantic authorization subject identity by themselves.
+
+## Current ownership
 
 - AP owns current semantic authorization.
 - ACC owns immutable InteractionContractRevision traffic meaning.
 - AD owns ApplicationDeployment and ComponentPlacement truth.
 - RC owns Resource AddressSpace.
-- NEP owns enforcement candidate/policy-locator relevance.
-- Required Policy Materialization is derived composition producing complete `TargetRequiredPolicy` or unresolved.
-- Provider Policy Interpreter owns provider-native interpretation into configured effective policy.
-- APR owns comparison, semantic delta and verified source-neutral change intent.
+- NEP owns candidate Firewall/policy-locator relevance.
+- RPM is derived composition producing complete TargetRequiredPolicy or unresolved.
+- Provider Policy Interpreter owns provider-native interpretation.
+- APR owns comparison, semantic delta, accepted change design and semantic verification.
 - Provider Policy Renderer owns provider-native rendering of verified intent.
-- NEO owns controlled mutation lifecycle and outcome.
+- NEO owns controlled mutation lifecycle/outcome.
 
-No additional Bounded Context is implied for these composition steps.
+No additional peer Bounded Context is introduced merely for the composition steps above.

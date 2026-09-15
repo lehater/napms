@@ -1,92 +1,66 @@
 # Network Environment Operations architecture boundary
 
-## Purpose
+Status: `accepted I22 stub-first architecture`.
 
-Realize controlled network-target mutation without leaking provider transport, persistence or framework mechanics into NEO Domain/Application semantics.
+Date: 2026-09-10.
 
-## Module boundary
+## Decision
 
-NEO is a framework-independent semantic module with Domain, Application and consumer-owned ports. Provider/device transports, persistence adapters and deterministic test adapters remain outer infrastructure.
+I22 is implemented as a separate framework-free semantic module with Domain + Application + consumer-owned ports. Provider/device transports and the deterministic stub are outer adapters.
 
 ```text
-TargetPolicyArtifact
+I21 RenderedConfiguration
     -> NEO Application: ExecuteNetworkOperation
-        -> MutationAuthorityPort
+        -> AuthorityPort
         -> OperationRepository
         -> TargetExecutionPort
-            <- provider/device adapter
-            <- deterministic test adapter
+            <- deterministic target stub first
+            <- real Cisco adapter later when selected by evidence
 ```
 
-Network Environment Operations owns operation identity, mutation workflow state, execution outcome and operation provenance. It does not own rendered policy meaning or enforcement-target identity.
+Network Environment Operations (NEO) owns operation identity, mutation workflow state, execution outcome and execution audit semantics. It does not own rendered configuration semantics or Enforcement Target identity.
+
+## Stub-first constraint
+
+No real lab is currently available. Therefore the first transport adapter is an in-process deterministic target simulator. It must expose the same acquisition/apply contracts needed by a future real adapter while making its non-production status explicit in naming and composition.
+
+Passing stub tests proves only NEO orchestration semantics.
 
 ## Ports
 
 Application owns:
-
 - `MutationAuthorityPort` — action-specific admission for network mutation;
-- `TargetExecutionPort` — acquire operation-scoped current target state and apply one artifact under an expected revision;
-- `OperationRepository` — reserve/load/store operation identity and established result for idempotency.
+- `TargetExecutionPort` — acquire current target state and apply one artifact under expected revision;
+- `OperationRepository` — reserve/load/store operation identity/result for idempotency.
 
-No device SDK, SSH/REST client, database-driver or framework type enters Domain/Application.
+No device SDK, SSH client, REST client, database or framework type enters Domain/Application.
 
-General technical-evidence acquisition does not use NEO as its semantic gateway. Acquisition and NEO may share lower-level provider/device client infrastructure only when Architecture chooses that realization without merging their ports or ownership.
+## Concurrency/idempotency
 
-## Concurrency and idempotency
-
-`operationId` is the command idempotency identity. Target revision/base correlation is the optimistic-concurrency boundary.
+Operation id is the command idempotency key. Target revision is the optimistic concurrency token.
 
 The application sequence is:
+1. validate/reserve operation identity;
+2. authorize mutation;
+3. acquire pre-state;
+4. compare expected revision if supplied;
+5. apply against acquired revision;
+6. on definite apply success, reacquire post-state;
+7. compare post-state artifact digest;
+8. persist final operation result.
 
-1. validate or reserve operation identity;
-2. authorize the mutation action;
-3. acquire operation-scoped pre-state;
-4. validate expected revision/base correlation;
-5. apply against the acquired revision;
-6. when apply is definitely accepted, reacquire operation-scoped post-state;
-7. verify correspondence to the supplied artifact;
-8. persist the final operation result.
-
-A target adapter must make apply conditional on the supplied concurrency expectation. If the provider cannot establish that guarantee, the adapter reports the resulting uncertainty explicitly rather than manufacturing `Verified`.
-
-Conflicting reuse of one operation ID for a different target/artifact intent fails closed. An identical retry returns the established result and does not repeat mutation.
+A target adapter must make an apply call conditional on the supplied expected revision. If it cannot provide that guarantee, the adapter contract is insufficient for `Verified` and must map uncertainty explicitly.
 
 ## Failure boundary
 
-Provider/transport failures are translated by adapters into the explicit NEO outcome vocabulary. Application code does not infer success from request submission, connection state or transport acknowledgement alone.
+Transport exceptions/timeouts are mapped by adapters into explicit `Rejected` or `Unknown` apply outcomes. Application code must not infer success from submission or connection state.
 
-An unknown apply outcome remains `Unknown`; it is not blindly retried or converted to success. A stale/mismatched precondition prevents mutation.
+Unknown apply outcome terminates the first-slice operation as `Unknown`; no automatic retry/rollback is attempted.
 
 ## Persistence
 
-`OperationRepository` is owned by NEO Application. Its concrete storage is an outer adapter. Durable persistence is required whenever the selected runtime must preserve operation idempotency/outcome across process failure; an in-memory implementation is valid only for deterministic test/composition scenarios that make the non-durable boundary explicit.
-
-Repository mechanics do not alter NEO semantic identity or outcome rules.
+The first slice uses an in-memory operation repository. This is sufficient to prove lifecycle/idempotency in-process, not crash recovery. Durable operation persistence is a later I22 stage only if selected before final absorption.
 
 ## Authority
 
-Authority Management remains the semantic owner of mutation eligibility. NEO consumes an explicit action/scope admission through `MutationAuthorityPort`.
-
-A test composition may supply a deterministic authority adapter, but no target adapter may bypass or infer mutation authority from provider credentials, Resource metadata or transport access.
-
-## Dependency direction
-
-```text
-NEO Domain
-    ^
-    |
-NEO Application + NEO-owned ports
-    ^
-    |
-persistence / authority / provider adapters / composition
-```
-
-## Architecture guardrails
-
-- no provider SDK or transport type in Domain/Application;
-- no provider policy interpretation or rendering inside NEO;
-- no general TAE acquisition/read gateway hidden behind `TargetExecutionPort`;
-- no mutation before explicit authority admission and precondition validation;
-- no blind retry after uncertain apply outcome;
-- no cross-context private-model or repository access;
-- no claim of semantic convergence from transport success alone.
+Authority Management remains semantic owner of action eligibility. The first executable stub composition may use a deterministic authority adapter for tests, but the application dependency remains an explicit port so mutation authority cannot be bypassed by a real transport adapter.
