@@ -1,16 +1,16 @@
 # Application Communication Catalogue — Target Domain Model
 
-Status: `S2 affected-edge revalidated; deployment ownership moved to Application Deployment`.
+Status: `S2 affected-edge revalidated; target Tactical model aligned 2026-09-15`.
 
-This document is the target ACC model. Earlier ACC-owned `ComponentDeployment`, Resource binding and `DirectedInteractionIdentity` semantics are superseded by the Application Deployment boundary decision.
+Canonical MVP Tactical model: `target-tactical-model.md`.
+
+Earlier ACC-owned `ComponentDeployment`, Resource binding and `DirectedInteractionIdentity` semantics are superseded by the Application Deployment boundary decision.
 
 ## MVP modelling rule
 
-For the current MVP, model only domain semantics required to complete the minimal end-to-end happy path. Preserve context boundaries and stable identities so richer behavior can be added later, but do not implement speculative extension points as current domain concepts.
+Model only domain semantics required for the minimal end-to-end happy path. Preserve stable identities and immutable decision-relevant communication contracts; defer richer workflows/version presentation/persistence concerns.
 
-In particular, revision workflows, richer lifecycle/state machines, replacement semantics and other history mechanisms are deferred unless the working happy path requires them. Audit/history needs may be satisfied by the existing audit/provenance mechanism without promoting every change into a domain revision model.
-
-## Model
+## Strategic shape
 
 ```text
 ApplicationDefinition
@@ -20,54 +20,71 @@ ApplicationDefinition
   -> Interaction
       -> source Component
       -> destination Component
-      -> traffic
+      -> current InteractionContractRevision
+
+InteractionContractRevision
+  -> immutable trafficAlternatives[1..N]
 ```
 
 ### ApplicationDefinition
 
-Stable ACC-owned identity grouping Components and their declared interactions. It describes the application definition, not a deployment of that application.
+Stable ACC-owned identity grouping Components and declared Interactions. It describes the application definition, not a deployment.
 
 ### Component
 
-Stable ACC-owned application role inside exactly one Application Definition. The parent Application is immutable for the Component lifetime.
+Stable ACC-owned application role inside exactly one ApplicationDefinition. Parent Application identity is immutable for the Component lifetime.
 
 ### Interaction
 
-Stable ACC-owned directed communication template between two Components of the same Application Definition. Interaction describes a possible logical component-to-component communication; it does not know deployment, Resource, address or endpoint realization.
+Stable ACC-owned directed communication template between two Components of the same ApplicationDefinition.
 
 MVP invariants:
 
-- both ends belong to the same Application Definition;
-- self-interaction (`A -> A`) is valid;
-- at most one Interaction exists for one directed Component pair inside an Application Definition;
-- `A -> B` and `B -> A` are different Interactions;
-- source and destination are immutable after creation; changing either end means creating another Interaction;
-- traffic is part of the current Interaction state for MVP; a dedicated domain revision model is deferred.
+- both endpoints belong to the same ApplicationDefinition;
+- self-interaction is valid;
+- at most one Interaction exists for one directed Component pair;
+- reverse direction is a different Interaction;
+- endpoints are immutable;
+- traffic changes preserve Interaction identity but create a new immutable contract revision.
 
-If the same Component pair appears to need several independent Interactions, first challenge whether the Components actually contain several semantic roles that should be modelled as separate Components.
+### InteractionContractRevision
+
+Immutable decision-relevant traffic snapshot for one Interaction.
+
+Downstream governance keys on `InteractionContractRevisionRef`, so a material traffic change creates a new revision identity while old revisions remain historically resolvable.
+
+The revision contains the complete atomic set of vendor-neutral traffic alternatives. Consumers may not authorize/materialize only one preferred subset of a revision.
+
+The target does **not** require a rich revision workflow, version-number scheme, supersession state machine or independently editable revision aggregate for MVP. Those are deferred unless a concrete product journey requires them.
 
 ## Lifecycle baseline
 
-NAPMS uses retirement rather than physical domain deletion unless a context explicitly requires otherwise. A domain object that is still used by an active dependency cannot be retired; the user must remove or retire blockers first. Historical identity/data may remain readable after retirement.
+Application/Component/Interaction keep the minimal retirement baseline where accepted dependency rules allow it. No richer state machine is introduced for the happy path.
 
-For MVP, do not add richer lifecycle machinery unless required by the happy path. Interaction keeps a stable identity. If support for restoring a previously retired Interaction is required, the same Interaction identity is reused rather than creating a second identity for the same directed Component pair.
+Published InteractionContractRevisions are immutable historical contract truth and are not rewritten after downstream reference.
 
 ## Published semantic contracts
 
-ACC publishes only the identities and current communication meaning required by consumers:
+ACC publishes:
 
 ```text
 ApplicationRef
 ComponentRef
 InteractionRef
-current traffic contract
+InteractionContractRevisionRef
+current Interaction contract revision
+immutable revision resolution
 ```
 
-Application Deployment consumes Application/Component identities and owns where Components are placed. Downstream contexts combine ACC Interaction identity with AD deployment identities when they need a concrete governed/deployed subject. ACC does not own or publish a concrete deployment pair.
+AD consumes Application/Component identity and owns deployment/placement.
+
+AG/AP use the exact immutable contract revision in governed-subject identity.
+
+RPM resolves that revision and preserves its complete traffic semantics.
 
 ## Resource realization semantics
 
-None belong to ACC. The current chain is:
+None belong to ACC:
 
 ```text
 ACC Interaction/Component semantics
@@ -75,9 +92,7 @@ ACC Interaction/Component semantics
 + RC Resource -> effective HostAddress | Prefix
 ```
 
-Deployments can use the declared Interaction to derive technically possible interactions between concrete realizations/placements of its Components. The derivation and resulting policy/rule semantics do not belong to ACC.
-
-Address changes do not alter ACC Interaction identity.
+Address/placement changes do not alter ACC Interaction or contract-revision identity.
 
 ## Cross-context rule
 
@@ -85,8 +100,9 @@ Consumers treat published references as opaque semantic identities rather than r
 
 ## Deliberately deferred beyond MVP
 
-- dedicated `InteractionContractRevision` domain workflow and immutable revision history;
-- richer ACC lifecycle states and restoration workflows beyond what the happy path requires;
+- revision numbering/version-string presentation;
+- draft/publish/review workflow for catalogue revisions;
+- richer lifecycle states;
 - persistence/repository structure;
 - migration from the implemented legacy ApplicationDeployment / DeploymentInteraction shape;
 - richer communication-contract semantics not required by the first end-to-end scenario.
