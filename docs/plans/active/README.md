@@ -1,77 +1,67 @@
 # Active execution
 
-Current: `apr-mvp-change-intent.md`
-Goal: continue the thin MVP vertical path from exact APR semantic comparison into one safe source-neutral change intent without claiming authority over unrelated configured access.
-Current task: resolve the S1 remediation boundary — whether APR may automatically remove `excess` or MVP is additive-only on `missing`.
-Lifecycle stage: `S1`
+Current: `mvp-vertical-consistency.md`
+Goal: verify the first accepted end-to-end MVP semantic path is internally coherent before any implementation authorization.
+Current task: run a bounded cross-contract consistency pass over ACC -> AD -> RC -> AG -> AP -> RPM -> APR -> renderer -> NEO.
+Lifecycle stage: `S2`
 Stage state: `IN_PROGRESS`
-Lifecycle basis: accepted AG/AP/RPM semantics and the completed APR MVP exact-comparison checkpoint.
+Lifecycle basis: accepted 2026-09-15 AG Q1/Q2/Q3 decisions, APR exact-comparison checkpoint, additive-only remediation decision, ADR-020 and ADR-021.
 Implementation authorization: `none`
 Authorized scope: `none`
 Authorization basis: `none`
 
 ## MVP execution rule
 
-Build the smallest working end-to-end happy path, not a feature-complete domain model. Define only semantics required by that path; preserve stable context boundaries, identities and public contracts; defer revisions, richer lifecycle/state machines, migration machinery, optimization and edge-case semantics until concrete pressure appears. Prefer a thin vertical path across contexts over completing each context in depth first.
+Build the smallest working end-to-end happy path, not a feature-complete domain model. Define only semantics required by that path; preserve stable context boundaries, identities and public contracts; defer richer lifecycle, generalized scope algebra, Prefix-aware NEP, managed-policy removal, optimization, migration machinery and edge-case semantics until concrete pressure appears.
 
-Current progression:
+## Current vertical baseline
 
 ```text
-ACC + RC -> AD
+ACC InteractionContractRevision
+        -> AD ApplicationDeployment / ComponentPlacement
+        -> RC Resource / HostAddress realization
         -> AG bilateral authorization
-        -> AP current semantic Policy Rule
+        -> AP current Policy Rule
         -> RPM TargetRequiredPolicy
         -> APR common/missing/excess
-        -> current S1: safe MVP change-intent boundary
+        -> VerifiedChangeIntent(ENSURE-PERMIT)
+        -> Provider Policy Renderer
+        -> TargetPolicyArtifact
+        -> NEO controlled mutation
 ```
 
-## Completed checkpoint
+Current deliberate limitations:
 
-APR comparison for one complete `firewallId + accessListName` scope is now explicit:
-
-```text
-common  = required ∩ configured
-missing = required - configured
-excess  = configured - required
-```
-
-- `Realized` iff missing and excess are empty;
-- `Drift` iff either is non-empty;
-- `Uncomparable` is distinct from drift and never authorizes remediation;
-- complete empty configured policy is valid; incomplete/unknown evidence is not empty;
-- required/configured provenance is retained for explanation.
-
-## Current blocker
-
-The target model has no accepted managed-policy scope proving that NAPMS owns every configured permit in an ACL. Therefore APR can calculate `excess`, but automatic removal of that excess is not yet justified.
-
-Current non-authoritative MVP candidate:
-
-```text
-missing -> may generate source-neutral ENSURE-PERMIT intent
-excess  -> report only; no automatic removal
-Realized -> no intent
-Uncomparable -> no intent
-```
-
-This candidate remains S1 until explicitly accepted by the owner.
+- AG first path requires exactly one applicable ResponsibilityScope per side;
+- Prefix Resource realization is preserved upstream but RPM is unresolved for the current HostAddress-only NEP edge;
+- APR may remediate `missing` only; `excess` is report/audit evidence, not automatic removal;
+- provider rendering must prove semantic equivalence or fail closed;
+- NEO `Verified` is immediate artifact/application verification, not final semantic convergence.
 
 ## Working set
 
 Read first:
 
-- `docs/plans/active/apr-mvp-change-intent.md`
+- `docs/plans/active/mvp-vertical-consistency.md`
+- `docs/domain/context-map.md`
+- `docs/domain/strategic-model.md`
+- `docs/domain/strategic-model.json`
+- `docs/requirements/access-governance-g1.md`
+- `docs/domain/access-governance/target-tactical-model.md`
+- `docs/domain/access-policy/tactical-model.md`
+- `docs/decisions/ADR-020-required-policy-materialization-is-derived-composition.md`
+- `docs/requirements/access-policy-realization-mvp.md`
 - `docs/domain/access-policy-realization/README.md`
-- `docs/decisions/ADR-021-provider-policy-interpretation-and-rendering-boundaries.md`
+- `docs/requirements/provider-policy-renderer-mvp.md`
+- `docs/requirements/network-environment-operations.md`
+- `docs/domain/network-environment-operations/tactical-model.md`
 
-Use current runtime `ManagedReconciliationScope` only as migration evidence, not target truth.
+Expand only when a concrete contradiction points to another owner document.
 
 ## Gate
 
-The exact APR comparison slice is coherent. The next change-design step is blocked only on the product decision above.
-
-No implementation authorization exists.
+No implementation authorization exists. This pass may align documentation/contracts only.
 
 ## Next
 
-Obtain the owner decision on additive-only MVP remediation. If accepted, define the minimal `VerifiedChangeIntent` and continue to provider rendering / NEO handoff.
+Finish the bounded consistency pass. If no blocking semantic contradiction remains, record the vertical design checkpoint as ready for an explicit implementation-authorization decision rather than silently starting implementation.
