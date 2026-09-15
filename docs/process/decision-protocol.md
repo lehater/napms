@@ -35,7 +35,7 @@ Every material statement must also be distinguishable as:
 
 Stakeholder statements about problems, goals, usage, examples, workarounds, constraints, risks and operating context are source evidence. They are not automatically accepted requirements or domain truth.
 
-When consequential evidence must survive the conversation, preserve only the minimum evidence needed by the current owner to interpret or decide the active question. Do not create transcript archives, discovery-history documents or supersession narratives. Git history preserves replaced repository state.
+When consequential evidence must survive the conversation, preserve only the minimum evidence needed by the current owner to interpret or decide the active question. Do not create transcript archives or discovery-history documents.
 
 ## Discovery entity classification
 
@@ -80,13 +80,15 @@ When a later-stage choice creates a new externally observable constraint, explic
 
 ## Recording accepted decisions
 
-Record each accepted consequence directly in the canonical current artifact owned by its semantic level:
+Record accepted normative consequences in the artifact owned by their semantic level:
 
-- requirements for accepted observable behavior and quality constraints;
-- domain for accepted meaning, identity, lifecycle, invariants and semantic ownership;
-- architecture for accepted realization structure and dependency/data boundaries;
-- engineering for current operational or implementation contracts.
+- requirements for observable behavior and quality constraints;
+- domain for meaning, identity, lifecycle, invariants and semantic ownership;
+- architecture for realization structure and dependency/data boundaries;
+- engineering for API, persistence, runtime and operational contracts.
 
-Keep only the rationale needed to interpret the current contract correctly. Propagate required consequences to dependent current artifacts and remove replaced statements rather than preserving parallel models.
+Use an ADR under `docs/decisions/` when the **decision itself** is required project knowledge: a consequential choice among alternatives whose rationale, trade-offs, compatibility consequences or revisit conditions are needed to reconstruct or safely evolve the current as-built/target design. Such an ADR is current design documentation, not a decision-history archive.
 
-Do not create a separate decision-history document for an accepted choice. Git history is the archive for replaced decisions and repository state. Chat transcripts are not canonical project truth.
+An ADR may remain after implementation. Remove it only when it no longer constrains or explains any current as-built or target design and its still-required normative consequences are fully represented elsewhere.
+
+Do not retain supersession chains or obsolete alternatives solely for history. Git history remains the archive for replaced decisions and repository state. Chat transcripts are not canonical project truth.
