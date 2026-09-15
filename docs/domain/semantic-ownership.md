@@ -1,6 +1,6 @@
 # Semantic Ownership
 
-Status: `S2 MVP target ownership aligned 2026-09-15`.
+Status: `S2 MVP target ownership aligned with TAE acquisition boundary 2026-09-15`.
 
 Canonical relationships: `context-map.md`.
 
@@ -16,7 +16,8 @@ Canonical relationships: `context-map.md`.
 | ApplicationDeployment / current ComponentPlacement set -> ResourceRef | **Application Deployment** |
 | normalized required technical predicates / target required policy | **non-peer Required Policy Materialization** |
 | candidate enforcement target/policy locator | **Network Enforcement Placement** |
-| source-qualified technical evidence | **Technical Access Evidence** |
+| canonical normalized source-qualified technical evidence | **Technical Access Evidence** |
+| source-specific technical evidence collection / translation into TAE contract | acquisition/collector integration/application capability |
 | provider configured-policy interpretation | provider integration capability |
 | required-vs-configured assessment/change design/verification | **Access Policy Realization** |
 | provider target rendering | provider integration capability |
@@ -72,6 +73,23 @@ ActorRef + ActionRef + ResponsibilityScopeRef + effectiveTime
 
 using effective group membership, role assignment and role-permitted action facts. `Denied` and `Unknown` fail closed for protected actions. Historical consuming decisions retain their authority evidence; later role/membership changes do not rewrite old decisions.
 
+## Technical evidence ownership
+
+```text
+source-specific collectors/adapters
+    -> faithful normalization into TAE published language
+    -> TAE immutable evidence history
+    -> consumer-specific interpretation
+```
+
+TAE owns the meaning/invariants of normalized evidence facts, not collection scheduling, polling cadence, credentials, retries or source transport.
+
+Typical non-BC producers include device/config acquisition, NetFlow/IPFIX/flow collection and import adapters.
+
+TAE evidence remains evidence. It does not itself create authorization, desired policy, access/ACL proposals or network mutation intent.
+
+NEO is not the read/acquisition owner for TAE. NEO owns controlled mutation. Whether collectors and NEO share concrete provider/device access infrastructure is an Architecture concern, not semantic ownership.
+
 ## Realization chain
 
 ```text
@@ -87,8 +105,10 @@ AP effective authorization
 -> NEO controlled execution
 ```
 
+Configured evidence stored by TAE may be one input source for the Provider Policy Interpreter under an explicit source contract; TAE does not determine current/complete configured-policy truth.
+
 Unresolved input is not empty policy. `excess` is not automatic removal authority. Apply success is not convergence proof. Semantic ownership does not prohibit rebuildable consumer-local projections for computation locality.
 
 ## Guardrail
 
-This artifact records problem-space ownership and semantic boundaries. It does not prescribe synchronous transport, database topology, package layout or persistence schema.
+This artifact records problem-space ownership and semantic boundaries. It does not prescribe synchronous transport, database topology, package layout, polling framework, shared device client or persistence schema.
