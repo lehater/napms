@@ -2,8 +2,6 @@
 
 Status: `accepted implementation guidance`.
 
-Roadmap: `docs/engineering/web-ui-component-composition-roadmap.md`.
-
 This document defines ownership and composition rules for reusable React UI in NAPMS. Product/domain semantics remain owned by canonical domain/requirements/architecture artifacts; visual tokens and detailed reference behavior remain owned by `docs/ui/design-system.md`.
 
 ## Purpose
@@ -109,7 +107,7 @@ Reuse is demonstrated, not predicted. Prefer a second concrete consumer before e
 
 `web/src/design-system/` is the durable owner of generic visual primitives, components, layout and reusable product UI patterns.
 
-`web/src/components/ui/` is existing transitional structure. During the component-composition migration, move a generic control to `design-system/components/` when its ownership is touched and clear. Migrate consumers directly; do not create compatibility facades or preserve two permanent generic UI namespaces.
+`web/src/components/ui/` is existing transitional structure. Move a generic control to `design-system/components/` when its ownership is touched and clear. Migrate consumers directly; do not create compatibility facades or preserve two permanent generic UI namespaces.
 
 ## Quality signals
 
