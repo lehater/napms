@@ -1,12 +1,20 @@
 # Application Deployment boundary convergence
 
-Status: `audit completed on branch; validation/review remains before main`.
+Status: `active MVP foundational tactical convergence`.
 
 Date: 2026-09-15.
 
 ## Goal
 
-Converge ACC/AD/RC ownership and minimum Resource network realization without speculative endpoint modelling.
+Converge the minimum ACC/RC/AD semantics required for the first end-to-end happy path while preserving context ownership and stable identities. Defer speculative lifecycle, revision, migration, optimization and edge-case machinery until a concrete requirement needs it.
+
+## Inputs
+
+- accepted strategic ownership: ACC owns Application/Component/Interaction, AD owns ApplicationDeployment/ComponentPlacement, RC owns Resource realization;
+- accepted AD binding: `ComponentPlacement -> ResourceRef`;
+- accepted current RC realization: at most one effective `AddressSpace = HostAddress | Prefix` per Resource;
+- accepted MVP ACC target in `docs/domain/application-communication-catalogue/target-model.md`;
+- known AG S1 questions remain downstream blockers and are not to be solved speculatively here.
 
 ## Executed
 
@@ -14,21 +22,15 @@ Converge ACC/AD/RC ownership and minimum Resource network realization without sp
 - [x] ACC owns Application/Component/Interaction only, not deployment/Resource binding;
 - [x] RC owns Resource and at most one effective `AddressSpace = HostAddress | Prefix` per Resource/time;
 - [x] AD binds `ComponentPlacement -> ResourceRef` only;
-- [x] RPM uses AP + ACC + AD + RC + NEP public contracts;
-- [x] old `DirectedInteractionIdentity` replaced by `GovernedInteractionSubject`;
 - [x] multi-address/interface/VIP/exposure explicitly deferred;
-- [x] repository-wide stale-reference audit completed and recorded in `docs/audits/application-deployment-stale-reference-audit-2026-09-15.md`;
-- [x] target/canonical documentation corrected;
-- [x] intentional runtime/history references classified;
-- [x] obsolete active revalidation plan removed;
-- [x] strategic-model validator aligned to current JSON projection;
-- [ ] execute/review `make knowledge-check` evidence;
-- [ ] ready-for-main decision.
+- [x] repository-wide stale-reference audit recorded in `docs/audits/application-deployment-stale-reference-audit-2026-09-15.md`;
+- [x] minimal MVP ACC target checkpointed;
+- [x] MVP execution rule established: thin happy path first, deeper modelling only under demonstrated pressure.
 
 ## Current model
 
 ```text
-ACC Component / InteractionContractRevision
+ACC Application / Component / Interaction
         |
         v
 AD ApplicationDeployment
@@ -39,18 +41,20 @@ RC Resource -> effective AddressSpace [0..1]
                AddressSpace = HostAddress | Prefix
 ```
 
-## Active S1 questions
+## Exit criteria
 
-1. What product constraints determine selectable source/destination ApplicationDeployment pairs for an Access Request?
-2. If placement or Resource Scope Affiliation changes alter approval obligations, what happens to current authorization?
-3. When several Responsibility Scopes apply to one governance side, what approval obligations are required?
+- active resume capsule passes Harness plan validation;
+- MVP ACC decision is durable in canonical target documentation;
+- current ACC/RC/AD ownership remains non-contradictory;
+- next session can start minimal RC Tactical modelling without reopening deferred ACC extensions;
+- no implementation authorization is implied by this plan.
 
-AG Tactical G2 for the affected subject/obligation slice is not valid until these are resolved.
+## Blockers
 
-## Tactical follow-up
+No blocker prevents this documentation checkpoint from merging.
 
-```text
-ACC + RC -> AD -> AM -> affected BC/AG/AP convergence
-```
+Downstream Access Governance still has S1 behavior questions about selectable ApplicationDeployment pairs, authorization after placement/scope changes, and overlapping Responsibility Scopes. They become blocking only when the thin vertical slice reaches the affected governance behavior.
 
-Then continue RPM/NEP/TAE/APR/NEO. A future confirmed need for multiple addresses/interfaces reopens only the affected RC/AD/RPM edge.
+## Next
+
+Start with the minimal Resource Catalogue Tactical model, then immediately revalidate the minimal Application Deployment model against ACC + RC. Continue the smallest downstream governance/network/policy path required to produce a working rule; defer deeper modelling until the happy path exposes a concrete gap.
