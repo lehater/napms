@@ -4,24 +4,33 @@ Apply root `AGENTS.md` first.
 
 ## Canonical ownership
 
-- `requirements/` — current observable product/quality behavior.
+Project documentation is a reconstructable specification, not only a backlog or record of unfinished work.
+
+- `requirements/` — current observable product/quality behavior, whether already implemented or still target-only.
 - `domain/` — current meaning, identity, lifecycle and semantic ownership.
-- `architecture/` — current accepted structural/runtime constraints.
-- `engineering/` — current operational and implementation contracts.
-- `ui/` — current reusable presentation/interaction guidance.
+- `architecture/` — current as-built and target structural/runtime contracts. When they differ, label the distinction explicitly.
+- `decisions/` — design decisions still required to reproduce or safely evolve the current as-built/target system.
+- `engineering/` — current API, persistence, runtime, configuration, operational and implementation-facing contracts.
+- `ui/` — current product-facing screen/wireframe specifications plus reusable presentation/interaction guidance.
 - `plans/active/` — current execution state only.
 - `process/` — reusable working protocols.
 
-Git history is the sole archive. Do not retain completed milestones, supersession chains, migration diaries, audit reports, previous models or absorbed decision records in the working documentation tree.
+Git history is the archive for material that is no longer part of either current as-built or current target design: completed milestones, obsolete alternatives, superseded-only decision chains, migration diaries, audit snapshots and previous models.
+
+## Reconstruction rule
+
+Do not delete a requirement, architecture contract, ADR, engineering contract or UI specification merely because it has been implemented.
+
+Before deleting or absorbing project documentation, verify that the remaining working tree can still reconstruct the designed current system from zero without inventing product/domain/architecture decisions. If a document contains both historical narration and required current design, keep or rewrite the current design; remove only the historical narration.
 
 ## Layer discipline
 
-Requirements answer what observable behavior must hold. Domain answers what concepts mean and who owns them. Architecture answers how current semantic owners compose and what structural constraints preserve correctness. Engineering describes current executable/operational mechanics. UI describes presentation. Active plans describe only the selected current delta.
+Requirements answer what observable behavior must hold. Domain answers what concepts mean and who owns them. Architecture answers how semantic owners compose and what structural/runtime constraints preserve correctness. Engineering defines current executable-facing contracts and runtime mechanics. UI defines current user-facing composition. Active plans describe only the selected current delta.
 
-Keep current truth at its highest owning layer and link downward instead of retelling it. If an artifact is no longer current or its decision has been fully absorbed by its owner, remove it.
+Keep truth at its highest owning layer and link downward instead of retelling it unnecessarily. As-built and target contracts may coexist when both are required; never let an as-built compatibility model silently override accepted target semantics.
 
 ## Knowledge discipline
 
 Classify material content as accepted, hypothesis, unknown or conflict. Do not turn an unknown into an implementation assumption.
 
-When code evidence conflicts with accepted behavior/domain/architecture, update the highest affected canonical truth before implementation. Runtime artifacts may be evidence of implementation state, but they do not override current product/domain truth.
+When implementation evidence conflicts with accepted behavior/domain/architecture, resolve the highest affected canonical layer. Runtime artifacts are evidence of as-built implementation, but production code is not a substitute for project documentation.
