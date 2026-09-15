@@ -2,13 +2,13 @@
 
 Current: `PLAN-130-revalidate-policy-lifecycle.md`
 
-Goal: revalidate the selected first-MVP product contracts after clarification of concrete Component deployment identity, policy-rule change behavior, and evidence-derived access proposals.
+Goal: converge the target Strategic/Tactical DDD after G1 revalidation of concrete Component Deployment endpoints, rule revision changes, and evidence-derived access proposals.
 
-Current task: update the affected observable requirements and evaluate G1 before changing Strategic/Tactical DDD.
+Current task: challenge the affected Bounded Context boundaries and public semantic contracts before Tactical DDD.
 
-Lifecycle stage: `S1`
+Lifecycle stage: `S2`
 Stage state: `IN_PROGRESS`
-Lifecycle basis: stakeholder clarification conflicts with the accepted `ApplicationDeployment + ComponentPlacement` product model and governed-subject behavior in current G1 requirements; per `docs/process/change-lifecycle.md`, the earliest affected canonical layer is Requirements.
+Lifecycle basis: affected requirements passed G1 revalidation on 2026-09-16; the changed deployment identity and access lifecycle invalidate the accepted Strategic relationships that used whole-Application `ApplicationDeployment` and separate AG -> AP governed-subject handoff.
 Implementation authorization: `none`
 Authorized scope: `none`
 Authorization basis: `none`
@@ -17,19 +17,19 @@ Authorization basis: `none`
 
 Read first:
 - `docs/plans/active/PLAN-130-revalidate-policy-lifecycle.md`
-- `docs/requirements/application-catalogue-domain-target.md`
-- `docs/requirements/access-governance-g1.md`
-- `docs/requirements/access-policy-core.md`
-- `docs/requirements/first-mvp-vendor-neutral-policy-export.md`
+- `docs/domain/strategic-model.md`
+- `docs/domain/context-map.md`
+- `docs/domain/strategic-model.json`
+- `docs/domain/semantic-ownership.md`
 
 ## Blockers
 
-None at S1. Whether governance-change history and current Policy Rule truth remain separate Bounded Context responsibilities is deliberately deferred to S2 after G1.
+None currently. Strategic DDD must decide whether governance-change history and current effective Policy Rule truth are one lifecycle owner or remain separate Bounded Contexts.
 
 ## Gate
 
-G1 — affected requirements coherent enough that S2 need not invent deployment identity, current-vs-proposed policy behavior, or evidence-derived proposal behavior.
+G2 — one coherent semantic owner for concrete deployment truth and the access-rule lifecycle; explicit public contracts; dependent Tactical models revalidated; no P0/P1 contradiction.
 
 ## Next
 
-Replace the affected G1 wording, evaluate G1, then route the accepted delta through Strategic DDD before Tactical DDD. Production-code implementation remains forbidden.
+Converge the affected Strategic boundaries first, then revalidate only dependent Tactical models. Production-code implementation remains forbidden.
