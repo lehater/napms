@@ -1,8 +1,8 @@
 # NAPMS Strategic DDD model
 
-Status: `S2 affected-edge convergence: AD boundary and minimal RC address contract accepted; AG behavior questions remain S1-open`.
+Status: `S2 thin-vertical convergence through Access Governance / Access Policy / MVP RPM edge; broader extensions deferred`.
 
-Source baseline: DDD-BDM-010, 2026-09-14 G1 revalidation, ADR-019/020/021, global Strategic convergence pass, and 2026-09-15 AD/RC clarification.
+Source baseline: DDD-BDM-010, 2026-09-14 G1 revalidation, ADR-019/020/021, global Strategic convergence pass, and 2026-09-15 ACC/AD/RC/AG/AP/RPM clarification.
 
 Canonical relationship map: `context-map.md`.
 
@@ -69,9 +69,6 @@ AM -- effective authority --> AG
 AG -- AuthorizationGranted / AuthorizationWithdrawn --> AP
 ```
 
-`Grant = source consent AND destination consent`.
-`Revoke = source withdrawal OR destination withdrawal`.
-
 ```text
 GovernedInteractionSubject {
     interactionContractRevisionRef
@@ -80,24 +77,63 @@ GovernedInteractionSubject {
 }
 ```
 
-Subject identity and current authorization validity remain distinct. Placement changes can alter effective Resource Scope Affiliations and approval obligations without changing subject identity; resulting product behavior remains S1-open.
+Current MVP behavior is accepted:
+
+- a deployment pair is selectable only when each deployment realizes the corresponding Interaction endpoint Component and current approval obligations are resolvable;
+- MVP requires exactly one distinct applicable Responsibility Scope per governance side; zero or several scopes fail closed and are not selectable/authorizable;
+- source and destination obligations are independent and both are required for grant;
+- either pending side may reject;
+- either authorized side may withdraw current consent;
+- placement/scope changes that leave obligations materially unchanged preserve authorization;
+- a material obligation change causes AG to publish `AuthorizationWithdrawn` without changing governed-subject identity;
+- current authorization may return only after current obligations are satisfied and AG publishes a new `AuthorizationGranted`;
+- historical approvals never silently restore a withdrawn grant.
+
+Generalized overlapping-scope approval algebra is deliberately deferred beyond the first happy path.
+
+## Access Policy edge
+
+AP owns current semantic Policy Rule truth and reacts only to explicit AG grant/withdrawal facts. It does not infer bilateral obligations from AD/RC state.
+
+A later `AuthorizationGranted` after withdrawal re-establishes authorization for the same governed subject; it does not create a different subject identity.
 
 ## Required Policy Materialization
+
+RPM remains a non-peer derived composition:
 
 ```text
 AP effective Policy Rules
 + ACC immutable Interaction traffic semantics
 + AD applicable ComponentPlacements / ResourceRefs
 + RC ResourceRef -> effective HostAddress | Prefix as-of selected time
-+ NEP candidate target/policy locators
-        -> normalized required technical predicates
-        -> TargetRequiredPolicy
++ NEP candidate Firewall / AccessListLocator results
+        -> normalized required permit predicates
+        -> TargetRequiredPolicy[] | unresolved
         -> APR
 ```
 
-Missing/unresolved placement, Resource AddressSpace or locator input remains explicit and is not an empty required policy. Prefixes remain prefixes; materialization need not enumerate their host addresses.
+For one target comparison scope:
 
-The boundary must not require a Cartesian distributed join at scale. Consumer-local rebuildable projections may be introduced later without moving semantic ownership.
+```text
+ComparisonScope = firewallId + accessListName
+
+TargetRequiredPolicy {
+    comparisonScope
+    requiredPermitSpace
+    contributingPolicyRuleRefs
+    logicalTime
+    inputProvenance
+    inputFreshness
+}
+```
+
+Multiple NEP candidates/locators are preserved as multiple comparison scopes; RPM never chooses an arbitrary route or winning Firewall.
+
+Missing/unresolved placement, Resource realization, candidate target or policy locator is explicit unresolved state and is not an empty required policy.
+
+RC Prefix remains a first-class AddressSpace and is never expanded into hosts. The first end-to-end MVP NEP edge currently supports only HostAddress-to-HostAddress TrafficPairs; if RPM receives a Prefix on either side it fails closed as unresolved until Prefix-aware NEP query semantics are explicitly designed.
+
+Consumer-local rebuildable projections may be introduced later for scale without moving source semantic ownership.
 
 ## Strategic invariants
 
@@ -107,20 +143,25 @@ The boundary must not require a Cartesian distributed join at scale. Consumer-lo
 - current target RC network realization is at most one effective `HostAddress | Prefix` per Resource/time.
 - AD references Resource only; it does not own address/endpoint realization.
 - technical realization change does not redefine semantic authorization identity.
+- Access Governance historical Request truth is distinct from current authorization truth.
 - Required Policy Materialization is derived composition; unresolved is not empty required policy/APR drift.
 - technical evidence is not authorization or automatically current/complete configured policy.
 - provider interpretation/rendering remain adapters; APR core remains provider-neutral.
 - NEO owns execution lifecycle, not policy reinterpretation/placement.
 - no Shared Kernel is accepted between target BCs.
 
-## Active strategic / S1 questions
+## Deferred strategic extensions
 
-1. What product constraints determine selectable source/destination `ApplicationDeployment` pairs for an Access Request?
-2. When placement or Resource Scope Affiliation changes alter approval obligations, does existing authorization remain valid, require reapproval, warn, or withdraw?
-3. When several Responsibility Scopes are simultaneously applicable to one governance side, what approval obligations are required?
+The following are explicit future extensions rather than current blockers:
+
+- generalized approval semantics when several Responsibility Scopes apply to one governance side;
+- Prefix-aware NEP query/matching semantics;
+- multiple simultaneous Resource addresses/prefixes, interfaces, endpoint purpose, VIP and deployment-specific exposure.
 
 ## Strategic convergence disposition
 
 The Application Deployment Boundary Challenge is `PASS`. The RC/AD network-address question is closed for the current scope by the minimal Resource-level AddressSpace rule. The former RC -> ACC deployment binding, ACC-owned `ComponentDeployment` subject and endpoint-based target realization are superseded.
 
-Global G2 is not implied. Foundational Tactical work should converge ACC and RC as independent upstream owners, then AD (`ACC + RC -> AD`), then AM/governance contracts before downstream materialization details are frozen.
+The Access Governance MVP S1 questions are resolved for the first happy path and AG/AP Tactical edges are revalidated. RPM now has a deterministic HostAddress-based first vertical path plus explicit unresolved behavior for unsupported Prefix input.
+
+Global G2 is not implied. Work continues by following the thin downstream vertical path and reopening only the affected edge when a concrete use case requires a deferred extension.
