@@ -1,7 +1,7 @@
 {
   "model_id": "NAPMS-DDD-001",
-  "source_baseline": "DDD-BDM-010 + 2026-09-14 G1 revalidation + global Strategic convergence + 2026-09-15 AD/RC clarification",
-  "status": "affected-edge-converged-s1-open",
+  "source_baseline": "DDD-BDM-010 + 2026-09-14 G1 revalidation + global Strategic convergence + 2026-09-15 ACC/AD/RC/AG/AP/RPM clarification",
+  "status": "thin-vertical-converged-through-mvp-rpm-edge",
   "canonical_authority": {
     "responsibilities_and_boundaries": "docs/domain/strategic-model.md",
     "relationships_and_contracts": "docs/domain/context-map.md",
@@ -39,11 +39,11 @@
     {"source":"am","target":"ad","contract":"EffectiveAuthority(actor, action, scope, time)"},
     {"source":"ag","target":"ap","contract":"AuthorizationGranted / AuthorizationWithdrawn"},
     {"source":"ap","target":"rpm","contract":"effective Policy Rules with governed subject/provenance"},
-    {"source":"acc","target":"rpm","contract":"InteractionContractRevision traffic semantics"},
+    {"source":"acc","target":"rpm","contract":"InteractionContractRevision complete immutable traffic semantics"},
     {"source":"ad","target":"rpm","contract":"applicable ComponentPlacements / ResourceRefs with resolution state"},
     {"source":"rc","target":"rpm","contract":"ResourceRef + logicalTime -> effective AddressSpace[0..1] = HostAddress | Prefix with resolution/provenance"},
-    {"source":"nep","target":"rpm","contract":"TrafficPair -> FirewallCandidate[] -> AccessListLocator[]"},
-    {"source":"rpm","target":"apr","contract":"TargetRequiredPolicy"},
+    {"source":"nep","target":"rpm","contract":"MVP: HostAddress TrafficPair -> FirewallCandidate[] -> accessListNames[]; Prefix input unresolved until edge is widened"},
+    {"source":"rpm","target":"apr","contract":"TargetRequiredPolicy[] by firewallId + accessListName, or unresolved"},
     {"source":"provider","target":"ppi","contract":"provider-native configured policy for explicit comparison scope"},
     {"source":"ppi","target":"apr","contract":"ConfiguredEffectivePolicySnapshot"},
     {"source":"apr","target":"ppr","contract":"VerifiedChangeIntent + target/provider capability + base revision/correlation"},
@@ -60,20 +60,22 @@
     "Application Deployment references ResourceRef only and owns no endpoint/address selection.",
     "Resource address changes do not redefine Resource, ApplicationDeployment or GovernedInteractionSubject identity.",
     "GovernedInteractionSubject identity is InteractionContractRevisionRef + source/destination ApplicationDeploymentRef.",
+    "Access Governance MVP requires exactly one distinct applicable Responsibility Scope per governance side; zero or several fail closed.",
+    "A material approval-obligation change withdraws current authorization without changing governed-subject identity.",
+    "Historical Access Requests/approvals cannot silently restore withdrawn current authorization.",
     "Required Policy Materialization is derived composition; unresolved is not empty required policy or APR drift.",
+    "The first MVP NEP edge accepts only HostAddress-to-HostAddress TrafficPairs; Prefix remains upstream truth and yields unresolved materialization until Prefix-aware NEP semantics are accepted.",
     "No Shared Kernel is accepted between target Bounded Contexts."
   ],
-  "open_strategic_questions": [
-    "S1: what product constraints determine selectable source/destination ApplicationDeployment pairs for an Access Request?",
-    "S1: when placement or Resource Scope Affiliation changes alter approval obligations, does existing authorization remain valid, require reapproval, warn, or withdraw?",
-    "S1: when several Responsibility Scopes are simultaneously applicable to one governance side, what approval obligations are required?"
-  ],
+  "open_strategic_questions": [],
   "tactical_open_questions": [
     "Exact ApplicationDeployment lifecycle/status vocabulary and move-versus-replacement mechanics.",
     "Whether multiple access-domain placements of the same Component on the same Resource require distinct identity.",
     "Persistence/history migration from earlier ResourceEndpoint/EndpointAddress representation to Resource-level AddressSpace without losing provenance."
   ],
   "explicit_future_extensions": [
+    "Generalized Access Governance approval semantics when several Responsibility Scopes apply to one side.",
+    "Prefix-aware NEP TrafficPair routing/override matching semantics without host enumeration.",
     "Multiple simultaneous Resource addresses/prefixes, interfaces, endpoint purpose, VIP and deployment-specific network exposure require a future confirmed use case and affected-edge reopen."
   ]
 }
