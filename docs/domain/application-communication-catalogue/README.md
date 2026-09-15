@@ -4,9 +4,10 @@
 
 Current ACC target authority:
 
-- `target-model.md` — Application / Component / Interaction / immutable traffic contract;
+- `target-model.md` — strategic target shape for Application / Component / Interaction / immutable traffic contracts;
+- `target-tactical-model.md` — current MVP Tactical DDD, including immutable `InteractionContractRevision` semantics;
 - `../../requirements/application-catalogue-domain-target.md` — accepted behavior and ACC/AD/RC split;
-- `../application-deployment/boundary.md` — deployment/placement owner;
+- `../application-deployment/boundary.md` + `../application-deployment/tactical-model.md` — deployment/placement owner;
 - `../resource-catalogue/target-realization-model.md` — Resource AddressSpace owner;
 - `../context-map.md` — cross-context contracts.
 
@@ -21,9 +22,11 @@ Historical ADR-012/013 and existing UI/architecture contracts may still describe
 ## Target boundary
 
 ```text
-ACC: Application / Component / InteractionContractRevision
+ACC: Application / Component / Interaction / InteractionContractRevision
 AD:  ApplicationDeployment / ComponentPlacement -> ResourceRef
 RC:  Resource -> effective HostAddress | Prefix
 ```
 
-Migration must preserve referenced historical truth without promoting legacy identities back into the target model.
+`Interaction` is the stable directed component-pair template. `InteractionContractRevision` is the immutable decision-relevant traffic snapshot. A material traffic change creates a new revision reference while preserving Interaction identity.
+
+Migration must preserve referenced historical truth without promoting legacy deployment identities back into ACC target ownership.
