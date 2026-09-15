@@ -1,6 +1,6 @@
 # Access Policy Realization — Problem Statement and Design Directions
 
-Status: `S2 MVP comparison checkpoint aligned; deeper APR Tactical work remains open`.
+Status: `S2 MVP comparison and additive change-intent checkpoint aligned; deeper APR Tactical work remains open`.
 
 Date: 2026-09-15.
 
@@ -170,6 +170,50 @@ APR must preserve enough attribution to explain where derived regions came from:
 
 Exact region-level storage/index representation is deferred. The semantic requirement is explainability, not a particular schema.
 
+## Accepted MVP remediation boundary
+
+The current target has no accepted managed-policy scope proving that NAPMS owns every configured permit in an ACL.
+
+Therefore the first MVP remediation path is additive-only:
+
+```text
+missing -> may produce ENSURE-PERMIT intent
+excess  -> report/audit only; no automatic removal or narrowing
+Realized -> no intent
+Uncomparable -> no intent
+```
+
+`excess` is evidence that configured effective permit space is not explained by current required policy. It is not proof that NAPMS may remove that access.
+
+A future removal/narrowing capability requires an accepted managed-policy scope/authority rule before APR may generate such intent.
+
+## Minimal VerifiedChangeIntent
+
+For the current MVP path APR may publish only:
+
+```text
+VerifiedChangeIntent {
+    comparisonScope
+    operation = ENSURE-PERMIT
+    permitSpace
+    baseConfiguredCorrelation
+    requiredPolicyProvenance
+    deltaProvenance
+    verificationEvidence
+}
+```
+
+Semantics:
+
+- `permitSpace` is exactly the selected `missingPermitSpace` to be ensured;
+- no provider-native rule/object syntax is part of the intent;
+- no remove/narrow operation exists in the MVP intent vocabulary;
+- base configured correlation is retained for downstream stale-base/precondition protection;
+- verification establishes, for the supported slice, that the intent covers the selected missing permit space without narrowing previously configured effective access;
+- renderer/provider representation choices remain outside APR core.
+
+The current slice does not require an independently persisted editable remediation-plan aggregate. `VerifiedChangeIntent` is a verified semantic handoff value unless a future user journey establishes a durable plan lifecycle.
+
 ## APR responsibilities
 
 APR owns:
@@ -178,7 +222,7 @@ APR owns:
 - exact effective-policy algebra;
 - realization assessment;
 - exact Semantic Delta;
-- vendor-neutral Policy Change Design;
+- vendor-neutral Policy Change Design for accepted remediation behavior;
 - semantic verification of the proposed resulting effective policy;
 - provenance/explainability of derived results;
 - a source-neutral `VerifiedChangeIntent` result suitable for downstream provider rendering.
@@ -230,6 +274,8 @@ APR must support very large policy spaces without mandatory full in-memory hydra
 - comparison uses effective semantics, not configuration text;
 - exact `common/missing/excess` algebra is preserved;
 - `Realized`, `Drift` and `Uncomparable` are distinct semantic outcomes;
+- MVP automatic remediation is additive-only on `missing`;
+- `excess` remains report/audit evidence until managed-policy ownership is explicitly accepted;
 - assessment, delta, change design and verification remain distinct concepts;
 - provider interpretation/rendering fail closed when semantics are unsupported;
 - empty evidence is not proof of empty configured policy without explicit completeness;
@@ -238,18 +284,20 @@ APR must support very large policy spaces without mandatory full in-memory hydra
 
 ## MVP Tactical checkpoint
 
-The first exact comparison slice is now coherent without resolving the whole APR Tactical backlog:
+The first comparison and remediation slice is now coherent without resolving the whole APR Tactical backlog:
 
 ```text
 complete comparable inputs
     -> exact common/missing/excess
     -> Realized | Drift
+    -> if missing != empty: VerifiedChangeIntent(ENSURE-PERMIT)
 
 incomplete/mismatched/unsupported inputs
     -> Uncomparable
+    -> no change intent
 ```
 
-No provider-native syntax, rendering or execution semantics are required to make this comparison result correct.
+Provider-native rendering and controlled execution are downstream boundaries and do not redefine APR semantic truth.
 
 ## Open Tactical DDD work beyond this checkpoint
 
@@ -257,10 +305,10 @@ Still unresolved:
 
 - broader technical-region/value vocabulary and edge cases beyond the first MVP comparison (APR-P03);
 - data-local semantic computation contract (APR-P04);
-- vendor-neutral change-design vocabulary (APR-P05);
-- proposed-change simulation/verification contract (APR-P06);
+- richer change-design vocabulary beyond additive ENSURE-PERMIT (APR-P05);
+- generalized proposed-change simulation/verification contract beyond the current additive slice (APR-P06);
 - richer attribution/explanation storage semantics (APR-P08);
 - final APR Tactical DDD/ERD/persistence classification (APR-P09);
 - target-versus-current migration plan (APR-P10).
 
-APR-P02 and APR-P07 strategic ownership questions are resolved by ADR-021. RPM/APR input correlation and the minimum exact comparison result for the first HostAddress-based MVP vertical path are now explicit; deeper work is reopened only when the next vertical step requires it.
+APR-P02 and APR-P07 strategic ownership questions are resolved by ADR-021. RPM/APR input correlation, exact comparison and the additive-only `VerifiedChangeIntent` for the first HostAddress-based MVP vertical path are now explicit; deeper work is reopened only when a concrete next slice requires it.
