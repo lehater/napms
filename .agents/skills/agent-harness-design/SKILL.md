@@ -1,15 +1,17 @@
 ---
 name: agent-harness-design
-description: "Use when designing, reviewing, or auditing the NAPMS repository environment for coding agents: lifecycle stages/gates, context loading, AGENTS.md routing, Skills, active-plan continuity, process protocols, validators/evals and CI. Prefer the smallest change that removes demonstrated harness problems. Do not use for product/domain architecture."
+description: "Use when designing, reviewing, or auditing the NAPMS repository environment for coding agents: context loading, AGENTS routing, Skills, lifecycle/gates, active-plan continuity, process protocols, validators/evals and CI. Prefer the smallest change that removes demonstrated Harness problems. Do not use for product/domain architecture."
 ---
 
 # Agent Harness Design
 
 ## Start here
 
-For lifecycle/routing changes, read `docs/process/change-lifecycle.md` first. Treat it as the top-level progression model; do not create a competing stage/gate algorithm inside a Skill.
+Classify the Harness concern before loading process detail.
 
-Load only the protocol and project artifacts required by the current Harness task. Do not preload every process document merely because the task concerns Harness design.
+- For startup/context loading, AGENTS/Skill routing, validator/eval or CI discoverability work, stay task-local and do not preload the product change lifecycle.
+- Load `docs/process/change-lifecycle.md` only when the Harness change actually modifies or evaluates S0-S4/G0-G4 progression, reopen/dirty propagation or implementation-lease semantics.
+- Load only the additional protocol/project artifacts required by the demonstrated Harness problem.
 
 ## Audit dimensions
 
@@ -17,21 +19,22 @@ Load only the protocol and project artifacts required by the current Harness tas
 - no-invention and blocked-unknown handling;
 - startup/progressive disclosure;
 - context promotion/discard/rollover;
-- current-plan recoverability;
+- current-plan recoverability without forcing current-plan context into unrelated tasks;
 - project truth vs process vs Skill ownership;
 - Skill trigger overlap;
 - validator/eval and CI alignment;
 - CI discoverability: agents can find applicable hosted gates, exact triggers/commands and manual-dispatch fallback without blind repository scans;
 - stale/dead paths and duplicated truth;
-- unnecessary harness complexity.
+- unnecessary Harness complexity.
 
 Classify findings P0-P3.
 
 ## Rules
 
 - one agent + repository instructions/Skills is the default;
-- lifecycle protocols decide when work is required; Skills describe how to perform judgement-heavy reusable work;
+- lifecycle protocols decide when product lifecycle work is required; Skills describe judgement-heavy reusable work;
 - deterministic invariants belong in validators, not prose-only Skills;
+- deterministic routing-corpus validation is not evidence that a model routed correctly; score actual observations separately when routing behavior is under test;
 - extend before adding;
 - no current project facts in reusable Skill bodies;
 - do not turn the conceptual lifecycle into a runtime workflow engine/state-machine framework without demonstrated need;
