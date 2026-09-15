@@ -54,6 +54,8 @@ A class, table, API, service, framework, deployment unit or shared library is no
 Strategic and Tactical DDD are not separate top-level lifecycle stages, but they do depend on each other.
 
 - A Tactical finding that puts responsibility/context boundary/cross-context contract in doubt reroutes the current S2 work to Strategic DDD; it does not `REOPEN(S2)` because S2 is already active.
+- A Tactical finding of cross-context model leakage, semantic chatiness, temporal/change coupling, duplicated authority or scale amplification reroutes only the affected edge to the Strategic coupling challenge when the cause may be insufficient public meaning or a wrong semantic boundary. Do not reopen unrelated edges or contexts.
+- If the affected semantic contract is already sufficient and the remaining issue is only efficient delivery, local computation, caching/materialization, transport or deployment, keep S2 semantics unchanged and record/route the concern to S3 Architecture instead.
 - A Strategic change to ownership/boundary/contract marks the affected Tactical assumptions inside S2 as requiring revalidation before G2 may pass.
 - Revalidate only Tactical concepts whose owner, identity, lifecycle, invariant or operation depends on the changed Strategic guarantee; unrelated context internals do not need a full remodel.
 - G2 is evaluated only after the affected Strategic and Tactical views are mutually coherent.
@@ -65,9 +67,9 @@ Strategic and Tactical DDD are not separate top-level lifecycle stages, but they
 3. Route to Strategic or Tactical level using the criteria above.
 4. Resolve unknown/conflicting domain claims through `decision-protocol.md`.
 5. Update the highest affected domain owner first.
-6. Challenge the result against requirements and neighboring semantic ownership.
-7. When Strategic ownership/boundaries changed, identify and revalidate only dependent Tactical semantics before G2.
-8. Record unresolved material problems rather than widening DTOs/models to hide them.
+6. Challenge the result against requirements, neighboring semantic ownership and affected cross-context coupling.
+7. When Strategic ownership/boundaries/contracts changed, identify and revalidate only dependent Tactical semantics before G2.
+8. Record unresolved material problems rather than widening DTOs/models/Aggregates to hide them.
 9. Rework only the affected semantic delta.
 10. Evaluate G2 for the affected scope.
 
@@ -96,6 +98,7 @@ Architecture may constrain feasible realization, but if Architecture requires ch
 - relevant Bounded Context boundaries/relationships are coherent enough for the change;
 - affected Tactical assumptions have been revalidated after any Strategic ownership/boundary/contract change;
 - cross-context consumers can rely on explicit public semantic meaning rather than peer-private models;
+- no unresolved P0/P1 cross-context coupling defect forces peer-private knowledge, duplicated semantic authority or downstream invention; pure delivery/computation concerns may remain owned by S3;
 - identity/lifecycle/invariant ownership needed by the change is explicit;
 - derived/source/current state required by the change is classified well enough that Architecture need not guess what is authoritative;
 - no unresolved P0/P1 semantic ownership contradiction remains;
@@ -138,7 +141,7 @@ On S2 closure/parking, promote accepted semantics to canonical `docs/domain/`/AD
 
 - `change-lifecycle.md` owns top-level stage transitions/reopen/dirty/no-progress semantics.
 - `requirements-stage.md` owns S1/G1 product-behavior guarantees.
-- `strategic-ddd-convergence.md` owns iterative Strategic DDD boundary/context-map/contract convergence.
+- `strategic-ddd-convergence.md` owns iterative Strategic DDD boundary/context-map/contract convergence, including affected-edge cross-context coupling challenge.
 - `tactical-ddd-stage.md` owns Tactical DDD identity/lifecycle/invariant coherence inside an accepted context boundary.
 - `domain-change-protocol.md` is the focused re-entry classifier used when findings arise from lower layers.
 - `decision-protocol.md` owns unknown/conflict handling.
