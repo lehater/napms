@@ -1,20 +1,23 @@
 # Technical Access Evidence tactical model
 
-Status: `accepted I17 WP0 baseline`.
+Status: `S2 MVP Tactical model aligned with acquisition boundary 2026-09-15`.
 
-Date: 2026-09-09.
+Date: 2026-09-15.
 
 ## Scope
 
-This model defines the first executable consistency model for the **Technical Access Evidence** bounded context.
+This model defines the target MVP consistency model for the **Technical Access Evidence** bounded context.
 
-TAE owns the source-qualified claim that technical access material was reported, observed/derived, or imported for one source-defined scope and source-time statement.
+TAE owns the source-qualified claim that technical access material was reported, observed/derived, or imported for one source-defined scope and source-time statement. It also owns the canonical source-neutral evidence vocabulary and invariants used to record those facts.
 
-It does not own:
+TAE does not own acquisition initiation. Polling cadence, scheduling, retries, credentials, source transport and provider-specific collection/parsing belong outside the TAE domain boundary.
+
+It also does not own:
 - whether access is required or authorized;
 - business/domain interpretation of technical access;
 - where traffic is enforced;
 - whether required target policy is realized;
+- creation of access/ACL proposals from evidence;
 - vendor rendering or device mutation.
 
 Core invariants:
@@ -44,6 +47,28 @@ Meaning:
 
 The kind describes evidence provenance/derivation. It does not grant authority or prove completeness.
 
+## Acquisition / producer boundary
+
+TAE is a **consumer of acquired evidence**, not the scheduler or device-reader that initiates acquisition.
+
+Conceptually:
+
+```text
+device/config acquisition capability ----\
+NetFlow/IPFIX/flow collector -------------+--> faithful normalization --> TAE
+file/import adapter ----------------------/
+```
+
+These producers are application/integration capabilities, not additional Bounded Contexts merely because they collect data.
+
+TAE owns the meaning and invariants of the normalized evidence contract. A source-specific producer owns faithful translation of its source material into that contract and must not broaden, narrow or manufacture facts merely to make them recordable.
+
+If source material cannot be represented faithfully by the accepted TAE vocabulary, the producer/capture fails closed for the affected material under the current slice rather than inventing an approximation.
+
+TAE does not decide when a source should be polled, how often, with which credentials, through which protocol or with which retry/backoff policy. Those are acquisition/integration concerns.
+
+Network Environment Operations is not the semantic read/acquisition gateway for TAE. NEO owns controlled mutation operations. Whether acquisition capabilities and NEO later share concrete provider/device access adapters, clients or libraries is an S3 Architecture decision and is not TAE domain truth.
+
 ## Source qualification
 
 ### EvidenceSourceReference
@@ -67,7 +92,7 @@ Cross-context correspondence is introduced only when its owning context accepts 
 
 Mandatory opaque source-defined collection boundary.
 
-Examples may later represent a controller policy package, device context, traffic observation query, or imported dataset, but I17 does not standardize those meanings.
+Examples may later represent a controller policy package, device context, traffic observation query, or imported dataset, but the MVP model does not standardize those meanings.
 
 `SourceScopeReference` is explicitly not an Authority Management Responsibility Scope and not a Network Enforcement Placement identity.
 
@@ -77,7 +102,7 @@ Mandatory opaque identifier for one source collection/observation/import episode
 
 For one `EvidenceSourceReference`, the same `SourceCaptureReference` identifies the same attempted evidence capture.
 
-The outer adapter may derive this reference from a native snapshot/run/import identifier or create a stable collection-run identifier when the source has none.
+The outer adapter/collector may derive this reference from a native snapshot/run/import identifier or create a stable collection-run identifier when the source has none.
 
 ## Evidence time
 
@@ -172,7 +197,7 @@ sourcePorts: PortConstraint
 destinationPorts: PortConstraint
 ```
 
-The adapter must map source syntax to this representation without broadening or narrowing the represented technical region.
+The producer maps source syntax/material into this representation without broadening or narrowing the represented technical region.
 
 Source-native service/object names are provenance, not members of the normalized technical region unless a later accepted model assigns them source-neutral semantics.
 
@@ -217,7 +242,7 @@ TechnicalAccessEvidenceSet
 
 One set is one accepted source collection/observation/import episode.
 
-The set is append-only after successful recording. I17 has no edit, retire, supersede or current-state lifecycle.
+The set is append-only after successful recording. The MVP has no edit, retire, supersede or current-state lifecycle for an Evidence Set.
 
 An empty set is valid evidence that the source capture produced zero normalized entries. Without accepted coverage semantics, an empty set is not proof that no access exists.
 
@@ -267,7 +292,7 @@ TechnicalAccessEntry
 
 `EvidenceEntryId` is a generated stable surrogate.
 
-There is no content-based entry uniqueness in I17. Duplicate predicates are preserved because duplicate source rules/records may themselves be factual evidence.
+There is no content-based entry uniqueness in the MVP. Duplicate predicates are preserved because duplicate source rules/records may themselves be factual evidence.
 
 `sourceEntryReference` is optional opaque provenance when the source exposes a stable native item reference.
 
@@ -277,7 +302,7 @@ Semantic command:
 
 `RecordTechnicalAccessEvidenceSet`
 
-Input is already source-neutral material from an outer source adapter:
+Input is already source-neutral material produced through the TAE published evidence contract:
 - kind;
 - Evidence Source Reference;
 - Source Scope Reference;
@@ -294,9 +319,23 @@ Behavior:
 5. otherwise create one Evidence Set ID and generated Entry IDs;
 6. persist the complete immutable set atomically enough that partial entry loss is never reported as a successful set.
 
-If any source item cannot be normalized faithfully, the first slice rejects the complete capture. It does not silently persist a partial set that could later be mistaken for complete source material.
+If any source item cannot be normalized faithfully, the current slice rejects the complete capture. It does not silently persist a partial set that could later be mistaken for complete source material.
 
-Source-specific parsing/collection/raw payload handling is outside Domain meaning.
+Source-specific collection, parsing, scheduling, credentials and raw transport handling are outside TAE domain meaning.
+
+## Downstream interpretation boundary
+
+TAE publishes evidence facts; it does not convert those facts into higher-level decisions.
+
+Typical consumers may include:
+
+- Provider Policy Interpreter consuming configured evidence under an explicit source contract and deriving a `ConfiguredEffectivePolicySnapshot`;
+- recognition/reconciliation compositions consuming `TrafficDerived` evidence to correlate observed communication with Resources, deployments, Interactions, business need and authorization;
+- audit/investigation consumers reading historical evidence/provenance.
+
+A consumer may also use provider/source material directly when its accepted integration contract requires semantics not represented by the current TAE evidence vocabulary. TAE is not forced into ownership of provider-specific interpretation merely to become the mandatory path for every reader.
+
+Recording evidence alone never creates an Access Request, Policy Rule, ACL proposal, `VerifiedChangeIntent` or network operation.
 
 ## Query semantics
 
@@ -312,7 +351,7 @@ Supported list filters may include:
 - recorded-at range;
 - known source-time range where mechanically unambiguous.
 
-I17 intentionally exposes no `GetCurrentEvidence`, `GetFreshEvidence` or automatic winner selection across multiple captures.
+The MVP intentionally exposes no `GetCurrentEvidence`, `GetFreshEvidence` or automatic winner selection across multiple captures.
 
 Selection of evidence for any downstream semantic consumer belongs to that consumer/source integration contract.
 
@@ -358,7 +397,7 @@ An empty TAE set therefore remains only an empty evidence capture outside such a
 
 ### Confidence — deferred
 
-I17 introduces no global numeric/ordinal confidence scale.
+The MVP introduces no global numeric/ordinal confidence scale.
 
 Reason:
 different evidence sources have no accepted common calibration.
@@ -367,25 +406,29 @@ Revisit only when a concrete consumer can define how a confidence value changes 
 
 ## Authority and human workflow
 
-I17 core introduces no new Authority Management action merely for ceremony.
+The TAE core introduces no new Authority Management action merely for ceremony.
 
-Trusted source-adapter admission is a composition/integration concern for the first slice.
+Trusted producer admission is a composition/integration concern for the first slice.
 
 A human-facing ingest/read workspace and AM actions are added only when a concrete operator workflow is accepted.
 
 ## Invariants
 
 1. Evidence is never authorization or desired policy.
-2. Evidence Set ID is stable and generated.
-3. Source + Capture Reference is idempotency identity for one capture.
-4. Same capture identity cannot silently change content.
-5. Evidence sets and entries are immutable.
-6. Duplicate entry content is preserved.
-7. Source time and RecordedAt remain distinct.
-8. Unknown source time remains explicit.
-9. Predicate normalization must preserve represented technical space exactly.
-10. Optional action/order are stored only when factual.
-11. Empty evidence set does not imply absence without coverage semantics.
-12. I17 selects no globally current/fresh evidence.
-13. Partial normalization is not reported as a successful complete capture.
-14. Policy realization, target selection and provider execution remain outside TAE.
+2. TAE owns the canonical meaning/invariants of its normalized evidence vocabulary; acquisition producers translate source material into that contract.
+3. TAE does not initiate polling/collection and does not own scheduling, retries, credentials or source transport.
+4. Evidence Set ID is stable and generated.
+5. Source + Capture Reference is idempotency identity for one capture.
+6. Same capture identity cannot silently change content.
+7. Evidence sets and entries are immutable.
+8. Duplicate entry content is preserved.
+9. Source time and RecordedAt remain distinct.
+10. Unknown source time remains explicit.
+11. Predicate normalization must preserve represented technical space exactly.
+12. Optional action/order are stored only when factual.
+13. Empty evidence set does not imply absence without coverage semantics.
+14. TAE selects no globally current/fresh evidence.
+15. Partial normalization is not reported as a successful complete capture.
+16. Evidence does not itself create proposals, authorization, desired policy or mutation intent.
+17. Policy realization, target selection, provider interpretation and provider execution remain outside TAE.
+18. NEO is not the TAE acquisition/read gateway; any shared provider-access mechanism is downstream Architecture.

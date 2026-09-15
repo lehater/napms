@@ -1,0 +1,129 @@
+@startuml NAPMS_Bounded_Contexts
+
+!theme plain
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #555555
+skinparam packageBorderColor #555555
+skinparam packageBackgroundColor #FFFFFF
+skinparam componentBorderColor #777777
+skinparam componentBackgroundColor #F7F7F7
+skinparam noteBorderColor #AAAAAA
+skinparam noteBackgroundColor #FFFDF3
+
+hide stereotype
+
+title NAPMS — Target Bounded Context Map (MVP DDD baseline)
+
+package "Business Connectivity\n<<Bounded Context>>" as BC {
+  rectangle "Business Process\nConnectivity Need\nBusiness attribution" as BC_CORE
+}
+
+package "Access Governance\n<<Bounded Context>>" as AG {
+  rectangle "Access Request\nBilateral approval\nGrant / withdrawal" as AG_CORE
+}
+
+package "Access Policy\n<<Bounded Context>>" as AP {
+  rectangle "Current semantic\nPolicy Rule truth" as AP_CORE
+}
+
+package "Authority Management\n<<Bounded Context>>" as AM {
+  rectangle "Actor + Action + Scope + Time\nEffective Authority" as AM_CORE
+}
+
+package "Application Communication Catalogue\n<<Bounded Context>>" as ACC {
+  rectangle "Application\nComponent\nInteraction\nInteractionContractRevision" as ACC_CORE
+}
+
+package "Application Deployment\n<<Bounded Context>>" as AD {
+  rectangle "ApplicationDeployment\nComponentPlacement\n(ComponentRef, ResourceRef)" as AD_CORE
+}
+
+package "Resource Catalogue\n<<Bounded Context>>" as RC {
+  rectangle "Resource\nHostAddress | Prefix\nResourceScopeAffiliation\nResourceResponsibility" as RC_CORE
+}
+
+package "Network Enforcement Placement\n<<Bounded Context>>" as NEP {
+  rectangle "Firewall candidate relevance\nAccess-list / policy locator" as NEP_CORE
+}
+
+package "Technical Access Evidence\n<<Bounded Context>>" as TAE {
+  rectangle "Immutable source-qualified\ntechnical evidence" as TAE_CORE
+}
+
+package "Access Policy Realization\n<<Bounded Context>>" as APR {
+  rectangle "Required vs configured\ncommon / missing / excess\nVerifiedChangeIntent" as APR_CORE
+}
+
+package "Network Environment Operations\n<<Bounded Context>>" as NEO {
+  rectangle "Controlled mutation\nAuthority / preconditions\nOutcome / provenance" as NEO_CORE
+}
+
+component "Required Policy\nMaterialization\n<<Derived Composition>>" as RPM
+component "Provider Policy\nInterpreter\n<<Integration Capability>>" as PPI
+component "Provider Policy\nRenderer\n<<Integration Capability>>" as PPR
+cloud "Provider / Network\nEnvironment" as PROVIDER
+
+' Business meaning and governance
+ACC --> BC : InteractionRef
+BC --> AG : ConnectivityNeed /\nBusinessProcess basis
+ACC --> AG : InteractionContractRevisionRef
+AD --> AG : source / destination\nApplicationDeploymentRef
+RC --> AG : ResourceScopeAffiliation
+AM --> AG : EffectiveAuthority
+AG --> AP : AuthorizationGranted /\nAuthorizationWithdrawn
+
+' Catalogue / deployment / resource ownership
+ACC --> AD : ApplicationRef / ComponentRef
+RC --> AD : opaque ResourceRef
+AM ..> ACC : curation authority
+AM ..> RC : curation authority
+AM ..> AD : protected actions
+
+' Semantic-to-technical materialization
+AP --> RPM : effective Policy Rules
+ACC --> RPM : immutable traffic contract
+AD --> RPM : current ComponentPlacements
+RC --> RPM : Resource -> AddressSpace
+NEP --> RPM : FirewallCandidate /\naccessListNames
+RPM --> APR : TargetRequiredPolicy[]\nor unresolved
+
+' Configured truth, remediation and execution
+PROVIDER --> PPI : provider-native policy
+PPI --> APR : ConfiguredEffectivePolicySnapshot
+APR --> PPR : VerifiedChangeIntent\nENSURE-PERMIT
+PPR --> NEO : TargetPolicyArtifact
+AM --> NEO : mutation authority
+NEO --> PROVIDER : controlled mutation
+PROVIDER --> TAE : source-qualified capture
+
+note bottom of RPM
+Not a Bounded Context.
+Derived composition over published owner truth.
+end note
+
+note bottom of PPI
+Not a Bounded Context.
+Interprets provider-specific semantics
+into source-neutral configured policy.
+end note
+
+note bottom of PPR
+Not a Bounded Context.
+Renders verified semantic intent
+without changing its meaning.
+end note
+
+legend right
+  |= Symbol |= Meaning |
+  | package | Target Bounded Context |
+  | component | Derived / integration capability |
+  | cloud | External provider/network environment |
+  | solid arrow | Primary semantic contract / fact flow |
+  | dotted arrow | Protected-action authority dependency |
+endlegend
+
+@enduml

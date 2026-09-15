@@ -1,14 +1,16 @@
-# Access Policy Realization — Problem Statement and Design Directions
+# Access Policy Realization
 
-Status: `active Tactical DDD; strategic provider boundaries resolved by ADR-021`.
+Status: `S2 MVP Tactical DDD aligned for the first vertical 2026-09-15; future generalization deferred`.
 
-Date: 2026-09-14.
+Date: 2026-09-15.
 
-APR remains a separate Bounded Context. Its final Tactical DDD, ERD, persistence/computation model and migration design are not yet locked.
+Canonical MVP Tactical model: `tactical-model.md`.
+
+APR remains a separate Bounded Context. It owns source-neutral realization assessment, semantic delta, accepted vendor-neutral change design and semantic verification. It does not own provider-native interpretation/rendering, target selection, authorization or execution.
 
 ## Problem statement
 
-For one comparable technical policy target, APR determines how exactly configured effective access realizes required effective access, identifies semantic difference, designs a vendor-neutral policy change, and verifies the proposed resulting semantics before provider rendering/execution.
+For one comparable technical policy target, APR determines how configured effective access realizes required effective access, identifies the exact semantic difference, and may produce a verified vendor-neutral additive change intent for the accepted MVP path.
 
 APR reasons over **source-neutral effective access semantics**, not raw firewall text, native rule identity or rule count.
 
@@ -16,29 +18,63 @@ APR reasons over **source-neutral effective access semantics**, not raw firewall
 
 ### TargetRequiredPolicy
 
-Published by Required Policy Materialization (ADR-020): target/policy correlation + normalized required effective permit space + provenance/time.
+Published by Required Policy Materialization (ADR-020) only when materialization for the comparison scope is complete:
+
+```text
+TargetRequiredPolicy {
+    comparisonScope {
+        firewallId
+        accessListName
+    }
+    requiredPermitSpace
+    contributingPolicyRuleRefs
+    logicalTime
+    inputProvenance
+    inputFreshness
+}
+```
+
+RPM may publish several values for several candidate Firewall/access-list scopes. APR evaluates each scope independently.
+
+RPM `unresolved` is not an empty required policy. Missing placement, Resource realization, target or locator evidence must never be converted into `requiredPermitSpace = []`.
+
+The first MVP path reaches APR only for HostAddress-to-HostAddress technical materialization. Prefix remains upstream truth and causes unresolved until Prefix-aware NEP semantics are accepted.
 
 ### ConfiguredEffectivePolicySnapshot
 
-Published by a provider interpretation adapter/integration capability (ADR-021):
+Published by Provider Policy Interpreter (ADR-021):
 
 ```text
-ConfiguredEffectivePolicySnapshot
-    targetRef
-    policyLocator / comparisonScope
+ConfiguredEffectivePolicySnapshot {
+    comparisonScope {
+        firewallId
+        accessListName
+    }
     effectivePermitSpace
     sourceCapture/evidence references
     evidence/effective time
     completeness: Complete | Incomplete | Unknown
     interpreter identity/version
     unsupportedSemantics[]
+}
 ```
 
-APR does not parse provider-native policy syntax. Provider ordering, deny/default behavior, objects/groups, aliases and other source-specific constructs must already have been interpreted exactly into the source-neutral projection.
+APR does not parse provider-native syntax. Provider ordering, deny/default behavior, objects/groups and aliases must already be interpreted into trustworthy source-neutral effective semantics.
 
-`Incomplete | Unknown` configured input cannot be treated as an empty policy or used for a complete realization conclusion.
+`Incomplete | Unknown` is not empty configured policy.
 
-TAE may preserve source-qualified evidence but does not own current configured-policy publication/completeness.
+## Comparability gate
+
+APR performs exact comparison only when:
+
+```text
+required.comparisonScope == configured.comparisonScope
+required materialization == complete
+configured.completeness == Complete
+unsupported configured semantics == none for the compared space
+```
+
+Otherwise the result is `Uncomparable`, not `Drift` or `Realized`.
 
 ## Core semantic algebra
 
@@ -50,80 +86,159 @@ missing = required - configured
 excess  = configured - required
 ```
 
-Policies are semantically equivalent when they denote the same effective permit space even when their native decomposition differs.
+Policies are compared by semantic permit-space meaning, not provider decomposition.
 
-## APR responsibilities
+```text
+Realized <=> missing is empty AND excess is empty
+Drift    <=> missing is non-empty OR excess is non-empty
+```
+
+Explicit complete emptiness is valid. Unresolved/unknown evidence is not.
+
+## MVP Tactical classification
+
+The first MVP requires no durable APR aggregate or editable remediation-plan lifecycle.
+
+The canonical Tactical model classifies:
+
+- `ComparisonScope` — value;
+- `PermitRegion` / `EffectivePermitSpace` — values;
+- `SemanticDelta` — derived value;
+- `RealizationAssessment` — derived immutable result;
+- `VerifiedChangeIntent` — immutable semantic handoff value.
+
+Their domain meaning is complete without prescribing ERD, tables, caches, workflow state or APIs.
+
+## Accepted remediation boundary
+
+The target has no accepted managed-policy scope proving that NAPMS owns every configured permit in an ACL.
+
+Therefore:
+
+```text
+missing -> may produce ENSURE-PERMIT intent
+excess  -> report/audit only; no automatic removal or narrowing
+Realized -> no intent
+Uncomparable -> no intent
+```
+
+A future destructive/removal capability requires a separate accepted managed-policy ownership rule.
+
+## VerifiedChangeIntent
+
+```text
+VerifiedChangeIntent {
+    comparisonScope
+    operation = ENSURE-PERMIT
+    permitSpace
+    baseConfiguredCorrelation
+    requiredPolicyProvenance
+    deltaProvenance
+    verificationEvidence
+}
+```
+
+MVP invariants:
+
+- `permitSpace` is non-empty and equals the selected missing permit space;
+- no provider-native syntax is part of the intent;
+- no destructive operation exists in the MVP vocabulary;
+- base correlation is retained for stale-base protection downstream;
+- provenance explains required basis and delta;
+- semantic verification proves additive effect without narrowing previously configured access.
+
+For configured space `C` and missing space `M`:
+
+```text
+proposed = C ∪ M
+M == missing
+C ⊆ proposed
+required ⊆ proposed
+```
+
+If `excess` existed before the additive change, it may remain afterwards. The verified intent therefore does not itself claim final `Realized` convergence. A new provider observation and APR comparison are required.
+
+## Provenance / explainability
+
+APR must preserve enough attribution to explain:
+
+- which required contributors demand a missing region;
+- which configured evidence exposes an excess region;
+- which basis produced a VerifiedChangeIntent.
+
+Exact provenance storage/index/materialization is downstream Architecture/Implementation work.
+
+## Ownership
 
 APR owns:
 
-- comparability validation for its two published inputs;
+- comparability validation;
 - exact effective-policy algebra;
-- realization assessment;
-- exact Semantic Delta;
-- vendor-neutral Policy Change Design;
-- semantic verification of the proposed resulting effective policy;
-- provenance/explainability of derived results;
-- a source-neutral `VerifiedChangeIntent` result suitable for downstream provider rendering.
+- `Realized | Drift | Uncomparable` assessment;
+- Semantic Delta;
+- accepted additive change design;
+- semantic verification;
+- source-neutral `VerifiedChangeIntent` handoff.
 
 APR does not own:
 
 - authorization or Policy Rule governance;
-- Resource/ACC truth;
-- NEP target selection/relevance;
-- provider-native configured-policy interpretation;
-- provider-specific rendering implementation;
-- provider/device mutation lifecycle.
+- ACC/AD/RC source truth;
+- NEP target discovery;
+- RPM source composition;
+- provider-native interpretation;
+- provider-specific rendering;
+- network mutation lifecycle.
 
-## Provider rendering handoff
-
-ADR-021 places provider rendering outside APR core:
+## Provider / NEO handoff
 
 ```text
 VerifiedChangeIntent
 + target/provider capabilities
-+ base target revision/correlation
++ base target correlation
     -> Provider Policy Renderer
     -> TargetPolicyArtifact
     -> NEO
 ```
 
-Rendering is an adapter/integration capability. It may not widen, narrow or reinterpret verified intent.
+Rendering may not broaden, narrow or reinterpret verified intent and must fail closed when semantic equivalence cannot be established.
 
-A successful rendering path must establish semantic equivalence of the target representation for the supported provider semantics. If equivalence cannot be established, rendering fails closed and NEO receives no executable artifact.
+NEO owns operation identity, mutation authority, preconditions/concurrency, apply outcome and execution provenance. Apply success is not convergence proof.
 
-The proof mechanism belongs to Architecture: deterministic construction, round-trip interpretation, provider simulation or another validated mechanism may satisfy the invariant.
+## Scale classification
 
-## NEO handoff
+APR must remain capable of very large policy spaces, but the choice between in-memory, indexed, database-local or other computation is Architecture. It does not create new Tactical entities or ownership.
 
-NEO owns operation identity, mutation authority, concurrency/pre-check, apply outcome and execution provenance for the supplied `TargetPolicyArtifact`. NEO does not rewrite policy semantics.
+## Deferred beyond MVP DDD
 
-An apply success is not convergence proof. Subsequent provider state must be collected/interpreted into another `ConfiguredEffectivePolicySnapshot` and compared again.
+Future product/domain extensions:
 
-## Scale direction
+- Prefix-aware/richer address-space algebra;
+- destructive/remove/narrow change semantics after managed-policy ownership is accepted;
+- durable remediation-plan lifecycle if a real user journey needs saved/editable/scheduled plans;
+- richer provider-semantic classes beyond the first supported vocabulary.
 
-APR must support very large policy spaces without mandatory full in-memory hydration. Data-local computation/worksets/indexes may be used behind APR semantic contracts. Such state remains derived unless a future accepted lifecycle establishes independent durable business meaning.
+Downstream non-DDD work:
 
-## Stable constraints
+- data-local computation/index strategy;
+- ERD/table/cache/materialization choices;
+- target/current migration mechanics;
+- provider round-trip/equivalence mechanism;
+- transport DTOs and orchestration.
 
-- target selection is upstream truth;
-- comparison uses effective semantics, not configuration text;
-- exact `common/missing/excess` algebra is preserved;
-- assessment, delta, change design and verification remain distinct concepts;
-- provider interpretation/rendering fail closed when semantics are unsupported;
-- empty evidence is not proof of empty configured policy without explicit completeness;
-- APR does not navigate peer-private persistence merely for performance;
-- current APR provider-renderer code is migration evidence, not target domain ownership.
+## MVP Tactical result
 
-## Open Tactical DDD work
+The first MVP APR domain is now closed sufficiently for DDD convergence:
 
-Still unresolved:
+```text
+complete comparable inputs
+    -> exact common/missing/excess
+    -> Realized | Drift
+    -> if missing != empty: VerifiedChangeIntent(ENSURE-PERMIT)
 
-- final technical-region/value vocabulary and edge cases (APR-P03);
-- data-local semantic computation contract (APR-P04);
-- vendor-neutral change-design vocabulary (APR-P05);
-- proposed-change simulation/verification contract (APR-P06);
-- attribution/explanation semantics (APR-P08);
-- final APR Tactical DDD/ERD/persistence classification (APR-P09);
-- target-versus-current migration plan (APR-P10).
+incomplete/mismatched/unsupported inputs
+    -> Uncomparable
+    -> no change intent
+```
 
-APR-P02 and APR-P07 strategic ownership questions are resolved by ADR-021. Architecture details of provider adapters/artifact format remain downstream.
+No remaining APR Tactical decision is required by the accepted first MVP happy path. Future generalization is reopened only when a concrete product journey requires it.

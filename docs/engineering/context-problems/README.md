@@ -68,11 +68,14 @@ A problem register is the default durable parking artifact.
 
 Create a roadmap only when ordering is itself useful current engineering truth, such as a required migration sequence, hard dependency chain or staged rollout/rollback plan. A roadmap that loses its justification should be removed/superseded, with still-open content retained here as unordered problems and real dependencies.
 
+Do not create a roadmap merely to list all known future work.
+
 ## Registry
 
 | Bounded context | Problem register | Known implementation gate |
 | --- | --- | --- |
 | Access Policy Realization | `access-policy-realization.md` | closed while blocking target-design problems remain unresolved |
+| Technical Access Evidence | `technical-access-evidence.md` | open only when real acquisition/provider integration work is selected; S2/G2 is not blocked |
 
 Add another row only after concrete unresolved context work has been identified. Do not create empty placeholders for every bounded context.
 

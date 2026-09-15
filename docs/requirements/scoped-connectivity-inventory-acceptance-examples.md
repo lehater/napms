@@ -1,8 +1,8 @@
 # Scoped Connectivity Inventory acceptance examples
 
-Status: `G1 revalidated specification-by-example`.
+Status: `G1 revalidated specification-by-example; AD target semantics aligned 2026-09-15`.
 
-Date: 2026-09-14.
+Date: 2026-09-15.
 
 Canonical requirements:
 - `docs/requirements/scoped-connectivity-inventory.md`.
@@ -26,54 +26,65 @@ Given R1 is affiliated with `payments-prod` but Actor A lacks `ReadScopedConnect
 
 Catalogue visibility of R1 may still exist independently under the global Resource visibility policy.
 
-## SCI-EX-04 — ambiguous scope authority fails closed
+## SCI-EX-04 — ambiguous/unknown authority fails closed
 
-Given authority for `ReadScopedConnectivity` is ambiguous, no local inventory data is returned for that scope and the ambiguity is explicit.
+Given `ReadScopedConnectivity` authority for the requested scope cannot be established unambiguously/trustworthily, no local inventory data is returned and the authority problem is explicit.
 
-## SCI-EX-05 — Resource with no current address still appears
+## SCI-EX-05 — Resource with no current AddressSpace still appears
 
-Given R1 is local but has no trustworthy current Endpoint/address realization, R1 still appears and technical realization is shown as unresolved.
+Given R1 is local but has no trustworthy current RC AddressSpace realization, R1 still appears and technical realization is shown as unresolved.
 
-## SCI-EX-06 — Resource with no ComponentDeployment still appears
+## SCI-EX-06 — Resource with no Component placement still appears
 
-Given R1 is local and ACC has no ComponentDeployment on R1, R1 appears with an explicit empty deployment/connectivity child state.
+Given R1 is local and AD has no current ComponentPlacement referencing R1, R1 appears with an explicit empty deployment/placement/connectivity child state.
 
-## SCI-EX-07 — exactly one Resource per ComponentDeployment
+## SCI-EX-07 — one Component may have several current placements
 
-Given ComponentDeployment C1 exists on Resource R1,
+Given ApplicationDeployment D1 contains Component C1 placements on R1 and R2,
 
 Then:
-- C1 appears under R1;
-- C1 does not simultaneously belong to R2;
-- moving the Component to R2 creates a different ComponentDeployment reference rather than rebinding C1.
+- the same logical D1/C1 may appear under both Resources;
+- D1 identity is the same in both projections;
+- the system does not invent two ComponentDeployment identities merely because there are two Resources;
+- an exact duplicate `(C1, R1)` placement relation is not represented twice.
 
-Endpoint/address changes on R1 do not create a new ComponentDeployment.
+Changing R1's AddressSpace does not change D1 or the `(C1, R1)` placement meaning.
 
-## SCI-EX-08 — outgoing relationship relative to local side
+## SCI-EX-08 — placement migration preserves logical deployment identity
 
-Given C1 is deployed on local R1 and ACC defines C1 -> C2 / Contract-Https,
+Given D1/C1 is currently placed on R1,
 
-Then the row under R1/C1 is outgoing, remote participant is C2, and canonical source/destination remain C1/C2.
+When current placement changes so C1 is placed on R2 instead (or temporarily on both during ordinary scaling/migration),
 
-## SCI-EX-09 — incoming relationship relative to local side
+Then D1 remains the same ApplicationDeployment while its placement set changes.
 
-Given C2 is deployed on local R2 and ACC defines C1 -> C2 / Contract-Https,
+The governed subject changes only if the logical ApplicationDeployment or InteractionContractRevision identity changes, not merely because Resource placement changes.
 
-Then the row under R2/C2 is incoming and canonical source/destination remain C1/C2.
+## SCI-EX-09 — outgoing relationship relative to local side
 
-## SCI-EX-10 — both participants local
+Given C1 of source ApplicationDeployment D1 is placed on local R1 and ACC defines Interaction C1 -> C2 with current contract revision K1,
 
-Given C1 and C2 are deployed on Resources in the same selected scope, the same exact interaction may appear under C1 as outgoing and C2 as incoming without creating duplicate interaction or Policy Rule identity.
+Then the row under R1/D1/C1 is outgoing, while canonical source/destination remain C1/C2.
 
-## SCI-EX-11 — remote Resource known, current address unresolved
+## SCI-EX-10 — incoming relationship relative to local side
 
-Given C1 -> C2 is known and C2's Resource is known but has no current address,
+Given C2 of destination ApplicationDeployment D2 is placed on local R2 and ACC defines C1 -> C2 / K1,
 
-Then the remote ComponentDeployment/Resource are shown and address realization is explicitly unresolved. The interaction is not described as absent.
+Then the row under R2/D2/C2 is incoming and canonical source/destination remain C1/C2.
 
-## SCI-EX-12 — business Need is independent from authorization
+## SCI-EX-11 — both participants/local placements do not duplicate domain identity
 
-Given a current Process-backed Connectivity Need exists for interaction I but there is no current authorization,
+Given D1/C1 and D2/C2 have placements on Resources in the same selected scope, the same governed interaction may appear through several local Resource/placement paths without creating duplicate Interaction, Access Request or Policy Rule identity.
+
+## SCI-EX-12 — remote Resource known, current address unresolved
+
+Given C1 -> C2 / K1 is known and D2/C2 has an applicable placement on Resource R2 but R2 has no current AddressSpace,
+
+Then the remote ApplicationDeployment/Component/Resource context is shown and address realization is explicitly unresolved. The semantic interaction is not described as absent.
+
+## SCI-EX-13 — business Need is independent from authorization
+
+Given a current Process-backed Connectivity Need exists for Interaction I but there is no current authorization,
 
 Then the inventory may show:
 - Need = Known;
@@ -81,9 +92,9 @@ Then the inventory may show:
 
 It must not infer approval from the Need.
 
-## SCI-EX-13 — authorized access may lack current business attribution
+## SCI-EX-14 — authorized access may lack current business attribution
 
-Given a current Policy Rule is effectively authorized for subject I but current Process/Need attribution is unavailable,
+Given a current Policy Rule is effectively authorized but current Process/Need attribution is unavailable,
 
 Then the inventory may show:
 - Need = Unknown or None according to authoritative business truth;
@@ -91,94 +102,100 @@ Then the inventory may show:
 
 It must not fabricate a Need from Rule existence.
 
-## SCI-EX-14 — one side approved, one side pending
+## SCI-EX-15 — one side approved, one side pending
 
-Given an Access Request exists for I, source-side approval is valid, and destination-side approval is pending,
+Given an Access Request exists for a governed subject, source-side approval is valid, and destination-side approval is pending,
 
 Then governance summary = PendingApprovals and effectiveAuthorization != Yes.
 
-## SCI-EX-15 — bilateral approval produces authorization
+## SCI-EX-16 — bilateral approval produces authorization
 
 Given both required sides validly approve the same current Request subject,
 
 Then governance summary may be Approved and the resulting Access Policy truth may show one authoritative effective Rule for that subject.
 
-## SCI-EX-16 — rejection creates no deny Rule
+## SCI-EX-17 — rejection creates no deny Rule
 
 Given either required side rejects a pending Access Request,
 
 Then governance summary = Rejected and no deny Policy Rule is created merely to represent the rejection.
 
-## SCI-EX-17 — unilateral withdrawal revokes current authorization
+## SCI-EX-18 — unilateral withdrawal revokes current authorization
 
 Given a subject was previously approved by both sides and one currently authorized side withdraws consent,
 
 Then:
 - governance summary = Revoked;
-- effectiveAuthorization = No after the withdrawal takes effect;
+- effectiveAuthorization = No after withdrawal;
 - the original approved Request/history remains historical truth and is not rewritten as Rejected.
 
-## SCI-EX-18 — one Rule may have several business justifications
+## SCI-EX-19 — one Rule may have several business justifications
 
-Given two current Connectivity Needs and two approved Requests justify the same exact authorization subject,
+Given two current Connectivity Needs and two approved Requests justify the same exact governed subject,
 
 Then Access Policy may expose one current authoritative Rule for that subject while preserving many-to-one provenance.
 
-## SCI-EX-19 — request access reuses trusted semantic context
+## SCI-EX-20 — request access reuses trusted semantic context
 
 Given:
-- local source ComponentDeployment C1;
-- destination ComponentDeployment C2;
-- existing ACC interaction contract C1 -> C2;
+- source ApplicationDeployment D1 with source Component C1 placed on selected local Resource R1;
+- destination ApplicationDeployment D2 whose destination Component C2 realizes the other Interaction endpoint;
+- existing immutable ACC `InteractionContractRevisionRef` K1 for C1 -> C2;
 - valid Process-backed Connectivity Need;
 - actor admitted to initiate access for the source scope,
 
 When the actor selects Request access,
 
-Then the system reuses the trusted source/destination/interaction subject and submits an Access Request into bilateral governance. It does not materialize a Policy Rule directly.
+Then the system submits an Access Request for:
 
-## SCI-EX-20 — request requires business justification
+```text
+K1 + D1 + D2
+```
 
-Given the user attempts deliberate Request access for an interaction with no valid Process-backed Connectivity Need,
+The current Resource placements are used for applicability/obligation resolution but are not embedded into governed-subject identity. The flow does not materialize a Policy Rule directly.
+
+## SCI-EX-21 — request requires business justification
+
+Given the user attempts deliberate Request access for an Interaction with no valid Process-backed Connectivity Need,
 
 Then the product does not fabricate a Need and does not bypass Business Connectivity. The missing justification is explicit and must be established through the owning capability.
 
-## SCI-EX-21 — owner/admin metadata does not grant approval
+## SCI-EX-22 — owner/admin metadata does not grant approval
 
 Given a user is shown as Resource owner/administrator but lacks effective approval authority for the relevant scope/action,
 
 Then the user cannot satisfy that side's approval obligation merely because of the owner/admin metadata.
 
-## SCI-EX-22 — same actor may approve both sides only with both authorities
+## SCI-EX-23 — same actor may approve both sides only with both authorities
 
 Given Actor A independently has valid source-side and destination-side approval authority,
 
 Then A may satisfy both obligations. If A has only one side's authority, the other obligation remains unresolved.
 
-## SCI-EX-23 — authorized but unresolved technical realization
+## SCI-EX-24 — authorized but unresolved technical realization
 
-Given a Rule is effectively authorized but the Resource has no current usable address or placement/policy-locator evidence,
+Given a Rule is effectively authorized but an applicable placement Resource has no current usable AddressSpace, or target/policy-locator evidence is unresolved,
 
 Then:
 - effectiveAuthorization = Yes;
 - realization = Unresolved;
 - the Rule is not silently omitted from desired policy semantics.
 
-## SCI-EX-24 — realization distinguishes missing and excess access
+## SCI-EX-25 — realization distinguishes missing and excess access
 
-Given trustworthy comparable required and observed policy:
+Given trustworthy comparable required and configured effective policy:
 - required but absent technical access -> MissingRequiredAccess;
-- technically present access with no current authorization requirement -> ExcessUnauthorizedAccess;
-- equivalent required/observed access -> Satisfied.
+- technically present access with no current requirement -> ExcessUnauthorizedAccess;
+- equivalent required/configured access -> Satisfied.
 
 These are realization summaries, not approval states.
 
-## SCI-EX-25 — partial enrichment failure remains partial
+## SCI-EX-26 — partial enrichment failure remains partial
 
 Given local Resource/interaction rows are trustworthy but one governance or realization enrichment is unavailable,
 
 Then the base row remains available and only the affected dimension is Unknown. Unknown is never converted into false absence or denial.
 
-## SCI-EX-26 — top-level paging preserves Resource groups
+## SCI-EX-27 — top-level paging preserves Resource groups
 
 Given more local Resources exist than one page, pagination is over the effective local Resource set. Resource groups are not split across top-level pages; bounded child collections expose explicit continuation/truncation.

@@ -1,8 +1,8 @@
 # Business Connectivity — target Tactical DDD model
 
-Status: `S2 target candidate`.
+Status: `S2 MVP Tactical model accepted 2026-09-15; non-blocking extensions deferred`.
 
-Date: 2026-09-14.
+Date: 2026-09-15.
 
 Strategic owner: **Business Connectivity** per ADR-019.
 
@@ -28,7 +28,7 @@ ConnectivityNeed [0..N]
     |
     | requires
     v
-Application Interaction reference
+ACC InteractionRef
 ```
 
 The context stores only opaque references to ACC-owned application/component/interaction identities. It does not copy ACC private models.
@@ -51,15 +51,15 @@ Minimum target facts:
 - human-recognizable name/title;
 - business description/purpose when supplied;
 - organizational-responsibility reference(s) sufficient for explanation/governance correlation;
-- business importance/criticality value only when a later accepted scale exists.
+- business importance/criticality only when a later accepted scale exists.
 
-Exact organization registry integration and criticality scale are deliberately outside this tactical slice.
+Exact organization registry integration and criticality scale are outside the MVP Tactical requirement.
 
-### Lifecycle
+### Lifecycle classification
 
-No detailed Process workflow/state machine is currently justified by G1.
+No detailed Process workflow/state machine is justified by current accepted behavior.
 
-The model requires only that historical references remain explainable if a Process is later retired/replaced. Exact retirement/archive mechanics are deferred until a concrete requirement needs them.
+The domain guarantee is only that historical Process references remain explainable if a Process later ceases to be current. Exact retirement/archive mechanics are deferred until a concrete product journey needs them.
 
 ## ConnectivityNeed
 
@@ -67,7 +67,7 @@ The model requires only that historical references remain explainable if a Proce
 
 `ConnectivityNeedId` is a stable domain identity for one enduring business requirement.
 
-Its semantic subject is application-level, conceptually:
+Its semantic subject is application-level:
 
 ```text
 BusinessProcessRef
@@ -79,26 +79,31 @@ The domain identifier remains stable when non-identity justification metadata ch
 
 The Need is **not** identified by:
 
-- IP address;
-- ResourceEndpoint;
+- IP address/Prefix;
 - Resource;
-- concrete source/destination ComponentDeployment;
+- ComponentPlacement;
+- ApplicationDeployment;
 - Access Request;
-- Policy Rule.
+- Policy Rule;
+- one specific InteractionContractRevision.
+
+The Need references stable Interaction meaning because the business requirement may outlive one technical/deployment realization or one particular immutable traffic-contract revision. Access Governance chooses/preserves the exact `InteractionContractRevisionRef` used by each concrete governed Request.
 
 ### Sameness across technical change
 
 A Need remains the same when:
 
-- endpoint/address realization changes;
-- one concrete deployment is replaced by another deployment fulfilling the same application-semantic role;
-- several concrete Access Requests are created over time to realize the same Need.
+- Resource address realization changes;
+- Component placement changes while the same application-semantic participant role remains;
+- one logical ApplicationDeployment is replaced by another realization of the same business/application need;
+- several concrete Access Requests are created over time to realize the same Need;
+- the ACC Interaction receives a later traffic-contract revision, unless the business-required Interaction/participant meaning itself changes.
 
 A materially different required Interaction or different dependent business participant meaning is a different Need rather than a silent mutation of its semantic identity.
 
 ### Required invariants
 
-1. Every deliberate Connectivity Need belongs to exactly one Business Process in this first target model.
+1. Every deliberate Connectivity Need belongs to exactly one Business Process in the first target model.
 2. Every Need references an existing ACC-owned Interaction meaning rather than inventing network/IP semantics locally.
 3. Need existence never implies authorization.
 4. Need existence never implies network realization.
@@ -107,25 +112,25 @@ A materially different required Interaction or different dependent business part
 7. Losing/retiring one Need does not rewrite historical Access Requests or approvals.
 8. Losing all known current Needs for an authorization produces a business-justification reconciliation condition, not automatic revocation by Business Connectivity.
 
-The exact uniqueness rule for semantically duplicate Need declarations is deferred until product behavior requires whether two Processes/participants may intentionally carry separately identified equivalent Needs.
+The exact uniqueness rule for semantically equivalent Need declarations is deferred until product behavior requires whether separate Processes/participants may intentionally carry separately identified equivalent Needs.
 
 ## Need applicability/currentness
 
-G1 requires a distinction between a business requirement that is current and one that no longer supplies current justification, but does not require the previous `Active -> Retired` ConnectivityRequirement state machine.
-
-Target semantic guarantee:
+The domain requires a distinction between a Need that currently supplies business justification and one that no longer does, while preserving historical identity/provenance.
 
 ```text
-Need may be current/applicable
-or no longer current/applicable
-while its historical identity/provenance remains explainable
+Need applicability = Current | NotCurrent
 ```
 
-Exact state names, temporal-window model and commands are deferred to a later tactical increment unless required by a current use case.
+These are semantic meanings, not a required storage enum or workflow state machine.
+
+A consumer must also preserve `Unknown/Incomplete` when it cannot establish currentness from authoritative Business Connectivity truth; technical failure must not be converted into `NotCurrent`.
+
+Exact temporal-window representation is downstream design unless a product journey requires scheduled business-validity semantics.
 
 ## Business attribution
 
-Business attribution is a relation/finding that associates a recognized deployed interaction or authorization with one or more known Connectivity Needs/Processes for explanation/reconciliation.
+Business attribution associates a recognized deployed interaction or authorization with one or more known Connectivity Needs/Processes for explanation/reconciliation.
 
 Important semantics:
 
@@ -135,27 +140,27 @@ Important semantics:
 - adding attribution to already authorized access does not create a duplicate Policy Rule;
 - attribution does not transform observed traffic into a Need automatically.
 
-Whether attribution is stored as an independently identified entity or computed/recorded evidence is deferred until its editing/history requirements are specified.
+Whether attribution becomes an independently identified durable entity is deferred until editing/history requirements demand that identity/lifecycle.
 
 ## Public semantic contracts
 
-### Need summary for Access Governance
+### Need basis for Access Governance
 
-For a deliberate request Business Connectivity must be able to publish enough trusted meaning to establish the business basis without exposing private internals:
+For a deliberate request Business Connectivity publishes enough trusted meaning to establish the business basis:
 
 ```text
 ConnectivityNeedRef
 BusinessProcessRef
 required InteractionRef
 current/applicable justification status
-human-explainable business basis
+human-explainable business basis/provenance
 ```
 
-Access Governance must preserve the referenced basis used by the Request and must not infer authorization from it.
+Access Governance combines that stable Need with the exact concrete `InteractionContractRevisionRef + source/destination ApplicationDeploymentRef` governed subject. It preserves the basis used by the Request and never infers authorization from Need existence.
 
 ### Business-justification reconciliation
 
-A consumer may ask whether one recognized/authorized interaction has zero/one/many current known Need justifications. The result must distinguish at least:
+A consumer may ask whether one recognized/authorized interaction has current known Need justifications. The result distinguishes:
 
 ```text
 Known
@@ -163,23 +168,26 @@ NoneKnown
 Unknown/Incomplete
 ```
 
-when data completeness makes `NoneKnown` versus `Unknown` material.
+`NoneKnown` is valid only from complete authoritative knowledge; unknown evidence is not absence.
 
 ## Derived vs authoritative truth
 
 Authoritative:
-- Process identity/meaning maintained by this context;
-- Connectivity Need identity/meaning/currentness maintained by this context;
-- explicitly accepted attribution facts if/when recorded here.
+
+- Process identity/meaning;
+- Connectivity Need identity/meaning/currentness;
+- explicit attribution facts if/when recorded here.
 
 External references:
+
 - ACC Interaction/Component references;
 - organization/responsibility references.
 
 Derived/composition:
+
 - whether the Need is currently authorized;
 - whether technical access is realized;
-- impact analysis that combines other context facts.
+- impact analysis combining peer context facts.
 
 ## Explicit non-goals
 
@@ -188,15 +196,26 @@ Derived/composition:
 - security approval/consent;
 - Access Request lifecycle;
 - Policy Rule lifecycle;
-- concrete Deployment/IP identity as Need identity;
+- concrete ApplicationDeployment/Resource/address identity as Need identity;
 - firewall/network realization;
 - automatic revocation when business justification disappears.
 
-## Remaining non-blocking questions
+## Deliberately deferred non-blocking extensions
 
-- exact Process retirement/archive semantics;
-- accepted business criticality scale and propagation rules;
-- exact organization-unit/responsibility references;
+- exact Process retirement/archive mechanics;
+- business criticality scale and propagation rules;
+- exact organization-unit/responsibility reference semantics;
 - duplicate/equivalent Need declaration policy;
-- durable attribution entity/history once editing/audit requirements are known;
-- exact applicability/time-window representation.
+- durable attribution identity/history;
+- scheduled/time-window representation beyond Current/NotCurrent meaning.
+
+## Tactical coherence result
+
+Business Connectivity is sufficient for the first MVP DDD baseline:
+
+- Process and Need identities are explicit;
+- Need is application-semantic and independent of deployment/address realization;
+- currentness needed for deliberate request justification is explicit;
+- exact governed contract revision remains AG/ACC truth, not Need identity;
+- disappearance of business justification is reconciliation input, not implicit revocation;
+- remaining questions are future extensions and do not require implementation invention for the happy path.
