@@ -1,6 +1,6 @@
 # Application Deployment — strategic boundary
 
-Status: `Strategic boundary accepted; Tactical model intentionally minimal`.
+Status: `Strategic boundary accepted; current Resource binding contract closed`.
 
 ## Purpose
 
@@ -8,21 +8,9 @@ Own the independently changing truth of which logical deployment of an Applicati
 
 ## Ownership
 
-Application Deployment owns:
+Application Deployment owns `ApplicationDeployment` identity/continuity, deployment lifecycle semantics, Component-to-Resource placement truth (`ComponentPlacement`), and publication of placement facts needed by governance/materialization.
 
-- `ApplicationDeployment` identity and continuity;
-- deployment lifecycle semantics;
-- Component-to-Resource placement truth (`ComponentPlacement`);
-- publication of deployment applicability/placement facts needed by governance and required-policy materialization.
-
-It does not own:
-
-- Application, Component or Interaction meaning — ACC;
-- Resource identity, responsibility/scope or technical realization — RC;
-- authorization/approval workflow — AG;
-- effective Policy Rule truth — AP;
-- technical enforcement placement — NEP;
-- provider runtime/container/orchestrator truth unless a future accepted requirement introduces such semantics.
+It does not own Application/Component/Interaction meaning (ACC), Resource identity/address/scope/responsibility (RC), authorization workflow (AG), Policy Rule truth (AP), enforcement placement (NEP), or provider runtime/container/orchestrator truth.
 
 ## Minimal strategic model
 
@@ -43,7 +31,7 @@ A placed Component belongs to the Application referenced by its ApplicationDeplo
 
 `ApplicationDeployment` preserves identity while continuity of the same logical deployment is preserved. Ordinary horizontal scaling, Resource migration and Component placement replacement do not alone create a new ApplicationDeployment identity.
 
-The exact create/activate/retire vocabulary, move-versus-replacement rule and same-Component/same-Resource multiplicity are Tactical-open.
+Exact lifecycle vocabulary, move-versus-replacement mechanics and same-Component/same-Resource multiplicity remain Tactical-open.
 
 ## Public relationships
 
@@ -55,17 +43,21 @@ AD  -> AG: source/destination ApplicationDeploymentRef as governed applicability
 AD  -> RPM: applicable ComponentPlacement / ResourceRef projection with time and resolution state
 ```
 
-AD must not expose ACC or RC private tactical structures as its own authority.
+## Resource/address binding decision
 
-## Network exposure
+For the current scope, AD has no endpoint or address binding concept. `ComponentPlacement` references exactly a Resource; RC resolves that Resource at a logical time to at most one effective `AddressSpace = HostAddress | Prefix`.
 
-Network exposure is a real placement-related concern but its model is not yet accepted. In particular, this boundary does not establish `ResourceEndpointRef`, `DeploymentEndpointBinding`, Environment, listener/interface, VIP, pod/container or other provider-specific concepts.
+```text
+ComponentPlacement.ResourceRef
+        -> RC Resource
+        -> effective HostAddress | Prefix
+```
 
-RC Tactical DDD must first establish what stable technical network meaning RC actually owns. AD Tactical DDD can then define the smallest semantic declaration/correlation it needs. If the result requires a cross-context contract change, route only that affected edge back through Strategic DDD.
+Address changes do not change ApplicationDeployment or ComponentPlacement identity. Multiple simultaneous addresses/interfaces, VIPs, management/data separation and deployment-specific network exposure are explicitly out of scope until a confirmed use case requires them.
+
+`ResourceEndpointRef`, `DeploymentEndpointBinding`, listener/interface and provider-runtime identities are therefore not part of the current target contract.
 
 ## Governance implication
-
-Working governed subject:
 
 ```text
 GovernedInteractionSubject {
@@ -75,7 +67,7 @@ GovernedInteractionSubject {
 }
 ```
 
-This identity is deliberately above individual Component placements and technical addresses. Changes in placement may nevertheless change Resource Scope Affiliations and therefore approval obligations. Whether existing consent remains valid in that case is an S1 product-behavior question, not an AD invariant.
+This identity is deliberately above individual Component placements and technical addresses. Placement changes may nevertheless change Resource Scope Affiliations and approval obligations; resulting authorization behavior remains an S1 product question.
 
 ## Scale constraint
 
