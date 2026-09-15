@@ -1,49 +1,27 @@
 # Active execution
 
-Current: first implementation MVP — Required Access Matrix.
+Current: none.
 
-Lifecycle stage: `S2`
-Stage state: `ACCEPTED`
-Implementation authorization: `none`
-Authorized scope: `none`
-Authorization basis: `none`
+The selected next implementation increment is the Required Access Matrix defined by `docs/requirements/first-mvp-required-access-matrix.md`.
 
-## Selected slice
+Current accepted product slice:
 
 ```text
-ACC
-  InteractionContractRevision
+ACC InteractionContractRevision
         +
-AD
-  ApplicationDeployment
-  Component -> Resource placements
+AD ApplicationDeployment + ComponentPlacement
         +
-RC
-  Resource -> AddressSpace
+RC Resource + AddressSpace
         |
         v
-Required Access Matrix materialization
+Required Access Matrix
         |
         +--> table
         `--> vendor-neutral export
 ```
 
-Canonical product contract: `docs/requirements/first-mvp-required-access-matrix.md`.
-
-The materialization input is an explicit set of:
-
-```text
-InteractionContractRevisionRef
-+ sourceApplicationDeploymentRef
-+ destinationApplicationDeploymentRef
-```
-
-A successful result expands every applicable source placement × destination placement × traffic alternative. Missing required owner truth produces explicit `Unresolved`; incomplete output is never presented as a complete policy.
-
-The first implementation does not require governance, authorization, firewall/ACL placement, configured-state comparison, provider rendering or device execution.
+No S3 Architecture task is active yet. No implementation authorization exists.
 
 ## Next
 
-Enter S3 Architecture only for this selected slice. S3 must define composition boundaries, dependency direction, consistency/read semantics, output contract, UI/export seam and executable architecture checks without widening the product scope.
-
-Production-code implementation remains forbidden until S4 reaches G4 for an explicit scope.
+Enter S3 Architecture only for this selected slice when explicitly requested. Production-code implementation remains forbidden until S4 reaches G4 for an explicit scope.
