@@ -1,24 +1,30 @@
 # Active execution
 
 Current: `application-deployment-boundary.md`
-
-Lifecycle stage: `S2 Tactical DDD — minimal happy-path convergence`.
-
-Implementation authorization: `none`.
+Goal: converge the smallest ACC + RC -> AD foundation needed for the MVP happy path without speculative extensions.
+Current task: checkpoint the minimal ACC model and hand off to minimal Resource Catalogue Tactical modelling.
+Lifecycle stage: `S2`
+Stage state: `IN_PROGRESS`
+Lifecycle basis: `docs/plans/active/application-deployment-boundary.md` and the accepted 2026-09-15 MVP happy-path decision.
+Implementation authorization: `none`
+Authorized scope: `none`
+Authorization basis: `none`
 
 ## MVP execution rule
 
-The current objective is the smallest working end-to-end happy path, not feature-complete domain modelling.
+Build the smallest working end-to-end happy path, not a feature-complete domain model. Define only semantics required by that path; preserve stable context boundaries, identities and public contracts; defer revisions, richer lifecycle/state machines, migration machinery, optimization and edge-case semantics until concrete pressure appears. Prefer a thin vertical path across contexts over completing each context in depth first.
 
-For each affected Bounded Context:
+Current progression: minimal `ACC + RC -> AD`, then the smallest downstream governance/network/policy path needed to produce a working rule.
 
-- define only semantics required by the first end-to-end scenario;
-- preserve stable context boundaries, identities and public contracts so later extension remains possible;
-- defer revisions, richer lifecycle/state machines, migration machinery, optimization and edge-case semantics until a concrete requirement or implementation finding needs them;
-- do not add extension mechanisms merely because they may be useful later;
-- prefer a thin vertical path across contexts over completing every context in depth before integration.
+## Working set
 
-The target progression is therefore minimal `ACC + RC -> AD`, then the smallest downstream governance/network/policy path needed to produce a working rule, with deeper modelling added only under demonstrated pressure.
+Read first:
+
+- `docs/domain/application-communication-catalogue/target-model.md`
+- `docs/plans/active/application-deployment-boundary.md`
+- `docs/domain/context-map.md`
+
+Expand only if a concrete contradiction or missing requirement requires it.
 
 ## Current baseline
 
@@ -32,35 +38,18 @@ AD ApplicationDeployment / ComponentPlacement -> ResourceRef
 RC Resource -> effective AddressSpace [0..1] = HostAddress | Prefix
 ```
 
-Canonical target authority:
+ACC MVP checkpoint: Interaction is a stable directed communication template between Components of one Application Definition; self-interaction is allowed; one directed Component pair has at most one Interaction; reverse direction is distinct; endpoints are immutable; traffic is current Interaction state; dedicated InteractionContractRevision is deferred beyond MVP. ACC owns neither placements nor Resources nor concrete deployment pairs.
 
-- `docs/domain/strategic-model.md` — responsibilities/boundaries;
-- `docs/domain/context-map.md` — relationships/contracts;
-- `docs/domain/strategic-model.json` — machine-readable projection;
-- `docs/domain/application-communication-catalogue/target-model.md` — current minimal ACC target;
-- `docs/plans/active/application-deployment-boundary.md` — prior AD boundary convergence/audit record.
+## Blockers
 
-## ACC checkpoint
+None for the foundational ACC checkpoint or the next minimal RC Tactical step.
 
-For the MVP, ACC owns an `ApplicationDefinition`, its `Component` identities and directed `Interaction` definitions.
+Access Governance retains S1 questions around selectable ApplicationDeployment pairs, authorization behavior after placement/scope changes, and overlapping Responsibility Scopes. Do not solve them speculatively; reopen them when the vertical slice reaches that behavior.
 
-Accepted current semantics:
+## Gate
 
-- an Interaction describes possible communication between two Components of one Application Definition, not a deployment or network endpoint;
-- self-interaction is allowed;
-- one directed Component pair has at most one Interaction; reverse direction is distinct;
-- Interaction endpoints are immutable; changing either endpoint creates another Interaction;
-- Interaction has a stable identity and current traffic contract;
-- dedicated `InteractionContractRevision` workflow is deferred beyond MVP;
-- retirement means removal from active use, not physical deletion; active dependencies block retirement;
-- richer restoration/history semantics are deferred unless the happy path needs them.
-
-AD may use ACC Component/Interaction meaning plus Component placements to derive concrete technically possible interactions. ACC itself owns neither placements nor Resources nor concrete deployment pairs.
-
-## Known downstream blockers
-
-Access Governance still has S1 behavior questions around selectable ApplicationDeployment pairs, authorization behavior when placement/scope changes alter approval obligations, and obligations under overlapping Responsibility Scopes. Do not solve those questions speculatively while building the foundational happy path; reopen/resolve them when the minimal vertical slice reaches the affected governance behavior.
+This checkpoint may merge when the hosted Harness gate passes for the PR head. Passing this gate records documentation/process consistency only; it does not grant implementation authorization.
 
 ## Next
 
-Start a fresh session from this capsule. Continue with the **minimal Resource Catalogue Tactical model**, then immediately revalidate the minimal Application Deployment model against ACC + RC. Avoid deeper ACC refinement unless the end-to-end slice exposes a blocking semantic gap.
+Start a fresh session from this capsule. Define the **minimal Resource Catalogue Tactical model**, then immediately revalidate minimal Application Deployment against ACC + RC. Avoid deeper ACC refinement unless the end-to-end slice exposes a blocking semantic gap.
