@@ -4,7 +4,7 @@ Status: `active`
 
 ## Goal
 
-Revalidate the first-MVP product contracts after stakeholder clarification of concrete component deployment identity, policy-rule change behavior, and evidence-derived access proposals before reopening Strategic/Tactical DDD.
+Converge the target Strategic/Tactical DDD after G1 revalidation established concrete Component Deployment endpoints, current-vs-proposed rule revision behavior, and evidence-derived access proposals.
 
 ## Inputs
 
@@ -16,16 +16,17 @@ Revalidate the first-MVP product contracts after stakeholder clarification of co
 
 ## Exit criteria
 
-- affected observable requirements no longer depend on logical whole-Application deployment + placement-set semantics;
-- pending/rejected access changes cannot silently replace current effective policy;
-- evidence-derived recognition/proposal behavior is explicit without promoting evidence to authorization;
-- G1 is re-evaluated for the affected slice;
-- accepted requirements are sufficient to enter S2 without inventing product behavior.
+- concrete Component Deployment has one coherent semantic owner, identity and Resource relation;
+- proposal/change history and current effective policy have one coherent lifecycle owner without duplicated authority;
+- ACC revision, RC Resource, Business Connectivity and TAE recognition relationships use explicit public semantic contracts;
+- affected Tactical identities/lifecycles/invariants are explicit;
+- vendor-neutral export consumes only published owner truth;
+- G2 is re-evaluated for the affected slice with no P0/P1 semantic contradiction.
 
 ## Blockers
 
-None currently. Strategic ownership of proposal/change-request versus current policy remains an S2 question after G1.
+None currently. The principal Strategic question is whether the existing Access Governance / Access Policy split still represents independent semantic lifecycles or artificially splits one Access Rule lifecycle.
 
 ## Next
 
-Update the smallest affected G1 requirement owners, evaluate G1, then enter Strategic DDD only for the affected context relationships.
+Challenge the affected Strategic boundaries and public contracts, update canonical Strategic artifacts, then revalidate only the dependent Tactical models and evaluate G2.
