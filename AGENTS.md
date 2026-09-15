@@ -27,7 +27,6 @@ Load process protocols on demand:
 - `docs/requirements/` — current accepted product behavior and quality contracts.
 - `docs/domain/` — current Strategic/Tactical DDD and semantic ownership.
 - `docs/architecture/` — current accepted target structure and architecture constraints.
-- `docs/decisions/` — only decisions that are still binding and not fully absorbed elsewhere.
 - `docs/engineering/` — current operational/implementation contracts.
 - `docs/ui/` — current reusable UI guidance.
 - `docs/plans/active/` — current execution state only.
