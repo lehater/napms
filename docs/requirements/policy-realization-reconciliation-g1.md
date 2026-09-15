@@ -123,15 +123,15 @@ An additive verified intent must cover the selected missing permit space and mus
 - Resource address changes do not redefine the concrete Component Deployment pair authorized by a Rule.
 - a second deployment of the same Component does not inherit another deployment's Policy Rule automatically.
 
-## Current ownership constraints for S2
+## Domain alignment
 
-The current requirements establish these semantic facts without deciding final Bounded Context boundaries:
+S2 subsequently accepted these owners:
 
 - ACC owns Application/Component/Interaction and immutable revision traffic meaning;
-- concrete Component Deployment truth must identify one Component on one Resource;
+- Application Deployment owns concrete `ComponentDeploymentId + ComponentRef + ResourceRef` truth;
 - RC owns Resource AddressSpace;
-- current Policy Rule truth identifies the concrete directed Component Deployment pair and exact current revision;
-- target-specific materialization remains derived composition and owns no independent authorization/deployment/resource truth;
+- Access Policy owns the complete PolicyRule/RuleChange governance and current-effective lifecycle;
+- target-specific materialization remains a derived composition and owns no independent policy/deployment/resource truth;
 - NEP/APR/provider/NEO responsibilities remain separate from semantic authorization.
 
-The final owner/name of Component Deployment and the governance/current-policy context split are S2 decisions.
+See `docs/domain/strategic-model.md`, `docs/domain/access-policy/tactical-model.md` and ADR-020. No implementation authorization is implied.
