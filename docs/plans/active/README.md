@@ -1,33 +1,35 @@
 # Active execution
 
-Current: none.
+Current: `PLAN-130-revalidate-policy-lifecycle.md`
 
-The selected next implementation increment is the Full Vendor-Neutral Policy Export defined by `docs/requirements/first-mvp-vendor-neutral-policy-export.md`.
+Goal: revalidate the selected first-MVP product contracts after clarification of concrete Component deployment identity, policy-rule change behavior, and evidence-derived access proposals.
 
-Current accepted product slice:
+Current task: update the affected observable requirements and evaluate G1 before changing Strategic/Tactical DDD.
 
-```text
-AP current effective Policy Rules
-        +
-ACC InteractionContractRevision
-        +
-AD ApplicationDeployment + ComponentPlacement
-        +
-RC Resource + AddressSpace
-        |
-        v
-Full Vendor-Neutral Policy Export
-        |
-        +--> table
-        `--> CSV/vendor-neutral data
-```
+Lifecycle stage: `S1`
+Stage state: `IN_PROGRESS`
+Lifecycle basis: stakeholder clarification conflicts with the accepted `ApplicationDeployment + ComponentPlacement` product model and governed-subject behavior in current G1 requirements; per `docs/process/change-lifecycle.md`, the earliest affected canonical layer is Requirements.
+Implementation authorization: `none`
+Authorized scope: `none`
+Authorization basis: `none`
 
-The exported policy must carry access-list-oriented source/destination address, protocol and port/range semantics while remaining independent of firewall, device, ACL and provider context.
+## Working set
 
-The previous AP-free Required Access Matrix selection is superseded.
+Read first:
+- `docs/plans/active/PLAN-130-revalidate-policy-lifecycle.md`
+- `docs/requirements/application-catalogue-domain-target.md`
+- `docs/requirements/access-governance-g1.md`
+- `docs/requirements/access-policy-core.md`
+- `docs/requirements/first-mvp-vendor-neutral-policy-export.md`
 
-No product workstream is active yet. Because the selected slice now starts from authoritative Access Policy truth, the next lifecycle step is a narrow S2 revalidation of the AP -> export composition and policy-creation handoff before S3 Architecture starts. No implementation authorization exists.
+## Blockers
+
+None at S1. Whether governance-change history and current Policy Rule truth remain separate Bounded Context responsibilities is deliberately deferred to S2 after G1.
+
+## Gate
+
+G1 — affected requirements coherent enough that S2 need not invent deployment identity, current-vs-proposed policy behavior, or evidence-derived proposal behavior.
 
 ## Next
 
-Enter S2 only for the selected AP + ACC + AD + RC export slice when explicitly started. Confirm that the export consumes public owner contracts, owns no independent policy truth and does not require NEP/device semantics. Then proceed through S3/S4. Production-code implementation remains forbidden until S4 reaches G4 for an explicit scope.
+Replace the affected G1 wording, evaluate G1, then route the accepted delta through Strategic DDD before Tactical DDD. Production-code implementation remains forbidden.
