@@ -1,8 +1,8 @@
 # NAPMS Strategic DDD model
 
-Status: `S2 first MVP DDD baseline converged 2026-09-15; future extensions deferred`.
+Status: `S2 first MVP DDD baseline converged; TAE acquisition edge aligned 2026-09-15`.
 
-Source baseline: DDD-BDM-010, 2026-09-14 G1 revalidation, ADR-019/020/021, global Strategic convergence and the 2026-09-15 full Tactical convergence pass.
+Source baseline: DDD-BDM-010, 2026-09-14 G1 revalidation, ADR-019/020/021, global Strategic convergence, the 2026-09-15 full Tactical convergence pass, and the 2026-09-15 TAE acquisition/normalization clarification.
 
 Canonical relationship map: `context-map.md`.
 DDD convergence checkpoint: `mvp-ddd-convergence-checkpoint.md`.
@@ -19,13 +19,13 @@ DDD convergence checkpoint: `mvp-ddd-convergence-checkpoint.md`.
 | **Application Communication Catalogue** | what applications/components exist and how may components communicate? | Application/Component/Interaction identity and immutable InteractionContractRevision traffic meaning |
 | **Application Deployment** | where are logical application deployments placed? | ApplicationDeployment identity/continuity and current Component-to-Resource placement-set truth |
 | **Network Enforcement Placement** | where may a technical pair be enforced? | candidate Firewall/policy-locator relevance |
-| **Technical Access Evidence** | what source-qualified technical material was observed/imported? | immutable normalized evidence with source/time/provenance |
+| **Technical Access Evidence** | what source-qualified technical material was reported/observed/imported? | canonical normalized immutable evidence language plus source/time/provenance |
 | **Access Policy Realization** | how does configured effective access compare with required effective access? | source-neutral assessment, semantic delta, accepted additive change design and verification |
 | **Network Environment Operations** | how is one verified target mutation executed and explained? | controlled mutation identity, authority, preconditions/concurrency, outcome/provenance |
 
 `Connectivity Requirements` and `Connectivity Decision` are legacy/current-state boundaries, not target BCs.
 
-Provider Policy Interpreter and Provider Policy Renderer are integration capabilities, not peer Bounded Contexts. Required Policy Materialization is a non-peer derived composition.
+Provider Policy Interpreter, Provider Policy Renderer and Technical Evidence Acquisition/Collectors are integration/application capabilities, not peer Bounded Contexts. Required Policy Materialization is a non-peer derived composition.
 
 ## Core semantic ladder
 
@@ -182,9 +182,23 @@ ComparisonScope = firewallId + accessListName
 
 Several NEP candidates/locators yield several comparison scopes; RPM never chooses a route/winner.
 
-## Technical evidence and provider interpretation
+## Technical evidence acquisition and interpretation
 
-TAE owns immutable source-qualified technical evidence. It does not decide which capture is current/complete configured policy for APR.
+TAE owns the canonical normalized evidence language and immutable source-qualified evidence history. It does **not** initiate collection.
+
+Conceptually:
+
+```text
+device/config acquisition capability ----\
+NetFlow/IPFIX/flow collector -------------+--> normalized source-qualified evidence --> TAE
+file/import adapter ----------------------/
+```
+
+The acquisition/collector capabilities own source-specific collection and faithful translation into the TAE contract. TAE owns the meaning and invariants of the normalized facts it accepts.
+
+Polling cadence, scheduling, retries, credentials, source transport and provider-specific collection mechanics are not TAE domain responsibilities.
+
+TAE evidence remains evidence. Recording it does not create authorization, desired policy, an ACL/access proposal, `VerifiedChangeIntent` or a network operation.
 
 Provider Policy Interpreter is the integration capability that interprets provider ordering, deny/default, objects/groups/aliases and other native semantics into a trustworthy:
 
@@ -196,6 +210,10 @@ ConfiguredEffectivePolicySnapshot
     freshness/provenance
     unsupported semantics
 ```
+
+PPI may consume provider/source material directly, TAE configured evidence under an explicit source contract, or both. TAE does not decide which capture is current/complete configured policy for APR.
+
+`TrafficDerived` evidence may instead be interpreted by recognition/reconciliation compositions. TAE does not acquire their business/domain decision ownership.
 
 APR never parses raw provider syntax.
 
@@ -266,9 +284,11 @@ TargetPolicyArtifact
     -> Verified | Rejected | PreconditionFailed | Drift | Unknown
 ```
 
-NEO does not recompute authorization, target selection, APR change design or provider rendering. Unknown/stale authority or preconditions fail closed. Identical retries are idempotent; uncertain apply is not blindly retried.
+NEO does not recompute authorization, target selection, APR change design or provider rendering. It is also not the semantic evidence-acquisition/read gateway for TAE. Unknown/stale authority or preconditions fail closed. Identical retries are idempotent; uncertain apply is not blindly retried.
 
 NEO `Verified` proves immediate artifact/application correspondence under the execution contract, not final semantic convergence.
+
+Whether NEO and acquisition capabilities share concrete provider/device access clients, adapters or libraries is an S3 Architecture concern; no such implementation structure is part of the S2 domain model.
 
 ## Strategic invariants
 
@@ -279,7 +299,10 @@ NEO `Verified` proves immediate artifact/application correspondence under the ex
 - technical realization changes do not redefine higher-level semantic identities unless their accepted identity rules say so;
 - current-state and historical evidence are not conflated;
 - workflows/compositions may derive values but acquire no business authority merely by orchestrating owners;
-- provider-native semantics remain at integration boundaries.
+- provider-native semantics remain at integration boundaries;
+- TAE owns the canonical normalized evidence vocabulary/invariants, while acquisition/collector capabilities own source-specific collection and translation into that contract;
+- evidence acquisition is not NEO mutation-domain responsibility;
+- evidence alone never manufactures authorization, desired policy or remediation intent.
 
 ## Explicit non-blocking future extensions
 
@@ -292,13 +315,16 @@ NEO `Verified` proves immediate artifact/application correspondence under the ex
 - several simultaneous Resource addresses/interfaces, endpoint purpose, VIP and deployment-specific exposure;
 - managed-policy ownership/removal semantics for APR excess;
 - richer APR change vocabulary or durable remediation-plan lifecycle;
+- concrete acquisition scheduling/polling strategy and shared provider/device access realization between collectors and NEO;
 - production provider transport, rollback and multi-target transaction mechanisms.
 
 These are revisit-triggered extensions, not unresolved requirements for the first MVP happy path.
 
 ## S2 disposition
 
-Strategic ownership and the Tactical models required by the first MVP are mutually coherent. No known P0/P1 semantic ownership, identity, lifecycle or invariant contradiction remains in the target baseline.
+Strategic ownership and the Tactical models required by the first MVP are mutually coherent. The TAE acquisition clarification changes no Bounded Context boundary: it makes the non-BC producer relationship explicit and keeps device-access realization downstream.
+
+No known P0/P1 semantic ownership, identity, lifecycle or invariant contradiction remains in the target baseline.
 
 The formal G2 result is recorded in `mvp-ddd-convergence-checkpoint.md`.
 
