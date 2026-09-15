@@ -1,6 +1,6 @@
 # First MVP vertical — Architecture
 
-Status: `active S3 Architecture`.
+Status: `completed — G3 PASS for first MVP vertical`.
 
 Date: 2026-09-15.
 
@@ -25,59 +25,35 @@ ACC InteractionContractRevision
 -> NEO controlled mutation
 ```
 
-Current deliberate limitations remain authoritative:
+## Architecture result
 
-- exactly one applicable ResponsibilityScope per AG side;
-- HostAddress-to-HostAddress technical materialization only for the first NEP/RPM edge;
-- Prefix input is unresolved, never host-expanded;
-- APR remediation is additive-only on `missing`;
-- no automatic removal of `excess`;
-- provider rendering fails closed when semantic equivalence cannot be established;
-- NEO executes one artifact with explicit mutation authority/preconditions;
-- execution success is not final semantic convergence proof.
+Canonical target architecture: `docs/architecture/first-mvp-vertical.md`.
 
-## S3 questions
+G3 challenge/result: `docs/architecture/first-mvp-vertical-g3-review.md`.
 
-Architecture must define only what implementation would otherwise have to invent:
+Accepted architecture decisions for the first vertical:
 
-1. where the thin vertical orchestration lives without creating a new semantic owner;
-2. consumer-owned ports between existing contexts/capabilities;
-3. dependency direction and package boundaries;
-4. how current authoritative data is read without peer-private persistence access;
-5. transaction/snapshot consistency needed for one end-to-end operation;
-6. fail-closed propagation for unresolved/incomplete/unsupported states;
-7. idempotency/correlation boundaries for rendering and NEO;
-8. minimal migration/compatibility strategy from current runtime structures;
-9. which existing code can be retained/adapted/replaced without treating it as target truth.
+- modular monolith, in-process application calls, existing PostgreSQL deployment;
+- AG and AP retain separate semantic/persistence ownership;
+- AG authorization transition -> AP current-rule handoff uses one focused local transaction/UoW in the modular monolith;
+- technical realization is a separate cross-context `workflows/policy_realization` orchestration with no domain ownership;
+- cross-context reads use explicit application contracts/consumer-owned ports, never peer SQL/domain imports;
+- ACC/RC legacy runtime may be consumed only through bounded fail-closed workflow infrastructure adapters;
+- NEP must implement the accepted target `AnalyzeTrafficPairs -> FirewallCandidate/accessListName` query; old path/attachment output is not adapted into target meaning;
+- APR old managed-scope/placement orchestration is replaced for the target slice; reusable permit-space algebra may be retained;
+- provider rendering is outside APR core behind a workflow/integration port;
+- NEO current execution flow is retained/adapted around TargetPolicyArtifact;
+- unresolved/incomplete/unknown/unsupported propagates fail-closed;
+- no broker, durable workflow engine or distributed transaction is introduced.
 
-## Architecture rule
+## G3 result
 
-Prefer in-process application orchestration and explicit ports for the MVP. Do not introduce messaging, distributed workflows, new services, caches or durable orchestration state unless a demonstrated requirement makes them necessary.
+`G3 PASS` for this exact first MVP vertical.
 
-## Working set
+No unresolved P0/P1 architecture decision is delegated to implementation.
 
-Start with:
+Implementation remains unauthorized until S4 Implementation Readiness evaluates concrete code/migration slices and G4 passes for a bounded scope.
 
-- `docs/process/architecture-stage.md`
-- `docs/domain/context-map.md`
-- `docs/domain/strategic-model.md`
-- `docs/decisions/ADR-020-required-policy-materialization-is-derived-composition.md`
-- `docs/decisions/ADR-021-provider-policy-interpretation-and-rendering-boundaries.md`
-- `docs/requirements/access-policy-realization-mvp.md`
-- `docs/requirements/provider-policy-renderer-mvp.md`
-- `docs/requirements/network-environment-operations.md`
-- only the affected current code/packages needed to map realization gaps.
+## Next
 
-## Exit criteria / G3
-
-- one clear technical owner for orchestration responsibilities;
-- explicit ports/adapters and dependency direction;
-- no peer-private model/database navigation;
-- consistency/precondition strategy preserves accepted semantics;
-- unresolved/incomplete/unsupported cases fail closed end to end;
-- provider-specific code remains outside APR core and NEO does not render;
-- migration from current runtime is bounded and removable;
-- no unresolved P0/P1 architecture contradiction remains;
-- implementation would not need to invent architecture or upstream semantics.
-
-No implementation authorization is implied.
+Proceed to S4 Implementation Readiness for the first MVP vertical. Map exact modules/schema/tests, choose the smallest dependency-ordered slices and issue no implementation lease until G4 criteria are satisfied.
