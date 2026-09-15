@@ -1,34 +1,29 @@
 # Application Communication Catalogue domain
 
-## Accepted target
+## Current target
 
-The accepted ACC target is defined by:
+Current ACC target authority:
 
-- `../../decisions/ADR-015-acc-component-deployment-and-atomic-interaction-contract.md` — normative domain decision: Component is the deployment unit; interaction traffic is an atomic immutable contract; ACC publishes the concrete directed-interaction identity;
-- `target-model.md` — canonical target domain model and ERD;
-- `../../requirements/application-catalogue-domain-target.md` — target requirements and acceptance invariants;
-- `../../engineering/application-catalogue-domain-migration-roadmap.md` — implementation migration gates.
+- `target-model.md` — Application / Component / Interaction / immutable traffic contract;
+- `../../requirements/application-catalogue-domain-target.md` — accepted behavior and ACC/AD/RC split;
+- `../application-deployment/boundary.md` — deployment/placement owner;
+- `../resource-catalogue/target-realization-model.md` — Resource AddressSpace owner;
+- `../context-map.md` — cross-context contracts.
 
-The target is **accepted but not yet implemented**. Implementation work must conform to ADR-015 and the target model rather than extending the I31 `ApplicationDeployment` / `DeploymentInteraction` model.
+ADR-015 is retained as superseded rationale/history. It is no longer target authority for ACC-owned `ComponentDeployment` or `DirectedInteractionIdentity`.
 
 ## Current implemented runtime
 
-`tactical-model.md` describes the currently implemented I31 write/read model. It remains current-state/runtime documentation until migration is completed; it is **not** the target domain design.
+`tactical-model.md` describes the implemented I31/current-state model. Its ACC-owned `ApplicationDeployment`, `DeploymentInteraction`, Resource bindings, compatibility ComponentDeployment identities and `DirectedInteractionIdentity` are runtime/migration facts, not target semantic ownership.
 
-Historical I31 decisions and product/architecture contracts are retained to explain the existing implementation:
+Historical ADR-012/013 and existing UI/architecture contracts may still describe that implementation and must be read as current-state/migration evidence.
 
-- `../../decisions/ADR-012-application-definition-deployment-model.md`;
-- `../../decisions/ADR-013-i31-application-catalogue-compatibility-and-reference-semantics.md`;
-- `../../requirements/application-catalogue-target.md`;
-- `../../architecture/application-catalogue-target-boundary.md`;
-- `../../ui/application-catalogue-target.md`.
+## Target boundary
 
-ADR-015 supersedes those documents where they prescribe `ApplicationDeployment`, `DeploymentInteraction`, interaction-scoped Resource sets, or the I31 compatibility projection as future target semantics.
+```text
+ACC: Application / Component / InteractionContractRevision
+AD:  ApplicationDeployment / ComponentPlacement -> ResourceRef
+RC:  Resource -> effective HostAddress | Prefix
+```
 
-Pre-I31/I31 Component Deployment, DCS revision and Deployment Resource Binding facts remain valid runtime/history where existing references require them. Migration must preserve referenced historical truth.
-
-Strategic ownership remains in:
-
-- `../strategic-model.md`;
-- `../semantic-ownership.md`;
-- `../ubiquitous-language.md`.
+Migration must preserve referenced historical truth without promoting legacy identities back into the target model.

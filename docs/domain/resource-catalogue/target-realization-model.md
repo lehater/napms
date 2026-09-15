@@ -1,66 +1,63 @@
 # Resource Catalogue — Target realization semantics
 
-Status: `S2 accepted for required-policy materialization`.
+Status: `S2 simplified target accepted for current scope`.
 
-Date: 2026-09-14.
+Date: 2026-09-15.
 
 ## Purpose
 
-Define only the Resource/Endpoint/address semantics required by current access-policy materialization. Curation commands, persistence and migration remain separate concerns.
+Define the minimum Resource/address semantics required by current access-policy materialization. Endpoint/interface/VIP/listener modelling is intentionally deferred until a demonstrated use case requires it.
 
-## Model
+## Current target model
 
 ```text
 Resource
-    -> ResourceEndpoint [0..N]
-        -> current AddressRealization [0..1] for MVP
+    ResourceId
+    ...
+    -> effective AddressSpace [0..1] at a logical time
+
+AddressSpace = HostAddress | Prefix
 ```
 
-### ResourceEndpoint
+For the current scope, one Resource has at most one effective `AddressSpace` at one logical time. When present, it is either one host address or one network prefix.
 
-A `ResourceEndpoint` is a stable logical L3 presence/interface of one Resource.
+`AddressSpace` is Resource Catalogue truth. Application Deployment references only `ResourceRef`; it does not copy an IP/prefix and does not select an endpoint.
 
-Invariants:
+## Address realization
 
-- Endpoint identity is independent from its current address;
-- changing an address does not create a new Endpoint;
-- an Endpoint may exist before any address is known;
-- one Resource may have several Endpoints when they remain one logical access-management Resource;
-- Endpoint identity is Resource Catalogue truth and is not owned by ACC or Access Policy.
+Address realization is a temporal/current fact of the Resource, not Resource identity.
 
-### AddressRealization
+Current rules:
 
-Address realization is a temporal/current fact of one Endpoint, not Endpoint identity.
-
-For MVP:
-
-- at most one address realization is current for one Endpoint at one logical time;
-- the value may represent one host address or a network prefix;
+- changing the effective host address or prefix does not change `ResourceId`;
 - the value is the corporate-visible address/prefix meaningful for access management;
-- local/private addresses hidden behind NAT are not substituted when the corporate network uses a translated address/prefix;
 - Resource Catalogue does not calculate NAT; it records the already meaningful corporate-visible realization;
-- absence of a current address is valid and must be distinguishable from an empty set of required access.
-
-Historical realization changes must remain explainable, but the exact persistence/versioning mechanism is not defined here.
+- absence of a current AddressSpace is valid and must be distinguishable from an empty set of required access;
+- historical realization changes must remain explainable; exact persistence/versioning remains Tactical.
 
 ## Published materialization contract
 
-For a Resource and logical/effective time, Resource Catalogue can publish conceptually:
+Conceptually:
 
 ```text
 CurrentResourceRealization
     resourceRef
-    endpoints[]
-        endpointRef
-        corporateAddressOrPrefix?
+    addressSpace? : HostAddress | Prefix
     asOf
+    resolution/completeness state
     provenance/freshness reference
 ```
 
-Consumers must treat Endpoint and Resource references as opaque catalogue identities.
+Required-policy materialization resolves each `ComponentPlacement.ResourceRef` through this contract. A missing/unresolved AddressSpace makes affected materialization unresolved; it is not silently omitted.
 
-Required-policy materialization considers every current Endpoint of the Resource. An Endpoint with no current address makes affected semantic authorization technically unresolved; it is not silently omitted as though no access were required.
+A Prefix remains a Prefix. Materialization is not required to enumerate every host address inside it.
 
-## Relationship to existing curation model
+## Explicit current limitation
 
-`tactical-model.md` remains evidence and accepted semantics for the earlier I27 curation slice where compatible. Its older `ResourceRealizationVersion -> EndpointAddress` representation must not be used to imply that Endpoint identity is recreated with every realization version. This document is the current target owner for Endpoint/address identity semantics used by materialization.
+The current target does **not** model several simultaneous addresses/prefixes, multiple interfaces, management/data separation, VIPs, deployment-specific network exposure or `ResourceEndpoint` identity. These are future extensions only if a confirmed use case requires them.
+
+This limitation is deliberate: the target model prefers one Resource -> one effective host-or-prefix realization over speculative endpoint abstractions.
+
+## Relationship to earlier curation model
+
+`tactical-model.md` contains accepted I27 curation/history semantics where compatible, but its `ResourceRealizationVersion -> EndpointAddress+` shape is an earlier implementation-oriented representation and is superseded for target network semantics by this document. Tactical RC revalidation must converge persistence and commands onto the simplified Resource-level AddressSpace without losing historical provenance.
