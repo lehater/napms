@@ -1,7 +1,7 @@
 {
   "model_id": "NAPMS-DDD-001",
   "source_baseline": "DDD-BDM-010 + 2026-09-14 G1 revalidation + global Strategic convergence + 2026-09-15 full MVP Tactical convergence + TAE acquisition/normalization clarification",
-  "status": "first-mvp-ddd-baseline-converged",
+  "status": "accepted",
   "canonical_authority": {
     "responsibilities_and_boundaries": "docs/domain/strategic-model.md",
     "relationships_and_contracts": "docs/domain/context-map.md",
