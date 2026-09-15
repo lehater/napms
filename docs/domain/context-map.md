@@ -6,7 +6,7 @@ Date: 2026-09-14.
 
 This is the canonical strategic relationship map for the current NAPMS target. It defines semantic participants, ownership direction and public cross-boundary contracts. It does not define services, deployments, databases, transports or package dependencies.
 
-`docs/domain/strategic-model.md` remains the canonical responsibility/boundary summary. Context-local Tactical DDD remains owned by the corresponding context artifacts.
+`docs/domain/strategic-model.md` remains the canonical responsibility/boundary summary. `docs/domain/strategic-model.json` is the machine-readable projection of participants and material relationships. Context-local Tactical DDD remains owned by the corresponding context artifacts.
 
 ## Strategic participants
 
@@ -61,7 +61,9 @@ Unless an accepted context contract says otherwise:
 - provider-native policy syntax is isolated by the Provider Policy Interpreter/Renderer anti-corruption boundaries;
 - no Shared Kernel is accepted between current target Bounded Contexts.
 
-## Core context map
+## Core governance and realization flow
+
+This diagram is an intentionally compact end-to-end view of the main governance-to-realization path. It is **not** the exhaustive Context Map. Material relationships that are omitted for readability remain canonical in `Public semantic contracts by edge` below and in `docs/domain/strategic-model.json`.
 
 ```mermaid
 flowchart LR
@@ -95,7 +97,7 @@ flowchart LR
     DEV -->|source-qualified capture| TAE[Technical Access Evidence]
 ```
 
-The diagram shows ownership/data-flow direction, not synchronous transport and not deployment topology.
+The arrows show semantic ownership/data-flow direction, not synchronous transport or deployment topology. In particular, TAE is shown as an independent evidence owner: downstream interpreters/consumers may reference TAE evidence, but TAE is not required to mediate provider acquisition and does not publish APR's configured-effective-policy view. Authority Management also has protected consumers beyond the two arrows shown here; those material relationships are specified by the authority contract below and in the machine-readable relationship set.
 
 ## Public semantic contracts by edge
 
@@ -369,6 +371,8 @@ Closed findings:
 - **P1:** relationship truth was distributed across strategic/tactical/ADR artifacts without one canonical Context Map; this document is that map.
 - **P1:** machine-readable strategic `external_seams` was empty despite accepted provider and optional enterprise seams; the strategic model is aligned with this map.
 - **P2:** legacy Requirement/Decision terminology in the canonical Resource role summary could suggest obsolete governance ownership; current target wording is aligned with Business Connectivity / Access Governance / Access Policy.
+- **P2:** the overview Mermaid previously looked like an exhaustive Context Map while intentionally omitting some material consumers; it is now explicitly scoped as the compact governance/realization flow, with exhaustive material edges delegated to the semantic-contract section and machine-readable projection.
+- **P2:** TAE's visual position could imply a required mediation path; the diagram annotation now makes its independent evidence-owner role explicit.
 
 No remaining P0/P1 ownership, context-boundary or cross-context-contract contradiction is known for the current target scope after these corrections.
 
