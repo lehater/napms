@@ -4,18 +4,21 @@ This directory is a working knowledge base for current accepted product and qual
 
 Use the smallest requirement family that owns the behavior under change:
 
+- `first-mvp-required-access-matrix.md` — selected first implementation MVP: ACC + AD + RC materialization into one global vendor-neutral Required Access Matrix with table/export output and no governance, authorization, firewall placement, configured-state comparison or execution.
 - `business-connectivity-g1.md` — current observable behavior for Business Process, Connectivity Need and brownfield business attribution.
 - `access-governance-g1.md` — current observable behavior for Access Request, bilateral source/destination approval, authority integration and withdrawal.
 - `access-policy-core.md` — authoritative Policy Rule truth and effective authorized-policy projection after Access Governance grant/withdrawal.
 - `application-catalogue-domain-target.md` — ACC Application/Component/Interaction plus immutable InteractionContractRevision behavior, and the accepted ACC/AD/RC ownership split.
 - `policy-realization-reconciliation-g1.md` — current semantic-to-technical materialization, normalized required/configured comparison and convergence behavior.
 - `scoped-connectivity-inventory.md` + acceptance examples — resource-centric composition over RC Resources, AD placements, Business Need, Access Governance, Access Policy and realization truth.
-- `policy-export-core.md` — coherent logical-as-of normalized desired-policy export; implementation-specific assumptions must be revalidated when downstream target design changes.
+- `policy-export-core.md` — broader authorized-policy export behavior with Access Policy/Authority/as-of semantics; it is not the selected first implementation MVP.
 - `technical-access-evidence-core.md` — source-qualified Technical Access Evidence recording/query behavior.
 - `network-enforcement-placement-core.md` — accepted Network Enforcement Placement behavior.
 - `enterprise-identity-authoritative-sources.md` — local-first operation plus optional external identity/source extension seams.
 - `catalogue-curation.md` + acceptance/security contracts — implemented Resource/Application catalogue curation behavior; current target ACC/AD/RC semantics win where legacy curation/runtime vocabulary differs.
 - `web-ui-requirements.md` — product-facing UI requirements; stale ComponentDeployment/endpoint terminology must not override current target domain contracts.
+
+The first implementation MVP is intentionally narrower than the full target-domain baseline. It proves the path from application communication intent through deployment/resource realization to a global required-access table. It must not be widened merely because later target Bounded Contexts already have accepted requirements or Tactical models.
 
 Connectivity Requirements, Connectivity Decision and Requirement-to-Policy Alignment requirement packets were removed after revalidation replaced their target semantics with Business Connectivity, Access Governance and the current policy/materialization chain. Their runtime remnants are migration/current-state evidence only and must not be reintroduced as target requirements.
 
