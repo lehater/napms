@@ -1,12 +1,10 @@
 # NAPMS Context Map
 
-Status: `S2 global Strategic DDD convergence accepted for current target scope`.
+Status: `S2 affected-edge convergence accepted for Application Deployment; named AG behavior remains S1-open`.
 
-Date: 2026-09-14.
+Date: 2026-09-15.
 
-This is the canonical strategic relationship map for the current NAPMS target. It defines semantic participants, ownership direction and public cross-boundary contracts. It does not define services, deployments, databases, transports or package dependencies.
-
-`docs/domain/strategic-model.md` remains the canonical responsibility/boundary summary. `docs/domain/strategic-model.json` is the machine-readable projection of participants and material relationships. Context-local Tactical DDD remains owned by the corresponding context artifacts.
+This is the canonical strategic relationship map for the current NAPMS target. It defines semantic participants, ownership direction and public cross-boundary contracts. It does not define services, databases, transports or package dependencies. `strategic-model.md` is canonical for responsibilities/boundaries; `strategic-model.json` is its machine-readable projection.
 
 ## Strategic participants
 
@@ -14,74 +12,59 @@ This is the canonical strategic relationship map for the current NAPMS target. I
 
 | Bounded Context | Authoritative semantic responsibility |
 |---|---|
-| **Business Connectivity** | Business Process, Connectivity Need and business justification/attribution |
-| **Access Governance** | Access Request history, bilateral approval obligations/current consent, grant/withdrawal provenance |
-| **Access Policy** | authoritative current Policy Rule truth and effective authorized-policy projection |
-| **Authority Management** | effective actor/action/scope/time authority and role/group/scope assignment semantics |
-| **Resource Catalogue** | Resource/ResourceEndpoint identity, current/historical corporate-visible realization, Resource Scope Affiliation and Resource Responsibility |
-| **Application Communication Catalogue** | Application/Component/ComponentDeployment/Interaction identity and immutable interaction traffic contract |
-| **Network Enforcement Placement** | candidate Firewall relevance and applicable policy/ACL locators |
-| **Technical Access Evidence** | immutable source-qualified normalized technical evidence with provenance/time/source scope |
-| **Access Policy Realization** | source-neutral required-vs-configured effective-policy assessment, semantic delta, vendor-neutral change design and proposed-result verification |
-| **Network Environment Operations** | controlled provider/device mutation attempt identity, authority admission, concurrency/preconditions, outcome and execution provenance |
+| **Business Connectivity (BC)** | Business Process, Connectivity Need and business justification/attribution |
+| **Access Governance (AG)** | Access Request history, bilateral approval obligations/current consent, grant/withdrawal provenance |
+| **Access Policy (AP)** | authoritative current Policy Rule truth and effective authorized-policy projection |
+| **Authority Management (AM)** | effective actor/action/scope/time authority and role/group/scope assignment semantics |
+| **Resource Catalogue (RC)** | Resource identity/lifecycle, technical realization, Resource Scope Affiliation and Resource Responsibility |
+| **Application Communication Catalogue (ACC)** | Application/Component/Interaction identity and immutable interaction traffic contract |
+| **Application Deployment (AD)** | ApplicationDeployment identity/lifecycle and Component-to-Resource placement truth |
+| **Network Enforcement Placement (NEP)** | candidate Firewall relevance and applicable policy/ACL locators |
+| **Technical Access Evidence (TAE)** | immutable source-qualified normalized technical evidence with provenance/time/source scope |
+| **Access Policy Realization (APR)** | source-neutral required-vs-configured assessment, semantic delta, vendor-neutral change design and proposed-result verification |
+| **Network Environment Operations (NEO)** | controlled provider/device mutation identity, authority admission, concurrency/preconditions, outcome and execution provenance |
 
-`Connectivity Requirements` and `Connectivity Decision` are legacy/current-state boundaries only and are not current target Bounded Contexts.
+`Connectivity Requirements` and `Connectivity Decision` are legacy/current-state boundaries only.
 
-### Non-peer strategic participants
+### Non-peer participants
 
-| Participant | Kind | Responsibility |
-|---|---|---|
-| **Required Policy Materialization** | derived composition | derive normalized required technical predicates and `TargetRequiredPolicy` from published Access Policy, ACC, Resource Catalogue and NEP contracts; unresolved input remains explicit |
-| **Provider Policy Interpreter** | integration/adapter capability | translate provider-native configured policy into a source-neutral `ConfiguredEffectivePolicySnapshot` with scope/completeness/provenance/unsupported semantics |
-| **Provider Policy Renderer** | integration/adapter capability | translate APR-verified vendor-neutral intent into a semantically equivalent `TargetPolicyArtifact` or fail closed |
-| **Scoped Connectivity Inventory** | application/read composition | compose owner-facing views from context-owned public facts without becoming a source of truth |
-| **Connectivity Impact / technical analysis compositions** | application/read/analysis composition | combine accepted context facts/evidence for a concrete analysis without becoming a peer semantic owner |
-
-These participants may have application identity or implementation state, but they do not become Bounded Contexts merely because they orchestrate several contexts.
+- **Required Policy Materialization (RPM)** — derived composition of AP authorization, ACC traffic semantics, AD placements, RC technical realization and NEP placement into target-specific required policy.
+- **Provider Policy Interpreter (PPI)** — provider-native configured-policy anti-corruption/interpretation capability.
+- **Provider Policy Renderer (PPR)** — provider-native rendering capability for APR-verified intent.
+- **Scoped Connectivity Inventory** and **Connectivity Impact / technical analysis compositions** — read/application compositions, not semantic owners.
 
 ### External seams
 
-- **Provider / network-device environment** — routing/configuration/observation/mutation source and target. Provider-native meaning is translated through explicit adapters; it is not NAPMS domain truth by itself.
-- **Optional external identity provider** — may authenticate a source-qualified external subject and map it to one NAPMS Actor; it never grants NAPMS business authority directly.
-- **Optional enterprise source systems** — future sources for Authority Management, ACC, Resource Catalogue or organizational-responsibility references. They terminate at context-owned import/projection seams and do not become shared mutable domain models.
-
-The current supported product remains local-first. No concrete external enterprise provider, synchronization protocol or organization hierarchy is required until a future accepted requirement selects one.
+Provider/network-device environment, optional external identity provider, and optional enterprise source systems remain explicit external seams.
 
 ## Global relationship policy
 
-Unless an accepted context contract says otherwise:
-
-- the upstream semantic owner publishes the smallest stable public meaning needed by the consumer;
-- consumers keep peer-private aggregates/entities/storage invisible and use opaque references or consumer-owned ports/translations;
-- no cross-context database foreign key or shared mutable model is a semantic contract;
-- a shared reference such as `ResponsibilityScope` is correlation, not a shared lifecycle/aggregate;
-- `Unknown`, incomplete, ambiguous and unresolved states remain explicit where converting them to absence/success would change meaning;
-- temporal meaning (`current`, `asOf`, snapshot/evidence time) crosses a boundary explicitly when it affects the consumer decision;
-- provenance crosses a boundary when the downstream result must explain or audit the upstream fact;
-- provider-native policy syntax is isolated by the Provider Policy Interpreter/Renderer anti-corruption boundaries;
-- no Shared Kernel is accepted between current target Bounded Contexts.
+- Upstream owners publish the smallest stable public meaning needed by consumers.
+- Consumers do not depend on peer-private entities, aggregates or storage.
+- Cross-context references are opaque semantic identities, not shared lifecycles or database foreign keys.
+- Unknown, incomplete, ambiguous and unresolved states remain explicit where absence would change meaning.
+- Temporal meaning and provenance cross boundaries when downstream decisions depend on them.
+- No Shared Kernel is accepted between target BCs.
+- Semantic ownership does not require remote computation; consumer-local rebuildable projections may be introduced later without becoming authoritative truth.
 
 ## Core governance and realization flow
 
-This diagram is an intentionally compact end-to-end view of the main governance-to-realization path. It is **not** the exhaustive Context Map. Material relationships that are omitted for readability remain canonical in `Public semantic contracts by edge` below and in `docs/domain/strategic-model.json`.
-
 ```mermaid
 flowchart LR
-    EXTORG[Optional enterprise sources] -. optional refs/import .-> BC[Business Connectivity]
-    EXTORG -. optional imports .-> AM[Authority Management]
-    EXTORG -. optional imports .-> RC[Resource Catalogue]
-    EXTORG -. optional imports .-> ACC[Application Communication Catalogue]
-
-    RC -->|opaque ResourceRef| ACC
-    ACC -->|InteractionRef| BC
-    BC -->|ConnectivityNeed summary| AG[Access Governance]
-    ACC -->|DirectedInteractionIdentity| AG
-    RC -->|effective Resource Scope Affiliation| AG
-    AM -->|EffectiveAuthority| AG
+    ACC[Application Communication Catalogue] -->|ApplicationRef / ComponentRef| AD[Application Deployment]
+    RC[Resource Catalogue] -->|ResourceRef| AD
+    ACC -->|InteractionContractRevisionRef| BC[Business Connectivity]
+    BC -->|Connectivity Need basis| AG[Access Governance]
+    ACC -->|InteractionContractRevisionRef| AG
+    AD -->|ApplicationDeployment refs| AG
+    RC -->|Resource Scope Affiliation| AG
+    AM[Authority Management] -->|EffectiveAuthority| AG
+    AM -->|EffectiveAuthority| AD
     AG -->|AuthorizationGranted / Withdrawn| AP[Access Policy]
 
     AP --> RPM[Required Policy Materialization]
     ACC --> RPM
+    AD --> RPM
     RC --> RPM
     NEP[Network Enforcement Placement] --> RPM
     RPM -->|TargetRequiredPolicy| APR[Access Policy Realization]
@@ -90,78 +73,69 @@ flowchart LR
     PPI -->|ConfiguredEffectivePolicySnapshot| APR
     APR -->|VerifiedChangeIntent| PPR[Provider Policy Renderer]
     PPR -->|TargetPolicyArtifact| NEO[Network Environment Operations]
-    AM -->|mutation EffectiveAuthority| NEO
+    AM -->|mutation authority| NEO
     NEO -->|controlled mutation| DEV
-    DEV -->|subsequent state| PPI
-
     DEV -->|source-qualified capture| TAE[Technical Access Evidence]
 ```
 
-The arrows show semantic ownership/data-flow direction, not synchronous transport or deployment topology. In particular, TAE is shown as an independent evidence owner: downstream interpreters/consumers may reference TAE evidence, but TAE is not required to mediate provider acquisition and does not publish APR's configured-effective-policy view. Authority Management also has protected consumers beyond the two arrows shown here; those material relationships are specified by the authority contract below and in the machine-readable relationship set.
+Arrows show semantic ownership/data flow, not synchronous transport or deployment topology.
 
-## Public semantic contracts by edge
+## Public semantic contracts by affected edge
 
-### Application Communication Catalogue -> Business Connectivity
-
-**Purpose:** let a Connectivity Need refer to application-semantic communication without importing ACC internals.
-
-Contract:
+### ACC -> AD
 
 ```text
-InteractionRef / InteractionContractRevisionRef
+ApplicationRef
+ComponentRef
 ```
 
-Business Connectivity treats the reference as opaque ACC identity and does not replace it with IP/Resource realization.
+ACC owns Application/Component identity. AD owns deployment and placement lifecycle.
 
-### Business Connectivity -> Access Governance
-
-**Purpose:** establish the business basis for a deliberate Access Request without making Need equal permission.
-
-Contract conceptually includes:
-
-```text
-ConnectivityNeedRef
-BusinessProcessRef
-required InteractionRef
-current/applicable justification status
-human-explainable basis
-```
-
-`Unknown/Incomplete` justification status must not become `NoneKnown`. Access Governance preserves the historical basis used by a Request and owns the authorization decision/history.
-
-### Resource Catalogue -> Application Communication Catalogue
-
-**Purpose:** bind one ComponentDeployment to exactly one access-domain Resource for its lifetime.
-
-Contract:
+### RC -> AD
 
 ```text
 opaque ResourceRef
 ```
 
-ACC owns the binding; Resource Catalogue owns Resource/Endpoint/address truth. Moving a Component to another Resource creates another ComponentDeployment rather than silently rebinding authorization identity.
+AD owns Component-to-Resource placement; RC retains Resource truth. The former `RC -> ACC ResourceRef` deployment-binding edge is superseded.
 
-### Application Communication Catalogue -> Access Governance
-
-**Purpose:** identify the exact deployed interaction being governed.
-
-Published contract:
+### ACC -> BC
 
 ```text
-DirectedInteractionIdentity {
-    sourceComponentDeploymentRef
-    destinationComponentDeploymentRef
-    interactionContractRevisionRef
+InteractionRef / InteractionContractRevisionRef
+```
+
+Connectivity Need remains application-semantic and does not import deployment/address realization.
+
+### BC -> AG
+
+Conceptually:
+
+```text
+ConnectivityNeedRef
+BusinessProcessRef
+InteractionContractRevisionRef
+current/applicable justification status
+human-explainable basis
+```
+
+Need is business basis, not permission.
+
+### ACC + AD -> AG
+
+The governed subject is conceptually:
+
+```text
+GovernedInteractionSubject {
+    interactionContractRevisionRef       // ACC
+    sourceApplicationDeploymentRef       // AD
+    destinationApplicationDeploymentRef  // AD
 }
 ```
 
-Access Governance does not own ComponentDeployment/Interaction lifecycle and must not authorize only a private subset of an atomic Interaction contract revision.
+This supersedes the former ACC-owned `DirectedInteractionIdentity` containing ComponentDeployment refs. Scaling, ordinary placement replacement, Resource replacement and address changes do not by themselves redefine subject identity. Subject identity does not imply that existing consent remains valid after approval obligations change.
 
-### Resource Catalogue -> Access Governance
-
-**Purpose:** supply the responsibility-scope facts from which source/destination governance obligations can be correlated.
-
-Contract conceptually is:
+### RC -> AG
 
 ```text
 ResourceRef
@@ -170,15 +144,9 @@ ResourceRef
    with validity/provenance
 ```
 
-A ComponentDeployment's `ResourceRef` comes from ACC. Resource Catalogue owns which scope affiliations are effective. Access Governance owns how an approval obligation uses those facts; Authority Management owns whether an Actor may perform the approval/revoke action for the selected scope.
+AG owns how current placement/resource scope facts establish source/destination approval obligations. AM owns actor authority for selected scope/action/time. Zero, multiple or ambiguous applicable scopes remain explicit.
 
-Zero, overlapping or otherwise unresolved applicable affiliations must remain explicit. Resource owner/administrator/contact metadata must never be substituted for approval authority. The exact product policy for choosing among overlapping applicable scopes remains an Access Governance requirement/Tactical question and does not move ownership into Resource Catalogue or Authority Management.
-
-### Authority Management -> protected consumers
-
-**Purpose:** answer whether an Actor may perform a specific domain action for a stable scope at a logical/effective time.
-
-Public meaning:
+### AM -> protected consumers
 
 ```text
 ActorRef
@@ -186,47 +154,53 @@ ActorRef
 + ResponsibilityScopeRef
 + effectiveTime
 -> admitted / denied / unknown-or-ambiguous
-+ sufficient authority provenance
++ authority provenance
 ```
 
-Material current consumers include Access Governance approval/revocation/request actions, Resource/ACC curation actions, owner-workspace read actions and Network Environment Operations mutation admission. Consumers own the decision made after authority admission; they do not inspect role/group internals or infer authority from ownership/contact data.
+Material consumers include AG, RC, ACC, AD and NEO. Consumer decisions remain consumer-owned.
 
-### Access Governance -> Access Policy
-
-**Purpose:** publish current semantic authorization changes without exporting request workflow internals.
-
-Contract:
+### AG -> AP
 
 ```text
 AuthorizationGranted(subject, provenance)
 AuthorizationWithdrawn(subject, provenance)
 ```
 
-Pending/rejected Requests do not create semantic deny Policy Rules. Historical approved Requests cannot silently restore authorization after a current withdrawal.
+Pending/rejected Requests do not create deny Policy Rules. Event identity/version/order/idempotency semantics remain to be hardened with Tactical AP/AG work.
 
-### Access Policy -> Required Policy Materialization
+### AP -> RPM
 
-**Purpose:** provide current effective semantic authorization to technical materialization.
+Effective Policy Rules with governed subject/provenance. RPM may materialize but may not re-decide authorization.
 
-Contract: effective Policy Rules with subject/provenance sufficient to resolve the authorized deployed interaction. Materialization may derive technical predicates but may not re-decide authorization.
+### ACC -> RPM
 
-### Application Communication Catalogue -> Required Policy Materialization
+```text
+InteractionContractRevisionRef
++ complete immutable traffic contract
+```
 
-**Purpose:** resolve the authorized semantic subject to its concrete deployments, Resource references and complete immutable traffic contract.
+ACC no longer resolves deployments or Resource references for RPM.
 
-Materialization consumes only ACC public contracts. It must not invent traffic selectors or inspect ACC persistence.
+### AD -> RPM
 
-### Resource Catalogue -> Required Policy Materialization
+Conceptually:
 
-**Purpose:** resolve each referenced Resource to current ResourceEndpoint/corporate-visible address realization at the selected logical time.
+```text
+ApplicationDeploymentRef
++ ComponentRef
++ logicalTime
+-> applicable ComponentPlacement[]
+   containing ResourceRef
+   + resolution/completeness state
+```
 
-Missing realization is `unresolved`; it is not an empty required policy.
+Unresolved/incomplete deployment knowledge is not an empty authorized set.
 
-### Network Enforcement Placement -> Required Policy Materialization
+### RC -> RPM
 
-**Purpose:** identify every candidate Firewall and applicable policy/ACL locator for each technical source/destination pair.
+RC resolves referenced Resources to technical realization at the selected logical time. The exact public network-realization contract is Tactical-open. It must express as-of realization, resolution/completeness and sufficient provenance, but must not prematurely require `ResourceEndpointRef`, `DeploymentEndpointBinding`, interface, listener, VIP or provider-runtime identities.
 
-Contract conceptually:
+### NEP -> RPM
 
 ```text
 TrafficPair
@@ -234,146 +208,74 @@ TrafficPair
    -> AccessListLocator[]
 ```
 
-Candidate membership means relevance-to-inspect, not a proven end-to-end path. Materialization must not reinterpret routing/override evidence. A candidate target without a comparable locator remains unresolved.
+Candidate membership is relevance-to-inspect, not a proven end-to-end path. Completeness/unknown semantics remain explicit.
 
-NEP-owned target identity/locator references remain opaque through downstream `TargetRequiredPolicy`, rendering and execution. Network Environment Operations does not re-decide placement.
-
-### Required Policy Materialization -> Access Policy Realization
-
-**Purpose:** publish a comparable target-specific required effective policy.
-
-Contract conceptually:
+### RPM -> APR
 
 ```text
 TargetRequiredPolicy {
-    targetRef
-    policyLocator
-    required effective normalized predicates
+    comparison target/scope identity
+    required normalized predicates
     contributing PolicyRule refs
     input freshness/provenance refs
     logical/effective time
 }
 ```
 
-Only successfully comparable materializations enter APR. `unresolved` is a separate upstream outcome, not `missing` or an empty policy.
+`unresolved` is separate from `missing` or empty required policy. Required/configured temporal comparability and one strict common comparison identity remain APR contract-hardening concerns.
 
-### Provider / network-device environment -> Provider Policy Interpreter
+### Provider interpretation, rendering and execution
 
-**Purpose:** obtain provider-native configured policy for an explicit comparison scope and interpret its effective semantics exactly for the supported slice.
+PPI publishes `ConfiguredEffectivePolicySnapshot` with explicit comparison scope, effective permit space, evidence/effective time, completeness and unsupported semantics. APR publishes `VerifiedChangeIntent`; PPR renders a semantically equivalent `TargetPolicyArtifact`; NEO executes it with independent mutation authority and concurrency/preconditions. `Applied` is not convergence proof.
 
-The provider/native representation is external evidence/input, not APR or TAE domain truth. Unsupported semantics fail closed.
+### External/source adapters -> TAE
 
-### Provider Policy Interpreter -> Access Policy Realization
-
-Contract:
-
-```text
-ConfiguredEffectivePolicySnapshot {
-    targetRef
-    policyLocator / comparisonScope
-    effectivePermitSpace
-    source/evidence refs
-    evidence/effective time
-    completeness: Complete | Incomplete | Unknown
-    interpreter identity/version
-    unsupportedSemantics[]
-}
-```
-
-APR may reach a complete realization conclusion only from comparable complete semantics. `Incomplete | Unknown` never means empty configured policy.
-
-Technical Access Evidence may preserve source-qualified captures referenced by an interpreter, but it does not choose APR currentness/completeness or become the configured-policy publisher.
-
-### Access Policy Realization -> Provider Policy Renderer
-
-**Purpose:** translate already verified source-neutral intent into a provider representation without changing policy meaning.
-
-Contract:
-
-```text
-VerifiedChangeIntent
-+ target/provider capability input
-+ base target revision/correlation
-```
-
-APR owns the verified semantic intent. The renderer owns representation translation only.
-
-### Provider Policy Renderer -> Network Environment Operations
-
-Contract:
-
-```text
-TargetPolicyArtifact
-```
-
-The artifact carries enough target/base/integrity/provenance correlation for controlled execution. Rendering must establish semantic equivalence for supported provider semantics or fail closed; NEO does not repair or reinterpret it.
-
-### Authority Management -> Network Environment Operations
-
-Mutation requires independent action-specific authority admission for the target/scope. Read/acquisition authority does not imply mutation authority. Denied/unknown/ambiguous admission fails closed before apply.
-
-### Network Environment Operations -> provider / network-device environment
-
-**Purpose:** execute one controlled target mutation attempt with stable operation identity, preconditions/concurrency protection and explicit outcome/provenance.
-
-`Applied` is not convergence proof. Subsequent provider state is interpreted again and compared by APR.
-
-### External/source adapters -> Technical Access Evidence
-
-**Purpose:** preserve immutable source-qualified normalized technical evidence.
-
-Contract includes source namespace/reference, source-defined scope, capture reference, evidence time and normalized entries. TAE does not claim universal currentness, completeness or authorization. Any downstream consumer requiring those properties must establish them in its own source/consumer contract.
+TAE preserves immutable source-qualified normalized evidence with source namespace/reference, source-defined scope, evidence time and provenance. It does not assert universal currentness/completeness or authorization.
 
 ## Responsibility Scope correlation
 
-`ResponsibilityScope` is currently a stable reference value, not a separate Bounded Context or aggregate.
+`ResponsibilityScope` remains a stable reference value, not a separate BC or aggregate. RC owns Resource-to-Scope affiliation; AM owns Actor/action authority to the same reference; AG correlates the independent truths without deriving one from another.
 
-Two independent truths may use the same reference:
+## Application Deployment boundary decision
+
+Boundary Challenge result: **PASS**.
+
+`ApplicationDeployment` is a stable logical deployment identity, not a service/deployment unit or provider runtime object. Its identity survives scaling, migration and ordinary Component placement replacement while continuity of the logical deployment is preserved.
+
+Minimal accepted strategic model:
 
 ```text
-Resource Catalogue:
-Resource --ResourceScopeAffiliation--> ResponsibilityScopeRef
+ApplicationDeployment
+    ApplicationDeploymentId
+    ApplicationRef
 
-Authority Management:
-Actor --EffectiveAuthority(action)--> ResponsibilityScopeRef
+ComponentPlacement
+    ApplicationDeploymentRef
+    ComponentRef
+    ResourceRef
 ```
 
-The shared reference correlates those truths; it does not make Resource affiliation equal actor authority and does not imply a shared lifecycle.
+A placed Component must belong to the referenced Application. Not every Component must necessarily be placed. Exact aggregate structure, lifecycle vocabulary, same-Component/same-Resource multiplicity and network exposure are Tactical questions.
 
-Access Governance may use the effective Resource affiliations to identify the relevant side scope and then ask Authority Management about the Actor/action/scope/time admission. It must not derive either fact from the other.
+## Active S1 questions
 
-## External organization/responsibility boundary
+1. What product constraints determine which source/destination `ApplicationDeployment` pair may be selected for an Access Request?
+2. If placement or Resource Scope Affiliation changes alter source/destination approval obligations, does current authorization remain valid, require reapproval, warn, or withdraw?
+3. When several Responsibility Scopes are simultaneously applicable to one governance side, what approval obligations are required?
 
-Current G1 requires Business Process organizational responsibility but explicitly does not equate an external organizational unit with a NAPMS Responsibility Scope. The current local-first model therefore needs only source-neutral organization/responsibility references sufficient for explanation/governance correlation.
+These are product behavior questions. Tactical DDD must not invent their workflow policy.
 
-A concrete enterprise organization registry, hierarchy, synchronization protocol, completeness/deletion model or mapping to Responsibility Scope is not current product behavior. If a future requirement selects such a source, it terminates at a Business Connectivity-owned import/reference seam and cannot silently grant Authority Management permissions or redefine Process identity.
+## Affected-edge convergence result
 
-This closes the strategic ownership/boundary question without inventing a provider-specific integration contract.
+The 2026-09-15 pass closes the ownership boundary:
 
-## Deferred behavior that does not block this Context Map
+- **ADD BC:** Application Deployment.
+- **MOVE ownership:** deployment/Component-to-Resource placement from ACC to AD.
+- **DELETE edge:** RC -> ACC deployment binding.
+- **ADD edges:** ACC -> AD, RC -> AD, AD -> AG, AD -> RPM, AM -> AD.
+- **REFINE:** ACC -> AG to application interaction semantics; AD supplies logical deployment applicability.
+- **REFINE:** ACC -> RPM supplies traffic semantics only; AD supplies placements; RC supplies technical realization.
+- **SUPERSEDE:** `DirectedInteractionIdentity{ComponentDeploymentRef...}` with `GovernedInteractionSubject{InteractionContractRevisionRef, sourceApplicationDeploymentRef, destinationApplicationDeploymentRef}`.
+- **KEEP OPEN:** exact AD/RC network-exposure contract; no `ResourceEndpointRef` is accepted as public language yet.
 
-The following questions remain real but do not currently change strategic ownership/boundaries/contracts:
-
-- whether a later Resource Scope Affiliation/responsibility change should warn, trigger reapproval, or automatically withdraw existing Access Governance consent;
-- how Access Governance selects one applicable approval scope when several Resource Scope Affiliations are simultaneously valid;
-- exact Process organization-reference shape once a concrete external organization source or editing workflow is required.
-
-The first two are product behavior/Access Governance Tactical concerns. If a selected use case requires a policy not already accepted by G1, route to S1 rather than inventing it in Strategic DDD. The third is an optional-source detail and re-enters Strategic DDD only if a concrete external source changes ownership or language boundaries.
-
-## Global boundary-challenge result
-
-The 2026-09-14 global pass challenged every current target participant and material edge against ownership, private-model leakage, temporal/unknown semantics and external seams.
-
-Closed findings:
-
-- **P1:** Network Environment Operations had an accepted independent semantic lifecycle but was omitted from the canonical target BC list; it is a target Bounded Context.
-- **P1:** Access Governance depended on governance scope facts without an explicit Resource Catalogue relationship; `ResourceScopeAffiliation` is now the explicit upstream fact while obligation/scope-selection policy remains Access Governance-owned.
-- **P1:** relationship truth was distributed across strategic/tactical/ADR artifacts without one canonical Context Map; this document is that map.
-- **P1:** machine-readable strategic `external_seams` was empty despite accepted provider and optional enterprise seams; the strategic model is aligned with this map.
-- **P2:** legacy Requirement/Decision terminology in the canonical Resource role summary could suggest obsolete governance ownership; current target wording is aligned with Business Connectivity / Access Governance / Access Policy.
-- **P2:** the overview Mermaid previously looked like an exhaustive Context Map while intentionally omitting some material consumers; it is now explicitly scoped as the compact governance/realization flow, with exhaustive material edges delegated to the semantic-contract section and machine-readable projection.
-- **P2:** TAE's visual position could imply a required mediation path; the diagram annotation now makes its independent evidence-owner role explicit.
-
-No remaining P0/P1 ownership, context-boundary or cross-context-contract contradiction is known for the current target scope after these corrections.
-
-This is a **Strategic DDD convergence PASS**, not a blanket `G2 PASS` for every context. S2 Tactical DDD remains required where identity/lifecycle/invariant questions are still dirty, notably APR and NEP revalidation slices.
+No P0 ownership contradiction remains on affected edges. Final AG behavior semantics remain S1-open. Tactical work should resume RC -> AD -> ACC, followed by affected AG/AP contract convergence before downstream materialization details are frozen.
