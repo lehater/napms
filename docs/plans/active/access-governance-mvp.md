@@ -20,6 +20,7 @@ Accepted behavior already retained in `docs/requirements/access-governance-g1.md
 - grant requires both required sides;
 - either required side may reject a pending request;
 - either authorized side may later withdraw its consent;
+- a material change of approval obligations withdraws current authorization until the current obligations are satisfied again;
 - Authority Management determines actor/action/scope authority;
 - Resource Responsibility metadata is not approval authority;
 - Access Policy consumes AuthorizationGranted / AuthorizationWithdrawn.
@@ -40,31 +41,30 @@ A pair is selectable when each ApplicationDeployment can realize the correspondi
 
 For MVP this does not add cross-application compatibility rules, planned/future deployment semantics or fallback inference.
 
-### Q2 — obligation change after placement/scope change — CURRENT
+### Q2 — obligation change after placement/scope change — ACCEPTED
 
-Product decision still required. Minimal candidate for owner decision:
+If a placement or Resource Scope Affiliation change leaves the effective approval obligations materially unchanged, current authorization remains effective.
+
+If the effective approval obligations materially change, current authorization ceases to be effective and AG publishes `AuthorizationWithdrawn` with provenance identifying the obligation-change cause. The same governed subject may become authorized again only after the current obligations are satisfied and AG publishes a new `AuthorizationGranted`.
+
+Historical Requests/approvals remain evidence and do not silently satisfy a materially changed obligation set. MVP introduces no separate `Suspended` product state. Exact treatment of still-valid individual consent facts is Tactical-open so long as no grant remains effective without all current obligations being satisfied.
+
+### Q3 — overlapping Responsibility Scopes — CURRENT
+
+RC permits one Resource to have several different effective Responsibility Scope affiliations; there is no accepted scope hierarchy or precedence rule.
+
+Minimal MVP candidate for owner decision, not yet accepted:
 
 ```text
-If a placement or Resource Scope Affiliation change does not change the effective
-approval obligations for the governed subject, current authorization remains valid.
+The first happy path supports exactly one distinct applicable Responsibility Scope
+per governance side.
 
-If the effective approval obligations materially change, the current authorization
-ceases to be effective and AG emits AuthorizationWithdrawn with provenance identifying
-the obligation-change cause. The subject may become authorized again only after the
-currently required obligations are approved.
+If more than one distinct Responsibility Scope is simultaneously applicable to a
+source or destination side, approval obligations are unresolved for MVP and the pair
+is not selectable/authorizable under the Q1 selection rule.
 ```
 
-For MVP, do not add a separate `Suspended` state. Do not treat an address or placement change alone as a withdrawal; the trigger is a material change of approval obligations.
-
-Prior approval history remains historical evidence and must not silently satisfy a changed obligation set. Whether an unchanged individual obligation may reuse still-valid consent is Tactical-open unless the happy path demonstrates the need.
-
-This candidate is non-authoritative until explicitly accepted at S1.
-
-### Q3 — overlapping Responsibility Scopes
-
-Unknown: when several Responsibility Scopes simultaneously apply to one side, which approval obligations are required?
-
-Do not freeze obligation cardinality or scope-precedence semantics until S1 accepts a rule.
+This is a fail-closed explicit deferral of generalized overlapping-scope semantics. It does not choose an arbitrary winning scope and does not introduce mandatory approval by every overlapping scope before a concrete requirement needs that behavior.
 
 ## Exit criteria
 
@@ -77,10 +77,10 @@ Do not freeze obligation cardinality or scope-precedence semantics until S1 acce
 
 ## Blockers
 
-Q2 and Q3 remain S1 owner decisions. Repository evidence does not currently contain accepted answers.
+Only Q3 remains an S1 owner decision for this MVP governance checkpoint.
 
-For MVP, prefer the smallest behavior that preserves bilateral authorization correctness and does not create a hidden automatic grant when placement/scope meaning changes.
+The repository contains no accepted hierarchy/precedence between simultaneously applicable Responsibility Scopes. For MVP, do not invent one.
 
 ## Next
 
-Obtain the Q2 owner decision. Promote it into `docs/requirements/access-governance-g1.md` only after explicit acceptance. Then address Q3 only to the extent overlapping Responsibility Scopes are required by the first happy path.
+Resolve Q3. Prefer the explicit fail-closed deferral above unless the first happy path requires multi-scope approval. After Q3 is accepted or explicitly deferred, evaluate G1 closure for the affected Access Governance behavior and return to Tactical AG revalidation.
