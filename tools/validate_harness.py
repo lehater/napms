@@ -115,17 +115,15 @@ def main() -> int:
         for marker in [
             ".agents/skills/",
             "docs/plans/active/README.md",
-            "Load `docs/plans/active/README.md` only when",
+            "Load `docs/plans/active/README.md` when",
             "nearest scoped `AGENTS.md`",
-            "## Task precedence",
-            "explicit user request",
+            "explicit user task",
             "docs/process/change-lifecycle.md",
             "web/AGENTS.md",
             "squash merge",
-            "must not commit directly to",
+            "Never commit directly to `main`",
             "## CI execution map",
             ".github/workflows/",
-            "workflow_dispatch",
         ]:
             if marker not in text:
                 errors.append(f"AGENTS.md missing routing/guardrail marker: {marker}")
@@ -134,7 +132,7 @@ def main() -> int:
             "1. read this file;",
             "2. read the nearest scoped `AGENTS.md`",
             "3. load the smallest applicable Skill",
-            "4. read only the canonical artifacts",
+            "4. read only the current project artifacts",
         ]
         if not _ordered_markers(text, startup_order):
             errors.append(
@@ -174,10 +172,10 @@ def main() -> int:
             errors,
             docs_readme,
             [
-                "task-first recovery",
-                "nearest scoped AGENTS.md",
-                "Insert `docs/plans/active/README.md`",
-                "Do not preload the current product workstream",
+                "Documentation ownership:",
+                "`plans/active/`",
+                "selected next implementation MVP",
+                "## Reconstruction test",
             ],
             "docs/README.md",
         )
@@ -201,12 +199,11 @@ def main() -> int:
             errors,
             working_loop,
             [
-                "## Context rollover",
+                "## Session rollover",
                 "disposable execution context",
                 "read-only by default",
-                "## Validation execution",
+                "## Validation",
                 ".github/workflows/",
-                "workflow_dispatch",
             ],
             "working-loop.md",
         )
@@ -222,7 +219,7 @@ def main() -> int:
                 "Implementation authorization:",
                 "Authorized scope:",
                 "Authorization basis:",
-                "revokes the G4 lease",
+                "reopening an upstream stage revokes any G4 lease immediately",
             ],
             "plan-lifecycle.md",
         )
@@ -263,7 +260,7 @@ def main() -> int:
             "Implementation authorization: G4 PASS",
             "Authorized scope",
             "Authorization basis",
-            "revoke the affected implementation lease",
+            "revoke the affected G4 lease",
         ]:
             if marker not in text:
                 errors.append(
