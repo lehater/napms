@@ -1,6 +1,6 @@
 # NAPMS Context Map
 
-Status: `S2 thin-vertical convergence accepted through AG/AP and MVP RPM edge`.
+Status: `S2 thin-vertical convergence accepted through APR additive remediation, provider rendering and NEO execution boundary`.
 
 Date: 2026-09-15.
 
@@ -128,7 +128,7 @@ For the first end-to-end MVP vertical path, RPM calls this edge only with HostAd
 
 A candidate with no access-list locator is valid NEP output but cannot form an RPM/APR comparison scope and therefore leaves the affected materialization unresolved.
 
-### RPM -> APR and provider chain
+### RPM -> APR
 
 RPM groups normalized required permit predicates by:
 
@@ -151,7 +151,67 @@ TargetRequiredPolicy {
 
 Missing/incomplete upstream evidence, missing candidate target or missing policy locator is `unresolved`, never empty required policy.
 
-PPI publishes configured effective policy for the same comparison scope; APR owns required/configured delta and verified change intent; PPR renders; NEO executes with independent mutation authority. `Applied` is not convergence proof.
+### Provider Interpreter -> APR
+
+PPI publishes `ConfiguredEffectivePolicySnapshot` for the exact same `ComparisonScope`, with explicit completeness and unsupported-semantics information. APR does not parse raw provider syntax.
+
+### APR -> Provider Policy Renderer
+
+For complete comparable input APR computes exact source-neutral:
+
+```text
+common  = required ∩ configured
+missing = required - configured
+excess  = configured - required
+```
+
+The MVP remediation boundary is additive-only:
+
+```text
+missing -> VerifiedChangeIntent(operation = ENSURE-PERMIT)
+excess  -> report/audit only; no automatic removal
+Realized -> no intent
+Uncomparable -> no intent
+```
+
+The target currently has no accepted managed-policy scope proving that NAPMS owns all configured permit space in an ACL. Therefore `excess` is not automatic removal authority.
+
+### Provider Policy Renderer -> NEO
+
+Provider Policy Renderer is an integration capability. It translates a verified source-neutral intent into provider/target representation only when semantic equivalence can be established.
+
+```text
+VerifiedChangeIntent
++ TargetProviderCapabilities
++ base target revision/correlation
+    -> TargetPolicyArtifact {
+         targetRef
+         comparisonScope
+         baseTargetCorrelation
+         rendererIdentity/version
+         artifactContent
+         artifactDigest
+         semanticEquivalenceEvidence
+         intentProvenance
+       }
+```
+
+If exact supported rendering/equivalence cannot be established, no executable artifact is published.
+
+### NEO -> provider environment
+
+NEO owns controlled execution only:
+
+```text
+TargetPolicyArtifact
++ actor / mutation authority scope
++ operationId / preconditions
+    -> NetworkOperation outcome
+```
+
+NEO does not recompute APR intent or rewrite provider representation. Mutation requires explicit Authority Management admission and successful stale/concurrency pre-checks.
+
+`Applied` is only a transport/apply result. NEO `Verified` is immediate artifact/application verification, not final semantic convergence proof. Final convergence requires later provider observation/interpreter publication and APR comparison again.
 
 ## Application Deployment boundary decision
 
@@ -189,10 +249,14 @@ The following are explicit non-blocking future extensions:
 
 - generalized Access Governance behavior for several simultaneous Responsibility Scopes on one side;
 - Prefix-aware NEP TrafficPair semantics;
+- managed-policy ownership/removal semantics for APR `excess`;
+- richer APR change-design vocabulary beyond additive `ENSURE-PERMIT`;
 - several simultaneous Resource addresses/interfaces, endpoint purpose, VIP and deployment-specific exposure.
 
 ## Convergence result
 
-The ACC/AD/RC foundation, Access Governance MVP behavior, AG/AP Tactical handoff and first HostAddress-based RPM vertical path are coherent for the current scope. No open S1 Access Governance blocker remains for the happy path.
+The first MVP semantic vertical path is coherent from ACC/AD/RC through AG/AP, HostAddress-based RPM, APR exact comparison/additive remediation, provider rendering and NEO controlled mutation.
 
-Global G2 is not implied. Continue downstream and reopen only the specific affected edge when a concrete deferred case becomes necessary.
+No known open S1 product question blocks this happy path. Deferred cases fail closed or remain outside the path rather than being silently approximated.
+
+Global G2 and implementation authorization are not implied. Reopen only a specific affected edge when a concrete deferred case becomes necessary.
