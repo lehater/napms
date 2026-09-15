@@ -89,11 +89,7 @@
     "No Shared Kernel is accepted between target Bounded Contexts."
   ],
   "open_strategic_questions": [],
-  "tactical_open_questions": [
-    "Exact PolicyRule aggregate/entity structure, including identity and child change-attempt identity/lifecycle.",
-    "Exact ComponentDeployment lifecycle/immutability rules consistent with one Component on one Resource.",
-    "Exact RecognizedAccessCandidate handoff value and idempotency semantics without creating a false evidence authority."
-  ],
+  "tactical_open_questions": [],
   "explicit_future_extensions": [
     "Detailed BusinessProcess retirement/archive, criticality and duplicate-Need policy when a concrete journey requires them.",
     "Whether several different ComponentDeployments may share one Resource.",
