@@ -1,7 +1,7 @@
 {
   "model_id": "NAPMS-DDD-001",
-  "source_baseline": "DDD-BDM-010 + 2026-09-14 G1 revalidation + global Strategic convergence + 2026-09-15 full MVP Tactical convergence",
-  "status": "first-mvp-ddd-baseline-converged",
+  "source_baseline": "DDD-BDM-010 + 2026-09-14 G1 revalidation + global Strategic convergence + 2026-09-15 full MVP Tactical convergence + TAE acquisition/normalization clarification",
+  "status": "first-mvp-ddd-baseline-converged-tae-acquisition-aligned",
   "canonical_authority": {
     "responsibilities_and_boundaries": "docs/domain/strategic-model.md",
     "relationships_and_contracts": "docs/domain/context-map.md",
@@ -18,13 +18,15 @@
     {"id":"acc","kind":"bounded_context","name":"Application Communication Catalogue","responsibility":"Application/Component/Interaction identities and immutable InteractionContractRevision traffic snapshots."},
     {"id":"ad","kind":"bounded_context","name":"Application Deployment","responsibility":"Logical ApplicationDeployment identity/continuity and complete current Component-to-Resource placement-set truth."},
     {"id":"nep","kind":"bounded_context","name":"Network Enforcement Placement","responsibility":"Candidate Firewall and policy-locator relevance for technical address pairs."},
-    {"id":"tae","kind":"bounded_context","name":"Technical Access Evidence","responsibility":"Immutable source-qualified technical evidence with source/time/provenance."},
+    {"id":"tae","kind":"bounded_context","name":"Technical Access Evidence","responsibility":"Canonical normalized immutable source-qualified technical evidence with source/time/provenance."},
     {"id":"apr","kind":"bounded_context","name":"Access Policy Realization","responsibility":"Source-neutral realization assessment, semantic delta, accepted additive change design and verification."},
     {"id":"neo","kind":"bounded_context","name":"Network Environment Operations","responsibility":"Controlled target mutation identity, authority, preconditions, outcome and execution provenance."},
     {"id":"rpm","kind":"derived_composition","name":"Required Policy Materialization"},
     {"id":"ppi","kind":"integration_capability","name":"Provider Policy Interpreter"},
     {"id":"ppr","kind":"integration_capability","name":"Provider Policy Renderer"},
-    {"id":"provider","kind":"external_seam","name":"Provider / network-device environment"}
+    {"id":"acq","kind":"integration_capability","name":"Technical Evidence Acquisition / Collectors"},
+    {"id":"provider","kind":"external_seam","name":"Provider / network-device environment"},
+    {"id":"extsrc","kind":"external_seam","name":"Import / external technical sources"}
   ],
   "relationships": [
     {"source":"acc","target":"bc","contract":"InteractionRef"},
@@ -45,13 +47,16 @@
     {"source":"rc","target":"rpm","contract":"ResourceRef + logicalTime -> effective AddressSpace[0..1] = HostAddress | Prefix with resolution/provenance"},
     {"source":"nep","target":"rpm","contract":"MVP: HostAddress TrafficPair -> FirewallCandidate[] -> accessListNames[]; Prefix input unresolved until edge is widened"},
     {"source":"rpm","target":"apr","contract":"TargetRequiredPolicy[] by ComparisonScope firewallId + accessListName, or unresolved"},
+    {"source":"provider","target":"acq","contract":"device/config/flow source material"},
+    {"source":"extsrc","target":"acq","contract":"imported/external technical source material"},
+    {"source":"acq","target":"tae","contract":"faithfully normalized source-qualified TechnicalAccessEvidenceSet input"},
     {"source":"provider","target":"ppi","contract":"provider-native configured policy/evidence for explicit comparison scope"},
+    {"source":"tae","target":"ppi","contract":"configured evidence when selected by an explicit source contract"},
     {"source":"ppi","target":"apr","contract":"ConfiguredEffectivePolicySnapshot with explicit completeness/unsupported semantics"},
     {"source":"apr","target":"ppr","contract":"MVP VerifiedChangeIntent(ENSURE-PERMIT missingPermitSpace) + base configured correlation/provenance"},
     {"source":"ppr","target":"neo","contract":"TargetPolicyArtifact with target/comparison scope, base correlation, artifact digest, renderer identity/version, semantic-equivalence evidence and intent provenance"},
     {"source":"am","target":"neo","contract":"mutation EffectiveAuthority(actor, action, responsibilityScope, time)"},
-    {"source":"neo","target":"provider","contract":"controlled target mutation attempt with precondition/idempotency semantics"},
-    {"source":"provider","target":"tae","contract":"source-qualified capture"}
+    {"source":"neo","target":"provider","contract":"controlled target mutation attempt with precondition/idempotency semantics"}
   ],
   "invariants": [
     "Business Connectivity Need references stable Interaction meaning; concrete Access Governance subject references the exact immutable InteractionContractRevision.",
@@ -71,6 +76,10 @@
     "Unknown authority fails closed for protected actions; historical decisions preserve the authority evidence valid at decision time.",
     "Required Policy Materialization is derived composition; unresolved is not empty required policy or APR drift.",
     "The first MVP NEP edge accepts only HostAddress-to-HostAddress TrafficPairs; Prefix remains upstream truth and yields unresolved materialization until Prefix-aware NEP semantics are accepted.",
+    "TAE owns the canonical normalized evidence vocabulary and immutable source-qualified evidence history; acquisition/collector capabilities own source-specific collection and faithful translation into that contract.",
+    "TAE does not initiate polling/collection and does not own scheduling, retries, credentials or source transport.",
+    "NEO is not the evidence-acquisition/read gateway; NEO owns controlled target mutation.",
+    "Evidence alone never creates authorization, desired policy, policy proposals or remediation intent.",
     "APR compares complete required/configured effective permit semantics by ComparisonScope firewallId + accessListName using exact common/missing/excess algebra.",
     "APR assessment, semantic delta and VerifiedChangeIntent are immutable/derived values for MVP and require no invented durable remediation aggregate.",
     "MVP remediation is additive-only: missing may produce ENSURE-PERMIT VerifiedChangeIntent; excess is report/audit evidence and not automatic removal authority.",
@@ -91,6 +100,7 @@
     "Managed-policy ownership and automatic removal/narrowing semantics for APR excess.",
     "Richer APR remediation vocabulary or durable remediation-plan lifecycle beyond additive ENSURE-PERMIT.",
     "Multiple simultaneous Resource addresses/prefixes, interfaces, endpoint purpose, VIP and deployment-specific network exposure require a future confirmed use case and affected-edge reopen.",
+    "Concrete acquisition scheduling/polling strategy and any shared provider/device access realization between collectors and NEO are downstream Architecture concerns.",
     "Production provider transport, generic rollback and multi-target transaction semantics are downstream architecture extensions, not current DDD blockers."
   ]
 }
