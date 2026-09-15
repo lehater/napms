@@ -1,6 +1,6 @@
 # First MVP vertical — DDD convergence
 
-Status: `active S2 Domain Design`.
+Status: `completed — G2 PASS 2026-09-15; parked at design`.
 
 Date: 2026-09-15.
 
@@ -8,94 +8,151 @@ Date: 2026-09-15.
 
 Finish the DDD needed by the first MVP vertical before any further code work.
 
-The earlier S3/S4 work remains design evidence, but implementation is frozen. The existing experimental target APR code is left in the branch unchanged and is not authoritative domain truth.
+Result: **complete for the accepted first MVP happy path**.
+
+The earlier S3/S4 work remains non-authoritative downstream design evidence. The experimental target APR code already present in the branch was left unchanged and is frozen.
 
 ## Lifecycle correction
 
-The first vertical was moved toward implementation too early. Strategic ownership is substantially converged, but at least two Tactical DDD gaps remain material to implementation:
+The first vertical had moved toward implementation before the full target DDD baseline was actually closed. The project-owner instruction on 2026-09-15 returned the work to S2 and revoked the previous G4 implementation lease.
 
-1. Application Deployment has an accepted strategic boundary but no accepted MVP Tactical model.
-2. Access Policy Realization has accepted comparison/additive semantics but its MVP Tactical identity/lifecycle/invariant classification is not yet closed.
+The convergence pass then found and resolved more than the initially visible AD/APR gaps:
 
-Therefore:
+- Application Deployment lacked target Tactical DDD;
+- Access Policy Realization still classified MVP Tactical meaning as open;
+- ACC requirements required immutable InteractionContractRevision while the target domain document had deferred that identity;
+- Authority Management had no canonical target Tactical DDD;
+- Business Connectivity was still only a Tactical candidate despite its remaining questions being non-blocking;
+- stale Scoped Connectivity / realization requirements still reintroduced `ComponentDeployment -> exactly one Resource` and endpoint-era semantics;
+- strategic/machine-readable maps retained stale Tactical-open and S1-open statements.
 
-- Lifecycle stage returns to `S2 Domain Design`;
-- previous G4 implementation authorization is revoked;
-- no production code, tests, migrations, adapters, bootstrap or UI changes are permitted while this plan is active;
-- existing code changes are not reverted, but no further implementation work may build on them until a later explicit S3/S4/G4 cycle after DDD closure.
+These conflicts are now closed in canonical target artifacts.
 
-## Scope
-
-Close only DDD required by the accepted first MVP happy path:
+## Final target scope
 
 ```text
+Business Connectivity Need -> stable ACC Interaction
+
 ACC InteractionContractRevision
--> AD ApplicationDeployment / ComponentPlacement
+-> AD ApplicationDeployment / complete ComponentPlacement set
 -> RC Resource / AddressSpace
 -> AG bilateral authorization
 -> AP current Policy Rule
 -> RPM derived TargetRequiredPolicy
 -> APR realization assessment / additive VerifiedChangeIntent
+-> Provider Policy Renderer boundary
 -> NEO controlled mutation semantics
+
+AM -> effective authority for protected actions
+TAE -> source-qualified technical evidence
+PPI -> configured effective policy interpretation
 ```
 
-Do not design persistence, transport, workflow wiring, provider adapters, migration mechanics or package structure here.
+## Completed Tactical work
 
-## Already coherent for MVP
+### Application Deployment
 
-Treat these as accepted unless the convergence pass exposes a direct contradiction:
+Closed in `docs/domain/application-deployment/tactical-model.md`:
 
-- ACC Tactical model;
-- RC Tactical model;
-- AG Tactical model;
-- AP Tactical model;
-- NEP target Tactical model;
-- NEO Tactical model;
-- Strategic context ownership and public semantic edges in `docs/domain/context-map.md` and `docs/domain/strategic-model.md`.
+- stable ApplicationDeployment identity/continuity;
+- ComponentPlacement is the relation value `(ComponentRef, ResourceRef)`;
+- zero/one/many placements per Component are valid;
+- exact duplicate relations are not;
+- complete current placement set is authoritative AD truth;
+- empty current set and unresolved truth are distinct;
+- scaling/migration does not by itself change deployment identity;
+- richer lifecycle/history is explicitly deferred because the MVP does not require it.
 
-## Active Tactical work
+### Access Policy Realization
 
-### 1. Application Deployment
+Closed in `docs/domain/access-policy-realization/tactical-model.md`:
 
-Resolve at MVP scope:
+- ComparisonScope / PermitSpace / SemanticDelta / Assessment / VerifiedChangeIntent classification;
+- exact Realized/Drift/Uncomparable invariants;
+- additive-only ENSURE-PERMIT semantics;
+- `excess` is evidence, not removal authority;
+- semantic verification of additive effect;
+- assessment/delta/intent require no invented durable aggregate/lifecycle;
+- scale/persistence/migration are downstream concerns, not missing Tactical DDD.
 
-- ApplicationDeployment sameness/continuity;
-- whether ComponentPlacement has independent identity or is a relation/value inside deployment state;
-- placement multiplicity semantics without imposing exactly-one placement;
-- invariants for ComponentRef/ApplicationRef/ResourceRef;
-- current placement-set meaning and empty placement meaning;
-- minimum domain operations needed for scaling/migration;
-- explicit classification of lifecycle details that are not required by current accepted behavior.
+### Application Communication Catalogue
 
-### 2. Access Policy Realization
+Closed the immutable revision contradiction in `target-tactical-model.md`:
 
-Resolve at MVP scope:
+- Interaction is stable directed component-pair identity;
+- material traffic change creates a new immutable InteractionContractRevision;
+- old revisions remain historically resolvable;
+- one revision's full traffic-alternative set is atomic;
+- no rich revision workflow/version numbering is required for MVP.
 
-- semantic identity/value classification of ComparisonScope, assessment, delta and VerifiedChangeIntent;
-- whether any APR aggregate/durable lifecycle is actually required;
-- minimum permit-space value vocabulary for the HostAddress-based first path;
-- exact invariants for Realized/Drift/Uncomparable and additive-only ENSURE-PERMIT;
-- verification meaning when `excess` remains after missing access is ensured;
-- provenance/explainability as semantic guarantee versus storage concern;
-- classification of remaining APR-Pxx items as MVP-domain work, future product work or downstream architecture/implementation work.
+### Authority Management
 
-## Convergence checks
+Added canonical `docs/domain/authority-management/tactical-model.md`:
 
-After AD and APR Tactical closure:
+- exact actor/action/scope/time authority meaning;
+- Group Membership + Role Assignment @ ResponsibilityScope + Role permits Action;
+- temporal assignment/membership evidence;
+- Admitted / Denied / Unknown distinction;
+- Unknown fails closed;
+- Resource responsibility metadata is never authority;
+- no speculative nested-group/deny/ABAC/quorum framework.
 
-- check their public contracts against AG/AP/RPM/NEP/NEO;
-- remove stale `S1-open` / `Tactical-open` statements that are actually resolved;
-- preserve explicit deferrals for generalized scopes, Prefix-aware NEP, managed-policy removal and richer provider semantics;
-- do not reopen accepted Strategic boundaries unless a real ownership contradiction is found.
+### Business Connectivity
 
-## Exit / G2 rule
+Closed the existing target candidate without inventing future workflow:
 
-G2 may pass for the first MVP vertical only when:
+- stable BusinessProcess and ConnectivityNeed identity;
+- Need references stable Interaction meaning, not one deployment/address/revision;
+- current business justification is distinct from authorization/realization;
+- exact concrete revision remains AG/ACC governed-subject truth;
+- remaining process/criticality/duplicate-Need questions are non-blocking extensions.
 
-- every domain concept needed by the vertical has explicit owner, identity/sameness and invariant semantics;
-- every context that needs a Tactical model has one sufficient for the MVP slice;
-- derived/value concepts are distinguished from durable entities/aggregates;
-- no implementation step would need to invent domain meaning;
-- remaining unknowns are explicitly outside the MVP and have a revisit trigger.
+## Cross-context consistency work
 
-Even after G2 PASS, stop at design. Do not resume S3/S4/implementation unless explicitly requested later.
+Updated current canonical artifacts so they no longer reintroduce superseded semantics:
+
+- `docs/domain/context-map.md`;
+- `docs/domain/strategic-model.md`;
+- `docs/domain/strategic-model.json`;
+- `docs/domain/semantic-ownership.md`;
+- `docs/domain/resource-role-model.md`;
+- `docs/requirements/README.md`;
+- `docs/requirements/scoped-connectivity-inventory.md`;
+- `docs/requirements/scoped-connectivity-inventory-acceptance-examples.md`;
+- `docs/requirements/policy-realization-reconciliation-g1.md`.
+
+## Gate result
+
+Canonical checkpoint: `docs/domain/mvp-ddd-convergence-checkpoint.md`.
+
+```text
+Lifecycle stage: S2
+Stage state: ACCEPTED
+G2: PASS
+Implementation authorization: none
+```
+
+G2 PASS is for the first MVP target DDD baseline across all 11 target Bounded Contexts. It does not claim that all conceivable future product extensions have been modelled.
+
+## Explicit non-blocking deferrals
+
+- generalized overlapping Responsibility Scope approval algebra;
+- nested groups/role inheritance/explicit deny/ABAC/quorum authority semantics;
+- richer BusinessProcess criticality/lifecycle/duplicate-Need behavior;
+- richer ApplicationDeployment lifecycle/history;
+- ACC revision draft/publish/version-number workflow;
+- Prefix-aware NEP;
+- multiple simultaneous Resource addresses/interfaces/VIPs/exposure;
+- managed-policy removal/narrowing;
+- richer APR change vocabulary/durable remediation plans;
+- provider transport, persistence, migration, transaction and package architecture.
+
+These reopen only on concrete requirement pressure.
+
+## Stop condition
+
+Do not continue to S3, S4 or implementation from this plan.
+
+No production code, tests, schemas, migrations, adapters, bootstrap, HTTP or UI changes are authorized. The existing experimental code remains untouched.
+
+A later architecture or implementation phase requires an explicit new project-owner request and a new downstream lifecycle decision from this G2 baseline.
