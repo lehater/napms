@@ -1,8 +1,8 @@
 # NAPMS Context Map
 
-Status: `S2 MVP target relationship map aligned with TAE acquisition boundary 2026-09-15`.
+Status: `S2 affected relationship map converged 2026-09-16; dependent Tactical DDD pending`.
 
-Date: 2026-09-15.
+Date: 2026-09-16.
 
 This is the canonical strategic relationship map. `strategic-model.md` owns responsibilities/boundaries; `strategic-model.json` is the machine-readable projection.
 
@@ -10,19 +10,19 @@ This is the canonical strategic relationship map. `strategic-model.md` owns resp
 
 ```mermaid
 flowchart LR
-    ACC[Application Communication Catalogue] -->|ApplicationRef / ComponentRef| AD[Application Deployment]
+    ACC[Application Communication Catalogue] -->|ComponentRef| AD[Application Deployment]
     RC[Resource Catalogue] -->|ResourceRef| AD
     ACC -->|InteractionRef| BC[Business Connectivity]
-    BC -->|Connectivity Need basis| AG[Access Governance]
-    ACC -->|InteractionContractRevisionRef| AG
-    AD -->|ApplicationDeployment refs / placement facts| AG
-    RC -->|Resource Scope Affiliation| AG
-    AM[Authority Management] -->|EffectiveAuthority| AG
-    AM -->|EffectiveAuthority| AD
-    AG -->|AuthorizationGranted / Withdrawn| AP[Access Policy]
-    AP --> RPM[Required Policy Materialization]
-    ACC --> RPM
-    AD --> RPM
+
+    BC -->|Connectivity Need / business basis| AP[Access Policy]
+    ACC -->|InteractionContractRevisionRef| AP
+    AD -->|ComponentDeployment refs + Resource refs| AP
+    RC -->|Resource Scope Affiliation| AP
+    AM[Authority Management] -->|EffectiveAuthority| AP
+
+    AP -->|current effective PolicyRule| RPM[Required Policy Materialization]
+    ACC -->|exact revision semantics| RPM
+    AD -->|ComponentDeployment -> ResourceRef| RPM
     RC -->|ResourceRef -> HostAddress or Prefix| RPM
     NEP[Network Enforcement Placement] --> RPM
     RPM -->|TargetRequiredPolicy| APR[Access Policy Realization]
@@ -38,67 +38,103 @@ flowchart LR
     EXT[Import / external technical sources] --> ACQ
     ACQ -->|normalized source-qualified evidence| TAE[Technical Access Evidence]
     TAE -.->|configured evidence when selected by source contract| PPI
+
+    TAE --> EAR[Evidence Access Recognition]
+    RC --> EAR
+    AD --> EAR
+    ACC --> EAR
+    EAR -->|RecognizedAccessCandidate| AP
 ```
 
 Arrows show semantic ownership/data flow, not synchronous transport or deployment topology. No Shared Kernel is accepted.
 
-Provider Policy Interpreter, Provider Policy Renderer and Technical Evidence Acquisition/Collectors are integration/application capabilities, not peer Bounded Contexts. Required Policy Materialization is a non-peer derived composition.
+`Access Governance` is not a separate target Bounded Context in the revalidated model. Its proposal/approval/withdrawal responsibilities are part of the Access Policy lifecycle.
+
+Provider Policy Interpreter, Provider Policy Renderer and Technical Evidence Acquisition/Collectors are integration/application capabilities. Required Policy Materialization and Evidence Access Recognition are non-peer compositions.
 
 ## Affected public contracts
 
 ### ACC -> Business Connectivity
 
-Business Connectivity references stable `InteractionRef` as the application-semantic business need. A Need is not pinned to one concrete deployment or one immutable traffic revision.
+Business Connectivity references stable `InteractionRef` as application-semantic business need. A Need is not pinned to one concrete Component Deployment or immutable traffic revision.
 
-For a concrete Access Request, AG combines the Need basis with the exact current/selected `InteractionContractRevisionRef` that defines the governed traffic semantics.
+### ACC -> Application Deployment
 
-### ACC -> AD
+Application Deployment consumes opaque `ComponentRef`. ACC remains owner of Application/Component semantics.
 
-`ApplicationRef / ComponentRef`. ACC owns application/component identity; AD owns logical deployment identity and current placement-set truth.
+A Component Deployment can only reference an existing Component. Application Deployment does not copy Interaction or revision semantics.
 
-### RC -> AD
+### RC -> Application Deployment
 
-`opaque ResourceRef`. For MVP, AD `ComponentPlacement` is the relation value `(ComponentRef, ResourceRef)` inside one ApplicationDeployment current placement set. RC retains Resource and network realization truth.
+Application Deployment consumes opaque `ResourceRef`. RC remains owner of Resource identity, lifecycle, AddressSpace and responsibility/scope facts.
 
-### ACC + AD -> AG
-
-```text
-GovernedInteractionSubject {
-    interactionContractRevisionRef       // ACC
-    sourceApplicationDeploymentRef       // AD
-    destinationApplicationDeploymentRef  // AD
-}
-```
-
-Scaling, ordinary placement replacement, Resource replacement and address change do not by themselves redefine this identity.
-
-For the MVP, the pair is selectable only when each selected ApplicationDeployment realizes the corresponding Interaction endpoint Component through at least one current placement and the current approval obligations are resolvable.
-
-AG then requires exactly one distinct applicable Responsibility Scope per governance side. Zero or several applicable scopes fail closed for the MVP path.
-
-### AD -> AG
-
-AD publishes the complete current placement set needed to determine which Resources participate on each governance side.
+For the first MVP one `ComponentDeploymentRef` resolves to exactly one `ComponentRef` and one `ResourceRef`.
 
 ```text
-ApplicationDeploymentRef + endpoint ComponentRef
--> complete Set<ResourceRef> | unresolved
+ComponentDeploymentRef
+-> ComponentRef
+-> ResourceRef
 ```
 
-One Component may have zero, one or many placements. AG must preserve every applicable placement when resolving Resource Scope Affiliations; it must not choose one arbitrary Resource merely to obtain a simpler obligation result.
+Deploying the same Component on another Resource produces another `ComponentDeploymentRef`.
 
-### RC -> AG
+### ACC + Application Deployment -> Access Policy
+
+One concrete policy connection uses:
+
+```text
+sourceComponentDeploymentRef
++ destinationComponentDeploymentRef
++ revisionRef
+```
+
+The directed Component Deployment pair identifies the concrete connection. `revisionRef` identifies the exact proposed/current traffic semantics but is not itself the connection identity.
+
+Access Policy resolves the revision through ACC and verifies:
+
+```text
+source ComponentDeployment.ComponentRef
+    == revision.Interaction.sourceComponentRef
+
+destination ComponentDeployment.ComponentRef
+    == revision.Interaction.destinationComponentRef
+```
+
+Because an Interaction is intra-Application, this validation also prevents cross-Application policy connections.
+
+No duplicate `InteractionRef` is required in the policy contract solely to recover the owning Interaction of an exact revision.
+
+### Application Deployment -> Access Policy
+
+Application Deployment publishes only the concrete endpoint facts needed by the lifecycle:
+
+```text
+ComponentDeploymentRef
+-> ComponentRef
+-> ResourceRef
+| unresolved
+```
+
+The first MVP has no whole-Application deployment selection or placement-set expansion in access governance.
+
+A Resource address change does not replace ComponentDeployment identity. A different Component deployment on a different Resource is a different policy endpoint.
+
+### RC -> Access Policy
+
+For approval-obligation resolution:
 
 ```text
 ResourceRef + logicalTime
 -> effective ResourceScopeAffiliation[] with validity/provenance
 ```
 
-AG owns how these facts establish approval obligations.
+Access Policy owns how these facts establish source/destination approval obligations.
 
-A material change of the resolved source/destination obligation pair causes AG to publish `AuthorizationWithdrawn`; materially unchanged obligations preserve current authorization. Historical approvals do not silently restore a withdrawn grant.
+For the MVP, each governance side must resolve to exactly one distinct applicable Responsibility Scope. Zero or several fail closed.
 
-### AM -> protected domain actions
+A material change of applicable obligations may make current authorization cease to be effective; historical decisions do not silently satisfy changed obligations.
+
+### AM -> Access Policy
 
 AM evaluates effective authority for an exact:
 
@@ -106,33 +142,64 @@ AM evaluates effective authority for an exact:
 ActorRef + ActionRef + ResponsibilityScopeRef + effectiveTime
 ```
 
-from effective group membership, role assignment and role-permitted action truth. Resource responsibility/contact metadata does not grant authority.
+`Denied` and `Unknown` fail closed for protected actions. Resource responsibility/contact metadata does not grant authority.
 
-`Denied` and `Unknown` fail closed for protected actions. Historical consuming decisions may preserve the authority evidence valid at decision time without freezing current assignments.
+Access Policy preserves the authority evidence/basis used for historical decisions without copying AM private role/group models.
 
-### AG -> AP
+### Business Connectivity -> Access Policy
+
+A deliberate access change submission requires a Process-backed Connectivity Need/business basis.
+
+Published meaning required by Access Policy includes stable references sufficient to explain the business basis, including the relevant `InteractionRef` and current/applicable justification status.
+
+Access Policy does not convert Need existence into authorization. A Need may outlive one Component Deployment pair or revision.
+
+Evidence-derived recognition may create a candidate before Need attribution; that candidate cannot bypass the business-basis requirement for deliberate governance submission.
+
+### Access Policy internal lifecycle boundary
+
+No cross-context AG -> AP handoff exists in the target model.
+
+Within Access Policy, these truths remain distinct:
 
 ```text
-AuthorizationGranted(subject, provenance)
-AuthorizationWithdrawn(subject, provenance)
+PolicyRule identity / concrete endpoint pair
+current effective revision (optional)
+pending/rejected/approved rule-change attempts
+bilateral approval decisions and provenance
+withdrawal history
 ```
 
-AP does not reconstruct bilateral governance. A later explicit grant may re-establish current authorization for the same governed subject.
+A pending/rejected revision change never overwrites the current effective revision. An accepted change may update the effective revision for the same Policy Rule.
+
+### Access Policy -> RPM
+
+Access Policy publishes current effective Policy Rules only, with opaque `PolicyRuleRef` provenance and enough public meaning to identify:
+
+```text
+sourceComponentDeploymentRef
+destinationComponentDeploymentRef
+revisionRef
+```
+
+Historical/pending/rejected changes do not enter current required-policy materialization.
 
 ### ACC -> RPM
 
-`InteractionContractRevisionRef + complete immutable traffic contract`. ACC does not resolve deployments or Resources.
+`InteractionContractRevisionRef -> complete immutable traffic contract + endpoint ComponentRefs`.
 
-A material traffic change creates a new immutable revision reference; old revisions remain historically resolvable.
+ACC does not resolve deployments or Resources.
 
-### AD -> RPM
+### Application Deployment -> RPM
 
 ```text
-ApplicationDeploymentRef + ComponentRef + logicalTime
--> complete applicable Set<(ComponentRef, ResourceRef)> | unresolved
+ComponentDeploymentRef
+-> ComponentRef
+-> ResourceRef
+| unresolved
 ```
 
-A complete empty placement set is distinct from an unavailable/unresolved result. Multiple current placements are all part of required-policy materialization completeness.
+Each effective Policy Rule already names one concrete source and destination Component Deployment. RPM does not perform replica/placement Cartesian expansion.
 
 ### RC -> RPM
 
@@ -150,8 +217,6 @@ ResourceRef + logicalTime
 
 One Resource has at most one effective AddressSpace at a logical time. Missing realization is unresolved, not an empty address set. Prefixes are first-class and are not expanded into hosts.
 
-`ResourceEndpoint`, endpoint purpose, multiple simultaneous addresses/interfaces, VIP and deployment-specific exposure are outside the current target model.
-
 ### NEP -> RPM
 
 ```text
@@ -162,11 +227,9 @@ TrafficPair
    freshness metadata
 ```
 
-Candidate membership is relevance-to-inspect/affect, not a proven path. Multiple candidates are preserved; order has no route meaning.
+Candidate membership is relevance-to-inspect/affect, not a proven path. Multiple candidates are preserved.
 
-For the first end-to-end MVP vertical path, RPM calls this edge only with HostAddress-to-HostAddress pairs. If RC supplies a Prefix on either side, RPM returns unresolved until Prefix-aware NEP query/matching semantics are explicitly designed.
-
-A candidate with no access-list locator is valid NEP output but cannot form an RPM/APR comparison scope and therefore leaves the affected materialization unresolved.
+For the first end-to-end target-specific path, RPM calls this edge only with HostAddress-to-HostAddress pairs. Prefix yields unresolved until Prefix-aware NEP semantics are accepted.
 
 ### RPM -> APR
 
@@ -176,171 +239,105 @@ RPM groups normalized required permit predicates by:
 ComparisonScope = firewallId + accessListName
 ```
 
-and publishes only complete target-specific results:
-
-```text
-TargetRequiredPolicy {
-    comparisonScope
-    requiredPermitSpace
-    contributingPolicyRuleRefs
-    logicalTime
-    inputProvenance
-    inputFreshness
-}
-```
-
-Missing/incomplete upstream evidence, missing candidate target or missing policy locator is `unresolved`, never empty required policy.
+and publishes complete `TargetRequiredPolicy` results carrying contributing `PolicyRuleRef` provenance. Missing/incomplete upstream evidence is `unresolved`, never empty policy.
 
 ### Technical Evidence Acquisition / Collectors -> TAE
 
-Acquisition/collector capabilities initiate source collection outside the TAE domain boundary and publish source-qualified normalized evidence into TAE.
+Acquisition/collector capabilities initiate source collection outside TAE and publish faithfully normalized source-qualified evidence into TAE.
 
-Typical producers include:
+TAE owns evidence meaning/invariants, not polling cadence, credentials, retries or source transport.
+
+### TAE + RC + Application Deployment + ACC -> Evidence Access Recognition
+
+Evidence Access Recognition is a non-authoritative composition.
+
+It may correlate:
 
 ```text
-device/config collector
-NetFlow/IPFIX/flow collector
-file/import adapter
-other technical source adapters
+TAE source/destination address + protocol/ports
+-> RC Resource correlation
+-> Application Deployment ComponentDeployment correlation
+-> ACC exact Component/Interaction/revision match
+-> RecognizedAccessCandidate | unresolved/ambiguous
 ```
 
-TAE owns the normalized evidence language/invariants. Producers own faithful source-specific translation into that contract. TAE does not own polling cadence, scheduling, credentials, retry/backoff or source transport.
+It must fail closed on ambiguous/missing correlation. It cannot manufacture a Resource, Component Deployment, Interaction revision, business Need or authorization.
 
-These producer capabilities are not Bounded Contexts merely because they have application workflows or adapters.
+### Evidence Access Recognition -> Access Policy
 
-Network Environment Operations is not the acquisition/read gateway for TAE. NEO remains the owner of controlled target mutation. Whether acquisition and NEO share a concrete provider/device access library or adapter layer is an S3 Architecture concern and is intentionally not decided by this Context Map.
+A recognized candidate may initiate the same proposal/change lifecycle used for manually proposed access.
 
-### TAE -> evidence consumers
+The candidate carries evidence provenance sufficient to explain why it was proposed. Access Policy remains the owner of whether the candidate becomes a submitted change, receives approvals or affects current policy.
 
-TAE publishes immutable source-qualified evidence; consumers interpret it for their own responsibility.
+### TAE -> Provider Policy Interpreter
 
-- configured evidence may be selected by an explicit source contract and consumed by Provider Policy Interpreter;
-- `TrafficDerived` evidence may feed recognition/reconciliation compositions;
-- historical evidence may feed audit/investigation views.
-
-TAE does not infer authorization, business need, desired policy, policy realization or change proposals from evidence.
+Configured evidence may be consumed by PPI when selected by an explicit source contract. TAE does not select globally current/complete configured policy.
 
 ### Provider Policy Interpreter -> APR
 
-PPI publishes `ConfiguredEffectivePolicySnapshot` for the exact same ComparisonScope, with explicit completeness and unsupported-semantics information. APR does not parse raw provider syntax.
+PPI publishes `ConfiguredEffectivePolicySnapshot` for the exact ComparisonScope with explicit completeness, freshness/provenance and unsupported-semantics information. APR does not parse raw provider syntax.
 
-PPI may consume provider/source material directly, TAE configured evidence through an explicit source contract, or both. TAE does not select current/complete configured-policy truth for APR.
+### APR -> Provider Policy Renderer -> NEO
 
-### APR -> Provider Policy Renderer
+APR owns exact source-neutral comparison and accepted additive `ENSURE-PERMIT` intent. Provider renderer publishes executable target representation only when semantic equivalence can be proven. NEO owns controlled mutation with authority/precondition/outcome semantics.
 
-For complete comparable input APR computes exact source-neutral:
-
-```text
-common  = required ∩ configured
-missing = required - configured
-excess  = configured - required
-```
-
-The MVP remediation boundary is additive-only:
-
-```text
-missing -> VerifiedChangeIntent(operation = ENSURE-PERMIT)
-excess  -> report/audit only; no automatic removal
-Realized -> no intent
-Uncomparable -> no intent
-```
-
-The target has no accepted managed-policy scope proving that NAPMS owns all configured permit space in an ACL. Therefore `excess` is not automatic removal authority.
-
-`VerifiedChangeIntent` is an immutable semantic handoff value for the MVP, not an independently persisted remediation aggregate.
-
-### Provider Policy Renderer -> NEO
-
-Provider Policy Renderer is an integration capability. It translates a verified source-neutral intent into provider/target representation only when semantic equivalence can be established.
-
-```text
-VerifiedChangeIntent
-+ TargetProviderCapabilities
-+ base target revision/correlation
-    -> TargetPolicyArtifact {
-         targetRef
-         comparisonScope
-         baseTargetCorrelation
-         rendererIdentity/version
-         artifactContent
-         artifactDigest
-         semanticEquivalenceEvidence
-         intentProvenance
-       }
-```
-
-If exact supported rendering/equivalence cannot be established, no executable artifact is published.
-
-### NEO -> provider environment
-
-NEO owns controlled execution only:
-
-```text
-TargetPolicyArtifact
-+ actor / mutation authority scope
-+ operationId / preconditions
-    -> NetworkOperation outcome
-```
-
-NEO does not recompute APR intent, rewrite provider representation or act as a general evidence-acquisition service. Mutation requires explicit Authority Management admission and successful stale/concurrency pre-checks.
-
-`Applied` is only a transport/apply result. NEO `Verified` is immediate artifact/application verification, not final semantic convergence proof. Final convergence requires later provider observation/interpreter publication and APR comparison again.
+Execution success is not final semantic convergence proof.
 
 ## Application Deployment boundary decision
 
-Boundary Challenge: **PASS**.
+Boundary Challenge: **PASS for the affected MVP behavior**.
 
 ```text
-ApplicationDeployment {
-    ApplicationDeploymentId
-    ApplicationRef
-    currentPlacements: Set<(ComponentRef, ResourceRef)>
+ComponentDeployment {
+    ComponentDeploymentId
+    ComponentRef
+    ResourceRef
 }
 ```
 
-MVP Tactical semantics are closed:
+Strategic meaning:
 
-- `ComponentPlacement` is a relation value, not a separately identified entity;
-- one Component may have zero, one or many distinct current Resource placements;
-- the exact same `(ComponentRef, ResourceRef)` pair is not duplicated;
-- scaling/migration/placement replacement preserve ApplicationDeployment identity while logical deployment continuity remains;
-- no deployment lifecycle state machine is invented because current accepted behavior does not require one;
-- complete empty placement truth and unresolved placement truth remain distinct.
+- one concrete deployed Component instance is one Component Deployment;
+- one Component Deployment references exactly one Resource in the first MVP;
+- deploying the same Component to another Resource creates another Component Deployment;
+- no whole-Application deployment identity is needed by the target policy lifecycle;
+- Resource address realization remains RC truth;
+- exact identity/lifecycle operations are Tactical DDD concerns.
 
-The former ACC-owned `ComponentDeployment`, RC -> ACC deployment binding and `DirectedInteractionIdentity{ComponentDeploymentRef...}` are superseded target semantics.
+The same term may exist in as-built ACC compatibility contracts with different ownership/semantics. Those contracts remain as-built reconstruction truth and do not redefine this target Application Deployment concept.
 
-## Current Resource network decision
+## Access Policy boundary decision
 
-The former endpoint-based target is simplified:
+Boundary Challenge: **PASS for merging the former AG/AP target split**.
+
+The former split had two current-authorization owners:
 
 ```text
-Resource -> effective AddressSpace [0..1]
-AddressSpace = HostAddress | Prefix
+Access Governance.GovernedAuthorization.effectiveGrant
+    -> AuthorizationGranted / Withdrawn
+    -> Access Policy.PolicyRule current authorization
 ```
 
-AD therefore needs no endpoint/network-exposure contract in the current scope. Future multi-address/interface requirements must reopen this affected edge rather than being pre-modelled now.
+After G1 revalidation, AP adds no independent authorization decision: the approved/rejected/withdrawn proposal lifecycle is exactly what determines the Rule's current effective revision/state.
+
+Keeping both BCs would duplicate the same current semantic truth and require identity translation/handoff without an independent lifecycle reason. The target therefore uses one Access Policy BC with governance as an internal domain capability.
+
+Business Connectivity and Authority Management remain separate because their identities/lifecycles are independently meaningful.
 
 ## Deferred affected-edge extensions
 
-The following are explicit non-blocking future extensions:
-
-- generalized Access Governance behavior for several simultaneous Responsibility Scopes on one side;
+- generalized approval behavior for several simultaneous Responsibility Scopes on one side;
 - nested groups, role inheritance, explicit deny/ABAC authority rules;
+- whether several different Component Deployments may share one Resource;
+- richer ComponentDeployment runtime/container/pod lifecycle/history;
 - Prefix-aware NEP TrafficPair semantics;
 - managed-policy ownership/removal semantics for APR `excess`;
-- richer APR change-design vocabulary beyond additive `ENSURE-PERMIT`;
-- durable/editable APR remediation plans if a concrete user journey requires them;
 - several simultaneous Resource addresses/interfaces, endpoint purpose, VIP and deployment-specific exposure;
-- richer ApplicationDeployment lifecycle/history where observable behavior later requires it;
-- richer ACC revision workflow/version presentation beyond immutable contract snapshots;
-- concrete acquisition scheduling/polling strategy and any shared provider/device access realization between collectors and NEO (S3 Architecture).
+- richer ACC revision workflow/version presentation;
+- concrete acquisition scheduling/polling and shared provider/device access realization (S3).
 
 ## Convergence result
 
-The first MVP semantic path is coherent across all target bounded contexts and non-peer integration/composition boundaries needed by it.
+The affected Strategic relationships are coherent with the revalidated G1 behavior. Dependent Tactical DDD remains DIRTY until Policy Rule/change lifecycle, ComponentDeployment identity, recognition candidate handoff and related invariants are revalidated.
 
-The TAE acquisition clarification does not introduce a new Bounded Context or change TAE evidence identity/lifecycle. It makes the producer relationship explicit and keeps device-access realization out of S2.
-
-Known future cases are explicitly deferred or fail closed; they are not hidden as unresolved current behavior.
-
-Final G2 status for the full MVP DDD baseline is recorded in the dedicated convergence checkpoint. No implementation authorization is implied by this map.
+No implementation authorization is implied by this map.
