@@ -1,8 +1,8 @@
 # Access Policy Realization — Problem Statement and Design Directions
 
-Status: `active Tactical DDD; strategic provider boundaries resolved by ADR-021`.
+Status: `active Tactical DDD; strategic provider boundaries resolved by ADR-021; RPM input contract aligned 2026-09-15`.
 
-Date: 2026-09-14.
+Date: 2026-09-15.
 
 APR remains a separate Bounded Context. Its final Tactical DDD, ERD, persistence/computation model and migration design are not yet locked.
 
@@ -16,29 +16,72 @@ APR reasons over **source-neutral effective access semantics**, not raw firewall
 
 ### TargetRequiredPolicy
 
-Published by Required Policy Materialization (ADR-020): target/policy correlation + normalized required effective permit space + provenance/time.
+Published by Required Policy Materialization (ADR-020) only when materialization for the comparison scope is complete:
+
+```text
+TargetRequiredPolicy {
+    comparisonScope {
+        firewallId
+        accessListName
+    }
+    requiredPermitSpace
+    contributingPolicyRuleRefs
+    logicalTime
+    inputProvenance
+    inputFreshness
+}
+```
+
+`requiredPermitSpace` is the normalized vendor-neutral effective permit semantics derived from current authorized Policy Rules, complete ACC traffic alternatives and current technical realization.
+
+RPM may produce several `TargetRequiredPolicy` values for one governed interaction when NEP reports several relevant Firewalls and/or access-list names. APR evaluates each comparison scope independently; candidate ordering has no route meaning.
+
+RPM `unresolved` is not a `TargetRequiredPolicy` with an empty permit space. APR must not infer an empty required policy from missing placements, Resource realization, target selection, policy locator or other incomplete upstream materialization.
+
+The first MVP vertical path currently reaches APR only for HostAddress-to-HostAddress NEP materialization. Prefix input remains upstream truth but causes RPM unresolved until Prefix-aware NEP query semantics are explicitly designed.
 
 ### ConfiguredEffectivePolicySnapshot
 
 Published by a provider interpretation adapter/integration capability (ADR-021):
 
 ```text
-ConfiguredEffectivePolicySnapshot
-    targetRef
-    policyLocator / comparisonScope
+ConfiguredEffectivePolicySnapshot {
+    comparisonScope {
+        firewallId
+        accessListName
+    }
     effectivePermitSpace
     sourceCapture/evidence references
     evidence/effective time
     completeness: Complete | Incomplete | Unknown
     interpreter identity/version
     unsupportedSemantics[]
+}
 ```
+
+The configured snapshot must correlate to the same explicit comparison scope as `TargetRequiredPolicy` before APR performs complete realization algebra.
 
 APR does not parse provider-native policy syntax. Provider ordering, deny/default behavior, objects/groups, aliases and other source-specific constructs must already have been interpreted exactly into the source-neutral projection.
 
 `Incomplete | Unknown` configured input cannot be treated as an empty policy or used for a complete realization conclusion.
 
 TAE may preserve source-qualified evidence but does not own current configured-policy publication/completeness.
+
+## Comparability gate
+
+APR performs semantic comparison only when both inputs are complete and refer to the same comparison scope.
+
+At minimum:
+
+```text
+required.comparisonScope == configured.comparisonScope
+required materialization == complete
+configured.completeness == Complete
+```
+
+A mismatch, unresolved required materialization, incomplete/unknown configured snapshot or unsupported source semantics is not policy drift; it is an incomplete/uncomparable realization assessment.
+
+Exact freshness acceptance thresholds remain downstream Tactical/product work unless a concrete journey requires them. APR must preserve the input freshness/provenance needed to explain the assessment.
 
 ## Core semantic algebra
 
@@ -51,6 +94,8 @@ excess  = configured - required
 ```
 
 Policies are semantically equivalent when they denote the same effective permit space even when their native decomposition differs.
+
+For the MVP happy path, `requiredPermitSpace` may contain several normalized predicates from one or more contributing Policy Rules; APR reasons over their effective union rather than native rule decomposition.
 
 ## APR responsibilities
 
@@ -70,6 +115,7 @@ APR does not own:
 - authorization or Policy Rule governance;
 - Resource/ACC truth;
 - NEP target selection/relevance;
+- RPM source composition ownership;
 - provider-native configured-policy interpretation;
 - provider-specific rendering implementation;
 - provider/device mutation lifecycle.
@@ -106,6 +152,8 @@ APR must support very large policy spaces without mandatory full in-memory hydra
 ## Stable constraints
 
 - target selection is upstream truth;
+- RPM unresolved is not empty required policy;
+- comparison scope is explicit `firewallId + accessListName` for the current MVP contract;
 - comparison uses effective semantics, not configuration text;
 - exact `common/missing/excess` algebra is preserved;
 - assessment, delta, change design and verification remain distinct concepts;
@@ -126,4 +174,4 @@ Still unresolved:
 - final APR Tactical DDD/ERD/persistence classification (APR-P09);
 - target-versus-current migration plan (APR-P10).
 
-APR-P02 and APR-P07 strategic ownership questions are resolved by ADR-021. Architecture details of provider adapters/artifact format remain downstream.
+APR-P02 and APR-P07 strategic ownership questions are resolved by ADR-021. RPM/APR input correlation for the first HostAddress-based MVP vertical path is now explicit; the remaining APR work is internal Tactical depth, not an upstream ownership blocker.
