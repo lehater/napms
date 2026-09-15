@@ -77,7 +77,7 @@ Prefer rollover when:
 
 A stage transition is a strong compaction point, not an automatic requirement to start a fresh session. Continue in the same session only when the retained context is still small and directly relevant.
 
-Before rollover:
+Before rollover of current execution:
 1. absorb durable product/domain/architecture decisions into their canonical artifacts;
 2. harvest consequential stakeholder evidence and unresolved discoveries from the active discussion; preserve compact source observations separately from their current interpretation when later reinterpretation may matter;
 3. persist only material unresolved problems/discoveries in the smallest correct owner: current plan/capsule while active, a bounded-context problem register when parking context-local work, or another existing durable owner when justified;
@@ -86,7 +86,7 @@ Before rollover:
 6. preserve evidence references needed to resume or later synthesize without preserving full transcript/tool dumps;
 7. discard temporary reasoning, duplicated explanations, rejected exploration, non-consequential candidate ideas and task-local rules that no longer apply.
 
-A fresh session recovers in this order:
+A fresh session that resumes current execution recovers in this order:
 
 ```text
 root AGENTS.md
@@ -97,9 +97,11 @@ root AGENTS.md
   -> additional process/evidence only when current work demonstrates need
 ```
 
+A fresh session for an unrelated task follows root task-first routing instead: root `AGENTS.md` -> nearest scoped `AGENTS.md` -> smallest applicable Skill -> minimal task working set. It does not load the active capsule unless the new task demonstrates a dependency on current execution/gate/authorization.
+
 Read the full active plan only when planning/coordination/stage transition or missing material context requires it.
 
-Do not automatically reload the top-level change lifecycle, protocols or historical evidence from completed stages during ordinary work. The resume capsule should carry the resulting stage/gate state; transition protocols and source evidence are loaded again only when routing, gate evaluation, reopen/invalidation, ambiguity or explicit synthesis requires them.
+Do not automatically reload the top-level change lifecycle, protocols or historical evidence from completed stages during ordinary work. When current execution is being resumed, the resume capsule should carry the resulting stage/gate state; transition protocols and source evidence are loaded again only when routing, gate evaluation, reopen/invalidation, ambiguity or explicit synthesis requires them.
 
 When a parked context is deliberately resumed, canonical context truth comes first, then its context problem register; any roadmap/evidence corpus is secondary and must be revalidated before its ordering or interpretation is trusted.
 

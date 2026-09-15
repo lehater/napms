@@ -17,6 +17,6 @@ Read only what the current task requires:
 - `domain-change-protocol.md` — focused domain re-entry guidance when implementation findings may change accepted semantics.
 - `plan-lifecycle.md` — how current execution state is persisted/resumed, how unresolved bounded-context problems are parked, and when an ordered roadmap is justified.
 
-Do not preload all protocols. Start from the repository agent map and active resume capsule, then load only the applicable Skill, current-stage protocol when needed, and minimal working set. Expand evidence only when the current task demonstrates the need.
+Do not preload all protocols. Start from the repository agent map, scoped instructions and the smallest applicable Skill. Load the active resume capsule only when current execution/gate/authorization is relevant to the requested task, then expand to the minimal working set and additional evidence only when demonstrated necessary.
 
 Project truth belongs in the domain/requirements/architecture/engineering areas, not here.

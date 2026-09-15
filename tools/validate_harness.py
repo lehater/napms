@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the NAPMS repository-local agent harness."""
+"""Validate the NAPMS repository-local agent harness structure."""
 
 from __future__ import annotations
 
@@ -73,6 +73,13 @@ def _ordered_markers(text: str, markers: list[str]) -> bool:
     return True
 
 
+def _require_markers(errors: list[str], path: Path, markers: list[str], label: str) -> None:
+    text = path.read_text(encoding="utf-8-sig")
+    for marker in markers:
+        if marker not in text:
+            errors.append(f"{label} missing structural marker: {marker}")
+
+
 def main() -> int:
     errors: list[str] = []
     required = [
@@ -80,6 +87,7 @@ def main() -> int:
         ROOT / "backend" / "src" / "AGENTS.md",
         ROOT / "web" / "AGENTS.md",
         ROOT / "docs" / "AGENTS.md",
+        ROOT / "docs" / "README.md",
         ROOT / ".agents" / "README.md",
         ROOT / ".agents" / "skills" / "AGENTS.md",
         ROOT / "docs" / "process" / "README.md",
@@ -99,9 +107,7 @@ def main() -> int:
     required.extend(ROOT / "docs" / "process" / name for name in LIFECYCLE_PROTOCOLS)
     for path in required:
         if not path.is_file():
-            errors.append(
-                f"missing required harness file: {path.relative_to(ROOT)}"
-            )
+            errors.append(f"missing required harness file: {path.relative_to(ROOT)}")
 
     root_agents = ROOT / "AGENTS.md"
     if root_agents.is_file():
@@ -109,41 +115,72 @@ def main() -> int:
         for marker in [
             ".agents/skills/",
             "docs/plans/active/README.md",
+            "Load `docs/plans/active/README.md` only when",
+            "nearest scoped `AGENTS.md`",
+            "## Task precedence",
+            "explicit user request",
             "docs/process/change-lifecycle.md",
-            "Read the full current",
-            "PLAN-*.md",
-            "non-authoritative recovery cache",
             "web/AGENTS.md",
             "squash merge",
             "must not commit directly to",
             "## CI execution map",
             ".github/workflows/",
             "workflow_dispatch",
-            "Lifecycle stage: IMPLEMENTATION",
-            "Implementation authorization: G4 PASS",
-            "Authorized scope",
-            "Authorization basis",
         ]:
             if marker not in text:
-                errors.append(
-                    f"AGENTS.md missing guardrail marker: {marker}"
-                )
+                errors.append(f"AGENTS.md missing routing/guardrail marker: {marker}")
 
         startup_order = [
-            "1. this file;",
-            "2. `docs/plans/active/README.md`",
-            "3. the nearest scoped `AGENTS.md`",
-            "4. the smallest applicable Skill",
-            "5. only the canonical artifacts and code",
+            "1. read this file;",
+            "2. read the nearest scoped `AGENTS.md`",
+            "3. load the smallest applicable Skill",
+            "4. read only the canonical artifacts",
         ]
         if not _ordered_markers(text, startup_order):
             errors.append(
-                "AGENTS.md must preserve root -> capsule -> scoped AGENTS "
-                "-> Skill -> working-set startup order"
+                "AGENTS.md must preserve task-first root -> scoped AGENTS -> Skill -> working-set order"
             )
+
+        duplicated_lease_fields = [
+            "Implementation authorization: G4 PASS",
+            "Authorized scope",
+            "Authorization basis",
+        ]
+        for marker in duplicated_lease_fields:
+            if marker in text:
+                errors.append(
+                    f"AGENTS.md must reference canonical implementation-lease owners instead of duplicating field {marker!r}"
+                )
 
         if len(text.encode("utf-8")) > 12 * 1024:
             errors.append("AGENTS.md exceeds 12 KiB; keep it map-like")
+
+    agents_readme = ROOT / ".agents" / "README.md"
+    if agents_readme.is_file():
+        _require_markers(
+            errors,
+            agents_readme,
+            [
+                "start from the explicit task",
+                "loaded only when current execution, gate or authorization matters",
+                "do not load the active capsule unless",
+            ],
+            ".agents/README.md",
+        )
+
+    docs_readme = ROOT / "docs" / "README.md"
+    if docs_readme.is_file():
+        _require_markers(
+            errors,
+            docs_readme,
+            [
+                "task-first recovery",
+                "nearest scoped AGENTS.md",
+                "Insert `docs/plans/active/README.md`",
+                "Do not preload the current product workstream",
+            ],
+            "docs/README.md",
+        )
 
     process_index = ROOT / "docs" / "process" / "README.md"
     if process_index.is_file():
@@ -160,51 +197,59 @@ def main() -> int:
 
     working_loop = ROOT / "docs" / "process" / "working-loop.md"
     if working_loop.is_file():
-        text = working_loop.read_text(encoding="utf-8-sig")
-        for marker in [
-            "## Context rollover",
-            "disposable execution context",
-            "read-only by default",
-            "## Validation execution",
-            ".github/workflows/",
-            "workflow_dispatch",
-        ]:
-            if marker not in text:
-                errors.append(
-                    f"working-loop.md missing context-performance/CI marker: "
-                    f"{marker}"
-                )
+        _require_markers(
+            errors,
+            working_loop,
+            [
+                "## Context rollover",
+                "disposable execution context",
+                "read-only by default",
+                "## Validation execution",
+                ".github/workflows/",
+                "workflow_dispatch",
+            ],
+            "working-loop.md",
+        )
 
     plan_lifecycle = ROOT / "docs" / "process" / "plan-lifecycle.md"
     if plan_lifecycle.is_file():
-        text = plan_lifecycle.read_text(encoding="utf-8-sig")
-        for marker in [
-            "## Lifecycle execution lease",
-            "Lifecycle stage:",
-            "Implementation authorization:",
-            "Authorized scope:",
-            "Authorization basis:",
-            "revokes the G4 lease",
-        ]:
-            if marker not in text:
-                errors.append(f"plan-lifecycle.md missing execution-lease marker: {marker}")
+        _require_markers(
+            errors,
+            plan_lifecycle,
+            [
+                "## Lifecycle execution lease",
+                "Lifecycle stage:",
+                "Implementation authorization:",
+                "Authorized scope:",
+                "Authorization basis:",
+                "revokes the G4 lease",
+            ],
+            "plan-lifecycle.md",
+        )
 
     execute_work_package = SKILLS / "execute-work-package" / "SKILL.md"
     if execute_work_package.is_file():
         text = execute_work_package.read_text(encoding="utf-8-sig")
         for marker in [
-            "root `AGENTS.md` -> `docs/plans/active/README.md` "
-            "-> nearest scoped `AGENTS.md`",
-            "Read the full current plan only",
-            "canonical truth and refresh the capsule",
-            "context rollover",
+            "docs/plans/active/README.md",
+            "task-first routing",
+            "smallest applicable Skill",
+            "docs/process/change-lifecycle.md",
+            "docs/process/plan-lifecycle.md",
+            "docs/process/working-loop.md",
+            "implement-slice",
+            "do not restate or reimplement the lease state machine here",
+        ]:
+            if marker not in text:
+                errors.append(f"execute-work-package missing orchestration marker: {marker}")
+        for marker in [
             "Implementation authorization: G4 PASS",
             "Authorized scope",
             "Authorization basis",
         ]:
-            if marker not in text:
+            if marker in text:
                 errors.append(
-                    f"execute-work-package missing recovery/lease marker: {marker}"
+                    f"execute-work-package must delegate lease semantics instead of duplicating field {marker!r}"
                 )
 
     implement_slice = SKILLS / "implement-slice" / "SKILL.md"
@@ -222,7 +267,7 @@ def main() -> int:
         ]:
             if marker not in text:
                 errors.append(
-                    f"implement-slice missing lifecycle boundary marker: {marker}"
+                    f"implement-slice missing lifecycle enforcement marker: {marker}"
                 )
 
     architecture_review = SKILLS / "architecture-review" / "SKILL.md"
@@ -253,32 +298,24 @@ def main() -> int:
 
     missing = sorted(REQUIRED_SKILLS - names)
     if missing:
-        errors.append(
-            "missing required core skills: " + ", ".join(missing)
-        )
+        errors.append("missing required core skills: " + ", ".join(missing))
 
     if ROOT.joinpath("docs", "methodology").exists():
-        errors.append(
-            "legacy methodology tree must not be recreated; use docs/process"
-        )
+        errors.append("legacy methodology tree must not be recreated; use docs/process")
     if ROOT.joinpath("agent", "skills").exists():
         errors.append("deprecated agent/skills path exists")
 
-    for directory in [
-        ROOT / "docs" / "requirements",
-        ROOT / "docs" / "architecture",
-    ]:
+    for directory in [ROOT / "docs" / "requirements", ROOT / "docs" / "architecture"]:
         for path in sorted(directory.glob("wave1-*.md")):
             errors.append(
-                "historical Wave-1 packet must not remain in living "
-                f"knowledge surface: {path.relative_to(ROOT)}"
+                "historical Wave-1 packet must not remain in living knowledge surface: "
+                f"{path.relative_to(ROOT)}"
             )
 
     historical_ui_plan = ROOT / "docs" / "ui" / "implementation-plan.md"
     if historical_ui_plan.exists():
         errors.append(
-            "historical UI execution plan must not remain under docs/ui; "
-            "use active plan/roadmap and Git history"
+            "historical UI execution plan must not remain under docs/ui; use active plan/roadmap and Git history"
         )
 
     if errors:
