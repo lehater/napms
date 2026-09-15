@@ -29,4 +29,7 @@ Check:
 - body owns workflow, not current NAPMS facts;
 - shared mechanics link to `docs/process/`;
 - routing corpus includes positive and confusable negative cases;
-- `make harness-check` passes.
+- `make harness-check` passes deterministic structure/coverage checks;
+- when a Skill trigger/boundary changes, evaluate actual model routing observations against `skill-routing-cases.json` when a model runner is available; do not treat corpus validation alone as routing evidence.
+
+Use `tools/evaluate_skill_routing_results.py` to score captured model-routing observations and compare context/tooling metrics when assessing Harness changes.
