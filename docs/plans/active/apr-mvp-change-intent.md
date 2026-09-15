@@ -1,12 +1,12 @@
 # APR MVP change-intent decision
 
-Status: `active S1 MVP remediation-boundary decision`.
+Status: `S1 MVP remediation boundary accepted`.
 
 Date: 2026-09-15.
 
 ## Goal
 
-Decide the smallest safe product behavior needed to continue from an exact APR semantic delta to one verified source-neutral change intent without claiming authority over unrelated configured access.
+Define the smallest safe product behavior needed to continue from an exact APR semantic delta to one verified source-neutral change intent without claiming authority over unrelated configured access.
 
 ## Accepted baseline
 
@@ -18,7 +18,7 @@ missing = required - configured
 excess  = configured - required
 ```
 
-APR now distinguishes:
+APR distinguishes:
 
 - `Realized` when missing and excess are both empty;
 - `Drift` when either is non-empty;
@@ -26,46 +26,61 @@ APR now distinguishes:
 
 The comparison scope is `firewallId + accessListName`.
 
-## Current product gap
+## Accepted MVP remediation boundary
 
 The target model does not currently define a managed/authoritative sub-scope proving that NAPMS owns every configured permit in an ACL.
 
-Therefore `excess` means "configured effective permit not explained by current required policy" but does not yet prove "NAPMS is authorized to remove this permit".
-
-The old runtime `ManagedReconciliationScope` is migration evidence and is not accepted target truth.
-
-## Minimal MVP candidate — owner decision required
+Therefore the first MVP remediation behavior is intentionally additive-only:
 
 ```text
 Realized
     -> no change intent
 
 Drift with missing permit space
-    -> APR may create a source-neutral intent to ENSURE the missing permit space
+    -> APR may create a source-neutral ENSURE-PERMIT intent for the missing permit space
 
 Excess permit space
     -> report as drift/audit evidence only
-    -> do not create automatic removal intent in MVP
+    -> no automatic removal/narrowing intent in MVP
 
 Uncomparable
     -> no change intent
 ```
 
-This gives the first end-to-end happy path a safe additive remediation without pretending that the whole ACL is NAPMS-owned.
+`excess` means configured effective permit not explained by current required policy. It does not prove that NAPMS is authorized to remove that permit.
 
-A later feature may generate removal/narrowing intents only after an accepted product rule defines the managed policy scope/authority and proves which configured access NAPMS is allowed to remove.
+The old runtime `ManagedReconciliationScope` remains migration evidence and is not accepted target truth.
 
-## Why this is an S1 decision
+A later removal/narrowing feature requires an explicit accepted managed-policy scope/authority rule that proves which configured access NAPMS may remove.
 
-Whether `excess` is merely evidence or an automatic removal target changes observable product behavior and operational risk. Tactical DDD must not infer whole-ACL ownership from the fact that APR can mathematically calculate `excess`.
+## Consequences for change design
 
-## Exit criteria
+The minimum MVP `VerifiedChangeIntent` may express only the semantic operation:
 
-- owner accepts the additive-only MVP rule, or accepts another explicit remediation authority rule;
-- accepted behavior is promoted into canonical APR requirements/domain documentation;
-- minimal `VerifiedChangeIntent` semantics can then be defined without provider-native rule editing;
-- no implementation authorization is implied.
+```text
+ENSURE-PERMIT(missingPermitSpace)
+```
 
-## Next
+It must retain:
 
-Obtain the owner decision on the candidate above. If accepted, define the minimum `VerifiedChangeIntent` as "ensure missing effective permit space" and continue to provider rendering / NEO handoff.
+- comparison scope;
+- base configured snapshot/revision correlation required for safe application;
+- semantic permit space to ensure;
+- provenance back to required policy and semantic delta;
+- verification evidence proving that the intent does not narrow existing effective access and that applying it would cover the intended missing permit space for the supported slice.
+
+Provider-native rule/object edits are not APR domain semantics.
+
+## Deferred
+
+- automatic removal of excess access;
+- whole-ACL ownership semantics;
+- generalized Add/Remove/Replace rule-edit vocabulary;
+- cleanup/optimization of existing rules;
+- provider-specific representation strategy.
+
+## Exit result
+
+`S1 PASS` for the additive-only MVP remediation boundary.
+
+The next step is Tactical convergence of the minimal `VerifiedChangeIntent`, provider-renderer handoff and NEO execution boundary. No implementation authorization is implied.
