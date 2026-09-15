@@ -89,7 +89,7 @@ Current as-built workflows include owner-preserving compositions such as policy 
 
 A workflow may own orchestration-specific read models or rebuildable projections. It does not acquire independent identity/lifecycle/invariants merely because it combines several contexts, and it does not read or mutate peer-private tables.
 
-The selected Required Access Matrix MVP is also cross-context composition over ACC + AD + RC. Its exact physical workflow/package name, API boundary, snapshot/consistency mechanism and export/UI adapter remain S3 decisions; no package name is canonical until that architecture is accepted.
+The selected Full Vendor-Neutral Policy Export MVP is a cross-context composition over AP + ACC + AD + RC. It starts from current effective AP Policy Rules and materializes complete access-list-oriented source/destination AddressSpace, protocol and port/range rows without firewall/device/provider context. Its exact physical workflow/package name, public API boundary, snapshot/consistency mechanism and table/CSV adapters remain S3 decisions after the affected S2 composition boundary is revalidated; no new package name is canonical until that architecture is accepted.
 
 ### Compatibility and migration adapters
 
@@ -207,7 +207,7 @@ Architecture checks should protect at least:
 - design-system independence from feature/domain semantics;
 - feature-local Web ownership where applicable.
 
-For the Required Access Matrix slice, S3 should add checks for whatever concrete ownership/package boundaries it accepts, especially preventing direct ACC/AD/RC private persistence access and accidental introduction of a new semantic `RequiredAccessMatrix` bounded context unless S2 explicitly changes.
+For the Full Vendor-Neutral Policy Export slice, S3 should add checks for whatever concrete workflow/package boundary it accepts, especially preventing direct AP/ACC/AD/RC private persistence access, accidental introduction of a new semantic policy-export Bounded Context, and accidental dependence on NEP/device/provider types in the vendor-neutral export core.
 
 ## Reconstruction rule
 
