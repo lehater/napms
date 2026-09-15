@@ -1,10 +1,10 @@
 # Application Communication Catalogue — Target Domain Model
 
-Status: `S2 affected-edge revalidated; target Tactical model aligned 2026-09-15`.
+Status: `S2 affected-edge revalidated; target Tactical model aligned 2026-09-16`.
 
 Canonical MVP Tactical model: `target-tactical-model.md`.
 
-Earlier ACC-owned `ComponentDeployment`, Resource binding and `DirectedInteractionIdentity` semantics are superseded by the Application Deployment boundary decision.
+ACC owns reusable Application/Component/Interaction meaning and immutable traffic-contract revisions. Concrete Component Deployment belongs to the separate Application Deployment context.
 
 ## MVP modelling rule
 
@@ -41,6 +41,7 @@ Stable ACC-owned directed communication template between two Components of the s
 MVP invariants:
 
 - both endpoints belong to the same ApplicationDefinition;
+- cross-Application Interaction is invalid;
 - self-interaction is valid;
 - at most one Interaction exists for one directed Component pair;
 - reverse direction is a different Interaction;
@@ -51,11 +52,15 @@ MVP invariants:
 
 Immutable decision-relevant traffic snapshot for one Interaction.
 
-Downstream governance keys on `InteractionContractRevisionRef`, so a material traffic change creates a new revision identity while old revisions remain historically resolvable.
+A material traffic change creates a new revision identity while old revisions remain historically resolvable.
 
 The revision contains the complete atomic set of vendor-neutral traffic alternatives. Consumers may not authorize/materialize only one preferred subset of a revision.
 
-The target does **not** require a rich revision workflow, version-number scheme, supersession state machine or independently editable revision aggregate for MVP. Those are deferred unless a concrete product journey requires them.
+An exact revision reference also identifies its owning Interaction and therefore its source/destination Component definitions. Access Policy does not need to duplicate `InteractionRef` next to `revisionRef` solely to interpret one exact revision.
+
+Changing the ACC-current revision does not silently change an existing Policy Rule. A Policy Rule remains on its currently effective exact revision until its own accepted change lifecycle advances it.
+
+The target does **not** require a rich revision workflow, version-number scheme, supersession state machine or independently editable revision aggregate for MVP.
 
 ## Lifecycle baseline
 
@@ -76,23 +81,25 @@ current Interaction contract revision
 immutable revision resolution
 ```
 
-AD consumes Application/Component identity and owns deployment/placement.
+Application Deployment consumes `ComponentRef` and owns concrete `ComponentDeployment(ComponentRef, ResourceRef)` truth.
 
-AG/AP use the exact immutable contract revision in governed-subject identity.
+Access Policy uses the exact immutable revision as proposed/current traffic semantics for one concrete ComponentDeployment pair.
 
-RPM resolves that revision and preserves its complete traffic semantics.
+Required Policy Materialization resolves that revision and preserves its complete traffic semantics.
+
+Evidence Access Recognition may use public revision/Interaction meaning to correlate observed traffic but cannot create or modify ACC truth.
 
 ## Resource realization semantics
 
 None belong to ACC:
 
 ```text
-ACC Interaction/Component semantics
-+ AD ComponentPlacement -> ResourceRef
+ACC Interaction/Component/revision semantics
++ AD concrete ComponentDeployment -> ResourceRef
 + RC Resource -> effective HostAddress | Prefix
 ```
 
-Address/placement changes do not alter ACC Interaction or contract-revision identity.
+Address/deployment changes do not alter ACC Interaction or contract-revision identity.
 
 ## Cross-context rule
 
@@ -104,7 +111,7 @@ Consumers treat published references as opaque semantic identities rather than r
 - draft/publish/review workflow for catalogue revisions;
 - richer lifecycle states;
 - persistence/repository structure;
-- migration from the implemented legacy ApplicationDeployment / DeploymentInteraction shape;
+- migration from the implemented legacy ApplicationDeployment / DeploymentInteraction / compatibility ComponentDeployment shape;
 - richer communication-contract semantics not required by the first end-to-end scenario.
 
-Endpoint selection is not an ACC deferred question: the current target deliberately has no endpoint model.
+Endpoint/network realization is not ACC ownership.
