@@ -1,6 +1,6 @@
 # Access Governance — G1 Requirements Passport
 
-Status: `G1 bilateral behavior retained; deployment subject aligned 2026-09-15; three behavior questions reopened`.
+Status: `G1 bilateral behavior retained; deployment subject aligned 2026-09-15; pair selection accepted; two behavior questions reopened`.
 
 ## Observable requirements
 
@@ -18,6 +18,9 @@ Status: `G1 bilateral behavior retained; deployment subject aligned 2026-09-15; 
 12. Approval/revoke authority is evaluated through Authority Management and is not inferred from Resource Owner/Administrator/Responsibility metadata.
 13. Rejected Requests remain history and create no semantic deny Policy Rule.
 14. Access Policy consumes `AuthorizationGranted` / `AuthorizationWithdrawn`; it does not run bilateral governance.
+15. A source/destination ApplicationDeployment pair is selectable for an Access Request using a declared Interaction when each ApplicationDeployment can realize the corresponding Interaction endpoint Component and the current placements required to determine approval obligations are resolvable.
+
+The selection rule does not imply planned/future deployment inference, generalized cross-application compatibility rules or fallback guessing when current placement/scope information is unresolved.
 
 ## Current subject
 
@@ -33,10 +36,9 @@ Technical Resource AddressSpace is not part of subject identity.
 
 ## Reopened S1 behavior
 
-The AD boundary makes these product questions operationally material and they remain unresolved:
+The following product questions remain unresolved:
 
-1. What constraints determine selectable source/destination ApplicationDeployment pairs?
-2. When placement or Resource Scope Affiliation changes alter approval obligations, does current authorization remain valid, require reapproval, warn, suspend or withdraw?
-3. When several Responsibility Scopes simultaneously apply to one side, which approval obligations are required?
+1. When placement or Resource Scope Affiliation changes alter approval obligations, does current authorization remain valid, require reapproval, warn, suspend or withdraw?
+2. When several Responsibility Scopes simultaneously apply to one side, which approval obligations are required?
 
 Tactical AG must not invent these answers.
