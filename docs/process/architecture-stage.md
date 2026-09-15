@@ -2,146 +2,81 @@
 
 ## Purpose
 
-Use this protocol for lifecycle stage `S3 Architecture` when accepted requirements/domain guarantees must be realized through system structure, boundaries and technical mechanisms.
+Use S3 when accepted requirements/domain guarantees must be realized through system structure, boundaries and technical mechanisms.
 
 S3 answers:
 
-> How will the accepted semantics be realized while preserving ownership, dependency direction, consistency, security and operational constraints?
+> How will current accepted semantics be realized while preserving ownership, dependency direction, consistency, security and operational constraints?
 
-Architecture may choose mechanisms. It must not invent product behavior or redefine domain ownership.
-
-Load this protocol only while S3 design or G3 evaluation is active.
+Architecture may choose mechanisms. It does not invent product behavior or redefine domain ownership.
 
 ## Inputs
 
-Use the smallest applicable set of:
+Load only:
 
-- G1/G2 accepted guarantees for the affected scope;
-- current architecture/ADR owners relevant to the change;
-- existing implementation structure only as current-state evidence;
-- explicit constraints from security, operations, migration or external integration;
-- reopened architecture findings from S4/implementation.
+- G1/G2 guarantees for the affected scope;
+- current architecture owners relevant to the change;
+- current implementation structure as realization evidence when needed;
+- current security/operations/external-integration constraints;
+- a current reopen finding from S4/implementation.
 
-Do not preload unrelated architecture documentation or the whole codebase.
-
-## Responsibility boundary
+## What S3 owns
 
 S3 may define:
 
-- application/use-case boundaries;
+- application/use-case boundaries and orchestration placement;
 - ports/adapters and dependency direction;
-- consumer/provider contract realization;
-- workflow/orchestration placement;
-- persistence ownership and repository boundaries;
-- transaction/consistency strategy;
-- synchronous vs asynchronous interaction mechanism;
-- migration/compatibility strategy;
-- failure/retry/idempotency mechanism where semantics are already accepted;
-- security/authentication/authorization realization preserving accepted authority semantics;
+- realization of cross-context contracts;
+- persistence ownership/repository boundaries;
+- transaction and consistency strategy;
+- synchronous/asynchronous mechanisms;
+- currently required compatibility/changeover mechanics;
+- retry/idempotency/failure mechanisms preserving accepted semantics;
+- authentication/authorization realization;
 - deployment/process boundaries when technically required;
-- observability and operational seams;
-- architecture-testable structural constraints.
+- observability seams;
+- mechanically enforceable architecture rules.
 
-S3 must not decide merely to unblock implementation:
+S3 does not choose missing product behavior, new domain identity/lifecycle/invariant, context responsibility transfer or unaccepted authority/business policy. Those use `REOPEN(S1|S2)`.
 
-- missing product behavior;
-- new domain identity/lifecycle/invariant;
-- Bounded Context responsibility transfer;
-- cross-context semantic meaning not accepted in S2;
-- authority/business policy not already owned upstream.
+## Working loop
 
-If an architecture choice requires such a decision, use `REOPEN(S1)` or `REOPEN(S2)`.
-
-## Architecture working loop
-
-For the affected change:
-
-1. **Restate accepted guarantees.** Identify the specific S1/S2 guarantees Architecture must preserve.
-2. **Map current realization.** Inspect only the affected packages/contracts/data paths; distinguish current implementation from target architecture.
-3. **Choose responsibility placement.** Map each technical responsibility to context/workflow/platform ownership without moving semantic ownership implicitly.
-4. **Define dependency direction.** Identify inbound use cases, consumer-owned ports, provider adapters and composition/wiring.
-5. **Define data ownership.** State which context owns writes, authoritative persistence and permitted read projections; reject peer-private persistence access.
-6. **Define consistency/transaction semantics.** Choose transaction boundaries, snapshots, sequencing or eventual consistency that satisfy accepted guarantees.
-7. **Define failure/unknown behavior realization.** Preserve upstream fail-closed/open, timeout, retry, unknown and provenance semantics rather than inventing them.
-8. **Define migration/compatibility path.** When current and target differ, state temporary compatibility constraints and the removal condition; avoid permanent transitional ownership buckets.
-9. **Challenge unnecessary complexity.** Prefer local/in-process/simple mechanisms unless distribution, messaging, caching or abstraction has demonstrated pressure.
-10. **Challenge semantic leakage.** If architecture must understand or decide peer-private domain semantics, reopen S2 rather than widening interfaces.
-11. **Make mechanical rules executable where useful.** Add/update architecture tests for stable structural invariants rather than relying only on prose.
-12. **Review the proposed architecture.** Use `architecture-review` for an independent P0-P3 challenge before G3 when the increment is material.
-13. **Update the smallest canonical architecture/ADR owner first** and evaluate G3.
-
-## Architecture coherence checks
-
-For the affected scope verify:
-
-- every technical responsibility has one clear owner;
-- dependencies point toward accepted semantic owners;
-- cross-context interaction uses explicit semantic/application contracts, not peer domain imports;
-- workflows/orchestration own no authoritative business truth;
-- persistence ownership cannot be bypassed by convenience reads/writes;
-- transaction/consistency choices are sufficient for accepted invariants without creating stronger guarantees accidentally;
-- security/authority/provenance are preserved end-to-end;
-- unknown/failure/temporal semantics survive adapter and persistence boundaries;
-- migration does not silently preserve obsolete semantic ownership;
-- infrastructure/distribution/abstraction exists only where required;
-- architecture choices are separable from product/domain truth.
+1. Restate the exact S1/S2 guarantees Architecture must preserve.
+2. Inspect only the affected realization path.
+3. Place each technical responsibility without moving semantic ownership implicitly.
+4. Define dependency direction, ports, adapters and composition.
+5. Define authoritative persistence ownership and forbid peer-private reads/writes.
+6. Define consistency/transaction/snapshot/sequencing behavior sufficient for accepted invariants.
+7. Preserve accepted failure, unknown, timeout, retry, temporal and provenance semantics through adapters/persistence.
+8. When the current runtime differs from the target, define only the temporary compatibility mechanism needed for the selected change and its removal condition; do not create permanent transitional ownership.
+9. Prefer local/in-process/simple mechanisms unless distribution, messaging, caching or abstraction has demonstrated pressure.
+10. If realization requires peer-private semantic knowledge or a new domain decision, reopen S2 instead of widening the interface.
+11. Make stable structural constraints executable with architecture tests where practical.
+12. Use `architecture-review` for a material independent P0-P3 challenge.
+13. Update the smallest current architecture owner and evaluate G3.
 
 ## G3 — Architecture fit
 
-`G3 PASS` means Implementation Readiness may rely on these guarantees for the affected scope:
+`G3 PASS` means S4 may rely on:
 
-- accepted S1/S2 semantics have a feasible target realization;
-- responsibility placement and dependency direction are explicit;
-- cross-context contracts and adapter boundaries are sufficient;
-- persistence/data ownership and consistency strategy are explicit where material;
-- security/authority/failure/temporal constraints are preserved;
-- migration/compatibility constraints are known where current implementation differs;
-- no unresolved P0/P1 architecture contradiction remains;
-- implementation need not invent architecture or upstream semantics.
+- feasible realization of current S1/S2 semantics;
+- explicit responsibility placement and dependency direction;
+- sufficient cross-context/application/adapter contracts;
+- explicit persistence/data ownership and consistency strategy where material;
+- preserved security/authority/failure/temporal semantics;
+- current-runtime-to-target compatibility constraints where needed for the selected change;
+- no unresolved P0/P1 architecture contradiction;
+- no architecture decisions left for implementation to invent.
 
-### G3 outcomes
+Outcomes:
 
-- `PASS` — mark S3 accepted and proceed to S4/next dirty stage.
-- `REWORK` — architecture owns the deficiency; revise the affected realization design.
-- `REOPEN(S2)` — architecture exposed missing/wrong semantic ownership, identity, invariant or cross-context contract.
-- `REOPEN(S1)` — required observable behavior/quality/authority expectation is unsettled.
-- `REOPEN(S0)` — the underlying problem/evidence premise is invalid.
-- `BLOCKED` — a required external technical constraint/evidence/decision is unavailable.
+- `PASS` — proceed to S4/next dirty stage;
+- `REWORK` — S3 owns the realization deficiency;
+- `REOPEN(S2|S1|S0)` — an upstream semantic/product/problem guarantee is missing or wrong;
+- `BLOCKED` — required current external technical evidence/constraint is unavailable.
 
-## Mixed-level artifacts
+## Context rule
 
-Existing domain/requirements/code artifacts may contain architecture choices, and architecture documents may contain stale semantic claims. File location does not make a statement authoritative.
+Load root/scoped instructions, the active capsule when relevant, this protocol while S3/G3 is active, the smallest current architecture artifacts and only the affected S1/S2/code evidence.
 
-During revalidation:
-
-1. classify the statement by meaning;
-2. keep product/domain truth with S1/S2 owners;
-3. keep realization choices with architecture/engineering owners;
-4. treat current code as evidence, not target architecture by default;
-5. avoid mass-cleanup unrelated to the active change.
-
-## Context contract
-
-Normal S3 startup:
-
-```text
-root AGENTS.md
--> active resume capsule
--> scoped AGENTS.md if applicable
--> this protocol for S3/G3
--> smallest relevant architecture/ADR artifact(s)
--> accepted S1/S2 guarantees for affected scope
--> architecture-review Skill only when reviewing a material proposal
--> code/tests only on demonstrated need
-```
-
-Do not preload full domain/requirements families or all architecture documents.
-
-## Relationship to other protocols/Skills
-
-- `change-lifecycle.md` owns stage transitions/reopen/dirty/no-progress semantics.
-- `requirements-stage.md` owns S1 guarantees.
-- `domain-design-stage.md` owns S2 guarantees.
-- `architecture-review` is a review Skill used inside S3; it does not own stage progression or accepted architecture truth.
-- `working-loop.md` owns execution/checkpoint/rollover mechanics.
-- S4 Implementation Readiness owns exact code-impact/slicing after G3.
+Architecture docs contain current target constraints only. Replaced designs and rationale remain in Git history rather than ADR/supersession archives in the working tree.
