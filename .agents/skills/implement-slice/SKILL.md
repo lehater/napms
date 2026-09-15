@@ -13,7 +13,9 @@ Use this Skill only after `S4 Implementation Readiness` / G4 has authorized the 
 - `Implementation authorization: G4 PASS`;
 - non-`none` `Authorized scope` matching the requested slice;
 - non-`none` `Authorization basis` identifying current G4/upstream guarantees;
-- relevant current requirements/domain/architecture contracts;
+- relevant current requirements/domain contracts;
+- relevant current as-built/target architecture and applicable ADRs;
+- relevant current API/persistence/engineering/UI contracts when the slice touches those boundaries;
 - current code/tests.
 
 ## Procedure
@@ -30,13 +32,16 @@ Use this Skill only after `S4 Implementation Readiness` / G4 has authorized the 
    Domain -> Application + consuming Ports -> tests -> adapters
    ```
 9. Preserve fail-closed behavior, semantic identity and explicit outcomes.
-10. Add/adjust executable proof before claiming the slice complete.
-11. Run the applicable local/hosted repository checks.
-12. Review dependency direction and claims-vs-evidence.
-13. Do not close the slice with P0/P1 findings open.
+10. Preserve documented as-built compatibility where the current slice depends on it; do not replace it with target semantics without the required migration/design decision.
+11. Add/adjust executable proof before claiming the slice complete.
+12. Run the applicable local/hosted repository checks.
+13. Review dependency direction and claims-vs-evidence.
+14. Do not close the slice with P0/P1 findings open.
 
 ## Guardrails
 
 No framework, database, transport, configuration, logging or DI-container dependency belongs in Domain. Infrastructure does not compensate for unclear core semantics.
+
+Production code is not a substitute for project specification. If implementation evidence exposes an undocumented but consequential as-built design contract, route it to the owning documentation layer rather than relying on code archaeology for future reconstruction.
 
 When implementation evidence invalidates an upstream guarantee, preserve the current finding in the active execution state, revoke the affected G4 lease and reopen the single owning lifecycle stage instead of patching around it.
