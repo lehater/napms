@@ -115,6 +115,34 @@ For each affected edge ask:
 
 If the smallest stable contract still requires peer-private model knowledge, challenge the context boundary before expanding the DTO/API.
 
+### Cross-context coupling challenge
+
+For every affected cross-context edge whose contract is created, changed or materially exercised by the current Tactical work, challenge coupling as a second lens. Do not run a repository-wide coupling audit merely because one edge changed.
+
+Ask:
+
+1. **Model leakage** — must the consumer understand provider-private entities, aggregates, lifecycle or storage shape to perform its responsibility?
+2. **Interaction/chatiness** — does one semantic operation require object-by-object traversal, N+1 cross-context lookups or a large distributed join rather than one sufficiently complete published meaning?
+3. **Temporal coupling** — must provider and consumer be simultaneously available even though the consumer only needs an already-established semantic fact?
+4. **Change coupling** — can an internal provider-model refactor force consumer change without any change to the public semantic meaning?
+5. **Consistency-boundary abuse** — are an Aggregate or Bounded Context being enlarged merely to remove integration inconvenience rather than to protect a local invariant/lifecycle?
+6. **Semantic duplication** — does a consumer-owned copy/projection begin to make authoritative decisions that belong to the provider?
+7. **Scale amplification** — under a plausible x100/x1000 object count, does the contract turn a normal use case into per-object coordination, Cartesian expansion or mandatory full hydration?
+
+Prefer semantic remedies before architecture remedies:
+
+- private-model leakage -> narrow the Published Language or consumer-owned semantic port;
+- chatiness caused by an under-specified semantic contract -> publish a coarser complete semantic result or batch-shaped semantic contract;
+- temporal coupling where the meaning is already established -> permit a derived/local consumer projection while preserving one semantic owner;
+- change coupling -> stabilize the Published Language or use an anti-corruption translation boundary;
+- large distributed joins -> allow derived/materialized consumer projections when they do not acquire independent authority;
+- Aggregate enlargement -> reject unless a local invariant, lifecycle or atomic consistency requirement justifies it;
+- duplicated authority -> retain one semantic owner and classify downstream copies as derived/rebuildable state.
+
+Do not choose HTTP, messaging, brokers, caches, database replication, persistence technology or deployment topology in S2 merely to answer this challenge. A coupling finding is Strategic when it exposes insufficient public meaning, peer-private model dependence, duplicated authority or a wrong boundary. If the semantic contract is sufficient and only efficient delivery/computation remains unresolved, record an Architecture concern for S3 rather than blocking Strategic convergence.
+
+Chatiness, temporal coupling or scale cost alone is therefore not automatically a P1 domain finding. Classify it P0/P1 only when the cause is a semantic boundary/contract defect that would force downstream invention or peer-private knowledge.
+
 ## Convergence loop
 
 Run only the affected portion of this loop:
@@ -125,8 +153,8 @@ Run only the affected portion of this loop:
 4. establish/restate candidate context responsibilities;
 5. map affected relationships;
 6. describe the semantic contract for each affected edge;
-7. boundary-challenge each contract;
-8. classify contradictions/gaps P0-P3;
+7. boundary-challenge and coupling-challenge each affected contract as applicable;
+8. classify contradictions/gaps P0-P3 and separate semantic defects from S3 delivery/computation concerns;
 9. change context boundary/ownership/relationship when required;
 10. rebuild only contracts/capability grouping affected by that change;
 11. repeat until no P0/P1 finding requires another boundary/ownership/contract change.
@@ -142,9 +170,10 @@ Strategic work is converged for the affected scope when:
 - all relationships needed by the current change are explicit;
 - each such relationship has a sufficient semantic contract;
 - consumers do not require peer-private domain models to perform their responsibility;
-- no unresolved P0/P1 ownership/boundary/semantic-cycle contradiction remains;
+- no unresolved P0/P1 ownership/boundary/semantic-cycle or semantic-coupling contradiction remains;
 - relevant identity/time/unknown/provenance semantics are explicit where omission would force downstream invention;
-- one full boundary-challenge pass produces no new P0/P1 requiring a strategic-model change.
+- material coupling findings have either a semantic remedy in S2 or are explicitly classified as S3 delivery/computation concerns;
+- one full boundary/coupling challenge pass over the affected edges produces no new P0/P1 requiring a strategic-model change.
 
 P2/P3 findings may remain when they do not undermine these guarantees.
 
