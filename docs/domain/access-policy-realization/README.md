@@ -1,6 +1,6 @@
 # Access Policy Realization — Problem Statement and Design Directions
 
-Status: `active Tactical DDD; strategic provider boundaries resolved by ADR-021; RPM input contract aligned 2026-09-15`.
+Status: `S2 MVP comparison checkpoint aligned; deeper APR Tactical work remains open`.
 
 Date: 2026-09-15.
 
@@ -77,9 +77,10 @@ At minimum:
 required.comparisonScope == configured.comparisonScope
 required materialization == complete
 configured.completeness == Complete
+unsupported configured semantics == none for the compared space
 ```
 
-A mismatch, unresolved required materialization, incomplete/unknown configured snapshot or unsupported source semantics is not policy drift; it is an incomplete/uncomparable realization assessment.
+A mismatch, unresolved required materialization, incomplete/unknown configured snapshot or unsupported source semantics is not policy drift; it is an uncomparable realization result.
 
 Exact freshness acceptance thresholds remain downstream Tactical/product work unless a concrete journey requires them. APR must preserve the input freshness/provenance needed to explain the assessment.
 
@@ -96,6 +97,78 @@ excess  = configured - required
 Policies are semantically equivalent when they denote the same effective permit space even when their native decomposition differs.
 
 For the MVP happy path, `requiredPermitSpace` may contain several normalized predicates from one or more contributing Policy Rules; APR reasons over their effective union rather than native rule decomposition.
+
+## MVP comparison result
+
+The current slice needs no independently persisted comparison lifecycle. The result is a derived semantic value for one explicit comparison scope.
+
+```text
+APRComparisonResult =
+    ComparableAssessment
+  | Uncomparable
+```
+
+### ComparableAssessment
+
+```text
+ComparableAssessment {
+    comparisonScope
+    status: Realized | Drift
+    commonPermitSpace
+    missingPermitSpace
+    excessPermitSpace
+    requiredProvenance
+    configuredProvenance
+}
+```
+
+The status is derived exactly:
+
+```text
+Realized <=> missingPermitSpace is empty
+              AND excessPermitSpace is empty
+
+Drift    <=> missingPermitSpace is non-empty
+              OR excessPermitSpace is non-empty
+```
+
+`commonPermitSpace` may legitimately be empty. Empty `configured.effectivePermitSpace` is also legitimate when and only when the configured input is explicitly `Complete`; in that case all required permit space is `missing`.
+
+Likewise, an explicitly complete empty required permit space is distinct from unresolved materialization. If configured permit space is then non-empty, that space is `excess`.
+
+### Uncomparable
+
+```text
+Uncomparable {
+    comparisonScope?
+    reasons[]
+    requiredProvenance?
+    configuredProvenance?
+}
+```
+
+Minimum reason classes for the current path:
+
+```text
+RequiredMaterializationUnresolved
+ComparisonScopeMismatch
+ConfiguredIncomplete
+ConfiguredUnknown
+UnsupportedConfiguredSemantics
+```
+
+`Uncomparable` is not `Drift`, not `Realized`, and does not authorize remediation.
+
+## Provenance / explanation invariant
+
+APR must preserve enough attribution to explain where derived regions came from:
+
+- required-side regions retain contributing PolicyRule references/provenance from `TargetRequiredPolicy`;
+- configured-side regions retain configured snapshot/evidence provenance;
+- a derived `missing` region remains traceable to the required contributors that demand it;
+- a derived `excess` region remains traceable to configured evidence that exposes it.
+
+Exact region-level storage/index representation is deferred. The semantic requirement is explainability, not a particular schema.
 
 ## APR responsibilities
 
@@ -156,22 +229,38 @@ APR must support very large policy spaces without mandatory full in-memory hydra
 - comparison scope is explicit `firewallId + accessListName` for the current MVP contract;
 - comparison uses effective semantics, not configuration text;
 - exact `common/missing/excess` algebra is preserved;
+- `Realized`, `Drift` and `Uncomparable` are distinct semantic outcomes;
 - assessment, delta, change design and verification remain distinct concepts;
 - provider interpretation/rendering fail closed when semantics are unsupported;
 - empty evidence is not proof of empty configured policy without explicit completeness;
 - APR does not navigate peer-private persistence merely for performance;
 - current APR provider-renderer code is migration evidence, not target domain ownership.
 
-## Open Tactical DDD work
+## MVP Tactical checkpoint
+
+The first exact comparison slice is now coherent without resolving the whole APR Tactical backlog:
+
+```text
+complete comparable inputs
+    -> exact common/missing/excess
+    -> Realized | Drift
+
+incomplete/mismatched/unsupported inputs
+    -> Uncomparable
+```
+
+No provider-native syntax, rendering or execution semantics are required to make this comparison result correct.
+
+## Open Tactical DDD work beyond this checkpoint
 
 Still unresolved:
 
-- final technical-region/value vocabulary and edge cases (APR-P03);
+- broader technical-region/value vocabulary and edge cases beyond the first MVP comparison (APR-P03);
 - data-local semantic computation contract (APR-P04);
 - vendor-neutral change-design vocabulary (APR-P05);
 - proposed-change simulation/verification contract (APR-P06);
-- attribution/explanation semantics (APR-P08);
+- richer attribution/explanation storage semantics (APR-P08);
 - final APR Tactical DDD/ERD/persistence classification (APR-P09);
 - target-versus-current migration plan (APR-P10).
 
-APR-P02 and APR-P07 strategic ownership questions are resolved by ADR-021. RPM/APR input correlation for the first HostAddress-based MVP vertical path is now explicit; the remaining APR work is internal Tactical depth, not an upstream ownership blocker.
+APR-P02 and APR-P07 strategic ownership questions are resolved by ADR-021. RPM/APR input correlation and the minimum exact comparison result for the first HostAddress-based MVP vertical path are now explicit; deeper work is reopened only when the next vertical step requires it.
