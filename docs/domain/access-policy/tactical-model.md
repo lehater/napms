@@ -1,6 +1,6 @@
 # Access Policy — target Tactical DDD model
 
-Status: `S2 MVP edge checkpoint aligned with accepted Access Governance behavior 2026-09-15`.
+Status: `S2 MVP edge checkpoint aligned with accepted Access Governance and downstream RPM contracts 2026-09-15`.
 
 ## Purpose
 
@@ -73,7 +73,7 @@ Policy Rule subject
 -> RPM
 ```
 
-A missing or temporarily unresolved technical materialization does not erase semantic Policy Rule truth while the subject remains authorized. RPM must surface that technical incompleteness separately.
+A missing or temporarily unresolved technical materialization does not erase semantic Policy Rule truth while the subject remains authorized. RPM surfaces that technical incompleteness separately.
 
 ## MVP invariants
 
@@ -99,4 +99,4 @@ A missing or temporarily unresolved technical materialization does not erase sem
 
 The former upstream AG blocker is closed for the MVP path. Access Policy requires no new product behavior to accommodate placement/scope-driven obligation changes: existing `AuthorizationGranted` / `AuthorizationWithdrawn` semantics are sufficient.
 
-The next unresolved work is downstream Required Policy Materialization: converting current authorized semantic Policy Rule truth plus ACC/AD/RC/NEP projections into one technical required-policy result without transferring ownership into RPM.
+The downstream contract is also explicit: RPM consumes only current effective Policy Rule truth plus published ACC/AD/RC/NEP projections. AP does not own technical materialization, APR comparison, provider rendering or execution.
