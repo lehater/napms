@@ -237,6 +237,6 @@ G2: PASS
 Implementation authorization: none
 ```
 
-The existing experimental code already present on the branch is left untouched and is non-authoritative implementation evidence. No further code work is permitted by this checkpoint.
+The branch diff against `main` is documentation-only at this checkpoint. No further code work is permitted by this checkpoint.
 
 A later move to Architecture/S3, Implementation Readiness/S4 or code requires a new explicit request and a fresh downstream lifecycle decision based on this G2 baseline.
