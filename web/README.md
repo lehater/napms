@@ -1,6 +1,6 @@
 # NAPMS Web UI
 
-Browser-facing operator UI for the supported local NAPMS product path.
+React browser adapter for NAPMS.
 
 ## Local development
 
@@ -24,10 +24,6 @@ npm ci
 npm run dev
 ```
 
-`package-lock.json` is repository-owned and CI/Docker use `npm ci`, so dependency resolution is reproducible for a source revision.
+`package-lock.json` is repository-owned and CI/Docker use `npm ci`. Vite proxies `/api` and `/health` to `127.0.0.1:8000`.
 
-Vite proxies `/api` and `/health` to `127.0.0.1:8000`.
-
-Current accepted workspaces cover Connectivity, Needs, Decisions, Rules, Effective Desired Policy and Normalized Policy export. The runtime may still expose the older read-only `Realization` screen while APR migration is pending; its existing stages/statuses are legacy implementation behavior and are not the target Access Policy Realization contract. Current APR semantics are defined only by `docs/domain/access-policy-realization/README.md` until the redesign is locked.
-
-Authority remains enforced by backend owner use cases; navigation does not grant business authority.
+Current product behavior is defined by `docs/requirements/`; current UI composition guidance is in `docs/ui/`. Existing runtime routes/components are implementation evidence and do not define product semantics when they disagree with those owners.

@@ -1,43 +1,21 @@
 # Requirements map
 
-This directory is a working knowledge base for current accepted product and quality behavior. Superseded specifications are removed rather than retained beside target requirements. Git history is the archive.
+This directory contains current accepted product and quality behavior only.
 
-Use the smallest requirement family that owns the behavior under change:
+Primary current contracts:
 
-- `first-mvp-required-access-matrix.md` — selected first implementation MVP: ACC + AD + RC materialization into one global vendor-neutral Required Access Matrix with table/export output and no governance, authorization, firewall placement, configured-state comparison or execution.
-- `business-connectivity-g1.md` — current observable behavior for Business Process, Connectivity Need and brownfield business attribution.
-- `access-governance-g1.md` — current observable behavior for Access Request, bilateral source/destination approval, authority integration and withdrawal.
-- `access-policy-core.md` — authoritative Policy Rule truth and effective authorized-policy projection after Access Governance grant/withdrawal.
-- `application-catalogue-domain-target.md` — ACC Application/Component/Interaction plus immutable InteractionContractRevision behavior, and the accepted ACC/AD/RC ownership split.
-- `policy-realization-reconciliation-g1.md` — current semantic-to-technical materialization, normalized required/configured comparison and convergence behavior.
-- `scoped-connectivity-inventory.md` + acceptance examples — resource-centric composition over RC Resources, AD placements, Business Need, Access Governance, Access Policy and realization truth.
-- `policy-export-core.md` — broader authorized-policy export behavior with Access Policy/Authority/as-of semantics; it is not the selected first implementation MVP.
-- `technical-access-evidence-core.md` — source-qualified Technical Access Evidence recording/query behavior.
-- `network-enforcement-placement-core.md` — accepted Network Enforcement Placement behavior.
-- `enterprise-identity-authoritative-sources.md` — local-first operation plus optional external identity/source extension seams.
-- `catalogue-curation.md` + acceptance/security contracts — implemented Resource/Application catalogue curation behavior; current target ACC/AD/RC semantics win where legacy curation/runtime vocabulary differs.
-- `web-ui-requirements.md` — product-facing UI requirements; stale ComponentDeployment/endpoint terminology must not override current target domain contracts.
+- `first-mvp-required-access-matrix.md` — selected first implementation MVP: ACC + AD + RC -> global vendor-neutral Required Access Matrix -> table/export.
+- `application-catalogue-domain-target.md` — ACC/AD/RC behavior and ownership split.
+- `business-connectivity-g1.md` — Business Connectivity behavior.
+- `access-governance-g1.md` — Access Governance behavior.
+- `access-policy-core.md` — Access Policy behavior.
+- `network-enforcement-placement-core.md` — Network Enforcement Placement behavior.
+- `technical-access-evidence-core.md` + `technical-access-evidence-acceptance-examples.md` — Technical Access Evidence behavior.
+- `policy-realization-reconciliation-g1.md` + `access-policy-realization-mvp.md` — Access Policy Realization behavior.
+- `provider-policy-renderer-mvp.md` — provider rendering boundary.
+- `network-environment-operations.md` — Network Environment Operations behavior.
+- `enterprise-identity-authoritative-sources.md` — authoritative-source extension boundary.
 
-The first implementation MVP is intentionally narrower than the full target-domain baseline. It proves the path from application communication intent through deployment/resource realization to a global required-access table. It must not be widened merely because later target Bounded Contexts already have accepted requirements or Tactical models.
+The selected implementation scope is narrower than the complete target model. Requirements outside the selected slice remain current target contracts but are not implementation prerequisites for the first MVP.
 
-Connectivity Requirements, Connectivity Decision and Requirement-to-Policy Alignment requirement packets were removed after revalidation replaced their target semantics with Business Connectivity, Access Governance and the current policy/materialization chain. Their runtime remnants are migration/current-state evidence only and must not be reintroduced as target requirements.
-
-`application-catalogue-target.md` may remain only where it carries migration/current-state information not represented by the target ACC/AD model; target design must prefer `application-catalogue-domain-target.md` on conflict.
-
-The consolidated stakeholder/G1 checkpoint is `../engineering/context-problems/capability-revalidation-checkpoint-2026-09-14.md`; it is provenance for the revalidation, not authority over later accepted requirement/domain corrections recorded on 2026-09-15.
-
-Current target Tactical DDD owners include:
-
-- `../domain/application-communication-catalogue/target-tactical-model.md`;
-- `../domain/application-deployment/tactical-model.md`;
-- `../domain/resource-catalogue/tactical-model.md`;
-- `../domain/business-connectivity/target-tactical-model.md`;
-- `../domain/access-governance/target-tactical-model.md`;
-- `../domain/access-policy/tactical-model.md`;
-- `../domain/authority-management/tactical-model.md`;
-- `../domain/network-enforcement-placement/target-tactical-model.md`;
-- `../domain/technical-access-evidence/tactical-model.md`;
-- `../domain/access-policy-realization/tactical-model.md`;
-- `../domain/network-environment-operations/tactical-model.md`.
-
-Requirements own observable behavior and quality outcomes. Do not promote S2 aggregate/state/storage choices or current implementation mechanics into requirements merely because they already exist.
+Git history is the archive for removed specifications.
