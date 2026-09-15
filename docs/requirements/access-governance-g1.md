@@ -1,6 +1,6 @@
 # Access Governance — G1 Requirements Passport
 
-Status: `G1 bilateral behavior retained; deployment subject aligned 2026-09-15; pair selection accepted; two behavior questions reopened`.
+Status: `G1 bilateral behavior retained; deployment subject aligned 2026-09-15; pair selection and obligation-change behavior accepted; overlapping-scope behavior remains open`.
 
 ## Observable requirements
 
@@ -19,8 +19,13 @@ Status: `G1 bilateral behavior retained; deployment subject aligned 2026-09-15; 
 13. Rejected Requests remain history and create no semantic deny Policy Rule.
 14. Access Policy consumes `AuthorizationGranted` / `AuthorizationWithdrawn`; it does not run bilateral governance.
 15. A source/destination ApplicationDeployment pair is selectable for an Access Request using a declared Interaction when each ApplicationDeployment can realize the corresponding Interaction endpoint Component and the current placements required to determine approval obligations are resolvable.
+16. A placement or Resource Scope Affiliation change does not by itself withdraw current authorization. If the change materially changes the approval obligations for the governed subject, the current authorization shall cease to be effective and AG shall publish `AuthorizationWithdrawn` with provenance for the obligation change.
+17. Historical Requests, approvals and provenance remain history after such withdrawal; they do not silently satisfy a materially changed set of current approval obligations.
+18. The same governed subject may become authorized again only after the current approval obligations are satisfied and AG publishes a new `AuthorizationGranted`.
 
 The selection rule does not imply planned/future deployment inference, generalized cross-application compatibility rules or fallback guessing when current placement/scope information is unresolved.
+
+The obligation-change rule does not require a separate `Suspended` product state for MVP. If placement/scope changes leave the approval obligations materially unchanged, the current authorization remains effective. Exact reuse or representation of still-valid individual consent facts is Tactical-open so long as no authorization remains effective without all current obligations being satisfied.
 
 ## Current subject
 
@@ -36,9 +41,8 @@ Technical Resource AddressSpace is not part of subject identity.
 
 ## Reopened S1 behavior
 
-The following product questions remain unresolved:
+One product question remains unresolved:
 
-1. When placement or Resource Scope Affiliation changes alter approval obligations, does current authorization remain valid, require reapproval, warn, suspend or withdraw?
-2. When several Responsibility Scopes simultaneously apply to one side, which approval obligations are required?
+1. When several Responsibility Scopes simultaneously apply to one side, which approval obligations are required?
 
-Tactical AG must not invent these answers.
+Tactical AG must not invent this answer.
