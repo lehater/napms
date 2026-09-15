@@ -1,6 +1,6 @@
 # Domain capability ownership map
 
-Status: `S2 affected capability ownership aligned 2026-09-16; Tactical DDD pending revalidation`.
+Status: `S2 capability ownership and dependent Tactical DDD aligned; G2 PASS 2026-09-16`.
 
 A capability is not automatically a Bounded Context, service or deployment unit. Canonical relationship map: `context-map.md`.
 
