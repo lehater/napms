@@ -30,6 +30,20 @@ Load only the affected strategic scope:
 
 Do not preload every bounded context, every known journey/use case, or a global capability inventory merely because Strategic DDD is active. Widen the working set only when the current boundary question demonstrates the need.
 
+### Canonical strategic artifact authority
+
+When the repository has a converged strategic baseline, treat its representations according to their declared authority rather than as competing sources:
+
+- `docs/domain/strategic-model.md` is authoritative for current target participants, semantic responsibilities and context boundaries;
+- `docs/domain/context-map.md` is authoritative for material strategic relationships and public semantic contracts;
+- `docs/domain/strategic-model.json` is the machine-readable projection used for consistency checks and automation, not an independent source allowed to redefine the Markdown authorities.
+
+The machine-readable projection should carry stable participant identifiers and every material relationship needed to compare it with the canonical Context Map. A mismatch is a consistency finding to resolve against accepted requirements/ADRs and the canonical owners; it is not permission to silently change domain truth.
+
+Git history is the archive. Repository documentation is the current working knowledge base. Superseded specifications should not remain normal retrieval inputs unless they carry migration-relevant current-state information or durable decision rationale that is not represented by current canonical artifacts.
+
+A repository/code-search hit is not current truth merely because the search backend returns it. Before using a found document as semantic evidence, verify that the path exists at the task's current target ref (normally current `main`) and classify it as canonical/current, migration/current-state, or superseded rationale. Search results tied only to an older commit SHA are historical evidence.
+
 ## Capability and boundary discovery
 
 Capabilities are useful evidence for Strategic DDD, not automatic Bounded Contexts. When ownership/boundaries are genuinely unclear, derive only the capabilities needed by the affected use cases and look for semantic cohesion around:
@@ -133,6 +147,8 @@ Strategic work is converged for the affected scope when:
 - one full boundary-challenge pass produces no new P0/P1 requiring a strategic-model change.
 
 P2/P3 findings may remain when they do not undermine these guarantees.
+
+For a repository-wide strategic baseline that also maintains a machine-readable projection, convergence hardening additionally requires that participant identities and material relationship edges can be reconciled between the projection and the canonical Markdown artifacts. Projection drift is documentation/tooling debt unless it exposes a real semantic contradiction; it does not by itself reopen Strategic DDD.
 
 ## Output
 
