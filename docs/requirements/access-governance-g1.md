@@ -1,37 +1,10 @@
-# Access Governance — G1 Requirements Passport
+# Access Governance requirements
 
-Status: `G1 MVP behavior accepted 2026-09-15; generalized overlapping-scope semantics deferred`.
+## Purpose
 
-## Observable requirements
+Define the observable governance behavior for requesting, approving, withdrawing and re-establishing authorization for one governed Interaction between logical ApplicationDeployments.
 
-1. A deliberate Access Request shall request permission for a Process-backed Connectivity Need applied to a concrete logical source/destination ApplicationDeployment pair.
-2. The semantic subject shall distinguish `InteractionContractRevisionRef`, source `ApplicationDeploymentRef` and destination `ApplicationDeploymentRef`.
-3. The Request shall preserve the business justification and approval basis used at submission/decision time; later changes shall not rewrite history.
-4. Resource address changes, ordinary ComponentPlacement replacement and Resource replacement shall not by themselves create a different governed subject while ApplicationDeployment continuity is preserved.
-5. Material change of InteractionContractRevision or replacement of either logical ApplicationDeployment creates a different subject.
-6. Request initiation authority is distinct from approval authority.
-7. Ordinary authorization requires independent source-side and destination-side approval obligations; overall grant requires both.
-8. Either required side may reject a pending Request.
-9. Either authorized side may later withdraw its current consent without approval from the other side.
-10. Rejection and withdrawal are distinct; neither rewrites historical valid decisions.
-11. Old approved Requests cannot silently restore withdrawn consent.
-12. Approval/revoke authority is evaluated through Authority Management and is not inferred from Resource Owner/Administrator/Responsibility metadata.
-13. Rejected Requests remain history and create no semantic deny Policy Rule.
-14. Access Policy consumes `AuthorizationGranted` / `AuthorizationWithdrawn`; it does not run bilateral governance.
-15. A source/destination ApplicationDeployment pair is selectable for an Access Request using a declared Interaction when each ApplicationDeployment can realize the corresponding Interaction endpoint Component and the current placements required to determine approval obligations are resolvable.
-16. A placement or Resource Scope Affiliation change does not by itself withdraw current authorization. If the change materially changes the approval obligations for the governed subject, the current authorization shall cease to be effective and AG shall publish `AuthorizationWithdrawn` with provenance for the obligation change.
-17. Historical Requests, approvals and provenance remain history after such withdrawal; they do not silently satisfy a materially changed set of current approval obligations.
-18. The same governed subject may become authorized again only after the current approval obligations are satisfied and AG publishes a new `AuthorizationGranted`.
-19. For the MVP happy path, each governance side shall resolve to exactly one distinct applicable `ResponsibilityScopeRef` when approval obligations are determined.
-20. If a source or destination side resolves to zero or more than one distinct applicable Responsibility Scope, approval obligations are unresolved for MVP and the deployment pair is not selectable/authorizable. AG shall fail closed rather than choose a scope by precedence or require all overlapping scopes without an accepted product rule.
-
-The selection rule does not imply planned/future deployment inference, generalized cross-application compatibility rules or fallback guessing when current placement/scope information is unresolved.
-
-The obligation-change rule does not require a separate `Suspended` product state for MVP. If placement/scope changes leave the approval obligations materially unchanged, the current authorization remains effective. Exact reuse or representation of still-valid individual consent facts is Tactical-open so long as no authorization remains effective without all current obligations being satisfied.
-
-The single-scope-per-side rule is an Access Governance MVP boundary, not a Resource Catalogue invariant. RC may retain several distinct effective Resource Scope Affiliations; generalized overlap semantics are deferred until a concrete governance journey requires them.
-
-## Current subject
+## Governed subject
 
 ```text
 GovernedInteractionSubject {
@@ -41,18 +14,34 @@ GovernedInteractionSubject {
 }
 ```
 
-Technical Resource AddressSpace is not part of subject identity.
+Resource addresses and individual ComponentPlacements are not part of subject identity.
 
-## G1 checkpoint result
+## Requirements
 
-The behavior required for the first Access Governance happy path is accepted:
+1. A deliberate Access Request requests permission for a Process-backed Connectivity Need applied to one concrete logical source/destination ApplicationDeployment pair.
+2. The Request preserves business justification and the approval/authority provenance used for its decisions; later current-state changes do not rewrite those historical decisions.
+3. Resource address changes, ordinary ComponentPlacement replacement and Resource replacement do not create a new governed subject while both ApplicationDeployment identities and the InteractionContractRevision remain unchanged.
+4. Replacing the InteractionContractRevision or either logical ApplicationDeployment creates a different governed subject.
+5. Request initiation authority is distinct from approval authority.
+6. Authorization requires independent source-side and destination-side approval obligations; current grant requires both obligations to be satisfied.
+7. Either required side may reject a pending Request.
+8. Either authorized side may withdraw its current consent without approval from the other side.
+9. Rejection and withdrawal are distinct and do not rewrite prior valid decisions.
+10. Old approved Requests do not silently restore withdrawn consent.
+11. Request, approval and withdrawal authority is evaluated through Authority Management and is not inferred from Resource owner, administrator, responsibility or contact metadata.
+12. Rejected Requests create no semantic deny Policy Rule.
+13. Access Policy consumes `AuthorizationGranted` and `AuthorizationWithdrawn`; it does not own bilateral governance.
+14. A source/destination ApplicationDeployment pair is selectable for a declared Interaction only when each deployment can realize the corresponding Interaction endpoint Component and the current placement/scope facts required to determine approval obligations are resolvable.
+15. A placement or Resource Scope Affiliation change does not automatically withdraw authorization. If the change materially changes the approval obligations for the same governed subject, AG withdraws current authorization with provenance for that obligation change.
+16. Earlier approvals do not silently satisfy a materially changed set of current obligations.
+17. The same governed subject may become authorized again only after its current approval obligations are satisfied and AG publishes a new `AuthorizationGranted`.
+18. Each governance side currently resolves to exactly one distinct applicable `ResponsibilityScopeRef` when approval obligations are evaluated.
+19. If either side resolves to zero or more than one distinct applicable Responsibility Scope, the obligations are unresolved and the pair is not selectable/authorizable. AG fails closed and does not choose a scope by precedence or require all overlapping scopes implicitly.
 
-- governed subject identity is stable;
-- deployment-pair selection is fail-closed when obligations cannot be resolved;
-- one source-side and one destination-side obligation are required for the MVP;
-- grant requires both sides;
-- either side may reject while pending or later withdraw current consent;
-- material obligation change withdraws current authorization until current obligations are satisfied again;
-- overlapping Responsibility Scopes are explicitly unsupported/fail-closed for the first happy path rather than implicitly resolved.
+## Current scope boundary
 
-No implementation authorization is implied. Broader scope algebra, precedence and multi-scope approval behavior remain deferred product work.
+The current Access Governance contract uses one applicable Responsibility Scope per side. Resource Catalogue may still contain several effective Resource Scope Affiliations; AG simply cannot authorize a subject whose required side resolves ambiguously under the current contract.
+
+The model contains no separate `Suspended` product state. If placement/scope changes leave obligations materially unchanged, current authorization remains effective. If obligations change materially, current authorization is withdrawn until the new obligations are satisfied.
+
+The current requirements do not define generalized overlapping-scope approval algebra, precedence rules, quorum approval, explicit deny policy or automatic inference from planned/future deployments.
