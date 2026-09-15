@@ -1,16 +1,18 @@
-# ADR-013 — Application Catalogue Compatibility and Reference Semantics
+# ADR-013 — I31 Application Catalogue Compatibility and Reference Semantics
 
 Status: `current as-built compatibility decision`.
 
+Date: 2026-09-10.
+
 ## Role
 
-This ADR defines compatibility semantics required to reproduce the current implemented Application Catalogue and its downstream contracts. It is retained because these identities, projections and dependency rules are still part of the as-built design.
+This ADR defines compatibility semantics required to reproduce the current implemented Application Catalogue and its downstream contracts. It remains project documentation because these identities, projections, edit constraints and dependency rules are still part of the as-built design.
 
-It does not define current target ACC/AD ownership. Target semantics are owned by the Strategic model, ACC target model and Application Deployment model.
+It does not define current target ACC/AD ownership. Target semantics are owned by the Strategic model, `docs/domain/application-communication-catalogue/target-model.md`, `docs/domain/application-communication-catalogue/target-tactical-model.md`, `docs/domain/application-deployment/tactical-model.md` and `docs/requirements/application-catalogue-domain-target.md`.
 
 ## Context
 
-The implemented catalogue authoring model is:
+ADR-012 changed the Application Communication Catalogue product model from Component Deployment-centric authoring to:
 
 ```text
 Application Definition
@@ -19,24 +21,26 @@ Application Definition
 
 Application Deployment
   -> selected Deployment Interactions
-      -> interaction-scoped Source/Destination Resource bindings
+      -> interaction-scoped source/destination Resource bindings
 ```
 
-Existing downstream implemented flows consume the stable compatibility subject:
+Existing downstream NAPMS contexts already consumed the stable semantic triple:
 
 ```text
 sourceComponentDeploymentId
-+ destinationComponentDeploymentId
-+ dcsContractRevisionId
+destinationComponentDeploymentId
+dcsContractRevisionId
 ```
 
-Current Connectivity Requirement, Connectivity Decision, Access Rule and export records that reference these identities must remain explainable and must not be rewritten merely because the catalogue authoring model changes.
+Historical Connectivity Requirements, Connectivity Decisions, Access Rules and policy/export facts must not be rewritten. I31 also introduced Application/Component metadata and Deployment Company/Environment/Scope fields without introducing a Company/Organization or directory bounded context.
 
-## Decision
+This ADR closed the blocking I31 choices required to preserve those contracts while implementing the new authoring model.
 
-### 1. Preserve the downstream semantic triple through an ACC compatibility projection
+## As-built I31 decision
 
-For each Active Deployment Interaction, ACC owns an internal compatibility projection:
+### 1. Preserve the existing downstream semantic triple as an ACC compatibility contract
+
+`DeploymentInteraction` is the I31 user-facing selected interaction identity. For each Active Deployment Interaction, ACC owns an internal compatibility projection:
 
 ```text
 DeploymentInteraction
@@ -46,75 +50,146 @@ DeploymentInteraction
   -> DirectedInteractionIdentity
 ```
 
-The two compatibility Component Deployment identities are server-owned, unique per Deployment Interaction side and stable for that Deployment Interaction lifetime. They are not shared merely because two interactions use the same Component.
+The two compatibility Component Deployment identities are server-owned and stable for the lifetime of that Deployment Interaction. They are unique per Deployment Interaction side; they are not shared merely because two interactions use the same Component.
 
-Compatibility Component Deployment IDs are implementation identities. Current Web/API authoring does not require users to understand or assemble them.
+This uniqueness is required because ADR-012 allows the same Component to bind to different Resource sets in different Deployment Interactions.
+
+Compatibility Component Deployment IDs are implementation identities. Product Web/API authoring does not expose them as concepts the user must understand or assemble.
 
 ### 2. Interaction-scoped Resource bindings project through compatibility sides
 
-A source-side Resource binding is realized through the source compatibility Component Deployment for that Deployment Interaction. A destination-side binding is realized through the destination compatibility Component Deployment.
+A source-side Resource binding is realized through the source compatibility Component Deployment for that Deployment Interaction. A destination-side binding is realized through its destination compatibility Component Deployment.
 
-Temporal `DeploymentResourceBinding` facts therefore remain usable by current downstream Resource resolution while the stronger application meaning remains that the binding belongs to one Deployment Interaction side.
+Existing temporal `DeploymentResourceBinding` facts therefore remain usable by the current ACC resolver without changing downstream contracts. The as-built Application Catalogue owns the stronger meaning that each binding belongs to one Deployment Interaction side.
 
-Ending/replacing a side binding ends/replaces the corresponding temporal compatibility binding without erasing historical binding facts.
+Ending or replacing a side binding ends/replaces the corresponding temporal compatibility binding; historical binding facts remain preserved.
 
-### 3. Interaction Definition endpoint edits are constrained
+### 3. Interaction Definition endpoint edits are structurally constrained
 
 An Interaction Definition owns stable source and destination Component references.
 
-Changing either endpoint in place is allowed only while the Interaction Definition has no Active Deployment Interaction selections. Once selected, endpoint replacement would change the meaning of existing compatibility side identities and is therefore blocked.
+Changing either endpoint in place is allowed only while the Interaction Definition has no Active Deployment Interaction selections. Once selected by an Active Application Deployment, endpoint replacement would change the meaning of existing compatibility side identities and is therefore blocked.
 
-Replacement is represented by creating another Interaction Definition and explicitly changing selections after active dependencies are cleared. Existing retired/reference-bearing compatibility facts remain intact.
+When endpoint change is blocked, the normal as-built workflow is:
+
+1. create another Interaction Definition with the desired endpoints;
+2. remove/retire affected Deployment Interactions after their active dependencies are cleared;
+3. select the replacement Interaction Definition where required;
+4. retire the old Interaction Definition when no Active selections remain.
+
+Historical retired Deployment Interactions continue to explain their last compatibility snapshot and are not rewritten by later Definition changes.
 
 ### 4. Traffic edits create immutable downstream snapshots
 
-Interaction Definition traffic is editable current definition data, but an existing DCS revision is immutable.
+Interaction Definition traffic remains editable current definition data. A traffic edit never mutates an existing DCS revision.
 
-For every Active Deployment Interaction selecting an edited Interaction Definition, ACC creates a new immutable DCS revision over the same compatibility source/destination identities and advances that Deployment Interaction's current compatibility projection to the new revision.
+For every Active Deployment Interaction selecting the edited Interaction Definition, ACC creates a new immutable DCS revision over the same compatibility source/destination identities and atomically advances that Deployment Interaction's current compatibility projection to the new revision.
 
-Old DCS revisions remain addressable by existing downstream subjects.
+Old DCS revisions remain addressable by historical downstream subjects.
 
-A traffic edit is blocked if any affected current compatibility triple has an owner-reported active/effective downstream reference that would otherwise become stale. Current blocker classes are:
+A traffic edit is blocked if any affected current compatibility triple has an owner-reported active/effective downstream business reference. This prevents a currently effective Requirement, Decision or Access Rule from silently remaining authoritative for traffic that the current Deployment Interaction no longer declares.
 
-```text
-active/effective Connectivity Requirement
-effective/final Connectivity Decision
-active/effective Access Rule
-```
-
-Each owning module defines its own effective/current meaning. ACC consumes those results through application ports rather than reimplementing peer lifecycle semantics.
-
-When no blocking current references exist, the traffic edit updates all affected Active Deployment Interactions as one semantic operation.
-
-### 5. Catalogue metadata is descriptive/correlation data
-
-Application Definition may carry optional description, domain classification and owner correlation reference. Component may carry optional type/classification and description.
-
-Application Deployment carries:
+The blocking reference classes are:
 
 ```text
-companyReference
-environment
-scopeReference
+Active/effective Connectivity Requirement
+Effective/final Connectivity Decision
+Active/effective Access Rule
 ```
 
-Company/owner/scope references are correlation data. They do not create Organization/Person/Team/Responsibility Scope aggregates and do not grant catalogue or policy authority.
+Each owning context defines whether its reference is active/effective. ACC consumes those decisions through application-owned ports/adapters and does not redefine peer lifecycle semantics.
 
-Environment is descriptive deployment context. Company, Environment and Scope do not form Application Deployment identity and may be corrected without changing `applicationDeploymentId`.
+When no such active/effective downstream references exist, a traffic edit may update all Active Deployment Interactions in one semantic operation. Historical references do not block the edit.
 
-Discovery adapters may improve value selection without changing these identity semantics.
+### 5. Metadata is catalogue descriptive/correlation data, not new identity ownership
 
-### 6. Lifecycle uses active-reference blockers rather than hard deletion
+The I31 fields required by the accepted wireframes have these semantics.
 
-The implemented lifecycle remains:
+#### Application Definition
+
+```text
+description: optional descriptive text
+domain: optional classification label
+ownerReference: optional external responsible-party/team correlation reference
+```
+
+`description` and `domain` are ACC-owned descriptive metadata. They do not define Application identity or authority.
+
+`ownerReference` is an external correlation value. NAPMS does not create a Person/Team/Organization identity from it and does not derive catalogue or policy authority from it.
+
+#### Component
+
+```text
+type: optional classification label
+description: optional descriptive text
+```
+
+Component `type` is deliberately not a closed enum in the current implementation. Values such as `Frontend`, `Service` and `Database` are classifications, not domain behavior switches. A fixed vocabulary requires a separately accepted semantic requirement.
+
+Neither Component `type` nor `description` participates in Component identity.
+
+#### Application Deployment
+
+```text
+companyReference: required external correlation reference
+environment: required bounded label
+scopeReference: required external Responsibility Scope correlation reference
+```
+
+The as-built model does not introduce Company/Organization or Responsibility Scope registry ownership. `companyReference` and `scopeReference` are external correlation values. `scopeReference` uses the same externally-owned Responsibility Scope concept already admitted by ADR-011.
+
+`environment` is ACC-owned deployment-context metadata such as `Production` or `Test`; the as-built model does not define a closed environment taxonomy.
+
+Company, Environment and Scope do not form Application Deployment identity, do not grant authority and may be corrected through an audited/concurrency-safe mutation without changing `applicationDeploymentId`.
+
+Future registry/discovery adapters may replace explicit local-first text entry with selection without changing as-built identity or mutation semantics.
+
+### 6. Lifecycle uses active-reference blockers, not hard deletion
+
+The implemented lifecycle is terminal:
 
 ```text
 Active -> Retired
 ```
 
-Normal hard delete is absent. Retirement is blocked by active dependants/references while historical references remain preserved.
+Normal hard delete is absent.
 
-Current blocker groups include, where applicable:
+Retirement is blocked by active dependants/references. Historical references do not block retirement.
+
+Required blocker sets are:
+
+```text
+Application Definition
+  -> Active Components
+  -> Active Interaction Definitions
+  -> Active Application Deployments
+
+Component
+  -> Active Interaction Definitions using it
+  -> Active legacy I27 Component Deployments, while legacy coexistence remains
+
+Interaction Definition
+  -> Active Deployment Interactions selecting it
+
+Application Deployment
+  -> Active Deployment Interactions
+
+Deployment Interaction
+  -> effective source/destination Resource bindings
+  -> active/effective Connectivity Requirements for its current compatibility triple
+  -> effective/final Connectivity Decisions for its current compatibility triple
+  -> active/effective Access Rules for its current compatibility triple
+```
+
+For Component retirement the read model may additionally aggregate the number of Active Application Deployments indirectly depending on the Component through selected Interaction Definitions so the blocked UI can explain impact, but the direct structural blocker remains the Active Interaction Definition.
+
+Deployment Interaction retirement first requires effective side bindings to be ended and active/effective downstream references to be retired/ended according to their owning contexts. Only then may its compatibility Component Deployments be retired. Their historical DCS/binding/downstream references remain valid.
+
+### 7. Blocked operations expose structured dependencies
+
+`CatalogueRetirementBlocked` and traffic-edit blocking are explainable through a structured dependency projection, not only a generic message.
+
+The application/read contract returns grouped dependency kinds and counts. Required semantic groups include, where applicable:
 
 ```text
 Components
@@ -125,40 +200,42 @@ ResourceBindings
 ConnectivityRequirements
 ConnectivityDecisions
 AccessRules
-CompatibilityComponentDeployments
+LegacyComponentDeployments
 ```
 
-Deployment Interaction retirement requires effective side bindings and blocking current downstream references to be cleared first. Its compatibility identities may then leave normal authoring/discovery while referenced DCS/binding/business history remains valid.
+Each non-zero group is drillable through a bounded server-side list. Clients do not infer dependencies from already-loaded UI trees.
 
-### 7. Blocked operations expose structured dependencies
+### 8. Existing I27 rows coexist as legacy compatibility truth
 
-Dependency-blocked retirement and traffic edits expose grouped dependency kinds and exact counts with bounded server-side drill-downs. Clients do not infer dependency state from already loaded UI trees.
+Existing Component Deployments, DCS revisions and Deployment Resource Bindings are not automatically promoted into Application Deployments or Interaction Definitions.
 
-### 8. Compatibility facts are not fabricated into newer authoring identities
+Automatic promotion is unsafe because legacy rows may connect different Applications and contain no trustworthy Company/Environment/Scope evidence.
 
-Existing compatibility Component Deployments, DCS revisions and Deployment Resource Bindings are not automatically promoted into Application Deployments/Interaction Definitions when required business context cannot be inferred safely.
+Existing Application and Component identities may continue to appear as Definitions/Components because their identity meaning is compatible. Their pre-I31 Component Deployments/DCS/bindings remain legacy ACC truth and continue to satisfy existing downstream references.
 
-Existing Application and Component identities may be reused where their identity meaning remains compatible. Compatibility participants stay available to downstream reads and dependency explanation while current authoring uses Application Definition / Application Deployment / Deployment Interaction.
+During coexistence:
 
-No display name or technical value is used to invent Company, Environment, Scope, Deployment or Interaction identity.
+- current authoring creates the Application Deployment / Deployment Interaction model;
+- current Web does not expose legacy Component Deployment as the user-facing deployment unit;
+- existing legacy rows remain available to downstream compatibility reads;
+- legacy active Component Deployments may block Component retirement and are exposed as a dependency class rather than silently ignored;
+- removal of the legacy maintenance surface requires either no remaining required active legacy participant or an explicit migration workflow with sufficient business input.
 
-## Current target relationship
+No legacy display name is used to invent Company, Environment, Scope, Application Deployment or Interaction Definition identity.
 
-The current target domain model is different from this as-built compatibility model:
+## Relationship to current target
 
-- ACC target owns Application, Component, Interaction and immutable `InteractionContractRevision`;
-- target Application Deployment is a separate Bounded Context owning logical deployment identity and current Component-to-Resource placement set;
-- the target governed subject uses `InteractionContractRevisionRef + sourceApplicationDeploymentRef + destinationApplicationDeploymentRef`;
-- compatibility `ComponentDeployment`, `DeploymentResourceBinding`, `DirectedInteractionIdentity` and `DeploymentInteraction` do not become target domain ownership merely because current runtime uses them.
+The target model no longer treats this compatibility projection as semantic ownership. Target ACC owns Application/Component/Interaction/immutable InteractionContractRevision, and target AD owns ApplicationDeployment plus current Component-to-Resource placement truth.
 
-This ADR remains authoritative only for reproducing and safely evolving the current compatibility path until that path is explicitly migrated.
+The compatibility `ComponentDeployment`, `DeploymentInteraction`, DCS and binding structures in this ADR remain authoritative for reconstructing the implemented I31 runtime until that implementation is migrated. They must not be used to override the current target Strategic/Tactical model.
 
 ## Consequences
 
-- existing downstream subjects and records remain stable;
-- interaction-scoped Resource sets work through distinct compatibility sides;
-- traffic edits preserve immutable DCS history and fail safely when current downstream truth would become stale;
-- endpoint replacement cannot silently change compatibility identity meaning;
-- metadata is implemented without inventing new organization/party authority semantics;
-- retirement remains explainable and preserves referenced history;
-- the current product can be reconstructed without confusing compatibility implementation with target domain ownership.
+- existing downstream contexts keep their semantic identity types and historical rows unchanged;
+- current interaction-scoped Resource sets work because each Deployment Interaction owns distinct compatibility sides;
+- traffic edits preserve immutable DCS history and fail safely when active downstream truth would become stale;
+- structural endpoint replacement cannot silently change compatibility identity meaning;
+- accepted wireframe metadata is implemented without inventing Company/Organization/Party registries or authority coupling;
+- retirement is explainable and consistently blocked by active references;
+- legacy I27 runtime truth coexists with I31-created truth without fabricated migration semantics;
+- the current implementation remains reconstructable without confusing compatibility implementation with target domain ownership.
