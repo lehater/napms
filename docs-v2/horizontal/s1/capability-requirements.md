@@ -19,8 +19,9 @@ Disposition markers:
 
 - **REQ-ACC-001 CURRENT** — users can maintain Application and Component identities and reusable directed Component-to-Component communication definitions.
 - **REQ-ACC-002 CURRENT** — an Interaction is intra-Application; cross-Application Interaction is rejected.
-- **REQ-ACC-003 CURRENT** — traffic semantics are preserved as immutable revisions; changing traffic creates a new revision while stable Interaction identity and old revisions remain resolvable.
+- **REQ-ACC-003 CURRENT** — traffic semantics are preserved as immutable InteractionContractRevision values; changing traffic creates a new revision while stable Interaction identity and old revisions remain resolvable.
 - **REQ-ACC-004 CURRENT** — an exact revision determines its owning Interaction, endpoint Components and complete traffic alternatives without requiring duplicate semantic references.
+- **REQ-ACC-005 CURRENT** — ACC communication semantics are defined at Component level; concrete ComponentDeployment selection is not part of ACC Interaction ownership.
 - **REQ-ACC-101 EXTENSION** — richer draft/publish/version presentation may be added without changing immutable revision semantics.
 
 ## Concrete application deployment
@@ -28,6 +29,7 @@ Disposition markers:
 - **REQ-AD-001 CURRENT** — users can represent one concrete deployed Component instance as an identity referencing exactly one Component and one Resource.
 - **REQ-AD-002 CURRENT** — deploying the same Component on another Resource creates another independently governed deployment identity.
 - **REQ-AD-003 CURRENT** — Resource address changes do not change deployment identity; Resource replacement creates a different deployment instance.
+- **REQ-AD-004 CURRENT** — deployment truth supplies the ComponentRef/ResourceRef facts used to validate whether a concrete deployment pair is compatible with an ACC Interaction revision; AD does not decide whether that pair is authorized for access.
 - **REQ-AD-101 EXTENSION** — richer runtime/container/deployment history and product restrictions on Resource sharing may be introduced when use cases require them.
 
 ## Resource catalogue
@@ -42,10 +44,12 @@ Disposition markers:
 ## Access policy lifecycle
 
 - **REQ-AP-001 CURRENT** — users can maintain a stable concrete access rule for one directed source/destination ComponentDeployment pair.
-- **REQ-AP-002 CURRENT** — users can propose changes to the rule's exact communication revision and record one formal Pending, Accepted or Rejected outcome with actor/time/provenance.
-- **REQ-AP-003 CURRENT** — pending/rejected changes never overwrite current effective policy; an applicable accepted change may advance the effective revision.
-- **REQ-AP-004 CURRENT** — users can explicitly withdraw effective access without deleting decision/change history; historical acceptance does not silently reactivate withdrawn access.
-- **REQ-AP-005 CURRENT** — deliberate change submission preserves its Process-backed Need/business basis; evidence-derived candidates cannot bypass the business-basis requirement for formal submission.
+- **REQ-AP-002 CURRENT** — a PolicyRule/RuleChange identifies one exact ACC InteractionContractRevision plus one concrete source/destination ComponentDeployment pair; AP validates that each deployment's ComponentRef matches the corresponding endpoint ComponentRef of the revision's Interaction.
+- **REQ-AP-003 CURRENT** — users can propose changes to the rule's exact communication revision and record one formal Pending, Accepted or Rejected outcome with actor/time/provenance.
+- **REQ-AP-004 CURRENT** — pending/rejected changes never overwrite current effective policy; an applicable accepted change may advance the effective revision.
+- **REQ-AP-005 CURRENT** — users can explicitly withdraw effective access without deleting decision/change history; historical acceptance does not silently reactivate withdrawn access.
+- **REQ-AP-006 CURRENT** — deliberate change submission preserves its Process-backed Need/business basis; evidence-derived candidates cannot bypass the business-basis requirement for formal submission.
+- **REQ-AP-007 CURRENT** — exact InteractionContractRevision is sufficient to resolve the owning Interaction; PolicyRule does not need a duplicate InteractionRef merely to restate that identity.
 - **REQ-AP-101 EXTENSION** — multiple simultaneous pending changes and ordering/conflict semantics may be introduced later.
 - **REQ-AP-102 EXTENSION** — customer-specific bilateral/quorum/CAB/ticket approval procedures may integrate while preserving the core formal outcome model.
 
