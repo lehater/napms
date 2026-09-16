@@ -27,7 +27,7 @@ An ADR does not become historical merely because it was implemented. Remove it o
 ## Retained current target decisions
 
 - `ADR-018-nep-firewall-current-state-candidate-model.md` — current NEP candidate model used by target/current boundaries.
-- `ADR-019-business-connectivity-and-access-governance-boundaries.md` — current BC/AG boundary decision.
+- `ADR-019-business-connectivity-and-access-governance-boundaries.md` — keeps Business Connectivity separate while unifying formal RuleChange decision/current-policy semantics in Access Policy; customer-specific approval workflow is outside the MVP baseline.
 - `ADR-020-required-policy-materialization-is-derived-composition.md` — current materialization ownership/composition decision.
 - `ADR-021-provider-policy-interpretation-and-rendering-boundaries.md` — current provider interpretation/rendering boundary decision.
 
