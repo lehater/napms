@@ -1,10 +1,10 @@
 # Resource Role Model
 
-Status: `Strategic summary aligned to MVP DDD 2026-09-15`.
+Status: `Strategic summary aligned to simplified MVP DDD 2026-09-16`.
 
 ## Resource inclusion rule
 
-A provider/device is not automatically a Resource. A first-class Resource exists when its stable access-domain identity/lifecycle matters to governed outcomes.
+A provider/device is not automatically a Resource. A first-class Resource exists when its stable access-domain identity/lifecycle matters to managed outcomes.
 
 ## Resource Catalogue ownership
 
@@ -17,49 +17,60 @@ Resource Scope Affiliation
 Resource Responsibility
 ```
 
-AddressSpace is technical realization, not Resource identity. Address/prefix change therefore does not replace the Resource. Current target deliberately has no `ResourceEndpoint` identity and no multiple simultaneous addresses/interfaces.
+AddressSpace is technical realization, not Resource identity. Address/prefix change therefore does not replace the Resource.
+
+Current target deliberately has no `ResourceEndpoint` identity and no multiple simultaneous addresses/interfaces.
 
 ## Application Deployment relation
 
-AD, not RC, owns where application Components are placed:
+Application Deployment, not RC, owns which concrete deployed Component instance uses a Resource:
 
 ```text
-ApplicationDeployment
-    -> current Set<(ComponentRef, ResourceRef)>
+ComponentDeployment
+    ComponentRef
+    ResourceRef
 ```
 
-One Component may have zero, one or many current Resource placements in one logical ApplicationDeployment. RC does not own Application/Component semantics or placement continuity. AD does not own Resource address realization.
+One ComponentDeployment references exactly one Resource for the first MVP. Deploying the same Component on another Resource creates another ComponentDeployment identity.
+
+RC does not own Application/Component semantics or ComponentDeployment identity. AD does not own Resource AddressSpace/scope/responsibility.
+
+Changing Resource AddressSpace does not change ComponentDeployment identity because the deployment references Resource identity, not address.
+
+The current MVP does not impose a domain rule prohibiting several different ComponentDeployments from referencing the same Resource.
 
 ## Responsibility and authority
 
 `ResourceScopeAffiliation(ResourceRef, ResponsibilityScopeRef, validity, provenance)` is RC truth. `ResourceResponsibility` is operational/contact truth. Neither grants actor authority.
 
-Authority Management independently answers whether Actor A may perform Action X for Scope S at Time T. Access Governance owns how Resource scope facts establish bilateral approval obligations.
+Authority Management independently answers whether Actor A may perform Action X for Scope S at Time T.
 
-Changing scope affiliation/responsibility does not rewrite historical governance facts.
+The simplified Access Policy MVP does **not** derive mandatory source/destination approval obligations from Resource Scope Affiliation. AP may consume Authority Management to protect a propose/decide/withdraw action, but the formal RuleChange decision is still one `Accepted | Rejected` outcome and customer-specific approval procedure is external to the baseline model.
 
-Accepted current-authorization behavior is:
+Changing Resource scope affiliation/responsibility therefore does not, by itself, rewrite or invalidate a PolicyRule decision in the baseline MVP.
 
-- if the resolved source/destination approval obligations remain materially unchanged, the current AG grant remains valid;
-- if they materially change, AG withdraws the current grant and publishes `AuthorizationWithdrawn`;
-- the governed subject identity itself does not change merely because placement/scope/address facts changed;
-- historical approvals do not silently restore authorization after withdrawal.
+Future customer-specific governance may explicitly reuse RC scope facts and AM authority, but that requires a separate accepted requirement/domain extension.
 
 ## Enforcement identity
 
 Firewall identity and policy-locator relevance remain Network Enforcement Placement truth and are distinct from Resource identity and provider/device realization.
 
-## Governed subject consequence
+## Policy consequence
 
-Current semantic authorization subject is:
+Current concrete Policy Rule subject is the directed pair:
 
 ```text
-InteractionContractRevisionRef
-+ sourceApplicationDeploymentRef
-+ destinationApplicationDeploymentRef
+sourceComponentDeploymentRef
++ destinationComponentDeploymentRef
 ```
 
-Resource AddressSpace and ComponentPlacement are downstream/current applicability facts, not subject identity.
+The exact `revisionRef` is the Rule's proposed/current traffic semantics rather than connection identity.
+
+Resource AddressSpace and Scope Affiliation are not PolicyRule identity.
+
+## Evidence-recognition consequence
+
+Evidence Access Recognition may correlate an observed address to Resource identity and then use Application Deployment to find matching ComponentDeployment candidates. Several or zero matches remain ambiguous/unresolved rather than being guessed by RC.
 
 ## Guardrail
 

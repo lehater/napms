@@ -6,7 +6,7 @@ This file contains current strategic vocabulary. Context-local Tactical vocabula
 
 **Business Process** — business context that explains why connectivity is needed.
 
-**Connectivity Need** — application-semantic business requirement for an Interaction; not permission and not technical realization.
+**Connectivity Need** — application-semantic business requirement for an Interaction; not permission and not technical realization. A Need may outlive one concrete deployment or traffic revision.
 
 ## Application Communication Catalogue
 
@@ -14,27 +14,27 @@ This file contains current strategic vocabulary. Context-local Tactical vocabula
 
 **Component** — stable application role inside one Application.
 
-**Interaction** — directed semantic communication template from one Component to another. It contains no deployment, Resource or address identity.
+**Interaction** — directed semantic communication template from one Component to another Component of the same Application. It contains no deployment, Resource or address identity.
 
-**Interaction Contract Revision** — immutable decision-relevant traffic contract revision of an Interaction.
+**Interaction Contract Revision** — immutable decision-relevant traffic contract revision of one Interaction. An exact revision identifies the owning Interaction and therefore its source/destination Component definitions.
 
 **Traffic Alternative** — one vendor-neutral protocol/port selector inside an atomic Interaction Contract Revision.
 
 ## Application Deployment
 
-**Application Deployment** — stable logical deployment of one Application. Ordinary scaling, Resource migration and placement replacement do not change identity while logical deployment continuity is preserved.
-
-**Component Placement** — AD-owned fact that one Component of an Application Deployment is placed on one Resource:
+**Component Deployment** — one concrete independently addressable deployed instance of one ACC Component on one Resource for the first MVP:
 
 ```text
-ComponentPlacement = (ComponentRef, ResourceRef)
+ComponentDeployment
+    ComponentRef
+    ResourceRef
 ```
 
-It is a relation value, not automatically a process/container/pod/runtime instance and not an independently identified placement aggregate in the current target model.
+Deploying the same Component on a second Resource creates another Component Deployment. Component Deployment is not a whole-Application deployment, placement set, pod/container identity or Resource address.
 
 ## Resource Catalogue
 
-**Resource** — stable access-domain resource identity whose lifecycle/realization matters to governed access.
+**Resource** — stable access-domain resource identity whose lifecycle/realization matters to managed access.
 
 **Address Space** — current network realization of one Resource at a logical time:
 
@@ -42,41 +42,53 @@ It is a relation value, not automatically a process/container/pod/runtime instan
 HostAddress | Prefix
 ```
 
-Changing Address Space does not change Resource identity.
+Changing Address Space does not change Resource or Component Deployment identity.
 
-**Resource Scope Affiliation** — RC-owned time-qualified relation from Resource to `ResponsibilityScopeRef`. It does not grant actor authority.
+**Resource Scope Affiliation** — RC-owned time-qualified relation from Resource to `ResponsibilityScopeRef`. It does not grant actor authority and is not a mandatory baseline Policy Rule decision input.
 
-**Resource Responsibility** — operational/business responsibility/contact fact for a Resource; not approval authority.
+**Resource Responsibility** — operational/business responsibility/contact fact for a Resource; not policy-decision authority.
 
-## Access Governance / Access Policy
+## Access Policy
 
-**Governed Interaction Subject** — semantic authorization subject:
+**Policy Rule** — Access Policy-owned durable semantic object for one concrete directed source/destination Component Deployment pair. It owns current effective revision plus the RuleChange/withdrawal history required to explain how that state changed.
+
+**Policy Rule ID** — Access Policy-internal stable identity of a Policy Rule.
+
+**Policy Rule Ref** — opaque external reference by which another context/composition refers to a Policy Rule without depending on AP-internal identity representation.
+
+**Rule Change** — one formally submitted attempt to establish or change the traffic-contract revision of a Policy Rule. It has stable attempt identity, business/evidence provenance and one formal state:
 
 ```text
-InteractionContractRevisionRef
-+ sourceApplicationDeploymentRef
-+ destinationApplicationDeploymentRef
+Pending | Accepted | Rejected
 ```
 
-It is intentionally independent from Component Placement and Resource Address Space.
+A RuleChange is not a second Aggregate Root and is not current effective policy merely because it exists.
 
-**Access Request** — one explicit attempt to obtain bilateral authorization for a governed subject under a business basis.
+**Formal Rule Decision** — the `Accepted` or `Rejected` terminal outcome for one RuleChange. It records actor/time/provenance sufficient for explanation but does not model the customer-specific approval procedure that produced the outcome.
 
-**Approval Obligation** — source-side or destination-side consent obligation. Grant requires the accepted bilateral obligations; withdrawal follows Access Governance semantics.
+**Current Effective Revision** — the exact immutable Interaction Contract Revision currently effective for one Policy Rule. A Pending/Rejected RuleChange does not replace it.
 
-**Policy Rule** — Access Policy-owned authoritative current semantic authorization meaning for one governed subject.
+**Withdrawal** — explicit fact that clears current effectiveness of a Policy Rule without retiring/deleting the Rule or rewriting RuleChange history.
 
-**Vendor-Neutral Policy Export** — complete technical projection of the current effective AP policy set through ACC traffic semantics, AD placements and RC Address Spaces. It exposes access-list-oriented source/destination address, protocol and port/range meaning while remaining independent of firewall, device, ACL and provider syntax. It is a workflow/read composition and owns no Policy Rule truth.
+**Recognized Access Candidate** — non-authoritative correlation result derived from technical evidence plus RC/AD/ACC truth that may seed the same RuleChange lifecycle as manual creation. It is not a Need, formal decision or effective Policy Rule by itself.
+
+**Vendor-Neutral Policy Export** — complete technical projection of the current effective Access Policy set through ACC traffic semantics, concrete Component Deployments and RC Address Spaces. It exposes source/destination address, protocol and port/range meaning while remaining independent of firewall, device, ACL and provider syntax. It is a workflow/read composition and owns no Policy Rule truth.
 
 ## Authority Management
 
-**Responsibility Scope** — stable correlation reference shared semantically between RC affiliation and AM authority contracts; it is not a shared aggregate.
+**Responsibility Scope** — stable correlation reference used by authority/scope-owning contexts; it is not a shared aggregate and does not imply a Policy Rule approval side.
 
-**Effective Authority** — actor/action/scope/time admission result with provenance.
+**Effective Authority** — actor/action/scope/time admission result with provenance. AP may use it to protect actions without turning authority admission into an approval workflow.
+
+## Technical Access Evidence
+
+**Technical Access Evidence** — immutable source-qualified technical facts reported, observed/derived or imported. Evidence is not authorization or desired policy.
+
+**Evidence Access Recognition** — non-peer composition that correlates TAE technical predicates with RC Resources, AD Component Deployments and ACC communication semantics to derive a Recognized Access Candidate or unresolved/ambiguous result.
 
 ## Realization
 
-**Required Policy Materialization** — non-peer derived composition of Access Policy authorization, ACC traffic semantics, AD placements, RC Address Space and NEP target relevance.
+**Required Policy Materialization** — non-peer derived composition of current effective Access Policy rules, ACC traffic semantics, concrete AD Component Deployments, RC Address Space and NEP target relevance.
 
 **Traffic Pair** — technical source/destination Address Space pair used for enforcement-placement reasoning.
 
@@ -95,11 +107,15 @@ It is intentionally independent from Component Placement and Resource Address Sp
 ## Core distinctions
 
 ```text
-Observed != Recognized != Needed != Authorized != Materialized != Realized != Executed
+Observed != Recognized != Needed != Proposed != Accepted != Materialized != Realized != Executed
 ```
 
-The Vendor-Neutral Policy Export starts from current `Authorized` AP truth and materializes a complete technical read projection. It does not claim enforcement placement, configured reality, provider rendering, realization or execution.
+Recognized evidence may exist before Process/Need attribution. Deliberate RuleChange submission still requires accepted business justification. Proposed change, formal decision and current effective policy are distinct truths.
+
+Customer-specific bilateral/quorum/CAB/ticket approval procedures are not current ubiquitous-language domain objects. They may exist outside NAPMS and feed the formal decision boundary.
+
+The Vendor-Neutral Policy Export starts from current effective Access Policy truth and materializes a complete technical read projection. It does not claim enforcement placement, configured reality, provider rendering, realization or execution.
 
 ## As-built compatibility vocabulary
 
-Terms such as `Connectivity Requirement`, `Connectivity Decision`, ACC-owned compatibility `ComponentDeployment`, `DeploymentResourceBinding`, `DirectedInteractionIdentity`, `ResourceEndpoint` and legacy APR stage/status names may still exist in current as-built contracts and runtime compatibility paths. They remain documented where needed to reconstruct that implementation, but they do not replace the target vocabulary above.
+Terms such as `ApplicationDeployment`, `DeploymentInteraction`, ACC-owned compatibility `ComponentDeployment`, `DeploymentResourceBinding`, `DirectedInteractionIdentity`, `Connectivity Requirement`, `Connectivity Decision`, legacy DCS revision names and legacy APR stage/status names may still exist in current as-built contracts and runtime compatibility paths. They remain documented where needed to reconstruct that implementation, but they do not replace the target vocabulary above.

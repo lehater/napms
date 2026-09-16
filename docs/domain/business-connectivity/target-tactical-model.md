@@ -1,16 +1,12 @@
 # Business Connectivity — target Tactical DDD model
 
-Status: `S2 MVP Tactical model accepted 2026-09-15; non-blocking extensions deferred`.
-
-Date: 2026-09-15.
-
-Strategic owner: **Business Connectivity** per ADR-019.
+Status: `S2 MVP Tactical model revalidated 2026-09-16; non-blocking extensions deferred`.
 
 Accepted behavior: `docs/requirements/business-connectivity-g1.md`.
 
 ## Purpose
 
-Own the business-purpose truth behind application connectivity without conflating that truth with security consent, concrete deployment authorization or network realization.
+Own the business-purpose truth behind application connectivity without conflating that truth with security consent, concrete Component Deployment authorization or network realization.
 
 The core question is:
 
@@ -75,28 +71,23 @@ BusinessProcessRef
 + dependent participant/component-role meaning
 ```
 
-The domain identifier remains stable when non-identity justification metadata changes.
-
 The Need is **not** identified by:
 
 - IP address/Prefix;
 - Resource;
-- ComponentPlacement;
-- ApplicationDeployment;
-- Access Request;
-- Policy Rule;
+- ComponentDeployment;
+- PolicyRule;
 - one specific InteractionContractRevision.
 
-The Need references stable Interaction meaning because the business requirement may outlive one technical/deployment realization or one particular immutable traffic-contract revision. Access Governance chooses/preserves the exact `InteractionContractRevisionRef` used by each concrete governed Request.
+The Need references stable Interaction meaning because the business requirement may outlive one technical/deployment realization or one particular immutable traffic-contract revision. Access Policy preserves the exact revision used by each submitted RuleChange.
 
 ### Sameness across technical change
 
 A Need remains the same when:
 
 - Resource address realization changes;
-- Component placement changes while the same application-semantic participant role remains;
-- one logical ApplicationDeployment is replaced by another realization of the same business/application need;
-- several concrete Access Requests are created over time to realize the same Need;
+- one concrete ComponentDeployment is replaced by another realization of the same business/application role;
+- several concrete Policy Rule changes are created over time to realize the same Need;
 - the ACC Interaction receives a later traffic-contract revision, unless the business-required Interaction/participant meaning itself changes.
 
 A materially different required Interaction or different dependent business participant meaning is a different Need rather than a silent mutation of its semantic identity.
@@ -107,12 +98,12 @@ A materially different required Interaction or different dependent business part
 2. Every Need references an existing ACC-owned Interaction meaning rather than inventing network/IP semantics locally.
 3. Need existence never implies authorization.
 4. Need existence never implies network realization.
-5. One Need may justify many concrete Access Requests over time.
+5. One Need may justify many concrete Policy Rule change attempts over time.
 6. One semantic Policy Rule may be justified by several Needs; Business Connectivity does not enforce Rule uniqueness.
-7. Losing/retiring one Need does not rewrite historical Access Requests or approvals.
+7. Losing/retiring one Need does not rewrite historical RuleChanges or approvals.
 8. Losing all known current Needs for an authorization produces a business-justification reconciliation condition, not automatic revocation by Business Connectivity.
 
-The exact uniqueness rule for semantically equivalent Need declarations is deferred until product behavior requires whether separate Processes/participants may intentionally carry separately identified equivalent Needs.
+The exact uniqueness rule for semantically equivalent Need declarations is deferred until product behavior requires it.
 
 ## Need applicability/currentness
 
@@ -126,11 +117,9 @@ These are semantic meanings, not a required storage enum or workflow state machi
 
 A consumer must also preserve `Unknown/Incomplete` when it cannot establish currentness from authoritative Business Connectivity truth; technical failure must not be converted into `NotCurrent`.
 
-Exact temporal-window representation is downstream design unless a product journey requires scheduled business-validity semantics.
-
 ## Business attribution
 
-Business attribution associates a recognized deployed interaction or authorization with one or more known Connectivity Needs/Processes for explanation/reconciliation.
+Business attribution associates a recognized concrete access relationship or current authorization with one or more known Connectivity Needs/Processes for explanation/reconciliation.
 
 Important semantics:
 
@@ -142,11 +131,9 @@ Important semantics:
 
 Whether attribution becomes an independently identified durable entity is deferred until editing/history requirements demand that identity/lifecycle.
 
-## Public semantic contracts
+## Public semantic contract to Access Policy
 
-### Need basis for Access Governance
-
-For a deliberate request Business Connectivity publishes enough trusted meaning to establish the business basis:
+For deliberate RuleChange submission Business Connectivity publishes enough trusted meaning to establish the business basis:
 
 ```text
 ConnectivityNeedRef
@@ -156,9 +143,11 @@ current/applicable justification status
 human-explainable business basis/provenance
 ```
 
-Access Governance combines that stable Need with the exact concrete `InteractionContractRevisionRef + source/destination ApplicationDeploymentRef` governed subject. It preserves the basis used by the Request and never infers authorization from Need existence.
+Access Policy combines that stable Need basis with the exact concrete source/destination ComponentDeployment pair and exact `InteractionContractRevisionRef` proposed by the RuleChange. It preserves the basis used by the change and never infers authorization from Need existence.
 
-### Business-justification reconciliation
+Evidence-derived recognition may exist before Process/Need attribution is known. Formal deliberate submission still requires the accepted Need basis.
+
+## Business-justification reconciliation
 
 A consumer may ask whether one recognized/authorized interaction has current known Need justifications. The result distinguishes:
 
@@ -194,9 +183,8 @@ Derived/composition:
 - BPMN/workflow execution;
 - Process hierarchy unless later required;
 - security approval/consent;
-- Access Request lifecycle;
-- Policy Rule lifecycle;
-- concrete ApplicationDeployment/Resource/address identity as Need identity;
+- Policy Rule/RuleChange lifecycle;
+- concrete ComponentDeployment/Resource/address identity as Need identity;
 - firewall/network realization;
 - automatic revocation when business justification disappears.
 
@@ -211,11 +199,10 @@ Derived/composition:
 
 ## Tactical coherence result
 
-Business Connectivity is sufficient for the first MVP DDD baseline:
+Business Connectivity remains unchanged in its semantic center after the policy/deployment revalidation:
 
-- Process and Need identities are explicit;
-- Need is application-semantic and independent of deployment/address realization;
-- currentness needed for deliberate request justification is explicit;
-- exact governed contract revision remains AG/ACC truth, not Need identity;
-- disappearance of business justification is reconciliation input, not implicit revocation;
-- remaining questions are future extensions and do not require implementation invention for the happy path.
+- Process and Need identities are application-semantic and deployment-independent;
+- exact concrete ComponentDeployment pair and revision belong to Access Policy RuleChange, not Need identity;
+- observed traffic may be recognized before Need attribution;
+- deliberate submission requires current Process-backed business justification;
+- disappearance of business justification is reconciliation input, not implicit revocation.

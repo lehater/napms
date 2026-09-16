@@ -1,10 +1,10 @@
 # Policy Realization Reconciliation — G1 Requirements Passport
 
-Status: `G1 revalidated and aligned to current ACC/AD/RC/NEP/APR ownership 2026-09-15`.
+Status: `G1 revalidated for concrete Component Deployment policy endpoints 2026-09-16`.
 
 ## Problem / outcome
 
-The system must distinguish what is semantically authorized from what the network currently realizes. Authorization, materialization, configured-policy observation, reconciliation and execution are separate truths.
+The system must distinguish what is semantically authorized from what the network currently realizes. Authorization, technical materialization, configured-policy observation, reconciliation and execution are separate truths.
 
 ## Observable requirements
 
@@ -19,49 +19,54 @@ missing = required - configured
 excess  = configured - required
 ```
 
-5. A semantically authorized Policy Rule remains valid when technical materialization is unresolved; the realization outcome is `Unresolved/Uncomparable`, not silent omission.
+5. A semantically authorized Policy Rule remains authoritative when technical materialization is unresolved; the realization outcome is `Unresolved/Uncomparable`, not silent omission.
 6. Required technical policy is derived from the aggregate of all effective semantic authorizations.
 7. Equivalent technical predicates may be supported by several Policy Rules; deduplication preserves provenance.
 8. Withdrawal of one authorization shall not remove technical access still required by another current authorization.
-9. Withdrawal/regrant changes required policy by recomputation; it is never interpreted as “delete the ACL line originally created for this Rule”.
+9. Withdrawal/regrant or an approved traffic-revision change changes required policy by recomputation; it is never interpreted as “edit/delete the provider ACL row originally created for this Rule”.
 10. Configured technical state carries freshness/provenance sufficient to distinguish trustworthy current evidence from stale/unknown evidence.
 11. Execution success does not prove semantic convergence; convergence requires later provider observation/interpretation and comparison again.
 12. `missing`, `excess`, `Realized`, `Drift`, `Uncomparable` and semantic authorization remain distinct meanings.
-13. In the first MVP, automatic remediation is additive-only on `missing`; `excess` is report/audit evidence and does not authorize automatic removal/narrowing without a separately accepted managed-policy scope.
+13. In the first remediation slice, automatic remediation is additive-only on `missing`; `excess` is report/audit evidence and does not authorize automatic removal/narrowing without a separately accepted managed-policy scope.
 
 ## Current semantic-to-technical materialization
 
-For one effective Access Policy Rule:
+For one effective Policy Rule:
 
 ```text
-GovernedInteractionSubject
-    InteractionContractRevisionRef
-    sourceApplicationDeploymentRef
-    destinationApplicationDeploymentRef
+Policy Rule
+    sourceComponentDeploymentRef
+    destinationComponentDeploymentRef
+    revisionRef
 
-ACC InteractionContractRevision
+ACC exact Interaction Contract Revision
+    -> owning Interaction
     -> source/destination ComponentRef
     -> complete immutable trafficAlternatives
 
-AD source ApplicationDeployment + source Component
-    -> all current applicable ComponentPlacement(ResourceRef)
+source Component Deployment
+    -> expected source ComponentRef
+    -> exactly one ResourceRef for first MVP
 
-AD destination ApplicationDeployment + destination Component
-    -> all current applicable ComponentPlacement(ResourceRef)
+destination Component Deployment
+    -> expected destination ComponentRef
+    -> exactly one ResourceRef for first MVP
 
 RC each ResourceRef
     -> effective AddressSpace [0..1] = HostAddress | Prefix
 
-supported technical pairs
+supported technical pair
     -> NEP FirewallCandidate[] / accessListNames[]
     -> TargetRequiredPolicy[] grouped by ComparisonScope
 ```
 
-Every applicable placement is part of completeness. Downstream materialization must not arbitrarily choose one Resource when a Component has several placements.
+The materializer shall verify that each concrete Component Deployment realizes the corresponding endpoint Component of the exact revision's Interaction.
 
-A complete empty placement set and an unavailable/unresolved placement result are distinct.
+A replica of a Component on another Resource is a different Component Deployment. It contributes required technical policy only when effective policy authorizes a concrete connection using that deployment; materialization does not automatically expand one Rule across every replica of the same Component definition.
 
-For the first end-to-end MVP edge, only `HostAddress -> HostAddress` pairs are submitted to NEP. `Prefix` remains valid RC truth but makes the current materialization unresolved; it is never expanded into hosts merely to continue the pipeline.
+A missing/unavailable Component Deployment, Resource binding or AddressSpace is distinct from an empty required policy.
+
+For the first end-to-end NEP edge, only `HostAddress -> HostAddress` pairs are submitted to NEP. `Prefix` remains valid RC truth but makes the current target-specific materialization unresolved; it is never expanded into hosts merely to continue the pipeline.
 
 The current comparison scope is:
 
@@ -77,7 +82,7 @@ Provider ordering, deny/default behavior, objects/groups, aliases and native syn
 
 APR receives a `ConfiguredEffectivePolicySnapshot` with explicit scope, completeness, unsupported-semantics information, freshness and provenance.
 
-TAE may record source-qualified technical evidence but does not decide which evidence is the current complete configured-policy truth for APR.
+TAE may record source-qualified technical evidence but does not decide which evidence is the current complete configured-policy truth for APR. Traffic-derived evidence may separately feed recognition of access candidates; such recognition is not effective policy.
 
 ## APR outcome
 
@@ -115,19 +120,18 @@ An additive verified intent must cover the selected missing permit space and mus
 - unresolved materialization is not empty required policy.
 - incomplete configured evidence is not empty configured policy.
 - `excess` is not automatic deletion authority.
-- Resource address/placement changes do not redefine semantic authorization subject identity by themselves.
+- Resource address changes do not redefine the concrete Component Deployment pair authorized by a Rule.
+- a second deployment of the same Component does not inherit another deployment's Policy Rule automatically.
 
-## Current ownership
+## Domain alignment
 
-- AP owns current semantic authorization.
-- ACC owns immutable InteractionContractRevision traffic meaning.
-- AD owns ApplicationDeployment and ComponentPlacement truth.
-- RC owns Resource AddressSpace.
-- NEP owns candidate Firewall/policy-locator relevance.
-- RPM is derived composition producing complete TargetRequiredPolicy or unresolved.
-- Provider Policy Interpreter owns provider-native interpretation.
-- APR owns comparison, semantic delta, accepted change design and semantic verification.
-- Provider Policy Renderer owns provider-native rendering of verified intent.
-- NEO owns controlled mutation lifecycle/outcome.
+S2 subsequently accepted these owners:
 
-No additional peer Bounded Context is introduced merely for the composition steps above.
+- ACC owns Application/Component/Interaction and immutable revision traffic meaning;
+- Application Deployment owns concrete `ComponentDeploymentId + ComponentRef + ResourceRef` truth;
+- RC owns Resource AddressSpace;
+- Access Policy owns the complete PolicyRule/RuleChange governance and current-effective lifecycle;
+- target-specific materialization remains a derived composition and owns no independent policy/deployment/resource truth;
+- NEP/APR/provider/NEO responsibilities remain separate from semantic authorization.
+
+See `docs/domain/strategic-model.md`, `docs/domain/access-policy/tactical-model.md` and ADR-020. No implementation authorization is implied.
