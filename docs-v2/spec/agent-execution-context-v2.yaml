@@ -1,0 +1,486 @@
+version: 1
+kind: agent-execution-context-model
+id: DOCS-V2-AGENT-EXECUTION-CONTEXT-V2
+status: active
+owner_phase: H9
+owner_task: H9-T1
+last_updated: 2026-09-16
+
+purpose: >-
+  Define the universal agent execution contract that turns durable Harness state into one
+  reconstructible, bounded Task Capsule v2. Constrain agent knowledge, derivations, context
+  expansion, tools, mutations and handoff so an agent can perform one authorized design task
+  without ambient authority, hidden state, speculative business invention or lifecycle overreach.
+
+authority:
+  supersedes_for_execution_semantics:
+    path: docs-v2/spec/agent-execution.md
+    disposition: historical-redesign-input
+  direct_dependency:
+    id: DOCS-V2-VALIDATION-GATE-ENGINE
+    path: docs-v2/spec/validation-gate-engine.yaml
+  required_contracts:
+    - {id: DOCS-V2-VALIDATION-ENGINE-CATALOG, path: docs-v2/spec/validation-engine-catalog.yaml}
+    - {id: DOCS-V2-HUMAN-KNOWLEDGE-ACQUISITION, path: docs-v2/spec/human-knowledge-acquisition.yaml}
+    - {id: DOCS-V2-HARNESS-RELIABILITY-CONFORMANCE, path: docs-v2/spec/harness-reliability-conformance.yaml}
+    - {id: DOCS-V2-LIFECYCLE-STATE-MACHINE, path: docs-v2/spec/lifecycle-state-machine.yaml}
+    - {id: DOCS-V2-DESIGN-ANCHOR-CONTRACT, path: docs-v2/spec/design-anchor.yaml}
+    - {id: DOCS-V2-DEPENDENCY-REGISTRY-IMPACT, path: docs-v2/spec/dependency-registry-impact.yaml}
+  defines:
+    - Task Capsule v2 schema and lifecycle
+    - known-facts and allowed-derivations contracts
+    - question, decision and example reference contracts
+    - deterministic context selection and explicit expansion
+    - execution-basis freeze and rebuild rules
+    - tool and mutation authority
+    - implementation lease enforcement
+    - stop, reopen and handoff behavior
+    - concise observable feedback record
+    - declarative H9 conformance cases
+  does_not_define:
+    - project-specific product/domain truth
+    - new H4 artifact types or semantic owners
+    - new H5 dependency relations
+    - new H1/H2 lifecycle routes
+    - DDD method semantics owned by H6
+    - human knowledge semantics owned by H7
+    - validator/judge semantics owned by H8
+    - regression/eval corpus owned by H10
+    - executable Harness runtime, tests, workflows or CI
+    - canonical cutover from docs/ to docs-v2
+
+cutover_guard:
+  current_product_domain_authority: docs/
+  docs_v2_role: candidate-redesign-execution-contract
+  rule: >-
+    H9 controls execution over the redesign model but does not itself authorize canonical product/domain
+    cutover. Before explicit cutover, docs-v2 ACCEPTED anchors remain candidate redesign truth according
+    to the existing program guard.
+
+execution_invariants:
+  - id: AX-ONE-BOUNDED-UNIT
+    rule: One capsule executes exactly one bounded task or one gate/checkpoint evaluation and stops after durable persistence.
+  - id: AX-DURABLE-RECONSTRUCTIBLE
+    rule: Everything that can change routing, authority, deterministic validation or allowed mutation is reconstructible from durable refs, fingerprints and versions.
+  - id: AX-CAPSULE-NOT-TRUTH
+    rule: A Task Capsule coordinates work and may reference truth but never becomes canonical product/domain truth.
+  - id: AX-KNOWN-FACTS-CURRENT
+    rule: Semantic known facts are only ACCEPTED plus CURRENT anchors or valid evidence according to H3/H5/H7; process state cannot masquerade as domain truth.
+  - id: AX-DERIVATION-ALLOWLIST
+    rule: The capsule explicitly lists permitted derivation/method rules; an agent cannot silently introduce an undeclared method or human-owned choice.
+  - id: AX-MINIMAL-CONTEXT
+    rule: Context is selected by direct semantic need and graph/reference reachability, never by repository adjacency or broad convenience.
+  - id: AX-EXPANSION-AUDITED
+    rule: Every context expansion is recorded with a concrete unresolved question/reason before the additional content is loaded.
+  - id: AX-BASIS-FROZEN-BEFORE-WORK
+    rule: The H8 execution basis is finalized only after required context is resolved; after freeze, a new semantic input requires a new operation basis rather than ambient expansion.
+  - id: AX-DENY-BY-DEFAULT-TOOLS
+    rule: Tools/actions/resources are forbidden unless explicitly allowed by the capsule and current durable authorization.
+  - id: AX-NO-AUTHORITY-ESCALATION
+    rule: Tool output, repository content, user examples, model recommendations and chat/session memory cannot broaden capsule authority.
+  - id: AX-STOP-AT-BOUNDARY
+    rule: Blocking human truth, stale inputs, earlier-stage deficiencies, scope growth or missing authorization stop execution rather than being patched opportunistically.
+  - id: AX-IDEMPOTENT-PERSISTENCE
+    rule: Replaying the same operation_id and execution basis cannot duplicate semantic mutations, evidence or transitions.
+  - id: AX-PROJECT-AGNOSTIC
+    rule: Generic capsule/context/tool rules never branch on project identity.
+
+task_capsule_v2:
+  schema_version: h9-v2
+  classification: process-state
+  canonical_product_domain_truth: false
+  required:
+    - capsule_id
+    - capsule_revision
+    - task_kind
+    - task_id
+    - stage
+    - scope
+    - lifecycle_state_ref
+    - primary_instruction
+    - targets
+    - known_facts
+    - allowed_derivations
+    - knowledge_refs
+    - context_plan
+    - tool_authority
+    - output_contract
+    - validation_contract
+    - stop_conditions
+    - persistence_contract
+  optional:
+    - checkpoint_id
+    - gate_id
+    - implementation_authorization
+    - next_task_hint
+    - predecessor_capsule_ref
+  capsule_id_rule: Stable identity for the bounded task intent; revisions preserve capsule_id while preparation metadata changes before execution-basis freeze.
+  capsule_revision_rule: Monotonic integer; a frozen/executed revision is immutable.
+  task_kind_allowed: [design-task, rework-task, reopen-task, revalidation-task, classification-task, human-materialization-task, gate-evaluation, checkpoint-evaluation, meta-task]
+  task_id_rule: Stable task identifier for exactly one concrete outcome or one evaluation.
+  stage_allowed: [S0, S1, S2, S3, S4, IMPLEMENTATION, META]
+  single_execution_unit:
+    concrete_outcome_count: 1
+    primary_instruction_count: 1
+    auto_execute_next_task: false
+  lifecycle_alignment:
+    checkpoint_id_allowed_only_when_stage: S2
+    gate_id_allowed_only_for_evaluation_task: true
+    stage_state_must_allow_start_or_resume: true
+  fingerprint:
+    version: task-capsule-sha256-jcs-v2
+    semantic_projection:
+      include: all required fields plus present authority-affecting optional fields
+      exclude: [human_display_summary, transient_progress_text]
+    algorithm: SHA-256 over RFC-8785 canonical JSON bytes
+
+primary_instruction_contract:
+  required: [instruction_id, instruction_version]
+  rule: Exactly one primary instruction owns the task method; supporting specifications are context, not co-primary instructions.
+  unresolved_instruction: FAIL
+  sibling_preload_forbidden: true
+
+target_contract:
+  target:
+    required: [target_kind, target_id, intended_effect]
+    target_kind_allowed: [anchor, process-state, gate, S2-checkpoint, meta-spec]
+    intended_effect_allowed: [create, update, supersede, retire, materialize, validate, evaluate, classify, no-semantic-mutation]
+    optional: [expected_type_id, expected_owner_stage]
+  rules:
+    - every semantic mutation target must be explicitly declared
+    - target owner must match H4/H2 ownership
+    - later-stage target cannot be used to hide an earlier-stage deficiency
+    - undeclared semantic mutation target is forbidden
+
+known_facts_contract:
+  entry_required: [fact_id, source_kind, source_ref, source_fingerprint, epistemic_class, permitted_use]
+  entry_optional: [selector, relation_to_task]
+  source_kind_allowed: [anchor, evidence, process-state, external-authoritative-evidence]
+  epistemic_class_allowed: [accepted-fact, accepted-decision, stakeholder-example, observation, hypothesis, recommendation, unresolved-question, rejected-proposition, coordination-state]
+  permitted_use_allowed: [semantic-premise, evidence-only, example-only, coordination-only, prohibition-or-boundary]
+  semantic_premise_guard:
+    anchor: status ACCEPTED and validation freshness CURRENT
+    decision: accepted stage-owned decision anchor with current authority provenance
+    evidence: valid current fingerprint and provenance; cannot independently become design authority
+    process-state: never semantic-premise
+    hypothesis: never semantic-premise
+    recommendation: never semantic-premise
+    unresolved-question: never semantic-premise
+    stakeholder-example: example-only unless separately materialized/generalized by H7
+  selector_rule: >-
+    Item-level selectors may narrow a known fact, but any semantic dependency still requires
+    the corresponding H5 semantic_ref in the affected canonical output.
+  stale_or_invalid_fact:
+    result: FAIL
+    semantic_work_allowed: false
+
+allowed_derivations_contract:
+  entry_required: [derivation_rule_id, source_fact_ids, allowed_output_kinds, human_choice_policy]
+  entry_optional: [method_spec_ref, constraints]
+  source_fact_rule: Every source_fact_id resolves to a capsule known_fact whose permitted_use supports the derivation.
+  allowed_output_kinds_rule: Output types/kinds are narrower than or equal to the output_contract.
+  human_choice_policy_allowed: [deterministic-consequence-only, proposal-only-requires-human-authority, accepted-human-decision-required]
+  rules:
+    - H6 named method rules must be explicitly listed when a DDD derivation uses them
+    - derivation cannot upgrade hypothesis/recommendation/example to accepted fact
+    - derivation cannot create a new human-owned business rule, boundary, priority or policy without H7 materialized authority
+    - a derived candidate may be emitted when the target schema permits candidate/hypothesis state
+    - acceptance remains subject to H8 validation and never follows merely from being listed as allowed
+
+knowledge_refs_contract:
+  required_fields:
+    question_refs: []
+    decision_refs: []
+    example_refs: []
+  question_ref:
+    required: [question_id, status, blocking]
+    rule: Blocking unresolved question prevents semantic mutation/evaluation that depends on it.
+  decision_ref:
+    required: [anchor_id, semantic_fingerprint]
+    rule: Must resolve accepted/current when used as authority.
+  example_ref:
+    required: [source_ref, example_id, generalization_status]
+    rule: concrete-only and candidate-pattern examples remain examples, not universal rules.
+  no_parallel_truth_rule: knowledge refs point to H7/H3/H4 durable carriers; capsule fields never duplicate their semantic bodies.
+
+context_plan:
+  phases:
+    prepare:
+      may_expand: true
+      semantic_mutation_allowed: false
+      execution_basis_frozen: false
+    execute:
+      may_expand_semantic_inputs: false
+      semantic_mutation_allowed: according-to-output-contract
+      execution_basis_frozen: true
+  required: [base_refs, working_refs, forbidden_preloads, expansions, basis_freeze_status]
+  base_refs_minimum:
+    - durable current workstream/lifecycle state ref
+    - current capsule
+    - primary instruction/spec ref
+    - H8 validation profile/catalog refs required by task
+  working_refs_rule: >-
+    Add only direct target, known-fact, required artifact-schema/method and authority refs needed
+    to perform the declared task. Do not preload whole stages, all sibling skills, all contexts,
+    historical plans or directories.
+  forbidden_preloads_default:
+    - unrelated stage protocols
+    - entire artifact catalog when exact entries are resolvable
+    - all bounded contexts
+    - full repository tree
+    - historical/retired material not explicitly required
+    - product code/tests as design-truth sources
+  search_before_broad_load: true
+  metadata_first_sources: [generated anchor registry, H5 dependency/lineage indexes, H4 type registry, repository layout/index metadata when available]
+  expansion_record_schema:
+    required: [expansion_id, unresolved_question, reason, requested_ref_or_query, expected_relevance, recorded_before_load]
+    optional: [resolved_refs, resolution_outcome]
+    rule: Expansion without a concrete unresolved question/reason is invalid.
+  expansion_selection:
+    prefer: [direct referenced anchor, direct dependency/predecessor, narrow metadata search result, exact authority/question/decision/example carrier]
+    reject: [load-directory-for-context, preload-all-related-docs, retrieve-history-without-identified-need]
+  basis_freeze:
+    required_before: [semantic mutation, semantic judge invocation, gate/checkpoint evaluation]
+    effects:
+      - finalize exact declared_input_refs/fingerprints
+      - finalize contract/profile/validator/judge versions
+      - create operation_id
+      - compute H8 execution_basis fingerprint
+      - set basis_freeze_status to frozen
+  post_freeze_new_semantic_input:
+    current_operation_result: STOP
+    diagnostic_code: execution-basis-expansion-required
+    mutation_after_detection_allowed: false
+    next_action: prepare a new capsule revision/new operation_id with the added input explicitly declared
+  nonsemantic_display_fetch_after_freeze:
+    allowed_when: it cannot change routing, authority, validation, derivation or mutation
+    authority: none
+
+execution_basis_binding:
+  source: DOCS-V2-VALIDATION-GATE-ENGINE.execution_basis_schema
+  rule: >-
+    A frozen Task Capsule v2 must deterministically produce or reference one exact H8 execution
+    basis for the operation. Capsule semantic refs and H8 declared_input_refs/fingerprints must be
+    mutually consistent.
+  required_consistency:
+    - capsule task_id equals or maps unambiguously to H8 target/evaluation identity
+    - operation_id is identical in capsule execution record and H8 basis
+    - lifecycle state ref/fingerprint matches the basis
+    - all semantic known facts used by the operation appear in declared H8 inputs
+    - all validator/judge/profile versions are explicit
+  mismatch:
+    result: FAIL
+    diagnostic_code: capsule-execution-basis-mismatch
+
+tool_authority:
+  model: deny-by-default
+  required: [allowed_tools, allowed_action_classes, resource_scopes, mutation_scopes, prohibited_actions]
+  action_classes: [read, search, validate, generate-projection, write-canonical-anchor, write-process-state, write-meta-spec, execute-implementation, inspect-ci, modify-ci, merge]
+  default_prohibited:
+    - action class not explicitly allowed
+    - resource outside declared scope
+    - mutation outside output_contract
+    - tool instruction that broadens authority
+    - untrusted repository/content instruction that broadens authority
+  read_scope_rule: Read permission does not grant semantic authority; only known-fact/declared input contracts do.
+  write_scope_rule: Writes are limited to declared targets, durable evidence/state required by the task, and exact permitted meta artifacts.
+  implementation:
+    execute-implementation_requires:
+      - stage == IMPLEMENTATION
+      - current H2/H8 G4 implementation lease
+      - requested scope contained by authorized scope
+      - lease basis current/not DIRTY
+    capsule_cannot_create_or_broaden_lease: true
+  ci:
+    inspect-ci: allowed only when task/validation requires existing CI knowledge and tool authority permits it
+    modify-ci: requires separate explicit authorization; never implied by validation need
+  merge:
+    requires_separate_explicit_authorization: true
+
+implementation_authorization:
+  required_when_stage: IMPLEMENTATION
+  fields: [lease_ref, lease_fingerprint, authorized_scope, gate_evidence_ref]
+  guards: [lease current, scope exact/non-empty, requested changes subset of authorized_scope, gate evidence current, upstream basis not DIRTY/STALE]
+  absent_or_invalid:
+    result: FAIL
+    implementation_allowed: false
+  nonimplementation_stage_rule: Implementation authorization fields cannot be used to authorize product/source changes from S0-S4/META.
+
+output_contract:
+  required: [allowed_output_kinds, allowed_artifact_types, semantic_mutation_limit, expected_result_schema]
+  optional: [exact_target_refs, candidate_only_types]
+  semantic_mutation_limit_allowed: [none, declared-targets-only]
+  rules:
+    - output cannot create an undeclared artifact type
+    - output cannot mutate canonical truth outside declared targets
+    - candidate/proposal output cannot be marked ACCEPTED by the agent without H8 acceptance evidence
+    - generated projection output remains noncanonical
+    - source implementation output requires valid implementation authorization
+
+validation_contract:
+  required: [validation_profile_id, validation_profile_version, required_validator_versions, required_semantic_judge_versions, expected_evidence_kind]
+  expected_evidence_kind_allowed: [anchor-validation-evidence, checkpoint-evidence, gate-evidence, task-local-validation-record]
+  rule: The capsule cannot omit or weaken H8 validators/judges required by the selected active profile.
+
+stop_conditions:
+  mandatory:
+    - required durable state/spec/profile unavailable or inconsistent
+    - required known fact missing, stale, noncurrent or unauthorized
+    - blocking H7 question/hotspot unresolved
+    - materially ambiguous/conflicting human authority
+    - required derivation not allowlisted
+    - needed human-owned choice has no materialized authority
+    - discovered deficiency owned by an earlier stage/checkpoint
+    - scope expands beyond capsule
+    - undeclared semantic input needed after basis freeze
+    - tool/resource/action outside authority
+    - implementation lease absent/stale/out-of-scope
+    - concurrent input/fingerprint change before persistence
+    - deterministic validation non-PASS
+  effects:
+    persist_finding: true
+    speculative_retry: false
+    opportunistic_wrong-owner_patch: false
+    auto_start_next_capsule: false
+  routing: existing H1/H2/H5/H7/H8 semantics only
+
+execution_flow:
+  - read durable state and current task before chat/history inference
+  - resolve one bounded task/gate/checkpoint target
+  - construct Task Capsule v2 from durable routing/state metadata
+  - validate capsule structure, owner, task boundary and tool authority
+  - resolve minimal base/working context and known facts
+  - classify unresolved human knowledge via H7 refs
+  - record any justified context expansions before loading them
+  - require all blocking questions resolved/materialized for the operation basis
+  - freeze capsule revision and build exact H8 execution basis/operation_id
+  - run deterministic preflight/validation required before semantic work
+  - perform exactly one authorized task or evaluation using only known facts and allowed derivations
+  - run required H8 validation profile
+  - re-resolve exact inputs immediately before persistence when H8 requires
+  - atomically/idempotently persist declared semantic/state/evidence effects
+  - persist concise feedback record and at most one next_task_hint
+  - stop
+
+feedback_loop_contract:
+  purpose: Give the next agent/human enough durable observable information without storing private reasoning.
+  required: [capsule_id, capsule_revision, operation_id, execution_basis_fingerprint, outcome, route_or_state_effect, changed_refs, validation_evidence_refs, diagnostic_codes, blockers_or_questions, material_context_expansions, next_task_hint]
+  optional: [concise_rationale_summary, rejected_mutation_refs]
+  forbidden: [private chain-of-thought, exploratory scratch transcript, copied full upstream artifacts, unstated inferred business truth]
+  next_task_hint_rule: One hint may be recorded; it does not authorize or start the next task.
+
+durable_execution_record:
+  classification: process-state-subrecord
+  carrier: lifecycle-scope-state or workstream-state according to task class
+  new_h4_artifact_type_required: false
+  required: [capsule_id, capsule_revision, operation_id, capsule_fingerprint, execution_basis_fingerprint, started_from_state_ref, outcome, evidence_refs, persisted_effect_refs, diagnostic_codes]
+  purpose: Restart/replay/audit identity; not product/domain truth.
+
+resume_and_restart:
+  resume_source_order: [current durable workstream/lifecycle state, current capsule/execution record, exact referenced contracts/anchors/evidence]
+  forbidden_resume_sources: [chat history as required authority, process-local cache, model memory]
+  same_checkpoint_same_basis:
+    deterministic_route_and_state_effect_equal: true
+  incomplete_persistence:
+    rule: >-
+      If atomic/idempotent persistence cannot prove whether an effect committed, restart uses
+      operation_id plus execution-basis evidence to detect already-applied versus safe retry;
+      it never repeats semantic mutation speculatively.
+
+parallel_execution:
+  allowed_when:
+    - capsules have non-overlapping semantic mutation targets
+    - explicit coordination/serialization contract exists
+  forbidden_when:
+    - two capsules can independently mutate the same canonical anchor/revision
+    - one capsule may change another capsule's required input without invalidation handling
+  merge_point_rule: Shared-boundary outputs are revalidated on current fingerprints before downstream acceptance.
+
+diagnostic_codes:
+  capsule-invalid: malformed Task Capsule v2 or invariant violation
+  capsule-multiple-primary-instructions: more than one primary instruction selected
+  capsule-target-outside-scope: target or output exceeds declared scope
+  known-fact-not-current: semantic known fact is stale/noncurrent/invalid
+  epistemic-class-not-authoritative: non-authoritative knowledge used as semantic premise
+  derivation-not-allowed: requested derivation is not in capsule allowlist
+  human-authority-required: human-owned choice lacks H7 materialized authority
+  context-expansion-reason-required: expansion attempted without durable concrete reason
+  forbidden-context-preload: unrelated broad context loaded or requested
+  execution-basis-expansion-required: new semantic input is needed after basis freeze
+  capsule-execution-basis-mismatch: capsule semantic inputs/versioning disagree with H8 basis
+  tool-action-not-authorized: requested tool/action/resource is outside capsule authority
+  mutation-target-not-declared: requested semantic write target is not in output contract
+  implementation-lease-invalid: implementation action lacks current exact-scope lease
+  input-changed-before-commit: declared input fingerprint/state changed before persistence
+  blocking-knowledge-unresolved: required H7 question/hotspot remains blocking
+  earlier-owner-deficiency: discovered deficiency belongs to earlier stage/checkpoint
+  operation-id-basis-conflict: operation_id was previously bound to a different basis
+  harness-self-consistency-failed: required Harness state/spec/profile integrity invalid
+
+conformance_cases:
+  - {id: AX-CF-CAPSULE-RECONSTRUCTIBLE, oracle: deterministic, given: {durable_state_present: true, capsule_all_required_fields_present: true, chat_history_available: false}, expect: {execution_reconstructible: true, chat_history_required: false}}
+  - {id: AX-CF-ONE-BOUNDED-TASK, oracle: deterministic, given: {declared_task_count: 1, primary_instruction_count: 1}, expect: {capsule_valid: true}}
+  - {id: AX-CF-MULTI-TASK-REJECTED, oracle: deterministic, given: {declared_task_count: 2}, expect: {result: FAIL, diagnostic_code: capsule-invalid}}
+  - {id: AX-CF-MULTI-PRIMARY-REJECTED, oracle: deterministic, given: {primary_instruction_count: 2}, expect: {result: FAIL, diagnostic_code: capsule-multiple-primary-instructions}}
+  - {id: AX-CF-KNOWN-FACT-CURRENT, oracle: deterministic, given: {source_kind: anchor, status: ACCEPTED, validation_freshness: CURRENT, permitted_use: semantic-premise}, expect: {known_fact_valid: true}}
+  - {id: AX-CF-STALE-KNOWN-FACT-REJECTED, oracle: deterministic, given: {source_kind: anchor, status: DIRTY, permitted_use: semantic-premise}, expect: {result: FAIL, diagnostic_code: known-fact-not-current, semantic_work_allowed: false}}
+  - {id: AX-CF-RECOMMENDATION-NOT-FACT, oracle: deterministic, given: {epistemic_class: recommendation, permitted_use: semantic-premise}, expect: {result: FAIL, diagnostic_code: epistemic-class-not-authoritative}}
+  - {id: AX-CF-EXAMPLE-NOT-RULE, oracle: semantic, given: {epistemic_class: stakeholder-example, generalization_status: concrete-only, proposed_use: universal-business-rule}, expect: {accepted_as_rule: false, route: NEED_MORE_DATA}}
+  - {id: AX-CF-DERIVATION-ALLOWLISTED, oracle: deterministic, given: {derivation_rule_id: DDD-MR-TACTICAL-AGGREGATE, listed_in_allowed_derivations: true, source_facts_valid: true}, expect: {derivation_may_run: true, acceptance_automatic: false}}
+  - {id: AX-CF-UNDECLARED-DERIVATION-REJECTED, oracle: deterministic, given: {derivation_rule_id: UNLISTED, listed_in_allowed_derivations: false}, expect: {result: FAIL, diagnostic_code: derivation-not-allowed}}
+  - {id: AX-CF-HUMAN-CHOICE-NEEDS-AUTHORITY, oracle: deterministic, given: {human_owned_choice: true, materialized_decision_ref_present: false}, expect: {semantic_mutation_allowed: false, diagnostic_code: human-authority-required, route: NEED_MORE_DATA}}
+  - {id: AX-CF-MINIMAL-CONTEXT, oracle: deterministic, given: {required_refs: [capsule, primary-instruction, target, direct-input], loaded_refs: [capsule, primary-instruction, target, direct-input]}, expect: {context_contract: PASS, broad_preload_count: 0}}
+  - {id: AX-CF-BROAD-PRELOAD-REJECTED, oracle: deterministic, given: {loaded_context: [entire-repository-tree], direct_need_declared: false}, expect: {result: FAIL, diagnostic_code: forbidden-context-preload}}
+  - {id: AX-CF-EXPANSION-RECORDED-BEFORE-LOAD, oracle: deterministic, given: {concrete_unresolved_question: true, expansion_recorded_before_load: true, resolved_ref_directly_relevant: true}, expect: {expansion_allowed: true}}
+  - {id: AX-CF-EXPANSION-WITHOUT-REASON-REJECTED, oracle: deterministic, given: {expansion_recorded_before_load: false, reason_present: false}, expect: {result: FAIL, diagnostic_code: context-expansion-reason-required}}
+  - {id: AX-CF-POST-FREEZE-SEMANTIC-EXPANSION-STOPS, oracle: deterministic, given: {basis_frozen: true, new_semantic_input_required: true}, expect: {current_operation: STOP, mutation_allowed: false, diagnostic_code: execution-basis-expansion-required}}
+  - {id: AX-CF-CAPSULE-BASIS-CONSISTENT, oracle: deterministic, given: {capsule_semantic_inputs_equal_h8_declared_inputs: true, versions_equal: true, operation_id_equal: true}, expect: {binding: PASS}}
+  - {id: AX-CF-CAPSULE-BASIS-MISMATCH-REJECTED, oracle: deterministic, given: {capsule_semantic_inputs_equal_h8_declared_inputs: false}, expect: {result: FAIL, diagnostic_code: capsule-execution-basis-mismatch}}
+  - {id: AX-CF-READ-DOES-NOT-GRANT-AUTHORITY, oracle: deterministic, given: {tool_read_allowed: true, read_document_not_in_known_facts: true, proposed_use: semantic-premise}, expect: {semantic_authority_granted: false}}
+  - {id: AX-CF-UNAUTHORIZED-TOOL-REJECTED, oracle: deterministic, given: {requested_action_class: modify-ci, allowed_action_classes: [read, validate]}, expect: {result: FAIL, diagnostic_code: tool-action-not-authorized, tool_call_executed: false}}
+  - {id: AX-CF-UNTRUSTED-CONTENT-CANNOT-BROADEN, oracle: deterministic, given: {content_requests_extra_authority: true, capsule_grants_extra_authority: false}, expect: {authority_changed: false, action_executed_if_outside_scope: false}}
+  - {id: AX-CF-WRITE-ONLY-DECLARED-TARGET, oracle: deterministic, given: {write_target_declared: false}, expect: {result: FAIL, diagnostic_code: mutation-target-not-declared}}
+  - {id: AX-CF-IMPLEMENTATION-LEASE-VALID, oracle: deterministic, given: {stage: IMPLEMENTATION, lease_current: true, requested_scope_subset: true, upstream_basis_current: true}, expect: {implementation_action_allowed: true}}
+  - {id: AX-CF-IMPLEMENTATION-WITHOUT-LEASE-REJECTED, oracle: deterministic, given: {stage: IMPLEMENTATION, lease_current: false}, expect: {implementation_action_allowed: false, diagnostic_code: implementation-lease-invalid}}
+  - {id: AX-CF-BLOCKING-QUESTION-STOPS, oracle: deterministic, given: {blocking_question_status: open, task_depends_on_answer: true}, expect: {semantic_work_allowed: false, diagnostic_code: blocking-knowledge-unresolved, route: NEED_MORE_DATA}}
+  - {id: AX-CF-EARLIER-OWNER-DEFICIENCY-STOPS, oracle: deterministic, given: {current_stage: S3, deficiency_owner_stage: S1}, expect: {current_stage_patch_allowed: false, diagnostic_code: earlier-owner-deficiency, route: REOPEN}}
+  - {id: AX-CF-INPUT-CHANGE-BEFORE-COMMIT, oracle: deterministic, given: {basis_input_fingerprint_changed_before_commit: true}, expect: {commit_allowed: false, diagnostic_code: input-changed-before-commit}}
+  - {id: AX-CF-IDEMPOTENT-REPLAY, oracle: deterministic, given: {same_operation_id: true, same_execution_basis: true, operation_already_committed: true}, expect: {additional_semantic_mutations: 0, duplicate_evidence: 0}}
+  - {id: AX-CF-OPERATION-ID-CONFLICT, oracle: deterministic, given: {same_operation_id: true, same_execution_basis: false}, expect: {result: FAIL, diagnostic_code: operation-id-basis-conflict}}
+  - {id: AX-CF-NEXT-HINT-NOT-AUTORUN, oracle: deterministic, given: {current_task_complete: true, next_task_hint_present: true}, expect: {next_task_started_in_same_capsule: false}}
+  - {id: AX-CF-FEEDBACK-NO-COT, oracle: deterministic, given: {feedback_contains_private_chain_of_thought: true}, expect: {feedback_valid: false}}
+  - {id: AX-CF-PARALLEL-NONOVERLAP, oracle: deterministic, given: {capsule_A_targets: [A1], capsule_B_targets: [B1], overlap: false}, expect: {parallel_allowed_subject_to_dependencies: true}}
+  - {id: AX-CF-PARALLEL-SAME-TARGET-REJECTED, oracle: deterministic, given: {capsule_A_targets: [A1], capsule_B_targets: [A1], coordination_contract_present: false}, expect: {parallel_allowed: false}}
+
+h9_exit_evaluation:
+  checks:
+    - Task Capsule v2 can be reconstructed from durable state without chat/session authority
+    - exactly one bounded task/evaluation and one primary instruction are enforced
+    - semantic known facts are current/authority-valid and non-authoritative epistemic classes cannot masquerade as truth
+    - allowed derivations are explicit and cannot create human-owned choices without H7 authority
+    - question/decision/example refs preserve H7 epistemic semantics without duplicate truth
+    - minimal context is selected from direct refs/graph/indexes and broad preloads are rejected
+    - every context expansion is recorded before load with concrete reason
+    - H8 execution basis is frozen before semantic work and post-freeze semantic expansion stops/rebuilds
+    - tools/actions/resources/mutations use deny-by-default explicit authority
+    - implementation requires current exact-scope G4 lease
+    - agents stop at blocking knowledge, earlier-owner deficiencies, scope expansion and stale inputs
+    - persistence is idempotent and next task is never auto-started
+    - feedback is concise observable state and excludes private chain-of-thought
+    - no new H4 artifact type, H5 edge relation or H1/H2 route is introduced
+    - no project-specific semantics or product/domain cutover is introduced
+
+handoff_to_h10:
+  next_task: H10 Harness evals, tracing and regression model
+  required_behavior:
+    - derive regression/eval fixtures from H1/H5/H6/H7/H8/H9 stable conformance IDs
+    - test context minimization, unsupported inference, routing, authority and semantic-judge boundaries
+    - trace capsule/basis/evidence/diagnostics without private chain-of-thought
+    - preserve stable diagnostic/scenario identity across Harness evolution
+
+restrictions:
+  executable_runtime_created_or_changed: false
+  executable_tests_created_or_changed: false
+  workflow_ci_created_or_changed: false
+  product_implementation_created_or_changed: false
+  product_domain_cutover_performed: false
