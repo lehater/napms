@@ -20,10 +20,16 @@ Design and validate a replacement documentation/artifact system incrementally, w
 - v2 readiness review passes;
 - migration/cutover can proceed without ambiguous canonical ownership.
 
+## Progress
+
+- M0 foundation: complete.
+- M1 lifecycle contract: complete.
+- M2 artifact model: next.
+
 ## Blockers
 
-None for M1.
+None for M2.
 
 ## Next
 
-Complete M1 lifecycle semantics only. Do not design detailed artifact schemas or migrate product documentation during M1.
+Complete M2 artifact model only: define the finite artifact catalog, applicability classes, ownership, canonical source formats, gate relevance, traceability and generated-projection rules. Do not create product artifacts, finalize physical paths, or migrate current documentation during M2.
