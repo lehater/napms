@@ -1,10 +1,10 @@
 # Resource Role Model
 
-Status: `Strategic summary aligned to revalidated MVP DDD 2026-09-16`.
+Status: `Strategic summary aligned to simplified MVP DDD 2026-09-16`.
 
 ## Resource inclusion rule
 
-A provider/device is not automatically a Resource. A first-class Resource exists when its stable access-domain identity/lifecycle matters to governed outcomes.
+A provider/device is not automatically a Resource. A first-class Resource exists when its stable access-domain identity/lifecycle matters to managed outcomes.
 
 ## Resource Catalogue ownership
 
@@ -33,9 +33,9 @@ ComponentDeployment
 
 One ComponentDeployment references exactly one Resource for the first MVP. Deploying the same Component on another Resource creates another ComponentDeployment identity.
 
-RC does not own Application/Component semantics or ComponentDeployment identity. Application Deployment does not own Resource AddressSpace/scope/responsibility.
+RC does not own Application/Component semantics or ComponentDeployment identity. AD does not own Resource AddressSpace/scope/responsibility.
 
-Changing the AddressSpace of a Resource does not change ComponentDeployment identity because the deployment refers to Resource identity, not address.
+Changing Resource AddressSpace does not change ComponentDeployment identity because the deployment references Resource identity, not address.
 
 The current MVP does not impose a domain rule prohibiting several different ComponentDeployments from referencing the same Resource.
 
@@ -43,16 +43,13 @@ The current MVP does not impose a domain rule prohibiting several different Comp
 
 `ResourceScopeAffiliation(ResourceRef, ResponsibilityScopeRef, validity, provenance)` is RC truth. `ResourceResponsibility` is operational/contact truth. Neither grants actor authority.
 
-Authority Management independently answers whether Actor A may perform Action X for Scope S at Time T. Access Policy owns how the two Policy Rule endpoint Resources and their scope facts establish bilateral approval obligations.
+Authority Management independently answers whether Actor A may perform Action X for Scope S at Time T.
 
-Changing scope affiliation/responsibility does not rewrite historical policy-governance facts.
+The simplified Access Policy MVP does **not** derive mandatory source/destination approval obligations from Resource Scope Affiliation. AP may consume Authority Management to protect a propose/decide/withdraw action, but the formal RuleChange decision is still one `Accepted | Rejected` outcome and customer-specific approval procedure is external to the baseline model.
 
-Accepted current-policy behavior is:
+Changing Resource scope affiliation/responsibility therefore does not, by itself, rewrite or invalidate a PolicyRule decision in the baseline MVP.
 
-- if an Active Rule's current approval obligations remain materially valid, its current effective revision remains effective;
-- if accepted lifecycle rules determine that materially changed obligations invalidate current consent, Access Policy withdraws current effectiveness while preserving history;
-- reauthorization requires a new RuleChange under current obligations;
-- old approved RuleChanges do not silently reactivate a withdrawn Rule.
+Future customer-specific governance may explicitly reuse RC scope facts and AM authority, but that requires a separate accepted requirement/domain extension.
 
 ## Enforcement identity
 
@@ -69,7 +66,7 @@ sourceComponentDeploymentRef
 
 The exact `revisionRef` is the Rule's proposed/current traffic semantics rather than connection identity.
 
-Resource AddressSpace is downstream technical realization, not Policy Rule identity.
+Resource AddressSpace and Scope Affiliation are not PolicyRule identity.
 
 ## Evidence-recognition consequence
 
