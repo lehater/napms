@@ -4,53 +4,47 @@ Status: IN PROGRESS / non-canonical / documentation materialization continuing.
 
 ## Pilot execution boundary
 
-This M7 pilot is documentation-system design work only. Product source code is evidence, not an output.
+This M7 pilot is documentation-system design work only. Product source code, tests and runtime realization are out of scope as design inputs.
 
-Until a later, explicit implementation authorization changes this boundary:
+Until a later, explicit implementation phase changes this boundary:
 
 - do not write, edit, refactor or generate product code;
-- do not change tests to make the pilot pass;
-- do not change runtime configuration, migrations, workflows or CI as part of this pilot;
-- inspect implementation and tests only as realization evidence or to discover documentation/implementation drift;
-- if documentation cannot be completed without a genuine product/domain decision not already answered by accepted documentation, record the gap or blocker instead of implementing a solution.
+- do not change tests, runtime configuration, migrations, workflows or CI;
+- do not inspect implementation or tests to resolve, validate or enrich product/domain/architecture/contract semantics;
+- derive candidate v2 artifacts only from the accepted current documentation under `docs/**` plus the docs-v2 process/specification artifacts;
+- if the accepted `docs/**` sources are ambiguous, contradictory or leave a material design choice unresolved, stop and ask for a decision rather than consulting code;
+- if a detail is absent from accepted documentation and is not required for the artifact at the current stage, leave it unspecified rather than inventing it.
 
 The pilot may create or edit only `docs-v2/**` candidate/design artifacts on its branch. Canonical `docs/**` remain unchanged until an explicit documentation cutover step.
 
-## Source precedence during this migration pilot
+## Source authority during this migration pilot
 
-Accepted current documentation has authority over existing implementation when they conflict.
+For product/project design truth the source set is the accepted current documentation in `docs/**`. Existing implementation is known to be stale and has no authority in this pilot.
 
-For migration/classification purposes the precedence is:
+Migration/classification precedence is therefore documentation-only:
 
-1. accepted upstream documentation truth at the earliest owning stage;
-2. downstream documentation consistent with that truth;
-3. implementation and tests as realization/evidence only.
+1. accepted upstream `docs/**` truth at the earliest owning stage;
+2. downstream `docs/**` artifacts consistent with that truth;
+3. docs-v2 classification/materialization artifacts derived from 1–2.
 
-Therefore code/test behavior must not silently rewrite S0/S1/S2/S3 documentation semantics. A conflict with implementation is recorded as realization drift for later implementation reconciliation. It is not a documentation blocker unless the accepted documentation itself is ambiguous or contradictory.
+Implementation and tests are intentionally excluded from this precedence and from validation of the design slice.
 
 ## Materialized so far
 
 The documentation-only materialization has produced the bounded S1 artifacts, the Resource Catalogue S2 domain model/glossary/traceability, and the S3 container/interaction-flow diagrams under `docs-v2/pilot/materialized/**`.
 
-## Resolved realization drift
+## Superseded implementation-derived finding
 
-During OpenAPI preparation the executable RC implementation exposed plural `technicalAddresses`, while the accepted current domain documentation models one effective `AddressSpace` per Resource at a logical time, with `AddressSpace = HostAddress | Prefix`.
+The earlier cardinality concern obtained by inspecting executable code is invalid as a design blocker because implementation is outside the authoritative source set. It must not influence the migrated documentation.
 
-Under the source-precedence rule above, this is no longer a design decision for the documentation pilot:
-
-- the accepted S2 documentation semantics remain authoritative;
-- the executable plural shape is implementation drift/evidence to reconcile later;
-- S2 is not reopened merely to copy implementation behavior;
-- the candidate HTTP contract must express the accepted documented semantics, and validation must record where the current executable surface differs.
-
-No product/code change is authorized or proposed by this resolution.
+The accepted `docs/domain/resource-catalogue/tactical-model.md` and `docs/domain/resource-catalogue/target-realization-model.md` remain the source for Resource realization semantics. Any future implementation reconciliation belongs to a later implementation phase and is not part of M7.
 
 ## Readiness result
 
-Result: `PASS` to continue documentation-only materialization.
+Result: `PASS` to continue documentation-only materialization from `docs/**`.
 
-The former cardinality blocker is resolved by explicit documentation precedence. This is not a product G4 result and grants no product implementation lease.
+This is not a product G4 result and grants no product implementation lease.
 
 ## Next task
 
-Materialize the bounded Resource Catalogue HTTP/OpenAPI candidate from accepted S1/S2/S3 documentation truth, explicitly recording implementation drift rather than importing conflicting executable cardinality. Then complete pilot documentation validation and migration-ledger review.
+Materialize the remaining bounded S3 HTTP contract from the accepted legacy documentation in `docs/**` only. If the legacy documentation does not determine a material contract choice needed for the artifact, stop and request that decision. After the contract is materialized, complete documentation-only validation and migration-ledger review.
