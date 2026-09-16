@@ -7,26 +7,27 @@ last_updated: 2026-09-16
 
 program:
   status: ACTIVE
-  current_phase: H8
+  current_phase: H9
   current_phase_state: NOT_STARTED
-  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7]
+  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8]
   blocked_phases: []
   compatibility_review_required_phases: []
 
 current_task:
-  id: H8-T1
-  title: Validation and gate engine specification
+  id: H9-T1
+  title: Agent execution and context model v2
   state: NOT_STARTED
   objective: >-
-    On the next bounded execution, apply the resume protocol and read the H8 roadmap entry plus
-    its direct dependencies H5, H6 and H7. H8 must make deterministic validation, semantic judging,
-    question-resolution authority and gate evidence reproducible without weakening the H1 reliability
-    contract. Do not execute H8 inside the completed H7 capsule.
+    On the next bounded execution, apply the resume protocol and read the H9 roadmap entry plus
+    its direct H8 dependency before resolving the exact H9 task capsule. H9 must rebase Task
+    Capsules, context selection and tool/authority bounds on the H8 execution basis and durable
+    H3-H7 project graph. Do not execute H9 inside the completed H8 capsule.
   required_inputs:
-    - docs-v2/spec/dependency-registry-impact.yaml
-    - docs-v2/spec/ddd-pipeline.yaml
+    - docs-v2/spec/validation-gate-engine.yaml
+    - docs-v2/spec/validation-engine-catalog.yaml
     - docs-v2/spec/human-knowledge-acquisition.yaml
     - docs-v2/spec/harness-reliability-conformance.yaml
+  next_after_completion: H10 Harness evals, tracing and regression corpus
 
 completed_work:
   - {id: H0-T1, result: PASS, artifact: docs-v2/meta/roadmap.yaml, summary: durable roadmap and universal design-Harness charter}
@@ -41,30 +42,38 @@ completed_work:
   - {id: H5-T1, result: PASS, artifact: docs-v2/spec/dependency-registry-impact.yaml, summary: generated registry, typed dependencies, fingerprints and impact model}
   - {id: H5-T2, result: PASS, artifact: docs-v2/spec/design-derivation-lineage.yaml, summary: universal logical derivation lineage and project-book projection contract}
   - {id: H6-T1, result: PASS, artifact: docs-v2/spec/ddd-pipeline.yaml, summary: complete strategic/process-discovery/tactical DDD method and schema contract}
-  - id: H7-T1
+  - {id: H7-T1, result: PASS, artifact: docs-v2/spec/human-knowledge-acquisition.yaml, summary: durable questions, stakeholder materialization, examples and epistemic-state protocol}
+  - id: H8-T1
     result: PASS
     description: >-
-      Define durable human knowledge acquisition from NEED_MORE_DATA through structured questions,
-      nonbinding options/recommendations, provenance-bearing stakeholder responses, stage-owned
-      materialization and example/journey enrichment without silent generalization.
+      Define the deterministic-first validation/gate engine, exact execution-basis schema,
+      versioned validator/judge catalog, bounded semantic judges, H7 authority checks,
+      reproducible gate evidence, stable diagnostics and exact-snapshot commit rules.
     validation:
       machine_readable_yaml: PASS
-      question_schema: PASS
-      response_schema: PASS
-      decision_logical_schema: PASS
-      epistemic_class_count: 8
-      conformance_case_count: 23
+      validation_layer_count: 10
+      deterministic_validator_count: 14
+      semantic_judge_count: 8
+      validation_profile_count: 9
+      main_conformance_case_count: 27
+      catalog_conformance_case_count: 5
       conformance_case_id_uniqueness: PASS
-      question_is_process_state_not_truth: PASS
-      recommendation_nonbinding: PASS
-      response_requires_materialization: PASS
-      semantic_owner_not_asker_stage: PASS
-      examples_not_silently_generalized: PASS
-      ambiguity_conflict_fail_closed: PASS
-      blocking_hotspot_resolution_guard: PASS
-      user_journey_identity_rules: PASS
-      stage_decision_mapping: PASS
-      idempotent_materialization: PASS
+      deterministic_before_semantic: PASS
+      fail_closed_no_fallback: PASS
+      execution_basis_version_bound: PASS
+      validator_catalog_fully_versioned: PASS
+      semantic_judge_catalog_fully_versioned: PASS
+      semantic_judge_nonmutating: PASS
+      human_authority_before_sufficiency: PASS
+      h7_unmaterialized_response_not_truth: PASS
+      h5_dependency_freshness_preserved: PASS
+      g0_g4_profiles_explicit: PASS
+      s2_checkpoint_profiles_explicit: PASS
+      gate_evidence_exact_input_snapshot: PASS
+      precommit_input_recheck: PASS
+      stable_diagnostic_catalog: PASS
+      g4_lease_bound_to_gate_evidence: PASS
+      idempotent_persistence: PASS
       new_h4_artifact_types: false
       new_h5_edge_relations: false
       new_h1_h2_transition_classes: false
@@ -75,7 +84,8 @@ completed_work:
       workflow_ci_created_or_changed: false
       product_domain_cutover_performed: false
     artifacts:
-      - docs-v2/spec/human-knowledge-acquisition.yaml
+      - docs-v2/spec/validation-gate-engine.yaml
+      - docs-v2/spec/validation-engine-catalog.yaml
 
 routing_history:
   - id: H2-T1-ATTEMPT-1
@@ -98,27 +108,26 @@ carry_forward:
   - Harness is a universal project-agnostic design execution rail from idea/problem/evidence through requirements, DDD, architecture and implementation readiness before first product code; NAPMS is a pilot, never a hard-coded semantic special case.
   - Harness is a critical engineering instrument: explicit versioned rule or explicit stable stop; silent heuristic fallback is forbidden.
   - Project documentation is a graph of machine-readable Design Anchors and typed relations; human-readable documentation is a reproducible non-canonical book/view projection.
-  - Provenance alone is insufficient: every accepted non-root anchor preserves logical derivation lineage with accepted predecessors/evidence/constraints/decisions, derivation kind and durable design rationale.
+  - Every accepted non-root anchor preserves logical derivation lineage with accepted predecessors/evidence/constraints/decisions, derivation kind and durable design rationale.
   - H6 owns the complete universal S2 DDD method/schema contract in docs-v2/spec/ddd-pipeline.yaml.
-  - H7 owns the human knowledge acquisition protocol in docs-v2/spec/human-knowledge-acquisition.yaml.
-  - A question, option set or agent recommendation is durable process state, never canonical design truth.
-  - A stakeholder response is captured authority input but does not become current design truth until materialized into the fixed-owner H4 anchor/evidence and accepted under H3/H5/H6 rules.
-  - Question resolution requires traceability from originating gap/hotspot through response to materialized current truth; open/ambiguous/conflicting answers cannot be marked resolved.
-  - Agent recommendations are explicitly nonbinding and cannot satisfy human authority.
-  - Examples remain concrete by default. Repetition may justify a candidate pattern but never auto-promotes examples to a universal rule.
-  - Materialization owner is determined by semantic ownership, not by the stage that asked the question; earlier-owned answers route REOPEN and H5 impact propagation.
-  - Significant human choices use existing stage-owned decision anchors: problem-decision, requirements-decision, domain-decision, architecture-decision or implementation-readiness-decision.
-  - H7 introduces no generic stakeholder-truth or dynamic-owner decision artifact type.
-  - H6 blocking hotspots/aggregate questions remain blocking until H7 materialization completes; candidate aggregate hypotheses remain hypotheses until tactical acceptance.
-  - Contradictory authority-bearing human inputs without precedence remain NEED_MORE_DATA; last-write-wins is forbidden.
-  - Unknown or deferred answers do not silently select defaults; blocking defer remains BLOCKED.
-  - User-journey enrichment preserves anchor identity for the same actor/goal/outcome concept and creates a new anchor for materially different journey semantics.
-  - H7 response/materialization operations are idempotent and must not duplicate semantic mutations.
-  - H8 must validate H5/H6/H7 structures and authority deterministically before semantic judging and must make gate evidence reproducible from exact specification/validator versions.
-  - docs-v2/spec/harness-reliability-conformance.yaml remains mandatory for downstream routing/validation/execution design.
+  - H7 owns human knowledge acquisition: questions/recommendations are process state; stakeholder responses require fixed-owner materialization before they are current design truth.
+  - H8 owns validation/gate evaluation in docs-v2/spec/validation-gate-engine.yaml plus concrete validator/judge version resolution in docs-v2/spec/validation-engine-catalog.yaml.
+  - H8 validation is strictly deterministic-first. Any deterministic FAIL/BLOCKED/NEED_MORE_DATA stops semantic judging; semantic PASS can never override a deterministic non-PASS finding.
+  - H8 execution basis is immutable and version-bound: exact target/scope, durable state/input refs and fingerprints, Harness/process/profile versions, validator versions and semantic judge versions determine the evaluation.
+  - Chat/session memory, process-local cache and undeclared context carry no validation or authorization authority.
+  - H8 has 14 stable h8-v1 deterministic validators bound to ordered validation layers and 8 bounded h8-v1 semantic judges for G0, G1, S2 Strategic/Process/Tactical, G2, G3 and G4.
+  - Semantic judges consume only declared ACCEPTED/CURRENT inputs, return only PASS/REWORK/REOPEN/NEED_MORE_DATA, cannot mutate truth/state, cannot choose stakeholder options and cannot invent lifecycle routes.
+  - H7 human authority/materialization is checked before semantic sufficiency; recommendations, hypotheses, open questions and unmaterialized answers are not current truth.
+  - Validation evidence is H4 validation-evidence process state, never product/domain truth; H8 defines anchor/checkpoint/gate evidence schemas and validation-evidence-sha256-jcs-v1.
+  - Gate PASS is bound to an exact input snapshot, validator/judge/spec versions and execution-basis fingerprint; inputs are re-resolved immediately before PASS/state-effect commit.
+  - If an exact input changes before commit, PASS is not committed; existing H2/H5 ownership/routing determines rework/blocking.
+  - G4 implementation lease is issued only from current exact-scope G4 gate evidence and becomes unusable when its upstream basis becomes stale/dirty.
+  - H8 diagnostic codes are stable machine-readable semantics; human-readable detail is non-authoritative and semantic judge outcome conflicts FAIL rather than being silently resolved.
+  - Durable validation/gate persistence is idempotent by operation_id plus execution basis; same operation ID with different basis FAILs.
+  - H9 must make Task Capsule v2 reconstruct or carry the H8 execution basis, restrict known facts to ACCEPTED/CURRENT refs, declare allowed derivations and question/decision/example refs, and make context expansion explicit before semantic work.
   - docs/ remains canonical product/project design truth until explicit cutover; ACCEPTED docs-v2 anchors do not override docs/ before cutover.
   - Product code/tests remain excluded as sources of product/domain/architecture truth during current documentation-design work.
-  - H2 owns lifecycle; H3 anchor identity/provenance/acceptance; H4 type/format/applicability; H5 registry/refs/fingerprints/lineage/impact; H6 DDD semantics; H7 human knowledge acquisition.
+  - H2 owns lifecycle; H3 anchor identity/provenance/acceptance; H4 type/format/applicability; H5 registry/refs/fingerprints/lineage/impact; H6 DDD semantics; H7 human knowledge acquisition; H8 validation/gates.
   - Deterministic structural/reference/authority/self-consistency failures must be resolved before semantic evaluation can PASS.
 
 blockers: []
