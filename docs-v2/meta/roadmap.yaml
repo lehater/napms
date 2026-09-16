@@ -2,8 +2,9 @@ version: 1
 kind: meta-roadmap
 id: DOCS-V2-HARNESS-ROADMAP
 status: active
-scope: documentation-system-v2-and-harness-redesign
+scope: universal-project-design-harness-redesign
 canonical_for:
+  - program-design-intent
   - meta-work-sequence
   - phase-dependencies
   - phase-exit-criteria
@@ -13,9 +14,13 @@ not_canonical_for:
   - product-implementation
 
 purpose: >
-  Provide a durable, machine-readable roadmap so Documentation System v2 and Harness
-  redesign can continue across separate chats and work sessions without reconstructing
-  sequence, dependencies, completion state or next work from conversation history.
+  Define a durable, project-agnostic design Harness that guides an agent from initial idea,
+  problem and evidence through requirements, Domain-Driven Design, architecture and
+  implementation readiness before the first product code is written. The Harness must
+  preserve the logical derivation of every accepted design artifact in machine-readable
+  form so the complete design can be validated, corrected, resumed across sessions and
+  projected as coherent human-readable project documentation. NAPMS is the redesign pilot,
+  not a source of project-specific semantics for the universal Harness.
 
 operating_constraints:
   - docs/ remains the sole canonical source of current product/project design truth until explicit cutover.
@@ -25,10 +30,26 @@ operating_constraints:
   - No merge is authorized by this roadmap.
 
 principles:
+  - id: P-UNIVERSAL-DESIGN-HARNESS
+    statement: >
+      Harness is a project-agnostic design method and execution rail from problem discovery
+      through implementation readiness; project-specific domain semantics live in project
+      anchors, never in Harness rules.
   - id: P-HUMAN-TRUTH
     statement: Human-approved facts and accepted canonical artifacts own design truth; agents may derive consequences but must not invent missing business facts.
   - id: P-MACHINE-READABLE
-    statement: Every Design Anchor must have a canonical machine-readable representation; human-readable projections are optional unless required for review.
+    statement: Every Design Anchor must have a canonical machine-readable representation; human-readable projections are derived views unless a type explicitly owns narrative source.
+  - id: P-DERIVATION-LINEAGE
+    statement: >
+      Every accepted non-root Design Anchor must explicitly identify the logical predecessors,
+      evidence, constraints and decisions from which its semantics are derived. Source attribution
+      alone is insufficient: the derivation path must explain why the artifact exists and how its
+      design content follows from prior accepted project knowledge.
+  - id: P-GRAPH-AND-BOOK
+    statement: >
+      Canonical project documentation is a graph of machine-readable Design Anchors and typed
+      lineage relations. Human-readable project documentation is a reproducible projection of
+      that graph that can be read coherently from problem and decisions toward implementation readiness.
   - id: P-STANDARD-FIRST
     statement: Prefer established formal standards or DSLs such as OpenAPI, AsyncAPI and architecture DSLs when they preserve required semantics; invent custom schemas only where needed.
   - id: P-REPO-SYSTEM-OF-RECORD
@@ -42,7 +63,7 @@ principles:
   - id: P-TEST-FIRST
     statement: New Harness behavior is specified by conformance cases and expected failures before runtime implementation is authorized.
   - id: P-TRACEABLE
-    statement: Important claims, decisions and derived artifacts preserve provenance and stable references.
+    statement: Important claims, decisions and derived artifacts preserve provenance, stable references and explicit logical lineage.
   - id: P-OPENAI-ALIGNED
     statement: Harness design should remain compatible with current OpenAI guidance on structured outputs, bounded tool use, progressive context, layered guardrails, evals, tracing and human escalation without coupling project semantics to one SDK.
 
@@ -140,24 +161,32 @@ phases:
       - No duplicate canonical owners exist for the same semantic truth.
 
   - id: H5
-    title: Dependency, registry and impact model
+    title: Dependency, derivation, registry and impact model
     depends_on: [H4]
-    objective: Make project design state graph-addressable and changes impact-computable.
+    objective: >
+      Make project design state graph-addressable, logically derivation-explainable and
+      change-impact-computable without duplicating canonical truth.
     deliverables:
       - generated anchor registry model
       - dependency edge vocabulary
+      - design derivation-lineage contract
       - reference resolution rules
       - content fingerprints
       - DIRTY/STALE propagation
       - earliest-affected-stage calculation contract
+      - human-readable project-book projection rules
     exit_criteria:
       - Dangling references, invalid statuses and stale validation evidence are deterministically detectable.
       - A changed upstream anchor produces a reproducible affected downstream set.
+      - Every accepted non-root Design Anchor has explicit machine-readable derivation lineage to accepted predecessors, evidence, constraints or durable human decisions.
+      - Backward lineage traversal can explain how an accepted artifact follows from project roots without relying on chat history or private agent reasoning.
 
   - id: H6
     title: Complete DDD pipeline specification
     depends_on: [H5]
-    objective: Formalize strategic discovery, context design, domain process discovery/Event Storming and tactical DDD as anchor-producing work.
+    objective: >
+      Formalize strategic discovery, context design, domain process discovery/Event Storming
+      and tactical DDD as anchor-producing and derivation-lineage-producing work.
     deliverables:
       - subdomain and domain-distillation model
       - capability map and capability-to-context mapping
@@ -165,8 +194,10 @@ phases:
       - domain process model for commands, events, actors, policies, timelines and external systems
       - candidate aggregate derivation
       - tactical aggregate/entity/value-object/invariant/domain-service/state semantics
+      - explicit predecessor/derivation rules for every DDD artifact produced
     exit_criteria:
       - Strategic, process and tactical phases have explicit inputs/outputs and checkpoints.
+      - Every accepted DDD output identifies the accepted inputs, evidence and decisions from which it is derived.
       - Domain Events are not automatically treated as integration messages.
       - Aggregate design cannot proceed through unresolved blocking business questions.
 
@@ -275,6 +306,9 @@ phases:
 
 program_exit:
   - Machine-readable process and anchor specifications are authoritative for Harness behavior after explicit cutover.
+  - Any accepted non-root design artifact can be traced backward through explicit logical derivation to accepted problem/evidence/decision roots.
+  - The canonical anchor graph can be reproducibly projected into coherent human-readable project documentation without creating a second source of truth.
   - Harness implementation is covered by deterministic conformance checks and semantic evals.
   - Cross-session work resumes from repository state without relying on chat history.
   - Human decisions and examples accumulate as traceable project knowledge.
+  - Harness process semantics remain project-agnostic; NAPMS serves as a validation and migration pilot rather than a hard-coded special case.
