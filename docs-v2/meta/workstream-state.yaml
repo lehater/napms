@@ -7,24 +7,25 @@ last_updated: 2026-09-16
 
 program:
   status: ACTIVE
-  current_phase: H7
+  current_phase: H8
   current_phase_state: NOT_STARTED
-  completed_phases: [H0, H1, H2, H3, H4, H5, H6]
+  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7]
   blocked_phases: []
   compatibility_review_required_phases: []
 
 current_task:
-  id: H7-T1
-  title: Human knowledge acquisition protocol
+  id: H8-T1
+  title: Validation and gate engine specification
   state: NOT_STARTED
   objective: >-
-    On the next bounded execution, apply the resume protocol and read the H7 roadmap entry plus
-    its direct H6 dependency before resolving the exact H7 task capsule. H7 must provide durable
-    handling for H6 NEED_MORE_DATA points without inventing business truth. Do not execute H7
-    inside the completed H6 capsule.
+    On the next bounded execution, apply the resume protocol and read the H8 roadmap entry plus
+    its direct dependencies H5, H6 and H7. H8 must make deterministic validation, semantic judging,
+    question-resolution authority and gate evidence reproducible without weakening the H1 reliability
+    contract. Do not execute H8 inside the completed H7 capsule.
   required_inputs:
+    - docs-v2/spec/dependency-registry-impact.yaml
     - docs-v2/spec/ddd-pipeline.yaml
-    - docs-v2/spec/design-derivation-lineage.yaml
+    - docs-v2/spec/human-knowledge-acquisition.yaml
     - docs-v2/spec/harness-reliability-conformance.yaml
 
 completed_work:
@@ -36,38 +37,34 @@ completed_work:
   - {id: H2-T1, result: PASS, artifact: docs-v2/spec/lifecycle-state-machine.yaml, summary: executable lifecycle and gate state machine}
   - {id: H3-T1, result: PASS, artifact: docs-v2/spec/design-anchor.yaml, summary: universal Design Anchor contract}
   - {id: H4-T1, result: PASS-HISTORICAL, artifact: docs-v2/spec/artifact-type-registry.yaml, summary: initial artifact registry before H6 completeness gap}
-  - id: H4-T2
-    result: PASS
-    artifact: docs-v2/spec/artifact-type-registry.yaml
-    summary: Added bounded-context and domain-process-model canonical S2 owners; H5 compatibility PASS.
+  - {id: H4-T2, result: PASS, artifact: docs-v2/spec/artifact-type-registry.yaml, summary: bounded-context and domain-process-model canonical S2 owners; H5 compatibility PASS}
   - {id: H5-T1, result: PASS, artifact: docs-v2/spec/dependency-registry-impact.yaml, summary: generated registry, typed dependencies, fingerprints and impact model}
   - {id: H5-T2, result: PASS, artifact: docs-v2/spec/design-derivation-lineage.yaml, summary: universal logical derivation lineage and project-book projection contract}
-  - id: H6-T1
+  - {id: H6-T1, result: PASS, artifact: docs-v2/spec/ddd-pipeline.yaml, summary: complete strategic/process-discovery/tactical DDD method and schema contract}
+  - id: H7-T1
     result: PASS
     description: >-
-      Define the complete universal DDD pipeline from accepted requirements through strategic
-      capability/subdomain/context design, Domain Process Discovery/Event Storming and tactical
-      aggregate/entity/value-object/invariant/domain-service/state semantics. Bind every accepted
-      output to explicit H5 derivation lineage and fail closed on unresolved human-owned truth.
+      Define durable human knowledge acquisition from NEED_MORE_DATA through structured questions,
+      nonbinding options/recommendations, provenance-bearing stakeholder responses, stage-owned
+      materialization and example/journey enrichment without silent generalization.
     validation:
       machine_readable_yaml: PASS
-      s2_checkpoint_contract_count: 3
-      method_rule_count: 13
-      detailed_type_schema_count: 8
+      question_schema: PASS
+      response_schema: PASS
+      decision_logical_schema: PASS
+      epistemic_class_count: 8
       conformance_case_count: 23
       conformance_case_id_uniqueness: PASS
-      strategic_inputs_outputs_explicit: PASS
-      process_discovery_inputs_outputs_explicit: PASS
-      tactical_inputs_outputs_explicit: PASS
-      capability_subdomain_bounded_context_distinct: PASS
-      bounded_context_boundary_lineage: PASS
-      domain_process_event_storming_schema: PASS
-      candidate_aggregate_hypothesis_guard: PASS
-      tactical_aggregate_consistency_basis_guard: PASS
-      blocking_business_question_guard: PASS
-      domain_event_not_integration_message_guard: PASS
-      item_selector_requires_h5_semantic_ref: PASS
-      h5_sha256_jcs_profile_preserved: PASS
+      question_is_process_state_not_truth: PASS
+      recommendation_nonbinding: PASS
+      response_requires_materialization: PASS
+      semantic_owner_not_asker_stage: PASS
+      examples_not_silently_generalized: PASS
+      ambiguity_conflict_fail_closed: PASS
+      blocking_hotspot_resolution_guard: PASS
+      user_journey_identity_rules: PASS
+      stage_decision_mapping: PASS
+      idempotent_materialization: PASS
       new_h4_artifact_types: false
       new_h5_edge_relations: false
       new_h1_h2_transition_classes: false
@@ -78,7 +75,7 @@ completed_work:
       workflow_ci_created_or_changed: false
       product_domain_cutover_performed: false
     artifacts:
-      - docs-v2/spec/ddd-pipeline.yaml
+      - docs-v2/spec/human-knowledge-acquisition.yaml
 
 routing_history:
   - id: H2-T1-ATTEMPT-1
@@ -95,31 +92,33 @@ routing_history:
     result: REOPEN(H4)
     observed_at: 2026-09-16
     reason: H4 lacked canonical owners for Bounded Context boundary truth and Process Discovery/Event Storming truth required by H6.
-    resolution: H4-T2 added bounded-context and domain-process-model; focused H5 compatibility review PASS; H6 resumed and completed.
+    resolution: H4-T2 added bounded-context and domain-process-model; H5 compatibility PASS; H6 completed.
 
 carry_forward:
   - Harness is a universal project-agnostic design execution rail from idea/problem/evidence through requirements, DDD, architecture and implementation readiness before first product code; NAPMS is a pilot, never a hard-coded semantic special case.
   - Harness is a critical engineering instrument: explicit versioned rule or explicit stable stop; silent heuristic fallback is forbidden.
   - Project documentation is a graph of machine-readable Design Anchors and typed relations; human-readable documentation is a reproducible non-canonical book/view projection.
   - Provenance alone is insufficient: every accepted non-root anchor preserves logical derivation lineage with accepted predecessors/evidence/constraints/decisions, derivation kind and durable design rationale.
-  - H6 now owns the detailed universal S2 DDD method/schema contract in docs-v2/spec/ddd-pipeline.yaml.
-  - S2 is ordered Strategic -> Process Discovery -> Tactical. G2 is eligible only when all applicable checkpoints are ACCEPTED.
-  - Strategic DDD derives capability-map, domain-distillation, bounded-context and applicable context-relationship-map from accepted behavior/constraints; capability, subdomain and Bounded Context are never assumed one-to-one.
-  - Bounded Context boundaries require explicit model/language/responsibility cohesion basis; legacy code/service/team/database boundaries are insufficient by themselves.
-  - Process Discovery/Event Storming persists actors, commands, Domain Events, policies, timeline, external systems, hotspots and candidate aggregate hypotheses in domain-process-model.
-  - Accepted process commands/events/policies cannot rely on agent-hypothesis alone; unresolved human-owned semantics route NEED_MORE_DATA.
-  - Candidate aggregate records in domain-process-model are hypotheses only. Accepted aggregate truth exists only in domain-model after tactical derivation/validation.
-  - Tactical aggregate boundaries require accepted requirement/process/invariant consistency basis inside exactly one accepted Bounded Context; table/object graph/transaction convenience is insufficient.
-  - Entities require domain identity semantics; value objects require value/equality semantics without independent identity; invariants require authority-bearing lineage; domain services require a domain responsibility that does not naturally belong to an entity/value object.
-  - Domain Events are S2 domain facts and do not imply S3 integration messages, brokers or AsyncAPI contracts.
-  - Cross-anchor whole/item references in H6 payloads never create a parallel graph: semantic payload refs/selectors must have matching H5 semantic_refs when they contribute semantics.
-  - H6 specializes H5 sha256-jcs-v1 only by declaring explicit set-like arrays and deterministic local-ID sort keys; unlisted arrays preserve order and process timelines remain order-sensitive.
-  - Later S2 work that exposes invalid earlier S2 truth routes to the owning earlier checkpoint; tactical work must not patch around strategic/process defects.
-  - H7 must turn H6 NEED_MORE_DATA/hotspot/aggregate questions into durable stakeholder knowledge, options/decisions/examples without silently generalizing or inventing truth.
+  - H6 owns the complete universal S2 DDD method/schema contract in docs-v2/spec/ddd-pipeline.yaml.
+  - H7 owns the human knowledge acquisition protocol in docs-v2/spec/human-knowledge-acquisition.yaml.
+  - A question, option set or agent recommendation is durable process state, never canonical design truth.
+  - A stakeholder response is captured authority input but does not become current design truth until materialized into the fixed-owner H4 anchor/evidence and accepted under H3/H5/H6 rules.
+  - Question resolution requires traceability from originating gap/hotspot through response to materialized current truth; open/ambiguous/conflicting answers cannot be marked resolved.
+  - Agent recommendations are explicitly nonbinding and cannot satisfy human authority.
+  - Examples remain concrete by default. Repetition may justify a candidate pattern but never auto-promotes examples to a universal rule.
+  - Materialization owner is determined by semantic ownership, not by the stage that asked the question; earlier-owned answers route REOPEN and H5 impact propagation.
+  - Significant human choices use existing stage-owned decision anchors: problem-decision, requirements-decision, domain-decision, architecture-decision or implementation-readiness-decision.
+  - H7 introduces no generic stakeholder-truth or dynamic-owner decision artifact type.
+  - H6 blocking hotspots/aggregate questions remain blocking until H7 materialization completes; candidate aggregate hypotheses remain hypotheses until tactical acceptance.
+  - Contradictory authority-bearing human inputs without precedence remain NEED_MORE_DATA; last-write-wins is forbidden.
+  - Unknown or deferred answers do not silently select defaults; blocking defer remains BLOCKED.
+  - User-journey enrichment preserves anchor identity for the same actor/goal/outcome concept and creates a new anchor for materially different journey semantics.
+  - H7 response/materialization operations are idempotent and must not duplicate semantic mutations.
+  - H8 must validate H5/H6/H7 structures and authority deterministically before semantic judging and must make gate evidence reproducible from exact specification/validator versions.
   - docs-v2/spec/harness-reliability-conformance.yaml remains mandatory for downstream routing/validation/execution design.
   - docs/ remains canonical product/project design truth until explicit cutover; ACCEPTED docs-v2 anchors do not override docs/ before cutover.
   - Product code/tests remain excluded as sources of product/domain/architecture truth during current documentation-design work.
-  - H2 lifecycle-state-machine owns lifecycle semantics; H3 design-anchor owns anchor identity/provenance/acceptance; H4 artifact-type-registry owns type/format/applicability; H5 owns registry/refs/fingerprints/lineage/impact; H6 owns DDD method/schema semantics.
+  - H2 owns lifecycle; H3 anchor identity/provenance/acceptance; H4 type/format/applicability; H5 registry/refs/fingerprints/lineage/impact; H6 DDD semantics; H7 human knowledge acquisition.
   - Deterministic structural/reference/authority/self-consistency failures must be resolved before semantic evaluation can PASS.
 
 blockers: []
