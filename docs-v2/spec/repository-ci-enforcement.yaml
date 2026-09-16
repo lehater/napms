@@ -1,0 +1,824 @@
+version: 1
+kind: repository-ci-enforcement-design
+id: DOCS-V2-REPOSITORY-CI-ENFORCEMENT
+status: active
+owner_phase: H11
+owner_task: H11-T1
+last_updated: 2026-09-17
+
+purpose: >-
+  Define how repository-local and hosted validation surfaces enforce the universal Harness
+  contracts without creating a parallel validation stack. Preserve one repository-owned check
+  implementation per rule, expose exact current capabilities to agents, reject stale or
+  unversioned evidence, and bind hosted acceptance evidence to the exact candidate revision.
+
+authority:
+  direct_dependency:
+    id: DOCS-V2-HARNESS-EVALS-TRACING-REGRESSION
+    path: docs-v2/spec/harness-evals-tracing-regression.yaml
+  required_contracts:
+    - {id: DOCS-V2-VALIDATION-GATE-ENGINE, path: docs-v2/spec/validation-gate-engine.yaml}
+    - {id: DOCS-V2-VALIDATION-ENGINE-CATALOG, path: docs-v2/spec/validation-engine-catalog.yaml}
+    - {id: DOCS-V2-ARTIFACT-TYPE-REGISTRY, path: docs-v2/spec/artifact-type-registry.yaml}
+    - {id: DOCS-V2-DEPENDENCY-REGISTRY-IMPACT, path: docs-v2/spec/dependency-registry-impact.yaml}
+    - {id: DOCS-V2-AGENT-EXECUTION-CONTEXT-V2, path: docs-v2/spec/agent-execution-context-v2.yaml}
+    - {id: DOCS-V2-HARNESS-RELIABILITY-CONFORMANCE, path: docs-v2/spec/harness-reliability-conformance.yaml}
+  defines:
+    - repository check classes and local/hosted responsibility split
+    - changed-artifact-class to required-check matrix
+    - binding of H8 validators and H10 suites to repository enforcement surfaces
+    - generated registry/index verification rules
+    - validation/gate/G4 freshness rejection rules
+    - specification and validator version invalidation policy
+    - exact candidate revision binding for hosted evidence
+    - CI capability discovery contract consumed by H9 capsules
+    - current NAPMS repository-surface compatibility observations
+    - H11 conformance cases and diagnostics
+  does_not_define:
+    - project-specific product/domain truth
+    - new H4 artifact types or H5 dependency relations
+    - new lifecycle routes
+    - executable validators, eval runners, tests, workflows or CI jobs
+    - product implementation
+    - canonical cutover from docs/ to docs-v2
+    - merge authorization
+
+cutover_guard:
+  current_product_domain_authority: docs/
+  docs_v2_role: candidate-redesign-repository-enforcement-contract
+  rule: >-
+    H11 describes future enforcement of the redesigned Harness. It does not make current
+    docs-v2 validation executable or authoritative over docs/, and it does not authorize
+    workflow, CI, product-code or merge changes.
+
+enforcement_invariants:
+  - id: CI-ONE-RULE-IMPLEMENTATION
+    rule: >-
+      A deterministic Harness rule has one repository-owned implementation. Local commands and
+      hosted CI invoke that same implementation/profile rather than maintaining separate logic.
+  - id: CI-LOCAL-HOSTED-EQUIVALENT
+    rule: >-
+      For the same revision, inputs and versions, local and hosted deterministic checks must
+      produce the same structured result and diagnostic codes. Environment-specific setup may
+      differ but validation semantics may not.
+  - id: CI-FAIL-CLOSED-COVERAGE
+    rule: >-
+      A changed artifact or enforcement surface whose required check mapping cannot be resolved
+      fails closed. Missing check coverage cannot be treated as PASS.
+  - id: CI-EXACT-REVISION-EVIDENCE
+    rule: >-
+      Hosted evidence used to authorize merge/release/current-gate status is bound to the exact
+      candidate revision. Any subsequent relevant commit makes that evidence stale.
+  - id: CI-POST-MERGE-NOT-PREMERGE-AUTHORITY
+    rule: >-
+      A push-to-main check is integration/post-merge evidence. It cannot retroactively satisfy a
+      required pre-merge candidate-revision check.
+  - id: CI-GENERATED-NOT-TRUTH
+    rule: >-
+      Generated anchor registries, dependency graphs, regression indexes and projections are
+      recomputed from canonical sources and verified for exact agreement. Editing generated
+      output never changes canonical truth.
+  - id: CI-STALE-EVIDENCE-REJECTED
+    rule: >-
+      Validation, checkpoint, gate and implementation-authorization evidence whose content,
+      dependency, execution-basis, profile, specification, validator or judge basis is no longer
+      current is rejected rather than accepted with a warning.
+  - id: CI-VERSION-BOUND
+    rule: >-
+      A behavior-affecting contract, validator, judge policy/profile or generated-model change
+      has an explicit version/compatibility effect. Unversioned behavior changes fail.
+  - id: CI-H10-REGRESSION-REQUIRED
+    rule: >-
+      Harness behavior/spec/runtime changes cannot be accepted until H10 resolves and passes the
+      complete applicable regression set under one versioned eval plan.
+  - id: CI-SEMANTIC-EVAL-NOT-FAKED
+    rule: >-
+      Deterministic repository checks validate semantic-eval corpus/evidence structure and
+      freshness but cannot claim that a semantic judge/model run occurred when it did not.
+  - id: CI-G4-GUARDS-IMPLEMENTATION
+    rule: >-
+      Product/source implementation paths are not accepted solely because product tests pass.
+      When implementation enforcement is active, a shared repository authorization guard verifies
+      a current exact-scope G4 lease against the candidate changes.
+  - id: CI-CAPABILITIES-DISCOVERABLE
+    rule: >-
+      H9 capsules can discover exact current local/hosted check capabilities, commands, triggers,
+      scopes and evidence roles from durable repository metadata rather than rediscovering CI.
+  - id: CI-EXISTING-SURFACES-FIRST
+    rule: >-
+      Existing repository entrypoints/workflows are evolved and reused when they can carry the
+      required semantics; a new parallel workflow/check stack requires an explicit non-duplication
+      justification.
+  - id: CI-PROJECT-AGNOSTIC-CORE
+    rule: >-
+      Universal H4-H10 enforcement semantics do not branch on NAPMS domain concepts. Repository
+      path/workflow bindings are integration metadata, not generic Harness rules.
+
+current_repository_observation:
+  observed_ref: meta/docs-v2-m7-pilot
+  observed_at: 2026-09-17
+  authority: compatibility-evidence-not-normative-harness-semantics
+  surfaces:
+    local_harness_entrypoint:
+      command: make harness-check
+      makefile_path: Makefile
+      current_steps:
+        - tools/validate_harness.py
+        - tools/validate_plans.py
+        - tools/validate_plan_capsule_sync.py
+        - tools/validate_skill_routing.py
+        - tools/validate_lifecycle_transitions.py
+        - tools/validate_docs_v2.py
+    hosted_harness_surface:
+      workflow: .github/workflows/harness.yml
+      workflow_name: harness gate
+      job: validate
+      command: make harness-check
+      current_triggers:
+        - push to main for configured Harness paths
+        - pull_request ready_for_review for configured Harness paths
+      docs_v2_path_covered: true
+    existing_other_surfaces:
+      - {workflow: .github/workflows/knowledge.yml, name: knowledge gate, command: make knowledge-check, responsibility: current docs/domain knowledge invariants}
+      - {workflow: .github/workflows/ci.yml, name: core gate, command: make test, responsibility: backend product/core executable checks}
+      - {workflow: .github/workflows/web.yml, name: web gate, command: npm run build, responsibility: web build/type validation}
+    agent_ci_awareness:
+      path: AGENTS.md
+      required_behavior:
+        - inspect applicable workflow and exact command/trigger before claiming a check unavailable
+        - prefer local checks during editing
+        - inspect hosted run/job/logs before claiming hosted PASS
+        - distinguish connector/tool inability from repository CI absence
+    model_eval_precedent:
+      path: backend/tests/evals/README.md
+      rule: >-
+        Existing repository practice already separates deterministic corpus validation from
+        observations produced by an actual model run; repository evaluators judge captured
+        model results against checked-in contracts.
+  current_gaps:
+    - id: GAP-LEGACY-DOCS-V2-VALIDATOR
+      finding: >-
+        tools/validate_docs_v2.py still reads docs-v2/spec/artifacts.md and the superseded
+        docs-v2/spec/agent-execution.md and therefore cannot prove H4-H10 conformance.
+      consequence: Current green make harness-check is not sufficient evidence for redesigned H4-H10 compliance.
+      target_disposition: extend-or-replace-internals-while-preserving-repository-entrypoint
+    - id: GAP-PR-HEAD-FRESHNESS
+      finding: >-
+        harness.yml currently runs on pull_request ready_for_review, not every later candidate
+        head update. A commit after the ready_for_review event can make hosted evidence stale.
+      consequence: Future authoritative pre-merge evidence must be bound to and rerun for the exact candidate head revision.
+      target_disposition: evolve-trigger-or-merge-gate-semantics-under-separate-CI-authorization
+    - id: GAP-G4-NOT-REPOSITORY-ENFORCED-FOR-PRODUCT-PATHS
+      finding: >-
+        Current product/core and web gates validate product behavior/builds but do not enforce
+        H8/H9 current exact-scope G4 authorization for changed implementation paths.
+      consequence: Current CI must not be described as enforcing redesigned implementation authorization.
+      target_disposition: shared-authorization-guard-reused-by-existing-product-surfaces-after-authorization
+  no_current_workflow_change_performed: true
+
+repository_check_model:
+  check_record_required:
+    - check_id
+    - check_version
+    - oracle_kind
+    - responsibility
+    - implementation_binding
+    - applicable_change_classes
+    - evidence_kind
+  oracle_kind_allowed: [deterministic, semantic-observation, human-authorization]
+  implementation_binding:
+    rule: >-
+      Binding names the single repository-owned implementation plus every invocation surface.
+      Multiple invocation surfaces may call the same implementation; they must not reimplement it.
+    fields:
+      - implementation_id
+      - local_entrypoint
+      - hosted_surface
+      - runtime_or_tool_versions
+  evidence_kind_allowed:
+    - local-check-record
+    - hosted-check-record
+    - h8-validation-evidence
+    - h10-eval-run-evidence
+    - human-authorization-evidence
+  result_allowed: [PASS, FAIL, BLOCKED, NOT_APPLICABLE]
+  no_check_skipping_by_path_only: >-
+    Path filters are an optimization after logical changed-artifact classification. A file/path
+    not yet represented in mapping metadata cannot silently avoid required checks.
+
+check_classes:
+  - id: RC-HARNESS-SELF
+    oracle: deterministic
+    binds_h8: [DV-HARNESS-SELF, DV-EXECUTION-BASIS]
+    responsibility:
+      - validate durable Harness/meta state and referenced contract identities/versions
+      - validate Task Capsule/execution-basis structural integrity where present
+  - id: RC-FORMAT-TYPE-APPLICABILITY
+    oracle: deterministic
+    binds_h8: [DV-FORMAT-SCHEMA, DV-TYPE-OWNER, DV-APPLICABILITY]
+    responsibility:
+      - validate H4 format/type/owner/schema/applicability contracts
+  - id: RC-LIFECYCLE
+    oracle: deterministic
+    binds_h8: [DV-LIFECYCLE]
+    responsibility:
+      - validate H2 state/checkpoint/gate transition legality and current eligibility
+  - id: RC-REGISTRY-REF-GRAPH
+    oracle: deterministic
+    binds_h8: [DV-FINGERPRINT, DV-REGISTRY, DV-REFERENCE, DV-DEPENDENCY-GRAPH]
+    responsibility:
+      - recompute fingerprints
+      - generate/verify anchor registry
+      - resolve refs and item selectors
+      - generate/verify dependency graph
+  - id: RC-LINEAGE-AUTHORITY
+    oracle: deterministic
+    binds_h8: [DV-LINEAGE, DV-AUTHORITY]
+    responsibility:
+      - validate derivation lineage and roots
+      - validate human/materialization/epistemic authority
+  - id: RC-FRESHNESS
+    oracle: deterministic
+    binds_h8: [DV-FRESHNESS]
+    responsibility:
+      - reject stale validation/checkpoint/gate evidence
+      - reject incompatible specification/validator/judge versions
+  - id: RC-G4-AUTHORIZATION
+    oracle: deterministic
+    binds_h8: [DV-AUTHORIZATION]
+    responsibility:
+      - validate current exact-scope G4 lease and current gate evidence for implementation changes
+  - id: RC-REGRESSION-INDEX
+    oracle: deterministic
+    binds_h10: [HE-CRITICAL-REGRESSION]
+    responsibility:
+      - generate/verify H10 corpus index
+      - enforce global stable scenario IDs and effective-critical coverage
+  - id: RC-REGRESSION-IMPACT
+    oracle: deterministic
+    binds_h10:
+      - HE-CRITICAL-REGRESSION
+      - HE-ROUTING
+      - HE-CONTEXT-MINIMIZATION
+      - HE-UNSUPPORTED-INFERENCE
+      - HE-SEMANTIC-JUDGES
+      - HE-REPLAY-RESTART-IDEMPOTENCY
+      - HE-AUTHORITY-TOOLS-AUTHORIZATION
+    responsibility:
+      - resolve changed-contract scenario impact
+      - require one frozen eval plan for the complete applicable set
+      - reject missing/stale required suite evidence
+  - id: RC-SEMANTIC-EVAL-EVIDENCE
+    oracle: semantic-observation
+    binds_h10: [HE-SEMANTIC-JUDGES]
+    responsibility:
+      - run or consume versioned semantic observations when the applicable set requires them
+      - validate engine/judge/policy/trial/input identity
+      - never synthesize model-run PASS from deterministic structure checks
+  - id: RC-TRACE-EVIDENCE
+    oracle: deterministic
+    responsibility:
+      - validate H10 trace completeness for persisted eval/gate/task evidence
+      - prohibit private chain-of-thought as required evidence
+
+change_classes:
+  harness_contract:
+    examples:
+      - docs-v2 meta/process/Harness specifications
+      - validator/judge/profile catalogs
+      - Task Capsule/validation/eval contracts
+    required_check_classes:
+      - RC-HARNESS-SELF
+      - RC-REGRESSION-INDEX
+      - RC-REGRESSION-IMPACT
+    conditional_check_classes:
+      - RC-SEMANTIC-EVAL-EVIDENCE when H10 applicable set selects semantic fixtures
+      - RC-FRESHNESS when active project/gate evidence references changed versions
+  artifact_type_or_schema_contract:
+    required_check_classes:
+      - RC-HARNESS-SELF
+      - RC-FORMAT-TYPE-APPLICABILITY
+      - RC-REGISTRY-REF-GRAPH
+      - RC-REGRESSION-INDEX
+      - RC-REGRESSION-IMPACT
+      - RC-FRESHNESS
+  canonical_anchor_or_evidence:
+    required_check_classes:
+      - RC-FORMAT-TYPE-APPLICABILITY
+      - RC-REGISTRY-REF-GRAPH
+      - RC-LINEAGE-AUTHORITY
+      - RC-FRESHNESS
+    conditional_check_classes:
+      - applicable H8 semantic judge evidence for acceptance/gate transition
+  lifecycle_or_process_state:
+    required_check_classes:
+      - RC-HARNESS-SELF
+      - RC-LIFECYCLE
+      - RC-FRESHNESS
+    conditional_check_classes:
+      - RC-G4-AUTHORIZATION when implementation lease/evidence is involved
+  generated_registry_graph_or_index:
+    required_check_classes:
+      - RC-REGISTRY-REF-GRAPH or RC-REGRESSION-INDEX according to generated kind
+    write_policy: generated-output-must-equal-recomputed-output
+  validation_checkpoint_or_gate_evidence:
+    required_check_classes:
+      - RC-FRESHNESS
+      - RC-TRACE-EVIDENCE
+    conditional_check_classes:
+      - RC-G4-AUTHORIZATION for G4 evidence/lease
+  harness_validator_eval_or_runtime_implementation:
+    required_check_classes:
+      - RC-HARNESS-SELF
+      - RC-REGRESSION-INDEX
+      - RC-REGRESSION-IMPACT
+      - RC-TRACE-EVIDENCE
+    conditional_check_classes:
+      - RC-SEMANTIC-EVAL-EVIDENCE according to applicable H10 plan
+  repository_enforcement_configuration:
+    examples: [Makefile, Harness validator entrypoints, workflow/check configuration, path/check mapping]
+    required_check_classes:
+      - RC-HARNESS-SELF
+      - RC-REGRESSION-INDEX
+      - RC-REGRESSION-IMPACT
+    self_enforcement_rule: >-
+      A change to the mechanism selecting/running checks cannot exempt itself from validation.
+      Hosted evidence must come from an unaffected trusted revision/surface or an explicitly
+      authorized bootstrap procedure whose result is bound to the candidate revision.
+  product_or_web_implementation:
+    required_existing_product_checks: [core-or-web-check-as-applicable]
+    required_harness_check_classes_when_implementation_enforcement_active: [RC-G4-AUTHORIZATION]
+    note: Product tests/builds prove executable behavior, not design/implementation authorization.
+
+check_matrix_resolution:
+  algorithm:
+    - classify every changed retained artifact/configuration into one or more change_classes
+    - union required_check_classes
+    - evaluate conditional_check_classes from declared current facts and H10 change impact
+    - resolve each check class to one repository implementation binding
+    - fail if any required check has no current implementation/evidence path
+    - produce deterministic sorted required check set
+  unknown_change_class:
+    result: FAIL
+    diagnostic_code: enforcement-surface-unmapped
+  unknown_conditional_fact:
+    human_owned: NEED_MORE_DATA
+    technical_or_repository_fact_missing: BLOCKED
+  optimization:
+    path_filters_allowed_after_resolution: true
+    path_filter_may_remove_required_check: false
+
+local_hosted_responsibility:
+  local:
+    default_role:
+      - fast deterministic feedback
+      - generation/verification of registry, graph and regression index
+      - deterministic conformance and applicable regression runner where available
+      - preparation/validation of semantic eval plan and captured evidence
+    authority:
+      may_prove_deterministic_contract: true
+      may_authorize_merge_by_itself: false
+      may_claim_semantic_model_eval_without_run: false
+  hosted:
+    default_role:
+      - authoritative exact-candidate-revision deterministic integration evidence
+      - check-matrix completeness
+      - verification that committed/generated outputs match canonical sources
+      - verification that required H10 eval evidence is current and complete
+      - execution of semantic evals only when a versioned hosted runner is actually configured
+    exact_revision_required: true
+    stale_on_head_change: true
+  shared_implementation:
+    preferred_local_entrypoint: make harness-check
+    preferred_hosted_surface: .github/workflows/harness.yml
+    rule: >-
+      Future H4-H10 deterministic enforcement should be implemented behind the repository-owned
+      Harness check entrypoint and invoked by the existing harness gate rather than duplicated as
+      separate local/hosted validators.
+  product_surfaces:
+    rule: >-
+      Existing core/web/product workflows remain owners of product executable checks. A future
+      shared G4 authorization guard is invoked by those surfaces for implementation changes rather
+      than duplicating product tests inside harness.yml.
+
+hosted_evidence_binding:
+  required:
+    - check_id
+    - check_version
+    - repository_revision
+    - required_check_set_fingerprint
+    - contract_version_set
+    - result
+    - evidence_ref
+  repository_revision_rule: full immutable commit SHA
+  candidate_acceptance:
+    requires_all:
+      - every required hosted check PASS for exact candidate revision
+      - no required H10 suite missing/BLOCKED
+      - no stale validation/gate/G4 evidence
+      - no unresolved change impact
+    head_change:
+      effect: invalidate prior candidate hosted evidence
+      diagnostic_code: hosted-evidence-stale-head
+  main_push:
+    role: post-merge/integration verification and drift detection
+    premerge_authority: false
+
+generated_output_verification:
+  generated_kinds:
+    anchor_registry:
+      source: canonical current H3/H4 anchors
+      verifier: DV-REGISTRY plus DV-FINGERPRINT
+    dependency_graph:
+      source: canonical H5 semantic refs plus current registry
+      verifier: DV-REFERENCE plus DV-DEPENDENCY-GRAPH
+    regression_index:
+      source: source-owned conformance cases and H10 suite selectors
+      verifier: RC-REGRESSION-INDEX
+    human_readable_projection:
+      source: current canonical graph/lineage
+      verifier: source refs/fingerprints and projection profile
+  verify_algorithm:
+    - regenerate from exact candidate sources using pinned generator/check version
+    - canonicalize using owning contract
+    - compare generated fingerprint/content to candidate generated output when retained
+    - fail on mismatch
+  mismatch:
+    result: FAIL
+    diagnostic_code: generated-output-drift
+  manual_edit_effect:
+    canonical_truth_changed: false
+    required_action: regenerate-or-remove-illegal-generated-edit
+  committed_generated_output_optional: >-
+    A repository may retain or generate outputs ephemerally according to layout policy; either way
+    evidence records the generator/profile version and exact source fingerprints.
+
+stale_evidence_rejection:
+  validation_evidence:
+    reject_when:
+      - validated local semantic fingerprint differs
+      - dependency snapshot differs from current effective dependencies
+      - validation-basis fingerprint does not recompute
+      - required validator/spec/profile version no longer accepted
+  gate_evidence:
+    reject_when:
+      - any required input anchor/evidence is noncurrent, DIRTY, STALE, dangling or changed
+      - exact execution-basis fingerprint no longer matches current basis
+      - required checkpoint/gate profile, validator or judge version is incompatible
+      - required H10 eval evidence for the basis is missing/stale
+    diagnostic_code: stale-gate-evidence
+  g4_lease:
+    reject_when:
+      - source G4 gate evidence stale or invalid
+      - authorized scope does not contain candidate implementation change
+      - upstream basis changed/dirty
+    effect:
+      implementation_allowed: false
+      diagnostic_code: implementation-lease-invalid
+  warning_only_mode: forbidden
+
+specification_version_invalidation:
+  behavior_affecting_change_requires_version_change_when:
+    - schema required/forbidden fields or enums change
+    - validator/judge allowed outcome or routing semantics change
+    - diagnostic code meaning changes
+    - artifact owner/applicability/canonicalization changes
+    - fingerprint/dependency/lineage semantics change
+    - Task Capsule authority/context/tool semantics change
+    - validation/eval pass criteria change
+  metadata_only_change_may_keep_version_when:
+    - comment/display wording changes without changing machine behavior
+    - non-authoritative explanation changes
+  unversioned_behavior_change:
+    result: FAIL
+    diagnostic_code: contract-version-bump-required
+  compatibility_record_required:
+    fields:
+      - changed_contract_id
+      - before_version
+      - after_version
+      - before_fingerprint
+      - after_fingerprint
+      - compatibility_effect
+      - affected_profile_or_validator_ids
+      - affected_scenario_ids
+  compatibility_effect_allowed:
+    - evidence-compatible
+    - revalidate-affected
+    - invalidate-all-using-version
+    - superseded
+  evidence_preservation:
+    evidence-compatible:
+      rule: >-
+        Preserve existing evidence only when the active profile explicitly accepts the old version
+        and the compatibility declaration proves no affected validation/routing/authority semantics.
+    revalidate-affected:
+      rule: Mark only evidence whose basis includes affected profile/spec/validator/judge as STALE.
+    invalidate-all-using-version:
+      rule: Mark every evidence record that uses the changed version STALE.
+    superseded:
+      rule: Old evidence remains historical only and cannot satisfy current checks.
+  validator_or_judge_implementation_change:
+    behavior_affecting: version bump plus H10 regression required
+    non_behavior_affecting: durable compatibility declaration still required
+  missing_compatibility:
+    result: FAIL
+    diagnostic_code: specification-version-impact-unresolved
+
+h10_regression_enforcement:
+  change_input:
+    - H10 contract-change record
+    - generated regression index fingerprint
+    - exact changed contract/runtime refs/fingerprints
+  required:
+    - applicable set resolves deterministically
+    - one eval plan covers complete applicable set
+    - required suite results/evidence match exact plan/candidate revision
+    - semantic runner profiles are explicit where semantic fixtures selected
+  missing_or_partial:
+    result: FAIL
+    diagnostic_code: regression-evidence-missing
+  stale:
+    result: FAIL
+    diagnostic_code: regression-evidence-stale
+  baseline_role: diagnostic-only
+
+semantic_eval_repository_policy:
+  deterministic_repository_ci:
+    may_validate:
+      - semantic fixture/profile/eval-plan schema
+      - exact input/engine/judge/policy version identity
+      - captured result structure
+      - prohibited-behavior fields
+      - evidence freshness
+    may_claim_semantic_execution: false
+  actual_semantic_execution:
+    requirement: a configured versioned runner actually performs the H10 semantic trials
+    preferred_integration: reuse harness gate as a hosted surface/job when practical
+    alternate_external_runner_allowed: true
+    alternate_requirements:
+      - durable runner identity/version
+      - exact candidate revision and eval-plan fingerprint
+      - captured H10 eval-run evidence
+      - repository verification of evidence integrity/freshness
+    unavailable_when_required:
+      result: BLOCKED
+      diagnostic_code: semantic-eval-evidence-missing
+      deterministic_fallback: forbidden
+
+ci_capability_index:
+  classification: generated-operational-projection
+  canonical_product_domain_truth: false
+  purpose: Expose current repository check capabilities to H9 Task Capsule construction.
+  generated_from:
+    - Makefile/local check entrypoints
+    - .github/workflows executable triggers/jobs/commands
+    - repository check bindings defined by implemented H11 enforcement profile
+  entry_required:
+    - capability_id
+    - local_command_or_null
+    - hosted_workflow_or_null
+    - hosted_job_or_null
+    - trigger_summary
+    - applicable_change_classes
+    - oracle_kind
+    - evidence_role
+    - implementation_status
+  implementation_status_allowed: [available, partial, unavailable]
+  freshness:
+    fingerprint_inputs:
+      - Makefile fingerprint
+      - relevant workflow fingerprints
+      - implemented check-binding/profile fingerprint
+    stale_effect:
+      result: FAIL
+      diagnostic_code: ci-capability-index-stale
+  h9_consumption:
+    - capsule exposes only relevant capability IDs for current changed artifact/task
+    - agent inspects exact current command/trigger before relying on hosted execution
+    - capability unavailable to connector/runtime does not mean repository capability absent
+    - capability index cannot grant tool/action/merge authority
+
+merge_and_branch_evidence:
+  general:
+    candidate_revision: exact immutable head revision
+    required_checks_fingerprint: required
+    all_required_checks_current: true
+  draft_work:
+    local_checks_preferred: true
+    hosted_check_required_for_each_intermediate_commit: false
+  candidate_ready_for_integration:
+    required: hosted evidence on exact candidate revision
+    rule: >-
+      Repository policy may choose ready-for-review, synchronize, merge-queue or equivalent events,
+      but evidence used for integration must correspond to the exact revision being integrated.
+  squash_merge:
+    premerge_candidate_evidence_survives_squash_hash_change: >-
+      The PR candidate evidence proves the exact pre-merge tree/revision selected for integration;
+      the resulting main squash commit receives post-merge verification. Mapping between candidate
+      tree and integration result must be supplied by repository hosting semantics.
+  merge_performed_by_h11: false
+
+future_surface_binding:
+  harness_gate:
+    existing_workflow: .github/workflows/harness.yml
+    existing_local_entrypoint: make harness-check
+    target_responsibilities:
+      - H4-H10 deterministic contract checks
+      - generated registry/dependency/regression-index verification
+      - stale validation/gate evidence rejection
+      - H10 change-impact and required eval evidence verification
+      - semantic eval execution only if a real versioned runner is configured
+  core_gate:
+    existing_workflow: .github/workflows/ci.yml
+    target_responsibilities:
+      - preserve backend executable checks
+      - invoke shared G4 authorization guard for changed implementation scope when enforcement is active
+  web_gate:
+    existing_workflow: .github/workflows/web.yml
+    target_responsibilities:
+      - preserve web build checks
+      - invoke shared G4 authorization guard for changed implementation scope when enforcement is active
+  knowledge_gate:
+    existing_workflow: .github/workflows/knowledge.yml
+    target_responsibilities:
+      - preserve current docs canonical knowledge checks before cutover
+      - do not silently become docs-v2 canonical enforcement before explicit migration/cutover
+  duplication_rule: New workflows require evidence that no existing surface can carry the responsibility without semantic duplication.
+
+diagnostic_codes:
+  enforcement-surface-unmapped: Changed artifact/configuration cannot be mapped to a complete required check set.
+  required-check-not-implemented: Required H11 check class has no current repository implementation binding.
+  local-hosted-command-drift: Local and hosted deterministic surfaces use semantically different validator implementations/profiles.
+  hosted-evidence-stale-head: Hosted PASS belongs to an earlier candidate revision.
+  generated-output-drift: Retained/generated output differs from deterministic regeneration from current sources.
+  stale-gate-evidence: Gate/checkpoint evidence basis is no longer current.
+  implementation-lease-invalid: G4 lease missing, stale or out of candidate change scope.
+  contract-version-bump-required: Behavior-affecting contract/validator semantics changed without required version change.
+  specification-version-impact-unresolved: Changed version lacks complete compatibility/evidence invalidation mapping.
+  regression-evidence-missing: Complete required H10 applicable regression evidence is absent.
+  regression-evidence-stale: H10 evidence does not match current candidate revision/plan/contracts.
+  semantic-eval-evidence-missing: Required actual semantic eval evidence is absent.
+  ci-capability-index-stale: Generated repository check capability projection does not match current executable surfaces.
+  candidate-check-set-incomplete: Candidate revision lacks one or more resolved required checks.
+  post-merge-evidence-used-as-premerge: Post-merge result was presented as pre-merge authorization evidence.
+
+conformance_cases:
+  - id: CI-CF-LOCAL-HOSTED-SAME-IMPLEMENTATION
+    oracle: deterministic
+    given: {local_implementation_id: H-CHECK-1, hosted_implementation_id: H-CHECK-1, versions_equal: true}
+    expect: {result: PASS}
+  - id: CI-CF-LOCAL-HOSTED-DRIFT-REJECTED
+    oracle: deterministic
+    given: {local_implementation_id: H-CHECK-1, hosted_implementation_id: H-CHECK-2}
+    expect: {result: FAIL, diagnostic_code: local-hosted-command-drift}
+  - id: CI-CF-UNKNOWN-CHANGE-CLASS-FAILS
+    oracle: deterministic
+    given: {changed_artifact_class_resolvable: false}
+    expect: {result: FAIL, diagnostic_code: enforcement-surface-unmapped}
+  - id: CI-CF-REQUIRED-CHECK-NOT-IMPLEMENTED
+    oracle: deterministic
+    given: {required_check_class: RC-REGISTRY-REF-GRAPH, implementation_binding_present: false}
+    expect: {result: FAIL, diagnostic_code: required-check-not-implemented}
+  - id: CI-CF-DOCS-V2-USES-HARNESS-ENTRYPOINT
+    oracle: deterministic
+    given: {changed_path: docs-v2/spec/example.yaml, resolved_surface: harness-gate, local_entrypoint: make-harness-check}
+    expect: {parallel_validation_stack_required: false}
+  - id: CI-CF-GENERATED-REGISTRY-MATCH
+    oracle: deterministic
+    given: {regenerated_fingerprint_equal_committed_or_evidence_fingerprint: true}
+    expect: {result: PASS}
+  - id: CI-CF-GENERATED-REGISTRY-DRIFT
+    oracle: deterministic
+    given: {regenerated_fingerprint_equal_committed_or_evidence_fingerprint: false}
+    expect: {result: FAIL, diagnostic_code: generated-output-drift, canonical_truth_changed_by_generated_edit: false}
+  - id: CI-CF-REGRESSION-INDEX-DRIFT
+    oracle: deterministic
+    given: {h10_regression_index_matches_source_cases: false}
+    expect: {result: FAIL, diagnostic_code: generated-output-drift}
+  - id: CI-CF-STALE-VALIDATION-EVIDENCE-REJECTED
+    oracle: deterministic
+    given: {validated_fingerprint_current: false, evidence_claims_current: true}
+    expect: {result: FAIL}
+  - id: CI-CF-STALE-GATE-EVIDENCE-REJECTED
+    oracle: deterministic
+    given: {gate_input_fingerprint_changed: true, gate_evidence_claims_current: true}
+    expect: {result: FAIL, diagnostic_code: stale-gate-evidence}
+  - id: CI-CF-STALE-G4-BLOCKS-IMPLEMENTATION
+    oracle: deterministic
+    given: {g4_gate_evidence_current: false, product_change_requested: true}
+    expect: {implementation_allowed: false, diagnostic_code: implementation-lease-invalid}
+  - id: CI-CF-G4-SCOPE-CONTAINS-CHANGE
+    oracle: deterministic
+    given: {g4_gate_evidence_current: true, changed_implementation_scope_subset_of_lease: true}
+    expect: {authorization_guard: PASS}
+  - id: CI-CF-PRODUCT-TEST-PASS-NOT-G4
+    oracle: deterministic
+    given: {product_tests_pass: true, g4_lease_current: false}
+    expect: {implementation_authorized: false}
+  - id: CI-CF-BEHAVIOR-CHANGE-VERSION-BUMP
+    oracle: deterministic
+    given: {behavior_affecting_contract_change: true, contract_version_changed: true, compatibility_record_complete: true}
+    expect: {version_guard: PASS}
+  - id: CI-CF-BEHAVIOR-CHANGE-NO-VERSION-BUMP
+    oracle: deterministic
+    given: {behavior_affecting_contract_change: true, contract_version_changed: false}
+    expect: {result: FAIL, diagnostic_code: contract-version-bump-required}
+  - id: CI-CF-INCOMPATIBLE-VERSION-STALES-EVIDENCE
+    oracle: deterministic
+    given: {compatibility_effect: invalidate-all-using-version, current_evidence_uses_old_version: true}
+    expect: {evidence_current: false}
+  - id: CI-CF-MISSING-VERSION-IMPACT-FAILS
+    oracle: deterministic
+    given: {contract_version_changed: true, compatibility_record_complete: false}
+    expect: {result: FAIL, diagnostic_code: specification-version-impact-unresolved}
+  - id: CI-CF-H10-REGRESSION-COMPLETE
+    oracle: deterministic
+    given: {applicable_set_resolved: true, one_eval_plan_covers_set: true, all_required_suite_evidence_current: true}
+    expect: {regression_guard: PASS}
+  - id: CI-CF-H10-REGRESSION-PARTIAL-REJECTED
+    oracle: deterministic
+    given: {applicable_set_resolved: true, all_required_suite_evidence_current: false}
+    expect: {result: FAIL, diagnostic_code: regression-evidence-missing}
+  - id: CI-CF-SEMANTIC-EVAL-NOT-SYNTHESIZED
+    oracle: deterministic
+    given: {semantic_eval_required: true, actual_semantic_runner_executed: false, deterministic_structure_checks_pass: true}
+    expect: {result: BLOCKED, diagnostic_code: semantic-eval-evidence-missing, semantic_pass_claimed: false}
+  - id: CI-CF-SEMANTIC-EVAL-EVIDENCE-CURRENT
+    oracle: deterministic
+    given: {semantic_eval_required: true, runner_executed: true, eval_plan_matches_candidate: true, versions_match: true}
+    expect: {semantic_evidence_guard: PASS}
+  - id: CI-CF-EXACT-HEAD-HOSTED-PASS
+    oracle: deterministic
+    given: {hosted_evidence_revision: HEAD1, candidate_revision: HEAD1}
+    expect: {hosted_evidence_current: true}
+  - id: CI-CF-HEAD-CHANGE-STALES-HOSTED-PASS
+    oracle: deterministic
+    given: {hosted_evidence_revision: HEAD1, candidate_revision: HEAD2}
+    expect: {hosted_evidence_current: false, diagnostic_code: hosted-evidence-stale-head}
+  - id: CI-CF-MAIN-PUSH-NOT-PREMERGE-AUTHORITY
+    oracle: deterministic
+    given: {only_check_evidence_source: push-main-after-merge, required_role: premerge-candidate-authorization}
+    expect: {result: FAIL, diagnostic_code: post-merge-evidence-used-as-premerge}
+  - id: CI-CF-CAPABILITY-INDEX-CURRENT
+    oracle: deterministic
+    given: {makefile_workflow_binding_fingerprints_match_index: true}
+    expect: {h9_ci_capability_discovery_valid: true}
+  - id: CI-CF-CAPABILITY-INDEX-STALE
+    oracle: deterministic
+    given: {workflow_changed: true, capability_index_regenerated: false}
+    expect: {result: FAIL, diagnostic_code: ci-capability-index-stale}
+  - id: CI-CF-CONNECTOR-LIMITATION-NOT-CI-ABSENCE
+    oracle: deterministic
+    given: {repository_workflow_exists: true, current_agent_tool_cannot_dispatch: true}
+    expect: {repository_capability_exists: true, agent_may_claim_ci_absent: false}
+  - id: CI-CF-ENFORCEMENT-CHANGE-CANNOT-SELF-EXEMPT
+    oracle: deterministic
+    given: {check_selection_config_changed: true, candidate_skips_required_regression_because_of_own_change: true}
+    expect: {candidate_acceptable: false}
+  - id: CI-CF-PATH-FILTER-IS-OPTIMIZATION
+    oracle: deterministic
+    given: {logical_required_check: RC-FRESHNESS, path_filter_excludes_check: true}
+    expect: {candidate_acceptable: false, path_filter_authoritative: false}
+  - id: CI-CF-LEGACY-VALIDATOR-NOT-H4-H10-PROOF
+    oracle: deterministic
+    given: {validate_docs_v2_uses_superseded_inputs: true, current_harness_check_green: true}
+    expect: {h4_h10_compliance_proven: false}
+
+h11_exit_evaluation:
+  checks:
+    - check matrix maps Harness contracts, anchors/evidence, process state, generated outputs, gate evidence, validator/runtime changes and implementation paths to required enforcement
+    - local and hosted deterministic checks share repository-owned implementations/profiles
+    - existing harness gate and make harness-check are the preferred future H4-H10 enforcement surface rather than a duplicate workflow stack
+    - current legacy docs-v2 validator gap is explicitly recognized and cannot be misrepresented as redesigned compliance
+    - generated registries/graphs/regression indexes are reproducibly regenerated and drift is rejected
+    - stale validation/gate/G4 evidence fails closed
+    - behavior-affecting spec/validator/judge changes require version/compatibility impact and H10 regression
+    - exact candidate revision binding prevents stale PR evidence after head changes
+    - push-main checks are not treated as pre-merge authorization
+    - semantic eval evidence is required when selected and cannot be synthesized by deterministic CI
+    - CI capabilities are discoverable by H9 capsules without granting authority
+    - no executable validators/tests/workflows/CI, product implementation, merge or cutover were changed
+  executable_enforcement_required_for_h11: false
+
+handoff_to_h12:
+  next_task: H12 NAPMS migration and revalidation plan
+  requirements:
+    - distinguish specification-level/manual H4-H10 revalidation from executable CI enforcement until H11/H13 implementation is separately authorized
+    - do not treat current green legacy harness gate as proof that migrated NAPMS anchors satisfy redesigned H4-H10 contracts
+    - plan migrated anchor/registry/evidence layout so future H11 generators/checks can operate deterministically
+    - preserve docs/ authority until explicit cutover
+    - identify which migrated validation/gate evidence must be regenerated because old versions/bases are incompatible
+  implementation_note: >-
+    H13 runtime/enforcement planning should preserve the existing make harness-check plus harness.yml
+    integration surface where practical, replace legacy internal validators with H4-H10-aware
+    implementations, and add exact-head/G4/semantic-eval enforcement only under explicit authorization.
+
+restrictions:
+  executable_validators_created_or_changed: false
+  executable_eval_runner_created_or_changed: false
+  executable_tests_created_or_changed: false
+  workflow_ci_created_or_changed: false
+  product_implementation_created_or_changed: false
+  product_domain_cutover_performed: false
+  merge_performed: false
