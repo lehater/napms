@@ -11,7 +11,7 @@ DDD convergence checkpoint: `mvp-ddd-convergence-checkpoint.md`.
 | Bounded Context | Semantic center | Responsibility |
 |---|---|---|
 | **Business Connectivity** | why is application connectivity needed? | Business Process, Connectivity Need, attribution/current justification |
-| **Access Policy** | what concrete access is proposed, governed and currently effective? | Policy Rule identity/lifecycle, RuleChange governance history, current effective revision/withdrawal |
+| **Access Policy** | what concrete access is proposed, formally decided and currently effective? | Policy Rule identity/lifecycle, RuleChange history/formal decision, current effective revision/withdrawal |
 | **Authority Management** | who may perform a protected action for scope/time? | effective actor/action/scope authority |
 | **Resource Catalogue** | what access-domain resources exist and how are they realized/responsible? | Resource identity/lifecycle, AddressSpace, scope affiliation/responsibility |
 | **Application Communication Catalogue** | what applications/components exist and how may their components communicate? | Application/Component/Interaction identity and immutable InteractionContractRevision traffic meaning |
@@ -21,7 +21,9 @@ DDD convergence checkpoint: `mvp-ddd-convergence-checkpoint.md`.
 | **Access Policy Realization** | how does configured effective access compare with required effective access? | assessment, semantic delta, accepted additive change design/verification |
 | **Network Environment Operations** | how is a verified target mutation executed/explained? | controlled mutation identity, authority, preconditions, outcome/provenance |
 
-`Access Governance` is no longer a separate target Bounded Context. Its bilateral proposal/approval/rejection/withdrawal semantics are part of the Access Policy Rule lifecycle.
+`Access Governance` is not a separate target Bounded Context. The target Access Policy lifecycle owns proposed changes, their formal Accepted/Rejected outcome, current effective revision and withdrawal history.
+
+The MVP does not define a customer approval workflow. Bilateral approval, quorum, CAB/ticket stages and Responsibility Scope-derived approver selection may exist outside NAPMS and may later integrate by recording the final formal decision through an authorized action.
 
 `Connectivity Requirements`, `Connectivity Decision`, implemented ACC `ApplicationDeployment`/`DeploymentInteraction` and compatibility `ComponentDeployment` remain as-built/legacy terms only where current reconstruction documentation requires them.
 
@@ -30,10 +32,10 @@ Provider Policy Interpreter, Provider Policy Renderer and Technical Evidence Acq
 ## Core distinctions
 
 ```text
-Observed != Recognized != Needed != Proposed != Authorized != Materialized != Realized != Executed
+Observed != Recognized != Needed != Proposed != Accepted != Materialized != Realized != Executed
 ```
 
-These are semantic distinctions, not one mandatory linear workflow. Brownfield traffic may be Recognized before Process/Need attribution. Deliberate policy-change submission requires accepted business justification.
+These are semantic distinctions, not one mandatory linear workflow. Brownfield traffic may be Recognized before Process/Need attribution. Deliberate policy-change submission requires accepted business justification. A Proposed change becomes current policy only after an explicit formal Accepted outcome.
 
 Execution success is not final convergence proof; later observation/interpretation/comparison establishes convergence.
 
@@ -95,6 +97,8 @@ ResourceResponsibility
 
 AddressSpace is realization, not Resource or ComponentDeployment identity. Multiple simultaneous interfaces/addresses, endpoint purpose, VIPs and deployment-specific exposure are deferred; `ResourceEndpoint` is not current target truth.
 
+RC scope/responsibility facts are not part of baseline RuleChange decision semantics. They remain independently useful for catalogue responsibility, authority integrations, views and future customer-specific governance extensions.
+
 ## Business Connectivity versus concrete policy
 
 Business Connectivity Need remains application-semantic:
@@ -117,7 +121,7 @@ PolicyRule
 
 The directed deployment pair is the concrete Rule subject/business uniqueness. `revisionRef` is proposed/current traffic semantics rather than Rule identity.
 
-A deliberate RuleChange submission requires a Process-backed Need/business basis. Evidence-derived recognition may produce a candidate before attribution, but cannot make access effective or bypass governance.
+A deliberate RuleChange submission requires a Process-backed Need/business basis. Evidence-derived recognition may produce a candidate before attribution, but cannot make access effective or bypass formal decision.
 
 ## Access Policy — one rule lifecycle owner
 
@@ -126,32 +130,31 @@ Access Policy owns:
 - stable PolicyRule identity;
 - immutable source/destination ComponentDeployment subject;
 - RuleChange attempts and their business/evidence provenance;
-- source/destination approval obligations;
-- approval/rejection history;
+- one formal RuleChange outcome: Pending, Accepted or Rejected;
 - current effective revision, if any;
 - withdrawal/regrant history;
 - current effective PolicyRule publication.
 
-This is one lifecycle because an accepted RuleChange is exactly what changes the Rule's current semantics. The former AG `GovernedAuthorization.effectiveGrant` + AP `PolicyRule` split duplicated current authorization truth without an independent AP decision.
+This is one lifecycle because an Accepted RuleChange is exactly what changes the Rule's current semantics. The former AG `GovernedAuthorization.effectiveGrant` + AP `PolicyRule` split duplicated current authorization truth without an independent AP decision.
 
-Historical and current truth remain distinct inside the BC: pending/rejected changes never overwrite current effective policy, and old approvals never silently reactivate withdrawn access.
+Historical and current truth remain distinct inside the BC: Pending/Rejected changes never overwrite current effective policy, and old Accepted changes never silently reactivate withdrawn access.
 
 `PolicyRuleId` is AP-internal identity; downstream uses opaque `PolicyRuleRef`.
 
-## Approval obligations and authority
+## Formal decision and action authority
+
+The MVP Access Policy domain intentionally does not model how an organization reaches a decision.
 
 ```text
-AD: ComponentDeploymentRef -> ResourceRef
-RC: ResourceRef -> ResponsibilityScopeRef affiliation
-AM: ActorRef + ActionRef + ResponsibilityScopeRef + effectiveTime -> EffectiveAuthority
-AP: derives RuleChange approval obligations from those public facts
+RuleChange
+    Pending
+      -> Accepted
+      -> Rejected
 ```
 
-The first MVP requires exactly one distinct applicable Responsibility Scope per side. Zero or several on either side fail closed. Source and destination approvals are independent and both are required.
+The formal decision preserves actor/time/provenance sufficient for explanation. Source/destination approvers, approval basis snapshots, Responsibility Scope resolution, quorum and workflow stages are not baseline domain concepts.
 
-AM owns actor/action/scope/time authority. Resource responsibility/contact metadata never grants authority.
-
-Historical decisions preserve the authority/obligation basis valid when decided. Materially changed obligations may withdraw current effectiveness; historical approvals alone cannot restore it.
+Authority Management remains an independent owner that may protect actions such as proposing, deciding or withdrawing according to the deployed product's authority configuration. Such action admission does not make AM an approval-workflow engine and does not introduce bilateral approval semantics into AP.
 
 ## Evidence Access Recognition
 
@@ -226,11 +229,12 @@ Provider Policy Renderer owns provider representation and must preserve semantic
 ## Strategic invariants
 
 - each authoritative semantic fact/decision has one owner;
-- Access Policy is the single owner of proposal/approval/current PolicyRule lifecycle;
-- current effective policy and pending/rejected history remain distinct;
+- Access Policy is the single owner of proposed changes, formal decisions and current PolicyRule lifecycle;
+- current effective policy and Pending/Rejected history remain distinct;
+- customer-specific approval workflow is outside the MVP baseline;
 - ACC owns reusable application communication meaning, not deployment;
 - AD owns concrete ComponentDeployment identity/Resource relation, not Resource realization;
-- RC owns Resource/address/scope/responsibility truth, not policy;
+- RC owns Resource/address/scope/responsibility truth, not policy decisions;
 - cross-context references are opaque semantic references, not persistence foreign keys;
 - no Shared Kernel is accepted between target BCs;
 - unknown/incomplete evidence never silently becomes absence, denial, empty policy or success;
@@ -242,7 +246,7 @@ Provider Policy Renderer owns provider representation and must preserve semantic
 
 - richer BusinessProcess lifecycle/criticality/duplicate-Need behavior;
 - several simultaneous Pending RuleChanges and conflict ordering;
-- generalized multi-scope approval algebra;
+- customer-specific approval workflow integration: bilateral approvals, quorum, CAB/ticket stages, Responsibility Scope-derived approvers;
 - nested groups, role inheritance, deny/ABAC/quorum authority;
 - whether several ComponentDeployments may share one Resource as a product restriction;
 - provider runtime identity and richer ComponentDeployment history;
@@ -254,6 +258,6 @@ Provider Policy Renderer owns provider representation and must preserve semantic
 
 ## S2 disposition
 
-Strategic and dependent Tactical DDD are mutually coherent for the selected first-MVP slice. Formal result: `G2 PASS` in `mvp-ddd-convergence-checkpoint.md`.
+Strategic and dependent Tactical DDD are mutually coherent for the simplified selected first-MVP slice. Formal result: `G2 PASS` in `mvp-ddd-convergence-checkpoint.md`.
 
-No implementation authorization is implied. S3 Architecture may now rely on this target baseline.
+No implementation authorization is implied. S3 Architecture may rely on this target baseline.
