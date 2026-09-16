@@ -1,0 +1,767 @@
+version: 1
+kind: validation-gate-engine-specification
+id: DOCS-V2-VALIDATION-GATE-ENGINE
+status: active
+owner_phase: H8
+owner_task: H8-T1
+last_updated: 2026-09-16
+
+purpose: >-
+  Define the universal validation and gate-evaluation engine for the design Harness. Make
+  structural integrity, references, fingerprints, dependency freshness, human authority,
+  lifecycle legality and semantic sufficiency evaluate in a strict deterministic-first order,
+  and persist replayable version-bound evidence for every gate/checkpoint result.
+
+authority:
+  defines:
+    - validation execution-basis schema
+    - deterministic validator pipeline and ordering
+    - semantic judge contract and bounded outcome model
+    - validator/judge version binding
+    - H7 question/materialization authority validation
+    - S2 checkpoint and G0-G4 validation profiles
+    - validation-evidence and gate-evidence logical schemas
+    - stable H8 diagnostic catalog
+    - result aggregation, routing and persistence rules
+    - H8 conformance cases
+  does_not_define:
+    - project-specific product/domain truth
+    - new H4 artifact types or semantic owners
+    - new H5 dependency relations
+    - new H1/H2 lifecycle transition classes
+    - DDD semantics owned by H6
+    - human question/answer semantics owned by H7
+    - agent context/task-capsule runtime owned by H9
+    - executable validators, tests, CI, workflows or Harness runtime
+    - canonical cutover from docs/ to docs-v2
+  direct_dependencies:
+    - {id: DOCS-V2-DEPENDENCY-REGISTRY-IMPACT, path: docs-v2/spec/dependency-registry-impact.yaml}
+    - {id: DOCS-V2-DDD-PIPELINE, path: docs-v2/spec/ddd-pipeline.yaml}
+    - {id: DOCS-V2-HUMAN-KNOWLEDGE-ACQUISITION, path: docs-v2/spec/human-knowledge-acquisition.yaml}
+  required_contracts:
+    - {id: DOCS-V2-HARNESS-CONFORMANCE, path: docs-v2/spec/harness-conformance.yaml}
+    - {id: DOCS-V2-HARNESS-RELIABILITY-CONFORMANCE, path: docs-v2/spec/harness-reliability-conformance.yaml}
+    - {id: DOCS-V2-LIFECYCLE-STATE-MACHINE, path: docs-v2/spec/lifecycle-state-machine.yaml}
+    - {id: DOCS-V2-DESIGN-ANCHOR-CONTRACT, path: docs-v2/spec/design-anchor.yaml}
+    - {id: DOCS-V2-ARTIFACT-TYPE-REGISTRY, path: docs-v2/spec/artifact-type-registry.yaml}
+
+cutover_guard:
+  current_product_domain_authority: docs/
+  docs_v2_role: candidate-redesign-validation-contract
+  rule: >-
+    Validation PASS over docs-v2 proves conformance to the redesign contracts only and does not
+    perform canonical product/domain cutover before separate explicit authorization.
+
+engine_invariants:
+  - id: VE-DETERMINISTIC-FIRST
+    rule: No semantic judge may run until every deterministic check required by the active validation profile has PASSed.
+  - id: VE-FAIL-CLOSED
+    rule: Missing validator, unknown validator version, invalid execution basis, unresolved required reference or invalid Harness self-state stops evaluation; no weaker fallback is allowed.
+  - id: VE-NO-MUTATING-JUDGE
+    rule: Semantic judges return bounded findings/outcomes only and cannot edit anchors, state, questions, decisions, authority or validation evidence.
+  - id: VE-REPLAYABLE
+    rule: The same execution-basis fingerprint and active validator/judge versions reproduce the same deterministic findings, routing inputs and state effects.
+  - id: VE-AUTHORITY-BEFORE-SUFFICIENCY
+    rule: Human-owned semantics must satisfy H3/H7 authority/materialization guards before a semantic sufficiency judge may treat them as current truth.
+  - id: VE-CURRENT-DEPENDENCIES
+    rule: Gate/checkpoint PASS cannot rely on non-current, stale, dangling, ambiguous or merely captured-but-unmaterialized inputs.
+  - id: VE-ONE-EVIDENCE-BASIS
+    rule: All validator/judge results contributing to one gate/checkpoint decision are bound to one immutable execution basis.
+  - id: VE-STABLE-DIAGNOSTICS
+    rule: Deterministic stop/failure classes use stable machine-readable diagnostic codes; human-readable detail is non-authoritative.
+  - id: VE-IDEMPOTENT-PERSISTENCE
+    rule: Reapplying the same operation_id with the same execution basis cannot duplicate evidence or lifecycle state effects.
+  - id: VE-PROJECT-AGNOSTIC
+    rule: Generic validation/routing rules never branch on project identity or encode NAPMS-specific domain semantics.
+
+execution_basis_schema:
+  schema_version: h8-v1
+  required:
+    - evaluation_id
+    - operation_id
+    - target_kind
+    - target_id
+    - scope
+    - durable_state_ref
+    - durable_state_fingerprint
+    - declared_input_refs
+    - declared_input_fingerprints
+    - harness_contract_versions
+    - process_specification_versions
+    - validation_profile_id
+    - validation_profile_version
+    - validator_versions
+    - semantic_judge_versions
+  optional:
+    - registry_generation_version
+    - registry_fingerprint
+    - dependency_graph_fingerprint
+    - lifecycle_scope_state_ref
+    - applicability_fact_snapshot
+    - question_state_refs
+  target_kind_allowed:
+    - anchor
+    - S2-checkpoint
+    - gate
+    - process-state
+  target_id_rule: Stable ID of the exact anchor/checkpoint/gate/process-state being evaluated.
+  input_rule: >-
+    Every datum capable of changing deterministic validation, authority, routing or gate outcome
+    must be represented by a declared durable ref/fingerprint or a versioned specification field.
+    Chat history, ambient process memory and unversioned cache state cannot affect the result.
+  fingerprint:
+    version: execution-basis-sha256-jcs-v1
+    algorithm: SHA-256 over RFC-8785 canonical JSON projection of all required fields plus present optional semantic fields
+  immutability_rule: A validator/judge run cannot add undeclared semantic inputs after the basis fingerprint is created.
+  operation_identity:
+    same_operation_same_basis: idempotent-replay
+    same_operation_different_basis:
+      result: FAIL
+      diagnostic_code: operation-id-basis-conflict
+
+validation_pipeline:
+  ordered_layers:
+    - layer: 0
+      id: harness-self-preflight
+      oracle: deterministic
+      checks:
+        - durable Harness/workstream/lifecycle state schema and identity
+        - required specifications resolvable with unambiguous identities/versions
+        - validation profile resolvable
+        - every required validator/judge identity and version resolvable
+      on_failure:
+        engine_result: FAIL
+        project_semantic_judge_runs: false
+        project_state_mutation_allowed: false
+        diagnostic_code: harness-self-consistency-failed
+    - layer: 1
+      id: execution-basis
+      oracle: deterministic
+      checks:
+        - execution_basis_schema
+        - operation_id conflict
+        - declared input fingerprints present
+        - no ambient authority/input
+      on_failure:
+        semantic_judge_runs: false
+    - layer: 2
+      id: format-schema-type
+      oracle: deterministic
+      checks:
+        - H4 canonical format syntax
+        - H4 type existence/classification
+        - H4 fixed owner
+        - type-specific H6/H7/H8 schema when applicable
+        - canonical semantic key uniqueness where registry build is in scope
+    - layer: 3
+      id: applicability-lifecycle
+      oracle: deterministic
+      checks:
+        - H4 applicability expression syntax
+        - declared applicability facts
+        - H2 stage/checkpoint/gate legality
+        - predecessor/checkpoint eligibility
+      unknown_human_owned_applicability:
+        outcome: NEED_MORE_DATA
+        semantic_judge_runs: false
+      known_prerequisite_unavailable:
+        outcome: BLOCKED
+        semantic_judge_runs: false
+    - layer: 4
+      id: fingerprint-registry-reference
+      oracle: deterministic
+      checks:
+        - H5 semantic fingerprint recomputation
+        - generated registry identity uniqueness
+        - current reference resolution
+        - item-selector resolution when applicable
+        - generated dependency graph integrity
+        - H6 payload semantic refs match H5 semantic refs where required
+    - layer: 5
+      id: lineage-authority
+      oracle: deterministic
+      checks:
+        - H5 derivation-lineage structural completeness
+        - derivation graph acyclicity
+        - root authority validity
+        - H7 question/response/materialization state consistency
+        - decision authority provenance
+        - recommendation/hypothesis/example not used as accepted truth
+      human_truth_missing:
+        outcome: NEED_MORE_DATA
+        semantic_judge_runs: false
+    - layer: 6
+      id: freshness-impact
+      oracle: deterministic
+      checks:
+        - H5 validation-basis fingerprint
+        - dependency snapshot equals current dependencies
+        - active validator/spec versions accepted
+        - impact/dirty state consistency
+        - dependent G4 lease revocation where applicable
+    - layer: 7
+      id: target-deterministic-gate-preconditions
+      oracle: deterministic
+      checks:
+        - validation profile required deterministic validators all PASS
+        - gate/checkpoint-specific deterministic preconditions
+        - no unresolved blocking H7 question/hotspot in target basis
+        - all required current inputs ACCEPTED plus CURRENT
+    - layer: 8
+      id: semantic-judging
+      oracle: semantic
+      precondition: every required deterministic layer PASS and no deterministic route/stop outcome exists
+      checks:
+        - only semantic judges declared by active validation profile
+        - each judge receives bounded question and declared current inputs only
+    - layer: 9
+      id: aggregate-route-persist
+      oracle: deterministic
+      checks:
+        - aggregate validator/judge outcomes
+        - derive H2 route/state effect
+        - build validation/gate evidence
+        - persist evidence and lifecycle effect atomically/idempotently
+  early_stop_rule: >-
+    A deterministic layer that yields FAIL, BLOCKED or NEED_MORE_DATA stops all later layers.
+    A deterministic deficiency with explicit semantic owner may be routed REWORK/REOPEN without
+    invoking a semantic judge when ownership follows mechanically from H4/H5.
+  no_override_rule: A semantic PASS can never override a deterministic non-PASS finding.
+
+deterministic_validator_contract:
+  required_fields:
+    - validator_id
+    - validator_version
+    - validator_kind
+    - accepted_input_schema_version
+    - diagnostic_codes
+  validator_kind_allowed:
+    - schema
+    - format
+    - type-owner
+    - applicability
+    - lifecycle
+    - fingerprint
+    - registry
+    - reference
+    - dependency-graph
+    - lineage
+    - authority
+    - freshness
+    - authorization
+    - self-consistency
+  invocation_input:
+    - execution_basis_fingerprint
+    - declared target/input refs
+    - exact relevant fingerprints
+    - exact relevant specification versions
+  result_schema:
+    required: [validator_id, validator_version, result, findings]
+    result_allowed: [PASS, FAIL, BLOCKED, NEED_MORE_DATA]
+    finding_required: [diagnostic_code, subject_ref]
+    finding_optional: [owner_stage, supporting_refs, human_detail]
+  forbidden:
+    - network/context expansion not declared by execution basis
+    - semantic guessing to repair invalid input
+    - mutation of project truth/state
+
+semantic_judge_contract:
+  required_fields:
+    - judge_id
+    - judge_version
+    - purpose
+    - bounded_question
+    - allowed_input_kinds
+    - allowed_outcomes
+    - prohibited_behaviors
+  invocation_preconditions:
+    - all_required_deterministic_validators_pass
+    - all input anchor refs resolve ACCEPTED plus CURRENT
+    - human-owned input authority is materialized and valid
+    - execution basis contains judge version and exact input fingerprints
+  common_allowed_outcomes:
+    - PASS
+    - REWORK
+    - REOPEN
+    - NEED_MORE_DATA
+  result_schema:
+    required:
+      - judge_id
+      - judge_version
+      - outcome
+      - finding_codes
+      - supporting_refs
+      - rationale_summary
+    conditional:
+      REWORK: [deficiency_owner_stage]
+      REOPEN: [deficiency_owner_stage]
+      NEED_MORE_DATA: [question_request]
+  rationale_summary_rule: >-
+    Concise observable design-review justification; it must not contain private chain-of-thought
+    and cannot serve as authority for a human-owned business choice.
+  question_request_rule: Must be sufficient to create an H7 question linked to the exact semantic gap; it does not itself answer the question.
+  prohibited_behaviors:
+    - edit or rewrite canonical anchors
+    - create accepted facts or decisions
+    - treat recommendation/example/hypothesis as authority
+    - broaden validation scope beyond execution basis
+    - choose an H7 stakeholder option
+    - override deterministic findings
+    - invent a new lifecycle route/outcome
+  disagreement_rule: >-
+    Multiple semantic judges for one profile may all be required. If required judge outcomes are
+    not mutually compatible for one H2 route, the result is REWORK of the validation profile or
+    bounded classification work; the engine must not pick the most convenient judge answer.
+
+semantic_judges:
+  - id: SJ-G0-PROBLEM-SUFFICIENCY
+    purpose: Determine whether the accepted problem/evidence/constraints are sufficient to derive requirements without inventing problem truth.
+    bounded_question: Are the accepted S0 semantics sufficient and internally coherent for this exact scope?
+    allowed_input_kinds: [problem-statement, evidence, user-journey, constraint, problem-decision]
+    allowed_outcomes: [PASS, REWORK, NEED_MORE_DATA]
+  - id: SJ-G1-REQUIREMENTS-SUFFICIENCY
+    purpose: Determine whether accepted observable behavior/qualities/acceptance intent are sufficient and solution-appropriate for domain design.
+    bounded_question: Are the accepted S1 requirements sufficient for S2 without redefining S0 truth?
+    allowed_input_kinds: [functional-requirement, quality-requirement, acceptance-scenario, requirements-glossary, requirements-decision]
+    allowed_outcomes: [PASS, REWORK, REOPEN, NEED_MORE_DATA]
+  - id: SJ-S2-STRATEGIC-SUFFICIENCY
+    purpose: Evaluate strategic DDD boundary/responsibility sufficiency against H6 method rules.
+    bounded_question: Do the accepted strategic S2 anchors justify capability/subdomain/context ownership for this scope without unexplained boundary choices?
+    allowed_input_kinds: [capability-map, domain-distillation, bounded-context, context-relationship-map, domain-glossary, domain-decision]
+    allowed_outcomes: [PASS, REWORK, REOPEN, NEED_MORE_DATA]
+  - id: SJ-S2-PROCESS-SUFFICIENCY
+    purpose: Evaluate domain-process discovery sufficiency against H6 Event Storming/process semantics.
+    bounded_question: Are material commands/events/policies/timeline/external interactions and blocking hotspots sufficiently resolved for tactical design?
+    allowed_input_kinds: [domain-process-model, domain-glossary, domain-decision, bounded-context]
+    allowed_outcomes: [PASS, REWORK, REOPEN, NEED_MORE_DATA]
+  - id: SJ-S2-TACTICAL-SUFFICIENCY
+    purpose: Evaluate aggregate/entity/value-object/invariant/domain-service/state sufficiency against H6 tactical rules.
+    bounded_question: Are tactical domain semantics sufficiently justified by current strategic/process/requirement truth for architecture to realize them?
+    allowed_input_kinds: [domain-model, state-model, domain-glossary, domain-decision, bounded-context, domain-process-model]
+    allowed_outcomes: [PASS, REWORK, REOPEN, NEED_MORE_DATA]
+  - id: SJ-G2-DOMAIN-SUFFICIENCY
+    purpose: Evaluate cross-checkpoint S2 coherence after every applicable checkpoint is ACCEPTED.
+    bounded_question: Taken together, do current accepted S2 checkpoints provide complete coherent domain ownership/semantics for S3 without inventing domain truth?
+    allowed_input_kinds: [S2-accepted-checkpoint-evidence, current-S2-anchors]
+    allowed_outcomes: [PASS, REWORK, REOPEN, NEED_MORE_DATA]
+  - id: SJ-G3-ARCHITECTURE-SUFFICIENCY
+    purpose: Determine whether architecture/contracts realize accepted upstream truth without unresolved technical design gaps.
+    bounded_question: Does the accepted S3 design sufficiently realize current S0-S2 truth for implementation-readiness planning?
+    allowed_input_kinds: [system-context, container-view, interaction-flow, deployment-model, persistence-model, http-contract, event-contract, data-schema, architecture-decision]
+    allowed_outcomes: [PASS, REWORK, REOPEN, NEED_MORE_DATA]
+  - id: SJ-G4-READINESS-SUFFICIENCY
+    purpose: Determine whether one exact implementation slice is specified and verifiable without unresolved P0/P1 design work.
+    bounded_question: Is the exact S4 scope implementation-ready and validation-ready on current upstream truth?
+    allowed_input_kinds: [implementation-plan, migration-plan, test-intent, implementation-readiness-decision]
+    allowed_outcomes: [PASS, REWORK, REOPEN, NEED_MORE_DATA]
+
+validation_profiles:
+  anchor-acceptance:
+    profile_version: h8-v1
+    target_kind: anchor
+    required_layers: [harness-self-preflight, execution-basis, format-schema-type, applicability-lifecycle, fingerprint-registry-reference, lineage-authority, freshness-impact]
+    semantic_judge_selection: type/stage-owned when V-STAGE-SEMANTICS applies
+    pass_rule: all required deterministic validators PASS and all required semantic judges PASS
+  S2-STRATEGIC:
+    profile_version: h8-v1
+    target_kind: S2-checkpoint
+    required_semantic_judges: [SJ-S2-STRATEGIC-SUFFICIENCY]
+  S2-PROCESS-DISCOVERY:
+    profile_version: h8-v1
+    target_kind: S2-checkpoint
+    required_semantic_judges: [SJ-S2-PROCESS-SUFFICIENCY]
+  S2-TACTICAL:
+    profile_version: h8-v1
+    target_kind: S2-checkpoint
+    required_semantic_judges: [SJ-S2-TACTICAL-SUFFICIENCY]
+  G0:
+    profile_version: h8-v1
+    target_kind: gate
+    required_semantic_judges: [SJ-G0-PROBLEM-SUFFICIENCY]
+  G1:
+    profile_version: h8-v1
+    target_kind: gate
+    required_semantic_judges: [SJ-G1-REQUIREMENTS-SUFFICIENCY]
+  G2:
+    profile_version: h8-v1
+    target_kind: gate
+    required_deterministic_guard: every applicable S2 checkpoint ACCEPTED
+    required_semantic_judges: [SJ-G2-DOMAIN-SUFFICIENCY]
+  G3:
+    profile_version: h8-v1
+    target_kind: gate
+    required_semantic_judges: [SJ-G3-ARCHITECTURE-SUFFICIENCY]
+  G4:
+    profile_version: h8-v1
+    target_kind: gate
+    required_semantic_judges: [SJ-G4-READINESS-SUFFICIENCY]
+    required_deterministic_guard:
+      - exact non-empty scope
+      - all authorization-basis refs current
+      - no upstream DIRTY/STALE basis
+
+authority_validation:
+  accepted_human_semantics_require:
+    - fixed-owner H4 materialization target
+    - H3 durable authority/provenance where human-owned
+    - H7 response/question provenance link when obtained through H7
+    - H5 current semantic refs/lineage where consumed
+    - current validation evidence for resulting anchor
+  invalid_authority_inputs:
+    - open H7 question
+    - answered-pending-materialization response
+    - ambiguous/conflicting response
+    - agent recommendation
+    - hypothesis
+    - concrete example generalized beyond its accepted scope
+    - chat/session-only assertion
+  invalid_use_result:
+    outcome: NEED_MORE_DATA when human truth is missing
+    result: FAIL when content falsely claims accepted authority
+  resolved_question_guard: >-
+    A question status resolved is valid only if response provenance exists and each authority-bearing
+    semantic answer has a materialized accepted/current target or a valid no-op confirmation of
+    already accepted/current truth.
+
+freshness_validation:
+  source: H5 validation_basis
+  anchor_current_requires:
+    - local validated_fingerprint equals current semantic_fingerprint
+    - dependency_snapshot equals current resolved dependencies
+    - validation_basis_fingerprint recomputes
+    - active validator/spec versions remain accepted
+  gate_evidence_current_requires:
+    - execution_basis_fingerprint still represents current declared inputs
+    - every current anchor/evidence dependency fingerprint still equals its recorded snapshot
+    - validation_profile version remains accepted
+    - every validator/judge version remains accepted
+    - lifecycle/gate specification versions remain accepted
+  stale_effect:
+    anchor_validation: STALE
+    gate_evidence: STALE
+    dependent_lifecycle_effect: governed by H5 impact/H2 lifecycle; H8 does not invent a new transition
+
+validation_evidence_schema:
+  artifact_type: validation-evidence
+  classification: process-state
+  schema_version: h8-v1
+  required:
+    - evidence_id
+    - evidence_kind
+    - evaluation_id
+    - operation_id
+    - target_kind
+    - target_id
+    - scope
+    - execution_basis_fingerprint
+    - validation_profile_id
+    - validation_profile_version
+    - deterministic_results
+    - semantic_results
+    - aggregate_result
+    - specification_versions
+    - recorded_at
+    - evidence_fingerprint
+  optional:
+    - validated_anchor_fingerprint
+    - dependency_snapshot
+    - validation_basis_fingerprint
+    - registry_fingerprint
+    - dependency_graph_fingerprint
+    - lifecycle_effect
+    - implementation_lease_effect
+    - question_refs
+    - diagnostic_summary
+  evidence_kind_allowed:
+    - anchor-validation
+    - checkpoint-validation
+    - gate-validation
+    - harness-self-validation
+  aggregate_result_allowed:
+    - PASS
+    - REWORK
+    - REOPEN
+    - BLOCKED
+    - NEED_MORE_DATA
+    - FAIL
+  evidence_fingerprint:
+    version: validation-evidence-sha256-jcs-v1
+    includes:
+      - all required semantic fields except recorded_at
+      - all present optional fields except human-readable diagnostic_summary text
+    excludes:
+      - private reasoning
+      - display-only metadata
+  canonical_truth: false
+  authority_rule: Validation evidence proves conformance/freshness but cannot introduce product/domain truth.
+
+gate_evidence_extension:
+  applies_when: evidence_kind == gate-validation
+  additional_required:
+    - gate_id
+    - gate_specification_version
+    - pre_gate_stage_state
+    - gate_result
+    - route
+    - post_evaluation_state_effect
+    - exact_input_snapshot
+  gate_result_allowed:
+    - PASS
+    - NOT_PASS
+    - NOT_EVALUATED
+  pass_rule:
+    - every required deterministic validator PASS
+    - every required semantic judge PASS
+    - no blocking/unresolved authority question exists
+    - exact input snapshot remains current at commit
+  exact_input_snapshot_entry:
+    required: [ref_kind, ref_id, fingerprint_or_state_token]
+  commit_recheck_rule: >-
+    Immediately before persisting PASS/state effect, re-resolve all exact input snapshot entries.
+    If any changed since evaluation began, do not commit PASS; return BLOCKED or REWORK according
+    to existing ownership/routing semantics with diagnostic_code input-changed-before-commit.
+  g4_extension_when_pass:
+    implementation_lease:
+      status: current
+      exact_scope: gate-evaluated-scope
+      authorization_basis_ref: evidence_id
+      authorization_basis_fingerprint: evidence_fingerprint
+
+result_aggregation:
+  deterministic_nonpass_precedence:
+    - FAIL
+    - NEED_MORE_DATA
+    - BLOCKED
+    - REOPEN
+    - REWORK
+  semantic_outcome_rules:
+    - any NEED_MORE_DATA => NEED_MORE_DATA
+    - otherwise any REOPEN => REOPEN earliest explicit deficiency owner using H5 stage rank
+    - otherwise any REWORK => REWORK
+    - otherwise all required judges PASS => PASS
+  fail_rule: FAIL is engine/integrity failure and cannot be converted to semantic PASS/REWORK by a judge.
+  route_binding:
+    PASS: H2 TR-GATE-PASS or checkpoint progression as applicable
+    REWORK: H2 TR-GATE-REWORK/current checkpoint rework
+    REOPEN: H2 TR-REOPEN at explicit earliest owning stage
+    BLOCKED: H2 TR-BLOCKED
+    NEED_MORE_DATA: H2 TR-NEED-MORE-DATA plus H7 structured question
+    FAIL: no project semantic mutation; repair Harness/spec/input integrity first
+  one_capsule_rule: Persist result/state/next-task eligibility and stop; never execute the next task/stage in the same evaluation capsule.
+
+diagnostic_catalog:
+  stability_rule: Codes are stable machine-readable semantics and may not be silently reused.
+  codes:
+    harness-self-consistency-failed: Harness state/spec/profile/version integrity invalid.
+    invalid-execution-basis: Execution basis missing/invalid or contains undeclared authority input.
+    operation-id-basis-conflict: Operation ID was already committed with a different basis.
+    validator-unavailable: Required validator identity/version cannot be resolved.
+    semantic-judge-unavailable: Required judge identity/version cannot be resolved.
+    format-or-schema-invalid: Canonical payload does not parse/validate against required profile.
+    unknown-artifact-type: H4 type cannot be resolved.
+    owner-stage-mismatch: Artifact owner conflicts with H4 fixed owner.
+    applicability-fact-missing-human: Required applicability depends on missing human-owned truth.
+    lifecycle-transition-illegal: Requested checkpoint/gate/state transition is not legal under H2.
+    dangling-reference: Current required ref has no unique target.
+    ambiguous-anchor-id: Current anchor identity resolution is ambiguous.
+    anchor-not-current-truth: Referenced anchor is not ACCEPTED/CURRENT.
+    registry-source-fingerprint-mismatch: Registry fingerprint differs from recomputed canonical source.
+    dependency-graph-invalid: H5 graph cannot be deterministically built.
+    derivation-lineage-invalid: Required lineage is missing, dangling or cyclic.
+    human-authority-not-materialized: Human-owned semantic input is not materialized as valid current truth.
+    example-overgeneralized: Example is being used as broader rule without accepted derivation/decision.
+    validation-evidence-stale: Recorded validation basis no longer matches current inputs/versions.
+    required-input-blocked: Known required prerequisite is unavailable.
+    blocking-question-open: H7/H6 blocking question/hotspot remains unresolved.
+    applicable-s2-domain-design-incomplete: G2 requested before all applicable S2 checkpoints are ACCEPTED.
+    semantic-sufficiency-rework: Current owner semantics are insufficient but no earlier truth must change.
+    semantic-sufficiency-reopen: Sufficiency finding is owned by an earlier accepted stage.
+    semantic-truth-missing: Required non-derivable human semantic truth is missing.
+    input-changed-before-commit: Exact validation input changed between evaluation basis and commit recheck.
+    g4-authorization-basis-invalid: G4 exact scope or upstream authorization basis is stale/dirty/invalid.
+
+semantic_judge_version_policy:
+  pin_exact_version_in_execution_basis: true
+  result_evidence_records_version: true
+  model_or_runtime_identity:
+    rule: >-
+      Runtime/model identity needed to reproduce or audit a semantic judge invocation is part of
+      judge_version or its referenced immutable profile. H8 does not require byte-identical natural
+      language output, only bounded outcome/evidence compliance.
+  upgrade_rule: >-
+    Changing a judge profile/version invalidates prior current evidence only when the active
+    validation policy declares revalidation required; such policy is explicit/versioned.
+
+conformance_cases:
+  - id: VE-CF-DETERMINISTIC-BEFORE-SEMANTIC
+    oracle: deterministic
+    critical: true
+    given: {deterministic_result: FAIL, semantic_judge_attempted: true}
+    expect: {result: FAIL, semantic_judge_runs: false}
+  - id: VE-CF-DANGLING-REF-STOPS-JUDGE
+    oracle: deterministic
+    critical: true
+    given: {current_ref_resolves: false, semantic_sufficiency_question_ready: true}
+    expect: {result: FAIL, diagnostic_code: dangling-reference, semantic_judge_runs: false}
+  - id: VE-CF-EXECUTION-BASIS-REPLAY
+    oracle: deterministic
+    critical: true
+    given: {execution_basis_fingerprint_equal: true, deterministic_validator_versions_equal: true, run_count: 2}
+    expect: {deterministic_findings_equal: true, route_inputs_equal: true}
+  - id: VE-CF-UNDECLARED-AMBIENT-INPUT-REJECTED
+    oracle: deterministic
+    critical: true
+    given: {ambient_chat_fact_changes_outcome: true, fact_not_in_execution_basis: true}
+    expect: {result: FAIL, diagnostic_code: invalid-execution-basis}
+  - id: VE-CF-VALIDATOR-VERSION-REQUIRED
+    oracle: deterministic
+    critical: true
+    given: {required_validator_id_present: true, required_validator_version_missing: true}
+    expect: {result: FAIL, diagnostic_code: validator-unavailable}
+  - id: VE-CF-JUDGE-CANNOT-MUTATE
+    oracle: deterministic
+    critical: true
+    given: {judge_output_contains_anchor_patch: true}
+    expect: {result: FAIL, patch_applied: false}
+  - id: VE-CF-JUDGE-ALLOWED-OUTCOME-ONLY
+    oracle: deterministic
+    critical: true
+    given: {judge_output_outcome: AUTO_IMPLEMENT}
+    expect: {result: FAIL, lifecycle_route_created: false}
+  - id: VE-CF-RECOMMENDATION-NOT-AUTHORITY
+    oracle: deterministic
+    critical: true
+    given: {human_owned_choice_basis: agent-recommendation, materialized_human_decision: false}
+    expect: {outcome: NEED_MORE_DATA, diagnostic_code: human-authority-not-materialized}
+  - id: VE-CF-ANSWER-PENDING-MATERIALIZATION-NOT-TRUTH
+    oracle: deterministic
+    critical: true
+    given: {question_status: answered-pending-materialization, response_captured: true, materialized_target_current: false}
+    expect: {outcome: NEED_MORE_DATA, current_truth_usable: false}
+  - id: VE-CF-EXAMPLE-NOT-UNIVERSAL-RULE
+    oracle: deterministic
+    critical: true
+    given: {example_generalization_status: concrete-only, consumed_as_universal_rule: true}
+    expect: {result: FAIL, diagnostic_code: example-overgeneralized}
+  - id: VE-CF-BLOCKING-HOTSPOT-STOPS-CHECKPOINT
+    oracle: deterministic
+    critical: true
+    given: {target: S2-PROCESS-DISCOVERY, blocking_hotspot_open: true}
+    expect: {outcome: NEED_MORE_DATA, checkpoint_pass: false}
+  - id: VE-CF-G2-REQUIRES-ALL-APPLICABLE-S2
+    oracle: deterministic
+    critical: true
+    given: {strategic: ACCEPTED, process_discovery: ACCEPTED, tactical: NOT_STARTED, tactical_applicable: true}
+    expect: {gate_result: NOT_EVALUATED, diagnostic_code: applicable-s2-domain-design-incomplete}
+  - id: VE-CF-SEMANTIC-JUDGE-BOUNDED-INPUTS
+    oracle: deterministic
+    critical: true
+    given: {declared_input_refs: [A1, A2], judge_consumed_refs: [A1, A2, A3]}
+    expect: {result: FAIL, undeclared_input_consumed: true}
+  - id: VE-CF-SEMANTIC-REWORK-CURRENT-OWNER
+    oracle: semantic
+    critical: true
+    given: {judge_outcome: REWORK, deficiency_owner_stage: S2, current_stage: S2}
+    expect: {route: REWORK}
+  - id: VE-CF-SEMANTIC-REOPEN-EARLIER-OWNER
+    oracle: semantic
+    critical: true
+    given: {judge_outcome: REOPEN, deficiency_owner_stage: S1, current_stage: S3}
+    expect: {route: REOPEN, owning_stage: S1}
+  - id: VE-CF-JUDGE-MISSING-TRUTH-ROUTES-H7
+    oracle: semantic
+    critical: true
+    given: {judge_outcome: NEED_MORE_DATA, question_request_valid: true}
+    expect: {route: NEED_MORE_DATA, h7_question_required: true, agent_invention_allowed: false}
+  - id: VE-CF-FRESH-ANCHOR-DEPENDENCY-SNAPSHOT
+    oracle: deterministic
+    critical: true
+    given: {local_fingerprint_matches: true, dependency_snapshot_matches_current: true, validator_versions_current: true}
+    expect: {validation_freshness: CURRENT}
+  - id: VE-CF-DEPENDENCY-DRIFT-STALES-EVIDENCE
+    oracle: deterministic
+    critical: true
+    given: {validated_anchor_unchanged: true, dependency_fingerprint_changed: true}
+    expect: {validation_freshness: STALE, gate_pass_reuse_allowed: false}
+  - id: VE-CF-JUDGE-VERSION-BOUND-EVIDENCE
+    oracle: deterministic
+    critical: true
+    given: {semantic_judge_ran: true, judge_version_in_execution_basis: true, judge_version_in_evidence: true}
+    expect: {evidence_version_bound: true}
+  - id: VE-CF-GATE-EVIDENCE-EXACT-INPUT-SNAPSHOT
+    oracle: deterministic
+    critical: true
+    given: {gate_result: PASS, exact_input_snapshot_complete: true}
+    expect: {evidence_persistable: true}
+  - id: VE-CF-INPUT-CHANGED-BEFORE-COMMIT
+    oracle: deterministic
+    critical: true
+    given: {evaluation_passed: true, input_snapshot_changed_before_commit: true}
+    expect: {gate_pass_committed: false, diagnostic_code: input-changed-before-commit}
+  - id: VE-CF-G4-PASS-ISSUES-BOUND-LEASE
+    oracle: deterministic
+    critical: true
+    given: {gate: G4, gate_result: PASS, evidence_current: true, exact_scope_nonempty: true}
+    expect: {implementation_lease_status: current, lease_basis_is_gate_evidence: true}
+  - id: VE-CF-G4-STALE-BASIS-NO-AUTH
+    oracle: deterministic
+    critical: true
+    given: {gate: G4, prior_pass: true, upstream_basis_now_stale: true}
+    expect: {implementation_allowed: false, diagnostic_code: g4-authorization-basis-invalid}
+  - id: VE-CF-IDEMPOTENT-GATE-PERSIST
+    oracle: deterministic
+    critical: true
+    given: {same_operation_id: true, same_execution_basis: true, prior_gate_evidence_committed: true}
+    expect: {duplicate_evidence_count: 0, duplicate_state_effect_count: 0}
+  - id: VE-CF-OPERATION-ID-BASIS-CONFLICT
+    oracle: deterministic
+    critical: true
+    given: {same_operation_id: true, execution_basis_changed: true}
+    expect: {result: FAIL, diagnostic_code: operation-id-basis-conflict}
+  - id: VE-CF-FAIL-NOT-SEMANTICALLY-RECOVERED
+    oracle: deterministic
+    critical: true
+    given: {deterministic_result: FAIL, later_judge_claims_PASS: true}
+    expect: {aggregate_result: FAIL, pass_allowed: false}
+  - id: VE-CF-GATE-PASS-PERSISTS-AND-STOPS
+    oracle: deterministic
+    critical: true
+    given: {gate_result: PASS, successor_eligible: true}
+    expect: {evidence_persisted: true, state_effect_persisted: true, successor_started_same_capsule: false}
+
+h8_exit_evaluation:
+  checks:
+    - exact versioned execution-basis schema is defined
+    - deterministic validation layers precede every semantic judge
+    - H4 schema/type/applicability and H2 lifecycle legality are deterministic
+    - H5 fingerprint/reference/graph/lineage/freshness validation is preserved
+    - H7 question/response/materialization authority is validated before semantic sufficiency
+    - semantic judges have bounded questions, declared inputs and bounded allowed outcomes
+    - semantic judges cannot mutate truth/state or override deterministic findings
+    - G0-G4 and S2 checkpoint validation profiles are explicit
+    - validation/gate evidence is replayable and version-bound
+    - exact input snapshot is rechecked before committing gate PASS
+    - stable diagnostic codes are defined
+    - G4 lease binds to exact current gate evidence/scope
+    - idempotent persistence and operation-basis conflict behavior are defined
+    - no new artifact type, H5 relation or H1/H2 transition class is introduced
+    - no executable validator/test/runtime/CI/cutover is performed
+
+handoff_to_h9:
+  next_task: H9 Agent execution and context model v2
+  required_behavior:
+    - Task Capsule v2 carries H8 execution-basis inputs or enough durable refs to construct them deterministically
+    - known facts are ACCEPTED/CURRENT refs only
+    - allowed derivations are explicitly bounded by current task/profile
+    - question/decision/example refs are selected from H7 durable state
+    - context expansion is explicit and updates the execution basis before semantic work
+    - agent/tool actions cannot mutate beyond H8/H9 declared authority
+    - result persistence uses stable operation identity and H8 evidence/diagnostics
+
+restrictions:
+  executable_validators_created_or_changed: false
+  executable_tests_created_or_changed: false
+  runtime_implementation_created_or_changed: false
+  workflow_ci_created_or_changed: false
+  product_code_created_or_changed: false
+  product_domain_cutover_performed: false
