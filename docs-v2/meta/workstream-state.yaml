@@ -7,27 +7,28 @@ last_updated: 2026-09-16
 
 program:
   status: ACTIVE
-  current_phase: H9
+  current_phase: H10
   current_phase_state: NOT_STARTED
-  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8]
+  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9]
   blocked_phases: []
   compatibility_review_required_phases: []
 
 current_task:
-  id: H9-T1
-  title: Agent execution and context model v2
+  id: H10-T1
+  title: Harness evals, tracing and regression model
   state: NOT_STARTED
   objective: >-
-    On the next bounded execution, apply the resume protocol and read the H9 roadmap entry plus
-    its direct H8 dependency before resolving the exact H9 task capsule. H9 must rebase Task
-    Capsules, context selection and tool/authority bounds on the H8 execution basis and durable
-    H3-H7 project graph. Do not execute H9 inside the completed H8 capsule.
+    On the next bounded execution, apply the resume protocol and read the H10 roadmap entry plus
+    its direct H9 dependency. Build the repeatable regression/eval/trace model for the universal
+    Harness using stable conformance IDs and observable durable execution evidence without private
+    chain-of-thought. Do not execute H10 inside the completed H9 capsule.
   required_inputs:
+    - docs-v2/spec/agent-execution-context-v2.yaml
+    - docs-v2/spec/harness-conformance.yaml
+    - docs-v2/spec/harness-reliability-conformance.yaml
     - docs-v2/spec/validation-gate-engine.yaml
     - docs-v2/spec/validation-engine-catalog.yaml
-    - docs-v2/spec/human-knowledge-acquisition.yaml
-    - docs-v2/spec/harness-reliability-conformance.yaml
-  next_after_completion: H10 Harness evals, tracing and regression corpus
+  next_after_completion: H11 Repository and CI enforcement design
 
 completed_work:
   - {id: H0-T1, result: PASS, artifact: docs-v2/meta/roadmap.yaml, summary: durable roadmap and universal design-Harness charter}
@@ -43,49 +44,51 @@ completed_work:
   - {id: H5-T2, result: PASS, artifact: docs-v2/spec/design-derivation-lineage.yaml, summary: universal logical derivation lineage and project-book projection contract}
   - {id: H6-T1, result: PASS, artifact: docs-v2/spec/ddd-pipeline.yaml, summary: complete strategic/process-discovery/tactical DDD method and schema contract}
   - {id: H7-T1, result: PASS, artifact: docs-v2/spec/human-knowledge-acquisition.yaml, summary: durable questions, stakeholder materialization, examples and epistemic-state protocol}
-  - id: H8-T1
+  - {id: H8-T1, result: PASS, artifact: docs-v2/spec/validation-gate-engine.yaml, summary: deterministic-first validation/gate engine plus versioned validator/judge catalog}
+  - id: H9-T1
     result: PASS
     description: >-
-      Define the deterministic-first validation/gate engine, exact execution-basis schema,
-      versioned validator/judge catalog, bounded semantic judges, H7 authority checks,
-      reproducible gate evidence, stable diagnostics and exact-snapshot commit rules.
+      Rebase agent execution on Task Capsule v2, H8 execution basis and durable project-graph
+      authority. Define current known facts, explicit allowed derivations, minimal context loading,
+      pre-load expansion records, deny-by-default tool/mutation authority, post-freeze stop/rebuild,
+      implementation lease enforcement, idempotent persistence and concise observable feedback.
     validation:
-      machine_readable_yaml: PASS
-      validation_layer_count: 10
-      deterministic_validator_count: 14
-      semantic_judge_count: 8
-      validation_profile_count: 9
-      main_conformance_case_count: 27
-      catalog_conformance_case_count: 5
-      conformance_case_id_uniqueness: PASS
-      deterministic_before_semantic: PASS
-      fail_closed_no_fallback: PASS
-      execution_basis_version_bound: PASS
-      validator_catalog_fully_versioned: PASS
-      semantic_judge_catalog_fully_versioned: PASS
-      semantic_judge_nonmutating: PASS
-      human_authority_before_sufficiency: PASS
-      h7_unmaterialized_response_not_truth: PASS
-      h5_dependency_freshness_preserved: PASS
-      g0_g4_profiles_explicit: PASS
-      s2_checkpoint_profiles_explicit: PASS
-      gate_evidence_exact_input_snapshot: PASS
-      precommit_input_recheck: PASS
-      stable_diagnostic_catalog: PASS
-      g4_lease_bound_to_gate_evidence: PASS
-      idempotent_persistence: PASS
+      task_capsule_v2_schema: PASS
+      one_bounded_execution_unit: PASS
+      one_primary_instruction: PASS
+      durable_reconstructibility_without_chat: PASS
+      known_fact_authority_guard: PASS
+      allowed_derivation_allowlist: PASS
+      h7_question_decision_example_refs: PASS
+      context_minimization_contract: PASS
+      context_expansion_recorded_before_load: PASS
+      execution_basis_freeze_before_semantic_work: PASS
+      post_freeze_semantic_expansion_stops: PASS
+      h8_capsule_basis_consistency: PASS
+      deny_by_default_tool_authority: PASS
+      read_permission_not_semantic_authority: PASS
+      declared_mutation_targets_only: PASS
+      exact_scope_g4_lease_guard: PASS
+      earlier_owner_stop_reopen_guard: PASS
+      input_recheck_before_persistence: PASS
+      idempotent_replay: PASS
+      next_task_not_auto_started: PASS
+      feedback_excludes_private_chain_of_thought: PASS
+      conformance_case_count: 33
+      diagnostic_code_count: 19
+      legacy_agent_execution_prose_superseded: true
       new_h4_artifact_types: false
       new_h5_edge_relations: false
       new_h1_h2_transition_classes: false
       project_specific_semantics_introduced: false
-      executable_validators_created_or_changed: false
+      executable_runtime_created_or_changed: false
       executable_tests_created_or_changed: false
-      runtime_implementation_created_or_changed: false
       workflow_ci_created_or_changed: false
+      product_implementation_created_or_changed: false
       product_domain_cutover_performed: false
     artifacts:
-      - docs-v2/spec/validation-gate-engine.yaml
-      - docs-v2/spec/validation-engine-catalog.yaml
+      - docs-v2/spec/agent-execution-context-v2.yaml
+      - docs-v2/spec/agent-execution.md
 
 routing_history:
   - id: H2-T1-ATTEMPT-1
@@ -111,24 +114,23 @@ carry_forward:
   - Every accepted non-root anchor preserves logical derivation lineage with accepted predecessors/evidence/constraints/decisions, derivation kind and durable design rationale.
   - H6 owns the complete universal S2 DDD method/schema contract in docs-v2/spec/ddd-pipeline.yaml.
   - H7 owns human knowledge acquisition: questions/recommendations are process state; stakeholder responses require fixed-owner materialization before they are current design truth.
-  - H8 owns validation/gate evaluation in docs-v2/spec/validation-gate-engine.yaml plus concrete validator/judge version resolution in docs-v2/spec/validation-engine-catalog.yaml.
-  - H8 validation is strictly deterministic-first. Any deterministic FAIL/BLOCKED/NEED_MORE_DATA stops semantic judging; semantic PASS can never override a deterministic non-PASS finding.
-  - H8 execution basis is immutable and version-bound: exact target/scope, durable state/input refs and fingerprints, Harness/process/profile versions, validator versions and semantic judge versions determine the evaluation.
-  - Chat/session memory, process-local cache and undeclared context carry no validation or authorization authority.
-  - H8 has 14 stable h8-v1 deterministic validators bound to ordered validation layers and 8 bounded h8-v1 semantic judges for G0, G1, S2 Strategic/Process/Tactical, G2, G3 and G4.
-  - Semantic judges consume only declared ACCEPTED/CURRENT inputs, return only PASS/REWORK/REOPEN/NEED_MORE_DATA, cannot mutate truth/state, cannot choose stakeholder options and cannot invent lifecycle routes.
-  - H7 human authority/materialization is checked before semantic sufficiency; recommendations, hypotheses, open questions and unmaterialized answers are not current truth.
-  - Validation evidence is H4 validation-evidence process state, never product/domain truth; H8 defines anchor/checkpoint/gate evidence schemas and validation-evidence-sha256-jcs-v1.
-  - Gate PASS is bound to an exact input snapshot, validator/judge/spec versions and execution-basis fingerprint; inputs are re-resolved immediately before PASS/state-effect commit.
-  - If an exact input changes before commit, PASS is not committed; existing H2/H5 ownership/routing determines rework/blocking.
-  - G4 implementation lease is issued only from current exact-scope G4 gate evidence and becomes unusable when its upstream basis becomes stale/dirty.
-  - H8 diagnostic codes are stable machine-readable semantics; human-readable detail is non-authoritative and semantic judge outcome conflicts FAIL rather than being silently resolved.
-  - Durable validation/gate persistence is idempotent by operation_id plus execution basis; same operation ID with different basis FAILs.
-  - H9 must make Task Capsule v2 reconstruct or carry the H8 execution basis, restrict known facts to ACCEPTED/CURRENT refs, declare allowed derivations and question/decision/example refs, and make context expansion explicit before semantic work.
+  - H8 owns deterministic-first validation/gates, versioned validators/judges, execution basis and replayable gate evidence.
+  - H9 owns active agent execution/context semantics in docs-v2/spec/agent-execution-context-v2.yaml; docs-v2/spec/agent-execution.md is superseded and historical only.
+  - Task Capsule v2 is process state, never canonical product/domain truth, and executes exactly one bounded task/evaluation with exactly one primary instruction.
+  - Semantic known facts are only current authority-valid H3/H5/H7 sources. Read access, chat/session memory, recommendations, hypotheses and concrete examples do not become semantic authority by being visible to the agent.
+  - Allowed derivations are explicit. H6 method rules used by a DDD task must be allowlisted in the capsule; human-owned choices still require H7 materialized authority.
+  - Context loading is metadata/direct-ref first and minimal. Broad repository/stage/context preloading is invalid unless a concrete need is recorded.
+  - Context expansion is allowed only during capsule preparation, recorded before load with a concrete unresolved question/reason. After H8 execution-basis freeze, any new semantic input stops the operation and requires a new capsule revision/new operation_id.
+  - Capsule semantic inputs/fingerprints/versions and the H8 execution basis must match exactly; mismatch fails closed.
+  - Tool/action/resource/mutation authority is deny-by-default. Read permission never grants semantic authority. Writes are restricted to declared targets/output contract.
+  - Implementation requires a current exact-scope G4 lease and current gate evidence; capsule fields cannot create or broaden authorization. CI modification and merge require separate explicit authorization.
+  - Agents stop on blocking H7 knowledge, stale/changed inputs, earlier-owner deficiencies, scope expansion, undeclared derivations, missing authority or unauthorized tools; they do not patch around the boundary.
+  - Durable execution feedback contains capsule/basis/evidence/diagnostics/blockers/context expansions/next hint but never private chain-of-thought or scratch transcripts.
+  - Replaying the same operation/basis is idempotent; the same operation ID with a different basis fails.
+  - H10 must turn stable conformance IDs and H9 observable execution records into regression/eval/trace coverage for Harness quality without private chain-of-thought.
   - docs/ remains canonical product/project design truth until explicit cutover; ACCEPTED docs-v2 anchors do not override docs/ before cutover.
   - Product code/tests remain excluded as sources of product/domain/architecture truth during current documentation-design work.
-  - H2 owns lifecycle; H3 anchor identity/provenance/acceptance; H4 type/format/applicability; H5 registry/refs/fingerprints/lineage/impact; H6 DDD semantics; H7 human knowledge acquisition; H8 validation/gates.
-  - Deterministic structural/reference/authority/self-consistency failures must be resolved before semantic evaluation can PASS.
+  - H2 owns lifecycle; H3 anchor identity/provenance/acceptance; H4 type/format/applicability; H5 registry/refs/fingerprints/lineage/impact; H6 DDD; H7 human knowledge; H8 validation/gates; H9 agent execution/context.
 
 blockers: []
 
