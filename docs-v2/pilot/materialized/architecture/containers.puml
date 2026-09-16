@@ -1,0 +1,43 @@
+@startuml
+skinparam componentStyle rectangle
+
+actor User
+component "Web / HTTP adapter" as Web
+component "Resource Catalogue\napplication use cases" as App
+component "Resource Catalogue\ndomain" as Domain
+component "Authority admission port" as AuthPort
+component "Authority Management adapter" as Auth
+component "Resource Catalogue\nrepository port" as RepoPort
+database "PostgreSQL adapter" as Pg
+component "Owner-preserving\nread projection/composition" as Read
+
+User --> Web
+Web --> App
+App --> Domain
+App --> AuthPort
+AuthPort --> Auth
+App --> RepoPort
+RepoPort --> Pg
+App --> Read
+Read --> Domain
+
+note right of Web
+Outer adapter only.
+No Resource Catalogue semantic ownership.
+Caller does not choose trusted actor,
+authority scope or provenance.
+end note
+
+note right of AuthPort
+Application-owned dependency boundary.
+RC domain does not depend on Authority
+Management implementation or HTTP.
+end note
+
+note bottom of Read
+Cross-context enrichment may compose
+presentation data without moving
+semantic ownership into Web/query code.
+end note
+
+@enduml
