@@ -1,0 +1,54 @@
+@startuml
+actor Curator
+participant "Web / HTTP" as Web
+participant "RC application" as App
+participant "Authority Management" as AM
+participant "RC domain" as Domain
+database "RC repository" as Repo
+
+== Resource mutation ==
+Curator -> Web : submit authenticated mutation
+Web -> App : command + server actor context
+App -> AM : admit CurateResourceCatalogue\n@ resource-catalogue
+alt denied or unknown
+  AM --> App : denial / ambiguity
+  App --> Web : public failure; no mutation
+else admitted
+  AM --> App : admitted
+  App -> Domain : apply accepted command/invariants
+  Domain --> App : domain result
+  App -> Repo : persist RC transaction
+  Repo --> App : committed result
+  App --> Web : command result / projection
+end
+
+== Address replacement ==
+Curator -> Web : replacement + expectedVersion
+Web -> App : selected fact + temporal input
+App -> AM : admission
+AM --> App : admitted
+App -> Domain : validate current fact/version/time
+Domain --> App : end current + successor semantics
+App -> Repo : atomic RC persistence
+Repo --> App : updated projection
+App --> Web : replacement result
+
+== Workspace read ==
+Curator -> Web : resource workspace query + asOf
+Web -> App : paging/search/filter request
+App -> Repo : load Resource + effective RC facts
+Repo --> App : RC-owned facts
+App --> Web : projection with explicit missing facts
+
+note over App,AM
+responsibilityScope is business-data filtering.
+It is not substituted for the fixed
+Resource Catalogue authority scope.
+end note
+
+note over Web,Repo
+This pilot documents architecture only.
+Product code and tests are not modified.
+end note
+
+@enduml
