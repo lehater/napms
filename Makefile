@@ -44,6 +44,7 @@ harness-check:
 	python tools/validate_plans.py
 	python tools/validate_skill_routing.py
 	python tools/validate_lifecycle_transitions.py
+	python tools/validate_docs_v2.py
 
 skill-routing-eval:
 	@test -n "$(ROUTING_RESULTS)" || (echo "Usage: make skill-routing-eval ROUTING_RESULTS=path/to/results.json [ROUTING_BASELINE=path/to/baseline.json]" >&2; exit 2)
