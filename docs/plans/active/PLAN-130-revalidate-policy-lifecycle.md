@@ -4,7 +4,7 @@ Status: `active`
 
 ## Goal
 
-Converge the target Strategic/Tactical DDD after G1 revalidation established concrete Component Deployment endpoints, current-vs-proposed rule revision behavior, and evidence-derived access proposals.
+Converge the target requirements, Domain Design and Architecture around concrete Component Deployment endpoints, one Policy Rule lifecycle, evidence-derived access candidates, and a deliberately minimal policy-decision model that does not embed customer-specific approval workflow.
 
 ## Inputs
 
@@ -17,16 +17,19 @@ Converge the target Strategic/Tactical DDD after G1 revalidation established con
 ## Exit criteria
 
 - concrete Component Deployment has one coherent semantic owner, identity and Resource relation;
-- proposal/change history and current effective policy have one coherent lifecycle owner without duplicated authority;
+- proposal/change history and current effective policy have one coherent lifecycle owner;
+- one formal RuleChange decision outcome is sufficient for MVP (`Pending -> Accepted | Rejected`), with organization-specific approval procedures outside the domain baseline;
+- no source/destination bilateral approval algebra or Responsibility Scope resolution is required merely to decide a RuleChange;
+- actor authority may protect propose/decide/withdraw actions without modelling the external organizational process that produced the decision;
 - ACC revision, RC Resource, Business Connectivity and TAE recognition relationships use explicit public semantic contracts;
-- affected Tactical identities/lifecycles/invariants are explicit;
 - vendor-neutral export consumes only published owner truth;
-- G2 is re-evaluated for the affected slice with no P0/P1 semantic contradiction.
+- G1, G2 and G3 are re-evaluated in order after this simplification, with no P0/P1 contradiction;
+- no production implementation starts before G4.
 
 ## Blockers
 
-None currently. The principal Strategic question is whether the existing Access Governance / Access Policy split still represents independent semantic lifecycles or artificially splits one Access Rule lifecycle.
+None currently.
 
 ## Next
 
-Challenge the affected Strategic boundaries and public contracts, update canonical Strategic artifacts, then revalidate only the dependent Tactical models and evaluate G2.
+Reopen S1 for policy-decision semantics, re-run G1 and dependent S2/G2, then return to S3 and remove architecture dependencies that existed solely for bilateral approval/scope-resolution behavior.
