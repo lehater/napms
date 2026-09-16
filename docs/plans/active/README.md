@@ -4,11 +4,11 @@ Current: `PLAN-130-revalidate-policy-lifecycle.md`
 
 Goal: realize the concrete Component Deployment, unified Policy Rule lifecycle and vendor-neutral export without embedding customer-specific approval workflow into the MVP domain.
 
-Current task: revalidate observable policy-decision behavior after simplifying governance from bilateral/source-destination approval obligations to one formal RuleChange decision outcome.
+Current task: revalidate the Access Policy domain model and affected context relationships after G1 accepted one formal RuleChange outcome (`Pending -> Accepted | Rejected`).
 
-Lifecycle stage: `S1`
+Lifecycle stage: `S2`
 Stage state: `IN_PROGRESS`
-Lifecycle basis: stakeholder clarification on 2026-09-16 changes accepted observable governance behavior: the MVP requires only a formal `Pending -> Accepted | Rejected` decision, while concrete organizational approval procedures are customer-specific and outside the product-domain baseline.
+Lifecycle basis: `docs/requirements/access-governance-g1.md` and `access-policy-core.md` record G1 PASS for formal-decision semantics on 2026-09-16; the previous bilateral approval/scope-resolution model is therefore DIRTY.
 Implementation authorization: `none`
 Authorized scope: `none`
 Authorization basis: `none`
@@ -17,19 +17,19 @@ Authorization basis: `none`
 
 Read first:
 - `docs/plans/active/PLAN-130-revalidate-policy-lifecycle.md`
-- `docs/requirements/access-governance-g1.md`
-- `docs/requirements/access-policy-core.md`
 - `docs/domain/access-policy/tactical-model.md`
+- `docs/domain/strategic-model.md`
+- `docs/domain/context-map.md`
 - `docs/domain/mvp-ddd-convergence-checkpoint.md`
 
 ## Blockers
 
-None. The simplification removes previously accepted bilateral approval/scope-resolution behavior; S2 and S3 are DIRTY until G1 is re-evaluated.
+None. S2 must remove approval-specific entities/invariants and any AP dependency on RC Responsibility Scope merely for deciding a RuleChange, while preserving optional action authority through Authority Management.
 
 ## Gate
 
-G1 — accepted requirements distinguish current effective policy from proposed changes while requiring only a formal policy decision outcome and leaving organization-specific approval procedures outside MVP semantics.
+G2 — PolicyRule/RuleChange identity and current-vs-proposed semantics remain coherent with one formal decision outcome, no customer-specific approval workflow is embedded, and affected public contracts have one owner.
 
 ## Next
 
-Update the affected requirements, evaluate G1, then revalidate Access Policy Tactical/Strategic consequences at S2 before returning to S3. Production-code implementation remains forbidden.
+Simplify the AP Tactical model and affected strategic contracts, evaluate G2, then return to S3 to simplify the architecture accordingly. Production-code implementation remains forbidden.
