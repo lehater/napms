@@ -3,32 +3,33 @@ kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
 branch: meta/docs-v2-m7-pilot
-last_updated: 2026-09-16
+last_updated: 2026-09-17
 
 program:
   status: ACTIVE
-  current_phase: H11
+  current_phase: H12
   current_phase_state: NOT_STARTED
-  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10]
+  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11]
   blocked_phases: []
   compatibility_review_required_phases: []
 
 current_task:
-  id: H11-T1
-  title: Repository and CI enforcement design
+  id: H12-T1
+  title: NAPMS migration and revalidation plan
   state: NOT_STARTED
   objective: >-
-    On the next bounded execution, apply the resume protocol and read the H11 roadmap entry plus
-    its direct H10 dependency. Define how local and hosted repository checks enforce H4-H10
-    contracts, regression impact, generated-index integrity, stale evidence rejection and current
-    CI capability reuse without creating or modifying executable workflows in the same capsule.
+    On the next bounded execution, apply the resume protocol and read the H12 roadmap entry plus
+    its direct H11 dependency. Define the first bounded migration/revalidation step for NAPMS under
+    the redesigned Harness, preserving docs/ as current authority, excluding product code/tests as
+    design truth, and routing missing business/domain knowledge through H7. Do not execute H12
+    migration work inside the completed H11 capsule.
   required_inputs:
+    - docs-v2/spec/repository-ci-enforcement.yaml
     - docs-v2/spec/harness-evals-tracing-regression.yaml
-    - docs-v2/spec/validation-gate-engine.yaml
-    - docs-v2/spec/validation-engine-catalog.yaml
-    - docs-v2/spec/artifact-type-registry.yaml
-    - docs-v2/spec/dependency-registry-impact.yaml
-  next_after_completion: H12 NAPMS migration and revalidation plan
+    - docs-v2/spec/agent-execution-context-v2.yaml
+    - docs-v2/spec/ddd-pipeline.yaml
+    - docs-v2/spec/human-knowledge-acquisition.yaml
+  next_after_completion: H13 Runtime Harness implementation plan
 
 completed_work:
   - {id: H0-T1, result: PASS, artifact: docs-v2/meta/roadmap.yaml, summary: durable roadmap and universal design-Harness charter}
@@ -46,40 +47,46 @@ completed_work:
   - {id: H7-T1, result: PASS, artifact: docs-v2/spec/human-knowledge-acquisition.yaml, summary: durable questions, stakeholder materialization, examples and epistemic-state protocol}
   - {id: H8-T1, result: PASS, artifact: docs-v2/spec/validation-gate-engine.yaml, summary: deterministic-first validation/gate engine plus versioned validator/judge catalog}
   - {id: H9-T1, result: PASS, artifact: docs-v2/spec/agent-execution-context-v2.yaml, summary: Task Capsule v2, bounded context/tool authority and reconstructible agent execution}
-  - id: H10-T1
+  - {id: H10-T1, result: PASS, artifact: docs-v2/spec/harness-evals-tracing-regression.yaml, summary: source-owned regression corpus, eval suites, observable tracing and failure promotion}
+  - id: H11-T1
     result: PASS
-    artifact: docs-v2/spec/harness-evals-tracing-regression.yaml
+    artifact: docs-v2/spec/repository-ci-enforcement.yaml
     description: >-
-      Define source-owned regression fixtures, generated corpus/index semantics, required cross-cutting
-      eval suites, deterministic and semantic oracle profiles, observable trace/replay evidence,
-      material failure promotion and Harness contract-change regression selection.
+      Define one-stack repository/CI enforcement over H4-H10, local/hosted equivalence, changed-artifact
+      check resolution, exact-revision hosted evidence, generated registry/index verification, stale
+      evidence/version rejection, semantic-eval evidence rules, G4 implementation authorization and
+      H9-visible CI capability discovery while preserving existing repository surfaces.
     validation:
-      machine_readable_contract: PASS
+      machine_readable_yaml: PASS
       roadmap_deliverables_covered: PASS
-      required_eval_suite_count: 7
-      h10_conformance_case_count: 24
-      h10_diagnostic_code_count: 10
-      source_owned_fixture_oracles_not_duplicated: PASS
-      effective_critical_default_fail_closed: PASS
-      critical_regression_sentinel: PASS
-      routing_eval_contract: PASS
-      context_minimization_eval_contract: PASS
-      unsupported_inference_zero_tolerance: PASS
-      semantic_judge_all_active_versions_required: PASS
-      deterministic_exact_replay: PASS
-      restart_idempotency_suite: PASS
-      authority_tool_g4_suite: PASS
-      trace_observable_without_private_cot: PASS
-      failure_to_regression_promotion: PASS
-      contract_change_applicable_regression_required: PASS
-      baseline_cannot_override_current_contract: PASS
+      check_class_count: 11
+      h8_deterministic_validator_count: 14
+      h8_validator_coverage: PASS
+      h10_required_suite_count: 7
+      h10_suite_enforcement_coverage: PASS
+      conformance_case_count: 30
+      conformance_case_id_uniqueness: PASS
+      diagnostic_code_count: 15
+      existing_harness_surface_reused: PASS
+      local_hosted_single_implementation_rule: PASS
+      changed_artifact_check_matrix: PASS
+      generated_registry_graph_index_verification: PASS
+      stale_validation_gate_g4_rejection: PASS
+      specification_version_invalidation: PASS
+      exact_candidate_revision_binding: PASS
+      post_merge_not_premerge_authority: PASS
+      semantic_eval_not_synthesized: PASS
+      ci_capability_index_for_h9: PASS
+      legacy_docs_v2_validator_gap_detected: PASS
+      ready_for_review_head_freshness_gap_detected: PASS
+      current_product_g4_ci_gap_detected: PASS
       new_h4_artifact_types: false
       new_h5_edge_relations: false
       new_h1_h2_transition_classes: false
-      project_specific_semantics_introduced: false
+      project_specific_core_semantics_introduced: false
+      executable_validators_created_or_changed: false
       executable_eval_runner_created_or_changed: false
       executable_tests_created_or_changed: false
-      runtime_implementation_created_or_changed: false
       workflow_ci_created_or_changed: false
       product_implementation_created_or_changed: false
       product_domain_cutover_performed: false
@@ -107,20 +114,22 @@ carry_forward:
   - Harness is a critical engineering instrument: explicit versioned rule or explicit stable stop; silent heuristic fallback is forbidden.
   - Project documentation is a graph of machine-readable Design Anchors and typed relations; human-readable documentation is a reproducible non-canonical book/view projection.
   - Every accepted non-root anchor preserves logical derivation lineage with accepted predecessors/evidence/constraints/decisions, derivation kind and durable design rationale.
-  - H6 owns universal S2 DDD semantics; H7 owns human knowledge acquisition; H8 owns deterministic-first validation/gates; H9 owns active Task Capsule v2 agent execution/context semantics.
-  - Semantic known facts are only current authority-valid H3/H5/H7 sources. Read access, chat/session memory, recommendations, hypotheses and concrete examples do not become semantic authority by visibility.
-  - Context expansion is explicit before load and only during capsule preparation; after execution-basis freeze a new semantic input stops the current operation and requires a new basis/operation identity.
-  - Tool/action/resource/mutation authority is deny-by-default; implementation requires a current exact-scope G4 lease; CI modification and merge require separate explicit authorization.
-  - H10 owns Harness quality measurement in docs-v2/spec/harness-evals-tracing-regression.yaml.
-  - Source specifications remain canonical owners of conformance-case given/expect semantics. H10 generates/indexes stable scenario IDs and must not create a second expected-behavior truth source.
-  - H10 treats an active conformance case with missing critical field as effective-critical; only explicit critical false excludes it from the universal sentinel unless promoted after a material failure.
-  - Deterministic Harness behavior requires exact contract-level replay for declared outcomes/routes/state/authorization/diagnostics; semantic judges are evaluated only by bounded structured outcomes, refs and prohibited-behavior guards, never private reasoning text.
-  - HE-CRITICAL-REGRESSION must cover every active effective-critical case; routing, context minimization, unsupported inference, semantic judges, replay/restart/idempotency and authority/tool/G4 boundaries have required specialized suites.
-  - Unauthorized mutation, invented human-owned truth, silent fallback, authority escalation and implementation without a valid lease have zero tolerance in required critical runs.
-  - H10 traces store only observable durable refs/fingerprints/versions/results/diagnostics/state effects; private chain-of-thought and scratch transcripts are prohibited.
-  - A reproduced critical/material Harness failure cannot close until the violated behavior is represented by a stable regression fixture (or durably classified not-a-defect) and the applicable regression suite passes.
-  - Every Harness behavior/spec/runtime change declares affected contracts/scenarios and passes the complete applicable regression set; historical baselines cannot redefine the current contract oracle.
-  - H11 must map H8 validators and H10 suites onto existing local/hosted repository validation surfaces, enforce generated index integrity and stale evidence/version rejection, and avoid creating a parallel CI stack when existing infrastructure can be evolved.
+  - H6 owns universal S2 DDD semantics; H7 owns human knowledge acquisition; H8 owns deterministic-first validation/gates; H9 owns Task Capsule v2 execution/context; H10 owns Harness regression/evals/tracing; H11 owns repository/CI enforcement design.
+  - Source specifications remain canonical owners of conformance-case expected behavior; generated regression indexes and other generated views are never a second truth source.
+  - Deterministic Harness behavior requires exact replay on declared contract outputs; semantic evaluation is bounded by structured outcomes and prohibited-behavior guards, never private chain-of-thought.
+  - Existing repository Harness integration surface is make harness-check locally and .github/workflows/harness.yml hosted; future H4-H10 enforcement should evolve those surfaces rather than create a parallel validation stack where practical.
+  - Current tools/validate_docs_v2.py still validates legacy artifacts.md and superseded agent-execution.md, so a green current harness-check is not proof of redesigned H4-H10 compliance.
+  - Current harness.yml includes docs-v2/** and invokes make harness-check, but its pull-request trigger is ready_for_review only; hosted evidence used for integration must be bound to the exact candidate revision and becomes stale after a relevant head change.
+  - A push-main result is post-merge/integration evidence and cannot substitute for required pre-merge candidate evidence.
+  - Current core/web checks do not enforce redesigned exact-scope G4 authorization; future product implementation enforcement must reuse a shared G4 guard alongside existing product checks.
+  - Path filters are an execution optimization only after logical changed-artifact classification; they cannot remove a required check.
+  - Generated anchor registries, dependency graphs and H10 regression indexes must be regenerated deterministically and drift must fail closed; manual generated edits do not change canonical truth.
+  - Validation/checkpoint/gate evidence is current only while exact content/dependency fingerprints, execution basis and accepted validator/spec/profile versions match; stale evidence is rejected, not warned through.
+  - Behavior-affecting contract/validator/judge changes require explicit version and compatibility impact plus complete H10 applicable regression evidence.
+  - Deterministic CI cannot fabricate semantic-eval PASS. When required semantic execution is unavailable, the result is BLOCKED until version-bound real eval evidence exists.
+  - A generated CI capability index should expose current local/hosted commands, triggers, scopes and evidence roles to H9 capsules; connector inability does not imply repository CI absence and the index grants no authority.
+  - AGENTS.md already directs agents to inspect applicable workflows/commands/triggers, prefer local checks, inspect hosted run/log evidence, and distinguish tool limitations from absent CI.
+  - H12 must distinguish specification/manual revalidation from executable CI enforcement until H11/H13 implementation is separately authorized and must not use current green legacy Harness CI as redesigned compliance evidence.
   - docs/ remains canonical product/project design truth until explicit cutover; ACCEPTED docs-v2 anchors do not override docs/ before cutover.
   - Product code/tests remain excluded as sources of product/domain/architecture truth during current documentation-design work.
 
