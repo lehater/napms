@@ -1,6 +1,6 @@
 # Repository layout specification
 
-Status: M3 COMPLETE — canonical layout and locality rules defined; migration remains M6-owned.
+Status: M3 REVISED — canonical layout includes strategic DDD discovery/distillation artifacts.
 
 ## Purpose
 
@@ -34,7 +34,10 @@ docs/
 │   └── glossary.md
 ├── domain/
 │   ├── README.md
+│   ├── capability-map.md
+│   ├── distillation.md
 │   ├── context-map.puml
+│   ├── context-relationships.yaml
 │   ├── glossary.md
 │   ├── traceability/
 │   └── <bounded-context>/
@@ -72,7 +75,10 @@ Only paths required by actual artifacts exist. The tree above is a routing model
 | `constraint` | `docs/requirements/constraints.md` unless a constraint has enough independent lifecycle to justify `constraints/<name>.md` |
 | `acceptance-scenario` | near the requirement when Markdown; executable `.feature` in the repository test/spec location selected by implementation conventions, referenced from the requirement |
 | `requirements-glossary` | `docs/requirements/glossary.md` |
+| `capability-map` | `docs/domain/capability-map.md` or machine-readable equivalent when the mapping is generated/viewed in several forms |
+| `domain-distillation` | `docs/domain/distillation.md` |
 | `context-map` | `docs/domain/context-map.puml` |
+| `context-relationship-map` | `docs/domain/context-relationships.yaml`; context-map rendering may project these classifications but does not duplicate their truth manually |
 | `domain-model` | `docs/domain/<bounded-context>/domain-model.puml` |
 | `domain-glossary` | `docs/domain/glossary.md` for shared domain language; context-local terms may live in `docs/domain/<bounded-context>/README.md` |
 | `state-model` | `docs/domain/<bounded-context>/state-machines/<subject>.puml` |
@@ -104,6 +110,20 @@ requirements/functional/connectivity-management.md
 ```
 
 is valid even if S2 later maps those behaviors across several bounded contexts. Context-centric requirement views are generated projections from traceability.
+
+## Strategic domain locality
+
+Cross-context strategic discovery lives directly under `docs/domain/` because it precedes and explains context-local tactical ownership:
+
+```text
+docs/domain/
+  capability-map.md
+  distillation.md              # only when applicable
+  context-relationships.yaml   # only when multiple BC relationships require classification
+  context-map.puml
+```
+
+The capability map records capability clustering and disposition into candidate/accepted Bounded Context, composition, integration capability or unresolved strategic ownership. Distillation records strategic importance without changing semantic ownership. Context relationships record DDD relationship semantics; the visual context map may render them.
 
 ## Bounded-context locality
 
@@ -138,58 +158,19 @@ An ADR references affected canonical artifacts. It does not own the resulting do
 
 ## Naming
 
-Use lower-case kebab-case for semantic path segments and filenames except established tool conventions.
-
-Prefer:
-
-```text
-access-governance/domain-model.puml
-connectivity-management.md
-request-policy-access.puml
-```
-
-Avoid:
-
-```text
-access-governance-g2.md
-requirements-final-v3.md
-new-domain-model.puml
-architecture-approved.md
-```
-
-Stable identifiers inside artifacts are preferred for traceability; filenames should remain readable and may change only when concept ownership genuinely changes.
+Use lower-case kebab-case for semantic path segments and filenames except established tool conventions. Stable identifiers inside artifacts are preferred for traceability; filenames should remain readable and may change only when concept ownership genuinely changes.
 
 ## Indexes and navigation
 
-Each major area may have one small `README.md` that answers only:
-
-- what this area owns;
-- how artifacts are grouped;
-- where canonical sources are found;
-- links to the small number of cross-cutting entry points.
-
-Do not create hand-maintained catalog pages that repeat titles/statuses already derivable from machine-readable metadata. Prefer generated indexes once M5 tooling exists.
+Each major area may have one small `README.md` that answers only what the area owns, how artifacts are grouped, where canonical sources are found, and links to the small number of cross-cutting entry points. Do not create hand-maintained catalog pages that repeat titles/statuses already derivable from machine-readable metadata.
 
 ## Generated output
 
-Canonical source stays in the paths above. Generated renderings/reports must either:
-
-1. be CI artifacts and remain outside Git; or
-2. live under a clearly non-canonical generated root when a repository consumer requires committed output.
-
-A future generated root, if required, is:
-
-```text
-docs-generated/
-```
-
-It must never be searched as canonical knowledge by agents. Generated files identify their source and generation mechanism. Default policy: do not commit reproducible renderings.
+Canonical source stays in the paths above. Generated renderings/reports must either be CI artifacts outside Git or live under a clearly non-canonical generated root when a repository consumer requires committed output. A future generated root, if required, is `docs-generated/`; it must never be searched as canonical knowledge by agents.
 
 ## Source-code locality exceptions
 
 Executable truth remains with source code when moving it into `docs/` would make it less authoritative. Examples include database migrations, tests and infrastructure-as-code. Documentation references those paths rather than cloning their content.
-
-This preserves the principle "artifact over prose" without forcing every artifact into the documentation directory.
 
 ## `docs-v2` design-period rule
 
@@ -200,7 +181,7 @@ docs/      = canonical current product/process knowledge
 docs-v2/   = non-canonical design specification for the replacement system
 ```
 
-Do not place migrated product artifacts in `docs-v2` until M6 defines migration batches and M7 selects a pilot. This prevents dual truth during design.
+Pilot/migration candidate artifacts may live under `docs-v2/**` only under the migration/pilot rules; they do not become canonical merely by existing there.
 
 ## Cutover rule
 
@@ -213,6 +194,6 @@ validated docs-v2/  -> docs/
 
 `docs-old/` is temporary and excluded from agent canonical search. After cutover verification it is removed; Git history is the long-term archive.
 
-## M3 exit
+## M3 revision note
 
-M3 is complete when canonical physical ownership, path patterns, naming, locality, contract/ADR placement, generated-output policy and the target cutover tree are explicit without migrating current product documentation.
+The strategic-pilot audit added physical ownership for `capability-map`, `domain-distillation` and `context-relationship-map`. Without these paths the repository layout encouraged storing only the final context map and context-local models, losing the durable derivation and relationship classification required for repeatable strategic DDD review.
