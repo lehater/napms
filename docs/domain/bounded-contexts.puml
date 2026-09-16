@@ -22,12 +22,8 @@ package "Business Connectivity\n<<Bounded Context>>" as BC {
   rectangle "Business Process\nConnectivity Need\nBusiness attribution" as BC_CORE
 }
 
-package "Access Governance\n<<Bounded Context>>" as AG {
-  rectangle "Access Request\nBilateral approval\nGrant / withdrawal" as AG_CORE
-}
-
 package "Access Policy\n<<Bounded Context>>" as AP {
-  rectangle "Current semantic\nPolicy Rule truth" as AP_CORE
+  rectangle "PolicyRule\nRuleChange\nPending -> Accepted | Rejected\nCurrent effective revision / withdrawal" as AP_CORE
 }
 
 package "Authority Management\n<<Bounded Context>>" as AM {
@@ -39,7 +35,7 @@ package "Application Communication Catalogue\n<<Bounded Context>>" as ACC {
 }
 
 package "Application Deployment\n<<Bounded Context>>" as AD {
-  rectangle "ApplicationDeployment\nComponentPlacement\n(ComponentRef, ResourceRef)" as AD_CORE
+  rectangle "ComponentDeployment\nComponentRef\nResourceRef" as AD_CORE
 }
 
 package "Resource Catalogue\n<<Bounded Context>>" as RC {
@@ -62,31 +58,37 @@ package "Network Environment Operations\n<<Bounded Context>>" as NEO {
   rectangle "Controlled mutation\nAuthority / preconditions\nOutcome / provenance" as NEO_CORE
 }
 
+component "Evidence Access\nRecognition\n<<Derived Composition>>" as EAR
 component "Required Policy\nMaterialization\n<<Derived Composition>>" as RPM
 component "Provider Policy\nInterpreter\n<<Integration Capability>>" as PPI
 component "Provider Policy\nRenderer\n<<Integration Capability>>" as PPR
 cloud "Provider / Network\nEnvironment" as PROVIDER
 
-' Business meaning and governance
+' Business meaning and policy lifecycle
 ACC --> BC : InteractionRef
-BC --> AG : ConnectivityNeed /\nBusinessProcess basis
-ACC --> AG : InteractionContractRevisionRef
-AD --> AG : source / destination\nApplicationDeploymentRef
-RC --> AG : ResourceScopeAffiliation
-AM --> AG : EffectiveAuthority
-AG --> AP : AuthorizationGranted /\nAuthorizationWithdrawn
+BC --> AP : ConnectivityNeed /\nBusinessProcess basis
+ACC --> AP : InteractionContractRevisionRef
+AD --> AP : source / destination\nComponentDeploymentRef
+AM ..> AP : protected action admission\nwhen configured
 
 ' Catalogue / deployment / resource ownership
-ACC --> AD : ApplicationRef / ComponentRef
+ACC --> AD : ComponentRef
 RC --> AD : opaque ResourceRef
 AM ..> ACC : curation authority
 AM ..> RC : curation authority
 AM ..> AD : protected actions
 
+' Evidence recognition
+TAE --> EAR : technical evidence
+RC --> EAR : address / Resource truth
+AD --> EAR : ComponentDeployment truth
+ACC --> EAR : Interaction / revision truth
+EAR --> AP : RecognizedAccessCandidate
+
 ' Semantic-to-technical materialization
-AP --> RPM : effective Policy Rules
+AP --> RPM : current effective PolicyRules
 ACC --> RPM : immutable traffic contract
-AD --> RPM : current ComponentPlacements
+AD --> RPM : ComponentDeployment -> ResourceRef
 RC --> RPM : Resource -> AddressSpace
 NEP --> RPM : FirewallCandidate /\naccessListNames
 RPM --> APR : TargetRequiredPolicy[]\nor unresolved
@@ -99,6 +101,18 @@ PPR --> NEO : TargetPolicyArtifact
 AM --> NEO : mutation authority
 NEO --> PROVIDER : controlled mutation
 PROVIDER --> TAE : source-qualified capture
+
+note bottom of AP
+No separate Access Governance BC.
+MVP models one formal RuleChange outcome only.
+Customer-specific bilateral/quorum workflow is external.
+end note
+
+note bottom of EAR
+Not a Bounded Context.
+Recognition derives a candidate only;
+it does not authorize access.
+end note
 
 note bottom of RPM
 Not a Bounded Context.
