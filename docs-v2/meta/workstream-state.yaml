@@ -1,0 +1,68 @@
+version: 1
+kind: meta-workstream-state
+id: DOCS-V2-HARNESS-STATE
+roadmap: docs-v2/meta/roadmap.yaml
+branch: meta/docs-v2-m7-pilot
+last_updated: 2026-09-16
+
+program:
+  status: ACTIVE
+  current_phase: H1
+  current_phase_state: NOT_STARTED
+  completed_phases:
+    - H0
+  blocked_phases: []
+
+current_task:
+  id: H1-T1
+  title: Define Harness conformance and eval contract
+  state: NOT_STARTED
+  objective: >
+    Detail the test-first contract that will define expected Harness behavior before any
+    future runtime implementation: conformance scenario taxonomy, positive/negative
+    fixtures, deterministic-versus-semantic validation boundaries, transition/failure
+    routing cases, and evals for context minimization, structured outputs, guardrails,
+    bounded tools and human escalation.
+  expected_outputs:
+    - machine-readable conformance/eval specification
+    - stable conformance scenario IDs
+    - success and failure cases for the planned Harness capabilities
+  next_after_completion: H2 executable lifecycle model
+
+completed_work:
+  - id: H0-T1
+    result: PASS
+    description: Persist resumable Harness redesign roadmap and test-first delivery policy.
+    artifacts:
+      - docs-v2/meta/roadmap.yaml
+      - docs-v2/README.md
+  - id: H0-T2
+    result: PASS
+    description: Persist separate mutable workstream state for cross-chat continuation.
+    artifacts:
+      - docs-v2/meta/workstream-state.yaml
+
+carry_forward:
+  - Existing M1-M6 specifications are redesign inputs and may be revised by H2-H11.
+  - M7 evidence exposed missing strategic-DDD derivation artifacts and broader Harness/process gaps.
+  - The previously recorded horizontal strategic G2 PASS is stale under the revised direction and must not authorize architecture or implementation.
+  - Product code/tests remain excluded as sources of product/domain/architecture truth in the current documentation-design work.
+  - docs/ remains canonical product/project design truth until explicit cutover.
+  - Design Anchors are intended to become canonical machine-readable, human-controllable reference points with stable identity, provenance, dependency and validation semantics.
+  - Domain Process Discovery/Event Storming must escalate unsupported business choices to structured stakeholder questions; user answers/examples should become durable decisions, use cases or journeys with provenance.
+
+blockers: []
+
+restrictions:
+  product_implementation_authorization: none
+  executable_test_change_authorization: none
+  workflow_ci_change_authorization: none
+  canonical_cutover_authorization: false
+  merge_authorization: false
+
+resume_protocol:
+  - Read this file first.
+  - Read only the current phase entry and direct dependencies from docs-v2/meta/roadmap.yaml.
+  - Load existing specs only when required by the current task.
+  - Complete one bounded META task, validate it, persist state, and stop.
+  - Do not infer progress from chat history when repository state is available.
