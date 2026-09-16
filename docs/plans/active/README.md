@@ -1,33 +1,33 @@
 # Active execution
 
-Current: none.
+Current: `PLAN-documentation-system-v2.md`
+Goal: Design and validate Documentation System v2 before any canonical product-document migration.
+Current task: Complete M1 lifecycle specification only.
+Lifecycle stage: `META`
+Stage state: `IN_PROGRESS`
+Lifecycle basis: `docs-v2/README.md`, `docs-v2/spec/lifecycle.md`, `docs-v2/migration/plan.md`
+Implementation authorization: `none`
+Authorized scope: `none`
+Authorization basis: `none`
 
-The selected next implementation increment is the Full Vendor-Neutral Policy Export defined by `docs/requirements/first-mvp-vendor-neutral-policy-export.md`.
+## Working set
 
-Current accepted product slice:
+Read first:
 
-```text
-AP current effective Policy Rules
-        +
-ACC InteractionContractRevision
-        +
-AD ApplicationDeployment + ComponentPlacement
-        +
-RC Resource + AddressSpace
-        |
-        v
-Full Vendor-Neutral Policy Export
-        |
-        +--> table
-        `--> CSV/vendor-neutral data
-```
+- `docs/plans/active/PLAN-documentation-system-v2.md`
+- `docs-v2/README.md`
+- `docs-v2/spec/lifecycle.md`
+- `docs-v2/migration/plan.md`
+- `docs/process/change-lifecycle.md`
 
-The exported policy must carry access-list-oriented source/destination address, protocol and port/range semantics while remaining independent of firewall, device, ACL and provider context.
+## Blockers
 
-The previous AP-free Required Access Matrix selection is superseded.
+None for M1.
 
-No product workstream is active yet. Because the selected slice now starts from authoritative Access Policy truth, the next lifecycle step is a narrow S2 revalidation of the AP -> export composition and policy-creation handoff before S3 Architecture starts. No implementation authorization exists.
+## Gate
+
+META design work only. `docs/` remains canonical; `docs-v2/` is non-canonical until explicit cutover.
 
 ## Next
 
-Enter S2 only for the selected AP + ACC + AD + RC export slice when explicitly started. Confirm that the export consumes public owner contracts, owns no independent policy truth and does not require NEP/device semantics. Then proceed through S3/S4. Production-code implementation remains forbidden until S4 reaches G4 for an explicit scope.
+Complete M1 lifecycle semantics. Do not expand into detailed artifact schemas, product-artifact creation or migration during this increment.
