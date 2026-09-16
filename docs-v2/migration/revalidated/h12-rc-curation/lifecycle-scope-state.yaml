@@ -1,25 +1,35 @@
-version: 1
+version: 2
 kind: lifecycle-scope-state
 id: NAPMS-H12-RC-CURATION-LIFECYCLE
 scope_id: H12-RC-CURATION-MVP
 last_updated: 2026-09-17
 canonical_product_domain_truth: false
+state_role: sole-writable-lifecycle-owner
 
 process_contracts:
+  control_plane: {id: DOCS-V2-HARNESS-CONTROL-PLANE, version: 1, path: docs-v2/spec/harness-control-plane.yaml}
   lifecycle: {id: DOCS-V2-LIFECYCLE-STATE-MACHINE, version: 1}
   migration: {id: DOCS-V2-NAPMS-MIGRATION-REVALIDATION, version: 2}
   validation: {id: DOCS-V2-VALIDATION-GATE-ENGINE, version: 1}
+  execution: {id: DOCS-V2-AGENT-EXECUTION-CONTEXT-V2, version: 1}
 
 current_task:
   id: H12-G0-1
   kind: gate-evaluation
   lifecycle_stage: S0
   state: NOT_STARTED
+  transaction_boundary: separate-capsule
+  orchestration_session:
+    may_chain_after_prior_commit: true
 
 completed_tasks:
   - id: H12-T2
     result: PASS
     effect: S0-design-basis-materialized
+  - id: H12-P0-RECONCILE-S0
+    result: PASS
+    effect: S0-change-set-revalidated-under-control-plane-v1
+    evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s0-change-set-validation-v2.yaml
 
 stage_states:
   S0: IN_PROGRESS
@@ -46,19 +56,18 @@ applicability_facts:
   scope.external_or_nonnegotiable_constraint_exists: false
   scope.material_claim_requires_durable_evidence: false
 
-current_S0_anchors:
+accepted_anchor_refs:
   - anchor_id: NAPMS-S0-RC-CURATION-PROBLEM
-    type_id: problem-statement
-    status: ACCEPTED
-    validation_freshness: CURRENT
-    semantic_fingerprint: sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
     canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/problem-statement.md
   - anchor_id: NAPMS-S0-RC-CURATION-JOURNEY
-    type_id: user-journey
-    status: ACCEPTED
-    validation_freshness: CURRENT
-    semantic_fingerprint: sha256-jcs-v1:5401681959c4ef07ce2b990b28ff2df1ee2eb5756b3d6355b641ab4f0f5bd475
     canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/user-journey.md
+
+current_validation_evidence:
+  S0_change_set:
+    evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s0-change-set-validation-v2.yaml
+  historical_superseded_receipts:
+    - docs-v2/migration/revalidated/h12-rc-curation/validation/s0-problem-anchor-validation.yaml
+    - docs-v2/migration/revalidated/h12-rc-curation/validation/s0-journey-anchor-validation.yaml
 
 source_authority:
   current_product_domain_authority: docs/
@@ -75,4 +84,6 @@ blockers: []
 
 next_when_current_task_passes:
   id: H12-T3
-  auto_start: false
+  same_capsule: false
+  same_orchestration_session_allowed: true
+  guard: control-plane continuation guards pass

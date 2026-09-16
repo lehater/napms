@@ -44,10 +44,10 @@ semantic_refs: []
 semantic_fingerprint: sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
 validation:
   freshness: CURRENT
-  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s0-problem-anchor-validation.yaml
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s0-change-set-validation-v2.yaml
+  evidence_target: NAPMS-S0-RC-CURATION-PROBLEM
   validated_fingerprint: sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
-  validation_basis_fingerprint: sha256-jcs-v1:e847ab04eee8a421eff7e2531787c5396bc15a1fedf64e34c436d750be98887c
-  profile: anchor-acceptance
-  profile_version: h8-v1
+  profile: change-set-anchor-acceptance
+  profile_version: cp-v1
   enforcement_status: specification-manual-not-CI
 ---

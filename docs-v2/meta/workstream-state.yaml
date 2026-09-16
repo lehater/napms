@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
@@ -13,25 +13,23 @@ program:
   blocked_phases: []
   compatibility_review_required_phases: []
 
-current_task:
-  id: H12-T2
-  title: Rebuild catalogue-curation problem basis
-  state: NOT_STARTED
-  lifecycle_stage: S0
-  objective: >-
-    Using only current canonical docs/**, materialize the minimum S0 problem-statement and
-    applicable user-journey anchors for the bounded Resource Catalogue catalogue-curation
-    migration scope with H3 provenance and H5 root/derivation lineage. Stop before G0 evaluation.
-  required_inputs:
-    - docs-v2/spec/napms-migration-revalidation.yaml
-    - docs-v2/spec/design-anchor.yaml
-    - docs-v2/spec/artifact-type-registry.yaml
-    - docs-v2/spec/dependency-registry-impact.yaml
-    - docs-v2/spec/design-derivation-lineage.yaml
-    - docs-v2/spec/human-knowledge-acquisition.yaml
-    - docs/requirements/catalogue-curation.md
-    - docs/requirements/catalogue-curation-acceptance-examples.md
-  next_after_completion: H12-G0-1 Evaluate G0 for catalogue-curation migration scope
+control_plane:
+  contract:
+    id: DOCS-V2-HARNESS-CONTROL-PLANE
+    path: docs-v2/spec/harness-control-plane.yaml
+    version: 1
+  effective_from: 2026-09-17
+  role: normative-integration-composition-root
+  note: >-
+    H1-H10 component contracts remain authoritative for their owned semantics. The control-plane
+    contract owns the explicit integration amendments needed to distinguish Harness transactions,
+    orchestration sessions and repository commits.
+
+active_scope:
+  scope_id: H12-RC-CURATION-MVP
+  state_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
+  state_owner: scope-state-is-sole-writable-lifecycle-owner
+  resume_rule: read-scope-state-for-current-task-stage-gates-and-blockers
 
 completed_work:
   - {id: H0-T1, result: PASS, artifact: docs-v2/meta/roadmap.yaml, summary: durable universal Harness roadmap}
@@ -56,21 +54,23 @@ completed_work:
     result: PASS
     artifact: docs-v2/spec/napms-migration-revalidation.yaml
     summary: corrected H12 v2 lifecycle/gate sequencing after H12-T2 preflight
-    validation:
-      h2_one_execution_unit_respected: PASS
-      g0_required_before_s1: PASS
-      g1_required_before_s2: PASS
-      gate_evaluation_separate_capsule: PASS
-      s2_strategic_process_tactical_order_preserved: PASS
-      old_horizontal_pilot_gate_evidence_stale: PASS
-      address_cardinality_earliest_owner: S1
-      current_s1_address_behavior: one-or-more-technical-addresses
-      later_s2_single_addressspace_override_allowed: false
-      h7_question_needed_to_reconstruct_current_s1: false
-      executable_validator_test_workflow_changes: false
-      product_implementation_changes: false
-      product_domain_cutover: false
-      merge_performed: false
+  - id: H12-T2
+    result: PASS
+    artifact: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
+    summary: bounded S0 problem/journey reconstruction completed on current canonical docs
+  - id: H12-P0-CONTROL-PLANE
+    result: PASS
+    artifact: docs-v2/spec/harness-control-plane.yaml
+    summary: >-
+      Introduced transaction/session separation, single lifecycle-state ownership, anchor/gate
+      semantic split, lazy authority-closure context, complete final execution basis, change-set
+      validation, evidence normalization and repository authority zones.
+  - id: H12-P0-RECONCILE-S0
+    result: PASS
+    artifact: docs-v2/migration/revalidated/h12-rc-curation/validation/s0-change-set-validation-v2.yaml
+    summary: >-
+      Revalidated the unchanged S0 problem/journey anchors as one change set under the v2.1
+      control-plane semantics; old per-anchor receipts remain historical only.
 
 routing_history:
   - id: H2-T1-ATTEMPT-1
@@ -92,28 +92,48 @@ routing_history:
     result: REWORK(H12-T1)
     observed_at: 2026-09-17
     reason: >-
-      H12 v1 combined S0 and S1 reconstruction in one bounded design execution and routed directly
-      to S2 without separate G0/G1 evaluations, violating H2 one-execution-unit and predecessor-gate invariants.
+      H12 v1 combined S0 and S1 reconstruction and skipped separate G0/G1 gate transactions.
     resolution: >-
-      H12-T1R revised the plan to S0 -> G0 -> S1 -> G1 -> S2 Strategic -> Process Discovery -> Tactical -> G2.
+      H12 v2 established S0 -> G0 -> S1 -> G1 -> S2 Strategic -> Process Discovery -> Tactical -> G2.
+  - id: H12-HARNESS-V2-1-AUDIT
+    result: CONTROL_PLANE_CORRECTION
+    observed_at: 2026-09-17
+    reason: >-
+      Independent audit found duplicate writable lifecycle-state ownership, incomplete exact
+      binding of scoped state in validation evidence, anchor acceptance using a gate-sufficiency
+      judge identity, and avoidable session/commit fragmentation.
+    resolution: >-
+      DOCS-V2-HARNESS-CONTROL-PLANE v1 keeps lifecycle/gate ordering and reliability invariants
+      while making the Task Capsule the atomic transaction boundary and allowing serial capsules
+      in one orchestration session.
 
 carry_forward:
   - Harness is a universal project-agnostic design execution rail; NAPMS is a migration/pilot case, never a hard-coded semantic special case.
   - Harness behavior is explicit, versioned and fail-closed; silent fallback, ambient authority and project-specific magic are forbidden.
   - Project documentation is a graph of machine-readable Design Anchors and H5 relations; readable documentation is a non-canonical projection.
   - Every accepted non-root anchor preserves logical derivation lineage to accepted predecessors/evidence/constraints/decisions.
-  - H6 owns S2 DDD semantics; H7 human knowledge acquisition; H8 validation/gates; H9 Task Capsule execution; H10 regression/evals/tracing; H11 repository/CI enforcement design.
-  - Existing repository Harness surfaces remain make harness-check and .github/workflows/harness.yml; current legacy docs-v2 validator is not redesigned H4-H10 compliance evidence.
+  - H6 owns S2 DDD semantics; H7 human knowledge acquisition; H8 validation/gates; H9 transaction-scoped Task Capsules; H10 regression/evals/tracing; H11 repository/CI enforcement design.
+  - DOCS-V2-HARNESS-CONTROL-PLANE v1 is the normative composition root for transaction/session/state/evidence integration semantics.
+  - One Task Capsule equals one atomic Harness transaction; an orchestration session may chain multiple committed eligible capsules until a real stop condition.
+  - Gate/checkpoint evaluations remain separate transactions with separate evidence; they do not require separate agent/session invocations.
+  - The active scope lifecycle state is the sole writable owner of current task, stage/checkpoint/gate states and blockers; this global state only points to it.
+  - Anchor semantic consistency uses SJ-ANCHOR-CONSISTENCY; gate/checkpoint sufficiency judges are reserved for gate/checkpoint profiles.
+  - Exact context may be resolved lazily inside a predeclared authority closure; the final consumed execution basis is frozen and fingerprint-bound before decision/persistence.
+  - Coherent same-stage/same-scope anchor changes may be validated as one change set while preserving per-target fingerprints and graph/lineage guarantees.
   - docs/ remains canonical NAPMS product/project design truth until explicit cutover; product code/tests/runtime config cannot reconstruct missing product/domain/architecture truth during H12.
-  - Existing horizontal/pilot docs-v2 candidates are comparison/historical input until rematerialized under current H3-H8 contracts; former V0-V3/G2/PASS evidence is stale.
-  - H12 v2 legal migration sequence is H12-T2 S0 -> H12-G0-1 -> H12-T3 S1 -> H12-G1-1 -> H12-T4 Strategic -> H12-T5 Process Discovery -> H12-T6 Tactical -> H12-G2-1 -> H12-T7.
-  - One bounded execution may perform one design task or one gate/checkpoint evaluation, never both; successor lifecycle stages require their predecessor gate PASS.
+  - Existing horizontal/pilot docs-v2 candidates are migration/history/comparison input until rematerialized; former V0-V3/G2/PASS evidence is stale.
+  - H12 legal semantic sequence remains S0 -> G0 -> S1 -> G1 -> S2 Strategic -> Process Discovery -> Tactical -> G2 -> planning; only session/transaction mechanics changed.
   - Current canonical S1 catalogue-curation behavior explicitly permits a realization version with one or more technical addresses.
-  - The later S2 single-effective-AddressSpace rule is a downstream narrowing and cannot override current S1. Reconstructing current S1 requires no H7 question; adopting the narrower rule would require an explicit S1/H7 authority change.
-  - Acceptance Example F is concrete-only evidence of replacing one address with another and cannot establish a universal max-one cardinality rule.
-  - The prior Resource Catalogue tactical pilot cannot satisfy current S2 because applicable H6 Process Discovery was not durably performed before tactical modelling.
-  - Old context-map is projection-only after current bounded-context/context-relationship anchors exist; old traceability is replaced by H5 semantic refs/lineage plus generated views.
+  - The later S2 single-effective-AddressSpace rule cannot override current S1 without explicit S1/H7 authority change.
+  - The prior Resource Catalogue tactical pilot cannot satisfy current S2 because applicable Process Discovery was not durably performed before tactical modelling.
   - New bounded-scope G2 does not authorize docs cutover, S3/S4 acceptance, product implementation, workflow changes, merge or broader NAPMS domain completeness.
+
+repository_authority_zones:
+  harness_control_plane: docs-v2/spec/** and docs-v2/meta/** except declared project adapters
+  canonical_project_truth: docs/**
+  migration_workspace: docs-v2/migration/**, docs-v2/pilot/**, docs-v2/horizontal/** plus docs-v2/spec/napms-migration-revalidation.yaml
+  generated_views: docs-generated/**
+  target_layout_deferred: {harness: harness/**, migration: docs-migration/**}
 
 blockers: []
 
@@ -126,12 +146,13 @@ restrictions:
 
 resume_protocol:
   - Read this file first.
-  - Read only the current phase entry and direct dependencies from docs-v2/meta/roadmap.yaml.
-  - Load existing specs only when required by the current task.
-  - Treat carry_forward and current_task required-input pointers as explicit context dependencies.
-  - Complete one bounded META/migration task or one gate evaluation, validate it, persist state, and stop.
-  - Do not infer progress from chat history when repository state is available.
+  - Resolve active_scope.state_ref; treat that scope state as the sole current lifecycle/task/gate owner.
+  - Read docs-v2/spec/harness-control-plane.yaml for effective integration semantics.
+  - Read only the current scope task direct dependencies and applicable phase/spec contracts.
+  - Build one transaction-scoped Task Capsule; persist it atomically/idempotently before starting another transaction.
+  - The same orchestration session may start the next eligible capsule after commit unless a control-plane stop condition applies.
+  - Do not infer progress or authority from chat history when repository state is available.
 
 history_note: >-
-  Earlier detailed validation remains available in Git history; this state preserves the current
-  resumable execution pointer, active invariants, restrictions and migration findings.
+  Detailed prior validation remains available in Git history and historical receipts. This state
+  intentionally avoids duplicating the active scope current_task/stage/gate state.
