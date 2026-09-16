@@ -1,6 +1,6 @@
 # Full-width source disposition ledger
 
-Status: IN PROGRESS / non-canonical.
+Status: COMPLETE / non-canonical.
 
 This ledger prevents legacy file placement or vocabulary from silently becoming v2 ownership. `docs/**` is read as accepted design evidence; each source is routed to the earliest semantic stage it actually supports.
 
@@ -27,7 +27,7 @@ This ledger prevents legacy file placement or vocabulary from silently becoming 
 | `policy-realization-reconciliation-g1.md` + `access-policy-realization-mvp.md` | S1 comparison/delta/change/verification behavior; S2 owner APR |
 | `provider-policy-renderer-mvp.md` | S1 semantic-preserving rendering behavior; S2 disposition integration capability |
 | `network-environment-operations.md` | S1 controlled mutation behavior; S2 owner NEO |
-| `policy-export-core.md` + `first-mvp-vendor-neutral-policy-export.md` | S1 export/materialization behavior; strategic disposition RPM composition over authoritative contexts |
+| `policy-export-core.md` + `first-mvp-vendor-neutral-policy-export.md` | S1 full Vendor-Neutral Policy Export behavior; S2 disposition owner-preserving composition over AP + ACC + AD + RC, explicitly distinct from RPM and with no NEP dependency |
 | `scoped-connectivity-inventory.md` + acceptance | S1 owner-preserving read behavior; S2 non-peer read composition |
 | `traffic-analysis-checker.md` | S1 technical-entry/read-analysis behavior; strategic routing to owner-preserving composition over existing contexts, not a new peer BC |
 | `web-ui-requirements.md` | S1 product-facing interaction/quality requirements; UI remains outer adapter and does not create semantic ownership |
@@ -39,7 +39,7 @@ This ledger prevents legacy file placement or vocabulary from silently becoming 
 |---|---|
 | `strategic-model.md`, `context-map.md`, `semantic-ownership.md`, `capabilities.md`, `bounded-contexts.puml` | primary current strategic S2 baseline; normalized into `s2/strategic-model.md` |
 | `strategic-model.json` | machine-readable strategic baseline; consistency evidence for the same S2 ownership model, not a second semantic owner |
-| `ubiquitous-language.md` | S1/S2 terminology source; candidate glossary reconstruction input |
+| `ubiquitous-language.md` | S1/S2 terminology source; normalized into candidate glossary |
 | `mvp-ddd-convergence-checkpoint.md` | accepted convergence/evidence record; not a separate semantic owner |
 | per-context `docs/domain/<context>/**` | tactical/domain-detail evidence used only to verify strategic boundaries/terms in this pass; tactical reconstruction is downstream |
 | `resource-role-model.md` | RC/authority/responsibility boundary evidence; responsibility does not imply authority |
@@ -124,6 +124,13 @@ Deferred material is retained as `EXTENSION` where it describes a real accepted 
 
 ## Coverage state
 
-Directory-family accounting is now complete for root, requirements, domain, architecture, engineering, UI, decisions, plans and process. Requirements and engineering are enumerated to file-level/family-level disposition; architecture/UI/decisions have explicit source-family dispositions and known supersession rules.
+Directory-family accounting is complete for root, requirements, domain, architecture, engineering, UI, decisions, plans and process. The accounted sources have been routed into the completed horizontal candidate artifacts:
 
-Remaining semantic work is not tree discovery. It is to finish candidate S0/S1/S2 artifacts from the accounted sources: glossary, acceptance/observable outcomes, strategic context-map artifact and requirement-to-context traceability validation. Any newly discovered material contradiction during that work must be escalated rather than resolved from implementation.
+- S0 problem landscape and full-width user journeys;
+- S1 capability requirements, quality requirements, acceptance outcomes and glossary;
+- strategic S2 model and context map;
+- machine-readable S0-to-S2 traceability.
+
+Known superseded material is explicitly dispositioned rather than silently migrated. No unresolved material contradiction remains in the reviewed horizontal candidate. Future/deferred items remain extensions and do not block the current baseline.
+
+This ledger does not authorize tactical S2, S3/S4, implementation, canonical cutover or product migration. Any later stage must consume the accepted output of its preceding stage rather than reopening downstream implementation as design authority.
