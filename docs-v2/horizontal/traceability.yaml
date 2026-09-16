@@ -1,4 +1,4 @@
-version: 2
+version: 3
 status: candidate
 scope: full-width-s0-s2
 source_authority: accepted docs/** only
@@ -17,98 +17,80 @@ problem_areas:
     requirements: [REQ-BC-001, REQ-BC-002, REQ-BC-003, REQ-BC-101]
     acceptance: [AP-01]
     strategic_owners: [Business Connectivity]
-
   application-communication:
     requirements: [REQ-ACC-001, REQ-ACC-002, REQ-ACC-003, REQ-ACC-004, REQ-ACC-005, REQ-ACC-101]
     acceptance: [ACC-01, ACC-02, ACC-03]
     strategic_owners: [Application Communication Catalogue]
-
   concrete-deployment:
     requirements: [REQ-AD-001, REQ-AD-002, REQ-AD-003, REQ-AD-004, REQ-AD-101]
     acceptance: [AD-01, AD-02]
     strategic_owners: [Application Deployment]
-
   resource-realization:
     requirements: [REQ-RC-001, REQ-RC-002, REQ-RC-003, REQ-RC-004, REQ-RC-005, REQ-RC-101]
     acceptance: [RC-01, RC-02, RC-03]
     strategic_owners: [Resource Catalogue]
-
   access-policy-lifecycle:
     requirements: [REQ-AP-001, REQ-AP-002, REQ-AP-003, REQ-AP-004, REQ-AP-005, REQ-AP-006, REQ-AP-007, REQ-AP-101, REQ-AP-102]
     acceptance: [AP-01, AP-02, AP-03, AP-04, AP-05, AP-06, AP-07, AP-08]
     strategic_owners: [Access Policy]
-
   action-authority:
     requirements: [REQ-AM-001, REQ-AM-002, REQ-AM-003, REQ-AM-101]
     acceptance: [AM-01, AM-02, AM-03]
     strategic_owners: [Authority Management]
-
   technical-evidence:
     requirements: [REQ-TAE-001, REQ-TAE-002, REQ-TAE-101]
     acceptance: [TAE-01, TAE-02, TAE-03, TAE-04, TAE-05, TAE-06, TAE-07, TAE-08]
     strategic_owners: [Technical Access Evidence]
-
   evidence-recognition:
     requirements: [REQ-EAR-001, REQ-EAR-002]
     acceptance: [EAR-01, EAR-02]
     strategic_owners: [Evidence Access Recognition]
     disposition: non-peer-composition
-
   vendor-neutral-policy-export:
-    requirements: []
+    requirements: [REQ-EXPORT-001, REQ-EXPORT-002, REQ-EXPORT-003, REQ-EXPORT-004]
     acceptance: [EXP-01, EXP-02, EXP-03]
     strategic_owners: [Vendor-Neutral Policy Export]
     disposition: owner-preserving-composition
     upstream_owners: [Access Policy, Application Communication Catalogue, Application Deployment, Resource Catalogue]
     note: selected full export is distinct from enforcement-target materialization and has no NEP dependency
-
   required-policy-materialization:
     requirements: [REQ-RPM-001, REQ-RPM-002, REQ-RPM-003, REQ-RPM-004]
     acceptance: [RPM-01, RPM-02, RPM-03]
     strategic_owners: [Required Policy Materialization]
     disposition: non-peer-composition
     upstream_owners: [Access Policy, Application Communication Catalogue, Application Deployment, Resource Catalogue, Network Enforcement Placement]
-
   enforcement-placement:
     requirements: [REQ-NEP-001, REQ-NEP-002, REQ-NEP-003, REQ-NEP-101]
     acceptance: [RPM-03, CHK-02]
     strategic_owners: [Network Enforcement Placement]
-
   policy-realization:
     requirements: [REQ-APR-001, REQ-APR-002, REQ-APR-003, REQ-APR-004, REQ-APR-101]
     acceptance: [APR-01, APR-02, APR-03, VER-01]
     strategic_owners: [Access Policy Realization]
-
   provider-interpretation-rendering:
     requirements: [REQ-PPI-001, REQ-PPR-001, REQ-PROVIDER-101]
     acceptance: [PPI-01, PPR-01]
     strategic_owners: [Provider Policy Interpreter, Provider Policy Renderer]
     disposition: integration-capabilities
-
   controlled-network-mutation:
     requirements: [REQ-NEO-001, REQ-NEO-002, REQ-NEO-003]
     acceptance: [NEO-01, NEO-02, VER-01]
     strategic_owners: [Network Environment Operations]
-
   scoped-connectivity-inventory:
     requirements: [REQ-VIEW-001]
     acceptance: [SCI-01, SCI-02, SCI-03, SCI-04, SCI-05, SCI-06]
     strategic_owners: [Scoped Connectivity Inventory]
     disposition: owner-preserving-composition
-
   checker-traffic-analysis:
-    requirements: []
+    requirements: [REQ-CHECK-001, REQ-CHECK-002]
     acceptance: [CHK-01, CHK-02]
     strategic_owners: [Checker / Traffic Analysis]
     disposition: owner-preserving-composition
-    note: accepted UI/requirements behavior is retained; no peer bounded context is created
-
   connectivity-impact-analysis:
     requirements: [REQ-VIEW-002]
     acceptance: []
     strategic_owners: [Connectivity Impact Analysis]
     disposition: owner-preserving-composition
-
   enterprise-source-integration:
     requirements: [REQ-ID-001, REQ-ID-101]
     acceptance: []
@@ -179,4 +161,4 @@ validation_notes:
   - current Resource target has at most one effective AddressSpace at a logical time
   - Vendor-Neutral Policy Export and Required Policy Materialization are separate non-peer compositions
   - execution success and convergence verification remain distinct
-  - empty requirement arrays mark accepted behavior currently represented by acceptance/UI/source contracts but not yet assigned a dedicated functional requirement ID
+  - functional traceability gaps previously present for Vendor-Neutral Policy Export and Checker are closed in version 3
