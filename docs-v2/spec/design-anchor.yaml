@@ -1,0 +1,501 @@
+version: 1
+kind: design-anchor-contract
+id: DOCS-V2-DESIGN-ANCHOR-CONTRACT
+status: active
+owner_phase: H3
+owner_task: H3-T1
+last_updated: 2026-09-16
+
+purpose: >
+  Define the universal logical contract for machine-readable Design Anchors: stable
+  identity, canonical representation, lifecycle/status, provenance, human control,
+  supersession and fingerprint/revalidation semantics. This contract defines how durable
+  design truth can be represented and safely referenced; it does not perform product
+  cutover or define concrete artifact families/formats.
+
+authority:
+  defines:
+    - universal Design Anchor identity and envelope semantics
+    - canonical-source uniqueness rules
+    - anchor status model and acceptance guards
+    - provenance requirements
+    - human decision and override semantics
+    - supersession and retirement semantics
+    - semantic fingerprint and validation-evidence freshness semantics
+    - declarative H3 conformance cases
+  does_not_define:
+    - NAPMS product or domain truth
+    - concrete artifact type catalog or canonical formats
+    - physical repository paths
+    - dependency graph derivation or impact traversal
+    - DDD artifact schemas or applicability rules
+    - executable validators, runtime Harness behavior, tests, workflows or CI
+    - canonical cutover from docs/ to docs-v2/
+  direct_dependency:
+    id: DOCS-V2-LIFECYCLE-STATE-MACHINE
+    path: docs-v2/spec/lifecycle-state-machine.yaml
+  redesign_input:
+    - docs-v2/spec/artifacts.md
+  behavioral_input:
+    id: DOCS-V2-HARNESS-CONFORMANCE
+    path: docs-v2/spec/harness-conformance.yaml
+
+cutover_guard:
+  current_product_domain_authority: docs/
+  docs_v2_product_domain_authority: candidate-until-explicit-cutover
+  rule: >
+    Defining or validating this contract MUST NOT make a docs-v2 product/domain anchor
+    authoritative over current docs/. Product/domain authority changes only through a
+    separately authorized explicit cutover.
+
+terminology:
+  design_anchor: >
+    A durable, stable-identity reference point for one owned unit of design truth whose
+    canonical semantics are machine-addressable, provenance-bearing and validation-aware.
+  anchor_envelope: >
+    The universal machine-readable metadata required for identity, ownership, state,
+    provenance, references, fingerprints and validation freshness.
+  canonical_payload: >
+    The authoritative semantic body for the anchor. H4 chooses its concrete native format
+    and whether universal envelope fields are embedded, adjacent or mapped into native metadata.
+  projection: >
+    A derived human- or tool-friendly view that references canonical source(s) and never
+    becomes independent truth merely because it is easier to consume.
+
+identity_model:
+  anchor_id:
+    required: true
+    immutable: true
+    globally_unique_within_project: true
+    semantics: identifies the owned concept, not its file path, title, gate, status or revision
+    forbidden_identity_sources:
+      - filesystem path alone
+      - display title alone
+      - gate identifier
+      - lifecycle status
+  type_id:
+    required: true
+    semantics: resolves to exactly one artifact/anchor family once H4 defines the registry
+  owner_stage:
+    required: true
+    cardinality: exactly-one
+    allowed_values: [S0, S1, S2, S3, S4]
+    note: >
+      Concrete H4 types may further restrict owner_stage. Product implementation evidence is
+      not promoted to Design Anchor truth by this H3 contract.
+  scope:
+    required: true
+    semantics: stable semantic scope owned by the anchor; never inferred only from directory placement
+  identity_change_rule:
+    same_owned_concept: preserve-anchor-id
+    materially_different_owned_concept: create-new-anchor-id-and-use-supersession-or-separate-anchor
+    rename_or_move_only: preserve-anchor-id
+
+canonical_representation:
+  logical_shape:
+    required_fields:
+      - anchor_id
+      - type_id
+      - owner_stage
+      - scope
+      - status
+      - canonical_payload
+      - provenance
+      - semantic_fingerprint
+      - validation
+    conditional_fields:
+      - supersedes
+      - superseded_by
+      - retirement
+      - human_override
+      - semantic_refs
+  canonical_owner_rule: >
+    For one anchor_id at one current revision there is exactly one canonical semantic
+    representation. Native payload plus envelope metadata may be physically split only if
+    H4 defines a deterministic one-to-one mapping and neither copy can diverge independently.
+  projection_rule: >
+    Generated/readable projections identify canonical source refs and fingerprint; projection
+    edits never mutate canonical truth.
+  duplicate_truth_rule: >
+    The same semantic truth MUST NOT have multiple independent canonical owners. Cross-cutting
+    views use stable refs or generated projections.
+  format_boundary: >
+    H3 defines the logical contract only. H4 selects YAML, Markdown metadata, OpenAPI,
+    AsyncAPI, architecture DSL or other native source representations per type.
+
+anchor_status_model:
+  states:
+    - id: CANDIDATE
+      may_be_downstream_truth: false
+      meaning: Proposed or derived content exists but has not satisfied acceptance guards.
+    - id: ACCEPTED
+      may_be_downstream_truth: true
+      meaning: Current semantic fingerprint has valid acceptance/validation evidence and authority basis.
+    - id: DIRTY
+      may_be_downstream_truth: false
+      meaning: Previously accepted semantics changed or an accepted dependency/authority basis invalidated current evidence.
+    - id: SUPERSEDED
+      may_be_downstream_truth: false
+      meaning: A newer anchor intentionally replaces this semantic identity; historical references remain resolvable.
+    - id: RETIRED
+      may_be_downstream_truth: false
+      meaning: The anchor is intentionally no longer current and has no required replacement.
+  initial_state: CANDIDATE
+  downstream_reference_guard: >
+    A downstream artifact may rely on an anchor as current truth only when status == ACCEPTED,
+    its validation evidence is CURRENT for semantic_fingerprint, and the reference does not
+    resolve through a superseded/retired current pointer.
+  transition_rules:
+    - id: DA-TR-CANDIDATE-ACCEPT
+      from: CANDIDATE
+      to: ACCEPTED
+      guards:
+        - deterministic integrity validation PASS
+        - required semantic validation or human decision PASS when applicable
+        - authority basis valid for all human-owned assertions
+        - validation evidence records current semantic_fingerprint
+    - id: DA-TR-ACCEPTED-DIRTY
+      from: ACCEPTED
+      to: DIRTY
+      triggers:
+        - canonical semantic fingerprint changes
+        - accepted authority basis becomes stale or invalid
+        - a declared accepted dependency invalidates this anchor once H5 dependency semantics apply
+    - id: DA-TR-DIRTY-ACCEPT
+      from: DIRTY
+      to: ACCEPTED
+      guards:
+        - current semantics revalidated under applicable validator/spec versions
+        - required authority basis remains or becomes valid
+        - validation evidence matches current semantic_fingerprint
+    - id: DA-TR-CURRENT-SUPERSEDED
+      from: [CANDIDATE, ACCEPTED, DIRTY]
+      to: SUPERSEDED
+      guards:
+        - superseded_by references a distinct replacement anchor_id
+        - replacement intent is explicit and durable
+    - id: DA-TR-CURRENT-RETIRED
+      from: [CANDIDATE, ACCEPTED, DIRTY]
+      to: RETIRED
+      guards:
+        - retirement intent and provenance are durable
+  forbidden_transitions:
+    - SUPERSEDED -> ACCEPTED
+    - RETIRED -> ACCEPTED
+    - CANDIDATE -> ACCEPTED when unsupported human-owned assertion exists
+    - DIRTY -> ACCEPTED with stale validation evidence
+
+provenance_model:
+  required_fields:
+    - origin_kind
+    - source_refs
+    - recorded_at
+  origin_kind:
+    allowed:
+      - human-decision
+      - accepted-anchor-derivation
+      - external-authoritative-evidence
+      - imported-current-docs
+      - agent-proposal
+      - mixed
+  source_refs:
+    rule: >
+      References point to durable evidence/decisions/accepted anchors sufficient to audit
+      why the asserted semantics are allowed. Empty source_refs are valid only for an
+      explicitly recorded human-origin assertion whose durable decision record is itself referenced.
+  derivation:
+    required_when: origin_kind in [accepted-anchor-derivation, mixed]
+    fields:
+      - input_anchor_refs
+      - derivation_rule_or_method
+    rule: >
+      Derivation may produce consequences of accepted facts but MUST NOT silently add a
+      new human-owned business choice.
+  authority_basis:
+    required_for_acceptance_when: anchor contains human-owned business semantics
+    allowed:
+      - durable-human-decision-ref
+      - imported-current-docs-ref-before-cutover
+      - accepted-upstream-anchor-ref-after-applicable-cutover
+  audit_history:
+    append_only: true
+    semantics: >
+      Records durable status/override/supersession decisions, not private chain-of-thought.
+
+human_control:
+  principles:
+    - Human-owned business choices enter accepted truth through a durable decision/provenance reference.
+    - Human edits do not bypass deterministic schema/reference/fingerprint validation.
+    - A human may reject or replace an agent proposal without preserving the agent rationale.
+    - A human override changes authority/semantics only through an explicit durable override record.
+  override_record:
+    required_fields:
+      - override_id
+      - actor_ref
+      - decision
+      - affected_anchor_id
+      - previous_fingerprint
+      - resulting_fingerprint
+      - reason_or_decision_ref
+      - recorded_at
+    allowed_decisions:
+      - ACCEPT_PROPOSAL
+      - REPLACE_SEMANTICS
+      - REJECT_PROPOSAL
+      - RETIRE
+      - SUPERSEDE
+    deterministic_effects:
+      REPLACE_SEMANTICS:
+        - recompute semantic_fingerprint
+        - invalidate validation evidence bound to previous_fingerprint
+        - if anchor was ACCEPTED set status DIRTY until current semantics are revalidated
+      REJECT_PROPOSAL:
+        - candidate cannot become ACCEPTED from the rejected proposal
+      RETIRE:
+        - set status RETIRED after integrity checks
+      SUPERSEDE:
+        - apply supersession rules after integrity checks
+  unsupported_assertion_rule: >
+    An agent-generated assertion that introduces human-owned business truth without a valid
+    authority basis remains CANDIDATE or routes to NEED_MORE_DATA/BLOCKED at the owning
+    lifecycle task. It MUST NOT transition to ACCEPTED merely because semantic output is plausible.
+
+supersession:
+  rules:
+    - Supersession uses a new anchor_id only when the replacement represents a materially different owned concept/identity.
+    - The superseded anchor remains addressable for historical provenance and must point to superseded_by.
+    - The replacement may point to supersedes; both directions must agree when both are present.
+    - Current-reference resolution must not silently resolve SUPERSEDED as current truth.
+    - Supersession does not erase prior validation evidence; that evidence remains historical and fingerprint-bound.
+  replacement_acceptance: >
+    A replacement anchor is independently subject to normal acceptance guards. Marking an
+    old anchor SUPERSEDED does not automatically ACCEPT the replacement.
+
+fingerprint_and_revalidation:
+  semantic_fingerprint:
+    algorithm_property: deterministic-and-versioned
+    concrete_algorithm: deferred-to-H5
+    canonicalization_algorithm: deferred-to-H5
+    includes_logical_fields:
+      - anchor_id
+      - type_id
+      - owner_stage
+      - scope
+      - canonical_payload
+      - semantic_refs
+      - authority-bearing provenance
+      - supersession semantics when current truth changes
+    excludes_operational_fields:
+      - validation results themselves
+      - timestamps that do not change semantics
+      - generated projections
+      - private reasoning
+      - non-semantic audit display metadata
+  validation_evidence:
+    required_fields:
+      - evidence_id
+      - anchor_id
+      - validated_fingerprint
+      - validator_or_eval_id
+      - validator_or_eval_version
+      - specification_version
+      - result
+      - recorded_at
+    result_values: [PASS, FAIL]
+    freshness_rule: validated_fingerprint == current semantic_fingerprint
+    current_rule: >
+      Evidence is CURRENT only when fingerprint and applicable validator/specification
+      versions remain valid. Otherwise evidence is STALE and cannot support ACCEPTED status.
+  manual_edit_rule: >
+    Any manual edit that changes a fingerprint-included field produces a different semantic
+    fingerprint. Prior evidence becomes STALE deterministically. If the anchor was ACCEPTED,
+    its status becomes DIRTY before it can again serve as current downstream truth.
+  nonsemantic_edit_rule: >
+    An edit confined to excluded operational fields does not invalidate semantic validation,
+    provided deterministic validation confirms the change is genuinely non-semantic.
+  downstream_effect_boundary: >
+    H3 defines local anchor freshness. H5 defines dependency edges, graph traversal and the
+    reproducible downstream affected set/STALE propagation.
+
+reference_contract:
+  stable_reference:
+    minimum: anchor_id
+    current_truth_resolution:
+      required_status: ACCEPTED
+      validation_freshness: CURRENT
+      reject_statuses: [CANDIDATE, DIRTY, SUPERSEDED, RETIRED]
+  pinned_historical_reference:
+    minimum:
+      - anchor_id
+      - semantic_fingerprint
+    use: audit/provenance only unless the consuming contract explicitly permits historical evidence
+  path_independence: >
+    Moving or renaming a canonical file does not change anchor identity. Path resolution is
+    a repository-layout concern and must resolve back to the same anchor_id.
+
+acceptance_guards:
+  deterministic_first:
+    - unique immutable anchor_id
+    - exactly one owner_stage
+    - logical required fields present
+    - refs structurally resolvable when the required registry/dependency model exists
+    - semantic_fingerprint recomputed from the declared canonical semantic projection
+    - validation evidence fingerprint matches current semantics
+    - supersession refs are non-self and consistent
+    - current ACCEPTED anchor is not simultaneously SUPERSEDED or RETIRED
+  semantic_or_human_after_deterministic_pass:
+    - semantic sufficiency for the anchor type/stage when required
+    - human authority for non-derivable business choice when required
+  hard_rejection:
+    - unsupported agent-generated human-owned assertion proposed as ACCEPTED
+    - ACCEPTED with stale/mismatched validation fingerprint
+    - multiple canonical representations that can diverge for one anchor revision
+    - self-supersession
+    - current downstream truth reference to non-ACCEPTED anchor
+
+conformance_cases:
+  - id: DA-CF-STABLE-ID-RENAME
+    polarity: positive
+    oracle: deterministic
+    given:
+      same_owned_concept: true
+      file_renamed_or_moved: true
+    expect:
+      anchor_id_changed: false
+
+  - id: DA-CF-ACCEPTED-REFERENCE
+    polarity: positive
+    oracle: deterministic
+    given:
+      status: ACCEPTED
+      validation_freshness: CURRENT
+      current_reference_requested: true
+    expect:
+      current_truth_reference_valid: true
+
+  - id: DA-CF-DIRTY-REFERENCE-REJECTED
+    polarity: negative
+    oracle: deterministic
+    given:
+      status: DIRTY
+      current_reference_requested: true
+    expect:
+      result: FAIL
+      current_truth_reference_valid: false
+
+  - id: DA-CF-MANUAL-SEMANTIC-EDIT-STALES-EVIDENCE
+    polarity: negative
+    oracle: deterministic
+    given:
+      previous_status: ACCEPTED
+      fingerprint_included_field_changed: true
+      previous_validation_fingerprint_matches_old_content: true
+    expect:
+      fingerprint_changed: true
+      previous_validation_evidence: STALE
+      resulting_status: DIRTY
+      downstream_current_truth_valid: false
+
+  - id: DA-CF-NONSEMANTIC-EDIT-PRESERVES-EVIDENCE
+    polarity: positive
+    oracle: deterministic
+    given:
+      excluded_operational_field_only_changed: true
+      semantic_projection_changed: false
+    expect:
+      fingerprint_changed: false
+      prior_validation_evidence_may_remain_current: true
+
+  - id: DA-CF-AGENT-DERIVATION-SUPPORTED
+    polarity: positive
+    oracle: semantic
+    given:
+      origin_kind: accepted-anchor-derivation
+      all_business_semantics_derivable_from_accepted_inputs: true
+      new_human_owned_business_choice_introduced: false
+      deterministic_validation: PASS
+    expect:
+      acceptance_possible_after_required_semantic_validation: true
+
+  - id: DA-CF-AGENT-UNSUPPORTED-ASSERTION-NOT-ACCEPTED
+    polarity: negative
+    oracle: semantic
+    given:
+      origin_kind: agent-proposal
+      introduces_human_owned_business_choice: true
+      authority_basis_present: false
+      requested_status: ACCEPTED
+    expect:
+      accepted: false
+      required_route: NEED_MORE_DATA
+      lifecycle_state_effect: BLOCKED
+
+  - id: DA-CF-HUMAN-REPLACE-SEMANTICS-REVALIDATES
+    polarity: positive
+    oracle: deterministic
+    given:
+      previous_status: ACCEPTED
+      override_decision: REPLACE_SEMANTICS
+      resulting_fingerprint_differs: true
+    expect:
+      previous_validation_evidence: STALE
+      resulting_status: DIRTY
+      revalidation_required: true
+
+  - id: DA-CF-SUPERSEDE-PRESERVES-HISTORY
+    polarity: positive
+    oracle: deterministic
+    given:
+      old_anchor_id: A-OLD
+      replacement_anchor_id: A-NEW
+      explicit_replacement_intent: true
+    expect:
+      old_status: SUPERSEDED
+      old_anchor_remains_resolvable_historically: true
+      replacement_auto_accepted: false
+
+  - id: DA-CF-SELF-SUPERSESSION-REJECTED
+    polarity: negative
+    oracle: deterministic
+    given:
+      anchor_id: A-1
+      superseded_by: A-1
+    expect:
+      result: FAIL
+
+  - id: DA-CF-CUTOVER-NOT-IMPLICIT
+    polarity: negative
+    oracle: deterministic
+    given:
+      docs_v2_anchor_contract_defined: true
+      explicit_cutover_authorization: false
+    expect:
+      docs_v2_product_domain_authority: candidate
+      docs_remains_product_domain_authority: true
+
+h3_exit_evaluation:
+  machine_readable_contract_required: true
+  required_conformance_cases:
+    - DA-CF-ACCEPTED-REFERENCE
+    - DA-CF-MANUAL-SEMANTIC-EDIT-STALES-EVIDENCE
+    - DA-CF-AGENT-UNSUPPORTED-ASSERTION-NOT-ACCEPTED
+    - DA-CF-HUMAN-REPLACE-SEMANTICS-REVALIDATES
+    - DA-CF-SUPERSEDE-PRESERVES-HISTORY
+    - DA-CF-CUTOVER-NOT-IMPLICIT
+  checks:
+    - accepted current references require ACCEPTED plus CURRENT validation evidence
+    - identity is stable across path/title changes
+    - semantic manual edits deterministically stale prior evidence and dirty accepted anchors
+    - unsupported agent-generated human-owned assertions cannot become ACCEPTED
+    - human overrides are durable and cannot bypass deterministic integrity validation
+    - superseded anchors remain historically addressable and replacements are independently accepted
+    - concrete formats and physical paths remain deferred to H4/repository-layout ownership
+    - dependency graph propagation remains deferred to H5
+    - product/domain cutover is not performed
+
+handoff_to_h4:
+  next_task: H4-T1
+  requirements:
+    - H4 artifact types must map to this universal anchor envelope without creating duplicate semantic owners.
+    - H4 must choose canonical native formats and envelope mapping per type.
+    - H4 applicability/owner rules may specialize but must not weaken anchor identity, provenance, acceptance or freshness invariants.
