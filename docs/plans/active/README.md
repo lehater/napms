@@ -2,13 +2,13 @@
 
 Current: `PLAN-130-revalidate-policy-lifecycle.md`
 
-Goal: realize the G1/G2-accepted concrete Component Deployment, unified Policy Rule lifecycle and vendor-neutral export through an owner-preserving target architecture compatible with the current runtime.
+Goal: realize the concrete Component Deployment, unified Policy Rule lifecycle and vendor-neutral export without embedding customer-specific approval workflow into the MVP domain.
 
-Current task: define the selected first-MVP S3 architecture for AP lifecycle, AD ownership, policy export and as-built compatibility.
+Current task: revalidate observable policy-decision behavior after simplifying governance from bilateral/source-destination approval obligations to one formal RuleChange decision outcome.
 
-Lifecycle stage: `S3`
+Lifecycle stage: `S1`
 Stage state: `IN_PROGRESS`
-Lifecycle basis: `docs/domain/mvp-ddd-convergence-checkpoint.md` records G2 PASS on 2026-09-16 for the revalidated target baseline.
+Lifecycle basis: stakeholder clarification on 2026-09-16 changes accepted observable governance behavior: the MVP requires only a formal `Pending -> Accepted | Rejected` decision, while concrete organizational approval procedures are customer-specific and outside the product-domain baseline.
 Implementation authorization: `none`
 Authorized scope: `none`
 Authorization basis: `none`
@@ -17,19 +17,19 @@ Authorization basis: `none`
 
 Read first:
 - `docs/plans/active/PLAN-130-revalidate-policy-lifecycle.md`
-- `docs/architecture/README.md`
-- `docs/architecture/code-structure.md`
-- `docs/architecture/current-architecture.md`
+- `docs/requirements/access-governance-g1.md`
+- `docs/requirements/access-policy-core.md`
+- `docs/domain/access-policy/tactical-model.md`
 - `docs/domain/mvp-ddd-convergence-checkpoint.md`
 
 ## Blockers
 
-None currently. S3 must make compatibility explicit because the implemented ACC compatibility `ComponentDeployment` has different ownership/identity semantics from target AD `ComponentDeployment`.
+None. The simplification removes previously accepted bilateral approval/scope-resolution behavior; S2 and S3 are DIRTY until G1 is re-evaluated.
 
 ## Gate
 
-G3 — feasible owner-preserving architecture with explicit ports, persistence ownership, consistency/failure semantics, compatibility/changeover path and no P0/P1 architecture contradiction.
+G1 — accepted requirements distinguish current effective policy from proposed changes while requiring only a formal policy decision outcome and leaving organization-specific approval procedures outside MVP semantics.
 
 ## Next
 
-Accept the target first-MVP architecture, challenge it with the architecture-review lenses, then enter S4 only after G3 PASS. Production-code implementation remains forbidden.
+Update the affected requirements, evaluate G1, then revalidate Access Policy Tactical/Strategic consequences at S2 before returning to S3. Production-code implementation remains forbidden.
