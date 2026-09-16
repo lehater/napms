@@ -1,0 +1,636 @@
+version: 1
+kind: lifecycle-state-machine
+id: DOCS-V2-LIFECYCLE-STATE-MACHINE
+status: active
+owner_phase: H2
+owner_task: H2-T1
+last_updated: 2026-09-16
+
+purpose: >
+  Define the machine-readable lifecycle coordination contract for Documentation System v2
+  and Harness. This specification formalizes stage ownership, stage states, G0-G4 gates,
+  S2 checkpoint progression, failure routing, dirty propagation and implementation
+  eligibility using only transition classes already specified by the H1 RED conformance contract.
+
+authority:
+  defines:
+    - lifecycle stage identity and ordering
+    - lifecycle stage state vocabulary
+    - legal transition classes and deterministic state effects
+    - stage ownership boundaries at lifecycle granularity
+    - S2 checkpoint ordering and G2 eligibility
+    - G0-G4 lifecycle contracts
+    - REWORK, REOPEN, BLOCKED and NEED_MORE_DATA routing effects
+    - G4 implementation-lease lifecycle effects
+  does_not_define:
+    - product or domain truth
+    - detailed DDD methods or artifact schemas
+    - artifact applicability rules beyond declared checkpoint applicability inputs
+    - dependency graph derivation
+    - executable Harness/runtime implementation
+    - executable tests
+    - CI or workflow configuration
+    - canonical cutover from docs/ to docs-v2/
+  behavioral_source:
+    id: DOCS-V2-HARNESS-CONFORMANCE
+    path: docs-v2/spec/harness-conformance.yaml
+    required_owner_task: H1-T2
+  redesign_input:
+    - docs-v2/spec/lifecycle.md
+
+invariants:
+  - id: LI-ONE-EXECUTION-UNIT
+    statement: >
+      One Harness execution completes exactly one bounded task or one gate evaluation,
+      persists durable state and stops. Eligibility of a next task or stage never starts
+      it in the same capsule.
+    conformance:
+      - HC-TRANSITION-PERSIST-AND-STOP
+      - HC-TRANSITION-AUTO-CONTINUE
+
+  - id: LI-PREDECESSOR-GATE
+    statement: >
+      A later lifecycle stage becomes eligible only when the required predecessor gate
+      for the selected scope is accepted; stage skipping is rejected.
+    conformance:
+      - HC-TRANSITION-GATE-PASS-ACCEPTED
+      - HC-TRANSITION-ILLEGAL-STAGE-SKIP
+
+  - id: LI-G2-COMPLETE-APPLICABLE-S2
+    statement: >
+      G2 evaluation is eligible only when every S2 checkpoint declared applicable to the
+      scope is ACCEPTED. Non-applicable checkpoints are skipped and are not fabricated as ACCEPTED.
+    conformance:
+      - HC-TRANSITION-G2-COMPLETE-S2
+      - HC-TRANSITION-G2-PARTIAL-S2
+      - HC-S2-CHECKPOINT-NEXT-APPLICABLE
+      - HC-S2-CHECKPOINT-SKIP-NONAPPLICABLE
+
+  - id: LI-DETERMINISTIC-ROUTE-EFFECT
+    statement: >
+      After a route or semantic classification is known, its state mutation and
+      authorization effects are deterministic and cannot be overridden by later-stage patching.
+    conformance:
+      - HC-ROUTE-CURRENT-REWORK
+      - HC-ROUTE-EARLIER-REOPEN
+      - HC-ROUTE-BLOCKED-KNOWN-DEPENDENCY
+      - HC-ROUTE-MISSING-BUSINESS-TRUTH
+      - HC-ROUTE-OPPORTUNISTIC-LATER-PATCH
+
+  - id: LI-DIRTY-REVOKES-DEPENDENT-G4
+    statement: >
+      A material upstream change marks only declared dependent accepted downstream stages
+      DIRTY and immediately revokes any G4 implementation lease depending on the changed truth.
+    conformance:
+      - HC-TRANSITION-UPSTREAM-DIRTY-PROPAGATION
+      - HC-AUTH-DIRTY-UPSTREAM-REVOKES-G4
+
+execution_model:
+  unit: one-bounded-task-or-one-gate-evaluation
+  persist_before_stop: true
+  next_task:
+    may_be_recorded: true
+    may_execute_in_same_capsule: false
+
+stage_state_model:
+  states:
+    - id: NOT_STARTED
+      meaning: No bounded task for the current required work has started for this scope.
+    - id: IN_PROGRESS
+      meaning: A bounded task for this stage/checkpoint is active or its result awaits gate evaluation.
+    - id: BLOCKED
+      meaning: Progress is stopped pending a declared prerequisite, authority, evidence or stakeholder input.
+    - id: GATE_FAILED
+      meaning: The current stage failed its gate with REWORK and requires a new same-stage correction capsule.
+    - id: ACCEPTED
+      meaning: The stage guarantee is accepted for the evaluated scope by its gate.
+    - id: DIRTY
+      meaning: Previously accepted work requires revalidation because declared upstream truth materially changed.
+  initial_state: NOT_STARTED
+  active_work_state: IN_PROGRESS
+  terminal_for_current_gate: [ACCEPTED, GATE_FAILED, BLOCKED, DIRTY]
+
+stage_order:
+  - S0
+  - S1
+  - S2
+  - S3
+  - S4
+  - IMPLEMENTATION
+
+stages:
+  - id: S0
+    title: Problem / Evidence
+    owns:
+      - problem need and intended outcome
+      - actors relevant to the problem
+      - evidence supporting the problem
+      - externally imposed or non-negotiable constraints
+      - unresolved problem questions
+    minimum_input:
+      - request, observation or conflicting evidence
+    exit_guarantee: >
+      The problem, material external constraints and evidence are sufficiently bounded
+      to derive requirements without later stages inventing problem truth.
+    gate: G0
+
+  - id: S1
+    title: Requirements
+    owns:
+      - observable functional behavior
+      - applicable quality requirements
+      - acceptance intent
+    minimum_input:
+      - applicable G0-accepted problem and constraint truth, or current equivalent accepted evidence
+    exit_guarantee: >
+      Required behavior and applicable quality expectations are explicit enough for
+      domain work while remaining solution-agnostic where practical.
+    gate: G1
+
+  - id: S2
+    title: Domain Design
+    owns:
+      - domain responsibilities
+      - domain language and semantics
+      - semantic ownership and boundaries
+      - bounded-context design at lifecycle granularity
+      - applicable strategic, process-discovery and tactical domain-design checkpoints
+    minimum_input:
+      - applicable G1-accepted behavior
+    exit_guarantee: >
+      Complete applicable domain design is sufficient for architecture to realize the
+      scope without inventing domain truth.
+    checkpoints:
+      ordered:
+        - S2-STRATEGIC
+        - S2-PROCESS-DISCOVERY
+        - S2-TACTICAL
+      applicability_source: declared-per-scope
+      next_checkpoint_rule: earliest-applicable-checkpoint-not-ACCEPTED
+      non_applicable_rule: skip-without-changing-state-to-ACCEPTED
+      g2_eligibility_rule: all-checkpoints-with-applicable-true-must-be-ACCEPTED
+    gate: G2
+
+  - id: S3
+    title: Architecture
+    owns:
+      - technical realization
+      - system boundaries and interactions
+      - technical contracts
+      - significant technical decisions
+    minimum_input:
+      - applicable accepted G1 and G2 guarantees plus technical constraints
+    exit_guarantee: >
+      Architecture and contracts are sufficient to derive a concrete implementation-ready slice.
+    gate: G3
+
+  - id: S4
+    title: Implementation Readiness
+    owns:
+      - exact implementation slice
+      - implementation dependencies
+      - migration applicability and intent
+      - validation intent
+      - execution order
+    minimum_input:
+      - applicable current accepted upstream guarantees
+    exit_guarantee: >
+      One exact implementation scope is executable and verifiable without unresolved P0/P1 design work.
+    gate: G4
+
+s2_checkpoints:
+  - id: S2-STRATEGIC
+    order: 10
+    label: strategic
+    responsibility: >
+      Establish or revalidate strategic domain responsibility and boundary evidence needed
+      by the current S2 scope. Detailed strategic-DDD artifact semantics are owned by later DDD specifications.
+    applicability: explicit-per-scope
+    state_vocabulary: stage_state_model.states
+
+  - id: S2-PROCESS-DISCOVERY
+    order: 20
+    label: process_discovery
+    responsibility: >
+      Establish or revalidate applicable domain-process evidence before tactical design.
+      Detailed Event Storming/process schemas are owned by later DDD specifications.
+    applicability: explicit-per-scope
+    state_vocabulary: stage_state_model.states
+
+  - id: S2-TACTICAL
+    order: 30
+    label: tactical
+    responsibility: >
+      Establish or revalidate applicable tactical domain-design evidence after required
+      preceding checkpoints. Detailed aggregate/entity/value-object semantics are owned by later DDD specifications.
+    applicability: explicit-per-scope
+    state_vocabulary: stage_state_model.states
+
+gates:
+  - id: G0
+    owner_stage: S0
+    successor: S1
+    pass_contract: >
+      Current evidence and applicable externally imposed constraints justify requirements work
+      for the selected problem scope.
+    deterministic_preconditions:
+      - stage_state == IN_PROGRESS
+      - applicable deterministic validation has no blocking failure
+    pass_effect:
+      stage_state: ACCEPTED
+      successor_eligible: true
+      successor_auto_started: false
+
+  - id: G1
+    owner_stage: S1
+    successor: S2
+    pass_contract: >
+      Observable behavior, applicable qualities and acceptance intent are sufficient for
+      domain design without redefining accepted S0 constraints.
+    deterministic_preconditions:
+      - stage_state == IN_PROGRESS
+      - applicable deterministic validation has no blocking failure
+    pass_effect:
+      stage_state: ACCEPTED
+      successor_eligible: true
+      successor_auto_started: false
+
+  - id: G2
+    owner_stage: S2
+    successor: S3
+    pass_contract: >
+      Complete applicable domain semantics, responsibility and boundary ownership are
+      sufficient for architecture.
+    deterministic_preconditions:
+      - stage_state == IN_PROGRESS
+      - every S2 checkpoint with applicable == true has state == ACCEPTED
+      - applicable deterministic validation has no blocking failure
+    semantic_requirement: stage-specific semantic sufficiency must pass after deterministic preconditions
+    pass_effect:
+      stage_state: ACCEPTED
+      successor_eligible: true
+      successor_auto_started: false
+    rejection:
+      incomplete_applicable_s2:
+        route: REWORK
+        gate_pass: false
+        conformance: HC-TRANSITION-G2-PARTIAL-S2
+
+  - id: G3
+    owner_stage: S3
+    successor: S4
+    pass_contract: >
+      Technical realization and contracts are sufficient to derive a concrete implementation-ready slice.
+    deterministic_preconditions:
+      - stage_state == IN_PROGRESS
+      - applicable deterministic validation has no blocking failure
+    pass_effect:
+      stage_state: ACCEPTED
+      successor_eligible: true
+      successor_auto_started: false
+
+  - id: G4
+    owner_stage: S4
+    successor: IMPLEMENTATION
+    pass_contract: >
+      The exact selected implementation slice has sufficient current upstream evidence,
+      dependencies and validation intent to authorize implementation.
+    deterministic_preconditions:
+      - stage_state == IN_PROGRESS
+      - applicable deterministic validation has no blocking failure
+      - authorization scope is exact and non-empty
+      - authorization basis references current accepted evidence
+    pass_effect:
+      stage_state: ACCEPTED
+      successor_eligible: true
+      successor_auto_started: false
+      implementation_lease:
+        status: current
+        scope: evaluated_exact_scope
+        basis: durable_G4_evidence
+    implementation_entry_guard:
+      - G4 status == PASS
+      - implementation lease status == current
+      - requested implementation scope is contained by lease scope
+      - lease basis is not stale or DIRTY
+
+routing_outcomes:
+  - id: PASS
+    class: gate-outcome
+    use_when: gate sufficiency passes
+    transition_rule: TR-GATE-PASS
+
+  - id: REWORK
+    class: failure-route
+    use_when: deficiency owner is the current stage and correction does not require reopening earlier accepted truth
+    transition_rule: TR-GATE-REWORK
+
+  - id: REOPEN
+    class: failure-route
+    parameters:
+      - owning_stage
+    use_when: later work exposes missing or invalid truth owned by an earlier stage
+    transition_rule: TR-REOPEN
+
+  - id: BLOCKED
+    class: stop-route
+    use_when: >
+      A required known prerequisite, authority or evidence is unavailable, the resolution
+      owner/path is known, and no new business semantic choice is required.
+    requires_stakeholder_business_question: false
+    transition_rule: TR-BLOCKED
+
+  - id: NEED_MORE_DATA
+    class: stop-route
+    use_when: required human-owned business truth is missing and is not derivable from accepted facts
+    requires_stakeholder_business_question: true
+    transition_rule: TR-NEED-MORE-DATA
+
+transition_rules:
+  - id: TR-START-RESUME
+    h1_transition_class: LT-START-RESUME
+    trigger: new-bounded-task-selected
+    cases:
+      - from: NOT_STARTED
+        guard: required task preconditions satisfied
+        to: IN_PROGRESS
+      - from: GATE_FAILED
+        guard: same-stage rework task selected
+        to: IN_PROGRESS
+      - from: BLOCKED
+        guard: blocking condition cleared and a new capsule selected
+        to: IN_PROGRESS
+      - from: DIRTY
+        guard: revalidation task selected
+        to: IN_PROGRESS
+    rejection:
+      from: BLOCKED
+      when: blocking condition not cleared
+      state_remains: BLOCKED
+      conformance: HC-TRANSITION-BLOCKED-RESUME-WITHOUT-CLEARANCE
+    conformance:
+      - HC-TRANSITION-START-OR-RESUME-LEGAL
+      - HC-TRANSITION-BLOCKED-RESUME-WITHOUT-CLEARANCE
+
+  - id: TR-GATE-PASS
+    h1_transition_class: LT-GATE-PASS
+    trigger: gate-outcome-PASS
+    from: IN_PROGRESS
+    to: ACCEPTED
+    effects:
+      - persist gate PASS evidence
+      - mark successor eligible
+      - record next task when known
+      - stop current execution unit
+      - do not start successor in same capsule
+    g4_effect: issue or refresh only the exact-scope implementation lease represented by current durable G4 evidence
+    conformance:
+      - HC-TRANSITION-GATE-PASS-ACCEPTED
+      - HC-TRANSITION-PERSIST-AND-STOP
+      - HC-TRANSITION-AUTO-CONTINUE
+
+  - id: TR-GATE-REWORK
+    h1_transition_class: LT-GATE-REWORK
+    trigger: route-REWORK
+    from: IN_PROGRESS
+    to: GATE_FAILED
+    guards:
+      - deficiency owner == current stage
+    effects:
+      - successor remains ineligible
+      - next task owner remains current stage
+      - stop current execution unit
+    conformance:
+      - HC-ROUTE-CURRENT-REWORK
+      - HC-TRANSITION-GATE-REWORK-FAILED
+
+  - id: TR-REOPEN
+    h1_transition_class: LT-REOPEN
+    trigger: route-REOPEN
+    guards:
+      - deficiency owner is an earlier lifecycle stage
+    effects:
+      - route next bounded task to owning stage
+      - if owning stage is ACCEPTED, mark it DIRTY
+      - mark only declared dependent ACCEPTED downstream stages DIRTY
+      - revoke any dependent current G4 implementation lease
+      - do not patch the later stage to hide the upstream gap
+      - stop current execution unit
+    conformance:
+      - HC-ROUTE-EARLIER-REOPEN
+      - HC-ROUTE-OPPORTUNISTIC-LATER-PATCH
+
+  - id: TR-BLOCKED
+    h1_transition_class: LT-BLOCKED
+    trigger: route-BLOCKED
+    from: IN_PROGRESS
+    to: BLOCKED
+    guards:
+      - required known prerequisite, authority or evidence is unavailable
+      - resolution owner or path is known
+      - no new business semantic choice is required
+    effects:
+      - persist blocker and resolution owner/path
+      - do not create a stakeholder business question merely to classify the known dependency
+      - stop current execution unit
+    resume_via: TR-START-RESUME
+    conformance:
+      - HC-ROUTE-BLOCKED-KNOWN-DEPENDENCY
+      - HC-TRANSITION-BLOCKED-RESUME-WITHOUT-CLEARANCE
+
+  - id: TR-NEED-MORE-DATA
+    h1_transition_class: LT-NEED-MORE-DATA
+    trigger: route-NEED_MORE_DATA
+    from: IN_PROGRESS
+    to: BLOCKED
+    guards:
+      - required business truth is missing
+      - missing truth is human-owned
+      - truth is not derivable from accepted facts
+    effects:
+      - persist structured stakeholder question
+      - prohibit speculative retry or invented business rule
+      - stop current execution unit
+    resume_guard:
+      - stakeholder answer or decision is durably persisted with provenance
+    resume_via: TR-START-RESUME
+    conformance:
+      - HC-ROUTE-MISSING-BUSINESS-TRUTH
+      - HC-HUMAN-QUESTION-STRUCTURED
+      - HC-HUMAN-RETRY-OR-INVENT
+
+  - id: TR-DIRTY-PROPAGATION
+    h1_transition_class: LT-DIRTY
+    trigger: material-upstream-change
+    guards:
+      - changed truth is accepted upstream truth for the evaluated scope
+      - affected downstream set is declared by dependency evidence
+    effects:
+      changed_owner_stage:
+        when_state: ACCEPTED
+        set_state: DIRTY
+      affected_downstream:
+        when_state: ACCEPTED
+        set_state: DIRTY
+      unaffected_stages:
+        state_change: none
+      dependent_g4_lease:
+        set_status: revoked-or-not-current
+      implementation_allowed_if_dependent_lease_revoked: false
+    conformance:
+      - HC-TRANSITION-UPSTREAM-DIRTY-PROPAGATION
+      - HC-AUTH-DIRTY-UPSTREAM-REVOKES-G4
+
+  - id: TR-S2-CHECKPOINT-PROGRESSION
+    h1_transition_class: LT-S2-CHECKPOINTS
+    trigger: select-next-S2-work-or-evaluate-G2
+    guards:
+      - current stage == S2
+      - checkpoint applicability is declared for the scope
+    selection:
+      next: earliest checkpoint in declared order where applicable == true and state != ACCEPTED
+      skip: checkpoint where applicable == false
+      skipped_state_mutation: none
+    g2_eligibility:
+      condition: every checkpoint with applicable == true has state == ACCEPTED
+      semantic_gate_still_required: true
+    conformance:
+      - HC-S2-CHECKPOINT-NEXT-APPLICABLE
+      - HC-S2-CHECKPOINT-SKIP-NONAPPLICABLE
+      - HC-TRANSITION-G2-COMPLETE-S2
+      - HC-TRANSITION-G2-PARTIAL-S2
+
+  - id: TR-ILLEGAL-REJECTION
+    h1_transition_class: LT-ILLEGAL-REJECTION
+    trigger: requested-stage-entry
+    rejection_cases:
+      - id: predecessor-gate-not-accepted
+        when: requested stage is later than the immediate eligible successor
+        result: FAIL
+        requested_stage_started: false
+        conformance: HC-TRANSITION-ILLEGAL-STAGE-SKIP
+      - id: implementation-without-current-G4
+        when: IMPLEMENTATION requested without a current exact-scope G4 lease
+        result: FAIL
+        implementation_allowed: false
+        conformance: HC-AUTH-NO-G4
+    conformance:
+      - HC-TRANSITION-ILLEGAL-STAGE-SKIP
+      - HC-AUTH-NO-G4
+
+implementation_authorization:
+  lease_owner_gate: G4
+  required_for_stage: IMPLEMENTATION
+  fields:
+    - status
+    - exact_scope
+    - authorization_basis
+  valid_when:
+    - G4 == PASS
+    - status == current
+    - requested scope is contained by exact_scope
+    - authorization basis is current
+    - no dependency of the lease is DIRTY
+  invalidation:
+    - material scope change
+    - stale or missing authorization basis
+    - any declared upstream dependency becomes DIRTY
+  invalid_effects:
+    - implementation_allowed = false
+    - current lease is revoked or rejected
+    - route to owning stage when upstream truth requires correction
+  conformance:
+    - HC-AUTH-CURRENT-G4-SCOPE
+    - HC-AUTH-NO-G4
+    - HC-AUTH-STALE-OR-OUTSIDE-SCOPE
+    - HC-AUTH-DIRTY-UPSTREAM-REVOKES-G4
+
+rejection_rules:
+  - id: LR-AUTO-CONTINUE
+    result: FAIL
+    when: next task or successor stage starts in the same capsule after current task/gate completion
+    conformance: HC-TRANSITION-AUTO-CONTINUE
+
+  - id: LR-G2-INCOMPLETE-S2
+    result: REWORK
+    when: G2 requested while at least one applicable S2 checkpoint is not ACCEPTED
+    conformance: HC-TRANSITION-G2-PARTIAL-S2
+
+  - id: LR-BLOCKED-NOT-CLEARED
+    result: FAIL
+    when: BLOCKED stage is requested to resume before its blocking condition is cleared
+    conformance: HC-TRANSITION-BLOCKED-RESUME-WITHOUT-CLEARANCE
+
+  - id: LR-STAGE-SKIP
+    result: FAIL
+    when: a stage beyond the eligible successor is requested without required predecessor gate acceptance
+    conformance: HC-TRANSITION-ILLEGAL-STAGE-SKIP
+
+  - id: LR-IMPLEMENTATION-NO-G4
+    result: FAIL
+    when: implementation is requested without a current exact-scope G4 lease
+    conformance: HC-AUTH-NO-G4
+
+  - id: LR-LATER-PATCH-HIDES-UPSTREAM
+    result: FAIL
+    when: a later-stage patch is proposed to hide a deficiency owned by an earlier stage
+    required_route: REOPEN
+    conformance: HC-ROUTE-OPPORTUNISTIC-LATER-PATCH
+
+conformance_mapping:
+  h1_transition_classes:
+    LT-START-RESUME: TR-START-RESUME
+    LT-GATE-PASS: TR-GATE-PASS
+    LT-GATE-REWORK: TR-GATE-REWORK
+    LT-REOPEN: TR-REOPEN
+    LT-BLOCKED: TR-BLOCKED
+    LT-NEED-MORE-DATA: TR-NEED-MORE-DATA
+    LT-DIRTY: TR-DIRTY-PROPAGATION
+    LT-S2-CHECKPOINTS: TR-S2-CHECKPOINT-PROGRESSION
+    LT-ILLEGAL-REJECTION: TR-ILLEGAL-REJECTION
+
+  lifecycle_suite:
+    HC-TRANSITION-PERSIST-AND-STOP: LI-ONE-EXECUTION-UNIT
+    HC-TRANSITION-AUTO-CONTINUE: LR-AUTO-CONTINUE
+    HC-TRANSITION-GATE-PASS-ACCEPTED: TR-GATE-PASS
+    HC-TRANSITION-GATE-REWORK-FAILED: TR-GATE-REWORK
+    HC-TRANSITION-START-OR-RESUME-LEGAL: TR-START-RESUME
+    HC-TRANSITION-BLOCKED-RESUME-WITHOUT-CLEARANCE: LR-BLOCKED-NOT-CLEARED
+    HC-TRANSITION-G2-PARTIAL-S2: LR-G2-INCOMPLETE-S2
+    HC-TRANSITION-G2-COMPLETE-S2: TR-S2-CHECKPOINT-PROGRESSION
+    HC-S2-CHECKPOINT-NEXT-APPLICABLE: TR-S2-CHECKPOINT-PROGRESSION
+    HC-S2-CHECKPOINT-SKIP-NONAPPLICABLE: TR-S2-CHECKPOINT-PROGRESSION
+    HC-TRANSITION-UPSTREAM-DIRTY-PROPAGATION: TR-DIRTY-PROPAGATION
+    HC-TRANSITION-ILLEGAL-STAGE-SKIP: LR-STAGE-SKIP
+    HC-ROUTE-CURRENT-REWORK: TR-GATE-REWORK
+    HC-ROUTE-EARLIER-REOPEN: TR-REOPEN
+    HC-ROUTE-BLOCKED-KNOWN-DEPENDENCY: TR-BLOCKED
+    HC-ROUTE-MISSING-BUSINESS-TRUTH: TR-NEED-MORE-DATA
+    HC-ROUTE-OPPORTUNISTIC-LATER-PATCH: LR-LATER-PATCH-HIDES-UPSTREAM
+    HC-AUTH-DIRTY-UPSTREAM-REVOKES-G4: TR-DIRTY-PROPAGATION
+    HC-AUTH-NO-G4: LR-IMPLEMENTATION-NO-G4
+
+h2_exit_evaluation:
+  machine_readable_state_machine_required: true
+  required_h1_transition_classes:
+    - LT-START-RESUME
+    - LT-GATE-PASS
+    - LT-GATE-REWORK
+    - LT-REOPEN
+    - LT-BLOCKED
+    - LT-NEED-MORE-DATA
+    - LT-DIRTY
+    - LT-S2-CHECKPOINTS
+    - LT-ILLEGAL-REJECTION
+  checks:
+    - every required H1 transition class maps to exactly one H2 transition rule
+    - every H2 transition rule cites an H1 transition class
+    - every HE-LIFECYCLE-ROUTING scenario is mapped to an H2 invariant, transition or rejection rule
+    - G2 deterministic eligibility requires all applicable S2 checkpoints ACCEPTED
+    - non-applicable S2 checkpoints are skipped without being fabricated as ACCEPTED
+    - PASS makes only the immediate successor eligible and never auto-starts it
+    - REWORK, REOPEN, BLOCKED and NEED_MORE_DATA have explicit deterministic state effects
+    - DIRTY propagation changes only declared dependent accepted stages
+    - dependent G4 authorization is revoked when upstream dependency becomes DIRTY
+    - implementation entry is rejected without a current exact-scope G4 lease
+    - no product code/tests, CI/workflows, canonical cutover or merge are authorized
