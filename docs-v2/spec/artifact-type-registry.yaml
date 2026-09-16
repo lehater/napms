@@ -1,56 +1,51 @@
-version: 1
+version: 2
 kind: artifact-type-registry
 id: DOCS-V2-ARTIFACT-TYPE-REGISTRY
 status: active
 owner_phase: H4
-owner_task: H4-T1
+owner_task: H4-T2
 last_updated: '2026-09-16'
-purpose: Define the machine-readable registry for retained Documentation System v2 artifact families, their classification,
-  single semantic owner, applicability, canonical representation, schema/DSL selection and validator requirements while preserving
-  the H3 Design Anchor contract.
+
+purpose: >-
+  Define the machine-readable registry for retained Documentation System v2 artifact families,
+  their classification, single semantic owner, applicability, canonical representation,
+  schema/DSL selection and validator requirements while preserving H3 identity/provenance
+  invariants and completing the S2 artifact families required by the full DDD pipeline.
+
 authority:
   defines:
-  - artifact classification vocabulary
-  - retained artifact type identities
-  - single semantic owner per retained type
-  - machine-checkable applicability expressions
-  - canonical format and schema/DSL selection rules
-  - per-type validator requirement identifiers
-  - mapping of anchor types to the H3 Design Anchor envelope
-  - legacy catalog disposition where H4 consolidates or reclassifies a type
+    - artifact classification vocabulary
+    - retained artifact type identities
+    - single semantic owner per retained type
+    - machine-checkable applicability expressions
+    - canonical format and schema/DSL selection rules
+    - per-type validator requirement identifiers
+    - mapping of anchor types to the H3 Design Anchor envelope
+    - legacy catalog disposition
+    - S2 ownership split among capability, bounded-context, process, relationship and tactical model truth
   does_not_define:
-  - NAPMS product or domain truth
-  - physical repository paths or filenames
-  - dependency graph edges or impact traversal
-  - concrete fingerprint/canonicalization algorithm
-  - detailed DDD schemas or process methods
-  - executable validators or Harness runtime
-  - product code, tests, CI or workflows
-  - canonical cutover from docs/ to docs-v2/
-  direct_dependency:
-    id: DOCS-V2-DESIGN-ANCHOR-CONTRACT
-    path: docs-v2/spec/design-anchor.yaml
-  redesign_input:
-  - docs-v2/spec/artifacts.md
+    - project-specific product or domain truth
+    - physical repository paths or filenames
+    - dependency graph edge semantics or impact traversal
+    - fingerprint/canonicalization algorithm
+    - detailed DDD schemas or derivation methods
+    - executable validators or Harness runtime
+    - product code, tests, CI or workflows
+    - canonical cutover from docs/ to docs-v2/
+  direct_dependency: {id: DOCS-V2-DESIGN-ANCHOR-CONTRACT, path: docs-v2/spec/design-anchor.yaml}
+  redesign_input: [docs-v2/spec/artifacts.md]
+
 cutover_guard:
   current_product_domain_authority: docs/
   registry_effect: classification-and-format-contract-only
   rule: Registry presence or an anchor ACCEPTED status does not perform product/domain cutover.
+
 classification_model:
-  allowed:
-  - anchor
-  - evidence
-  - projection
-  - process-state
+  allowed: [anchor, evidence, projection, process-state]
   anchor:
     canonical_design_truth: true
     h3_envelope_required: true
-    owner_stage_allowed:
-    - S0
-    - S1
-    - S2
-    - S3
-    - S4
+    owner_stage_allowed: [S0, S1, S2, S3, S4]
     may_be_current_downstream_truth: only when H3 status == ACCEPTED and validation freshness == CURRENT
   evidence:
     canonical_design_truth: false
@@ -67,120 +62,53 @@ classification_model:
     h3_envelope_required: false
     purpose: Durable Harness/meta/validation/authorization state used to coordinate work.
     may_introduce_new_product_domain_truth: false
+
 owner_model:
   rule: Every retained artifact type declares exactly one owner_stage token. Anchor owner_stage is restricted by H3 to S0-S4.
-  allowed_non_anchor_owner_stages:
-  - S0
-  - IMPLEMENTATION
-  - S4
-  - VALIDATION
-  - HARNESS
-  - META
-  forbidden:
-  - multi-owner syntax
-  - S0/S1
-  - S2/S3
-  - Implementation/Validation
+  allowed_non_anchor_owner_stages: [S0, IMPLEMENTATION, S4, VALIDATION, HARNESS, META]
+  forbidden: [multi-owner-syntax, S0/S1, S2/S3, Implementation/Validation]
+
 applicability_model:
   classes:
     mandatory: Required whenever the declared owner stage/process enters the applicable scope.
     conditional: Required only when the structured expression evaluates true.
     optional: Never gate-required solely because the type exists.
   expression_dsl:
-    leaf:
-      fact: stable boolean scope/process fact id
-    operators:
-    - all
-    - any
-    - not
+    leaf: {fact: stable boolean scope/process fact id}
+    operators: [all, any, not]
     evaluation_rule: Expressions are evaluated over declared facts. The registry does not infer missing business facts.
     unknown_fact: NEED_MORE_DATA when human-owned and non-derivable; otherwise BLOCKED or classification work according to lifecycle routing.
   validation:
-  - 'mandatory types require expression {fact: owner_scope_entered} or equivalent true owner-entry fact'
-  - conditional types require a non-empty structured expression
-  - optional types never block a gate when absent
+    - mandatory types require an owner-entry fact or equivalent deterministic true applicability expression
+    - conditional types require a non-empty structured expression
+    - optional types never block a gate when absent
+
 canonical_representation_rules:
-- id: CR-STANDARD-NATIVE-FIRST
-  rule: When an established machine-readable standard directly owns the semantic contract, use that standard as canonical payload rather than prose describing it.
-- id: CR-NARRATIVE-MARKDOWN
-  rule: Use Markdown for primarily narrative rationale/problem/plan content; H3 anchor envelope carries identity/provenance/fingerprint metadata.
-- id: CR-NO-STANDARD-STRUCTURED-YAML
-  rule: When no adequate standard exists but machine validation is required, use YAML bound to a type-specific schema owned by the later phase that defines the detailed semantics.
-- id: CR-DIAGRAM-AS-SOURCE-ONLY-WHEN-SEMANTIC
-  rule: PlantUML/C4 text may be canonical only for a type whose owned semantics are the diagram model itself; otherwise diagrams are projections.
-- id: CR-EXACTLY-ONE-CANONICAL
-  rule: A retained semantic type has exactly one canonical representation rule; generated or readable alternatives are projections.
-- id: CR-EXECUTABLE-NATIVE-EVIDENCE
-  rule: Implementation evidence remains in executable/native source form and never becomes a Design Anchor merely because it is machine-readable.
+  - {id: CR-STANDARD-NATIVE-FIRST, rule: When an established machine-readable standard directly owns the semantic contract, use that standard rather than prose describing the same truth.}
+  - {id: CR-NARRATIVE-MARKDOWN, rule: Use Markdown for primarily narrative rationale/problem/plan content; H3 carries identity/provenance/fingerprint metadata.}
+  - {id: CR-NO-STANDARD-STRUCTURED-YAML, rule: When no adequate standard exists but machine validation is required, use YAML bound to a type-specific schema owned by the later phase defining detailed semantics.}
+  - {id: CR-DIAGRAM-AS-SOURCE-ONLY-WHEN-SEMANTIC, rule: PlantUML/C4 text may be canonical only when the owned semantics are the diagram model itself; otherwise diagrams are projections.}
+  - {id: CR-EXACTLY-ONE-CANONICAL, rule: A retained semantic type has exactly one canonical representation; generated/readable alternatives are projections.}
+  - {id: CR-EXECUTABLE-NATIVE-EVIDENCE, rule: Implementation evidence remains executable/native source and never becomes Design Anchor truth merely because it is machine-readable.}
+
 format_catalog:
-  markdown-h3-anchor:
-    family: Markdown
-    machine_metadata: H3 envelope or deterministic adjacent metadata
-    version_policy: repository profile
-  yaml-schema-anchor:
-    family: YAML
-    schema: type-specific schema required; detailed schema may be owned by H6/H7/H8 as declared
-    version_policy: schema version required
-  gherkin-feature:
-    family: Gherkin
-    extensions:
-    - .feature
-    version_policy: validator profile pins grammar/tool version
-  c4-plantuml:
-    family: C4-PlantUML
-    extensions:
-    - .puml
-    version_policy: validator/render profile pins dependency version
-  plantuml-sequence:
-    family: PlantUML
-    profile: sequence
-    extensions:
-    - .puml
-  plantuml-deployment:
-    family: PlantUML
-    profile: deployment
-    extensions:
-    - .puml
-  plantuml-erd:
-    family: PlantUML
-    profile: ERD
-    extensions:
-    - .puml
-  openapi-yaml:
-    family: OpenAPI
-    serialization: YAML
-    version_policy: document declares OpenAPI version; accepted versions are pinned by validation profile
-  asyncapi-yaml:
-    family: AsyncAPI
-    serialization: YAML
-    version_policy: document declares AsyncAPI version; accepted versions are pinned by validation profile
-  json-schema:
-    family: JSON Schema
-    serialization:
-    - JSON
-    - YAML
-    version_policy: document declares dialect via $schema when applicable; accepted dialects pinned by validation profile
-  infrastructure-native:
-    family: native declarative infrastructure format
-    selection_rule: exactly one format is selected by accepted architecture decision for the owned topology contract
-  migration-native:
-    family: native migration source
-    selection_rule: format follows authorized persistence/migration toolchain
-  test-source-native:
-    family: repository test source
-    selection_rule: format follows authorized implementation test toolchain
-  yaml-evidence-record:
-    family: YAML
-    schema: evidence-record
-  yaml-process-state:
-    family: YAML
-    schema: process-state-specific
-  generated-projection:
-    family: generated
-    canonical: false
-    requires:
-    - canonical source refs
-    - source fingerprint when available
+  markdown-h3-anchor: {family: Markdown, machine_metadata: H3 envelope or deterministic adjacent metadata, version_policy: repository profile}
+  yaml-schema-anchor: {family: YAML, schema: type-specific schema required; detailed schema may be owned by H6/H7/H8 as declared, version_policy: schema version required}
+  gherkin-feature: {family: Gherkin, extensions: [.feature], version_policy: validator profile pins grammar/tool version}
+  c4-plantuml: {family: C4-PlantUML, extensions: [.puml], version_policy: validator/render profile pins dependency version}
+  plantuml-sequence: {family: PlantUML, profile: sequence, extensions: [.puml]}
+  plantuml-deployment: {family: PlantUML, profile: deployment, extensions: [.puml]}
+  plantuml-erd: {family: PlantUML, profile: ERD, extensions: [.puml]}
+  openapi-yaml: {family: OpenAPI, serialization: YAML, version_policy: document declares OpenAPI version; accepted versions pinned by validation profile}
+  asyncapi-yaml: {family: AsyncAPI, serialization: YAML, version_policy: document declares AsyncAPI version; accepted versions pinned by validation profile}
+  json-schema: {family: JSON Schema, serialization: [JSON, YAML], version_policy: dialect declared by $schema when applicable; accepted dialects pinned by validation profile}
+  infrastructure-native: {family: native declarative infrastructure format, selection_rule: exactly one format selected by accepted architecture decision for owned topology contract}
+  migration-native: {family: native migration source, selection_rule: format follows authorized persistence/migration toolchain}
+  test-source-native: {family: repository test source, selection_rule: format follows authorized implementation test toolchain}
+  yaml-evidence-record: {family: YAML, schema: evidence-record}
+  yaml-process-state: {family: YAML, schema: process-state-specific}
+  generated-projection: {family: generated, canonical: false, requires: [canonical source refs, source fingerprint when available]}
+
 validator_requirements:
   V-H3-ENVELOPE: Deterministically validate H3 identity, owner, status, provenance and freshness envelope.
   V-APPLICABILITY: Evaluate structured applicability expression against declared facts.
@@ -192,521 +120,187 @@ validator_requirements:
   V-EVIDENCE-PROVENANCE: Verify evidence provenance/source identity and that evidence does not claim anchor authority.
   V-PROCESS-STATE: Validate process-state schema and lifecycle/authorization consistency.
   V-STAGE-SEMANTICS: Bounded semantic validation owned by the applicable stage specification; executable implementation deferred.
+
 artifact_types:
-- id: problem-statement
-  classification: anchor
-  retained: true
-  owner_stage: S0
-  canonical_semantic_key: problem-statement
-  applicability:
-    class: mandatory
-    expression:
-      fact: stage.S0.scope_entered
-  canonical_representation:
-    format_id: markdown-h3-anchor
-    canonical: true
-  validator_requirements:
-  - V-H3-ENVELOPE
-  - V-APPLICABILITY
-  - V-CANONICAL-UNIQUENESS
-  - V-FORMAT-SYNTAX
-  - V-STAGE-SEMANTICS
-  h3_envelope: required
-  gate_relevance: G0
-- id: evidence
-  classification: evidence
-  retained: true
-  owner_stage: S0
-  canonical_semantic_key: problem-evidence
-  applicability:
-    class: conditional
-    expression:
-      fact: scope.material_claim_requires_durable_evidence
-  canonical_representation:
-    format_id: yaml-evidence-record
-    canonical: true
-  validator_requirements:
-  - V-APPLICABILITY
-  - V-FORMAT-SYNTAX
-  - V-TYPE-SCHEMA
-  - V-EVIDENCE-PROVENANCE
-  h3_envelope: not-applicable
-  gate_relevance: G0
-  notes: Evidence supports claims/anchors but is not itself current Design Anchor truth.
-- id: user-journey
-  classification: anchor
-  retained: true
-  owner_stage: S0
-  canonical_semantic_key: user-journey
-  applicability:
-    class: conditional
-    expression:
-      fact: scope.actor_goal_journey_required
-  canonical_representation:
-    format_id: markdown-h3-anchor
-    canonical: true
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G0
-- id: constraint
-  classification: anchor
-  retained: true
-  owner_stage: S0
-  canonical_semantic_key: external-constraint
-  applicability: {class: conditional, expression: {fact: scope.external_or_nonnegotiable_constraint_exists}}
-  canonical_representation: {format_id: markdown-h3-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G0
-- id: functional-requirement
-  classification: anchor
-  retained: true
-  owner_stage: S1
-  canonical_semantic_key: functional-requirement
-  applicability: {class: conditional, expression: {fact: scope.observable_behavior_changed}}
-  canonical_representation: {format_id: markdown-h3-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G1
-- id: quality-requirement
-  classification: anchor
-  retained: true
-  owner_stage: S1
-  canonical_semantic_key: quality-requirement
-  applicability: {class: conditional, expression: {fact: scope.quality_attribute_materially_constrains}}
-  canonical_representation: {format_id: markdown-h3-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G1
-- id: acceptance-scenario
-  classification: anchor
-  retained: true
-  owner_stage: S1
-  canonical_semantic_key: acceptance-scenario
-  applicability: {class: conditional, expression: {fact: scope.example_level_acceptance_behavior_required}}
-  canonical_representation: {format_id: gherkin-feature, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STANDARD-CONTRACT, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G1
-  notes: Narrative examples that do not warrant a precise scenario remain inside requirement rationale instead of creating a second canonical scenario format.
-- id: requirements-glossary
-  classification: anchor
-  retained: true
-  owner_stage: S1
-  canonical_semantic_key: requirements-glossary
-  applicability: {class: conditional, expression: {fact: scope.requirements_terminology_ambiguity_material}}
-  canonical_representation: {format_id: yaml-schema-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G1
-- id: capability-map
-  classification: anchor
-  retained: true
-  owner_stage: S2
-  canonical_semantic_key: capability-map
-  applicability: {class: conditional, expression: {fact: scope.multi_capability_strategic_discovery_required}}
-  canonical_representation: {format_id: yaml-schema-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G2
-  allowed_projections: [capability-map-view]
-- id: domain-distillation
-  classification: anchor
-  retained: true
-  owner_stage: S2
-  canonical_semantic_key: domain-distillation
-  applicability: {class: conditional, expression: {fact: scope.strategic_distillation_required}}
-  canonical_representation: {format_id: yaml-schema-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G2
-- id: context-relationship-map
-  classification: anchor
-  retained: true
-  owner_stage: S2
-  canonical_semantic_key: context-relationship-semantics
-  applicability: {class: conditional, expression: {fact: scope.context_relationship_semantics_required}}
-  canonical_representation: {format_id: yaml-schema-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G2
-  allowed_projections: [context-map]
-- id: domain-model
-  classification: anchor
-  retained: true
-  owner_stage: S2
-  canonical_semantic_key: domain-model
-  applicability: {class: conditional, expression: {fact: scope.affected_domain_semantics_changed}}
-  canonical_representation: {format_id: yaml-schema-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G2
-  allowed_projections: [domain-model-diagram]
-  notes: Detailed H6 DDD schema owns aggregate/entity/value-object/invariant fields; H4 selects structured YAML as canonical carrier.
-- id: domain-glossary
-  classification: anchor
-  retained: true
-  owner_stage: S2
-  canonical_semantic_key: domain-glossary
-  applicability: {class: conditional, expression: {fact: scope.domain_terms_or_invariants_require_definition}}
-  canonical_representation: {format_id: yaml-schema-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G2
-- id: state-model
-  classification: anchor
-  retained: true
-  owner_stage: S2
-  canonical_semantic_key: domain-state-model
-  applicability: {class: conditional, expression: {fact: scope.domain_lifecycle_states_material}}
-  canonical_representation: {format_id: yaml-schema-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G2
-  allowed_projections: [state-model-diagram]
-- id: context-map
-  classification: projection
-  retained: false
-  owner_stage: S2
-  canonical_semantic_key: projection:context-map
-  applicability: {class: optional, expression: {fact: projection.context_map_requested}}
-  canonical_representation: {format_id: generated-projection, canonical: false}
-  validator_requirements: [V-APPLICABILITY, V-PROJECTION-SOURCES]
-  h3_envelope: not-applicable
-  notes: Reclassified from canonical PlantUML to generated projection of context/boundary/relationship anchors to prevent duplicate canonical relationship ownership.
-- id: requirement-domain-trace
-  classification: projection
-  retained: false
-  owner_stage: S2
-  canonical_semantic_key: projection:requirement-domain-trace
-  applicability: {class: optional, expression: {fact: projection.requirement_domain_trace_requested}}
-  canonical_representation: {format_id: generated-projection, canonical: false}
-  validator_requirements: [V-APPLICABILITY, V-PROJECTION-SOURCES]
-  h3_envelope: not-applicable
-  notes: Reclassified as generated projection; H5 dependency/registry relations own trace edges.
-- id: system-context
-  classification: anchor
-  retained: true
-  owner_stage: S3
-  canonical_semantic_key: system-context
-  applicability: {class: conditional, expression: {fact: scope.system_boundary_or_external_relationship_changed}}
-  canonical_representation: {format_id: c4-plantuml, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STANDARD-CONTRACT, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G3
-- id: container-view
-  classification: anchor
-  retained: true
-  owner_stage: S3
-  canonical_semantic_key: container-architecture
-  applicability: {class: conditional, expression: {fact: scope.runtime_container_responsibility_changed}}
-  canonical_representation: {format_id: c4-plantuml, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STANDARD-CONTRACT, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G3
-- id: interaction-flow
-  classification: anchor
-  retained: true
-  owner_stage: S3
-  canonical_semantic_key: interaction-flow
-  applicability: {class: conditional, expression: {fact: scope.cross_boundary_interaction_order_material}}
-  canonical_representation: {format_id: plantuml-sequence, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G3
-- id: deployment-model
-  classification: anchor
-  retained: true
-  owner_stage: S3
-  canonical_semantic_key: deployment-model
-  applicability: {class: conditional, expression: {fact: scope.deployment_topology_material}}
-  canonical_representation: {format_id: plantuml-deployment, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G3
-  notes: If infrastructure-native source is explicitly the architecture contract, a future registry revision may select infrastructure-native only through a non-duplicating canonical-format migration.
-- id: persistence-model
-  classification: anchor
-  retained: true
-  owner_stage: S3
-  canonical_semantic_key: persistence-model
-  applicability: {class: conditional, expression: {fact: scope.relational_persistence_design_material}}
-  canonical_representation: {format_id: plantuml-erd, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G3
-- id: http-contract
-  classification: anchor
-  retained: true
-  owner_stage: S3
-  canonical_semantic_key: http-contract
-  applicability: {class: conditional, expression: {fact: scope.http_boundary_changed_or_introduced}}
-  canonical_representation: {format_id: openapi-yaml, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STANDARD-CONTRACT, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G3
-- id: event-contract
-  classification: anchor
-  retained: true
-  owner_stage: S3
-  canonical_semantic_key: async-event-contract
-  applicability: {class: conditional, expression: {fact: scope.async_message_boundary_changed_or_introduced}}
-  canonical_representation: {format_id: asyncapi-yaml, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STANDARD-CONTRACT, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G3
-  notes: Domain Events are not automatically integration messages; this type applies only to an external/asynchronous message contract.
-- id: data-schema
-  classification: anchor
-  retained: true
-  owner_stage: S3
-  canonical_semantic_key: data-schema
-  applicability: {class: conditional, expression: {fact: scope.independently_governed_payload_schema_required}}
-  canonical_representation: {format_id: json-schema, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STANDARD-CONTRACT, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G3
-- id: problem-decision
-  classification: anchor
-  retained: true
-  owner_stage: S0
-  canonical_semantic_key: decision:S0
-  applicability: {class: conditional, expression: {fact: scope.significant_S0_decision_requires_rationale}}
-  canonical_representation: {format_id: markdown-h3-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G0
-  notes: Stage-specific replacement for legacy generic decision-record; references affected canonical anchors and does not replace them.
-- id: requirements-decision
-  classification: anchor
-  retained: true
-  owner_stage: S1
-  canonical_semantic_key: decision:S1
-  applicability: {class: conditional, expression: {fact: scope.significant_S1_decision_requires_rationale}}
-  canonical_representation: {format_id: markdown-h3-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G1
-  notes: Stage-specific replacement for legacy generic decision-record; references affected canonical anchors and does not replace them.
-- id: domain-decision
-  classification: anchor
-  retained: true
-  owner_stage: S2
-  canonical_semantic_key: decision:S2
-  applicability: {class: conditional, expression: {fact: scope.significant_S2_decision_requires_rationale}}
-  canonical_representation: {format_id: markdown-h3-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G2
-  notes: Stage-specific replacement for legacy generic decision-record; references affected canonical anchors and does not replace them.
-- id: architecture-decision
-  classification: anchor
-  retained: true
-  owner_stage: S3
-  canonical_semantic_key: decision:S3
-  applicability: {class: conditional, expression: {fact: scope.significant_S3_decision_requires_rationale}}
-  canonical_representation: {format_id: markdown-h3-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G3
-  notes: Stage-specific replacement for legacy generic decision-record; references affected canonical anchors and does not replace them.
-- id: implementation-readiness-decision
-  classification: anchor
-  retained: true
-  owner_stage: S4
-  canonical_semantic_key: decision:S4
-  applicability: {class: conditional, expression: {fact: scope.significant_S4_decision_requires_rationale}}
-  canonical_representation: {format_id: markdown-h3-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G4
-  notes: Stage-specific replacement for legacy generic decision-record; references affected canonical anchors and does not replace them.
-- id: implementation-plan
-  classification: anchor
-  retained: true
-  owner_stage: S4
-  canonical_semantic_key: implementation-plan
-  applicability: {class: conditional, expression: {fact: scope.nontrivial_implementation_slice}}
-  canonical_representation: {format_id: markdown-h3-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G4
-- id: migration-plan
-  classification: anchor
-  retained: true
-  owner_stage: S4
-  canonical_semantic_key: migration-plan
-  applicability: {class: conditional, expression: {fact: scope.persistent_or_external_state_transition_required}}
-  canonical_representation: {format_id: markdown-h3-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G4
-- id: test-intent
-  classification: anchor
-  retained: true
-  owner_stage: S4
-  canonical_semantic_key: test-intent
-  applicability: {class: conditional, expression: {fact: scope.nontrivial_implementation_slice}}
-  canonical_representation: {format_id: markdown-h3-anchor, canonical: true}
-  validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS]
-  h3_envelope: required
-  gate_relevance: G4
-- id: migration
-  classification: evidence
-  retained: true
-  owner_stage: IMPLEMENTATION
-  canonical_semantic_key: implementation:migration
-  applicability: {class: conditional, expression: {fact: implementation.authorized_migration_required}}
-  canonical_representation: {format_id: migration-native, canonical: true}
-  validator_requirements: [V-APPLICABILITY, V-FORMAT-SYNTAX, V-EVIDENCE-PROVENANCE]
-  h3_envelope: not-applicable
-  notes: Executable state-transition source; requires applicable current G4 authorization at execution time.
-- id: automated-test
-  classification: evidence
-  retained: true
-  owner_stage: IMPLEMENTATION
-  canonical_semantic_key: implementation:automated-test
-  applicability: {class: conditional, expression: {fact: implementation.automated_test_required_by_test_intent}}
-  canonical_representation: {format_id: test-source-native, canonical: true}
-  validator_requirements: [V-APPLICABILITY, V-FORMAT-SYNTAX, V-EVIDENCE-PROVENANCE]
-  h3_envelope: not-applicable
-- id: journey-e2e-test
-  classification: evidence
-  retained: true
-  owner_stage: IMPLEMENTATION
-  canonical_semantic_key: implementation:journey-e2e-test
-  applicability: {class: conditional, expression: {fact: implementation.accepted_journey_requires_e2e_proof}}
-  canonical_representation: {format_id: test-source-native, canonical: true}
-  validator_requirements: [V-APPLICABILITY, V-FORMAT-SYNTAX, V-EVIDENCE-PROVENANCE]
-  h3_envelope: not-applicable
-- id: workstream-state
-  classification: process-state
-  retained: true
-  owner_stage: META
-  canonical_semantic_key: process:workstream-state
-  applicability: {class: mandatory, expression: {fact: meta.docs_v2_workstream_active}}
-  canonical_representation: {format_id: yaml-process-state, canonical: true}
-  validator_requirements: [V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-PROCESS-STATE]
-  h3_envelope: not-applicable
-  notes: Resumable meta-work state; not product/domain truth.
-- id: lifecycle-scope-state
-  classification: process-state
-  retained: true
-  owner_stage: HARNESS
-  canonical_semantic_key: process:lifecycle-scope-state
-  applicability: {class: conditional, expression: {fact: harness.lifecycle_scope_tracked}}
-  canonical_representation: {format_id: yaml-process-state, canonical: true}
-  validator_requirements: [V-APPLICABILITY, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-PROCESS-STATE]
-  h3_envelope: not-applicable
-  notes: Per-scope orchestration state conforming to H2 lifecycle state machine.
-- id: implementation-lease
-  classification: process-state
-  retained: true
-  owner_stage: S4
-  canonical_semantic_key: process:implementation-lease
-  applicability: {class: conditional, expression: {fact: gate.G4_passed_for_exact_scope}}
-  canonical_representation: {format_id: yaml-process-state, canonical: true}
-  validator_requirements: [V-APPLICABILITY, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-PROCESS-STATE]
-  h3_envelope: not-applicable
-  notes: Authorization state issued by G4; revocable on stale/dirty basis.
-- id: validation-evidence
-  classification: process-state
-  retained: true
-  owner_stage: VALIDATION
-  canonical_semantic_key: process:validation-evidence
-  applicability: {class: conditional, expression: {fact: validation.executed}}
-  canonical_representation: {format_id: yaml-process-state, canonical: true}
-  validator_requirements: [V-APPLICABILITY, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-PROCESS-STATE]
-  h3_envelope: not-applicable
-  notes: Fingerprint-bound PASS/FAIL evidence; H3 defines freshness semantics.
+  - {id: problem-statement, classification: anchor, retained: true, owner_stage: S0, canonical_semantic_key: problem-statement, applicability: {class: mandatory, expression: {fact: stage.S0.scope_entered}}, canonical_representation: {format_id: markdown-h3-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G0}
+  - {id: evidence, classification: evidence, retained: true, owner_stage: S0, canonical_semantic_key: problem-evidence, applicability: {class: conditional, expression: {fact: scope.material_claim_requires_durable_evidence}}, canonical_representation: {format_id: yaml-evidence-record, canonical: true}, validator_requirements: [V-APPLICABILITY, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-EVIDENCE-PROVENANCE], h3_envelope: not-applicable, gate_relevance: G0, notes: Evidence supports claims/anchors but is not Design Anchor truth.}
+  - {id: user-journey, classification: anchor, retained: true, owner_stage: S0, canonical_semantic_key: user-journey, applicability: {class: conditional, expression: {fact: scope.actor_goal_journey_required}}, canonical_representation: {format_id: markdown-h3-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G0}
+  - {id: constraint, classification: anchor, retained: true, owner_stage: S0, canonical_semantic_key: external-constraint, applicability: {class: conditional, expression: {fact: scope.external_or_nonnegotiable_constraint_exists}}, canonical_representation: {format_id: markdown-h3-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G0}
+
+  - {id: functional-requirement, classification: anchor, retained: true, owner_stage: S1, canonical_semantic_key: functional-requirement, applicability: {class: conditional, expression: {fact: scope.observable_behavior_changed}}, canonical_representation: {format_id: markdown-h3-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G1}
+  - {id: quality-requirement, classification: anchor, retained: true, owner_stage: S1, canonical_semantic_key: quality-requirement, applicability: {class: conditional, expression: {fact: scope.quality_attribute_materially_constrains}}, canonical_representation: {format_id: markdown-h3-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G1}
+  - {id: acceptance-scenario, classification: anchor, retained: true, owner_stage: S1, canonical_semantic_key: acceptance-scenario, applicability: {class: conditional, expression: {fact: scope.example_level_acceptance_behavior_required}}, canonical_representation: {format_id: gherkin-feature, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STANDARD-CONTRACT, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G1}
+  - {id: requirements-glossary, classification: anchor, retained: true, owner_stage: S1, canonical_semantic_key: requirements-glossary, applicability: {class: conditional, expression: {fact: scope.requirements_terminology_ambiguity_material}}, canonical_representation: {format_id: yaml-schema-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G1}
+
+  - {id: capability-map, classification: anchor, retained: true, owner_stage: S2, canonical_semantic_key: capability-map, applicability: {class: conditional, expression: {fact: scope.multi_capability_strategic_discovery_required}}, canonical_representation: {format_id: yaml-schema-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G2, allowed_projections: [capability-map-view, capability-context-map]}
+  - {id: domain-distillation, classification: anchor, retained: true, owner_stage: S2, canonical_semantic_key: domain-distillation, applicability: {class: conditional, expression: {fact: scope.strategic_distillation_required}}, canonical_representation: {format_id: yaml-schema-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G2}
+  - id: bounded-context
+    classification: anchor
+    retained: true
+    owner_stage: S2
+    canonical_semantic_key: bounded-context
+    applicability: {class: conditional, expression: {fact: scope.bounded_context_identity_or_boundary_required}}
+    canonical_representation: {format_id: yaml-schema-anchor, canonical: true}
+    validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS]
+    h3_envelope: required
+    gate_relevance: G2
+    allowed_projections: [context-map, capability-context-map]
+    semantic_ownership: [context identity, model boundary, owned responsibility, ubiquitous-language/model ownership]
+    excludes: [inter-context relationship pattern, tactical aggregate/entity/value-object internals, deployment/runtime boundary]
+    notes: >-
+      H6 defines the detailed schema. Capability ownership is expressed by stable semantic refs
+      to capability-map anchors/items; a separate canonical capability-to-context mapping artifact
+      is forbidden because it would duplicate the same ownership truth.
+  - id: domain-process-model
+    classification: anchor
+    retained: true
+    owner_stage: S2
+    canonical_semantic_key: domain-process-model
+    applicability: {class: conditional, expression: {fact: scope.domain_process_discovery_required}}
+    canonical_representation: {format_id: yaml-schema-anchor, canonical: true}
+    validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS]
+    h3_envelope: required
+    gate_relevance: G2
+    allowed_projections: [event-storming-board, process-timeline-view]
+    semantic_ownership: [actors, commands, domain events, policies, temporal/process ordering, external systems, hotspots/questions, candidate aggregate hypotheses]
+    excludes: [accepted tactical aggregate semantics, integration-message contract]
+    notes: >-
+      Durable Process Discovery/Event Storming truth. Candidate aggregate boundaries remain
+      hypotheses here until H6 derivation plus authority/validation produces accepted tactical
+      aggregate semantics in domain-model. Domain Events here are domain semantics and do not
+      automatically create S3 event-contract anchors.
+  - {id: context-relationship-map, classification: anchor, retained: true, owner_stage: S2, canonical_semantic_key: context-relationship-semantics, applicability: {class: conditional, expression: {fact: scope.context_relationship_semantics_required}}, canonical_representation: {format_id: yaml-schema-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G2, allowed_projections: [context-map], notes: Owns inter-context direction/pattern semantics; context identities/boundaries are owned by bounded-context.}
+  - {id: domain-model, classification: anchor, retained: true, owner_stage: S2, canonical_semantic_key: domain-model, applicability: {class: conditional, expression: {fact: scope.affected_domain_semantics_changed}}, canonical_representation: {format_id: yaml-schema-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G2, allowed_projections: [domain-model-diagram], notes: H6 schema owns accepted aggregate/entity/value-object/invariant/domain-service semantics. Candidate aggregate hypotheses remain in domain-process-model until accepted derivation.}
+  - {id: domain-glossary, classification: anchor, retained: true, owner_stage: S2, canonical_semantic_key: domain-glossary, applicability: {class: conditional, expression: {fact: scope.domain_terms_or_invariants_require_definition}}, canonical_representation: {format_id: yaml-schema-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G2}
+  - {id: state-model, classification: anchor, retained: true, owner_stage: S2, canonical_semantic_key: domain-state-model, applicability: {class: conditional, expression: {fact: scope.domain_lifecycle_states_material}}, canonical_representation: {format_id: yaml-schema-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G2, allowed_projections: [state-model-diagram]}
+  - {id: context-map, classification: projection, retained: false, owner_stage: S2, canonical_semantic_key: 'projection:context-map', applicability: {class: optional, expression: {fact: projection.context_map_requested}}, canonical_representation: {format_id: generated-projection, canonical: false}, validator_requirements: [V-APPLICABILITY, V-PROJECTION-SOURCES], h3_envelope: not-applicable, notes: Generated from bounded-context plus context-relationship-map and referenced S2 anchors; never owns boundary truth.}
+  - {id: requirement-domain-trace, classification: projection, retained: false, owner_stage: S2, canonical_semantic_key: 'projection:requirement-domain-trace', applicability: {class: optional, expression: {fact: projection.requirement_domain_trace_requested}}, canonical_representation: {format_id: generated-projection, canonical: false}, validator_requirements: [V-APPLICABILITY, V-PROJECTION-SOURCES], h3_envelope: not-applicable, notes: Generated from H5 semantic refs; never owns trace truth.}
+
+  - {id: system-context, classification: anchor, retained: true, owner_stage: S3, canonical_semantic_key: system-context, applicability: {class: conditional, expression: {fact: scope.system_boundary_or_external_relationship_changed}}, canonical_representation: {format_id: c4-plantuml, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STANDARD-CONTRACT, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G3}
+  - {id: container-view, classification: anchor, retained: true, owner_stage: S3, canonical_semantic_key: container-architecture, applicability: {class: conditional, expression: {fact: scope.runtime_container_responsibility_changed}}, canonical_representation: {format_id: c4-plantuml, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STANDARD-CONTRACT, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G3}
+  - {id: interaction-flow, classification: anchor, retained: true, owner_stage: S3, canonical_semantic_key: interaction-flow, applicability: {class: conditional, expression: {fact: scope.cross_boundary_interaction_order_material}}, canonical_representation: {format_id: plantuml-sequence, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G3}
+  - {id: deployment-model, classification: anchor, retained: true, owner_stage: S3, canonical_semantic_key: deployment-model, applicability: {class: conditional, expression: {fact: scope.deployment_topology_material}}, canonical_representation: {format_id: plantuml-deployment, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G3}
+  - {id: persistence-model, classification: anchor, retained: true, owner_stage: S3, canonical_semantic_key: persistence-model, applicability: {class: conditional, expression: {fact: scope.relational_persistence_design_material}}, canonical_representation: {format_id: plantuml-erd, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G3}
+  - {id: http-contract, classification: anchor, retained: true, owner_stage: S3, canonical_semantic_key: http-contract, applicability: {class: conditional, expression: {fact: scope.http_boundary_changed_or_introduced}}, canonical_representation: {format_id: openapi-yaml, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STANDARD-CONTRACT, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G3}
+  - {id: event-contract, classification: anchor, retained: true, owner_stage: S3, canonical_semantic_key: async-event-contract, applicability: {class: conditional, expression: {fact: scope.async_message_boundary_changed_or_introduced}}, canonical_representation: {format_id: asyncapi-yaml, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STANDARD-CONTRACT, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G3, notes: Domain Events are not automatically integration messages; this type applies only to an external/asynchronous message contract.}
+  - {id: data-schema, classification: anchor, retained: true, owner_stage: S3, canonical_semantic_key: data-schema, applicability: {class: conditional, expression: {fact: scope.independently_governed_payload_schema_required}}, canonical_representation: {format_id: json-schema, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STANDARD-CONTRACT, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G3}
+
+  - {id: problem-decision, classification: anchor, retained: true, owner_stage: S0, canonical_semantic_key: 'decision:S0', applicability: {class: conditional, expression: {fact: scope.significant_S0_decision_requires_rationale}}, canonical_representation: {format_id: markdown-h3-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G0}
+  - {id: requirements-decision, classification: anchor, retained: true, owner_stage: S1, canonical_semantic_key: 'decision:S1', applicability: {class: conditional, expression: {fact: scope.significant_S1_decision_requires_rationale}}, canonical_representation: {format_id: markdown-h3-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G1}
+  - {id: domain-decision, classification: anchor, retained: true, owner_stage: S2, canonical_semantic_key: 'decision:S2', applicability: {class: conditional, expression: {fact: scope.significant_S2_decision_requires_rationale}}, canonical_representation: {format_id: markdown-h3-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G2}
+  - {id: architecture-decision, classification: anchor, retained: true, owner_stage: S3, canonical_semantic_key: 'decision:S3', applicability: {class: conditional, expression: {fact: scope.significant_S3_decision_requires_rationale}}, canonical_representation: {format_id: markdown-h3-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G3}
+  - {id: implementation-readiness-decision, classification: anchor, retained: true, owner_stage: S4, canonical_semantic_key: 'decision:S4', applicability: {class: conditional, expression: {fact: scope.significant_S4_decision_requires_rationale}}, canonical_representation: {format_id: markdown-h3-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G4}
+
+  - {id: implementation-plan, classification: anchor, retained: true, owner_stage: S4, canonical_semantic_key: implementation-plan, applicability: {class: conditional, expression: {fact: scope.nontrivial_implementation_slice}}, canonical_representation: {format_id: markdown-h3-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G4}
+  - {id: migration-plan, classification: anchor, retained: true, owner_stage: S4, canonical_semantic_key: migration-plan, applicability: {class: conditional, expression: {fact: scope.persistent_or_external_state_transition_required}}, canonical_representation: {format_id: markdown-h3-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G4}
+  - {id: test-intent, classification: anchor, retained: true, owner_stage: S4, canonical_semantic_key: test-intent, applicability: {class: conditional, expression: {fact: scope.nontrivial_implementation_slice}}, canonical_representation: {format_id: markdown-h3-anchor, canonical: true}, validator_requirements: [V-H3-ENVELOPE, V-APPLICABILITY, V-CANONICAL-UNIQUENESS, V-FORMAT-SYNTAX, V-STAGE-SEMANTICS], h3_envelope: required, gate_relevance: G4}
+
+  - {id: migration, classification: evidence, retained: true, owner_stage: IMPLEMENTATION, canonical_semantic_key: 'implementation:migration', applicability: {class: conditional, expression: {fact: implementation.authorized_migration_required}}, canonical_representation: {format_id: migration-native, canonical: true}, validator_requirements: [V-APPLICABILITY, V-FORMAT-SYNTAX, V-EVIDENCE-PROVENANCE], h3_envelope: not-applicable}
+  - {id: automated-test, classification: evidence, retained: true, owner_stage: IMPLEMENTATION, canonical_semantic_key: 'implementation:automated-test', applicability: {class: conditional, expression: {fact: implementation.automated_test_required_by_test_intent}}, canonical_representation: {format_id: test-source-native, canonical: true}, validator_requirements: [V-APPLICABILITY, V-FORMAT-SYNTAX, V-EVIDENCE-PROVENANCE], h3_envelope: not-applicable}
+  - {id: journey-e2e-test, classification: evidence, retained: true, owner_stage: IMPLEMENTATION, canonical_semantic_key: 'implementation:journey-e2e-test', applicability: {class: conditional, expression: {fact: implementation.accepted_journey_requires_e2e_proof}}, canonical_representation: {format_id: test-source-native, canonical: true}, validator_requirements: [V-APPLICABILITY, V-FORMAT-SYNTAX, V-EVIDENCE-PROVENANCE], h3_envelope: not-applicable}
+
+  - {id: workstream-state, classification: process-state, retained: true, owner_stage: META, canonical_semantic_key: 'process:workstream-state', applicability: {class: mandatory, expression: {fact: meta.docs_v2_workstream_active}}, canonical_representation: {format_id: yaml-process-state, canonical: true}, validator_requirements: [V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-PROCESS-STATE], h3_envelope: not-applicable}
+  - {id: lifecycle-scope-state, classification: process-state, retained: true, owner_stage: HARNESS, canonical_semantic_key: 'process:lifecycle-scope-state', applicability: {class: conditional, expression: {fact: harness.lifecycle_scope_tracked}}, canonical_representation: {format_id: yaml-process-state, canonical: true}, validator_requirements: [V-APPLICABILITY, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-PROCESS-STATE], h3_envelope: not-applicable}
+  - {id: implementation-lease, classification: process-state, retained: true, owner_stage: S4, canonical_semantic_key: 'process:implementation-lease', applicability: {class: conditional, expression: {fact: gate.G4_passed_for_exact_scope}}, canonical_representation: {format_id: yaml-process-state, canonical: true}, validator_requirements: [V-APPLICABILITY, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-PROCESS-STATE], h3_envelope: not-applicable}
+  - {id: validation-evidence, classification: process-state, retained: true, owner_stage: VALIDATION, canonical_semantic_key: 'process:validation-evidence', applicability: {class: conditional, expression: {fact: validation.executed}}, canonical_representation: {format_id: yaml-process-state, canonical: true}, validator_requirements: [V-APPLICABILITY, V-FORMAT-SYNTAX, V-TYPE-SCHEMA, V-PROCESS-STATE], h3_envelope: not-applicable}
+
 legacy_catalog_disposition:
-- legacy_type: decision-record
-  disposition: split
-  replacement_types: [problem-decision, requirements-decision, domain-decision, architecture-decision, implementation-readiness-decision]
-  reason: H4 requires each retained type to have one fixed semantic owner; legacy decision-owner placeholder is resolved into stage-specific types.
-- legacy_type: context-map
-  disposition: reclassified-projection
-  replacement_canonical_sources: [context-relationship-map, other referenced S2 boundary anchors]
-  reason: Prevent a rendered context view from duplicating canonical boundary/relationship semantics.
-- legacy_type: requirement-domain-trace
-  disposition: reclassified-projection
-  replacement_canonical_source: H5 dependency/registry relations
-  reason: Trace views should be generated from canonical references/edges rather than own duplicate mapping truth.
-- legacy_type: evidence
-  disposition: retained-with-normalized-envelope
-  canonical_change: YAML evidence record references native/external evidence instead of making arbitrary evidence payload formats co-canonical.
-- legacy_type: domain-model
-  disposition: retained-format-redesign
-  canonical_change: Structured YAML carrier; H6 defines detailed DDD schema. Diagrams become projections.
-- legacy_type: state-model
-  disposition: retained-format-redesign
-  canonical_change: Structured YAML carrier; H6 defines detailed lifecycle semantics. Diagram is a projection.
+  - {legacy_type: decision-record, disposition: split, replacement_types: [problem-decision, requirements-decision, domain-decision, architecture-decision, implementation-readiness-decision], reason: Fixed H4 ownership replaces dynamic decision-owner.}
+  - {legacy_type: context-map, disposition: reclassified-projection, replacement_canonical_sources: [bounded-context, context-relationship-map, other referenced S2 anchors], reason: Prevent rendered context view from duplicating canonical boundary/relationship semantics.}
+  - {legacy_type: requirement-domain-trace, disposition: reclassified-projection, replacement_canonical_source: H5 dependency/registry relations, reason: Trace views are generated from canonical refs/edges.}
+  - {legacy_type: evidence, disposition: retained-with-normalized-envelope, canonical_change: YAML evidence record references native/external evidence instead of making arbitrary evidence payload formats co-canonical.}
+  - {legacy_type: domain-model, disposition: retained-format-redesign, canonical_change: Structured YAML carrier; H6 defines detailed tactical DDD schema; diagrams are projections.}
+  - {legacy_type: state-model, disposition: retained-format-redesign, canonical_change: Structured YAML carrier; H6 defines detailed lifecycle semantics; diagram is a projection.}
+  - {legacy_gap: bounded-context, disposition: added-H4-T2, reason: H6 requires canonical Bounded Context identity/boundary truth distinct from relationship and tactical model truth.}
+  - {legacy_gap: domain-process-model, disposition: added-H4-T2, reason: H6 requires durable Process Discovery/Event Storming truth before tactical modeling.}
+
+s2_semantic_ownership:
+  capability_map:
+    owns: capability identity/grouping and strategic clustering semantics
+    does_not_own: accepted Bounded Context identity/boundary
+  bounded_context:
+    owns: context identity/boundary/responsibility/model-language ownership
+    capability_to_context_mapping: expressed by stable H5 semantic refs and generated as capability-context-map projection/index
+    duplicate_mapping_anchor_allowed: false
+  context_relationship_map:
+    owns: inter-context direction and DDD relationship-pattern semantics
+    does_not_own: context identity/boundary
+  domain_process_model:
+    owns: durable process-discovery/Event Storming semantics and candidate aggregate hypotheses
+    candidate_aggregate_status: hypothesis-until-tactical-acceptance
+  domain_model:
+    owns: accepted tactical aggregate/entity/value-object/invariant/domain-service semantics
+  state_model:
+    owns: accepted material domain lifecycle state/transition semantics
+  separation_rules:
+    - Domain Event in domain-process-model is domain truth, not automatically an S3 integration message.
+    - Candidate aggregate hypotheses cannot satisfy accepted domain-model aggregate semantics.
+    - Capability-to-context projection cannot be edited as independent truth.
+    - Runtime/deployment boundaries remain S3 architecture truth and cannot redefine a Bounded Context.
+
 registry_invariants:
-- id: AR-ONE-OWNER
-  rule: Every retained type has exactly one owner_stage token; retained anchor types use only S0-S4.
-- id: AR-ONE-CANONICAL-SEMANTIC-KEY
-  rule: canonical_semantic_key is unique across retained canonical types; projections use projection:* keys and are non-canonical.
-- id: AR-H3-ANCHOR-MAPPING
-  rule: Every anchor type requires the H3 envelope and cannot weaken H3 identity/provenance/status/fingerprint guards.
-- id: AR-APPLICABILITY-DECLARATIVE
-  rule: Conditional applicability is a structured expression over declared facts; missing facts are routed, never invented.
-- id: AR-PROJECTION-NONCANONICAL
-  rule: Projection types are non-canonical and cannot become current downstream truth independently of their sources.
-- id: AR-STANDARD-FIRST
-  rule: OpenAPI, AsyncAPI, JSON Schema and Gherkin are used for the contract classes they directly express; prose is not a parallel canonical copy.
-- id: AR-NO-CUTOVER
-  rule: This registry does not change docs/ product/domain authority.
+  - {id: AR-ONE-OWNER, rule: Every retained type has exactly one owner_stage token; retained anchor types use only S0-S4.}
+  - {id: AR-ONE-CANONICAL-SEMANTIC-KEY, rule: canonical_semantic_key is unique across retained canonical types; projections use projection:* keys and are non-canonical.}
+  - {id: AR-H3-ANCHOR-MAPPING, rule: Every anchor type requires the H3 envelope and cannot weaken H3 identity/provenance/status/fingerprint guards.}
+  - {id: AR-APPLICABILITY-DECLARATIVE, rule: Conditional applicability is a structured expression over declared facts; missing facts are routed, never invented.}
+  - {id: AR-PROJECTION-NONCANONICAL, rule: Projection types are non-canonical and cannot become current downstream truth independently of sources.}
+  - {id: AR-STANDARD-FIRST, rule: OpenAPI, AsyncAPI, JSON Schema and Gherkin are used where they directly own the semantic contract.}
+  - {id: AR-S2-NO-DUPLICATE-TRUTH, rule: Capability, context boundary, relationship, process-discovery and tactical-model semantics have distinct canonical owners; cross-cutting mappings are refs/projections.}
+  - {id: AR-NO-CUTOVER, rule: This registry does not change docs/ product/domain authority.}
+
 conformance_cases:
-- id: AR-CF-ONE-OWNER-PER-RETAINED
-  oracle: deterministic
-  given: {retained_types: all}
-  expect: {each_has_exactly_one_owner_stage: true, retained_anchor_owner_in: [S0, S1, S2, S3, S4]}
-- id: AR-CF-CONDITIONAL-APPLICABILITY-STRUCTURED
-  oracle: deterministic
-  given: {types_with_applicability_class: conditional}
-  expect: {expression_present: true, expression_uses_declared_dsl: true}
-- id: AR-CF-NO-DUPLICATE-CANONICAL-OWNER
-  oracle: deterministic
-  given: {retained_canonical_types: all}
-  expect: {canonical_semantic_key_unique: true}
-- id: AR-CF-ANCHOR-H3-ENVELOPE
-  oracle: deterministic
-  given: {classification: anchor}
-  expect: {h3_envelope: required, may_weaken_h3_guards: false}
-- id: AR-CF-STANDARD-NATIVE-MAPPINGS
-  oracle: deterministic
-  given: {types: [http-contract, event-contract, data-schema, acceptance-scenario]}
-  expect: {formats: [openapi-yaml, asyncapi-yaml, json-schema, gherkin-feature]}
-- id: AR-CF-LEGACY-DECISION-OWNER-RESOLVED
-  oracle: deterministic
-  given: {legacy_type: decision-record}
-  expect: {retained_generic_type: false, stage_specific_replacement_count: 5}
-- id: AR-CF-PROJECTION-NOT-CANONICAL
-  oracle: deterministic
-  given: {classification: projection}
-  expect: {canonical: false, may_be_independent_truth: false}
-- id: AR-CF-CUTOVER-NOT-IMPLICIT
-  oracle: deterministic
-  given: {registry_defined: true, explicit_cutover_authorization: false}
-  expect: {docs_remains_product_domain_authority: true}
+  - {id: AR-CF-ONE-OWNER-PER-RETAINED, oracle: deterministic, given: {retained_types: all}, expect: {each_has_exactly_one_owner_stage: true, retained_anchor_owner_in: [S0, S1, S2, S3, S4]}}
+  - {id: AR-CF-CONDITIONAL-APPLICABILITY-STRUCTURED, oracle: deterministic, given: {types_with_applicability_class: conditional}, expect: {expression_present: true, expression_uses_declared_dsl: true}}
+  - {id: AR-CF-NO-DUPLICATE-CANONICAL-OWNER, oracle: deterministic, given: {retained_canonical_types: all}, expect: {canonical_semantic_key_unique: true}}
+  - {id: AR-CF-ANCHOR-H3-ENVELOPE, oracle: deterministic, given: {classification: anchor}, expect: {h3_envelope: required, may_weaken_h3_guards: false}}
+  - {id: AR-CF-STANDARD-NATIVE-MAPPINGS, oracle: deterministic, given: {types: [http-contract, event-contract, data-schema, acceptance-scenario]}, expect: {formats: [openapi-yaml, asyncapi-yaml, json-schema, gherkin-feature]}}
+  - {id: AR-CF-LEGACY-DECISION-OWNER-RESOLVED, oracle: deterministic, given: {legacy_type: decision-record}, expect: {retained_generic_type: false, stage_specific_replacement_count: 5}}
+  - {id: AR-CF-PROJECTION-NOT-CANONICAL, oracle: deterministic, given: {classification: projection}, expect: {canonical: false, may_be_independent_truth: false}}
+  - {id: AR-CF-BOUNDED-CONTEXT-CANONICAL-OWNER, oracle: deterministic, given: {semantic_truth: bounded-context-identity-boundary}, expect: {canonical_type: bounded-context, owner_stage: S2, format_id: yaml-schema-anchor}}
+  - {id: AR-CF-DOMAIN-PROCESS-CANONICAL-OWNER, oracle: deterministic, given: {semantic_truth: process-discovery-event-storming}, expect: {canonical_type: domain-process-model, owner_stage: S2, format_id: yaml-schema-anchor}}
+  - {id: AR-CF-CAPABILITY-CONTEXT-NO-DUPLICATE, oracle: deterministic, given: {capability_to_context_view_requested: true}, expect: {separate_canonical_mapping_type: false, source_truth: [capability-map, bounded-context-semantic-refs], projection_allowed: true}}
+  - {id: AR-CF-CANDIDATE-AGGREGATE-NOT-TACTICAL-TRUTH, oracle: deterministic, given: {candidate_aggregate_in_process_model: true, accepted_domain_model_derivation_absent: true}, expect: {accepted_tactical_aggregate: false, process_hypothesis_retained: true}}
+  - {id: AR-CF-DOMAIN-EVENT-NOT-INTEGRATION-CONTRACT, oracle: deterministic, given: {domain_event_in_process_model: true, S3_async_contract_decision_absent: true}, expect: {event_contract_created_implicitly: false}}
+  - {id: AR-CF-CUTOVER-NOT-IMPLICIT, oracle: deterministic, given: {registry_defined: true, explicit_cutover_authorization: false}, expect: {docs_remains_product_domain_authority: true}}
+
+h5_compatibility_review:
+  reviewed_contracts:
+    - docs-v2/spec/dependency-registry-impact.yaml
+    - docs-v2/spec/design-derivation-lineage.yaml
+  result: PASS
+  findings:
+    - H5 registry source_set already includes all retained H4 anchors, so the two new anchor types require no registry-model change.
+    - Both new types use existing H3 anchor identity/status/fingerprint semantics and structured YAML canonicalization profile.
+    - H6 can express derivation through existing H5 semantic_refs and edge vocabulary; no new dependency relation is required.
+    - Capability-to-context mapping uses existing refs and generated projection/index semantics, so no parallel graph is introduced.
+    - Candidate aggregate hypotheses remain inside domain-process-model until an accepted domain-model derives/refines them; H5 lineage can represent that with existing DERIVES_FROM/REFINES/DECIDED_BY relations.
+    - No H5 fingerprint, impact, earliest-stage, supersession or reference-resolution rule is weakened or contradicted.
+  reopen_required:
+    H5: false
+
 h4_exit_evaluation:
   checks:
-  - all retained type ids are unique
-  - every retained type has exactly one owner_stage token
-  - all retained anchor owner stages are one of S0-S4
-  - every type has a canonical representation rule
-  - every conditional type has a structured applicability expression
-  - canonical_semantic_key is unique across retained canonical types
-  - every retained anchor maps to H3 envelope
-  - standard mappings exist for OpenAPI, AsyncAPI, JSON Schema and architecture/text DSL families
-  - generic legacy decision-record is not retained as a dynamic-owner canonical type
-  - projection types are explicitly non-canonical
-  - no product/domain cutover is performed
+    - all type ids are unique
+    - every retained type has exactly one owner_stage token
+    - all retained anchor owner stages are one of S0-S4
+    - every type has a canonical representation rule
+    - every conditional type has a structured applicability expression
+    - canonical_semantic_key is unique across retained canonical types
+    - every retained anchor maps to H3 envelope
+    - bounded-context owns Bounded Context identity/boundary truth
+    - domain-process-model owns Process Discovery/Event Storming truth
+    - capability-to-context mapping has no duplicate canonical owner
+    - candidate aggregate hypotheses do not become accepted tactical truth implicitly
+    - Domain Events do not become integration contracts implicitly
+    - H5 compatibility review passes
+    - no product/domain cutover is performed
   executable_validators_required: false
-handoff_to_h5:
-  next_task: H5-T1
+
+handoff_to_h5_h6:
+  h5_compatibility: PASS
+  resume_task: H6-T1
   requirements:
-  - Build the generated anchor registry from retained H4 types and H3 anchor identities.
-  - Define dependency-edge vocabulary and reference resolution without changing H4 semantic ownership.
-  - Define concrete content fingerprint/canonicalization algorithm compatible with H3 freshness semantics.
-  - Compute reproducible DIRTY/STALE downstream impact from H4/H3 references and H2 lifecycle routing.
+    - H6 defines detailed schemas and derivation methods for bounded-context and domain-process-model.
+    - H6 uses H5 semantic refs for capability-to-context lineage and all downstream derivation.
+    - H6 preserves candidate aggregate hypotheses as non-accepted until tactical domain-model acceptance guards pass.
+    - H6 preserves the domain-event versus integration-message boundary.
