@@ -11,7 +11,7 @@ Design and validate a replacement documentation/artifact system incrementally, w
 - current lifecycle/process/Harness conventions;
 - `docs-v2/README.md` charter;
 - `docs-v2/spec/*` design specifications;
-- `docs-v2/migration/plan.md` iteration roadmap.
+- `docs-v2/migration/plan.md` migration roadmap.
 
 ## Exit criteria
 
@@ -28,12 +28,13 @@ Design and validate a replacement documentation/artifact system incrementally, w
 - M3 repository layout: complete.
 - M4 agent execution model: complete.
 - M5 validation model: complete.
-- M6 migration plan: next.
+- M6 migration plan: complete.
+- M7 bounded pilot: next.
 
 ## Blockers
 
-None for M6.
+None for pilot selection.
 
 ## Next
 
-Complete M6 migration plan only: inventory/map current `docs/` and Harness/CI ownership to v2 artifact types and profiles, define migration batches, pilot selection criteria, canonical-truth safeguards, cutover/rollback procedure and retirement of old documentation. Do not perform the migration during M6.
+M7 task 1 only: select one already-implemented representative product slice using the criteria in `docs-v2/migration/plan.md`, inventory its current requirements/domain/architecture/contracts/tests, and record the pilot scope plus legacy-to-v2 disposition map. Do not migrate the slice until that bounded inventory/selection task is complete.
