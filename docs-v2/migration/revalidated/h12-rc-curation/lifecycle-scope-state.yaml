@@ -11,10 +11,15 @@ process_contracts:
   validation: {id: DOCS-V2-VALIDATION-GATE-ENGINE, version: 1}
 
 current_task:
-  id: H12-T2
-  kind: revalidation-task
+  id: H12-G0-1
+  kind: gate-evaluation
   lifecycle_stage: S0
-  state: IN_PROGRESS
+  state: NOT_STARTED
+
+completed_tasks:
+  - id: H12-T2
+    result: PASS
+    effect: S0-design-basis-materialized
 
 stage_states:
   S0: IN_PROGRESS
@@ -41,6 +46,20 @@ applicability_facts:
   scope.external_or_nonnegotiable_constraint_exists: false
   scope.material_claim_requires_durable_evidence: false
 
+current_S0_anchors:
+  - anchor_id: NAPMS-S0-RC-CURATION-PROBLEM
+    type_id: problem-statement
+    status: ACCEPTED
+    validation_freshness: CURRENT
+    semantic_fingerprint: sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
+    canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/problem-statement.md
+  - anchor_id: NAPMS-S0-RC-CURATION-JOURNEY
+    type_id: user-journey
+    status: ACCEPTED
+    validation_freshness: CURRENT
+    semantic_fingerprint: sha256-jcs-v1:5401681959c4ef07ce2b990b28ff2df1ee2eb5756b3d6355b641ab4f0f5bd475
+    canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/user-journey.md
+
 source_authority:
   current_product_domain_authority: docs/
   allowed_S0_sources:
@@ -54,6 +73,6 @@ source_authority:
 blocking_questions: []
 blockers: []
 
-next_when_task_complete:
-  id: H12-G0-1
+next_when_current_task_passes:
+  id: H12-T3
   auto_start: false
