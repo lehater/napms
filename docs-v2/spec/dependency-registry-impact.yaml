@@ -1,0 +1,587 @@
+version: 1
+kind: dependency-registry-impact-model
+id: DOCS-V2-DEPENDENCY-REGISTRY-IMPACT
+status: active
+owner_phase: H5
+owner_task: H5-T1
+last_updated: 2026-09-16
+
+purpose: >
+  Make redesigned Design Anchor state graph-addressable and impact-computable without
+  changing H4 semantic ownership. Define the generated anchor registry, typed dependency
+  edges, deterministic reference resolution, concrete semantic fingerprint/canonicalization,
+  validation-basis freshness, DIRTY/STALE propagation and earliest-affected-stage calculation.
+
+authority:
+  defines:
+    - generated Design Anchor registry model
+    - structured semantic reference and dependency-edge vocabulary
+    - current and pinned historical reference resolution
+    - semantic projection canonicalization and fingerprint algorithm
+    - validation-basis dependency snapshots
+    - deterministic direct/transitive impact traversal
+    - anchor DIRTY and validation STALE propagation
+    - dependent G4 lease revocation trigger
+    - earliest-affected-stage calculation after semantic ownership is known
+  does_not_define:
+    - NAPMS product or domain truth
+    - new artifact types or semantic owners
+    - detailed DDD schemas or process methods
+    - physical repository layout or path conventions
+    - executable validators, Harness runtime, tests, workflows or CI
+    - canonical cutover from docs/ to docs-v2/
+  direct_dependency:
+    id: DOCS-V2-ARTIFACT-TYPE-REGISTRY
+    path: docs-v2/spec/artifact-type-registry.yaml
+  supporting_contracts:
+    - id: DOCS-V2-DESIGN-ANCHOR-CONTRACT
+      path: docs-v2/spec/design-anchor.yaml
+    - id: DOCS-V2-LIFECYCLE-STATE-MACHINE
+      path: docs-v2/spec/lifecycle-state-machine.yaml
+    - id: DOCS-V2-HARNESS-CONFORMANCE
+      path: docs-v2/spec/harness-conformance.yaml
+
+external_standards:
+  - id: RFC-8785-JCS
+    role: canonical JSON serialization
+    url: https://www.rfc-editor.org/rfc/rfc8785
+    note: >
+      Used as the deterministic serialization profile after an anchor semantic projection
+      has been reduced to an I-JSON-compatible JSON data model.
+  - id: FIPS-180-4-SHA256
+    role: semantic digest
+    url: https://csrc.nist.gov/pubs/fips/180-4/upd1/final
+    note: SHA-256 is the v1 digest algorithm; algorithm version is encoded in every fingerprint.
+
+cutover_guard:
+  current_product_domain_authority: docs/
+  docs_v2_registry_role: candidate-redesign-index
+  rule: >
+    Registry generation, dependency traversal or an H3 ACCEPTED status MUST NOT perform
+    product/domain cutover. docs/ remains authoritative until separately authorized cutover.
+
+model_boundaries:
+  canonical_truth:
+    source: H3/H4-compliant Design Anchor canonical payload plus H3 envelope
+    rule: generated registry and graph never become independent semantic owners
+  generated_registry:
+    classification: process-state
+    canonical_product_domain_truth: false
+  generated_dependency_graph:
+    classification: projection
+    canonical_product_domain_truth: false
+  validation_evidence:
+    classification: process-state
+    rule: may prove freshness/conformance but never introduce product/domain truth
+
+stage_rank:
+  S0: 0
+  S1: 1
+  S2: 2
+  S3: 3
+  S4: 4
+
+anchor_registry:
+  kind: generated-index
+  source_set: all retained H4 artifact instances where classification == anchor
+  generation:
+    deterministic: true
+    full_rebuild_preferred: true
+    no_manual_semantic_fields: true
+    ordering: [owner_stage_rank, type_id, anchor_id]
+  entry_required_fields:
+    - anchor_id
+    - type_id
+    - owner_stage
+    - scope
+    - status
+    - semantic_fingerprint
+    - validation_freshness
+    - canonical_locator
+    - superseded_by
+  entry_rules:
+    - exactly one current registry entry may exist for an anchor_id
+    - type_id must resolve to one retained H4 anchor type
+    - owner_stage must equal the H4 owner for type_id
+    - canonical_locator is derived routing metadata and is not anchor identity
+    - canonical_locator change alone must not change anchor_id
+    - status and fingerprint are copied/derived from canonical anchor state, never authored in registry
+    - superseded/retired revisions remain historically addressable
+  build_rejections:
+    duplicate_current_anchor_id: FAIL
+    unknown_or_nonanchor_type_id: FAIL
+    owner_stage_mismatch: FAIL
+    duplicate_current_canonical_locator: FAIL
+    fingerprint_recompute_mismatch: FAIL
+    invalid_status_for_current_truth: FAIL
+  current_entry:
+    required_status: ACCEPTED
+    required_validation_freshness: CURRENT
+
+semantic_references:
+  storage: H3 semantic_refs in the dependent anchor envelope
+  direction:
+    dependent_anchor_id: anchor that records the reference and may be affected
+    dependency_anchor_id: anchor whose current semantics are consumed
+  required_fields:
+    - relation
+    - target
+  target:
+    current_anchor:
+      required: [kind, anchor_id]
+      kind_value: anchor-current
+    pinned_historical_anchor:
+      required: [kind, anchor_id, semantic_fingerprint]
+      kind_value: anchor-pinned
+    evidence:
+      required: [kind, evidence_ref, evidence_fingerprint]
+      kind_value: evidence
+  optional_fields:
+    - impact
+    - condition
+    - rationale_ref
+  defaults:
+    current_anchor_impact: relation-default
+    pinned_historical_anchor_impact: none
+    evidence_impact: relation-default
+  rule: >
+    Cross-anchor semantic dependencies MUST be explicit structured refs. Text mentions,
+    file paths and generated projections do not create dependency edges implicitly.
+
+edge_vocabulary:
+  - id: DERIVES_FROM
+    meaning: Dependent semantics are derived from dependency semantics.
+    default_impact: semantic
+    allowed_stage_direction: same-or-later-dependent
+  - id: CONSTRAINED_BY
+    meaning: Dependent semantics must remain compatible with a constraint or decision dependency.
+    default_impact: semantic
+    allowed_stage_direction: same-or-later-dependent
+  - id: REALIZES
+    meaning: Dependent design provides a realization of an upstream accepted behavior/domain/architecture contract.
+    default_impact: semantic
+    allowed_stage_direction: later-dependent
+  - id: REFINES
+    meaning: Dependent anchor adds owned detail while preserving the dependency contract.
+    default_impact: semantic
+    allowed_stage_direction: same-or-later-dependent
+  - id: REFERENCES
+    meaning: Navigational or explanatory reference that does not by itself make semantics dependent.
+    default_impact: none
+    allowed_stage_direction: any
+  - id: EVIDENCED_BY
+    meaning: Anchor points to durable evidence supporting a claim; evidence is not Design Anchor truth.
+    default_impact: evidence-freshness
+    target_kind: evidence
+  - id: DECIDED_BY
+    meaning: Anchor semantics rely on an accepted stage-owned decision anchor.
+    default_impact: semantic
+    allowed_stage_direction: same-or-later-dependent
+  - id: SUPERSEDES
+    meaning: Historical replacement relationship governed by H3 supersession semantics.
+    default_impact: none
+    allowed_stage_direction: any
+
+impact_modes:
+  semantic:
+    on_dependency_semantic_fingerprint_change:
+      dependent_status_if_ACCEPTED: DIRTY
+      dependent_validation: STALE
+      traverse_transitively: true
+  evidence-freshness:
+    on_evidence_change:
+      dependent_validation: STALE
+      dependent_status_if_ACCEPTED: DIRTY
+      traverse_transitively: true
+    note: Evidence cannot directly provide new domain truth; it can invalidate the basis of accepted truth.
+  none:
+    on_target_change:
+      dependent_status_change: none
+      dependent_validation_change: none
+      traverse_transitively: false
+
+edge_rules:
+  - relation default impact is authoritative unless the owning type specification explicitly narrows impact to none
+  - an edge MUST NOT broaden a relation from default impact none to semantic without an explicit type/spec rule
+  - conditional impact requires a machine-readable condition over declared facts
+  - unknown human-owned condition routes to NEED_MORE_DATA; unresolved known prerequisite routes to BLOCKED
+  - current semantic edges must resolve to ACCEPTED + CURRENT dependencies before dependent ACCEPTED can be current
+  - pinned historical refs are audit/provenance inputs and never silently become current semantic dependencies
+  - cycles are permitted only as explicit edges; traversal uses a visited set and returns a stable set, not repeated work
+
+reference_resolution:
+  current:
+    input: {anchor_id: required}
+    algorithm:
+      - lookup exactly one anchor_id in generated registry
+      - reject if missing or ambiguous
+      - reject status in [CANDIDATE, DIRTY, SUPERSEDED, RETIRED]
+      - recompute semantic_fingerprint from canonical source and require registry equality
+      - require validation_freshness == CURRENT
+      - return anchor_id, type_id, owner_stage, scope, fingerprint and canonical_locator
+    failure:
+      dangling: {result: FAIL, reason: dangling-reference, semantic_eval_runs: false}
+      ambiguous: {result: FAIL, reason: ambiguous-anchor-id, semantic_eval_runs: false}
+      invalid_status: {result: FAIL, reason: anchor-not-current-truth}
+      stale_validation: {result: FAIL, reason: validation-evidence-stale}
+      fingerprint_mismatch: {result: FAIL, reason: registry-source-fingerprint-mismatch}
+    supersession:
+      silent_redirect: false
+      replacement_hint_allowed: true
+  pinned_historical:
+    input: {anchor_id: required, semantic_fingerprint: required}
+    algorithm:
+      - resolve exact historical revision by anchor_id plus fingerprint
+      - allow SUPERSEDED or RETIRED revision for audit/provenance
+      - never satisfy a current-truth dependency unless consuming contract explicitly permits historical evidence
+  evidence:
+    input: {evidence_ref: required, evidence_fingerprint: required}
+    algorithm:
+      - resolve exactly one retained H4 evidence instance
+      - require evidence provenance/integrity validation
+      - require requested evidence_fingerprint to match the resolved evidence
+      - return evidence identity/fingerprint without granting Design Anchor authority
+  path_resolution:
+    rule: >
+      canonical_locator is an implementation/layout-provided locator. H5 resolution identity
+      is anchor_id, not path; move/rename must preserve anchor_id and only update the generated locator.
+
+semantic_fingerprint:
+  version: sha256-jcs-v1
+  output_format: "sha256-jcs-v1:<64-lowercase-hex>"
+  digest:
+    algorithm: SHA-256
+    standard: FIPS-180-4-SHA256
+  semantic_projection:
+    required_h3_fields:
+      - anchor_id
+      - type_id
+      - owner_stage
+      - scope
+      - canonical_payload
+      - semantic_refs
+      - authority-bearing provenance
+      - supersession semantics when current truth changes
+    excluded:
+      - validation result records
+      - non-semantic timestamps
+      - generated projections
+      - private reasoning
+      - generated registry fields
+      - canonical_locator/path
+      - non-semantic audit display metadata
+  projection_normalization:
+    object_field_order: irrelevant before JCS
+    arrays: order preserved unless a type-specific schema explicitly declares a set-like field
+    set_like_arrays:
+      rule: >
+        A type schema that declares a field set-like MUST define its deterministic sort key.
+        H5 never guesses that an arbitrary array is order-insensitive.
+    null_and_missing: distinct
+    numbers: must be representable by the selected I-JSON/JCS profile; otherwise encode as a schema-defined string
+  canonical_payload_profiles:
+    structured-data:
+      applies_to_families: [YAML, JSON, OpenAPI, AsyncAPI, JSON-Schema]
+      steps:
+        - parse using the type/profile grammar
+        - reject duplicate mapping/object keys
+        - reduce to an I-JSON-compatible JSON data model
+        - preserve string code points exactly; do not apply Unicode normalization
+        - apply schema-declared set-like sorting only
+        - embed structured data in the semantic projection
+    text-source:
+      applies_to_families: [Markdown, Gherkin, C4-PlantUML, PlantUML]
+      steps:
+        - require UTF-8 without BOM
+        - normalize CRLF and CR line endings to LF
+        - preserve all remaining code points, whitespace, comments and line order
+        - embed normalized text as a JSON string in the semantic projection
+      rationale: >
+        H5 does not attempt semantic parsing that could incorrectly treat a meaningful text
+        edit as non-semantic. Type-specific later validators may define a stronger semantic projection.
+  serialization:
+    algorithm: RFC-8785-JCS
+    input_requirement: semantic projection is I-JSON-compatible
+    output_encoding: UTF-8
+  final_step: SHA-256 over RFC-8785 canonical UTF-8 bytes
+  recomputation_rule: >
+    Recompute from canonical source; registry-stored fingerprints are cache/index values and
+    MUST NOT be trusted without matching recomputation when freshness is evaluated.
+
+validation_basis:
+  purpose: Make validation freshness depend on both local content and current semantic dependencies.
+  evidence_extension:
+    required_for_anchor_acceptance:
+      - validated_fingerprint
+      - dependency_snapshot
+      - validation_basis_fingerprint
+    dependency_snapshot_entry:
+      required:
+        - anchor_id
+        - semantic_fingerprint
+        - relation
+      deterministic_sort_key: [anchor_id, relation, semantic_fingerprint]
+    snapshot_scope: all resolved current refs whose effective impact is semantic or evidence-freshness
+  basis_projection:
+    fields:
+      - anchor_id
+      - validated_fingerprint
+      - sorted_dependency_snapshot
+      - validator_or_eval_id
+      - validator_or_eval_version
+      - specification_version
+  basis_fingerprint:
+    algorithm: same sha256-jcs-v1 profile
+  freshness:
+    CURRENT_when:
+      - validated_fingerprint equals current anchor semantic_fingerprint
+      - every dependency snapshot fingerprint equals currently resolved dependency fingerprint
+      - validation_basis_fingerprint recomputes equal
+      - validator/specification versions remain accepted by the active validation profile
+    STALE_when_any:
+      - local semantic fingerprint changed
+      - current semantic/evidence dependency fingerprint differs from snapshot
+      - required dependency no longer resolves as valid current truth
+      - validation basis projection changes
+      - validator/specification version becomes invalid under active profile
+
+generated_dependency_graph:
+  nodes:
+    anchor: from generated anchor registry
+    evidence: only when referenced by EVIDENCED_BY
+  edges:
+    source: explicit semantic_references from canonical anchors
+    identity_fields: [dependent_anchor_id, relation, dependency_anchor_id, condition]
+    deduplication: exact duplicate edge records collapse to one generated edge
+  build_rejections:
+    - dangling current target
+    - ambiguous target
+    - unknown relation
+    - invalid stage direction for relation
+    - current semantic dependency on non-ACCEPTED or STALE anchor
+    - edge condition with invalid applicability expression
+  graph_ordering:
+    nodes: [stage_rank, anchor_id]
+    edges: [dependency_anchor_id, dependent_anchor_id, relation]
+  generated_views:
+    - requirement-domain-trace
+    - context/reference indexes
+    - impact reports
+  rule: generated views are projections and never become duplicate canonical truth
+
+impact_calculation:
+  trigger:
+    - anchor semantic_fingerprint changes
+    - accepted anchor becomes DIRTY, SUPERSEDED or RETIRED
+    - evidence fingerprint changes where an EVIDENCED_BY edge is effective
+    - current dependency becomes unresolvable or loses CURRENT validation
+  roots:
+    rule: changed or invalidated nodes that triggered calculation
+  traversal:
+    direction: reverse dependency direction, from changed dependency to dependents
+    traverse_edge_when:
+      - effective impact in [semantic, evidence-freshness]
+      - condition absent or evaluates true
+    stop_edge_when:
+      - effective impact == none
+      - condition evaluates false
+    unknown_condition:
+      human_owned_non_derivable: NEED_MORE_DATA
+      known_prerequisite_unavailable: BLOCKED
+    cycle_handling: visited node+edge identity set
+  affected_set:
+    includes: roots plus every reachable dependent through traversed edges
+    deterministic_order: [stage_rank, anchor_id]
+    reproducibility_inputs:
+      - root anchor/evidence IDs and before/after fingerprints/status
+      - exact generated graph fingerprint
+      - declared condition facts
+      - registry generation version
+  effects:
+    changed_anchor:
+      validation_evidence: STALE when local fingerprint/basis changed
+      status_if_previously_ACCEPTED: DIRTY unless transition is explicit SUPERSEDED or RETIRED
+    affected_dependent_anchor:
+      validation_evidence: STALE
+      status_if_ACCEPTED: DIRTY
+      status_if_CANDIDATE: CANDIDATE
+      status_if_DIRTY: DIRTY
+    unaffected_anchor:
+      state_change: none
+    dependent_g4_lease:
+      when: lease validation/authorization basis includes any affected anchor
+      effect: revoke-or-not-current
+      implementation_allowed: false
+  no_blast_radius_rule: >
+    Stage ordering alone never causes DIRTY. Only roots and anchors reachable by explicit
+    effective dependency edges are affected.
+
+graph_fingerprint:
+  version: graph-sha256-jcs-v1
+  projection:
+    - registry generation version
+    - sorted pre-impact current anchor node identities plus fingerprints/status
+    - sorted pre-impact generated effective edge records
+  algorithm: SHA-256 over RFC-8785 canonical JSON bytes
+  use: bind impact reports to the exact graph snapshot used for calculation
+
+earliest_affected_stage:
+  applicability: >
+    Runs after each material semantic root has an explicit H4 anchor type/owner or an
+    explicit deficiency owner from validated evidence. It does not replace semantic classification.
+  calculation:
+    - collect owner_stage for every changed semantic root anchor
+    - include an explicit deficiency_owner_stage or deficiency_owner_anchor_id when evidence supplies one
+    - map stages through stage_rank
+    - choose the minimum stage_rank
+    - persist supporting root/owner references
+  result:
+    selected_stage: S0|S1|S2|S3|S4
+    supporting_roots_required: true
+    execution_auto_continues: false
+  routing_adapter:
+    deficiency_finding:
+      when_selected_stage_earlier_than_current: REOPEN(selected_stage)
+      when_selected_stage_equals_current: REWORK
+    planned_change:
+      rule: select the bounded task at selected_stage; apply existing H2 dirty/revalidation rules without inventing a new route outcome
+  ambiguity:
+    when:
+      - a material change cannot be assigned to an existing anchor/type/owner from accepted evidence
+      - competing owner classifications remain unresolved
+    result:
+      next_task: narrow-classification
+      invent_stage: false
+      broad_stage_preload: false
+  non_rule: >
+    Do not choose the earliest stage merely because it is numerically earliest among all
+    downstream affected anchors. The earliest stage is based on semantic roots/explicit
+    deficiency ownership; downstream impact is a consequence, not ownership transfer.
+
+deterministic_validation_order:
+  - validate H4 type and fixed owner
+  - recompute local semantic fingerprints
+  - generate registry and reject duplicate/dangling identity problems
+  - resolve structured refs and build typed graph
+  - compute validation-basis freshness
+  - calculate impact set and G4 revocations
+  - calculate earliest affected stage when semantic root ownership is known
+  - only then run bounded semantic classification/eval for unresolved ownership or applicability
+
+conformance_cases:
+  - id: DI-CF-REGISTRY-GENERATED-NOT-TRUTH
+    oracle: deterministic
+    given: {registry_entry_edited_without_source_anchor_change: true}
+    expect: {product_domain_truth_changed: false, registry_regeneration_required: true}
+
+  - id: DI-CF-DANGLING-CURRENT-REF-REJECTED
+    oracle: deterministic
+    given: {reference: {anchor_id: A-MISSING}, registry_match_count: 0}
+    expect: {result: FAIL, reason: dangling-reference, semantic_eval_runs: false}
+
+  - id: DI-CF-NONCURRENT-REF-REJECTED
+    oracle: deterministic
+    given: {reference: {anchor_id: A-1}, resolved_status: DIRTY}
+    expect: {result: FAIL, reason: anchor-not-current-truth}
+
+  - id: DI-CF-PINNED-HISTORICAL-RESOLVES
+    oracle: deterministic
+    given: {reference: {anchor_id: A-OLD, semantic_fingerprint: "sha256-jcs-v1:historical"}, resolved_status: SUPERSEDED}
+    expect: {audit_reference_valid: true, current_truth_reference_valid: false}
+
+  - id: DI-CF-STRUCTURED-KEY-ORDER-INVARIANT
+    oracle: deterministic
+    given:
+      profile: structured-data
+      logical_data_equal: true
+      object_key_order_differs: true
+    expect: {semantic_fingerprint_equal: true}
+
+  - id: DI-CF-TEXT-LINE-ENDINGS-INVARIANT
+    oracle: deterministic
+    given: {profile: text-source, only_difference: LF-versus-CRLF}
+    expect: {semantic_fingerprint_equal: true}
+
+  - id: DI-CF-TEXT-WHITESPACE-CHANGE-DETECTED
+    oracle: deterministic
+    given: {profile: text-source, non-line-ending-whitespace_changed: true}
+    expect: {semantic_fingerprint_equal: false}
+
+  - id: DI-CF-DEPENDENCY-BASIS-STALES
+    oracle: deterministic
+    given:
+      dependent_validated_fingerprint_unchanged: true
+      dependency_snapshot_fingerprint: old
+      dependency_current_fingerprint: new
+    expect: {dependent_validation: STALE, dependent_status_if_ACCEPTED: DIRTY}
+
+  - id: DI-CF-REFERENCE-ONLY-NO-DIRTY
+    oracle: deterministic
+    given: {relation: REFERENCES, dependency_fingerprint_changed: true}
+    expect: {dependent_status_change: none, traverse_transitively: false}
+
+  - id: DI-CF-TRANSITIVE-AFFECTED-SET
+    oracle: deterministic
+    given:
+      edges:
+        - {dependent: A2, relation: REALIZES, dependency: A1}
+        - {dependent: A3, relation: DERIVES_FROM, dependency: A2}
+        - {dependent: A4, relation: REFERENCES, dependency: A1}
+      changed_root: A1
+    expect: {affected_set: [A1, A2, A3], unaffected: [A4]}
+
+  - id: DI-CF-CYCLE-STABLE
+    oracle: deterministic
+    given:
+      edges:
+        - {dependent: A2, relation: CONSTRAINED_BY, dependency: A1}
+        - {dependent: A1, relation: CONSTRAINED_BY, dependency: A2}
+      changed_root: A1
+    expect: {affected_set_unique: [A1, A2], infinite_traversal: false}
+
+  - id: DI-CF-DEPENDENT-G4-REVOKED
+    oracle: deterministic
+    given: {g4_basis_contains_anchor: A3, affected_set_contains: A3, lease_status: current}
+    expect: {lease_status: revoked-or-not-current, implementation_allowed: false}
+
+  - id: DI-CF-EARLIEST-STAGE-FROM-ROOTS
+    oracle: deterministic
+    given:
+      root_owners: [S3, S1]
+      downstream_affected_owners: [S2, S3, S4]
+    expect: {selected_stage: S1, deficiency_route_from_current_S3: REOPEN(S1)}
+
+  - id: DI-CF-AMBIGUOUS-OWNER-CLASSIFICATION
+    oracle: semantic
+    given: {material_change_owner_derivable: false}
+    expect: {next_task: narrow-classification, invent_stage: false, preload_all_stages: false}
+
+  - id: DI-CF-NO-IMPLICIT-CUTOVER
+    oracle: deterministic
+    given: {h5_model_defined: true, explicit_cutover_authorization: false}
+    expect: {docs_remains_product_domain_authority: true}
+
+h5_exit_evaluation:
+  required_checks:
+    - generated registry is derived from canonical anchors and cannot become duplicate truth
+    - dangling/ambiguous/current-status reference failures are deterministic
+    - semantic fingerprints use versioned SHA-256 over RFC-8785 canonical semantic projection
+    - structured key order and text line-ending normalization are deterministic
+    - validation freshness binds local content plus exact semantic dependency snapshot
+    - changed upstream anchor produces a reproducible reverse-edge affected set
+    - non-impact REFERENCES edges do not enlarge blast radius
+    - affected ACCEPTED anchors become DIRTY and validation evidence becomes STALE
+    - dependent G4 lease is revoked or made non-current
+    - earliest affected stage derives from semantic roots/explicit deficiency ownership
+    - unresolved semantic ownership routes to narrow classification instead of invented stage
+    - no H4 semantic owner or canonical representation is changed
+    - no product/domain cutover is performed
+  executable_validators_required: false
+
+handoff_to_h6:
+  next_task: H6-T1
+  requirements:
+    - H6 DDD anchors must use H4 types and H3 envelope.
+    - H6 must emit explicit H5 semantic_refs for derivation/constraint/realization relationships needed for traceability and impact.
+    - H6 may define type-specific semantic projection details only by specializing H5 canonicalization without weakening fingerprint determinism.
+    - H6 process/tactical work must preserve H2 checkpoint gating and human escalation for non-derivable business truth.
