@@ -1,33 +1,35 @@
 # Active execution
 
-Current: none.
+Current: `PLAN-130-revalidate-policy-lifecycle.md`
 
-The selected next implementation increment is the Full Vendor-Neutral Policy Export defined by `docs/requirements/first-mvp-vendor-neutral-policy-export.md`.
+Goal: realize the concrete Component Deployment, unified Policy Rule lifecycle and vendor-neutral export without embedding customer-specific approval workflow into the MVP domain.
 
-Current accepted product slice:
+Current task: complete G3 review of the simplified target architecture for AP formal decisions, AD/BC ownership, policy export and as-built compatibility.
 
-```text
-AP current effective Policy Rules
-        +
-ACC InteractionContractRevision
-        +
-AD ApplicationDeployment + ComponentPlacement
-        +
-RC Resource + AddressSpace
-        |
-        v
-Full Vendor-Neutral Policy Export
-        |
-        +--> table
-        `--> CSV/vendor-neutral data
-```
+Lifecycle stage: `S3`
+Stage state: `IN_PROGRESS`
+Lifecycle basis: G1 and G2 were revalidated on 2026-09-16 after simplifying RuleChange governance to one formal `Pending -> Accepted | Rejected` decision; `docs/domain/mvp-ddd-convergence-checkpoint.md` records G2 PASS for that baseline.
+Implementation authorization: `none`
+Authorized scope: `none`
+Authorization basis: `none`
 
-The exported policy must carry access-list-oriented source/destination address, protocol and port/range semantics while remaining independent of firewall, device, ACL and provider context.
+## Working set
 
-The previous AP-free Required Access Matrix selection is superseded.
+Read first:
+- `docs/plans/active/PLAN-130-revalidate-policy-lifecycle.md`
+- `docs/architecture/first-mvp-policy-lifecycle-export.md`
+- `docs/architecture/target-policy-authoring-boundary.md`
+- `docs/architecture/code-structure.md`
+- `docs/domain/mvp-ddd-convergence-checkpoint.md`
 
-No product workstream is active yet. Because the selected slice now starts from authoritative Access Policy truth, the next lifecycle step is a narrow S2 revalidation of the AP -> export composition and policy-creation handoff before S3 Architecture starts. No implementation authorization exists.
+## Blockers
+
+None currently. S3 must preserve the simplified decision boundary: no source/destination approval model, no ApprovalBasis persistence, and no mandatory RC Responsibility Scope dependency for baseline `DecideRuleChange`.
+
+## Gate
+
+G3 — feasible owner-preserving architecture with explicit ports/persistence/concurrency/failure/compatibility semantics and no P0/P1 contradiction, while keeping customer-specific approval procedures outside the first-MVP core.
 
 ## Next
 
-Enter S2 only for the selected AP + ACC + AD + RC export slice when explicitly started. Confirm that the export consumes public owner contracts, owns no independent policy truth and does not require NEP/device semantics. Then proceed through S3/S4. Production-code implementation remains forbidden until S4 reaches G4 for an explicit scope.
+Run the architecture-review lenses against the simplified S3 candidate and synchronize remaining architecture/as-built target references before evaluating G3. Production-code implementation remains forbidden.

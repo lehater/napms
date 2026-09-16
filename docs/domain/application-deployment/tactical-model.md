@@ -1,182 +1,164 @@
 # Application Deployment — MVP Tactical DDD model
 
-Status: `S2 MVP Tactical model accepted for convergence 2026-09-15`.
+Status: `S2 MVP Tactical model revalidated 2026-09-16`.
 
 ## Purpose
 
-Own the identity/continuity of one logical deployment of an Application and the current Component-to-Resource placement truth needed by governance and technical materialization.
+Own the identity and lifecycle of one concrete deployed Component instance and its exact Resource relation for the access domain.
 
-This model is deliberately smaller than a runtime/orchestrator inventory. It does not model pods, processes, containers, interfaces, listeners, addresses or deployment-specific endpoints.
+The model deliberately does not represent provider pods, processes, containers, interfaces, listeners, addresses or a whole-Application deployment aggregate.
 
-## Aggregate root — ApplicationDeployment
+## Aggregate root — ComponentDeployment
 
 ```text
-ApplicationDeployment {
-    applicationDeploymentId
-    applicationRef
-    componentPlacements: Set<ComponentPlacement>
+ComponentDeployment {
+    componentDeploymentId
+    componentRef
+    resourceRef
+    lifecycle: Active | Retired
 }
 ```
 
-`ApplicationDeployment` is the semantic identity/consistency owner for its current placement set.
+`ComponentDeployment` is the semantic identity/consistency owner for one concrete deployed Component instance.
 
 ### Identity / sameness
 
-`applicationDeploymentId` identifies one logical deployment and is never derived from current Resources or addresses.
+`componentDeploymentId` is the stable AD-owned identity.
 
-The same ApplicationDeployment remains the same while continuity of that logical deployment is preserved, including:
-
-- adding/removing placement of a Component;
-- horizontal scaling of one Component to several Resources;
-- Resource migration;
-- Resource address change;
-- ordinary replacement of one placement by another.
-
-Changing the referenced Application is not a mutation of the same ApplicationDeployment; it requires a different logical deployment identity.
-
-## ComponentPlacement — relation value, not independent entity
-
-For the first MVP:
+Two Component Deployments are different when they represent different concrete deployed instances, including when the same ACC Component is deployed on two different Resources.
 
 ```text
-ComponentPlacement = (ComponentRef, ResourceRef)
+Component A + Resource R1 -> CD-1
+Component A + Resource R2 -> CD-2
 ```
 
-`ComponentPlacement` has no independent semantic identity or lifecycle. It is a current relation value owned by its ApplicationDeployment.
+`componentRef` and `resourceRef` are identity-defining semantic facts for the instance and do not change in place for the first MVP.
 
 Consequences:
 
-- there is no `ComponentPlacementId` requirement in the MVP domain;
-- the exact same `(ComponentRef, ResourceRef)` pair cannot occur twice in one ApplicationDeployment;
-- one Component may be placed on zero, one or many distinct Resources;
-- one Resource may host placements for several Components;
-- removing and later re-adding the same pair does not imply continuity of a separately identified placement entity;
-- placement history/audit may be added later only if a concrete product requirement needs independently addressable historical placement facts.
+- moving/redeploying the same Component to another Resource creates another Component Deployment;
+- changing the referenced Component creates another Component Deployment;
+- changing the Resource AddressSpace does **not** create another Component Deployment because Resource identity is unchanged;
+- a retired Component Deployment is not repointed to a replacement Resource or Component;
+- downstream historical references remain meaningful.
 
-This explicitly avoids the false invariant “exactly one placement per Component”.
+A generated persistence row identifier is not a separate semantic identity beyond `ComponentDeploymentId`.
 
-## Placement-set semantics
+## Lifecycle
 
-For one ApplicationDeployment and Component:
+Target lifecycle is terminal:
 
 ```text
-CurrentPlacements(applicationDeploymentRef, componentRef)
-    = Set<ResourceRef>
+Active -> Retired
 ```
 
-The set is authoritative AD truth for the current model.
+There is no normal semantic hard delete and no `Retired -> Active` reactivation in the first MVP.
 
-- empty set = AD knows that the Component currently has no placement in this ApplicationDeployment;
-- non-empty set = every ResourceRef in the set is an applicable current placement;
-- failure to obtain/resolve AD truth is **not** the same as an empty set and must remain unresolved at the consuming boundary.
+Retirement means the concrete deployed instance is no longer current/selectable for new policy work. Historical Policy Rules/change records/evidence may continue to refer to it for explanation.
 
-Downstream consumers must preserve all members of the set. They may not choose one arbitrary Resource when several placements exist.
+Whether retirement is blocked while a current effective Policy Rule references the deployment is a cross-context product/architecture concern that must preserve historical truth; AD itself does not silently mutate peer policy.
 
-## Invariants
+No richer `Planned/Running/Stopped` runtime state machine is required.
 
-1. Every ApplicationDeployment references exactly one ACC `ApplicationRef`.
-2. Every placed `ComponentRef` must belong to that referenced Application according to ACC public semantics.
-3. Every placement references one opaque RC `ResourceRef`; AD does not copy Resource address, responsibility or scope semantics.
-4. The current placement set contains no duplicate `(ComponentRef, ResourceRef)` pair.
-5. Placement multiplicity is unrestricted by the MVP domain beyond set uniqueness.
-6. ApplicationDeployment identity is independent of its current placement set.
-7. Resource AddressSpace changes do not mutate ComponentPlacement meaning because placement references Resource identity, not address.
-8. Interaction identity/traffic semantics remain in ACC; a placement never embeds or owns an Interaction.
+## Core invariants
+
+1. every Component Deployment has one stable `ComponentDeploymentId`;
+2. every Component Deployment references exactly one ACC `ComponentRef`;
+3. every Component Deployment references exactly one opaque RC `ResourceRef`;
+4. `componentRef` and `resourceRef` are fixed for that Component Deployment identity in the first MVP;
+5. deploying the same Component on another Resource creates another Component Deployment identity;
+6. Resource AddressSpace changes do not change ComponentDeployment identity;
+7. Interaction identity/traffic semantics remain ACC truth and are never embedded as AD-owned semantics;
+8. Resource address, responsibility and scope remain RC truth;
+9. Retired Component Deployments remain referentially explainable and are excluded from normal new-selection semantics.
+
+The MVP does **not** impose a uniqueness rule preventing different Component Deployments from referencing the same Resource because no accepted behavior currently requires that restriction.
 
 ## Minimal domain operations
 
-The MVP needs only relation-set semantics:
-
 ```text
-EstablishApplicationDeployment(applicationRef)
-PlaceComponent(componentRef, resourceRef)
-UnplaceComponent(componentRef, resourceRef)
+EstablishComponentDeployment(componentRef, resourceRef)
+RetireComponentDeployment(componentDeploymentId)
 ```
 
-These names express domain meaning, not frozen API commands.
+These are semantic operations, not frozen API command names.
 
-A “move” or “replacement” is not a separate required domain concept for MVP. It is a change from one valid placement set to another. This avoids inventing atomic move semantics that the product has not required.
+There is deliberately no `MoveComponentDeployment` operation. A deployment on a different Resource is a different Component Deployment.
 
-Likewise, horizontal scaling is simply a placement set containing several ResourceRefs for the same ComponentRef.
+Horizontal replication is represented by several Component Deployments of the same `ComponentRef`, not by one deployment with a placement set or replica count.
 
 ## Interaction applicability
 
-Given an ACC InteractionContractRevision with source/destination endpoint Components, a logical ApplicationDeployment can realize one endpoint only when:
-
-1. the deployment references the Application containing that endpoint Component; and
-2. the endpoint Component has at least one current placement ResourceRef in that deployment.
-
-This is only deployment/placement applicability. AG remains responsible for approval-obligation resolvability; RC remains responsible for Resource scope/address truth.
-
-For a governed source/destination deployment pair, all applicable endpoint placements are preserved. Governance/materialization may fail closed if required downstream scope/address facts are unresolved; AD does not hide a placement to manufacture a simpler result.
-
-## Published semantic values
-
-AD may publish a current placement projection equivalent to:
+Given an ACC `InteractionContractRevision`:
 
 ```text
-ApplicationDeploymentPlacementView {
-    applicationDeploymentRef
-    applicationRef
-    placements: Set<(ComponentRef, ResourceRef)>
-}
+revision
+  -> Interaction
+      sourceComponentRef
+      destinationComponentRef
 ```
 
-or a component-filtered equivalent.
+one source/destination Component Deployment pair is compatible only when:
 
-The semantic contract is the complete current set for the requested scope, not a specific DTO or transport shape.
+```text
+sourceDeployment.componentRef == sourceComponentRef
+destinationDeployment.componentRef == destinationComponentRef
+```
 
-A consumer must be able to distinguish:
+AD owns only each deployment's Component/Resource facts. Access Policy owns whether that compatible concrete pair is proposed/authorized.
 
-- complete current empty set;
-- complete current non-empty set;
-- unavailable/unresolved result.
+## Published semantic contract
 
-The mechanism for completeness/failure signalling is Architecture, not Tactical DDD.
+AD publishes a public projection equivalent to:
 
-## Lifecycle classification
+```text
+ResolveComponentDeployment(componentDeploymentRef)
+-> {
+     componentDeploymentRef
+     componentRef
+     resourceRef
+     lifecycle/currentness
+   }
+| unresolved
+```
 
-AD owns ApplicationDeployment lifecycle in the strategic sense, but the accepted first MVP behavior does not currently distinguish `Planned`, `Running`, `Stopped`, `Retired` or similar deployment states.
+Exact DTO/transport/persistence shape is Architecture.
 
-No lifecycle state machine is therefore introduced merely for implementation convenience.
+Consumers must distinguish a known Retired deployment, a known Active deployment and an unavailable/unresolved lookup where that distinction affects behavior.
 
-For the current MVP DDD:
+For evidence recognition, AD may also support a semantic query equivalent to:
 
-- ApplicationDeployment identity/continuity is defined;
-- current placement mutation is defined;
-- richer deployment lifecycle vocabulary remains deliberately deferred until an accepted journey gives those states observable meaning.
+```text
+FindActiveComponentDeploymentsByResource(resourceRef)
+-> ComponentDeploymentRef[] | unresolved
+```
 
-This deferral is non-blocking for the first happy path because selection/governance/materialization depend on the current published deployment and placement facts, not on an unaccepted lifecycle enum.
+Several matches are valid because the current domain does not prohibit several Component Deployments on one Resource. Recognition must preserve ambiguity rather than choose arbitrarily.
 
 ## Historical-state classification
 
-The MVP domain does not require independently queryable ComponentPlacement history. AG preserves the approval basis/provenance used for governance decisions, so historical authorization evidence does not require AD to invent a placement-history aggregate.
+The first MVP does not require a separately queryable time series of deployment mutations because Component/Resource references do not mutate in place. Historical identity is preserved by the durable Component Deployment plus terminal retirement.
 
-If future audit/product requirements require “what exact placements existed at time T?” as AD-owned domain truth, temporal placement facts can be introduced then without changing ApplicationDeployment identity or the current set semantics above.
+If future requirements need exact activation/retirement effective intervals or provider runtime history, that can be added without returning to a mutable placement-set model.
 
 ## Deliberately deferred
 
-- deployment lifecycle states beyond current identity/continuity;
-- placement-history entity IDs and temporal fact model;
-- ordering/ordinal of replicas;
-- desired replica count;
-- runtime instance/process/container identity;
-- deployment-specific endpoint/listener/interface selection;
-- multiple address selection or VIP semantics;
-- atomic move/replace workflow;
+- whether several Component Deployments may share one Resource as a product constraint;
+- activation/retirement effective-time interval modelling beyond preserved provenance;
+- provider pod/container/process identity;
+- desired replica count/grouping;
+- deployment-specific interface/listener/address selection;
+- several simultaneous addresses or VIP semantics;
 - provider/orchestrator state.
 
 ## Tactical coherence result
 
-For the first MVP vertical, AD now has sufficient Tactical semantics:
+The revalidated AD model now matches the accepted concrete endpoint behavior:
 
-- one stable ApplicationDeployment aggregate identity;
-- ComponentPlacement as a set relation value rather than an invented entity;
-- zero/one/many placements per Component are valid;
-- exact duplicate relations are not;
-- placement changes preserve deployment identity;
-- all applicable placements are visible to AG/RPM;
-- empty placement and unresolved access to placement truth cannot be conflated;
-- no endpoint/address/runtime-instance ownership leaks into AD.
-
-No remaining AD Tactical decision is required by the accepted first MVP happy path.
+- one aggregate identity per concrete deployed Component instance;
+- one Component and one Resource per instance;
+- replicas are separate identities;
+- redeployment to another Resource creates another identity;
+- Resource address change does not;
+- `Active -> Retired` preserves identity/history without hard delete;
+- consumers use opaque `ComponentDeploymentRef` rather than peer-private persistence.

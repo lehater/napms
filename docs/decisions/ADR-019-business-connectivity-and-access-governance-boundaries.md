@@ -1,184 +1,247 @@
-# ADR-019 — Separate Business Connectivity and Access Governance boundaries
+# ADR-019 — Keep Business Connectivity separate and unify formal policy decisions with Access Policy
 
 Status: `accepted current target decision`.
 
-Date: 2026-09-14; governed-subject contract aligned 2026-09-15.
+Date: 2026-09-14; revalidated 2026-09-16.
 
 ## Context
 
-Requirements revalidation established product behavior that the earlier minimal authorization model did not cover:
+The target model must preserve several independently meaningful truths:
 
-- deliberate access requires Process-backed business justification through a Connectivity Need;
-- a Connectivity Need exists independently from a concrete Access Request and may survive deployment replacement or access revocation;
-- ordinary authorization requires independent source-side and destination-side consent;
-- either authorized side may withdraw current consent without the other side's approval;
-- request/approval/revocation history must remain explainable;
-- Access Policy owns current authoritative Policy Rule truth but does not run the bilateral governance workflow.
+- Business Process / Connectivity Need explains **why** application-semantic connectivity is needed;
+- concrete Component Deployments identify the exact deployed source/destination instances involved in one access relationship;
+- an exact immutable Interaction Contract Revision defines the traffic semantics being proposed or currently effective;
+- RuleChange history preserves what was proposed and the formal Accepted/Rejected outcome;
+- current Policy Rule truth determines what semantic access is currently effective.
 
-The previous `Connectivity Requirements` and `Connectivity Decision` contexts do not match these semantics. Preserving their names/boundaries would either mix application-semantic business need with concrete deployment authorization or force bilateral governance back into a single global `Allowed | NotAllowed` decision.
+The previous target split used separate `Access Governance` and `Access Policy` Bounded Contexts:
+
+```text
+Access Governance
+    AccessRequest
+    GovernedAuthorization.effectiveGrant
+        -> AuthorizationGranted / AuthorizationWithdrawn
+
+Access Policy
+    PolicyRule current authorization
+```
+
+After requirements revalidation, this creates duplicate ownership of one current-access fact. Access Policy does not make an independent decision after governance; it merely mirrors the effective grant for the same concrete connection.
+
+The product also requires a Pending/Rejected revision change to coexist with an already effective revision of the **same Policy Rule**. This is one rule lifecycle rather than two independently evolving authoritative lifecycles.
+
+A later 2026-09-16 revalidation further established that the first MVP does not need an embedded bilateral approval workflow. Different adopters may use different procedures. NAPMS baseline semantics need only the formal RuleChange outcome that is necessary to change current policy.
 
 ## Decision
 
-### 1. Business Connectivity is a distinct Bounded Context
+### 1. Business Connectivity remains a distinct Bounded Context
 
 **Semantic center:** why is application connectivity needed by the business?
 
 Business Connectivity owns:
 
-- Business Process identity/meaning and organizational responsibility needed for connectivity justification;
-- Connectivity Need identity/lifecycle;
-- the fact that a Process requires an application-level Interaction from a dependent participant/role perspective;
-- business attribution and current business-justification reconciliation;
-- business importance/criticality semantics when later specified.
+- Business Process identity/meaning;
+- Connectivity Need identity/lifecycle/currentness;
+- application-semantic required `InteractionRef`;
+- business attribution/justification reconciliation.
 
-A Connectivity Need is application-semantic and references stable ACC Interaction meaning. It is independent from concrete ApplicationDeployment, ComponentPlacement, Resource and IP realization.
+A Need is independent from concrete Component Deployment, Resource, address and exact contract revision.
 
-Business Connectivity does not authorize access and does not own Access Request/approval/revocation state.
+Observed brownfield traffic may be recognized before Process/Need attribution is known. Deliberate policy-change submission still requires the accepted Process-backed Need/business basis.
 
-### 2. Access Governance is a distinct Bounded Context
+### 2. Access Governance is absorbed into Access Policy
 
-**Semantic center:** has the concrete governed interaction received and retained the required consent from the responsible sides?
+**Semantic center:** what concrete access relationship exists as a Policy Rule, what change is proposed, what formal decision was made, and what revision is currently effective?
 
-Access Governance owns:
-
-- Access Request identity/history;
-- exact authorization-subject correlation;
-- approval obligations for source and destination sides;
-- side approval/rejection decisions and their provenance;
-- bilateral grant evaluation;
-- withdrawal/revocation of current consent;
-- governance history sufficient to explain current and past authorization;
-- production of authorization grant/withdrawal facts consumed by Access Policy.
-
-The exact governed subject is:
+Access Policy owns one complete concrete-rule lifecycle:
 
 ```text
-GovernedInteractionSubject
-    interactionContractRevisionRef
-    sourceApplicationDeploymentRef
-    destinationApplicationDeploymentRef
+PolicyRule
+    PolicyRuleId
+    sourceComponentDeploymentRef
+    destinationComponentDeploymentRef
+    effectiveRevisionRef?
+    RuleChange[]
+    withdrawal history
 ```
 
-The immutable `InteractionContractRevisionRef` fixes decision-relevant traffic semantics. The source/destination `ApplicationDeploymentRef` values identify the two logical deployments whose current placement/scope facts determine governance obligations. Component placements, ResourceRefs and addresses do not become subject identity.
+Governance is not a peer Bounded Context. The baseline policy-decision capability is internal to Access Policy.
 
-Access Governance consumes Process-backed Need as business justification for deliberate requests. It does not own the Need lifecycle.
+The Rule's concrete subject is the directed source/destination Component Deployment pair. The exact `revisionRef` is proposed/current traffic semantics and is not part of Rule identity.
 
-### 3. Authority Management remains separate
-
-Authority Management owns whether actor A may perform action X for scope S at time T.
-
-Access Governance consumes effective authority results for request, approval and revocation actions. It must not infer authority from Resource owner/administrator metadata and must not depend on Authority Management's private role/group representation.
-
-### 4. Access Policy remains separate
-
-Access Policy owns the current authoritative Policy Rule truth and effective authorized-policy projection for the exact governed subject.
-
-It consumes authorization grant/withdrawal semantics from Access Governance. It does not re-run bilateral approval or own request/decision history.
-
-Multiple Needs and approved Requests may support one semantic Policy Rule without producing duplicate current Rules for the same governed subject.
-
-### 5. Retire old CR/CD strategic boundaries as target owners
-
-`Connectivity Requirements` and `Connectivity Decision` are not target Bounded Contexts for the revalidated product model.
-
-Useful semantics from them are redistributed:
+A `RuleChange` preserves one formal attempt to establish/change the Rule revision, including business/evidence provenance and one state:
 
 ```text
-old Connectivity Requirements
-    -> Business Connectivity: Process-backed application-semantic Need
-
-old Connectivity Decision
-    -> Access Governance: side decisions, bilateral grant, rejection, revocation, provenance
+Pending -> Accepted | Rejected
 ```
 
-Existing runtime artifacts may remain as as-built compatibility/migration evidence until migrated. Their physical existence does not restore them as target semantic owners.
+Pending/Rejected changes do not overwrite current effective policy. An Accepted applicable change may advance the same Policy Rule to another immutable revision.
+
+Withdrawal clears current effectiveness without deleting the Rule or rewriting history. Reauthorization requires a new explicit RuleChange and Accepted decision.
+
+### 3. Customer approval workflow is outside the MVP domain baseline
+
+The first MVP does not require Access Policy to model:
+
+- source-side and destination-side approvers;
+- approval obligation/basis snapshots;
+- Responsibility Scope-derived approval routing;
+- quorum or ordering;
+- CAB/ticket/workflow stages;
+- internals of an external approval product.
+
+An organization-specific process may occur manually or in an external system. Once that process reaches a final outcome, an authorized caller/integration may record the formal `Accepted` or `Rejected` decision on the RuleChange.
+
+This preserves extensibility without turning NAPMS into a general approval workflow engine.
+
+### 4. Policy Rule is created before first acceptance
+
+A Policy Rule may exist with no current effective revision while its first RuleChange is Pending or after that initial attempt is Rejected.
+
+This avoids a parallel top-level Proposal aggregate whose identity/lifecycle would duplicate the Rule it is trying to establish.
+
+Separate RuleChange identity remains semantically justified because multiple attempts for the same Rule/revision at different times must preserve different decision/provenance histories.
+
+### 5. Authority Management remains separate
+
+Authority Management owns whether Actor A may perform Action X for Responsibility Scope S at time T.
+
+Access Policy may consume effective authority results to protect propose/decide/withdraw application actions, according to the deployed authority configuration. It does not infer authority from Resource owner/administrator/contact metadata and does not import AM private role/group models.
+
+This authority check is not itself an approval workflow and does not imply multiple approvers or endpoint-derived approval obligations.
+
+### 6. Concrete deployment ownership remains outside Access Policy
+
+Application Deployment owns target `ComponentDeployment` identity and the exact:
+
+```text
+ComponentDeploymentRef -> ComponentRef + ResourceRef
+```
+
+relation.
+
+Resource Catalogue owns Resource AddressSpace, Scope Affiliation and Responsibility. AP does not need RC scope facts merely to accept/reject a baseline RuleChange.
+
+Access Policy combines ACC/AD public facts to validate revision endpoints; it does not copy deployment/resource ownership.
+
+### 7. Evidence-derived proposals use the same rule lifecycle
+
+Technical Access Evidence remains evidence-only.
+
+A non-peer Evidence Access Recognition composition may correlate TAE predicates through RC + Application Deployment + ACC and produce:
+
+```text
+RecognizedAccessCandidate {
+    sourceComponentDeploymentRef
+    destinationComponentDeploymentRef
+    revisionRef
+    evidenceProvenance
+}
+```
+
+That candidate may seed the same Access Policy RuleChange flow as manual creation. Recognition does not authorize access and does not bypass the Business Connectivity requirement for deliberate submission or the formal Accepted decision.
 
 ## Primary semantic contracts
 
-### Business Connectivity -> Access Governance
+### Business Connectivity -> Access Policy
 
-Purpose: justify a deliberate concrete access request.
-
-Published meaning required by Access Governance:
+Purpose: supply business basis for a deliberate RuleChange.
 
 ```text
 ConnectivityNeedRef
-BusinessProcessRef / explainable business basis
-InteractionRef
+BusinessProcessRef
+required InteractionRef
 current/applicable justification status
+explainable provenance
 ```
 
-Consumer obligations:
+Need existence is not authorization.
 
-- Access Governance must not convert Need existence into authorization;
-- Access Governance preserves the justification basis used by a Request rather than rewriting history when the Need later changes;
-- loss of a Need does not itself rewrite approvals or automatically revoke current authorization.
+### ACC -> Access Policy
 
-### ACC + AD + RC -> Access Governance
-
-Purpose: supply exact governed subject and current obligation-resolution facts without transferring semantic ownership.
-
-Published meaning:
+Purpose: supply exact immutable traffic and endpoint Component meaning.
 
 ```text
-ACC:
-  InteractionContractRevisionRef
-  sourceComponentRef
-  destinationComponentRef
-
-AD:
-  sourceApplicationDeploymentRef + complete current source placements
-  destinationApplicationDeploymentRef + complete current destination placements
-
-RC:
-  ResourceRef -> current ResponsibilityScopeRef affiliation
+InteractionContractRevisionRef
+    -> owning Interaction
+    -> sourceComponentRef
+    -> destinationComponentRef
+    -> complete traffic alternatives
 ```
 
-Access Governance correlates these facts to derive source/destination approval obligations. Missing, unavailable or ambiguous required scope evidence fails closed; it is not interpreted as no obligation.
+A duplicate `InteractionRef` is unnecessary when an exact revision is already present.
 
-### Authority Management -> Access Governance
-
-Purpose: determine whether an actor may perform request/approve/withdraw action for the relevant side/scope/time.
-
-Published meaning:
+### Application Deployment -> Access Policy
 
 ```text
-actor + action + scope + time -> admitted | denied | unknown
-+ sufficient authority provenance for decision audit
+ComponentDeploymentRef
+    -> ComponentRef
+    -> ResourceRef
 ```
 
-Access Governance must not reproduce role/group resolution logic.
+The RuleChange is valid only when source/destination deployment Components match the exact revision's Interaction endpoints.
 
-### Access Governance -> Access Policy
+### Authority Management -> Access Policy
 
-Purpose: communicate current authorization changes for one exact semantic subject.
-
-Published meaning:
+Optional protected-action admission:
 
 ```text
-AuthorizationGranted(GovernedInteractionSubject, provenance)
-AuthorizationWithdrawn(GovernedInteractionSubject, provenance)
+actor + action + configured authority scope/time
+-> admitted | denied | unknown
++ authority provenance
 ```
 
-Access Policy must not reinterpret pending/rejected governance history as desired allow/deny policy.
+Denied/unknown fail closed when the action is protected. This contract does not prescribe the approval process that produced the formal decision.
+
+### Access Policy -> downstream policy materialization
+
+```text
+EffectivePolicyRule {
+    policyRuleRef
+    sourceComponentDeploymentRef
+    destinationComponentDeploymentRef
+    revisionRef
+    decisionProvenance
+}
+```
+
+Pending/Rejected RuleChanges are not current effective policy.
 
 ## Identity and change consequences
 
-A material ACC traffic change creates a new immutable `InteractionContractRevisionRef`, therefore a new governed subject. An ordinary placement or Resource address change does not create a new subject because placements/addresses are not subject identity.
-
-When placement/scope changes materially alter approval obligations, Access Governance owns reevaluation of current consent and may emit withdrawal. Access Policy reacts only to explicit governance grant/withdrawal facts; it does not independently infer obligation changes.
+- PolicyRuleId is stable across Accepted revision changes for the same concrete directed Component Deployment pair.
+- `PolicyRuleRef` is the opaque external reference to that identity.
+- replacing either Component Deployment means a different concrete Rule subject;
+- changing Resource AddressSpace does not change the Rule subject;
+- changing traffic creates a new ACC revision but does not alter an existing Rule until an Accepted RuleChange activates that revision;
+- Pending/Rejected changes never replace current effective revision;
+- old Accepted changes cannot silently restore withdrawn effectiveness.
 
 ## Consequences
 
-- Business need and security consent can evolve independently without losing traceability.
-- A Need may lead to many Requests; a Request refers to one exact governed interaction subject.
-- Revocation does not destroy Need or historical approval facts.
-- Access Policy receives a smaller stable semantic contract rather than peer-private workflow state.
-- Authority Management remains reusable across catalogue, governance and operational actions.
-- The old `Requirement -> Decision -> Rule` chain is not the target strategic model.
-- Subject identity is stable across ordinary placement/address changes but changes with an immutable interaction-contract revision.
-- Current target Tactical models for BC, AG, AP, ACC, AD, RC and AM remain the authority for detailed invariants.
+- there is one authoritative owner for current concrete access rather than AG grant plus AP mirror;
+- proposal/formal-decision/current-rule semantics are one cohesive lifecycle while historical and current truth remain distinct;
+- NAPMS does not prematurely standardize customer-specific approval procedure;
+- Business Need remains independently reusable and explainable;
+- Authority Management remains reusable across protected actions;
+- evidence-derived and manual access follow one RuleChange decision path;
+- downstream consumers receive stable PolicyRule references without knowing decision-workflow internals;
+- migration from implemented legacy Connectivity Decision/Access Rule and ACC compatibility identities remains an Architecture/Implementation concern rather than target domain ownership.
 
-## Rejected alternative
+## Rejected alternatives
 
-A single combined Business Connectivity + Access Governance context was rejected because it would couple two independent lifecycles and authoritative facts: enduring business need and concrete bilateral security consent. The accepted requirements require those truths to survive/change independently.
+### Keep Access Governance and Access Policy as separate target BCs
+
+Rejected because `GovernedAuthorization.effectiveGrant` and AP current Policy Rule would both own the same current authorization fact without an independent AP decision/lifecycle.
+
+### Make Proposal a separate top-level aggregate/BC
+
+Rejected for the first MVP because the proposal exists only to establish/change one Policy Rule. A child RuleChange identity is sufficient to preserve distinct attempts while avoiding a second competing rule lifecycle.
+
+### Encode bilateral approval workflow in the MVP core
+
+Rejected because the product currently requires only a formal allow/reject decision and customer procedures differ. Encoding endpoint-side approvals, scope-derived approvers or quorum would add domain complexity without accepted MVP behavior requiring it.
+
+### Put business Need inside Access Policy
+
+Rejected because business-purpose truth can exist/change independently from concrete authorization and may justify several concrete Rules over time.

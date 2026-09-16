@@ -1,58 +1,92 @@
-# Access Governance — G1 Requirements Passport
+# Access Governance behavior — G1 Requirements Passport
 
-Status: `G1 MVP behavior accepted 2026-09-15; generalized overlapping-scope semantics deferred`.
+Status: `G1 revalidated for formal policy-decision semantics 2026-09-16`.
+
+This file owns observable governance behavior. It does not define a Bounded Context boundary; current domain ownership is defined in `docs/domain/strategic-model.md` and `docs/domain/access-policy/tactical-model.md`.
 
 ## Observable requirements
 
-1. A deliberate Access Request shall request permission for a Process-backed Connectivity Need applied to a concrete logical source/destination ApplicationDeployment pair.
-2. The semantic subject shall distinguish `InteractionContractRevisionRef`, source `ApplicationDeploymentRef` and destination `ApplicationDeploymentRef`.
-3. The Request shall preserve the business justification and approval basis used at submission/decision time; later changes shall not rewrite history.
-4. Resource address changes, ordinary ComponentPlacement replacement and Resource replacement shall not by themselves create a different governed subject while ApplicationDeployment continuity is preserved.
-5. Material change of InteractionContractRevision or replacement of either logical ApplicationDeployment creates a different subject.
-6. Request initiation authority is distinct from approval authority.
-7. Ordinary authorization requires independent source-side and destination-side approval obligations; overall grant requires both.
-8. Either required side may reject a pending Request.
-9. Either authorized side may later withdraw its current consent without approval from the other side.
-10. Rejection and withdrawal are distinct; neither rewrites historical valid decisions.
-11. Old approved Requests cannot silently restore withdrawn consent.
-12. Approval/revoke authority is evaluated through Authority Management and is not inferred from Resource Owner/Administrator/Responsibility metadata.
-13. Rejected Requests remain history and create no semantic deny Policy Rule.
-14. Access Policy consumes `AuthorizationGranted` / `AuthorizationWithdrawn`; it does not run bilateral governance.
-15. A source/destination ApplicationDeployment pair is selectable for an Access Request using a declared Interaction when each ApplicationDeployment can realize the corresponding Interaction endpoint Component and the current placements required to determine approval obligations are resolvable.
-16. A placement or Resource Scope Affiliation change does not by itself withdraw current authorization. If the change materially changes the approval obligations for the governed subject, the current authorization shall cease to be effective and AG shall publish `AuthorizationWithdrawn` with provenance for the obligation change.
-17. Historical Requests, approvals and provenance remain history after such withdrawal; they do not silently satisfy a materially changed set of current approval obligations.
-18. The same governed subject may become authorized again only after the current approval obligations are satisfied and AG publishes a new `AuthorizationGranted`.
-19. For the MVP happy path, each governance side shall resolve to exactly one distinct applicable `ResponsibilityScopeRef` when approval obligations are determined.
-20. If a source or destination side resolves to zero or more than one distinct applicable Responsibility Scope, approval obligations are unresolved for MVP and the deployment pair is not selectable/authorizable. AG shall fail closed rather than choose a scope by precedence or require all overlapping scopes without an accepted product rule.
+1. The system shall support proposing access between one concrete source Component Deployment and one concrete destination Component Deployment using one exact immutable Interaction Contract Revision.
+2. The selected source and destination Component Deployments shall realize the source and destination Components of that revision's owning Interaction; mismatched endpoints are not selectable.
+3. Because an Interaction is defined only inside one Application, a proposed governed connection cannot join Components from different Applications.
+4. A proposal/change shall preserve the exact revision being requested, its provenance and any business justification available at submission/decision time; later changes shall not rewrite historical decisions.
+5. A deliberate human-submitted access change shall have a Process-backed Connectivity Need at submission time.
+6. Recognition of observed/brownfield traffic may produce an access candidate before Process/Need attribution is known; the system shall not fabricate a Process or Need merely to recognize the candidate.
+7. Evidence-derived recognition is not authorization. An evidence-derived candidate follows the same formal decision path as manually proposed access before it can affect effective policy.
+8. One submitted policy change has one formal decision state: `Pending`, `Accepted` or `Rejected`.
+9. A `Pending` change does not alter current effective policy.
+10. A `Rejected` change does not alter current effective policy and creates no semantic deny Policy Rule.
+11. Only an `Accepted` applicable change may establish or change the effective Interaction Contract Revision for the concrete endpoint pair.
+12. The MVP shall not require a built-in source-side/destination-side approval workflow, approval quorum, approval ordering, Responsibility Scope resolution or other customer-specific approval procedure merely to decide a change.
+13. The procedure by which an organization reaches the formal `Accepted` or `Rejected` outcome may be external, manual, integrated or customer-specific and is outside the MVP domain baseline.
+14. Authority to propose, decide or withdraw a policy change may be evaluated through Authority Management as protected actions, but such action authority is distinct from modelling the organization's approval procedure.
+15. A currently effective Rule may be explicitly withdrawn by an actor admitted to the applicable withdrawal action; withdrawal removes current effectiveness without rewriting proposal/decision history.
+16. Old accepted changes cannot silently restore a withdrawn Rule; re-establishing access requires a new explicit accepted change.
+17. A change proposing another Interaction Contract Revision for an already effective concrete source/destination Component Deployment pair shall not replace the current revision while that change is Pending or Rejected.
+18. A second Component Deployment of the same Component is a different concrete access endpoint and may require a different Rule and decision from another deployment instance.
+19. Current Resource address changes do not by themselves change which Component Deployment is governed; they change downstream technical realization.
+20. A Resource replacement represented by a different Component Deployment is a different concrete access endpoint for governance.
+21. Historical proposals/change attempts, formal decisions, withdrawals and evidence/business provenance remain explainable after current policy changes.
 
-The selection rule does not imply planned/future deployment inference, generalized cross-application compatibility rules or fallback guessing when current placement/scope information is unresolved.
+## Proposed versus effective access
 
-The obligation-change rule does not require a separate `Suspended` product state for MVP. If placement/scope changes leave the approval obligations materially unchanged, the current authorization remains effective. Exact reuse or representation of still-valid individual consent facts is Tactical-open so long as no authorization remains effective without all current obligations being satisfied.
-
-The single-scope-per-side rule is an Access Governance MVP boundary, not a Resource Catalogue invariant. RC may retain several distinct effective Resource Scope Affiliations; generalized overlap semantics are deferred until a concrete governance journey requires them.
-
-## Current subject
+The product shall preserve these two truths independently:
 
 ```text
-GovernedInteractionSubject {
-    interactionContractRevisionRef
-    sourceApplicationDeploymentRef
-    destinationApplicationDeploymentRef
-}
+currently effective access
+!=
+proposed access change
 ```
 
-Technical Resource AddressSpace is not part of subject identity.
+For an already effective concrete connection, a new revision may be proposed while the current revision remains effective. Rejecting the proposal leaves current effective policy unchanged. Accepting it may change the effective revision without losing history of the earlier decision.
+
+## Formal decision boundary
+
+The MVP deliberately models only the outcome required by Access Policy:
+
+```text
+RuleChange
+    Pending
+      -> Accepted
+      -> Rejected
+```
+
+The system may protect the transition with actor/action authority and preserve decision provenance, but it does not prescribe how many approvers exist, which organizational sides participate, which external ticket/workflow produced the outcome, or how a customer structures approval policy.
+
+An external workflow may therefore produce a final decision and invoke the same Access Policy decision capability as an in-product manual decision, provided the caller has the required action authority.
+
+## Evidence-derived candidate boundary
+
+`TrafficDerived` or other applicable technical evidence may be interpreted by recognition/correlation. When source/destination addresses can be correlated unambiguously to concrete Component Deployments and exact ACC traffic semantics, the product may surface an access candidate.
+
+```text
+Technical Access Evidence
+    -> recognition/correlation
+    -> source Component Deployment
+    -> destination Component Deployment
+    -> exact Interaction Contract Revision
+    -> access candidate
+    -> normal RuleChange decision
+```
+
+Recording evidence alone never grants access, creates effective policy or bypasses Process/Need requirements for deliberate submission.
+
+## Concrete governed access meaning
+
+The concrete connection is the directed Component Deployment pair. The exact Interaction Contract Revision is the proposed/current traffic semantics for that connection; changing revision is a proposed change to the same concrete connection rather than automatically a different endpoint pair.
 
 ## G1 checkpoint result
 
-The behavior required for the first Access Governance happy path is accepted:
+`G1 PASS` for the revalidated formal-decision behavior:
 
-- governed subject identity is stable;
-- deployment-pair selection is fail-closed when obligations cannot be resolved;
-- one source-side and one destination-side obligation are required for the MVP;
-- grant requires both sides;
-- either side may reject while pending or later withdraw current consent;
-- material obligation change withdraws current authorization until current obligations are satisfied again;
-- overlapping Responsibility Scopes are explicitly unsupported/fail-closed for the first happy path rather than implicitly resolved.
+- governance operates on concrete Component Deployment endpoints;
+- the exact immutable revision defines proposed/effective traffic semantics without requiring a duplicate Interaction reference;
+- one formal `Pending | Accepted | Rejected` change decision is sufficient for the MVP;
+- customer-specific bilateral/quorum/workflow approval procedures are not part of the baseline domain model;
+- action authority and decision provenance remain supported without modelling the external procedure;
+- pending/rejected revision changes do not replace current effective access;
+- evidence-derived candidates may enter the same decision path without evidence becoming authorization;
+- deliberate submission requires Process-backed business justification;
+- historical decision/provenance remains explainable.
 
-No implementation authorization is implied. Broader scope algebra, precedence and multi-scope approval behavior remain deferred product work.
+No implementation authorization is implied.

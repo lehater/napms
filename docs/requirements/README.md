@@ -4,14 +4,14 @@ This directory contains current product and quality contracts. A requirement rem
 
 ## Selected next implementation slice
 
-- `first-mvp-vendor-neutral-policy-export.md` — AP + ACC + AD + RC -> complete current vendor-neutral policy -> table/CSV export without firewall/device/provider context.
+- `first-mvp-vendor-neutral-policy-export.md` — current effective policy over concrete source/destination Component Deployments + exact ACC revision + RC Resource/AddressSpace -> complete vendor-neutral table/CSV export without firewall/device/provider context.
 
 ## Current target contracts
 
-- `application-catalogue-domain-target.md` — current ACC/AD/RC target behavior and ownership split.
-- `business-connectivity-g1.md` — Business Connectivity behavior.
-- `access-governance-g1.md` — Access Governance behavior.
-- `access-policy-core.md` — Access Policy behavior.
+- `application-catalogue-domain-target.md` — current Application/Component/Interaction behavior plus concrete Component Deployment and RC realization requirements for the target policy path.
+- `business-connectivity-g1.md` — Business Connectivity behavior, including recognition before Process/Need attribution and Process-backed Need requirement for deliberate submission.
+- `access-governance-g1.md` — proposal/change, bilateral governance, evidence-derived candidate and current-vs-proposed behavior.
+- `access-policy-core.md` — current Policy Rule behavior for one concrete directed Component Deployment pair and exact effective revision.
 - `network-enforcement-placement-core.md` — Network Enforcement Placement behavior.
 - `technical-access-evidence-core.md` + `technical-access-evidence-acceptance-examples.md` — Technical Access Evidence behavior.
 - `policy-realization-reconciliation-g1.md` + `access-policy-realization-mvp.md` — Access Policy Realization behavior.
@@ -32,6 +32,13 @@ These remain because they describe implemented behavior that must be reproducibl
 
 As-built contracts do not override newer target ownership or vocabulary. They document what must be reproduced when rebuilding the current system; target contracts document the accepted intended design.
 
-The selected implementation scope is narrower than the complete target model but deliberately includes Access Policy because the MVP product goal is to create/establish current policy truth and export that policy, not merely materialize ungoverned connectivity intent.
+## Current lifecycle disposition
 
-Git history is the archive only for requirements that no longer describe any current as-built or target behavior.
+The affected first-MVP requirements passed G1 revalidation on 2026-09-16. The next lifecycle work is S2 Strategic/Tactical DDD revalidation of:
+
+- ownership and identity of concrete Component Deployment;
+- governance proposal/change history versus current Policy Rule ownership;
+- cross-context contracts from ACC/RC/TAE into the access lifecycle;
+- policy export/materialization references.
+
+No implementation authorization is implied. Git history is the archive only for requirements that no longer describe any current as-built or target behavior.
