@@ -34,7 +34,7 @@ Deploying the same Component on a second Resource creates another Component Depl
 
 ## Resource Catalogue
 
-**Resource** — stable access-domain resource identity whose lifecycle/realization matters to governed access.
+**Resource** — stable access-domain resource identity whose lifecycle/realization matters to managed access.
 
 **Address Space** — current network realization of one Resource at a logical time:
 
@@ -44,39 +44,47 @@ HostAddress | Prefix
 
 Changing Address Space does not change Resource or Component Deployment identity.
 
-**Resource Scope Affiliation** — RC-owned time-qualified relation from Resource to `ResponsibilityScopeRef`. It does not grant actor authority.
+**Resource Scope Affiliation** — RC-owned time-qualified relation from Resource to `ResponsibilityScopeRef`. It does not grant actor authority and is not a mandatory baseline Policy Rule decision input.
 
-**Resource Responsibility** — operational/business responsibility/contact fact for a Resource; not approval authority.
+**Resource Responsibility** — operational/business responsibility/contact fact for a Resource; not policy-decision authority.
 
 ## Access Policy
 
-**Policy Rule** — Access Policy-owned durable semantic object for one concrete directed source/destination Component Deployment pair. It owns current effective access state/revision plus the governance history required to explain how that state changed.
+**Policy Rule** — Access Policy-owned durable semantic object for one concrete directed source/destination Component Deployment pair. It owns current effective revision plus the RuleChange/withdrawal history required to explain how that state changed.
 
-**Policy Rule ID** — Access Policy-internal stable identity of a Policy Rule. The exact representation is Tactical/Architecture work.
+**Policy Rule ID** — Access Policy-internal stable identity of a Policy Rule.
 
 **Policy Rule Ref** — opaque external reference by which another context/composition refers to a Policy Rule without depending on AP-internal identity representation.
 
-**Rule Change Proposal** — a proposed initial or subsequent traffic-contract revision for one Policy Rule, with business/evidence provenance and governance state. It is not current effective policy merely because it exists.
+**Rule Change** — one formally submitted attempt to establish or change the traffic-contract revision of a Policy Rule. It has stable attempt identity, business/evidence provenance and one formal state:
 
-**Current Effective Revision** — the exact immutable Interaction Contract Revision currently authorized for one Policy Rule. A pending/rejected proposal does not replace it.
+```text
+Pending | Accepted | Rejected
+```
 
-**Approval Obligation** — source-side or destination-side consent obligation derived for the concrete Rule endpoints. The first MVP requires exactly one distinct applicable Responsibility Scope per side.
+A RuleChange is not a second Aggregate Root and is not current effective policy merely because it exists.
 
-**Recognized Access Candidate** — non-authoritative correlation result derived from technical evidence plus RC/AD/ACC truth that may initiate the same Access Policy proposal lifecycle as manual creation. It is not a Need, approval or Policy Rule effect by itself.
+**Formal Rule Decision** — the `Accepted` or `Rejected` terminal outcome for one RuleChange. It records actor/time/provenance sufficient for explanation but does not model the customer-specific approval procedure that produced the outcome.
 
-**Vendor-Neutral Policy Export** — complete technical projection of the current effective Access Policy set through ACC traffic semantics, concrete Component Deployments and RC Address Spaces. It exposes access-list-oriented source/destination address, protocol and port/range meaning while remaining independent of firewall, device, ACL and provider syntax. It is a workflow/read composition and owns no Policy Rule truth.
+**Current Effective Revision** — the exact immutable Interaction Contract Revision currently effective for one Policy Rule. A Pending/Rejected RuleChange does not replace it.
+
+**Withdrawal** — explicit fact that clears current effectiveness of a Policy Rule without retiring/deleting the Rule or rewriting RuleChange history.
+
+**Recognized Access Candidate** — non-authoritative correlation result derived from technical evidence plus RC/AD/ACC truth that may seed the same RuleChange lifecycle as manual creation. It is not a Need, formal decision or effective Policy Rule by itself.
+
+**Vendor-Neutral Policy Export** — complete technical projection of the current effective Access Policy set through ACC traffic semantics, concrete Component Deployments and RC Address Spaces. It exposes source/destination address, protocol and port/range meaning while remaining independent of firewall, device, ACL and provider syntax. It is a workflow/read composition and owns no Policy Rule truth.
 
 ## Authority Management
 
-**Responsibility Scope** — stable correlation reference shared semantically between RC affiliation and AM authority contracts; it is not a shared aggregate.
+**Responsibility Scope** — stable correlation reference used by authority/scope-owning contexts; it is not a shared aggregate and does not imply a Policy Rule approval side.
 
-**Effective Authority** — actor/action/scope/time admission result with provenance.
+**Effective Authority** — actor/action/scope/time admission result with provenance. AP may use it to protect actions without turning authority admission into an approval workflow.
 
 ## Technical Access Evidence
 
 **Technical Access Evidence** — immutable source-qualified technical facts reported, observed/derived or imported. Evidence is not authorization or desired policy.
 
-**Evidence Access Recognition** — non-peer composition that correlates TAE technical predicates with RC Resources, AD Component Deployments and ACC communication semantics to derive a Recognized Access Candidate or an unresolved/ambiguous result.
+**Evidence Access Recognition** — non-peer composition that correlates TAE technical predicates with RC Resources, AD Component Deployments and ACC communication semantics to derive a Recognized Access Candidate or unresolved/ambiguous result.
 
 ## Realization
 
@@ -99,10 +107,12 @@ Changing Address Space does not change Resource or Component Deployment identity
 ## Core distinctions
 
 ```text
-Observed != Recognized != Needed != Proposed != Authorized != Materialized != Realized != Executed
+Observed != Recognized != Needed != Proposed != Accepted != Materialized != Realized != Executed
 ```
 
-Recognized evidence may exist before Process/Need attribution. Deliberate proposal submission still requires accepted business justification. Proposed change and current effective policy are distinct truths.
+Recognized evidence may exist before Process/Need attribution. Deliberate RuleChange submission still requires accepted business justification. Proposed change, formal decision and current effective policy are distinct truths.
+
+Customer-specific bilateral/quorum/CAB/ticket approval procedures are not current ubiquitous-language domain objects. They may exist outside NAPMS and feed the formal decision boundary.
 
 The Vendor-Neutral Policy Export starts from current effective Access Policy truth and materializes a complete technical read projection. It does not claim enforcement placement, configured reality, provider rendering, realization or execution.
 
