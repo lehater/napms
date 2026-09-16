@@ -1,0 +1,791 @@
+version: 1
+kind: ddd-pipeline-specification
+id: DOCS-V2-DDD-PIPELINE
+status: active
+owner_phase: H6
+owner_task: H6-T1
+last_updated: 2026-09-16
+
+purpose: >-
+  Define the universal S2 Domain-Driven Design pipeline as explicit, reviewable transformations
+  from accepted problem/requirement truth through strategic domain design, domain process
+  discovery/Event Storming and tactical domain design. Every accepted DDD artifact must expose
+  its accepted predecessors, method/derivation kind, durable rationale and any human decision
+  authority required for non-derivable choices.
+
+authority:
+  defines:
+    - S2 strategic, process-discovery and tactical method/checkpoint contracts
+    - detailed H6 schemas for S2 YAML anchor payloads owned by H4
+    - derivation rules between S0/S1 inputs and S2 outputs
+    - capability, subdomain and Bounded Context discovery semantics
+    - Context Mapping relationship semantics
+    - Domain Process Discovery/Event Storming semantics
+    - candidate aggregate hypothesis semantics
+    - accepted tactical aggregate/entity/value-object/invariant/domain-service semantics
+    - S2 domain state-model semantics
+    - DDD-specific lineage and acceptance guards
+    - DDD-specific semantic canonicalization specializations
+    - declarative H6 conformance cases
+  does_not_define:
+    - project-specific product/domain truth
+    - new artifact types or semantic owners
+    - new H5 dependency relations
+    - human question/decision capture schema owned by H7
+    - executable validation/gate engine owned by H8
+    - Task Capsule runtime owned by H9
+    - executable validators, tests, CI, workflows or Harness runtime
+    - physical repository layout
+    - canonical cutover from docs/ to docs-v2
+  direct_dependency:
+    id: DOCS-V2-DEPENDENCY-REGISTRY-IMPACT
+    path: docs-v2/spec/dependency-registry-impact.yaml
+  required_contracts:
+    - {id: DOCS-V2-ARTIFACT-TYPE-REGISTRY, path: docs-v2/spec/artifact-type-registry.yaml}
+    - {id: DOCS-V2-DESIGN-DERIVATION-LINEAGE, path: docs-v2/spec/design-derivation-lineage.yaml}
+    - {id: DOCS-V2-LIFECYCLE-STATE-MACHINE, path: docs-v2/spec/lifecycle-state-machine.yaml}
+    - {id: DOCS-V2-HARNESS-RELIABILITY-CONFORMANCE, path: docs-v2/spec/harness-reliability-conformance.yaml}
+
+cutover_guard:
+  current_product_domain_authority: docs/
+  docs_v2_role: candidate-redesign-DDD-contract
+  rule: >-
+    H6 specifies the universal design method and artifact schemas only. It does not assert NAPMS
+    domain facts and does not make docs-v2 accepted anchors authoritative over docs/ before an
+    explicit separately authorized cutover.
+
+universal_principles:
+  - id: DDD-P-DOMAIN-BEFORE-SOLUTION
+    rule: S2 models business/domain semantics and ownership; deployment, persistence, API and transport choices remain S3 unless they are externally imposed S0 constraints.
+  - id: DDD-P-NO-BC-FROM-ORG-OR-CODE
+    rule: A Bounded Context cannot be accepted merely because a repository module, team, service, database or legacy component already has that name/boundary.
+  - id: DDD-P-CAPABILITY-NOT-BC
+    rule: A business capability, subdomain and Bounded Context are distinct concepts; no one-to-one mapping is assumed.
+  - id: DDD-P-LANGUAGE-BOUNDARY
+    rule: Bounded Context acceptance requires explicit model/language/responsibility boundary rationale, not only data flow or deployment separation.
+  - id: DDD-P-PROCESS-BEFORE-TACTICAL
+    rule: When process discovery is applicable, tactical aggregates cannot be accepted before the relevant domain-process-model is accepted/current.
+  - id: DDD-P-AGGREGATE-CONSISTENCY
+    rule: Aggregate boundaries are justified by business consistency/invariant needs and command/event behavior, not transaction convenience, table grouping or object graph shape.
+  - id: DDD-P-DOMAIN-EVENT-NOT-MESSAGE
+    rule: A Domain Event records a meaningful domain fact; it does not imply an integration message, broker, AsyncAPI contract or cross-context publication.
+  - id: DDD-P-HUMAN-OWNED-CHOICE
+    rule: A materially different business rule, policy, boundary or prioritization choice not derivable from accepted truth requires durable human decision authority.
+  - id: DDD-P-LINEAGE
+    rule: Every accepted H6 non-root output is backward-explainable through H5 lineage to accepted S0/S1 roots, evidence, constraints and decisions.
+  - id: DDD-P-FAIL-CLOSED
+    rule: Missing current inputs, unresolved blocking human truth or invalid lineage stops progression; semantic plausibility is never a fallback.
+
+s2_pipeline:
+  stage: S2
+  ordered_checkpoints:
+    - S2-STRATEGIC
+    - S2-PROCESS-DISCOVERY
+    - S2-TACTICAL
+  checkpoint_progression_source: DOCS-V2-LIFECYCLE-STATE-MACHINE
+  g2_rule: all applicable checkpoints must be ACCEPTED before G2 evaluation is eligible
+  cross_checkpoint_discovery_rule: >-
+    Later checkpoint work may expose an earlier-owned deficiency. The deficiency routes to the
+    owning earlier S2 checkpoint using existing REWORK/DIRTY semantics; later work must not patch
+    around an invalid strategic/process basis.
+
+checkpoint_contracts:
+  S2-STRATEGIC:
+    purpose: Establish domain responsibility, strategic importance, semantic boundaries and inter-context model relationships.
+    minimum_current_inputs:
+      any_of:
+        - functional-requirement
+        - acceptance-scenario
+      supporting_when_applicable:
+        - quality-requirement
+        - requirements-glossary
+        - problem-statement
+        - user-journey
+        - constraint
+        - domain-decision
+    produces_when_applicable:
+      - capability-map
+      - domain-distillation
+      - bounded-context
+      - context-relationship-map
+      - domain-glossary
+    acceptance_guards:
+      - every produced accepted anchor has H5/H6 lineage to accepted/current inputs
+      - capability and subdomain classifications do not silently imply Bounded Context boundaries
+      - every accepted bounded-context has explicit boundary_basis and capability/subdomain lineage
+      - human-owned boundary/prioritization choices have durable DECIDED_BY authority
+      - context relationship endpoints resolve accepted/current bounded-context anchors
+      - unresolved blocking strategic hotspot/question count is zero
+    completion_guarantee: >-
+      The scope has sufficient accepted strategic domain ownership and boundary semantics for
+      applicable process discovery without reusing unexplained legacy boundaries.
+
+  S2-PROCESS-DISCOVERY:
+    purpose: Discover and persist domain behavior over time using Event-Storming-compatible process semantics.
+    minimum_current_inputs:
+      required:
+        - bounded-context
+      supporting_when_applicable:
+        - functional-requirement
+        - acceptance-scenario
+        - user-journey
+        - domain-glossary
+        - context-relationship-map
+        - domain-decision
+    produces_when_applicable:
+      - domain-process-model
+      - domain-glossary
+      - domain-decision
+    acceptance_guards:
+      - each command/event/policy has explicit origin class and lineage-compatible evidence or derivation
+      - an accepted process model cannot contain agent-hypothesis as authoritative command/event/policy truth; unresolved hypotheses belong in hotspots
+      - events are domain facts expressed in past-tense/fact semantics, not transport messages
+      - policies connect accepted/observed trigger semantics to command intent without inventing business choices
+      - unresolved blocking hotspots/questions prevent checkpoint acceptance
+      - candidate aggregate hypotheses remain hypotheses and are not tactical truth
+      - process behavior that contradicts a strategic boundary routes strategic rework rather than being hidden in tactical design
+    completion_guarantee: >-
+      Material business processes, causal/temporal behavior, policies, external interactions and
+      unresolved hotspots are explicit enough to constrain tactical design without agent invention.
+
+  S2-TACTICAL:
+    purpose: Define accepted tactical domain model semantics within accepted Bounded Context boundaries.
+    minimum_current_inputs:
+      required:
+        - bounded-context
+      required_when_process_discovery_applicable:
+        - domain-process-model
+      supporting_when_applicable:
+        - functional-requirement
+        - acceptance-scenario
+        - domain-glossary
+        - domain-decision
+    produces_when_applicable:
+      - domain-model
+      - state-model
+      - domain-glossary
+      - domain-decision
+    acceptance_guards:
+      - each accepted aggregate is inside exactly one accepted/current bounded-context
+      - each aggregate boundary cites process/requirement/invariant basis sufficient to justify one consistency boundary
+      - candidate aggregate hypothesis alone is insufficient for acceptance
+      - entities have stable domain identity semantics
+      - value objects are defined by domain value/equality semantics rather than storage identity
+      - invariants are stated as domain rules with authority/lineage
+      - domain services are used only for domain operations that do not naturally belong to an entity/value object
+      - state transitions preserve accepted invariants and reference domain triggers where material
+      - no unresolved blocking business question remains in the tactical basis
+    completion_guarantee: >-
+      Applicable domain semantics are explicit enough for S3 architecture to realize the scope
+      without inventing domain rules, ownership or consistency boundaries.
+
+applicability_fact_semantics:
+  scope.multi_capability_strategic_discovery_required:
+    true_when: More than one material business/domain capability must be discovered, challenged or revalidated for the affected scope.
+    unknown_human_owned: NEED_MORE_DATA
+  scope.strategic_distillation_required:
+    true_when: Material capability/subdomain areas differ in strategic differentiation, investment or build/buy treatment.
+    unknown_human_owned: NEED_MORE_DATA
+  scope.bounded_context_identity_or_boundary_required:
+    true_when: The affected scope requires creating, changing or revalidating semantic/model ownership boundaries.
+    unknown_human_owned: NEED_MORE_DATA
+  scope.context_relationship_semantics_required:
+    true_when: Two or more relevant Bounded Contexts collaborate and their model relationship affects autonomy or model integrity.
+    unknown_human_owned: NEED_MORE_DATA
+  scope.domain_process_discovery_required:
+    true_when_any:
+      - business behavior spans multiple commands/events/policies or temporal steps
+      - aggregate boundaries or policies are not justified by accepted current evidence
+      - stakeholder examples are required to resolve behavior
+      - cross-context process interaction may challenge strategic boundaries
+    explicit_non_applicability_requires_rationale: true
+  scope.affected_domain_semantics_changed:
+    true_when: Accepted tactical domain semantics are created, changed or revalidated for the scope.
+  scope.domain_terms_or_invariants_require_definition:
+    true_when: Domain terminology or rules are materially ambiguous or shared interpretation is required.
+  scope.domain_lifecycle_states_material:
+    true_when: Domain behavior depends materially on explicit states/transitions/guards.
+
+cross_anchor_reference_contract:
+  purpose: Allow whole-anchor references and stable item-level selectors without creating a second dependency system.
+  rule: >-
+    Canonical payload fields may point to another anchor or select a stable item inside it, but
+    the consuming anchor MUST also contain an H5 semantic_ref to that target anchor whenever the
+    reference contributes semantics. Payload references narrow meaning; only H5 semantic_refs
+    create dependency/lineage authority.
+  whole_anchor_ref:
+    required: [anchor_id]
+  item_selector:
+    required: [anchor_id, item_id]
+  acceptance_guard:
+    - target anchor resolves ACCEPTED plus CURRENT
+    - item_id exists uniquely in the resolved target revision when an item selector is used
+    - matching H5 lineage-bearing semantic_ref to anchor_id exists when the reference contributes semantics
+  failure:
+    missing_matching_semantic_ref: FAIL
+    missing_item: FAIL
+    ambiguous_item: FAIL
+
+logical_derivation_profile:
+  required_for_every_accepted_nonroot_h6_anchor: true
+  payload_projection_fields:
+    - basis_refs
+    - derivation_kind
+    - rationale
+    - method_rule_ids
+    - decision_refs
+    - evidence_refs
+  h5_alignment:
+    relations_allowed: [DERIVES_FROM, CONSTRAINED_BY, REALIZES, REFINES, DECIDED_BY, EVIDENCED_BY]
+    REFERENCES_satisfies_lineage: false
+  fingerprint_relevance: all fields above are semantic and included through canonical_payload/H3 semantic_refs
+  private_chain_of_thought: prohibited
+  rationale_rule: concise design-level explanation of why the output follows from the stated basis
+
+method_rules:
+  - id: DDD-MR-CAPABILITY-DISCOVERY
+    checkpoint: S2-STRATEGIC
+    output_type: capability-map
+    derivation_kind: synthesis
+    rule: Group accepted behavior by durable business outcome/responsibility and language cohesion; do not group by existing code/service layout alone.
+    human_choice_boundary: Naming/refining capability intent may be semantic judgment; new business responsibility requires accepted evidence or human authority.
+  - id: DDD-MR-SUBDOMAIN-DISTILLATION
+    checkpoint: S2-STRATEGIC
+    output_type: domain-distillation
+    derivation_kind: classification
+    rule: Classify subdomain areas by strategic differentiation/importance using accepted business evidence and decisions.
+    human_choice_boundary: Core/supporting/generic or custom strategic investment classification cannot be accepted from agent preference alone.
+  - id: DDD-MR-BOUNDED-CONTEXT-DERIVATION
+    checkpoint: S2-STRATEGIC
+    output_type: bounded-context
+    derivation_kind: synthesis
+    rule: >-
+      Propose a context boundary from cohesive model/language/responsibility ownership and explicit
+      capability/subdomain basis. A capability, team, service, repository folder, database or deployment
+      unit is never sufficient evidence by itself.
+    human_choice_boundary: Material alternative boundary choices require durable domain-decision when accepted truth does not determine one.
+  - id: DDD-MR-CONTEXT-RELATIONSHIP
+    checkpoint: S2-STRATEGIC
+    output_type: context-relationship-map
+    derivation_kind: mapping
+    rule: >-
+      Record upstream/downstream or symmetric relationship semantics between accepted contexts and
+      applicable DDD Context Mapping patterns only when supported by accepted collaboration/model facts.
+      Shared Kernel is never inferred merely from shared IDs, schemas or libraries.
+  - id: DDD-MR-PROCESS-COMMAND-EVENT
+    checkpoint: S2-PROCESS-DISCOVERY
+    output_type: domain-process-model
+    derivation_kind: synthesis
+    rule: Derive candidate process chains from stakeholder examples, journeys, requirements and accepted context ownership; distinguish human-supplied observations from model-derived consequences.
+  - id: DDD-MR-PROCESS-POLICY
+    checkpoint: S2-PROCESS-DISCOVERY
+    output_type: domain-process-model
+    derivation_kind: synthesis
+    rule: A policy connects one or more domain facts to command intent; a materially new business policy requires human authority.
+  - id: DDD-MR-CANDIDATE-AGGREGATE
+    checkpoint: S2-PROCESS-DISCOVERY
+    output_type: domain-process-model
+    derivation_kind: synthesis
+    rule: >-
+      Candidate aggregate hypotheses may group commands/events around suspected consistency/invariant
+      boundaries. They remain hypotheses until tactical validation and never create accepted aggregate truth.
+  - id: DDD-MR-TACTICAL-AGGREGATE
+    checkpoint: S2-TACTICAL
+    output_type: domain-model
+    derivation_kind: refinement
+    rule: >-
+      Accept an aggregate only when one consistency boundary is justified by accepted requirements,
+      process behavior and invariants inside one Bounded Context. Prefer the smallest boundary that
+      preserves required immediate consistency; do not use aggregate boundaries as generic transaction/distribution containers.
+    human_choice_boundary: If multiple materially different consistency boundaries remain valid, acceptance requires durable domain-decision.
+  - id: DDD-MR-ENTITY
+    checkpoint: S2-TACTICAL
+    output_type: domain-model
+    derivation_kind: refinement
+    rule: An entity has continuity defined by domain identity across state changes; storage keys alone do not establish domain identity.
+  - id: DDD-MR-VALUE-OBJECT
+    checkpoint: S2-TACTICAL
+    output_type: domain-model
+    derivation_kind: refinement
+    rule: A value object is defined by its domain value/equality semantics and invariants, not independent identity.
+  - id: DDD-MR-INVARIANT
+    checkpoint: S2-TACTICAL
+    output_type: domain-model
+    derivation_kind: refinement
+    rule: Invariants must be explicit accepted business/domain rules traceable to requirements, examples, decisions or process evidence.
+  - id: DDD-MR-DOMAIN-SERVICE
+    checkpoint: S2-TACTICAL
+    output_type: domain-model
+    derivation_kind: refinement
+    rule: Use a domain service only for a domain operation that does not naturally belong to an entity/value object while remaining domain semantics rather than application orchestration.
+  - id: DDD-MR-STATE-MODEL
+    checkpoint: S2-TACTICAL
+    output_type: state-model
+    derivation_kind: refinement
+    rule: States and transitions exist only when they materially constrain allowed domain behavior; transitions cite triggers/guards/invariants.
+
+type_schemas:
+  capability-map:
+    schema_version: h6-v1
+    payload_required: [capabilities, clustering, logical_derivation]
+    capability:
+      required: [capability_id, name, business_outcome, responsibility]
+      optional: [language_terms, behavior_basis_selectors, parent_capability_id, notes]
+      capability_id_scope: unique-within-anchor
+    clustering:
+      required: [cluster_id, capability_ids, rationale, status]
+      status_allowed: [candidate, accepted, rejected, unresolved]
+      rule: Cluster status accepted does not make the cluster a Bounded Context.
+    semantic_set_fields:
+      capabilities: capability_id
+      clustering: cluster_id
+
+  domain-distillation:
+    schema_version: h6-v1
+    payload_required: [subdomains, logical_derivation]
+    subdomain:
+      required: [subdomain_id, name, capability_selectors, classification, rationale]
+      classification_allowed: [core, supporting, generic, custom]
+      custom_requires: [taxonomy_label, decision_ref]
+      strategic_consequence_optional: [investment_attention, build_buy_posture, modeling_attention]
+    acceptance_guard: Classification with material investment/business consequence requires accepted evidence/decision basis.
+    semantic_set_fields:
+      subdomains: subdomain_id
+
+  bounded-context:
+    schema_version: h6-v1
+    payload_required:
+      - name
+      - purpose
+      - responsibility
+      - boundary_basis
+      - capability_selectors
+      - model_language_ownership
+      - logical_derivation
+    boundary_basis:
+      required: [cohesion_rationale]
+      optional:
+        - separation_rationale
+        - subdomain_selectors
+        - language_collision_refs
+        - invariant_ownership_refs
+        - change_autonomy_evidence_refs
+        - rejected_boundary_alternatives
+    model_language_ownership:
+      required: [owned_terms_or_model_scope]
+      optional: [term_selectors, explicitly_external_terms]
+    exclusions:
+      - deployment topology
+      - persistence schema ownership
+      - API transport contract
+    acceptance_guards:
+      - at least one capability selector resolves through cross_anchor_reference_contract
+      - boundary_basis explains cohesion; separation_rationale is required when material alternative boundaries exist
+      - non-derivable accepted boundary choice has DECIDED_BY authority
+      - no accepted context is justified only by existing implementation structure
+
+  context-relationship-map:
+    schema_version: h6-v1
+    payload_required: [relationships, logical_derivation]
+    relationship:
+      required: [relationship_id, context_a_ref, context_b_ref, direction, patterns, rationale]
+      direction_allowed: [a-upstream-b, b-upstream-a, symmetric, separate]
+      patterns_allowed:
+        - partnership
+        - shared-kernel
+        - customer-supplier
+        - conformist
+        - anticorruption-layer
+        - open-host-service
+        - published-language
+        - separate-ways
+      optional: [model_translation_owner, published_language_ref, decision_refs]
+      guard: Both context refs resolve accepted/current bounded-context anchors.
+    semantic_set_fields:
+      relationships: relationship_id
+
+  domain-process-model:
+    schema_version: h6-v1
+    payload_required:
+      - name
+      - context_refs
+      - actors
+      - commands
+      - domain_events
+      - policies
+      - timeline
+      - external_systems
+      - hotspots
+      - candidate_aggregates
+      - logical_derivation
+    origin_class_allowed:
+      - stakeholder-example
+      - accepted-requirement
+      - accepted-journey
+      - accepted-anchor-derivation
+      - external-evidence
+      - human-decision
+      - agent-hypothesis
+    actor:
+      required: [actor_id, name, role, origin_class]
+    command:
+      required: [command_id, name, target_context_ref, intent, origin_class]
+      optional: [actor_ref, precondition_refs, requirement_selectors]
+    domain_event:
+      required: [event_id, name, context_ref, fact_meaning, origin_class]
+      optional: [caused_by_command_ref, causal_event_refs, requirement_selectors]
+      naming_rule: expresses a domain fact that has occurred; transport/message semantics are absent
+    policy:
+      required: [policy_id, when_event_refs, then_command_refs, rationale, origin_class]
+      optional: [condition, decision_ref]
+      acceptance_guard: material new business policy cannot be accepted with origin_class agent-hypothesis alone
+    timeline_step:
+      required: [step_id, sequence, kind, item_ref]
+      kind_allowed: [command, domain-event, policy, external-system, hotspot]
+      sequence_rule: integer order is semantic; sequence values are unique within the timeline and array order is preserved
+    external_system:
+      required: [external_system_id, name, interaction_meaning, origin_class]
+    hotspot:
+      required: [hotspot_id, question_or_uncertainty, owner_kind, blocking, status]
+      owner_kind_allowed: [stakeholder, external-authority, design-team]
+      status_allowed: [open, resolved, deferred-nonblocking]
+      blocking_guard: blocking true plus status not resolved prevents checkpoint acceptance
+      optional: [resolution_decision_ref, evidence_refs]
+    candidate_aggregate:
+      required:
+        - candidate_id
+        - name
+        - context_ref
+        - command_refs
+        - event_refs
+        - consistency_boundary_rationale
+        - status
+      status_allowed: [candidate, rejected]
+      optional: [suspected_invariant_statements, rejected_reason]
+      rule: This record never has an accepted tactical status.
+    semantic_set_fields:
+      actors: actor_id
+      commands: command_id
+      domain_events: event_id
+      policies: policy_id
+      external_systems: external_system_id
+      hotspots: hotspot_id
+      candidate_aggregates: candidate_id
+    semantic_ordered_fields:
+      timeline: sequence
+
+  domain-model:
+    schema_version: h6-v1
+    payload_required:
+      - bounded_context_ref
+      - aggregates
+      - entities
+      - value_objects
+      - invariants
+      - domain_services
+      - logical_derivation
+    aggregate:
+      required:
+        - aggregate_id
+        - name
+        - root_entity_ref
+        - invariant_refs
+        - consistency_boundary_rationale
+      optional:
+        - entity_refs
+        - value_object_refs
+        - command_selectors
+        - domain_event_selectors
+        - candidate_aggregate_selectors
+        - decision_refs
+      acceptance_guard:
+        - exactly one accepted/current bounded-context owns the aggregate
+        - consistency boundary has accepted requirement/process/invariant basis
+        - candidate aggregate selector without additional accepted basis is insufficient
+    entity:
+      required: [entity_id, name, identity_semantics]
+      optional: [owned_value_object_refs, invariant_refs]
+    value_object:
+      required: [value_object_id, name, value_semantics, equality_semantics]
+      optional: [invariant_refs]
+    invariant:
+      required: [invariant_id, statement, applies_to_refs, authority_basis]
+      optional: [requirement_selectors, process_selectors, decision_refs]
+      acceptance_guard: agent-hypothesis alone cannot supply authority_basis
+    domain_service:
+      required: [domain_service_id, name, responsibility, justification]
+      optional: [input_semantics, output_semantics, invariant_refs]
+      guard: justification explains why responsibility does not naturally belong to an entity/value object
+    semantic_set_fields:
+      aggregates: aggregate_id
+      entities: entity_id
+      value_objects: value_object_id
+      invariants: invariant_id
+      domain_services: domain_service_id
+
+  domain-glossary:
+    schema_version: h6-v1
+    payload_required: [terms, logical_derivation]
+    term:
+      required: [term_id, term, definition, context_ref]
+      optional: [aliases, disallowed_meanings, source_selectors]
+    semantic_set_fields:
+      terms: term_id
+
+  state-model:
+    schema_version: h6-v1
+    payload_required: [subject_ref, states, transitions, logical_derivation]
+    state:
+      required: [state_id, name, meaning]
+      optional: [invariant_refs]
+    transition:
+      required: [transition_id, from_state_id, to_state_id, trigger_ref]
+      optional: [guard_refs, invariant_refs, effect_domain_event_selectors]
+    semantic_set_fields:
+      states: state_id
+      transitions: transition_id
+
+canonicalization_specialization:
+  profile_base: H5 sha256-jcs-v1
+  rule: >-
+    H6 declares only the listed semantic_set_fields as order-insensitive and defines their sort
+    key. All unlisted arrays preserve authored order. Ordered process timeline remains order-sensitive.
+  nested_set_sort: sort ascending by declared stable local ID using Unicode code-point order before H5 JCS
+  no_other_normalization: true
+
+artifact_derivation_matrix:
+  capability-map:
+    checkpoint: S2-STRATEGIC
+    required_basis_types: [functional-requirement]
+    optional_basis_types: [acceptance-scenario, user-journey, requirements-glossary, constraint, evidence]
+    required_method_rule: DDD-MR-CAPABILITY-DISCOVERY
+    normal_relations: [DERIVES_FROM, CONSTRAINED_BY, EVIDENCED_BY, DECIDED_BY]
+  domain-distillation:
+    checkpoint: S2-STRATEGIC
+    required_basis_types: [capability-map]
+    optional_basis_types: [problem-statement, functional-requirement, domain-decision, evidence]
+    required_method_rule: DDD-MR-SUBDOMAIN-DISTILLATION
+    normal_relations: [DERIVES_FROM, CONSTRAINED_BY, DECIDED_BY, EVIDENCED_BY]
+  bounded-context:
+    checkpoint: S2-STRATEGIC
+    required_basis_types: [capability-map]
+    optional_basis_types: [domain-distillation, functional-requirement, acceptance-scenario, requirements-glossary, domain-decision]
+    required_method_rule: DDD-MR-BOUNDED-CONTEXT-DERIVATION
+    normal_relations: [DERIVES_FROM, CONSTRAINED_BY, DECIDED_BY]
+  context-relationship-map:
+    checkpoint: S2-STRATEGIC
+    required_basis_types: [bounded-context]
+    optional_basis_types: [functional-requirement, acceptance-scenario, domain-decision]
+    required_method_rule: DDD-MR-CONTEXT-RELATIONSHIP
+    normal_relations: [DERIVES_FROM, REFINES, DECIDED_BY]
+  domain-process-model:
+    checkpoint: S2-PROCESS-DISCOVERY
+    required_basis_types: [bounded-context, functional-requirement]
+    optional_basis_types: [acceptance-scenario, user-journey, domain-glossary, context-relationship-map, domain-decision, evidence]
+    required_method_rules: [DDD-MR-PROCESS-COMMAND-EVENT, DDD-MR-PROCESS-POLICY, DDD-MR-CANDIDATE-AGGREGATE]
+    normal_relations: [DERIVES_FROM, CONSTRAINED_BY, DECIDED_BY, EVIDENCED_BY]
+  domain-model:
+    checkpoint: S2-TACTICAL
+    required_basis_types: [bounded-context, functional-requirement]
+    conditional_required_basis:
+      when: scope.domain_process_discovery_required
+      types: [domain-process-model]
+    optional_basis_types: [acceptance-scenario, domain-glossary, domain-decision]
+    required_method_rules:
+      - DDD-MR-TACTICAL-AGGREGATE
+      - DDD-MR-ENTITY
+      - DDD-MR-VALUE-OBJECT
+      - DDD-MR-INVARIANT
+      - DDD-MR-DOMAIN-SERVICE
+    normal_relations: [DERIVES_FROM, REFINES, CONSTRAINED_BY, DECIDED_BY]
+  state-model:
+    checkpoint: S2-TACTICAL
+    required_basis_types: [domain-model]
+    optional_basis_types: [domain-process-model, functional-requirement, acceptance-scenario, domain-decision]
+    required_method_rule: DDD-MR-STATE-MODEL
+    normal_relations: [DERIVES_FROM, REFINES, CONSTRAINED_BY, DECIDED_BY]
+  domain-glossary:
+    checkpoint: any-applicable-S2
+    required_basis_types: []
+    optional_basis_types: [requirements-glossary, capability-map, bounded-context, domain-process-model, domain-model, domain-decision]
+    rule: Accepted term definitions require lineage to the artifact/decision that owns their meaning; glossary never invents domain semantics.
+
+blocking_and_escalation:
+  unresolved_human_owned_truth:
+    route: NEED_MORE_DATA
+    acceptance_allowed: false
+    required_durable_result_before_resume: accepted human decision/example/evidence under H7-compatible authority
+  known_prerequisite_unavailable:
+    route: BLOCKED
+    acceptance_allowed: false
+  deterministic_integrity_failure:
+    result: FAIL
+    semantic_eval_runs: false
+  process_hotspot_rule:
+    blocking_open_hotspot:
+      S2-PROCESS-DISCOVERY_acceptance: forbidden
+      S2-TACTICAL_acceptance_if_in_basis: forbidden
+  aggregate_question_rule: >-
+    If an aggregate boundary depends on an unresolved business invariant, concurrency/consistency
+    rule, command ownership or lifecycle rule, tactical acceptance routes NEED_MORE_DATA rather
+    than choosing a plausible boundary.
+
+domain_event_integration_boundary:
+  domain_process_event:
+    owner: S2 domain-process-model
+    meaning: domain fact in a Bounded Context
+    transport_assumption: none
+  integration_message:
+    owner: S3 event-contract when applicable
+    requires:
+      - explicit architecture decision/contract applicability
+      - intentional cross-boundary publication/consumption semantics
+      - separate S3 lineage from accepted S2 domain semantics
+  forbidden_inference:
+    - every domain event is published
+    - every domain event crosses a context boundary
+    - every domain event requires a broker
+    - every domain event requires AsyncAPI
+
+checkpoint_acceptance_evidence:
+  required_observable_fields:
+    - checkpoint_id
+    - applicable
+    - accepted_output_anchor_ids
+    - input_anchor_fingerprints
+    - unresolved_blocking_item_count
+    - method_rule_ids
+    - specification_version
+  private_reasoning_required: false
+  version_binding: H1 reliability and H5 validation basis apply
+  H8_note: H8 defines executable validator/judge evidence schema; H6 defines semantic evidence content only.
+
+conformance_cases:
+  - id: DDD-CF-STRATEGIC-INPUT-OUTPUT-LINEAGE
+    oracle: deterministic
+    given: {checkpoint: S2-STRATEGIC, accepted_output: bounded-context, accepted_current_capability_basis: true, logical_derivation_present: true}
+    expect: {lineage_guard: PASS}
+  - id: DDD-CF-CAPABILITY-NOT-BC
+    oracle: deterministic
+    given: {capability_cluster_accepted: true, bounded_context_anchor_absent: true}
+    expect: {bounded_context_truth_inferred: false}
+  - id: DDD-CF-BC-NOT-FROM-CODE-STRUCTURE
+    oracle: semantic
+    given: {only_boundary_basis: existing-service-or-module, accepted_business_model_basis: false}
+    expect: {bounded_context_accepted: false, route: NEED_MORE_DATA}
+  - id: DDD-CF-DISTILLATION-HUMAN-AUTHORITY
+    oracle: semantic
+    given: {classification_has_material_investment_consequence: true, agent_only_basis: true}
+    expect: {accepted: false, route: NEED_MORE_DATA}
+  - id: DDD-CF-CONTEXT-RELATION-ENDPOINTS
+    oracle: deterministic
+    given: {relationship_endpoints_current_bounded_contexts: true}
+    expect: {result: PASS}
+  - id: DDD-CF-SHARED-KERNEL-NOT-INFERRED
+    oracle: deterministic
+    given: {shared_identifiers_or_schema_only: true, explicit_shared_kernel_decision: false}
+    expect: {shared_kernel_pattern_accepted: false}
+  - id: DDD-CF-PROCESS-BLOCKING-HOTSPOT
+    oracle: deterministic
+    given: {checkpoint: S2-PROCESS-DISCOVERY, blocking_hotspot_status: open}
+    expect: {checkpoint_acceptance: false}
+  - id: DDD-CF-DOMAIN-EVENT-NOT-INTEGRATION
+    oracle: deterministic
+    given: {domain_event_exists: true, S3_publication_contract_absent: true}
+    expect: {event_contract_required_implicitly: false, async_transport_inferred: false}
+  - id: DDD-CF-CANDIDATE-AGGREGATE-STAYS-HYPOTHESIS
+    oracle: deterministic
+    given: {candidate_aggregate_exists: true, tactical_domain_model_absent: true}
+    expect: {accepted_aggregate_truth: false}
+  - id: DDD-CF-AGGREGATE-REQUIRES-PROCESS-WHEN-APPLICABLE
+    oracle: deterministic
+    given: {process_discovery_applicable: true, current_domain_process_model: false, requested_domain_model_acceptance: true}
+    expect: {accepted: false, route: BLOCKED}
+  - id: DDD-CF-AGGREGATE-BLOCKING-BUSINESS-QUESTION
+    oracle: semantic
+    given: {aggregate_boundary_materially_depends_on_unresolved_human_owned_invariant: true}
+    expect: {accepted: false, route: NEED_MORE_DATA, plausible_boundary_auto_selected: false}
+  - id: DDD-CF-AGGREGATE-CONSISTENCY-BASIS
+    oracle: semantic
+    given: {aggregate_boundary_has_requirement_process_invariant_basis: true, only_table_or_object_graph_basis: false}
+    expect: {semantic_guard_may_pass: true}
+  - id: DDD-CF-ENTITY-DOMAIN-IDENTITY
+    oracle: semantic
+    given: {entity_identity_basis: database-primary-key-only}
+    expect: {entity_semantics_sufficient: false}
+  - id: DDD-CF-VALUE-OBJECT-NO-INDEPENDENT-IDENTITY
+    oracle: deterministic
+    given: {value_object_declares_independent_domain_identity: true}
+    expect: {result: FAIL}
+  - id: DDD-CF-INVARIANT-AUTHORITY
+    oracle: semantic
+    given: {invariant_origin: agent-hypothesis, accepted_requirement_example_decision_basis: false}
+    expect: {accepted: false, route: NEED_MORE_DATA}
+  - id: DDD-CF-STATE-MODEL-TRIGGER-LINEAGE
+    oracle: deterministic
+    given: {transition_trigger_ref_resolves: true, logical_derivation_present: true}
+    expect: {result: PASS}
+  - id: DDD-CF-CROSS-ANCHOR-SELECTOR-REQUIRES-H5-REF
+    oracle: deterministic
+    given: {payload_selector_crosses_anchor: true, matching_h5_semantic_ref: false}
+    expect: {result: FAIL, reason: missing-matching-semantic-ref}
+  - id: DDD-CF-LATER-DISCOVERY-REOPENS-EARLIER-S2
+    oracle: deterministic
+    given: {process_discovery_finds_invalid_strategic_boundary: true, proposed_action: patch-tactical-model}
+    expect: {patch_allowed: false, route: REWORK, owner_checkpoint: S2-STRATEGIC}
+  - id: DDD-CF-G2-REQUIRES-ALL-APPLICABLE
+    oracle: deterministic
+    given: {strategic: ACCEPTED, process_discovery_applicable: true, process_discovery: ACCEPTED, tactical_applicable: true, tactical: ACCEPTED}
+    expect: {g2_evaluation_eligible: true}
+  - id: DDD-CF-PROCESS-AGENT-HYPOTHESIS-NOT-AUTHORITY
+    oracle: semantic
+    given: {accepted_process_item_origin: agent-hypothesis, durable_authority_or_derivation_basis: false}
+    expect: {accepted_as_process_truth: false, route: NEED_MORE_DATA}
+  - id: DDD-CF-BC-SEPARATION-RATIONALE-WHEN-ALTERNATIVES
+    oracle: semantic
+    given: {material_alternative_boundaries_exist: true, separation_rationale_present: false}
+    expect: {bounded_context_accepted: false}
+  - id: DDD-CF-PROJECT-AGNOSTIC
+    oracle: deterministic
+    given: {h6_rule_requires_specific_project_identity: true}
+    expect: {result: FAIL, reason: project-specific-core-rule-forbidden}
+  - id: DDD-CF-NO-IMPLICIT-CUTOVER
+    oracle: deterministic
+    given: {h6_spec_defined: true, explicit_cutover_authorization: false}
+    expect: {docs_remains_product_domain_authority: true}
+
+h6_exit_evaluation:
+  checks:
+    - strategic, process-discovery and tactical checkpoints have explicit current inputs, outputs, acceptance guards and completion guarantees
+    - capability/subdomain/bounded-context concepts are distinct and machine-representable
+    - bounded-context and context-relationship detailed schemas preserve H4 semantic ownership
+    - domain-process-model covers actors, commands, domain events, policies, timeline, external systems, hotspots and candidate aggregate hypotheses
+    - tactical domain-model covers aggregates, entities, value objects, invariants and domain services
+    - state-model defines domain states/transitions/triggers without architecture/persistence leakage
+    - every accepted H6 output has explicit H5 lineage/derivation requirements
+    - item-level selectors cannot bypass H5 semantic refs
+    - candidate aggregate hypotheses cannot become accepted tactical truth implicitly
+    - unresolved blocking business questions stop applicable checkpoint acceptance
+    - Domain Events do not imply integration messages
+    - H5 sha256-jcs-v1 determinism is preserved with explicit H6 set-like sort keys
+    - no new H4 artifact type or H5 edge relation is introduced
+    - no new H1/H2 lifecycle transition class is introduced
+    - Harness reliability fail-closed/version-bound requirements are preserved
+    - no project-specific NAPMS semantics are introduced
+    - no executable validators/tests/runtime/CI/workflows are created or changed
+    - no product/domain cutover is performed
+
+handoff_to_h7:
+  next_task: H7 Human knowledge acquisition protocol
+  required_behavior:
+    - define durable question/option/recommendation/consequence representation for H6 NEED_MORE_DATA points
+    - turn stakeholder answers/examples into durable authority-bearing decisions/examples/journeys without silent generalization
+    - preserve H6 hotspot and aggregate-question references when resolving business truth
+    - distinguish accepted facts, hypotheses and recommendations
+
+restrictions:
+  executable_validators_created_or_changed: false
+  executable_tests_created_or_changed: false
+  runtime_implementation_created_or_changed: false
+  workflow_ci_created_or_changed: false
+  product_domain_cutover_performed: false
