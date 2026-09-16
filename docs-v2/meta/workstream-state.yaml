@@ -7,7 +7,7 @@ last_updated: 2026-09-16
 
 program:
   status: ACTIVE
-  current_phase: H5
+  current_phase: H6
   current_phase_state: NOT_STARTED
   completed_phases:
     - H0
@@ -15,25 +15,17 @@ program:
     - H2
     - H3
     - H4
+    - H5
   blocked_phases: []
 
 current_task:
-  id: H5-T1
-  title: Define dependency, registry and impact model
+  id: H6-T1
+  title: Complete DDD pipeline specification
   state: NOT_STARTED
   objective: >
-    Make redesigned project design state graph-addressable and changes impact-computable by
-    defining the generated anchor registry, dependency-edge vocabulary, reference-resolution
-    rules, concrete content fingerprint/canonicalization contract, DIRTY/STALE propagation
-    and earliest-affected-stage calculation without changing H4 semantic ownership.
-  expected_outputs:
-    - generated anchor registry model
-    - dependency edge vocabulary
-    - reference resolution rules
-    - concrete content fingerprint and canonicalization contract
-    - deterministic DIRTY/STALE propagation rules
-    - earliest-affected-stage calculation contract
-  next_after_completion: H6 Complete DDD pipeline specification
+    On the next bounded execution, apply the resume protocol and read the H6 roadmap entry
+    plus its direct dependency H5 before resolving the exact H6 task capsule. Do not infer
+    additional H6 scope from chat history and do not execute H6 work inside the completed H5 capsule.
 
 completed_work:
   - id: H0-T1
@@ -42,11 +34,13 @@ completed_work:
     artifacts:
       - docs-v2/meta/roadmap.yaml
       - docs-v2/README.md
+
   - id: H0-T2
     result: PASS
     description: Persist separate mutable workstream state for cross-chat continuation.
     artifacts:
       - docs-v2/meta/workstream-state.yaml
+
   - id: H1-T1
     result: PASS
     description: >
@@ -63,6 +57,7 @@ completed_work:
       executable_tests_created_or_changed: false
     artifacts:
       - docs-v2/spec/harness-conformance.yaml
+
   - id: H1-T2
     result: PASS
     description: >
@@ -81,6 +76,7 @@ completed_work:
       executable_tests_created_or_changed: false
     artifacts:
       - docs-v2/spec/harness-conformance.yaml
+
   - id: H2-T1
     result: PASS
     description: >
@@ -105,6 +101,7 @@ completed_work:
       runtime_implementation_created_or_changed: false
     artifacts:
       - docs-v2/spec/lifecycle-state-machine.yaml
+
   - id: H3-T1
     result: PASS
     description: >
@@ -130,6 +127,7 @@ completed_work:
       runtime_implementation_created_or_changed: false
     artifacts:
       - docs-v2/spec/design-anchor.yaml
+
   - id: H4-T1
     result: PASS
     description: >
@@ -161,6 +159,47 @@ completed_work:
     artifacts:
       - docs-v2/spec/artifact-type-registry.yaml
 
+  - id: H5-T1
+    result: PASS
+    description: >
+      Define the generated Design Anchor registry, typed semantic dependency references,
+      deterministic current/historical reference resolution, concrete versioned content
+      fingerprint/canonicalization, dependency-bound validation freshness, reproducible
+      DIRTY/STALE impact traversal, dependent G4 revocation and earliest-affected-stage calculation.
+    validation:
+      machine_readable_yaml: PASS
+      dependency_edge_relation_count: 7
+      conformance_case_count: 15
+      conformance_case_id_uniqueness: PASS
+      current_and_historical_registry_indexes: PASS
+      registry_is_generated_not_canonical_truth: PASS
+      deterministic_reference_resolution: PASS
+      dangling_reference_rejection: PASS
+      noncurrent_reference_rejection: PASS
+      pinned_historical_resolution: PASS
+      semantic_fingerprint_profile: sha256-jcs-v1
+      rfc8785_canonicalization_profile: PASS
+      sha256_digest_profile: PASS
+      structured_key_order_invariance: PASS
+      text_line_ending_normalization: PASS
+      anchor_and_evidence_dependency_snapshot: PASS
+      dependency_bound_validation_freshness: PASS
+      transitive_affected_set_reproducibility: PASS
+      cycle_stable_traversal: PASS
+      nonimpact_reference_blast_radius: PASS
+      affected_anchor_dirty_stale_effect: PASS
+      dependent_g4_revocation: PASS
+      earliest_stage_from_semantic_roots: PASS
+      ambiguous_owner_routes_narrow_classification: PASS
+      h4_semantic_owner_changes: false
+      h4_canonical_representation_changes: false
+      explicit_cutover_guard: PASS
+      executable_validators_created_or_changed: false
+      executable_tests_created_or_changed: false
+      runtime_implementation_created_or_changed: false
+    artifacts:
+      - docs-v2/spec/dependency-registry-impact.yaml
+
 routing_history:
   - id: H2-T1-ATTEMPT-1
     task: H2-T1
@@ -180,25 +219,31 @@ routing_history:
       - docs-v2/spec/lifecycle.md
 
 carry_forward:
-  - Existing M1-M6 specifications are redesign inputs and may be revised by H5-H11.
+  - Existing M1-M6 specifications are redesign inputs and may be revised by H6-H11.
   - M7 evidence exposed missing strategic-DDD derivation artifacts and broader Harness/process gaps.
   - The previously recorded horizontal strategic G2 PASS is stale under the revised direction and must not authorize architecture or implementation.
   - Product code/tests remain excluded as sources of product/domain/architecture truth in the current documentation-design work.
   - docs/ remains canonical product/project design truth until explicit cutover.
   - docs-v2/spec/lifecycle-state-machine.yaml owns redesigned Harness lifecycle coordination semantics; docs-v2/spec/lifecycle.md remains pre-H2 redesign input only.
   - docs-v2/spec/design-anchor.yaml owns the universal Design Anchor contract; later phases must not weaken H3 identity, provenance, acceptance, human-control or freshness invariants.
-  - docs-v2/spec/artifact-type-registry.yaml owns redesigned artifact classification, retained type identity, semantic ownership, applicability and canonical-format selection; docs-v2/spec/artifacts.md is retained only as pre-H4 redesign input.
+  - docs-v2/spec/artifact-type-registry.yaml owns redesigned artifact classification, retained type identity, semantic ownership, applicability and canonical-format selection; docs-v2/spec/artifacts.md remains pre-H4 redesign input only.
+  - docs-v2/spec/dependency-registry-impact.yaml owns generated registry, typed semantic-reference, fingerprint/canonicalization, validation-basis and impact-calculation semantics for the redesign.
   - Before cutover, ACCEPTED in the Design Anchor model denotes redesigned-model conformance and does not override docs/ product/domain authority.
   - Every retained H4 anchor type has exactly one S0-S4 owner and requires the H3 envelope; non-anchor evidence/process-state cannot introduce product/domain truth.
-  - The legacy generic decision-record is not retained as a canonical dynamic-owner type; it is split into problem-, requirements-, domain-, architecture- and implementation-readiness-decision types with fixed owners.
-  - context-map and requirement-domain-trace are non-canonical generated projections; canonical relationship/trace semantics must come from anchors and the H5 dependency/registry model.
+  - The legacy generic decision-record is not retained as a canonical dynamic-owner type; it is split into fixed-owner stage-specific decision types.
+  - context-map and requirement-domain-trace are non-canonical generated projections; canonical relationship/trace semantics come from anchors and H5 typed references/edges.
   - S2 domain-model and state-model use structured YAML as canonical carriers; H6 owns their detailed DDD schemas and generated diagrams are projections.
-  - OpenAPI, AsyncAPI, JSON Schema and Gherkin are canonical standard families for their applicable contract types; accepted concrete versions are pinned by future validation profiles rather than silently defaulted by H4.
-  - H4 does not define physical repository paths; path resolution must preserve H3 anchor identity and belongs to repository-layout/integration work.
-  - H5 must define generated registry/reference/fingerprint/dependency semantics without changing H4 semantic owners or creating duplicate canonical truth.
-  - Manual edits to fingerprint-included semantics stale prior validation evidence and move an ACCEPTED anchor to DIRTY until revalidated.
-  - Human acceptance/override provides durable authority but never bypasses deterministic integrity/fingerprint validation.
-  - Unsupported agent-generated human-owned business assertions cannot become ACCEPTED; they route to NEED_MORE_DATA/BLOCKED when truth is not derivable.
+  - H5 registry current resolution is keyed by anchor_id; historical resolution is keyed by anchor_id plus semantic_fingerprint. Registry fields are generated indexes, not independent truth.
+  - H5 semantic dependencies are explicit typed H3 semantic_refs; text mentions, file paths and generated projections never create dependency edges implicitly.
+  - H3 supersession metadata remains the single owner of replacement history and is not duplicated as a dependency edge.
+  - H5 semantic fingerprints use the versioned sha256-jcs-v1 profile: type-specific semantic projection, RFC 8785 JCS serialization and SHA-256 digest.
+  - Structured payload key order is canonicalized; text payloads normalize only line endings and otherwise preserve code points, whitespace, comments and order unless a later type-specific semantic projection is explicitly defined.
+  - Validation freshness is bound to the local semantic fingerprint plus an exact typed dependency snapshot; dependency fingerprint drift deterministically makes evidence STALE and an ACCEPTED dependent DIRTY.
+  - Impact propagation follows only explicit effective reverse dependency edges; stage order alone never expands the blast radius.
+  - A dependent G4 lease becomes revoked/non-current when its basis contains any affected anchor.
+  - Earliest affected stage is calculated from semantic roots or explicit deficiency ownership, not from the numerically earliest downstream affected stage.
+  - If semantic ownership cannot be derived, route to narrow classification; do not invent an owner stage or preload all stage protocols.
+  - OpenAPI, AsyncAPI, JSON Schema and Gherkin remain canonical standard families for applicable H4 contract types; accepted concrete versions are pinned by validation profiles.
   - H1 conformance scenarios remain RED-stage behavioral requirements and must not be weakened to fit later specifications or implementation.
   - No new lifecycle transition class or rejection path may be added outside H1 lifecycle_transition_coverage; a missing class reopens H1 first.
   - G2 evaluation is eligible only when all applicable S2 checkpoints are ACCEPTED; non-applicable checkpoints are skipped rather than fabricated as complete.
