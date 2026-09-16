@@ -65,7 +65,7 @@ quality_invariants:
   - id: ER-CANONICAL-FIXTURES-STAY-WITH-OWNER
     rule: A source specification owns the semantic given/expect of its conformance case; H10 indexes and groups stable IDs but does not copy them as a second source of expected behavior.
   - id: ER-ALL-CRITICAL-COVERED
-    rule: Every active critical Harness conformance case appears in at least one required regression suite.
+    rule: Every active effective-critical Harness conformance case appears in at least one required regression suite.
   - id: ER-DETERMINISTIC-EXACT
     rule: Deterministic evals compare contract-level outcome, route, state/authorization effect and diagnostic code exactly where the source case declares them.
   - id: ER-SEMANTIC-BOUNDED
@@ -117,21 +117,30 @@ regression_corpus:
       - source_contract_id
       - source_contract_fingerprint
       - oracle
-      - critical
+      - effective_critical
       - active_status
       - suite_ids
     optional:
+      - source_critical
       - capability_id
       - tags
       - superseded_by
       - diagnostic_codes
       - behavior_owner_phase
+  criticality:
+    source_true: effective_critical true
+    source_false: effective_critical false unless the case is explicitly promoted as a critical failure regression
+    source_missing: effective_critical true
+    rationale: >-
+      Later contracts do not uniformly carry the H1 critical field. H10 therefore fails safe:
+      an unlabeled active case is treated as critical rather than silently excluded from the
+      sentinel regression suite.
   integrity:
     - scenario_id globally unique across active source contracts
     - scenario_id never reused for different semantics
     - source contract fingerprint recomputes from current source
     - suite references resolve active scenario IDs or explicit historical supersession mappings
-    - every critical active scenario has at least one required suite membership
+    - every effective-critical active scenario has at least one required suite membership
     - an index edit cannot change expected behavior without changing the source-owned case
   generated_index_authority: none
   index_fingerprint:
@@ -179,7 +188,7 @@ eval_suites:
     required: true
     purpose: Universal sentinel suite for all current critical conformance cases.
     selection:
-      - every generated corpus entry with critical == true and active_status == active
+      - every generated corpus entry with effective_critical == true and active_status == active
     pass_rule: all selected fixtures pass
   - id: HE-ROUTING
     required: true
@@ -660,7 +669,7 @@ conformance_cases:
 h10_exit_evaluation:
   checks:
     - regression corpus is generated from source-owned stable conformance cases rather than copying test oracles
-    - every active critical case is included by HE-CRITICAL-REGRESSION
+    - every active effective-critical case is included by HE-CRITICAL-REGRESSION
     - routing eval suite covers owner/stage routing, ambiguous classification and wrong-stage patch rejection
     - context-minimization suite covers direct refs, broad-preload rejection, explicit expansion and post-freeze stop/rebuild
     - unsupported-inference suite has zero tolerance for invented human-owned truth or authority promotion
