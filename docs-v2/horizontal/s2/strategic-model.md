@@ -11,10 +11,10 @@ A capability is not automatically a Bounded Context, service or deployment unit.
 | Bounded Context | Core question | Authoritative semantic ownership |
 |---|---|---|
 | Business Connectivity | Why is application connectivity needed? | Business Process, Connectivity Need, business attribution/current justification |
-| Access Policy | What concrete access is proposed, formally decided and currently effective? | PolicyRule identity/lifecycle, RuleChange history/outcome, effective revision, withdrawal |
+| Access Policy | What concrete access is proposed, formally decided and currently effective? | PolicyRule identity/lifecycle, concrete deployment-pair subject, exact communication revision, RuleChange history/outcome, effective revision, withdrawal |
 | Authority Management | Who may perform a protected action for scope/time? | effective actor/action/scope authority |
 | Resource Catalogue | What access-domain Resources exist and how are they realized/responsible? | Resource identity/lifecycle, effective AddressSpace, scope affiliation, responsibility |
-| Application Communication Catalogue | What applications/components exist and how may Components communicate? | Application, Component, Interaction, immutable InteractionContractRevision traffic meaning |
+| Application Communication Catalogue | What applications/components exist and how may Components communicate? | Application, Component, Component-level Interaction, immutable InteractionContractRevision traffic meaning |
 | Application Deployment | Which concrete Component instances are deployed on which Resources? | ComponentDeployment identity/lifecycle and ComponentRef -> ResourceRef truth |
 | Network Enforcement Placement | Where may a technical pair be enforced? | candidate enforcement target/policy-locator relevance |
 | Technical Access Evidence | What source-qualified technical material was observed/reported/imported? | normalized immutable technical evidence and provenance |
@@ -103,7 +103,9 @@ Owns the application-semantic reason for connectivity. `ConnectivityNeed` may su
 
 ### Application Communication Catalogue
 
-Owns reusable application communication meaning. An Interaction is a stable directed Component pair within one Application; traffic changes create immutable revisions. ACC owns neither concrete deployment nor Resource realization.
+Owns reusable application communication meaning. An Interaction is a stable directed Component pair within one Application; traffic changes create immutable `InteractionContractRevision` values. The revision resolves its owning Interaction, endpoint Components and complete traffic alternatives. ACC owns neither concrete deployment nor Resource realization.
+
+A legacy DCS contract that places `sourceComponentDeploymentId` and `destinationComponentDeploymentId` inside the ACC-authored communication revision is superseded for target semantics by the revalidated Component-level Interaction model. This does not remove the need for concrete deployments from access policy; it moves their ownership/use to the correct boundary.
 
 ### Application Deployment
 
@@ -116,7 +118,7 @@ ComponentDeployment
   ResourceRef
 ```
 
-A deployment references exactly one Component and one Resource. Replicas are independent deployments. Address changes do not change deployment identity.
+A deployment references exactly one Component and one Resource. Replicas are independent deployments. Address changes do not change deployment identity. AD exposes the Component/Resource facts needed by consumers but does not decide whether a deployment pair is permitted to communicate.
 
 ### Resource Catalogue
 
@@ -131,7 +133,18 @@ Multiple simultaneous addresses/interfaces/VIPs are an extension, not current ta
 
 ### Access Policy
 
-Owns one coherent concrete rule lifecycle. The directed source/destination ComponentDeployment pair is the Rule subject; exact revision is proposed/current traffic semantics rather than Rule identity. RuleChange formal outcome is Pending/Accepted/Rejected; accepted changes may advance current semantics; withdrawal clears effectiveness without deleting history.
+Owns one coherent concrete rule lifecycle. The directed source/destination `ComponentDeployment` pair is the Rule subject; the exact ACC `InteractionContractRevision` supplies the proposed/current communication semantics.
+
+For a candidate rule/revision AP validates the cross-context compatibility invariant:
+
+```text
+sourceDeployment.componentRef == revision.interaction.sourceComponentRef
+destinationDeployment.componentRef == revision.interaction.destinationComponentRef
+```
+
+Thus Component-level interaction meaning and deployment-level governed access are intentionally different concerns. The exact revision resolves its Interaction, so a duplicate `InteractionRef` is unnecessary merely to restate identity.
+
+RuleChange formal outcome is Pending/Accepted/Rejected; accepted changes may advance current semantics; withdrawal clears effectiveness without deleting history.
 
 `Access Governance` is not a target peer BC. Customer-specific approval workflow can integrate around the formal outcome without duplicating current policy ownership.
 
@@ -165,6 +178,8 @@ Owns controlled mutation lifecycle and outcome/provenance. It does not own desir
 - missing/ambiguous input never silently becomes absence, denial, empty required policy or success;
 - provider-native semantics stay at integration boundaries;
 - Application communication meaning, concrete deployment and Resource realization are three separate ownership concerns;
+- ACC Interaction endpoints are Components; AP governed-rule endpoints are compatible concrete ComponentDeployments;
+- AP validates deployment ComponentRefs against the exact ACC revision's Interaction endpoints;
 - Resource responsibility/scope and actor authority are separate concerns;
 - Access Policy is the single owner of proposed changes, formal decisions and current concrete policy lifecycle;
 - no Shared Kernel is accepted among target peer contexts.
