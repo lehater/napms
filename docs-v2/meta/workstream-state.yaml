@@ -8,88 +8,82 @@ last_updated: 2026-09-17
 program:
   status: ACTIVE
   current_phase: H12
-  current_phase_state: NOT_STARTED
+  current_phase_state: IN_PROGRESS
   completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11]
   blocked_phases: []
   compatibility_review_required_phases: []
 
 current_task:
-  id: H12-T1
-  title: NAPMS migration and revalidation plan
+  id: H12-T2
+  title: Rebuild catalogue-curation problem and requirement basis
   state: NOT_STARTED
   objective: >-
-    On the next bounded execution, apply the resume protocol and read the H12 roadmap entry plus
-    its direct H11 dependency. Define the first bounded migration/revalidation step for NAPMS under
-    the redesigned Harness, preserving docs/ as current authority, excluding product code/tests as
-    design truth, and routing missing business/domain knowledge through H7. Do not execute H12
-    migration work inside the completed H11 capsule.
+    Using only current canonical docs/**, materialize the minimum current S0/S1 Design Anchors
+    required to revalidate the Resource Catalogue catalogue-curation slice under H3-H8. Preserve
+    examples as examples, split mixed legacy semantics by H4 owner, establish current provenance
+    and H5 lineage, and classify the single-effective-AddressSpace issue at its earliest semantic
+    owner. Route any non-derivable human-owned truth through H7. Stop before S2 strategic work.
   required_inputs:
-    - docs-v2/spec/repository-ci-enforcement.yaml
-    - docs-v2/spec/harness-evals-tracing-regression.yaml
-    - docs-v2/spec/agent-execution-context-v2.yaml
-    - docs-v2/spec/ddd-pipeline.yaml
+    - docs-v2/spec/napms-migration-revalidation.yaml
+    - docs-v2/spec/design-anchor.yaml
+    - docs-v2/spec/artifact-type-registry.yaml
+    - docs-v2/spec/dependency-registry-impact.yaml
+    - docs-v2/spec/design-derivation-lineage.yaml
     - docs-v2/spec/human-knowledge-acquisition.yaml
-  next_after_completion: H13 Runtime Harness implementation plan
+    - docs/requirements/catalogue-curation.md
+    - docs/requirements/catalogue-curation-acceptance-examples.md
+    - docs/requirements/catalogue-curation-security.md
+  comparison_only_inputs:
+    - docs-v2/pilot/catalogue-curation/s1-inventory.md
+    - docs-v2/pilot/materialized/requirements/**
+    - docs-v2/horizontal/s0/**
+    - docs-v2/horizontal/s1/**
+  expected_outputs:
+    - bounded-scope current candidate S0/S1 anchors with H3 identity/provenance
+    - H5 semantic refs and derivation lineage
+    - preserved stakeholder/example epistemic classification
+    - explicit earliest-owner classification for AddressSpace cardinality
+    - H7 question records only if current docs cannot determine required human-owned behavior
+  next_after_completion: H12-T3 Reconstruct strategic domain basis for selected scope
 
 completed_work:
-  - {id: H0-T1, result: PASS, artifact: docs-v2/meta/roadmap.yaml, summary: durable roadmap and universal design-Harness charter}
-  - {id: H0-T2, result: PASS, artifact: docs-v2/meta/workstream-state.yaml, summary: resumable repository-resident workstream state}
-  - {id: H1-T1, result: PASS, artifact: docs-v2/spec/harness-conformance.yaml, summary: initial RED-stage Harness conformance/eval contract}
-  - {id: H1-T2, result: PASS, artifact: docs-v2/spec/harness-conformance.yaml, summary: lifecycle transition and rejection coverage hardening}
-  - {id: H1-T3, result: PASS, artifact: docs-v2/spec/harness-reliability-conformance.yaml, summary: deterministic replay, restart safety, idempotency, fail-closed and regression hardening}
-  - {id: H2-T1, result: PASS, artifact: docs-v2/spec/lifecycle-state-machine.yaml, summary: executable lifecycle and gate state machine}
+  - {id: H0-T1, result: PASS, artifact: docs-v2/meta/roadmap.yaml, summary: durable universal Harness roadmap}
+  - {id: H0-T2, result: PASS, artifact: docs-v2/meta/workstream-state.yaml, summary: resumable repository state}
+  - {id: H1-T1, result: PASS, artifact: docs-v2/spec/harness-conformance.yaml, summary: RED-stage Harness conformance contract}
+  - {id: H1-T2, result: PASS, artifact: docs-v2/spec/harness-conformance.yaml, summary: lifecycle transition and rejection coverage}
+  - {id: H1-T3, result: PASS, artifact: docs-v2/spec/harness-reliability-conformance.yaml, summary: deterministic replay, restart safety, idempotency and fail-closed reliability}
+  - {id: H2-T1, result: PASS, artifact: docs-v2/spec/lifecycle-state-machine.yaml, summary: executable lifecycle/gate state machine}
   - {id: H3-T1, result: PASS, artifact: docs-v2/spec/design-anchor.yaml, summary: universal Design Anchor contract}
-  - {id: H4-T1, result: PASS-HISTORICAL, artifact: docs-v2/spec/artifact-type-registry.yaml, summary: initial artifact registry before H6 completeness gap}
-  - {id: H4-T2, result: PASS, artifact: docs-v2/spec/artifact-type-registry.yaml, summary: bounded-context and domain-process-model canonical S2 owners; H5 compatibility PASS}
-  - {id: H5-T1, result: PASS, artifact: docs-v2/spec/dependency-registry-impact.yaml, summary: generated registry, typed dependencies, fingerprints and impact model}
-  - {id: H5-T2, result: PASS, artifact: docs-v2/spec/design-derivation-lineage.yaml, summary: universal logical derivation lineage and project-book projection contract}
-  - {id: H6-T1, result: PASS, artifact: docs-v2/spec/ddd-pipeline.yaml, summary: complete strategic/process-discovery/tactical DDD method and schema contract}
-  - {id: H7-T1, result: PASS, artifact: docs-v2/spec/human-knowledge-acquisition.yaml, summary: durable questions, stakeholder materialization, examples and epistemic-state protocol}
-  - {id: H8-T1, result: PASS, artifact: docs-v2/spec/validation-gate-engine.yaml, summary: deterministic-first validation/gate engine plus versioned validator/judge catalog}
-  - {id: H9-T1, result: PASS, artifact: docs-v2/spec/agent-execution-context-v2.yaml, summary: Task Capsule v2, bounded context/tool authority and reconstructible agent execution}
-  - {id: H10-T1, result: PASS, artifact: docs-v2/spec/harness-evals-tracing-regression.yaml, summary: source-owned regression corpus, eval suites, observable tracing and failure promotion}
-  - id: H11-T1
+  - {id: H4-T1, result: PASS-HISTORICAL, artifact: docs-v2/spec/artifact-type-registry.yaml, summary: initial artifact registry}
+  - {id: H4-T2, result: PASS, artifact: docs-v2/spec/artifact-type-registry.yaml, summary: complete S2 canonical owners; H5 compatibility PASS}
+  - {id: H5-T1, result: PASS, artifact: docs-v2/spec/dependency-registry-impact.yaml, summary: registry, refs, fingerprints and impact model}
+  - {id: H5-T2, result: PASS, artifact: docs-v2/spec/design-derivation-lineage.yaml, summary: logical derivation lineage and project-book projection}
+  - {id: H6-T1, result: PASS, artifact: docs-v2/spec/ddd-pipeline.yaml, summary: Strategic -> Process Discovery -> Tactical DDD pipeline}
+  - {id: H7-T1, result: PASS, artifact: docs-v2/spec/human-knowledge-acquisition.yaml, summary: durable human-question/materialization protocol}
+  - {id: H8-T1, result: PASS, artifact: docs-v2/spec/validation-gate-engine.yaml, summary: deterministic-first version-bound validation/gate engine}
+  - {id: H9-T1, result: PASS, artifact: docs-v2/spec/agent-execution-context-v2.yaml, summary: Task Capsule v2 and bounded context/tool authority}
+  - {id: H10-T1, result: PASS, artifact: docs-v2/spec/harness-evals-tracing-regression.yaml, summary: regression/evals/tracing and failure promotion}
+  - {id: H11-T1, result: PASS, artifact: docs-v2/spec/repository-ci-enforcement.yaml, summary: one-stack local/hosted repository enforcement design}
+  - id: H12-T1
     result: PASS
-    artifact: docs-v2/spec/repository-ci-enforcement.yaml
-    description: >-
-      Define one-stack repository/CI enforcement over H4-H10, local/hosted equivalence, changed-artifact
-      check resolution, exact-revision hosted evidence, generated registry/index verification, stale
-      evidence/version rejection, semantic-eval evidence rules, G4 implementation authorization and
-      H9-visible CI capability discovery while preserving existing repository surfaces.
+    artifact: docs-v2/spec/napms-migration-revalidation.yaml
+    summary: NAPMS candidate migration dispositions and ordered revalidation/G2 plan
     validation:
-      machine_readable_yaml: PASS
-      roadmap_deliverables_covered: PASS
-      check_class_count: 11
-      h8_deterministic_validator_count: 14
-      h8_validator_coverage: PASS
-      h10_required_suite_count: 7
-      h10_suite_enforcement_coverage: PASS
-      conformance_case_count: 30
-      conformance_case_id_uniqueness: PASS
-      diagnostic_code_count: 15
-      existing_harness_surface_reused: PASS
-      local_hosted_single_implementation_rule: PASS
-      changed_artifact_check_matrix: PASS
-      generated_registry_graph_index_verification: PASS
-      stale_validation_gate_g4_rejection: PASS
-      specification_version_invalidation: PASS
-      exact_candidate_revision_binding: PASS
-      post_merge_not_premerge_authority: PASS
-      semantic_eval_not_synthesized: PASS
-      ci_capability_index_for_h9: PASS
-      legacy_docs_v2_validator_gap_detected: PASS
-      ready_for_review_head_freshness_gap_detected: PASS
-      current_product_g4_ci_gap_detected: PASS
-      new_h4_artifact_types: false
-      new_h5_edge_relations: false
-      new_h1_h2_transition_classes: false
-      project_specific_core_semantics_introduced: false
-      executable_validators_created_or_changed: false
-      executable_eval_runner_created_or_changed: false
-      executable_tests_created_or_changed: false
-      workflow_ci_created_or_changed: false
-      product_implementation_created_or_changed: false
-      product_domain_cutover_performed: false
+      migration_candidate_classes_dispositioned: PASS
+      docs_remains_current_authority: PASS
+      product_code_tests_excluded_as_design_truth: PASS
+      old_horizontal_pilot_gate_evidence_stale: PASS
+      strategic_before_process_before_tactical: PASS
+      prior_tactical_candidate_cannot_skip_process_discovery: PASS
+      old_context_map_projection_only: PASS
+      old_traceability_replaced_by_h5_refs_projection: PASS
+      h7_question_routing_defined: PASS
+      addressspace_earliest_owner_risk_carried_to_t2: PASS
+      redesigned_g2_exact_basis_required: PASS
+      first_bounded_migration_task_defined: H12-T2
+      executable_validator_test_workflow_changes: false
+      product_implementation_changes: false
+      product_domain_cutover: false
       merge_performed: false
 
 routing_history:
@@ -101,37 +95,35 @@ routing_history:
   - id: H6-PREFLIGHT-RELIABILITY-AUDIT
     result: REOPEN(H1)
     observed_at: 2026-09-16
-    reason: Existing H1 lacked explicit reliability conformance for the universal Harness quality bar.
+    reason: Existing H1 lacked explicit universal Harness reliability conformance.
     resolution: H1-T3 closed the gap without requiring H2-H5 reopen.
   - id: H6-T1-PREFLIGHT-1
     result: REOPEN(H4)
     observed_at: 2026-09-16
-    reason: H4 lacked canonical owners for Bounded Context boundary truth and Process Discovery/Event Storming truth required by H6.
+    reason: H4 lacked canonical owners for Bounded Context and Process Discovery/Event Storming truth.
     resolution: H4-T2 added bounded-context and domain-process-model; H5 compatibility PASS; H6 completed.
 
 carry_forward:
-  - Harness is a universal project-agnostic design execution rail from idea/problem/evidence through requirements, DDD, architecture and implementation readiness before first product code; NAPMS is a pilot, never a hard-coded semantic special case.
-  - Harness is a critical engineering instrument: explicit versioned rule or explicit stable stop; silent heuristic fallback is forbidden.
-  - Project documentation is a graph of machine-readable Design Anchors and typed relations; human-readable documentation is a reproducible non-canonical book/view projection.
-  - Every accepted non-root anchor preserves logical derivation lineage with accepted predecessors/evidence/constraints/decisions, derivation kind and durable design rationale.
-  - H6 owns universal S2 DDD semantics; H7 owns human knowledge acquisition; H8 owns deterministic-first validation/gates; H9 owns Task Capsule v2 execution/context; H10 owns Harness regression/evals/tracing; H11 owns repository/CI enforcement design.
-  - Source specifications remain canonical owners of conformance-case expected behavior; generated regression indexes and other generated views are never a second truth source.
-  - Deterministic Harness behavior requires exact replay on declared contract outputs; semantic evaluation is bounded by structured outcomes and prohibited-behavior guards, never private chain-of-thought.
-  - Existing repository Harness integration surface is make harness-check locally and .github/workflows/harness.yml hosted; future H4-H10 enforcement should evolve those surfaces rather than create a parallel validation stack where practical.
-  - Current tools/validate_docs_v2.py still validates legacy artifacts.md and superseded agent-execution.md, so a green current harness-check is not proof of redesigned H4-H10 compliance.
-  - Current harness.yml includes docs-v2/** and invokes make harness-check, but its pull-request trigger is ready_for_review only; hosted evidence used for integration must be bound to the exact candidate revision and becomes stale after a relevant head change.
-  - A push-main result is post-merge/integration evidence and cannot substitute for required pre-merge candidate evidence.
-  - Current core/web checks do not enforce redesigned exact-scope G4 authorization; future product implementation enforcement must reuse a shared G4 guard alongside existing product checks.
-  - Path filters are an execution optimization only after logical changed-artifact classification; they cannot remove a required check.
-  - Generated anchor registries, dependency graphs and H10 regression indexes must be regenerated deterministically and drift must fail closed; manual generated edits do not change canonical truth.
-  - Validation/checkpoint/gate evidence is current only while exact content/dependency fingerprints, execution basis and accepted validator/spec/profile versions match; stale evidence is rejected, not warned through.
-  - Behavior-affecting contract/validator/judge changes require explicit version and compatibility impact plus complete H10 applicable regression evidence.
-  - Deterministic CI cannot fabricate semantic-eval PASS. When required semantic execution is unavailable, the result is BLOCKED until version-bound real eval evidence exists.
-  - A generated CI capability index should expose current local/hosted commands, triggers, scopes and evidence roles to H9 capsules; connector inability does not imply repository CI absence and the index grants no authority.
-  - AGENTS.md already directs agents to inspect applicable workflows/commands/triggers, prefer local checks, inspect hosted run/log evidence, and distinguish tool limitations from absent CI.
-  - H12 must distinguish specification/manual revalidation from executable CI enforcement until H11/H13 implementation is separately authorized and must not use current green legacy Harness CI as redesigned compliance evidence.
-  - docs/ remains canonical product/project design truth until explicit cutover; ACCEPTED docs-v2 anchors do not override docs/ before cutover.
-  - Product code/tests remain excluded as sources of product/domain/architecture truth during current documentation-design work.
+  - Harness is a universal project-agnostic design execution rail; NAPMS is a pilot/migration case, never a hard-coded semantic special case.
+  - Harness behavior is explicit/versioned/fail-closed; silent fallback, ambient authority and project-specific magic are forbidden.
+  - Project documentation is a graph of machine-readable Design Anchors and typed H5 relations; human-readable documentation is a generated non-canonical projection.
+  - Every accepted non-root anchor preserves logical derivation lineage to accepted predecessors/evidence/constraints/decisions.
+  - H6 owns S2 DDD semantics; H7 human knowledge acquisition; H8 validation/gates; H9 Task Capsule execution; H10 Harness evals/tracing/regression; H11 repository/CI enforcement design.
+  - Source-owned conformance cases remain the expected-behavior truth; generated regression indexes are projections only.
+  - Existing repository Harness surfaces are make harness-check and .github/workflows/harness.yml; future enforcement should evolve them rather than create a parallel stack where practical.
+  - Current tools/validate_docs_v2.py still validates legacy docs-v2 contracts, so current green harness-check is not redesigned H4-H10 compliance evidence.
+  - Hosted evidence used for integration must bind to the exact candidate revision; push-main evidence is post-merge only.
+  - Deterministic CI cannot fabricate semantic-eval PASS; required unavailable semantic evidence means BLOCKED.
+  - docs/ remains canonical NAPMS product/project design truth until explicit cutover; docs-v2 product candidates remain non-canonical.
+  - Product code/tests/runtime configuration remain excluded as sources for reconstructing missing product/domain/architecture truth during H12.
+  - H12 migration is semantic/provenance reconstruction, not file copying. Existing horizontal/pilot candidates are comparison input until rematerialized under current H3-H8 contracts.
+  - Existing horizontal/pilot V0-V3/G2/PASS evidence is stale for redesigned gates and cannot satisfy current H8 evidence requirements.
+  - Old context-map is projection-only after current bounded-context/context-relationship anchors exist; old traceability must be replaced by H5 semantic refs/lineage plus generated views.
+  - The prior Resource Catalogue tactical pilot cannot satisfy current S2 because H6 process discovery is applicable and was not durably performed before tactical modelling.
+  - H12 selected bounded migration sequence is T2 S0/S1 -> T3 Strategic -> T4 Process Discovery -> T5 Tactical -> T6 redesigned G2 -> T7 remaining-breadth planning.
+  - The single-effective-AddressSpace rule must be classified at the earliest semantic owner during H12-T2; S2 cannot silently rewrite S1. If it is a true S1 behavior choice not derivable from current docs, route through H7.
+  - Examples remain examples unless separately generalized/materialized with authority.
+  - New bounded-scope G2 does not authorize docs cutover, S3/S4 acceptance, product implementation, workflow changes, merge or broader NAPMS domain completeness.
 
 blockers: []
 
@@ -146,10 +138,10 @@ resume_protocol:
   - Read this file first.
   - Read only the current phase entry and direct dependencies from docs-v2/meta/roadmap.yaml.
   - Load existing specs only when required by the current task.
-  - Treat carry_forward required-input pointers as explicit context dependencies for the current phase.
-  - Complete one bounded META task, validate it, persist state, and stop.
+  - Treat carry_forward and current_task required-input pointers as explicit context dependencies.
+  - Complete one bounded META/migration task, validate it, persist state, and stop.
   - Do not infer progress from chat history when repository state is available.
 
 history_note: >-
-  Detailed validation fields from earlier completed tasks remain available in prior Git revisions;
-  this state keeps the current resumable summary plus all active invariants and restrictions.
+  Detailed earlier validation remains available in Git history; this state preserves the current
+  resumable execution pointer, active invariants, restrictions and migration findings.
