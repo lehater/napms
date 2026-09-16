@@ -1,0 +1,258 @@
+openapi: 3.1.0
+info:
+  title: NAPMS Resource Catalogue Curation API — M7 pilot candidate
+  version: 0.1.0-pilot
+  description: >-
+    Non-canonical documentation-system pilot contract derived from accepted docs/**.
+    MVP Resource realization has at most one effective AddressSpace per Resource at a
+    logical time. AddressSpace is exactly one HostAddress or Prefix. The superseded
+    technicalAddresses[]/endpoint realization shape is intentionally not carried forward.
+servers: []
+paths:
+  /api/v1/catalogues/resources:
+    get:
+      operationId: discoverResources
+      summary: Discover Resources for authenticated catalogue consumers
+      responses:
+        '200':
+          description: Resource discovery result.
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+    post:
+      operationId: createResource
+      summary: Create a stable Resource identity
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateResourceRequest'
+      responses:
+        '200':
+          description: Resource created or authoritative equivalent retry result.
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/CatalogueAuthorityDenied'
+        '409':
+          description: Authority ambiguity or idempotency conflict.
+        '422':
+          description: Invalid catalogue input.
+  /api/v1/catalogues/resource-workspace:
+    get:
+      operationId: getResourceWorkspace
+      summary: Read the Resource Catalogue workspace projection
+      parameters:
+        - {name: page, in: query, schema: {type: integer, minimum: 1}}
+        - {name: pageSize, in: query, schema: {type: integer, minimum: 1}}
+        - {name: search, in: query, schema: {type: string}}
+        - {name: responsibilityScope, in: query, schema: {type: string}}
+        - {name: asOf, in: query, schema: {type: string, format: date-time}}
+        - {name: includeRetired, in: query, schema: {type: boolean}}
+      responses:
+        '200': {description: Owner-specific workspace projection at one logical instant.}
+        '401': {$ref: '#/components/responses/AuthenticationRequired'}
+  /api/v1/catalogues/resources/{resourceReference}:
+    get:
+      operationId: getResource
+      summary: Read a Resource and its current/effective RC-owned facts
+      parameters:
+        - $ref: '#/components/parameters/ResourceReference'
+        - {name: asOf, in: query, schema: {type: string, format: date-time}}
+      responses:
+        '200': {description: Resource detail with current AddressSpace, affiliations and responsibilities.}
+        '401': {$ref: '#/components/responses/AuthenticationRequired'}
+        '404': {description: CatalogueSubjectNotFound.}
+  /api/v1/catalogues/resources/{resourceReference}/address-space:
+    post:
+      operationId: setResourceAddressSpace
+      summary: Establish an AddressSpace when no effective address fact exists
+      parameters:
+        - $ref: '#/components/parameters/ResourceReference'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/SetResourceAddressSpaceRequest'}
+      responses:
+        '200': {description: AddressSpace fact established.}
+        '401': {$ref: '#/components/responses/AuthenticationRequired'}
+        '403': {$ref: '#/components/responses/CatalogueAuthorityDenied'}
+        '409': {description: Authority ambiguity, overlap or idempotency conflict.}
+        '422': {description: Invalid address or temporal input.}
+  /api/v1/catalogues/resource-address-facts/{factReference}/replacement:
+    post:
+      operationId: replaceResourceAddressSpace
+      summary: Atomically end the selected current address fact and establish its successor
+      parameters:
+        - {name: factReference, in: path, required: true, schema: {type: string}}
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ReplaceResourceAddressSpaceRequest'}
+      responses:
+        '200': {description: AddressSpace replaced while retaining history/provenance.}
+        '401': {$ref: '#/components/responses/AuthenticationRequired'}
+        '403': {$ref: '#/components/responses/CatalogueAuthorityDenied'}
+        '409': {description: Authority ambiguity, overlap, optimistic concurrency or idempotency conflict.}
+        '422': {description: Invalid address or temporal input.}
+  /api/v1/catalogues/resources/{resourceReference}/scope-affiliations:
+    post:
+      operationId: createResourceScopeAffiliation
+      summary: Create a temporal Resource Scope Affiliation
+      parameters:
+        - $ref: '#/components/parameters/ResourceReference'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateScopeAffiliationRequest'}
+      responses:
+        '200': {description: Affiliation created.}
+        '401': {$ref: '#/components/responses/AuthenticationRequired'}
+        '403': {$ref: '#/components/responses/CatalogueAuthorityDenied'}
+        '409': {description: Authority ambiguity, overlap or idempotency conflict.}
+        '422': {description: Invalid temporal or correlation-reference input.}
+  /api/v1/catalogues/resource-scope-affiliations/{affiliationReference}/end:
+    post:
+      operationId: endResourceScopeAffiliation
+      summary: End a selected Resource Scope Affiliation without deleting history
+      parameters:
+        - {name: affiliationReference, in: path, required: true, schema: {type: string}}
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/EndTemporalFactRequest'}
+      responses:
+        '200': {description: Affiliation ended.}
+        '401': {$ref: '#/components/responses/AuthenticationRequired'}
+        '403': {$ref: '#/components/responses/CatalogueAuthorityDenied'}
+        '409': {description: Authority ambiguity, optimistic concurrency or idempotency conflict.}
+        '422': {description: Invalid temporal input.}
+  /api/v1/catalogues/resources/{resourceReference}/responsibilities:
+    post:
+      operationId: createResourceResponsibility
+      summary: Create a temporal Resource Responsibility assignment
+      parameters:
+        - $ref: '#/components/parameters/ResourceReference'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateResourceResponsibilityRequest'}
+      responses:
+        '200': {description: Responsibility assignment created.}
+        '401': {$ref: '#/components/responses/AuthenticationRequired'}
+        '403': {$ref: '#/components/responses/CatalogueAuthorityDenied'}
+        '409': {description: Authority ambiguity or idempotency conflict.}
+        '422': {description: Invalid temporal or correlation-reference input.}
+  /api/v1/catalogues/resource-responsibilities/{assignmentReference}/end:
+    post:
+      operationId: endResourceResponsibility
+      summary: End a selected Resource Responsibility without deleting history
+      parameters:
+        - {name: assignmentReference, in: path, required: true, schema: {type: string}}
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/EndTemporalFactRequest'}
+      responses:
+        '200': {description: Responsibility assignment ended.}
+        '401': {$ref: '#/components/responses/AuthenticationRequired'}
+        '403': {$ref: '#/components/responses/CatalogueAuthorityDenied'}
+        '409': {description: Authority ambiguity, optimistic concurrency or idempotency conflict.}
+        '422': {description: Invalid temporal input.}
+components:
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: {type: string, minLength: 1}
+    ResourceReference:
+      name: resourceReference
+      in: path
+      required: true
+      schema: {type: string}
+  responses:
+    AuthenticationRequired:
+      description: AuthenticationRequired.
+    CatalogueAuthorityDenied:
+      description: CatalogueAuthorityDenied; read visibility/responsibility/scope affiliation does not imply mutation authority.
+  schemas:
+    CreateResourceRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        displayName: {type: [string, 'null']}
+    AddressSpace:
+      oneOf:
+        - $ref: '#/components/schemas/HostAddress'
+        - $ref: '#/components/schemas/Prefix'
+    HostAddress:
+      type: object
+      additionalProperties: false
+      required: [kind, value]
+      properties:
+        kind: {const: HostAddress}
+        value: {type: string}
+    Prefix:
+      type: object
+      additionalProperties: false
+      required: [kind, value]
+      properties:
+        kind: {const: Prefix}
+        value: {type: string}
+    SetResourceAddressSpaceRequest:
+      type: object
+      additionalProperties: false
+      required: [addressSpace, validFrom]
+      properties:
+        addressSpace: {$ref: '#/components/schemas/AddressSpace'}
+        validFrom: {type: string, format: date-time}
+        validTo: {type: [string, 'null'], format: date-time}
+    ReplaceResourceAddressSpaceRequest:
+      allOf:
+        - $ref: '#/components/schemas/SetResourceAddressSpaceRequest'
+        - type: object
+          required: [expectedVersion]
+          properties:
+            expectedVersion: {type: integer, minimum: 0}
+    CreateScopeAffiliationRequest:
+      type: object
+      additionalProperties: false
+      required: [responsibilityScope, validFrom]
+      properties:
+        responsibilityScope: {type: string}
+        validFrom: {type: string, format: date-time}
+        validTo: {type: [string, 'null'], format: date-time}
+    CreateResourceResponsibilityRequest:
+      type: object
+      additionalProperties: false
+      required: [partyReference, partyKind, role, displayName, validFrom]
+      properties:
+        partyReference: {type: string}
+        partyKind: {enum: [Person, Team]}
+        role: {enum: [ServiceOwner, TechnicalOwner, OperationsContact, BusinessOwner]}
+        displayName: {type: string}
+        contactPoint: {type: [string, 'null']}
+        validFrom: {type: string, format: date-time}
+        validTo: {type: [string, 'null'], format: date-time}
+    EndTemporalFactRequest:
+      type: object
+      additionalProperties: false
+      required: [validTo, expectedVersion]
+      properties:
+        validTo: {type: string, format: date-time}
+        expectedVersion: {type: integer, minimum: 0}
