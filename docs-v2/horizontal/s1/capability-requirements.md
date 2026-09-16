@@ -2,7 +2,7 @@
 
 Status: CANDIDATE / non-canonical / S1 reconstruction from accepted `docs/**`.
 
-Requirements are grouped by observable product capability rather than by Bounded Context. Strategic ownership is assigned separately in S2.
+Requirements are grouped by observable product capability rather than by Bounded Context. Strategic ownership is assigned separately in S2. Cross-cutting quality requirements are canonicalized separately in `quality-requirements.md` and are not duplicated here.
 
 Disposition markers:
 - `CURRENT` — accepted current target/as-built behavior required to reconstruct the designed system;
@@ -68,9 +68,16 @@ Disposition markers:
 - **REQ-EAR-002 CURRENT** — recognition cannot manufacture catalogue identities, business need, desired policy or authorization.
 - **REQ-TAE-101 EXTENSION** — additional collectors/import sources and richer source contracts may be added while preserving normalized evidence ownership.
 
+## Vendor-neutral policy export
+
+- **REQ-EXPORT-001 CURRENT** — users can obtain a complete vendor-neutral projection of the selected current effective Policy Rules by combining exact accepted communication revisions, concrete source/destination Component Deployments and current Resource Address Spaces.
+- **REQ-EXPORT-002 CURRENT** — the full vendor-neutral export does not require enforcement-placement or provider-specific semantics and does not claim configured reality, execution or convergence.
+- **REQ-EXPORT-003 CURRENT** — unresolved selected effective policy prevents successful partial publication; a successful export is coherent and complete for its selected policy set.
+- **REQ-EXPORT-004 CURRENT** — alternate representations such as table/JSON and CSV are derived from the same immutable export result rather than independent live reads.
+
 ## Required policy materialization
 
-- **REQ-RPM-001 CURRENT** — current effective access can be materialized by combining exact accepted policy, immutable communication semantics, concrete source/destination deployments, Resource realization and applicable enforcement-placement relevance.
+- **REQ-RPM-001 CURRENT** — current effective access can be materialized for enforcement/realization by combining exact accepted policy, immutable communication semantics, concrete source/destination deployments, Resource realization and applicable enforcement-placement relevance.
 - **REQ-RPM-002 CURRENT** — each effective rule already identifies one concrete deployment pair; materialization does not perform replica/placement Cartesian expansion.
 - **REQ-RPM-003 CURRENT** — missing/incomplete deployment, address, target or locator information produces an explicit unresolved result, never empty required policy.
 - **REQ-RPM-004 CURRENT** — Prefix remains first-class upstream truth even when a downstream enforcement edge supports HostAddress only.
@@ -105,18 +112,11 @@ Disposition markers:
 ## Cross-context views and analysis
 
 - **REQ-VIEW-001 CURRENT** — users can consume resource-centric scoped connectivity inventory/read compositions without the view becoming an authoritative owner of underlying facts.
+- **REQ-CHECK-001 CURRENT** — users can analyze a technical source/destination address, protocol, port/range and logical `asOf` without collapsing zero/one/many candidate semantic matches into a fabricated single answer.
+- **REQ-CHECK-002 CURRENT** — Checker keeps required policy, current effective/allowed policy, configured technical evidence and network/enforcement relevance as distinct conclusions with explicit Unknown/Ambiguous states.
 - **REQ-VIEW-002 CURRENT** — connectivity impact analysis may compose authoritative facts across contexts while preserving source ownership and uncertainty.
 
 ## Enterprise authoritative-source integration
 
 - **REQ-ID-001 CURRENT** — where enterprise identities/authoritative facts are integrated, their source authority and correlation boundary remain explicit rather than silently becoming locally authored truth.
 - **REQ-ID-101 EXTENSION** — additional authoritative enterprise source integrations may be introduced under explicit source contracts.
-
-## Cross-cutting quality requirements
-
-- **QREQ-001 CURRENT** — fail closed on missing/ambiguous authority, identity correlation or required semantic inputs where proceeding would fabricate access truth.
-- **QREQ-002 CURRENT** — preserve provenance, temporal meaning and historical identities required for explanation/reconstruction.
-- **QREQ-003 CURRENT** — preserve semantic ownership across compositions; a view/orchestrator/integration does not become authoritative merely by consuming data.
-- **QREQ-004 CURRENT** — provider-specific semantics remain isolated at integration boundaries and do not leak into core source-neutral policy meaning.
-- **QREQ-005 CURRENT** — current effective truth remains distinguishable from proposed, historical, observed and executed truth.
-- **QREQ-006 CURRENT** — designed current as-built and target behavior remains reconstructible from documentation without requiring implementation inspection.
