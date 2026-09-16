@@ -7,27 +7,29 @@ last_updated: 2026-09-16
 
 program:
   status: ACTIVE
-  current_phase: H1
+  current_phase: H2
   current_phase_state: NOT_STARTED
   completed_phases:
     - H0
+    - H1
   blocked_phases: []
 
 current_task:
-  id: H1-T1
-  title: Define Harness conformance and eval contract
+  id: H2-T1
+  title: Define executable lifecycle model
   state: NOT_STARTED
   objective: >
-    Detail the test-first contract that will define expected Harness behavior before any
-    future runtime implementation: conformance scenario taxonomy, positive/negative
-    fixtures, deterministic-versus-semantic validation boundaries, transition/failure
-    routing cases, and evals for context minimization, structured outputs, guardrails,
-    bounded tools and human escalation.
+    Replace prose-only lifecycle assumptions with a machine-readable state-machine
+    specification that defines lifecycle states/transitions, S0/S1/S2/S3/S4 ownership,
+    S2 strategic/process-discovery/tactical checkpoints, G0-G4 contracts and explicit
+    REWORK, REOPEN, BLOCKED and NEED_MORE_DATA routing.
   expected_outputs:
-    - machine-readable conformance/eval specification
-    - stable conformance scenario IDs
-    - success and failure cases for the planned Harness capabilities
-  next_after_completion: H2 executable lifecycle model
+    - machine-readable lifecycle state-machine specification
+    - lifecycle states and legal/rejected transitions
+    - S0/S1/S2/S3/S4 stage ownership and S2 internal checkpoints
+    - G0-G4 contracts and failure-routing semantics
+    - mapping from H1 lifecycle conformance cases to deterministic transition rules
+  next_after_completion: H3 Design Anchor contract
 
 completed_work:
   - id: H0-T1
@@ -41,6 +43,22 @@ completed_work:
     description: Persist separate mutable workstream state for cross-chat continuation.
     artifacts:
       - docs-v2/meta/workstream-state.yaml
+  - id: H1-T1
+    result: PASS
+    description: >
+      Define the test-first Harness conformance/eval contract with stable scenario IDs,
+      positive/negative fixtures, deterministic-versus-semantic boundaries, transition
+      and failure routing expectations, and OpenAI-alignment eval suites.
+    validation:
+      machine_readable_yaml: PASS
+      capability_count: 15
+      scenario_count: 37
+      capability_success_failure_coverage: PASS
+      scenario_reference_integrity: PASS
+      required_openai_alignment_eval_coverage: PASS
+      executable_tests_created_or_changed: false
+    artifacts:
+      - docs-v2/spec/harness-conformance.yaml
 
 carry_forward:
   - Existing M1-M6 specifications are redesign inputs and may be revised by H2-H11.
@@ -50,6 +68,10 @@ carry_forward:
   - docs/ remains canonical product/project design truth until explicit cutover.
   - Design Anchors are intended to become canonical machine-readable, human-controllable reference points with stable identity, provenance, dependency and validation semantics.
   - Domain Process Discovery/Event Storming must escalate unsupported business choices to structured stakeholder questions; user answers/examples should become durable decisions, use cases or journeys with provenance.
+  - H1 conformance scenarios in docs-v2/spec/harness-conformance.yaml are RED-stage behavioral requirements for H2-H13 and must not be weakened to fit an implementation.
+  - NEED_MORE_DATA is required when business truth is missing and not derivable from accepted facts; speculative retries or invented business rules are non-conformant.
+  - G2 must reject a scope where applicable S2 process-discovery or tactical work remains incomplete even if strategic decomposition is complete.
+  - Deterministic structural/reference/authority failures must be resolved before semantic eval can produce PASS.
 
 blockers: []
 
