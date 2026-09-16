@@ -1,143 +1,107 @@
 # Scoped Connectivity Inventory requirements
 
-Status: `G1 revalidated product contract; AD target semantics aligned 2026-09-15; composition details pending later design`.
-
-Date: 2026-09-15.
+Status: `G1 target contract aligned to concrete ComponentDeployment and formal RuleChange decisions 2026-09-16`.
 
 ## Purpose
 
 Define the resource-centric workspace that lets an authenticated actor understand connectivity for one selected Responsibility Scope without exposing NAPMS bounded-context boundaries.
 
-The workspace is a cross-capability read/action composition. It is not a new source of business truth.
+The workspace is a cross-capability read/action composition, not a new source of business truth.
 
-Primary user question:
+Primary question:
 
-> What Resources are in my selected area of responsibility, which Application Components are currently placed on them, what application interactions exist, what business need/authorization exists, and how is that authorization realized?
+> What Resources are in my selected area of responsibility, which concrete Component Deployments use them, what application interactions/needs/policy relationships exist, and how is current policy realized?
 
-`Needed`, `Authorized` and `Realized` remain independent dimensions.
+`Needed`, `Proposed`, `Effective` and `Realized` remain independent dimensions.
 
 ## Responsibility scope and local Resources
 
-The selected Responsibility Scope is the workspace context.
+The selected Responsibility Scope is workspace/read context.
 
-Two independent truths use the same stable scope reference:
+Two independent truths may use the same stable scope reference:
 
 ```text
-Resource Catalogue:
-Resource --Resource Scope Affiliation--> Responsibility Scope
-
-Authority Management:
-Actor --effective action authority--> Responsibility Scope
+RC: Resource --Resource Scope Affiliation--> Responsibility Scope
+AM: Actor --effective ReadScopedConnectivity authority--> Responsibility Scope
 ```
 
 Requirements:
 
 - scope discovery exposes only scopes for which the actor has effective `ReadScopedConnectivity` authority;
-- reading a selected scope re-evaluates that authority for the requested logical time;
-- ambiguous/denied/unknown authority exposes no local inventory data;
-- local Resources are those effectively affiliated with the selected scope at that logical time;
+- reading a selected scope re-evaluates that read authority;
+- ambiguous/denied/unknown read authority exposes no local inventory data;
+- local Resources are those effectively affiliated with the selected scope;
 - Resource membership does not imply actor authority and actor authority does not manufacture Resource membership;
-- Resource identity is not defined by one owner/scope field;
 - caller-supplied actor identity is never trusted.
 
-## Catalogue visibility and Application Deployment relation
+This inventory scope does **not** imply source/destination PolicyRule approval sides. The baseline AP RuleChange decision is independent from SCI's resource-selection scope.
+
+## Resource -> concrete Component Deployment projection
 
 Current target semantics:
 
-- Resources are catalogue-visible to authenticated users for discovery/context;
-- mutation authority is independent from visibility;
-- Application Deployment owns one stable `ApplicationDeploymentRef` for one logical deployment of an Application;
-- its current placement set contains unique `(ComponentRef, ResourceRef)` relations;
-- one Component may have zero, one or many current Resource placements inside the same logical ApplicationDeployment;
-- ordinary scaling, Resource migration and placement replacement do not by themselves change ApplicationDeployment identity;
-- RC Resource AddressSpace changes do not change ApplicationDeployment or placement meaning;
-- a complete empty placement set is different from unavailable/unresolved placement truth.
-
-The resource-centric inventory may therefore project:
-
 ```text
 Resource
-    -> ApplicationDeployment / ComponentPlacement rows [0..N]
+    -> ComponentDeployment [0..N]
         -> Component
-        -> known Interaction [0..N]
 ```
 
-The same ApplicationDeployment/Component may legitimately appear under several Resources when the Component is placed on several Resources. This is not duplicate domain identity.
+Each target ComponentDeployment has one stable identity and references exactly one Component and one Resource.
 
-A local Resource remains visible even when it has no current AddressSpace or no Component placement.
+Consequences:
+
+- the same Component deployed on R1 and R2 appears as two distinct ComponentDeployments;
+- moving/redeploying a Component to another Resource creates another ComponentDeployment rather than mutating a whole-Application placement set;
+- changing only Resource AddressSpace leaves the ComponentDeployment identity unchanged;
+- a Resource remains visible when it has no current AddressSpace or no ComponentDeployment.
 
 ## Local-relative interaction projection
 
-The governed interaction subject is:
+ACC Interactions are application-semantic Component-to-Component templates. For each local ComponentDeployment, inventory may project ACC-known directed Interactions involving its Component and correlate concrete remote ComponentDeployment candidates.
+
+Presentation direction is relative to the selected local deployment:
 
 ```text
-InteractionContractRevisionRef
-+ sourceApplicationDeploymentRef
-+ destinationApplicationDeploymentRef
+local Component is Interaction source      -> outgoing
+local Component is Interaction destination -> incoming
 ```
 
-For each local placement, expand ACC-known directed Interactions involving that Component and correlate the relevant source/destination ApplicationDeployments.
+One Interaction may correspond to several separate concrete PolicyRule relationships because replicas are separate ComponentDeployments. The inventory must not collapse them into one logical deployment or automatically copy policy between replicas.
 
-Presentation direction is relative to the selected local side:
+Missing/ambiguous remote deployment or Resource realization is shown explicitly rather than treated as absence.
 
-```text
-local Component is source       -> outgoing
-local Component is destination  -> incoming
-```
+## Business Need summary
 
-If both participants have placements on local Resources, the same governed interaction may appear through several local Resource/placement paths without creating duplicate Interaction, Request or Policy Rule identity.
-
-Remote Resource context is derived from all applicable placements of the remote endpoint Component in the selected remote ApplicationDeployment. Consumers must preserve all applicable placements rather than choose one arbitrary Resource.
-
-If remote placement or RC AddressSpace realization is unresolved, show that explicitly rather than treating the semantic interaction as absent.
-
-## Coarse business and authorization summaries
-
-`ReadScopedConnectivity` admits a coarse owner overview only. Protected detail remains independently authorized.
-
-### Business need summary
-
-For the exact Interaction/current context, the workspace may summarize whether known current Business Process / Connectivity Need justification exists.
+The workspace may summarize known current Business Connectivity justification:
 
 ```text
 Need = Known | None | Unknown
 ```
 
-The summary must not expose protected Need/Process provenance/details unless separately admitted.
+Protected Need/Process details require independent read authority where applicable.
 
-`None` does not mean forbidden. `Unknown` must not be converted to absence.
+`None` does not mean forbidden. `Unknown` is not converted to absence.
 
-### Access governance summary
+## Policy/change summary
 
-For the exact governed subject, the workspace may summarize current request/governance state without exposing protected decision provenance.
-
-At minimum:
+For one concrete directed ComponentDeployment pair, inventory may summarize AP truth without exposing protected audit details:
 
 ```text
-NoRequest
-PendingApprovals
-Approved
-Rejected
-Revoked
-Unknown
+Rule = Exists | None | Unknown
+CurrentEffect = Effective | NotEffective | Unknown
+PendingChange = Yes | No | Unknown
+LatestDecision = Accepted | Rejected | None | Unknown
 ```
 
-The summary is derived from Access Governance truth and is not a new persisted inventory lifecycle.
+These values derive from Access Policy and are not a new inventory lifecycle.
 
-### Policy summary
+A Pending RuleChange does not mean access is effective. A Rejected change is not a deny rule. An Accepted change may establish/update current effectiveness.
 
-The workspace may summarize whether an authoritative current Policy Rule exists and whether it contributes to effective authorized policy at the selected time.
+The MVP does not display required source/destination approval obligations because they are not baseline domain semantics.
 
-```text
-rule = Exists | None | Unknown
-effectiveAuthorization = Yes | No | Unknown
-```
+## Realization summary
 
-Rule identity/provenance/audit details require independent Access Policy read authority.
-
-### Realization summary
-
-Where trustworthy realization data is available:
+Where trustworthy realization data exists:
 
 ```text
 Satisfied
@@ -147,46 +111,64 @@ Unresolved
 Unknown
 ```
 
-These are realization summaries, not authorization states.
+These are realization summaries, not policy decisions.
 
-## Request access action
+## Request/propose access action
 
-A user may initiate access for an in-scope source context when Authority Management admits the request action.
+A user may initiate a RuleChange for a concrete connection when the corresponding application action is admitted.
 
 The action reuses trusted semantic context:
 
-- selected source Resource and the source ApplicationDeployment/Component placement shown under it;
-- selected destination ApplicationDeployment/Component context;
-- existing immutable ACC `InteractionContractRevisionRef`;
-- Process-backed Connectivity Need required for deliberate access.
+- selected source ComponentDeployment;
+- selected destination ComponentDeployment;
+- exact immutable ACC `InteractionContractRevisionRef` whose endpoints match those deployments;
+- Process-backed Connectivity Need required for deliberate submission.
 
-The Access Request subject remains the logical source/destination ApplicationDeployment pair plus exact InteractionContractRevisionRef. Individual placement ResourceRefs are current applicability/obligation inputs, not request-subject identity.
+Conceptually:
 
-The flow submits into bilateral Access Governance; it does not materialize a Policy Rule directly.
+```text
+sourceComponentDeploymentRef
++ destinationComponentDeploymentRef
++ revisionRef
++ ConnectivityNeedRef
+    -> create/reuse PolicyRule
+    -> create Pending RuleChange
+```
 
-Request initiation, source-side approval, destination-side approval, withdrawal and network execution are independently authorizable actions.
+The action does not directly make the Rule effective.
 
-If no valid Process-backed Need exists, the product must establish that business justification through Business Connectivity rather than fabricate one inside the inventory.
+A later formal decision is one of:
+
+```text
+Accepted
+Rejected
+```
+
+Customer-specific approval procedure may happen outside NAPMS and then record this formal decision through an authorized action/integration. SCI does not define bilateral approvals, quorum or Responsibility Scope-derived approvers.
+
+Request/proposal, decide, withdraw and network execution may be independently protected actions.
+
+If no valid Process-backed Need exists, the product must establish business justification through Business Connectivity rather than fabricate one inside inventory.
 
 ## Zero-interaction Components
 
-A placed Component with no ACC-known Interaction has no trusted remote participant/traffic contract that the inventory can authorize.
+A ComponentDeployment whose Component has no ACC-known Interaction has no trusted remote participant/traffic contract that inventory can propose.
 
 Current behavior:
 
-- show the local Resource/deployment/component placement;
+- show local Resource/ComponentDeployment/Component;
 - state that no catalogued interaction is known;
 - do not construct arbitrary access from client-entered UUIDs/IP/ports.
 
-Authoring a new application Interaction belongs to ACC.
+Authoring a new Interaction belongs to ACC.
 
 ## Query semantics and bounded results
 
 Conceptual query input:
 
 - authenticated actor from server/session;
-- selected Responsibility Scope;
-- explicit logical `asOf` where time-qualified truth is requested;
+- selected Responsibility Scope for inventory read;
+- explicit logical `asOf` where time-qualified RC/AM truth is requested;
 - bounded Resource paging;
 - search/filter/sort as supported.
 
@@ -199,17 +181,18 @@ Top-level paging is over local Resources so Resource groups are not split across
 - a new Connectivity Overview Bounded Context;
 - copied cross-context truth as authoritative inventory state;
 - authorization inferred from Resource owner/administrator metadata;
-- a single global `Allowed | NotAllowed` Decision model;
-- exactly-one Resource placement per Component;
+- bilateral PolicyRule approval workflow;
+- whole-Application deployment/placement-set semantics;
+- automatic policy inheritance across Component replicas;
 - arbitrary remote/interaction construction from client-entered technical identifiers;
 - vendor/device rendering or execution.
 
 ## Canonical target references
 
 - Business Connectivity: `docs/requirements/business-connectivity-g1.md`;
-- Access Governance: `docs/requirements/access-governance-g1.md`;
+- policy decision behavior: `docs/requirements/access-governance-g1.md`;
 - Application/Interaction and AD/RC split: `docs/requirements/application-catalogue-domain-target.md`;
 - AD Tactical semantics: `docs/domain/application-deployment/tactical-model.md`;
 - Resource Catalogue: `docs/domain/resource-catalogue/tactical-model.md`;
 - Authority Management: `docs/domain/authority-management/tactical-model.md`;
-- Access Policy / realization owners: current canonical domain and requirement artifacts.
+- Access Policy: `docs/domain/access-policy/tactical-model.md` and `docs/requirements/access-policy-core.md`.
