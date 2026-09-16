@@ -1,0 +1,149 @@
+version: 1
+kind: validation-engine-catalog
+id: DOCS-V2-VALIDATION-ENGINE-CATALOG
+status: active
+owner_phase: H8
+owner_task: H8-T1
+last_updated: 2026-09-16
+
+purpose: >-
+  Provide the concrete stable validator identities, layer bindings and semantic-judge version
+  resolution required to instantiate DOCS-V2-VALIDATION-GATE-ENGINE without implicit defaults.
+
+authority:
+  extends:
+    id: DOCS-V2-VALIDATION-GATE-ENGINE
+    path: docs-v2/spec/validation-gate-engine.yaml
+  defines:
+    - concrete deterministic validator IDs and versions
+    - validation-layer to validator bindings
+    - common profile inheritance
+    - semantic judge definition normalization/version resolution
+    - semantic judge outcome-conflict diagnostic
+  does_not_define:
+    - new validation semantics beyond the parent specification
+    - new artifact types, lifecycle routes or dependency relations
+    - executable validators/runtime
+
+semantic_judge_definition_normalization:
+  identity_field:
+    source_field: id
+    instantiated_contract_field: judge_id
+    rule: judge_id equals the stable id declared in semantic_judges.
+  version:
+    default_for_parent_h8_v1_catalog: h8-v1
+    rule: >-
+      Every semantic judge entry declared by DOCS-V2-VALIDATION-GATE-ENGINE is instantiated with
+      judge_version h8-v1 unless a later explicit catalog revision declares a different version.
+      The resolved version is always written explicitly into the execution basis and result evidence.
+  prohibited_behaviors:
+    source: DOCS-V2-VALIDATION-GATE-ENGINE.semantic_judge_contract.prohibited_behaviors
+    inheritance: mandatory
+  no_ambient_defaults: true
+
+deterministic_validators:
+  - {id: DV-HARNESS-SELF, validator_version: h8-v1, validator_kind: self-consistency, purpose: Validate Harness durable state/spec/profile/version integrity.}
+  - {id: DV-EXECUTION-BASIS, validator_version: h8-v1, validator_kind: self-consistency, purpose: Validate H8 execution-basis completeness, fingerprintability and operation identity.}
+  - {id: DV-FORMAT-SCHEMA, validator_version: h8-v1, validator_kind: schema, purpose: Validate canonical format syntax and applicable type-specific schema.}
+  - {id: DV-TYPE-OWNER, validator_version: h8-v1, validator_kind: type-owner, purpose: Validate H4 type/classification/fixed semantic owner.}
+  - {id: DV-APPLICABILITY, validator_version: h8-v1, validator_kind: applicability, purpose: Evaluate H4 applicability facts without inference.}
+  - {id: DV-LIFECYCLE, validator_version: h8-v1, validator_kind: lifecycle, purpose: Validate H2 stage/checkpoint/gate legality and eligibility.}
+  - {id: DV-FINGERPRINT, validator_version: h8-v1, validator_kind: fingerprint, purpose: Recompute H5 semantic fingerprints and compare current source/index values.}
+  - {id: DV-REGISTRY, validator_version: h8-v1, validator_kind: registry, purpose: Validate generated registry identity uniqueness and current index integrity.}
+  - {id: DV-REFERENCE, validator_version: h8-v1, validator_kind: reference, purpose: Resolve current/pinned/evidence refs and H6 item selectors.}
+  - {id: DV-DEPENDENCY-GRAPH, validator_version: h8-v1, validator_kind: dependency-graph, purpose: Build and validate H5 typed dependency graph.}
+  - {id: DV-LINEAGE, validator_version: h8-v1, validator_kind: lineage, purpose: Validate H5 derivation completeness, roots and acyclicity.}
+  - {id: DV-AUTHORITY, validator_version: h8-v1, validator_kind: authority, purpose: Validate H3/H7 human authority, materialization and epistemic-class rules.}
+  - {id: DV-FRESHNESS, validator_version: h8-v1, validator_kind: freshness, purpose: Validate H5 dependency snapshots, validation basis and active versions.}
+  - {id: DV-AUTHORIZATION, validator_version: h8-v1, validator_kind: authorization, purpose: Validate exact-scope G4 authorization basis and lease freshness.}
+
+layer_validator_binding:
+  harness-self-preflight: [DV-HARNESS-SELF]
+  execution-basis: [DV-EXECUTION-BASIS]
+  format-schema-type: [DV-FORMAT-SCHEMA, DV-TYPE-OWNER]
+  applicability-lifecycle: [DV-APPLICABILITY, DV-LIFECYCLE]
+  fingerprint-registry-reference: [DV-FINGERPRINT, DV-REGISTRY, DV-REFERENCE, DV-DEPENDENCY-GRAPH]
+  lineage-authority: [DV-LINEAGE, DV-AUTHORITY]
+  freshness-impact: [DV-FRESHNESS]
+  target-deterministic-gate-preconditions: [DV-LIFECYCLE, DV-FRESHNESS]
+  G4-additional: [DV-AUTHORIZATION]
+
+profile_inheritance:
+  base-deterministic:
+    required_layers:
+      - harness-self-preflight
+      - execution-basis
+      - format-schema-type
+      - applicability-lifecycle
+      - fingerprint-registry-reference
+      - lineage-authority
+      - freshness-impact
+      - target-deterministic-gate-preconditions
+    validator_binding_source: layer_validator_binding
+  anchor-acceptance:
+    extends: base-deterministic
+  checkpoint-and-gates-G0-G3:
+    extends: base-deterministic
+  G4:
+    extends: base-deterministic
+    additional_validator_binding: G4-additional
+
+semantic_judge_catalog:
+  - {id: SJ-G0-PROBLEM-SUFFICIENCY, judge_version: h8-v1}
+  - {id: SJ-G1-REQUIREMENTS-SUFFICIENCY, judge_version: h8-v1}
+  - {id: SJ-S2-STRATEGIC-SUFFICIENCY, judge_version: h8-v1}
+  - {id: SJ-S2-PROCESS-SUFFICIENCY, judge_version: h8-v1}
+  - {id: SJ-S2-TACTICAL-SUFFICIENCY, judge_version: h8-v1}
+  - {id: SJ-G2-DOMAIN-SUFFICIENCY, judge_version: h8-v1}
+  - {id: SJ-G3-ARCHITECTURE-SUFFICIENCY, judge_version: h8-v1}
+  - {id: SJ-G4-READINESS-SUFFICIENCY, judge_version: h8-v1}
+
+diagnostic_extension:
+  semantic-judge-outcome-conflict:
+    meaning: Required semantic judge outcomes cannot be aggregated into one legal deterministic H2 route.
+    result: FAIL
+    project_semantic_mutation_allowed: false
+
+aggregation_clarification:
+  incompatible_required_judge_outcomes:
+    result: FAIL
+    diagnostic_code: semantic-judge-outcome-conflict
+    rule: The engine cannot choose the most convenient judge result or silently discard a required result.
+
+catalog_integrity:
+  checks:
+    - every validator ID is unique
+    - every validator has an explicit version and kind
+    - every layer binding resolves only declared validator IDs
+    - every parent semantic judge ID has exactly one resolved h8-v1 catalog entry
+    - every semantic judge receives the common prohibited-behavior contract
+    - validator/judge versions are explicit in execution basis and evidence
+    - no project identity appears in generic validator/judge routing
+
+conformance_cases:
+  - id: VEC-CF-ALL-VALIDATORS-VERSIONED
+    oracle: deterministic
+    given: {validator_catalog: all}
+    expect: {missing_id_count: 0, missing_version_count: 0, duplicate_id_count: 0}
+  - id: VEC-CF-LAYER-BINDINGS-RESOLVE
+    oracle: deterministic
+    given: {layer_bindings: all}
+    expect: {unknown_validator_id_count: 0}
+  - id: VEC-CF-ALL-JUDGES-VERSIONED
+    oracle: deterministic
+    given: {parent_semantic_judges: all, catalog: semantic_judge_catalog}
+    expect: {unresolved_judge_count: 0, version: h8-v1}
+  - id: VEC-CF-JUDGE-PROHIBITIONS-INHERITED
+    oracle: deterministic
+    given: {semantic_judge_instantiated: true}
+    expect: {common_prohibited_behaviors_applied: true}
+  - id: VEC-CF-JUDGE-CONFLICT-FAILS
+    oracle: deterministic
+    given: {required_judge_outcomes_compatible: false}
+    expect: {result: FAIL, diagnostic_code: semantic-judge-outcome-conflict}
+
+restrictions:
+  executable_validators_created_or_changed: false
+  executable_tests_created_or_changed: false
+  runtime_implementation_created_or_changed: false
+  workflow_ci_created_or_changed: false
