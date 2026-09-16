@@ -46,7 +46,8 @@ cutover_guard:
   rule: >
     Defining or validating this contract MUST NOT make a docs-v2 product/domain anchor
     authoritative over current docs/. Product/domain authority changes only through a
-    separately authorized explicit cutover.
+    separately authorized explicit cutover. Before cutover, an anchor status of ACCEPTED
+    denotes conformance to this anchor contract only; it does not override docs/ product/domain truth.
 
 terminology:
   design_anchor: >
@@ -200,9 +201,10 @@ provenance_model:
       - mixed
   source_refs:
     rule: >
-      References point to durable evidence/decisions/accepted anchors sufficient to audit
-      why the asserted semantics are allowed. Empty source_refs are valid only for an
-      explicitly recorded human-origin assertion whose durable decision record is itself referenced.
+      References point to durable evidence, decisions or accepted anchors sufficient to
+      audit why the asserted semantics are allowed. A human-origin assertion that is intended
+      for acceptance MUST include its durable human decision reference; source_refs must not
+      be empty when authority-bearing semantics depend on that decision.
   derivation:
     required_when: origin_kind in [accepted-anchor-derivation, mixed]
     fields:
@@ -245,6 +247,10 @@ human_control:
       - RETIRE
       - SUPERSEDE
     deterministic_effects:
+      ACCEPT_PROPOSAL:
+        - record durable human authority basis for the current fingerprint
+        - do not bypass deterministic integrity validation
+        - transition to ACCEPTED only through DA-TR-CANDIDATE-ACCEPT guards
       REPLACE_SEMANTICS:
         - recompute semantic_fingerprint
         - invalidate validation evidence bound to previous_fingerprint
@@ -430,6 +436,20 @@ conformance_cases:
       required_route: NEED_MORE_DATA
       lifecycle_state_effect: BLOCKED
 
+  - id: DA-CF-HUMAN-ACCEPT-PROPOSAL-STILL-VALIDATES
+    polarity: positive
+    oracle: deterministic
+    given:
+      previous_status: CANDIDATE
+      override_decision: ACCEPT_PROPOSAL
+      current_fingerprint_recorded: true
+      deterministic_integrity_validation: PASS
+      authority_basis_persisted: true
+    expect:
+      acceptance_guard_bypassed: false
+      transition_may_use: DA-TR-CANDIDATE-ACCEPT
+      accepted_only_if_all_acceptance_guards_pass: true
+
   - id: DA-CF-HUMAN-REPLACE-SEMANTICS-REVALIDATES
     polarity: positive
     oracle: deterministic
@@ -479,6 +499,7 @@ h3_exit_evaluation:
     - DA-CF-ACCEPTED-REFERENCE
     - DA-CF-MANUAL-SEMANTIC-EDIT-STALES-EVIDENCE
     - DA-CF-AGENT-UNSUPPORTED-ASSERTION-NOT-ACCEPTED
+    - DA-CF-HUMAN-ACCEPT-PROPOSAL-STILL-VALIDATES
     - DA-CF-HUMAN-REPLACE-SEMANTICS-REVALIDATES
     - DA-CF-SUPERSEDE-PRESERVES-HISTORY
     - DA-CF-CUTOVER-NOT-IMPLICIT
@@ -487,7 +508,7 @@ h3_exit_evaluation:
     - identity is stable across path/title changes
     - semantic manual edits deterministically stale prior evidence and dirty accepted anchors
     - unsupported agent-generated human-owned assertions cannot become ACCEPTED
-    - human overrides are durable and cannot bypass deterministic integrity validation
+    - human acceptance/override decisions are durable and cannot bypass deterministic integrity validation
     - superseded anchors remain historically addressable and replacements are independently accepted
     - concrete formats and physical paths remain deferred to H4/repository-layout ownership
     - dependency graph propagation remains deferred to H5
