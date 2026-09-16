@@ -41,9 +41,10 @@ authority:
     - id: DOCS-V2-HARNESS-CONFORMANCE
       path: docs-v2/spec/harness-conformance.yaml
 
-external_standards:
+external_profiles:
   - id: RFC-8785-JCS
     role: canonical JSON serialization
+    publication_status: RFC-8785 is Informational; H5 adopts it as a deterministic project profile
     url: https://www.rfc-editor.org/rfc/rfc8785
     note: >
       Used as the deterministic serialization profile after an anchor semantic projection
@@ -89,6 +90,15 @@ anchor_registry:
     full_rebuild_preferred: true
     no_manual_semantic_fields: true
     ordering: [owner_stage_rank, type_id, anchor_id]
+  indexes:
+    current:
+      key: anchor_id
+      cardinality: at-most-one-current-entry-per-anchor-id
+      use: current truth resolution and impact calculation
+    historical:
+      key: [anchor_id, semantic_fingerprint]
+      cardinality: unique
+      use: audit/provenance and pinned historical resolution
   entry_required_fields:
     - anchor_id
     - type_id
@@ -106,7 +116,7 @@ anchor_registry:
     - canonical_locator is derived routing metadata and is not anchor identity
     - canonical_locator change alone must not change anchor_id
     - status and fingerprint are copied/derived from canonical anchor state, never authored in registry
-    - superseded/retired revisions remain historically addressable
+    - superseded/retired revisions remain historically addressable through the historical index
   build_rejections:
     duplicate_current_anchor_id: FAIL
     unknown_or_nonanchor_type_id: FAIL
@@ -147,6 +157,8 @@ semantic_references:
   rule: >
     Cross-anchor semantic dependencies MUST be explicit structured refs. Text mentions,
     file paths and generated projections do not create dependency edges implicitly.
+    H3 supersedes/superseded_by metadata is resolved by reference history and is not duplicated
+    as a dependency edge.
 
 edge_vocabulary:
   - id: DERIVES_FROM
@@ -177,10 +189,6 @@ edge_vocabulary:
     meaning: Anchor semantics rely on an accepted stage-owned decision anchor.
     default_impact: semantic
     allowed_stage_direction: same-or-later-dependent
-  - id: SUPERSEDES
-    meaning: Historical replacement relationship governed by H3 supersession semantics.
-    default_impact: none
-    allowed_stage_direction: any
 
 impact_modes:
   semantic:
@@ -213,7 +221,7 @@ reference_resolution:
   current:
     input: {anchor_id: required}
     algorithm:
-      - lookup exactly one anchor_id in generated registry
+      - lookup exactly one anchor_id in the current registry index
       - reject if missing or ambiguous
       - reject status in [CANDIDATE, DIRTY, SUPERSEDED, RETIRED]
       - recompute semantic_fingerprint from canonical source and require registry equality
@@ -231,7 +239,7 @@ reference_resolution:
   pinned_historical:
     input: {anchor_id: required, semantic_fingerprint: required}
     algorithm:
-      - resolve exact historical revision by anchor_id plus fingerprint
+      - resolve exact historical revision by anchor_id plus fingerprint in the historical registry index
       - allow SUPERSEDED or RETIRED revision for audit/provenance
       - never satisfy a current-truth dependency unless consuming contract explicitly permits historical evidence
   evidence:
@@ -281,7 +289,7 @@ semantic_fingerprint:
     numbers: must be representable by the selected I-JSON/JCS profile; otherwise encode as a schema-defined string
   canonical_payload_profiles:
     structured-data:
-      applies_to_families: [YAML, JSON, OpenAPI, AsyncAPI, JSON-Schema]
+      applies_to_families: [YAML, JSON, OpenAPI, AsyncAPI, "JSON Schema"]
       steps:
         - parse using the type/profile grammar
         - reject duplicate mapping/object keys
@@ -316,11 +324,13 @@ validation_basis:
       - dependency_snapshot
       - validation_basis_fingerprint
     dependency_snapshot_entry:
-      required:
-        - anchor_id
-        - semantic_fingerprint
-        - relation
-      deterministic_sort_key: [anchor_id, relation, semantic_fingerprint]
+      common_required: [target_kind, relation]
+      anchor_target_required: [anchor_id, semantic_fingerprint]
+      evidence_target_required: [evidence_ref, evidence_fingerprint]
+      deterministic_sort_key: [target_kind, target_id, relation, target_fingerprint]
+      normalization:
+        target_id: anchor_id for anchor targets; evidence_ref for evidence targets
+        target_fingerprint: semantic_fingerprint for anchor targets; evidence_fingerprint for evidence targets
     snapshot_scope: all resolved current refs whose effective impact is semantic or evidence-freshness
   basis_projection:
     fields:
@@ -330,6 +340,7 @@ validation_basis:
       - validator_or_eval_id
       - validator_or_eval_version
       - specification_version
+      - dependency_model_version
   basis_fingerprint:
     algorithm: same sha256-jcs-v1 profile
   freshness:
@@ -343,6 +354,7 @@ validation_basis:
       - current semantic/evidence dependency fingerprint differs from snapshot
       - required dependency no longer resolves as valid current truth
       - validation basis projection changes
+      - dependency model version changes in a way requiring revalidation
       - validator/specification version becomes invalid under active profile
 
 generated_dependency_graph:
@@ -351,7 +363,18 @@ generated_dependency_graph:
     evidence: only when referenced by EVIDENCED_BY
   edges:
     source: explicit semantic_references from canonical anchors
-    identity_fields: [dependent_anchor_id, relation, dependency_anchor_id, condition]
+    normalized_fields:
+      - dependent_anchor_id
+      - relation
+      - dependency_kind
+      - dependency_id
+      - dependency_fingerprint
+      - condition
+      - effective_impact
+    normalization:
+      anchor_target: {dependency_kind: anchor, dependency_id: anchor_id, dependency_fingerprint: semantic_fingerprint}
+      evidence_target: {dependency_kind: evidence, dependency_id: evidence_ref, dependency_fingerprint: evidence_fingerprint}
+    identity_fields: [dependent_anchor_id, relation, dependency_kind, dependency_id, condition]
     deduplication: exact duplicate edge records collapse to one generated edge
   build_rejections:
     - dangling current target
@@ -362,7 +385,7 @@ generated_dependency_graph:
     - edge condition with invalid applicability expression
   graph_ordering:
     nodes: [stage_rank, anchor_id]
-    edges: [dependency_anchor_id, dependent_anchor_id, relation]
+    edges: [dependency_kind, dependency_id, dependent_anchor_id, relation]
   generated_views:
     - requirement-domain-trace
     - context/reference indexes
