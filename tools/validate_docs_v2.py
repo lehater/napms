@@ -23,23 +23,18 @@ TABLE_ROW_RE = re.compile(r"^\| `([^`]+)` \| ([^|]+) \| ([^|]+) \|", re.MULTILIN
 
 
 def _catalog_rows() -> tuple[dict[str, tuple[str, str]], list[str]]:
-    if not ARTIFACTS.is_file():
-        return {}, ["missing docs-v2/spec/artifacts.md"]
+    if not ARTIFACTS.is_file(): return {}, ["missing docs-v2/spec/artifacts.md"]
     rows = TABLE_ROW_RE.findall(ARTIFACTS.read_text(encoding="utf-8-sig"))
-    if not rows:
-        return {}, ["artifact catalog contains no parseable artifact rows"]
-    result: dict[str, tuple[str, str]] = {}
-    errors: list[str] = []
+    if not rows: return {}, ["artifact catalog contains no parseable artifact rows"]
+    result: dict[str, tuple[str, str]] = {}; errors: list[str] = []
     for artifact_id, owner, applicability in rows:
-        if artifact_id in result:
-            errors.append(f"duplicate artifact type id: {artifact_id}")
+        if artifact_id in result: errors.append(f"duplicate artifact type id: {artifact_id}")
         result[artifact_id] = (owner.strip(), applicability.strip())
     return result, errors
 
 
 def validate_artifact_catalog(catalog: dict[str, tuple[str, str]]) -> list[str]:
-    errors: list[str] = []
-    text = ARTIFACTS.read_text(encoding="utf-8-sig")
+    errors: list[str] = []; text = ARTIFACTS.read_text(encoding="utf-8-sig")
     for artifact_id, (owner, applicability) in catalog.items():
         if MULTI_OWNER_RE.search(owner): errors.append(f"artifact {artifact_id} has multiple semantic owners: {owner}")
         if owner not in VALID_OWNERS: errors.append(f"artifact {artifact_id} has unsupported owning stage: {owner}")
@@ -53,23 +48,21 @@ def validate_artifact_catalog(catalog: dict[str, tuple[str, str]]) -> list[str]:
 
 def validate_task_capsule_contract() -> list[str]:
     if not EXECUTION.is_file(): return ["missing docs-v2/spec/agent-execution.md"]
-    text = EXECUTION.read_text(encoding="utf-8-sig")
-    errors: list[str] = []
-    for field in ("scope:", "stage:", "state:", "task:", "primary_instruction:", "artifact_types:", "inputs:", "outputs:", "validation_profile:", "blockers:", "next:"):
+    text = EXECUTION.read_text(encoding="utf-8-sig"); errors: list[str] = []
+    fields = ("scope:", "stage:", "state:", "task:", "primary_instruction:", "artifact_types:", "inputs:", "outputs:", "validation_profile:", "implementation_authorization:", "authorized_scope:", "authorization_basis:", "context_refs:", "context_expansions:", "blockers:", "next:")
+    for field in fields:
         if field not in text: errors.append(f"task capsule contract missing field: {field}")
-    for marker in ("Every task has one primary instruction/skill", "G4 authorization", "one concrete task", "stop"):
+    markers = ("exactly one `primary_instruction`", "For `IMPLEMENTATION` all three fields are mandatory", "stage: IMPLEMENTATION", "implementation_authorization: G4 PASS", "The capsule cannot create or broaden the lease", "every expansion has a recorded reason", "forbidden refs")
+    for marker in markers:
         if marker not in text: errors.append(f"agent execution spec missing capsule invariant: {marker}")
     return errors
 
 
 def validate_routing_cases(catalog: dict[str, tuple[str, str]]) -> list[str]:
     errors: list[str] = []
-    try:
-        cases = json.loads(ROUTING_CASES.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        return [f"cannot read docs-v2 routing cases: {exc}"]
-    ids: set[str] = set()
-    required = {"id", "change", "stage", "primary_instruction", "artifact_types", "validation_profile"}
+    try: cases = json.loads(ROUTING_CASES.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc: return [f"cannot read docs-v2 routing cases: {exc}"]
+    ids: set[str] = set(); required = {"id", "change", "stage", "primary_instruction", "artifact_types", "validation_profile"}
     for case in cases:
         missing = required - case.keys()
         if missing: errors.append(f"routing case missing fields {sorted(missing)}: {case.get('id', '<unknown>')}"); continue
@@ -97,20 +90,15 @@ def _gate_result(applicability: str, condition: bool, present: bool) -> str:
 
 def validate_gate_cases() -> list[str]:
     errors: list[str] = []
-    try:
-        cases = json.loads(GATE_CASES.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        return [f"cannot read gate applicability cases: {exc}"]
+    try: cases = json.loads(GATE_CASES.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc: return [f"cannot read gate applicability cases: {exc}"]
     ids: set[str] = set()
     for case in cases:
         case_id = str(case.get("id", "<unknown>"))
         if case_id in ids: errors.append(f"duplicate gate case id: {case_id}")
         ids.add(case_id)
-        try:
-            actual = _gate_result(str(case["class"]), bool(case["condition"]), bool(case["present"]))
-            expected = str(case["expected"])
-        except (KeyError, ValueError) as exc:
-            errors.append(f"invalid gate case {case_id}: {exc}"); continue
+        try: actual = _gate_result(str(case["class"]), bool(case["condition"]), bool(case["present"])); expected = str(case["expected"])
+        except (KeyError, ValueError) as exc: errors.append(f"invalid gate case {case_id}: {exc}"); continue
         if actual != expected: errors.append(f"gate case {case_id}: expected {expected}, got {actual}")
     required = {("mandatory", True, False, "BLOCK"), ("conditional", True, False, "BLOCK"), ("conditional", False, False, "PASS"), ("optional", False, False, "PASS")}
     observed = {(str(c.get("class")), bool(c.get("condition")), bool(c.get("present")), str(c.get("expected"))) for c in cases}
@@ -119,18 +107,13 @@ def validate_gate_cases() -> list[str]:
 
 
 def main() -> int:
-    catalog, errors = _catalog_rows()
-    errors += validate_artifact_catalog(catalog)
-    errors += validate_task_capsule_contract()
-    errors += validate_routing_cases(catalog)
-    errors += validate_gate_cases()
+    catalog, errors = _catalog_rows(); errors += validate_artifact_catalog(catalog); errors += validate_task_capsule_contract(); errors += validate_routing_cases(catalog); errors += validate_gate_cases()
     if errors:
         print("Documentation System v2 conformance failed:", file=sys.stderr)
         for error in errors: print(f"  - {error}", file=sys.stderr)
         return 1
-    print("Documentation System v2 catalog, capsule, routing and gate applicability conformance OK")
+    print("Documentation System v2 catalog, capsule authorization, routing and gate applicability conformance OK")
     return 0
 
 
-if __name__ == "__main__":
-    raise SystemExit(main())
+if __name__ == "__main__": raise SystemExit(main())
