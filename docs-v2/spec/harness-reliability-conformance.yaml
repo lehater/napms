@@ -1,0 +1,464 @@
+version: 1
+kind: harness-reliability-conformance-extension
+id: DOCS-V2-HARNESS-RELIABILITY-CONFORMANCE
+status: active
+owner_phase: H1
+owner_task: H1-T3
+last_updated: 2026-09-16
+
+purpose: >
+  Harden the universal project-design Harness as a critical engineering tool. Extend the
+  H1 RED-stage conformance contract with explicit reliability requirements for deterministic
+  replay, fail-closed behavior, restart/resume consistency, idempotent durable effects,
+  version-bound decisions, stable diagnostics, self-consistency, project-agnostic core
+  behavior and regression-safe contract evolution.
+
+authority:
+  extends:
+    id: DOCS-V2-HARNESS-CONFORMANCE
+    path: docs-v2/spec/harness-conformance.yaml
+  program_intent:
+    id: DOCS-V2-HARNESS-ROADMAP
+    path: docs-v2/meta/roadmap.yaml
+  defines:
+    - critical Harness reliability quality bar
+    - deterministic replay contract for deterministic Harness decisions
+    - restart/resume and idempotency invariants
+    - fail-closed and no-silent-fallback behavior
+    - execution-basis and version-binding requirements
+    - stable machine-readable diagnostic-code contract
+    - Harness self-consistency preflight
+    - project-agnostic-core guard
+    - conformance-contract regression-change policy
+    - RED-stage reliability scenarios
+  does_not_define:
+    - product or domain truth
+    - new lifecycle transition classes
+    - DDD semantics
+    - executable runtime or tests
+    - CI/workflow implementation
+    - canonical cutover or merge authorization
+
+quality_bar:
+  principle: >
+    The Harness must either execute an authorized design-process step according to explicit,
+    versioned durable rules or stop with a stable machine-readable reason. "Best effort"
+    continuation through missing authority, invalid state or unavailable deterministic
+    mechanisms is forbidden.
+  invariants:
+    - id: HR-DETERMINISTIC-CORE
+      rule: >
+        Given the same durable execution basis and the same versioned deterministic rules,
+        deterministic Harness decisions produce the same route, state effect and diagnostic code.
+    - id: HR-FAIL-CLOSED
+      rule: >
+        Missing/invalid required state, authority, reference, validator or rule causes explicit
+        FAIL, BLOCKED or NEED_MORE_DATA according to existing routing semantics; the Harness
+        must not silently substitute a weaker heuristic or unversioned fallback.
+    - id: HR-DURABLE-STATE-ONLY
+      rule: >
+        Any state that can change routing, authorization or deterministic validation must be
+        present in the declared durable execution basis. Session memory, prior chat state and
+        process-local caches cannot carry authority.
+    - id: HR-RESTART-SAFE
+      rule: >
+        Restarting from the same durable checkpoint must be equivalent to uninterrupted
+        continuation from that checkpoint for deterministic routing and state effects.
+    - id: HR-IDEMPOTENT-EFFECTS
+      rule: >
+        Reapplying the same authorized durable operation identity cannot create duplicate
+        transitions, duplicate evidence, duplicate decisions or a second semantic mutation.
+    - id: HR-VERSION-BOUND
+      rule: >
+        Every persisted Harness decision/evidence record is bound to the exact relevant
+        Harness/process/validator contract versions and durable input fingerprint(s).
+    - id: HR-DIAGNOSABLE
+      rule: >
+        Every deterministic non-PASS stop/rejection has a stable machine-readable diagnostic
+        code. Human-readable detail may evolve, but a code cannot be silently repurposed.
+    - id: HR-SELF-CONSISTENT
+      rule: >
+        Required Harness state/spec/registry inputs must pass their own deterministic integrity
+        checks before they can authorize or route project work.
+    - id: HR-PROJECT-AGNOSTIC-CORE
+      rule: >
+        Generic Harness routing, lifecycle, validation and authorization rules cannot branch
+        on a specific project identity or encode NAPMS-specific domain semantics.
+    - id: HR-REGRESSION-PROTECTED
+      rule: >
+        A Harness contract change declares affected stable conformance scenario IDs and cannot
+        silently remove or weaken critical behavior.
+
+determinism_boundary:
+  exact_replay_required_for:
+    - schema/reference validation
+    - lifecycle legality and state effects after classification is known
+    - authorization checks
+    - registry/fingerprint/dependency calculations
+    - task-boundary and tool-authority checks
+    - deterministic routing adapters
+  exact_replay_outputs:
+    - outcome_class
+    - route
+    - state_effect
+    - authorization_effect
+    - diagnostic_code
+  not_required:
+    - byte-identical natural-language explanation
+    - byte-identical semantic-judge rationale
+  semantic_eval_rule: >
+    Semantic evaluation may be nondeterministic internally, but it is invoked only after
+    deterministic checks pass, uses declared/versioned inputs, returns only allowed bounded
+    outcomes, and persists observable evidence rather than private reasoning.
+
+execution_basis:
+  required_fields:
+    - task_or_gate_id
+    - operation_id
+    - durable_state_ref
+    - durable_state_fingerprint
+    - declared_input_refs
+    - declared_input_fingerprints
+    - harness_contract_versions
+    - process_specification_versions
+    - validator_or_eval_versions
+  fingerprint_rule: >
+    The execution basis has a deterministic fingerprint over the required fields. Process-local
+    cache values, chat history and ambient environment values that are not declared inputs are
+    excluded from authority and must not alter deterministic decisions.
+  mutation_rule: >
+    Any operation that can persist a state/anchor/evidence change carries a stable operation_id
+    for idempotency detection.
+
+diagnostic_contract:
+  field: diagnostic_code
+  format: stable-kebab-case
+  stability:
+    - one code represents one failure/stop class
+    - existing codes are not reused for different semantics
+    - a superseded code remains historically interpretable
+  compatibility:
+    legacy_h1_expect_reason: >
+      Existing H1 scenario expect.reason values are treated as v1 diagnostic codes for the
+      behavior they identify until a later schema migration explicitly maps them.
+  human_detail:
+    optional: true
+    canonical_authority: false
+
+fail_closed_contract:
+  forbidden:
+    - fallback from failed deterministic validator to LLM plausibility
+    - fallback from dangling stable reference to path/name guess
+    - fallback from missing versioned rule to an unversioned default
+    - fallback from unavailable durable state to chat/session memory
+    - fallback from missing human-owned truth to agent invention
+  allowed_stop_routes:
+    - FAIL
+    - BLOCKED
+    - NEED_MORE_DATA
+  selection_rule: existing H1/H2 routing semantics determine the applicable stop class
+
+idempotency_contract:
+  key: operation_id
+  same_operation_same_basis:
+    second_application:
+      semantic_mutation_count: 0
+      duplicate_transition_count: 0
+      duplicate_evidence_count: 0
+      allowed_result:
+        - return-original-committed-result
+        - idempotent-already-applied
+  same_operation_different_basis:
+    result: FAIL
+    diagnostic_code: operation-id-basis-conflict
+
+self_consistency_preflight:
+  required_before_project_work:
+    - current durable workstream/lifecycle state schema-valid
+    - required referenced Harness specifications resolvable
+    - referenced specification identities/versions unambiguous
+    - required generated registry/fingerprint basis internally consistent when applicable
+    - current task/gate capsule structurally valid
+  on_failure:
+    project_semantic_eval_runs: false
+    project_mutation_allowed: false
+    result: FAIL
+    diagnostic_code: harness-self-consistency-failed
+
+contract_change_policy:
+  required_change_record_fields:
+    - changed_contract_ids
+    - change_kind
+    - affected_scenario_ids
+    - compatibility_effect
+  change_kind_allowed:
+    - additive
+    - clarifying
+    - behavior-changing
+    - superseding
+  critical_scenario_rule: >
+    A critical scenario may be superseded only with an explicit replacement/mapping. Deletion,
+    renumbering or semantic weakening without a durable migration is invalid.
+  downstream_review_rule: >
+    A behavior-changing H1 contract change must identify which later accepted Harness
+    specifications require compatibility review. Compatibility review does not automatically
+    dirty later phases when no contradiction exists.
+
+capabilities:
+  - id: CAP-HARNESS-RELIABILITY
+    success_cases:
+      - HR-CF-DETERMINISTIC-REPLAY
+      - HR-CF-RESTART-RESUME-EQUIVALENT
+      - HR-CF-IDEMPOTENT-REAPPLY
+      - HR-CF-VERSION-BOUND-RESULT
+      - HR-CF-STABLE-DIAGNOSTIC-CODE
+      - HR-CF-SELF-CONSISTENT-PREFLIGHT
+    failure_cases:
+      - HR-CF-AMBIENT-STATE-CANNOT-AUTHORIZE
+      - HR-CF-UNPERSISTED-RESTART-STATE-REJECTED
+      - HR-CF-OPERATION-ID-BASIS-CONFLICT
+      - HR-CF-SILENT-FALLBACK-REJECTED
+      - HR-CF-PROJECT-SPECIFIC-CORE-REJECTED
+      - HR-CF-CONTRACT-CHANGE-WITHOUT-IMPACT-REJECTED
+
+conformance_cases:
+  - id: HR-CF-DETERMINISTIC-REPLAY
+    capability: CAP-HARNESS-RELIABILITY
+    polarity: positive
+    oracle: deterministic
+    critical: true
+    given:
+      execution_basis_fingerprint_equal: true
+      deterministic_rule_versions_equal: true
+      run_count: 2
+    expect:
+      route_equal: true
+      state_effect_equal: true
+      diagnostic_code_equal: true
+      natural_language_byte_equality_required: false
+
+  - id: HR-CF-AMBIENT-STATE-CANNOT-AUTHORIZE
+    capability: CAP-HARNESS-RELIABILITY
+    polarity: negative
+    oracle: deterministic
+    critical: true
+    given:
+      durable_execution_basis_authorizes_action: false
+      session_or_chat_memory_claims_authorization: true
+      requested_action_requires_authority: true
+    expect:
+      result: FAIL
+      action_executed: false
+      ambient_state_used_as_authority: false
+      diagnostic_code: authority-not-in-durable-basis
+
+  - id: HR-CF-RESTART-RESUME-EQUIVALENT
+    capability: CAP-HARNESS-RELIABILITY
+    polarity: positive
+    oracle: deterministic
+    critical: true
+    given:
+      durable_checkpoint_equal: true
+      execution_basis_fingerprint_equal: true
+      one_run_restarted_before_next_effect: true
+    expect:
+      next_route_equal: true
+      next_state_effect_equal: true
+      hidden_process_state_required: false
+
+  - id: HR-CF-UNPERSISTED-RESTART-STATE-REJECTED
+    capability: CAP-HARNESS-RELIABILITY
+    polarity: negative
+    oracle: deterministic
+    critical: true
+    given:
+      required_routing_state_exists_only_in_process_memory: true
+      durable_checkpoint_lacks_state: true
+    expect:
+      result: FAIL
+      guessed_resume_allowed: false
+      diagnostic_code: required-state-not-durable
+
+  - id: HR-CF-IDEMPOTENT-REAPPLY
+    capability: CAP-HARNESS-RELIABILITY
+    polarity: positive
+    oracle: deterministic
+    critical: true
+    given:
+      operation_id: OP-1
+      execution_basis_fingerprint: BASIS-1
+      operation_already_committed: true
+      same_operation_reapplied: true
+    expect:
+      additional_semantic_mutations: 0
+      duplicate_transitions: 0
+      duplicate_evidence_records: 0
+      result_in: [return-original-committed-result, idempotent-already-applied]
+
+  - id: HR-CF-OPERATION-ID-BASIS-CONFLICT
+    capability: CAP-HARNESS-RELIABILITY
+    polarity: negative
+    oracle: deterministic
+    critical: true
+    given:
+      operation_id: OP-1
+      previously_committed_basis_fingerprint: BASIS-1
+      requested_basis_fingerprint: BASIS-2
+    expect:
+      result: FAIL
+      mutation_allowed: false
+      diagnostic_code: operation-id-basis-conflict
+
+  - id: HR-CF-SILENT-FALLBACK-REJECTED
+    capability: CAP-HARNESS-RELIABILITY
+    polarity: negative
+    oracle: deterministic
+    critical: true
+    given:
+      required_deterministic_validator_available: false
+      proposed_fallback: semantic-llm-plausibility
+      prerequisite_owner_known: true
+    expect:
+      fallback_executed: false
+      route: BLOCKED
+      diagnostic_code: deterministic-prerequisite-unavailable
+
+  - id: HR-CF-VERSION-BOUND-RESULT
+    capability: CAP-HARNESS-RELIABILITY
+    polarity: positive
+    oracle: deterministic
+    critical: true
+    given:
+      persisted_result: true
+      execution_basis_contains_all_required_version_fields: true
+      execution_basis_fingerprint_recorded: true
+    expect:
+      result_evidence_replayable: true
+      unversioned_rule_dependency_count: 0
+
+  - id: HR-CF-STABLE-DIAGNOSTIC-CODE
+    capability: CAP-HARNESS-RELIABILITY
+    polarity: positive
+    oracle: deterministic
+    critical: true
+    given:
+      same_failure_class: true
+      human_detail_text_changed: true
+      contract_version_compatible: true
+    expect:
+      diagnostic_code_changed: false
+      human_detail_may_change: true
+
+  - id: HR-CF-SELF-CONSISTENT-PREFLIGHT
+    capability: CAP-HARNESS-RELIABILITY
+    polarity: positive
+    oracle: deterministic
+    critical: true
+    given:
+      required_harness_inputs_valid: true
+      required_spec_refs_resolve: true
+      task_capsule_valid: true
+    expect:
+      project_work_may_start: true
+      preflight_result: PASS
+
+  - id: HR-CF-PROJECT-SPECIFIC-CORE-REJECTED
+    capability: CAP-HARNESS-RELIABILITY
+    polarity: negative
+    oracle: deterministic
+    critical: true
+    given:
+      generic_harness_rule_contains_project_id_branch: NAPMS
+      project_specific_semantics_required_for_generic_route: true
+    expect:
+      result: FAIL
+      generic_rule_accepted: false
+      diagnostic_code: project-specific-core-rule-forbidden
+
+  - id: HR-CF-CONTRACT-CHANGE-WITHOUT-IMPACT-REJECTED
+    capability: CAP-HARNESS-RELIABILITY
+    polarity: negative
+    oracle: deterministic
+    critical: true
+    given:
+      harness_contract_behavior_changed: true
+      affected_scenario_ids_declared: false
+      downstream_compatibility_review_declared: false
+    expect:
+      result: FAIL
+      contract_change_acceptable: false
+      diagnostic_code: conformance-impact-not-declared
+
+eval_suite:
+  id: HE-HARNESS-RELIABILITY
+  scenario_ids:
+    - HR-CF-DETERMINISTIC-REPLAY
+    - HR-CF-AMBIENT-STATE-CANNOT-AUTHORIZE
+    - HR-CF-RESTART-RESUME-EQUIVALENT
+    - HR-CF-UNPERSISTED-RESTART-STATE-REJECTED
+    - HR-CF-IDEMPOTENT-REAPPLY
+    - HR-CF-OPERATION-ID-BASIS-CONFLICT
+    - HR-CF-SILENT-FALLBACK-REJECTED
+    - HR-CF-VERSION-BOUND-RESULT
+    - HR-CF-STABLE-DIAGNOSTIC-CODE
+    - HR-CF-SELF-CONSISTENT-PREFLIGHT
+    - HR-CF-PROJECT-SPECIFIC-CORE-REJECTED
+    - HR-CF-CONTRACT-CHANGE-WITHOUT-IMPACT-REJECTED
+  pass_rule: all-critical-scenarios-pass
+
+compatibility_review:
+  reviewed_specs:
+    - docs-v2/spec/lifecycle-state-machine.yaml
+    - docs-v2/spec/design-anchor.yaml
+    - docs-v2/spec/artifact-type-registry.yaml
+    - docs-v2/spec/dependency-registry-impact.yaml
+    - docs-v2/spec/design-derivation-lineage.yaml
+  result: PASS-WITH-FUTURE-IMPLEMENTATION-OBLIGATIONS
+  findings:
+    - No new lifecycle transition class or rejection route is introduced.
+    - H2 durable state/stop semantics are compatible with restart/resume and fail-closed requirements.
+    - H3/H5 versioned fingerprints and validation evidence support version-bound replay inputs.
+    - H5 deterministic registry/reference/impact calculations are compatible with deterministic replay.
+    - H2-H5 do not define operation-level idempotency or a common diagnostic schema; these are future H8/H9/H13 implementation/specification obligations, not contradictions requiring reopen.
+    - Project-agnostic core behavior is consistent with the revised program charter.
+  reopen_required:
+    H2: false
+    H3: false
+    H4: false
+    H5: false
+
+h1_t3_exit_evaluation:
+  audit_result: GAP_FOUND_AND_CLOSED_AT_CONTRACT_LEVEL
+  scenario_count: 12
+  all_scenarios_critical: true
+  success_failure_coverage: PASS
+  deterministic_replay_covered: PASS
+  restart_resume_covered: PASS
+  idempotency_covered: PASS
+  fail_closed_no_silent_fallback_covered: PASS
+  stable_diagnostics_covered: PASS
+  version_binding_covered: PASS
+  self_consistency_covered: PASS
+  project_agnostic_core_covered: PASS
+  regression_change_control_covered: PASS
+  later_phase_reopen_required: false
+  executable_tests_created_or_changed: false
+  runtime_implementation_created_or_changed: false
+
+handoff:
+  H6:
+    - DDD pipeline rules must not introduce project-specific core exceptions.
+    - Unknown/missing prerequisites must use fail-closed H1/H2 routing rather than heuristic continuation.
+  H8:
+    - Define concrete execution-basis/result-evidence schemas and stable diagnostic-code catalog.
+    - Validators must support deterministic replay inputs and fail-closed behavior.
+  H9:
+    - Task Capsule v2 must declare durable execution-basis inputs and operation identity.
+    - Context/session memory must never supply undeclared authority.
+  H10:
+    - Reliability scenarios become part of the permanent regression corpus.
+    - Behavior-changing Harness contract changes require declared scenario impact.
+  H11:
+    - Repository/CI enforcement must reject invalid Harness self-state and unversioned/stale execution evidence.
+  H13:
+    - Runtime implementation must provide idempotent durable effects, restart-safe execution and no silent fallback.
