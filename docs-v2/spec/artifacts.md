@@ -1,6 +1,6 @@
 # Artifact catalog specification
 
-Status: M2 COMPLETE — reviewed before M7; artifact ownership is single-stage and gate applicability is explicit.
+Status: M2 REVISED — strategic DDD discovery/distillation artifacts added after horizontal-pilot gap review.
 
 ## Purpose
 
@@ -45,7 +45,10 @@ A decision record is owned by the stage that owns the truth being decided. The g
 | `quality-requirement` | S1 | conditional: quality attribute materially constrains scope | Markdown with measurable scenario | G1 and downstream constraints |
 | `acceptance-scenario` | S1 | conditional: requirement needs example-level executable/precise acceptance behavior | Gherkin `.feature` preferred when executable; otherwise Markdown | G1; later validation trace |
 | `requirements-glossary` | S1 | conditional: terminology ambiguity is material before domain discovery | Markdown | G1 |
+| `capability-map` | S2 | mandatory when strategic domain boundaries are being discovered/revalidated across more than one material capability | Markdown table or machine-readable mapping | G2; demonstrates capability grouping, semantic cohesion and candidate/accepted ownership rather than assuming BCs from legacy structure |
+| `domain-distillation` | S2 | conditional: multiple subdomains/capability clusters have materially different strategic importance or build/buy/invest treatment | Markdown or machine-readable classification | G2; records Core / Supporting / Generic (or explicitly justified equivalent) strategic classification |
 | `context-map` | S2 | conditional: more than one bounded context or boundary relation is relevant | PlantUML `.puml` | G2 |
+| `context-relationship-map` | S2 | conditional: two or more bounded contexts collaborate/integrate and the relationship pattern affects autonomy/model integrity | machine-readable mapping plus optional PlantUML projection | G2; records upstream/downstream direction and applicable DDD Context Mapping pattern such as Customer-Supplier, Conformist, ACL, OHS/Published Language, Partnership, Shared Kernel or Separate Ways |
 | `domain-model` | S2 | mandatory for each affected bounded context whose semantics/model change | PlantUML `.puml` plus minimal explanatory Markdown only where notation is insufficient | G2 |
 | `domain-glossary` | S2 | conditional: domain terms/invariants require durable definition | Markdown | G2 |
 | `state-model` | S2 | conditional: entity/aggregate lifecycle has material states/transitions | PlantUML state diagram `.puml` | G2 |
@@ -66,6 +69,28 @@ A decision record is owned by the stage that owns the truth being decided. The g
 | `automated-test` | Implementation | conditional by implemented behavior/risk | test source code | validation evidence |
 | `journey-e2e-test` | Implementation | conditional: accepted journey requires end-to-end proof | executable test source | validation evidence |
 
+## Strategic DDD discovery contract
+
+When S2 is discovering or materially revalidating boundaries, it must not jump directly from requirements to a pre-existing list of Bounded Contexts. The minimum strategic discovery chain is:
+
+```text
+S1 behavior / language
+-> identify business/domain capabilities
+-> capability map and clustering
+-> identify subdomain/model boundaries and candidate Bounded Contexts
+-> distill strategic importance when material
+-> accept Bounded Context ownership
+-> classify inter-context relationships
+-> context map
+-> tactical domain models only after strategic boundaries are sufficient
+```
+
+`capability-map` answers why capabilities belong together or apart and why a capability is a peer BC, an owner-preserving composition, an integration/application capability, or remains unresolved. A capability is not automatically a Bounded Context.
+
+`domain-distillation` prevents strategic design from treating every part of the domain as equally differentiating. Where applicable it identifies Core, Supporting and Generic subdomains (or an explicitly justified project vocabulary) and records the consequence for modeling/investment attention. This classification is strategic, not deployment topology.
+
+`context-relationship-map` records model/team relationship semantics rather than merely drawing arrows. Directional data/reference flow alone is insufficient when a DDD relationship pattern is material. `Shared Kernel` must never be inferred merely because contexts share identifiers or schemas.
+
 ## Stage output profile
 
 This is a routing profile, not a requirement to create every listed artifact.
@@ -74,7 +99,7 @@ This is a routing profile, not a requirement to create every listed artifact.
 |---|---|
 | S0 | problem/evidence and only necessary journeys/constraints |
 | S1 | functional behavior plus applicable quality, acceptance and terminology artifacts; S0 constraints are consumed, not re-owned |
-| S2 | affected domain models plus applicable context/state/glossary/traceability artifacts |
+| S2 | capability grouping/boundary evidence when discovering strategic structure; applicable distillation and relationship classification; affected domain models plus context/state/glossary/traceability artifacts |
 | S3 | only architecture views/contracts/decisions needed by the affected boundaries |
 | S4 | exact implementation plan, validation intent and applicable migration/readiness planning |
 | Implementation | source implementation and executable evidence; upstream artifacts updated only through normal reopen rules |
@@ -99,7 +124,9 @@ Do not create ADRs for routine choices already obvious from an owning artifact o
 Traceability is sparse and semantic, not a full document matrix. Required links are only those needed to answer routing/validation questions such as:
 
 - which accepted requirement drives this domain responsibility;
+- which capability cluster supports a candidate/accepted bounded context;
 - which bounded context owns the behavior;
+- which context relationship governs cross-boundary model collaboration;
 - which contract realizes a cross-boundary interaction;
 - which acceptance/test evidence proves an accepted behavior.
 
@@ -107,7 +134,7 @@ Do not manually duplicate information solely to obtain traceability. Prefer stab
 
 ## Generated projections
 
-Allowed projections include rendered diagrams, browsable API documentation, context-centric requirement indexes, traceability reports and documentation sites. A projection:
+Allowed projections include rendered diagrams, browsable API documentation, capability/context views, context-centric requirement indexes, traceability reports and documentation sites. A projection:
 
 - identifies its canonical source(s);
 - is reproducible when practical;
@@ -136,6 +163,6 @@ allowed-projections
 
 M2 defines the semantics of these fields. M3 defines physical `location-rule` values. M5 defines concrete `validation-rule-ids`. A later implementation iteration may encode this catalog in YAML/JSON; this Markdown remains the design specification until that representation is deliberately introduced and validated.
 
-## M2 exit
+## M2 revision note
 
-M2 is complete when the finite initial catalog, applicability classes, canonical-source rules, single-stage lifecycle ownership, gate relevance, traceability principles and generated-projection rules are defined without creating product artifacts or fixing physical repository paths.
+The M7 horizontal pilot exposed a process defect: the original catalog contained the final `context-map` and tactical `domain-model` artifacts but omitted the durable strategic evidence used to derive and challenge Bounded Context boundaries. This allowed a valid-looking G2 package to reuse a legacy BC list without preserving the capability-clustering argument. The same audit exposed two adjacent omissions: domain distillation and explicit Context Mapping relationship classification. These are now first-class S2 artifacts with applicability rules rather than informal reasoning hidden in an agent run.
