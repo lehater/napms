@@ -14,8 +14,10 @@ Migrate current project knowledge and Harness/CI routing into Documentation Syst
 - migrate current truth artifact-by-artifact after target ownership/type is known;
 - content is normalized into v2 artifact types rather than preserving legacy file boundaries;
 - every migrated semantic claim has one canonical owner after cutover;
+- missing upstream truth is recorded as a migration gap and is never reconstructed by inference from downstream domain, architecture, implementation or tests;
+- executable implementation/tests may corroborate migrated truth but never become the source of product/problem, requirement or domain truth;
 - Git history is the long-term archive; `docs-old/` is temporary cutover insurance only if used;
-- Harness/CI routing is updated before agents are allowed to treat v2 product artifacts as canonical;
+- candidate-mode Harness/validation support is enabled before candidate product artifacts depend on it; final canonical routing switches only at cutover;
 - no production implementation is authorized by the documentation migration itself.
 
 ## Iterations
@@ -38,7 +40,7 @@ The current tree is migrated by semantic class, not file-for-file.
 
 | Current owner | V2 disposition |
 |---|---|
-| `docs/requirements/**` | split/normalize into S1 functional, quality, constraints, acceptance and glossary artifacts; remove bounded-context/gate naming from canonical requirement ownership |
+| `docs/requirements/**` | split/normalize into S1 functional, quality, acceptance and glossary artifacts; externally imposed/non-negotiable constraints route to S0; remove bounded-context/gate naming from canonical requirement ownership |
 | `docs/domain/**` | normalize into context map, per-bounded-context domain models, state models, domain glossary and sparse requirement-domain traceability |
 | `docs/architecture/**` | normalize into system/container/flow/deployment/persistence architecture sources; move interface contracts to `docs/contracts/**` when they are first-class contracts |
 | `docs/engineering/**` | classify each item: first-class contract -> `docs/contracts/**`; architecture realization -> `docs/architecture/**`; implementation/runbook truth -> nearest source/operations owner; remove duplicated prose after canonical owner exists |
@@ -63,29 +65,32 @@ RETIRE     — historical/superseded-only content; preserve in Git history, not 
 DEFER      — applicability/current truth is unresolved; blocks that migration batch, not unrelated batches
 ```
 
-No file is copied merely to make the target tree look complete.
+No file is copied merely to make the target tree look complete. `DEFER` is also the required disposition when an upstream semantic owner has no trustworthy current source; downstream artifacts are evidence of the gap, not authority to fill it.
 
 ## Migration batches
 
-### B0 — Pilot infrastructure
+### B0 — Candidate validation and pilot infrastructure
 
 Scope:
 
+- enable only the deterministic v2 catalog/capsule/layout checks needed to validate non-canonical candidate material through the existing Harness/CI surface;
+- keep current `docs/` routing and canonical knowledge checks authoritative;
 - choose one bounded product slice with requirements + domain + architecture/contract + executable evidence;
 - create only the target paths required by that slice under the pilot area;
 - exercise task capsules, artifact applicability and validation profiles;
 - record spec defects rather than working around them silently.
 
-No canonical switch.
+No canonical switch. Candidate-mode validation may recognize `docs-v2/**`; it must not make candidate product artifacts canonical or redirect production agents away from `docs/`.
 
 ### B1 — Product/problem and S1 requirements
 
-- reconstruct product/problem framing from current accepted truth;
+- migrate S0 problem/evidence/constraint truth only from trustworthy current S0-equivalent sources or explicit stakeholder/evidence input;
+- when trustworthy S0 truth is absent, record `DEFER`/gap rather than reconstructing it from requirements, domain models, architecture, implementation or tests;
 - normalize functional requirements by observable behavior/capability, not bounded context;
-- separate quality requirements, constraints, glossary and acceptance scenarios;
+- separate quality requirements, glossary and acceptance scenarios; route externally imposed/non-negotiable constraints to S0;
 - establish stable ids needed for downstream traceability.
 
-Exit: S1 truth is complete enough that S2 migration does not need to infer requirements from domain files.
+Exit: S0/S1 truth for the migrated scope is explicitly sourced and complete enough that S2 migration does not need to infer requirements or problem truth from downstream files. Missing upstream truth remains a visible blocker for that scope.
 
 ### B2 — Domain
 
@@ -105,15 +110,15 @@ Exit: domain semantics can be reconstructed without consulting legacy domain fil
 
 Exit: architecture and cross-boundary contracts can be reconstructed without legacy architecture/engineering files.
 
-### B4 — Process, Harness and CI
+### B4 — Final process, Harness and CI routing
 
-- replace repository routing with v2 artifact/layout/validation metadata;
+- replace repository routing with v2 artifact/layout/validation metadata only after candidate batches have passed candidate-mode validation;
 - update stage/task skills to load only applicable specs/artifacts;
-- map `make harness-check`, `make knowledge-check`, `make check`, Web/E2E and other existing checks to v2 validation profiles;
+- finalize mapping of `make harness-check`, `make knowledge-check`, `make check`, Web/E2E and other existing checks to v2 validation profiles;
 - update hosted workflow path filters for the final target tree;
 - add only missing deterministic validators demonstrated by the pilot/migration.
 
-Exit: agents and CI resolve v2 canonical truth and no longer depend on legacy paths.
+Exit: agents and CI resolve v2 canonical truth and no longer depend on legacy paths. B4 is the final routing switch, not the first point at which candidate artifacts receive validation.
 
 ### B5 — Cutover and cleanup
 
@@ -135,6 +140,8 @@ Choose a slice that is:
 - not currently under unrelated active product redesign.
 
 Prefer a slice with one clear user journey and a small number of bounded contexts. Avoid the broadest or most contentious capability for the first pilot.
+
+Executable evidence is corroborating/realization evidence only. If it conflicts with or exposes a gap in upstream truth, route the finding to the owning stage; do not reverse-engineer a new requirement/domain rule and silently declare it canonical.
 
 ## Pilot outputs
 
@@ -178,12 +185,12 @@ During M7 the existing Harness remains authoritative for repository execution; p
 
 Current hosted workflows are retained and evolved.
 
-- `harness.yml` remains the hosted Harness gate; later add v2 spec/registry/path triggers and corresponding `harness-check` rules.
-- `knowledge.yml` remains the knowledge validation surface; later expand its target paths to v2 requirements/domain/architecture/contracts and map checks to V0-V3 profiles.
+- `harness.yml` remains the hosted Harness gate; candidate-mode v2 spec/registry/path triggers and checks may be added in B0 without changing canonical product routing.
+- `knowledge.yml` remains the canonical knowledge validation surface until cutover; candidate knowledge validation may be added separately within the existing validation entry points, then its final target paths switch in B4/cutover.
 - implementation/Web/Postgres/Docker/journey workflows remain implementation evidence and are mapped to V4/V5 profiles rather than duplicated.
 - `Makefile` remains the local command entry point unless the pilot demonstrates a simpler replacement.
 
-Before cutover, path filters must recognize the final `docs/` v2 layout including `docs/contracts/**`. During pilot, only checks needed to validate pilot material are added; do not globally redirect existing canonical checks to `docs-v2/`.
+Before cutover, path filters must recognize the final `docs/` v2 layout including `docs/contracts/**`. Candidate checks must be active early enough to validate B1-B3 material before it can be accepted for cutover; do not globally redirect existing canonical checks to `docs-v2/`.
 
 ## Canonical-truth safeguard
 
@@ -203,11 +210,11 @@ Do not operate indefinitely with both roots accepted as canonical.
 Each migration batch must prove:
 
 1. every source legacy artifact has a disposition;
-2. every retained semantic claim has one target canonical owner;
-3. target artifacts pass applicable V0-V3 checks;
+2. every retained semantic claim has one target canonical owner and a trustworthy source appropriate to that owner stage;
+3. target artifacts pass applicable V0-V3 candidate checks before they are eligible for cutover;
 4. direct references/traceability resolve;
 5. reconstruction test passes for the migrated scope without legacy files;
-6. executable evidence still agrees where applicable;
+6. executable evidence still agrees where applicable, while disagreements/gaps reopen the semantic owner rather than redefining upstream truth;
 7. no agent/Harness routing depends on a path scheduled for retirement before its replacement routing is active.
 
 ## Cutover readiness review
@@ -260,7 +267,7 @@ M1-M5 semantics are now stable enough for a pilot-oriented compact registry prot
 
 ## Current task
 
-M7 — select and run one bounded pilot. No global migration or canonical cutover is authorized.
+Pre-pilot review/conformance gate. M7 remains paused until P0/P1 findings are resolved and the minimum mechanized suite is green.
 
 ## M6 exit
 
