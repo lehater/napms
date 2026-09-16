@@ -33,8 +33,8 @@ Later stages must not invent unresolved truth owned by an earlier stage merely t
 
 | Stage | Owns | Minimum input | Exit guarantee |
 |---|---|---|---|
-| S0 Problem / Evidence | need, actors, outcome, evidence, material constraints and unresolved problem questions | request, observation or conflicting evidence | the problem is sufficiently evidenced and bounded to derive requirements |
-| S1 Requirements | observable functional behavior, quality requirements, constraints and acceptance intent | G0-accepted problem truth or already-valid equivalent | required behavior is explicit, testable enough for domain work and solution-agnostic where practical |
+| S0 Problem / Evidence | need, actors, outcome, evidence, externally imposed/non-negotiable constraints and unresolved problem questions | request, observation or conflicting evidence | the problem, its material external constraints and evidence are sufficiently bounded to derive requirements |
+| S1 Requirements | observable functional behavior, quality requirements and acceptance intent | G0-accepted problem/constraint truth or already-valid equivalent | required behavior and applicable quality expectations are explicit, testable enough for domain work and solution-agnostic where practical |
 | S2 Domain Design | domain responsibilities, language, semantics, ownership, boundaries and bounded contexts | applicable G1-accepted behavior | semantic ownership and boundaries are sufficient for architecture to realize without inventing domain truth |
 | S3 Architecture | technical realization, system boundaries, interactions, contracts and significant technical decisions | applicable G1/G2 guarantees plus technical constraints | architecture and external/internal contracts are sufficient to prepare an implementation slice |
 | S4 Implementation Readiness | exact implementation slice, dependencies, migrations, validation intent and execution order | applicable accepted upstream guarantees | one explicit implementation scope is executable and verifiable without unresolved P0/P1 design work |
@@ -45,8 +45,8 @@ Detailed working methods belong to stage-specific instructions. Artifact type de
 
 | Gate | PASS means |
 |---|---|
-| G0 | current evidence justifies requirements work for the selected problem scope |
-| G1 | observable behavior, applicable qualities/constraints and acceptance intent are sufficient for domain design |
+| G0 | current evidence and applicable externally imposed constraints justify requirements work for the selected problem scope |
+| G1 | observable behavior, applicable qualities and acceptance intent are sufficient for domain design without redefining S0 constraints |
 | G2 | affected domain semantics, responsibility and boundary ownership are sufficient for architecture |
 | G3 | realization and contracts are sufficient to derive a concrete implementation-ready slice |
 | G4 | the exact selected slice has sufficient current upstream evidence, dependencies and validation intent to authorize implementation |
