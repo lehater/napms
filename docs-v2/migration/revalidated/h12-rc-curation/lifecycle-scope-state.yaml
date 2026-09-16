@@ -1,0 +1,59 @@
+version: 1
+kind: lifecycle-scope-state
+id: NAPMS-H12-RC-CURATION-LIFECYCLE
+scope_id: H12-RC-CURATION-MVP
+last_updated: 2026-09-17
+canonical_product_domain_truth: false
+
+process_contracts:
+  lifecycle: {id: DOCS-V2-LIFECYCLE-STATE-MACHINE, version: 1}
+  migration: {id: DOCS-V2-NAPMS-MIGRATION-REVALIDATION, version: 2}
+  validation: {id: DOCS-V2-VALIDATION-GATE-ENGINE, version: 1}
+
+current_task:
+  id: H12-T2
+  kind: revalidation-task
+  lifecycle_stage: S0
+  state: IN_PROGRESS
+
+stage_states:
+  S0: IN_PROGRESS
+  S1: NOT_STARTED
+  S2: NOT_STARTED
+  S3: NOT_STARTED
+  S4: NOT_STARTED
+
+s2_checkpoints:
+  S2-STRATEGIC: NOT_STARTED
+  S2-PROCESS-DISCOVERY: NOT_STARTED
+  S2-TACTICAL: NOT_STARTED
+
+gates:
+  G0: NOT_EVALUATED
+  G1: NOT_EVALUATED
+  G2: NOT_EVALUATED
+  G3: NOT_EVALUATED
+  G4: NOT_EVALUATED
+
+applicability_facts:
+  stage.S0.scope_entered: true
+  scope.actor_goal_journey_required: true
+  scope.external_or_nonnegotiable_constraint_exists: false
+  scope.material_claim_requires_durable_evidence: false
+
+source_authority:
+  current_product_domain_authority: docs/
+  allowed_S0_sources:
+    - path: docs/requirements/catalogue-curation.md
+      blob_sha: 92833e29efc3bfdb6503e5b600e48296b8fb6041
+    - path: docs/requirements/catalogue-curation-acceptance-examples.md
+      blob_sha: c98ab5174740b890c9b4b240530f1b9eec89cc91
+  product_code_tests_as_design_truth: forbidden
+  prior_docs_v2_candidates_as_truth: forbidden
+
+blocking_questions: []
+blockers: []
+
+next_when_task_complete:
+  id: H12-G0-1
+  auto_start: false
