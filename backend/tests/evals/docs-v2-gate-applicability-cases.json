@@ -1,0 +1,44 @@
+[
+  {
+    "id": "mandatory-present",
+    "class": "mandatory",
+    "condition": true,
+    "present": true,
+    "expected": "PASS"
+  },
+  {
+    "id": "mandatory-missing",
+    "class": "mandatory",
+    "condition": true,
+    "present": false,
+    "expected": "BLOCK"
+  },
+  {
+    "id": "conditional-applicable-present",
+    "class": "conditional",
+    "condition": true,
+    "present": true,
+    "expected": "PASS"
+  },
+  {
+    "id": "conditional-applicable-missing",
+    "class": "conditional",
+    "condition": true,
+    "present": false,
+    "expected": "BLOCK"
+  },
+  {
+    "id": "conditional-not-applicable-missing",
+    "class": "conditional",
+    "condition": false,
+    "present": false,
+    "expected": "PASS"
+  },
+  {
+    "id": "optional-missing",
+    "class": "optional",
+    "condition": false,
+    "present": false,
+    "expected": "PASS"
+  }
+]
