@@ -17,8 +17,7 @@ flowchart LR
     BC -->|Need / business basis| AP[Access Policy]
     ACC -->|InteractionContractRevisionRef| AP
     AD -->|ComponentDeploymentRef| AP
-    RC -->|Resource Scope Affiliation| AP
-    AM[Authority Management] -->|EffectiveAuthority| AP
+    AM[Authority Management] -->|protected action admission when configured| AP
 
     AP -->|current effective PolicyRule| RPM[Required Policy Materialization]
     ACC --> RPM
@@ -48,7 +47,11 @@ flowchart LR
 
 Arrows are semantic contracts/data flow, not transport or deployment topology. No Shared Kernel is accepted.
 
-`Access Governance` is not a separate target Bounded Context. Its proposal/approval/rejection/withdrawal responsibilities are part of the Access Policy lifecycle. Required Policy Materialization and Evidence Access Recognition are non-peer compositions; PPI/PPR/acquisition are integration/application capabilities.
+`Access Governance` is not a separate target Bounded Context. Proposed access, formal `Accepted | Rejected` decisions, current effective revision and withdrawal history are one Access Policy lifecycle.
+
+The target deliberately has no mandatory RC -> AP approval-obligation contract. Resource Scope Affiliation remains RC truth but is not required merely to accept/reject a RuleChange in the MVP.
+
+Required Policy Materialization and Evidence Access Recognition are non-peer compositions; PPI/PPR/acquisition are integration/application capabilities.
 
 ## Public contracts
 
@@ -112,24 +115,15 @@ ComponentDeploymentRef
 
 The target has no whole-Application deployment selection or placement-set expansion in policy governance. Address change on the same Resource does not replace ComponentDeployment identity; a separately deployed Component instance is a distinct policy endpoint.
 
-### RC -> Access Policy
+AP does not derive mandatory source/destination approval sides from the deployment Resources in the baseline MVP.
 
-```text
-ResourceRef + logicalTime
--> effective ResourceScopeAffiliation[] + provenance
-```
+### Authority Management -> Access Policy
 
-AP owns how those public facts establish source/destination approval obligations. The MVP requires exactly one distinct applicable Responsibility Scope per side; zero or several fail closed.
+Authority Management may protect application actions such as proposing, deciding or withdrawing a Rule according to the deployed authority configuration.
 
-### AM -> Access Policy
+This contract is action admission only. It does not define the Policy Rule decision procedure and does not introduce source/destination approval entities, quorum or Responsibility Scope-derived approval obligations into AP.
 
-```text
-ActorRef + ActionRef + ResponsibilityScopeRef + effectiveTime
--> Admitted | Denied | Unknown
-+ authority provenance
-```
-
-Denied/Unknown fail closed. Resource responsibility/contact metadata is not authority.
+`Denied`/`Unknown` remain fail-closed when an AP action is configured as protected.
 
 ### Business Connectivity -> Access Policy
 
@@ -145,12 +139,14 @@ Within one PolicyRule, these remain distinct:
 stable PolicyRuleId / PolicyRuleRef
 immutable source/destination ComponentDeployment pair
 effectiveRevisionRef?
-RuleChange[]: Pending | Approved | Rejected
-bilateral decisions / approval basis
+RuleChange[]: Pending | Accepted | Rejected
+formal decision actor/time/provenance
 withdrawal/regrant history
 ```
 
-A Pending or Rejected RuleChange never overwrites current effective revision. An applicable Approved change may advance the same Rule. Withdrawal clears effectiveness without deleting history; old approvals cannot silently restore it.
+A Pending or Rejected RuleChange never overwrites current effective revision. An applicable Accepted change may advance the same Rule. Withdrawal clears effectiveness without deleting history; old Accepted changes cannot silently restore it.
+
+How a customer reaches Accepted/Rejected is outside baseline domain semantics and may be supplied by an external workflow/integration.
 
 ### Access Policy -> RPM
 
@@ -162,11 +158,11 @@ EffectivePolicyRule {
     sourceComponentDeploymentRef
     destinationComponentDeploymentRef
     revisionRef
-    authorizationProvenance
+    decisionProvenance
 }
 ```
 
-Pending/rejected history is not required policy.
+Pending/Rejected history is not required policy.
 
 ### ACC -> RPM
 
@@ -251,7 +247,7 @@ It fails closed on missing/ambiguous correlation and cannot manufacture Resource
 
 ### Evidence Access Recognition -> Access Policy
 
-A recognized candidate may seed the same RuleChange path as manual creation and carries evidence provenance. AP remains the owner of formal submission, approval and current policy.
+A recognized candidate may seed the same RuleChange path as manual creation and carries evidence provenance. AP remains the owner of formal submission, formal decision and current policy.
 
 ### TAE -> PPI -> APR
 
@@ -287,11 +283,15 @@ AG GovernedAuthorization.effectiveGrant
 -> AP current PolicyRule
 ```
 
-contained two owners of the same current authorization fact. In the revalidated target, proposal/approval/current-revision/withdrawal are one PolicyRule lifecycle inside Access Policy. Business Connectivity and Authority Management remain separate because their identities and lifecycles are independently meaningful.
+contained two owners of the same current authorization fact. In the target, RuleChange submission/formal decision/current-revision/withdrawal are one PolicyRule lifecycle inside Access Policy.
+
+The later S1/S2 simplification removes mandatory bilateral approval and Resource Scope-derived obligation semantics from that lifecycle. Customer-specific approval workflows may integrate at the application boundary without becoming AP domain entities.
+
+Business Connectivity and Authority Management remain separate because their identities and lifecycles are independently meaningful.
 
 ## Deferred affected-edge extensions
 
-- several simultaneous Responsibility Scopes per approval side;
+- customer-specific approval workflow integration, including bilateral/quorum/staged procedures and Responsibility Scope-derived approver selection;
 - several simultaneous Pending RuleChanges and ordering/conflict semantics;
 - whether several ComponentDeployments may share one Resource as a product restriction;
 - richer ComponentDeployment runtime/container history;
@@ -303,6 +303,6 @@ contained two owners of the same current authorization fact. In the revalidated 
 
 ## Convergence result
 
-Strategic relationships and dependent Tactical semantics are coherent for the revalidated first-MVP slice. `mvp-ddd-convergence-checkpoint.md` records `G2 PASS`.
+Strategic relationships and dependent Tactical semantics are coherent for the simplified first-MVP slice. `mvp-ddd-convergence-checkpoint.md` records `G2 PASS`.
 
 No implementation authorization is implied. S3 Architecture may rely on these public semantic contracts.
