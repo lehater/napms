@@ -24,12 +24,13 @@ Design and validate a replacement documentation/artifact system incrementally, w
 
 - M0 foundation: complete.
 - M1 lifecycle contract: complete.
-- M2 artifact model: next.
+- M2 artifact model: complete.
+- M3 repository layout: next.
 
 ## Blockers
 
-None for M2.
+None for M3.
 
 ## Next
 
-Complete M2 artifact model only: define the finite artifact catalog, applicability classes, ownership, canonical source formats, gate relevance, traceability and generated-projection rules. Do not create product artifacts, finalize physical paths, or migrate current documentation during M2.
+Complete M3 repository layout only: define canonical physical ownership, target paths, naming, generated-output rules and how concept ownership maps to folders. Do not migrate current product documentation or implement validation tooling during M3.
