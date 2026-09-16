@@ -26,12 +26,13 @@ Design and validate a replacement documentation/artifact system incrementally, w
 - M1 lifecycle contract: complete.
 - M2 artifact model: complete.
 - M3 repository layout: complete.
-- M4 agent execution model: next.
+- M4 agent execution model: complete.
+- M5 validation model: next.
 
 ## Blockers
 
-None for M4.
+None for M5.
 
 ## Next
 
-Complete M4 agent execution model only: define routing, one-task execution capsules, progressive disclosure, instruction/artifact loading order, stop/reopen behavior and durable handoff state. Do not migrate product documentation or implement validation tooling during M4.
+Complete M5 validation model only: define validation layers/profiles, artifact syntax/structure/consistency checks, gate evidence checks, CI/local responsibilities and failure routing. Do not implement the full validator suite or migrate product documentation during M5.
