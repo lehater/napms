@@ -1,0 +1,576 @@
+version: 1
+kind: napms-migration-revalidation-plan
+id: DOCS-V2-NAPMS-H12-REVALIDATION
+status: active
+owner_phase: H12
+owner_task: H12-T1
+last_updated: 2026-09-17
+purpose: Rebase the existing non-canonical NAPMS docs-v2 candidate material onto the redesigned H3-H11 Harness without treating old candidate files, product code, tests or legacy gate reviews as current design authority. Preserve docs/ as canonical until explicit cutover, reconstruct accepted Design Anchors and lineage from current documented truth and stakeholder decisions, execute the complete applicable S2 strategic/process/tactical sequence, and replace former horizontal/pilot G2 claims with redesigned checkpoint and gate evidence.
+authority:
+  direct_dependency:
+    id: DOCS-V2-REPOSITORY-CI-ENFORCEMENT
+    path: docs-v2/spec/repository-ci-enforcement.yaml
+  required_contracts:
+  - id: DOCS-V2-DDD-PIPELINE
+    path: docs-v2/spec/ddd-pipeline.yaml
+  - id: DOCS-V2-HUMAN-KNOWLEDGE-ACQUISITION
+    path: docs-v2/spec/human-knowledge-acquisition.yaml
+  - id: DOCS-V2-AGENT-EXECUTION-CONTEXT-V2
+    path: docs-v2/spec/agent-execution-context-v2.yaml
+  - id: DOCS-V2-HARNESS-EVALS-TRACING-REGRESSION
+    path: docs-v2/spec/harness-evals-tracing-regression.yaml
+  redesign_specs:
+  - docs-v2/spec/design-anchor.yaml
+  - docs-v2/spec/artifact-type-registry.yaml
+  - docs-v2/spec/dependency-registry-impact.yaml
+  - docs-v2/spec/design-derivation-lineage.yaml
+  - docs-v2/spec/validation-gate-engine.yaml
+  - docs-v2/spec/validation-engine-catalog.yaml
+  historical_inputs:
+  - docs-v2/migration/plan.md
+  - docs-v2/horizontal/**
+  - docs-v2/pilot/**
+  - docs-v2/review/**
+  defines:
+  - H12 source-authority and migration-disposition rules
+  - disposition of existing non-canonical NAPMS docs-v2 candidate material
+  - bounded migration/revalidation sequence and task boundaries
+  - first pilot scope under redesigned S2 checkpoints
+  - H7 question routing for migration ambiguities
+  - conditions for accepting new redesigned S2/G2 evidence
+  - H12 completion and handoff criteria
+  does_not_define:
+  - new product/domain truth
+  - new H4 artifact types or H5 relations
+  - new lifecycle transitions
+  - executable validators, tests, workflows or Harness runtime
+  - product implementation
+  - canonical docs-to-docs-v2 cutover
+  - merge authorization
+cutover_guard:
+  current_product_domain_authority: docs/
+  docs_v2_role: non-canonical migration/revalidation workspace
+  canonical_cutover_authorized: false
+  rule: Nothing produced by H12 changes canonical product/project authority. Candidate redesign anchors, checkpoint evidence and gate evidence remain non-canonical until a separately authorized cutover.
+source_authority_policy:
+  semantic_premise_order:
+  - current accepted docs/ artifact owned by the applicable semantic stage
+  - current accepted stakeholder decision materialized under H7
+  - current external authoritative evidence when the owning contract permits it
+  docs_v2_existing_candidate_role:
+    allowed:
+    - migration inventory
+    - comparison target
+    - hypothesis seed
+    - provenance pointer to the docs/ source from which it was previously derived
+    - evidence of a prior Harness/design-process defect
+    forbidden:
+    - direct promotion to ACCEPTED solely because a prior pilot/review said PASS
+    - authority over conflicting current docs/
+    - satisfying H5 derivation lineage without current accepted predecessors
+    - satisfying H6 process-discovery requirements through an old tactical model
+  product_code_and_tests:
+    semantic_authority: forbidden
+    allowed_role: implementation/realization evidence only after the owning design truth exists
+    current_h12_use: excluded from migration design reconstruction
+  current_green_legacy_harness_ci:
+    redesigned_h4_h10_compliance_evidence: false
+    reason_ref: DOCS-V2-REPOSITORY-CI-ENFORCEMENT.current_repository_observation.current_gaps.GAP-LEGACY-DOCS-V2-VALIDATOR
+  conflict_rule:
+  - classify the semantic owner of the conflicting propositions
+  - later-stage material cannot silently rewrite earlier-stage truth
+  - explicit current same-owner supersession may resolve a conflict when provenance is durable
+  - otherwise route to H7 NEED_MORE_DATA rather than selecting the convenient proposition
+migration_disposition_vocabulary:
+  REBASE_FROM_DOCS:
+    meaning: Preserve useful candidate intent only by reconstructing the new anchor from current authoritative docs/ inputs and H3-H7 lineage.
+  SPLIT_REDERIVE:
+    meaning: Existing file mixes multiple new owners/types; split and derive each target independently from accepted predecessors.
+  REGENERATE_PROJECTION:
+    meaning: Existing file is or becomes a noncanonical projection generated from accepted anchors/refs; it cannot own truth.
+  REPLACE_WITH_H5_GRAPH:
+    meaning: Existing hand-maintained trace/relationship file is replaced by H5 semantic refs/generated indexes or projections.
+  REVALIDATE_AFTER_PROCESS:
+    meaning: Existing tactical candidate is retained only as comparison/hypothesis until strategic and process-discovery checkpoints are accepted.
+  HOLD_DOWNSTREAM:
+    meaning: Existing S3/S4 candidate is not revalidated until the required redesigned upstream gate/checkpoint basis is current.
+  MIGRATION_EVIDENCE:
+    meaning: Retain temporarily as process/migration evidence; never use as product/domain semantic premise.
+  HISTORICAL_ONLY:
+    meaning: Prior review/gate/readiness result remains interpretable history but cannot satisfy current H8/H10 evidence.
+  SUPERSEDED_META:
+    meaning: Prior methodology/migration plan is historical input superseded by H0-H12 active contracts.
+  RETIRE_AFTER_H12:
+    meaning: Remove from the active candidate surface after equivalent current graph/projection/evidence is reconstructible; Git remains the archive.
+candidate_dispositions:
+- path: docs-v2/horizontal/README.md
+  disposition: MIGRATION_EVIDENCE
+  target: H12 migration index/summary only
+  after_h12: HISTORICAL_ONLY
+- path: docs-v2/horizontal/gate-review.md
+  disposition: HISTORICAL_ONLY
+  target: none
+  reason: Prior horizontal review is not redesigned H8 gate evidence.
+- path: docs-v2/horizontal/s0/problem-landscape.md
+  disposition: SPLIT_REDERIVE
+  target_types:
+  - problem-statement
+  - constraint
+  source_rule: Reconstruct from current S0-equivalent docs/ sources or H7 materialized authority.
+- path: docs-v2/horizontal/s0/user-journeys.md
+  disposition: REBASE_FROM_DOCS
+  target_types:
+  - user-journey
+- path: docs-v2/horizontal/s1/capability-requirements.md
+  disposition: SPLIT_REDERIVE
+  target_types:
+  - functional-requirement
+- path: docs-v2/horizontal/s1/quality-requirements.md
+  disposition: SPLIT_REDERIVE
+  target_types:
+  - quality-requirement
+- path: docs-v2/horizontal/s1/acceptance.md
+  disposition: SPLIT_REDERIVE
+  target_types:
+  - acceptance-scenario
+- path: docs-v2/horizontal/s1/glossary.md
+  disposition: REBASE_FROM_DOCS
+  target_types:
+  - requirements-glossary
+- path: docs-v2/horizontal/s2/strategic-model.md
+  disposition: SPLIT_REDERIVE
+  target_types:
+  - capability-map
+  - domain-distillation
+  - bounded-context
+  - context-relationship-map
+  - domain-glossary
+  guard: Existing Bounded Context names/boundaries are hypotheses until H6 strategic derivation/authority passes.
+- path: docs-v2/horizontal/s2/context-map.puml
+  disposition: REGENERATE_PROJECTION
+  target: generated context-map view from accepted bounded-context and context-relationship-map anchors
+- path: docs-v2/horizontal/source-ledger.md
+  disposition: MIGRATION_EVIDENCE
+  target: H12 source/disposition records
+  after_h12: HISTORICAL_ONLY
+- path: docs-v2/horizontal/traceability.yaml
+  disposition: REPLACE_WITH_H5_GRAPH
+  target: H5 semantic refs plus generated traceability/project-book views
+- path: docs-v2/horizontal/validation-review.md
+  disposition: HISTORICAL_ONLY
+  target: none
+- path: docs-v2/migration/plan.md
+  disposition: SUPERSEDED_META
+  target: docs-v2/migration/napms-h12-revalidation.yaml
+- path: docs-v2/pilot/catalogue-curation-inventory.md
+  disposition: MIGRATION_EVIDENCE
+  target: H12 bounded-scope source inventory
+- path: docs-v2/pilot/catalogue-curation/s1-inventory.md
+  disposition: MIGRATION_EVIDENCE
+  target: comparison against rebuilt S1 anchors
+- path: docs-v2/pilot/catalogue-curation/s2-inventory.md
+  disposition: MIGRATION_EVIDENCE
+  target: comparison/hypothesis seed for H12 process+tactical work
+- path: docs-v2/pilot/catalogue-curation/s3-inventory.md
+  disposition: HOLD_DOWNSTREAM
+  target: future post-G2 S3 revalidation
+- path: docs-v2/pilot/catalogue-curation/s4-readiness.md
+  disposition: HISTORICAL_ONLY
+  target: future post-G3/G4 readiness work
+- path: docs-v2/pilot/catalogue-curation/validation-review.md
+  disposition: HISTORICAL_ONLY
+  target: none
+  reason: Old candidate G1/G2/G3 labels are not redesigned H8 evidence.
+- path: docs-v2/pilot/materialized/requirements/functional/catalogue-curation.md
+  disposition: REBASE_FROM_DOCS
+  target_types:
+  - functional-requirement
+- path: docs-v2/pilot/materialized/requirements/functional/catalogue-curation-acceptance.md
+  disposition: REBASE_FROM_DOCS
+  target_types:
+  - acceptance-scenario
+- path: docs-v2/pilot/materialized/requirements/quality/catalogue-curation.md
+  disposition: REBASE_FROM_DOCS
+  target_types:
+  - quality-requirement
+- path: docs-v2/pilot/materialized/domain/resource-catalogue/README.md
+  disposition: REVALIDATE_AFTER_PROCESS
+  target_types:
+  - domain-glossary
+- path: docs-v2/pilot/materialized/domain/resource-catalogue/domain-model.puml
+  disposition: REVALIDATE_AFTER_PROCESS
+  target_types:
+  - domain-model
+  - state-model
+  guard: Old tactical candidate cannot satisfy S2-PROCESS-DISCOVERY or justify aggregate boundaries by itself.
+- path: docs-v2/pilot/materialized/domain/traceability/catalogue-curation.yaml
+  disposition: REPLACE_WITH_H5_GRAPH
+  target: H5 semantic refs and generated requirement-domain trace view
+- path: docs-v2/pilot/materialized/architecture/containers.puml
+  disposition: HOLD_DOWNSTREAM
+  target: future S3 architecture revalidation after redesigned G2
+- path: docs-v2/pilot/materialized/architecture/flows/resource-catalogue-curation.puml
+  disposition: HOLD_DOWNSTREAM
+  target: future S3 interaction-flow revalidation after redesigned G2
+- path: docs-v2/pilot/materialized/contracts/http/resource-catalogue.openapi.yaml
+  disposition: HOLD_DOWNSTREAM
+  target: future S3 HTTP-contract revalidation after redesigned G2
+- path: docs-v2/review/harness-conformance-review.md
+  disposition: HISTORICAL_ONLY
+  target: H10/H11 current conformance and enforcement contracts
+active_specs_excluded_from_candidate_migration:
+  paths:
+  - docs-v2/meta/**
+  - docs-v2/spec/**
+  rule: These are active Harness redesign contracts/state, not NAPMS product candidate artifacts.
+selected_revalidation_scope:
+  scope_id: H12-RC-CURATION-MVP
+  name: Resource Catalogue curation / address-realization slice
+  rationale:
+  - already has accepted current docs/ product and domain sources
+  - previous pilot gives comparison material without being authority
+  - exercises observable S1 behavior, strategic ownership, temporal process behavior and tactical invariants
+  - small enough for bounded Task Capsules
+  - contains a known migration-risk boundary between older endpoint wording and current AddressSpace target semantics
+  - does not require product implementation to reconstruct design truth
+  authoritative_initial_sources:
+    s1:
+    - docs/requirements/catalogue-curation.md
+    - docs/requirements/catalogue-curation-acceptance-examples.md
+    - docs/requirements/catalogue-curation-security.md
+    current_s2_reference_for_later_revalidation:
+    - docs/domain/resource-catalogue/target-realization-model.md
+    - docs/domain/resource-catalogue/tactical-model.md
+  candidate_comparison_only:
+  - docs-v2/pilot/materialized/requirements/functional/catalogue-curation.md
+  - docs-v2/pilot/materialized/requirements/functional/catalogue-curation-acceptance.md
+  - docs-v2/pilot/materialized/requirements/quality/catalogue-curation.md
+  - docs-v2/pilot/materialized/domain/resource-catalogue/README.md
+  - docs-v2/pilot/materialized/domain/resource-catalogue/domain-model.puml
+  - docs-v2/pilot/catalogue-curation/s2-inventory.md
+known_migration_risks:
+- id: H12-RISK-S1-S2-ENDPOINT-ADDRESSSPACE
+  owner_classification: must-be-determined-before-materialization
+  finding: Accepted S1 catalogue-curation material uses Resource Endpoint/realization wording while current S2 Resource Catalogue target explicitly removes ResourceEndpoint identity and uses at most one effective AddressSpace at a logical time.
+  deterministic_resolution_if: Current S1 behavior can be represented without asserting endpoint identity/cardinality and the difference is only solution/domain terminology.
+  h7_required_if: Preserving or removing endpoint identity/cardinality changes observable S1 behavior or a human-owned product rule rather than merely normalizing terminology.
+  forbidden_resolution: Let later S2 silently rewrite an earlier S1 requirement.
+- id: H12-RISK-OLD-G2-SKIPPED-PROCESS
+  finding: Previous horizontal/pilot G2 reasoning covered strategic or tactical classification but predates the mandatory applicable S2 Process Discovery checkpoint.
+  effect: All former G2 PASS labels are historical only; redesigned G2 must be rebuilt.
+- id: H12-RISK-TACTICAL-AS-PROCESS-SOURCE
+  finding: Existing tactical model contains operations/invariants but cannot be used as the authority from which process truth is reverse-derived.
+  effect: Process discovery uses accepted requirements/examples/journeys plus accepted strategic anchors; tactical candidate is comparison-only until S2-TACTICAL.
+- id: H12-RISK-LEGACY-CI-NOT-NEW-EVIDENCE
+  finding: Current make harness-check does not yet implement H4-H10 enforcement.
+  effect: H12 validation may be specification/manual evidence only and must label enforcement status explicitly.
+h12_task_sequence:
+- id: H12-T1
+  title: Inventory and migration/revalidation plan
+  stage: META
+  status_after_this_document: COMPLETE
+  output: docs-v2/migration/napms-h12-revalidation.yaml
+  semantic_mutation_of_product_truth: false
+- id: H12-T2
+  title: Reconstruct Resource Catalogue curation S0 basis
+  stage: S0
+  bounded_scope: H12-RC-CURATION-MVP
+  primary_outcome: Materialize the minimum current problem statement, actor/goal journey and any applicable external/non-negotiable constraints for this scope from current authoritative docs/ wording, without importing S1/S2 solution semantics.
+  input_policy:
+    semantic_premises:
+    - docs/requirements/catalogue-curation.md
+    - docs/requirements/catalogue-curation-acceptance-examples.md
+    docs_v2_old_candidates: comparison-only
+    product_code_tests: forbidden
+  required_checks:
+  - classify semantic content by H4 owner rather than physical docs/requirements location
+  - preserve examples as examples; do not generalize them into S0 facts without accepted basis
+  - do not import Bounded Context, endpoint, AddressSpace, API or persistence design into the problem statement
+  outputs_when_unblocked:
+  - problem-statement
+  - user-journey when actor/goal flow is materially supported
+  - constraint only when a current external/nonnegotiable constraint is actually present
+  - explicit migration provenance back to docs/ source revisions
+  stop_conditions:
+  - material S0 contradiction
+  - human-owned problem/actor/goal truth is missing and non-derivable
+  - source cannot establish provenance
+  next_when_pass: H12-T3
+- id: H12-T3
+  title: Rebase Resource Catalogue curation S1 requirements
+  stage: S1
+  bounded_scope: H12-RC-CURATION-MVP
+  prerequisite: H12-T2 accepted/current S0 basis
+  primary_outcome: Materialize current observable functional/quality/acceptance/glossary truth for the selected RC curation slice from authoritative docs/ sources with H3/H5 lineage.
+  semantic_premises:
+  - accepted/current H12-T2 S0 anchors
+  - docs/requirements/catalogue-curation.md
+  - docs/requirements/catalogue-curation-acceptance-examples.md
+  - docs/requirements/catalogue-curation-security.md
+  old_docs_v2_role: comparison-only
+  required_checks:
+  - resolve H12-RISK-S1-S2-ENDPOINT-ADDRESSSPACE at the S1 owner boundary
+  - preserve acceptance examples as examples unless a generalized rule is independently accepted
+  - keep Authority Management mutation-admission behavior observable at S1 without transferring domain ownership
+  outputs_when_unblocked:
+  - functional-requirement
+  - quality-requirement when applicable
+  - acceptance-scenario
+  - requirements-glossary when needed
+  stop_conditions:
+  - endpoint-versus-AddressSpace difference is a material S1 behavior choice not resolved by current S1 authority
+  - current authoritative S1 sources conflict without accepted same-owner precedence
+  - human-owned requirement choice is missing
+  h7_route_on_stop: NEED_MORE_DATA with fixed owner S1 when human-owned/non-derivable
+  next_when_pass: H12-T4
+- id: H12-T4
+  title: Reconstruct Resource Catalogue strategic S2
+  stage: S2
+  checkpoint: S2-STRATEGIC
+  bounded_scope: H12-RC-CURATION-MVP
+  primary_outcome: Derive current capability/subdomain/context ownership for the selected scope under H6 instead of promoting the old Resource Catalogue boundary by name.
+  allowed_h6_rules:
+  - DDD-MR-CAPABILITY-DISCOVERY
+  - DDD-MR-SUBDOMAIN-DISTILLATION
+  - DDD-MR-BOUNDED-CONTEXT-DERIVATION
+  - DDD-MR-CONTEXT-RELATIONSHIP
+  old_horizontal_strategic_model_role: hypothesis-and-comparison-only
+  outputs_when_applicable:
+  - capability-map
+  - domain-distillation
+  - bounded-context
+  - context-relationship-map
+  - domain-glossary
+  stop_conditions:
+  - boundary/prioritization choice lacks accepted basis or H7 authority
+  - accepted S1 inputs become DIRTY
+  next_when_pass: H12-T5
+- id: H12-T5
+  title: Resource Catalogue process discovery and stakeholder hotspots
+  stage: S2
+  checkpoint: S2-PROCESS-DISCOVERY
+  bounded_scope: H12-RC-CURATION-MVP
+  primary_outcome: Build the domain-process-model for the selected curation/address lifecycle from accepted S1 examples and accepted strategic boundaries, recording commands, domain events, policies, actors, temporal ordering, external interactions and aggregate candidates as hypotheses.
+  semantic_premises:
+  - accepted/current H12-T3 anchors
+  - accepted/current H12-T4 anchors
+  - current accepted stakeholder examples according to H7 example semantics
+  forbidden_premise:
+  - old tactical candidate as process authority
+  - product code/tests
+  h7_question_rule: Any non-derivable business policy, command/event meaning, lifecycle rule, invariant or boundary hotspot becomes one durable H7 question. The checkpoint remains blocked until each blocking answer is materialized into its fixed-owner anchor.
+  outputs:
+  - domain-process-model
+  - updated domain-glossary when needed
+  - domain-decision anchors for materialized S2 choices
+  - durable H7 questions/hotspots when unresolved
+  next_when_pass: H12-T6
+- id: H12-T6
+  title: Revalidate Resource Catalogue tactical S2
+  stage: S2
+  checkpoint: S2-TACTICAL
+  bounded_scope: H12-RC-CURATION-MVP
+  prerequisite: H12-T5 accepted/current or explicitly nonapplicable with accepted rationale
+  primary_outcome: Derive tactical aggregates/entities/value objects/invariants/state semantics from the accepted strategic/process basis, then compare the result with the old pilot/current docs tactical model without allowing the comparison target to define the derivation.
+  comparison_sources:
+  - docs/domain/resource-catalogue/target-realization-model.md
+  - docs/domain/resource-catalogue/tactical-model.md
+  - docs-v2/pilot/materialized/domain/resource-catalogue/domain-model.puml
+  - docs-v2/pilot/materialized/domain/resource-catalogue/README.md
+  required_guards:
+  - aggregate boundary justified by requirement/process/invariant basis
+  - candidate aggregate hypothesis alone is insufficient
+  - every invariant has accepted authority/lineage
+  - current docs/ semantics that cannot be reproduced from the redesigned basis become an explicit finding, never silently discarded
+  - process finding that invalidates the strategic boundary routes strategic rework
+  outputs:
+  - domain-model
+  - state-model when applicable
+  - domain-glossary
+  - domain-decision when needed
+  next_when_pass: H12-T7
+- id: H12-T7
+  title: Build redesigned S2 checkpoint and G2 evidence
+  stage: S2
+  task_kind: checkpoint-and-gate-evaluation
+  bounded_scope: H12-RC-CURATION-MVP
+  prerequisites:
+  - applicable S2-STRATEGIC evidence current
+  - applicable S2-PROCESS-DISCOVERY evidence current
+  - applicable S2-TACTICAL evidence current
+  - no blocking H7 questions
+  - H5 lineage backward-explainable to accepted roots
+  primary_outcome: Replace former horizontal/pilot G2 labels with H8-shaped evidence over the redesigned three-checkpoint S2 basis.
+  evidence_status_rule: Until H11 executable enforcement exists, explicitly distinguish manual/specification revalidation from executable repository enforcement. Do not cite the current legacy harness-check as H4-H10 compliance evidence.
+  pass_effect:
+  - former horizontal/pilot G2 evidence remains historical
+  - new H8-compatible candidate G2 evidence becomes the only redesigned G2 evidence for this scope
+  - held S3 pilot candidates may enter a later revalidation task but are not auto-accepted
+  next_when_pass: H12-T8
+- id: H12-T8
+  title: H12 migration closure review
+  stage: META
+  primary_outcome: Confirm the selected scope is reconstructible from redesigned accepted anchors and stakeholder decisions, all old candidate artifacts have durable dispositions, and H12 exit criteria are met.
+  h12_phase_pass_requires:
+  - H12-T2 through H12-T7 complete or explicitly routed/blocked with no false PASS
+  - current selected-scope design backward-reconstructible without treating old docs-v2 candidate files as truth
+  - former horizontal/pilot G2 labels replaced by redesigned evidence for the selected scope
+  - all stakeholder decisions used by redesign are durable H7/H3 materializations
+  - H11 enforcement implementation gap remains explicit if not separately authorized
+  next_when_pass: H13
+first_next_task_capsule_blueprint:
+  task_id: H12-T2
+  task_kind: revalidation-task
+  stage: S0
+  scope: H12-RC-CURATION-MVP
+  primary_instruction:
+    instruction_id: H12-REBASE-S0
+    instruction_version: h12-v1
+  targets:
+  - target_kind: anchor
+    target_id: H12-RC-CURATION-S0-BASIS
+    intended_effect: create
+  known_fact_source_policy:
+    allowed:
+    - docs/requirements/catalogue-curation.md
+    - docs/requirements/catalogue-curation-acceptance-examples.md
+    - current H3-H11 Harness contracts
+    comparison_only:
+    - existing docs-v2 horizontal/pilot candidate material
+    forbidden_semantic_premise:
+    - product code/tests
+    - old candidate G0/G1/G2/G3 PASS labels
+    - chat/session memory
+  allowed_derivations:
+  - owner-classify S0 problem/journey/constraint semantics according to H4
+  - extract the minimum problem/actor/goal basis without importing solution/domain design
+  - preserve concrete examples without automatic generalization
+  tool_authority:
+    allowed_action_classes:
+    - read
+    - search
+    - validate
+    - write-canonical-anchor
+    - write-process-state
+    prohibited_actions:
+    - execute-implementation
+    - modify-ci
+    - merge
+  stop_conditions:
+  - current authoritative sources conflict on S0 problem/actor/goal truth
+  - required S0 human-owned truth is missing and non-derivable
+  - scope expands beyond Resource Catalogue curation slice
+  next_task_hint: H12-T3 only after H12-T2 durable validation/persistence
+h12_validation_model:
+  deterministic:
+  - every existing non-spec/meta docs-v2 candidate path identified by the H12 inventory has one disposition
+  - no disposition promotes prior candidate PASS labels into current gate evidence
+  - downstream S3/S4 candidates remain held until new G2
+  - old traceability owners are replaced by H5 refs/projections, not duplicated
+  - bounded migration capsules preserve single-stage/checkpoint execution
+  - process discovery precedes tactical acceptance when applicable
+  - docs/ remains canonical and product code/tests remain excluded as design truth
+  semantic:
+  - migration order preserves earliest semantic owner
+  - selected scope is sufficiently narrow for one-task capsules
+  - candidate comparison material cannot silently strengthen accepted current docs/
+  execution_enforcement:
+    current_status: specification/manual-only-for-redesigned-H4-H11-rules
+    reason: H11 executable enforcement has not been authorized/implemented
+    false_claim_forbidden: current legacy make harness-check proves redesigned compliance
+conformance_cases:
+- id: H12-CF-OLD-CANDIDATE-NOT-AUTHORITY
+  oracle: deterministic
+  given:
+    old_docs_v2_candidate_pass: true
+    current_docs_source_present: true
+  expect:
+    semantic_authority_source: current-docs
+    direct_candidate_promotion: false
+- id: H12-CF-CODE-NOT-MIGRATION-TRUTH
+  oracle: deterministic
+  given:
+    docs_semantic_gap: true
+    product_code_contains_plausible_rule: true
+  expect:
+    code_used_as_design_premise: false
+- id: H12-CF-HORIZONTAL-G2-HISTORICAL
+  oracle: deterministic
+  given:
+    old_horizontal_g2_label: PASS
+    redesigned_process_checkpoint_missing: true
+  expect:
+    redesigned_g2_pass: false
+- id: H12-CF-TACTICAL-WAITS-FOR-PROCESS
+  oracle: deterministic
+  given:
+    process_discovery_applicable: true
+    process_checkpoint_current: false
+    old_tactical_candidate_present: true
+  expect:
+    tactical_acceptance_allowed: false
+- id: H12-CF-ENDPOINT-CONFLICT-OWNER-FIRST
+  oracle: semantic
+  given:
+    s1_endpoint_wording: true
+    later_s2_addressspace_model: true
+    observable_behavior_equivalence_derivable: false
+  expect:
+    later_s2_overwrites_s1: false
+    route: NEED_MORE_DATA
+- id: H12-CF-PROJECTION-REGENERATED
+  oracle: deterministic
+  given:
+    legacy_context_map_projection_present: true
+    accepted_new_context_anchors_changed: true
+  expect:
+    manual_projection_truth_preserved: false
+    regenerate_from_current_anchors: true
+- id: H12-CF-TRACE-REPLACED-BY-H5
+  oracle: deterministic
+  given:
+    legacy_traceability_file_present: true
+    h5_semantic_refs_available: true
+  expect:
+    second_trace_truth_owner_created: false
+- id: H12-CF-S3-HELD-BEFORE-NEW-G2
+  oracle: deterministic
+  given:
+    old_s3_candidate_present: true
+    redesigned_g2_current: false
+  expect:
+    s3_revalidation_allowed: false
+    disposition: HOLD_DOWNSTREAM
+- id: H12-CF-H7-MATERIALIZATION-BEFORE-USE
+  oracle: deterministic
+  given:
+    blocking_human_answer_captured: true
+    fixed_owner_materialization_current: false
+  expect:
+    downstream_semantic_use_allowed: false
+- id: H12-CF-MANUAL-EVIDENCE-LABELED
+  oracle: deterministic
+  given:
+    h11_executable_enforcement_available: false
+    manual_spec_review_performed: true
+  expect:
+    claim_executable_ci_compliance: false
+    manual_status_explicit: true
+h12_t1_exit:
+  result: PASS
+  checks:
+  - existing horizontal/pilot/review/migration candidate material has explicit disposition
+  - first redesigned NAPMS scope is selected without using implementation truth
+  - migration sequence follows S0 -> S1 -> strategic S2 -> process discovery -> tactical S2 -> G2
+  - old tactical candidate is comparison-only until process basis exists
+  - old horizontal/pilot G2 evidence is historical only
+  - H7 question routing exists for non-derivable migration conflicts
+  - first next Task Capsule is one bounded S0 task
+  - no product code/tests/workflows/CI/cutover/merge changes are authorized or performed
+restrictions:
+  product_implementation_created_or_changed: false
+  executable_tests_created_or_changed: false
+  workflow_ci_created_or_changed: false
+  runtime_harness_created_or_changed: false
+  canonical_cutover_performed: false
+  merge_performed: false
