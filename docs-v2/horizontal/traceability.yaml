@@ -1,0 +1,62 @@
+version: 1
+status: candidate
+scope: full-width-s0-s2
+source_authority: accepted docs/** only
+problem_areas:
+  business-intent:
+    requirements: [REQ-BC-001, REQ-BC-002, REQ-BC-003, REQ-BC-101]
+    strategic_owners: [Business Connectivity]
+  application-communication:
+    requirements: [REQ-ACC-001, REQ-ACC-002, REQ-ACC-003, REQ-ACC-004, REQ-ACC-101]
+    strategic_owners: [Application Communication Catalogue]
+  concrete-deployment:
+    requirements: [REQ-AD-001, REQ-AD-002, REQ-AD-003, REQ-AD-101]
+    strategic_owners: [Application Deployment]
+  resource-realization:
+    requirements: [REQ-RC-001, REQ-RC-002, REQ-RC-003, REQ-RC-004, REQ-RC-005, REQ-RC-101]
+    strategic_owners: [Resource Catalogue]
+  access-policy-lifecycle:
+    requirements: [REQ-AP-001, REQ-AP-002, REQ-AP-003, REQ-AP-004, REQ-AP-005, REQ-AP-101, REQ-AP-102]
+    strategic_owners: [Access Policy]
+  action-authority:
+    requirements: [REQ-AM-001, REQ-AM-002, REQ-AM-003, REQ-AM-101]
+    strategic_owners: [Authority Management]
+  technical-evidence:
+    requirements: [REQ-TAE-001, REQ-TAE-002, REQ-TAE-101]
+    strategic_owners: [Technical Access Evidence]
+  evidence-recognition:
+    requirements: [REQ-EAR-001, REQ-EAR-002]
+    strategic_owners: [Evidence Access Recognition]
+    disposition: non-peer-composition
+  required-policy-materialization:
+    requirements: [REQ-RPM-001, REQ-RPM-002, REQ-RPM-003, REQ-RPM-004]
+    strategic_owners: [Required Policy Materialization]
+    disposition: non-peer-composition
+  enforcement-placement:
+    requirements: [REQ-NEP-001, REQ-NEP-002, REQ-NEP-003, REQ-NEP-101]
+    strategic_owners: [Network Enforcement Placement]
+  policy-realization:
+    requirements: [REQ-APR-001, REQ-APR-002, REQ-APR-003, REQ-APR-004, REQ-APR-101]
+    strategic_owners: [Access Policy Realization]
+  provider-interpretation-rendering:
+    requirements: [REQ-PPI-001, REQ-PPR-001, REQ-PROVIDER-101]
+    strategic_owners: [Provider Policy Interpreter, Provider Policy Renderer]
+    disposition: integration-capabilities
+  controlled-network-mutation:
+    requirements: [REQ-NEO-001, REQ-NEO-002, REQ-NEO-003]
+    strategic_owners: [Network Environment Operations]
+  cross-context-views:
+    requirements: [REQ-VIEW-001, REQ-VIEW-002]
+    strategic_owners: [Scoped Connectivity Inventory, Connectivity Impact Analysis]
+    disposition: owner-preserving-compositions
+  enterprise-source-integration:
+    requirements: [REQ-ID-001, REQ-ID-101]
+    strategic_owners: [context-owned import/projection boundaries]
+    disposition: optional-integration-seams
+quality_requirements:
+  QREQ-001: [all-fail-closed-correlation-and-authority-edges]
+  QREQ-002: [all-temporal-and-provenance-owning-contexts]
+  QREQ-003: [all-compositions-and-integrations]
+  QREQ-004: [Provider Policy Interpreter, Provider Policy Renderer, Network Environment Operations]
+  QREQ-005: [Business Connectivity, Access Policy, Technical Access Evidence, Access Policy Realization, Network Environment Operations]
+  QREQ-006: [documentation-system]
