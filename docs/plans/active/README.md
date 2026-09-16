@@ -4,11 +4,11 @@ Current: `PLAN-130-revalidate-policy-lifecycle.md`
 
 Goal: realize the concrete Component Deployment, unified Policy Rule lifecycle and vendor-neutral export without embedding customer-specific approval workflow into the MVP domain.
 
-Current task: revalidate the Access Policy domain model and affected context relationships after G1 accepted one formal RuleChange outcome (`Pending -> Accepted | Rejected`).
+Current task: complete G3 review of the simplified target architecture for AP formal decisions, AD/BC ownership, policy export and as-built compatibility.
 
-Lifecycle stage: `S2`
+Lifecycle stage: `S3`
 Stage state: `IN_PROGRESS`
-Lifecycle basis: `docs/requirements/access-governance-g1.md` and `access-policy-core.md` record G1 PASS for formal-decision semantics on 2026-09-16; the previous bilateral approval/scope-resolution model is therefore DIRTY.
+Lifecycle basis: G1 and G2 were revalidated on 2026-09-16 after simplifying RuleChange governance to one formal `Pending -> Accepted | Rejected` decision; `docs/domain/mvp-ddd-convergence-checkpoint.md` records G2 PASS for that baseline.
 Implementation authorization: `none`
 Authorized scope: `none`
 Authorization basis: `none`
@@ -17,19 +17,19 @@ Authorization basis: `none`
 
 Read first:
 - `docs/plans/active/PLAN-130-revalidate-policy-lifecycle.md`
-- `docs/domain/access-policy/tactical-model.md`
-- `docs/domain/strategic-model.md`
-- `docs/domain/context-map.md`
+- `docs/architecture/first-mvp-policy-lifecycle-export.md`
+- `docs/architecture/target-policy-authoring-boundary.md`
+- `docs/architecture/code-structure.md`
 - `docs/domain/mvp-ddd-convergence-checkpoint.md`
 
 ## Blockers
 
-None. S2 must remove approval-specific entities/invariants and any AP dependency on RC Responsibility Scope merely for deciding a RuleChange, while preserving optional action authority through Authority Management.
+None currently. S3 must preserve the simplified decision boundary: no source/destination approval model, no ApprovalBasis persistence, and no mandatory RC Responsibility Scope dependency for baseline `DecideRuleChange`.
 
 ## Gate
 
-G2 — PolicyRule/RuleChange identity and current-vs-proposed semantics remain coherent with one formal decision outcome, no customer-specific approval workflow is embedded, and affected public contracts have one owner.
+G3 — feasible owner-preserving architecture with explicit ports/persistence/concurrency/failure/compatibility semantics and no P0/P1 contradiction, while keeping customer-specific approval procedures outside the first-MVP core.
 
 ## Next
 
-Simplify the AP Tactical model and affected strategic contracts, evaluate G2, then return to S3 to simplify the architecture accordingly. Production-code implementation remains forbidden.
+Run the architecture-review lenses against the simplified S3 candidate and synchronize remaining architecture/as-built target references before evaluating G3. Production-code implementation remains forbidden.
