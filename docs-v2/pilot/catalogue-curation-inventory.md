@@ -1,6 +1,6 @@
 # M7 pilot — catalogue curation inventory
 
-Status: SELECTED / inventory in progress / non-canonical candidate work only.
+Status: SELECTED / S1 inventory executing / non-canonical candidate work only.
 
 ## Pilot scope
 
@@ -23,9 +23,9 @@ The slice satisfies the M7 selection criteria without using the policy-lifecycle
 
 | Legacy/current source | Candidate v2 type | Disposition | Pilot use |
 |---|---|---|---|
-| `docs/requirements/catalogue-curation.md` | `functional-requirement`, possibly `quality-requirement` | SPLIT | extract observable catalogue-curation behavior by capability; preserve stable semantic ids where present |
+| `docs/requirements/catalogue-curation.md` | `functional-requirement`, possibly `quality-requirement`; S0 claims only if explicitly identified | SPLIT | extract observable catalogue-curation behavior by capability; preserve stable semantic ids where present; do not promote embedded problem/constraint prose into S1 |
 | `docs/requirements/catalogue-curation-acceptance-examples.md` | `acceptance-scenario` | MOVE/TRANSFORM | retain examples that prove accepted behavior; use Gherkin only where executable precision adds value |
-| `docs/requirements/catalogue-curation-security.md` | `quality-requirement` and/or functional security requirements | SPLIT | classify each claim by observable behavior vs measurable quality expectation |
+| `docs/requirements/catalogue-curation-security.md` | `functional-requirement`, possibly `quality-requirement` | SPLIT | classify observable authorization behavior separately from any externally imposed/non-negotiable S0 constraint |
 | `docs/domain/resource-catalogue/tactical-model.md` | `domain-model`, `domain-glossary` | TRANSFORM/SPLIT | convert formalizable semantics to the pilot domain model; keep only notation-insufficient narrative |
 | `docs/domain/resource-catalogue/target-realization-model.md` | S2/S3 evidence requiring classification | SPLIT/REFERENCE | do not preserve a mixed realization document as a new canonical owner |
 | `docs/architecture/catalogue-curation-boundary.md` | `container-view` and/or `interaction-flow`/architecture narrative | TRANSFORM/SPLIT | retain only architecture truth required to realize the accepted slice |
@@ -38,11 +38,11 @@ The slice satisfies the M7 selection criteria without using the policy-lifecycle
 
 The first pilot does not migrate the whole Resource Catalogue, UI wireframes, application catalogue legacy compatibility, access-policy lifecycle, deployment behavior, or unrelated shared HTTP conventions. Shared sources are referenced only when the selected curation path demonstrates a direct dependency.
 
-## Ownership guardrail discovered before execution
+## Constraint ownership guardrail
 
-The current v2 specifications still contain an unresolved constraint-ownership inconsistency: the catalog/lifecycle text assigns externally imposed constraints to S0, while the target repository layout and project rule place canonical requirement constraints in S1. The pilot must not encode candidate constraint artifacts until this is corrected consistently in M1/M2/M6. Problem conditions/evidence remain S0; canonical requirement constraints belong to S1 by default, with S0 reopened only when the underlying problem truth itself changes.
+The accepted v2 model is authoritative for the pilot: externally imposed/non-negotiable `constraint` artifacts are S0-owned; S1 consumes accepted S0 problem/constraint truth and must not redefine it. The physical placement of legacy prose under `docs/requirements/**` does not change semantic ownership.
 
-This is a specification defect, not a reason to infer or duplicate constraint truth in the pilot.
+Therefore S1 classification may extract functional requirements, quality requirements and acceptance scenarios from the selected sources, but any actual externally imposed/non-negotiable constraint encountered is routed to S0 (or recorded as an upstream migration gap) rather than duplicated in S1. No constraint-specific blocker remains for this capsule.
 
 ## First task capsule
 
@@ -75,8 +75,7 @@ context_refs:
   - docs/requirements/catalogue-curation-acceptance-examples.md
   - docs/requirements/catalogue-curation-security.md
 context_expansions: []
-blockers:
-  - constraint ownership specification must be corrected before any constraint record is classified
+blockers: []
 next: classify S2 Resource Catalogue sources after S1 candidate inventory passes its applicable checks
 ```
 
@@ -86,4 +85,4 @@ For every executed capsule record the direct context refs, any context expansion
 
 ## Exit for selection/inventory step
 
-This step is complete when the bounded slice, initial source dispositions, exclusions, first task capsule and known specification blocker are explicit. No candidate semantic migration is accepted until the constraint-ownership blocker is fixed.
+This selection/inventory step is complete: the bounded slice, source dispositions, exclusions and first task capsule are explicit, and the false constraint-ownership blocker has been removed. S1 classification can proceed without changing canonical `docs/`.
