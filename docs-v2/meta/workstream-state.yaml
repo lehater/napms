@@ -15,14 +15,13 @@ program:
 
 current_task:
   id: H12-T2
-  title: Rebuild catalogue-curation problem and requirement basis
+  title: Rebuild catalogue-curation problem basis
   state: NOT_STARTED
+  lifecycle_stage: S0
   objective: >-
-    Using only current canonical docs/**, materialize the minimum current S0/S1 Design Anchors
-    required to revalidate the Resource Catalogue catalogue-curation slice under H3-H8. Preserve
-    examples as examples, split mixed legacy semantics by H4 owner, establish current provenance
-    and H5 lineage, and classify the single-effective-AddressSpace issue at its earliest semantic
-    owner. Route any non-derivable human-owned truth through H7. Stop before S2 strategic work.
+    Using only current canonical docs/**, materialize the minimum S0 problem-statement and
+    applicable user-journey anchors for the bounded Resource Catalogue catalogue-curation
+    migration scope with H3 provenance and H5 root/derivation lineage. Stop before G0 evaluation.
   required_inputs:
     - docs-v2/spec/napms-migration-revalidation.yaml
     - docs-v2/spec/design-anchor.yaml
@@ -32,19 +31,7 @@ current_task:
     - docs-v2/spec/human-knowledge-acquisition.yaml
     - docs/requirements/catalogue-curation.md
     - docs/requirements/catalogue-curation-acceptance-examples.md
-    - docs/requirements/catalogue-curation-security.md
-  comparison_only_inputs:
-    - docs-v2/pilot/catalogue-curation/s1-inventory.md
-    - docs-v2/pilot/materialized/requirements/**
-    - docs-v2/horizontal/s0/**
-    - docs-v2/horizontal/s1/**
-  expected_outputs:
-    - bounded-scope current candidate S0/S1 anchors with H3 identity/provenance
-    - H5 semantic refs and derivation lineage
-    - preserved stakeholder/example epistemic classification
-    - explicit earliest-owner classification for AddressSpace cardinality
-    - H7 question records only if current docs cannot determine required human-owned behavior
-  next_after_completion: H12-T3 Reconstruct strategic domain basis for selected scope
+  next_after_completion: H12-G0-1 Evaluate G0 for catalogue-curation migration scope
 
 completed_work:
   - {id: H0-T1, result: PASS, artifact: docs-v2/meta/roadmap.yaml, summary: durable universal Harness roadmap}
@@ -64,23 +51,22 @@ completed_work:
   - {id: H9-T1, result: PASS, artifact: docs-v2/spec/agent-execution-context-v2.yaml, summary: Task Capsule v2 and bounded context/tool authority}
   - {id: H10-T1, result: PASS, artifact: docs-v2/spec/harness-evals-tracing-regression.yaml, summary: regression/evals/tracing and failure promotion}
   - {id: H11-T1, result: PASS, artifact: docs-v2/spec/repository-ci-enforcement.yaml, summary: one-stack local/hosted repository enforcement design}
-  - id: H12-T1
+  - {id: H12-T1, result: PASS-HISTORICAL-NOW-REVISED, artifact: docs-v2/spec/napms-migration-revalidation.yaml, summary: initial migration dispositions and revalidation plan}
+  - id: H12-T1R
     result: PASS
     artifact: docs-v2/spec/napms-migration-revalidation.yaml
-    summary: NAPMS candidate migration dispositions and ordered revalidation/G2 plan
+    summary: corrected H12 v2 lifecycle/gate sequencing after H12-T2 preflight
     validation:
-      migration_candidate_classes_dispositioned: PASS
-      docs_remains_current_authority: PASS
-      product_code_tests_excluded_as_design_truth: PASS
+      h2_one_execution_unit_respected: PASS
+      g0_required_before_s1: PASS
+      g1_required_before_s2: PASS
+      gate_evaluation_separate_capsule: PASS
+      s2_strategic_process_tactical_order_preserved: PASS
       old_horizontal_pilot_gate_evidence_stale: PASS
-      strategic_before_process_before_tactical: PASS
-      prior_tactical_candidate_cannot_skip_process_discovery: PASS
-      old_context_map_projection_only: PASS
-      old_traceability_replaced_by_h5_refs_projection: PASS
-      h7_question_routing_defined: PASS
-      addressspace_earliest_owner_risk_carried_to_t2: PASS
-      redesigned_g2_exact_basis_required: PASS
-      first_bounded_migration_task_defined: H12-T2
+      address_cardinality_earliest_owner: S1
+      current_s1_address_behavior: one-or-more-technical-addresses
+      later_s2_single_addressspace_override_allowed: false
+      h7_question_needed_to_reconstruct_current_s1: false
       executable_validator_test_workflow_changes: false
       product_implementation_changes: false
       product_domain_cutover: false
@@ -91,38 +77,42 @@ routing_history:
     result: REOPEN(H1)
     observed_at: 2026-09-16
     reason: Initial H1 lacked complete lifecycle transition/rejection coverage required by H2.
-    resolution: H1-T2 added missing RED-stage coverage; H2 then completed.
+    resolution: H1-T2 added missing coverage; H2 then completed.
   - id: H6-PREFLIGHT-RELIABILITY-AUDIT
     result: REOPEN(H1)
     observed_at: 2026-09-16
-    reason: Existing H1 lacked explicit universal Harness reliability conformance.
-    resolution: H1-T3 closed the gap without requiring H2-H5 reopen.
+    reason: Initial H1 lacked explicit universal Harness reliability conformance.
+    resolution: H1-T3 closed the gap.
   - id: H6-T1-PREFLIGHT-1
     result: REOPEN(H4)
     observed_at: 2026-09-16
     reason: H4 lacked canonical owners for Bounded Context and Process Discovery/Event Storming truth.
-    resolution: H4-T2 added bounded-context and domain-process-model; H5 compatibility PASS; H6 completed.
+    resolution: H4-T2 added bounded-context and domain-process-model; H5 compatibility PASS.
+  - id: H12-T2-PREFLIGHT-1
+    result: REWORK(H12-T1)
+    observed_at: 2026-09-17
+    reason: >-
+      H12 v1 combined S0 and S1 reconstruction in one bounded design execution and routed directly
+      to S2 without separate G0/G1 evaluations, violating H2 one-execution-unit and predecessor-gate invariants.
+    resolution: >-
+      H12-T1R revised the plan to S0 -> G0 -> S1 -> G1 -> S2 Strategic -> Process Discovery -> Tactical -> G2.
 
 carry_forward:
-  - Harness is a universal project-agnostic design execution rail; NAPMS is a pilot/migration case, never a hard-coded semantic special case.
-  - Harness behavior is explicit/versioned/fail-closed; silent fallback, ambient authority and project-specific magic are forbidden.
-  - Project documentation is a graph of machine-readable Design Anchors and typed H5 relations; human-readable documentation is a generated non-canonical projection.
+  - Harness is a universal project-agnostic design execution rail; NAPMS is a migration/pilot case, never a hard-coded semantic special case.
+  - Harness behavior is explicit, versioned and fail-closed; silent fallback, ambient authority and project-specific magic are forbidden.
+  - Project documentation is a graph of machine-readable Design Anchors and H5 relations; readable documentation is a non-canonical projection.
   - Every accepted non-root anchor preserves logical derivation lineage to accepted predecessors/evidence/constraints/decisions.
-  - H6 owns S2 DDD semantics; H7 human knowledge acquisition; H8 validation/gates; H9 Task Capsule execution; H10 Harness evals/tracing/regression; H11 repository/CI enforcement design.
-  - Source-owned conformance cases remain the expected-behavior truth; generated regression indexes are projections only.
-  - Existing repository Harness surfaces are make harness-check and .github/workflows/harness.yml; future enforcement should evolve them rather than create a parallel stack where practical.
-  - Current tools/validate_docs_v2.py still validates legacy docs-v2 contracts, so current green harness-check is not redesigned H4-H10 compliance evidence.
-  - Hosted evidence used for integration must bind to the exact candidate revision; push-main evidence is post-merge only.
-  - Deterministic CI cannot fabricate semantic-eval PASS; required unavailable semantic evidence means BLOCKED.
-  - docs/ remains canonical NAPMS product/project design truth until explicit cutover; docs-v2 product candidates remain non-canonical.
-  - Product code/tests/runtime configuration remain excluded as sources for reconstructing missing product/domain/architecture truth during H12.
-  - H12 migration is semantic/provenance reconstruction, not file copying. Existing horizontal/pilot candidates are comparison input until rematerialized under current H3-H8 contracts.
-  - Existing horizontal/pilot V0-V3/G2/PASS evidence is stale for redesigned gates and cannot satisfy current H8 evidence requirements.
-  - Old context-map is projection-only after current bounded-context/context-relationship anchors exist; old traceability must be replaced by H5 semantic refs/lineage plus generated views.
-  - The prior Resource Catalogue tactical pilot cannot satisfy current S2 because H6 process discovery is applicable and was not durably performed before tactical modelling.
-  - H12 selected bounded migration sequence is T2 S0/S1 -> T3 Strategic -> T4 Process Discovery -> T5 Tactical -> T6 redesigned G2 -> T7 remaining-breadth planning.
-  - The single-effective-AddressSpace rule must be classified at the earliest semantic owner during H12-T2; S2 cannot silently rewrite S1. If it is a true S1 behavior choice not derivable from current docs, route through H7.
-  - Examples remain examples unless separately generalized/materialized with authority.
+  - H6 owns S2 DDD semantics; H7 human knowledge acquisition; H8 validation/gates; H9 Task Capsule execution; H10 regression/evals/tracing; H11 repository/CI enforcement design.
+  - Existing repository Harness surfaces remain make harness-check and .github/workflows/harness.yml; current legacy docs-v2 validator is not redesigned H4-H10 compliance evidence.
+  - docs/ remains canonical NAPMS product/project design truth until explicit cutover; product code/tests/runtime config cannot reconstruct missing product/domain/architecture truth during H12.
+  - Existing horizontal/pilot docs-v2 candidates are comparison/historical input until rematerialized under current H3-H8 contracts; former V0-V3/G2/PASS evidence is stale.
+  - H12 v2 legal migration sequence is H12-T2 S0 -> H12-G0-1 -> H12-T3 S1 -> H12-G1-1 -> H12-T4 Strategic -> H12-T5 Process Discovery -> H12-T6 Tactical -> H12-G2-1 -> H12-T7.
+  - One bounded execution may perform one design task or one gate/checkpoint evaluation, never both; successor lifecycle stages require their predecessor gate PASS.
+  - Current canonical S1 catalogue-curation behavior explicitly permits a realization version with one or more technical addresses.
+  - The later S2 single-effective-AddressSpace rule is a downstream narrowing and cannot override current S1. Reconstructing current S1 requires no H7 question; adopting the narrower rule would require an explicit S1/H7 authority change.
+  - Acceptance Example F is concrete-only evidence of replacing one address with another and cannot establish a universal max-one cardinality rule.
+  - The prior Resource Catalogue tactical pilot cannot satisfy current S2 because applicable H6 Process Discovery was not durably performed before tactical modelling.
+  - Old context-map is projection-only after current bounded-context/context-relationship anchors exist; old traceability is replaced by H5 semantic refs/lineage plus generated views.
   - New bounded-scope G2 does not authorize docs cutover, S3/S4 acceptance, product implementation, workflow changes, merge or broader NAPMS domain completeness.
 
 blockers: []
@@ -139,9 +129,9 @@ resume_protocol:
   - Read only the current phase entry and direct dependencies from docs-v2/meta/roadmap.yaml.
   - Load existing specs only when required by the current task.
   - Treat carry_forward and current_task required-input pointers as explicit context dependencies.
-  - Complete one bounded META/migration task, validate it, persist state, and stop.
+  - Complete one bounded META/migration task or one gate evaluation, validate it, persist state, and stop.
   - Do not infer progress from chat history when repository state is available.
 
 history_note: >-
-  Detailed earlier validation remains available in Git history; this state preserves the current
+  Earlier detailed validation remains available in Git history; this state preserves the current
   resumable execution pointer, active invariants, restrictions and migration findings.
