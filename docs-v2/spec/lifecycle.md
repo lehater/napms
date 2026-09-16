@@ -1,12 +1,12 @@
 # Lifecycle specification
 
-Status: SKELETON — M1 owns completion.
+Status: M1 COMPLETE — lifecycle contract defined; artifact schemas remain M2-owned.
 
 ## Purpose
 
-Define routing, stage responsibilities, gate semantics, reopen/dirty propagation and implementation authorization without embedding stage-specific working instructions.
+Route a material change through the minimum semantic work required before implementation. Keep lifecycle coordination separate from stage-specific methods and artifact schemas so an agent can load only the current task contract.
 
-## Skeleton
+## Lifecycle
 
 ```text
 S0 Problem / Evidence          -> G0
@@ -17,20 +17,137 @@ S4 Implementation Readiness    -> G4
 IMPLEMENTATION -> VALIDATION
 ```
 
-## Core boundary
+This is not a waterfall. Start at the earliest stage whose accepted truth may change. Earlier accepted guarantees are inputs, not mandatory rework. Only affected downstream guarantees become dirty and require revalidation.
 
-A stage creates or updates canonical knowledge artifacts. A gate validates whether the artifacts required by the next stage are sufficient. A gate is not itself a product artifact.
+## Core model
 
-Enter at the earliest stage whose accepted truth may change; revalidate only affected downstream truth.
+- A **stage** creates or updates canonical knowledge for one semantic concern.
+- An **artifact** materializes that knowledge in its canonical representation.
+- A **gate** validates sufficient current evidence for the next stage; a gate is not a product artifact.
+- A **change scope** is the smallest stable semantic slice being evaluated.
+- An **implementation lease** is G4 authorization for exactly one evaluated implementation scope.
 
-## M1 must define
+Later stages must not invent unresolved truth owned by an earlier stage merely to continue.
 
-- inputs, responsibilities and exit guarantees for S0-S4;
-- G0-G4 evidence rules;
-- stage/gate states and transitions;
-- reopen and dirty propagation;
-- exact implementation authorization semantics;
-- interaction with artifact requirements;
-- minimal routing data required by an agent.
+## Stage contracts
 
-Do not define detailed artifact schemas here; those belong to the artifact catalog.
+| Stage | Owns | Minimum input | Exit guarantee |
+|---|---|---|---|
+| S0 Problem / Evidence | need, actors, outcome, evidence, material constraints and unresolved problem questions | request, observation or conflicting evidence | the problem is sufficiently evidenced and bounded to derive requirements |
+| S1 Requirements | observable functional behavior, quality requirements, constraints and acceptance intent | G0-accepted problem truth or already-valid equivalent | required behavior is explicit, testable enough for domain work and solution-agnostic where practical |
+| S2 Domain Design | domain responsibilities, language, semantics, ownership, boundaries and bounded contexts | applicable G1-accepted behavior | semantic ownership and boundaries are sufficient for architecture to realize without inventing domain truth |
+| S3 Architecture | technical realization, system boundaries, interactions, contracts and significant technical decisions | applicable G1/G2 guarantees plus technical constraints | architecture and external/internal contracts are sufficient to prepare an implementation slice |
+| S4 Implementation Readiness | exact implementation slice, dependencies, migrations, validation intent and execution order | applicable accepted upstream guarantees | one explicit implementation scope is executable and verifiable without unresolved P0/P1 design work |
+
+Detailed working methods belong to stage-specific instructions. Artifact type definitions belong to `artifacts.md`.
+
+## Gate contracts
+
+| Gate | PASS means |
+|---|---|
+| G0 | current evidence justifies requirements work for the selected problem scope |
+| G1 | observable behavior, applicable qualities/constraints and acceptance intent are sufficient for domain design |
+| G2 | affected domain semantics, responsibility and boundary ownership are sufficient for architecture |
+| G3 | realization and contracts are sufficient to derive a concrete implementation-ready slice |
+| G4 | the exact selected slice has sufficient current upstream evidence, dependencies and validation intent to authorize implementation |
+
+A gate evaluates only artifacts applicable to the current scope. `conditional` artifacts block only when their applicability condition is true. `optional` artifacts never become mandatory merely because a template exists.
+
+## States
+
+Stages use:
+
+```text
+NOT_STARTED
+IN_PROGRESS
+BLOCKED
+GATE_FAILED
+ACCEPTED
+DIRTY
+```
+
+Gate outcomes are:
+
+```text
+PASS
+REWORK
+REOPEN(Sx)
+BLOCKED
+```
+
+- `PASS` marks the stage `ACCEPTED` for the evaluated scope.
+- `REWORK` means the deficiency belongs to the current stage; correct only that delta.
+- `REOPEN(Sx)` means later work exposed missing or invalid truth owned by an earlier stage.
+- `BLOCKED` means required truth cannot currently be derived; record the blocking question and stop that path.
+
+## Dirty propagation and reopen
+
+When accepted upstream truth materially changes:
+
+1. identify downstream guarantees that actually depend on it;
+2. mark only those guarantees `DIRTY`;
+3. revoke any dependent G4 implementation lease immediately;
+4. reopen the owning stage;
+5. resolve the smallest affected delta;
+6. revalidate dirty downstream stages in dependency order.
+
+Do not restart unaffected stages and do not treat `DIRTY` as proof that prior work is wrong.
+
+## Implementation authorization
+
+Implementation is allowed only after G4 PASS for an exact scope. Authorization records:
+
+```text
+Implementation authorization: G4 PASS
+Authorized scope: <stable exact slice>
+Authorization basis: <current accepted upstream and G4 evidence>
+```
+
+The lease is invalid when the scope changes materially, an upstream dependency becomes dirty, or implementation evidence exposes an unresolved earlier-stage decision. Resume only after the owning stage is resolved and a new applicable G4 PASS exists.
+
+## Validation feedback
+
+Implementation and validation may expose defects in any earlier guarantee. Route the finding to the earliest owning stage rather than patching the later artifact to hide the inconsistency. Reopen/dirty rules then apply normally.
+
+## Agent routing contract
+
+A lifecycle router provides only:
+
+```text
+change-scope
+current-stage
+stage-state
+applicable accepted upstream references
+current gate or authorization state
+blocking question, if any
+primary stage instruction reference
+artifact-type references required for the current task
+next concrete task
+```
+
+The agent then loads only:
+
+1. repository routing instructions;
+2. this lifecycle contract only when routing/transition semantics are needed;
+3. one primary stage/task instruction;
+4. applicable artifact-type specifications;
+5. the minimal current project working set;
+6. additional evidence only when the task demonstrates need.
+
+One agent execution should complete one concrete task or one gate evaluation, persist the durable result/state, and stop. It must not preload every stage protocol or the full artifact catalog.
+
+## Ownership boundaries
+
+This specification owns lifecycle routing, stage/gate semantics, dirty/reopen propagation and implementation authorization.
+
+It does **not** own:
+
+- artifact schemas, applicability details or canonical formats — `artifacts.md`;
+- physical paths and naming — `repository-layout.md`;
+- detailed context loading and task execution — `agent-execution.md`;
+- concrete automated checks — `validation.md`;
+- migration from current documentation — `migration/plan.md`.
+
+## M1 exit
+
+M1 is complete when S0-S4 responsibilities, G0-G4 guarantees, states, reopen/dirty behavior, implementation authorization and minimal agent routing data are defined without requiring detailed artifact schemas.
