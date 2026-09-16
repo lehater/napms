@@ -6,7 +6,7 @@ scope:
   scope_id: H12-RC-CURATION-MVP
   product_area: Resource Catalogue curation
   lifecycle_boundary: S0 problem and actor/goal journey
-status: CANDIDATE
+status: ACCEPTED
 canonical_payload: |-
   # Resource Catalogue self-service onboarding journey
 
@@ -62,7 +62,10 @@ semantic_refs:
     rationale_ref: provenance.derivation.rationale
 semantic_fingerprint: sha256-jcs-v1:5401681959c4ef07ce2b990b28ff2df1ee2eb5756b3d6355b641ab4f0f5bd475
 validation:
-  freshness: NOT_VALIDATED
+  freshness: CURRENT
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s0-journey-anchor-validation.yaml
+  validated_fingerprint: sha256-jcs-v1:5401681959c4ef07ce2b990b28ff2df1ee2eb5756b3d6355b641ab4f0f5bd475
+  validation_basis_fingerprint: sha256-jcs-v1:a25f666e27e370a114ac58d135e8f74076f9e1f1ed3bbb42b6a3d0c0d277b0b8
   profile: anchor-acceptance
   profile_version: h8-v1
   enforcement_status: specification-manual-not-CI
