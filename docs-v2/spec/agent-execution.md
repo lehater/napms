@@ -1,6 +1,6 @@
 # Agent execution specification
 
-Status: M4 COMPLETE — task-local execution and context-loading contract defined; concrete checks remain M5-owned.
+Status: M4 COMPLETE — reviewed before M7; task-local execution, authorization and context-loading contracts are explicit.
 
 ## Purpose
 
@@ -18,6 +18,7 @@ one change scope
 + explicit applicable artifact types
 + minimal project working set
 + explicit validation intent
++ explicit implementation lease fields when stage is IMPLEMENTATION
 = one bounded agent execution
 ```
 
@@ -30,6 +31,7 @@ route request/change
 -> identify earliest affected stage
 -> select one concrete task
 -> construct task capsule
+-> validate capsule
 -> load repository routing
 -> load one primary task/stage instruction
 -> load only applicable artifact specifications
@@ -71,7 +73,7 @@ If the earliest stage cannot be determined without domain evidence, route to a n
 
 ## Task capsule contract
 
-A durable/serializable capsule should be representable as:
+A durable/serializable capsule is representable as:
 
 ```yaml
 scope: <stable semantic scope>
@@ -87,11 +89,51 @@ outputs:
   - <expected canonical artifact ref/type>
 validation_profile:
   - <rule/profile id>
+implementation_authorization: none
+authorized_scope: none
+authorization_basis: none
+context_refs:
+  - <direct canonical/instruction ref>
+context_expansions: []
 blockers: []
 next: <single next task or null>
 ```
 
-This is a target data contract, not yet a committed schema. Machine-readable implementation is introduced only after M5 validates what fields automation actually needs.
+Pilot tooling may encode this compact contract directly. A repository-wide registry is still deferred until M7 evidence confirms the fields.
+
+## Capsule invariants
+
+A valid capsule obeys all of the following:
+
+1. `stage` is exactly one of `S0`, `S1`, `S2`, `S3`, `S4`, `IMPLEMENTATION` or `META`;
+2. `task` names one concrete outcome or one gate evaluation;
+3. exactly one `primary_instruction` is selected;
+4. every `artifact_types` entry resolves in the artifact catalog and is applicable to the task;
+5. every `validation_profile` resolves in the validation specification/registry;
+6. `inputs`, `outputs` and `context_refs` contain only direct references required for this task;
+7. `next` may name one next task but does not authorize executing it in the current capsule;
+8. `blockers` stop execution when they invalidate a required input, ownership or authorization assumption.
+
+## Implementation authorization invariant
+
+For every stage other than `IMPLEMENTATION`:
+
+```yaml
+implementation_authorization: none
+authorized_scope: none
+authorization_basis: none
+```
+
+For `IMPLEMENTATION` all three fields are mandatory and must represent a current scoped lease:
+
+```yaml
+stage: IMPLEMENTATION
+implementation_authorization: G4 PASS
+authorized_scope: <exact non-empty scope>
+authorization_basis: <durable G4 evidence ref>
+```
+
+The capsule cannot create or broaden the lease. Its `scope`, task outputs and implementation changes must be contained by `authorized_scope`. If upstream accepted truth becomes `DIRTY`, is reopened, or the authorization basis is stale/missing, the dependent lease is invalid: stop the implementation task, persist the finding and route to the owning stage. Never repair the lease by editing capsule fields alone.
 
 ## Instruction loading order
 
@@ -107,32 +149,6 @@ Load instructions in this order and stop when sufficient:
 8. additional instructions/evidence only after a concrete gap is identified.
 
 Do not preload sibling skills, all stage protocols, the full artifact catalog, all bounded-context documentation or historical plans.
-
-## Primary instruction rule
-
-Every task has one primary instruction/skill. Secondary instructions are loaded only for a demonstrated cross-cutting concern that the primary instruction cannot resolve.
-
-Examples:
-
-```text
-Task: clarify observable requirement
-Primary: requirements-stage
-Artifacts: functional-requirement + applicable acceptance/quality entries
-```
-
-```text
-Task: update one bounded-context semantic model
-Primary: domain-design-stage
-Artifacts: domain-model + only applicable context/state/trace entries
-```
-
-```text
-Task: validate HTTP boundary change
-Primary: architecture-stage or contract-specific skill
-Artifacts: http-contract + directly affected architecture/domain references
-```
-
-Avoid meta-skills that merely load several other skills. Routing should select the narrowest capable primary instruction.
 
 ## Context budget model
 
@@ -168,11 +184,24 @@ Load only when a concrete question cannot be answered from the working set, for 
 - a gate check requires one missing conditional artifact;
 - a referenced identifier cannot be resolved.
 
-When expansion occurs, record the reason in execution evidence when it materially affects routing or a gate decision.
+When expansion occurs, append a compact entry to `context_expansions` containing the additional reference and the concrete unresolved question/reason. Absence of such a reason means the expansion is invalid. This evidence is operational metadata, not chain-of-thought.
+
+## Context minimization observable contract
+
+Harness regression scenarios evaluate context minimization through observable references, never through hidden reasoning. A routed task should expose:
+
+```text
+primary_instruction
+artifact_types
+context_refs
+context_expansions
+```
+
+A fixture may assert required refs and forbidden refs. Passing means all required direct inputs are present, forbidden unrelated context is absent, and every expansion has a recorded reason. It does not require reproducing the agent's reasoning text.
 
 ## Search before broad load
 
-When the exact artifact path is unknown, search metadata/indexes first. Fetch the matching artifact, not the entire directory tree. Machine-readable catalog/index support should make this deterministic after M5/M6 implementation.
+When the exact artifact path is unknown, search metadata/indexes first. Fetch the matching artifact, not the entire directory tree. Machine-readable catalog/index support should make this deterministic after M7 proves the minimum fields.
 
 ## Canonical precedence
 
@@ -222,6 +251,7 @@ canonical artifact delta
 lifecycle/gate state delta
 validation result/reference
 blocker/reopen finding, if any
+context expansion refs/reasons only when material
 next concrete task
 ```
 
@@ -274,8 +304,8 @@ validation profiles
 skill/task routing map
 ```
 
-Do not encode these registries until their fields stabilize through M5 and the M7 pilot.
+Do not encode repository-wide registries until their fields stabilize through the M7 pilot.
 
 ## M4 exit
 
-M4 is complete when routing inputs, one-task capsule semantics, instruction selection, progressive context loading, expansion rules, persistence/handoff, stop/reopen behavior and Harness/CI responsibilities are defined without implementing the validators or migrating product documentation.
+M4 is complete when routing inputs, one-task capsule semantics, implementation authorization, instruction selection, progressive context loading, observable expansion rules, persistence/handoff, stop/reopen behavior and Harness/CI responsibilities are defined without migrating product documentation.
