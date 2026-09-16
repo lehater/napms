@@ -7,32 +7,29 @@ last_updated: 2026-09-16
 
 program:
   status: ACTIVE
-  current_phase: H1
-  current_phase_state: IN_PROGRESS
+  current_phase: H2
+  current_phase_state: NOT_STARTED
   completed_phases:
     - H0
-  blocked_phases:
-    - H2
+    - H1
+  blocked_phases: []
 
 current_task:
-  id: H1-T2
-  title: Close lifecycle conformance gaps required by H2
+  id: H2-T1
+  title: Define executable lifecycle model
   state: NOT_STARTED
   objective: >
-    Extend the RED-stage Harness conformance contract only where H2-T1 proved lifecycle
-    behavior is not yet specified test-first. Add stable conformance cases for gate PASS,
-    BLOCKED routing, DIRTY propagation and dependent G4 revocation, S2 checkpoint
-    progression/applicability, and representative illegal-transition rejection so H2 can
-    define the lifecycle state machine without inventing untested transition semantics.
+    Replace prose-only lifecycle assumptions with a machine-readable state-machine
+    specification that defines lifecycle states/transitions, S0/S1/S2/S3/S4 ownership,
+    S2 strategic/process-discovery/tactical checkpoints, G0-G4 contracts and explicit
+    REWORK, REOPEN, BLOCKED and NEED_MORE_DATA routing.
   expected_outputs:
-    - additional stable lifecycle conformance scenario IDs in docs-v2/spec/harness-conformance.yaml
-    - explicit BLOCKED versus NEED_MORE_DATA behavioral boundary
-    - gate PASS to accepted-state/next-stage eligibility case without same-capsule auto-execution
-    - DIRTY propagation and dependent implementation-lease revocation case
-    - S2 strategic/process-discovery/tactical checkpoint progression and complete-applicable-S2 G2 eligibility cases
-    - representative illegal-transition rejection case
-    - refreshed HE-LIFECYCLE-ROUTING suite with reference-integrity validation
-  next_after_completion: Retry H2-T1 executable lifecycle model
+    - machine-readable lifecycle state-machine specification
+    - lifecycle states and legal/rejected transitions
+    - S0/S1/S2/S3/S4 stage ownership and S2 internal checkpoints
+    - G0-G4 contracts and failure-routing semantics
+    - mapping from H1 lifecycle conformance cases to deterministic transition rules
+  next_after_completion: H3 Design Anchor contract
 
 completed_work:
   - id: H0-T1
@@ -62,6 +59,33 @@ completed_work:
       executable_tests_created_or_changed: false
     artifacts:
       - docs-v2/spec/harness-conformance.yaml
+  - id: H1-T2
+    result: PASS
+    description: >
+      Close lifecycle test-first gaps exposed by the first H2 attempt. Add explicit
+      transition classes and RED cases for gate PASS/REWORK state effects, BLOCKED versus
+      NEED_MORE_DATA, legal resume, DIRTY propagation and G4 revocation, S2 checkpoint
+      applicability/progression, complete-S2 G2 eligibility and illegal transition rejection.
+    validation:
+      machine_readable_contract_review: PASS
+      capability_count: 15
+      scenario_count: 48
+      new_scenario_count: 11
+      capability_reference_integrity: PASS
+      eval_suite_reference_integrity: PASS
+      lifecycle_transition_coverage_reference_integrity: PASS
+      lifecycle_suite_required_routes:
+        REWORK: PASS
+        REOPEN: PASS
+        BLOCKED: PASS
+        NEED_MORE_DATA: PASS
+      lifecycle_suite_gate_pass: PASS
+      lifecycle_suite_dirty_propagation: PASS
+      lifecycle_suite_s2_applicability: PASS
+      lifecycle_suite_illegal_transition_rejection: PASS
+      executable_tests_created_or_changed: false
+    artifacts:
+      - docs-v2/spec/harness-conformance.yaml
 
 routing_history:
   - id: H2-T1-ATTEMPT-1
@@ -71,29 +95,11 @@ routing_history:
     reason: >
       H2 roadmap exit criteria require every legal lifecycle transition and rejection path
       to be covered by H1 conformance cases before the machine-readable lifecycle is defined.
-      The current H1 contract does not cover all behavior H2 is required to specify.
-    evidence:
-      roadmap_requires:
-        - lifecycle states and transitions
-        - S2 strategic/process-discovery/tactical checkpoints
-        - G0-G4 contracts
-        - REWORK, REOPEN, BLOCKED and NEED_MORE_DATA routing
-        - every legal transition and rejection path covered by H1 conformance cases
-      existing_h1_coverage:
-        - REWORK current-stage routing
-        - REOPEN earlier-stage routing
-        - NEED_MORE_DATA for non-derivable missing business truth
-        - stop after one bounded execution
-        - rejection of G2 when applicable S2 work is incomplete
-      missing_test_first_coverage:
-        - BLOCKED route and its boundary from NEED_MORE_DATA
-        - normal gate PASS transition to accepted state and next-stage eligibility
-        - DIRTY downstream propagation and dependent G4 lease revocation
-        - legal S2 checkpoint progression and applicability behavior
-        - representative illegal lifecycle transition rejection
-    decision: >
-      Do not define these missing semantics inside H2. Reopen H1 and specify the RED
-      conformance cases first, then retry H2-T1.
+      H1-T1 lacked BLOCKED, normal gate PASS, DIRTY/G4 revocation, S2 checkpoint progression
+      and representative illegal-transition coverage.
+    resolution: >
+      H1-T2 added the missing RED-stage cases and transition-class coverage. H2-T1 is now
+      unblocked and must implement/specify only transition classes already covered there.
     files_reviewed:
       - docs-v2/meta/roadmap.yaml
       - docs-v2/spec/harness-conformance.yaml
@@ -108,10 +114,12 @@ carry_forward:
   - Design Anchors are intended to become canonical machine-readable, human-controllable reference points with stable identity, provenance, dependency and validation semantics.
   - Domain Process Discovery/Event Storming must escalate unsupported business choices to structured stakeholder questions; user answers/examples should become durable decisions, use cases or journeys with provenance.
   - H1 conformance scenarios in docs-v2/spec/harness-conformance.yaml are RED-stage behavioral requirements for H2-H13 and must not be weakened to fit an implementation.
-  - NEED_MORE_DATA is required when business truth is missing and not derivable from accepted facts; speculative retries or invented business rules are non-conformant.
-  - G2 must reject a scope where applicable S2 process-discovery or tactical work remains incomplete even if strategic decomposition is complete.
-  - Deterministic structural/reference/authority failures must be resolved before semantic eval can produce PASS.
-  - H2-T1 must remain blocked until H1-T2 closes the lifecycle conformance gaps recorded in routing_history.
+  - H2 must not introduce a legal lifecycle transition class or rejection path absent from H1 lifecycle_transition_coverage; such a gap reopens H1 first.
+  - BLOCKED is for a known unavailable prerequisite/authority/evidence with a known resolution path and no new business semantic choice; NEED_MORE_DATA is for non-derivable human-owned business truth and requires a stakeholder question.
+  - NEED_MORE_DATA leaves the current stage BLOCKED while durable stakeholder input is awaited.
+  - G2 evaluation is eligible only when all applicable S2 checkpoints are accepted; non-applicable checkpoints are skipped rather than fabricated as complete.
+  - Material upstream change dirties only declared dependent accepted stages and revokes any dependent G4 implementation authorization.
+  - Deterministic structural/reference/authority/transition failures must be resolved before semantic eval can produce PASS.
 
 blockers: []
 
