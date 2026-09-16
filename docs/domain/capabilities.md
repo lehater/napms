@@ -7,7 +7,7 @@ A capability is not automatically a Bounded Context, service or deployment unit.
 | Capability | Semantic owner / disposition |
 |---|---|
 | Business Process / Connectivity Need / attribution | **Business Connectivity** |
-| Policy Rule lifecycle, proposal/change history, bilateral approvals, withdrawal, current effective revision | **Access Policy** |
+| Policy Rule lifecycle, RuleChange history, formal Accepted/Rejected decision, withdrawal, current effective revision | **Access Policy** |
 | Effective Authority | **Authority Management** |
 | Resource identity / effective HostAddress-or-Prefix realization | **Resource Catalogue** |
 | Resource Scope Affiliation / Resource Responsibility | **Resource Catalogue** |
@@ -27,7 +27,9 @@ A capability is not automatically a Bounded Context, service or deployment unit.
 | Scoped Connectivity Inventory | current as-built/non-peer read composition where retained |
 | Connectivity Impact Analysis | cross-context analysis; no peer BC accepted |
 
-`Access Governance` is no longer a target peer Bounded Context. Governance is a capability inside Access Policy because the proposal/approval/withdrawal lifecycle directly controls the same Policy Rule's current effective semantics.
+`Access Governance` is no longer a target peer Bounded Context. The minimum governance capability inside Access Policy is deliberately small: submit a RuleChange, record one formal `Accepted | Rejected` outcome, and preserve history/current effectiveness.
+
+Customer-specific approval procedure is not a target capability of the first MVP. Bilateral approvers, quorum, CAB/ticket stages and Responsibility Scope-derived approval routing may be integrated later without changing the core RuleChange outcome model.
 
 ## Concrete deployment capability
 
@@ -47,15 +49,16 @@ Manual proposal --------------------\
 Evidence Access Recognition --------/
 
 Rule lifecycle
-    proposal/change
-    -> bilateral governance
-    -> effective revision / withdrawn state
+    RuleChange(Pending)
+    -> Accepted | Rejected
+    -> effective revision / unchanged revision
+    -> optional explicit withdrawal
     -> current PolicyRule projection
 ```
 
-Pending/rejected changes coexist with current effective policy and cannot overwrite it.
+Pending/Rejected changes coexist with current effective policy and cannot overwrite it. One Accepted applicable change may advance the effective revision.
 
-Business Connectivity supplies Process-backed Need/business basis for deliberate submission. Authority Management supplies decision authority. Neither becomes part of Policy Rule ownership.
+Business Connectivity supplies Process-backed Need/business basis for deliberate submission. Authority Management may protect propose/decide/withdraw actions. Neither becomes part of Policy Rule ownership or defines customer approval workflow.
 
 ## Technical evidence acquisition and recognition
 
@@ -66,7 +69,7 @@ source acquisition / collector
     -> Evidence Access Recognition
         + RC/AD/ACC correlation
     -> RecognizedAccessCandidate
-    -> normal Access Policy proposal lifecycle
+    -> normal Access Policy RuleChange lifecycle
 ```
 
 TAE owns normalized evidence vocabulary/invariants. Recognition owns no authoritative policy or catalogue truth. Evidence does not become authorization merely because correlation succeeds.
