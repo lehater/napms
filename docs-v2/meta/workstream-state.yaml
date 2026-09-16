@@ -23,9 +23,11 @@ current_task:
   title: Complete DDD pipeline specification
   state: NOT_STARTED
   objective: >
-    On the next bounded execution, apply the resume protocol and read the H6 roadmap entry
-    plus its direct dependency H5 before resolving the exact H6 task capsule. Do not infer
-    additional H6 scope from chat history and do not execute H6 work inside the completed H5 capsule.
+    On the next bounded execution, apply the resume protocol and read the revised H6 roadmap
+    entry plus its direct H5 dependency, including docs-v2/spec/design-derivation-lineage.yaml.
+    H6 must formalize not only DDD outputs but the explicit accepted predecessors, evidence,
+    decisions, derivation kind and durable rationale from which every DDD artifact follows.
+    Do not execute H6 work inside the completed program-intent correction capsule.
 
 completed_work:
   - id: H0-T1
@@ -200,6 +202,34 @@ completed_work:
     artifacts:
       - docs-v2/spec/dependency-registry-impact.yaml
 
+  - id: H5-T2
+    result: PASS
+    description: >
+      Clarify the program as a universal project-design Harness from problem/evidence to
+      implementation readiness and extend H5 with an explicit design-derivation-lineage
+      contract. Distinguish logical provenance from impact dependency, require accepted
+      non-root anchors to explain their accepted predecessors and durable rationale, require
+      roots to have durable human/external/evidence authority, and define the project-book
+      as a non-canonical human-readable projection of the same anchor graph.
+    validation:
+      universal_design_harness_intent: PASS
+      machine_readable_lineage_contract: PASS
+      accepted_nonroot_lineage_required: PASS
+      durable_root_basis_required: PASS
+      lineage_relations_reuse_h5_refs: PASS
+      lineage_acyclicity: PASS
+      human_choice_requires_durable_decision: PASS
+      backward_explainability_to_roots: PASS
+      project_book_projection_noncanonical: PASS
+      private_chain_of_thought_not_required: PASS
+      napms_specific_semantics_in_harness: false
+      executable_validators_created_or_changed: false
+      executable_tests_created_or_changed: false
+      runtime_implementation_created_or_changed: false
+    artifacts:
+      - docs-v2/meta/roadmap.yaml
+      - docs-v2/spec/design-derivation-lineage.yaml
+
 routing_history:
   - id: H2-T1-ATTEMPT-1
     task: H2-T1
@@ -219,6 +249,14 @@ routing_history:
       - docs-v2/spec/lifecycle.md
 
 carry_forward:
+  - Harness is a universal, project-agnostic design execution rail from idea/problem/evidence through requirements, DDD, architecture and implementation readiness before first product code; NAPMS is the pilot, not a hard-coded semantic special case.
+  - Project documentation is fundamentally a graph of machine-readable Design Anchors and typed relations; human-readable documentation is a reproducible book/view projection of that graph rather than a parallel source of truth.
+  - Provenance alone is insufficient for derived design truth. Every accepted non-root anchor must preserve logical derivation lineage: accepted predecessors/evidence/constraints/decisions, derivation kind and concise durable design rationale.
+  - Accepted root anchors must terminate in durable stakeholder/external/evidence/constraint authority; an agent proposal cannot be an unexplained root.
+  - docs-v2/spec/design-derivation-lineage.yaml extends H5 and is a required direct design input for H6-H13 wherever artifact generation, validation, context selection, migration or documentation projection depends on design lineage.
+  - H5 impact dependency and derivation lineage reuse the same H3 semantic_refs and anchor identities; there must not be a second parallel hand-maintained lineage graph.
+  - General impact dependencies may be cyclic when explicitly valid, but logical derivation lineage is acyclic; a derivation cycle means the real predecessor/decision basis has not been exposed.
+  - Design rationale is durable project-level justification, not private chain-of-thought. It must be sufficient to review why a design step follows without storing hidden model reasoning.
   - Existing M1-M6 specifications are redesign inputs and may be revised by H6-H11.
   - M7 evidence exposed missing strategic-DDD derivation artifacts and broader Harness/process gaps.
   - The previously recorded horizontal strategic G2 PASS is stale under the revised direction and must not authorize architecture or implementation.
