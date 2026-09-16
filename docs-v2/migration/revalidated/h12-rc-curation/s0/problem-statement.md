@@ -6,7 +6,7 @@ scope:
   scope_id: H12-RC-CURATION-MVP
   product_area: Resource Catalogue curation
   lifecycle_boundary: S0 problem and actor/goal journey
-status: CANDIDATE
+status: ACCEPTED
 canonical_payload: |-
   # Resource Catalogue curation problem
 
@@ -43,7 +43,10 @@ provenance:
 semantic_refs: []
 semantic_fingerprint: sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
 validation:
-  freshness: NOT_VALIDATED
+  freshness: CURRENT
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s0-problem-anchor-validation.yaml
+  validated_fingerprint: sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
+  validation_basis_fingerprint: sha256-jcs-v1:e847ab04eee8a421eff7e2531787c5396bc15a1fedf64e34c436d750be98887c
   profile: anchor-acceptance
   profile_version: h8-v1
   enforcement_status: specification-manual-not-CI
