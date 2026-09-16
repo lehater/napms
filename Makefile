@@ -42,6 +42,7 @@ dev-restore:
 harness-check:
 	python tools/validate_harness.py
 	python tools/validate_plans.py
+	python tools/validate_plan_capsule_sync.py
 	python tools/validate_skill_routing.py
 	python tools/validate_lifecycle_transitions.py
 	python tools/validate_docs_v2.py
