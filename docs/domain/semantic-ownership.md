@@ -8,7 +8,7 @@ Canonical relationships: `context-map.md`.
 |---|---|
 | Business Process / Connectivity Need | **Business Connectivity** |
 | Policy Rule identity/current effective revision | **Access Policy** |
-| rule-change proposal/request history, bilateral approval/rejection/withdrawal, current effective policy transition | **Access Policy** |
+| RuleChange proposal history, formal Accepted/Rejected outcome, withdrawal/current effective transition | **Access Policy** |
 | effective actor/action/scope authority | **Authority Management** |
 | Resource identity/lifecycle and effective `HostAddress | Prefix` realization | **Resource Catalogue** |
 | Resource Scope Affiliation / Resource Responsibility | **Resource Catalogue** |
@@ -54,20 +54,20 @@ PolicyRule
     destinationComponentDeploymentRef
     current/effective revisionRef?
 
-+ proposal/change attempts
-+ bilateral approval/rejection decisions
++ RuleChange attempts
++ Pending | Accepted | Rejected formal decisions
 + withdrawal/regrant history
 + decision/business/evidence provenance
 ```
 
-The former Access Governance Bounded Context is removed from the target model. Its still-required governance semantics remain inside Access Policy because they directly control the same Rule's current effective revision/state.
+The former Access Governance Bounded Context is removed from the target model. The still-required proposal/decision/current-policy semantics remain inside Access Policy because they directly control the same Rule's current effective revision/state.
 
 This does **not** collapse historical and current truth:
 
-- pending/rejected changes remain historical/proposed facts and do not overwrite current effective policy;
-- an accepted change may update the current effective revision of the same concrete Rule;
+- Pending/Rejected changes remain historical/proposed facts and do not overwrite current effective policy;
+- an Accepted change may update the current effective revision of the same concrete Rule;
 - withdrawal makes the Rule non-effective without rewriting history;
-- old approvals cannot silently reactivate a withdrawn Rule.
+- old Accepted changes cannot silently reactivate a withdrawn Rule.
 
 Business Connectivity remains separate because business Need is not authorization and may outlive one concrete deployment pair or revision. Authority Management remains separate because authority evaluation is reusable and independently owned.
 
@@ -84,18 +84,19 @@ The current/proposed `InteractionContractRevisionRef` supplies exact traffic sem
 
 The revision's owning Interaction supplies the endpoint Component definitions. Access Policy verifies the concrete Component Deployments match those endpoints; no duplicate `InteractionRef` is required solely for that purpose.
 
-## Responsibility-scope correlation
+## Formal decision versus approval procedure
 
-`ResponsibilityScopeRef` remains a stable correlation value, not a Bounded Context.
+Access Policy owns only the formal outcome required to change effective policy:
 
-- AD identifies each concrete Component Deployment's Resource;
-- RC owns Resource-to-Scope affiliation;
-- AM owns Actor/action authority to the same scope reference;
-- Access Policy owns how those independent truths establish source/destination approval obligations.
+```text
+RuleChange: Pending -> Accepted | Rejected
+```
 
-Resource responsibility/contact metadata does not grant actor authority.
+It does not own customer-specific approval procedure, approver topology, source/destination sides, quorum, CAB/ticket stages or Responsibility Scope-derived approval obligations.
 
-For MVP, each side must resolve to exactly one distinct applicable Responsibility Scope. Zero or several fail closed.
+Such procedures may live in external systems or later optional integrations and may invoke the same formal AP decision capability when their own process completes.
+
+Resource Scope Affiliation remains RC-owned truth and Authority Management remains the owner of actor/action/scope authority, but neither fact is automatically an AP approval model.
 
 ## Authority semantics
 
@@ -105,7 +106,9 @@ AM evaluates authority for an exact:
 ActorRef + ActionRef + ResponsibilityScopeRef + effectiveTime
 ```
 
-using effective membership/role/scope facts. `Denied` and `Unknown` fail closed for protected actions. Historical decisions retain authority evidence valid at decision time; later assignment changes do not rewrite old decisions.
+using effective membership/role/scope facts. `Denied` and `Unknown` fail closed where an action is configured as protected.
+
+AP may consume action-admission results for proposing, deciding or withdrawing without importing AM private models or turning the authority check into a multi-party approval workflow.
 
 ## Technical evidence ownership and recognition
 
@@ -115,14 +118,14 @@ source-specific collectors/adapters
     -> TAE immutable evidence history
     -> Evidence Access Recognition composition
     -> RecognizedAccessCandidate | unresolved
-    -> Access Policy proposal lifecycle
+    -> Access Policy RuleChange lifecycle
 ```
 
 TAE owns evidence meaning/invariants only. It does not create desired policy or authorization.
 
 Evidence Access Recognition may correlate TAE predicates with RC Resources, AD Component Deployments and ACC revision semantics. It owns no authoritative Resource/deployment/application/policy truth and must fail closed on ambiguous correlation.
 
-A recognized candidate may carry evidence provenance into the same Access Policy change lifecycle as manual creation. It cannot bypass Process/Need submission requirements or approval authority.
+A recognized candidate may carry evidence provenance into the same Access Policy change lifecycle as manual creation. It cannot bypass Process/Need submission requirements or the formal Accepted decision.
 
 ## Realization chain
 
