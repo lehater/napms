@@ -25,12 +25,13 @@ Design and validate a replacement documentation/artifact system incrementally, w
 - M0 foundation: complete.
 - M1 lifecycle contract: complete.
 - M2 artifact model: complete.
-- M3 repository layout: next.
+- M3 repository layout: complete.
+- M4 agent execution model: next.
 
 ## Blockers
 
-None for M3.
+None for M4.
 
 ## Next
 
-Complete M3 repository layout only: define canonical physical ownership, target paths, naming, generated-output rules and how concept ownership maps to folders. Do not migrate current product documentation or implement validation tooling during M3.
+Complete M4 agent execution model only: define routing, one-task execution capsules, progressive disclosure, instruction/artifact loading order, stop/reopen behavior and durable handoff state. Do not migrate product documentation or implement validation tooling during M4.
