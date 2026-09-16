@@ -7,31 +7,31 @@ last_updated: 2026-09-16
 
 program:
   status: ACTIVE
-  current_phase: H3
+  current_phase: H4
   current_phase_state: NOT_STARTED
   completed_phases:
     - H0
     - H1
     - H2
+    - H3
   blocked_phases: []
 
 current_task:
-  id: H3-T1
-  title: Define Design Anchor contract
+  id: H4-T1
+  title: Define artifact type registry and canonical formats
   state: NOT_STARTED
   objective: >
-    Define the universal contract for canonical machine-readable Design Anchors: stable
-    identity, canonical representation, status/lifecycle, provenance, human override,
-    supersession and fingerprint/revalidation semantics, without changing product truth
-    or performing canonical cutover.
+    Define the machine-readable artifact type registry and canonical-format mapping for
+    every retained anchor/artifact family: applicability, single semantic owner, canonical
+    representation, schema/DSL selection, validators and classification as anchor,
+    evidence, projection or process-state artifact, while preserving the H3 Design Anchor contract.
   expected_outputs:
-    - machine-readable Design Anchor contract
-    - stable identity and canonical representation rules
-    - anchor status/lifecycle model
-    - provenance and human override semantics
-    - supersession rules
-    - fingerprint and revalidation semantics
-  next_after_completion: H4 Artifact type registry and canonical formats
+    - machine-readable artifact type registry
+    - schema/DSL selection rules
+    - standard-format mappings for OpenAPI, AsyncAPI, architecture DSL and other native specifications
+    - classification of anchor, evidence, projection and process-state artifacts
+    - per-type mapping to the H3 Design Anchor envelope where applicable
+  next_after_completion: H5 Dependency, registry and impact model
 
 completed_work:
   - id: H0-T1
@@ -76,15 +76,6 @@ completed_work:
       capability_reference_integrity: PASS
       eval_suite_reference_integrity: PASS
       lifecycle_transition_coverage_reference_integrity: PASS
-      lifecycle_suite_required_routes:
-        REWORK: PASS
-        REOPEN: PASS
-        BLOCKED: PASS
-        NEED_MORE_DATA: PASS
-      lifecycle_suite_gate_pass: PASS
-      lifecycle_suite_dirty_propagation: PASS
-      lifecycle_suite_s2_applicability: PASS
-      lifecycle_suite_illegal_transition_rejection: PASS
       executable_tests_created_or_changed: false
     artifacts:
       - docs-v2/spec/harness-conformance.yaml
@@ -107,15 +98,36 @@ completed_work:
       lifecycle_suite_scenario_count: 18
       lifecycle_suite_mapping: PASS
       g2_complete_applicable_s2_guard: PASS
-      non_applicable_checkpoint_skip_without_acceptance: PASS
-      route_state_effects: PASS
       dirty_dependent_g4_revocation: PASS
-      illegal_transition_rejection: PASS
-      implementation_without_current_g4_rejection: PASS
       executable_tests_created_or_changed: false
       runtime_implementation_created_or_changed: false
     artifacts:
       - docs-v2/spec/lifecycle-state-machine.yaml
+  - id: H3-T1
+    result: PASS
+    description: >
+      Define the universal machine-readable Design Anchor contract for stable identity,
+      canonical representation, status/lifecycle, provenance, human control, supersession
+      and fingerprint/revalidation semantics without changing current product/domain authority.
+    validation:
+      machine_readable_yaml: PASS
+      anchor_status_count: 5
+      anchor_transition_rule_count: 5
+      conformance_case_count: 12
+      conformance_case_id_uniqueness: PASS
+      required_h3_conformance_cases_present: PASS
+      accepted_reference_guard: PASS
+      manual_semantic_edit_stales_validation: PASS
+      unsupported_agent_assertion_acceptance_rejected: PASS
+      human_acceptance_does_not_bypass_integrity: PASS
+      supersession_history_preserved: PASS
+      explicit_cutover_guard: PASS
+      concrete_format_selection_deferred_to_h4: true
+      dependency_graph_propagation_deferred_to_h5: true
+      executable_tests_created_or_changed: false
+      runtime_implementation_created_or_changed: false
+    artifacts:
+      - docs-v2/spec/design-anchor.yaml
 
 routing_history:
   - id: H2-T1-ATTEMPT-1
@@ -136,20 +148,23 @@ routing_history:
       - docs-v2/spec/lifecycle.md
 
 carry_forward:
-  - Existing M1-M6 specifications are redesign inputs and may be revised by H3-H11.
+  - Existing M1-M6 specifications are redesign inputs and may be revised by H4-H11.
   - M7 evidence exposed missing strategic-DDD derivation artifacts and broader Harness/process gaps.
   - The previously recorded horizontal strategic G2 PASS is stale under the revised direction and must not authorize architecture or implementation.
   - Product code/tests remain excluded as sources of product/domain/architecture truth in the current documentation-design work.
   - docs/ remains canonical product/project design truth until explicit cutover.
-  - docs-v2/spec/lifecycle-state-machine.yaml owns redesigned Harness lifecycle coordination semantics; docs-v2/spec/lifecycle.md is retained only as pre-H2 redesign input and must not override the machine-readable state machine.
-  - H1 conformance scenarios in docs-v2/spec/harness-conformance.yaml remain RED-stage behavioral requirements and must not be weakened to fit later specifications or implementation.
+  - docs-v2/spec/lifecycle-state-machine.yaml owns redesigned Harness lifecycle coordination semantics; docs-v2/spec/lifecycle.md remains pre-H2 redesign input only.
+  - docs-v2/spec/design-anchor.yaml owns the universal logical Design Anchor contract; H4 may specialize formats/types but must not weaken H3 identity, provenance, acceptance, human-control or freshness invariants.
+  - Before cutover, ACCEPTED in the Design Anchor contract denotes conformance to the anchor model and does not override docs/ product/domain authority.
+  - Only ACCEPTED anchors with CURRENT validation evidence may serve as current downstream Design Anchor truth under the redesigned model.
+  - Manual edits to fingerprint-included semantics stale prior validation evidence and move an ACCEPTED anchor to DIRTY until revalidated.
+  - Human acceptance/override provides durable authority but never bypasses deterministic integrity/fingerprint validation.
+  - Unsupported agent-generated human-owned business assertions cannot become ACCEPTED; they route to NEED_MORE_DATA/BLOCKED when truth is not derivable.
+  - Superseded anchors remain historically addressable; replacement anchors require independent acceptance.
+  - Concrete fingerprint/canonicalization algorithms and dependency propagation remain H5-owned; H3 defines their required semantics only.
+  - H1 conformance scenarios remain RED-stage behavioral requirements and must not be weakened to fit later specifications or implementation.
   - No new lifecycle transition class or rejection path may be added outside H1 lifecycle_transition_coverage; a missing class reopens H1 first.
-  - BLOCKED is for a known unavailable prerequisite/authority/evidence with a known resolution path and no new business semantic choice; NEED_MORE_DATA is for non-derivable human-owned business truth and requires a stakeholder question.
-  - NEED_MORE_DATA leaves the current stage BLOCKED while durable stakeholder input is awaited.
-  - S2 checkpoint applicability is an explicit per-scope input at H2; criteria for deriving applicability belong to later artifact/DDD specifications rather than being invented by the lifecycle engine.
   - G2 evaluation is eligible only when all applicable S2 checkpoints are ACCEPTED; non-applicable checkpoints are skipped rather than fabricated as complete.
-  - Material upstream change dirties only declared dependent accepted stages and revokes any dependent G4 implementation authorization.
-  - Design Anchors are intended to become canonical machine-readable, human-controllable reference points with stable identity, provenance, dependency and validation semantics; H3 must define this contract without product cutover.
   - Domain Process Discovery/Event Storming must escalate unsupported business choices to structured stakeholder questions; user answers/examples should become durable decisions, use cases or journeys with provenance.
   - Deterministic structural/reference/authority/transition failures must be resolved before semantic eval can produce PASS.
 
