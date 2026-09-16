@@ -27,12 +27,13 @@ Design and validate a replacement documentation/artifact system incrementally, w
 - M2 artifact model: complete.
 - M3 repository layout: complete.
 - M4 agent execution model: complete.
-- M5 validation model: next.
+- M5 validation model: complete.
+- M6 migration plan: next.
 
 ## Blockers
 
-None for M5.
+None for M6.
 
 ## Next
 
-Complete M5 validation model only: define validation layers/profiles, artifact syntax/structure/consistency checks, gate evidence checks, CI/local responsibilities and failure routing. Do not implement the full validator suite or migrate product documentation during M5.
+Complete M6 migration plan only: inventory/map current `docs/` and Harness/CI ownership to v2 artifact types and profiles, define migration batches, pilot selection criteria, canonical-truth safeguards, cutover/rollback procedure and retirement of old documentation. Do not perform the migration during M6.
