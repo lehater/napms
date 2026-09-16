@@ -7,43 +7,68 @@ last_updated: 2026-09-16
 
 program:
   status: ACTIVE
-  current_phase: H4
-  current_phase_state: DIRTY
-  completed_phases: [H0, H1, H2, H3, H5]
+  current_phase: H6
+  current_phase_state: NOT_STARTED
+  completed_phases: [H0, H1, H2, H3, H4, H5]
   blocked_phases: []
-  compatibility_review_required_phases: [H5]
+  compatibility_review_required_phases: []
 
 current_task:
-  id: H4-T2
-  title: Complete S2 artifact types required by H6
+  id: H6-T1
+  title: Complete DDD pipeline specification
   state: NOT_STARTED
-  objective: >
-    Close the artifact-registry gap exposed by H6 preflight. Add canonical S2 artifact
-    ownership for Bounded Context identity/boundary semantics and Domain Process Discovery /
-    Event Storming semantics before H6 defines their detailed schemas and derivation methods.
-    Preserve H3/H5 identity, lineage and dependency invariants, avoid duplicate canonical truth,
-    and perform a focused H5 compatibility review after the H4 delta. Do not execute H6 in the
-    same bounded capsule.
-  expected_outputs:
-    - retained bounded-context S2 anchor type with one canonical owner/representation
-    - retained domain-process-model S2 anchor type with one canonical owner/representation
-    - applicability and G2 relevance for both types
-    - explicit disposition of capability-to-context mapping as canonical refs/projection rather than duplicate truth
-    - explicit disposition of candidate aggregate discovery as process-model hypothesis/input to tactical domain-model unless a separate canonical type is proven necessary
-    - H5 compatibility review for registry/dependency/lineage contracts
-  next_after_completion: Resume H6-T1 after H5 compatibility review passes
+  objective: >-
+    Resume H6 against the corrected H4 registry, H5 dependency/lineage contracts and H1
+    reliability contract. Define the detailed schemas and derivation methods for the complete
+    strategic -> process-discovery -> tactical DDD pipeline. Do not execute H7 in the same capsule.
+  required_inputs:
+    - docs-v2/spec/artifact-type-registry.yaml
+    - docs-v2/spec/dependency-registry-impact.yaml
+    - docs-v2/spec/design-derivation-lineage.yaml
+    - docs-v2/spec/harness-reliability-conformance.yaml
+  next_after_completion: H7 Human knowledge acquisition protocol
 
 completed_work:
-  - {id: H0-T1, result: PASS, artifact: docs-v2/meta/roadmap.yaml, summary: durable roadmap and redesign charter}
+  - {id: H0-T1, result: PASS, artifact: docs-v2/meta/roadmap.yaml, summary: durable roadmap and universal design-Harness charter}
   - {id: H0-T2, result: PASS, artifact: docs-v2/meta/workstream-state.yaml, summary: resumable repository-resident workstream state}
   - {id: H1-T1, result: PASS, artifact: docs-v2/spec/harness-conformance.yaml, summary: initial RED-stage Harness conformance/eval contract}
   - {id: H1-T2, result: PASS, artifact: docs-v2/spec/harness-conformance.yaml, summary: lifecycle transition and rejection coverage hardening}
   - {id: H1-T3, result: PASS, artifact: docs-v2/spec/harness-reliability-conformance.yaml, summary: deterministic replay, restart safety, idempotency, fail-closed and regression hardening}
   - {id: H2-T1, result: PASS, artifact: docs-v2/spec/lifecycle-state-machine.yaml, summary: executable lifecycle and gate state machine}
   - {id: H3-T1, result: PASS, artifact: docs-v2/spec/design-anchor.yaml, summary: universal Design Anchor contract}
-  - {id: H4-T1, result: PASS-HISTORICAL-NOW-DIRTY, artifact: docs-v2/spec/artifact-type-registry.yaml, summary: artifact type registry before H6 completeness gap was exposed}
-  - {id: H5-T1, result: PASS, artifact: docs-v2/spec/dependency-registry-impact.yaml, summary: generated registry, typed dependencies, fingerprints and impact model; compatibility review required after H4-T2}
-  - {id: H5-T2, result: PASS, artifact: docs-v2/spec/design-derivation-lineage.yaml, summary: universal logical derivation lineage and project-book projection contract; compatibility review required after H4-T2}
+  - {id: H4-T1, result: PASS-HISTORICAL, artifact: docs-v2/spec/artifact-type-registry.yaml, summary: initial artifact registry before H6 completeness gap}
+  - id: H4-T2
+    result: PASS
+    description: >-
+      Close the H6-exposed S2 registry gap. Add retained bounded-context and domain-process-model
+      anchors, clarify S2 semantic ownership, keep capability-to-context mapping as refs/projection,
+      keep candidate aggregate discovery as process-model hypothesis until tactical acceptance,
+      and verify H5 compatibility without changing H5 contracts.
+    validation:
+      machine_readable_yaml: PASS
+      artifact_type_count: 41
+      retained_type_count: 39
+      retained_anchor_count: 31
+      projection_type_count: 2
+      type_id_uniqueness: PASS
+      canonical_semantic_key_uniqueness: PASS
+      retained_anchor_single_owner: PASS
+      retained_anchor_h3_envelope: PASS
+      conditional_applicability_structured: PASS
+      bounded_context_canonical_owner: PASS
+      domain_process_model_canonical_owner: PASS
+      capability_context_duplicate_owner: false
+      candidate_aggregate_implicit_tactical_acceptance: false
+      domain_event_implicit_integration_contract: false
+      h5_compatibility_review: PASS
+      h5_reopen_required: false
+      executable_validators_created_or_changed: false
+      executable_tests_created_or_changed: false
+      runtime_implementation_created_or_changed: false
+    artifacts:
+      - docs-v2/spec/artifact-type-registry.yaml
+  - {id: H5-T1, result: PASS, artifact: docs-v2/spec/dependency-registry-impact.yaml, summary: generated registry, typed dependencies, fingerprints and impact model; H4-T2 compatibility PASS}
+  - {id: H5-T2, result: PASS, artifact: docs-v2/spec/design-derivation-lineage.yaml, summary: universal logical derivation lineage and project-book projection contract; H4-T2 compatibility PASS}
 
 routing_history:
   - id: H2-T1-ATTEMPT-1
@@ -59,35 +84,23 @@ routing_history:
   - id: H6-T1-PREFLIGHT-1
     result: REOPEN(H4)
     observed_at: 2026-09-16
-    reason: >
-      H6 roadmap requires bounded-context specifications and a durable Domain Process Discovery /
-      Event Storming model. The H4 registry has context-relationship-map and tactical domain-model,
-      but no retained bounded-context anchor and no retained domain-process-model anchor. Because
-      context-map is intentionally a generated projection, there is currently no canonical owner
-      for Bounded Context identity/boundary truth; process-discovery semantics likewise have no
-      canonical artifact family. H6 cannot invent these types without violating H4 ownership.
-    evidence:
-      - docs-v2/meta/roadmap.yaml#H6
-      - docs-v2/spec/artifact-type-registry.yaml
-      - docs-v2/spec/artifacts.md
-    resolution: >
-      Route one bounded H4-T2 task to complete the registry, then perform focused H5 compatibility
-      review. Resume H6 only after that passes.
+    reason: H4 lacked canonical owners for Bounded Context boundary truth and Process Discovery/Event Storming truth required by H6.
+    resolution: H4-T2 added bounded-context and domain-process-model; focused H5 compatibility review PASS; H6 may resume.
 
 carry_forward:
   - Harness is a universal project-agnostic design execution rail from idea/problem/evidence through requirements, DDD, architecture and implementation readiness before first product code; NAPMS is a pilot, never a hard-coded semantic special case.
   - Harness is a critical engineering instrument: explicit versioned rule or explicit stable stop; silent heuristic fallback is forbidden.
-  - docs-v2/spec/harness-reliability-conformance.yaml is mandatory downstream design input for H6-H13 where routing, validation, execution, regression, CI or runtime behavior is specified.
   - Project documentation is a graph of machine-readable Design Anchors and typed relations; human-readable documentation is a reproducible non-canonical book/view projection.
   - Provenance alone is insufficient: every accepted non-root anchor preserves logical derivation lineage with accepted predecessors/evidence/constraints/decisions, derivation kind and durable design rationale.
   - Accepted roots require durable stakeholder/external/evidence/constraint authority; agent plausibility cannot be an unexplained root.
   - H5 impact dependencies and derivation lineage reuse the same H3 semantic refs and anchor identities; no parallel hand-maintained lineage graph is allowed.
-  - H4-T2 must introduce no project-specific domain semantics; it only completes universal artifact families required by the DDD process.
-  - bounded-context must own Bounded Context identity/boundary/responsibility semantics; context-map remains a generated projection and context-relationship-map owns inter-context relationship semantics.
-  - domain-process-model must own durable process-discovery/Event Storming semantics such as actors, commands, domain events, policies, timelines/hotspots and external systems; detailed H6 schema/method follows only after H4 type ownership exists.
-  - capability-to-context mapping should be derivable from explicit H5 refs between accepted capability-map and bounded-context anchors and exposed as a projection/index, not duplicated as a second canonical mapping owner.
-  - candidate aggregate discovery should remain explicit durable process knowledge but must not become an accepted tactical aggregate merely because an agent proposed a boundary; H4-T2 must decide the smallest non-duplicating carrier and H6 later defines derivation rules.
-  - Domain Events discovered in S2 are domain semantics and are not automatically S3 integration messages/event-contracts.
+  - H4 now contains distinct S2 canonical owners: capability-map for capability/clustering truth; bounded-context for context identity/boundary/responsibility/model-language ownership; context-relationship-map for inter-context relationships; domain-process-model for process discovery/Event Storming and candidate aggregate hypotheses; domain-model for accepted tactical model semantics; state-model for material lifecycle state semantics.
+  - Capability-to-context mapping is represented by explicit semantic refs between capability-map and bounded-context anchors and may be generated as a projection/index; no separate canonical mapping owner is allowed.
+  - Candidate aggregate boundaries in domain-process-model are hypotheses only. They become accepted tactical aggregate semantics only through H6 derivation/authority/validation into domain-model.
+  - Domain Events in domain-process-model are domain semantics and are not automatically S3 integration messages/event-contracts.
+  - H5 compatibility with H4-T2 is PASS: no new edge relation, registry model, fingerprint, impact, earliest-stage, supersession or reference-resolution rule is required.
+  - H6 must define detailed schemas and explicit input/output/derivation rules for strategic, process-discovery and tactical S2 checkpoints using H4 types and H5 lineage.
+  - docs-v2/spec/harness-reliability-conformance.yaml remains mandatory for downstream routing/validation/execution design.
   - docs/ remains canonical product/project design truth until explicit cutover; ACCEPTED docs-v2 anchors do not override docs/ before cutover.
   - Product code/tests remain excluded as sources of product/domain/architecture truth during current documentation-design work.
   - H2 lifecycle-state-machine owns redesigned lifecycle semantics; no new lifecycle transition class/rejection path may appear outside H1 coverage.
@@ -113,3 +126,7 @@ resume_protocol:
   - Treat carry_forward required-input pointers as explicit context dependencies for the current phase.
   - Complete one bounded META task, validate it, persist state, and stop.
   - Do not infer progress from chat history when repository state is available.
+
+history_note: >-
+  Detailed validation fields from earlier completed tasks remain available in prior Git revisions;
+  this state keeps the current resumable summary plus all active invariants and restrictions.
