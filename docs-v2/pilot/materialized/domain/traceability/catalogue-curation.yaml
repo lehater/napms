@@ -1,0 +1,51 @@
+status: pilot-candidate
+canonical: false
+scope: catalogue-curation-pilot
+relationships:
+  - requirement: REQ-CAT-RC-001
+    domain_owner: Resource Catalogue
+    elements: [Resource]
+    status: direct
+  - requirement: REQ-CAT-RC-002
+    domain_owner: Resource Catalogue
+    elements: [ResourceAddressFact, AddressSpace, CurrentResourceRealization]
+    status: direct
+  - requirement: REQ-CAT-RC-003
+    domain_owner: Resource Catalogue
+    elements: [ResourceScopeAffiliation]
+    status: direct
+  - requirement: REQ-CAT-RC-004
+    domain_owner: Resource Catalogue
+    elements: [ResourceResponsibility]
+    status: direct
+  - requirement: REQ-CAT-RC-006
+    domain_owner: Resource Catalogue
+    elements: [CurrentResourceRealization]
+    status: direct
+  - requirement: REQ-CAT-AUTH-003
+    domain_owner: Resource Catalogue
+    elements: [ResourceScopeAffiliation, ResourceResponsibility]
+    status: boundary
+    note: RC semantics explicitly do not grant actor authority.
+  - requirement: REQ-CAT-VAL-001
+    domain_owner: Resource Catalogue
+    elements: [ResourceAddressFact, ResourceScopeAffiliation]
+    status: partial-cross-context
+    note: Binding and DCS validation remain with their owning contexts.
+  - requirement: QREQ-CAT-003
+    domain_owner: Resource Catalogue
+    elements: [Resource, ResourceAddressFact]
+    status: direct-for-rc
+  - requirement: ACC-CAT-006
+    domain_owner: Resource Catalogue
+    elements: [Resource, ResourceAddressFact, CurrentResourceRealization]
+    status: direct
+  - requirement: ACC-CAT-007
+    domain_owner: Resource Catalogue
+    elements: [ResourceResponsibility]
+    status: boundary
+  - requirement: ACC-CAT-008
+    domain_owner: Resource Catalogue
+    elements: [Resource]
+    status: partial-cross-context
+    note: Historical readability remains subject to downstream/read-authorization owners.
