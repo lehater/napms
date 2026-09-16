@@ -1,0 +1,613 @@
+version: 1
+kind: human-knowledge-acquisition-protocol
+id: DOCS-V2-HUMAN-KNOWLEDGE-ACQUISITION
+status: active
+owner_phase: H7
+owner_task: H7-T1
+last_updated: 2026-09-16
+
+purpose: >-
+  Define how the universal design Harness asks for, captures, classifies and materializes
+  human-owned knowledge when accepted project truth is insufficient. Preserve uncertainty,
+  examples, decisions and provenance without allowing agent recommendations, chat context or
+  isolated examples to become accepted product/domain truth implicitly.
+
+authority:
+  defines:
+    - durable domain-question logical schema
+    - question lifecycle and blocking semantics
+    - option/recommendation/consequence representation
+    - stakeholder-response and decision materialization protocol
+    - example/use-case capture and preservation rules
+    - user-journey enrichment rules
+    - hypothesis, example, recommendation, decision and accepted-fact distinctions
+    - conflict/ambiguity/defer handling
+    - H7 conformance cases
+  does_not_define:
+    - project-specific business/domain truth
+    - new H4 artifact types or semantic owners
+    - DDD method/schema semantics owned by H6
+    - new H5 dependency relations
+    - executable validation/gate engine owned by H8
+    - Task Capsule runtime owned by H9
+    - executable tests, CI, workflows or Harness runtime
+    - canonical cutover from docs/ to docs-v2
+  direct_dependency:
+    id: DOCS-V2-DDD-PIPELINE
+    path: docs-v2/spec/ddd-pipeline.yaml
+  required_contracts:
+    - {id: DOCS-V2-DESIGN-ANCHOR-CONTRACT, path: docs-v2/spec/design-anchor.yaml}
+    - {id: DOCS-V2-ARTIFACT-TYPE-REGISTRY, path: docs-v2/spec/artifact-type-registry.yaml}
+    - {id: DOCS-V2-DESIGN-DERIVATION-LINEAGE, path: docs-v2/spec/design-derivation-lineage.yaml}
+    - {id: DOCS-V2-HARNESS-CONFORMANCE, path: docs-v2/spec/harness-conformance.yaml}
+    - {id: DOCS-V2-HARNESS-RELIABILITY-CONFORMANCE, path: docs-v2/spec/harness-reliability-conformance.yaml}
+
+cutover_guard:
+  current_product_domain_authority: docs/
+  docs_v2_role: candidate-redesign-human-knowledge-contract
+  rule: >-
+    Capturing a question, response or H7 materialization record does not perform product/domain
+    cutover. Before explicit cutover, docs-v2 ACCEPTED anchors remain redesign-model truth only.
+
+core_principles:
+  - id: HK-P-ASK-ONLY-WHEN-NONDERIVABLE
+    rule: Ask a stakeholder only when required human-owned truth is not derivable from accepted current anchors/evidence.
+  - id: HK-P-QUESTION-NOT-TRUTH
+    rule: A question, option set or agent recommendation is process state and never canonical design truth.
+  - id: HK-P-ANSWER-NOT-YET-ACCEPTED
+    rule: A stakeholder response becomes design authority only after it is durably captured, assigned to the correct semantic owner and materialized into an H3/H4-compliant anchor or evidence basis.
+  - id: HK-P-RECOMMENDATION-NOT-AUTHORITY
+    rule: Agent recommendations must be explicitly labeled recommendation and never count as stakeholder choice or accepted fact.
+  - id: HK-P-EXAMPLE-NOT-GENERAL-RULE
+    rule: A concrete example is preserved as an example; it cannot be generalized into a universal rule without explicit derivation or human decision authority.
+  - id: HK-P-OWNER-BEFORE-MATERIALIZATION
+    rule: Materialization targets the stage that owns the answered semantics, not the stage that happened to ask the question.
+  - id: HK-P-RAW-MEANING-PRESERVED
+    rule: Normalization may structure a response but must not silently strengthen, broaden or reverse its meaning.
+  - id: HK-P-TRACEABLE-RESOLUTION
+    rule: Every resolved question is traceable to its originating gap/hotspot and to the durable artifact/evidence that materialized the answer.
+  - id: HK-P-FAIL-CLOSED
+    rule: Ambiguous, conflicting or incomplete human input remains unresolved; the Harness does not guess.
+  - id: HK-P-IDEMPOTENT-CAPTURE
+    rule: Replaying the same question/response/materialization operation must not duplicate decisions, anchors or evidence.
+
+storage_model:
+  domain_question:
+    classification: process-state-subrecord
+    canonical_design_truth: false
+    durable_carrier:
+      primary: lifecycle-scope-state
+      optional_cross_reference:
+        - H6 domain-process-model hotspot
+        - current bounded task/gate blocker record
+    new_h4_artifact_type_required: false
+  stakeholder_response:
+    classification: process-state-subrecord-until-materialized
+    canonical_design_truth: false
+    durable_carrier: lifecycle-scope-state
+  materialized_truth:
+    classification: existing-H4-anchor-or-evidence
+    rule: >-
+      Materialization uses the existing artifact type whose fixed H4 owner owns the semantics.
+      No generic stakeholder-truth artifact or generic dynamic-owner decision type is introduced.
+  stage_decision_mapping:
+    S0: problem-decision
+    S1: requirements-decision
+    S2: domain-decision
+    S3: architecture-decision
+    S4: implementation-readiness-decision
+
+epistemic_classes:
+  - id: accepted-fact
+    may_drive_current_design: true
+    authority_requirement: materialized in ACCEPTED plus CURRENT anchor or valid evidence basis
+  - id: accepted-decision
+    may_drive_current_design: true
+    authority_requirement: accepted stage-owned decision anchor with durable human authority
+  - id: stakeholder-example
+    may_drive_current_design: only-as-example-or-evidence-basis
+    rule: Does not become a universal rule merely because it is human-supplied.
+  - id: observation
+    may_drive_current_design: only-according-to-evidence-and-owner-rules
+  - id: hypothesis
+    may_drive_current_design: false
+    rule: May remain in explicitly hypothesis-capable structures such as H6 hotspots/candidate aggregate records.
+  - id: recommendation
+    may_drive_current_design: false
+    rule: Agent advice only; requires explicit stakeholder acceptance/materialization before authority exists.
+  - id: unresolved-question
+    may_drive_current_design: false
+  - id: rejected-proposition
+    may_drive_current_design: false
+    rule: Preserved for audit when materially useful; never treated as current truth.
+
+question_schema:
+  schema_version: h7-v1
+  required:
+    - question_id
+    - owner_stage
+    - scope
+    - originating_gap_refs
+    - missing_truth_kind
+    - question
+    - expected_answer_kind
+    - options
+    - consequences
+    - status
+  optional:
+    - recommendation
+    - known_facts_refs
+    - forbidden_assumptions
+    - related_hotspot_refs
+    - supersedes_question_id
+    - asked_at
+  question_id:
+    rule: stable within project; never reused for different semantics
+  owner_stage:
+    allowed: [S0, S1, S2, S3, S4]
+    rule: stage that owns the missing truth after classification
+  missing_truth_kind:
+    allowed:
+      - fact-clarification
+      - business-rule
+      - boundary-choice
+      - policy-choice
+      - priority-or-strategy
+      - terminology
+      - actor-goal-or-journey
+      - example-needed
+      - invariant-or-consistency
+      - lifecycle-rule
+      - architecture-choice
+      - implementation-readiness-choice
+  expected_answer_kind:
+    allowed:
+      - choose-option
+      - confirm-or-reject
+      - provide-fact
+      - provide-example
+      - provide-rule
+      - provide-terminology
+      - defer
+  status:
+    allowed:
+      - open
+      - answered-pending-materialization
+      - resolved
+      - deferred-blocking
+      - deferred-nonblocking
+      - superseded
+  originating_gap_refs_rule: >-
+    At least one durable ref identifies the H6 hotspot, gate finding, anchor deficiency or
+    accepted artifact whose unresolved semantics caused NEED_MORE_DATA.
+  known_facts_refs_rule: Only ACCEPTED/CURRENT anchors or valid evidence may be presented as known facts.
+  question_rule: >-
+    Ask the smallest decision/fact needed to unblock the current owned semantic gap. Do not bundle
+    materially independent human choices into one question.
+  options_rule: >-
+    Options are candidate choices, not truth. Include "other/free-form" when the known option set
+    is not demonstrably exhaustive.
+  recommendation_rule: >-
+    Optional agent recommendation must identify the recommended option or proposition, give concise
+    rationale based only on current accepted facts, and explicitly state that stakeholder acceptance
+    is required. Recommendation absence is valid.
+  consequences_rule: >-
+    Consequences describe known design/process effects of each option without claiming speculative
+    certainty. Unknown consequences are marked unknown rather than invented.
+
+option_schema:
+  required: [option_id, statement, consequences]
+  optional: [supporting_refs, risks, assumptions]
+  option_id_rule: unique within question
+  supporting_refs_rule: accepted/current refs only when presented as factual support
+  assumptions_rule: assumptions remain explicitly non-authoritative
+
+recommendation_schema:
+  required: [recommended_option_or_proposition, rationale, authority]
+  authority_value: agent-recommendation-nonbinding
+  forbidden:
+    - stakeholder-choice
+    - accepted-fact
+    - automatic-materialization
+
+response_schema:
+  schema_version: h7-v1
+  required:
+    - response_id
+    - question_id
+    - response_kind
+    - response_content
+    - provenance
+    - captured_status
+  response_kind:
+    allowed:
+      - option-selected
+      - fact-provided
+      - rule-provided
+      - example-provided
+      - terminology-provided
+      - premise-rejected
+      - defer
+      - unknown
+  captured_status:
+    allowed:
+      - captured-unmaterialized
+      - ambiguous-needs-followup
+      - conflicting-needs-resolution
+      - ready-to-materialize
+      - materialized
+  provenance:
+    required: [origin_kind, source_ref, recorded_at]
+    origin_kind_value: human-decision-or-input
+    rule: >-
+      source_ref must durably identify the stakeholder input source permitted by repository policy.
+      Chat/session memory alone cannot be the only authority after the bounded task finishes.
+  normalization:
+    allowed:
+      - split clearly independent factual claims
+      - map an unambiguous selected option to option_id
+      - preserve concrete examples as concrete examples
+      - normalize formatting without changing semantics
+    forbidden:
+      - infer unstated universal quantifiers
+      - turn "usually" into "always"
+      - turn one example into a complete rule
+      - infer a boundary/aggregate/policy choice the stakeholder did not make
+      - silently resolve contradictions
+  ambiguity_rule: >-
+    If materially different interpretations remain possible, set ambiguous-needs-followup and
+    create a new linked question; do not materialize either interpretation as truth.
+
+question_lifecycle:
+  transitions:
+    - {from: open, event: durable-response-captured-and-unambiguous, to: answered-pending-materialization}
+    - {from: open, event: stakeholder-defers-and-blocker-remains, to: deferred-blocking}
+    - {from: open, event: stakeholder-defers-and-owner-marks-nonblocking, to: deferred-nonblocking}
+    - {from: open, event: question-replaced-by-narrower-or-corrected-question, to: superseded}
+    - {from: answered-pending-materialization, event: answer-materialized-and-provenance-linked, to: resolved}
+  forbidden:
+    - open -> resolved without materialization
+    - ambiguous response -> resolved
+    - agent recommendation -> resolved without stakeholder response
+  blocking_rule: >-
+    A question whose originating gap is blocking keeps the owning stage/checkpoint BLOCKED until
+    the answer is materialized into current durable truth or the question is explicitly reclassified
+    nonblocking by an authorized owner decision.
+
+materialization_protocol:
+  steps:
+    - classify semantic owner stage from the answer; do not use asker stage as owner by default
+    - compare answer with current accepted truth and identify create/update/supersede/no-op result
+    - select an existing H4 artifact type owned by that stage
+    - preserve response/question refs in provenance and logical derivation/decision metadata
+    - persist candidate semantic delta
+    - validate required H3/H4/H5/H6 guards for that artifact
+    - only after acceptance/current evidence mark question resolved
+  same_owned_concept_rule: preserve existing anchor_id and create a semantic revision/update when H3 identity rules say concept is unchanged
+  materially_new_concept_rule: create a new anchor_id; use explicit relations/supersession as applicable
+  stage_change_rule: >-
+    If the answer changes truth owned by an earlier accepted stage, route REOPEN to that stage and
+    let H5 dirty affected dependents. Do not patch the current later-stage artifact instead.
+  no_op_rule: >-
+    If the response merely confirms already accepted/current truth and adds no material evidence,
+    link the response for audit and resolve the question without creating duplicate semantic truth.
+  idempotency:
+    key: response_id-plus-materialization-target
+    duplicate_application_semantic_mutations: 0
+
+materialization_targets:
+  direct_fact_or_rule:
+    rule: update/create the fixed-owner anchor that owns the semantics
+  significant_choice:
+    rule: create/update the stage-specific decision anchor and link affected anchors with DECIDED_BY
+  actor_goal_or_observed_journey:
+    preferred_type: user-journey
+    owner_stage: S0
+  precise_behavior_example:
+    preferred_type: acceptance-scenario
+    owner_stage: S1
+  requirements_behavior_rule:
+    preferred_type: functional-requirement
+    owner_stage: S1
+  domain_language:
+    preferred_type: domain-glossary
+    owner_stage: S2
+  process_example_or_business_process_fact:
+    preferred_type: domain-process-model
+    owner_stage: S2
+  domain_boundary_or_policy_choice:
+    decision_type: domain-decision
+    owner_stage: S2
+    affected_types_may_include: [bounded-context, context-relationship-map, domain-process-model, domain-model, state-model]
+  architecture_choice:
+    decision_type: architecture-decision
+    owner_stage: S3
+  implementation_readiness_choice:
+    decision_type: implementation-readiness-decision
+    owner_stage: S4
+
+decision_logical_schema:
+  applies_to:
+    - problem-decision
+    - requirements-decision
+    - domain-decision
+    - architecture-decision
+    - implementation-readiness-decision
+  required_semantic_fields:
+    - decision
+    - decision_scope
+    - question_refs
+    - response_refs
+    - chosen_option_or_resolution
+    - rationale
+    - consequences
+    - authority_provenance
+  optional_semantic_fields:
+    - rejected_options
+    - assumptions
+    - revisit_conditions
+  rules:
+    - decision must not contain broader semantics than the captured stakeholder response supports
+    - rejected options remain historical rationale, not current truth
+    - assumptions are explicit and cannot masquerade as accepted facts
+    - affected anchors reference the accepted decision using H5 DECIDED_BY when semantics depend on it
+
+example_capture:
+  logical_schema:
+    required:
+      - example_id
+      - example_kind
+      - concrete_situation
+      - observed_or_expected_outcome
+      - provenance_ref
+      - generalization_status
+    optional:
+      - actor_ref
+      - preconditions
+      - steps_or_interactions
+      - exceptions
+      - related_requirement_refs
+      - related_context_refs
+  example_kind_allowed:
+    - observed-journey
+    - desired-journey
+    - acceptance-example
+    - domain-process-example
+    - edge-case
+    - counterexample
+  generalization_status_allowed:
+    - concrete-only
+    - candidate-pattern
+    - explicitly-generalized
+  default_generalization_status: concrete-only
+  generalization_rule: >-
+    Multiple similar examples may justify proposing a candidate pattern, but a universal business
+    rule requires explicit accepted derivation or stakeholder decision. No threshold count of examples
+    automatically promotes them to a rule.
+  counterexample_rule: >-
+    A counterexample invalidates an unsupported universalization and may dirty dependent truth if it
+    contradicts an accepted rule; ownership/routing follows H5 earliest-stage semantics.
+
+user_journey_enrichment:
+  existing_same_journey:
+    preserve_anchor_id_when:
+      - actor/goal/outcome semantic identity remains the same
+      - new response adds examples, evidence, steps, exceptions or clarification without changing owned concept
+    material_effect: update canonical payload/provenance; fingerprint changes and dependents revalidate as H5 requires
+  materially_different_journey:
+    create_new_anchor_when:
+      - materially different actor role
+      - materially different goal/outcome
+      - independent journey semantics requiring separate traceability
+  downstream_refinement:
+    rule: >-
+      S1 acceptance scenarios may refine/realize an S0 journey without taking ownership of the
+      journey. An S1 example that reveals the S0 journey itself was wrong routes REOPEN(S0).
+  anti_duplication:
+    - do not copy the same example independently into journey, requirement and process anchors
+    - use stable refs/selectors where the same durable example is consumed downstream
+    - projections may render the example in multiple views without becoming truth
+
+conflict_and_defer_protocol:
+  contradictory_human_inputs:
+    rule: >-
+      If two authority-bearing responses conflict and no accepted precedence rule resolves them,
+      preserve both response records, mark the question/conflict unresolved and route NEED_MORE_DATA.
+    forbidden: last-write-wins-without-authority
+  external_authority_conflict:
+    rule: route according to owning stage and accepted authority precedence; if precedence itself is a human-owned choice, NEED_MORE_DATA
+  unknown_response:
+    effect: question remains unresolved; do not convert "I don't know" into a default choice
+  defer:
+    blocking: owning checkpoint/stage remains BLOCKED
+    nonblocking: allowed only when applicability/owner rules permit progress without the truth and the defer status/consequence is durable
+
+recommendation_policy:
+  may_recommend_when:
+    - known accepted facts are sufficient to explain meaningful tradeoffs
+    - recommendation does not require inventing missing business preferences
+  must_not_recommend_when:
+    - known facts cannot materially distinguish options
+    - recommendation would effectively choose an unknown stakeholder value or policy
+  recommendation_content:
+    - preferred option/proposition
+    - concise accepted-basis rationale
+    - main consequences/tradeoffs
+    - explicit nonbinding status
+  stakeholder_action_required: true
+
+question_generation_rules:
+  preconditions:
+    - deterministic integrity/self-consistency checks PASS
+    - missing semantics are classified human-owned and non-derivable
+    - owner_stage is known or a narrow classification task precedes questioning
+  question_context:
+    include:
+      - concise gap
+      - relevant accepted facts
+      - why the answer matters
+      - options when useful
+      - recommendation when justified
+      - consequences
+    exclude:
+      - irrelevant project history
+      - private model reasoning
+      - speculative facts
+  one_question_rule: one material semantic choice per question unless choices are inseparable and share one authority decision
+  answerability_rule: phrase questions in domain/project language rather than Harness internals when addressing stakeholders
+
+h6_integration:
+  hotspot_resolution:
+    - domain-process-model hotspot references question_id
+    - a resolved hotspot records materialized decision/evidence/anchor ref
+    - hotspot status becomes resolved only after H7 question resolution criteria pass
+  aggregate_question:
+    - unresolved invariant/consistency/ownership question creates H7 question with S2 owner
+    - candidate aggregate remains hypothesis while question open
+    - answer may materialize domain-decision and/or refine domain-process-model/domain-model
+  strategic_boundary_question:
+    - boundary alternatives are options, not candidate truth
+    - stakeholder selection materializes domain-decision and affected bounded-context semantics
+  process_policy_question:
+    - new business policy requires response materialization before command/policy semantics are accepted
+
+semantic_fingerprint_alignment:
+  question_process_state:
+    rule: governed by its process-state schema; does not enter an anchor semantic fingerprint merely by existing
+  materialized_anchor:
+    rule: >-
+      Question/response provenance refs and authority-bearing decision semantics that justify the anchor
+      are fingerprint-relevant according to H3/H5; nonsemantic UI wording/timestamps remain excluded when
+      the owning schema marks them nonsemantic.
+  examples:
+    rule: Concrete example content is semantic when embedded in a canonical anchor payload.
+
+conformance_cases:
+  - id: HK-CF-MISSING-TRUTH-CREATES-QUESTION
+    oracle: semantic
+    given: {human_owned_truth_missing: true, derivable_from_current_truth: false, owner_stage_known: S2}
+    expect: {route: NEED_MORE_DATA, durable_question_created: true, stage_state: BLOCKED}
+  - id: HK-CF-DERIVABLE-NO-QUESTION
+    oracle: semantic
+    given: {required_truth_derivable_from_current_accepted_anchors: true}
+    expect: {stakeholder_question_created: false, derive_using_lineage: true}
+  - id: HK-CF-QUESTION-NOT-TRUTH
+    oracle: deterministic
+    given: {question_status: open, option_present: true}
+    expect: {option_may_be_current_design_truth: false}
+  - id: HK-CF-RECOMMENDATION-NONBINDING
+    oracle: deterministic
+    given: {agent_recommendation_present: true, stakeholder_response_present: false}
+    expect: {question_resolved: false, accepted_decision_created: false}
+  - id: HK-CF-ANSWER-REQUIRES-MATERIALIZATION
+    oracle: deterministic
+    given: {response_captured: true, target_anchor_materialized: false}
+    expect: {question_status: answered-pending-materialization, current_design_truth_changed: false}
+  - id: HK-CF-RESOLUTION-TRACEABLE
+    oracle: deterministic
+    given: {question_status_requested: resolved, materialized_anchor_ref_present: true, response_ref_present: true, originating_gap_ref_present: true}
+    expect: {resolution_guard: PASS}
+  - id: HK-CF-AMBIGUOUS-ANSWER-FOLLOWUP
+    oracle: semantic
+    given: {response_has_multiple_material_interpretations: true}
+    expect: {materialization_allowed: false, followup_question_required: true}
+  - id: HK-CF-CONFLICT-NO-LAST-WRITE-WINS
+    oracle: semantic
+    given: {two_authority_responses_conflict: true, precedence_rule_available: false}
+    expect: {route: NEED_MORE_DATA, last_write_wins: false}
+  - id: HK-CF-EXAMPLE-NOT-UNIVERSALIZED
+    oracle: semantic
+    given: {single_stakeholder_example: true, universal_rule_explicitly_stated: false}
+    expect: {generalization_status: concrete-only, universal_rule_created: false}
+  - id: HK-CF-MULTIPLE-EXAMPLES-NOT-AUTO-RULE
+    oracle: semantic
+    given: {similar_example_count: 5, explicit_generalization_authority: false}
+    expect: {may_propose_candidate_pattern: true, accepted_universal_rule: false}
+  - id: HK-CF-COUNTEREXAMPLE-INVALIDATES-GENERALIZATION
+    oracle: semantic
+    given: {accepted_rule_claims_universal: true, valid_counterexample_conflicts: true}
+    expect: {impact_review_required: true, ignore_counterexample: false}
+  - id: HK-CF-STAGE-OWNER-NOT-ASKER
+    oracle: deterministic
+    given: {question_asked_during_stage: S3, answered_semantics_owned_by: S1}
+    expect: {materialization_owner: S1, route_if_current_later_stage: REOPEN(S1)}
+  - id: HK-CF-STAGE-DECISION-MAPPING
+    oracle: deterministic
+    given: {owner_stage: S2, significant_choice: true}
+    expect: {decision_type: domain-decision, dynamic_owner_decision_type_created: false}
+  - id: HK-CF-HOTSPOT-RESOLVED-AFTER-MATERIALIZATION
+    oracle: deterministic
+    given: {hotspot_blocking: true, response_captured: true, materialized_truth_current: false}
+    expect: {hotspot_status: open, checkpoint_acceptance: false}
+  - id: HK-CF-AGGREGATE-HYPOTHESIS-STAYS-HYPOTHESIS
+    oracle: deterministic
+    given: {candidate_aggregate_question_answer_absent: true, agent_recommendation_exists: true}
+    expect: {accepted_aggregate_created: false}
+  - id: HK-CF-DEFER-BLOCKING-STAYS-BLOCKED
+    oracle: deterministic
+    given: {question_blocking: true, response_kind: defer}
+    expect: {question_status: deferred-blocking, stage_remains: BLOCKED}
+  - id: HK-CF-UNKNOWN-NO-DEFAULT
+    oracle: deterministic
+    given: {response_kind: unknown, default_option_exists: true}
+    expect: {default_auto_selected: false, question_resolved: false}
+  - id: HK-CF-IDEMPOTENT-MATERIALIZATION
+    oracle: deterministic
+    given: {same_response_id: true, same_materialization_target: true, materialization_replayed: true}
+    expect: {additional_semantic_mutations: 0, duplicate_decisions: 0}
+  - id: HK-CF-JOURNEY-ENRICH-PRESERVES-ID
+    oracle: semantic
+    given: {same_actor_goal_outcome_concept: true, added_example_or_clarification: true}
+    expect: {preserve_user_journey_anchor_id: true}
+  - id: HK-CF-DIFFERENT-JOURNEY-NEW-ID
+    oracle: semantic
+    given: {materially_different_goal_or_outcome: true}
+    expect: {create_new_user_journey_anchor: true}
+  - id: HK-CF-PRECISE-EXAMPLE-TO-ACCEPTANCE
+    oracle: semantic
+    given: {response_is_precise_behavior_example: true, owner_stage: S1}
+    expect: {preferred_materialization_type: acceptance-scenario}
+  - id: HK-CF-QUESTION-BUNDLED-CHOICES-REJECTED
+    oracle: semantic
+    given: {question_contains_independent_material_choices: 3}
+    expect: {question_valid: false, split_required: true}
+  - id: HK-CF-CHAT-ONLY-AUTHORITY-REJECTED
+    oracle: deterministic
+    given: {stakeholder_answer_not_persisted_durably: true, session_memory_only: true}
+    expect: {materialization_allowed: false, diagnostic_code: authority-not-in-durable-basis}
+
+h7_exit_evaluation:
+  checks:
+    - missing non-derivable human-owned truth routes to a durable structured question
+    - questions/options/recommendations are process state and not canonical design truth
+    - recommendations are explicitly nonbinding
+    - responses require durable provenance before materialization
+    - question resolution requires materialized durable truth/evidence
+    - materialization uses existing fixed-owner H4 artifact types
+    - semantic owner stage is determined by owned truth, not by asker stage
+    - examples are preserved without silent universalization
+    - hypothesis, recommendation, example, decision and accepted-fact classes are distinct
+    - conflicting or ambiguous human input fails closed
+    - H6 hotspots and aggregate questions remain blocking until materialized resolution
+    - user-journey enrichment preserves H3 identity semantics
+    - stage-owned decisions use H4 stage-specific decision types
+    - idempotent materialization prevents duplicate semantic mutations
+    - no new H4 artifact type, H5 relation or H1/H2 transition class is introduced
+    - no product/domain cutover is performed
+
+handoff_to_h8:
+  required_behavior:
+    - validate H7 question/response/materialization structures deterministically
+    - validate authority provenance and resolution linkage
+    - include unresolved blocking questions in gate eligibility
+    - semantic judges may classify sufficiency/ambiguity but cannot materialize human-owned truth without durable response authority
+    - gate evidence records exact H7/H6/H5 specification versions used
+
+restrictions:
+  new_h4_artifact_types: false
+  new_h5_edge_relations: false
+  new_lifecycle_transition_classes: false
+  executable_validators_created_or_changed: false
+  executable_tests_created_or_changed: false
+  runtime_implementation_created_or_changed: false
+  workflow_ci_created_or_changed: false
