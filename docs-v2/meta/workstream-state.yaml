@@ -7,64 +7,43 @@ last_updated: 2026-09-16
 
 program:
   status: ACTIVE
-  current_phase: H6
-  current_phase_state: NOT_STARTED
-  completed_phases: [H0, H1, H2, H3, H4, H5]
+  current_phase: H4
+  current_phase_state: DIRTY
+  completed_phases: [H0, H1, H2, H3, H5]
   blocked_phases: []
+  compatibility_review_required_phases: [H5]
 
 current_task:
-  id: H6-T1
-  title: Complete DDD pipeline specification
+  id: H4-T2
+  title: Complete S2 artifact types required by H6
   state: NOT_STARTED
   objective: >
-    Resume with H6 and its direct H5 dependencies. H6 must produce explicit DDD derivation
-    lineage, obey the H1 reliability hardening contract, remain project-agnostic, and use
-    fail-closed routing for missing/invalid prerequisites. Do not begin H6 inside the completed
-    H1-T3 reliability-audit capsule.
-  required_inputs:
-    - docs-v2/spec/dependency-registry-impact.yaml
-    - docs-v2/spec/design-derivation-lineage.yaml
-    - docs-v2/spec/harness-reliability-conformance.yaml
-  next_after_completion: H7 Human knowledge acquisition protocol
+    Close the artifact-registry gap exposed by H6 preflight. Add canonical S2 artifact
+    ownership for Bounded Context identity/boundary semantics and Domain Process Discovery /
+    Event Storming semantics before H6 defines their detailed schemas and derivation methods.
+    Preserve H3/H5 identity, lineage and dependency invariants, avoid duplicate canonical truth,
+    and perform a focused H5 compatibility review after the H4 delta. Do not execute H6 in the
+    same bounded capsule.
+  expected_outputs:
+    - retained bounded-context S2 anchor type with one canonical owner/representation
+    - retained domain-process-model S2 anchor type with one canonical owner/representation
+    - applicability and G2 relevance for both types
+    - explicit disposition of capability-to-context mapping as canonical refs/projection rather than duplicate truth
+    - explicit disposition of candidate aggregate discovery as process-model hypothesis/input to tactical domain-model unless a separate canonical type is proven necessary
+    - H5 compatibility review for registry/dependency/lineage contracts
+  next_after_completion: Resume H6-T1 after H5 compatibility review passes
 
 completed_work:
   - {id: H0-T1, result: PASS, artifact: docs-v2/meta/roadmap.yaml, summary: durable roadmap and redesign charter}
   - {id: H0-T2, result: PASS, artifact: docs-v2/meta/workstream-state.yaml, summary: resumable repository-resident workstream state}
   - {id: H1-T1, result: PASS, artifact: docs-v2/spec/harness-conformance.yaml, summary: initial RED-stage Harness conformance/eval contract}
   - {id: H1-T2, result: PASS, artifact: docs-v2/spec/harness-conformance.yaml, summary: lifecycle transition and rejection coverage hardening}
-  - id: H1-T3
-    result: PASS
-    description: >
-      Audit and harden Harness reliability before H6. Add RED-stage conformance for deterministic
-      replay, durable-state-only authority, restart/resume equivalence, idempotent durable effects,
-      fail-closed/no-silent-fallback behavior, version-bound result evidence, stable diagnostics,
-      self-consistency preflight, project-agnostic core behavior and regression-safe contract changes.
-    validation:
-      audit_result: GAP_FOUND_AND_CLOSED_AT_CONTRACT_LEVEL
-      reliability_scenario_count: 12
-      all_reliability_scenarios_critical: true
-      deterministic_replay: PASS
-      restart_resume: PASS
-      idempotency: PASS
-      fail_closed_no_silent_fallback: PASS
-      stable_diagnostics: PASS
-      version_binding: PASS
-      self_consistency: PASS
-      project_agnostic_core: PASS
-      regression_change_control: PASS
-      h2_reopen_required: false
-      h3_reopen_required: false
-      h4_reopen_required: false
-      h5_reopen_required: false
-      executable_tests_created_or_changed: false
-      runtime_implementation_created_or_changed: false
-    artifacts:
-      - docs-v2/spec/harness-reliability-conformance.yaml
+  - {id: H1-T3, result: PASS, artifact: docs-v2/spec/harness-reliability-conformance.yaml, summary: deterministic replay, restart safety, idempotency, fail-closed and regression hardening}
   - {id: H2-T1, result: PASS, artifact: docs-v2/spec/lifecycle-state-machine.yaml, summary: executable lifecycle and gate state machine}
   - {id: H3-T1, result: PASS, artifact: docs-v2/spec/design-anchor.yaml, summary: universal Design Anchor contract}
-  - {id: H4-T1, result: PASS, artifact: docs-v2/spec/artifact-type-registry.yaml, summary: artifact type registry and canonical format mappings}
-  - {id: H5-T1, result: PASS, artifact: docs-v2/spec/dependency-registry-impact.yaml, summary: generated registry, typed dependencies, fingerprints and impact model}
-  - {id: H5-T2, result: PASS, artifact: docs-v2/spec/design-derivation-lineage.yaml, summary: universal logical derivation lineage and project-book projection contract}
+  - {id: H4-T1, result: PASS-HISTORICAL-NOW-DIRTY, artifact: docs-v2/spec/artifact-type-registry.yaml, summary: artifact type registry before H6 completeness gap was exposed}
+  - {id: H5-T1, result: PASS, artifact: docs-v2/spec/dependency-registry-impact.yaml, summary: generated registry, typed dependencies, fingerprints and impact model; compatibility review required after H4-T2}
+  - {id: H5-T2, result: PASS, artifact: docs-v2/spec/design-derivation-lineage.yaml, summary: universal logical derivation lineage and project-book projection contract; compatibility review required after H4-T2}
 
 routing_history:
   - id: H2-T1-ATTEMPT-1
@@ -75,30 +54,40 @@ routing_history:
   - id: H6-PREFLIGHT-RELIABILITY-AUDIT
     result: REOPEN(H1)
     observed_at: 2026-09-16
+    reason: Existing H1 lacked explicit reliability conformance for the universal Harness quality bar.
+    resolution: H1-T3 closed the gap without requiring H2-H5 reopen.
+  - id: H6-T1-PREFLIGHT-1
+    result: REOPEN(H4)
+    observed_at: 2026-09-16
     reason: >
-      Program intent was clarified: Harness is a critical universal design instrument and its
-      own reliability must be explicitly protected. Existing H1 lacked dedicated conformance
-      for replay, restart safety, idempotency, silent fallback rejection and regression change control.
+      H6 roadmap requires bounded-context specifications and a durable Domain Process Discovery /
+      Event Storming model. The H4 registry has context-relationship-map and tactical domain-model,
+      but no retained bounded-context anchor and no retained domain-process-model anchor. Because
+      context-map is intentionally a generated projection, there is currently no canonical owner
+      for Bounded Context identity/boundary truth; process-discovery semantics likewise have no
+      canonical artifact family. H6 cannot invent these types without violating H4 ownership.
+    evidence:
+      - docs-v2/meta/roadmap.yaml#H6
+      - docs-v2/spec/artifact-type-registry.yaml
+      - docs-v2/spec/artifacts.md
     resolution: >
-      H1-T3 added a focused reliability conformance extension. Compatibility review found no
-      contradiction requiring H2-H5 reopen. H6 remains NOT_STARTED and is now allowed to proceed
-      against the hardened contract.
+      Route one bounded H4-T2 task to complete the registry, then perform focused H5 compatibility
+      review. Resume H6 only after that passes.
 
 carry_forward:
   - Harness is a universal project-agnostic design execution rail from idea/problem/evidence through requirements, DDD, architecture and implementation readiness before first product code; NAPMS is a pilot, never a hard-coded semantic special case.
-  - Harness is a critical engineering instrument: it must either execute an explicit versioned rule or stop with a stable machine-readable reason; silent heuristic fallback is forbidden.
-  - docs-v2/spec/harness-reliability-conformance.yaml is mandatory downstream design input for H6-H13 wherever routing, validation, execution, regression, CI or runtime behavior is specified.
-  - Deterministic Harness decisions must be replayable from the same durable execution basis and contract versions; natural-language wording need not be byte-identical.
-  - Any state that can affect routing, authorization or deterministic validation must be durable and declared; chat/session memory and process-local caches carry no authority.
-  - Durable mutations require operation identity and must be idempotent; replay cannot duplicate transitions, evidence, decisions or semantic mutations.
-  - Required Harness self-state/spec/registry inputs must validate before project semantic work begins.
-  - Stable diagnostic codes are required for deterministic stop/rejection classes; human-readable detail is non-authoritative.
-  - Behavior-changing Harness contract changes must declare affected conformance scenario IDs and downstream compatibility review; critical behavior cannot be silently weakened.
+  - Harness is a critical engineering instrument: explicit versioned rule or explicit stable stop; silent heuristic fallback is forbidden.
+  - docs-v2/spec/harness-reliability-conformance.yaml is mandatory downstream design input for H6-H13 where routing, validation, execution, regression, CI or runtime behavior is specified.
   - Project documentation is a graph of machine-readable Design Anchors and typed relations; human-readable documentation is a reproducible non-canonical book/view projection.
-  - Provenance alone is insufficient: every accepted non-root anchor must preserve logical derivation lineage with accepted predecessors/evidence/constraints/decisions, derivation kind and durable design rationale.
+  - Provenance alone is insufficient: every accepted non-root anchor preserves logical derivation lineage with accepted predecessors/evidence/constraints/decisions, derivation kind and durable design rationale.
   - Accepted roots require durable stakeholder/external/evidence/constraint authority; agent plausibility cannot be an unexplained root.
   - H5 impact dependencies and derivation lineage reuse the same H3 semantic refs and anchor identities; no parallel hand-maintained lineage graph is allowed.
-  - General impact graphs may contain explicit valid cycles; logical derivation lineage is acyclic.
+  - H4-T2 must introduce no project-specific domain semantics; it only completes universal artifact families required by the DDD process.
+  - bounded-context must own Bounded Context identity/boundary/responsibility semantics; context-map remains a generated projection and context-relationship-map owns inter-context relationship semantics.
+  - domain-process-model must own durable process-discovery/Event Storming semantics such as actors, commands, domain events, policies, timelines/hotspots and external systems; detailed H6 schema/method follows only after H4 type ownership exists.
+  - capability-to-context mapping should be derivable from explicit H5 refs between accepted capability-map and bounded-context anchors and exposed as a projection/index, not duplicated as a second canonical mapping owner.
+  - candidate aggregate discovery should remain explicit durable process knowledge but must not become an accepted tactical aggregate merely because an agent proposed a boundary; H4-T2 must decide the smallest non-duplicating carrier and H6 later defines derivation rules.
+  - Domain Events discovered in S2 are domain semantics and are not automatically S3 integration messages/event-contracts.
   - docs/ remains canonical product/project design truth until explicit cutover; ACCEPTED docs-v2 anchors do not override docs/ before cutover.
   - Product code/tests remain excluded as sources of product/domain/architecture truth during current documentation-design work.
   - H2 lifecycle-state-machine owns redesigned lifecycle semantics; no new lifecycle transition class/rejection path may appear outside H1 coverage.
@@ -106,13 +95,7 @@ carry_forward:
   - H4 artifact-type-registry owns artifact classification, fixed semantic owners, applicability and canonical-format selection.
   - H5 dependency-registry-impact owns generated registry, typed refs, fingerprint/canonicalization, validation-basis and impact semantics.
   - S2 G2 is eligible only when all applicable strategic/process-discovery/tactical checkpoints are ACCEPTED; non-applicable checkpoints are skipped, not fabricated complete.
-  - Domain Process Discovery/Event Storming must escalate unsupported human-owned business choices; stakeholder answers/examples become durable knowledge with provenance.
   - Deterministic structural/reference/authority/self-consistency failures must be resolved before semantic evaluation can PASS.
-  - H8 must define concrete execution-basis/result-evidence schemas and diagnostic-code catalog.
-  - H9 Task Capsule v2 must carry declared durable execution inputs and operation identity; ambient context cannot authorize.
-  - H10 must include H1-T3 reliability scenarios in the permanent regression corpus.
-  - H11 enforcement must reject invalid Harness self-state and unversioned/stale execution evidence.
-  - H13 runtime plan must provide idempotent durable effects, restart-safe execution and no silent fallback.
 
 blockers: []
 
@@ -130,7 +113,3 @@ resume_protocol:
   - Treat carry_forward required-input pointers as explicit context dependencies for the current phase.
   - Complete one bounded META task, validate it, persist state, and stop.
   - Do not infer progress from chat history when repository state is available.
-
-history_note: >
-  Detailed validation fields from earlier completed tasks remain available in prior Git revisions;
-  this state keeps the current resumable summary plus all active invariants and restrictions.
