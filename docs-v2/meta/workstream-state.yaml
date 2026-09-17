@@ -1,158 +1,55 @@
-version: 2
+version: 3
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
 branch: meta/docs-v2-m7-pilot
 last_updated: 2026-09-17
-
 program:
   status: ACTIVE
   current_phase: H12
   current_phase_state: IN_PROGRESS
   completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11]
-  blocked_phases: []
-  compatibility_review_required_phases: []
-
 control_plane:
-  contract:
-    id: DOCS-V2-HARNESS-CONTROL-PLANE
-    path: docs-v2/spec/harness-control-plane.yaml
-    version: 1
-  effective_from: 2026-09-17
-  role: normative-integration-composition-root
-  note: >-
-    H1-H10 component contracts remain authoritative for their owned semantics. The control-plane
-    contract owns the explicit integration amendments needed to distinguish Harness transactions,
-    orchestration sessions and repository commits.
-
+  contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 2}
+  rule: meaningful design work is the visible unit; runtime reliability bookkeeping is internal
 active_scope:
   scope_id: H12-RC-CURATION-MVP
   state_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
-  state_owner: scope-state-is-sole-writable-lifecycle-owner
-  resume_rule: read-scope-state-for-current-task-stage-gates-and-blockers
-
+  state_owner: sole-writable-lifecycle-owner
 completed_work:
-  - {id: H0-T1, result: PASS, artifact: docs-v2/meta/roadmap.yaml, summary: durable universal Harness roadmap}
-  - {id: H0-T2, result: PASS, artifact: docs-v2/meta/workstream-state.yaml, summary: resumable repository state}
-  - {id: H1-T1, result: PASS, artifact: docs-v2/spec/harness-conformance.yaml, summary: RED-stage Harness conformance contract}
-  - {id: H1-T2, result: PASS, artifact: docs-v2/spec/harness-conformance.yaml, summary: lifecycle transition and rejection coverage}
-  - {id: H1-T3, result: PASS, artifact: docs-v2/spec/harness-reliability-conformance.yaml, summary: deterministic replay, restart safety, idempotency and fail-closed reliability}
-  - {id: H2-T1, result: PASS, artifact: docs-v2/spec/lifecycle-state-machine.yaml, summary: executable lifecycle/gate state machine}
-  - {id: H3-T1, result: PASS, artifact: docs-v2/spec/design-anchor.yaml, summary: universal Design Anchor contract}
-  - {id: H4-T1, result: PASS-HISTORICAL, artifact: docs-v2/spec/artifact-type-registry.yaml, summary: initial artifact registry}
-  - {id: H4-T2, result: PASS, artifact: docs-v2/spec/artifact-type-registry.yaml, summary: complete S2 canonical owners; H5 compatibility PASS}
-  - {id: H5-T1, result: PASS, artifact: docs-v2/spec/dependency-registry-impact.yaml, summary: registry, refs, fingerprints and impact model}
-  - {id: H5-T2, result: PASS, artifact: docs-v2/spec/design-derivation-lineage.yaml, summary: logical derivation lineage and project-book projection}
-  - {id: H6-T1, result: PASS, artifact: docs-v2/spec/ddd-pipeline.yaml, summary: Strategic -> Process Discovery -> Tactical DDD pipeline}
-  - {id: H7-T1, result: PASS, artifact: docs-v2/spec/human-knowledge-acquisition.yaml, summary: durable human-question/materialization protocol}
-  - {id: H8-T1, result: PASS, artifact: docs-v2/spec/validation-gate-engine.yaml, summary: deterministic-first version-bound validation/gate engine}
-  - {id: H9-T1, result: PASS, artifact: docs-v2/spec/agent-execution-context-v2.yaml, summary: Task Capsule v2 and bounded context/tool authority}
-  - {id: H10-T1, result: PASS, artifact: docs-v2/spec/harness-evals-tracing-regression.yaml, summary: regression/evals/tracing and failure promotion}
-  - {id: H11-T1, result: PASS, artifact: docs-v2/spec/repository-ci-enforcement.yaml, summary: one-stack local/hosted repository enforcement design}
-  - {id: H12-T1, result: PASS-HISTORICAL-NOW-REVISED, artifact: docs-v2/spec/napms-migration-revalidation.yaml, summary: initial migration dispositions and revalidation plan}
-  - id: H12-T1R
-    result: PASS
-    artifact: docs-v2/spec/napms-migration-revalidation.yaml
-    summary: corrected H12 v2 lifecycle/gate sequencing after H12-T2 preflight
-  - id: H12-T2
-    result: PASS
-    artifact: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
-    summary: bounded S0 problem/journey reconstruction completed on current canonical docs
-  - id: H12-P0-CONTROL-PLANE
-    result: PASS
-    artifact: docs-v2/spec/harness-control-plane.yaml
-    summary: >-
-      Introduced transaction/session separation, single lifecycle-state ownership, anchor/gate
-      semantic split, lazy authority-closure context, complete final execution basis, change-set
-      validation, evidence normalization and repository authority zones.
-  - id: H12-P0-RECONCILE-S0
-    result: PASS
-    artifact: docs-v2/migration/revalidated/h12-rc-curation/validation/s0-change-set-validation-v2.yaml
-    summary: >-
-      Revalidated the unchanged S0 problem/journey anchors as one change set under the v2.1
-      control-plane semantics; old per-anchor receipts remain historical only.
-
-routing_history:
-  - id: H2-T1-ATTEMPT-1
-    result: REOPEN(H1)
-    observed_at: 2026-09-16
-    reason: Initial H1 lacked complete lifecycle transition/rejection coverage required by H2.
-    resolution: H1-T2 added missing coverage; H2 then completed.
-  - id: H6-PREFLIGHT-RELIABILITY-AUDIT
-    result: REOPEN(H1)
-    observed_at: 2026-09-16
-    reason: Initial H1 lacked explicit universal Harness reliability conformance.
-    resolution: H1-T3 closed the gap.
-  - id: H6-T1-PREFLIGHT-1
-    result: REOPEN(H4)
-    observed_at: 2026-09-16
-    reason: H4 lacked canonical owners for Bounded Context and Process Discovery/Event Storming truth.
-    resolution: H4-T2 added bounded-context and domain-process-model; H5 compatibility PASS.
-  - id: H12-T2-PREFLIGHT-1
-    result: REWORK(H12-T1)
-    observed_at: 2026-09-17
-    reason: >-
-      H12 v1 combined S0 and S1 reconstruction and skipped separate G0/G1 gate transactions.
-    resolution: >-
-      H12 v2 established S0 -> G0 -> S1 -> G1 -> S2 Strategic -> Process Discovery -> Tactical -> G2.
-  - id: H12-HARNESS-V2-1-AUDIT
-    result: CONTROL_PLANE_CORRECTION
-    observed_at: 2026-09-17
-    reason: >-
-      Independent audit found duplicate writable lifecycle-state ownership, incomplete exact
-      binding of scoped state in validation evidence, anchor acceptance using a gate-sufficiency
-      judge identity, and avoidable session/commit fragmentation.
-    resolution: >-
-      DOCS-V2-HARNESS-CONTROL-PLANE v1 keeps lifecycle/gate ordering and reliability invariants
-      while making the Task Capsule the atomic transaction boundary and allowing serial capsules
-      in one orchestration session.
-
+  foundation: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11]
+  H12: [H12-T2, H12-P0-RECONCILE-S0, H12-G0-1, H12-T3, H12-G1-1, H12-T4]
+  simplification:
+    - design-work-restored-as-visible-unit
+    - Task-Capsule-serialization-made-optional-internal
+    - separate-gate-transactions-removed
+    - validation-reduced-to-changed-and-affected-design
+    - execution-basis-operation-id-fingerprint-bookkeeping-internalized
+    - execution-kernel-retired-as-separate-Harness-layer
 carry_forward:
-  - Harness is a universal project-agnostic design execution rail; NAPMS is a migration/pilot case, never a hard-coded semantic special case.
-  - Harness behavior is explicit, versioned and fail-closed; silent fallback, ambient authority and project-specific magic are forbidden.
-  - Project documentation is a graph of machine-readable Design Anchors and H5 relations; readable documentation is a non-canonical projection.
-  - Every accepted non-root anchor preserves logical derivation lineage to accepted predecessors/evidence/constraints/decisions.
-  - H6 owns S2 DDD semantics; H7 human knowledge acquisition; H8 validation/gates; H9 transaction-scoped Task Capsules; H10 regression/evals/tracing; H11 repository/CI enforcement design.
-  - DOCS-V2-HARNESS-CONTROL-PLANE v1 is the normative composition root for transaction/session/state/evidence integration semantics.
-  - One Task Capsule equals one atomic Harness transaction; an orchestration session may chain multiple committed eligible capsules until a real stop condition.
-  - Gate/checkpoint evaluations remain separate transactions with separate evidence; they do not require separate agent/session invocations.
-  - The active scope lifecycle state is the sole writable owner of current task, stage/checkpoint/gate states and blockers; this global state only points to it.
-  - Anchor semantic consistency uses SJ-ANCHOR-CONSISTENCY; gate/checkpoint sufficiency judges are reserved for gate/checkpoint profiles.
-  - Exact context may be resolved lazily inside a predeclared authority closure; the final consumed execution basis is frozen and fingerprint-bound before decision/persistence.
-  - Coherent same-stage/same-scope anchor changes may be validated as one change set while preserving per-target fingerprints and graph/lineage guarantees.
-  - docs/ remains canonical NAPMS product/project design truth until explicit cutover; product code/tests/runtime config cannot reconstruct missing product/domain/architecture truth during H12.
-  - Existing horizontal/pilot docs-v2 candidates are migration/history/comparison input until rematerialized; former V0-V3/G2/PASS evidence is stale.
-  - H12 legal semantic sequence remains S0 -> G0 -> S1 -> G1 -> S2 Strategic -> Process Discovery -> Tactical -> G2 -> planning; only session/transaction mechanics changed.
-  - Current canonical S1 catalogue-curation behavior explicitly permits a realization version with one or more technical addresses.
-  - The later S2 single-effective-AddressSpace rule cannot override current S1 without explicit S1/H7 authority change.
-  - The prior Resource Catalogue tactical pilot cannot satisfy current S2 because applicable Process Discovery was not durably performed before tactical modelling.
-  - New bounded-scope G2 does not authorize docs cutover, S3/S4 acceptance, product implementation, workflow changes, merge or broader NAPMS domain completeness.
-
-repository_authority_zones:
-  harness_control_plane: docs-v2/spec/** and docs-v2/meta/** except declared project adapters
-  canonical_project_truth: docs/**
-  migration_workspace: docs-v2/migration/**, docs-v2/pilot/**, docs-v2/horizontal/** plus docs-v2/spec/napms-migration-revalidation.yaml
-  generated_views: docs-generated/**
-  target_layout_deferred: {harness: harness/**, migration: docs-migration/**}
-
-blockers: []
-
+  - Harness guides design from problem to implementation readiness before code.
+  - docs/ remains canonical NAPMS product/domain/architecture truth until explicit cutover.
+  - Product code/tests cannot reconstruct missing design truth during H12.
+  - Design documentation is a graph of machine-readable anchors with meaningful derivation lineage.
+  - Human-owned truth is never invented; material gaps become questions/blockers.
+  - DDD work is applicability-driven, not universal ceremony.
+  - Readiness gates remain meaningful lifecycle guarantees but do not require separate execution units.
+  - Current evidence for unchanged design is reused; validate changed and affected design only.
+  - Operational IDs, fingerprints, execution bases, receipts, caching and atomicity are infrastructure details.
+  - Successful persistence or gate PASS does not require stopping when next meaningful work is clear.
 restrictions:
   product_implementation_authorization: none
   executable_test_change_authorization: none
   workflow_ci_change_authorization: none
   canonical_cutover_authorization: false
   merge_authorization: false
-
+blockers: []
 resume_protocol:
   - Read this file first.
-  - Resolve active_scope.state_ref; treat that scope state as the sole current lifecycle/task/gate owner.
-  - Read docs-v2/spec/harness-control-plane.yaml for effective integration semantics.
-  - Read only the current scope task direct dependencies and applicable phase/spec contracts.
-  - Build one transaction-scoped Task Capsule; persist it atomically/idempotently before starting another transaction.
-  - The same orchestration session may start the next eligible capsule after commit unless a control-plane stop condition applies.
-  - Do not infer progress or authority from chat history when repository state is available.
-
-history_note: >-
-  Detailed prior validation remains available in Git history and historical receipts. This state
-  intentionally avoids duplicating the active scope current_task/stage/gate state.
+  - Read active_scope.state_ref for current design maturity, blockers and next meaningful work.
+  - Read harness-control-plane.yaml for integration semantics.
+  - Load only the target design artifacts, direct semantic dependencies and applicable method/schema contracts.
+  - Perform coherent meaningful design work; validate changed/affected design and readiness at reached boundaries.
+  - Persist coherent artifacts/state/evidence and continue unless a real stop condition applies.
+  - Do not construct Task Capsules, operation IDs, execution bases or receipts manually as design work.
+  - Do not infer authority or progress from chat when repository state is available.
