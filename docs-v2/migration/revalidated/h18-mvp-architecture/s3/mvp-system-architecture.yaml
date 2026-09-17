@@ -2,13 +2,14 @@ anchor_id: NAPMS-S3-FIRST-MVP-SYSTEM-ARCHITECTURE
 type_id: software-architecture
 owner_stage: S3
 scope: {scope_id: H18-FIRST-MVP-ARCHITECTURE, product_area: Complete first MVP journey, lifecycle_boundary: S3 Software Architecture / Solution Design}
-status: CANDIDATE
+status: ACCEPTED
 canonical_payload:
   architecture_goal: Realize the complete accepted MVP journey on one frontend plus modular-monolith backend baseline, making system-wide technical choices once rather than independently per Bounded Context.
   system_shape:
-    frontend: Single user-facing application for resource, application/component/interaction, deployment, connectivity need, policy change and policy export workflow.
+    frontend: Single browser application for the complete MVP authoring and policy-export journey.
     backend: Single deployable modular monolith containing domain-aligned modules and an application composition layer.
-    deployment_units: [frontend, backend]
+    persistence: One PostgreSQL database colocating module-owned schemas.
+    deployment_units: [frontend, backend, postgresql]
     rule: 'Bounded Context ownership guides backend module boundaries; it does not imply one service, process or network API per context.'
   backend_modules:
     resource_catalogue: {owns: Resource and current AddressSpace application/domain realization, domain_anchor: NAPMS-S2-BC-RESOURCE-CATALOGUE}
@@ -16,42 +17,67 @@ canonical_payload:
     application_deployment: {owns: ComponentDeployment realization and references to ACC Component and RC Resource, domain_anchor: NAPMS-S2-BC-APPLICATION-DEPLOYMENT}
     business_connectivity: {owns: BusinessProcess and ConnectivityNeed realization, domain_anchor: NAPMS-S2-BC-BUSINESS-CONNECTIVITY}
     access_policy: {owns: 'PolicyRule, RuleChange and current EffectivePolicyRule realization', domain_anchor: NAPMS-S2-BC-ACCESS-POLICY}
+    authority_management: {owns: effective actor/action/scope authority and protected-action admission, domain_anchor: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}
     policy_export_composition: {owns: No domain truth; orchestrates reads from owner modules to materialize complete vendor-neutral policy and render table/CSV projections, peer_bounded_context: false}
+  frontend_backend_boundary:
+    protocol: HTTP
+    payload_style: JSON for application commands and queries; CSV for the explicit policy export representation.
+    canonical_contract: One OpenAPI contract for the system application API.
+    design_rule: API operations are organized around MVP use cases and resources exposed by the application boundary; they are not one network API per Bounded Context.
+    required_capabilities: [manage Resources and AddressSpace, manage Application/Components/Interactions and traffic revisions, manage ComponentDeployments, manage BusinessProcess/ConnectivityNeed, submit and decide RuleChange, view complete current vendor-neutral policy table, download same result as CSV]
+    error_rule: Domain rejection and Unresolved materialization are explicit application outcomes; missing materialization input is never represented as a silently partial successful export.
   interaction_rules:
     - Backend domain modules interact in-process through explicit module/application interfaces; HTTP is not an internal Bounded Context boundary.
     - Cross-module references use owner-defined identities and resolved semantics; consuming modules do not duplicate another module's mutable truth.
     - Policy export composition is read/orchestration logic and must not become an alternate owner of Resource, ACC, Deployment, Connectivity or Policy state.
-    - Access Policy acceptance must validate exact deployment endpoints, exact immutable ACC revision and required current ConnectivityNeed basis through explicit module contracts.
+    - Access Policy acceptance validates exact deployment endpoints, exact immutable ACC revision and required current ConnectivityNeed basis through explicit module contracts before committing its owned transition.
     - Failure to resolve required materialization input propagates as Unresolved; the composition must not silently omit rows.
-  frontend_backend_boundary:
-    kind: system delivery boundary
-    required_capabilities: [manage Resources and AddressSpace, manage Application/Components/Interactions and traffic revisions, manage ComponentDeployments, manage BusinessProcess/ConnectivityNeed, submit and decide RuleChange, view complete current vendor-neutral policy table, download same result as CSV]
-    protocol: TBD during H18 contract design; one system-level choice, not one choice per module
   persistence:
-    baseline: Backend modules own their persistence model and may share one physical database within the modular monolith while preserving logical ownership boundaries.
-    cross_module_rule: No module directly mutates another module's owned tables/state; cross-module semantics pass through module contracts.
-    technology: TBD; no database product selected by domain design.
+    engine: PostgreSQL
+    topology: One physical PostgreSQL database for the MVP backend.
+    ownership: Each domain module owns its persistence schema/repository contract inside the shared database.
+    mutation_rule: No module directly mutates another module's tables or persistence model.
+    read_rule: Cross-module semantics are obtained through owner module contracts; composition may combine owner-published read projections without transferring ownership.
+    migration_rule: Schema migrations are applied as one backend deployment concern while preserving module ownership in migration organization.
+    transaction_rule: Aggregate invariants are transactional inside the owner module; the modular monolith may use one local database transaction where one application use case coordinates owner operations, without redefining semantic ownership.
+  authorization:
+    identity_boundary: Authenticated actor identity is established by the backend session boundary and is not accepted from caller-supplied actor fields.
+    authentication_baseline: Local username/password authentication with server-side session is sufficient for the MVP; no external identity provider is required.
+    admission: Protected application use cases ask Authority Management for effective actor/action/scope admission and fail closed when required authority is unknown or ambiguous.
+    ownership_rule: Frontend visibility, disabled controls, Resource responsibility, catalogue facts and other domain metadata never substitute for Authority Management admission.
+    composition_rule: Application orchestration performs admission before invoking protected owner-module mutation; owner domain semantics remain unchanged by presentation concerns.
   consistency:
     local: Aggregate invariants are enforced transactionally inside the owning module.
     cross_module: Cross-context validation uses explicit orchestration/contracts; do not manufacture distributed-service semantics inside the monolith.
-    policy_acceptance: Formal Access Policy state transition is owned and committed by Access Policy after prerequisite semantic validation.
+    policy_acceptance: Formal Access Policy state transition is owned and committed by Access Policy after prerequisite semantic validation and protected-action admission.
     export: 'Read composition may span modules; it returns Success with a complete result or Unresolved with explicit causes.'
+  deployment:
+    baseline: Browser frontend, backend modular monolith and PostgreSQL are the complete MVP runtime topology.
+    external_dependencies: No external IdP, provider/device integration, evidence source or enforcement runtime is required for the first MVP journey.
+    evolution_rule: Module contracts and ownership boundaries permit later extraction only if a future quality/runtime need justifies it; extraction is not an MVP design goal.
   excluded_from_mvp_runtime: [Network Enforcement Placement, provider-specific rendering, Access Policy Realization, Network Environment Operations, Technical Access Evidence ingestion/recognition]
-  architecture_questions_remaining:
-    - {id: H18-Q1, question: Choose the concrete frontend-backend API style and contract representation., owner: architecture, blocking: S3 completion not current architecture baseline}
-    - {id: H18-Q2, question: Choose persistence technology and module schema/migration convention., owner: architecture, blocking: S3 completion not current architecture baseline}
-    - {id: H18-Q3, question: Define authorization integration at the frontend/backend use-case boundary using accepted Authority Management semantics., owner: architecture, blocking: S3 completion}
+  architecture_questions_remaining: []
   logical_derivation:
-    basis_refs: [{kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}]
-    derivation_kind: architecture-from-accepted-domain-slice
-    rationale: Apply the roadmap-selected frontend plus modular-monolith baseline once to the whole accepted MVP journey while preserving domain ownership and avoiding per-context transport/deployment decisions.
+    basis_refs:
+      - {kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}
+      - {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}
+      - {kind: anchor-current, anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}
+      - {kind: evidence, path: docs/architecture/current-architecture.md, use: compatible architecture evidence for PostgreSQL and server-session authority boundary}
+    derivation_kind: architecture-from-accepted-domain-slice-and-compatible-evidence
+    rationale: Apply the roadmap-selected frontend plus modular-monolith baseline once to the whole accepted MVP journey; use the stakeholder-approved HTTP/JSON plus OpenAPI delivery boundary and retain compatible simple local PostgreSQL/session architecture where it does not conflict with accepted target domain ownership.
 provenance:
-  origin_kind: derived
-  source_refs: [{kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}, {kind: roadmap, path: docs-v2/meta/roadmap.yaml, phase: H18}]
-  authority_basis: accepted-upstream-plus-roadmap-baseline
+  origin_kind: mixed
+  source_refs:
+    - {kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}
+    - {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}
+    - {kind: anchor-current, anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}
+    - {kind: repository-file, path: docs/architecture/current-architecture.md, blob_sha: 2a51b2ce84aea42ad00a7abc54790da7388e6517}
+    - {kind: stakeholder-decision, decision: HTTP/JSON frontend-backend boundary with one OpenAPI contract, recorded_at: '2026-09-17'}
+  authority_basis: accepted-upstream-plus-roadmap-baseline-plus-stakeholder-api-choice
   recorded_at: '2026-09-17'
 semantic_refs:
   - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
-semantic_fingerprint: pending-h18-validation
-validation: {freshness: STALE, evidence_ref: null, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: pending-H18-validation}
+  - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+semantic_fingerprint: sha256-json-v1:1dd7e7f60080811a8be993761252b701445d30b8b194c5f23ebe2495a962a33e
+validation: {freshness: CURRENT, evidence_ref: docs-v2/migration/revalidated/h18-mvp-architecture/validation/h18-change-set-validation.yaml, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: PASS}
