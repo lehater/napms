@@ -1,0 +1,100 @@
+version: 1
+kind: validation-evidence
+schema_version: cp-v1
+evidence_id: H12-T4-VE-S2-STRATEGIC-CHANGESET-1
+evidence_kind: change-set-anchor-validation
+evaluation_id: H12-T4-EVAL-S2-STRATEGIC-CHANGESET-1
+operation_id: H12-T4-OP-1
+scope: {scope_id: H12-RC-CURATION-MVP, lifecycle_stage: S2, checkpoint: S2-STRATEGIC}
+execution_basis_fingerprint: sha256-jcs-v1:e4f78bf893e2674f5809d7703402f224876091518ddc50a8c8c317d6ef5df0c8
+validation_profile_id: change-set-anchor-acceptance
+validation_profile_version: cp-v1
+targets:
+- {anchor_id: NAPMS-S2-RC-CAPABILITY-MAP, semantic_fingerprint: 'sha256-jcs-v1:d9dd8de01bab8ef44c4dec6e74bd0b166d3f754a8c4fd7a7cd1c0afa3b4d5b0a'}
+- {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE, semantic_fingerprint: 'sha256-jcs-v1:24fb478a426c6cc94776200589704e462cfd65577893ef4258ebf4214cec6917'}
+- {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT, semantic_fingerprint: 'sha256-jcs-v1:8b6a74b2be5930eaa73bfb16a8136355c6ea2aa199086ff98fd1e91aca993f62'}
+- {anchor_id: NAPMS-S2-RC-CONTEXT-RELATIONSHIPS, semantic_fingerprint: 'sha256-jcs-v1:9b9cee2f86c3bcf543036be2d6dab1cab7a9425e3ae7bf64363d0d062dfcc63a'}
+- {anchor_id: NAPMS-S2-RC-DOMAIN-GLOSSARY, semantic_fingerprint: 'sha256-jcs-v1:c7ddfa75bfb86823e87a5775a1b2895415d38e5d69c1a05764469a2db138d8da'}
+applicability_snapshot:
+  scope.multi_capability_strategic_discovery_required: true
+  scope.strategic_distillation_required: false
+  scope.bounded_context_identity_or_boundary_required: true
+  scope.context_relationship_semantics_required: true
+  scope.domain_terms_or_invariants_require_definition: true
+  scope.domain_process_discovery_required: true
+execution_basis:
+  task_or_gate_id: H12-T4
+  operation_id: H12-T4-OP-1
+  durable_state_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
+  durable_state_fingerprint: git-blob-sha1:47f294857ea4a711c27344cf5b4994c822b08a42
+  expected_repository_head: git-commit:18601017401d3fcb7d35428e09f408fc5bced93f
+  authority_closure:
+  - current accepted S1 anchors and G1 evidence for H12-RC-CURATION-MVP
+  - current canonical docs/domain strategic ownership/capability/boundary sources
+  - active H4/H5/H6/H7/H8/control-plane contracts required for strategic anchor acceptance
+  consumed_inputs:
+  - {ref: NAPMS-S1-RC-CURATION-BEHAVIOR, fingerprint: 'sha256-jcs-v1:1c70355ed0db0c2cf67d9167bf662f6351d665080ea5f4a3ac68e8e9821d2722'}
+  - {ref: NAPMS-S1-RC-CURATION-AUTHORIZATION, fingerprint: 'sha256-jcs-v1:abdfa0128b7311173305ca8e3641d5b1a96cf0076b726bd386e9324cf6e68f2c'}
+  - {ref: NAPMS-S1-RC-CURATION-INTEGRITY, fingerprint: 'sha256-jcs-v1:e505118d22c45bd930386310d38cb9939697df774293a7b92505e9a6a8f03460'}
+  - {ref: H12-T3-VE-S1-CHANGESET-1, fingerprint: 'git-blob-sha1:b95a24a85314af43668c214196bd0af8e2e866d1'}
+  - {ref: H12-G1-1-GATE-EVIDENCE-1, fingerprint: 'sha256-jcs-v1:7d48e7edbf97dce2ada42b8a1f75eb60ff1ce2c870f4b7073e8a66c9b2e74345'}
+  - {ref: docs/domain/capabilities.md, fingerprint: 'git-blob-sha1:adac9690c384ff7a87a75a5a7e494bc9a82279ae'}
+  - {ref: docs/domain/semantic-ownership.md, fingerprint: 'git-blob-sha1:1c80af643e805f289c09bd3719956470ccbebfd4'}
+  - {ref: docs/domain/strategic-model.md, fingerprint: 'git-blob-sha1:2df2538d6975d3060187b64c6397fd4b6ee6cafa'}
+  - {ref: docs/domain/context-map.md, fingerprint: 'git-blob-sha1:5980f19da4deed65d0f123d006c9bbd4600468b3'}
+  - {ref: docs/domain/resource-catalogue/README.md, fingerprint: 'git-blob-sha1:59e8580ff8440664d64cdd00c303e97d47961347'}
+  - {ref: docs/domain/authority-management/README.md, fingerprint: 'git-blob-sha1:c9b38cbd526ecd74930a4ce337a174505bc067b4'}
+  contract_versions:
+    DOCS-V2-HARNESS-CONTROL-PLANE: 1
+    DOCS-V2-ARTIFACT-TYPE-REGISTRY: 2
+    DOCS-V2-DEPENDENCY-REGISTRY-IMPACT: 1
+    DOCS-V2-DESIGN-DERIVATION-LINEAGE: 1
+    DOCS-V2-DDD-PIPELINE: 1
+    DOCS-V2-HUMAN-KNOWLEDGE-ACQUISITION: 1
+    DOCS-V2-VALIDATION-GATE-ENGINE: 1
+    DOCS-V2-LIFECYCLE-STATE-MACHINE: 1
+    DOCS-V2-NAPMS-MIGRATION-REVALIDATION: 2
+  validation_profile: {id: change-set-anchor-acceptance, version: cp-v1}
+  semantic_judges: {SJ-ANCHOR-CONSISTENCY: cp-v1}
+validator_bundle:
+  deterministic:
+    DV-HARNESS-SELF: h8-v1
+    DV-EXECUTION-BASIS: h8-v1
+    DV-FORMAT-SCHEMA: h8-v1
+    DV-TYPE-OWNER: h8-v1
+    DV-APPLICABILITY: h8-v1
+    DV-LIFECYCLE: h8-v1
+    DV-FINGERPRINT: h8-v1
+    DV-REGISTRY: h8-v1
+    DV-REFERENCE: h8-v1
+    DV-DEPENDENCY-GRAPH: h8-v1
+    DV-LINEAGE: h8-v1
+    DV-AUTHORITY: h8-v1
+    DV-FRESHNESS: h8-v1
+  semantic: {SJ-ANCHOR-CONSISTENCY: cp-v1}
+deterministic_result:
+  aggregate: PASS
+  finding_codes: []
+semantic_result:
+  judge_id: SJ-ANCHOR-CONSISTENCY
+  judge_version: cp-v1
+  outcome: PASS
+  finding_codes: []
+  supporting_refs: [NAPMS-S1-RC-CURATION-BEHAVIOR, NAPMS-S1-RC-CURATION-AUTHORIZATION, NAPMS-S1-RC-CURATION-INTEGRITY, docs/domain/capabilities.md, docs/domain/semantic-ownership.md, docs/domain/strategic-model.md, docs/domain/authority-management/README.md]
+  rationale_summary: >-
+    The strategic change set derives two relevant capabilities and separate Resource Catalogue/Authority Management model boundaries from accepted S1 behavior and current canonical ownership. It preserves Resource Catalogue ownership of Resource identity/realization/scope/responsibility, keeps effective action authority external, records only an upstream/downstream admission relation without inventing a stronger Context Mapping pattern, and explicitly excludes the stale downstream single-AddressSpace narrowing that conflicts with accepted S1.
+design_guards:
+  domain_distillation:
+    applicable: false
+    rationale: The bounded scope needs no core/supporting/generic investment classification to establish the affected boundaries; no such classification is inferred from agent preference.
+  address_cardinality: {accepted_s1_rule: one-or-more technical addresses, downstream_single_addressspace_imported: false}
+  context_relationship_pattern:
+    named_pattern_asserted: false
+    rationale: Upstream/downstream admission ownership is supported; a stronger named Context Mapping pattern is not accepted without additional evidence.
+  process_discovery:
+    applicable: true
+    rationale: Resource curation spans temporal add/end/replace behavior and cross-context authority admission; process discovery remains required before tactical acceptance.
+aggregate_result: PASS
+recorded_at: '2026-09-17'
+diagnostic_summary: H12-T4 strategic anchors materialized and anchor-validated under current S1 precedence. This evidence does not evaluate the S2-STRATEGIC checkpoint; a separate checkpoint transaction is required.
+evidence_fingerprint: sha256-jcs-v1:1327f0244521f62dce04ca067e1313d53efe9714da43afb2fd3028bbb30566d0
