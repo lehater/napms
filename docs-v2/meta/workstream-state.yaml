@@ -1,4 +1,4 @@
-version: 8
+version: 9
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
@@ -7,17 +7,18 @@ last_updated: 2026-09-17
 program:
   status: ACTIVE
   current_phase: H15
-  current_phase_state: PLANNING
+  current_phase_state: READY_FOR_AUTHORIZATION
   completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14]
 control_plane:
   contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 3}
   rule: meaningful design work is visible; runtime reliability bookkeeping is internal
 current_work:
   phase: H15
-  name: Post-H14 Harness integration planning
-  state: PLANNING
+  name: Post-H14 Harness integration
+  state: READY_FOR_AUTHORIZATION
+  plan_ref: docs-v2/meta/h15-integration-plan.yaml
   predecessor_ref: docs-v2/meta/h14-runtime-implementation.yaml
-  next: define the smallest post-H14 integration step that replaces obsolete docs-v2 validation entrypoints without expanding Harness ceremony or touching product semantics
+  next: obtain authorization for the accepted minimal shared Makefile/workflow integration boundary, then implement and verify it as one coherent change
 documentation_authority:
   evolving_authority: docs-v2/
   legacy_source: docs/
@@ -29,20 +30,23 @@ carry_forward:
   - Design documentation is a graph; affected-only revalidation replaces waterfall restart.
   - Downstream design conforms to applicable upstream authoritative constraints.
   - Readiness gates are lifecycle guarantees, not separate execution units.
-  - Operational IDs fingerprints execution bases receipts caching and atomicity are infrastructure details.
-  - H14 minimal repository-local runtime passed its regression suite and actual docs-v2 corpus validation on a branch checkout.
+  - H14 minimal repository-local runtime passed 14 regression tests and actual docs-v2 corpus validation with 14 anchors and zero errors.
   - Canonical design anchors may be YAML documents or Markdown documents with YAML front matter.
-  - Pre-H12 Task Capsule validators are legacy-only and are not part of the H14 runtime validation path.
+  - Pre-H12 Task Capsule validators are legacy-only and are not part of the docs-v2 runtime validation path.
 restrictions:
   product_implementation_authorization: none
   product_test_change_authorization: none
+  h15_shared_makefile_workflow_integration_authorization: pending
   namespace_cutover_authorization: false
   merge_authorization: false
-blockers: []
+blockers:
+  - id: H15-B-INTEGRATION-AUTHORIZATION
+    kind: authorization
+    statement: The minimal shared Makefile/workflow integration boundary is designed but not yet authorized for implementation.
 resume_protocol:
-  - Read this file first then roadmap.yaml then the H14 implementation state.
+  - Read this file first then roadmap.yaml then h15-integration-plan.yaml and the H14 implementation state.
   - Treat docs/ only as frozen migration evidence; never edit it.
   - Preserve the accepted minimal runtime boundary; do not reintroduce Task Capsule separate gate transaction daemon/service database or global semantic ceremony.
   - Use changed/affected validation and repository state as the normal resume path.
   - Product code/tests remain outside current authority and cannot supply missing design truth.
-  - Before changing shared workflow/Makefile validation entrypoints, explicitly define the intended H15 integration boundary in docs-v2 state/roadmap.
+  - Do not modify shared Makefile/workflow validation entrypoints until H15 integration authorization is explicit.

@@ -1,0 +1,45 @@
+version: 1
+kind: harness-integration-plan
+id: DOCS-V2-H15-INTEGRATION-PLAN
+status: ACCEPTED
+owner_phase: H15
+last_updated: 2026-09-17
+objective: >-
+  Make the H14 runtime the single docs-v2 validation entrypoint while keeping legacy Harness checks
+  isolated for legacy docs/process concerns and without adding new Harness ceremony.
+observed_state:
+  - make harness-check mixes legacy validators with tools/validate_docs_v2.py.
+  - tools/validate_docs_v2.py is pre-H12 and requires obsolete Task Capsule/product-repository fixtures.
+  - the H14 branch workflow already proves the new runtime regression suite and corpus validation on a real checkout.
+  - the existing main/ready-for-review harness workflow still routes docs-v2 changes through the legacy mixed target.
+minimal_boundary:
+  create_make_target:
+    name: docs-v2-harness-check
+    commands:
+      - python tools/test_docs_v2_harness.py
+      - python tools/test_docs_v2_harness_resume_refs.py
+      - python tools/test_docs_v2_harness_frontmatter.py
+      - python tools/docs_v2_harness.py --root . validate
+  legacy_target:
+    name: harness-check
+    action: remove tools/validate_docs_v2.py from this mixed legacy target; do not otherwise redesign legacy validation in H15
+  workflow:
+    action: route docs-v2 changes to the dedicated docs-v2-harness-check path; do not run product tests or product build
+  h14_workflow:
+    action: retire the temporary H14-only branch workflow after the shared docs-v2 entrypoint is proven
+non_goals:
+  - no product implementation or product tests
+  - no docs/ edits or namespace cutover
+  - no Task Capsule compatibility layer
+  - no new gate transaction, daemon, service, database, queue, receipt or execution-basis artifact
+  - no redesign of unrelated legacy Harness validators
+acceptance:
+  - one obvious repository command validates docs-v2 and its runtime regression suite
+  - docs-v2 validation has no dependency on Task Capsule or backend/tests/evals
+  - legacy docs/process checks can remain independently runnable
+  - CI checkout executes the same docs-v2 command developers/agents execute locally
+  - actual docs-v2 corpus remains PASS
+  - product code/tests are untouched
+implementation_authorization:
+  status: NOT_GRANTED
+  reason: H15 first records the intended shared Makefile/workflow boundary; changing those shared entrypoints requires explicit stakeholder authorization.
