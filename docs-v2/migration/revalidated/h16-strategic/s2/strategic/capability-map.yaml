@@ -1,0 +1,43 @@
+anchor_id: NAPMS-S2-NAPMS-CAPABILITY-MAP
+type_id: capability-map
+owner_stage: S2
+scope:
+  scope_id: H16-NAPMS-STRATEGIC
+  product_area: NAPMS whole-domain strategic landscape
+  lifecycle_boundary: S2 Strategic domain design
+status: CANDIDATE
+canonical_payload:
+  capabilities:
+  - {capability_id: CAP-BUSINESS-CONNECTIVITY, name: Business Connectivity, business_outcome: Own why application connectivity is needed., responsibility: Business Process identity/lifecycle and Connectivity Need attribution/current justification., language_terms: [Business Process, Connectivity Need]}
+  - {capability_id: CAP-ACCESS-POLICY, name: Access Policy, business_outcome: Own concrete access policy lifecycle and current effective policy truth., responsibility: Policy Rule identity/lifecycle RuleChange history/formal decision current revision and withdrawal., language_terms: [PolicyRule, RuleChange, Accepted, Rejected]}
+  - {capability_id: CAP-AUTHORITY-MANAGEMENT, name: Authority Management, business_outcome: Evaluate effective actor/action/scope/time authority for protected actions., responsibility: Effective authority semantic ownership., language_terms: [Actor, Action, ResponsibilityScopeRef, Effective Authority]}
+  - {capability_id: CAP-RESOURCE-CATALOGUE, name: Resource Catalogue, business_outcome: Maintain authoritative Resource catalogue facts., responsibility: Resource identity/lifecycle realization scope affiliation and responsibility., language_terms: [Resource, AddressSpace, Resource Scope Affiliation, Resource Responsibility]}
+  - {capability_id: CAP-APPLICATION-COMMUNICATION-CATALOGUE, name: Application Communication Catalogue, business_outcome: Own reusable application/component communication meaning., responsibility: Application Component Interaction and immutable traffic contract semantics., language_terms: [Application, Component, Interaction, InteractionContractRevision]}
+  - {capability_id: CAP-APPLICATION-DEPLOYMENT, name: Application Deployment, business_outcome: Own concrete deployed Component placement truth., responsibility: ComponentDeployment identity/lifecycle and exact ComponentRef-to-ResourceRef relation., language_terms: [ComponentDeployment, ComponentRef, ResourceRef]}
+  - {capability_id: CAP-NETWORK-ENFORCEMENT-PLACEMENT, name: Network Enforcement Placement, business_outcome: Determine where a technical pair may be enforced., responsibility: Candidate Firewall and policy-locator relevance., language_terms: [TrafficPair, FirewallCandidate, policy locator]}
+  - {capability_id: CAP-TECHNICAL-ACCESS-EVIDENCE, name: Technical Access Evidence, business_outcome: Preserve trustworthy normalized technical evidence., responsibility: Canonical immutable source-qualified technical evidence with source/time/provenance., language_terms: [TechnicalAccessEvidence, provenance]}
+  - {capability_id: CAP-ACCESS-POLICY-REALIZATION, name: Access Policy Realization, business_outcome: Compare required and configured effective access., responsibility: Source-neutral assessment semantic delta additive change design and verification., language_terms: [ConfiguredEffectivePolicySnapshot, VerifiedChangeIntent, missing, excess]}
+  - {capability_id: CAP-NETWORK-ENVIRONMENT-OPERATIONS, name: Network Environment Operations, business_outcome: Execute controlled provider/network target mutation., responsibility: Mutation identity authority preconditions outcome and provenance., language_terms: [TargetPolicyArtifact, controlled mutation]}
+  - {capability_id: CAP-REQUIRED-POLICY-MATERIALIZATION, name: Required Policy Materialization, business_outcome: Derive target-required policy from accepted upstream truth., responsibility: Non-peer composition over AP ACC AD RC and NEP; owns no upstream authoritative facts., language_terms: [TargetRequiredPolicy], disposition: non-peer-composition}
+  - {capability_id: CAP-EVIDENCE-ACCESS-RECOGNITION, name: Evidence Access Recognition, business_outcome: Correlate technical evidence to an access candidate., responsibility: Non-peer composition over TAE RC AD and ACC; ambiguous or missing correlation is unresolved., language_terms: [RecognizedAccessCandidate], disposition: non-peer-composition}
+  - {capability_id: CAP-PROVIDER-POLICY-INTERPRETER, name: Provider Policy Interpreter, business_outcome: Interpret provider configured policy into source-neutral semantics., responsibility: Integration/application capability., language_terms: [ConfiguredEffectivePolicySnapshot], disposition: integration-capability}
+  - {capability_id: CAP-PROVIDER-POLICY-RENDERER, name: Provider Policy Renderer, business_outcome: Render verified intent into provider target representation., responsibility: Integration/application capability preserving semantic equivalence., language_terms: [TargetPolicyArtifact], disposition: integration-capability}
+  - {capability_id: CAP-TECHNICAL-EVIDENCE-ACQUISITION, name: Technical Evidence Acquisition / Collectors, business_outcome: Acquire and faithfully normalize source material., responsibility: Integration/application capability producing TAE evidence., language_terms: [collector, source material], disposition: integration-capability}
+  clustering:
+  - {cluster_id: CLUSTER-TARGET-BOUNDED-CONTEXTS, capability_ids: [CAP-BUSINESS-CONNECTIVITY, CAP-ACCESS-POLICY, CAP-AUTHORITY-MANAGEMENT, CAP-RESOURCE-CATALOGUE, CAP-APPLICATION-COMMUNICATION-CATALOGUE, CAP-APPLICATION-DEPLOYMENT, CAP-NETWORK-ENFORCEMENT-PLACEMENT, CAP-TECHNICAL-ACCESS-EVIDENCE, CAP-ACCESS-POLICY-REALIZATION, CAP-NETWORK-ENVIRONMENT-OPERATIONS], rationale: The accepted strategic baseline assigns these authoritative responsibilities to ten target Bounded Contexts; capability identity does not imply deployable-service identity., status: candidate}
+  - {cluster_id: CLUSTER-NON-PEER-AND-INTEGRATION, capability_ids: [CAP-REQUIRED-POLICY-MATERIALIZATION, CAP-EVIDENCE-ACCESS-RECOGNITION, CAP-PROVIDER-POLICY-INTERPRETER, CAP-PROVIDER-POLICY-RENDERER, CAP-TECHNICAL-EVIDENCE-ACQUISITION], rationale: Derived compositions and provider/source adapters remain outside peer Bounded Context ownership., status: candidate}
+  logical_derivation:
+    basis_refs: [{kind: evidence, path: docs/domain/capabilities.md}, {kind: evidence, path: docs/domain/semantic-ownership.md}]
+    derivation_kind: migration-revalidation
+    rationale: Preserve accepted capability ownership while separating Bounded Contexts from compositions and integration capabilities.
+    method_rule_ids: [DDD-MR-CAPABILITY-DISCOVERY]
+provenance:
+  origin_kind: imported-current-docs
+  source_refs:
+  - {kind: repository-file, path: docs/domain/capabilities.md, blob_sha: adac9690c384ff7a87a75a5a7e494bc9a82279ae}
+  - {kind: repository-file, path: docs/domain/semantic-ownership.md, blob_sha: 1c80af643e805f289c09bd3719956470ccbebfd4}
+  authority_basis: imported-current-docs-ref-before-cutover
+  recorded_at: '2026-09-17'
+semantic_refs: []
+semantic_fingerprint: pending-h16-validation
+validation: {freshness: STALE, evidence_ref: null, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: pending-H16-validation}
