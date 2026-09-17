@@ -33,6 +33,7 @@ completed_work:
     - process-and-strategic-design-allowed-to-refine-each-other
     - tactical-acceptance-requires-current-process-and-strategic-basis
     - artifact-graph-drives-rework-not-waterfall-order
+    - ddd-pipeline-and-lifecycle-aligned-with-roadmap-revision-3
 carry_forward:
   - Harness guides design from problem/discovery to implementation readiness before code.
   - docs/ remains canonical NAPMS product/domain/architecture truth until explicit cutover.
@@ -43,6 +44,8 @@ carry_forward:
   - A design slice is a coherent end-to-end business outcome/process; it is not an API/table/screen/module/BC or isolated authorization operation.
   - Processes may cross Bounded Contexts and Bounded Contexts may participate in multiple processes.
   - Requirements and process discovery may refine each other; strategic DDD is evidence-backed by discovery/process/requirements/language.
+  - Strategic and Process Discovery are iterative maturity areas; neither is a universal authoring prerequisite for the other.
+  - Tactical acceptance requires current relevant strategic boundaries and applicable process evidence.
   - DDD work is applicability-driven, iterative and graph-based, not universal ceremony or a one-way waterfall.
   - Readiness gates remain meaningful lifecycle guarantees but do not require separate execution units.
   - Current evidence for unchanged design is reused; validate changed and affected design only.
