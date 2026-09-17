@@ -1,0 +1,70 @@
+version: 1
+kind: canonical-model-migration-workstream-state
+id: NAPMS-CANONICAL-MODEL-MIGRATION-STATE
+branch: meta/canonical-model-migration
+base_main_sha: 8a50f3154a320b620095a1475cafebada2d370f4
+last_updated: 2026-09-18
+strategy: docs/meta/canonical-model-migration/strategy.md
+roadmap: docs/meta/canonical-model-migration/roadmap.yaml
+ledger: docs/meta/canonical-model-migration/migration-ledger.yaml
+
+program:
+  status: ACTIVE
+  current_phase: CM1
+  current_phase_state: READY
+  completed_phases: [CM0]
+
+current_work:
+  task_id: CM1-01
+  name: Inventory accepted strategic sources and build target strategic spine
+  state: READY
+  objective: Establish target capability bounded-context and context-relationship owners from accepted current docs without semantic redesign.
+  source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM1
+  authority_unit: STRATEGIC-SPINE
+  next_action: Inventory accepted H16/H12 strategic anchors, create the three target strategic artifacts, generate/review Context Map, then perform semantic-equivalence review before changing ledger authority.
+  stop_conditions:
+    - accepted strategic semantics cannot be represented without loss
+    - source anchors contradict each other materially
+    - a missing DDD relationship pattern would have to be invented
+    - a target artifact would duplicate another canonical owner rather than reference it
+
+authority:
+  namespace: docs/
+  per_unit_resolution: docs/meta/canonical-model-migration/migration-ledger.yaml
+  rule: During migration the ledger determines whether legacy accepted anchors or target paths are current for each listed unit.
+  generated_paths: noncanonical-disposable
+
+carry_forward:
+  - H17 first-MVP S1-S2 journey and tactical slice remain accepted truth until their ledger unit cuts over.
+  - H18 S3 architecture remains accepted truth; Structurizr workspace is already canonical structural/C4 architecture.
+  - H19 S4 implementation-readiness truth remains accepted until corresponding target owners exist.
+  - Product code/tests are implementation/evidence and cannot be used to reconstruct design truth.
+  - Product implementation readiness does not authorize implementation.
+  - Normal work must stay lightweight; migration bookkeeping exists only to make authority and resume state unambiguous.
+  - Context Mapper pilot is evidence only and does not make CML a canonical dependency.
+  - Generated-projections pilot is evidence only until equivalent projection plumbing is adopted in this workstream.
+
+experiment_evidence:
+  - {ref: architecture/model-layout-pilot@13a39b7b80b7beaec65bef98ea415ae908fc3bcf, use: Resource Catalogue target-layout and Context Mapper comparison evidence}
+  - {ref: architecture/generated-projections@876c08fb72b08f18a014227f79e4041c8b623d73, use: deterministic generated-projection and Structurizr review-surface evidence}
+
+restrictions:
+  product_implementation_authorization: none
+  product_test_change_authorization: none
+  product_code_tests_as_design_truth: forbidden
+  semantic_redesign_authorization: none-by-default
+  merge_authorization: false
+
+blockers: []
+
+resume_protocol:
+  - Read this file first for any continuation of the canonical-model migration.
+  - Then read roadmap.yaml and migration-ledger.yaml; read strategy.md when the migration method or authority rule is relevant.
+  - Treat the ledger authority field as the temporary source of truth for where each migrating slice currently lives.
+  - Load only the accepted source anchors listed for the current ledger unit plus directly required dependencies.
+  - Do not use product code/tests to fill design gaps.
+  - Do not use pilot branches as semantic authority; they are evidence of shape/tooling only.
+  - Do not invent a next CM phase; follow roadmap.yaml and update this file when meaningful work changes state.
+  - After every successful cutover, update migration-ledger.yaml and this state in the same change.
+  - If a semantic gap or contradiction appears, stop the affected cutover and record it instead of weakening accepted meaning.
+  - Do not merge without explicit authorization.
