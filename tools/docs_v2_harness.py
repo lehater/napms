@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Minimal repository-local runtime for Documentation System v2."""
+"""Minimal repository-local runtime for the canonical Documentation System."""
 from __future__ import annotations
 import argparse, hashlib, json, subprocess
 from dataclasses import dataclass
@@ -40,9 +40,16 @@ def semantic_fingerprint(document:dict[str,Any])->str:
     encoded=json.dumps(projection,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()
     return "sha256-json-v1:"+hashlib.sha256(encoded).hexdigest()
 
+def _documentation_root(root:Path)->Path:
+    canonical=root/"docs"
+    if canonical.exists(): return canonical
+    legacy_test_root=root/"docs-v2"
+    if legacy_test_root.exists(): return legacy_test_root
+    return canonical
+
 def discover_anchors(root:Path)->dict[str,Anchor]:
-    anchors={}
-    files=sorted(list((root/"docs-v2").rglob("*.yaml"))+list((root/"docs-v2").rglob("*.md")))
+    anchors={}; docs_root=_documentation_root(root)
+    files=sorted(list(docs_root.rglob("*.yaml"))+list(docs_root.rglob("*.md")))
     for path in files:
         document=load_design_document(path)
         if not document or not document.get("anchor_id"): continue
@@ -89,21 +96,22 @@ def affected_set(anchors:dict[str,Anchor],changed:Iterable[str])->list[str]:
             if dep not in seen: seen.add(dep); queue.append(dep)
     return sorted(seen,key=lambda x:(anchors[x].owner_stage,x))
 
-def _docs_v2_ref(root:Path,raw_ref:str,label:str)->dict[str,Any]:
+def _docs_ref(root:Path,raw_ref:str,label:str)->dict[str,Any]:
     rel=Path(raw_ref)
-    if rel.is_absolute() or ".." in rel.parts or not rel.parts or rel.parts[0]!="docs-v2": raise HarnessError(f"{label} must point inside docs-v2/**: {raw_ref}")
+    allowed_root=_documentation_root(root).name
+    if rel.is_absolute() or ".." in rel.parts or not rel.parts or rel.parts[0]!=allowed_root: raise HarnessError(f"{label} must point inside {allowed_root}/**: {raw_ref}")
     return load_yaml(root/rel)
 
 def load_resume_context(root:Path)->dict[str,Any]:
-    state=load_yaml(root/"docs-v2/meta/workstream-state.yaml"); roadmap=state.get("roadmap")
+    docs_root=_documentation_root(root); state=load_yaml(docs_root/"meta/workstream-state.yaml"); roadmap=state.get("roadmap")
     if not isinstance(roadmap,str) or not roadmap: raise HarnessError("workstream state has no roadmap pointer")
-    context={"workstream":state,"roadmap":_docs_v2_ref(root,roadmap,"roadmap")}; current=state.get("current_work") or {}
+    context={"workstream":state,"roadmap":_docs_ref(root,roadmap,"roadmap")}; current=state.get("current_work") or {}
     if not isinstance(current,dict): raise HarnessError("workstream current_work must be a mapping")
     refs={}
     for key,value in current.items():
         if key.endswith("_ref") and value is not None:
             if not isinstance(value,str) or not value: raise HarnessError(f"current_work.{key} must be a non-empty repository path")
-            refs[key]=_docs_v2_ref(root,value,f"current_work.{key}")
+            refs[key]=_docs_ref(root,value,f"current_work.{key}")
     context["current_refs"]=refs; return context
 
 def readiness(scope_state:dict[str,Any],gate:str)->dict[str,str]:
@@ -123,10 +131,10 @@ def human_truth(required:bool,provided:bool)->dict[str,str]:
     return {"result":"NEED_MORE_DATA","reason":"required human-owned truth is missing"} if required and not provided else {"result":"PASS","reason":"no missing human-owned truth"}
 def persist_files(root:Path,expected_head:str,files:dict[str,str],message:str)->dict[str,str]:
     if not files: raise HarnessError("persistence change set is empty")
-    normalized={}
+    normalized={}; allowed_root=_documentation_root(root).name
     for raw,content in files.items():
         rel=Path(raw)
-        if rel.is_absolute() or ".." in rel.parts or not rel.parts or rel.parts[0]!="docs-v2": raise HarnessError(f"runtime persistence is limited to docs-v2/**: {raw}")
+        if rel.is_absolute() or ".." in rel.parts or not rel.parts or rel.parts[0]!=allowed_root: raise HarnessError(f"runtime persistence is limited to {allowed_root}/**: {raw}")
         normalized[rel]=content
     if all((root/r).is_file() and (root/r).read_text(encoding="utf-8")==c for r,c in normalized.items()): return {"result":"PASS","head":git_head(root),"effect":"already-applied"}
     assert_expected_head(root,expected_head)
@@ -139,7 +147,7 @@ def validate_repo(root:Path)->dict[str,Any]:
     return {"result":"PASS" if not errors else "FAIL","anchors":len(anchors),"errors":errors,"current_work":context["workstream"].get("current_work")}
 def main()->int:
     parser=argparse.ArgumentParser(description=__doc__); parser.add_argument("--root",type=Path,default=Path.cwd()); sub=parser.add_subparsers(dest="command",required=True); sub.add_parser("resume"); sub.add_parser("validate")
-    impact=sub.add_parser("impact"); impact.add_argument("anchor_ids",nargs="+"); gate=sub.add_parser("readiness"); gate.add_argument("scope_state",type=Path); gate.add_argument("gate"); cas=sub.add_parser("check-head"); cas.add_argument("expected_head"); persist=sub.add_parser("persist"); persist.add_argument("expected_head"); persist.add_argument("manifest",type=Path); persist.add_argument("--message",default="docs-v2: persist Harness change set")
+    impact=sub.add_parser("impact"); impact.add_argument("anchor_ids",nargs="+"); gate=sub.add_parser("readiness"); gate.add_argument("scope_state",type=Path); gate.add_argument("gate"); cas=sub.add_parser("check-head"); cas.add_argument("expected_head"); persist=sub.add_parser("persist"); persist.add_argument("expected_head"); persist.add_argument("manifest",type=Path); persist.add_argument("--message",default="docs: persist Harness change set")
     args=parser.parse_args(); root=args.root.resolve()
     try:
         if args.command=="resume":
