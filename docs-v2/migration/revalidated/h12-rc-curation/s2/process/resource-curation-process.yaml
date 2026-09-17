@@ -1,0 +1,107 @@
+anchor_id: NAPMS-S2-RC-CURATION-PROCESS
+type_id: domain-process-model
+owner_stage: S2
+scope:
+  scope_id: H12-RC-CURATION-MVP
+  product_area: Resource Catalogue curation
+  lifecycle_boundary: S2 Process Discovery / Event Storming
+status: ACCEPTED
+canonical_payload:
+  name: Resource Catalogue curation
+  context_refs:
+    - {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}
+    - {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}
+  actors:
+    - actor_id: ACTOR-CURATOR
+      name: Admitted catalogue curator
+      role: Authenticated actor admitted to catalogue-wide Resource Catalogue curation
+      origin_class: accepted-requirement
+  commands:
+    - {command_id: CMD-REGISTER-RESOURCE, name: Register Resource, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: Create a stable access-relevant Resource identity with required provenance., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
+    - {command_id: CMD-ADD-REALIZATION, name: Add Resource Realization, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: Add a time-qualified technical realization version with one or more technical addresses., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
+    - {command_id: CMD-END-REALIZATION, name: End Resource Realization, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: End an existing time-qualified realization without rewriting history., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
+    - {command_id: CMD-AFFILIATE-SCOPE, name: Affiliate Resource With Responsibility Scope, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: Add a time-qualified Resource Scope Affiliation., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
+    - {command_id: CMD-END-SCOPE-AFFILIATION, name: End Resource Scope Affiliation, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: End an existing scope affiliation without changing Resource identity., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
+    - {command_id: CMD-ASSIGN-RESPONSIBILITY, name: Assign Resource Responsibility, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: Assign an extensible responsibility role to a supported responsible party for a time-qualified period., actor_ref: ACTOR-CURATOR, origin_class: human-decision}
+    - {command_id: CMD-END-RESPONSIBILITY, name: End Resource Responsibility, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: End a responsibility assignment while preserving its history., actor_ref: ACTOR-CURATOR, origin_class: human-decision}
+  domain_events:
+    - {event_id: EVT-RESOURCE-REGISTERED, name: Resource Registered, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A Resource identity now exists with its provenance., origin_class: accepted-requirement, caused_by_command_ref: CMD-REGISTER-RESOURCE}
+    - {event_id: EVT-REALIZATION-ADDED, name: Resource Realization Added, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A time-qualified technical realization version was added to the Resource., origin_class: accepted-requirement, caused_by_command_ref: CMD-ADD-REALIZATION}
+    - {event_id: EVT-REALIZATION-ENDED, name: Resource Realization Ended, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A time-qualified technical realization ceased to be effective without erasing its history., origin_class: accepted-requirement, caused_by_command_ref: CMD-END-REALIZATION}
+    - {event_id: EVT-SCOPE-AFFILIATED, name: Resource Scope Affiliated, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A time-qualified Responsibility Scope affiliation was added to the Resource., origin_class: accepted-requirement, caused_by_command_ref: CMD-AFFILIATE-SCOPE}
+    - {event_id: EVT-SCOPE-AFFILIATION-ENDED, name: Resource Scope Affiliation Ended, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A Responsibility Scope affiliation ceased to be effective without changing Resource identity., origin_class: accepted-requirement, caused_by_command_ref: CMD-END-SCOPE-AFFILIATION}
+    - {event_id: EVT-RESPONSIBILITY-ASSIGNED, name: Resource Responsibility Assigned, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A responsible party now holds the specified responsibility role for the applicable time interval., origin_class: human-decision, caused_by_command_ref: CMD-ASSIGN-RESPONSIBILITY}
+    - {event_id: EVT-RESPONSIBILITY-ENDED, name: Resource Responsibility Ended, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A responsibility assignment ceased to be effective while its historical fact remains., origin_class: human-decision, caused_by_command_ref: CMD-END-RESPONSIBILITY}
+  policies: []
+  timeline:
+    - {step_id: T1, sequence: 1, kind: external-system, item_ref: EXT-AUTHORITY-MANAGEMENT}
+    - {step_id: T2, sequence: 2, kind: command, item_ref: CMD-REGISTER-RESOURCE}
+    - {step_id: T3, sequence: 3, kind: domain-event, item_ref: EVT-RESOURCE-REGISTERED}
+    - {step_id: T4, sequence: 4, kind: command, item_ref: CMD-ADD-REALIZATION}
+    - {step_id: T5, sequence: 5, kind: domain-event, item_ref: EVT-REALIZATION-ADDED}
+    - {step_id: T6, sequence: 6, kind: command, item_ref: CMD-AFFILIATE-SCOPE}
+    - {step_id: T7, sequence: 7, kind: domain-event, item_ref: EVT-SCOPE-AFFILIATED}
+    - {step_id: T8, sequence: 8, kind: command, item_ref: CMD-ASSIGN-RESPONSIBILITY}
+    - {step_id: T9, sequence: 9, kind: domain-event, item_ref: EVT-RESPONSIBILITY-ASSIGNED}
+  external_systems:
+    - external_system_id: EXT-AUTHORITY-MANAGEMENT
+      name: Authority Management
+      interaction_meaning: Admits or denies each protected Resource Catalogue mutation for the authenticated Actor using the fixed MVP catalogue-wide curation action/scope.
+      origin_class: human-decision
+  hotspots:
+    - {hotspot_id: HOTSPOT-SCOPED-AUTHORIZATION, question_or_uncertainty: How should authorization be scoped to subsets of Resources if a future confirmed customer requirement needs it?, owner_kind: stakeholder, blocking: false, status: deferred-nonblocking}
+    - {hotspot_id: HOTSPOT-MANDATORY-RESPONSIBILITY-COVERAGE, question_or_uncertainty: Do any responsibility roles become mandatory for a Resource and are temporary gaps or overlaps during responsibility transfer forbidden?, owner_kind: stakeholder, blocking: false, status: deferred-nonblocking}
+  candidate_aggregates:
+    - candidate_id: CANDIDATE-RESOURCE
+      name: Resource
+      context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}
+      command_refs: [CMD-REGISTER-RESOURCE, CMD-ADD-REALIZATION, CMD-END-REALIZATION, CMD-AFFILIATE-SCOPE, CMD-END-SCOPE-AFFILIATION, CMD-ASSIGN-RESPONSIBILITY, CMD-END-RESPONSIBILITY]
+      event_refs: [EVT-RESOURCE-REGISTERED, EVT-REALIZATION-ADDED, EVT-REALIZATION-ENDED, EVT-SCOPE-AFFILIATED, EVT-SCOPE-AFFILIATION-ENDED, EVT-RESPONSIBILITY-ASSIGNED, EVT-RESPONSIBILITY-ENDED]
+      consistency_boundary_rationale: Commands and temporal facts are centered on continuity of one Resource identity, but exact aggregate boundaries remain a Tactical DDD hypothesis.
+      status: candidate
+  logical_derivation:
+    basis_refs:
+      - {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR}
+      - {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION}
+      - {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-INTEGRITY}
+      - {kind: anchor-current, anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}
+      - {kind: anchor-current, anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}
+      - {kind: anchor-current, anchor_id: NAPMS-S2-DEC-RC-MVP-AUTHORITY}
+      - {kind: anchor-current, anchor_id: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES}
+    derivation_kind: synthesis
+    rationale: Accepted requirements define the curation operations and temporal history behavior; accepted strategic boundaries assign catalogue facts to Resource Catalogue and admission to Authority Management; the two human decisions resolve MVP authority and extensible responsibility-role semantics.
+    method_rule_ids: [DDD-MR-PROCESS-COMMAND-EVENT, DDD-MR-PROCESS-POLICY, DDD-MR-CANDIDATE-AGGREGATE]
+    decision_refs: [NAPMS-S2-DEC-RC-MVP-AUTHORITY, NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES]
+    evidence_refs: []
+provenance:
+  origin_kind: mixed
+  source_refs:
+    - {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR}
+    - {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION}
+    - {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-INTEGRITY}
+    - {kind: anchor-current, anchor_id: NAPMS-S2-DEC-RC-MVP-AUTHORITY}
+    - {kind: anchor-current, anchor_id: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES}
+  authority_basis: durable-human-decision-ref
+  derivation:
+    input_anchor_refs: [NAPMS-S1-RC-CURATION-BEHAVIOR, NAPMS-S1-RC-CURATION-AUTHORIZATION, NAPMS-S1-RC-CURATION-INTEGRITY, NAPMS-S2-BC-RESOURCE-CATALOGUE, NAPMS-S2-BC-AUTHORITY-MANAGEMENT, NAPMS-S2-DEC-RC-MVP-AUTHORITY, NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES]
+    derivation_rule_or_method: DOCS-V2-DDD-PIPELINE.S2-PROCESS-DISCOVERY
+    derivation_kind: synthesis
+    rationale: Process semantics are derived only from accepted requirements/boundaries and the captured stakeholder decisions.
+  recorded_at: '2026-09-17'
+semantic_refs:
+  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-INTEGRITY}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: DECIDED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-DEC-RC-MVP-AUTHORITY}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: DECIDED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+semantic_fingerprint: sha256-jcs-v1:c56fb4884b58a177312ef3822cb90aacdcafb095fb7224f1c3f2124e9bfa5747
+validation:
+  freshness: CURRENT
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-process-change-set-validation.yaml
+  evidence_target: NAPMS-S2-RC-CURATION-PROCESS
+  validated_fingerprint: sha256-jcs-v1:c56fb4884b58a177312ef3822cb90aacdcafb095fb7224f1c3f2124e9bfa5747
+  profile: changed-and-affected-design
+  profile_version: cp-v2
+  enforcement_status: specification-manual-not-CI
