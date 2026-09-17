@@ -1,0 +1,31 @@
+name: docs-v2 harness H14
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - meta/docs-v2-m7-pilot
+    paths:
+      - "docs-v2/**"
+      - "tools/docs_v2_harness.py"
+      - "tools/test_docs_v2_harness*.py"
+      - "tools/requirements-docs-v2-harness.txt"
+      - ".github/workflows/docs-v2-harness-h14.yml"
+
+jobs:
+  validate-docs-v2-harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install Harness dependency
+        run: python -m pip install -r tools/requirements-docs-v2-harness.txt
+      - name: Run H14 regression tests
+        run: |
+          python tools/test_docs_v2_harness.py
+          python tools/test_docs_v2_harness_resume_refs.py
+          python tools/test_docs_v2_harness_frontmatter.py
+      - name: Validate actual docs-v2 corpus
+        run: python tools/docs_v2_harness.py --root . validate
