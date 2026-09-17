@@ -1,13 +1,13 @@
 version: 1
-revision: 2
+revision: 3
 kind: meta-roadmap
 id: DOCS-V2-HARNESS-ROADMAP
 status: active
 scope: universal-project-design-harness
 purpose: >-
   Guide design from initial problem to implementation readiness before product code is written.
-  Preserve a visible, machine-readable chain of design artifacts and decisions so the design can
-  be reviewed, corrected, resumed and projected as coherent documentation.
+  Preserve a visible, machine-readable graph of design artifacts and decisions so design can be
+  discovered, reviewed, corrected, resumed and projected as coherent documentation.
 operating_constraints:
   - docs/ remains canonical NAPMS product/project design truth until explicit cutover.
   - Product code/tests are not sources of product/domain/architecture truth during current documentation design.
@@ -32,15 +32,78 @@ principles:
     statement: IDs, fingerprints, execution bases, receipts, caching, idempotency and atomic persistence are runtime details unless independently meaningful to design.
   - id: P-STANDARD-FIRST
     statement: Prefer established formats such as OpenAPI, AsyncAPI and architecture DSLs where they preserve required semantics.
+  - id: P-DISCOVER-BEFORE-BOUND
+    statement: Discover domain stories, processes, language and hotspots before treating a slice or Bounded Context boundary as settled.
+  - id: P-GRAPH-NOT-WATERFALL
+    statement: Stage labels describe maturity; artifact dependencies and affected-impact determine rework rather than a one-way document sequence.
 design_roadmap:
-  - {stage: S0, name: Problem / Evidence, outcome: bounded problem and constraints}
-  - {stage: S1, name: Requirements, outcome: observable behavior and applicable qualities}
-  - {stage: S2, name: Domain Design, outcome: applicable strategic/process/tactical domain semantics}
-  - {stage: S3, name: Architecture, outcome: technical realization and contracts}
-  - {stage: S4, name: Implementation Readiness, outcome: exact executable and verifiable implementation slice}
+  - stage: S0
+    name: Discovery / Problem Framing
+    outcome: bounded problem, goals, evidence, constraints and enough domain landscape to choose meaningful process slices without inventing boundaries
+    activities_when_applicable: [stakeholder-discovery, domain-stories, big-picture-event-storming, actors-and-external-systems, vocabulary-candidates, hotspots]
+  - stage: S1
+    name: Requirements Engineering
+    outcome: observable outcomes, behavior, business rules, acceptance examples and applicable qualities
+    relationship: iterates-with-discovery-and-process-understanding
+  - stage: S2
+    name: Domain Design
+    outcome: process, strategic and tactical domain semantics with evidence-backed boundaries and consistency rules
+    relationship: process-discovery-and-strategic-DDD-iterate-before-tactical-acceptance
+  - stage: S3
+    name: Software Architecture / Solution Design
+    outcome: technical realization, runtime structure, integrations and contracts constrained by accepted domain design and quality goals
+  - stage: S4
+    name: Implementation Design / Implementation Readiness
+    outcome: exact executable and verifiable implementation slice without unresolved required product/domain/architecture invention
+
+design_dependency_order:
+  discovery:
+    produces_or_refines: [problem, goals, evidence, constraints, domain-stories, big-picture, vocabulary, hotspots]
+    enables: [meaningful-process-slice-selection, requirements-discovery, strategic-DDD]
+  process_and_requirements:
+    relationship: iterative
+    rule: >-
+      Existing accepted requirements constrain discovery, while domain stories/process discovery may expose missing,
+      conflicting or underspecified requirements. Missing human-owned truth becomes a question rather than an agent assumption.
+    produces_or_refines: [business-outcomes, process-flows, commands, domain-events, policies, exceptions, requirements, acceptance-examples]
+  strategic_domain_design:
+    basis: [discovery, process-evidence, requirements, language]
+    produces_or_refines: [capabilities, subdomains, bounded-contexts, context-map, ubiquitous-language]
+    rule: A Bounded Context is not a prerequisite for discovering a process; process evidence may create, challenge or refine context boundaries.
+  process_refinement:
+    basis: [strategic-boundaries, requirements, domain-stories]
+    rule: Refine process ownership and cross-context interactions after strategic candidates exist; contradictions reopen affected strategic design.
+  tactical_domain_design:
+    basis: [current-relevant-processes, current-relevant-strategic-boundaries, requirements, accepted-human-decisions]
+    produces_or_refines: [aggregates, entities, value-objects, invariants, domain-services, state-transitions]
+  architecture:
+    basis: [domain-design, quality-requirements, constraints]
+  implementation_readiness:
+    basis: [architecture, domain-design, acceptance-examples]
+
+slice_selection:
+  definition: >-
+    A design slice is the smallest coherent end-to-end business outcome/process worth designing and demonstrating,
+    not a table, API endpoint, UI screen, repository module, Bounded Context or isolated authorization check.
+  selection_basis: [domain-landscape, business-outcome, process-flow, risk-or-hotspot, implementation-value]
+  guards:
+    - A slice may cross multiple Bounded Contexts.
+    - A Bounded Context may participate in multiple slices.
+    - Do not claim universal catalogue/process behavior from one slice; generalize only after repeated evidence or explicit domain authority.
+    - The slice must be broad enough to expose material rules, temporal behavior, failures and external interactions, but small enough to reach implementation readiness coherently.
+
+rework_model:
+  rule: >-
+    Design is a dependency graph, not a waterfall. New evidence or downstream discovery marks only semantically affected predecessors/successors for revalidation or rework.
+  examples:
+    - process discovery may reopen a requirement or strategic boundary
+    - strategic DDD may require more domain stories or process evidence
+    - tactical DDD may expose a missing business invariant and route to human knowledge acquisition
+    - architecture may expose an impossible quality constraint and reopen the owning requirement
+
 work_model:
   unit: meaningful-design-work
-  coherent_cycle: [design, affected-validation, readiness-if-boundary, persistence, continue]
+  coherent_cycle: [discover-or-design, affected-validation, readiness-if-boundary, persistence, continue]
   separate_gate_execution_required: false
   serialized_task_capsule_required: false
   stop_on_success: false
@@ -65,14 +128,15 @@ program_phases:
   active: H12
   next: H13
 H12:
-  objective: Validate the simplified Harness against the bounded NAPMS migration slice while continuing domain design.
-  exit: Current pilot reaches applicable G2 with traceable design and without reintroducing operational ceremony.
+  objective: Validate the simplified and corrected design order against a bounded NAPMS migration slice while continuing real domain discovery/design.
+  exit: Current pilot reaches applicable G2 with traceable design, evidence-backed slice/boundary selection and without reintroducing operational ceremony.
 H13:
   objective: Plan the smallest runtime needed to automate internal reliability/validation plumbing after H12.
   guard: Runtime architecture must not add user-visible Harness concepts unless a demonstrated design failure requires them.
 program_exit:
-  - Design can be followed from problem to implementation readiness through linked machine-readable artifacts.
-  - Material design decisions can be traced backward to accepted roots/decisions/evidence.
+  - Design can be followed from problem/discovery to implementation readiness through linked machine-readable artifacts.
+  - Material design decisions can be traced backward to accepted roots, stories/process evidence, decisions and constraints.
+  - Process slices and Bounded Context boundaries are evidence-backed rather than selected from implementation structure or agent convenience.
   - Work resumes from repository state without chat history.
   - Missing human truth is explicit rather than invented.
   - Normal design work is not dominated by Harness bookkeeping.

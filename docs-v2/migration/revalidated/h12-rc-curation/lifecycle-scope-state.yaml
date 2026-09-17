@@ -1,4 +1,4 @@
-version: 9
+version: 10
 kind: lifecycle-scope-state
 id: NAPMS-H12-RC-CURATION-LIFECYCLE
 scope_id: H12-RC-CURATION-MVP
@@ -11,52 +11,69 @@ process_contracts:
   migration: {id: DOCS-V2-NAPMS-MIGRATION-REVALIDATION, version: 2, revision: 3}
   validation: {id: DOCS-V2-VALIDATION-GATE-ENGINE, version: 1, revision: 2}
   execution: {id: DOCS-V2-AGENT-EXECUTION-CONTEXT-V2, version: 1, revision: 2}
-  ddd: {id: DOCS-V2-DDD-PIPELINE, version: 1}
+  ddd: {id: DOCS-V2-DDD-PIPELINE, version: 1, status: affected-by-roadmap-order-correction}
 current_work:
-  lifecycle_stage: S2
-  checkpoint: S2-TACTICAL
-  intent: Refine the accepted Resource Catalogue process model into the smallest tactical domain model justified by requirements, temporal behavior and invariants; do not promote candidate aggregate hypotheses without consistency evidence.
-  design_inputs: [NAPMS-S2-RC-CURATION-PROCESS, NAPMS-S2-BC-RESOURCE-CATALOGUE, NAPMS-S2-DEC-RC-MVP-AUTHORITY, NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES]
+  lifecycle_stage: S0-S2-REVALIDATION
+  checkpoint: DISCOVERY-AND-SLICE-REVALIDATION
+  intent: >-
+    Establish enough bounded NAPMS domain landscape around Resource Catalogue curation to test whether the current
+    H12 slice and already accepted strategic/process artifacts are evidence-backed under the corrected design order.
+    Reuse accepted work when confirmed; reopen only semantically affected anchors.
+  design_inputs:
+    - NAPMS-S0-RC-CURATION-PROBLEM
+    - NAPMS-S0-RC-CURATION-JOURNEY
+    - NAPMS-S1-RC-CURATION-BEHAVIOR
+    - NAPMS-S1-RC-CURATION-AUTHORIZATION
+    - NAPMS-S1-RC-CURATION-INTEGRITY
+    - NAPMS-S2-RC-CAPABILITY-MAP
+    - NAPMS-S2-BC-RESOURCE-CATALOGUE
+    - NAPMS-S2-BC-AUTHORITY-MANAGEMENT
+    - NAPMS-S2-RC-CONTEXT-RELATIONSHIPS
+    - NAPMS-S2-RC-CURATION-PROCESS
   state: IN_PROGRESS
 completed_work:
   - {id: H12-T2, result: PASS, effect: S0-design-materialized}
   - {id: H12-G0-1, result: PASS, effect: S0-accepted-S1-eligible}
   - {id: H12-T3, result: PASS, effect: S1-design-materialized-and-validated}
   - {id: H12-G1-1, result: PASS, effect: S1-accepted-S2-eligible}
-  - {id: H12-T4, result: PASS, effect: S2-strategic-design-materialized-and-validated}
-  - {id: H12-S2-STRATEGIC-READINESS, result: PASS, effect: S2-STRATEGIC-accepted-S2-PROCESS-DISCOVERY-eligible}
-  - {id: H12-S2-PROCESS-DISCOVERY, result: PASS, effect: human decisions materialized; Resource Catalogue process model accepted; S2-TACTICAL eligible}
-stage_states: {S0: ACCEPTED, S1: ACCEPTED, S2: IN_PROGRESS, S3: NOT_STARTED, S4: NOT_STARTED}
-s2_checkpoints: {S2-STRATEGIC: ACCEPTED, S2-PROCESS-DISCOVERY: ACCEPTED, S2-TACTICAL: IN_PROGRESS}
-gates: {G0: PASS, G1: PASS, G2: NOT_EVALUATED, G3: NOT_EVALUATED, G4: NOT_EVALUATED}
+  - {id: H12-T4, result: PASS, effect: S2-strategic-design-materialized-and-validated-under-prior-order}
+  - {id: H12-S2-STRATEGIC-READINESS, result: PASS, effect: accepted-under-prior-order; now subject-to-affected-revalidation}
+  - {id: H12-S2-PROCESS-DISCOVERY, result: PASS, effect: accepted-under-prior-order; now subject-to-affected-revalidation}
+stage_states: {S0: REVALIDATING, S1: REVALIDATING_IF_AFFECTED, S2: REVALIDATING, S3: NOT_STARTED, S4: NOT_STARTED}
+s2_checkpoints: {S2-STRATEGIC: REVALIDATING, S2-PROCESS-DISCOVERY: REVALIDATING, S2-TACTICAL: NOT_STARTED}
+gates: {G0: HISTORICAL_PASS_REVALIDATE_IF_AFFECTED, G1: HISTORICAL_PASS_REVALIDATE_IF_AFFECTED, G2: NOT_EVALUATED, G3: NOT_EVALUATED, G4: NOT_EVALUATED}
 applicability:
+  BIG-PICTURE-DOMAIN-DISCOVERY: true
+  SLICE-REVALIDATION: true
   S2-STRATEGIC: true
   S2-PROCESS-DISCOVERY: true
   S2-TACTICAL: true
   rationale:
+    BIG-PICTURE-DOMAIN-DISCOVERY: Current RC slice and BC boundaries were selected before the Harness required sufficient domain-landscape/process evidence.
+    SLICE-REVALIDATION: H12 must verify that Resource Catalogue Curation MVP is a coherent business-outcome/process slice rather than a boundary chosen from the assumed context.
     S2-PROCESS-DISCOVERY: Resource curation has temporal add/end/replace flows and cross-context authority interaction.
-    S2-TACTICAL: Temporal Resource facts and mutation invariants require explicit consistency boundaries before architecture.
+    S2-TACTICAL: Tactical work waits until affected discovery, slice and strategic/process basis are current.
 accepted_anchor_refs:
-  - {anchor_id: NAPMS-S0-RC-CURATION-PROBLEM, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/problem-statement.md}
-  - {anchor_id: NAPMS-S0-RC-CURATION-JOURNEY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/user-journey.md}
-  - {anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s1/resource-curation-behavior.md}
-  - {anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s1/resource-curation-authorization.md}
-  - {anchor_id: NAPMS-S1-RC-CURATION-INTEGRITY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s1/resource-curation-integrity.md}
-  - {anchor_id: NAPMS-S2-RC-CAPABILITY-MAP, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/capability-map.yaml}
-  - {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-resource-catalogue.yaml}
-  - {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-authority-management.yaml}
-  - {anchor_id: NAPMS-S2-RC-CONTEXT-RELATIONSHIPS, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/context-relationships.yaml}
-  - {anchor_id: NAPMS-S2-RC-DOMAIN-GLOSSARY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/domain-glossary.yaml}
-  - {anchor_id: NAPMS-S2-DEC-RC-MVP-AUTHORITY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/process/mvp-authority-decision.yaml}
-  - {anchor_id: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/process/responsibility-role-decision.yaml}
-  - {anchor_id: NAPMS-S2-RC-CURATION-PROCESS, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/process/resource-curation-process.yaml}
+  - {anchor_id: NAPMS-S0-RC-CURATION-PROBLEM, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/problem-statement.md, status: accepted-pending-affected-revalidation}
+  - {anchor_id: NAPMS-S0-RC-CURATION-JOURNEY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/user-journey.md, status: accepted-pending-affected-revalidation}
+  - {anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s1/resource-curation-behavior.md, status: accepted-pending-affected-revalidation}
+  - {anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s1/resource-curation-authorization.md, status: accepted-pending-affected-revalidation}
+  - {anchor_id: NAPMS-S1-RC-CURATION-INTEGRITY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s1/resource-curation-integrity.md, status: accepted-pending-affected-revalidation}
+  - {anchor_id: NAPMS-S2-RC-CAPABILITY-MAP, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/capability-map.yaml, status: accepted-pending-revalidation}
+  - {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-resource-catalogue.yaml, status: accepted-pending-revalidation}
+  - {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-authority-management.yaml, status: accepted-pending-revalidation}
+  - {anchor_id: NAPMS-S2-RC-CONTEXT-RELATIONSHIPS, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/context-relationships.yaml, status: accepted-pending-revalidation}
+  - {anchor_id: NAPMS-S2-RC-DOMAIN-GLOSSARY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/domain-glossary.yaml, status: accepted-pending-revalidation}
+  - {anchor_id: NAPMS-S2-DEC-RC-MVP-AUTHORITY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/process/mvp-authority-decision.yaml, status: accepted-current-human-decision}
+  - {anchor_id: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/process/responsibility-role-decision.yaml, status: accepted-current-human-decision}
+  - {anchor_id: NAPMS-S2-RC-CURATION-PROCESS, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/process/resource-curation-process.yaml, status: accepted-pending-revalidation}
 current_evidence_refs:
-  S0: docs-v2/migration/revalidated/h12-rc-curation/validation/s0-change-set-validation-v2.yaml
-  G0: docs-v2/migration/revalidated/h12-rc-curation/validation/h12-g0-gate-evidence.yaml
-  S1: docs-v2/migration/revalidated/h12-rc-curation/validation/s1-change-set-validation.yaml
-  G1: docs-v2/migration/revalidated/h12-rc-curation/validation/h12-g1-gate-evidence.yaml
-  S2_STRATEGIC_DESIGN: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-strategic-change-set-validation.yaml
-  S2_PROCESS_DISCOVERY: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-process-change-set-validation.yaml
+  historical_S0: docs-v2/migration/revalidated/h12-rc-curation/validation/s0-change-set-validation-v2.yaml
+  historical_G0: docs-v2/migration/revalidated/h12-rc-curation/validation/h12-g0-gate-evidence.yaml
+  historical_S1: docs-v2/migration/revalidated/h12-rc-curation/validation/s1-change-set-validation.yaml
+  historical_G1: docs-v2/migration/revalidated/h12-rc-curation/validation/h12-g1-gate-evidence.yaml
+  historical_S2_STRATEGIC_DESIGN: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-strategic-change-set-validation.yaml
+  historical_S2_PROCESS_DISCOVERY: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-process-change-set-validation.yaml
 source_authority:
   current_product_domain_authority: docs/
   product_code_tests_as_design_truth: forbidden
@@ -84,8 +101,10 @@ blockers: []
 deferred_nonblocking:
   - {id: H12-D-SCOPED-AUTHORIZATION, statement: Resource-level/scoped authorization model is intentionally deferred until a concrete customer requirement requires it.}
   - {id: H12-D-RESPONSIBILITY-COVERAGE, statement: Whether particular responsibility roles are mandatory and whether transfer gaps/overlaps are forbidden is not required by the current MVP and remains unspecified.}
+  - {id: H12-D-DDD-CONTRACT-ALIGNMENT, statement: ddd-pipeline.yaml still encodes the prior strict Strategic -> Process -> Tactical ordering and is affected by roadmap revision 3; it must be aligned before affected S2 revalidation can be accepted.}
 next_meaningful_work:
-  stage: S2
-  checkpoint: S2-TACTICAL
-  name: Tactical DDD
-  action: derive Resource aggregate/entity/value-object/invariant/state semantics from accepted process and requirements; ask only if a non-derivable business rule blocks acceptance.
+  stage: S0-S2-REVALIDATION
+  checkpoint: METHOD-AND-DISCOVERY-ALIGNMENT
+  name: Correct DDD method contract and revalidate discovery basis
+  action: >-
+    Align ddd-pipeline.yaml with roadmap revision 3 without adding new ceremony; then build only the bounded Big Picture/domain-discovery evidence needed around the RC curation outcome, re-evaluate slice and BC/process assumptions, and reuse or reopen affected anchors accordingly.

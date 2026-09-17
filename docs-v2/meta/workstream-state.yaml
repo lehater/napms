@@ -26,13 +26,24 @@ completed_work:
     - validation-reduced-to-changed-and-affected-design
     - execution-basis-operation-id-fingerprint-bookkeeping-internalized
     - execution-kernel-retired-as-separate-Harness-layer
+  design-order-correction:
+    - discovery-before-settled-slice-and-boundary
+    - requirements-and-process-understanding-iterative
+    - strategic-DDD-derived-from-discovery-process-requirements-language
+    - process-and-strategic-design-allowed-to-refine-each-other
+    - tactical-acceptance-requires-current-process-and-strategic-basis
+    - artifact-graph-drives-rework-not-waterfall-order
 carry_forward:
-  - Harness guides design from problem to implementation readiness before code.
+  - Harness guides design from problem/discovery to implementation readiness before code.
   - docs/ remains canonical NAPMS product/domain/architecture truth until explicit cutover.
   - Product code/tests cannot reconstruct missing design truth during H12.
   - Design documentation is a graph of machine-readable anchors with meaningful derivation lineage.
   - Human-owned truth is never invented; material gaps become questions/blockers.
-  - DDD work is applicability-driven, not universal ceremony.
+  - Domain stories, Big Picture/process evidence and hotspots are discovered before treating slices or Bounded Context boundaries as settled.
+  - A design slice is a coherent end-to-end business outcome/process; it is not an API/table/screen/module/BC or isolated authorization operation.
+  - Processes may cross Bounded Contexts and Bounded Contexts may participate in multiple processes.
+  - Requirements and process discovery may refine each other; strategic DDD is evidence-backed by discovery/process/requirements/language.
+  - DDD work is applicability-driven, iterative and graph-based, not universal ceremony or a one-way waterfall.
   - Readiness gates remain meaningful lifecycle guarantees but do not require separate execution units.
   - Current evidence for unchanged design is reused; validate changed and affected design only.
   - Operational IDs, fingerprints, execution bases, receipts, caching and atomicity are infrastructure details.
@@ -46,6 +57,7 @@ restrictions:
 blockers: []
 resume_protocol:
   - Read this file first.
+  - Read roadmap.yaml for current design dependency order and slice-selection rules.
   - Read active_scope.state_ref for current design maturity, blockers and next meaningful work.
   - Read harness-control-plane.yaml for integration semantics.
   - Load only the target design artifacts, direct semantic dependencies and applicable method/schema contracts.
