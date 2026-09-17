@@ -3,7 +3,7 @@ kind: canonical-model-migration-equivalence-review
 id: NAPMS-CM1-STRATEGIC-EQUIVALENCE
 phase: CM1
 unit: STRATEGIC-SPINE
-status: PENDING_CI
+status: PASS
 reviewed_at: 2026-09-18
 check_command: make canonical-model-check
 criteria:
@@ -15,4 +15,16 @@ criteria:
   - generic whole-domain arrows do not acquire invented named DDD patterns
   - generated Context Map includes peer BCs only and remains a projection
   - generated collaboration map may show non-peer compositions but does not promote them to BCs
-result: awaiting_clean_ci
+result: PASS
+evidence:
+  branch_commit: 4dd2332940acd05a1913403808b98ecac55d8633
+  workflow_run: 35288550441
+  workflow_job: 105426171177
+  observed:
+    - CM1 strategic equivalence PASS
+    - 10 capabilities preserved
+    - 10 peer Bounded Contexts preserved
+    - 13 whole-domain relationships preserved
+    - 1 explicit upstream/downstream Context Mapping relationship preserved
+    - 2 non-peer compositions preserved
+    - generated Context Map and strategic collaboration projection completed successfully

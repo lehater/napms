@@ -28,7 +28,7 @@ phases:
 
   - id: CM1
     name: Establish strategic spine
-    status: ACTIVE
+    status: COMPLETE
     depends_on: [CM0]
     objective: Create the stable whole-domain strategic model in target paths without reopening accepted strategic semantics.
     planned_outputs:
@@ -44,11 +44,12 @@ phases:
 
   - id: CM2
     name: Resource Catalogue vertical cutover
-    status: PENDING
+    status: ACTIVE
     depends_on: [CM1]
     objective: Use the proven Resource Catalogue pilot shape for the first real context cutover.
     exit_criteria:
-      - context/domain/process target artifacts preserve accepted H12 semantics.
+      - language/domain/process target artifacts preserve accepted H12 semantics without duplicating the strategic BC owner.
+      - Strategic purpose responsibility boundary and language ownership are referenced from docs/model/strategic/bounded-contexts.yaml.
       - NAPMS-specific invariants and policies remain explicit.
       - Generated domain/process projections derive from target artifacts.
       - Architecture is referenced, not duplicated.
@@ -71,13 +72,13 @@ phases:
       - Cross-context semantics are referenced from strategic/journey owners rather than duplicated locally.
 
   - id: CM4
-    name: Cross-context journeys and compositions
+    name: Cross-context journeys
     status: PENDING
     depends_on: [CM3]
-    objective: Normalize current cross-context use cases/journeys and explicit non-peer compositions outside individual BC ownership.
+    objective: Normalize current cross-context use cases/journeys while reusing non-peer compositions already owned by the strategic spine.
     exit_criteria:
       - First-MVP journey has one stable target owner.
-      - Required Policy Materialization and other non-peer compositions remain explicitly non-peer.
+      - Required Policy Materialization and other non-peer compositions remain explicitly non-peer and are referenced from their strategic owner rather than copied.
       - Cross-context use cases do not become owned by an arbitrary BC.
       - Generated journey/collaboration projections contain no independent truth.
 

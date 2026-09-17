@@ -10,29 +10,31 @@ ledger: docs/meta/canonical-model-migration/migration-ledger.yaml
 
 program:
   status: ACTIVE
-  current_phase: CM1
-  current_phase_state: IN_PROGRESS
-  completed_phases: [CM0]
+  current_phase: CM2
+  current_phase_state: READY
+  completed_phases: [CM0, CM1]
 
 current_work:
-  task_id: CM1-01
-  name: Inventory accepted strategic sources and build target strategic spine
-  state: IN_PROGRESS
-  objective: Establish target capability bounded-context and context-relationship owners from accepted current docs without semantic redesign.
-  source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM1
-  authority_unit: STRATEGIC-SPINE
-  completed_actions:
-    - Created CM1 source inventory at docs/meta/canonical-model-migration/cm1-strategic-source-inventory.yaml.
-    - Confirmed the strategic BC source set is eight H16 BC anchors plus corrected Resource Catalogue and Authority Management anchors from H12.
-    - Confirmed non-peer compositions must stay non-peer and generic semantic arrows must not gain invented DDD patterns.
-    - Created non-authoritative target candidates at docs/model/strategic/.
-    - Added deterministic CM1 semantic-equivalence check and strategic view generator.
-  next_action: Run canonical-model-check on a clean branch checkout. If equivalence and projection generation pass, record CM1 PASS and switch STRATEGIC-SPINE authority to target.
+  task_id: CM2-01
+  name: Migrate Resource Catalogue tactical semantic slice
+  state: READY
+  objective: Move accepted Resource Catalogue glossary tactical domain and curation process semantics into target owners without duplicating the strategic BC definition.
+  source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM2
+  authority_unit: RESOURCE-CATALOGUE
+  predecessor_result:
+    phase: CM1
+    result: PASS
+    review: docs/meta/canonical-model-migration/cm1-strategic-equivalence-review.yaml
+    target_owners:
+      - docs/model/strategic/capabilities.yaml
+      - docs/model/strategic/bounded-contexts.yaml
+      - docs/model/strategic/context-relationships.yaml
+  next_action: Read only the RESOURCE-CATALOGUE ledger sources plus its target strategic dependencies; create language domain-model and process-model candidates, validate semantic equivalence and generated projections, then cut over the unit if checks pass.
   stop_conditions:
-    - accepted strategic semantics cannot be represented without loss
-    - source anchors contradict each other materially
-    - a missing DDD relationship pattern would have to be invented
-    - a target artifact would duplicate another canonical owner rather than reference it
+    - accepted H12 glossary tactical or process semantics cannot be represented without loss
+    - target files would repeat strategic purpose boundary or relationship truth instead of referencing it
+    - a tactical or process decision would have to be invented
+    - architecture or persistence detail would leak into the domain model
 
 authority:
   namespace: docs/
