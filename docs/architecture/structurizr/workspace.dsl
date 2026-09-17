@@ -46,25 +46,39 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
     views {
         systemContext napms "SystemContext" {
             include *
-            autolayout lr
             description "NAPMS first-MVP system context."
         }
 
         container napms "Containers" {
             include *
-            autolayout lr
             description "NAPMS first-MVP runtime topology: browser frontend, modular-monolith backend, and PostgreSQL."
         }
 
         component napms.backend "BackendComponents" {
             include *
-            autolayout lr
             description "Domain-aligned modules and policy-export composition inside the modular-monolith backend."
         }
 
         styles {
+            element "Element" {
+                shape RoundedBox
+            }
             element "Person" {
                 shape Person
+                background #08427b
+                color #ffffff
+            }
+            element "Software System" {
+                background #1168bd
+                color #ffffff
+            }
+            element "Container" {
+                background #438dd5
+                color #ffffff
+            }
+            element "Component" {
+                background #85bbf0
+                color #000000
             }
             element "Database" {
                 shape Cylinder
