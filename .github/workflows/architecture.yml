@@ -4,8 +4,13 @@ on:
   pull_request:
     paths:
       - "docs/architecture/structurizr/**"
+      - "docs/migration/revalidated/h12-rc-curation/s2/process/resource-curation-process.yaml"
+      - "docs/migration/revalidated/h12-rc-curation/s2/tactical/resource-catalogue-domain-model.yaml"
       - "docs/migration/revalidated/h16-strategic/s2/strategic/capability-map.yaml"
       - "docs/migration/revalidated/h16-strategic/s2/strategic/context-relationships.yaml"
+      - "docs/migration/revalidated/h17-mvp-journey/s1/mvp-vendor-neutral-policy-export.yaml"
+      - "docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml"
+      - "docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-implementation-readiness.yaml"
       - "docs/spec/artifacts.md"
       - "docs/spec/repository-layout.md"
       - "tools/generate_architecture_views.py"
@@ -15,8 +20,13 @@ on:
     branches: [main]
     paths:
       - "docs/architecture/structurizr/**"
+      - "docs/migration/revalidated/h12-rc-curation/s2/process/resource-curation-process.yaml"
+      - "docs/migration/revalidated/h12-rc-curation/s2/tactical/resource-catalogue-domain-model.yaml"
       - "docs/migration/revalidated/h16-strategic/s2/strategic/capability-map.yaml"
       - "docs/migration/revalidated/h16-strategic/s2/strategic/context-relationships.yaml"
+      - "docs/migration/revalidated/h17-mvp-journey/s1/mvp-vendor-neutral-policy-export.yaml"
+      - "docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml"
+      - "docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-implementation-readiness.yaml"
       - "docs/spec/artifacts.md"
       - "docs/spec/repository-layout.md"
       - "tools/generate_architecture_views.py"
