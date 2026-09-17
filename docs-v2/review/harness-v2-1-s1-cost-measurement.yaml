@@ -1,0 +1,133 @@
+version: 1
+kind: harness-execution-cost-measurement
+id: DOCS-V2-HARNESS-V2-1-S1-COST-MEASUREMENT
+status: observed
+recorded_at: 2026-09-17
+branch: meta/docs-v2-m7-pilot
+basis_commit: 8a4429d802978dfeafca75f8919949e6ae94e090
+scope_id: H12-RC-CURATION-MVP
+transaction:
+  task_id: H12-T3
+  operation_id: H12-T3-OP-1
+  kind: design-change-set
+  result: PASS
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s1-change-set-validation.yaml
+
+purpose: >-
+  Preserve the first empirical cost measurement of a semantic design/materialization transaction
+  under Harness v2.1. Compare its unavoidable product-truth/derivation cost with the previously
+  measured G0 gate transaction and separate both from current ChatGPT/GitHub transport overhead.
+
+semantic_cost:
+  harness_transactions: 1
+  distinct_authoritative_artifacts_consumed: 13
+  canonical_product_truth_documents_reloaded: 3
+  accepted_predecessor_anchors_consumed: 2
+  current_predecessor_validation_receipts_reused: 1
+  new_design_anchors: 3
+  preserved_h7_examples: 5
+  downstream_conflict_markers: 1
+  deterministic_checks: 13
+  semantic_judges: 1
+  new_validation_evidence_records: 1
+  lifecycle_state_files_mutated: 1
+  final_repository_commits: 1
+  final_changed_files: 7
+  final_diff:
+    additions: 540
+    deletions: 46
+  product_code_test_ci_changes: 0
+
+semantic_inputs:
+  process_and_state:
+    - docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
+    - docs-v2/spec/napms-migration-revalidation.yaml
+    - docs-v2/spec/harness-control-plane.yaml
+    - docs-v2/spec/artifact-type-registry.yaml
+    - docs-v2/spec/dependency-registry-impact.yaml
+    - docs-v2/spec/design-derivation-lineage.yaml
+    - docs-v2/spec/human-knowledge-acquisition.yaml
+  accepted_predecessors:
+    - NAPMS-S0-RC-CURATION-PROBLEM
+    - NAPMS-S0-RC-CURATION-JOURNEY
+    - H12-P0-VE-S0-CHANGESET-1
+  canonical_project_truth:
+    - docs/requirements/catalogue-curation.md
+    - docs/requirements/catalogue-curation-acceptance-examples.md
+    - docs/requirements/catalogue-curation-security.md
+
+outputs:
+  anchors:
+    - NAPMS-S1-RC-CURATION-BEHAVIOR
+    - NAPMS-S1-RC-CURATION-AUTHORIZATION
+    - NAPMS-S1-RC-CURATION-INTEGRITY
+  process_state:
+    - H12-S1-RC-CURATION-EXAMPLES
+    - H12-S1-RC-CURATION-DOWNSTREAM-CONFLICTS
+  state_effect:
+    S1: IN_PROGRESS
+    next_task: H12-G1-1
+
+semantic_observations:
+  - The three canonical docs reads are intrinsic to reconstructing current S1 truth before cutover; unlike G0 they cannot be eliminated by reusing S0 evidence.
+  - Current S0 anchors and their validation receipt were reusable and did not require reconstructing S0 semantics.
+  - Three same-stage anchors were validated as one coherent change set; registry/graph/lineage/freshness work was not triplicated.
+  - Five accepted examples were preserved as H7 concrete-only records instead of becoming five additional truth owners or universal rules.
+  - The known S2 single-AddressSpace narrowing was recorded as non-authoritative process state; no H7 question was required because current S1 one-or-more cardinality is explicit.
+
+connector_orchestration_cost:
+  connector_invocations_through_final_branch_commit: 28
+  postcommit_verification_calls: 2
+  schema_discovery_calls_included: 3
+  temporary_contents_api_commits_created: 8
+  temporary_commits_retained_on_working_branch: 0
+  final_coherent_commits_retained_for_h12_t3: 1
+  transport_error_or_misdirected_call_count: 1
+  required_semantic_hashes:
+    anchor_fingerprints: 3
+    execution_basis_fingerprint: 1
+    evidence_fingerprint: 1
+  classification: transport-and-manual-runtime-overhead
+  note: >-
+    The high connector count is not a semantic Harness requirement. The dominant transport cost
+    comes from per-file Contents API staging plus manual squash/ref handling. The final branch
+    contains one coherent H12-T3 commit only.
+
+comparison_with_g0:
+  G0:
+    canonical_product_truth_reads: 0
+    new_design_anchors: 0
+    final_changed_files: 2
+    deterministic_checks: 8
+    semantic_judges: 1
+  S1_design:
+    canonical_product_truth_reads: 3
+    new_design_anchors: 3
+    final_changed_files: 7
+    deterministic_checks: 13
+    semantic_judges: 1
+  conclusion: >-
+    The remaining semantic cost scales mainly with genuinely new design truth. Gate evaluation is
+    cheap when current evidence is reusable; design materialization necessarily reads current
+    authority and writes new anchors, but change-set validation prevents cost from multiplying by
+    the number of related anchors.
+
+target_runtime_budget:
+  ordinary_three_anchor_design_change_set:
+    process_contract_reads_when_engine_bundle_cached: 0
+    scope_and_predecessor_reads_expected: 3-4
+    canonical_product_truth_reads_expected: authority-dependent
+    validation_receipt_reads_expected: 1
+    semantic_judges_expected: 1
+    atomic_repository_writes_expected: 1
+    final_repository_commits_expected: 1
+  budget_rule: correctness and authority closure override the budget; missing/stale inputs fail closed.
+
+next_transaction: H12-G1-1
+restrictions:
+  executable_runtime_created_or_changed: false
+  executable_validators_created_or_changed: false
+  executable_tests_created_or_changed: false
+  workflow_ci_created_or_changed: false
+  product_domain_truth_changed: false
+  g1_evaluated: false
