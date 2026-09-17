@@ -12,7 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 STRATEGIC_DIR = ROOT / "docs" / "migration" / "revalidated" / "h16-strategic" / "s2" / "strategic"
 CAPABILITY_MAP = STRATEGIC_DIR / "capability-map.yaml"
 CONTEXT_RELATIONSHIPS = STRATEGIC_DIR / "context-relationships.yaml"
-CONTEXT_MAP_OUTPUT = ROOT / "docs-generated" / "architecture" / "context-map.puml"
+GENERATED_DIR = ROOT / "docs-generated" / "architecture"
+CONTEXT_MAP_OUTPUT = GENERATED_DIR / "context-map.puml"
+COLLABORATION_MAP_OUTPUT = GENERATED_DIR / "strategic-collaboration-map.puml"
 
 
 def load_accepted_payload(path: Path, expected_type: str) -> dict[str, Any]:
@@ -36,18 +38,16 @@ def plantuml_text(value: str) -> str:
     return value.replace("\\", "\\\\").replace('"', '\\"')
 
 
-def wrap_label(value: str, width: int = 44) -> str:
-    return "\\n".join(
-        textwrap.wrap(
-            value,
-            width=width,
-            break_long_words=False,
-            break_on_hyphens=False,
-        )
-    )
+def wrapped_lines(value: str, width: int = 78) -> list[str]:
+    return textwrap.wrap(
+        value,
+        width=width,
+        break_long_words=False,
+        break_on_hyphens=False,
+    ) or [""]
 
 
-def render_context_map() -> str:
+def load_strategic_model() -> tuple[list[str], list[str], list[dict[str, str]]]:
     capability_payload = load_accepted_payload(CAPABILITY_MAP, "capability-map")
     relationship_payload = load_accepted_payload(CONTEXT_RELATIONSHIPS, "context-relationship-map")
 
@@ -74,41 +74,103 @@ def render_context_map() -> str:
     known_nodes = set(peer_names) | set(composition_names)
     relationships = relationship_payload.get("relationships", [])
 
+    normalized_relationships: list[dict[str, str]] = []
     for relationship in relationships:
-        for endpoint in ("from", "to"):
-            name = relationship.get(endpoint)
-            if name not in known_nodes:
+        source = relationship.get("from")
+        target = relationship.get("to")
+        semantics = relationship.get("semantics")
+        if not isinstance(source, str) or not isinstance(target, str) or not isinstance(semantics, str):
+            raise ValueError(f"{CONTEXT_RELATIONSHIPS}: every relationship requires string from/to/semantics")
+        for endpoint_name, endpoint_value in (("from", source), ("to", target)):
+            if endpoint_value not in known_nodes:
                 raise ValueError(
-                    f"{CONTEXT_RELATIONSHIPS}: relationship {endpoint} endpoint {name!r} "
+                    f"{CONTEXT_RELATIONSHIPS}: relationship {endpoint_name} endpoint {endpoint_value!r} "
                     "is not declared by the accepted capability map"
                 )
+        normalized_relationships.append({"from": source, "to": target, "semantics": semantics})
 
-    lines = [
+    return peer_names, composition_names, normalized_relationships
+
+
+def projection_header() -> list[str]:
+    return [
         "' GENERATED FILE - DO NOT EDIT",
         "' Projection only; semantic authority remains in the accepted S2 anchors below.",
         f"' Source: {CAPABILITY_MAP.relative_to(ROOT).as_posix()}",
         f"' Source: {CONTEXT_RELATIONSHIPS.relative_to(ROOT).as_posix()}",
+    ]
+
+
+def diagram_prelude(title: str) -> list[str]:
+    return [
         "@startuml",
-        "title NAPMS DDD Context Map",
+        f"title {title}",
         "left to right direction",
         "skinparam shadowing false",
         "skinparam roundcorner 12",
         "skinparam ArrowColor #5b6573",
-        "skinparam ArrowFontColor #3f4752",
-        "skinparam ArrowFontSize 10",
         "skinparam rectangle {",
         "  BorderColor #2f5597",
         "  FontColor #1f2937",
         "}",
         "",
-        "legend top left",
-        "  |= Color |= Meaning |",
-        "  |<#dbeafe> | Peer Bounded Context |",
-        "  |<#f3f4f6> | Non-peer composition |",
-        "endlegend",
-        "",
     ]
 
+
+def append_relationship_legend(
+    lines: list[str],
+    relationships: list[dict[str, str]],
+    *,
+    include_composition_notation: bool,
+) -> None:
+    lines.extend(["", "legend bottom", "  <b>Notation</b>", "  Blue = peer Bounded Context"])
+    if include_composition_notation:
+        lines.append("  Grey = non-peer composition")
+    lines.extend(
+        [
+            "  Arrows show accepted collaboration direction; no DDD Context Mapping pattern is inferred.",
+            "",
+            "  <b>Relationships</b>",
+        ]
+    )
+    for relationship in relationships:
+        lines.append(f"  {relationship['from']} -> {relationship['to']}")
+        for semantic_line in wrapped_lines(relationship["semantics"]):
+            lines.append(f"    {semantic_line}")
+    lines.append("endlegend")
+
+
+def render_context_map(
+    peer_names: list[str], relationships: list[dict[str, str]]
+) -> str:
+    peer_set = set(peer_names)
+    peer_relationships = [
+        relationship
+        for relationship in relationships
+        if relationship["from"] in peer_set and relationship["to"] in peer_set
+    ]
+
+    lines = projection_header() + diagram_prelude("NAPMS DDD Context Map")
+    for name in peer_names:
+        lines.append(f'rectangle "{plantuml_text(name)}" as {plantuml_alias(name)} #dbeafe')
+
+    lines.append("")
+    for relationship in peer_relationships:
+        lines.append(
+            f"{plantuml_alias(relationship['from'])} --> {plantuml_alias(relationship['to'])}"
+        )
+
+    append_relationship_legend(lines, peer_relationships, include_composition_notation=False)
+    lines.extend(["", "@enduml", ""])
+    return "\n".join(lines)
+
+
+def render_collaboration_map(
+    peer_names: list[str],
+    composition_names: list[str],
+    relationships: list[dict[str, str]],
+) -> str:
+    lines = projection_header() + diagram_prelude("NAPMS Strategic Collaboration Map")
     for name in peer_names:
         lines.append(f'rectangle "{plantuml_text(name)}" as {plantuml_alias(name)} #dbeafe')
 
@@ -119,20 +181,28 @@ def render_context_map() -> str:
 
     lines.append("")
     for relationship in relationships:
-        source = plantuml_alias(relationship["from"])
-        target = plantuml_alias(relationship["to"])
-        semantics = wrap_label(plantuml_text(relationship["semantics"]))
-        lines.append(f'{source} --> {target} : {semantics}')
+        lines.append(
+            f"{plantuml_alias(relationship['from'])} --> {plantuml_alias(relationship['to'])}"
+        )
 
+    append_relationship_legend(lines, relationships, include_composition_notation=True)
     lines.extend(["", "@enduml", ""])
     return "\n".join(lines)
 
 
 def main() -> int:
-    context_map = render_context_map()
-    CONTEXT_MAP_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    CONTEXT_MAP_OUTPUT.write_text(context_map, encoding="utf-8")
-    print(f"generated {CONTEXT_MAP_OUTPUT.relative_to(ROOT)}")
+    peer_names, composition_names, relationships = load_strategic_model()
+    GENERATED_DIR.mkdir(parents=True, exist_ok=True)
+
+    projections = {
+        CONTEXT_MAP_OUTPUT: render_context_map(peer_names, relationships),
+        COLLABORATION_MAP_OUTPUT: render_collaboration_map(
+            peer_names, composition_names, relationships
+        ),
+    }
+    for path, content in projections.items():
+        path.write_text(content, encoding="utf-8")
+        print(f"generated {path.relative_to(ROOT)}")
     return 0
 
 
