@@ -1,5 +1,5 @@
 version: 1
-revision: 4
+revision: 5
 kind: meta-roadmap
 id: DOCS-V2-HARNESS-ROADMAP
 status: active
@@ -14,98 +14,58 @@ operating_constraints:
   - Corrections and newly accepted design truth are written only to docs-v2/; reverse synchronization into docs/ is forbidden.
   - Physical namespace cutover is deferred until migration/stabilization; target is docs/ for the new system and docs-legacy/ for the frozen historical system.
   - Product code/tests are not sources of product/domain/architecture truth during current documentation design.
-  - Current work may modify only docs-v2/**.
-  - No product implementation, executable test, runtime/workflow/CI, namespace cutover or merge change is authorized.
+  - Product implementation, product tests, workflow/CI changes, namespace cutover and merge remain unauthorized.
+  - H14 is explicitly authorized to modify Harness runtime code, Harness executable regression tests, its dependency declaration, and docs-v2 state/evidence only.
 principles:
-  - id: P-DESIGN-FIRST
-    statement: Harness exists to improve design; operational bookkeeping is never a design step.
-  - id: P-MACHINE-READABLE
-    statement: Canonical design artifacts are machine-readable and human-readable views are projections where practical.
-  - id: P-DERIVATION
-    statement: Material derived design identifies accepted predecessors, evidence, constraints or human decisions.
-  - id: P-HUMAN-TRUTH
-    statement: Agents derive consequences but do not invent missing business truth.
-  - id: P-REPO-STATE
-    statement: Durable design/process state lives in the repository rather than chat memory.
-  - id: P-PROGRESSIVE-RIGOR
-    statement: Apply only design methods and validation justified by applicability, semantic risk and current lifecycle boundary.
-  - id: P-AFFECTED-ONLY
-    statement: Revalidate changed/affected design and reuse current unrelated evidence.
-  - id: P-INTERNALIZE-PLUMBING
-    statement: IDs, fingerprints, execution bases, receipts, caching, idempotency and atomic persistence are runtime details unless independently meaningful to design.
-  - id: P-STANDARD-FIRST
-    statement: Prefer established formats such as OpenAPI, AsyncAPI and architecture DSLs where they preserve required semantics.
-  - id: P-DISCOVER-BEFORE-BOUND
-    statement: Discover domain stories, processes, language and hotspots before treating a slice or Bounded Context boundary as settled.
-  - id: P-GRAPH-NOT-WATERFALL
-    statement: Stage labels describe maturity; artifact dependencies and affected-impact determine rework rather than a one-way document sequence.
-  - id: P-LEGACY-IS-EVIDENCE
-    statement: Legacy documentation is migration evidence, not a parallel truth store; accepted new-Harness design may correct it without back-porting changes.
+  - {id: P-DESIGN-FIRST, statement: Harness exists to improve design; operational bookkeeping is never a design step.}
+  - {id: P-MACHINE-READABLE, statement: Canonical design artifacts are machine-readable and human-readable views are projections where practical.}
+  - {id: P-DERIVATION, statement: Material derived design identifies accepted predecessors, evidence, constraints or human decisions.}
+  - {id: P-HUMAN-TRUTH, statement: Agents derive consequences but do not invent missing business truth.}
+  - {id: P-REPO-STATE, statement: Durable design/process state lives in the repository rather than chat memory.}
+  - {id: P-PROGRESSIVE-RIGOR, statement: Apply only design methods and validation justified by applicability, semantic risk and current lifecycle boundary.}
+  - {id: P-AFFECTED-ONLY, statement: Revalidate changed/affected design and reuse current unrelated evidence.}
+  - {id: P-INTERNALIZE-PLUMBING, statement: IDs fingerprints execution bases receipts caching idempotency and atomic persistence are runtime details unless independently meaningful to design.}
+  - {id: P-STANDARD-FIRST, statement: Prefer established formats such as OpenAPI AsyncAPI and architecture DSLs where they preserve required semantics.}
+  - {id: P-DISCOVER-BEFORE-BOUND, statement: Discover domain stories processes language and hotspots before treating a slice or Bounded Context boundary as settled.}
+  - {id: P-GRAPH-NOT-WATERFALL, statement: Stage labels describe maturity; artifact dependencies and affected-impact determine rework rather than a one-way document sequence.}
+  - {id: P-LEGACY-IS-EVIDENCE, statement: Legacy documentation is migration evidence not a parallel truth store; accepted new-Harness design may correct it without back-porting changes.}
 design_roadmap:
-  - stage: S0
-    name: Discovery / Problem Framing
-    outcome: bounded problem, goals, evidence, constraints and enough domain landscape to choose meaningful process slices without inventing boundaries
-    activities_when_applicable: [stakeholder-discovery, domain-stories, big-picture-event-storming, actors-and-external-systems, vocabulary-candidates, hotspots]
-  - stage: S1
-    name: Requirements Engineering
-    outcome: observable outcomes, behavior, business rules, acceptance examples and applicable qualities
-    relationship: iterates-with-discovery-and-process-understanding
-  - stage: S2
-    name: Domain Design
-    outcome: process, strategic and tactical domain semantics with evidence-backed boundaries and consistency rules
-    relationship: process-discovery-and-strategic-DDD-iterate-before-tactical-acceptance
-  - stage: S3
-    name: Software Architecture / Solution Design
-    outcome: technical realization, runtime structure, integrations and contracts constrained by accepted domain design and quality goals
-  - stage: S4
-    name: Implementation Design / Implementation Readiness
-    outcome: exact executable and verifiable implementation slice without unresolved required product/domain/architecture invention
-
+  - {stage: S0, name: Discovery / Problem Framing, outcome: bounded problem goals evidence constraints and enough domain landscape to choose meaningful process slices without inventing boundaries}
+  - {stage: S1, name: Requirements Engineering, outcome: observable outcomes behavior business rules acceptance examples and applicable qualities, relationship: iterates-with-discovery-and-process-understanding}
+  - {stage: S2, name: Domain Design, outcome: process strategic and tactical domain semantics with evidence-backed boundaries and consistency rules, relationship: process-discovery-and-strategic-DDD-iterate-before-tactical-acceptance}
+  - {stage: S3, name: Software Architecture / Solution Design, outcome: technical realization runtime structure integrations and contracts constrained by accepted domain design and quality goals}
+  - {stage: S4, name: Implementation Design / Implementation Readiness, outcome: exact executable and verifiable implementation slice without unresolved required product/domain/architecture invention}
 design_dependency_order:
   discovery:
     produces_or_refines: [problem, goals, evidence, constraints, domain-stories, big-picture, vocabulary, hotspots]
     enables: [meaningful-process-slice-selection, requirements-discovery, strategic-DDD]
   process_and_requirements:
     relationship: iterative
-    rule: >-
-      Existing accepted requirements constrain discovery, while domain stories/process discovery may expose missing,
-      conflicting or underspecified requirements. Missing human-owned truth becomes a question rather than an agent assumption.
+    rule: Existing accepted requirements constrain discovery while domain stories/process discovery may expose missing conflicting or underspecified requirements. Missing human-owned truth becomes a question rather than an agent assumption.
     produces_or_refines: [business-outcomes, process-flows, commands, domain-events, policies, exceptions, requirements, acceptance-examples]
   strategic_domain_design:
     basis: [discovery, process-evidence, requirements, language]
     produces_or_refines: [capabilities, subdomains, bounded-contexts, context-map, ubiquitous-language]
-    rule: A Bounded Context is not a prerequisite for discovering a process; process evidence may create, challenge or refine context boundaries.
+    rule: A Bounded Context is not a prerequisite for discovering a process; process evidence may create challenge or refine context boundaries.
   process_refinement:
     basis: [strategic-boundaries, requirements, domain-stories]
     rule: Refine process ownership and cross-context interactions after strategic candidates exist; contradictions reopen affected strategic design.
   tactical_domain_design:
     basis: [current-relevant-processes, current-relevant-strategic-boundaries, requirements, accepted-human-decisions]
     produces_or_refines: [aggregates, entities, value-objects, invariants, domain-services, state-transitions]
-  architecture:
-    basis: [domain-design, quality-requirements, constraints]
-  implementation_readiness:
-    basis: [architecture, domain-design, acceptance-examples]
-
+  architecture: {basis: [domain-design, quality-requirements, constraints]}
+  implementation_readiness: {basis: [architecture, domain-design, acceptance-examples]}
 slice_selection:
-  definition: >-
-    A design slice is the smallest coherent end-to-end business outcome/process worth designing and demonstrating,
-    not a table, API endpoint, UI screen, repository module, Bounded Context or isolated authorization check.
+  definition: A design slice is the smallest coherent end-to-end business outcome/process worth designing and demonstrating not a table API endpoint UI screen repository module Bounded Context or isolated authorization check.
   selection_basis: [domain-landscape, business-outcome, process-flow, risk-or-hotspot, implementation-value]
   guards:
     - A slice may cross multiple Bounded Contexts.
     - A Bounded Context may participate in multiple slices.
     - Do not claim universal catalogue/process behavior from one slice; generalize only after repeated evidence or explicit domain authority.
-    - The slice must be broad enough to expose material rules, temporal behavior, failures and external interactions, but small enough to reach implementation readiness coherently.
-
+    - The slice must be broad enough to expose material rules temporal behavior failures and external interactions but small enough to reach implementation readiness coherently.
 rework_model:
-  rule: >-
-    Design is a dependency graph, not a waterfall. New evidence or downstream discovery marks only semantically affected predecessors/successors for revalidation or rework.
-  examples:
-    - process discovery may reopen a requirement or strategic boundary
-    - strategic DDD may require more domain stories or process evidence
-    - tactical DDD may expose a missing business invariant and route to human knowledge acquisition
-    - architecture may expose an impossible quality constraint and reopen the owning requirement
-
+  rule: Design is a dependency graph not a waterfall. New evidence or downstream discovery marks only semantically affected predecessors/successors for revalidation or rework.
+  examples: [process discovery may reopen a requirement or strategic boundary, strategic DDD may require more domain stories or process evidence, tactical DDD may expose a missing business invariant and route to human knowledge acquisition, architecture may expose an impossible quality constraint and reopen the owning requirement]
 work_model:
   unit: meaningful-design-work
   coherent_cycle: [discover-or-design, affected-validation, readiness-if-boundary, persistence, continue]
@@ -114,40 +74,38 @@ work_model:
   stop_on_success: false
   real_stop_conditions: [NEED_MORE_DATA, BLOCKED, REOPEN, missing-authority, requested-scope-complete]
 core_capabilities:
-  artifact_graph:
-    contracts: [design-anchor, artifact-type-registry, dependency-registry-impact, design-derivation-lineage]
-  design_method:
-    contracts: [ddd-pipeline, human-knowledge-acquisition]
-  lifecycle_and_quality:
-    contracts: [lifecycle-state-machine, validation-gate-engine]
-  execution_safety:
-    contracts: [harness-control-plane, agent-execution-context-v2, harness-reliability-conformance]
-    visibility: infrastructure-behind-design-boundary
-  migration_authority:
-    legacy_path: docs/
-    evolving_path: docs-v2/
-    legacy_mode: frozen-read-only-evidence
-    reverse_sync: forbidden
-    namespace_cutover: deferred
-    target_paths: {evolving: docs/, legacy: docs-legacy/}
-historical_or_optional_operational_design:
-  - harness-execution-kernel
-  - per-operation execution-basis artifacts
-  - mandatory Task Capsule serialization
-  - separate validation/gate transactions
+  artifact_graph: {contracts: [design-anchor, artifact-type-registry, dependency-registry-impact, design-derivation-lineage]}
+  design_method: {contracts: [ddd-pipeline, human-knowledge-acquisition]}
+  lifecycle_and_quality: {contracts: [lifecycle-state-machine, validation-gate-engine]}
+  execution_safety: {contracts: [harness-control-plane, agent-execution-context-v2, harness-reliability-conformance], visibility: infrastructure-behind-design-boundary}
+  migration_authority: {legacy_path: docs/, evolving_path: docs-v2/, legacy_mode: frozen-read-only-evidence, reverse_sync: forbidden, namespace_cutover: deferred, target_paths: {evolving: docs/, legacy: docs-legacy/}}
+historical_or_optional_operational_design: [harness-execution-kernel, per-operation execution-basis artifacts, mandatory Task Capsule serialization, separate validation/gate transactions]
 program_phases:
-  completed_design_foundation: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11]
-  active: H12
-  next: H13
+  completed: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13]
+  active: H14
 H12:
   objective: Validate the simplified and corrected design order against a bounded NAPMS migration slice while continuing real domain discovery/design.
-  exit: Current pilot reaches applicable G2 with traceable design, evidence-backed slice/boundary selection and without reintroducing operational ceremony.
+  exit: Current pilot reaches applicable G2 with traceable design evidence-backed slice/boundary selection and without reintroducing operational ceremony.
+  result: PASS
 H13:
   objective: Plan the smallest runtime needed to automate internal reliability/validation plumbing after H12.
   guard: Runtime architecture must not add user-visible Harness concepts unless a demonstrated design failure requires them.
+  result: PASS
+  result_ref: docs-v2/meta/h13-minimal-runtime-plan.yaml
+H14:
+  objective: Implement and validate the accepted minimal repository-local Harness runtime boundary.
+  authorization: explicit stakeholder authorization granted 2026-09-17
+  allowed_changes: [Harness runtime code, Harness executable regression tests, Harness runtime dependency declaration, docs-v2 state/evidence]
+  forbidden_changes: [product implementation, product tests, workflow-ci changes, namespace cutover, merge]
+  exit:
+    - persisted runtime resumes from repository state and directly referenced current-work artifacts
+    - actual docs-v2 corpus passes checks relevant to the minimal runtime boundary or relevant failures are reconciled explicitly
+    - affected-only dependency traversal and readiness evaluation work without Task Capsule or separate gate transaction
+    - stale-write and idempotent persistence protections remain covered by executable regression tests
+    - obsolete pre-H12 validators are removed from the docs-v2 validation path or explicitly isolated as legacy-only before any CI wiring
 program_exit:
   - Design can be followed from problem/discovery to implementation readiness through linked machine-readable artifacts.
-  - Material design decisions can be traced backward to accepted roots, stories/process evidence, decisions and constraints.
+  - Material design decisions can be traced backward to accepted roots stories/process evidence decisions and constraints.
   - Process slices and Bounded Context boundaries are evidence-backed rather than selected from implementation structure or agent convenience.
   - Work resumes from repository state without chat history.
   - Missing human truth is explicit rather than invented.
