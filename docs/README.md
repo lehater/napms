@@ -1,45 +1,39 @@
-# Documentation System v2
+# NAPMS canonical documentation
 
-Status: DRAFT / non-canonical.
+Status: CANONICAL.
 
-This tree designs the next documentation and engineering-artifact system before any product knowledge is migrated.
+`docs-v2/` is the sole current documentation authority for NAPMS after H20 cutover. It contains the machine-readable linked design graph, Harness specifications and durable workstream state used to take design from problem framing through implementation readiness.
 
-Until explicit cutover, `docs/` remains the canonical project knowledge base. Agents and implementation work MUST NOT treat `docs-v2/` as product truth.
+`docs/` is retired, frozen migration evidence only. It cannot override accepted truth here and must not receive new design truth.
 
-## Durable META coordination
+## Start here
 
-The current Documentation System v2 / Harness redesign roadmap is machine-readable and repository-resident:
+For continuation of project design or Harness work:
 
-- `docs-v2/meta/roadmap.yaml` — ordered redesign phases, dependencies, exit criteria and test-first policy;
-- `docs-v2/meta/workstream-state.yaml` — current phase/task, completed work, blockers, authorization state and next task.
+1. read `meta/workstream-state.yaml`;
+2. read `meta/roadmap.yaml` when lifecycle/program context is required;
+3. load only the accepted anchors and specifications directly needed by the task;
+4. follow semantic references rather than reconstructing truth from implementation code or historical chat.
 
-A new chat/session must read the workstream state first and use the roadmap to resolve dependencies. Conversation history is not the source of execution state.
+## Current design maturity
 
-## Design goals
+The strategic NAPMS DDD baseline is canonical here. The selected first-MVP journey has accepted S1 requirements, S2 tactical domain design, S3 system architecture and S4 implementation/verification design. G4 is PASS for that exact MVP design scope. Implementation readiness does not itself authorize product-code or product-test changes.
 
-- lifecycle stages produce durable canonical artifacts; gates validate their sufficiency;
-- requirements remain solution- and bounded-context-agnostic until domain design establishes boundaries;
-- every Design Anchor is expected to acquire a canonical machine-readable representation as the redesign progresses;
-- prefer established machine-readable standards/DSLs where they preserve the required semantics;
-- load only the protocol, artifact specification and project evidence required by the current task;
-- one agent execution performs one concrete task and persists its result before moving on;
-- generated views are never canonical when a source artifact exists;
-- optional structure is created only when needed;
-- define Harness conformance/eval cases before future runtime implementation, then implement against those checks after explicit authorization.
+## Repository areas
 
-## Legacy design workstreams
+- `spec/` — Documentation System / Harness contracts.
+- `migration/revalidated/` — accepted/revalidated NAPMS design anchors and their validation evidence.
+- `meta/` — roadmap, durable workstream state and Harness evolution records.
+- `horizontal/` — retained earlier projections/evidence from the redesign; canonical truth is determined by accepted anchors and their semantic references.
+- `migration/` — migration provenance; historical source material does not outrank accepted anchors.
 
-The original M0-M7 sequence remains historical input to the redesign:
+## Authority rules
 
-1. M0 — charter and invariants.
-2. M1 — lifecycle skeleton.
-3. M2 — artifact model and catalog.
-4. M3 — repository layout and naming.
-5. M4 — agent execution and progressive disclosure.
-6. M5 — validation and CI/gate model.
-7. M6 — migration and cutover plan.
-8. M7 — pilot on one bounded vertical slice.
+- accepted current anchors are the design truth for their owned semantics;
+- human-owned truth is never invented;
+- product code and tests are implementation/evidence, not substitutes for product/domain/architecture design truth;
+- generated views do not override canonical sources;
+- changed design is revalidated through its affected semantic graph;
+- operational Harness bookkeeping stays behind the design boundary rather than becoming a design process of its own.
 
-M7 exposed structural gaps in the earlier specification. The active continuation is therefore governed by `meta/roadmap.yaml`; existing M1-M6 specifications are inputs that may be revised, not frozen final contracts.
-
-The files under `spec/` are design specifications. Product implementation remains out of scope for the current documentation-design work.
+H20 completed the authority cutover on 2026-09-17. The old `docs/` tree remains only as explicitly retired evidence so there is one normal documentation authority: this namespace.
