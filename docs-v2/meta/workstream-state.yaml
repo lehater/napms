@@ -1,14 +1,18 @@
-version: 3
+version: 4
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
 branch: meta/docs-v2-m7-pilot
 last_updated: 2026-09-17
-program: {status: ACTIVE, current_phase: H12, current_phase_state: IN_PROGRESS, completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11]}
+program: {status: ACTIVE, current_phase: H13, current_phase_state: IN_PROGRESS, completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12]}
 control_plane:
   contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 3}
   rule: meaningful design work is the visible unit; runtime reliability bookkeeping is internal
-active_scope: {scope_id: H12-RC-CURATION-MVP, state_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml, state_owner: sole-writable-lifecycle-owner}
+completed_pilot_scope: {scope_id: H12-RC-CURATION-MVP, state_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml, exit_gate: G2, result: PASS}
+current_work:
+  phase: H13
+  name: Minimal Harness runtime planning
+  intent: Derive the smallest runtime/automation boundary justified by H12 friction without adding user-visible workflow concepts.
 documentation_authority:
   evolving_authority: docs-v2/
   legacy_source: docs/
@@ -18,33 +22,30 @@ documentation_authority:
   target_after_namespace_cutover: {authoritative_docs: docs/, legacy_docs: docs-legacy/}
 carry_forward:
   - Harness guides design from problem/discovery to implementation readiness before code.
-  - docs-v2/ is the authoritative evolving design documentation during migration; accepted Harness outputs supersede contradictory legacy docs/ statements within migrated/affected scope.
-  - docs/ is frozen legacy documentation used only as historical/migration evidence; do not edit it and do not synchronize corrected docs-v2 truth back into it.
-  - Physical namespace cutover is deferred: after migration/stabilization rename legacy docs/ to docs-legacy/ and docs-v2/ to docs/ as one controlled change.
-  - Product code/tests cannot reconstruct missing design truth during H12.
+  - docs-v2/ is authoritative evolving design documentation during migration; docs/ is frozen legacy evidence only.
+  - Product code/tests cannot reconstruct missing design truth during documentation design.
   - Human-owned truth is never invented; material gaps become questions/blockers.
   - Domain stories/process evidence precede settled slices/boundaries; Strategic and Process Discovery may refine each other.
   - Tactical acceptance requires current relevant strategic boundaries and process evidence.
   - Design documentation is a graph; affected-only revalidation replaces waterfall restart.
-  - Semantic precedence follows authority and derivation direction: a downstream artifact must conform to current applicable upstream authoritative constraints and may refine but not contradict, weaken, narrow, broaden or replace them without an explicit authorized upstream change/decision.
-  - When two statements differ, first resolve authority/dependency precedence. Ask a human only when authoritative upstream truth is ambiguous/missing or a new human-owned choice is actually required.
-  - A later explicit stakeholder correction may amend an upstream artifact; when it does, correct that upstream truth first and propagate the change through all affected downstream artifacts.
+  - Downstream design conforms to current applicable upstream authoritative constraints; clear divergence is REWORK, not automatically a human question.
   - Readiness gates are lifecycle guarantees, not separate execution units; current unrelated evidence is reused.
   - Operational IDs, fingerprints, execution bases, receipts, caching and atomicity are infrastructure details.
+  - H12 demonstrated the corrected flow through G2 on Resource Catalogue curation without Task Capsule/gate transaction ceremony.
 restrictions:
   product_implementation_authorization: none
   executable_test_change_authorization: none
+  runtime_implementation_authorization: none
   workflow_ci_change_authorization: none
   namespace_cutover_authorization: false
   merge_authorization: false
 blockers: []
 resume_protocol:
   - Read this file first.
-  - Read roadmap.yaml for design dependency order and slice-selection rules.
-  - Read active_scope.state_ref for current design maturity, blockers and next meaningful work.
-  - Treat docs/ only as frozen migration evidence; never edit it or treat it as higher authority than accepted docs-v2 design in migrated/affected scope.
-  - Load only target artifacts, direct semantic dependencies and applicable method/schema contracts.
-  - Before classifying a semantic mismatch as a conflict/question, resolve authority and derivation precedence; downstream divergence from a clear upstream constraint is REWORK, not NEED_MORE_DATA.
-  - Perform coherent meaningful design work; validate changed/affected design and readiness at reached boundaries.
-  - Persist coherent artifacts/state/evidence and continue unless a real stop condition applies.
-  - Do not infer authority or progress from chat when repository state is available.
+  - Read roadmap.yaml for H13 objective and guard.
+  - Read the completed H12 lifecycle/evidence only as needed to identify demonstrated runtime needs/friction.
+  - Treat docs/ only as frozen migration evidence; never edit it.
+  - Load only directly needed Harness specs for the runtime boundary being designed.
+  - Keep H13 at planning/specification level until runtime implementation is explicitly authorized.
+  - Prefer automation behind the design boundary; do not create new user-visible Harness concepts without demonstrated need.
+  - Persist coherent H13 design/state and continue unless a real stop condition applies.
