@@ -56,7 +56,8 @@ provenance:
     - {anchor_id: NAPMS-S0-RC-CURATION-JOURNEY, semantic_fingerprint: sha256-jcs-v1:5401681959c4ef07ce2b990b28ff2df1ee2eb5756b3d6355b641ab4f0f5bd475}
     derivation_rule_or_method: stakeholder-correction-of-earlier-S1-transcription
     derivation_kind: refinement
-    rationale: The stakeholder corrected the earlier S1 transcription and confirmed the MVP rule already represented by the canonical Resource realization model: zero or one effective HostAddress-or-Prefix per Resource at a logical time.
+    rationale: >-
+      The stakeholder corrected the earlier S1 transcription and confirmed the MVP rule already represented by the canonical Resource realization model: zero or one effective HostAddress-or-Prefix per Resource at a logical time.
   recorded_at: '2026-09-17'
 status: ACCEPTED
 validation:
