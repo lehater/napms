@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: harness-runtime-implementation-state
 id: DOCS-V2-H14-MINIMAL-RUNTIME-IMPLEMENTATION
 status: IN_PROGRESS
@@ -7,41 +7,51 @@ last_updated: 2026-09-17
 authorization:
   granted: true
   source: explicit-stakeholder-instruction
-  granted_at: 2026-09-17
   allowed: [Harness runtime code, Harness executable regression tests, Harness runtime dependency declaration, docs-v2 state/evidence]
   forbidden: [product implementation, product tests, workflow-ci changes, namespace cutover, merge]
 implementation:
   runtime_path: tools/docs_v2_harness.py
-  tests_path: tools/test_docs_v2_harness.py
+  tests:
+    - tools/test_docs_v2_harness.py
+    - tools/test_docs_v2_harness_resume_refs.py
+    - tools/test_docs_v2_harness_frontmatter.py
   dependency_path: tools/requirements-docs-v2-harness.txt
   persistence_write_boundary: docs-v2/**
   implemented_capabilities:
-    - repository workstream/roadmap resume loading
-    - YAML anchor discovery and duplicate identity rejection
-    - current anchor reference/relation validation
-    - generated reverse semantic dependency graph
-    - transitive affected-set calculation
-    - lifecycle readiness evaluation without separate gate transaction
+    - repository-driven resume including current_work references
+    - YAML and Markdown-front-matter design-anchor discovery
+    - duplicate anchor identity and current-reference validation
+    - generated reverse semantic dependency graph and transitive affected set
+    - readiness evaluation without separate gate transaction
     - missing human-owned truth NEED_MORE_DATA route
-    - expected-Git-head stale basis rejection
-    - idempotent coherent docs-v2 persistence
-    - deterministic semantic fingerprint helper
+    - expected-head stale basis rejection and idempotent docs-v2 persistence
+corpus_validation:
+  status: IN_PROGRESS
+  finding:
+    id: H14-F-MARKDOWN-ANCHORS
+    result: FIXED
+    statement: Initial runtime discovered only YAML anchors while authoritative S1 anchors are stored in Markdown YAML front matter; this would create false dangling-reference failures.
+    evidence_example: docs-v2/migration/revalidated/h12-rc-curation/s1/resource-curation-behavior.md
+    correction: Runtime now discovers both YAML anchors and Markdown YAML-front-matter anchors and has regression coverage.
+  full_execution:
+    result: NOT_RUN_IN_CURRENT_EXECUTION_ENVIRONMENT
+    reason: Current execution environment cannot obtain a repository checkout from GitHub; connector access is file/resource based and CI/workflow changes are not authorized.
+    implication: H14 remains IN_PROGRESS; do not claim corpus PASS until the persisted runtime is executed against a checkout of the branch.
+legacy_validator_isolation:
+  tools/validate_docs_v2.py:
+    classification: PRE_H12_LEGACY_VALIDATOR
+    reasons:
+      - requires Task Capsule contract and capsule eval fixtures
+      - reads backend/tests/evals product-repository paths
+      - implements obsolete validation profiles and execution semantics
+    h14_runtime_validation_path: EXCLUDED
+  existing_harness_workflow:
+    status: UNCHANGED
+    note: Existing main/ready-for-review workflow still invokes legacy make harness-check behavior; H14 does not wire the new runtime into CI because workflow/CI changes are not authorized.
 verification:
-  local_unit_run:
-    result: PASS
-    command: python tools/test_docs_v2_harness.py
-    tests: 10
-    environment_note: Tests were executed against the exact candidate runtime/test contents before repository persistence.
-  covered_acceptance:
-    resume_without_chat_history: PASS
-    dangling_reference_rejection: PASS
-    affected_only_transitive_graph: PASS
-    stale_head_rejection: PASS
-    idempotent_retry: PASS
-    readiness_without_gate_transaction: PASS
-    missing_human_truth: PASS
-    generated_index_rebuild: PASS
+  regression_suite_state: persisted tests cover original minimal-runtime acceptance plus repository-driven current refs and Markdown-front-matter anchors
 remaining_before_H14_exit:
-  - Run the runtime against the actual branch docs-v2 corpus after persistence and correct only failures relevant to the minimal boundary.
-  - Reconcile or retire pre-H12 executable Harness validators that enforce obsolete Task Capsule/legacy-docs authority semantics before wiring any CI.
+  - Execute all persisted H14 tests and runtime validate against an actual checkout of the current branch.
+  - Reconcile any real corpus failures reported by that execution.
+  - Keep pre-H12 Task Capsule validator excluded from the H14 runtime path; replace CI wiring only under separate workflow/CI authorization.
 workflow_ci: NOT_AUTHORIZED
