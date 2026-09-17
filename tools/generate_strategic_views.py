@@ -21,7 +21,7 @@ def alias(name):
     return "".join(ch if ch.isalnum() else "_" for ch in name)
 
 def q(value):
-    return str(value).replace("\\", "\\\\").replace('"', "\\"").replace("\n", "\\n")
+    return str(value).replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
 def header(title):
     return [
