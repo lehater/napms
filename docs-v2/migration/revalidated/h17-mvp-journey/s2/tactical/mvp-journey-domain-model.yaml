@@ -60,27 +60,13 @@ canonical_payload:
         - Evidence is provenance/input rather than authorization and is not required by this first deliberate journey.
       public_semantics: [EffectivePolicyRule, PolicyRuleRef, sourceComponentDeploymentRef, destinationComponentDeploymentRef, revisionRef, currentDecisionProvenance]
   cross_context_flow:
-    - step: 1
-      owner: Resource Catalogue
-      result: Resources exist with current AddressSpace facts required for later materialization.
-    - step: 2
-      owner: Application Communication Catalogue
-      result: Application, Components, directed Interaction and exact immutable traffic revision exist.
-    - step: 3
-      owner: Application Deployment
-      result: Concrete source and destination ComponentDeployments bind the Interaction endpoint Components to Resources.
-    - step: 4
-      owner: Business Connectivity
-      result: A current Process-backed ConnectivityNeed references the stable Interaction and supplies the deliberate business basis.
-    - step: 5
-      owner: Access Policy
-      result: A RuleChange for the concrete deployment pair and exact revision is submitted with the Need basis and reaches Accepted or Rejected formal outcome.
-    - step: 6
-      owner: Access Policy
-      result: Only an Accepted applicable change establishes current EffectivePolicyRule truth.
-    - step: 7
-      owner: Full Vendor-Neutral Policy Export composition
-      result: EffectivePolicyRule is joined with exact ACC revision, AD deployment-to-Resource facts and current RC AddressSpace facts; unresolved required input makes the complete export Unresolved rather than partial.
+    - {step: 1, owner: Resource Catalogue, result: Resources exist with current AddressSpace facts required for later materialization.}
+    - {step: 2, owner: Application Communication Catalogue, result: Application Components directed Interaction and exact immutable traffic revision exist.}
+    - {step: 3, owner: Application Deployment, result: Concrete source and destination ComponentDeployments bind the Interaction endpoint Components to Resources.}
+    - {step: 4, owner: Business Connectivity, result: A current Process-backed ConnectivityNeed references the stable Interaction and supplies the deliberate business basis.}
+    - {step: 5, owner: Access Policy, result: A RuleChange for the concrete deployment pair and exact revision is submitted with the Need basis and reaches Accepted or Rejected formal outcome.}
+    - {step: 6, owner: Access Policy, result: Only an Accepted applicable change establishes current EffectivePolicyRule truth.}
+    - {step: 7, owner: Full Vendor-Neutral Policy Export composition, result: EffectivePolicyRule is joined with exact ACC revision AD deployment-to-Resource facts and current RC AddressSpace facts; unresolved required input makes the complete export Unresolved rather than partial.}
   materialization_join:
     policy: EffectivePolicyRule(policyRuleRef, sourceComponentDeploymentRef, destinationComponentDeploymentRef, revisionRef)
     traffic: ResolveInteractionContractRevision(revisionRef) -> complete traffic alternatives and endpoint Components
@@ -96,14 +82,14 @@ canonical_payload:
     - transport, persistence and API realization
   logical_derivation:
     basis_refs:
-      - {kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}
+      - {kind: evidence, path: docs-v2/migration/revalidated/h17-mvp-journey/s1/mvp-vendor-neutral-policy-export.yaml, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT, status_at_derivation: CANDIDATE}
       - {kind: anchor-current, anchor_id: NAPMS-S2-NAPMS-CONTEXT-RELATIONSHIPS}
       - {kind: evidence, path: docs/domain/application-communication-catalogue/target-tactical-model.md}
       - {kind: evidence, path: docs/domain/application-deployment/tactical-model.md}
       - {kind: evidence, path: docs/domain/business-connectivity/target-tactical-model.md}
       - {kind: evidence, path: docs/domain/access-policy/tactical-model.md}
     derivation_kind: migration-revalidation
-    rationale: The frozen tactical models were revalidated for the same first-MVP semantics on 2026-09-16; H17 extracts only the cross-context subset needed by the confirmed journey and preserves accepted H16 ownership boundaries.
+    rationale: The frozen tactical models were revalidated for the same first-MVP semantics on 2026-09-16; H17 extracts only the cross-context subset needed by the confirmed journey and preserves accepted H16 ownership boundaries. The H17 S1 candidate is co-developed in the same coherent change set and becomes a current semantic dependency only after acceptance.
 provenance:
   origin_kind: imported-current-docs
   source_refs:
@@ -114,7 +100,6 @@ provenance:
   authority_basis: imported-current-docs-ref-before-cutover
   recorded_at: '2026-09-17'
 semantic_refs:
-  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-NAPMS-CONTEXT-RELATIONSHIPS}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-APPLICATION-COMMUNICATION-CATALOGUE}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
