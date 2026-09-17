@@ -1,4 +1,4 @@
-version: 11
+version: 12
 kind: lifecycle-scope-state
 id: NAPMS-H12-RC-CURATION-LIFECYCLE
 scope_id: H12-RC-CURATION-MVP
@@ -14,11 +14,12 @@ process_contracts:
   ddd: {id: DOCS-V2-DDD-PIPELINE, version: 1, revision: 2, status: current-with-roadmap-revision-3}
 current_work:
   lifecycle_stage: S0-S2-REVALIDATION
-  checkpoint: BIG-PICTURE-AND-SLICE-REVALIDATION
+  checkpoint: PROCESS-COVERAGE-REWORK
   intent: >-
-    Build only enough bounded NAPMS domain landscape around the Resource Catalogue curation outcome to verify the
-    current slice, process coverage and strategic boundaries under the corrected discovery-first, graph-based method.
-    Reuse accepted work when confirmed and reopen only semantically affected anchors.
+    Refine Resource Catalogue Process Discovery from the now-evidence-backed RC curation slice. Cover the material
+    lifecycle flows, alternatives/failures, temporal replacement semantics, read/current projection and downstream
+    handoff without inventing unresolved business policy. Revalidate affected strategic anchors only if process evidence
+    actually challenges their ownership boundaries.
   design_inputs:
     - NAPMS-S0-RC-CURATION-PROBLEM
     - NAPMS-S0-RC-CURATION-JOURNEY
@@ -38,11 +39,12 @@ completed_work:
   - {id: H12-G1-1, result: PASS, effect: historical-S1-readiness}
   - {id: H12-T4, result: PASS, effect: S2-strategic-design-materialized-under-prior-method}
   - {id: H12-S2-STRATEGIC-READINESS, result: PASS, effect: historical-pass-subject-to-affected-revalidation}
-  - {id: H12-S2-PROCESS-DISCOVERY, result: PASS, effect: historical-pass-subject-to-affected-revalidation}
-  - {id: H12-METHOD-ORDER-CORRECTION, result: PASS, effect: roadmap-lifecycle-and-DDD-method-now-align-on-discovery-first-iterative-graph-based-order}
-stage_states: {S0: REVALIDATING, S1: REVALIDATING_IF_AFFECTED, S2: REVALIDATING, S3: NOT_STARTED, S4: NOT_STARTED}
-s2_checkpoints: {S2-STRATEGIC: REVALIDATING, S2-PROCESS-DISCOVERY: REVALIDATING, S2-TACTICAL: NOT_STARTED}
-gates: {G0: HISTORICAL_PASS_REVALIDATE_IF_AFFECTED, G1: HISTORICAL_PASS_REVALIDATE_IF_AFFECTED, G2: NOT_EVALUATED, G3: NOT_EVALUATED, G4: NOT_EVALUATED}
+  - {id: H12-S2-PROCESS-DISCOVERY, result: PASS, effect: historical-pass-now-reopened-for-process-coverage}
+  - {id: H12-METHOD-ORDER-CORRECTION, result: PASS, effect: roadmap-lifecycle-and-DDD-method-align-on-discovery-first-iterative-graph-based-order}
+  - {id: H12-BIG-PICTURE-SLICE-REVALIDATION, result: PASS, effect: RC-curation-confirmed-as-coherent-bounded-outcome; process-coverage-rework-required}
+stage_states: {S0: ACCEPTED_CURRENT, S1: ACCEPTED_CURRENT, S2: REVALIDATING, S3: NOT_STARTED, S4: NOT_STARTED}
+s2_checkpoints: {S2-STRATEGIC: REVALIDATING_IF_AFFECTED, S2-PROCESS-DISCOVERY: REWORK, S2-TACTICAL: NOT_STARTED}
+gates: {G0: PASS_CURRENT, G1: PASS_CURRENT, G2: NOT_EVALUATED, G3: NOT_EVALUATED, G4: NOT_EVALUATED}
 applicability:
   BIG-PICTURE-DOMAIN-DISCOVERY: true
   SLICE-REVALIDATION: true
@@ -50,24 +52,74 @@ applicability:
   S2-PROCESS-DISCOVERY: true
   S2-TACTICAL: true
   rationale:
-    BIG-PICTURE-DOMAIN-DISCOVERY: Current RC slice and BC boundaries were selected before sufficient domain-landscape/process evidence was required.
-    SLICE-REVALIDATION: Verify Resource Catalogue Curation MVP is a coherent business-outcome/process slice rather than an assumed context boundary.
-    S2-PROCESS-DISCOVERY: Resource curation has temporal add/end/replace flows and cross-context authority interaction.
-    S2-TACTICAL: Tactical waits until affected discovery, slice and strategic/process basis are current.
+    BIG-PICTURE-DOMAIN-DISCOVERY: Completed to the bounded depth needed to place RC curation in the surrounding NAPMS access outcome.
+    SLICE-REVALIDATION: Completed; RC curation has an independently meaningful outcome while remaining an upstream part of the larger I27 acceptance journey.
+    S2-PROCESS-DISCOVERY: Current process model is too happy-path/CRUD-shaped to satisfy the corrected completion guarantee.
+    S2-TACTICAL: Tactical waits until process coverage is current and any affected strategic revalidation is resolved.
+discovery_revalidation:
+  status: ACCEPTED_FOR_CURRENT_SLICE
+  source_authority: docs/
+  source_refs:
+    - docs/requirements/catalogue-curation.md
+    - docs/requirements/catalogue-curation-acceptance-examples.md
+    - docs/domain/capabilities.md
+    - docs/domain/context-map.md
+    - docs/domain/resource-catalogue/tactical-model.md
+    - docs/domain/authority-management/README.md
+    - docs/domain/application-deployment/README.md
+    - docs/domain/application-communication-catalogue/README.md
+  bounded_big_picture:
+    product_outcome: >-
+      A responsible admitted user can establish and maintain catalogue truth required for governed connectivity without
+      direct SQL/seed edits, then use that truth in downstream Connectivity/Need/Policy/Checker/Realization workflows.
+    surrounding_flow:
+      - Resource catalogue truth is established and maintained in Resource Catalogue.
+      - Application/Component communication meaning is established in Application Communication Catalogue.
+      - Concrete ComponentDeployment-to-Resource truth is owned by Application Deployment in the current target domain model.
+      - Catalogue mutation is admitted by Authority Management and responsibility metadata does not itself grant authority.
+      - Downstream Business Connectivity, Access Policy and materialization/realization capabilities consume stable catalogue references/projections rather than owning catalogue truth.
+    context_touchpoints:
+      inside_current_slice: [Resource Catalogue, Authority Management admission]
+      adjacent_not_designed_internally: [Application Communication Catalogue, Application Deployment, Business Connectivity, Access Policy, Required Policy Materialization, Checker/Realization workflows]
+  slice_assessment:
+    selected_outcome: >-
+      Make one new or changed access-relevant Resource usable by supported NAPMS workflows through supported Resource
+      Catalogue curation, with stable identity, current/historical realization, scope affiliation and responsibility facts,
+      backend mutation admission, and inspectable current projection.
+    result: CONFIRMED_WITH_PROCESS_REWORK
+    rationale:
+      - The outcome is independently meaningful: downstream workflows can discover/reference a curated Resource without SQL/seed edits.
+      - It crosses a real context interaction with Authority Management rather than being a table/API/UI slice.
+      - It exercises stable identity, temporal facts, missing-current-relation semantics, responsibility/authority separation and provenance.
+      - It is narrower than the full I27 journey because ACC/AD/DCS authoring is a separate coherent catalogue outcome that later composes with RC truth.
+      - The current process artifact does not yet cover enough behavior to justify Tactical DDD.
+  process_coverage_gaps:
+    - Current timeline is an onboarding happy path and incorrectly suggests realization, affiliation and responsibility are one mandatory linear sequence; accepted requirements allow missing current relations and independent later maintenance.
+    - End/replace behavior is not modeled as explicit lifecycle alternatives even though historical facts must not be silently rewritten.
+    - Inspect/current projection and the downstream handoff/use of the Resource are absent from the process narrative.
+    - Authorization denial and domain/integrity conflict paths are not represented despite accepted requirements requiring backend admission and explicit validation/conflict failures.
+    - Resource retirement exists in current canonical domain/acceptance material but is not required to complete this bounded curation outcome; it must not be silently added to the slice merely because the tactical model contains it.
+  strategic_effect:
+    result: NO_BOUNDARY_CONTRADICTION_FOUND
+    rationale: >-
+      Bounded discovery supports RC ownership of Resource identity/realization/scope/responsibility and AM ownership of
+      mutation admission. Adjacent ACC/AD ownership confirms that the RC slice should expose Resource identity/projection
+      for composition rather than absorb application/deployment semantics.
+    revalidation_rule: Keep strategic anchors current unless process rework exposes a concrete contradiction.
 accepted_anchor_refs:
-  - {anchor_id: NAPMS-S0-RC-CURATION-PROBLEM, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/problem-statement.md, status: accepted-pending-affected-revalidation}
-  - {anchor_id: NAPMS-S0-RC-CURATION-JOURNEY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/user-journey.md, status: accepted-pending-affected-revalidation}
-  - {anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s1/resource-curation-behavior.md, status: accepted-pending-affected-revalidation}
-  - {anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s1/resource-curation-authorization.md, status: accepted-pending-affected-revalidation}
-  - {anchor_id: NAPMS-S1-RC-CURATION-INTEGRITY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s1/resource-curation-integrity.md, status: accepted-pending-affected-revalidation}
-  - {anchor_id: NAPMS-S2-RC-CAPABILITY-MAP, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/capability-map.yaml, status: accepted-pending-revalidation}
-  - {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-resource-catalogue.yaml, status: accepted-pending-revalidation}
-  - {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-authority-management.yaml, status: accepted-pending-revalidation}
-  - {anchor_id: NAPMS-S2-RC-CONTEXT-RELATIONSHIPS, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/context-relationships.yaml, status: accepted-pending-revalidation}
-  - {anchor_id: NAPMS-S2-RC-DOMAIN-GLOSSARY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/domain-glossary.yaml, status: accepted-pending-revalidation}
+  - {anchor_id: NAPMS-S0-RC-CURATION-PROBLEM, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/problem-statement.md, status: accepted-current}
+  - {anchor_id: NAPMS-S0-RC-CURATION-JOURNEY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/user-journey.md, status: accepted-current}
+  - {anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s1/resource-curation-behavior.md, status: accepted-current}
+  - {anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s1/resource-curation-authorization.md, status: accepted-current}
+  - {anchor_id: NAPMS-S1-RC-CURATION-INTEGRITY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s1/resource-curation-integrity.md, status: accepted-current}
+  - {anchor_id: NAPMS-S2-RC-CAPABILITY-MAP, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/capability-map.yaml, status: accepted-current-revalidate-if-process-affected}
+  - {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-resource-catalogue.yaml, status: accepted-current-revalidate-if-process-affected}
+  - {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-authority-management.yaml, status: accepted-current-revalidate-if-process-affected}
+  - {anchor_id: NAPMS-S2-RC-CONTEXT-RELATIONSHIPS, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/context-relationships.yaml, status: accepted-current-revalidate-if-process-affected}
+  - {anchor_id: NAPMS-S2-RC-DOMAIN-GLOSSARY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/strategic/domain-glossary.yaml, status: accepted-current-revalidate-if-process-affected}
   - {anchor_id: NAPMS-S2-DEC-RC-MVP-AUTHORITY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/process/mvp-authority-decision.yaml, status: accepted-current-human-decision}
   - {anchor_id: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/process/responsibility-role-decision.yaml, status: accepted-current-human-decision}
-  - {anchor_id: NAPMS-S2-RC-CURATION-PROCESS, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/process/resource-curation-process.yaml, status: accepted-pending-revalidation}
+  - {anchor_id: NAPMS-S2-RC-CURATION-PROCESS, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s2/process/resource-curation-process.yaml, status: rework-required}
 current_evidence_refs:
   historical_S0: docs-v2/migration/revalidated/h12-rc-curation/validation/s0-change-set-validation-v2.yaml
   historical_G0: docs-v2/migration/revalidated/h12-rc-curation/validation/h12-g0-gate-evidence.yaml
@@ -96,10 +148,12 @@ blockers: []
 deferred_nonblocking:
   - {id: H12-D-SCOPED-AUTHORIZATION, statement: Resource-level/scoped authorization is deferred until a concrete customer requirement requires it.}
   - {id: H12-D-RESPONSIBILITY-COVERAGE, statement: Mandatory responsibility roles and transfer gap/overlap policy remain unspecified unless the current outcome requires them.}
+  - {id: H12-D-RESOURCE-RETIREMENT, statement: Resource retirement is canonical domain material but is not required by the selected RC curation outcome; keep it outside this slice unless process evidence shows it is needed for coherent completion.}
 next_meaningful_work:
-  stage: S0-S2-REVALIDATION
-  checkpoint: BIG-PICTURE-AND-SLICE-REVALIDATION
-  name: Bounded domain discovery around Resource Catalogue curation
+  stage: S2
+  checkpoint: S2-PROCESS-DISCOVERY
+  name: Refine Resource Catalogue curation process coverage
   action: >-
-    Read only canonical docs/ material needed to map the surrounding business outcomes/processes and interactions;
-    establish bounded Big Picture evidence, then re-evaluate the RC slice, process coverage and affected strategic boundaries.
+    Rework the existing process model around independent lifecycle flows rather than one onboarding sequence; add temporal
+    replace/end behavior, inspect/current projection, downstream handoff, authorization-denied and integrity-conflict paths.
+    Use accepted requirements and current domain docs only; route any material policy choice not derivable from them to a human question.
