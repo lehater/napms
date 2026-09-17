@@ -4,12 +4,18 @@ on:
   pull_request:
     paths:
       - "docs/architecture/structurizr/**"
+      - "docs/migration/revalidated/h16-strategic/s2/strategic/capability-map.yaml"
+      - "docs/migration/revalidated/h16-strategic/s2/strategic/context-relationships.yaml"
+      - "tools/generate_architecture_views.py"
       - "Makefile"
       - ".github/workflows/architecture.yml"
   push:
     branches: [main]
     paths:
       - "docs/architecture/structurizr/**"
+      - "docs/migration/revalidated/h16-strategic/s2/strategic/capability-map.yaml"
+      - "docs/migration/revalidated/h16-strategic/s2/strategic/context-relationships.yaml"
+      - "tools/generate_architecture_views.py"
       - "Makefile"
       - ".github/workflows/architecture.yml"
 
@@ -22,5 +28,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate canonical Structurizr workspace
+      - name: Regenerate projections and validate workspace
         run: make architecture-check
