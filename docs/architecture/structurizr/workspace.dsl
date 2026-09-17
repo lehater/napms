@@ -103,6 +103,10 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
             element "Database" {
                 shape Cylinder
             }
+            element "Deployment Node" {
+                background #f5f5f5
+                color #333333
+            }
         }
     }
 
