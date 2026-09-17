@@ -1,4 +1,4 @@
-version: 17
+version: 18
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
@@ -6,19 +6,20 @@ branch: meta/docs-v2-m7-pilot
 last_updated: 2026-09-17
 program:
   status: ACTIVE
-  current_phase: H18
-  current_phase_state: DESIGNING_MVP_SYSTEM_ARCHITECTURE
-  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15, H16, H17]
+  current_phase: H19
+  current_phase_state: DESIGNING_MVP_IMPLEMENTATION_READINESS
+  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15, H16, H17, H18]
 control_plane:
   contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 3}
   rule: meaningful design work is visible; runtime reliability bookkeeping is internal
 current_work:
-  phase: H18
-  name: Complete MVP system architecture
+  phase: H19
+  name: Complete MVP implementation readiness
   state: IN_PROGRESS
-  predecessor_ref: docs-v2/migration/revalidated/h17-mvp-journey/validation/h17-change-set-validation.yaml
-  next: complete one frontend plus modular-monolith backend architecture baseline for the whole MVP journey, resolve system-level API persistence and authorization contracts, then validate S3 as one coherent slice
+  predecessor_ref: docs-v2/migration/revalidated/h18-mvp-architecture/validation/h18-change-set-validation.yaml
+  next: derive one end-to-end implementation and verification design for the accepted MVP journey from S1-S3 truth, including exact application API, persistence realization, module work slices and test intent without reopening domain or system architecture
   target_scope: complete accepted first-MVP journey
+  reporting_granularity: report H19 as one meaningful implementation-readiness stage rather than individual files contracts fingerprints or CI repairs
 documentation_authority:
   evolving_authority: docs-v2/
   legacy_source: docs/
@@ -28,9 +29,11 @@ documentation_authority:
 carry_forward:
   - Human-owned truth is never invented; material gaps become questions/blockers.
   - H17 first-MVP S1-S2 journey and tactical slice are accepted current truth.
-  - H16 whole-domain strategic DDD baseline remains accepted current truth.
-  - H18 makes system-wide architecture choices once for frontend plus modular-monolith backend; contexts do not independently choose transports or deployment topology.
-  - Product code/tests remain outside design authority.
+  - H18 complete-MVP S3 architecture is accepted current truth.
+  - Frontend/backend delivery uses HTTP/JSON with one OpenAPI application contract; backend module interaction remains in-process.
+  - MVP persistence is one PostgreSQL database with module-owned schemas/repository contracts.
+  - Protected application use cases use backend session identity and Authority Management admission; frontend state never grants authority.
+  - Product code/tests remain outside design authority until H19 reaches implementation readiness and implementation is explicitly authorized.
   - Normal design work must not be dominated by Harness bookkeeping.
 restrictions:
   product_implementation_authorization: none
@@ -41,10 +44,11 @@ restrictions:
 blockers: []
 resume_protocol:
   - Read this file first then roadmap.yaml.
-  - For H18 load accepted H17 S1-S2 anchors, accepted H16 strategic anchors, and only architecture specs/evidence directly needed by the whole MVP journey.
+  - For H19 load accepted H17 S1-S2 and H18 S3 anchors plus only S4 specs and directly needed accepted dependencies.
   - Treat docs/ only as frozen migration evidence; never edit it and never let it override accepted docs-v2 corrections.
-  - Design frontend and modular-monolith backend as one system baseline; do not advance one Bounded Context architecture independently.
-  - Preserve domain ownership across in-process module boundaries and keep non-peer policy export as composition.
+  - Design implementation readiness for the complete MVP journey as one vertical slice; do not advance one Bounded Context implementation independently.
+  - Preserve accepted module ownership and non-peer policy export composition; do not reopen HTTP PostgreSQL modular-monolith or authorization baseline without contradictory evidence.
+  - Produce exact implementation and verification intent sufficient for coding without new product/domain/architecture invention.
   - Use changed/affected validation; Harness bookkeeping stays internal.
-  - Product code/tests remain outside current authority and cannot supply missing architecture truth.
+  - Product code/tests remain outside current authority and cannot supply missing design truth.
   - Ask the stakeholder only for a material human-owned choice that cannot be derived from accepted constraints.
