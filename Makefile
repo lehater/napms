@@ -1,7 +1,11 @@
-.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-check docs-v2-harness-check skill-routing-eval knowledge-check architecture architecture-check check
+.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-check docs-v2-harness-check skill-routing-eval knowledge-check architecture architecture-sync architecture-check check
 
 STRUCTURIZR_IMAGE ?= structurizr/structurizr:2026.06.28-noble
 STRUCTURIZR_DIR := $(CURDIR)/docs/architecture/structurizr
+GENERATED_ARCH_DIR := $(CURDIR)/docs-generated/architecture
+PLANTUML_SERVER_IMAGE ?= plantuml/plantuml-server:jetty
+ARCH_NETWORK ?= napms-architecture
+PLANTUML_CONTAINER ?= napms-plantuml
 
 test:
 	cd backend && python -m pytest -q -m "not postgres"
@@ -42,11 +46,24 @@ dev-restore:
 	@test "$(CONFIRM_RESET)" = "yes" || (echo "Restore replaces the local PostgreSQL volume; rerun with CONFIRM_RESET=yes" >&2; exit 2)
 	python tools/local_postgres_backup.py restore-clean "$(BACKUP)" --confirm-reset
 
-architecture:
-	docker run --rm -it -p 8080:8080 -v "$(STRUCTURIZR_DIR):/usr/local/structurizr" $(STRUCTURIZR_IMAGE) local
+architecture-sync:
+	python tools/generate_architecture_views.py
 
-architecture-check:
-	docker run --rm -v "$(STRUCTURIZR_DIR):/usr/local/structurizr:ro" $(STRUCTURIZR_IMAGE) validate -workspace /usr/local/structurizr/workspace.dsl
+architecture: architecture-sync
+	@docker network inspect $(ARCH_NETWORK) >/dev/null 2>&1 || docker network create $(ARCH_NETWORK) >/dev/null
+	@docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true
+	@docker run -d --rm --name $(PLANTUML_CONTAINER) --network $(ARCH_NETWORK) $(PLANTUML_SERVER_IMAGE) >/dev/null
+	@trap 'docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true; docker network rm $(ARCH_NETWORK) >/dev/null 2>&1 || true' EXIT INT TERM; \
+		docker run --rm -it -p 8080:8080 --network $(ARCH_NETWORK) \
+		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" \
+		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" \
+		$(STRUCTURIZR_IMAGE) local
+
+architecture-check: architecture-sync
+	docker run --rm \
+		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr:ro" \
+		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" \
+		$(STRUCTURIZR_IMAGE) validate -workspace /usr/local/structurizr/workspace.dsl
 
 harness-check:
 	python tools/validate_harness.py
