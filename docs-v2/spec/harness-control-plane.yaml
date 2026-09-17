@@ -1,4 +1,5 @@
 version: 1
+revision: 2
 kind: harness-control-plane
 id: DOCS-V2-HARNESS-CONTROL-PLANE
 status: active
@@ -7,430 +8,222 @@ owner_task: H12-P0-CORRECTION
 last_updated: 2026-09-17
 
 purpose: >-
-  Define the integration semantics between lifecycle, validation, Task Capsule, durable state,
-  regression and repository execution so Harness reliability guarantees do not require a new
-  agent/session invocation or Git commit for every atomic semantic operation.
+  Keep Harness centered on design work. The unit visible to an agent is a design artifact,
+  coherent design change set, human decision, or lifecycle readiness check. Reliability
+  mechanics such as operation identities, execution-basis fingerprints, receipts and atomic
+  persistence are implementation details and must not create extra design work.
 
 authority:
-  required_contracts:
-    - {id: DOCS-V2-HARNESS-CONFORMANCE, path: docs-v2/spec/harness-conformance.yaml, version: 1}
-    - {id: DOCS-V2-HARNESS-RELIABILITY-CONFORMANCE, path: docs-v2/spec/harness-reliability-conformance.yaml, version: 1}
-    - {id: DOCS-V2-LIFECYCLE-STATE-MACHINE, path: docs-v2/spec/lifecycle-state-machine.yaml, version: 1}
-    - {id: DOCS-V2-DESIGN-ANCHOR-CONTRACT, path: docs-v2/spec/design-anchor.yaml, version: 1}
-    - {id: DOCS-V2-DEPENDENCY-REGISTRY-IMPACT, path: docs-v2/spec/dependency-registry-impact.yaml, version: 1}
-    - {id: DOCS-V2-DESIGN-DERIVATION-LINEAGE, path: docs-v2/spec/design-derivation-lineage.yaml, version: 1}
-    - {id: DOCS-V2-VALIDATION-GATE-ENGINE, path: docs-v2/spec/validation-gate-engine.yaml, version: 1}
-    - {id: DOCS-V2-VALIDATION-ENGINE-CATALOG, path: docs-v2/spec/validation-engine-catalog.yaml, version: 1}
-    - {id: DOCS-V2-AGENT-EXECUTION-CONTEXT-V2, path: docs-v2/spec/agent-execution-context-v2.yaml, version: 1}
-    - {id: DOCS-V2-HARNESS-EVALS-TRACING-REGRESSION, path: docs-v2/spec/harness-evals-tracing-regression.yaml, version: 1}
   integration_precedence: >-
-    For the exact clauses listed under amendments, this contract is the active integration
-    interpretation. All unlisted H1-H10 semantics remain unchanged. This is a composition-root
-    contract, not an alternate lifecycle, validation stack or project-specific Harness fork.
+    This contract is the active integration interpretation for execution boundaries, gate
+    execution, validation evidence and resume behavior. Component specifications remain
+    authoritative for the design semantics they own, but clauses that require a separate
+    Task Capsule/transaction solely to persist, validate or advance design work are superseded
+    by this control-plane interpretation.
+  preserves:
+    - S0 -> S1 -> S2 -> S3 -> S4 lifecycle order
+    - G0-G4 readiness guarantees
+    - machine-readable Design Anchors and typed relations
+    - derivation lineage and provenance
+    - DDD semantics and applicability
+    - human-owned truth boundaries
+    - deterministic structural/reference validation
+    - stale-input detection and safe persistence
   does_not_define:
     - NAPMS product/domain/architecture truth
-    - new DDD artifact types or ownership
-    - new lifecycle stages or gate order
-    - executable runtime, validators, tests or CI changes
+    - new lifecycle stages or artifact types
+    - executable runtime, tests, workflow or CI changes
     - product implementation authorization
     - canonical docs cutover
     - merge authorization
 
-quality_goal:
+core_rule:
   statement: >-
-    Preserve fail-closed, provenance, lineage, DDD quality, deterministic replay and exact
-    authorization while reducing accidental complexity caused by treating an atomic Harness
-    transaction, an agent/session invocation and a Git commit as the same boundary.
+    Harness exists to move design from problem to implementation readiness. A reliability
+    mechanism is not a design step. It may constrain or reject a design operation, but it must
+    not require an additional user-visible task, checkpoint transaction, capsule or artifact
+    unless that additional artifact carries independent design meaning.
 
-execution_layers:
-  orchestration_session:
-    responsibility: >-
-      Coordinate zero or more serial Harness transactions while preserving durable boundaries.
-      A session is disposable and never carries authority that is absent from durable state.
-    may_chain_transactions: true
-    continuation_guard:
-      - previous transaction committed atomically/idempotently
-      - next transaction is deterministically eligible
-      - no blocking stop condition exists
-      - required authority remains current
-      - next transaction receives a new Task Capsule and operation_id
-  harness_transaction:
-    responsibility: >-
-      Perform exactly one bounded design task, checkpoint evaluation or gate evaluation against
-      one frozen execution basis and persist its semantic/state/evidence effects atomically.
-    capsule_cardinality: exactly-one
-    operation_id_cardinality: exactly-one
-    persist_before_next_transaction: true
-    next_task_may_execute_in_same_capsule: false
-    next_task_may_execute_in_same_session: true
-  repository_commit:
-    responsibility: Persist one coherent repository revision.
-    may_contain_multiple_completed_transactions: true
-    forbidden_as_authority_boundary: true
-    note: >-
-      Git history is not the Harness transaction log. Provenance and idempotency are carried by
-      operation/evidence identities and exact execution bases, not by requiring one commit per step.
+work_model:
+  visible_units:
+    - design-artifact
+    - coherent-design-change-set
+    - human-decision-or-answer
+    - lifecycle-readiness-check
+  ordinary_flow: >-
+    Read the current design state, perform the next meaningful design work, validate what was
+    changed, evaluate readiness when a stage/checkpoint boundary is reached, and persist the
+    coherent result. Continue while the requested scope is clear and no real stop condition exists.
+  forbidden_ceremony:
+    - separate Task Capsule only because validation follows design creation
+    - separate transaction only because a gate/checkpoint follows a completed design change
+    - separate repository commit for validation evidence
+    - mandatory stop after successful persistence
+    - requiring an agent to manually construct operation IDs, fingerprints or execution-basis records
+  gate_rule: >-
+    A gate/checkpoint is a readiness decision at a meaningful lifecycle boundary. It remains
+    logically distinct from artifact consistency validation, but it may be evaluated and persisted
+    in the same coherent work cycle after its inputs are current. Separate execution is required
+    only when a real stop condition or independent human authorization requires it.
 
-stop_conditions:
-  mandatory_session_stop:
-    - route == NEED_MORE_DATA
-    - route == BLOCKED
-    - route == REOPEN
-    - required human decision or approval is missing
-    - requested action crosses an authorization/tool boundary not already granted
-    - exact consumed input changes before commit
-    - operation_id conflicts with a different execution basis
-    - user-requested execution scope is complete
-  not_stop_conditions_by_themselves:
-    - successful persistence of a bounded task
-    - successful checkpoint PASS
-    - successful G0-G3 gate PASS
-    - deterministic discovery of the next eligible transaction
-  G4_rule: >-
-    G4 remains a separate authorization transaction. A session may continue only if the next
-    action is already within the newly issued exact implementation lease and the user task permits it.
+progressive_rigor:
+  rule: >-
+    Apply the minimum validation sufficient for the risk and semantics of the current design work.
+    Optional DDD work and expensive semantic checks run only when their applicability or the
+    significance of the decision requires them.
+  ordinary_anchor_or_change_set:
+    required:
+      - canonical format/schema integrity
+      - stable reference resolution
+      - required lineage/provenance
+      - semantic consistency when content changed materially
+  lifecycle_boundary:
+    additional:
+      - readiness/sufficiency check for the applicable gate or checkpoint
+  high_risk_or_authority_boundary:
+    additional_when_applicable:
+      - explicit human authority
+      - impact/freshness analysis
+      - exact authorization scope
+  no_global_preflight_rule: >-
+    Do not revalidate unrelated Harness contracts, registries, graph regions or historical
+    evidence for an ordinary operation when current reusable evidence already establishes them.
+
+operational_internals:
+  visibility: implementation-detail
+  may_be_generated_or_managed_automatically:
+    - operation_id
+    - execution_basis
+    - semantic_fingerprint
+    - validator_and_spec_version_binding
+    - validation_receipt
+    - idempotency_key
+    - atomic_repository_write
+    - cache_or_engine_bundle
+  agent_contract: >-
+    The agent supplies the design intent, semantic inputs, changed targets and any required human
+    authority. Infrastructure derives operational identities and bookkeeping automatically.
+  safety_invariants:
+    - consumed semantic inputs must be current at decision/persistence time
+    - retry must not duplicate semantic effects
+    - conflicting concurrent input changes must fail rather than silently overwrite
+    - generated operational metadata must not become a second source of product/domain truth
+
+context_model:
+  rule: >-
+    Load current scope state, the design targets and direct semantic dependencies needed for the
+    work. Resolve additional dependencies lazily when the graph shows they are relevant.
+  no_capsule_requirement: >-
+    A serialized Task Capsule is not required for ordinary design work. A runtime may generate a
+    compact internal execution manifest when useful, but design progress and authority must remain
+    recoverable from durable scope state and canonical artifacts without that manifest.
+  authority_boundary: >-
+    Access outside the allowed repository/project authority remains fail-closed. This safety
+    boundary does not require predeclaring every file that may be read inside the already-authorized
+    semantic dependency closure.
+
+validation_model:
+  order:
+    - structural-and-reference-integrity
+    - lineage-and-human-authority-when-applicable
+    - semantic-consistency-when-material
+    - lifecycle-readiness-at-boundary
+  reuse_rule: >-
+    Current evidence for unchanged inputs is reused. Gate/checkpoint evaluation does not rerun
+    unrelated per-anchor validation.
+  evidence_rule: >-
+    Persist the smallest evidence needed to explain the current accepted state and invalidate it
+    when its semantic basis changes. Operational validator catalogs and complete execution bases
+    may be generated internally and are not required as design artifacts.
+  semantic_split:
+    anchor_consistency: >-
+      Check that changed design content follows accepted inputs and does not invent human-owned truth.
+    lifecycle_readiness: >-
+      Check that the applicable stage/checkpoint guarantee is sufficient to move forward.
 
 state_ownership:
   scope_lifecycle_state:
     role: sole-writable-owner
     owns:
-      - current_task_or_transaction
-      - stage states
-      - checkpoint states
-      - gate states
+      - current meaningful design work
+      - stage/checkpoint/gate states
       - blockers and blocking questions
-      - current scope-level accepted-anchor/evidence references
+      - accepted anchor references
+      - current validation/readiness evidence references when useful
   global_workstream_state:
     role: program-pointer-and-restrictions
-    owns:
-      - current program phase
-      - active scope reference
-      - completed Harness/meta work
-      - program-level restrictions
-      - resume routing to the active scope
     forbidden_duplicates:
-      - scope current_task
+      - scope current work
       - scope stage state
       - scope gate state
-  generated_views:
-    rule: >-
-      Any program dashboard or current-task summary derived from scope state is a projection and
-      is never a second writable owner.
+  state_minimization_rule: >-
+    Do not persist transaction/capsule bookkeeping in lifecycle state unless it is required to
+    recover an interrupted unsafe write. Normal resume is from design state, not transaction history.
 
-execution_basis:
-  authority_closure:
-    freeze_before_semantic_work: true
-    meaning: >-
-      Declare the classes/graph closure of knowledge that may be consumed without broadening
-      authority. Exact files/anchors inside the permitted closure may be resolved lazily.
-  lazy_context_resolution:
-    allowed: true
-    rule: >-
-      Resolving an additional current predecessor/evidence reference already inside the authority
-      closure does not require a new session or capsule. The consumed reference is recorded.
-    outside_closure: fail-closed-and-replan
-  final_basis_freeze:
-    when: immediately-before-semantic-decision-or-persistence
-    required_fields:
-      - task_or_gate_id
-      - operation_id
-      - sole scope lifecycle state ref and exact fingerprint
-      - exact consumed input refs and fingerprints
-      - applicable Harness/process contract identities and versions
-      - validation profile and validator/judge versions
-    mutable_routing_input_rule: >-
-      Every mutable input capable of changing route, validation outcome or state effect must be
-      fingerprint-bound in the final basis.
-  commit_guard:
-    rule: Re-resolve/fingerprint exact consumed inputs immediately before persistence.
-    on_change: FAIL with input-changed-before-commit
+stop_conditions:
+  mandatory:
+    - route == NEED_MORE_DATA
+    - route == BLOCKED
+    - route == REOPEN and earlier design truth must change
+    - required human decision or approval is missing
+    - requested action crosses an authorization/tool boundary not granted
+    - consumed semantic input changed before persistence
+    - user-requested scope is complete
+  not_stops:
+    - design artifact persisted successfully
+    - validation completed successfully
+    - checkpoint PASS
+    - G0-G3 PASS
+    - next meaningful design work is already eligible and within requested scope
 
-validation_semantic_split:
-  anchor_consistency:
-    judge_id: SJ-ANCHOR-CONSISTENCY
-    judge_version: cp-v1
-    target_kind: anchor-or-coherent-change-set
-    bounded_question: >-
-      Does the target preserve its declared owner-stage semantics, accepted upstream truth,
-      provenance and allowed derivations without inventing human-owned truth or deciding
-      whether the entire lifecycle stage is sufficient to advance?
-    allowed_outcomes: [PASS, FAIL, NEED_MORE_DATA]
-  gate_sufficiency:
-    judge_ids:
-      - SJ-G0-PROBLEM-SUFFICIENCY
-      - SJ-G1-REQUIREMENTS-SUFFICIENCY
-      - SJ-S2-STRATEGIC-SUFFICIENCY
-      - SJ-S2-PROCESS-SUFFICIENCY
-      - SJ-S2-TACTICAL-SUFFICIENCY
-      - SJ-G2-DOMAIN-SUFFICIENCY
-      - SJ-G3-ARCHITECTURE-SUFFICIENCY
-      - SJ-G4-READINESS-SUFFICIENCY
-    rule: >-
-      Gate/checkpoint sufficiency judges run only for their gate/checkpoint profile and never
-      serve as the semantic oracle for individual anchor acceptance.
-  h8_amendment:
-    anchor_acceptance_semantic_selection: SJ-ANCHOR-CONSISTENCY
-    gate_profiles_keep_existing_judges: true
-
-change_set_validation:
-  purpose: >-
-    Validate one coherent same-owner/scope semantic change once while retaining target-level
-    schema/fingerprint checks and graph-level fail-closed guarantees.
-  applicability:
-    allowed_when:
-      - targets belong to one lifecycle owner stage
-      - targets share one bounded scope
-      - mutation targets are declared before final basis freeze
-      - dependency/lineage relations among targets are explicit
-    split_when:
-      - targets cross lifecycle owner stages
-      - one target requires independent human authority
-      - one target would change the authority closure for the others
-  plan_compilation:
-    per_target:
-      - format/schema
-      - type/owner
-      - semantic fingerprint
-    once_per_change_set_when_equivalent:
-      - registry/reference resolution
-      - dependency graph
-      - lineage/authority closure
-      - freshness/impact
-      - Harness self-consistency
-    semantic:
-      - SJ-ANCHOR-CONSISTENCY may evaluate the coherent change set once with target-specific findings
-  result:
-    one_receipt_may_cover_multiple_anchors: true
-    target_fingerprints_required: true
-
-evidence_normalization:
-  canonical_receipt:
-    required:
-      - evidence_id
-      - operation_id
-      - scope
-      - exact execution_basis_fingerprint
-      - target ids and target fingerprints
-      - validation profile id/version
-      - validator/judge bundle identity or explicit versions
-      - aggregate deterministic result and findings
-      - semantic results when applicable
-      - aggregate result
-      - recorded_at
-  anchor_envelope:
-    keep:
-      - validation freshness
-      - evidence_ref
-      - validated_fingerprint
-      - profile id/version
-    avoid:
-      - repeating validator catalogs
-      - repeating all contract version maps
-      - repeating graph snapshots already owned by the receipt
-  scope_state:
-    store_refs_not_copies: true
-    rule: >-
-      Scope state references accepted anchors and current validation evidence; registry/fingerprint
-      status is resolved from canonical anchors/evidence rather than maintained as independent copies.
-
-repository_authority_zones:
-  current_transition_layout:
-    harness_control_plane:
-      roots: [docs-v2/spec/**, docs-v2/meta/**]
-      authority: Harness/process only
-      project_adapter_exceptions:
-        - docs-v2/spec/napms-migration-revalidation.yaml
-    canonical_project_truth:
-      roots: [docs/**]
-      authority: current NAPMS product/domain/architecture truth before cutover
-    migration_workspace:
-      roots: [docs-v2/migration/**, docs-v2/pilot/**, docs-v2/horizontal/**]
-      project_adapter_files:
-        - docs-v2/spec/napms-migration-revalidation.yaml
-      authority: non-canonical migration/history/comparison unless explicitly rematerialized
-    generated_views:
-      roots: [docs-generated/**]
-      authority: never-canonical
-  target_layout:
-    harness_control_plane: harness/**
-    canonical_project_truth: docs/**
-    migration_workspace: docs-migration/**
-    generated_views: docs-generated/**
-  move_now_required: false
-  routing_rule: >-
-    The zone classification is authoritative immediately; physical moves are deferred to a
-    separately validated repository-layout migration.
+repository_rule:
+  coherent_commit: >-
+    One repository commit may contain the coherent design changes, their readiness result and
+    state update. Git commits are persistence units, not design-semantic transaction boundaries.
+  current_product_domain_authority: docs/
+  docs_v2_role_before_cutover: candidate-design-and-harness-workspace
 
 amendments:
-  H1:
-    clauses:
-      test_first_contract.one_execution_unit:
-        old_interpretation: one-agent/session-invocation
-        effective_interpretation: one-harness-transaction-or-one-capsule
-      scenarios:
-        HC-TRANSITION-PERSIST-AND-STOP:
-          effective_rule: persist transaction and stop that capsule; session may create the next eligible capsule
-        HC-TRANSITION-AUTO-CONTINUE:
-          effective_rule: starting a successor in the same capsule is invalid; starting a new capsule in the same session after commit is valid
-    critical_scenario_ids_preserved: true
-
-  H2:
-    clauses:
-      LI-ONE-EXECUTION-UNIT:
-        effective_rule: one capsule/transaction performs one bounded task or gate evaluation
-      execution_model.next_task.may_execute_in_same_capsule:
-        effective_value: false
-      execution_model:
-        added_field: {next_task_may_execute_in_same_session: true}
-      gate_pass_effect:
-        effective_rule: successor becomes eligible; orchestrator may start it as a new transaction in the same session
-    stage_and_gate_order_unchanged: true
-
+  H1_H2:
+    effective_rule: >-
+      Interpret one-execution-unit and persist-and-stop scenarios as safety requirements for
+      atomic persistence, not as a requirement to split adjacent design work and readiness checks
+      into separate capsules or transactions.
   H8:
-    clauses:
-      validation_profiles.anchor-acceptance.semantic_judge_selection:
-        effective_value: SJ-ANCHOR-CONSISTENCY
-      gate_profiles:
-        effective_value: existing gate/checkpoint sufficiency judges unchanged
-
+    effective_rule: >-
+      Collapse ordinary validation to the minimal applicable checks in validation_model. Detailed
+      execution-basis and receipt schemas are optional runtime internals unless needed to diagnose
+      a concrete stale/retry/concurrency failure.
   H9:
-    clauses:
-      execution_basis_freeze:
-        effective_rule: authority closure first; exact consumed basis frozen immediately before decision/persistence
-      context_expansion:
-        effective_rule: lazy resolution inside authority closure is not an expansion requiring restart
-      task_capsule:
-        effective_scope: one Harness transaction, not the entire orchestration session
-
+    effective_rule: >-
+      Task Capsule v2 is no longer a mandatory design-work abstraction. A runtime may derive an
+      internal manifest from durable state; agents do not create or manage capsules as workflow steps.
   H10:
-    clauses:
-      regression_effective_semantics:
-        rule: >-
-          Existing stable scenario IDs remain valid under the transaction/session interpretation
-          above; add the CP conformance cases below to prevent regression back to session-per-step.
-
+    effective_rule: >-
+      Preserve regression coverage for failures that can corrupt design truth or violate authority.
+      Transaction/capsule-shape conformance is not a product-quality goal by itself.
   H12:
-    contract: DOCS-V2-NAPMS-MIGRATION-REVALIDATION@2
-    clauses:
-      NM-STAGE-GATES-MANDATORY:
-        effective_rule: predecessor gates remain mandatory and are separate Harness transactions, not mandatory separate sessions
-      NM-ONE-BOUNDED-TASK:
-        effective_rule: one H12 capsule/transaction performs one design task or gate/checkpoint evaluation; a session may chain committed eligible transactions
-      NM-CF-GATE-SEPARATE-EXECUTION:
-        effective_rule: design task and gate must be separate transactions/capsules; same orchestration session is allowed
-      migration_execution_sequence.stop_before:
-        effective_rule: transaction boundary only; the orchestrator may continue with next_transaction when continuation guards pass
-      handoff.stop_rule:
-        effective_rule: no mandatory agent/session stop after successful transaction persistence
+    effective_rule: >-
+      Continue the NAPMS pilot from its current durable design state. Do not create separate gate
+      or checkpoint transactions merely to satisfy historical H12 sequencing. Evaluate readiness
+      when the relevant design work is current, persist the coherent result, then continue.
 
 conformance_cases:
-  - id: CP-CF-SINGLE-SCOPE-STATE-OWNER
-    oracle: deterministic
-    critical: true
-    given: {global_state_duplicates_current_task: false, scope_state_is_owner: true}
-    expect: {result: PASS}
-  - id: CP-CF-DUPLICATE-SCOPE-STATE-OWNER-REJECTED
-    oracle: deterministic
-    critical: true
-    given: {global_state_duplicates_current_task: true}
-    expect: {result: FAIL, diagnostic_code: duplicate-lifecycle-state-owner}
-  - id: CP-CF-SESSION-CHAINS-TRANSACTIONS
-    oracle: deterministic
-    critical: true
-    given: {transaction_A_committed: true, next_transaction_eligible: true, blocking_stop_condition: false, same_session: true}
-    expect: {new_capsule_required: true, continuation_allowed: true}
-  - id: CP-CF-GATE-SEPARATE-TRANSACTION
-    oracle: deterministic
-    critical: true
-    given: {design_transaction_committed: true, gate_in_new_capsule: true, same_session: true}
-    expect: {legal: true}
-  - id: CP-CF-GATE-IN-SAME-CAPSULE-REJECTED
-    oracle: deterministic
-    critical: true
-    given: {design_task_and_gate_same_capsule: true}
-    expect: {legal: false, diagnostic_code: transaction-boundary-violated}
-  - id: CP-CF-HUMAN-INPUT-STOPS-SESSION
-    oracle: deterministic
-    critical: true
-    given: {human_owned_truth_missing: true}
+  - id: CP-CF-DESIGN-WORK-IS-PRIMARY
+    given: {design_change_complete: true, readiness_check_due: true, real_stop_condition: false}
+    expect: {separate_capsule_required: false, separate_transaction_required: false, continuation_allowed: true}
+  - id: CP-CF-OPERATIONAL-METADATA-INTERNAL
+    given: {operation_id_not_manually_supplied: true, runtime_can_generate_it: true}
+    expect: {design_work_blocked: false}
+  - id: CP-CF-REUSE-CURRENT-EVIDENCE
+    given: {input_unchanged: true, current_validation_exists: true, gate_due: true}
+    expect: {rerun_unrelated_anchor_validation: false}
+  - id: CP-CF-HUMAN-TRUTH-STILL-STOPS
+    given: {required_human_owned_truth_missing: true}
     expect: {route: NEED_MORE_DATA, continuation_allowed: false}
-  - id: CP-CF-REOPEN-STOPS-FORWARD-CHAIN
-    oracle: deterministic
-    critical: true
-    given: {route: REOPEN, successor_known: true}
-    expect: {forward_continuation_allowed: false}
-  - id: CP-CF-LAZY-CONTEXT-IN-CLOSURE
-    oracle: deterministic
-    critical: true
-    given: {new_ref_needed: true, ref_inside_authority_closure: true}
-    expect: {new_session_required: false, consumed_ref_recorded: true}
-  - id: CP-CF-OUTSIDE-CLOSURE-FAILS-CLOSED
-    oracle: deterministic
-    critical: true
-    given: {new_ref_needed: true, ref_inside_authority_closure: false}
-    expect: {semantic_use_allowed: false, diagnostic_code: authority-closure-expansion-required}
-  - id: CP-CF-COMPLETE-FINAL-BASIS
-    oracle: deterministic
-    critical: true
-    given: {routing_mutable_input_unfingerprinted: false, scope_state_fingerprinted: true, consumed_refs_fingerprinted: true}
-    expect: {basis_valid: true}
-  - id: CP-CF-ANCHOR-JUDGE-NOT-GATE-JUDGE
-    oracle: deterministic
-    critical: true
-    given: {profile: anchor-acceptance, selected_judge: SJ-G0-PROBLEM-SUFFICIENCY}
-    expect: {result: FAIL, diagnostic_code: gate-judge-used-for-anchor}
-  - id: CP-CF-CHANGESET-VALIDATION
-    oracle: deterministic
-    critical: true
-    given: {same_stage: true, same_scope: true, target_count: 2, one_change_set_receipt: true}
-    expect: {legal: true, duplicate_graph_validation_required: false}
-  - id: CP-CF-GIT-COMMIT-NOT-TRANSACTION
-    oracle: deterministic
-    critical: true
-    given: {completed_transaction_count_in_commit: 3}
-    expect: {legal: true, transaction_identity_preserved_by_operation_ids: true}
-  - id: CP-CF-REPOSITORY-ZONE-AUTHORITY
-    oracle: deterministic
-    critical: true
-    given: {path: docs-v2/pilot/example.md}
-    expect: {canonical_project_truth: false, zone: migration_workspace}
-
-h12_correction_result:
-  semantic_reconstruction_required: false
-  existing_S0_anchor_semantics_changed: false
-  old_per_anchor_evidence:
-    disposition: historical-superseded-by-change-set-revalidation
-    reason:
-      - anchor acceptance used a gate sufficiency judge identity
-      - scoped lifecycle state was not exact-fingerprint-bound in the receipt
-      - duplicate per-anchor deterministic records created avoidable manual state
-  required_reconciliation:
-    - keep current S0 semantic fingerprints unchanged
-    - validate both current S0 anchors as one coherent change set
-    - bind the sole pre-transaction scope-state fingerprint
-    - use SJ-ANCHOR-CONSISTENCY rather than SJ-G0-PROBLEM-SUFFICIENCY
-    - after PASS keep H12-G0-1 as the next unevaluated gate
-
-runtime_obligations:
-  before_H13_implementation:
-    - fold this composition-root behavior into executable orchestration interfaces
-    - implement single scope-state write owner
-    - implement lazy authority-closure context resolver
-    - implement final basis freeze and optimistic commit guard
-    - implement change-set validation plan compiler
-    - generate compact receipts and derived registries/status views
-    - preserve one repository-owned deterministic implementation per check
-  component_spec_compaction:
-    required_before_runtime_cutover: true
-    rule: >-
-      Before executable Harness cutover, component specs may be revised to incorporate these
-      integration semantics directly so runtime does not depend on ambiguous textual precedence.
-      Until then this file is the explicit normative composition root.
-
-restrictions:
-  product_implementation_created_or_changed: false
-  executable_tests_created_or_changed: false
-  executable_validators_created_or_changed: false
-  workflow_ci_created_or_changed: false
-  product_domain_cutover_performed: false
-  merge_performed: false
+  - id: CP-CF-STALE-INPUT-STILL-FAILS
+    given: {consumed_semantic_input_changed_before_persist: true}
+    expect: {persist_allowed: false}
+  - id: CP-CF-DDD-APPLICABILITY-PRESERVED
+    given: {ddd_checkpoint_applicable: false}
+    expect: {fabricated_acceptance_required: false, checkpoint_may_be_skipped: true}
