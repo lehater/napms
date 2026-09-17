@@ -1,4 +1,4 @@
-version: 7
+version: 8
 kind: lifecycle-scope-state
 id: NAPMS-H12-RC-CURATION-LIFECYCLE
 scope_id: H12-RC-CURATION-MVP
@@ -14,26 +14,35 @@ process_contracts:
   ddd: {id: DOCS-V2-DDD-PIPELINE, version: 1}
 current_work:
   lifecycle_stage: S2
-  checkpoint: S2-STRATEGIC
+  checkpoint: S2-PROCESS-DISCOVERY
   intent: >-
-    Evaluate current strategic design readiness and, if it passes, continue directly to the
-    next applicable S2 Process Discovery design work unless a real blocker appears.
+    Discover Resource Catalogue curation behavior over time from accepted S1 behavior and strategic
+    boundaries. Do not invent Authority Management action granularity or scope-correlation policy.
   design_inputs:
-    - NAPMS-S2-RC-CAPABILITY-MAP
+    - NAPMS-S1-RC-CURATION-BEHAVIOR
+    - NAPMS-S1-RC-CURATION-AUTHORIZATION
+    - NAPMS-S1-RC-CURATION-INTEGRITY
     - NAPMS-S2-BC-RESOURCE-CATALOGUE
     - NAPMS-S2-BC-AUTHORITY-MANAGEMENT
     - NAPMS-S2-RC-CONTEXT-RELATIONSHIPS
     - NAPMS-S2-RC-DOMAIN-GLOSSARY
-  separate_capsule_required: false
-  separate_gate_transaction_required: false
+  state: BLOCKED
+  stop_reason: NEED_MORE_DATA
 completed_work:
   - {id: H12-T2, result: PASS, effect: S0-design-materialized}
   - {id: H12-G0-1, result: PASS, effect: S0-accepted-S1-eligible}
   - {id: H12-T3, result: PASS, effect: S1-design-materialized-and-validated}
   - {id: H12-G1-1, result: PASS, effect: S1-accepted-S2-eligible}
   - {id: H12-T4, result: PASS, effect: S2-strategic-design-materialized-and-validated}
-stage_states: {S0: ACCEPTED, S1: ACCEPTED, S2: IN_PROGRESS, S3: NOT_STARTED, S4: NOT_STARTED}
-s2_checkpoints: {S2-STRATEGIC: IN_PROGRESS, S2-PROCESS-DISCOVERY: NOT_STARTED, S2-TACTICAL: NOT_STARTED}
+  - id: H12-S2-STRATEGIC-READINESS
+    result: PASS
+    effect: S2-STRATEGIC-accepted-S2-PROCESS-DISCOVERY-eligible
+    rationale: >-
+      The current accepted strategic anchors have current change-set validation, explicit Resource Catalogue
+      and Authority Management responsibility/language boundaries, a supported upstream/downstream relation,
+      required lineage to accepted S1 inputs, and no unresolved strategic hotspot or human-owned boundary choice.
+stage_states: {S0: ACCEPTED, S1: ACCEPTED, S2: BLOCKED, S3: NOT_STARTED, S4: NOT_STARTED}
+s2_checkpoints: {S2-STRATEGIC: ACCEPTED, S2-PROCESS-DISCOVERY: BLOCKED, S2-TACTICAL: NOT_STARTED}
 gates: {G0: PASS, G1: PASS, G2: NOT_EVALUATED, G3: NOT_EVALUATED, G4: NOT_EVALUATED}
 applicability:
   S2-STRATEGIC: true
@@ -62,9 +71,23 @@ source_authority:
   current_product_domain_authority: docs/
   product_code_tests_as_design_truth: forbidden
   prior_docs_v2_candidates_as_truth: forbidden
-blocking_questions: []
-blockers: []
-next_when_strategic_ready:
+blocking_questions:
+  - id: H12-Q-RC-MUTATION-AUTHORITY-GRANULARITY
+    owner: human-domain-decision
+    question: >-
+      What Authority Management action granularity and scope-correlation semantics should govern Resource
+      Catalogue mutations (create Resource, add/end/replace realization, affiliate/end/replace scope,
+      maintain responsibility), so Process Discovery can model admission without inventing policy?
+    why_blocking: >-
+      Current canonical requirements explicitly leave exact catalogue-mutation action granularity and scope
+      correlation as a domain-stage decision. Process policies cannot turn that unresolved choice into agent-authored truth.
+    source_ref: docs/requirements/catalogue-curation.md#blocking-domain-decisions-for-implementation
+blockers:
+  - id: H12-B-PROCESS-AUTHORITY-POLICY
+    kind: missing-human-truth
+    question_ref: H12-Q-RC-MUTATION-AUTHORITY-GRANULARITY
+    affects: [S2-PROCESS-DISCOVERY, S2-TACTICAL, G2]
+next_when_unblocked:
   stage: S2
   checkpoint: S2-PROCESS-DISCOVERY
-  continue_same_work_cycle_allowed: true
+  action: materialize-domain-process-model-and-evaluate-readiness
