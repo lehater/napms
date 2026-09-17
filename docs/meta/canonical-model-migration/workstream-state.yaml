@@ -11,17 +11,21 @@ ledger: docs/meta/canonical-model-migration/migration-ledger.yaml
 program:
   status: ACTIVE
   current_phase: CM1
-  current_phase_state: READY
+  current_phase_state: IN_PROGRESS
   completed_phases: [CM0]
 
 current_work:
   task_id: CM1-01
   name: Inventory accepted strategic sources and build target strategic spine
-  state: READY
+  state: IN_PROGRESS
   objective: Establish target capability bounded-context and context-relationship owners from accepted current docs without semantic redesign.
   source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM1
   authority_unit: STRATEGIC-SPINE
-  next_action: Inventory accepted H16/H12 strategic anchors, create the three target strategic artifacts, generate/review Context Map, then perform semantic-equivalence review before changing ledger authority.
+  completed_actions:
+    - Created CM1 source inventory at docs/meta/canonical-model-migration/cm1-strategic-source-inventory.yaml.
+    - Confirmed the strategic BC source set is eight H16 BC anchors plus corrected Resource Catalogue and Authority Management anchors from H12.
+    - Confirmed non-peer compositions must stay non-peer and generic semantic arrows must not gain invented DDD patterns.
+  next_action: Validate accepted/current status of the inventory source set, then create capabilities.yaml bounded-contexts.yaml and context-relationships.yaml as non-authoritative migration candidates before semantic-equivalence review.
   stop_conditions:
     - accepted strategic semantics cannot be represented without loss
     - source anchors contradict each other materially

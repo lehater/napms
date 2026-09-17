@@ -7,7 +7,7 @@ authority_rule: legacy means accepted source paths remain current; target means 
 units:
   - id: STRATEGIC-SPINE
     phase: CM1
-    status: READY
+    status: IN_PROGRESS
     authority: legacy
     source_paths:
       - docs/migration/revalidated/h16-strategic/s2/strategic/capability-map.yaml
@@ -23,6 +23,7 @@ units:
       - docs/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-resource-catalogue.yaml
       - docs/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-authority-management.yaml
       - docs/migration/revalidated/h12-rc-curation/s2/strategic/context-relationships.yaml
+    source_inventory: docs/meta/canonical-model-migration/cm1-strategic-source-inventory.yaml
     target_paths:
       - docs/model/strategic/capabilities.yaml
       - docs/model/strategic/bounded-contexts.yaml
