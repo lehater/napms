@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import importlib.util
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,6 +10,7 @@ HERE = Path(__file__).resolve().parent
 SPEC = importlib.util.spec_from_file_location("docs_v2_harness", HERE / "docs_v2_harness.py")
 h = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader
+sys.modules[SPEC.name] = h
 SPEC.loader.exec_module(h)
 
 
