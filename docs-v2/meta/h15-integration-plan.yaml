@@ -1,50 +1,45 @@
-version: 2
+version: 3
 kind: harness-integration-plan
 id: DOCS-V2-H15-INTEGRATION-PLAN
-status: IN_PROGRESS
+status: COMPLETE
 owner_phase: H15
 last_updated: 2026-09-17
 objective: >-
   Make the H14 runtime the single docs-v2 validation entrypoint while keeping legacy Harness checks
   isolated for legacy docs/process concerns and without adding new Harness ceremony.
-observed_state:
-  - make harness-check mixes legacy validators with tools/validate_docs_v2.py.
-  - tools/validate_docs_v2.py is pre-H12 and requires obsolete Task Capsule/product-repository fixtures.
-  - the H14 branch workflow already proves the new runtime regression suite and corpus validation on a real checkout.
-  - the existing main/ready-for-review harness workflow still routes docs-v2 changes through the legacy mixed target.
 minimal_boundary:
-  create_make_target:
-    name: docs-v2-harness-check
-    commands:
-      - python tools/test_docs_v2_harness.py
-      - python tools/test_docs_v2_harness_resume_refs.py
-      - python tools/test_docs_v2_harness_frontmatter.py
-      - python tools/docs_v2_harness.py --root . validate
-  legacy_target:
-    name: harness-check
-    action: remove tools/validate_docs_v2.py from this mixed legacy target; do not otherwise redesign legacy validation in H15
-  workflow:
-    action: isolate legacy harness.yml from docs-v2 paths and add a dedicated docs-v2 workflow that executes make docs-v2-harness-check on the same checkout
-  h14_workflow:
-    action: retire the temporary H14-only branch workflow after the shared docs-v2 entrypoint is proven
+  make_target: docs-v2-harness-check
+  legacy_target: harness-check no longer invokes tools/validate_docs_v2.py
+  workflow: .github/workflows/docs-v2-harness.yml
+  temporary_h14_workflow: RETIRED
 non_goals:
   - no product implementation or product tests
   - no docs/ edits or namespace cutover
   - no Task Capsule compatibility layer
   - no new gate transaction daemon service database queue receipt or execution-basis artifact
   - no redesign of unrelated legacy Harness validators
-acceptance:
-  - one obvious repository command validates docs-v2 and its runtime regression suite
-  - docs-v2 validation has no dependency on Task Capsule or backend/tests/evals
-  - legacy docs/process checks can remain independently runnable
-  - CI checkout executes the same docs-v2 command developers/agents execute locally
-  - actual docs-v2 corpus remains PASS
-  - product code/tests are untouched
 implementation_authorization:
   status: GRANTED
   source: explicit stakeholder continuation instruction after H15 requested authorization
   scope: [Makefile docs-v2 entrypoint, legacy harness workflow path isolation, dedicated docs-v2 workflow, H15 state/evidence, temporary H14 workflow retirement after proof]
   forbidden: [product implementation, product tests, docs edits, namespace cutover, merge]
 verification:
-  shared_entrypoint_ci: PENDING
-  h14_workflow_retirement: PENDING
+  shared_entrypoint_ci:
+    result: PASS
+    provider: GitHub Actions
+    workflow: .github/workflows/docs-v2-harness.yml
+    run_id: 35243229385
+    tested_commit: 1c91e7378fb6fe3a5fe51c0fb4fa637e56b98246
+    command: make docs-v2-harness-check
+    regression_tests: {result: PASS, count: 14}
+    runtime_validate: {result: PASS, anchors: 14, errors: 0}
+  legacy_path_isolation: PASS
+  h14_workflow_retirement: PASS
+acceptance:
+  one_repository_command: PASS
+  no_task_capsule_dependency_in_docs_v2_path: PASS
+  legacy_checks_independently_runnable: PASS
+  ci_uses_same_repository_command: PASS
+  actual_docs_v2_corpus: PASS
+  product_code_tests_untouched: PASS
+exit: PASS

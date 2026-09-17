@@ -1,4 +1,4 @@
-version: 10
+version: 11
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
@@ -6,19 +6,19 @@ branch: meta/docs-v2-m7-pilot
 last_updated: 2026-09-17
 program:
   status: ACTIVE
-  current_phase: H15
-  current_phase_state: IN_PROGRESS
-  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14]
+  current_phase: H16
+  current_phase_state: PLANNING
+  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15]
 control_plane:
   contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 3}
   rule: meaningful design work is visible; runtime reliability bookkeeping is internal
 current_work:
-  phase: H15
-  name: Post-H14 Harness integration
-  state: IN_PROGRESS
-  plan_ref: docs-v2/meta/h15-integration-plan.yaml
-  predecessor_ref: docs-v2/meta/h14-runtime-implementation.yaml
-  next: verify the shared docs-v2-harness-check workflow on a real checkout then retire the temporary H14-only workflow if PASS
+  phase: H16
+  name: Resume pilot design at S3 Software Architecture / Solution Design
+  state: PLANNING
+  predecessor_ref: docs-v2/meta/h15-integration-plan.yaml
+  lifecycle_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
+  next: derive the smallest S3 architecture slice from accepted S0-S2 design and applicable quality constraints without using product code/tests as design truth
 documentation_authority:
   evolving_authority: docs-v2/
   legacy_source: docs/
@@ -30,20 +30,20 @@ carry_forward:
   - Design documentation is a graph; affected-only revalidation replaces waterfall restart.
   - Downstream design conforms to applicable upstream authoritative constraints.
   - Readiness gates are lifecycle guarantees not separate execution units.
-  - H14 minimal repository-local runtime passed 14 regression tests and actual docs-v2 corpus validation with 14 anchors and zero errors.
+  - H14 minimal runtime and H15 shared docs-v2 validation entrypoint are complete and passing.
   - Canonical design anchors may be YAML documents or Markdown documents with YAML front matter.
-  - Pre-H12 Task Capsule validators are legacy-only and are not part of the docs-v2 runtime validation path.
+  - Pre-H12 Task Capsule validators remain legacy-only and outside the docs-v2 validation path.
 restrictions:
   product_implementation_authorization: none
   product_test_change_authorization: none
-  h15_shared_makefile_workflow_integration_authorization: granted
+  product_code_tests_as_design_truth: forbidden
   namespace_cutover_authorization: false
   merge_authorization: false
 blockers: []
 resume_protocol:
-  - Read this file first then roadmap.yaml then h15-integration-plan.yaml and the H14 implementation state.
+  - Read this file first then roadmap.yaml then the current lifecycle_ref and only directly needed S0-S2/spec dependencies.
   - Treat docs/ only as frozen migration evidence; never edit it.
-  - Preserve the accepted minimal runtime boundary; do not reintroduce Task Capsule separate gate transaction daemon/service database or global semantic ceremony.
-  - Use changed/affected validation and repository state as the normal resume path.
+  - Resume meaningful product/system design at S3; Harness runtime work is not the default next task.
+  - Preserve the accepted minimal runtime boundary and use changed/affected validation.
   - Product code/tests remain outside current authority and cannot supply missing design truth.
-  - H15 may change only the accepted shared Makefile/workflow validation entrypoints and related docs-v2 state/evidence.
+  - Ask the stakeholder when an S3 choice depends on missing human-owned product or operational truth.
