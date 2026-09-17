@@ -18,7 +18,16 @@ make architecture
 
 Then open `http://localhost:8080`. The command uses the official Structurizr image pinned to the non-hardened `2026.06.28-noble` variant. This avoids host bind-mount write failures caused by the hardened image's container user while still allowing Structurizr Local to persist diagram layout next to `workspace.dsl`.
 
-Edit `workspace.dsl` in the repository and refresh the browser to see changes. The DSL is the source of truth. Generated/rendered diagrams are projections and should not be edited as independent architecture truth.
+Edit `workspace.dsl` in the repository and refresh the browser to see structural changes. The three C4 views intentionally use manual layout rather than `autoLayout`, so their elements can be moved in the Structurizr diagram editor.
+
+Use the pencil/editor action in Structurizr to position elements and relationships. Saving the workspace creates or updates `workspace.json` next to `workspace.dsl`. The two files have different roles:
+
+- `workspace.dsl` is the canonical S3 structural architecture truth;
+- `workspace.json` is the compiled workspace plus manual presentation/layout data and may be committed so that a reviewed layout is shared by the team.
+
+Do not hand-edit coordinates in `workspace.json`. Keep the explicit stable view keys (`SystemContext`, `Containers`, `BackendComponents`), because Structurizr uses them when retaining manual layout across DSL changes.
+
+The workspace uses the conventional C4 visual hierarchy: darker software-system elements, lighter containers, lighter components, a person shape for people, and a cylinder for the PostgreSQL container. Styling is presentation only; tags and model structure remain the semantic source.
 
 The image can be overridden when deliberately testing a newer Structurizr release:
 
@@ -37,6 +46,12 @@ make architecture-check
 This validates the DSL with the same pinned Structurizr image. Validation mounts the architecture directory read-only because it must not mutate canonical documentation.
 
 GitHub Actions runs the same `make architecture-check` for pull requests and `main` changes affecting the Structurizr workspace, Makefile, or the architecture workflow. This makes parser/runtime compatibility part of CI rather than relying on a developer discovering it manually.
+
+## Code/class diagrams
+
+Structurizr remains the native source for C4 System Context, Container, and Component views. Lower-level code/class diagrams are optional supporting projections and should not be modeled as additional C4 components merely to obtain UML notation.
+
+When a class diagram becomes useful, keep its source as PlantUML under `docs/architecture/code/` and expose it from the Structurizr workspace through an `image` view. This provides one architecture viewer without making PlantUML a competing source for C4 structure. No class diagrams are created yet; they should be added only where they answer a concrete implementation/design question.
 
 ## Authority boundary
 
