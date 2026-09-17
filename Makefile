@@ -4,7 +4,6 @@ STRUCTURIZR_IMAGE ?= structurizr/structurizr:2026.06.28-noble
 STRUCTURIZR_DIR := $(CURDIR)/docs/architecture/structurizr
 GENERATED_ARCH_DIR := $(CURDIR)/docs-generated/architecture
 PLANTUML_SERVER_IMAGE ?= plantuml/plantuml-server:jetty
-ARCH_NETWORK ?= napms-architecture
 PLANTUML_CONTAINER ?= napms-plantuml
 
 test:
@@ -50,11 +49,10 @@ architecture-sync:
 	python tools/generate_architecture_views.py
 
 architecture: architecture-sync
-	@docker network inspect $(ARCH_NETWORK) >/dev/null 2>&1 || docker network create $(ARCH_NETWORK) >/dev/null
 	@docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true
-	@docker run -d --rm --name $(PLANTUML_CONTAINER) --network $(ARCH_NETWORK) $(PLANTUML_SERVER_IMAGE) >/dev/null
-	@trap 'docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true; docker network rm $(ARCH_NETWORK) >/dev/null 2>&1 || true' EXIT INT TERM; \
-		docker run --rm -it -p 8080:8080 --network $(ARCH_NETWORK) \
+	@docker run -d --rm --name $(PLANTUML_CONTAINER) -p 127.0.0.1:8081:8080 $(PLANTUML_SERVER_IMAGE) >/dev/null
+	@trap 'docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true' EXIT INT TERM; \
+		docker run --rm -it -p 127.0.0.1:8080:8080 \
 		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" \
 		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" \
 		$(STRUCTURIZR_IMAGE) local
