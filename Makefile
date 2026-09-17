@@ -1,4 +1,4 @@
-.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-check skill-routing-eval knowledge-check check
+.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-check docs-v2-harness-check skill-routing-eval knowledge-check check
 
 test:
 	cd backend && python -m pytest -q -m "not postgres"
@@ -45,7 +45,12 @@ harness-check:
 	python tools/validate_plan_capsule_sync.py
 	python tools/validate_skill_routing.py
 	python tools/validate_lifecycle_transitions.py
-	python tools/validate_docs_v2.py
+
+docs-v2-harness-check:
+	python tools/test_docs_v2_harness.py
+	python tools/test_docs_v2_harness_resume_refs.py
+	python tools/test_docs_v2_harness_frontmatter.py
+	python tools/docs_v2_harness.py --root . validate
 
 skill-routing-eval:
 	@test -n "$(ROUTING_RESULTS)" || (echo "Usage: make skill-routing-eval ROUTING_RESULTS=path/to/results.json [ROUTING_BASELINE=path/to/baseline.json]" >&2; exit 2)

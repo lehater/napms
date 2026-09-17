@@ -1,5 +1,5 @@
 version: 1
-revision: 5
+revision: 6
 kind: meta-roadmap
 id: DOCS-V2-HARNESS-ROADMAP
 status: active
@@ -14,8 +14,8 @@ operating_constraints:
   - Corrections and newly accepted design truth are written only to docs-v2/; reverse synchronization into docs/ is forbidden.
   - Physical namespace cutover is deferred until migration/stabilization; target is docs/ for the new system and docs-legacy/ for the frozen historical system.
   - Product code/tests are not sources of product/domain/architecture truth during current documentation design.
-  - Product implementation, product tests, workflow/CI changes, namespace cutover and merge remain unauthorized.
-  - H14 is explicitly authorized to modify Harness runtime code, Harness executable regression tests, its dependency declaration, and docs-v2 state/evidence only.
+  - Product implementation, product tests, namespace cutover and merge remain unauthorized.
+  - H15 is explicitly authorized only for the accepted shared Makefile/workflow docs-v2 validation integration boundary and related docs-v2 state/evidence.
 principles:
   - {id: P-DESIGN-FIRST, statement: Harness exists to improve design; operational bookkeeping is never a design step.}
   - {id: P-MACHINE-READABLE, statement: Canonical design artifacts are machine-readable and human-readable views are projections where practical.}
@@ -81,8 +81,8 @@ core_capabilities:
   migration_authority: {legacy_path: docs/, evolving_path: docs-v2/, legacy_mode: frozen-read-only-evidence, reverse_sync: forbidden, namespace_cutover: deferred, target_paths: {evolving: docs/, legacy: docs-legacy/}}
 historical_or_optional_operational_design: [harness-execution-kernel, per-operation execution-basis artifacts, mandatory Task Capsule serialization, separate validation/gate transactions]
 program_phases:
-  completed: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13]
-  active: H14
+  completed: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14]
+  active: H15
 H12:
   objective: Validate the simplified and corrected design order against a bounded NAPMS migration slice while continuing real domain discovery/design.
   exit: Current pilot reaches applicable G2 with traceable design evidence-backed slice/boundary selection and without reintroducing operational ceremony.
@@ -94,15 +94,19 @@ H13:
   result_ref: docs-v2/meta/h13-minimal-runtime-plan.yaml
 H14:
   objective: Implement and validate the accepted minimal repository-local Harness runtime boundary.
-  authorization: explicit stakeholder authorization granted 2026-09-17
-  allowed_changes: [Harness runtime code, Harness executable regression tests, Harness runtime dependency declaration, docs-v2 state/evidence]
-  forbidden_changes: [product implementation, product tests, workflow-ci changes, namespace cutover, merge]
+  result: PASS
+  result_ref: docs-v2/meta/h14-runtime-implementation.yaml
+H15:
+  objective: Make the H14 runtime the single docs-v2 validation entrypoint while isolating obsolete legacy validation semantics.
+  authorization: explicit stakeholder continuation authorization granted 2026-09-17
+  plan_ref: docs-v2/meta/h15-integration-plan.yaml
+  allowed_changes: [shared Makefile docs-v2 validation entrypoint, Harness workflow routing for docs-v2, temporary H14 workflow retirement after proof, docs-v2 state/evidence]
+  forbidden_changes: [product implementation, product tests, docs edits, namespace cutover, merge]
   exit:
-    - persisted runtime resumes from repository state and directly referenced current-work artifacts
-    - actual docs-v2 corpus passes checks relevant to the minimal runtime boundary or relevant failures are reconciled explicitly
-    - affected-only dependency traversal and readiness evaluation work without Task Capsule or separate gate transaction
-    - stale-write and idempotent persistence protections remain covered by executable regression tests
-    - obsolete pre-H12 validators are removed from the docs-v2 validation path or explicitly isolated as legacy-only before any CI wiring
+    - make docs-v2-harness-check runs the runtime regression suite and actual corpus validation
+    - docs-v2 workflow executes that same command on a real checkout
+    - legacy harness-check no longer invokes tools/validate_docs_v2.py or routes docs-v2 changes through Task Capsule semantics
+    - temporary H14-only workflow is retired after the shared entrypoint is proven
 program_exit:
   - Design can be followed from problem/discovery to implementation readiness through linked machine-readable artifacts.
   - Material design decisions can be traced backward to accepted roots stories/process evidence decisions and constraints.

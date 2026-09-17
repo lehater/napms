@@ -1,7 +1,7 @@
-version: 1
+version: 2
 kind: harness-integration-plan
 id: DOCS-V2-H15-INTEGRATION-PLAN
-status: ACCEPTED
+status: IN_PROGRESS
 owner_phase: H15
 last_updated: 2026-09-17
 objective: >-
@@ -24,14 +24,14 @@ minimal_boundary:
     name: harness-check
     action: remove tools/validate_docs_v2.py from this mixed legacy target; do not otherwise redesign legacy validation in H15
   workflow:
-    action: route docs-v2 changes to the dedicated docs-v2-harness-check path; do not run product tests or product build
+    action: isolate legacy harness.yml from docs-v2 paths and add a dedicated docs-v2 workflow that executes make docs-v2-harness-check on the same checkout
   h14_workflow:
     action: retire the temporary H14-only branch workflow after the shared docs-v2 entrypoint is proven
 non_goals:
   - no product implementation or product tests
   - no docs/ edits or namespace cutover
   - no Task Capsule compatibility layer
-  - no new gate transaction, daemon, service, database, queue, receipt or execution-basis artifact
+  - no new gate transaction daemon service database queue receipt or execution-basis artifact
   - no redesign of unrelated legacy Harness validators
 acceptance:
   - one obvious repository command validates docs-v2 and its runtime regression suite
@@ -41,5 +41,10 @@ acceptance:
   - actual docs-v2 corpus remains PASS
   - product code/tests are untouched
 implementation_authorization:
-  status: NOT_GRANTED
-  reason: H15 first records the intended shared Makefile/workflow boundary; changing those shared entrypoints requires explicit stakeholder authorization.
+  status: GRANTED
+  source: explicit stakeholder continuation instruction after H15 requested authorization
+  scope: [Makefile docs-v2 entrypoint, legacy harness workflow path isolation, dedicated docs-v2 workflow, H15 state/evidence, temporary H14 workflow retirement after proof]
+  forbidden: [product implementation, product tests, docs edits, namespace cutover, merge]
+verification:
+  shared_entrypoint_ci: PENDING
+  h14_workflow_retirement: PENDING
