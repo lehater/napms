@@ -1,4 +1,4 @@
-version: 10
+version: 11
 kind: lifecycle-scope-state
 id: NAPMS-H12-RC-CURATION-LIFECYCLE
 scope_id: H12-RC-CURATION-MVP
@@ -7,18 +7,18 @@ canonical_product_domain_truth: false
 state_role: sole-writable-lifecycle-owner
 process_contracts:
   control_plane: {id: DOCS-V2-HARNESS-CONTROL-PLANE, version: 1, revision: 2}
-  lifecycle: {id: DOCS-V2-LIFECYCLE-STATE-MACHINE, version: 1, revision: 2}
+  lifecycle: {id: DOCS-V2-LIFECYCLE-STATE-MACHINE, version: 1, revision: 3}
   migration: {id: DOCS-V2-NAPMS-MIGRATION-REVALIDATION, version: 2, revision: 3}
   validation: {id: DOCS-V2-VALIDATION-GATE-ENGINE, version: 1, revision: 2}
   execution: {id: DOCS-V2-AGENT-EXECUTION-CONTEXT-V2, version: 1, revision: 2}
-  ddd: {id: DOCS-V2-DDD-PIPELINE, version: 1, status: affected-by-roadmap-order-correction}
+  ddd: {id: DOCS-V2-DDD-PIPELINE, version: 1, revision: 2, status: current-with-roadmap-revision-3}
 current_work:
   lifecycle_stage: S0-S2-REVALIDATION
-  checkpoint: DISCOVERY-AND-SLICE-REVALIDATION
+  checkpoint: BIG-PICTURE-AND-SLICE-REVALIDATION
   intent: >-
-    Establish enough bounded NAPMS domain landscape around Resource Catalogue curation to test whether the current
-    H12 slice and already accepted strategic/process artifacts are evidence-backed under the corrected design order.
-    Reuse accepted work when confirmed; reopen only semantically affected anchors.
+    Build only enough bounded NAPMS domain landscape around the Resource Catalogue curation outcome to verify the
+    current slice, process coverage and strategic boundaries under the corrected discovery-first, graph-based method.
+    Reuse accepted work when confirmed and reopen only semantically affected anchors.
   design_inputs:
     - NAPMS-S0-RC-CURATION-PROBLEM
     - NAPMS-S0-RC-CURATION-JOURNEY
@@ -32,13 +32,14 @@ current_work:
     - NAPMS-S2-RC-CURATION-PROCESS
   state: IN_PROGRESS
 completed_work:
-  - {id: H12-T2, result: PASS, effect: S0-design-materialized}
-  - {id: H12-G0-1, result: PASS, effect: S0-accepted-S1-eligible}
-  - {id: H12-T3, result: PASS, effect: S1-design-materialized-and-validated}
-  - {id: H12-G1-1, result: PASS, effect: S1-accepted-S2-eligible}
-  - {id: H12-T4, result: PASS, effect: S2-strategic-design-materialized-and-validated-under-prior-order}
-  - {id: H12-S2-STRATEGIC-READINESS, result: PASS, effect: accepted-under-prior-order; now subject-to-affected-revalidation}
-  - {id: H12-S2-PROCESS-DISCOVERY, result: PASS, effect: accepted-under-prior-order; now subject-to-affected-revalidation}
+  - {id: H12-T2, result: PASS, effect: S0-design-materialized-under-prior-method}
+  - {id: H12-G0-1, result: PASS, effect: historical-S0-readiness}
+  - {id: H12-T3, result: PASS, effect: S1-design-materialized-under-prior-method}
+  - {id: H12-G1-1, result: PASS, effect: historical-S1-readiness}
+  - {id: H12-T4, result: PASS, effect: S2-strategic-design-materialized-under-prior-method}
+  - {id: H12-S2-STRATEGIC-READINESS, result: PASS, effect: historical-pass-subject-to-affected-revalidation}
+  - {id: H12-S2-PROCESS-DISCOVERY, result: PASS, effect: historical-pass-subject-to-affected-revalidation}
+  - {id: H12-METHOD-ORDER-CORRECTION, result: PASS, effect: roadmap-lifecycle-and-DDD-method-now-align-on-discovery-first-iterative-graph-based-order}
 stage_states: {S0: REVALIDATING, S1: REVALIDATING_IF_AFFECTED, S2: REVALIDATING, S3: NOT_STARTED, S4: NOT_STARTED}
 s2_checkpoints: {S2-STRATEGIC: REVALIDATING, S2-PROCESS-DISCOVERY: REVALIDATING, S2-TACTICAL: NOT_STARTED}
 gates: {G0: HISTORICAL_PASS_REVALIDATE_IF_AFFECTED, G1: HISTORICAL_PASS_REVALIDATE_IF_AFFECTED, G2: NOT_EVALUATED, G3: NOT_EVALUATED, G4: NOT_EVALUATED}
@@ -49,10 +50,10 @@ applicability:
   S2-PROCESS-DISCOVERY: true
   S2-TACTICAL: true
   rationale:
-    BIG-PICTURE-DOMAIN-DISCOVERY: Current RC slice and BC boundaries were selected before the Harness required sufficient domain-landscape/process evidence.
-    SLICE-REVALIDATION: H12 must verify that Resource Catalogue Curation MVP is a coherent business-outcome/process slice rather than a boundary chosen from the assumed context.
+    BIG-PICTURE-DOMAIN-DISCOVERY: Current RC slice and BC boundaries were selected before sufficient domain-landscape/process evidence was required.
+    SLICE-REVALIDATION: Verify Resource Catalogue Curation MVP is a coherent business-outcome/process slice rather than an assumed context boundary.
     S2-PROCESS-DISCOVERY: Resource curation has temporal add/end/replace flows and cross-context authority interaction.
-    S2-TACTICAL: Tactical work waits until affected discovery, slice and strategic/process basis are current.
+    S2-TACTICAL: Tactical waits until affected discovery, slice and strategic/process basis are current.
 accepted_anchor_refs:
   - {anchor_id: NAPMS-S0-RC-CURATION-PROBLEM, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/problem-statement.md, status: accepted-pending-affected-revalidation}
   - {anchor_id: NAPMS-S0-RC-CURATION-JOURNEY, canonical_locator: docs-v2/migration/revalidated/h12-rc-curation/s0/user-journey.md, status: accepted-pending-affected-revalidation}
@@ -80,17 +81,11 @@ source_authority:
   prior_docs_v2_candidates_as_truth: forbidden
 stakeholder_responses:
   H12-R-RC-MVP-GLOBAL-CURATION:
-    question_ref: H12-Q-RC-MUTATION-AUTHORITY-GRANULARITY
-    response_kind: option-selected-and-refined
-    response_content: For MVP use catalogue-wide curation authority without resource-level scopes. Keep Resource Responsibility independent from permission; scoped authorization is deferred until a concrete customer requirement.
-    provenance: {origin_kind: human-decision-or-input, source_ref: current stakeholder design session, recorded_at: '2026-09-17'}
+    response_content: For MVP use catalogue-wide curation authority without resource-level scopes; Resource Responsibility remains independent from permission.
     captured_status: materialized
     materialized_anchor_ref: NAPMS-S2-DEC-RC-MVP-AUTHORITY
   H12-R-RC-RESPONSIBILITY-EXTENSIBLE:
-    question_ref: H12-Q-RC-RESPONSIBILITY-ROLE-SET
-    response_kind: option-selected-and-refined
-    response_content: Resource Responsibility roles are extensible, not a closed Owner/Operator/Access Approver set. One organization may use one role or many; responsibility may move between responsible parties over time.
-    provenance: {origin_kind: human-decision-or-input, source_ref: current stakeholder design session, recorded_at: '2026-09-17'}
+    response_content: Resource Responsibility roles are extensible and time-qualified rather than a closed role set.
     captured_status: materialized
     materialized_anchor_ref: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES
 resolved_questions:
@@ -99,12 +94,12 @@ resolved_questions:
 blocking_questions: []
 blockers: []
 deferred_nonblocking:
-  - {id: H12-D-SCOPED-AUTHORIZATION, statement: Resource-level/scoped authorization model is intentionally deferred until a concrete customer requirement requires it.}
-  - {id: H12-D-RESPONSIBILITY-COVERAGE, statement: Whether particular responsibility roles are mandatory and whether transfer gaps/overlaps are forbidden is not required by the current MVP and remains unspecified.}
-  - {id: H12-D-DDD-CONTRACT-ALIGNMENT, statement: ddd-pipeline.yaml still encodes the prior strict Strategic -> Process -> Tactical ordering and is affected by roadmap revision 3; it must be aligned before affected S2 revalidation can be accepted.}
+  - {id: H12-D-SCOPED-AUTHORIZATION, statement: Resource-level/scoped authorization is deferred until a concrete customer requirement requires it.}
+  - {id: H12-D-RESPONSIBILITY-COVERAGE, statement: Mandatory responsibility roles and transfer gap/overlap policy remain unspecified unless the current outcome requires them.}
 next_meaningful_work:
   stage: S0-S2-REVALIDATION
-  checkpoint: METHOD-AND-DISCOVERY-ALIGNMENT
-  name: Correct DDD method contract and revalidate discovery basis
+  checkpoint: BIG-PICTURE-AND-SLICE-REVALIDATION
+  name: Bounded domain discovery around Resource Catalogue curation
   action: >-
-    Align ddd-pipeline.yaml with roadmap revision 3 without adding new ceremony; then build only the bounded Big Picture/domain-discovery evidence needed around the RC curation outcome, re-evaluate slice and BC/process assumptions, and reuse or reopen affected anchors accordingly.
+    Read only canonical docs/ material needed to map the surrounding business outcomes/processes and interactions;
+    establish bounded Big Picture evidence, then re-evaluate the RC slice, process coverage and affected strategic boundaries.

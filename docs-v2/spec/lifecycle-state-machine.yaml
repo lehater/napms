@@ -1,20 +1,22 @@
 version: 1
-revision: 2
+revision: 3
 kind: lifecycle-state-machine
 id: DOCS-V2-LIFECYCLE-STATE-MACHINE
 status: active
 owner_phase: H2
 last_updated: 2026-09-17
 purpose: >-
-  Express design maturity from problem through implementation readiness. Lifecycle boundaries
-  describe design guarantees, not agent sessions, Task Capsules, transactions or Git commits.
+  Express design maturity from discovery/problem framing through implementation readiness.
+  Lifecycle boundaries describe guarantees, not a mandatory one-way authoring sequence, agent session, transaction or commit.
 authority:
   integration_contract: docs-v2/spec/harness-control-plane.yaml
-  defines: [S0-S4, S2-checkpoints, G0-G4-readiness, routing]
+  defines: [S0-S4, S2-maturity-areas, G0-G4-readiness, routing]
   does_not_define: [execution-units, task-capsules, operation-ids, execution-bases, commit-boundaries, product-domain-truth]
 invariants:
-  - Later design requires current applicable predecessor guarantees.
-  - G2 requires all applicable S2 checkpoints.
+  - Stage labels describe maturity; artifact dependencies determine actual design/rework order.
+  - Discovery, requirements and S2 process/strategic work may iterate when evidence exposes affected gaps.
+  - Tactical acceptance requires current applicable strategic/process guarantees.
+  - G2 requires all applicable S2 maturity areas.
   - Missing human-owned truth is never invented.
   - Deficiencies are corrected at their semantic owner rather than patched downstream.
   - Material upstream change invalidates only dependent downstream guarantees.
@@ -23,34 +25,42 @@ states:
   IN_PROGRESS: design exists but readiness is not yet accepted
   BLOCKED: progress needs unavailable authority, evidence or human truth
   ACCEPTED: readiness guarantee is current
-  DIRTY: accepted guarantee needs revalidation after dependency change
+  DIRTY: accepted guarantee needs affected revalidation after dependency change
 stage_order: [S0, S1, S2, S3, S4, IMPLEMENTATION]
 stages:
-  S0: {title: Problem / Evidence, owns: [problem, outcome, actors, constraints, evidence], gate: G0}
-  S1: {title: Requirements, owns: [observable-behavior, quality-requirements, acceptance-intent], gate: G1}
-  S2: {title: Domain Design, owns: [responsibilities, language, semantics, boundaries, processes, tactical-model], checkpoints: [S2-STRATEGIC, S2-PROCESS-DISCOVERY, S2-TACTICAL], gate: G2}
-  S3: {title: Architecture, owns: [technical-realization, system-boundaries, technical-contracts, technical-decisions], gate: G3}
-  S4: {title: Implementation Readiness, owns: [implementation-slice, dependencies, migration-intent, validation-intent, execution-order], gate: G4}
+  S0: {title: Discovery / Problem Framing, owns: [problem, outcome, actors, constraints, evidence, domain-landscape, domain-stories, hotspots], gate: G0}
+  S1: {title: Requirements Engineering, owns: [observable-behavior, business-rules, quality-requirements, acceptance-intent], gate: G1}
+  S2: {title: Domain Design, owns: [responsibilities, language, semantics, boundaries, processes, tactical-model], maturity_areas: [S2-STRATEGIC, S2-PROCESS-DISCOVERY, S2-TACTICAL], gate: G2}
+  S3: {title: Software Architecture / Solution Design, owns: [technical-realization, system-boundaries, runtime-structure, technical-contracts, technical-decisions], gate: G3}
+  S4: {title: Implementation Design / Implementation Readiness, owns: [implementation-slice, dependencies, migration-intent, validation-intent, execution-order], gate: G4}
+authoring_order:
+  fixed_waterfall: false
+  rules:
+    - S0 discovery and S1 requirements may refine each other while preserving accepted human truth.
+    - S2 Strategic and Process Discovery may iterate in either direction from sufficient current discovery/requirements evidence.
+    - Process Discovery does not require a pre-accepted Bounded Context merely to discover a process.
+    - Before G2, material process ownership must reconcile with accepted/current strategic boundaries.
+    - S2 Tactical is downstream in maturity and requires current relevant strategic/process basis.
+    - S3 and S4 may expose upstream deficiencies; route them to the owning artifact and invalidate affected dependents only.
 readiness_guarantees:
-  G0: Problem and material constraints are bounded enough to derive requirements without invention.
-  G1: Behavior and applicable qualities are explicit enough for domain design.
-  S2-STRATEGIC: Strategic responsibilities and required boundaries are coherent.
-  S2-PROCESS-DISCOVERY: Applicable temporal/process semantics are known before tactical design.
-  S2-TACTICAL: Applicable invariants and tactical ownership follow from strategic/process design.
+  G0: Problem, goals, material constraints and enough domain landscape are bounded to continue requirements/domain discovery without inventing the slice or boundaries.
+  G1: Behavior and applicable qualities are explicit enough to participate in domain design; later process discovery may still expose affected requirement gaps.
+  S2-STRATEGIC: Strategic responsibilities and required boundaries are coherent and evidence-backed by discovery/process/requirements/language.
+  S2-PROCESS-DISCOVERY: Applicable business processes, temporal behavior, alternatives/failures, external interactions and hotspots are explicit enough to constrain tactical design.
+  S2-TACTICAL: Applicable invariants and tactical ownership follow from current strategic/process/requirement basis.
   G2: Complete applicable domain design is sufficient for architecture without inventing domain truth.
   G3: Architecture and contracts are sufficient to derive a concrete implementation-ready slice.
   G4: The selected implementation slice is sufficiently specified and verifiable.
 readiness_evaluation:
   rule: >-
-    Evaluate a gate/checkpoint when current design reaches that meaningful boundary. Readiness is
-    logically distinct from artifact consistency, but may be evaluated and persisted in the same
-    coherent work cycle.
+    Evaluate a gate/maturity area when current design reaches that meaningful guarantee. Readiness is logically
+    distinct from artifact consistency but may be evaluated and persisted in the same coherent work cycle.
   separate_execution_required: false
-  pass_effect: [mark-owner-ACCEPTED, make-successor-eligible]
+  pass_effect: [mark-owner-ACCEPTED, enable-dependent-work]
 routing:
   PASS: continue when requested scope remains clear
-  REWORK: correct current semantic owner
-  REOPEN: reopen earlier semantic owner and invalidate dependent downstream design
+  REWORK: correct affected semantic owner and dependent design only
+  REOPEN: reopen earlier semantic owner when its guarantee is no longer current
   BLOCKED: persist known blocker and stop
   NEED_MORE_DATA: persist material human question and stop
 continuation:
