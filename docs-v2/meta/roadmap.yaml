@@ -1,5 +1,5 @@
 version: 1
-revision: 8
+revision: 9
 kind: meta-roadmap
 id: DOCS-V2-HARNESS-ROADMAP
 status: active
@@ -54,52 +54,25 @@ core_capabilities:
   execution_safety: {contracts: [harness-control-plane, agent-execution-context-v2, harness-reliability-conformance], visibility: infrastructure-behind-design-boundary}
   migration_authority: {legacy_path: docs/, evolving_path: docs-v2/, legacy_mode: frozen-read-only-evidence, reverse_sync: forbidden, namespace_cutover: after-strategic-ddd-migration}
 program_phases:
-  completed: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15]
-  active: H16
+  completed: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15, H16, H17, H18]
+  active: H19
 H12: {objective: Validate the simplified design order against a bounded NAPMS migration slice through G2., result: PASS}
 H13: {objective: Plan the smallest runtime needed after H12., result: PASS, result_ref: docs-v2/meta/h13-minimal-runtime-plan.yaml}
 H14: {objective: Implement and validate the minimal repository-local Harness runtime., result: PASS, result_ref: docs-v2/meta/h14-runtime-implementation.yaml}
-H15:
-  objective: Make the H14 runtime the single docs-v2 validation entrypoint while isolating obsolete legacy validation semantics.
-  result: PASS
-  result_ref: docs-v2/meta/h15-integration-plan.yaml
+H15: {objective: Make the H14 runtime the single docs-v2 validation entrypoint while isolating obsolete legacy validation semantics., result: PASS, result_ref: docs-v2/meta/h15-integration-plan.yaml}
 H16:
   objective: Migrate and revalidate the accepted strategic DDD baseline for NAPMS as a whole from frozen docs evidence into canonical docs-v2 S2 anchors.
-  basis:
-    - docs/domain/strategic-model.md
-    - docs/domain/strategic-model.json
-    - docs/domain/context-map.md
-    - docs/domain/capabilities.md
-    - docs/domain/semantic-ownership.md
-  scope:
-    - capability ownership needed to understand the domain landscape
-    - all target Bounded Context identities responsibilities and boundaries
-    - strategic context relationships and semantic contracts
-    - strategic invariants and explicit non-peer compositions/integration capabilities
-  exclusions:
-    - do not migrate tactical models merely because they exist in docs/
-    - do not continue isolated Resource Catalogue S3 work during this phase
-    - do not infer product/domain truth from code or tests
-  exit:
-    - the strategic NAPMS domain landscape is canonical and machine-readable in docs-v2
-    - all target Bounded Context boundaries and material relationships from the accepted legacy baseline are represented or explicitly corrected/deferred
-    - Resource Catalogue strategic anchors already revalidated in H12 are reconciled rather than duplicated
-    - affected validation passes and no material strategic ambiguity remains hidden
+  result: PASS
 H17:
   objective: Establish the narrow MVP journey on top of the migrated strategic DDD baseline and revalidate only the S0-S2 semantics needed by that journey.
   journey: describe resources and application/components/interactions -> create and accept a policy rule -> materialize and export the resulting policy
-  rule: The strategic landscape stays broad; tactical and requirements elaboration stays narrow to this journey.
-  exit:
-    - participating contexts and cross-context semantic flow are explicit
-    - required S0-S2 details are accepted for the journey
-    - unrelated tactical domain areas are deferred without blocking MVP
+  result: PASS
 H18:
   objective: Design S3 architecture for the complete MVP journey on one system baseline rather than one Bounded Context at a time.
   baseline: frontend plus modular-monolith backend; system-level delivery and module-boundary decisions are made once and inherited by participating contexts
-  exit:
-    - system architecture baseline is explicit
-    - participating module responsibilities interactions and external boundaries are sufficient for G3
-    - no context is forced to re-decide system-wide transport/deployment choices
+  result: PASS
+  result_ref: docs-v2/migration/revalidated/h18-mvp-architecture/validation/h18-change-set-validation.yaml
+  accepted_baseline: {delivery: HTTP/JSON with one OpenAPI application contract, backend: modular monolith with in-process module contracts, persistence: one PostgreSQL database with module-owned schemas, authorization: backend session identity plus Authority Management admission}
 H19:
   objective: Complete S4 implementation design and G4 for the end-to-end MVP journey.
   exit:
