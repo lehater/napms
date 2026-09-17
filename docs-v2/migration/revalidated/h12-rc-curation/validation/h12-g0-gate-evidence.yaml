@@ -1,0 +1,70 @@
+version: 1
+kind: validation-evidence
+schema_version: h8-v1+cp-v1
+evidence_id: H12-G0-1-GATE-EVIDENCE-1
+evidence_kind: gate-validation
+evaluation_id: H12-G0-1-EVAL-1
+operation_id: H12-G0-1-OP-1
+target_kind: gate
+target_id: G0
+gate_id: G0
+scope:
+  scope_id: H12-RC-CURATION-MVP
+  lifecycle_stage: S0
+execution_basis_fingerprint: sha256-jcs-v1:030f72867585c8becb40b29ebea8e4881a5c51331aae8cd0f0255d7aee843a3c
+validation_profile_id: G0
+validation_profile_version: h8-v1
+
+deterministic_results:
+  - {validator_id: DV-HARNESS-SELF, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-EXECUTION-BASIS, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-APPLICABILITY, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-LIFECYCLE, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-REFERENCE, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-AUTHORITY, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-FRESHNESS, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: G0-PRECONDITIONS, validator_version: h8-v1, result: PASS, findings: []}
+semantic_results:
+  - judge_id: SJ-G0-PROBLEM-SUFFICIENCY
+    judge_version: h8-v1
+    outcome: PASS
+    finding_codes: []
+    supporting_refs: [NAPMS-S0-RC-CURATION-PROBLEM, NAPMS-S0-RC-CURATION-JOURNEY]
+    rationale_summary: >-
+      Accepted S0 truth identifies the self-service catalogue problem, affected actor, intended
+      outcome, bounded journey and explicit stage boundaries. No applicable external constraint,
+      material evidence requirement, blocker or unresolved H7 question is declared for this scope.
+      S1 can derive observable requirements without inventing additional problem truth.
+aggregate_result: PASS
+specification_versions:
+  DOCS-V2-HARNESS-CONTROL-PLANE: 1
+  DOCS-V2-LIFECYCLE-STATE-MACHINE: 1
+  DOCS-V2-VALIDATION-GATE-ENGINE: 1
+  DOCS-V2-NAPMS-MIGRATION-REVALIDATION: 2
+gate_specification_version: 1
+pre_gate_stage_state: IN_PROGRESS
+gate_result: PASS
+route: PASS
+post_evaluation_state_effect:
+  S0: ACCEPTED
+  G0: PASS
+  successor: H12-T3
+  successor_stage: S1
+  successor_state: NOT_STARTED
+  successor_eligible: true
+  successor_started: false
+exact_input_snapshot:
+  - {ref_kind: scope-state, ref_id: NAPMS-H12-RC-CURATION-LIFECYCLE, fingerprint_or_state_token: 'git-blob-sha1:64aeeac0c5a1b7cdbb00a524ac3c54216f498912'}
+  - {ref_kind: anchor, ref_id: NAPMS-S0-RC-CURATION-PROBLEM, fingerprint_or_state_token: 'sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12'}
+  - {ref_kind: anchor, ref_id: NAPMS-S0-RC-CURATION-JOURNEY, fingerprint_or_state_token: 'sha256-jcs-v1:5401681959c4ef07ce2b990b28ff2df1ee2eb5756b3d6355b641ab4f0f5bd475'}
+  - {ref_kind: validation-evidence, ref_id: H12-P0-VE-S0-CHANGESET-1, fingerprint_or_state_token: 'git-blob-sha1:8c31e902fa519ced537f50a31bbc5d5d12b62f2b'}
+  - {ref_kind: contract, ref_id: 'DOCS-V2-HARNESS-CONTROL-PLANE@1', fingerprint_or_state_token: 'git-blob-sha1:aaf201a6f812a5176b3d70ae34f8b74b660695b2'}
+  - {ref_kind: contract, ref_id: 'DOCS-V2-LIFECYCLE-STATE-MACHINE@1', fingerprint_or_state_token: 'git-blob-sha1:c53ffa8b16f42757356a292df0b49e473da4e4a0'}
+  - {ref_kind: contract, ref_id: 'DOCS-V2-VALIDATION-GATE-ENGINE@1', fingerprint_or_state_token: 'git-blob-sha1:dfb9c167b9d4969573a5d312dadb37c7753af1f6'}
+  - {ref_kind: repository-head, ref_id: meta/docs-v2-m7-pilot, fingerprint_or_state_token: 'git-commit:681f14e1aef86545c20c62d1c83a6e1ca043e4ae'}
+recorded_at: 2026-09-17
+evidence_fingerprint: sha256-jcs-v1:9338b911f3ba9662243b95493eabb967c68b4e658ddc4223d68c7ded839c3a89
+diagnostic_summary: >-
+  Specification-guided pre-runtime G0 evaluation under control-plane v1. The gate reused the
+  current S0 change-set validation receipt instead of re-running per-anchor integrity stacks or
+  reloading canonical product source documents. G0 PASS only makes S1 eligible; S1 was not started.
