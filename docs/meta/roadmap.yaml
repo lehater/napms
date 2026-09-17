@@ -1,16 +1,16 @@
 version: 1
-revision: 11
+revision: 10
 kind: meta-roadmap
 id: DOCS-V2-HARNESS-ROADMAP
-status: complete
+status: active
 scope: universal-project-design-harness
 purpose: Guide design from initial problem to implementation readiness before product code is written, preserving visible machine-readable linked design truth.
 operating_constraints:
-  - docs-v2/ is the sole canonical current documentation authority after H20 cutover.
-  - docs/ is retired frozen migration evidence and cannot override accepted docs-v2 truth.
+  - docs-v2/ is the authoritative evolving documentation system during migration.
+  - docs/ is frozen legacy documentation and read-only migration evidence.
   - Corrections and newly accepted design truth are written only to docs-v2/; reverse synchronization into docs/ is forbidden.
   - Product code/tests are not sources of product/domain/architecture truth during documentation design.
-  - Product implementation, product tests and merge require their own explicit authorization.
+  - Product implementation, product tests, namespace cutover and merge require their own explicit authorization.
 principles:
   - {id: P-DESIGN-FIRST, statement: Harness exists to improve design; operational bookkeeping is never a design step.}
   - {id: P-MACHINE-READABLE, statement: Canonical design artifacts are machine-readable and human-readable views are projections where practical.}
@@ -20,7 +20,7 @@ principles:
   - {id: P-AFFECTED-ONLY, statement: Revalidate changed/affected design and reuse current unrelated evidence.}
   - {id: P-INTERNALIZE-PLUMBING, statement: IDs fingerprints receipts caching and atomic persistence are runtime details unless independently meaningful to design.}
   - {id: P-GRAPH-NOT-WATERFALL, statement: Stage labels describe maturity; artifact dependencies and affected-impact determine rework.}
-  - {id: P-LEGACY-IS-EVIDENCE, statement: Retired legacy documentation is migration evidence not a parallel truth store.}
+  - {id: P-LEGACY-IS-EVIDENCE, statement: Legacy documentation is migration evidence not a parallel truth store.}
 design_roadmap:
   - {stage: S0, name: Discovery / Problem Framing, outcome: bounded problem goals evidence constraints and enough domain landscape to choose meaningful process slices}
   - {stage: S1, name: Requirements Engineering, outcome: observable outcomes behavior business rules acceptance examples and applicable qualities}
@@ -35,8 +35,8 @@ work_model:
   stop_on_success: false
   real_stop_conditions: [NEED_MORE_DATA, BLOCKED, REOPEN, missing-authority, requested-scope-complete]
 program_phases:
-  completed: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15, H16, H17, H18, H19, H20]
-  active: null
+  completed: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15, H16, H17, H18, H19]
+  active: H20
 H12: {objective: Validate the simplified design order against a bounded NAPMS migration slice through G2., result: PASS}
 H13: {objective: Plan the smallest runtime needed after H12., result: PASS, result_ref: docs-v2/meta/h13-minimal-runtime-plan.yaml}
 H14: {objective: Implement and validate the minimal repository-local Harness runtime., result: PASS, result_ref: docs-v2/meta/h14-runtime-implementation.yaml}
@@ -55,14 +55,16 @@ H19:
   accepted_result: {implementation_readiness: NAPMS-S4-FIRST-MVP-IMPLEMENTATION-READINESS, verification_intent: NAPMS-S4-FIRST-MVP-TEST-INTENT, gate: G4, gate_result: PASS}
 H20:
   objective: Perform documentation namespace cutover after the migrated strategic baseline and MVP design have proven the new system usable as the sole documentation authority.
-  result: PASS
-  result_ref: docs-v2/meta/h20-namespace-cutover.yaml
-  accepted_result: {canonical_namespace: docs-v2/, retired_namespace: docs/, retired_mode: frozen-migration-evidence-only, competing_current_truth_store: false}
+  state: BLOCKED_PENDING_STAKEHOLDER_AUTHORIZATION
+  guard: requires explicit stakeholder authorization before physical rename/archive/delete operations
+  exit:
+    - one obvious canonical documentation namespace remains for normal project work
+    - legacy material is archived or retired without becoming a competing truth store
 program_exit:
-  - Strategic DDD for the NAPMS domain is canonical in the documentation system.
+  - Strategic DDD for the NAPMS domain is canonical in the new documentation system.
   - The selected MVP journey reaches implementation readiness through linked machine-readable artifacts.
   - Material design decisions trace backward to accepted evidence decisions and constraints.
   - Work resumes from repository state without chat history.
   - Missing human truth is explicit rather than invented.
-  - Legacy documentation is retired from normal authority and cannot act as a competing truth store.
+  - Legacy documentation is retired from normal authority after explicit cutover rather than remaining a competing truth store.
   - Normal design work is not dominated by Harness bookkeeping.

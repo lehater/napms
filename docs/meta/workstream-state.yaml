@@ -1,0 +1,57 @@
+version: 19
+kind: meta-workstream-state
+id: DOCS-V2-HARNESS-STATE
+roadmap: docs-v2/meta/roadmap.yaml
+branch: meta/docs-v2-m7-pilot
+last_updated: 2026-09-17
+program:
+  status: ACTIVE
+  current_phase: H20
+  current_phase_state: AWAITING_NAMESPACE_CUTOVER_AUTHORIZATION
+  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15, H16, H17, H18, H19]
+control_plane:
+  contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 3}
+  rule: meaningful design work is visible; runtime reliability bookkeeping is internal
+current_work:
+  phase: H20
+  name: Documentation namespace cutover
+  state: BLOCKED_PENDING_STAKEHOLDER_AUTHORIZATION
+  predecessor_ref: docs-v2/migration/revalidated/h19-mvp-implementation-readiness/validation/h19-change-set-validation.yaml
+  next: after explicit stakeholder authorization only, plan and perform the physical documentation namespace cutover so one canonical documentation namespace remains
+  target_scope: documentation authority namespace only; product implementation remains outside this workstream
+  reporting_granularity: report cutover as one coherent documentation-system transition rather than file-by-file moves
+  gate_status: {G4: PASS}
+documentation_authority:
+  evolving_authority: docs-v2/
+  legacy_source: docs/
+  legacy_status: frozen-read-only-migration-input
+  reverse_sync: forbidden
+  namespace_cutover: ready-but-not-authorized
+carry_forward:
+  - Human-owned truth is never invented; material gaps become questions/blockers.
+  - H17 first-MVP S1-S2 journey and tactical slice are accepted current truth.
+  - H18 complete-MVP S3 architecture is accepted current truth.
+  - H19 complete-MVP S4 implementation and verification design is accepted current truth and G4 is PASS.
+  - Frontend/backend delivery uses HTTP/JSON with one OpenAPI application contract; backend module interaction remains in-process.
+  - MVP persistence is one PostgreSQL database with module-owned schemas/repository contracts.
+  - Protected application use cases use backend session identity and Authority Management admission; frontend state never grants authority.
+  - Product implementation and product-test changes remain unauthorized; implementation readiness is not implementation authorization.
+  - Normal design work must not be dominated by Harness bookkeeping.
+restrictions:
+  product_implementation_authorization: none
+  product_test_change_authorization: none
+  product_code_tests_as_design_truth: forbidden
+  namespace_cutover_authorization: false
+  merge_authorization: false
+blockers:
+  - id: H20-CUTOVER-AUTHORIZATION
+    kind: missing-authority
+    owner: stakeholder
+    statement: Physical rename/archive/delete of documentation namespaces requires explicit stakeholder authorization.
+resume_protocol:
+  - Read this file first then roadmap.yaml.
+  - H19 is complete; do not reopen S1-S4 unless contradictory evidence or an explicit design change requires affected revalidation.
+  - Do not write product code or product tests without separate explicit implementation authorization.
+  - Do not perform namespace cutover until namespace_cutover_authorization is explicitly granted by the stakeholder.
+  - If cutover is authorized, preserve accepted docs-v2 semantic truth, archive or retire legacy evidence without reverse synchronization, update references coherently, validate affected documentation graph and leave one obvious canonical documentation namespace.
+  - Merge remains unauthorized.
