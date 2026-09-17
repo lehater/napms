@@ -1,314 +1,78 @@
 version: 1
+revision: 2
 kind: meta-roadmap
 id: DOCS-V2-HARNESS-ROADMAP
 status: active
-scope: universal-project-design-harness-redesign
-canonical_for:
-  - program-design-intent
-  - meta-work-sequence
-  - phase-dependencies
-  - phase-exit-criteria
-  - test-first-delivery-policy
-not_canonical_for:
-  - product-domain-truth
-  - product-implementation
-
-purpose: >
-  Define a durable, project-agnostic design Harness that guides an agent from initial idea,
-  problem and evidence through requirements, Domain-Driven Design, architecture and
-  implementation readiness before the first product code is written. The Harness must
-  preserve the logical derivation of every accepted design artifact in machine-readable
-  form so the complete design can be validated, corrected, resumed across sessions and
-  projected as coherent human-readable project documentation. NAPMS is the redesign pilot,
-  not a source of project-specific semantics for the universal Harness.
-
+scope: universal-project-design-harness
+purpose: >-
+  Guide design from initial problem to implementation readiness before product code is written.
+  Preserve a visible, machine-readable chain of design artifacts and decisions so the design can
+  be reviewed, corrected, resumed and projected as coherent documentation.
 operating_constraints:
-  - docs/ remains the sole canonical source of current product/project design truth until explicit cutover.
-  - Product code and product tests must not be inspected or used as sources of product/domain/architecture truth during the current documentation-design work.
-  - Current roadmap work may modify only docs-v2/**.
-  - No product implementation, test, runtime configuration, workflow or CI change is authorized by this roadmap.
-  - No merge is authorized by this roadmap.
-
+  - docs/ remains canonical NAPMS product/project design truth until explicit cutover.
+  - Product code/tests are not sources of product/domain/architecture truth during current documentation design.
+  - Current work may modify only docs-v2/**.
+  - No product implementation, executable test, runtime/workflow/CI, cutover or merge change is authorized.
 principles:
-  - id: P-UNIVERSAL-DESIGN-HARNESS
-    statement: >
-      Harness is a project-agnostic design method and execution rail from problem discovery
-      through implementation readiness; project-specific domain semantics live in project
-      anchors, never in Harness rules.
-  - id: P-HUMAN-TRUTH
-    statement: Human-approved facts and accepted canonical artifacts own design truth; agents may derive consequences but must not invent missing business facts.
+  - id: P-DESIGN-FIRST
+    statement: Harness exists to improve design; operational bookkeeping is never a design step.
   - id: P-MACHINE-READABLE
-    statement: Every Design Anchor must have a canonical machine-readable representation; human-readable projections are derived views unless a type explicitly owns narrative source.
-  - id: P-DERIVATION-LINEAGE
-    statement: >
-      Every accepted non-root Design Anchor must explicitly identify the logical predecessors,
-      evidence, constraints and decisions from which its semantics are derived. Source attribution
-      alone is insufficient: the derivation path must explain why the artifact exists and how its
-      design content follows from prior accepted project knowledge.
-  - id: P-GRAPH-AND-BOOK
-    statement: >
-      Canonical project documentation is a graph of machine-readable Design Anchors and typed
-      lineage relations. Human-readable project documentation is a reproducible projection of
-      that graph that can be read coherently from problem and decisions toward implementation readiness.
+    statement: Canonical design artifacts are machine-readable and human-readable views are projections where practical.
+  - id: P-DERIVATION
+    statement: Material derived design identifies accepted predecessors, evidence, constraints or human decisions.
+  - id: P-HUMAN-TRUTH
+    statement: Agents derive consequences but do not invent missing business truth.
+  - id: P-REPO-STATE
+    statement: Durable design/process state lives in the repository rather than chat memory.
+  - id: P-PROGRESSIVE-RIGOR
+    statement: Apply only design methods and validation justified by applicability, semantic risk and current lifecycle boundary.
+  - id: P-AFFECTED-ONLY
+    statement: Revalidate changed/affected design and reuse current unrelated evidence.
+  - id: P-INTERNALIZE-PLUMBING
+    statement: IDs, fingerprints, execution bases, receipts, caching, idempotency and atomic persistence are runtime details unless independently meaningful to design.
   - id: P-STANDARD-FIRST
-    statement: Prefer established formal standards or DSLs such as OpenAPI, AsyncAPI and architecture DSLs when they preserve required semantics; invent custom schemas only where needed.
-  - id: P-REPO-SYSTEM-OF-RECORD
-    statement: Durable project/process state belongs in the repository, not in chat history or agent memory.
-  - id: P-PROGRESSIVE-DISCLOSURE
-    statement: Agents load only the task capsule, applicable specifications and direct dependencies needed for one bounded task.
-  - id: P-DETERMINISTIC-FIRST
-    statement: Enforce structure, references, lifecycle legality, fingerprints and dependency invariants deterministically before semantic LLM evaluation.
-  - id: P-HUMAN-ESCALATION
-    statement: Missing business truth routes to NEED_MORE_DATA and a structured stakeholder question rather than repeated speculative retries.
-  - id: P-TEST-FIRST
-    statement: New Harness behavior is specified by conformance cases and expected failures before runtime implementation is authorized.
-  - id: P-TRACEABLE
-    statement: Important claims, decisions and derived artifacts preserve provenance, stable references and explicit logical lineage.
-  - id: P-OPENAI-ALIGNED
-    statement: Harness design should remain compatible with current OpenAI guidance on structured outputs, bounded tool use, progressive context, layered guardrails, evals, tracing and human escalation without coupling project semantics to one SDK.
-
-work_policy:
-  unit_of_execution: one-meta-task-or-one-gate-evaluation
-  state_source: docs-v2/meta/workstream-state.yaml
-  completion_rule: >
-    A phase is complete only when its declared deliverables exist, its specified conformance
-    cases are defined, its exit criteria are satisfied and the workstream state advances explicitly.
-  no_silent_advance: true
-
-# Test-first protocol applies to every phase that introduces executable Harness behavior.
-test_first_protocol:
-  - step: SPECIFY
-    result: Machine-readable behavior/invariant contract exists.
-  - step: RED
-    result: Conformance scenarios and negative fixtures describe behavior that the not-yet-implemented Harness must fail/pass; executable tests remain unauthorized until a later implementation phase.
-  - step: GREEN
-    result: After implementation is explicitly authorized, implement the smallest behavior required to satisfy the conformance suite.
-  - step: REFACTOR
-    result: Simplify implementation without weakening contracts or tests.
-  - step: REGRESSION
-    result: Re-run the complete applicable deterministic and semantic evaluation set before accepting the phase.
-
-phases:
-  - id: H0
-    title: Roadmap and redesign charter
-    depends_on: []
-    objective: Establish durable roadmap, state tracking and governing redesign principles.
-    deliverables:
-      - docs-v2/meta/roadmap.yaml
-      - docs-v2/meta/workstream-state.yaml
-    exit_criteria:
-      - Roadmap and current state are repository-resident and discoverable from docs-v2/README.md.
-      - Current task, next task, blockers and authorization state can be recovered without chat history.
-
-  - id: H1
-    title: Harness conformance and eval contract
-    depends_on: [H0]
-    objective: Define the tests before redesigning or implementing Harness behavior.
-    deliverables:
-      - conformance scenario taxonomy
-      - positive and negative fixture specification
-      - deterministic-versus-semantic validator boundary
-      - expected transition and failure-routing cases
-      - OpenAI-alignment eval cases for context minimization, structured outputs, tool boundaries, guardrails and human escalation
-    exit_criteria:
-      - Each planned Harness capability has at least one success case and one material failure case where applicable.
-      - Conformance cases are referenceable by stable IDs.
-      - No executable implementation is required to complete H1.
-
-  - id: H2
-    title: Executable lifecycle model
-    depends_on: [H1]
-    objective: Replace prose-only lifecycle assumptions with a machine-readable state-machine specification.
-    deliverables:
-      - lifecycle states and transitions
-      - S0/S1/S2/S3/S4 stage ownership
-      - S2 internal checkpoints for strategic, process-discovery and tactical work
-      - G0-G4 contracts
-      - REWORK, REOPEN, BLOCKED and NEED_MORE_DATA routing
-    exit_criteria:
-      - Every legal transition and rejection path is covered by H1 conformance cases.
-      - G2 occurs only after complete applicable S2 domain design rather than strategic decomposition alone.
-
-  - id: H3
-    title: Design Anchor contract
-    depends_on: [H2]
-    objective: Define the universal contract for canonical, machine-readable design anchors.
-    deliverables:
-      - stable identity model
-      - canonical representation rules
-      - status/lifecycle model
-      - provenance model
-      - human override semantics
-      - supersession rules
-      - fingerprint/revalidation semantics
-    exit_criteria:
-      - Accepted anchors can be safely referenced by downstream work.
-      - Manual edits can deterministically invalidate prior validation evidence.
-      - Unsupported agent-generated domain assertions cannot become accepted truth.
-
-  - id: H4
-    title: Artifact type registry and canonical formats
-    depends_on: [H3]
-    objective: Define every anchor/artifact family, applicability, owner, format, schema and validator requirements.
-    deliverables:
-      - machine-readable artifact type registry
-      - schema/DSL selection rules
-      - standard-format mappings for OpenAPI, AsyncAPI, architecture DSL and other native specifications
-      - classification of anchor, evidence, projection and process-state artifacts
-    exit_criteria:
-      - Every retained artifact type has one owner stage and canonical representation rule.
-      - Optional and conditional applicability is machine-checkable.
-      - No duplicate canonical owners exist for the same semantic truth.
-
-  - id: H5
-    title: Dependency, derivation, registry and impact model
-    depends_on: [H4]
-    objective: >
-      Make project design state graph-addressable, logically derivation-explainable and
-      change-impact-computable without duplicating canonical truth.
-    deliverables:
-      - generated anchor registry model
-      - dependency edge vocabulary
-      - design derivation-lineage contract
-      - reference resolution rules
-      - content fingerprints
-      - DIRTY/STALE propagation
-      - earliest-affected-stage calculation contract
-      - human-readable project-book projection rules
-    exit_criteria:
-      - Dangling references, invalid statuses and stale validation evidence are deterministically detectable.
-      - A changed upstream anchor produces a reproducible affected downstream set.
-      - Every accepted non-root Design Anchor has explicit machine-readable derivation lineage to accepted predecessors, evidence, constraints or durable human decisions.
-      - Backward lineage traversal can explain how an accepted artifact follows from project roots without relying on chat history or private agent reasoning.
-
-  - id: H6
-    title: Complete DDD pipeline specification
-    depends_on: [H5]
-    objective: >
-      Formalize strategic discovery, context design, domain process discovery/Event Storming
-      and tactical DDD as anchor-producing and derivation-lineage-producing work.
-    deliverables:
-      - subdomain and domain-distillation model
-      - capability map and capability-to-context mapping
-      - bounded-context and relationship specifications
-      - domain process model for commands, events, actors, policies, timelines and external systems
-      - candidate aggregate derivation
-      - tactical aggregate/entity/value-object/invariant/domain-service/state semantics
-      - explicit predecessor/derivation rules for every DDD artifact produced
-    exit_criteria:
-      - Strategic, process and tactical phases have explicit inputs/outputs and checkpoints.
-      - Every accepted DDD output identifies the accepted inputs, evidence and decisions from which it is derived.
-      - Domain Events are not automatically treated as integration messages.
-      - Aggregate design cannot proceed through unresolved blocking business questions.
-
-  - id: H7
-    title: Human knowledge acquisition protocol
-    depends_on: [H6]
-    objective: Turn unresolved domain knowledge and user examples into durable project knowledge without invention.
-    deliverables:
-      - domain-question schema
-      - option/recommendation/consequence format
-      - stakeholder-decision schema
-      - use-case/example capture
-      - user-journey enrichment rules
-      - hypothesis-versus-accepted-fact distinction
-    exit_criteria:
-      - Missing semantic truth routes to a structured question.
-      - User answers update or create durable anchors with provenance.
-      - Examples are preserved without silently generalizing them into universal rules.
-
-  - id: H8
-    title: Validation and gate engine specification
-    depends_on: [H5, H6, H7]
-    objective: Define layered deterministic and semantic validation against the executable process and anchor graph.
-    deliverables:
-      - schema/reference/dependency validators
-      - applicability and lifecycle validators
-      - fingerprint freshness validation
-      - semantic judge contracts with bounded questions and allowed outcomes
-      - gate evidence format with validator/process specification versions
-    exit_criteria:
-      - Every gate result is reproducible from declared inputs and validator versions.
-      - Deterministic failures are resolved before semantic judging.
-      - Semantic judges cannot silently invent or mutate upstream truth.
-
-  - id: H9
-    title: Agent execution and context model v2
-    depends_on: [H8]
-    objective: Rebase Task Capsules and routing on the machine-readable process, anchor registry and validation model.
-    deliverables:
-      - Task Capsule v2
-      - known-facts and allowed-derivations fields
-      - question/decision/example references
-      - minimal context selection rules
-      - bounded tool/authority rules
-      - concise feedback-loop contract
-    exit_criteria:
-      - One execution can be reconstructed and validated from durable state alone.
-      - Context expansion is explicit and auditable.
-      - Agents stop rather than cross blocking questions or authorization boundaries.
-
-  - id: H10
-    title: Harness evals, tracing and regression model
-    depends_on: [H9]
-    objective: Specify how Harness quality itself is measured over time.
-    deliverables:
-      - regression corpus
-      - routing evals
-      - context-minimization evals
-      - unsupported-inference evals
-      - semantic-judge evals
-      - trace and failure-corpus requirements
-    exit_criteria:
-      - Critical Harness behaviors have repeatable eval coverage.
-      - Failures can be diagnosed without storing private chain-of-thought.
-
-  - id: H11
-    title: Repository and CI enforcement design
-    depends_on: [H10]
-    objective: Define how local and hosted checks enforce the specifications after implementation is authorized.
-    deliverables:
-      - check matrix by changed artifact type
-      - local-versus-hosted validation responsibilities
-      - generated-registry verification
-      - stale-gate rejection rules
-      - specification-version invalidation rules
-    exit_criteria:
-      - A future CI implementation can fail deterministically on invalid anchors, references, transitions or stale evidence.
-      - Existing repository validation surfaces can be evolved rather than duplicated where practical.
-
-  - id: H12
-    title: NAPMS migration and revalidation plan
-    depends_on: [H11]
-    objective: Rebase existing docs-v2 candidate work on the redesigned Harness specifications and revalidate NAPMS without using product implementation as design truth.
-    deliverables:
-      - migration dispositions for existing candidate artifacts
-      - strategic reconstruction under new anchor model
-      - interactive domain process discovery questions
-      - tactical DDD after blockers are resolved
-      - new applicable G2 evidence
-    exit_criteria:
-      - Current NAPMS candidate design can be reconstructed from accepted anchors and stakeholder decisions.
-      - Former horizontal G2 evidence is replaced by evidence from the redesigned S2 process.
-
-  - id: H13
-    title: Runtime Harness implementation plan
-    depends_on: [H12]
-    objective: Plan actual orchestrator/validator implementation only after specifications and conformance suite have stabilized.
-    deliverables:
-      - runtime architecture decision
-      - OpenAI runtime/SDK integration boundary
-      - implementation slices ordered by H1 conformance tests
-      - rollout and rollback plan
-    exit_criteria:
-      - Runtime implementation can proceed test-first under an explicit implementation authorization.
-      - Project-specific process semantics remain independent of a single OpenAI SDK or runtime.
-
+    statement: Prefer established formats such as OpenAPI, AsyncAPI and architecture DSLs where they preserve required semantics.
+design_roadmap:
+  - {stage: S0, name: Problem / Evidence, outcome: bounded problem and constraints}
+  - {stage: S1, name: Requirements, outcome: observable behavior and applicable qualities}
+  - {stage: S2, name: Domain Design, outcome: applicable strategic/process/tactical domain semantics}
+  - {stage: S3, name: Architecture, outcome: technical realization and contracts}
+  - {stage: S4, name: Implementation Readiness, outcome: exact executable and verifiable implementation slice}
+work_model:
+  unit: meaningful-design-work
+  coherent_cycle: [design, affected-validation, readiness-if-boundary, persistence, continue]
+  separate_gate_execution_required: false
+  serialized_task_capsule_required: false
+  stop_on_success: false
+  real_stop_conditions: [NEED_MORE_DATA, BLOCKED, REOPEN, missing-authority, requested-scope-complete]
+core_capabilities:
+  artifact_graph:
+    contracts: [design-anchor, artifact-type-registry, dependency-registry-impact, design-derivation-lineage]
+  design_method:
+    contracts: [ddd-pipeline, human-knowledge-acquisition]
+  lifecycle_and_quality:
+    contracts: [lifecycle-state-machine, validation-gate-engine]
+  execution_safety:
+    contracts: [harness-control-plane, agent-execution-context-v2, harness-reliability-conformance]
+    visibility: infrastructure-behind-design-boundary
+historical_or_optional_operational_design:
+  - harness-execution-kernel
+  - per-operation execution-basis artifacts
+  - mandatory Task Capsule serialization
+  - separate validation/gate transactions
+program_phases:
+  completed_design_foundation: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11]
+  active: H12
+  next: H13
+H12:
+  objective: Validate the simplified Harness against the bounded NAPMS migration slice while continuing domain design.
+  exit: Current pilot reaches applicable G2 with traceable design and without reintroducing operational ceremony.
+H13:
+  objective: Plan the smallest runtime needed to automate internal reliability/validation plumbing after H12.
+  guard: Runtime architecture must not add user-visible Harness concepts unless a demonstrated design failure requires them.
 program_exit:
-  - Machine-readable process and anchor specifications are authoritative for Harness behavior after explicit cutover.
-  - Any accepted non-root design artifact can be traced backward through explicit logical derivation to accepted problem/evidence/decision roots.
-  - The canonical anchor graph can be reproducibly projected into coherent human-readable project documentation without creating a second source of truth.
-  - Harness implementation is covered by deterministic conformance checks and semantic evals.
-  - Cross-session work resumes from repository state without relying on chat history.
-  - Human decisions and examples accumulate as traceable project knowledge.
-  - Harness process semantics remain project-agnostic; NAPMS serves as a validation and migration pilot rather than a hard-coded special case.
+  - Design can be followed from problem to implementation readiness through linked machine-readable artifacts.
+  - Material design decisions can be traced backward to accepted roots/decisions/evidence.
+  - Work resumes from repository state without chat history.
+  - Missing human truth is explicit rather than invented.
+  - Normal design work is not dominated by Harness bookkeeping.
