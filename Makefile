@@ -61,7 +61,7 @@ architecture: architecture-sync
 
 architecture-check: architecture-sync
 	docker run --rm \
-		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr:ro" \
+		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" \
 		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" \
 		$(STRUCTURIZR_IMAGE) validate -workspace /usr/local/structurizr/workspace.dsl
 
