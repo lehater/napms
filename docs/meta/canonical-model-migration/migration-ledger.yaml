@@ -7,7 +7,7 @@ authority_rule: legacy means accepted source paths remain current; target means 
 units:
   - id: STRATEGIC-SPINE
     phase: CM1
-    status: IN_PROGRESS
+    status: EQUIVALENCE_REVIEW
     authority: legacy
     source_paths:
       - docs/migration/revalidated/h16-strategic/s2/strategic/capability-map.yaml
@@ -29,7 +29,9 @@ units:
       - docs/model/strategic/bounded-contexts.yaml
       - docs/model/strategic/context-relationships.yaml
     cutover_check:
-      state: NOT_RUN
+      state: PENDING_CI
+      review: docs/meta/canonical-model-migration/cm1-strategic-equivalence-review.yaml
+      command: make canonical-model-check
       requires:
         - preserve accepted peer BC and non-peer composition distinction
         - preserve capability ownership

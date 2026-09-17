@@ -1,0 +1,30 @@
+name: canonical model migration
+
+on:
+  push:
+    branches: [meta/canonical-model-migration]
+    paths:
+      - "docs/meta/canonical-model-migration/**"
+      - "docs/model/**"
+      - "docs/migration/revalidated/h12-rc-curation/s2/strategic/**"
+      - "docs/migration/revalidated/h16-strategic/s2/strategic/**"
+      - "tools/check_cm1_strategic_equivalence.py"
+      - "tools/generate_strategic_views.py"
+      - "Makefile"
+      - ".github/workflows/canonical-model-migration.yml"
+  pull_request:
+    paths:
+      - "docs/meta/canonical-model-migration/**"
+      - "docs/model/**"
+      - "tools/check_cm1_strategic_equivalence.py"
+      - "tools/generate_strategic_views.py"
+      - "Makefile"
+      - ".github/workflows/canonical-model-migration.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate strategic semantic equivalence and projections
+        run: make canonical-model-check

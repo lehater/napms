@@ -1,4 +1,4 @@
-.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-check docs-v2-harness-check skill-routing-eval knowledge-check architecture architecture-check check
+.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-check docs-v2-harness-check skill-routing-eval knowledge-check architecture architecture-check canonical-model-sync canonical-model-check check
 
 STRUCTURIZR_IMAGE ?= structurizr/structurizr:2026.06.28-noble
 STRUCTURIZR_DIR := $(CURDIR)/docs/architecture/structurizr
@@ -47,6 +47,14 @@ architecture:
 
 architecture-check:
 	docker run --rm -v "$(STRUCTURIZR_DIR):/usr/local/structurizr:ro" $(STRUCTURIZR_IMAGE) validate -workspace /usr/local/structurizr/workspace.dsl
+
+canonical-model-sync:
+	python tools/check_cm1_strategic_equivalence.py
+	python tools/generate_strategic_views.py
+
+canonical-model-check:
+	python tools/check_cm1_strategic_equivalence.py
+	python tools/generate_strategic_views.py --check
 
 harness-check:
 	python tools/validate_harness.py

@@ -3,7 +3,7 @@ kind: canonical-model-migration-source-inventory
 id: NAPMS-CM1-STRATEGIC-SOURCE-INVENTORY
 task_ref: CM1-01
 phase: CM1
-status: IN_PROGRESS
+status: INVENTORIED
 authority: legacy
 recorded_at: 2026-09-18
 

@@ -25,7 +25,9 @@ current_work:
     - Created CM1 source inventory at docs/meta/canonical-model-migration/cm1-strategic-source-inventory.yaml.
     - Confirmed the strategic BC source set is eight H16 BC anchors plus corrected Resource Catalogue and Authority Management anchors from H12.
     - Confirmed non-peer compositions must stay non-peer and generic semantic arrows must not gain invented DDD patterns.
-  next_action: Validate accepted/current status of the inventory source set, then create capabilities.yaml bounded-contexts.yaml and context-relationships.yaml as non-authoritative migration candidates before semantic-equivalence review.
+    - Created non-authoritative target candidates at docs/model/strategic/.
+    - Added deterministic CM1 semantic-equivalence check and strategic view generator.
+  next_action: Run canonical-model-check on a clean branch checkout. If equivalence and projection generation pass, record CM1 PASS and switch STRATEGIC-SPINE authority to target.
   stop_conditions:
     - accepted strategic semantics cannot be represented without loss
     - source anchors contradict each other materially
