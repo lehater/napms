@@ -10,7 +10,12 @@ The workspace currently provides:
 - `Containers` — browser application, modular-monolith backend, and PostgreSQL;
 - `BackendComponents` — domain-aligned backend modules plus policy-export composition;
 - `MVPDeployment` — deployment mapping of the browser frontend, backend runtime, and PostgreSQL runtime for the accepted MVP baseline;
-- `DomainContextMap` — generated PlantUML projection of the accepted strategic S2 capability map and context relationships.
+- `DomainContextMap` — peer Bounded Contexts only, with accepted peer-to-peer relationship meanings moved into the legend;
+- `StrategicCollaborationMap` — the wider strategic view containing peer Bounded Contexts, non-peer compositions, and all accepted strategic collaboration relationships.
+
+The two S2 projection views deliberately answer different questions. `DomainContextMap` is not allowed to promote compositions to Bounded Contexts. `StrategicCollaborationMap` shows those compositions because they are useful to understand whole-domain collaboration, but it is not labeled as a DDD Context Map.
+
+Relationship descriptions are not placed on arrows. Arrows remain visually compact, while the generated PlantUML legend lists each source/target pair and its accepted semantic meaning. The generator does not infer a DDD Context Mapping pattern that is absent from the canonical source.
 
 The deployment view deliberately stays at the accepted S3 baseline. It does not invent cloud provider, operating system, cluster, reverse proxy, load balancer, redundancy, or other infrastructure decisions that have not been made yet. The generic deployment nodes express runtime placement only; they are not claims about separate physical machines.
 
@@ -25,17 +30,19 @@ docs/migration/revalidated/h16-strategic/s2/strategic/context-relationships.yaml
                                       |
                                       v
                     tools/generate_architecture_views.py
-                                      |
-                                      v
-                 docs-generated/architecture/context-map.puml
-                                      |
-                                      v
-                         Structurizr DomainContextMap
+                         |                       |
+                         v                       v
+        docs-generated/architecture/   docs-generated/architecture/
+              context-map.puml         strategic-collaboration-map.puml
+                         |                       |
+                         +-----------+-----------+
+                                     v
+                                Structurizr
 ```
 
-The two S2 YAML anchors are semantic authority. `context-map.puml` is generated output only. It is under the ignored `docs-generated/` root and must not be edited or searched as canonical knowledge.
+The two S2 YAML anchors are semantic authority. Both PlantUML files are generated output only. They live under the ignored `docs-generated/` root and must not be edited or searched as canonical knowledge.
 
-The generator is intentionally not a general diagram framework. It performs a deterministic projection and fails if a relationship endpoint is not declared by the accepted capability map or if a configured source is not `ACCEPTED`.
+The generator is intentionally not a general diagram framework. It performs deterministic projections and fails if a relationship endpoint is not declared by the accepted capability map or if a configured source is not `ACCEPTED`.
 
 ## Refresh generated views
 
@@ -45,7 +52,7 @@ Run:
 make architecture-sync
 ```
 
-This regenerates all currently supported non-canonical architecture views from their canonical machine-readable sources. At present that is only the DDD Context Map.
+This regenerates all currently supported non-canonical architecture views from their canonical machine-readable sources.
 
 `make architecture` invokes `architecture-sync` automatically, so normal viewing always starts from freshly generated projections.
 
