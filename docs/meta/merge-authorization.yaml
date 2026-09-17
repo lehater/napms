@@ -1,0 +1,16 @@
+version: 1
+kind: integration-authorization
+id: H20-SQUASH-MERGE-AUTHORIZATION
+recorded_at: '2026-09-17'
+status: GRANTED
+scope: documentation-system-v2-workstream-H0-H20
+stakeholder_instruction: >-
+  After bringing the final Harness CI to green, squash the completed workstream into main.
+conditions:
+  required_ci: documentation harness
+  required_ci_result: success
+  merge_method: squash
+  target_branch: main
+  source_branch: meta/docs-v2-m7-pilot
+product_implementation_authorization: none
+product_test_change_authorization: none
