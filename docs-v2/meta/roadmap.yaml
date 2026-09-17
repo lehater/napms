@@ -1,5 +1,5 @@
 version: 1
-revision: 7
+revision: 8
 kind: meta-roadmap
 id: DOCS-V2-HARNESS-ROADMAP
 status: active
@@ -12,7 +12,7 @@ operating_constraints:
   - docs-v2/ is the authoritative evolving documentation system during migration.
   - docs/ is frozen legacy documentation and read-only migration evidence.
   - Corrections and newly accepted design truth are written only to docs-v2/; reverse synchronization into docs/ is forbidden.
-  - Physical namespace cutover is deferred until migration/stabilization.
+  - Physical namespace cutover is deferred until the strategic DDD migration baseline is complete and coherent.
   - Product code/tests are not sources of product/domain/architecture truth during current documentation design.
   - Product implementation, product tests, namespace cutover and merge remain unauthorized.
 principles:
@@ -52,7 +52,7 @@ core_capabilities:
   design_method: {contracts: [ddd-pipeline, human-knowledge-acquisition]}
   lifecycle_and_quality: {contracts: [lifecycle-state-machine, validation-gate-engine]}
   execution_safety: {contracts: [harness-control-plane, agent-execution-context-v2, harness-reliability-conformance], visibility: infrastructure-behind-design-boundary}
-  migration_authority: {legacy_path: docs/, evolving_path: docs-v2/, legacy_mode: frozen-read-only-evidence, reverse_sync: forbidden, namespace_cutover: deferred}
+  migration_authority: {legacy_path: docs/, evolving_path: docs-v2/, legacy_mode: frozen-read-only-evidence, reverse_sync: forbidden, namespace_cutover: after-strategic-ddd-migration}
 program_phases:
   completed: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15]
   active: H16
@@ -64,16 +64,58 @@ H15:
   result: PASS
   result_ref: docs-v2/meta/h15-integration-plan.yaml
 H16:
-  objective: Resume the H12 Resource Catalogue curation pilot at S3 Software Architecture / Solution Design using accepted S0-S2 design as authority.
-  guard: Do not infer architecture semantics from product code/tests; use only accepted docs-v2 design and explicitly applicable constraints/evidence.
+  objective: Migrate and revalidate the accepted strategic DDD baseline for NAPMS as a whole from frozen docs evidence into canonical docs-v2 S2 anchors.
+  basis:
+    - docs/domain/strategic-model.md
+    - docs/domain/strategic-model.json
+    - docs/domain/context-map.md
+    - docs/domain/capabilities.md
+    - docs/domain/semantic-ownership.md
+  scope:
+    - capability ownership needed to understand the domain landscape
+    - all target Bounded Context identities responsibilities and boundaries
+    - strategic context relationships and semantic contracts
+    - strategic invariants and explicit non-peer compositions/integration capabilities
+  exclusions:
+    - do not migrate tactical models merely because they exist in docs/
+    - do not continue isolated Resource Catalogue S3 work during this phase
+    - do not infer product/domain truth from code or tests
   exit:
-    - S3 architecture for the selected slice is explicit enough to evaluate G3
-    - architecture decisions trace to accepted S1/S2 semantics and applicable quality/technical constraints
-    - unresolved human-owned choices are explicit rather than silently assumed
+    - the strategic NAPMS domain landscape is canonical and machine-readable in docs-v2
+    - all target Bounded Context boundaries and material relationships from the accepted legacy baseline are represented or explicitly corrected/deferred
+    - Resource Catalogue strategic anchors already revalidated in H12 are reconciled rather than duplicated
+    - affected validation passes and no material strategic ambiguity remains hidden
+H17:
+  objective: Establish the narrow MVP journey on top of the migrated strategic DDD baseline and revalidate only the S0-S2 semantics needed by that journey.
+  journey: describe resources and application/components/interactions -> create and accept a policy rule -> materialize and export the resulting policy
+  rule: The strategic landscape stays broad; tactical and requirements elaboration stays narrow to this journey.
+  exit:
+    - participating contexts and cross-context semantic flow are explicit
+    - required S0-S2 details are accepted for the journey
+    - unrelated tactical domain areas are deferred without blocking MVP
+H18:
+  objective: Design S3 architecture for the complete MVP journey on one system baseline rather than one Bounded Context at a time.
+  baseline: frontend plus modular-monolith backend; system-level delivery and module-boundary decisions are made once and inherited by participating contexts
+  exit:
+    - system architecture baseline is explicit
+    - participating module responsibilities interactions and external boundaries are sufficient for G3
+    - no context is forced to re-decide system-wide transport/deployment choices
+H19:
+  objective: Complete S4 implementation design and G4 for the end-to-end MVP journey.
+  exit:
+    - the journey is executable and verifiable without inventing missing product/domain/architecture semantics during coding
+    - implementation and test intent trace to accepted design anchors
+H20:
+  objective: Perform documentation namespace cutover after the migrated strategic baseline and MVP design have proven the new system usable as the sole documentation authority.
+  guard: requires explicit stakeholder authorization before physical rename/archive/delete operations
+  exit:
+    - one obvious canonical documentation namespace remains for normal project work
+    - legacy material is archived or retired without becoming a competing truth store
 program_exit:
-  - Design can be followed from problem/discovery to implementation readiness through linked machine-readable artifacts.
+  - Strategic DDD for the NAPMS domain is canonical in the new documentation system.
+  - The selected MVP journey reaches implementation readiness through linked machine-readable artifacts.
   - Material design decisions can be traced backward to accepted roots stories/process evidence decisions and constraints.
   - Work resumes from repository state without chat history.
   - Missing human truth is explicit rather than invented.
-  - Legacy documentation remains immutable migration evidence rather than a competing truth store.
+  - Legacy documentation is retired from normal authority after explicit cutover rather than remaining a competing truth store.
   - Normal design work is not dominated by Harness bookkeeping.
