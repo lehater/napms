@@ -1,0 +1,17 @@
+anchor_id: NAPMS-S2-BC-NETWORK-ENFORCEMENT-PLACEMENT
+type_id: bounded-context
+owner_stage: S2
+scope: {scope_id: H16-NAPMS-STRATEGIC, product_area: NAPMS whole-domain strategic landscape, lifecycle_boundary: S2 Strategic domain design}
+status: CANDIDATE
+canonical_payload:
+  name: Network Enforcement Placement
+  purpose: Own where a technical traffic pair may be enforced.
+  responsibility: [candidate Firewall relevance, policy-locator relevance for technical address pairs]
+  boundary_basis: {cohesion_rationale: Enforcement placement answers target relevance without owning desired policy or provider mutation., separation_rationale: Required policy belongs to upstream policy/materialization semantics and execution belongs to NEO., rejected_boundary_alternatives: [treat candidate placement as authorization or execution]}
+  capability_selectors: [{anchor_id: NAPMS-S2-NAPMS-CAPABILITY-MAP, item_id: CAP-NETWORK-ENFORCEMENT-PLACEMENT}]
+  model_language_ownership: {owned_terms_or_model_scope: [TrafficPair, FirewallCandidate, policy locator], explicitly_external_terms: [PolicyRule, TargetPolicyArtifact]}
+  logical_derivation: {basis_refs: [{kind: evidence, path: docs/domain/strategic-model.json}], derivation_kind: migration-revalidation, rationale: Re-express the accepted enforcement-placement boundary., method_rule_ids: [DDD-MR-BOUNDED-CONTEXT-DERIVATION]}
+provenance: {origin_kind: imported-current-docs, source_refs: [{kind: repository-file, path: docs/domain/strategic-model.json, blob_sha: 4d8e8385cfd6f6e71ee4a8ab6d5bf8186766cdc7}], authority_basis: imported-current-docs-ref-before-cutover, recorded_at: '2026-09-17'}
+semantic_refs: []
+semantic_fingerprint: pending-h16-validation
+validation: {freshness: STALE, evidence_ref: null, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: pending-H16-validation}
