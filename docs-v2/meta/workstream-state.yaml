@@ -1,4 +1,4 @@
-version: 12
+version: 13
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
@@ -18,7 +18,7 @@ current_work:
   state: DESIGNING
   predecessor_ref: docs-v2/meta/h15-integration-plan.yaml
   lifecycle_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
-  current_anchor_ref: NAPMS-S3-RC-ARCHITECTURE-BOUNDARY
+  current_anchor_ref: docs-v2/migration/revalidated/h12-rc-curation/s3/resource-catalogue-architecture-boundary.md
   next: validate the changed/affected S3 architecture boundary through the shared docs-v2 entrypoint and derive only applicable S3 structural interaction or external-contract anchors needed for G3
 documentation_authority:
   evolving_authority: docs-v2/
