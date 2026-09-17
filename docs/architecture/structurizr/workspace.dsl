@@ -60,7 +60,7 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
 
     views {
         properties {
-            "plantuml.url" "http://napms-plantuml:8080"
+            "plantuml.url" "http://127.0.0.1:8081"
             "plantuml.format" "svg"
         }
 
