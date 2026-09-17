@@ -1,0 +1,17 @@
+anchor_id: NAPMS-S2-BC-APPLICATION-DEPLOYMENT
+type_id: bounded-context
+owner_stage: S2
+scope: {scope_id: H16-NAPMS-STRATEGIC, product_area: NAPMS whole-domain strategic landscape, lifecycle_boundary: S2 Strategic domain design}
+status: CANDIDATE
+canonical_payload:
+  name: Application Deployment
+  purpose: Own concrete deployed Component placement truth.
+  responsibility: [ComponentDeployment identity and lifecycle, exact opaque ComponentRef-to-opaque ResourceRef relation]
+  boundary_basis: {cohesion_rationale: Concrete deployed Component identity and its Resource placement form one deployment semantic responsibility., separation_rationale: Component meaning stays in ACC and Resource realization stays in RC., rejected_boundary_alternatives: [whole-Application deployment aggregate as required policy subject]}
+  capability_selectors: [{anchor_id: NAPMS-S2-NAPMS-CAPABILITY-MAP, item_id: CAP-APPLICATION-DEPLOYMENT}]
+  model_language_ownership: {owned_terms_or_model_scope: [ComponentDeployment], explicitly_external_terms: [Component, Resource, AddressSpace]}
+  logical_derivation: {basis_refs: [{kind: evidence, path: docs/domain/strategic-model.json}], derivation_kind: migration-revalidation, rationale: Re-express the accepted concrete ComponentDeployment strategic boundary., method_rule_ids: [DDD-MR-BOUNDED-CONTEXT-DERIVATION]}
+provenance: {origin_kind: imported-current-docs, source_refs: [{kind: repository-file, path: docs/domain/strategic-model.json, blob_sha: 4d8e8385cfd6f6e71ee4a8ab6d5bf8186766cdc7}], authority_basis: imported-current-docs-ref-before-cutover, recorded_at: '2026-09-17'}
+semantic_refs: []
+semantic_fingerprint: pending-h16-validation
+validation: {freshness: STALE, evidence_ref: null, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: pending-H16-validation}
