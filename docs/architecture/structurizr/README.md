@@ -16,9 +16,15 @@ Run:
 make architecture
 ```
 
-Then open `http://localhost:8080`. The command uses the official Structurizr `local` Docker image and mounts this directory as its workspace. Edit `workspace.dsl` in the repository and refresh the browser to see changes.
+Then open `http://localhost:8080`. The command uses the official Structurizr image pinned to the non-hardened `2026.06.28-noble` variant. This avoids host bind-mount write failures caused by the hardened image's container user while still allowing Structurizr Local to persist diagram layout next to `workspace.dsl`.
 
-The DSL is the source of truth. Generated/rendered diagrams are projections and should not be edited as independent architecture truth.
+Edit `workspace.dsl` in the repository and refresh the browser to see changes. The DSL is the source of truth. Generated/rendered diagrams are projections and should not be edited as independent architecture truth.
+
+The image can be overridden when deliberately testing a newer Structurizr release:
+
+```sh
+make architecture STRUCTURIZR_IMAGE=structurizr/structurizr:<version>-noble
+```
 
 ## Validation
 
@@ -28,7 +34,9 @@ Run:
 make architecture-check
 ```
 
-This validates the DSL with Structurizr. The check is intentionally narrow: it verifies that the canonical workspace is structurally valid without introducing another architecture lifecycle.
+This validates the DSL with the same pinned Structurizr image. Validation mounts the architecture directory read-only because it must not mutate canonical documentation.
+
+GitHub Actions runs the same `make architecture-check` for pull requests and `main` changes affecting the Structurizr workspace, Makefile, or the architecture workflow. This makes parser/runtime compatibility part of CI rather than relying on a developer discovering it manually.
 
 ## Authority boundary
 
