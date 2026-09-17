@@ -4,45 +4,51 @@
 
 Structurizr is also the common viewer for generated projections of other canonical design artifacts. Those projections are non-canonical and are rebuilt from their owning machine-readable sources.
 
-The workspace currently provides:
+The workspace currently provides native C4 views:
 
 - `SystemContext` — NAPMS and its user;
 - `Containers` — browser application, modular-monolith backend, and PostgreSQL;
 - `BackendComponents` — domain-aligned backend modules plus policy-export composition;
-- `MVPDeployment` — deployment mapping of the browser frontend, backend runtime, and PostgreSQL runtime for the accepted MVP baseline;
-- `DomainContextMap` — peer Bounded Contexts only, with accepted peer-to-peer relationship meanings moved into the legend;
-- `StrategicCollaborationMap` — the wider strategic view containing peer Bounded Contexts, non-peer compositions, and all accepted strategic collaboration relationships.
+- `MVPDeployment` — deployment mapping of the browser frontend, backend runtime, and PostgreSQL runtime for the accepted MVP baseline.
 
-The two S2 projection views deliberately answer different questions. `DomainContextMap` is not allowed to promote compositions to Bounded Contexts. `StrategicCollaborationMap` shows those compositions because they are useful to understand whole-domain collaboration, but it is not labeled as a DDD Context Map.
+It also provides generated review projections:
 
-Relationship descriptions are not placed on arrows. Arrows remain visually compact, while the generated PlantUML legend lists each source/target pair and its accepted semantic meaning. The generator does not infer a DDD Context Mapping pattern that is absent from the canonical source.
+| View | Canonical source | What it shows |
+|---|---|---|
+| `MVPJourney` | accepted H17 S1 product requirement | ordered first-MVP user/product journey |
+| `DomainContextMap` | accepted H16 capability map + context relationships | peer Bounded Contexts and accepted peer relationships |
+| `StrategicCollaborationMap` | accepted H16 capability map + context relationships | peer Bounded Contexts, non-peer compositions, and all accepted strategic collaborations |
+| `ResourceCurationProcess` | accepted H12 S2 process model | declared Resource Catalogue policies, commands, domain events, sequences, and alternatives |
+| `ResourceCatalogueDomainModel` | accepted H12 S2 tactical domain model | Resource aggregate root, owned entities, value objects, exact declared references, and invariants |
+| `MVPTacticalDomainModel` | accepted H17 S2 tactical model | aggregate/entity semantics participating in the first MVP journey, grouped by owning context |
+| `PersistenceOwnership` | accepted H19 S4 implementation-readiness design | PostgreSQL schema/table ownership only; deliberately not an ERD |
+
+The two strategic S2 views deliberately answer different questions. `DomainContextMap` is not allowed to promote compositions to Bounded Contexts. `StrategicCollaborationMap` shows those compositions because they are useful to understand whole-domain collaboration, but it is not labeled as a DDD Context Map.
+
+Generated diagrams never infer missing design decisions. For example, the Resource Catalogue domain-model projection creates ownership links only from explicit aggregate/entity references and links value objects only where the canonical model names them exactly as an identity or attribute. The persistence projection deliberately stops at schema/table ownership because no accepted column/key/cardinality-level persistence model exists yet.
 
 The deployment view deliberately stays at the accepted S3 baseline. It does not invent cloud provider, operating system, cluster, reverse proxy, load balancer, redundancy, or other infrastructure decisions that have not been made yet. The generic deployment nodes express runtime placement only; they are not claims about separate physical machines.
 
 ## Canonical source vs projection
 
-The first projection pipeline is deliberately small:
+The projection layer is deliberately small and deterministic:
 
 ```text
-docs/migration/revalidated/h16-strategic/s2/strategic/capability-map.yaml
-                                      +
-docs/migration/revalidated/h16-strategic/s2/strategic/context-relationships.yaml
-                                      |
-                                      v
-                    tools/generate_architecture_views.py
-                         |                       |
-                         v                       v
-        docs-generated/architecture/   docs-generated/architecture/
-              context-map.puml         strategic-collaboration-map.puml
-                         |                       |
-                         +-----------+-----------+
-                                     v
-                                Structurizr
+accepted machine-readable design anchors
+              |
+              v
+ tools/generate_architecture_views.py
+              |
+              v
+ docs-generated/architecture/*.puml
+              |
+              v
+         Structurizr
 ```
 
-The two S2 YAML anchors are semantic authority. Both PlantUML files are generated output only. They live under the ignored `docs-generated/` root and must not be edited or searched as canonical knowledge.
+Current inputs are the accepted H12 Resource Catalogue process/domain anchors, H16 strategic anchors, H17 first-MVP requirement/tactical anchors, and the H19 implementation-readiness persistence-ownership section. The generated PlantUML files live under the ignored `docs-generated/` root and must not be edited or searched as canonical knowledge.
 
-The generator is intentionally not a general diagram framework. It performs deterministic projections and fails if a relationship endpoint is not declared by the accepted capability map or if a configured source is not `ACCEPTED`.
+The generator is intentionally not a general diagram framework. Each renderer has a known canonical source shape, validates the source `status`/`type_id`, and fails on structural inconsistencies rather than guessing missing semantics.
 
 ## Refresh generated views
 
@@ -52,7 +58,7 @@ Run:
 make architecture-sync
 ```
 
-This regenerates all currently supported non-canonical architecture views from their canonical machine-readable sources.
+This regenerates all currently supported non-canonical architecture/design views from their canonical machine-readable sources.
 
 `make architecture` invokes `architecture-sync` automatically, so normal viewing always starts from freshly generated projections.
 
@@ -105,18 +111,14 @@ make architecture-check
 
 The check first regenerates projections from canonical sources, then validates the Structurizr DSL with the pinned Structurizr image. A clean CI checkout therefore never depends on a committed generated diagram.
 
-GitHub Actions runs the same check when the Structurizr workspace, projection generator, projection source anchors, Makefile, or architecture workflow changes.
+GitHub Actions runs the same check when the Structurizr workspace, projection generator, any current canonical projection source, Makefile, or architecture workflow changes.
 
-## Future projections
+## ERD boundary
 
-The same pattern can be extended without changing authority rules:
+`PersistenceOwnership` is intentionally not an ERD. H19 currently owns only the accepted implementation-readiness facts that the MVP uses one PostgreSQL database and which tables belong to each module/schema. That is enough for a useful ownership projection but not enough to draw columns, primary/foreign keys, indexes, or cardinalities honestly.
 
-- a canonical S3 persistence model can generate ERD PlantUML views;
-- machine-readable tactical/domain artifacts can generate domain-model views where useful;
-- code/class diagrams may use PlantUML when they have a defined canonical source.
-
-ERD generation is intentionally not implemented yet because a canonical column/key/relationship-level persistence model has not been established. The generator must visualize decisions; it must not infer missing persistence decisions from domain semantics or product code.
+When an accepted machine-readable S3 persistence model contains those decisions, the same projection mechanism should generate one or more ERD PlantUML views from it. The generated ERD will remain a projection; the structured persistence model will own the design truth.
 
 ## Authority boundary
 
-The Structurizr DSL may express C4 structural elements, deployment/runtime containers, deployment nodes, components, and their architectural relationships. Domain invariants and bounded-context semantics remain owned by accepted S2 artifacts. Generated image views expose those artifacts for human inspection without acquiring semantic authority. Persistence/ERD concerns remain outside the generated projection set until explicitly designed as canonical S3 persistence truth.
+The Structurizr DSL may express C4 structural elements, deployment/runtime containers, deployment nodes, components, and their architectural relationships. Domain invariants and bounded-context semantics remain owned by accepted S2 artifacts. Generated image views expose accepted S1/S2/S4 artifacts for human inspection without acquiring semantic authority. A future persistence/ERD projection must follow the same rule.
