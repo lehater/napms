@@ -87,7 +87,13 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
         image * "DomainContextMap" {
             plantuml "generated/context-map.puml"
             title "DDD Context Map"
-            description "Generated projection of the accepted strategic S2 capability and context-relationship anchors."
+            description "Generated projection containing peer Bounded Contexts only; accepted relationship meanings are listed in the legend rather than on arrows."
+        }
+
+        image * "StrategicCollaborationMap" {
+            plantuml "generated/strategic-collaboration-map.puml"
+            title "Strategic Collaboration Map"
+            description "Generated projection of peer Bounded Contexts plus non-peer compositions and all accepted strategic collaboration relationships."
         }
 
         styles {
