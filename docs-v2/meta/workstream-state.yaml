@@ -1,4 +1,4 @@
-version: 16
+version: 17
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
@@ -6,19 +6,19 @@ branch: meta/docs-v2-m7-pilot
 last_updated: 2026-09-17
 program:
   status: ACTIVE
-  current_phase: H17
-  current_phase_state: ESTABLISHING_MVP_JOURNEY
-  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15, H16]
+  current_phase: H18
+  current_phase_state: DESIGNING_MVP_SYSTEM_ARCHITECTURE
+  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15, H16, H17]
 control_plane:
   contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 3}
   rule: meaningful design work is visible; runtime reliability bookkeeping is internal
 current_work:
-  phase: H17
-  name: Narrow MVP journey S0-S2 revalidation
+  phase: H18
+  name: Complete MVP system architecture
   state: IN_PROGRESS
-  predecessor_ref: docs-v2/migration/revalidated/h16-strategic/validation/s2-strategic-change-set-validation.yaml
-  next: establish the end-to-end MVP journey from resources plus application/components/interactions through an accepted policy rule to materialized/exported policy, then revalidate only participating S0-S2 semantics
-  target_scope: resources plus application/components/interactions -> policy rule -> materialized/exported policy
+  predecessor_ref: docs-v2/migration/revalidated/h17-mvp-journey/validation/h17-change-set-validation.yaml
+  next: complete one frontend plus modular-monolith backend architecture baseline for the whole MVP journey, resolve system-level API persistence and authorization contracts, then validate S3 as one coherent slice
+  target_scope: complete accepted first-MVP journey
 documentation_authority:
   evolving_authority: docs-v2/
   legacy_source: docs/
@@ -27,10 +27,9 @@ documentation_authority:
   namespace_cutover: planned-after-strategic-migration-and-mvp-design
 carry_forward:
   - Human-owned truth is never invented; material gaps become questions/blockers.
-  - Design documentation is a graph; affected-only revalidation replaces waterfall restart.
-  - Downstream design conforms to applicable upstream authoritative constraints.
-  - H16 whole-domain strategic DDD baseline is accepted in docs-v2; H12 Resource Catalogue and Authority Management anchors remain current overlapping truth.
-  - Strategic landscape remains broad while H17 tactical and requirements elaboration narrows to the MVP journey.
+  - H17 first-MVP S1-S2 journey and tactical slice are accepted current truth.
+  - H16 whole-domain strategic DDD baseline remains accepted current truth.
+  - H18 makes system-wide architecture choices once for frontend plus modular-monolith backend; contexts do not independently choose transports or deployment topology.
   - Product code/tests remain outside design authority.
   - Normal design work must not be dominated by Harness bookkeeping.
 restrictions:
@@ -42,10 +41,10 @@ restrictions:
 blockers: []
 resume_protocol:
   - Read this file first then roadmap.yaml.
-  - For H17 load the accepted H16 strategic anchors and only frozen requirements/domain evidence directly relevant to the MVP journey.
+  - For H18 load accepted H17 S1-S2 anchors, accepted H16 strategic anchors, and only architecture specs/evidence directly needed by the whole MVP journey.
   - Treat docs/ only as frozen migration evidence; never edit it and never let it override accepted docs-v2 corrections.
-  - Keep tactical and requirements elaboration narrow to the confirmed MVP journey while retaining broad strategic context.
-  - Preserve the accepted minimal runtime boundary and use changed/affected validation.
-  - Product code/tests remain outside current authority and cannot supply missing design truth.
-  - Ask the stakeholder only when the MVP journey exposes a material contradiction or missing human-owned product/domain truth.
-blockers: []
+  - Design frontend and modular-monolith backend as one system baseline; do not advance one Bounded Context architecture independently.
+  - Preserve domain ownership across in-process module boundaries and keep non-peer policy export as composition.
+  - Use changed/affected validation; Harness bookkeeping stays internal.
+  - Product code/tests remain outside current authority and cannot supply missing architecture truth.
+  - Ask the stakeholder only for a material human-owned choice that cannot be derived from accepted constraints.
