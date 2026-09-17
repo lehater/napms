@@ -1,14 +1,14 @@
 version: 1
-revision: 11
+revision: 12
 kind: meta-roadmap
 id: DOCS-V2-HARNESS-ROADMAP
 status: complete
 scope: universal-project-design-harness
 purpose: Guide design from initial problem to implementation readiness before product code is written, preserving visible machine-readable linked design truth.
 operating_constraints:
-  - docs-v2/ is the sole canonical current documentation authority after H20 cutover.
-  - docs/ is retired frozen migration evidence and cannot override accepted docs-v2 truth.
-  - Corrections and newly accepted design truth are written only to docs-v2/; reverse synchronization into docs/ is forbidden.
+  - docs/ is the sole canonical current documentation authority after H20 cutover and physical namespace normalization.
+  - docs-legacy/ is retired frozen migration evidence and cannot override accepted docs truth.
+  - Corrections and newly accepted design truth are written only to docs/; reverse synchronization into docs-legacy/ is forbidden.
   - Product code/tests are not sources of product/domain/architecture truth during documentation design.
   - Product implementation, product tests and merge require their own explicit authorization.
 principles:
@@ -38,26 +38,26 @@ program_phases:
   completed: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15, H16, H17, H18, H19, H20]
   active: null
 H12: {objective: Validate the simplified design order against a bounded NAPMS migration slice through G2., result: PASS}
-H13: {objective: Plan the smallest runtime needed after H12., result: PASS, result_ref: docs-v2/meta/h13-minimal-runtime-plan.yaml}
-H14: {objective: Implement and validate the minimal repository-local Harness runtime., result: PASS, result_ref: docs-v2/meta/h14-runtime-implementation.yaml}
-H15: {objective: Make the H14 runtime the single docs-v2 validation entrypoint while isolating obsolete legacy validation semantics., result: PASS, result_ref: docs-v2/meta/h15-integration-plan.yaml}
-H16: {objective: Migrate and revalidate the accepted strategic DDD baseline for NAPMS as a whole into canonical docs-v2 S2 anchors., result: PASS}
+H13: {objective: Plan the smallest runtime needed after H12., result: PASS, result_ref: docs/meta/h13-minimal-runtime-plan.yaml}
+H14: {objective: Implement and validate the minimal repository-local Harness runtime., result: PASS, result_ref: docs/meta/h14-runtime-implementation.yaml}
+H15: {objective: Make the H14 runtime the single documentation validation entrypoint while isolating obsolete legacy validation semantics., result: PASS, result_ref: docs/meta/h15-integration-plan.yaml}
+H16: {objective: Migrate and revalidate the accepted strategic DDD baseline for NAPMS as a whole into canonical S2 anchors., result: PASS}
 H17: {objective: Establish the narrow MVP journey and revalidate the S0-S2 semantics needed by it., journey: describe resources and application/components/interactions -> create and accept a policy rule -> materialize and export resulting policy, result: PASS}
 H18:
   objective: Design S3 architecture for the complete MVP journey on one system baseline.
   result: PASS
-  result_ref: docs-v2/migration/revalidated/h18-mvp-architecture/validation/h18-change-set-validation.yaml
+  result_ref: docs/migration/revalidated/h18-mvp-architecture/validation/h18-change-set-validation.yaml
   accepted_baseline: {delivery: HTTP/JSON with one OpenAPI application contract, backend: modular monolith with in-process module contracts, persistence: one PostgreSQL database with module-owned schemas, authorization: backend session identity plus Authority Management admission}
 H19:
   objective: Complete S4 implementation design and G4 for the end-to-end MVP journey.
   result: PASS
-  result_ref: docs-v2/migration/revalidated/h19-mvp-implementation-readiness/validation/h19-change-set-validation.yaml
+  result_ref: docs/migration/revalidated/h19-mvp-implementation-readiness/validation/h19-change-set-validation.yaml
   accepted_result: {implementation_readiness: NAPMS-S4-FIRST-MVP-IMPLEMENTATION-READINESS, verification_intent: NAPMS-S4-FIRST-MVP-TEST-INTENT, gate: G4, gate_result: PASS}
 H20:
   objective: Perform documentation namespace cutover after the migrated strategic baseline and MVP design have proven the new system usable as the sole documentation authority.
   result: PASS
-  result_ref: docs-v2/meta/h20-namespace-cutover.yaml
-  accepted_result: {canonical_namespace: docs-v2/, retired_namespace: docs/, retired_mode: frozen-migration-evidence-only, competing_current_truth_store: false}
+  result_ref: docs/meta/h20-namespace-cutover.yaml
+  accepted_result: {canonical_namespace: docs/, retired_namespace: docs-legacy/, retired_mode: frozen-migration-evidence-only, competing_current_truth_store: false, physical_namespace_normalization: complete}
 program_exit:
   - Strategic DDD for the NAPMS domain is canonical in the documentation system.
   - The selected MVP journey reaches implementation readiness through linked machine-readable artifacts.
