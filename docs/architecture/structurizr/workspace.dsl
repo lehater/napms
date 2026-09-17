@@ -22,6 +22,7 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
 
         user -> napms.web "Uses"
         napms.web -> napms.backend "Uses application API" "HTTP/JSON; CSV export"
+        napms.backend -> napms.db "Uses module-owned persistence" "PostgreSQL protocol"
 
         napms.backend.rc -> napms.db "Reads/writes Resource Catalogue-owned schema"
         napms.backend.acc -> napms.db "Reads/writes Application Communication Catalogue-owned schema"
@@ -41,6 +42,20 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
         napms.backend.export -> napms.backend.ad "Resolves deployment endpoints"
         napms.backend.export -> napms.backend.rc "Resolves current AddressSpace"
         napms.backend.export -> napms.backend.bc "Resolves current connectivity basis"
+
+        mvp = deploymentEnvironment "MVP Baseline" {
+            client = deploymentNode "Client" "User-side runtime for the NAPMS browser frontend." "Web browser" {
+                containerInstance napms.web
+            }
+
+            applicationRuntime = deploymentNode "Backend Runtime" "Runtime hosting the single NAPMS modular-monolith backend deployment unit." "Application runtime" {
+                containerInstance napms.backend
+            }
+
+            databaseRuntime = deploymentNode "Database Runtime" "Runtime hosting the single PostgreSQL deployment unit." "PostgreSQL runtime" {
+                containerInstance napms.db
+            }
+        }
     }
 
     views {
@@ -57,6 +72,11 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
         component napms.backend "BackendComponents" {
             include *
             description "Domain-aligned modules and policy-export composition inside the modular-monolith backend."
+        }
+
+        deployment napms mvp "MVPDeployment" {
+            include *
+            description "Deployment mapping for the accepted MVP baseline: browser frontend, one backend runtime, and one PostgreSQL runtime."
         }
 
         styles {
