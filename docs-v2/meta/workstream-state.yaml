@@ -1,4 +1,4 @@
-version: 11
+version: 12
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
@@ -7,18 +7,19 @@ last_updated: 2026-09-17
 program:
   status: ACTIVE
   current_phase: H16
-  current_phase_state: PLANNING
+  current_phase_state: DESIGNING
   completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15]
 control_plane:
   contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 3}
   rule: meaningful design work is visible; runtime reliability bookkeeping is internal
 current_work:
   phase: H16
-  name: Resume pilot design at S3 Software Architecture / Solution Design
-  state: PLANNING
+  name: Resource Catalogue curation S3 Software Architecture / Solution Design
+  state: DESIGNING
   predecessor_ref: docs-v2/meta/h15-integration-plan.yaml
   lifecycle_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
-  next: derive the smallest S3 architecture slice from accepted S0-S2 design and applicable quality constraints without using product code/tests as design truth
+  current_anchor_ref: NAPMS-S3-RC-ARCHITECTURE-BOUNDARY
+  next: validate the changed/affected S3 architecture boundary through the shared docs-v2 entrypoint and derive only applicable S3 structural interaction or external-contract anchors needed for G3
 documentation_authority:
   evolving_authority: docs-v2/
   legacy_source: docs/
@@ -33,6 +34,7 @@ carry_forward:
   - H14 minimal runtime and H15 shared docs-v2 validation entrypoint are complete and passing.
   - Canonical design anchors may be YAML documents or Markdown documents with YAML front matter.
   - Pre-H12 Task Capsule validators remain legacy-only and outside the docs-v2 validation path.
+  - S3 must not select transport persistence or deployment technology without an applicable accepted constraint or human decision.
 restrictions:
   product_implementation_authorization: none
   product_test_change_authorization: none
@@ -41,9 +43,9 @@ restrictions:
   merge_authorization: false
 blockers: []
 resume_protocol:
-  - Read this file first then roadmap.yaml then the current lifecycle_ref and only directly needed S0-S2/spec dependencies.
+  - Read this file first then roadmap.yaml then the current lifecycle_ref and only directly needed accepted design/spec dependencies.
   - Treat docs/ only as frozen migration evidence; never edit it.
-  - Resume meaningful product/system design at S3; Harness runtime work is not the default next task.
+  - Resume meaningful product/system design at the lifecycle stage recorded by lifecycle_ref; Harness runtime work is not the default next task.
   - Preserve the accepted minimal runtime boundary and use changed/affected validation.
   - Product code/tests remain outside current authority and cannot supply missing design truth.
   - Ask the stakeholder when an S3 choice depends on missing human-owned product or operational truth.
