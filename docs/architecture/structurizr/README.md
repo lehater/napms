@@ -30,7 +30,7 @@ Use the pencil/editor action in Structurizr to position elements and relationshi
 
 Do not hand-edit coordinates in `workspace.json`. Keep the explicit stable view keys (`SystemContext`, `Containers`, `BackendComponents`, `MVPDeployment`), because Structurizr uses them when retaining manual layout across DSL changes.
 
-The workspace uses the conventional C4 visual hierarchy: darker software-system elements, lighter containers, lighter components, a person shape for people, and a cylinder for the PostgreSQL container. Styling is presentation only; tags and model structure remain the semantic source.
+The workspace uses the conventional C4 visual hierarchy: darker software-system elements, lighter containers, lighter components, a person shape for people, a cylinder for the PostgreSQL container, and neutral deployment-node boundaries. Styling is presentation only; tags and model structure remain the semantic source.
 
 The image can be overridden when deliberately testing a newer Structurizr release:
 
