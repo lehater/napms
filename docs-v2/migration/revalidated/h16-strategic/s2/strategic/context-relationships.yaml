@@ -1,0 +1,43 @@
+anchor_id: NAPMS-S2-NAPMS-CONTEXT-RELATIONSHIPS
+type_id: context-relationship-map
+owner_stage: S2
+scope: {scope_id: H16-NAPMS-STRATEGIC, product_area: NAPMS whole-domain strategic landscape, lifecycle_boundary: S2 Strategic domain design}
+status: CANDIDATE
+canonical_payload:
+  relationships:
+  - {relationship_id: REL-ACC-BC, context_a_ref: {anchor_id: NAPMS-S2-BC-APPLICATION-COMMUNICATION-CATALOGUE}, context_b_ref: {anchor_id: NAPMS-S2-BC-BUSINESS-CONNECTIVITY}, direction: a-upstream-b, patterns: [], contract: InteractionRef, rationale: Business Connectivity consumes stable application-semantic Interaction identity.}
+  - {relationship_id: REL-ACC-AD, context_a_ref: {anchor_id: NAPMS-S2-BC-APPLICATION-COMMUNICATION-CATALOGUE}, context_b_ref: {anchor_id: NAPMS-S2-BC-APPLICATION-DEPLOYMENT}, direction: a-upstream-b, patterns: [], contract: opaque ComponentRef, rationale: Deployment consumes Component identity without owning ACC meaning.}
+  - {relationship_id: REL-RC-AD, context_a_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, context_b_ref: {anchor_id: NAPMS-S2-BC-APPLICATION-DEPLOYMENT}, direction: a-upstream-b, patterns: [], contract: opaque ResourceRef, rationale: Deployment consumes Resource identity while RC retains Resource realization semantics.}
+  - {relationship_id: REL-BC-AP, context_a_ref: {anchor_id: NAPMS-S2-BC-BUSINESS-CONNECTIVITY}, context_b_ref: {anchor_id: NAPMS-S2-BC-ACCESS-POLICY}, direction: a-upstream-b, patterns: [], contract: ConnectivityNeedRef plus BusinessProcessRef and current justification basis, rationale: Deliberate policy change submission requires business basis but Need never implies authorization.}
+  - {relationship_id: REL-ACC-AP, context_a_ref: {anchor_id: NAPMS-S2-BC-APPLICATION-COMMUNICATION-CATALOGUE}, context_b_ref: {anchor_id: NAPMS-S2-BC-ACCESS-POLICY}, direction: a-upstream-b, patterns: [], contract: InteractionContractRevisionRef to immutable traffic semantics and endpoint ComponentRefs, rationale: AP consumes exact reusable traffic semantics.}
+  - {relationship_id: REL-AD-AP, context_a_ref: {anchor_id: NAPMS-S2-BC-APPLICATION-DEPLOYMENT}, context_b_ref: {anchor_id: NAPMS-S2-BC-ACCESS-POLICY}, direction: a-upstream-b, patterns: [], contract: ComponentDeploymentRef to ComponentRef plus ResourceRef or unresolved, rationale: Concrete policy subject is the directed deployment pair.}
+  - {relationship_id: REL-AM-AP, context_a_ref: {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}, context_b_ref: {anchor_id: NAPMS-S2-BC-ACCESS-POLICY}, direction: a-upstream-b, patterns: [], contract: optional protected-action admission, rationale: Authority admission does not define the RuleChange decision procedure.}
+  - {relationship_id: REL-AM-RC, context_a_ref: {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}, context_b_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, direction: a-upstream-b, patterns: [], contract: EffectiveAuthority actor action responsibilityScope time, rationale: Reuses the already-revalidated H12 RC curation admission relationship.}
+  - {relationship_id: REL-AM-ACC, context_a_ref: {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}, context_b_ref: {anchor_id: NAPMS-S2-BC-APPLICATION-COMMUNICATION-CATALOGUE}, direction: a-upstream-b, patterns: [], contract: EffectiveAuthority actor action responsibilityScope time, rationale: Protected catalogue actions may consume AM admission.}
+  - {relationship_id: REL-AM-AD, context_a_ref: {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}, context_b_ref: {anchor_id: NAPMS-S2-BC-APPLICATION-DEPLOYMENT}, direction: a-upstream-b, patterns: [], contract: EffectiveAuthority actor action responsibilityScope time, rationale: Protected deployment actions may consume AM admission.}
+  - {relationship_id: REL-AM-NEO, context_a_ref: {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}, context_b_ref: {anchor_id: NAPMS-S2-BC-NETWORK-ENVIRONMENT-OPERATIONS}, direction: a-upstream-b, patterns: [], contract: mutation EffectiveAuthority actor action responsibilityScope time, rationale: Controlled mutation may require AM admission.}
+  compositions:
+  - {composition_id: REQUIRED-POLICY-MATERIALIZATION, inputs: [NAPMS-S2-BC-ACCESS-POLICY, NAPMS-S2-BC-APPLICATION-COMMUNICATION-CATALOGUE, NAPMS-S2-BC-APPLICATION-DEPLOYMENT, NAPMS-S2-BC-RESOURCE-CATALOGUE, NAPMS-S2-BC-NETWORK-ENFORCEMENT-PLACEMENT], output_contract: TargetRequiredPolicy or unresolved, disposition: non-peer-composition}
+  - {composition_id: EVIDENCE-ACCESS-RECOGNITION, inputs: [NAPMS-S2-BC-TECHNICAL-ACCESS-EVIDENCE, NAPMS-S2-BC-RESOURCE-CATALOGUE, NAPMS-S2-BC-APPLICATION-DEPLOYMENT, NAPMS-S2-BC-APPLICATION-COMMUNICATION-CATALOGUE], output_contract: RecognizedAccessCandidate or unresolved/ambiguous, disposition: non-peer-composition}
+  integration_chain:
+  - {from: Provider Policy Interpreter, to: NAPMS-S2-BC-ACCESS-POLICY-REALIZATION, contract: ConfiguredEffectivePolicySnapshot}
+  - {from: NAPMS-S2-BC-ACCESS-POLICY-REALIZATION, to: Provider Policy Renderer, contract: VerifiedChangeIntent}
+  - {from: Provider Policy Renderer, to: NAPMS-S2-BC-NETWORK-ENVIRONMENT-OPERATIONS, contract: TargetPolicyArtifact}
+  - {from: Technical Evidence Acquisition / Collectors, to: NAPMS-S2-BC-TECHNICAL-ACCESS-EVIDENCE, contract: faithfully normalized source-qualified evidence input}
+  invariants:
+  - No Shared Kernel is accepted between target Bounded Contexts.
+  - Cross-context references are semantic references rather than persistence foreign-key ownership.
+  - Evidence alone never creates authorization desired policy or remediation intent.
+  - Unresolved input never silently becomes empty policy denial or success.
+  - Execution success is not final semantic convergence proof.
+  logical_derivation: {basis_refs: [{kind: evidence, path: docs/domain/context-map.md}, {kind: evidence, path: docs/domain/strategic-model.json}], derivation_kind: migration-revalidation, rationale: Preserve accepted whole-domain semantic contracts while reconciling already-accepted RC and AM anchors and keeping compositions/integrations non-peer., method_rule_ids: [DDD-MR-CONTEXT-RELATIONSHIP]}
+provenance:
+  origin_kind: imported-current-docs
+  source_refs:
+  - {kind: repository-file, path: docs/domain/context-map.md, blob_sha: 5980f19da4deed65d0f123d006c9bbd4600468b3}
+  - {kind: repository-file, path: docs/domain/strategic-model.json, blob_sha: 4d8e8385cfd6f6e71ee4a8ab6d5bf8186766cdc7}
+  authority_basis: imported-current-docs-ref-before-cutover
+  recorded_at: '2026-09-17'
+semantic_refs: []
+semantic_fingerprint: pending-h16-validation
+validation: {freshness: STALE, evidence_ref: null, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: pending-H16-validation}
