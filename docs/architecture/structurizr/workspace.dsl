@@ -84,6 +84,12 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
             description "Deployment mapping for the accepted MVP baseline: browser frontend, one backend runtime, and one PostgreSQL runtime."
         }
 
+        image * "MVPJourney" {
+            plantuml "generated/mvp-journey.puml"
+            title "First MVP Journey"
+            description "Generated ordered projection of the accepted S1 first-MVP journey."
+        }
+
         image * "DomainContextMap" {
             plantuml "generated/context-map.puml"
             title "DDD Context Map"
@@ -94,6 +100,30 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
             plantuml "generated/strategic-collaboration-map.puml"
             title "Strategic Collaboration Map"
             description "Generated projection of peer Bounded Contexts plus non-peer compositions and all accepted strategic collaboration relationships."
+        }
+
+        image * "ResourceCurationProcess" {
+            plantuml "generated/resource-curation-process.puml"
+            title "Resource Catalogue Curation Process"
+            description "Generated projection of accepted Resource Catalogue policies, commands, domain events, and declared process-flow alternatives."
+        }
+
+        image * "ResourceCatalogueDomainModel" {
+            plantuml "generated/resource-catalogue-domain-model.puml"
+            title "Resource Catalogue Domain Model"
+            description "Generated projection of the accepted Resource aggregate, owned entities, value objects, exact declared references, and invariants."
+        }
+
+        image * "MVPTacticalDomainModel" {
+            plantuml "generated/mvp-tactical-domain-model.puml"
+            title "First MVP Tactical Domain Model"
+            description "Generated projection of the accepted tactical aggregate/entity semantics participating in the first MVP journey."
+        }
+
+        image * "PersistenceOwnership" {
+            plantuml "generated/persistence-ownership.puml"
+            title "MVP Persistence Ownership"
+            description "Generated implementation-readiness projection of PostgreSQL schema/table ownership. This is intentionally not an ERD and does not infer columns, keys, or cardinalities."
         }
 
         styles {
