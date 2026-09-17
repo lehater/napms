@@ -1,4 +1,4 @@
-version: 7
+version: 8
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
@@ -6,24 +6,18 @@ branch: meta/docs-v2-m7-pilot
 last_updated: 2026-09-17
 program:
   status: ACTIVE
-  current_phase: H14
-  current_phase_state: IN_PROGRESS
-  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13]
+  current_phase: H15
+  current_phase_state: PLANNING
+  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14]
 control_plane:
   contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 3}
   rule: meaningful design work is visible; runtime reliability bookkeeping is internal
 current_work:
-  phase: H14
-  name: Minimal Harness runtime implementation
-  state: IN_PROGRESS
-  plan_ref: docs-v2/meta/h13-minimal-runtime-plan.yaml
-  implementation_state_ref: docs-v2/meta/h14-runtime-implementation.yaml
-  next: execute persisted H14 tests and runtime validation against an actual branch checkout, then reconcile only reported minimal-boundary failures
-runtime_authorization:
-  granted: true
-  source: explicit stakeholder instruction on 2026-09-17
-  allowed: [Harness runtime code, Harness executable regression tests, Harness runtime dependency declaration, docs-v2 state/evidence]
-  forbidden: [product implementation, product tests, workflow-ci changes, namespace cutover, merge]
+  phase: H15
+  name: Post-H14 Harness integration planning
+  state: PLANNING
+  predecessor_ref: docs-v2/meta/h14-runtime-implementation.yaml
+  next: define the smallest post-H14 integration step that replaces obsolete docs-v2 validation entrypoints without expanding Harness ceremony or touching product semantics
 documentation_authority:
   evolving_authority: docs-v2/
   legacy_source: docs/
@@ -36,26 +30,19 @@ carry_forward:
   - Downstream design conforms to applicable upstream authoritative constraints.
   - Readiness gates are lifecycle guarantees, not separate execution units.
   - Operational IDs fingerprints execution bases receipts caching and atomicity are infrastructure details.
-  - H14 runtime persistence may write only docs-v2/** even though runtime/test implementation lives under tools/.
-  - Canonical design anchors may be YAML documents or Markdown documents with YAML front matter; runtime discovery must support both.
+  - H14 minimal repository-local runtime passed its regression suite and actual docs-v2 corpus validation on a branch checkout.
+  - Canonical design anchors may be YAML documents or Markdown documents with YAML front matter.
   - Pre-H12 Task Capsule validators are legacy-only and are not part of the H14 runtime validation path.
 restrictions:
   product_implementation_authorization: none
   product_test_change_authorization: none
-  harness_runtime_implementation_authorization: granted-H14
-  harness_executable_test_authorization: granted-H14
-  workflow_ci_change_authorization: none
   namespace_cutover_authorization: false
   merge_authorization: false
-blockers:
-  - id: H14-B-CHECKOUT-EXECUTION
-    kind: execution-environment
-    statement: Full persisted runtime corpus execution requires a repository checkout; current execution environment cannot clone GitHub and CI wiring/change is outside current authorization.
+blockers: []
 resume_protocol:
   - Read this file first then roadmap.yaml then the H14 implementation state.
   - Treat docs/ only as frozen migration evidence; never edit it.
-  - Continue only the accepted minimal runtime boundary; do not add Task Capsule separate gate transaction daemon/service database or CI dependency.
-  - Run changed/affected validation rather than global semantic ceremony.
-  - Runtime persistence of canonical design is restricted to docs-v2/** and must fail on stale repository basis.
-  - Product code/tests remain outside H14 authority and cannot supply missing design truth.
-  - Do not claim H14 corpus PASS until the persisted runtime has executed against a current branch checkout.
+  - Preserve the accepted minimal runtime boundary; do not reintroduce Task Capsule separate gate transaction daemon/service database or global semantic ceremony.
+  - Use changed/affected validation and repository state as the normal resume path.
+  - Product code/tests remain outside current authority and cannot supply missing design truth.
+  - Before changing shared workflow/Makefile validation entrypoints, explicitly define the intended H15 integration boundary in docs-v2 state/roadmap.
