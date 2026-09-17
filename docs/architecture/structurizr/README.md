@@ -57,12 +57,14 @@ Run:
 make architecture
 ```
 
-Then open `http://localhost:8080`.
+Then open `http://127.0.0.1:8080` or `http://localhost:8080`.
 
-The command starts two local disposable containers on a private Docker network:
+The command starts two disposable local containers:
 
-- Structurizr Local for C4 viewing/layout editing;
-- PlantUML Server for rendering generated `.puml` image views.
+- Structurizr Local bound to `127.0.0.1:8080` for C4 viewing/layout editing;
+- PlantUML Server bound to `127.0.0.1:8081` for rendering generated `.puml` image views.
+
+The PlantUML endpoint is intentionally browser-visible on loopback because Structurizr image views emit an SVG URL that the web browser loads directly. A Docker-only hostname such as `napms-plantuml` is therefore not sufficient for local browser rendering. Both services are bound to loopback only and are not exposed on external network interfaces.
 
 No diagram source is sent to a public rendering service.
 
