@@ -9,7 +9,7 @@ The workspace currently provides four generated views:
 - `BackendComponents` — domain-aligned backend modules plus policy-export composition;
 - `MVPDeployment` — deployment mapping of the browser frontend, backend runtime, and PostgreSQL runtime for the accepted MVP baseline.
 
-The deployment view deliberately stays at the accepted S3 baseline. It does not invent cloud provider, operating system, cluster, reverse proxy, load balancer, redundancy, or other infrastructure decisions that have not been made yet.
+The deployment view deliberately stays at the accepted S3 baseline. It does not invent cloud provider, operating system, cluster, reverse proxy, load balancer, redundancy, or other infrastructure decisions that have not been made yet. The generic deployment nodes express runtime placement only; they are not claims about separate physical machines.
 
 ## Local viewing and editing
 
