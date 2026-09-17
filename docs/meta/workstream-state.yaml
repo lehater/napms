@@ -1,7 +1,7 @@
 version: 20
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
-roadmap: docs-v2/meta/roadmap.yaml
+roadmap: docs/meta/roadmap.yaml
 branch: meta/docs-v2-m7-pilot
 last_updated: 2026-09-17
 program:
@@ -10,20 +10,20 @@ program:
   current_phase_state: PROGRAM_COMPLETE
   completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15, H16, H17, H18, H19, H20]
 control_plane:
-  contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 3}
+  contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs/spec/harness-control-plane.yaml, version: 1, revision: 3}
   rule: meaningful design work is visible; runtime reliability bookkeeping is internal
 current_work:
   phase: null
   name: Documentation design program complete
   state: COMPLETE
-  predecessor_ref: docs-v2/meta/h20-namespace-cutover.yaml
-  next: no automatic continuation; start a new explicitly authorized workstream from canonical docs-v2 truth
+  predecessor_ref: docs/meta/h20-namespace-cutover.yaml
+  next: no automatic continuation; start a new explicitly authorized workstream from canonical docs truth
   target_scope: none
   reporting_granularity: completed program
   gate_status: {G4: PASS}
 documentation_authority:
-  canonical: docs-v2/
-  legacy_source: docs/
+  canonical: docs/
+  legacy_source: docs-legacy/
   legacy_status: retired-frozen-migration-evidence-only
   reverse_sync: forbidden
   namespace_cutover: complete
@@ -32,7 +32,7 @@ carry_forward:
   - H17 first-MVP S1-S2 journey and tactical slice are accepted current truth.
   - H18 complete-MVP S3 architecture is accepted current truth.
   - H19 complete-MVP S4 implementation and verification design is accepted current truth and G4 is PASS.
-  - docs-v2/ is the sole canonical current documentation authority; docs/ is retired evidence only.
+  - docs/ is the sole canonical current documentation authority; docs-legacy/ is retired evidence only.
   - Frontend/backend delivery uses HTTP/JSON with one OpenAPI application contract; backend module interaction remains in-process.
   - MVP persistence is one PostgreSQL database with module-owned schemas/repository contracts.
   - Protected application use cases use backend session identity and Authority Management admission; frontend state never grants authority.
@@ -48,7 +48,7 @@ blockers: []
 resume_protocol:
   - Read this file first for any continuation of the completed Documentation System / Harness workstream.
   - The H0-H20 program is complete; do not invent a next phase inside it.
-  - Use docs-v2/ as the sole canonical current documentation authority; docs/ is retired frozen migration evidence only.
+  - Use docs/ as the sole canonical current documentation authority; docs-legacy/ is retired frozen migration evidence only.
   - Do not reopen accepted S1-S4 truth unless contradictory evidence or an explicit design change requires affected revalidation.
   - Do not write product code or product tests without separate explicit implementation authorization.
   - Start any new design or implementation workstream explicitly and derive it from the accepted anchors relevant to its scope.
