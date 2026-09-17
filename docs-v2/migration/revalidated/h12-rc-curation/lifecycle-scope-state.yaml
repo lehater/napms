@@ -1,4 +1,4 @@
-version: 16
+version: 17
 kind: lifecycle-scope-state
 id: NAPMS-H12-RC-CURATION-LIFECYCLE
 scope_id: H12-RC-CURATION-MVP
@@ -10,10 +10,10 @@ process_contracts:
   lifecycle: {id: DOCS-V2-LIFECYCLE-STATE-MACHINE, version: 1, revision: 3}
   ddd: {id: DOCS-V2-DDD-PIPELINE, version: 1, revision: 3}
 current_work:
-  lifecycle_stage: S2
-  checkpoint: G2
-  intent: H12 pilot domain design completed through Tactical DDD and G2 readiness.
-  state: COMPLETE
+  lifecycle_stage: S3
+  checkpoint: G3
+  intent: Derive the smallest Resource Catalogue curation solution architecture from accepted S0-S2 truth and applicable quality constraints.
+  state: IN_PROGRESS
 completed_work:
   - {id: H12-METHOD-ORDER-CORRECTION, result: PASS}
   - {id: H12-BIG-PICTURE-SLICE-REVALIDATION, result: PASS}
@@ -22,7 +22,7 @@ completed_work:
   - {id: H12-DOCUMENTATION-AUTHORITY-CUTOVER, result: PASS}
   - {id: H12-S2-TACTICAL-RC, result: PASS, anchor_ref: NAPMS-S2-RC-TACTICAL-MODEL}
   - {id: H12-G2, result: PASS, evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-tactical-g2-validation.yaml}
-stage_states: {S0: ACCEPTED_CURRENT, S1: ACCEPTED_CURRENT, S2: ACCEPTED_CURRENT, S3: NOT_STARTED, S4: NOT_STARTED}
+stage_states: {S0: ACCEPTED_CURRENT, S1: ACCEPTED_CURRENT, S2: ACCEPTED_CURRENT, S3: IN_PROGRESS, S4: NOT_STARTED}
 s2_checkpoints: {S2-STRATEGIC: ACCEPTED_CURRENT, S2-PROCESS-DISCOVERY: ACCEPTED_CURRENT, S2-TACTICAL: ACCEPTED_CURRENT}
 gates: {G0: PASS_CURRENT, G1: PASS_CURRENT, G2: PASS_CURRENT, G3: NOT_EVALUATED, G4: NOT_EVALUATED}
 accepted_anchor_refs:
@@ -38,6 +38,7 @@ accepted_anchor_refs:
   - {anchor_id: NAPMS-S2-RC-DOMAIN-GLOSSARY, status: accepted-current-corrected}
   - {anchor_id: NAPMS-S2-RC-CURATION-PROCESS, status: accepted-current-corrected}
   - {anchor_id: NAPMS-S2-RC-TACTICAL-MODEL, status: accepted-current}
+  - {anchor_id: NAPMS-S3-RC-ARCHITECTURE-BOUNDARY, status: accepted-pending-validation}
 source_authority:
   evolving_product_domain_authority: docs-v2/
   legacy_migration_source: docs/
@@ -65,6 +66,6 @@ current_evidence_refs:
   tactical_and_g2: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-tactical-g2-validation.yaml
 h12_exit: {status: PASS, applicable_gate_reached: G2}
 next_meaningful_work:
-  phase: H13
-  name: Minimal Harness runtime planning
-  action: Derive the smallest automation/runtime boundary from failures and friction observed in H12; automate internal reference/schema/affected-state/reliability plumbing without adding user-visible Harness workflow concepts.
+  phase: H16
+  name: Continue S3 Resource Catalogue solution design
+  action: Validate the new architecture boundary with the shared docs-v2 runtime, then derive only the applicable S3 structural/interaction/contract artifacts required for G3; ask for human-owned truth if transport, deployment or persistence choices become material.
