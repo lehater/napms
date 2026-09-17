@@ -1,10 +1,14 @@
-version: 4
+version: 5
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
 branch: meta/docs-v2-m7-pilot
 last_updated: 2026-09-17
-program: {status: ACTIVE, current_phase: H13, current_phase_state: IN_PROGRESS, completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12]}
+program:
+  status: ACTIVE
+  current_phase: H13
+  current_phase_state: COMPLETE
+  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13]
 control_plane:
   contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 3}
   rule: meaningful design work is the visible unit; runtime reliability bookkeeping is internal
@@ -12,7 +16,14 @@ completed_pilot_scope: {scope_id: H12-RC-CURATION-MVP, state_ref: docs-v2/migrat
 current_work:
   phase: H13
   name: Minimal Harness runtime planning
-  intent: Derive the smallest runtime/automation boundary justified by H12 friction without adding user-visible workflow concepts.
+  state: COMPLETE
+  result_ref: docs-v2/meta/h13-minimal-runtime-plan.yaml
+  result: PASS
+next_meaningful_work:
+  requires_authorization: true
+  option: implement-minimal-harness-runtime
+  scope: runtime code and executable regression tests for the accepted H13 boundary
+  reason: H13 planning is complete; current restrictions explicitly prohibit runtime/test implementation.
 documentation_authority:
   evolving_authority: docs-v2/
   legacy_source: docs/
@@ -32,6 +43,7 @@ carry_forward:
   - Readiness gates are lifecycle guarantees, not separate execution units; current unrelated evidence is reused.
   - Operational IDs, fingerprints, execution bases, receipts, caching and atomicity are infrastructure details.
   - H12 demonstrated the corrected flow through G2 on Resource Catalogue curation without Task Capsule/gate transaction ceremony.
+  - H13 selects a single repository-local runtime boundary with deterministic validation/impact/readiness core plus thin Git persistence; generated indexes/caches are rebuildable and non-authoritative.
 restrictions:
   product_implementation_authorization: none
   executable_test_change_authorization: none
@@ -39,13 +51,15 @@ restrictions:
   workflow_ci_change_authorization: none
   namespace_cutover_authorization: false
   merge_authorization: false
-blockers: []
+blockers:
+  - id: H13-B-RUNTIME-AUTHORIZATION
+    kind: authorization-boundary
+    statement: Runtime implementation and executable tests require explicit stakeholder authorization.
 resume_protocol:
   - Read this file first.
-  - Read roadmap.yaml for H13 objective and guard.
-  - Read the completed H12 lifecycle/evidence only as needed to identify demonstrated runtime needs/friction.
+  - Read roadmap.yaml and docs-v2/meta/h13-minimal-runtime-plan.yaml.
+  - Treat H12 pilot artifacts only as evidence for the accepted runtime boundary unless new design evidence requires reopening them.
   - Treat docs/ only as frozen migration evidence; never edit it.
-  - Load only directly needed Harness specs for the runtime boundary being designed.
-  - Keep H13 at planning/specification level until runtime implementation is explicitly authorized.
-  - Prefer automation behind the design boundary; do not create new user-visible Harness concepts without demonstrated need.
-  - Persist coherent H13 design/state and continue unless a real stop condition applies.
+  - Do not implement runtime code or executable tests until explicit authorization is granted.
+  - If runtime implementation is authorized, implement only the accepted minimal boundary first and validate with the listed acceptance tests before adding architecture.
+  - Do not add Task Capsule, separate gate transaction, daemon/service, database or CI dependency without demonstrated need and explicit affected design change.
