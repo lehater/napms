@@ -1,6 +1,6 @@
 # NAPMS architecture workspace
 
-`workspace.dsl` is the canonical machine-readable S3 structural architecture model for the accepted first-MVP architecture. It materializes the accepted H18 architecture; it does not replace S1 requirements, S2 domain semantics, OpenAPI contracts, or S4 persistence/implementation design.
+`workspace.dsl` is the canonical machine-readable S3 structural architecture model for the accepted first-MVP architecture. It materializes the accepted H18 architecture; it does not replace S1 requirements, S2 domain semantics, S3 persistence/contracts, or S4 implementation-readiness design.
 
 Structurizr is also the common viewer for generated projections of other canonical design artifacts. Those projections are non-canonical and are rebuilt from their owning machine-readable sources.
 
@@ -102,7 +102,7 @@ GitHub Actions runs the same check when the Structurizr workspace, projection ge
 
 The same pattern can be extended without changing authority rules:
 
-- a canonical S4 persistence model can generate ERD PlantUML views;
+- a canonical S3 persistence model can generate ERD PlantUML views;
 - machine-readable tactical/domain artifacts can generate domain-model views where useful;
 - code/class diagrams may use PlantUML when they have a defined canonical source.
 
@@ -110,4 +110,4 @@ ERD generation is intentionally not implemented yet because a canonical column/k
 
 ## Authority boundary
 
-The Structurizr DSL may express C4 structural elements, deployment/runtime containers, deployment nodes, components, and their architectural relationships. Domain invariants and bounded-context semantics remain owned by accepted S2 artifacts. Generated image views expose those artifacts for human inspection without acquiring semantic authority. Persistence/ERD concerns remain outside the generated projection set until explicitly designed at S4.
+The Structurizr DSL may express C4 structural elements, deployment/runtime containers, deployment nodes, components, and their architectural relationships. Domain invariants and bounded-context semantics remain owned by accepted S2 artifacts. Generated image views expose those artifacts for human inspection without acquiring semantic authority. Persistence/ERD concerns remain outside the generated projection set until explicitly designed as canonical S3 persistence truth.
