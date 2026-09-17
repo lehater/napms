@@ -7,60 +7,143 @@ scope:
   lifecycle_boundary: S2 Process Discovery / Event Storming
 status: ACCEPTED
 canonical_payload:
-  name: Resource Catalogue curation
+  name: Resource Catalogue curation lifecycle
+  outcome: >-
+    An admitted user can establish or maintain one access-relevant Resource through supported curation,
+    preserve temporal history, inspect its current catalogue projection, and make the Resource available
+    by stable reference to downstream NAPMS workflows without direct SQL/seed edits.
   context_refs:
     - {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}
     - {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}
   actors:
     - actor_id: ACTOR-CURATOR
-      name: Admitted catalogue curator
-      role: Authenticated actor admitted to catalogue-wide Resource Catalogue curation
+      name: Catalogue curator
+      role: Authenticated user attempting Resource Catalogue curation; each mutation is independently admitted or denied by Authority Management.
+      origin_class: accepted-requirement
+    - actor_id: ACTOR-READER
+      name: Catalogue reader
+      role: Authenticated user consuming allowed Resource catalogue projections; read visibility does not imply mutation authority.
       origin_class: accepted-requirement
   commands:
-    - {command_id: CMD-REGISTER-RESOURCE, name: Register Resource, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: Create a stable access-relevant Resource identity with required provenance., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
-    - {command_id: CMD-ADD-REALIZATION, name: Add Resource Realization, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: Add a time-qualified technical realization version with one or more technical addresses., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
-    - {command_id: CMD-END-REALIZATION, name: End Resource Realization, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: End an existing time-qualified realization without rewriting history., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
-    - {command_id: CMD-AFFILIATE-SCOPE, name: Affiliate Resource With Responsibility Scope, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: Add a time-qualified Resource Scope Affiliation., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
-    - {command_id: CMD-END-SCOPE-AFFILIATION, name: End Resource Scope Affiliation, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: End an existing scope affiliation without changing Resource identity., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
-    - {command_id: CMD-ASSIGN-RESPONSIBILITY, name: Assign Resource Responsibility, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: Assign an extensible responsibility role to a supported responsible party for a time-qualified period., actor_ref: ACTOR-CURATOR, origin_class: human-decision}
-    - {command_id: CMD-END-RESPONSIBILITY, name: End Resource Responsibility, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: End a responsibility assignment while preserving its history., actor_ref: ACTOR-CURATOR, origin_class: human-decision}
+    - {command_id: CMD-REGISTER-RESOURCE, name: Register Resource, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: Establish a stable access-relevant Resource identity with required provenance., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
+    - {command_id: CMD-ADD-REALIZATION, name: Add Resource Realization, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: Establish a new time-qualified realization version with one or more technical addresses., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
+    - {command_id: CMD-END-REALIZATION, name: End Resource Realization, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: End a time-qualified realization without rewriting its historical fact., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
+    - {command_id: CMD-REPLACE-REALIZATION, name: Replace Resource Realization, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: End the applicable realization and establish its replacement while preserving history., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
+    - {command_id: CMD-AFFILIATE-SCOPE, name: Affiliate Resource With Responsibility Scope, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: Establish a time-qualified Resource Scope Affiliation., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
+    - {command_id: CMD-END-SCOPE-AFFILIATION, name: End Resource Scope Affiliation, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: End an affiliation without changing Resource identity or rewriting history., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
+    - {command_id: CMD-REPLACE-SCOPE-AFFILIATION, name: Replace Resource Scope Affiliation, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: End an applicable affiliation and establish its replacement while preserving history., actor_ref: ACTOR-CURATOR, origin_class: accepted-requirement}
+    - {command_id: CMD-ASSIGN-RESPONSIBILITY, name: Assign Resource Responsibility, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: Establish a time-qualified responsibility assignment for a supported person/team reference and extensible role., actor_ref: ACTOR-CURATOR, origin_class: human-decision}
+    - {command_id: CMD-END-RESPONSIBILITY, name: End Resource Responsibility, target_context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, intent: End a responsibility assignment while preserving history., actor_ref: ACTOR-CURATOR, origin_class: human-decision}
   domain_events:
-    - {event_id: EVT-RESOURCE-REGISTERED, name: Resource Registered, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A Resource identity now exists with its provenance., origin_class: accepted-requirement, caused_by_command_ref: CMD-REGISTER-RESOURCE}
-    - {event_id: EVT-REALIZATION-ADDED, name: Resource Realization Added, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A time-qualified technical realization version was added to the Resource., origin_class: accepted-requirement, caused_by_command_ref: CMD-ADD-REALIZATION}
-    - {event_id: EVT-REALIZATION-ENDED, name: Resource Realization Ended, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A time-qualified technical realization ceased to be effective without erasing its history., origin_class: accepted-requirement, caused_by_command_ref: CMD-END-REALIZATION}
-    - {event_id: EVT-SCOPE-AFFILIATED, name: Resource Scope Affiliated, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A time-qualified Responsibility Scope affiliation was added to the Resource., origin_class: accepted-requirement, caused_by_command_ref: CMD-AFFILIATE-SCOPE}
-    - {event_id: EVT-SCOPE-AFFILIATION-ENDED, name: Resource Scope Affiliation Ended, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A Responsibility Scope affiliation ceased to be effective without changing Resource identity., origin_class: accepted-requirement, caused_by_command_ref: CMD-END-SCOPE-AFFILIATION}
-    - {event_id: EVT-RESPONSIBILITY-ASSIGNED, name: Resource Responsibility Assigned, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A responsible party now holds the specified responsibility role for the applicable time interval., origin_class: human-decision, caused_by_command_ref: CMD-ASSIGN-RESPONSIBILITY}
-    - {event_id: EVT-RESPONSIBILITY-ENDED, name: Resource Responsibility Ended, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A responsibility assignment ceased to be effective while its historical fact remains., origin_class: human-decision, caused_by_command_ref: CMD-END-RESPONSIBILITY}
-  policies: []
+    - {event_id: EVT-RESOURCE-REGISTERED, name: Resource Registered, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A stable Resource identity now exists with provenance., origin_class: accepted-requirement, caused_by_command_ref: CMD-REGISTER-RESOURCE}
+    - {event_id: EVT-REALIZATION-ADDED, name: Resource Realization Added, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A time-qualified Resource realization was established., origin_class: accepted-requirement, caused_by_command_ref: CMD-ADD-REALIZATION}
+    - {event_id: EVT-REALIZATION-ENDED, name: Resource Realization Ended, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A realization ceased to be effective without erasing history., origin_class: accepted-requirement, caused_by_command_ref: CMD-END-REALIZATION}
+    - {event_id: EVT-REALIZATION-REPLACED, name: Resource Realization Replaced, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: An applicable realization ceased and a replacement became effective while historical facts were retained., origin_class: accepted-requirement, caused_by_command_ref: CMD-REPLACE-REALIZATION}
+    - {event_id: EVT-SCOPE-AFFILIATED, name: Resource Scope Affiliated, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A time-qualified Responsibility Scope affiliation was established., origin_class: accepted-requirement, caused_by_command_ref: CMD-AFFILIATE-SCOPE}
+    - {event_id: EVT-SCOPE-AFFILIATION-ENDED, name: Resource Scope Affiliation Ended, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: An affiliation ceased to be effective without changing Resource identity., origin_class: accepted-requirement, caused_by_command_ref: CMD-END-SCOPE-AFFILIATION}
+    - {event_id: EVT-SCOPE-AFFILIATION-REPLACED, name: Resource Scope Affiliation Replaced, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: An applicable affiliation ceased and a replacement was established while history was retained., origin_class: accepted-requirement, caused_by_command_ref: CMD-REPLACE-SCOPE-AFFILIATION}
+    - {event_id: EVT-RESPONSIBILITY-ASSIGNED, name: Resource Responsibility Assigned, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A party holds the specified responsibility role for the applicable interval., origin_class: human-decision, caused_by_command_ref: CMD-ASSIGN-RESPONSIBILITY}
+    - {event_id: EVT-RESPONSIBILITY-ENDED, name: Resource Responsibility Ended, context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, fact_meaning: A responsibility assignment ceased while its historical fact remains., origin_class: human-decision, caused_by_command_ref: CMD-END-RESPONSIBILITY}
+  policies:
+    - policy_id: POLICY-MUTATION-ADMISSION
+      name: Admit every protected catalogue mutation before persistence
+      when: An authenticated actor attempts any Resource Catalogue mutation.
+      then: Authority Management admits or denies CurateResourceCatalogue at the fixed resource-catalogue MVP scope; denial ends that mutation without catalogue change.
+      origin_class: human-decision
+    - policy_id: POLICY-PRESERVE-TEMPORAL-HISTORY
+      name: Preserve temporal history
+      when: A realization, scope affiliation or responsibility fact is ended or replaced.
+      then: Preserve the historical fact; do not silently rewrite it as a scalar current value.
+      origin_class: accepted-requirement
+    - policy_id: POLICY-FAIL-INVALID-MUTATION
+      name: Reject invalid catalogue mutation explicitly
+      when: Required identifiers/references/provenance are missing, temporal intervals are invalid, or an overlap violates an accepted catalogue invariant.
+      then: Reject the mutation as a domain/validation conflict distinct from authorization denial.
+      origin_class: accepted-requirement
+    - policy_id: POLICY-MISSING-CURRENT-RELATIONS
+      name: Missing current relations do not erase Resource identity
+      when: A Resource has no effective realization, scope affiliation or relevant responsibility/contact fact.
+      then: Keep the Resource visible according to read rules and represent the missing relation explicitly rather than fabricate or hide it.
+      origin_class: accepted-requirement
+  process_flows:
+    - flow_id: FLOW-REGISTER
+      name: Establish Resource identity
+      trigger: Curator intends to introduce an access-relevant Resource.
+      sequence: [POLICY-MUTATION-ADMISSION, CMD-REGISTER-RESOURCE, EVT-RESOURCE-REGISTERED]
+      alternatives: [authorization-denied, invalid-mutation-rejected]
+      completion: Stable Resource identity exists; realization, affiliation and responsibility are not mandatory creation steps.
+    - flow_id: FLOW-REALIZATION
+      name: Maintain technical realization over time
+      trigger: Curator needs to add, end or replace realization information.
+      alternatives:
+        - [POLICY-MUTATION-ADMISSION, CMD-ADD-REALIZATION, EVT-REALIZATION-ADDED]
+        - [POLICY-MUTATION-ADMISSION, CMD-END-REALIZATION, POLICY-PRESERVE-TEMPORAL-HISTORY, EVT-REALIZATION-ENDED]
+        - [POLICY-MUTATION-ADMISSION, CMD-REPLACE-REALIZATION, POLICY-PRESERVE-TEMPORAL-HISTORY, EVT-REALIZATION-REPLACED]
+      failure_paths: [authorization-denied, invalid-mutation-rejected]
+    - flow_id: FLOW-SCOPE-AFFILIATION
+      name: Maintain Responsibility Scope affiliation over time
+      trigger: Curator needs to establish, end or replace scope affiliation.
+      alternatives:
+        - [POLICY-MUTATION-ADMISSION, CMD-AFFILIATE-SCOPE, EVT-SCOPE-AFFILIATED]
+        - [POLICY-MUTATION-ADMISSION, CMD-END-SCOPE-AFFILIATION, POLICY-PRESERVE-TEMPORAL-HISTORY, EVT-SCOPE-AFFILIATION-ENDED]
+        - [POLICY-MUTATION-ADMISSION, CMD-REPLACE-SCOPE-AFFILIATION, POLICY-PRESERVE-TEMPORAL-HISTORY, EVT-SCOPE-AFFILIATION-REPLACED]
+      failure_paths: [authorization-denied, invalid-mutation-rejected]
+    - flow_id: FLOW-RESPONSIBILITY
+      name: Maintain Resource responsibility over time
+      trigger: Curator needs to establish or end an operational responsibility/contact assignment.
+      alternatives:
+        - [POLICY-MUTATION-ADMISSION, CMD-ASSIGN-RESPONSIBILITY, EVT-RESPONSIBILITY-ASSIGNED]
+        - [POLICY-MUTATION-ADMISSION, CMD-END-RESPONSIBILITY, POLICY-PRESERVE-TEMPORAL-HISTORY, EVT-RESPONSIBILITY-ENDED]
+      failure_paths: [authorization-denied, invalid-mutation-rejected]
+      note: Replacement can be expressed by ending/establishing assignments; no transfer gap/overlap rule is asserted.
+    - flow_id: FLOW-INSPECT-AND-HANDOFF
+      name: Inspect current Resource and hand off stable catalogue truth
+      trigger: Reader or downstream NAPMS workflow needs Resource catalogue truth.
+      sequence: [read-allowed-resource, derive-effective-current-projection, POLICY-MISSING-CURRENT-RELATIONS, expose-stable-resource-reference-and-current-facts]
+      completion: Current/missing relations, identifiers and provenance are inspectable and stable ResourceRef can be consumed downstream without transferring RC ownership.
   timeline:
-    - {step_id: T1, sequence: 1, kind: external-system, item_ref: EXT-AUTHORITY-MANAGEMENT}
-    - {step_id: T2, sequence: 2, kind: command, item_ref: CMD-REGISTER-RESOURCE}
-    - {step_id: T3, sequence: 3, kind: domain-event, item_ref: EVT-RESOURCE-REGISTERED}
-    - {step_id: T4, sequence: 4, kind: command, item_ref: CMD-ADD-REALIZATION}
-    - {step_id: T5, sequence: 5, kind: domain-event, item_ref: EVT-REALIZATION-ADDED}
-    - {step_id: T6, sequence: 6, kind: command, item_ref: CMD-AFFILIATE-SCOPE}
-    - {step_id: T7, sequence: 7, kind: domain-event, item_ref: EVT-SCOPE-AFFILIATED}
-    - {step_id: T8, sequence: 8, kind: command, item_ref: CMD-ASSIGN-RESPONSIBILITY}
-    - {step_id: T9, sequence: 9, kind: domain-event, item_ref: EVT-RESPONSIBILITY-ASSIGNED}
+    - {step_id: T1, sequence: 1, kind: command, item_ref: CMD-REGISTER-RESOURCE}
+    - {step_id: T2, sequence: 2, kind: domain-event, item_ref: EVT-RESOURCE-REGISTERED}
+    - {step_id: T3, sequence: 3, kind: policy, item_ref: POLICY-MISSING-CURRENT-RELATIONS}
+    - {step_id: T4, sequence: 4, kind: branch, item_ref: FLOW-REALIZATION}
+    - {step_id: T5, sequence: 5, kind: branch, item_ref: FLOW-SCOPE-AFFILIATION}
+    - {step_id: T6, sequence: 6, kind: branch, item_ref: FLOW-RESPONSIBILITY}
+    - {step_id: T7, sequence: 7, kind: read-handoff, item_ref: FLOW-INSPECT-AND-HANDOFF}
   external_systems:
     - external_system_id: EXT-AUTHORITY-MANAGEMENT
       name: Authority Management
-      interaction_meaning: Admits or denies each protected Resource Catalogue mutation for the authenticated Actor using the fixed MVP catalogue-wide curation action/scope.
+      interaction_meaning: Independently admits or denies every protected Resource Catalogue mutation using the accepted fixed MVP catalogue-wide curation authority.
       origin_class: human-decision
+    - external_system_id: EXT-DOWNSTREAM-NAPMS
+      name: Downstream NAPMS workflows
+      interaction_meaning: Consume stable Resource references and allowed current/historical Resource Catalogue projections without owning or mutating RC truth through this interaction.
+      origin_class: accepted-journey
+  failure_paths:
+    - failure_id: authorization-denied
+      meaning: Authority Management denies the protected mutation; Resource Catalogue state is unchanged and denial remains distinguishable from validation/conflict failures.
+      origin_class: accepted-requirement
+    - failure_id: invalid-mutation-rejected
+      meaning: Resource Catalogue rejects missing required data, invalid temporal data or an overlap that violates an accepted invariant; no silent overwrite occurs.
+      origin_class: accepted-requirement
+    - failure_id: duplicate-or-concurrent-submission-conflict
+      meaning: Duplicate/concurrent mutation must be handled safely and must not silently overwrite accepted truth; exact command/idempotency/concurrency mechanism remains downstream design.
+      origin_class: accepted-requirement
   hotspots:
     - {hotspot_id: HOTSPOT-SCOPED-AUTHORIZATION, question_or_uncertainty: How should authorization be scoped to subsets of Resources if a future confirmed customer requirement needs it?, owner_kind: stakeholder, blocking: false, status: deferred-nonblocking}
-    - {hotspot_id: HOTSPOT-MANDATORY-RESPONSIBILITY-COVERAGE, question_or_uncertainty: Do any responsibility roles become mandatory for a Resource and are temporary gaps or overlaps during responsibility transfer forbidden?, owner_kind: stakeholder, blocking: false, status: deferred-nonblocking}
+    - {hotspot_id: HOTSPOT-MANDATORY-RESPONSIBILITY-COVERAGE, question_or_uncertainty: Do any responsibility roles become mandatory and are transfer gaps/overlaps forbidden?, owner_kind: stakeholder, blocking: false, status: deferred-nonblocking}
+    - {hotspot_id: HOTSPOT-RESOURCE-RETIREMENT, question_or_uncertainty: Resource retirement is canonical domain material but is outside the selected curation outcome unless later scope evidence requires it., owner_kind: scope, blocking: false, status: deferred-outside-slice}
+    - {hotspot_id: HOTSPOT-REALIZATION-CARDINALITY, question_or_uncertainty: S1 preserves one-or-more technical addresses per realization while current canonical tactical material has a narrower AddressSpace model; do not resolve this conflict inside Process Discovery., owner_kind: tactical-revalidation, blocking: false, status: route-to-S2-tactical}
   candidate_aggregates:
     - candidate_id: CANDIDATE-RESOURCE
       name: Resource
       context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}
-      command_refs: [CMD-REGISTER-RESOURCE, CMD-ADD-REALIZATION, CMD-END-REALIZATION, CMD-AFFILIATE-SCOPE, CMD-END-SCOPE-AFFILIATION, CMD-ASSIGN-RESPONSIBILITY, CMD-END-RESPONSIBILITY]
-      event_refs: [EVT-RESOURCE-REGISTERED, EVT-REALIZATION-ADDED, EVT-REALIZATION-ENDED, EVT-SCOPE-AFFILIATED, EVT-SCOPE-AFFILIATION-ENDED, EVT-RESPONSIBILITY-ASSIGNED, EVT-RESPONSIBILITY-ENDED]
-      consistency_boundary_rationale: Commands and temporal facts are centered on continuity of one Resource identity, but exact aggregate boundaries remain a Tactical DDD hypothesis.
+      command_refs: [CMD-REGISTER-RESOURCE, CMD-ADD-REALIZATION, CMD-END-REALIZATION, CMD-REPLACE-REALIZATION, CMD-AFFILIATE-SCOPE, CMD-END-SCOPE-AFFILIATION, CMD-REPLACE-SCOPE-AFFILIATION, CMD-ASSIGN-RESPONSIBILITY, CMD-END-RESPONSIBILITY]
+      event_refs: [EVT-RESOURCE-REGISTERED, EVT-REALIZATION-ADDED, EVT-REALIZATION-ENDED, EVT-REALIZATION-REPLACED, EVT-SCOPE-AFFILIATED, EVT-SCOPE-AFFILIATION-ENDED, EVT-SCOPE-AFFILIATION-REPLACED, EVT-RESPONSIBILITY-ASSIGNED, EVT-RESPONSIBILITY-ENDED]
+      consistency_boundary_rationale: Resource identity provides lifecycle continuity for the observed facts, but exact aggregate boundaries remain a Tactical DDD hypothesis and may split temporal fact consistency from Resource identity.
       status: candidate
   logical_derivation:
     basis_refs:
+      - {kind: anchor-current, anchor_id: NAPMS-S0-RC-CURATION-JOURNEY}
       - {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR}
       - {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION}
       - {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-INTEGRITY}
@@ -68,27 +151,31 @@ canonical_payload:
       - {kind: anchor-current, anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}
       - {kind: anchor-current, anchor_id: NAPMS-S2-DEC-RC-MVP-AUTHORITY}
       - {kind: anchor-current, anchor_id: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES}
-    derivation_kind: synthesis
-    rationale: Accepted requirements define the curation operations and temporal history behavior; accepted strategic boundaries assign catalogue facts to Resource Catalogue and admission to Authority Management; the two human decisions resolve MVP authority and extensible responsibility-role semantics.
+    derivation_kind: refinement
+    rationale: >-
+      The accepted slice outcome and requirements show independent Resource lifecycle maintenance flows rather than one mandatory onboarding sequence. Accepted history, admission, missing-relation and failure behavior constrain those flows. No new transfer, retirement, cardinality or scoped-authorization policy is asserted.
     method_rule_ids: [DDD-MR-PROCESS-COMMAND-EVENT, DDD-MR-PROCESS-POLICY, DDD-MR-CANDIDATE-AGGREGATE]
     decision_refs: [NAPMS-S2-DEC-RC-MVP-AUTHORITY, NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES]
-    evidence_refs: []
 provenance:
   origin_kind: mixed
   source_refs:
+    - {kind: repository-file, path: docs/requirements/catalogue-curation.md}
+    - {kind: repository-file, path: docs/requirements/catalogue-curation-acceptance-examples.md}
+    - {kind: anchor-current, anchor_id: NAPMS-S0-RC-CURATION-JOURNEY}
     - {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR}
     - {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION}
     - {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-INTEGRITY}
     - {kind: anchor-current, anchor_id: NAPMS-S2-DEC-RC-MVP-AUTHORITY}
     - {kind: anchor-current, anchor_id: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES}
-  authority_basis: durable-human-decision-ref
+  authority_basis: current-docs-plus-durable-human-decisions
   derivation:
-    input_anchor_refs: [NAPMS-S1-RC-CURATION-BEHAVIOR, NAPMS-S1-RC-CURATION-AUTHORIZATION, NAPMS-S1-RC-CURATION-INTEGRITY, NAPMS-S2-BC-RESOURCE-CATALOGUE, NAPMS-S2-BC-AUTHORITY-MANAGEMENT, NAPMS-S2-DEC-RC-MVP-AUTHORITY, NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES]
+    input_anchor_refs: [NAPMS-S0-RC-CURATION-JOURNEY, NAPMS-S1-RC-CURATION-BEHAVIOR, NAPMS-S1-RC-CURATION-AUTHORIZATION, NAPMS-S1-RC-CURATION-INTEGRITY, NAPMS-S2-BC-RESOURCE-CATALOGUE, NAPMS-S2-BC-AUTHORITY-MANAGEMENT, NAPMS-S2-DEC-RC-MVP-AUTHORITY, NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES]
     derivation_rule_or_method: DOCS-V2-DDD-PIPELINE.S2-PROCESS-DISCOVERY
-    derivation_kind: synthesis
-    rationale: Process semantics are derived only from accepted requirements/boundaries and the captured stakeholder decisions.
+    derivation_kind: refinement
+    rationale: Reworked from bounded discovery to cover material lifecycle alternatives, temporal behavior, read/handoff and failures without adding unresolved business policy.
   recorded_at: '2026-09-17'
 semantic_refs:
+  - {relation: REFINES, target: {kind: anchor-current, anchor_id: NAPMS-S0-RC-CURATION-JOURNEY}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-INTEGRITY}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
@@ -96,12 +183,10 @@ semantic_refs:
   - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: DECIDED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-DEC-RC-MVP-AUTHORITY}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: DECIDED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
-semantic_fingerprint: sha256-jcs-v1:c56fb4884b58a177312ef3822cb90aacdcafb095fb7224f1c3f2124e9bfa5747
 validation:
   freshness: CURRENT
-  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-process-change-set-validation.yaml
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-process-change-set-validation-v2.yaml
   evidence_target: NAPMS-S2-RC-CURATION-PROCESS
-  validated_fingerprint: sha256-jcs-v1:c56fb4884b58a177312ef3822cb90aacdcafb095fb7224f1c3f2124e9bfa5747
   profile: changed-and-affected-design
   profile_version: cp-v2
   enforcement_status: specification-manual-not-CI
