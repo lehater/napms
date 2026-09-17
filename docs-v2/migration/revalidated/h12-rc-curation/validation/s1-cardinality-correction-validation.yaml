@@ -1,0 +1,19 @@
+version: 1
+kind: changed-and-affected-design-validation
+id: H12-RC-CARDINALITY-CORRECTION-VALIDATION
+scope_id: H12-RC-CURATION-MVP
+result: PASS
+validated_at: '2026-09-17'
+enforcement_status: specification-manual-not-CI
+basis:
+  stakeholder_response: H12-R-RC-MVP-SINGLE-ADDRESS-SPACE
+  canonical_support: docs/domain/resource-catalogue/target-realization-model.md
+checks:
+  corrected_S1_cardinality: PASS
+  strategic_RC_alignment: PASS
+  process_alignment: PASS
+  glossary_alignment: PASS
+  tactical_target_alignment: PASS
+  no_human_question_required: PASS
+finding: >-
+  The earlier one-or-more-address S1 transcription was wrong. MVP semantics are one Resource -> zero or one effective AddressSpace at a logical time; when present AddressSpace is one HostAddress or one Prefix. Existing canonical RC target/tactical material already expresses this rule.

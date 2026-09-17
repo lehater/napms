@@ -4,53 +4,24 @@ id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
 branch: meta/docs-v2-m7-pilot
 last_updated: 2026-09-17
-program:
-  status: ACTIVE
-  current_phase: H12
-  current_phase_state: IN_PROGRESS
-  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11]
+program: {status: ACTIVE, current_phase: H12, current_phase_state: IN_PROGRESS, completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11]}
 control_plane:
   contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 2}
   rule: meaningful design work is the visible unit; runtime reliability bookkeeping is internal
-active_scope:
-  scope_id: H12-RC-CURATION-MVP
-  state_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
-  state_owner: sole-writable-lifecycle-owner
-completed_work:
-  foundation: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11]
-  H12: [H12-T2, H12-P0-RECONCILE-S0, H12-G0-1, H12-T3, H12-G1-1, H12-T4]
-  simplification:
-    - design-work-restored-as-visible-unit
-    - Task-Capsule-serialization-made-optional-internal
-    - separate-gate-transactions-removed
-    - validation-reduced-to-changed-and-affected-design
-    - execution-basis-operation-id-fingerprint-bookkeeping-internalized
-    - execution-kernel-retired-as-separate-Harness-layer
-  design-order-correction:
-    - discovery-before-settled-slice-and-boundary
-    - requirements-and-process-understanding-iterative
-    - strategic-DDD-derived-from-discovery-process-requirements-language
-    - process-and-strategic-design-allowed-to-refine-each-other
-    - tactical-acceptance-requires-current-process-and-strategic-basis
-    - artifact-graph-drives-rework-not-waterfall-order
-    - ddd-pipeline-and-lifecycle-aligned-with-roadmap-revision-3
+active_scope: {scope_id: H12-RC-CURATION-MVP, state_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml, state_owner: sole-writable-lifecycle-owner}
 carry_forward:
   - Harness guides design from problem/discovery to implementation readiness before code.
   - docs/ remains canonical NAPMS product/domain/architecture truth until explicit cutover.
   - Product code/tests cannot reconstruct missing design truth during H12.
-  - Design documentation is a graph of machine-readable anchors with meaningful derivation lineage.
   - Human-owned truth is never invented; material gaps become questions/blockers.
-  - Domain stories, Big Picture/process evidence and hotspots are discovered before treating slices or Bounded Context boundaries as settled.
-  - A design slice is a coherent end-to-end business outcome/process; it is not an API/table/screen/module/BC or isolated authorization operation.
-  - Processes may cross Bounded Contexts and Bounded Contexts may participate in multiple processes.
-  - Requirements and process discovery may refine each other; strategic DDD is evidence-backed by discovery/process/requirements/language.
-  - Strategic and Process Discovery are iterative maturity areas; neither is a universal authoring prerequisite for the other.
-  - Tactical acceptance requires current relevant strategic boundaries and applicable process evidence.
-  - DDD work is applicability-driven, iterative and graph-based, not universal ceremony or a one-way waterfall.
-  - Readiness gates remain meaningful lifecycle guarantees but do not require separate execution units.
-  - Current evidence for unchanged design is reused; validate changed and affected design only.
+  - Domain stories/process evidence precede settled slices/boundaries; Strategic and Process Discovery may refine each other.
+  - Tactical acceptance requires current relevant strategic boundaries and process evidence.
+  - Design documentation is a graph; affected-only revalidation replaces waterfall restart.
+  - Semantic precedence follows authority and derivation direction: a downstream artifact must conform to current applicable upstream authoritative constraints and may refine but not contradict, weaken, narrow, broaden or replace them without an explicit authorized upstream change/decision.
+  - When two statements differ, first resolve authority/dependency precedence. Ask a human only when authoritative upstream truth is ambiguous/missing or a new human-owned choice is actually required.
+  - A later explicit stakeholder correction may amend an upstream artifact; when it does, correct that upstream truth first and propagate the change through all affected downstream artifacts.
+  - Readiness gates are lifecycle guarantees, not separate execution units; current unrelated evidence is reused.
   - Operational IDs, fingerprints, execution bases, receipts, caching and atomicity are infrastructure details.
-  - Successful persistence or gate PASS does not require stopping when next meaningful work is clear.
 restrictions:
   product_implementation_authorization: none
   executable_test_change_authorization: none
@@ -60,11 +31,10 @@ restrictions:
 blockers: []
 resume_protocol:
   - Read this file first.
-  - Read roadmap.yaml for current design dependency order and slice-selection rules.
+  - Read roadmap.yaml for design dependency order and slice-selection rules.
   - Read active_scope.state_ref for current design maturity, blockers and next meaningful work.
-  - Read harness-control-plane.yaml for integration semantics.
-  - Load only the target design artifacts, direct semantic dependencies and applicable method/schema contracts.
+  - Load only target artifacts, direct semantic dependencies and applicable method/schema contracts.
+  - Before classifying a semantic mismatch as a conflict/question, resolve authority and derivation precedence; downstream divergence from a clear upstream constraint is REWORK, not NEED_MORE_DATA.
   - Perform coherent meaningful design work; validate changed/affected design and readiness at reached boundaries.
   - Persist coherent artifacts/state/evidence and continue unless a real stop condition applies.
-  - Do not construct Task Capsules, operation IDs, execution bases or receipts manually as design work.
   - Do not infer authority or progress from chat when repository state is available.

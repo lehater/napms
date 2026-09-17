@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: downstream-semantic-conflict-register
 id: H12-S1-RC-CURATION-DOWNSTREAM-CONFLICTS
 classification: process-state
@@ -8,15 +8,13 @@ scope:
   owner_stage: S1
 conflicts:
 - conflict_id: H12-S1-RC-ADDRESS-CARDINALITY
-  status: current-downstream-conflict
+  status: resolved-by-stakeholder-correction
   earliest_owner_stage: S1
   current_owner_ref: NAPMS-S1-RC-CURATION-BEHAVIOR
-  current_rule: A new endpoint/realization version supports one or more technical addresses.
-  downstream_candidate_basis_ref: DOCS-V2-NAPMS-MIGRATION-REVALIDATION#NM-FINDING-ADDRESS-CARDINALITY-EARLIEST-OWNER
-  downstream_candidate_statement: Later S2 material narrows current realization to at most one effective AddressSpace.
-  disposition: S2-cannot-override-current-S1
+  corrected_rule: For MVP one Resource has at most one effective AddressSpace at a logical time; when present it is exactly one HostAddress or one Prefix.
+  previous_incorrect_rule: A new endpoint/realization version supports one or more technical addresses.
+  resolution_basis: explicit-stakeholder-correction-2026-09-17
+  disposition: correct-upstream-and-all-affected-downstream-documents
   h7_question_required_now: false
-  h7_trigger: Create an S1/H7 authority question only if a stakeholder requests the narrower single-effective-AddressSpace
-    rule.
-  example_guard: I27-RC-EXAMPLE-F remains concrete-only and cannot establish maximum cardinality.
+  note: The prior register incorrectly treated the already-decided single-AddressSpace model as a downstream conflict.
 recorded_at: '2026-09-17'
