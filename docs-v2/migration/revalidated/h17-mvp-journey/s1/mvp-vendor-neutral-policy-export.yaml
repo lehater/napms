@@ -5,7 +5,7 @@ scope:
   scope_id: H17-FIRST-MVP-JOURNEY
   product_area: First end-to-end MVP vendor-neutral policy export
   lifecycle_boundary: S1 Requirements Engineering
-status: CANDIDATE
+status: ACCEPTED
 canonical_payload:
   goal: Establish current effective Access Policy truth and export the complete applicable policy set as one vendor-neutral technical policy view inspectable as a table and downloadable as CSV.
   journey:
@@ -19,14 +19,8 @@ canonical_payload:
     - Request the complete current effective policy export.
     - Materialize each effective rule using exact traffic revision, concrete deployments and current Resource AddressSpace.
     - Inspect the complete vendor-neutral result as a table and export the same semantics as CSV.
-  participating_strategic_owners:
-    - Resource Catalogue
-    - Application Communication Catalogue
-    - Application Deployment
-    - Business Connectivity
-    - Access Policy
-  supporting_owner:
-    - Authority Management
+  participating_strategic_owners: [Resource Catalogue, Application Communication Catalogue, Application Deployment, Business Connectivity, Access Policy]
+  supporting_owner: [Authority Management]
   workflow_composition:
     name: Full Vendor-Neutral Policy Export
     peer_bounded_context: false
@@ -40,22 +34,8 @@ canonical_payload:
     - Pending or Rejected changes do not replace already effective rule semantics; only an Accepted applicable change may do so.
     - Missing or ambiguous required materialization input makes the complete export Unresolved rather than silently partial.
     - Table and CSV are representations of the same successful materialization result.
-  output_row_minimum:
-    - source AddressSpace
-    - destination AddressSpace
-    - protocol/service semantics
-    - applicable source/destination port or range
-    - PolicyRule provenance
-    - InteractionContractRevision provenance
-    - source/destination ComponentDeployment provenance
-    - source/destination Resource provenance
-  non_goals:
-    - Network Enforcement Placement or firewall selection
-    - provider/device/ACL-specific rendering
-    - configured-state comparison or remediation
-    - Network Environment Operations or device mutation
-    - evidence-derived proposal recognition as a prerequisite
-    - time-travel/as-of export
+  output_row_minimum: [source AddressSpace, destination AddressSpace, protocol/service semantics, applicable source/destination port or range, PolicyRule provenance, InteractionContractRevision provenance, source/destination ComponentDeployment provenance, source/destination Resource provenance]
+  non_goals: [Network Enforcement Placement or firewall selection, provider/device/ACL-specific rendering, configured-state comparison or remediation, Network Environment Operations or device mutation, evidence-derived proposal recognition as a prerequisite, time-travel/as-of export]
   acceptance_examples:
     - One effective HTTPS rule between concrete deployments whose Resources have HostAddresses yields one TCP destination-port 443 row.
     - A deliberate RuleChange without a current Process-backed ConnectivityNeed is not a valid formal submission.
@@ -90,5 +70,5 @@ semantic_refs:
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-BUSINESS-CONNECTIVITY}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-ACCESS-POLICY}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
-semantic_fingerprint: pending-h17-validation
-validation: {freshness: STALE, evidence_ref: null, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: pending-H17-validation}
+semantic_fingerprint: sha256-json-v1:df211065bc7b70111a3c989d92b960920df2451079830e4f3f2f35ff9f132b5b
+validation: {freshness: FRESH, evidence_ref: docs-v2/migration/revalidated/h17-mvp-journey/validation/h17-change-set-validation.yaml, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: PASS}
