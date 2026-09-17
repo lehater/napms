@@ -45,8 +45,7 @@ docs/
 │       └── state-machines/
 ├── architecture/
 │   ├── README.md
-│   ├── system-context.puml
-│   ├── containers.puml
+│   ├── structurizr/
 │   ├── flows/
 │   ├── deployment/
 │   └── persistence/
@@ -60,11 +59,11 @@ docs/
 └── process/
 ```
 
-Only paths required by actual artifacts exist. The tree above is a routing model, not a requirement to create every directory. Reproducible generated projections are outside this canonical tree.
+Only paths required by actual artifacts exist. The tree above is a routing model, not a requirement to create every directory.
 
 ## Path rules by artifact type
 
-| Artifact type | Path pattern |
+| Artifact type | Canonical path pattern |
 |---|---|
 | `problem-statement` | `docs/problem/README.md` for the current product-level problem frame, or `docs/problem/<scope>.md` when independently owned problem scopes exist |
 | `evidence` | `docs/problem/evidence/<stable-name>.md` or a durable external/native reference from that index |
@@ -76,17 +75,17 @@ Only paths required by actual artifacts exist. The tree above is a routing model
 | `requirements-glossary` | `docs/requirements/glossary.md` |
 | `capability-map` | `docs/domain/capability-map.md` or machine-readable equivalent when the mapping is generated/viewed in several forms |
 | `domain-distillation` | `docs/domain/distillation.md` |
-| `context-map` | generated projection under `docs-generated/architecture/context-map.puml`; never canonical |
-| `context-relationship-map` | `docs/domain/context-relationships.yaml`; generated context-map views may project these classifications together with context/capability identity but do not duplicate their truth manually |
-| `domain-model` | `docs/domain/<bounded-context>/domain-model.puml` |
+| `context-map` | generated projection under `docs-generated/`; never a canonical source path |
+| `context-relationship-map` | `docs/domain/context-relationships.yaml` or the accepted machine-readable S2 anchor selected by migration/cutover; generated context/collaboration views project this truth rather than duplicating it |
+| `domain-model` | `docs/domain/<bounded-context>/domain-model.puml` when PlantUML itself is the canonical semantic source; use a generated projection when a machine-readable semantic owner exists |
 | `domain-glossary` | `docs/domain/glossary.md` for shared domain language; context-local terms may live in `docs/domain/<bounded-context>/README.md` |
-| `state-model` | `docs/domain/<bounded-context>/state-machines/<subject>.puml` |
+| `state-model` | `docs/domain/<bounded-context>/state-machines/<subject>.puml` unless generated from a stronger machine-readable owner |
 | `requirement-domain-trace` | `docs/domain/traceability/<stable-name>.<machine-readable-ext>`; human indexes should be generated where practical |
-| `system-context` | `docs/architecture/system-context.puml` |
-| `container-view` | `docs/architecture/containers.puml` |
+| `system-context` | `docs/architecture/structurizr/workspace.dsl` when Structurizr is the selected canonical S3 structural model |
+| `container-view` | `docs/architecture/structurizr/workspace.dsl` when Structurizr is the selected canonical S3 structural model |
 | `interaction-flow` | `docs/architecture/flows/<flow>.puml` |
-| `deployment-model` | `docs/architecture/deployment/<scope>.puml` when documentation source is canonical; actual IaC remains with deployable source and is referenced |
-| `persistence-model` | `docs/architecture/persistence/<bounded-context-or-store>.puml` by default; colocate under implementation only when executable schema tooling is the canonical model |
+| `deployment-model` | `docs/architecture/structurizr/workspace.dsl` when represented by the canonical deployment model there; actual IaC remains with deployable source and is referenced |
+| `persistence-model` | `docs/architecture/persistence/<bounded-context-or-store>.<machine-readable-ext>` by default; generated ERD is a projection; colocate under implementation only when executable schema tooling is the canonical model |
 | `http-contract` | `docs/contracts/http/<api>.openapi.yaml` |
 | `event-contract` | `docs/contracts/events/<channel-or-api>.asyncapi.yaml` |
 | `data-schema` | `docs/contracts/schemas/<schema>.schema.json` or contract-native equivalent |
@@ -121,7 +120,7 @@ docs/domain/
   context-relationships.yaml   # only when multiple BC relationships require classification
 ```
 
-The capability map records capability clustering and disposition into candidate/accepted Bounded Context, composition, integration capability or unresolved strategic ownership. Distillation records strategic importance without changing semantic ownership. Context relationships record DDD relationship semantics. A visual Context Map is generated from these accepted sources into `docs-generated/` when useful for human review; it does not live beside them as a second manually maintained authority.
+The capability map records capability clustering and disposition into candidate/accepted Bounded Context, composition, integration capability or unresolved strategic ownership. Distillation records strategic importance without changing semantic ownership. Context relationships record DDD relationship semantics. Visual Context Maps and broader collaboration maps are generated projections under `docs-generated/` and may be surfaced through Structurizr; they do not become canonical by being easier to inspect.
 
 ## Bounded-context locality
 
@@ -136,7 +135,7 @@ docs/domain/<bounded-context>/
 
 The context README is intentionally small: responsibility, boundary summary, public semantic guarantees and links. It must not duplicate the domain model in prose.
 
-Persistence does not automatically live under the context directory because it is a technical realization, not the domain model. The default persistence owner is architecture; an implementation-native schema may supersede a documentation ERD when it can serve as the authoritative model.
+Persistence does not automatically live under the context directory because it is a technical realization, not the domain model. The default persistence owner is architecture; an implementation-native schema may supersede a documentation persistence model when it can serve as the authoritative model. ERDs derived from another canonical persistence source remain generated projections.
 
 ## Contracts
 
@@ -164,9 +163,7 @@ Each major area may have one small `README.md` that answers only what the area o
 
 ## Generated output
 
-Canonical source stays under `docs/` (or in an explicitly executable source location where the artifact contract says so). Reproducible renderings/reports/diagram sources may be generated under `docs-generated/` for local tooling consumers; this root is non-canonical, disposable, ignored by Git, and must never be searched as canonical knowledge by agents.
-
-The current projection workflow uses `docs-generated/architecture/context-map.puml`, regenerated by `make architecture-sync` and consumed by Structurizr. CI regenerates it from canonical sources instead of relying on a committed copy.
+Canonical source stays in the paths above. Generated renderings/reports must either be CI artifacts outside Git or live under a clearly non-canonical generated root when a repository consumer requires them. The generated root is `docs-generated/`; it must never be searched as canonical knowledge by agents.
 
 ## Source-code locality exceptions
 
@@ -196,4 +193,4 @@ validated docs-v2/  -> docs/
 
 ## M3 revision note
 
-The strategic-pilot audit added physical ownership for `capability-map`, `domain-distillation` and `context-relationship-map`. Without these paths the repository layout encouraged storing only a final Context Map and context-local models, losing the durable derivation and relationship classification required for repeatable strategic DDD review. Context Map is now explicitly a generated projection over those owned sources rather than a peer authority.
+The strategic-pilot audit added physical ownership for `capability-map`, `domain-distillation` and `context-relationship-map`. The current projection rule keeps those semantic owners durable while allowing Context Maps and wider collaboration views to be regenerated for review instead of hand-maintained as competing truth.
