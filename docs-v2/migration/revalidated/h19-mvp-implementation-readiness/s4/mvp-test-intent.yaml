@@ -1,0 +1,40 @@
+anchor_id: NAPMS-S4-FIRST-MVP-TEST-INTENT
+type_id: test-intent
+owner_stage: S4
+scope: {scope_id: H19-FIRST-MVP-IMPLEMENTATION, product_area: Complete first MVP journey, lifecycle_boundary: S4 Implementation Design / Implementation Readiness}
+status: CANDIDATE
+canonical_payload:
+  purpose: Define the minimum verification contract proving that an implementation realizes the accepted MVP journey without replacing design truth with tests.
+  levels:
+    module: Prove owner invariants and lifecycle rules at module public contracts.
+    integration: Prove cross-module resolution, admission, persistence ownership and materialization composition through in-process contracts and PostgreSQL-backed repositories.
+    application_api: Prove the OpenAPI application boundary maps HTTP/JSON requests and outcomes to the same application semantics without trusting caller-supplied identity.
+    end_to_end: Prove the browser/API journey from authoring through accepted PolicyRule to table and CSV export.
+  required_scenarios:
+    - {id: MVP-E2E-001, level: end_to_end, given: two addressed Resources plus one Application with source and destination Components HTTPS Interaction exact TCP-443 revision deployments Process-backed Need and admitted actor, when: RuleChange is submitted and accepted then current policy is requested, expect: complete table contains materialized TCP destination 443 semantics and CSV preserves the same meaning}
+    - {id: MVP-POL-002, level: integration, given: an already effective rule and a later Pending or Rejected revision change, when: current policy is materialized, expect: previous accepted revision remains effective}
+    - {id: MVP-EXP-003, level: integration, given: an effective rule whose required Resource has no current AddressSpace, when: current policy is materialized, expect: outcome is Unresolved with cause and no partial success rows are returned}
+    - {id: MVP-BC-004, level: integration, given: deliberate policy proposal without a current Process-backed ConnectivityNeed, when: submission is attempted, expect: submission is rejected and no effective policy changes}
+    - {id: MVP-AUTH-005, level: application_api, given: authenticated actor without effective admission for a protected mutation, when: mutation is requested, expect: request is denied and owner state is unchanged}
+    - {id: MVP-ACC-006, level: module, given: Components from different Applications, when: Interaction creation is attempted, expect: ACC rejects it}
+    - {id: MVP-ACC-007, level: module, given: published InteractionContractRevision, when: traffic meaning changes, expect: new immutable revision is created and historical revision remains resolvable}
+    - {id: MVP-AD-008, level: module, given: existing ComponentDeployment, when: same Component is redeployed to another Resource, expect: another ComponentDeployment identity is required}
+    - {id: MVP-AP-009, level: integration, given: effective PolicyRule, when: rule is withdrawn, expect: it disappears from current export while decision history remains}
+    - {id: MVP-EXP-010, level: integration, given: Resource AddressSpace represented as Prefix, when: policy is materialized, expect: Prefix semantics remain Prefix and are not expanded into hosts}
+  trace_rule: Every required scenario traces to accepted S1-S3 semantics or the H19 implementation-readiness anchor; tests do not become a source of new product/domain/architecture truth.
+  execution_rule: Exact test framework and source layout may follow the authorized implementation toolchain; scenario semantics and expected outcomes may not be weakened by implementation convenience.
+  logical_derivation:
+    basis_refs: [{kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}, {kind: anchor-current, anchor_id: NAPMS-S3-FIRST-MVP-SYSTEM-ARCHITECTURE}]
+    derivation_kind: verification-intent-from-accepted-design
+    rationale: Convert accepted behavior invariants and architecture boundaries into a compact verification contract for the whole MVP journey.
+provenance:
+  origin_kind: derived
+  source_refs: [{kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}, {kind: anchor-current, anchor_id: NAPMS-S3-FIRST-MVP-SYSTEM-ARCHITECTURE}]
+  authority_basis: accepted-upstream-design
+  recorded_at: '2026-09-17'
+semantic_refs:
+  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S3-FIRST-MVP-SYSTEM-ARCHITECTURE}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+semantic_fingerprint: pending-h19-validation
+validation: {freshness: STALE, evidence_ref: null, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: pending-H19-validation}
