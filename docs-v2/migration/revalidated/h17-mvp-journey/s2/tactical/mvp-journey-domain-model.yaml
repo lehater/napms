@@ -1,95 +1,53 @@
 anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL
 type_id: tactical-domain-model
 owner_stage: S2
-scope:
-  scope_id: H17-FIRST-MVP-JOURNEY
-  product_area: First end-to-end MVP vendor-neutral policy export
-  lifecycle_boundary: S2 Tactical domain design
-status: CANDIDATE
+scope: {scope_id: H17-FIRST-MVP-JOURNEY, product_area: First end-to-end MVP vendor-neutral policy export, lifecycle_boundary: S2 Tactical domain design}
+status: ACCEPTED
 canonical_payload:
   purpose: Revalidate only the tactical semantics required to execute the first MVP journey across accepted strategic owners without merging their ownership boundaries.
   participating_contexts:
-    Resource Catalogue:
-      current_anchor: NAPMS-S2-BC-RESOURCE-CATALOGUE
-      reused_current_truth: Resource identity and current zero-or-one AddressSpace realization are already canonical in H12 and are not duplicated here.
+    Resource Catalogue: {current_anchor: NAPMS-S2-BC-RESOURCE-CATALOGUE, reused_current_truth: Resource identity and current zero-or-one AddressSpace realization are already canonical in H12 and are not duplicated here.}
     Application Communication Catalogue:
       strategic_anchor: NAPMS-S2-BC-APPLICATION-COMMUNICATION-CATALOGUE
       aggregate: ApplicationDefinition
       entities: [Component, Interaction, InteractionContractRevision]
-      invariants:
-        - A Component belongs to exactly one ApplicationDefinition for its lifetime.
-        - An Interaction is a stable directed pair of Components inside one ApplicationDefinition; cross-Application Interaction is invalid.
-        - At most one Interaction exists for one directed Component pair inside an ApplicationDefinition.
-        - Interaction endpoints are immutable; traffic change creates a new immutable InteractionContractRevision instead of changing Interaction identity.
-        - Every published InteractionContractRevision contains at least one vendor-neutral traffic alternative and remains historically resolvable.
-        - Exactly one published revision is ACC-current for an Interaction, but changing it never silently changes an effective PolicyRule.
+      invariants: [A Component belongs to exactly one ApplicationDefinition for its lifetime., 'An Interaction is a stable directed pair of Components inside one ApplicationDefinition; cross-Application Interaction is invalid.', At most one Interaction exists for one directed Component pair inside an ApplicationDefinition., 'Interaction endpoints are immutable; traffic change creates a new immutable InteractionContractRevision instead of changing Interaction identity.', Every published InteractionContractRevision contains at least one vendor-neutral traffic alternative and remains historically resolvable., 'Exactly one published revision is ACC-current for an Interaction, but changing it never silently changes an effective PolicyRule.']
       public_semantics: [ApplicationRef, ComponentRef, InteractionRef, InteractionContractRevisionRef, ResolveInteractionContractRevision, CurrentInteractionContractRevision]
     Application Deployment:
       strategic_anchor: NAPMS-S2-BC-APPLICATION-DEPLOYMENT
       aggregate: ComponentDeployment
-      invariants:
-        - One ComponentDeployment represents one concrete deployed Component instance.
-        - It references exactly one ACC ComponentRef and exactly one RC ResourceRef.
-        - ComponentRef and ResourceRef are fixed for that ComponentDeployment identity in the MVP.
-        - Redeployment of the same Component to another Resource creates another ComponentDeployment.
-        - Resource AddressSpace change does not change ComponentDeployment identity.
-        - Lifecycle is Active to Retired; retired identities remain historically explainable.
+      invariants: [One ComponentDeployment represents one concrete deployed Component instance., It references exactly one ACC ComponentRef and exactly one RC ResourceRef., ComponentRef and ResourceRef are fixed for that ComponentDeployment identity in the MVP., Redeployment of the same Component to another Resource creates another ComponentDeployment., Resource AddressSpace change does not change ComponentDeployment identity., 'Lifecycle is Active to Retired; retired identities remain historically explainable.']
       public_semantics: [ComponentDeploymentRef, ResolveComponentDeployment]
     Business Connectivity:
       strategic_anchor: NAPMS-S2-BC-BUSINESS-CONNECTIVITY
       aggregate_semantics: [BusinessProcess, ConnectivityNeed]
-      invariants:
-        - Every deliberate ConnectivityNeed belongs to exactly one BusinessProcess in the MVP model.
-        - A ConnectivityNeed references stable ACC Interaction meaning rather than Resource, address, ComponentDeployment, PolicyRule or one traffic revision.
-        - A current ConnectivityNeed supplies business justification only; it never implies authorization or network realization.
-        - Deliberate RuleChange submission requires a current Process-backed ConnectivityNeed basis.
-        - Loss of business justification does not rewrite historical RuleChanges or automatically revoke Access Policy truth.
+      invariants: [Every deliberate ConnectivityNeed belongs to exactly one BusinessProcess in the MVP model., 'A ConnectivityNeed references stable ACC Interaction meaning rather than Resource, address, ComponentDeployment, PolicyRule or one traffic revision.', 'A current ConnectivityNeed supplies business justification only; it never implies authorization or network realization.', Deliberate RuleChange submission requires a current Process-backed ConnectivityNeed basis., Loss of business justification does not rewrite historical RuleChanges or automatically revoke Access Policy truth.]
       public_semantics: [ConnectivityNeedRef, BusinessProcessRef, required InteractionRef, current justification status, business provenance]
     Access Policy:
       strategic_anchor: NAPMS-S2-BC-ACCESS-POLICY
       aggregate: PolicyRule
       child_entity: RuleChange
-      invariants:
-        - One non-Retired PolicyRule exists per exact directed source/destination ComponentDeployment pair.
-        - Rule endpoints are immutable for PolicyRule identity; traffic revision is proposed/effective state rather than identity.
-        - Every RuleChange revisionRef resolves to one exact immutable ACC InteractionContractRevision whose endpoint Components match the two concrete ComponentDeployments.
-        - At most one Pending RuleChange exists per Active PolicyRule in the MVP.
-        - RuleChange state is Pending to Accepted or Rejected; Pending and Rejected changes never overwrite the current effective revision.
-        - Acceptance atomically records the formal outcome and advances effectiveRevisionRef only while the change remains applicable.
-        - Withdrawal clears current effectiveness without deleting the PolicyRule or its decision history.
-        - Evidence is provenance/input rather than authorization and is not required by this first deliberate journey.
+      invariants: [One non-Retired PolicyRule exists per exact directed source/destination ComponentDeployment pair., 'Rule endpoints are immutable for PolicyRule identity; traffic revision is proposed/effective state rather than identity.', Every RuleChange revisionRef resolves to one exact immutable ACC InteractionContractRevision whose endpoint Components match the two concrete ComponentDeployments., At most one Pending RuleChange exists per Active PolicyRule in the MVP., 'RuleChange state is Pending to Accepted or Rejected; Pending and Rejected changes never overwrite the current effective revision.', Acceptance atomically records the formal outcome and advances effectiveRevisionRef only while the change remains applicable., Withdrawal clears current effectiveness without deleting the PolicyRule or its decision history., Evidence is provenance/input rather than authorization and is not required by this first deliberate journey.]
       public_semantics: [EffectivePolicyRule, PolicyRuleRef, sourceComponentDeploymentRef, destinationComponentDeploymentRef, revisionRef, currentDecisionProvenance]
   cross_context_flow:
     - {step: 1, owner: Resource Catalogue, result: Resources exist with current AddressSpace facts required for later materialization.}
-    - {step: 2, owner: Application Communication Catalogue, result: Application Components directed Interaction and exact immutable traffic revision exist.}
+    - {step: 2, owner: Application Communication Catalogue, result: 'Application, Components, directed Interaction and exact immutable traffic revision exist.'}
     - {step: 3, owner: Application Deployment, result: Concrete source and destination ComponentDeployments bind the Interaction endpoint Components to Resources.}
     - {step: 4, owner: Business Connectivity, result: A current Process-backed ConnectivityNeed references the stable Interaction and supplies the deliberate business basis.}
     - {step: 5, owner: Access Policy, result: A RuleChange for the concrete deployment pair and exact revision is submitted with the Need basis and reaches Accepted or Rejected formal outcome.}
     - {step: 6, owner: Access Policy, result: Only an Accepted applicable change establishes current EffectivePolicyRule truth.}
-    - {step: 7, owner: Full Vendor-Neutral Policy Export composition, result: EffectivePolicyRule is joined with exact ACC revision AD deployment-to-Resource facts and current RC AddressSpace facts; unresolved required input makes the complete export Unresolved rather than partial.}
+    - {step: 7, owner: Full Vendor-Neutral Policy Export composition, result: 'EffectivePolicyRule is joined with exact ACC revision, AD deployment-to-Resource facts and current RC AddressSpace facts; unresolved required input makes the complete export Unresolved rather than partial.'}
   materialization_join:
     policy: EffectivePolicyRule(policyRuleRef, sourceComponentDeploymentRef, destinationComponentDeploymentRef, revisionRef)
     traffic: ResolveInteractionContractRevision(revisionRef) -> complete traffic alternatives and endpoint Components
     endpoints: ResolveComponentDeployment(source/destination refs) -> componentRef plus resourceRef
     addresses: Resource Catalogue current Resource realization -> zero-or-one AddressSpace per Resource
-    result_rule: Every traffic alternative is preserved; no provider-specific rendering or enforcement placement is introduced.
-  explicit_deferrals:
-    - customer-specific approval workflow, quorum or bilateral approver model
-    - evidence recognition as a prerequisite to deliberate policy creation
-    - provider/device/firewall-specific policy rendering
-    - Network Enforcement Placement and Network Environment Operations
-    - deployment provider runtime concepts and multi-address endpoint selection
-    - transport, persistence and API realization
+    result_rule: 'Every traffic alternative is preserved; no provider-specific rendering or enforcement placement is introduced.'
+  explicit_deferrals: [customer-specific approval workflow, quorum or bilateral approver model, evidence recognition as a prerequisite to deliberate policy creation, provider/device/firewall-specific policy rendering, Network Enforcement Placement and Network Environment Operations, deployment provider runtime concepts and multi-address endpoint selection, 'transport, persistence and API realization']
   logical_derivation:
-    basis_refs:
-      - {kind: evidence, path: docs-v2/migration/revalidated/h17-mvp-journey/s1/mvp-vendor-neutral-policy-export.yaml, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT, status_at_derivation: CANDIDATE}
-      - {kind: anchor-current, anchor_id: NAPMS-S2-NAPMS-CONTEXT-RELATIONSHIPS}
-      - {kind: evidence, path: docs/domain/application-communication-catalogue/target-tactical-model.md}
-      - {kind: evidence, path: docs/domain/application-deployment/tactical-model.md}
-      - {kind: evidence, path: docs/domain/business-connectivity/target-tactical-model.md}
-      - {kind: evidence, path: docs/domain/access-policy/tactical-model.md}
+    basis_refs: [{kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, {kind: anchor-current, anchor_id: NAPMS-S2-NAPMS-CONTEXT-RELATIONSHIPS}]
     derivation_kind: migration-revalidation
-    rationale: The frozen tactical models were revalidated for the same first-MVP semantics on 2026-09-16; H17 extracts only the cross-context subset needed by the confirmed journey and preserves accepted H16 ownership boundaries. The H17 S1 candidate is co-developed in the same coherent change set and becomes a current semantic dependency only after acceptance.
+    rationale: Extract the cross-context tactical subset needed by the accepted first-MVP journey while preserving accepted H16 ownership boundaries.
 provenance:
   origin_kind: imported-current-docs
   source_refs:
@@ -100,11 +58,12 @@ provenance:
   authority_basis: imported-current-docs-ref-before-cutover
   recorded_at: '2026-09-17'
 semantic_refs:
+  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-NAPMS-CONTEXT-RELATIONSHIPS}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-APPLICATION-COMMUNICATION-CATALOGUE}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-APPLICATION-DEPLOYMENT}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-BUSINESS-CONNECTIVITY}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
   - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-ACCESS-POLICY}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
-semantic_fingerprint: pending-h17-validation
-validation: {freshness: STALE, evidence_ref: null, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: pending-H17-validation}
+semantic_fingerprint: sha256-json-v1:ba350146da4af6734e9363d73d7ad701c24440040149fd4f8fad0356ee172fdd
+validation: {freshness: FRESH, evidence_ref: docs-v2/migration/revalidated/h17-mvp-journey/validation/h17-change-set-validation.yaml, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: PASS}
