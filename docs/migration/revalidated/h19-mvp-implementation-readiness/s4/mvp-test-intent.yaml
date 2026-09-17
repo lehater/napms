@@ -1,0 +1,35 @@
+anchor_id: NAPMS-S4-FIRST-MVP-TEST-INTENT
+type_id: test-intent
+owner_stage: S4
+scope: {scope_id: H19-FIRST-MVP-IMPLEMENTATION, product_area: Complete first MVP journey, lifecycle_boundary: S4 Implementation Design / Implementation Readiness}
+status: ACCEPTED
+canonical_payload:
+  purpose: Define minimum verification proving implementation realizes accepted MVP semantics; tests never create design truth.
+  levels: {module: owner invariants and lifecycle, integration: 'cross-module resolution, admission, persistence ownership and materialization', application_api: HTTP/session mapping to application semantics, end_to_end: complete authoring-to-export journey}
+  required_scenarios:
+    - {id: MVP-E2E-001, expect: Two addressed Resources + one Application/two Components + HTTPS TCP/443 revision + deployments + Process-backed Need + admitted actor + accepted RuleChange yields complete TCP/443 table row and semantically identical CSV.}
+    - {id: MVP-POL-002, expect: Pending or Rejected later change leaves previous accepted revision effective.}
+    - {id: MVP-EXP-003, expect: Missing required current AddressSpace yields Unresolved with causes and no partial success.}
+    - {id: MVP-BC-004, expect: Deliberate RuleChange without current Process-backed ConnectivityNeed is rejected with no policy mutation.}
+    - {id: MVP-AUTH-005, expect: Protected mutation without effective admission is denied with owner state unchanged.}
+    - {id: MVP-ACC-006, expect: Cross-Application Interaction is rejected.}
+    - {id: MVP-ACC-007, expect: Traffic change creates a new immutable revision and historical revision remains resolvable.}
+    - {id: MVP-AD-008, expect: Redeployment of same Component to another Resource requires another ComponentDeployment identity.}
+    - {id: MVP-AP-009, expect: Withdrawal removes rule from current export while retaining policy history.}
+    - {id: MVP-EXP-010, expect: Prefix remains Prefix and is not expanded to host rows.}
+  trace_rule: Every scenario traces to accepted S1-S3 or the H19 implementation-readiness anchor; implementation tests are evidence, not product/domain/architecture authority.
+  logical_derivation:
+    basis_refs: [{kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}, {kind: anchor-current, anchor_id: NAPMS-S3-FIRST-MVP-SYSTEM-ARCHITECTURE}]
+    derivation_kind: verification-intent-from-accepted-design
+    rationale: Convert accepted behavior and architecture boundaries into a compact verification contract.
+provenance:
+  origin_kind: derived
+  source_refs: [{kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}, {kind: anchor-current, anchor_id: NAPMS-S3-FIRST-MVP-SYSTEM-ARCHITECTURE}]
+  authority_basis: accepted-upstream-design
+  recorded_at: '2026-09-17'
+semantic_refs:
+  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S3-FIRST-MVP-SYSTEM-ARCHITECTURE}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+semantic_fingerprint: sha256-json-v1:18156f386b71128949f67920276fa4a89b289d2901fa87f25ae6c7a70969c7d7
+validation: {freshness: CURRENT, evidence_ref: docs-v2/migration/revalidated/h19-mvp-implementation-readiness/validation/h19-change-set-validation.yaml, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: PASS}

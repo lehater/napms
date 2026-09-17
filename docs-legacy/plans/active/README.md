@@ -16,11 +16,9 @@ Authorization basis: `none`
 ## Working set
 
 Read first:
-- `docs/plans/active/PLAN-130-revalidate-policy-lifecycle.md`
 - `docs/architecture/first-mvp-policy-lifecycle-export.md`
-- `docs/architecture/target-policy-authoring-boundary.md`
-- `docs/architecture/code-structure.md`
-- `docs/domain/mvp-ddd-convergence-checkpoint.md`
+
+Expand only when a concrete review lens requires it, starting with the active plan, accepted G2 checkpoint, target policy boundary or code-structure reference relevant to that question.
 
 ## Blockers
 

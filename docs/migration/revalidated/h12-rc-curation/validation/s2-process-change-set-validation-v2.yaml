@@ -1,0 +1,33 @@
+version: 2
+kind: changed-and-affected-design-validation
+id: H12-S2-PROCESS-REWORK-VALIDATION
+scope_id: H12-RC-CURATION-MVP
+checkpoint: S2-PROCESS-DISCOVERY
+result: PASS
+validated_at: '2026-09-17'
+enforcement_status: specification-manual-not-CI
+changed:
+  - anchor_id: NAPMS-S2-RC-CURATION-PROCESS
+    path: docs-v2/migration/revalidated/h12-rc-curation/s2/process/resource-curation-process.yaml
+checks:
+  required_process_shape: PASS
+  coherent_slice_outcome_basis: PASS
+  happy_path_and_independent_lifecycle_flows: PASS
+  temporal_end_replace_behavior: PASS
+  read_current_projection_and_downstream_handoff: PASS
+  authorization_denial_path: PASS
+  domain_integrity_conflict_path: PASS
+  human_truth_boundary: PASS
+  candidate_aggregate_remains_hypothesis: PASS
+  strategic_boundary_consistency: PASS
+findings:
+  - The previous mandatory-looking onboarding sequence is replaced by independent Resource lifecycle flows.
+  - Accepted requirements support history-preservation, admission, missing-current-relation and explicit conflict policies; no new stakeholder policy was invented.
+  - Resource Catalogue and Authority Management ownership remains consistent with current strategic anchors; no strategic rework is required.
+  - Resource retirement remains outside this selected outcome and responsibility transfer gap/overlap rules remain deferred.
+  - Realization cardinality remains intentionally unresolved at Process level because accepted S1 preserves one-or-more technical addresses while current canonical tactical material is narrower; Tactical DDD must reconcile this before acceptance.
+readiness:
+  S2_PROCESS_DISCOVERY: ACCEPTED_CURRENT
+  S2_STRATEGIC: ACCEPTED_CURRENT
+  S2_TACTICAL: ELIGIBLE_TO_START
+  G2: NOT_ELIGIBLE_UNTIL_TACTICAL_ACCEPTED

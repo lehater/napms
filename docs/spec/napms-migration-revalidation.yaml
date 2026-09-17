@@ -1,0 +1,45 @@
+version: 2
+revision: 3
+kind: napms-migration-revalidation-plan
+id: DOCS-V2-NAPMS-MIGRATION-REVALIDATION
+status: active
+owner_phase: H12
+last_updated: 2026-09-17
+purpose: >-
+  Reconstruct one bounded NAPMS design slice from current canonical docs through the Harness
+  design roadmap, preserving machine-readable derivation and human-owned truth without using
+  product code/tests or old docs-v2 candidates as authority.
+source_authority:
+  canonical_product_design_truth: docs/**
+  forbidden_as_truth: [product-code, product-tests, prior-docs-v2-candidates]
+  prior_docs_v2_role: migration-comparison-or-history-only
+invariants:
+  - Current docs/** remains authoritative until explicit cutover.
+  - Later-stage material cannot repair missing earlier-stage truth.
+  - Applicable S2 order is Strategic -> Process Discovery -> Tactical -> G2.
+  - Missing human-owned truth becomes a durable question.
+  - Accepted non-root design preserves meaningful derivation lineage.
+  - Old horizontal/pilot gate evidence is historical only.
+  - G2 does not authorize cutover, implementation, workflow/CI changes or merge.
+execution_rule: >-
+  Work in coherent design cycles. A cycle may create/update related artifacts, validate the changed
+  set, evaluate the reached checkpoint/gate and advance durable scope state. Design and gate do not
+  require separate Task Capsules, transactions, sessions or commits.
+current_pilot:
+  scope_id: H12-RC-CURATION-MVP
+  lifecycle_state: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
+  completed: [S0, G0, S1, G1, S2-STRATEGIC-DESIGN]
+  next_meaningful_work: S2-STRATEGIC-readiness-then-S2-PROCESS-DISCOVERY
+  process_discovery_required: true
+migration_sequence:
+  - reconstruct-current-stage-design-from-docs
+  - validate-changed-design-and-lineage
+  - evaluate-readiness-if-boundary-reached
+  - persist-coherent-artifacts-state-and-compact-evidence
+  - continue-to-next-eligible-design-work-unless-blocked
+stop_conditions:
+  - missing-human-owned-truth
+  - missing-required-authority-or-evidence
+  - earlier-stage-deficiency-requires-reopen
+  - requested-scope-complete
+  - unsafe-conflicting-current-input-change

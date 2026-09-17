@@ -1,0 +1,62 @@
+version: 1
+revision: 2
+kind: harness-conformance-contract
+id: DOCS-V2-HARNESS-CONFORMANCE
+status: active
+owner_phase: H1
+last_updated: 2026-09-17
+purpose: >-
+  Define the small set of behavior that makes the Harness useful for design: preserve the design
+  roadmap, artifact graph, derivation, human truth and readiness guarantees while avoiding
+  operational ceremony that does not improve design quality.
+critical_capabilities:
+  - id: HC-DESIGN-ROADMAP
+    guarantee: Current design maturity and next meaningful work are recoverable from durable state.
+  - id: HC-ARTIFACT-GRAPH
+    guarantee: Accepted design artifacts are machine-readable and have stable typed references.
+  - id: HC-DERIVATION
+    guarantee: Material derived design can be traced to accepted predecessors, evidence or decisions.
+  - id: HC-HUMAN-TRUTH
+    guarantee: Missing human-owned business truth stops or asks rather than being invented.
+  - id: HC-READINESS
+    guarantee: Meaningful lifecycle boundaries are checked before dependent design proceeds.
+  - id: HC-AFFECTED-VALIDATION
+    guarantee: Changed design and affected dependencies are checked; unrelated current work is reused.
+  - id: HC-RESUME
+    guarantee: Work resumes from repository state without chat history.
+  - id: HC-AUTHORITY
+    guarantee: Product implementation, cutover, workflow/CI and merge boundaries remain explicit.
+anti_requirements:
+  - one Task Capsule per design task
+  - separate capsule or transaction for a gate/checkpoint
+  - separate commit for validation evidence
+  - manual operation-id, execution-basis or fingerprint construction by the design agent
+  - global Harness preflight for every ordinary design change
+  - rerunning unchanged anchor validation at every gate
+  - stopping after every successful design or gate persistence
+oracle_boundary:
+  deterministic: [schema, stable-reference, lifecycle-legality, declared-dependency-impact, authority-boundary]
+  semantic: [design-consistency, lifecycle-readiness, applicability-when-not-mechanical]
+  human: [new-business-rule, unresolved-material-choice, explicit-approval]
+core_scenarios:
+  - id: HC2-COHERENT-DESIGN-CYCLE
+    given: current inputs and authorized meaningful design work
+    expect: [design-change, affected-validation, readiness-if-boundary, coherent-persistence]
+  - id: HC2-GATE-NOT-TRANSACTION
+    given: validated design reaches a lifecycle boundary
+    expect: {separate_execution_required: false}
+  - id: HC2-UNRELATED-EVIDENCE-REUSED
+    given: unchanged current unrelated anchors
+    expect: {revalidate: false}
+  - id: HC2-MISSING-HUMAN-TRUTH
+    given: required human-owned truth missing
+    expect: {route: NEED_MORE_DATA}
+  - id: HC2-UPSTREAM-GAP
+    given: later design exposes earlier-stage deficiency
+    expect: {route: REOPEN}
+  - id: HC2-RESUME
+    given: new session with repository state only
+    expect: {current_design_and_next_work_recoverable: true}
+  - id: HC2-NO-CEREMONY
+    given: ordinary design change
+    expect: {task_capsule_required: false, operation_metadata_manual: false}

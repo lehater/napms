@@ -1,0 +1,36 @@
+version: 2
+kind: historical-migration-input
+id: DOCS-V2-NAPMS-H12-REVALIDATION
+status: superseded
+owner_phase: H12
+owner_task: H12-T2
+last_updated: 2026-09-17
+
+superseded_by:
+  id: DOCS-V2-NAPMS-MIGRATION-REVALIDATION
+  path: docs-v2/spec/napms-migration-revalidation.yaml
+  version: 2
+
+canonical_process_authority: false
+product_domain_authority: false
+
+reason: >-
+  This file was an early H12 migration-plan artifact created before the corrected H12 lifecycle
+  sequence. Its embedded task sequence could conflict with H2 because it did not carry the final
+  separate G0/G1 gate executions. The active H12 migration/revalidation contract is now
+  docs-v2/spec/napms-migration-revalidation.yaml. Git history preserves the full prior content.
+
+use_allowed:
+  - historical audit
+  - migration-process defect evidence
+
+use_forbidden:
+  - current task routing
+  - current lifecycle/gate eligibility
+  - product/domain semantic authority
+  - H8 validation or gate evidence
+  - H5 derivation lineage
+
+cutover_guard:
+  docs_remains_canonical: true
+  cutover_authorized: false

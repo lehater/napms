@@ -1,0 +1,105 @@
+version: 1
+kind: validation-evidence
+schema_version: h8-v1+cp-v1
+evidence_id: H12-G1-1-GATE-EVIDENCE-1
+evidence_kind: gate-validation
+evaluation_id: H12-G1-1-EVAL-1
+operation_id: H12-G1-1-OP-1
+target_kind: gate
+target_id: G1
+gate_id: G1
+scope:
+  scope_id: H12-RC-CURATION-MVP
+  lifecycle_stage: S1
+execution_basis_fingerprint: sha256-jcs-v1:f2d0a2102b03936764673afa84e14ab537a5222a0d09fcaae7121c4b97f1526a
+validation_profile_id: G1
+validation_profile_version: h8-v1
+deterministic_results:
+- validator_id: DV-HARNESS-SELF
+  validator_version: h8-v1
+  result: PASS
+  findings: []
+- validator_id: DV-EXECUTION-BASIS
+  validator_version: h8-v1
+  result: PASS
+  findings: []
+- validator_id: DV-APPLICABILITY
+  validator_version: h8-v1
+  result: PASS
+  findings: []
+- validator_id: DV-LIFECYCLE
+  validator_version: h8-v1
+  result: PASS
+  findings: []
+- validator_id: DV-REFERENCE
+  validator_version: h8-v1
+  result: PASS
+  findings: []
+- validator_id: DV-AUTHORITY
+  validator_version: h8-v1
+  result: PASS
+  findings: []
+- validator_id: DV-FRESHNESS
+  validator_version: h8-v1
+  result: PASS
+  findings: []
+- validator_id: G1-PRECONDITIONS
+  validator_version: h8-v1
+  result: PASS
+  findings: []
+semantic_results:
+- judge_id: SJ-G1-REQUIREMENTS-SUFFICIENCY
+  judge_version: h8-v1
+  outcome: PASS
+  finding_codes: []
+  supporting_refs:
+  - NAPMS-S1-RC-CURATION-BEHAVIOR
+  - NAPMS-S1-RC-CURATION-AUTHORIZATION
+  - NAPMS-S1-RC-CURATION-INTEGRITY
+  rationale_summary: Accepted S1 truth states the Resource-curation behaviors, one-or-more technical-address cardinality,
+    mutation-admission/read separation, and history/integrity qualities needed for domain design. Optional acceptance-scenario
+    and requirements-glossary anchors are not applicable for this bounded scope; concrete examples remain H7 process state
+    and no blocking question is open. S2 can derive domain responsibility/invariants without redefining S0 or inventing missing
+    S1 behavior.
+aggregate_result: PASS
+specification_versions:
+  DOCS-V2-HARNESS-CONTROL-PLANE: 1
+  DOCS-V2-LIFECYCLE-STATE-MACHINE: 1
+  DOCS-V2-VALIDATION-GATE-ENGINE: 1
+  DOCS-V2-NAPMS-MIGRATION-REVALIDATION: 2
+gate_specification_version: 1
+pre_gate_stage_state: IN_PROGRESS
+gate_result: PASS
+route: PASS
+post_evaluation_state_effect:
+  S1: ACCEPTED
+  G1: PASS
+  successor: H12-T4
+  successor_stage: S2
+  successor_state: NOT_STARTED
+  successor_eligible: true
+  successor_started: false
+exact_input_snapshot:
+- ref_kind: scope-state
+  ref_id: NAPMS-H12-RC-CURATION-LIFECYCLE
+  fingerprint_or_state_token: git-blob-sha1:6a21ef71ae48e81d5f43b9dae4c5a39eefb517a1
+- ref_kind: anchor
+  ref_id: NAPMS-S1-RC-CURATION-BEHAVIOR
+  fingerprint_or_state_token: sha256-jcs-v1:1c70355ed0db0c2cf67d9167bf662f6351d665080ea5f4a3ac68e8e9821d2722
+- ref_kind: anchor
+  ref_id: NAPMS-S1-RC-CURATION-AUTHORIZATION
+  fingerprint_or_state_token: sha256-jcs-v1:abdfa0128b7311173305ca8e3641d5b1a96cf0076b726bd386e9324cf6e68f2c
+- ref_kind: anchor
+  ref_id: NAPMS-S1-RC-CURATION-INTEGRITY
+  fingerprint_or_state_token: sha256-jcs-v1:e505118d22c45bd930386310d38cb9939697df774293a7b92505e9a6a8f03460
+- ref_kind: validation-evidence
+  ref_id: H12-T3-VE-S1-CHANGESET-1
+  fingerprint_or_state_token: git-blob-sha1:b95a24a85314af43668c214196bd0af8e2e866d1
+- ref_kind: repository-head
+  ref_id: meta/docs-v2-m7-pilot
+  fingerprint_or_state_token: git-commit:c79358547a26bdafcad95bc72bb99aed09f4c0b5
+recorded_at: '2026-09-17'
+diagnostic_summary: Specification-guided pre-runtime G1 evaluation under control-plane v1. G1 reused current S1 change-set
+  evidence and did not reload canonical product documents. PASS makes S2 Strategic eligible; H12-T4 was not started in this
+  capsule.
+evidence_fingerprint: sha256-jcs-v1:7d48e7edbf97dce2ada42b8a1f75eb60ff1ce2c870f4b7073e8a66c9b2e74345

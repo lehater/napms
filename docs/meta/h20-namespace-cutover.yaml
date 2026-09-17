@@ -1,0 +1,29 @@
+version: 1
+kind: validation-evidence
+id: H20-NAMESPACE-CUTOVER
+status: PASS
+recorded_at: '2026-09-17'
+scope: documentation-authority-namespace
+stakeholder_authorization:
+  granted: true
+  evidence: explicit user authorization for H20 cutover followed by explicit instruction to normalize physical folder names
+result:
+  canonical_namespace: docs/
+  retired_namespace: docs-legacy/
+  retired_namespace_mode: frozen-migration-evidence-only
+  reverse_sync: forbidden
+  competing_current_truth_store: false
+  physical_namespace_normalization: complete
+  product_code_changed: false
+  product_tests_changed: false
+  merge_performed: false
+checks:
+  - docs/README.md declares docs as sole canonical documentation authority.
+  - docs-legacy/README.md declares the old tree retired and non-canonical.
+  - top-level AGENTS.md routes agents to docs workstream state, roadmap, specs and accepted anchors rather than legacy docs.
+  - H16-H19 accepted design truth remains under docs without semantic rewrite during the physical rename.
+  - legacy files remain available only under docs-legacy for migration provenance and cannot override accepted docs truth.
+  - product implementation and product-test authorization remain absent.
+notes:
+  - The cutover retires rather than bulk-deletes legacy evidence. This preserves provenance while removing its authority.
+  - The temporary migration name docs-v2 has been removed from the repository root; normal current documentation now uses the conventional docs namespace.

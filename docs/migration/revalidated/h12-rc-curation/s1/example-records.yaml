@@ -1,0 +1,34 @@
+version: 2
+kind: h7-example-record-set
+id: H12-S1-RC-CURATION-EXAMPLES
+classification: process-state
+canonical_product_domain_truth: false
+scope: {scope_id: H12-RC-CURATION-MVP, lifecycle_stage: S1}
+source:
+  path: docs/requirements/catalogue-curation-acceptance-examples.md
+  blob_sha: c98ab5174740b890c9b4b240530f1b9eec89cc91
+examples:
+- example_id: I27-RC-EXAMPLE-A
+  concrete_situation: Resource checkout-web-prod is realized by host address 10.10.10.10.
+  related_requirement_refs: [NAPMS-S1-RC-CURATION-BEHAVIOR]
+- example_id: I27-RC-EXAMPLE-F
+  concrete_situation: Resource orders-prod moves from HostAddress 10.20.20.20 to HostAddress 10.20.20.30.
+  observed_or_expected_outcome: The old temporal realization ends and the replacement becomes effective without changing Resource identity.
+  related_requirement_refs: [NAPMS-S1-RC-CURATION-BEHAVIOR, NAPMS-S1-RC-CURATION-INTEGRITY]
+  generalization_guard: The example is consistent with the accepted MVP maximum-one effective AddressSpace rule; AddressSpace may instead be one Prefix.
+- example_id: I27-RC-EXAMPLE-G
+  concrete_situation: A person is recorded as TechnicalOwner for a Resource.
+  observed_or_expected_outcome: Responsibility does not grant mutation authority.
+  related_requirement_refs: [NAPMS-S1-RC-CURATION-AUTHORIZATION]
+- example_id: I27-RC-EXAMPLE-I
+  concrete_situation: A Resource is retired.
+  related_requirement_refs: [NAPMS-S1-RC-CURATION-INTEGRITY]
+  generalization_guard: Retirement remains outside the current bounded curation outcome.
+- example_id: I27-RC-EXAMPLE-J
+  concrete_situation: Two sessions submit conflicting edits.
+  observed_or_expected_outcome: The stale mutation fails explicitly rather than silently overwriting accepted truth.
+  related_requirement_refs: [NAPMS-S1-RC-CURATION-INTEGRITY]
+rules:
+  examples_are_not_design_anchors: true
+  stakeholder_cardinality_correction: For MVP one Resource has at most one effective AddressSpace, either HostAddress or Prefix.
+recorded_at: '2026-09-17'

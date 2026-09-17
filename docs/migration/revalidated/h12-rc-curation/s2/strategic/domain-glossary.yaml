@@ -1,0 +1,52 @@
+anchor_id: NAPMS-S2-RC-DOMAIN-GLOSSARY
+type_id: domain-glossary
+owner_stage: S2
+scope: {scope_id: H12-RC-CURATION-MVP, product_area: Resource Catalogue curation, lifecycle_boundary: S2 Strategic domain design}
+status: ACCEPTED
+canonical_payload:
+  terms:
+  - term_id: TERM-RESOURCE
+    term: Resource
+    definition: An access-relevant catalogue identity independent of whether current realization, scope-affiliation or responsibility facts are present.
+    context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}
+  - term_id: TERM-ADDRESS-SPACE
+    term: AddressSpace
+    definition: The MVP Resource realization value; exactly one HostAddress or one Prefix when present. One Resource has at most one effective AddressSpace at one logical time.
+    context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}
+  - term_id: TERM-RESOURCE-REALIZATION
+    term: Resource technical realization
+    definition: A time-qualified Resource fact establishing one AddressSpace; replacement changes the effective HostAddress-or-Prefix without changing Resource identity and preserves history.
+    context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}
+  - term_id: TERM-RESOURCE-SCOPE-AFFILIATION
+    term: Resource Scope Affiliation
+    definition: A time-qualified Resource Catalogue fact associating a Resource with a Responsibility Scope reference; it does not grant curation authority.
+    context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}
+  - term_id: TERM-RESOURCE-RESPONSIBILITY
+    term: Resource Responsibility
+    definition: A Resource Catalogue fact recording operational person/team responsibility or contact roles; it is not mutation permission.
+    context_ref: {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}
+  - term_id: TERM-EFFECTIVE-AUTHORITY
+    term: Effective Authority
+    definition: Authority Management determination of whether an Actor may perform an Action for the applicable scope and time.
+    context_ref: {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT}
+  logical_derivation:
+    basis_refs: [{kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR}, {kind: anchor-current, anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}]
+    derivation_kind: synthesis
+    rationale: The glossary follows the corrected MVP Resource realization cardinality and current RC ownership.
+provenance:
+  origin_kind: mixed
+  source_refs:
+  - {kind: repository-file, path: docs/domain/resource-catalogue/target-realization-model.md, blob_sha: 470a44dc4ca5807e4b28a15d3eb26f946857c603}
+  - {kind: stakeholder-correction, ref: H12-R-RC-MVP-SINGLE-ADDRESS-SPACE}
+  authority_basis: explicit-stakeholder-correction
+  recorded_at: '2026-09-17'
+semantic_refs:
+- {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+- {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+validation:
+  freshness: CURRENT
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s1-cardinality-correction-validation.yaml
+  evidence_target: NAPMS-S2-RC-DOMAIN-GLOSSARY
+  profile: changed-and-affected-design
+  profile_version: cp-v2
+  enforcement_status: specification-manual-not-CI

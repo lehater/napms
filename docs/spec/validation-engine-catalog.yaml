@@ -1,0 +1,50 @@
+version: 1
+revision: 2
+kind: validation-engine-catalog
+id: DOCS-V2-VALIDATION-ENGINE-CATALOG
+status: active
+owner_phase: H8
+last_updated: 2026-09-17
+purpose: >-
+  Name reusable validation capabilities without forcing every capability into every design change.
+  The active validation profile is selected from changed semantics and lifecycle boundary.
+validators:
+  DV-FORMAT-SCHEMA: canonical format/schema integrity
+  DV-TYPE-OWNER: artifact type and semantic owner integrity
+  DV-REFERENCE: stable reference and selector resolution
+  DV-LINEAGE: required derivation lineage integrity
+  DV-AUTHORITY: human-owned truth/decision authority integrity
+  DV-LIFECYCLE: stage/checkpoint/gate legality
+  DV-DEPENDENCY-IMPACT: affected downstream design calculation
+  DV-FRESHNESS: current evidence/dependency freshness when relevant
+  DV-AUTHORIZATION: exact implementation-boundary check when relevant
+semantic_judges:
+  SJ-ANCHOR-CONSISTENCY: changed design follows accepted inputs without invented human truth
+  SJ-G0-PROBLEM-SUFFICIENCY: S0 readiness
+  SJ-G1-REQUIREMENTS-SUFFICIENCY: S1 readiness
+  SJ-S2-STRATEGIC-SUFFICIENCY: S2 strategic readiness
+  SJ-S2-PROCESS-SUFFICIENCY: S2 process readiness
+  SJ-S2-TACTICAL-SUFFICIENCY: S2 tactical readiness
+  SJ-G2-DOMAIN-SUFFICIENCY: S2 overall readiness
+  SJ-G3-ARCHITECTURE-SUFFICIENCY: S3 readiness
+  SJ-G4-READINESS-SUFFICIENCY: S4 readiness
+selection:
+  ordinary_design_change:
+    required: [DV-FORMAT-SCHEMA, DV-TYPE-OWNER, DV-REFERENCE]
+    conditional: [DV-LINEAGE, DV-AUTHORITY, SJ-ANCHOR-CONSISTENCY]
+  lifecycle_boundary:
+    required: [DV-LIFECYCLE, applicable-readiness-judge]
+    reuse: current-ordinary-design-validation
+  material_upstream_change:
+    additional: [DV-DEPENDENCY-IMPACT, DV-FRESHNESS]
+  implementation_boundary:
+    additional: [DV-AUTHORIZATION]
+forbidden:
+  - global base profile that runs every validator for every operation
+  - execution-basis validator as a design-facing prerequisite
+  - validator/judge catalog serialization into each design evidence record
+  - rerunning unchanged unrelated validation merely because a gate is evaluated
+runtime_metadata:
+  validator_versions: internal-or-compact-evidence-when-needed
+  operation_identity: internal
+  execution_basis: internal

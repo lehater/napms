@@ -1,0 +1,31 @@
+version: 1
+revision: 2
+kind: harness-execution-kernel-specification
+id: DOCS-V2-HARNESS-EXECUTION-KERNEL
+status: historical-design-input
+owner_phase: H12
+last_updated: 2026-09-17
+purpose: >-
+  Record the retired execution-kernel proposal. The proposal was created to optimize operational
+  cost produced by the previous transaction/capsule-heavy Harness. After simplification of the
+  control plane, execution context, lifecycle and validation contracts, it is no longer a separate
+  Harness design layer.
+disposition:
+  engine_bundle_builder: optional-runtime-cache
+  transaction_context_resolver: ordinary-runtime-context-resolution
+  validation_plan_compiler: internal-validation-optimization
+  validation_executor: implementation-detail
+  repository_transaction_writer: persistence-adapter
+  metrics_recorder: optional-observability
+  semantic_authority: none
+  required_for_design_flow: false
+preserved_runtime_requirements:
+  - reuse unchanged contracts/evidence when safe
+  - avoid global repository scans for ordinary work
+  - validate only affected design
+  - persist coherent changes safely
+  - detect conflicting input changes
+  - keep runtime cost observable
+rule: >-
+  H13 may implement any or none of these mechanisms. They must not reappear as user-visible
+  lifecycle stages, Task Capsules, transactions, design artifacts or mandatory Harness concepts.

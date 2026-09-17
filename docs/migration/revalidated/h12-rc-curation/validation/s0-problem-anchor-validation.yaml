@@ -1,0 +1,110 @@
+version: 1
+kind: validation-evidence
+schema_version: h8-v1
+evidence_id: H12-T2-VE-S0-PROBLEM-1
+evidence_kind: anchor-validation
+evaluation_id: H12-T2-EVAL-S0-PROBLEM-1
+operation_id: H12-T2-ACCEPT-S0-PROBLEM-1
+target_kind: anchor
+target_id: NAPMS-S0-RC-CURATION-PROBLEM
+scope: {scope_id: H12-RC-CURATION-MVP, lifecycle_stage: S0}
+execution_basis_fingerprint: execution-basis-sha256-jcs-v1:d4f7ed92da07680af6aed99a147d426d7c93d767087c96f30ec1f39b54d80cac
+validation_profile_id: anchor-acceptance
+validation_profile_version: h8-v1
+
+deterministic_results:
+  - {validator_id: DV-HARNESS-SELF, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-EXECUTION-BASIS, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-FORMAT-SCHEMA, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-TYPE-OWNER, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-APPLICABILITY, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-LIFECYCLE, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-FINGERPRINT, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-REGISTRY, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-REFERENCE, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-DEPENDENCY-GRAPH, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-LINEAGE, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-AUTHORITY, validator_version: h8-v1, result: PASS, findings: []}
+  - {validator_id: DV-FRESHNESS, validator_version: h8-v1, result: PASS, findings: []}
+
+semantic_results:
+  - judge_id: SJ-G0-PROBLEM-SUFFICIENCY
+    judge_version: h8-v1
+    outcome: PASS
+    finding_codes: []
+    supporting_refs:
+      - docs/requirements/catalogue-curation.md@92833e29efc3bfdb6503e5b600e48296b8fb6041
+    rationale_summary: >-
+      The target anchor faithfully preserves the accepted self-service catalogue problem, actor
+      and intended outcome while excluding S1/S2/S3 solution semantics. This is anchor-level
+      semantic review only; G0 remains unevaluated.
+
+aggregate_result: PASS
+specification_versions:
+  DOCS-V2-DESIGN-ANCHOR-CONTRACT: 1
+  DOCS-V2-ARTIFACT-TYPE-REGISTRY: 2
+  DOCS-V2-DEPENDENCY-REGISTRY-IMPACT: 1
+  DOCS-V2-DESIGN-DERIVATION-LINEAGE: 1
+  DOCS-V2-HUMAN-KNOWLEDGE-ACQUISITION: 1
+  DOCS-V2-VALIDATION-GATE-ENGINE: 1
+  DOCS-V2-VALIDATION-ENGINE-CATALOG: 1
+  DOCS-V2-LIFECYCLE-STATE-MACHINE: 1
+  DOCS-V2-NAPMS-MIGRATION-REVALIDATION: 2
+recorded_at: 2026-09-17
+validated_anchor_fingerprint: sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
+dependency_snapshot: []
+validation_basis_fingerprint: sha256-jcs-v1:e847ab04eee8a421eff7e2531787c5396bc15a1fedf64e34c436d750be98887c
+evidence_fingerprint: validation-evidence-sha256-jcs-v1:e0a14d3e8d87b30b553ebb25afe46a8f58788ab7508f13d85a9892291498a9d1
+
+diagnostic_summary: >-
+  Specification-guided manual H8 evaluation; no claim is made that current repository CI or
+  executable H4-H10 validators produced this PASS.
+
+execution_basis_snapshot:
+  evaluation_id: H12-T2-EVAL-S0-PROBLEM-1
+  operation_id: H12-T2-ACCEPT-S0-PROBLEM-1
+  target_kind: anchor
+  target_id: NAPMS-S0-RC-CURATION-PROBLEM
+  scope: {scope_id: H12-RC-CURATION-MVP, lifecycle_stage: S0}
+  durable_state_ref: docs-v2/meta/workstream-state.yaml
+  durable_state_fingerprint: git-blob-sha1:f7ab83f7ecab1ab2bbb68b97e5af5bef5ad1b1dc
+  declared_input_refs:
+    - docs/requirements/catalogue-curation.md
+    - docs-v2/migration/revalidated/h12-rc-curation/s0/problem-statement.md
+  declared_input_fingerprints:
+    - git-blob-sha1:92833e29efc3bfdb6503e5b600e48296b8fb6041
+    - sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
+  harness_contract_versions:
+    DOCS-V2-DESIGN-ANCHOR-CONTRACT: 1
+    DOCS-V2-ARTIFACT-TYPE-REGISTRY: 2
+    DOCS-V2-DEPENDENCY-REGISTRY-IMPACT: 1
+    DOCS-V2-DESIGN-DERIVATION-LINEAGE: 1
+    DOCS-V2-HUMAN-KNOWLEDGE-ACQUISITION: 1
+    DOCS-V2-VALIDATION-GATE-ENGINE: 1
+    DOCS-V2-VALIDATION-ENGINE-CATALOG: 1
+  process_specification_versions:
+    DOCS-V2-LIFECYCLE-STATE-MACHINE: 1
+    DOCS-V2-NAPMS-MIGRATION-REVALIDATION: 2
+  validation_profile_id: anchor-acceptance
+  validation_profile_version: h8-v1
+  validator_versions:
+    DV-HARNESS-SELF: h8-v1
+    DV-EXECUTION-BASIS: h8-v1
+    DV-FORMAT-SCHEMA: h8-v1
+    DV-TYPE-OWNER: h8-v1
+    DV-APPLICABILITY: h8-v1
+    DV-LIFECYCLE: h8-v1
+    DV-FINGERPRINT: h8-v1
+    DV-REGISTRY: h8-v1
+    DV-REFERENCE: h8-v1
+    DV-DEPENDENCY-GRAPH: h8-v1
+    DV-LINEAGE: h8-v1
+    DV-AUTHORITY: h8-v1
+    DV-FRESHNESS: h8-v1
+  semantic_judge_versions: {SJ-G0-PROBLEM-SUFFICIENCY: h8-v1}
+  lifecycle_scope_state_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
+  applicability_fact_snapshot:
+    stage.S0.scope_entered: true
+    scope.actor_goal_journey_required: true
+    scope.external_or_nonnegotiable_constraint_exists: false
+    scope.material_claim_requires_durable_evidence: false

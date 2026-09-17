@@ -1,0 +1,45 @@
+anchor_id: NAPMS-S2-DEC-RC-MVP-AUTHORITY
+type_id: domain-decision
+owner_stage: S2
+scope:
+  scope_id: H12-RC-CURATION-MVP
+  product_area: Resource Catalogue curation
+  lifecycle_boundary: S2 Process Discovery / Event Storming
+status: ACCEPTED
+canonical_payload:
+  decision: For the MVP, Resource Catalogue mutation authorization uses one catalogue-wide CurateResourceCatalogue action; resource-level authorization scopes are deferred.
+  decision_scope: Resource Catalogue mutation authority for H12/I27 MVP
+  question_refs: [H12-Q-RC-MUTATION-AUTHORITY-GRANULARITY]
+  response_refs: [H12-R-RC-MVP-GLOBAL-CURATION]
+  chosen_option_or_resolution: Global catalogue-level mutation authority without per-resource scopes.
+  rationale: The stakeholder selected the smallest MVP authorization model. Resource Responsibility remains business data and does not grant mutation authority.
+  consequences:
+    - Every protected Resource Catalogue mutation checks CurateResourceCatalogue for the authenticated Actor using the fixed resource-catalogue scope.
+    - Resource-level or responsibility-derived authorization is not part of the MVP.
+    - Scoped authorization may be designed later from concrete customer requirements without changing Resource Responsibility into permission.
+  rejected_options:
+    - Per-resource explicit ACLs for MVP
+    - Responsibility Scope as the MVP authorization scope
+    - Independent fine-grained Authority Scopes for MVP
+  revisit_conditions:
+    - A confirmed customer requirement needs different mutation rights for different subsets of Resources.
+provenance:
+  origin_kind: human-decision
+  source_refs:
+    - {kind: process-state-ref, path: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml, selector: stakeholder_responses.H12-R-RC-MVP-GLOBAL-CURATION}
+  authority_basis: durable-human-decision-ref
+  recorded_at: '2026-09-17'
+semantic_refs:
+  - relation: CONSTRAINED_BY
+    target: {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION}
+    impact: semantic
+    rationale_ref: canonical_payload.rationale
+semantic_fingerprint: sha256-jcs-v1:51e8bcf5aeb930ba4083f404832ba1b2b78a517faee141b122d1373b15c366ca
+validation:
+  freshness: CURRENT
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-process-change-set-validation.yaml
+  evidence_target: NAPMS-S2-DEC-RC-MVP-AUTHORITY
+  validated_fingerprint: sha256-jcs-v1:51e8bcf5aeb930ba4083f404832ba1b2b78a517faee141b122d1373b15c366ca
+  profile: changed-and-affected-design
+  profile_version: cp-v2
+  enforcement_status: specification-manual-not-CI

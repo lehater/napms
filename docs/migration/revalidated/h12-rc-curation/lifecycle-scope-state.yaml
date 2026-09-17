@@ -1,0 +1,71 @@
+version: 17
+kind: lifecycle-scope-state
+id: NAPMS-H12-RC-CURATION-LIFECYCLE
+scope_id: H12-RC-CURATION-MVP
+last_updated: '2026-09-17'
+canonical_product_domain_truth: true
+state_role: sole-writable-lifecycle-owner
+process_contracts:
+  control_plane: {id: DOCS-V2-HARNESS-CONTROL-PLANE, version: 1, revision: 3}
+  lifecycle: {id: DOCS-V2-LIFECYCLE-STATE-MACHINE, version: 1, revision: 3}
+  ddd: {id: DOCS-V2-DDD-PIPELINE, version: 1, revision: 3}
+current_work:
+  lifecycle_stage: S3
+  checkpoint: G3
+  intent: Derive the smallest Resource Catalogue curation solution architecture from accepted S0-S2 truth and applicable quality constraints.
+  state: IN_PROGRESS
+completed_work:
+  - {id: H12-METHOD-ORDER-CORRECTION, result: PASS}
+  - {id: H12-BIG-PICTURE-SLICE-REVALIDATION, result: PASS}
+  - {id: H12-S2-PROCESS-REWORK, result: PASS}
+  - {id: H12-RC-CARDINALITY-CORRECTION, result: PASS}
+  - {id: H12-DOCUMENTATION-AUTHORITY-CUTOVER, result: PASS}
+  - {id: H12-S2-TACTICAL-RC, result: PASS, anchor_ref: NAPMS-S2-RC-TACTICAL-MODEL}
+  - {id: H12-G2, result: PASS, evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-tactical-g2-validation.yaml}
+stage_states: {S0: ACCEPTED_CURRENT, S1: ACCEPTED_CURRENT, S2: ACCEPTED_CURRENT, S3: IN_PROGRESS, S4: NOT_STARTED}
+s2_checkpoints: {S2-STRATEGIC: ACCEPTED_CURRENT, S2-PROCESS-DISCOVERY: ACCEPTED_CURRENT, S2-TACTICAL: ACCEPTED_CURRENT}
+gates: {G0: PASS_CURRENT, G1: PASS_CURRENT, G2: PASS_CURRENT, G3: NOT_EVALUATED, G4: NOT_EVALUATED}
+accepted_anchor_refs:
+  - {anchor_id: NAPMS-S0-RC-CURATION-PROBLEM, status: accepted-current}
+  - {anchor_id: NAPMS-S0-RC-CURATION-JOURNEY, status: accepted-current}
+  - {anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR, status: accepted-current-corrected}
+  - {anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION, status: accepted-current}
+  - {anchor_id: NAPMS-S1-RC-CURATION-INTEGRITY, status: accepted-current}
+  - {anchor_id: NAPMS-S2-RC-CAPABILITY-MAP, status: accepted-current}
+  - {anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE, status: accepted-current-corrected}
+  - {anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT, status: accepted-current}
+  - {anchor_id: NAPMS-S2-RC-CONTEXT-RELATIONSHIPS, status: accepted-current}
+  - {anchor_id: NAPMS-S2-RC-DOMAIN-GLOSSARY, status: accepted-current-corrected}
+  - {anchor_id: NAPMS-S2-RC-CURATION-PROCESS, status: accepted-current-corrected}
+  - {anchor_id: NAPMS-S2-RC-TACTICAL-MODEL, status: accepted-current}
+  - {anchor_id: NAPMS-S3-RC-ARCHITECTURE-BOUNDARY, status: accepted-pending-validation}
+source_authority:
+  evolving_product_domain_authority: docs-v2/
+  legacy_migration_source: docs/
+  legacy_status: frozen-read-only-evidence
+  legacy_can_override_accepted_docs_v2: false
+  reverse_sync_to_legacy: forbidden
+  namespace_cutover: deferred
+  post_cutover_paths: {evolving_product_domain_authority: docs/, legacy_migration_source: docs-legacy/}
+  product_code_tests_as_design_truth: forbidden
+stakeholder_responses:
+  H12-R-RC-MVP-GLOBAL-CURATION: {captured_status: materialized, materialized_anchor_ref: NAPMS-S2-DEC-RC-MVP-AUTHORITY}
+  H12-R-RC-RESPONSIBILITY-EXTENSIBLE: {captured_status: materialized, materialized_anchor_ref: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES}
+  H12-R-RC-MVP-SINGLE-ADDRESS-SPACE: {captured_status: materialized-in-affected-S1-S2-artifacts}
+resolved_questions:
+  - {id: H12-Q-RC-MUTATION-AUTHORITY-GRANULARITY, status: resolved}
+  - {id: H12-Q-RC-RESPONSIBILITY-ROLE-SET, status: resolved}
+  - {id: H12-Q-RC-REALIZATION-CARDINALITY, status: resolved-by-stakeholder-correction}
+blockers: []
+deferred_nonblocking:
+  - {id: H12-D-SCOPED-AUTHORIZATION, statement: Resource-level/scoped authorization is deferred until a concrete customer requirement requires it.}
+  - {id: H12-D-RESPONSIBILITY-COVERAGE, statement: Mandatory responsibility roles and transfer gap/overlap policy remain unspecified unless required.}
+  - {id: H12-D-RESOURCE-RETIREMENT, statement: Resource retirement remains outside the selected RC curation outcome.}
+  - {id: H12-D-NAMESPACE-CUTOVER, statement: Physical docs namespace cutover is deferred until migration/stabilization.}
+current_evidence_refs:
+  tactical_and_g2: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-tactical-g2-validation.yaml
+h12_exit: {status: PASS, applicable_gate_reached: G2}
+next_meaningful_work:
+  phase: H16
+  name: Continue S3 Resource Catalogue solution design
+  action: Validate the new architecture boundary with the shared docs-v2 runtime, then derive only the applicable S3 structural/interaction/contract artifacts required for G3; ask for human-owned truth if transport, deployment or persistence choices become material.

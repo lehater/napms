@@ -1,0 +1,42 @@
+version: 1
+revision: 2
+kind: harness-evals-tracing-regression-model
+id: DOCS-V2-HARNESS-EVALS-TRACING-REGRESSION
+status: active
+owner_phase: H10
+last_updated: 2026-09-17
+purpose: >-
+  Protect the Harness behaviors that improve design and detect regressions that reintroduce
+  operational ceremony. Evals diagnose observable outcomes; tracing is optional runtime support,
+  not a design artifact stream.
+required_eval_dimensions:
+  design_integrity:
+    - machine-readable artifact/reference integrity
+    - derivation lineage for material design
+    - no unsupported human-owned inference
+    - correct lifecycle readiness/routing
+  resumability:
+    - recover current design and next meaningful work from repository state
+  affected_only_validation:
+    - unchanged unrelated design is not revalidated
+  ceremony_budget:
+    - ordinary design work does not require serialized Task Capsule
+    - gate/checkpoint does not require separate execution
+    - operation IDs/fingerprints/execution bases are not manually authored by design agent
+    - successful persistence does not force a stop
+  productivity:
+    - count design artifacts/decisions produced or corrected
+    - count human interruptions caused by real semantic uncertainty
+    - count non-design artifacts/writes/tool calls caused solely by Harness plumbing
+    - flag when plumbing work exceeds meaningful design work
+regression_policy:
+  - Reproducible design-quality failures become regression cases.
+  - Reintroduced mandatory ceremony becomes a regression case.
+  - Runtime implementation details need tests only for safety properties they own; they do not expand the design model.
+tracing:
+  required_for_design_acceptance: false
+  runtime_optional_fields: [changed-targets, consumed-semantic-refs, validation-result, readiness-result, diagnostic-code, timing-and-cost]
+  prohibited: [private-chain-of-thought]
+acceptance_rule: >-
+  A Harness change is not an improvement merely because it is more replayable or observable.
+  It must preserve design guarantees without materially increasing non-design work for ordinary flow.

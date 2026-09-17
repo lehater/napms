@@ -1,0 +1,47 @@
+anchor_id: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES
+type_id: domain-decision
+owner_stage: S2
+scope:
+  scope_id: H12-RC-CURATION-MVP
+  product_area: Resource Catalogue curation
+  lifecycle_boundary: S2 Process Discovery / Event Storming
+status: ACCEPTED
+canonical_payload:
+  decision: Resource Responsibility roles are extensible and time-qualified; examples such as Owner, Operator and Access Approver are not a closed role set and do not grant Authority.
+  decision_scope: Resource Responsibility role semantics for the Resource Catalogue
+  question_refs: [H12-Q-RC-RESPONSIBILITY-ROLE-SET]
+  response_refs: [H12-R-RC-RESPONSIBILITY-EXTENSIBLE]
+  chosen_option_or_resolution: Extensible responsibility roles with temporal assignments.
+  rationale: The stakeholder confirmed that organizations may use one, several or many responsibility roles and may transfer those responsibilities between people/teams/organizations over time.
+  consequences:
+    - A Resource may carry multiple responsibility assignments whose roles and responsible parties can differ.
+    - Responsibility assignments preserve time-qualified history when responsibility changes.
+    - Small organizations may concentrate responsibilities; larger organizations may separate them.
+    - Responsibility remains independent from mutation permission.
+  rejected_options: [Closed Owner/Operator/Access Approver enum]
+  revisit_conditions:
+    - A later requirement introduces governed role taxonomy constraints or mandatory role coverage.
+provenance:
+  origin_kind: human-decision
+  source_refs:
+    - {kind: process-state-ref, path: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml, selector: stakeholder_responses.H12-R-RC-RESPONSIBILITY-EXTENSIBLE}
+  authority_basis: durable-human-decision-ref
+  recorded_at: '2026-09-17'
+semantic_refs:
+  - relation: CONSTRAINED_BY
+    target: {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR}
+    impact: semantic
+    rationale_ref: canonical_payload.rationale
+  - relation: CONSTRAINED_BY
+    target: {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-INTEGRITY}
+    impact: semantic
+    rationale_ref: canonical_payload.rationale
+semantic_fingerprint: sha256-jcs-v1:d24a63a791f1a1d0472fd72faab280a7a95a812d6a435d66186e345ec9948521
+validation:
+  freshness: CURRENT
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-process-change-set-validation.yaml
+  evidence_target: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES
+  validated_fingerprint: sha256-jcs-v1:d24a63a791f1a1d0472fd72faab280a7a95a812d6a435d66186e345ec9948521
+  profile: changed-and-affected-design
+  profile_version: cp-v2
+  enforcement_status: specification-manual-not-CI

@@ -1,0 +1,151 @@
+@startuml
+' NAPMS full-width strategic DDD context map
+' Status: CANDIDATE / non-canonical / S2 reconstruction from accepted docs/**.
+' This diagram expresses semantic ownership and contracts, not deployment topology.
+
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+left to right direction
+
+package "Peer Bounded Contexts" {
+  component "Business Connectivity\n[BC]" as BC
+  component "Application Communication\nCatalogue [ACC]" as ACC
+  component "Application Deployment\n[AD]" as AD
+  component "Resource Catalogue\n[RC]" as RC
+  component "Access Policy\n[AP]" as AP
+  component "Authority Management\n[AM]" as AM
+  component "Technical Access Evidence\n[TAE]" as TAE
+  component "Network Enforcement\nPlacement [NEP]" as NEP
+  component "Access Policy Realization\n[APR]" as APR
+  component "Network Environment\nOperations [NEO]" as NEO
+}
+
+package "Owner-preserving compositions" {
+  component "Vendor-Neutral\nPolicy Export [VNPE]" as VNPE
+  component "Required Policy\nMaterialization [RPM]" as RPM
+  component "Evidence Access\nRecognition [EAR]" as EAR
+  component "Scoped Connectivity\nInventory [SCI]" as SCI
+  component "Checker / Traffic\nAnalysis [CHK]" as CHK
+  component "Connectivity Impact\nAnalysis [CIA]" as CIA
+}
+
+package "Integration / application capabilities" {
+  component "Technical Evidence\nAcquisition" as ACQ
+  component "Provider Policy\nInterpreter [PPI]" as PPI
+  component "Provider Policy\nRenderer [PPR]" as PPR
+  component "Identity / Enterprise\nSource Integration" as IDINT
+}
+
+cloud "Provider / Network\nEnvironment" as NET
+cloud "External Technical\nSources" as EXTSRC
+cloud "External Identity /\nEnterprise Sources" as EXTSYS
+
+ACC --> AD : ComponentRef
+RC --> AD : ResourceRef
+ACC --> BC : InteractionRef
+
+BC --> AP : Need / business basis
+ACC --> AP : exact InteractionContractRevisionRef
+AD --> AP : source/destination ComponentDeploymentRef
+AM --> AP : protected-action admission
+
+AP --> VNPE : current effective PolicyRules
+ACC --> VNPE : traffic semantics
+AD --> VNPE : concrete deployments
+RC --> VNPE : effective AddressSpace
+
+AP --> RPM : current effective PolicyRules
+ACC --> RPM : traffic semantics
+AD --> RPM : concrete deployments
+RC --> RPM : effective AddressSpace
+NEP --> RPM : target / policy-locator relevance
+RPM --> APR : TargetRequiredPolicy
+
+TAE --> EAR : source-qualified technical evidence
+RC --> EAR : Resource truth
+AD --> EAR : deployment truth
+ACC --> EAR : communication semantics
+EAR --> AP : RecognizedAccessCandidate
+
+NET --> PPI : configured/provider material
+PPI --> APR : ConfiguredEffectivePolicySnapshot
+APR --> PPR : VerifiedChangeIntent
+PPR --> NEO : TargetPolicyArtifact
+AM --> NEO : mutation authority
+NEO --> NET : controlled mutation
+
+EXTSRC --> ACQ : device/config/flow/import material
+NET --> ACQ : provider/network evidence
+ACQ --> TAE : normalized evidence contract
+EXTSYS --> IDINT : external identity/catalogue/inventory material
+IDINT --> AM : mapped actor identity where configured
+
+RC --> SCI
+AD --> SCI
+ACC --> SCI
+BC --> SCI
+AP --> SCI
+APR --> SCI
+AM --> SCI : read admission
+
+TAE --> CHK
+RC --> CHK
+AD --> CHK
+ACC --> CHK
+AP --> CHK
+NEP --> CHK
+
+BC --> CIA
+ACC --> CIA
+AD --> CIA
+RC --> CIA
+AP --> CIA
+APR --> CIA
+
+note bottom of ACC
+Interaction endpoints are Components.
+ACC owns no concrete deployment or Resource address.
+end note
+
+note bottom of AP
+PolicyRule subject is a concrete directed
+ComponentDeployment pair using an exact ACC revision.
+AP validates deployment ComponentRefs against
+revision Interaction endpoint Components.
+end note
+
+note bottom of RC
+Current target: effective AddressSpace [0..1]
+where AddressSpace = HostAddress | Prefix.
+end note
+
+note bottom of VNPE
+VNPE = complete vendor-neutral read projection
+from AP + ACC + AD + RC.
+It does not require NEP and does not claim realization.
+end note
+
+note bottom of RPM
+RPM is enforcement/realization materialization.
+It additionally consumes NEP target relevance.
+end note
+
+note bottom of APR
+Comparison semantics:
+common = required intersect configured
+missing = required - configured
+excess = configured - required
+end note
+
+note bottom of NEO
+Execution success is not convergence verification.
+end note
+
+legend bottom
+  All arrows are semantic contracts/data flow.
+  They do not prescribe service, process, package, database or transport topology.
+  No Shared Kernel is accepted among peer Bounded Contexts.
+  Compositions and integration capabilities are not peer Bounded Contexts.
+endlegend
+
+@enduml

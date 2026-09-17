@@ -1,0 +1,63 @@
+anchor_id: NAPMS-S2-BC-AUTHORITY-MANAGEMENT
+type_id: bounded-context
+owner_stage: S2
+scope:
+  scope_id: H12-RC-CURATION-MVP
+  product_area: Resource Catalogue curation
+  lifecycle_boundary: S2 Strategic domain design
+status: ACCEPTED
+canonical_payload:
+  name: Authority Management
+  purpose: Own effective actor/action/scope authority and the assignment semantics used to derive protected-action admission.
+  responsibility:
+  - effective actor/action/scope authority
+  - authority assignment/membership-role semantics used to derive it
+  - fail-closed protected-action admission
+  boundary_basis:
+    cohesion_rationale: Actor, action, scope and effective-time authority are one independently reusable authorization model used by protected actions across contexts.
+    separation_rationale: Resource ownership, Resource Scope Affiliation, Resource Responsibility and catalogue read visibility are Resource/catalogue facts, not authority assignments and cannot substitute for the Authority Management model.
+  capability_selectors:
+  - {anchor_id: NAPMS-S2-RC-CAPABILITY-MAP, item_id: CAP-AM-CURATION-ADMISSION}
+  model_language_ownership:
+    owned_terms_or_model_scope: [Actor, Action, Effective Authority, authority assignment, ResponsibilityScopeRef as authority correlation]
+    explicitly_external_terms: [Resource, Resource Scope Affiliation, Resource Responsibility]
+  logical_derivation:
+    basis_refs:
+    - {kind: anchor-current, anchor_id: NAPMS-S2-RC-CAPABILITY-MAP, item_id: CAP-AM-CURATION-ADMISSION}
+    - {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION}
+    derivation_kind: synthesis
+    rationale: The S1 mutation contract requires an independently owned effective-authority decision and explicitly rejects Resource catalogue facts as permission. Current canonical authority ownership confirms the same model boundary.
+    method_rule_ids: [DDD-MR-BOUNDED-CONTEXT-DERIVATION]
+    decision_refs: []
+    evidence_refs: []
+provenance:
+  origin_kind: mixed
+  source_refs:
+  - {kind: repository-file, path: docs/domain/authority-management/README.md, blob_sha: c9b38cbd526ecd74930a4ce337a174505bc067b4}
+  - {kind: repository-file, path: docs/domain/semantic-ownership.md, blob_sha: 1c80af643e805f289c09bd3719956470ccbebfd4}
+  - {kind: repository-file, path: docs/requirements/catalogue-curation-security.md, blob_sha: cef21bf26c44aae1b02e3313149278606892d26c}
+  authority_basis: imported-current-docs-ref-before-cutover
+  derivation:
+    input_anchor_refs: [NAPMS-S2-RC-CAPABILITY-MAP, NAPMS-S1-RC-CURATION-AUTHORIZATION]
+    derivation_rule_or_method: DDD-MR-BOUNDED-CONTEXT-DERIVATION
+    derivation_kind: synthesis
+    rationale: The S1 mutation contract requires an independently owned effective-authority decision and explicitly rejects Resource catalogue facts as permission. Current canonical authority ownership confirms the same model boundary.
+  recorded_at: '2026-09-17'
+semantic_refs:
+- relation: DERIVES_FROM
+  target: {kind: anchor-current, anchor_id: NAPMS-S2-RC-CAPABILITY-MAP}
+  impact: semantic
+  rationale_ref: canonical_payload.logical_derivation.rationale
+- relation: DERIVES_FROM
+  target: {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION}
+  impact: semantic
+  rationale_ref: canonical_payload.logical_derivation.rationale
+semantic_fingerprint: sha256-jcs-v1:8b6a74b2be5930eaa73bfb16a8136355c6ea2aa199086ff98fd1e91aca993f62
+validation:
+  freshness: CURRENT
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-strategic-change-set-validation.yaml
+  evidence_target: NAPMS-S2-BC-AUTHORITY-MANAGEMENT
+  validated_fingerprint: sha256-jcs-v1:8b6a74b2be5930eaa73bfb16a8136355c6ea2aa199086ff98fd1e91aca993f62
+  profile: change-set-anchor-acceptance
+  profile_version: cp-v1
+  enforcement_status: specification-manual-not-CI

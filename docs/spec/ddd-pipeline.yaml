@@ -1,0 +1,128 @@
+version: 1
+revision: 3
+kind: ddd-pipeline-specification
+id: DOCS-V2-DDD-PIPELINE
+status: active
+owner_phase: H6
+last_updated: 2026-09-17
+purpose: >-
+  Define S2 domain design as iterative discovery, strategic design, process refinement and tactical design.
+  Stage/checkpoint names describe maturity guarantees; they do not impose a one-way document sequence.
+authority:
+  defines: [S2-method, strategic-domain-design, process-discovery, tactical-domain-design, DDD-lineage-and-acceptance]
+  does_not_define: [project-specific-product-truth, execution-units, runtime, CI, physical-namespace-cutover]
+required_contracts:
+  - {id: DOCS-V2-HARNESS-ROADMAP, path: docs-v2/meta/roadmap.yaml, revision: 4}
+  - {id: DOCS-V2-ARTIFACT-TYPE-REGISTRY, path: docs-v2/spec/artifact-type-registry.yaml}
+  - {id: DOCS-V2-DESIGN-DERIVATION-LINEAGE, path: docs-v2/spec/design-derivation-lineage.yaml}
+  - {id: DOCS-V2-LIFECYCLE-STATE-MACHINE, path: docs-v2/spec/lifecycle-state-machine.yaml}
+migration_authority_guard:
+  evolving_product_domain_authority: docs-v2/
+  legacy_migration_source: docs/
+  legacy_mode: frozen-read-only-evidence
+  reverse_sync: forbidden
+  rule: >-
+    DDD work may use docs/ as historical/migration evidence, but accepted docs-v2 design is current
+    truth for migrated/affected scope and is not overridden or back-ported merely to keep legacy docs aligned.
+principles:
+  - {id: DDD-P-DISCOVERY-BEFORE-SETTLED-BOUNDARY, rule: Domain stories, process evidence, language and hotspots must be sufficient before a slice or Bounded Context is treated as settled.}
+  - {id: DDD-P-PROCESS-NOT-BC, rule: A process may cross Bounded Contexts and a Bounded Context may participate in multiple processes.}
+  - {id: DDD-P-NO-BC-FROM-ORG-OR-CODE, rule: Repository modules, services, teams, databases and existing implementation boundaries are not sufficient evidence for a Bounded Context.}
+  - {id: DDD-P-CAPABILITY-NOT-BC, rule: Capability, subdomain and Bounded Context are distinct concepts and no one-to-one mapping is assumed.}
+  - {id: DDD-P-ITERATIVE-STRATEGIC-PROCESS, rule: Process discovery and strategic DDD may refine each other; contradictions reopen only affected design.}
+  - {id: DDD-P-PROCESS-BEFORE-TACTICAL, rule: When process discovery is applicable, tactical truth requires current relevant process evidence.}
+  - {id: DDD-P-AGGREGATE-CONSISTENCY, rule: Aggregate boundaries follow business invariants and consistency needs, not persistence or object-graph convenience.}
+  - {id: DDD-P-DOMAIN-EVENT-NOT-MESSAGE, rule: A Domain Event is a domain fact and does not imply an integration message or transport.}
+  - {id: DDD-P-HUMAN-OWNED-CHOICE, rule: Material business rules, policies or boundary choices not derivable from accepted truth require human authority.}
+  - {id: DDD-P-GRAPH-NOT-WATERFALL, rule: Artifact dependencies and semantic impact determine rework; accepted unrelated work is reused.}
+  - {id: DDD-P-UPSTREAM-CONFORMANCE, rule: Tactical design may refine current upstream requirements/process/strategic truth but may not contradict or silently narrow/broaden it; clear downstream divergence is REWORK rather than a human question.}
+  - {id: DDD-P-FAIL-CLOSED, rule: Missing current inputs, invalid lineage or unresolved blocking human truth stops acceptance.}
+s2_model:
+  stage: S2
+  maturity_areas: [S2-STRATEGIC, S2-PROCESS-DISCOVERY, S2-TACTICAL]
+  ordering:
+    fixed_sequence: false
+    rules:
+      - Strategic and process discovery may start from accepted S0/S1/discovery evidence without requiring the other area to be already accepted.
+      - Strategic and process artifacts may iteratively refine each other.
+      - Tactical acceptance requires current relevant strategic boundaries and, when applicable, current relevant process models.
+      - G2 requires all applicable S2 maturity areas to be ACCEPTED/current.
+  upstream_discovery_requirement: >-
+    Before accepting strategic/process design for a selected slice, there must be enough accepted discovery evidence
+    to justify that the slice is a coherent business outcome/process and that proposed boundaries were not assumed first.
+  rework_rule: New evidence marks only semantically affected artifacts/checkpoints DIRTY or REWORK; do not restart unaffected design.
+checkpoint_contracts:
+  S2-STRATEGIC:
+    purpose: Establish capabilities, domain responsibility, semantic boundaries, language ownership and context relationships from discovery/process/requirements evidence.
+    minimum_current_inputs: {any_of: [functional-requirement, acceptance-scenario, user-journey, domain-process-model], discovery_evidence_required_when_boundary_or_slice_is_being_selected: true}
+    produces_when_applicable: [capability-map, domain-distillation, bounded-context, context-relationship-map, domain-glossary]
+    acceptance_guards: [boundaries-have-evidence-backed-rationale, process-evidence-may-challenge-boundaries, capability-does-not-imply-BC, human-owned-choices-have-authority, zero-blocking-strategic-questions]
+  S2-PROCESS-DISCOVERY:
+    purpose: Discover business behavior over time using Domain Storytelling/Event-Storming-compatible semantics before reducing it to software structure.
+    minimum_current_inputs: {any_of: [functional-requirement, acceptance-scenario, user-journey, domain-story-or-equivalent-discovery-evidence], bounded_context_required_before_process_discovery: false}
+    produces_when_applicable: [domain-process-model, domain-glossary, domain-decision]
+    acceptance_guards: [coherent-business-outcome-basis, command-event-policy-lineage, material-alternatives-failures-temporal-external-considered, domain-events-not-transport, no-invented-material-policy, zero-blocking-hotspots, ownership-reconciled-before-G2, candidate-aggregates-remain-hypotheses]
+  S2-TACTICAL:
+    purpose: Define tactical domain semantics inside current accepted strategic boundaries from current process/requirement evidence.
+    minimum_current_inputs: {required: [bounded-context], required_when_process_discovery_applicable: [domain-process-model]}
+    produces_when_applicable: [domain-model, state-model, domain-glossary, domain-decision]
+    acceptance_guards:
+      - each accepted aggregate belongs to exactly one accepted/current Bounded Context
+      - aggregate boundaries cite requirement/process/invariant basis
+      - candidate aggregate hypothesis alone is insufficient
+      - entities have stable domain identity semantics
+      - value objects use value/equality semantics
+      - invariants have accepted authority/lineage
+      - tactical semantics conform to all current applicable upstream authoritative constraints
+      - no unresolved blocking business question remains
+slice_selection:
+  definition: smallest coherent end-to-end business outcome/process worth designing and demonstrating
+  forbidden_as_sole_basis: [API-endpoint, table, UI-screen, repository-module, Bounded-Context, isolated-authorization-operation]
+  evidence_basis: [domain-landscape, domain-story-or-journey, business-outcome, process-flow, risk-or-hotspot]
+  guards: [slice-may-cross-BCs, BC-may-participate-in-multiple-slices, expose-material-rules-temporal-failures-external, generalization-requires-evidence-or-authority]
+method_rules:
+  DDD-MR-CAPABILITY-DISCOVERY: Group accepted behavior by durable business outcome/responsibility and language cohesion.
+  DDD-MR-BOUNDED-CONTEXT-DERIVATION: Derive candidate boundaries from cohesive model/language/responsibility evidence; reconcile them with process evidence before acceptance.
+  DDD-MR-CONTEXT-RELATIONSHIP: Record relationship semantics only when supported by accepted collaboration/model facts.
+  DDD-MR-PROCESS-COMMAND-EVENT: Derive process chains from domain stories, stakeholder examples, journeys, requirements and accepted decisions; context ownership may initially be candidate.
+  DDD-MR-PROCESS-POLICY: A policy connects domain facts to command intent; material new business policy requires human authority.
+  DDD-MR-CANDIDATE-AGGREGATE: Candidate aggregates remain hypotheses until tactical consistency evidence exists.
+  DDD-MR-TACTICAL-AGGREGATE: Accept the smallest consistency boundary justified by accepted requirements, processes and invariants.
+  DDD-MR-ENTITY: Entity continuity is defined by domain identity, not a storage key alone.
+  DDD-MR-VALUE-OBJECT: Value Object identity is its domain value/equality semantics.
+  DDD-MR-INVARIANT: Invariants require accepted requirement/example/decision/process authority.
+  DDD-MR-DOMAIN-SERVICE: Use only when domain responsibility does not naturally belong to an entity/value object.
+  DDD-MR-STATE-MODEL: Model states/transitions only when they materially constrain domain behavior.
+artifact_requirements:
+  common: {logical_derivation_required_for_accepted_nonroot: true, lineage_relations: [DERIVES_FROM, CONSTRAINED_BY, REALIZES, REFINES, DECIDED_BY, EVIDENCED_BY]}
+  capability-map: {required_payload: [capabilities, clustering, logical_derivation]}
+  domain-distillation: {required_payload: [subdomains, logical_derivation]}
+  bounded-context: {required_payload: [name, purpose, responsibility, boundary_basis, capability_selectors, model_language_ownership, logical_derivation]}
+  context-relationship-map: {required_payload: [relationships, logical_derivation]}
+  domain-process-model:
+    required_payload: [name, context_refs, actors, commands, domain_events, policies, timeline, external_systems, hotspots, candidate_aggregates, logical_derivation]
+    context_refs_rule: May contain candidate/unresolved ownership during discovery; all material ownership must resolve to accepted/current Bounded Contexts before G2.
+    origin_classes: [stakeholder-example, accepted-requirement, accepted-journey, accepted-anchor-derivation, external-evidence, human-decision, agent-hypothesis]
+    agent_hypothesis_rule: Agent hypotheses cannot be accepted as authoritative command/event/policy truth; unresolved hypotheses belong in hotspots.
+  domain-model: {required_payload: [bounded_context_ref, aggregates, entities, value_objects, invariants, domain_services, logical_derivation]}
+  state-model: {required_payload: [subject_ref, states, transitions, logical_derivation]}
+  domain-glossary: {required_payload: [terms, logical_derivation]}
+blocking_and_escalation:
+  unresolved_human_owned_truth: {route: NEED_MORE_DATA, acceptance_allowed: false}
+  known_prerequisite_unavailable: {route: BLOCKED, acceptance_allowed: false}
+  invalidated_upstream_basis: {route: REWORK, scope: affected-only}
+  clear_downstream_divergence_from_current_upstream: {route: REWORK, human_question_required: false}
+  aggregate_boundary_depends_on_unknown_business_rule: {route: NEED_MORE_DATA, plausible_auto_choice_allowed: false}
+conformance_cases:
+  - {id: DDD-CF-PROCESS-CAN-PRECEDE-BC, given: {process_discovery_has_current_story_requirement_basis: true, bounded_context_accepted: false}, expect: {process_discovery_allowed: true, context_ownership_may_be_candidate: true}}
+  - {id: DDD-CF-PROCESS-CHALLENGES-BC, given: {process_evidence_conflicts_with_boundary: true}, expect: {route: REWORK, affected_strategic_design_revalidated: true, tactical_patch_allowed: false}}
+  - {id: DDD-CF-TACTICAL-REQUIRES-CURRENT-BASIS, given: {process_applicable: true, process_current: false}, expect: {tactical_acceptance: false}}
+  - {id: DDD-CF-DOWNSTREAM-CONFORMS, given: {upstream_constraint_clear: true, downstream_contradicts_it: true}, expect: {route: REWORK, ask_human: false}}
+  - {id: DDD-CF-CANDIDATE-AGGREGATE-STAYS-HYPOTHESIS, given: {candidate_aggregate_exists: true, tactical_model_absent: true}, expect: {accepted_aggregate_truth: false}}
+  - {id: DDD-CF-G2-REQUIRES-ALL-APPLICABLE, given: {strategic: ACCEPTED, process: ACCEPTED, tactical: ACCEPTED}, expect: {g2_evaluation_eligible: true}}
+restrictions:
+  executable_validators_created_or_changed: false
+  executable_tests_created_or_changed: false
+  runtime_implementation_created_or_changed: false
+  workflow_ci_created_or_changed: false
+  physical_namespace_cutover_performed: false

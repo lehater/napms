@@ -1,0 +1,99 @@
+@startuml
+hide methods
+skinparam classAttributeIconSize 0
+
+class Resource {
+  ResourceId id
+  String displayName
+  ResourceLifecycle lifecycle
+}
+
+enum ResourceLifecycle {
+  Active
+  Retired
+}
+
+class ResourceAddressFact {
+  ResourceAddressFactId id
+  ResourceRef resource
+  AddressSpace addressSpace
+  Instant validFrom
+  Instant validUntil
+  ProvenanceRef provenance
+  ProvenanceRef endProvenance
+}
+
+class AddressSpace <<value object>>
+class HostAddress <<value object>>
+class Prefix <<value object>>
+
+class ResourceScopeAffiliation {
+  AffiliationId id
+  ResourceRef resource
+  ResponsibilityScopeRef scope
+  Instant validFrom
+  Instant validUntil
+  ProvenanceRef provenance
+  ProvenanceRef endProvenance
+}
+
+class ResourceResponsibility {
+  ResourceRef resource
+  ResponsiblePartyRef party
+  PartyKind partyKind
+  ResponsibilityRole role
+  String displayName
+  ContactPoint contact
+  Instant validFrom
+  Instant validUntil
+  ProvenanceRef provenance
+  ProvenanceRef endProvenance
+}
+
+class CurrentResourceRealization <<published projection>> {
+  ResourceRef resource
+  AddressSpace addressSpace
+  Instant asOf
+  ResolutionCompleteness completeness
+  ProvenanceRef provenance
+}
+
+Resource "1" --> "0..*" ResourceAddressFact : historical facts
+Resource "1" --> "0..*" ResourceScopeAffiliation
+Resource "1" --> "0..*" ResourceResponsibility
+AddressSpace <|-- HostAddress
+AddressSpace <|-- Prefix
+ResourceAddressFact --> AddressSpace
+CurrentResourceRealization --> Resource : resolves
+CurrentResourceRealization --> AddressSpace : optional
+
+note right of Resource
+ResourceId is stable across rename,
+realization, affiliation,
+responsibility and retirement.
+end note
+
+note right of ResourceAddressFact
+At one logical time a Resource has
+at most one effective AddressSpace.
+Replacing an address ends the current
+fact and creates a successor fact.
+end note
+
+note bottom of ResourceScopeAffiliation
+Affiliation is business/domain truth.
+It does not grant actor authority.
+end note
+
+note bottom of ResourceResponsibility
+Responsibility/contact is separate
+from scope affiliation and authority.
+end note
+
+note bottom of CurrentResourceRealization
+Derived RC-owned projection.
+Missing effective AddressSpace is a
+valid unresolved realization.
+end note
+
+@enduml

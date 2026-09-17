@@ -1,0 +1,106 @@
+version: 1
+kind: validation-evidence
+schema_version: cp-v1
+evidence_id: H12-P0-VE-S0-CHANGESET-1
+evidence_kind: change-set-anchor-validation
+evaluation_id: H12-P0-EVAL-S0-CHANGESET-1
+operation_id: H12-P0-RECONCILE-S0-1
+scope:
+  scope_id: H12-RC-CURATION-MVP
+  lifecycle_stage: S0
+execution_basis_fingerprint: sha256-jcs-v1:df62118038b58636f302004f46055e6e7df8b69972f76aa7f6478fee6abb1431
+validation_profile_id: change-set-anchor-acceptance
+validation_profile_version: cp-v1
+
+targets:
+  - anchor_id: NAPMS-S0-RC-CURATION-PROBLEM
+    semantic_fingerprint: sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
+  - anchor_id: NAPMS-S0-RC-CURATION-JOURNEY
+    semantic_fingerprint: sha256-jcs-v1:5401681959c4ef07ce2b990b28ff2df1ee2eb5756b3d6355b641ab4f0f5bd475
+
+execution_basis:
+  task_or_gate_id: H12-P0-RECONCILE-S0
+  operation_id: H12-P0-RECONCILE-S0-1
+  durable_state_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
+  durable_state_fingerprint: git-blob-sha1:259bb6f4da1f868fb081a5469cd0a89574bcadab
+  authority_closure:
+    - current S0 anchors for H12-RC-CURATION-MVP
+    - accepted canonical docs explicitly referenced by those anchors
+    - active Harness contracts required for anchor validation
+  consumed_inputs:
+    - ref: NAPMS-S0-RC-CURATION-PROBLEM
+      fingerprint: sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
+    - ref: NAPMS-S0-RC-CURATION-JOURNEY
+      fingerprint: sha256-jcs-v1:5401681959c4ef07ce2b990b28ff2df1ee2eb5756b3d6355b641ab4f0f5bd475
+    - ref: docs/requirements/catalogue-curation.md
+      fingerprint: git-blob-sha1:92833e29efc3bfdb6503e5b600e48296b8fb6041
+    - ref: docs/requirements/catalogue-curation-acceptance-examples.md
+      fingerprint: git-blob-sha1:c98ab5174740b890c9b4b240530f1b9eec89cc91
+  contract_versions:
+    DOCS-V2-HARNESS-CONTROL-PLANE: 1
+    DOCS-V2-DESIGN-ANCHOR-CONTRACT: 1
+    DOCS-V2-ARTIFACT-TYPE-REGISTRY: 2
+    DOCS-V2-DEPENDENCY-REGISTRY-IMPACT: 1
+    DOCS-V2-DESIGN-DERIVATION-LINEAGE: 1
+    DOCS-V2-VALIDATION-GATE-ENGINE: 1
+    DOCS-V2-VALIDATION-ENGINE-CATALOG: 1
+    DOCS-V2-AGENT-EXECUTION-CONTEXT-V2: 1
+    DOCS-V2-LIFECYCLE-STATE-MACHINE: 1
+    DOCS-V2-NAPMS-MIGRATION-REVALIDATION: 2
+  validation_profile: {id: change-set-anchor-acceptance, version: cp-v1}
+  semantic_judges: {SJ-ANCHOR-CONSISTENCY: cp-v1}
+
+validator_bundle:
+  deterministic:
+    DV-HARNESS-SELF: h8-v1
+    DV-EXECUTION-BASIS: h8-v1
+    DV-FORMAT-SCHEMA: h8-v1
+    DV-TYPE-OWNER: h8-v1
+    DV-APPLICABILITY: h8-v1
+    DV-LIFECYCLE: h8-v1
+    DV-FINGERPRINT: h8-v1
+    DV-REGISTRY: h8-v1
+    DV-REFERENCE: h8-v1
+    DV-DEPENDENCY-GRAPH: h8-v1
+    DV-LINEAGE: h8-v1
+    DV-AUTHORITY: h8-v1
+    DV-FRESHNESS: h8-v1
+  semantic:
+    SJ-ANCHOR-CONSISTENCY: cp-v1
+
+deterministic_result:
+  aggregate: PASS
+  finding_codes: []
+  note: >-
+    Specification-guided manual pre-runtime evaluation. Checks were applied to the coherent
+    two-anchor S0 change set; graph/lineage/freshness checks were not duplicated per target.
+semantic_result:
+  judge_id: SJ-ANCHOR-CONSISTENCY
+  judge_version: cp-v1
+  outcome: PASS
+  finding_codes: []
+  supporting_refs:
+    - docs/requirements/catalogue-curation.md@92833e29efc3bfdb6503e5b600e48296b8fb6041
+    - docs/requirements/catalogue-curation-acceptance-examples.md@c98ab5174740b890c9b4b240530f1b9eec89cc91
+  rationale_summary: >-
+    The problem anchor preserves the accepted self-service catalogue problem, actor and intended
+    outcome. The journey is a bounded refinement of that problem and the accepted responsible-user
+    onboarding flow. Neither anchor introduces S1 cardinality, S2 domain design or S3 technical
+    realization. This review establishes anchor consistency only; it does not evaluate G0 stage
+    sufficiency.
+
+aggregate_result: PASS
+recorded_at: 2026-09-17
+
+supersedes_for_current_validation:
+  - docs-v2/migration/revalidated/h12-rc-curation/validation/s0-problem-anchor-validation.yaml
+  - docs-v2/migration/revalidated/h12-rc-curation/validation/s0-journey-anchor-validation.yaml
+supersession_reason:
+  - old receipts used SJ-G0-PROBLEM-SUFFICIENCY for anchor acceptance
+  - old receipts duplicated the deterministic validator stack per anchor
+  - old receipts referenced scoped lifecycle state without exact scoped-state fingerprint binding
+historical_receipts_remain_auditable: true
+
+diagnostic_summary: >-
+  Control-plane v1 correction receipt. S0 semantic payloads and semantic fingerprints are unchanged.
+  No product/domain migration work, G0 evaluation, cutover, product code, tests or CI changes were performed.

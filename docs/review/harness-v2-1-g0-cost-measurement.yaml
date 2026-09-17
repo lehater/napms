@@ -1,0 +1,124 @@
+version: 1
+kind: harness-execution-cost-measurement
+id: DOCS-V2-HARNESS-V2-1-G0-COST-MEASUREMENT
+status: observed
+recorded_at: 2026-09-17
+branch: meta/docs-v2-m7-pilot
+basis_commit: b69acce5ceb635e5922c1260f6e8352b0ebaa12d
+scope_id: H12-RC-CURATION-MVP
+transaction:
+  task_id: H12-G0-1
+  operation_id: H12-G0-1-OP-1
+  kind: gate-evaluation
+  result: PASS
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/h12-g0-gate-evidence.yaml
+
+purpose: >-
+  Preserve the first empirical cost measurement of a real Harness v2.1 transaction after the
+  control-plane correction. Separate semantic Harness cost from current ChatGPT/GitHub connector
+  transport cost so later runtime work optimizes the correct layer without weakening reliability.
+
+semantic_cost:
+  harness_transactions: 1
+  distinct_authoritative_artifacts_consumed: 7
+  canonical_product_truth_documents_reloaded: 0
+  accepted_anchor_inputs: 2
+  current_validation_receipts_reused: 1
+  deterministic_checks: 8
+  semantic_judges: 1
+  new_evidence_records: 1
+  lifecycle_state_files_mutated: 1
+  final_repository_commits: 1
+  final_changed_files: 2
+  final_diff:
+    additions: 85
+    deletions: 7
+  product_code_test_ci_changes: 0
+
+semantic_inputs:
+  - docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
+  - docs-v2/spec/harness-control-plane.yaml
+  - docs-v2/spec/validation-gate-engine.yaml
+  - docs-v2/spec/lifecycle-state-machine.yaml
+  - docs-v2/migration/revalidated/h12-rc-curation/validation/s0-change-set-validation-v2.yaml
+  - NAPMS-S0-RC-CURATION-PROBLEM
+  - NAPMS-S0-RC-CURATION-JOURNEY
+
+reuse_observation:
+  reused_without_product_source_reload:
+    - problem anchor current validation
+    - user-journey anchor current validation
+    - canonical docs source fingerprints already bound by current S0 receipt
+  not_repeated:
+    - per-anchor full deterministic validator stacks
+    - product requirement document reads for gate semantics
+    - anchor semantic acceptance judging
+  gate_specific_work:
+    - current lifecycle/applicability/freshness checks
+    - G0 deterministic preconditions
+    - SJ-G0-PROBLEM-SUFFICIENCY
+
+connector_orchestration_cost:
+  observed_connector_invocations: 23
+  local_hash_computations: 3
+  schema_discovery_calls_included: 3
+  low_level_write_attempts_requiring_fallback: 1
+  temporary_contents_api_commits_created: 2
+  temporary_commits_retained_on_working_branch: 0
+  final_coherent_commits_retained: 1
+  classification: transport-and-manual-runtime-overhead
+  note: >-
+    These counts characterize the current ChatGPT/GitHub execution path, not required Harness
+    semantics. Temporary Contents API commits were replaced by one coherent final commit.
+
+findings:
+  - id: MEASURE-G0-01
+    priority: P1
+    finding: >-
+      Semantic duplication is materially lower after the control-plane correction: G0 reused
+      current anchor validation evidence and did not reload canonical product documents.
+  - id: MEASURE-G0-02
+    priority: P1
+    finding: >-
+      The dominant remaining cost is transport/runtime orchestration: repeated contract loading,
+      manual validation-plan selection and non-atomic Contents API mutation plumbing.
+  - id: MEASURE-G0-03
+    priority: P1
+    finding: >-
+      A content-addressed immutable engine bundle can remove steady-state per-transaction reads of
+      unchanged H1-H10 contracts while retaining exact version/fingerprint binding.
+  - id: MEASURE-G0-04
+    priority: P1
+    finding: >-
+      A compiled validation plan can reuse current receipts and select only target-specific checks;
+      uncertainty about receipt freshness or applicability must fail closed and force validation.
+  - id: MEASURE-G0-05
+    priority: P1
+    finding: >-
+      Repository persistence needs one compare-and-swap atomic writer for evidence plus state
+      effects; Git commit creation must be an implementation detail, not a sequence of semantic steps.
+
+target_steady_state_budget:
+  ordinary_gate_transaction:
+    repository_reads_expected: 4-5
+    canonical_product_truth_reads_expected: 0
+    contract_file_reads_expected_when_engine_bundle_cached: 0
+    semantic_judges_expected: 1
+    atomic_repository_writes_expected: 1
+    final_repository_commits_expected: 1
+  budget_is:
+    - engineering target
+    - regression signal
+  budget_is_not:
+    - permission to skip required semantic inputs
+    - permission to trust stale cached state
+    - correctness invariant stronger than fail-closed validation
+
+next_design_ref: docs-v2/spec/harness-execution-kernel.yaml
+restrictions:
+  executable_runtime_created_or_changed: false
+  executable_validators_created_or_changed: false
+  executable_tests_created_or_changed: false
+  workflow_ci_created_or_changed: false
+  product_domain_truth_changed: false
+  h12_t3_started: false

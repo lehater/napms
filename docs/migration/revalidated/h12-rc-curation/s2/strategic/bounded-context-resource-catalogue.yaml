@@ -1,0 +1,42 @@
+anchor_id: NAPMS-S2-BC-RESOURCE-CATALOGUE
+type_id: bounded-context
+owner_stage: S2
+scope: {scope_id: H12-RC-CURATION-MVP, product_area: Resource Catalogue curation, lifecycle_boundary: S2 Strategic domain design}
+status: ACCEPTED
+canonical_payload:
+  name: Resource Catalogue
+  purpose: Own the access-domain meaning and lifecycle of Resources and the Resource catalogue facts needed by downstream NAPMS workflows.
+  responsibility:
+    - Resource identity and lifecycle
+    - time-qualified Resource realization as zero-or-one effective AddressSpace, where AddressSpace is HostAddress or Prefix
+    - Resource Scope Affiliation
+    - Resource Responsibility and operational contact facts
+  boundary_basis:
+    cohesion_rationale: Resource identity, realization history, scope affiliation and responsibility/contact use one cohesive Resource catalogue language and lifecycle.
+    separation_rationale: Actor/action admission is not Resource catalogue truth; Authority Management remains outside this boundary.
+    rejected_boundary_alternatives: [merge Authority Management into Resource Catalogue, treat UI or persistence as the domain boundary]
+  capability_selectors: [{anchor_id: NAPMS-S2-RC-CAPABILITY-MAP, item_id: CAP-RC-RESOURCE-CURATION}]
+  model_language_ownership:
+    owned_terms_or_model_scope: [Resource, AddressSpace, HostAddress, Prefix, Resource technical realization, Resource Scope Affiliation, Resource Responsibility]
+    explicitly_external_terms: [Actor, Action, Effective Authority, ResponsibilityScopeRef identity/authority semantics]
+  logical_derivation:
+    basis_refs: [{kind: anchor-current, anchor_id: NAPMS-S2-RC-CAPABILITY-MAP}, {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR}]
+    derivation_kind: synthesis
+    rationale: The corrected S1 requirement and current canonical RC realization model agree on maximum one effective HostAddress-or-Prefix per Resource at a logical time.
+provenance:
+  origin_kind: mixed
+  source_refs:
+    - {kind: repository-file, path: docs/domain/resource-catalogue/target-realization-model.md, blob_sha: 470a44dc4ca5807e4b28a15d3eb26f946857c603}
+    - {kind: stakeholder-correction, ref: H12-R-RC-MVP-SINGLE-ADDRESS-SPACE}
+  authority_basis: explicit-stakeholder-correction
+  recorded_at: '2026-09-17'
+semantic_refs:
+- {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S2-RC-CAPABILITY-MAP}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+- {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+validation:
+  freshness: CURRENT
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s1-cardinality-correction-validation.yaml
+  evidence_target: NAPMS-S2-BC-RESOURCE-CATALOGUE
+  profile: changed-and-affected-design
+  profile_version: cp-v2
+  enforcement_status: specification-manual-not-CI

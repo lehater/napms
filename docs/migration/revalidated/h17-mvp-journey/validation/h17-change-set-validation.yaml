@@ -1,0 +1,18 @@
+version: 1
+kind: validation-evidence
+id: H17-FIRST-MVP-S0-S2-VALIDATION
+scope: H17-FIRST-MVP-JOURNEY
+recorded_at: '2026-09-17'
+result: PASS
+basis:
+  accepted_strategic: [NAPMS-S2-NAPMS-CONTEXT-RELATIONSHIPS, NAPMS-S2-BC-RESOURCE-CATALOGUE, NAPMS-S2-BC-APPLICATION-COMMUNICATION-CATALOGUE, NAPMS-S2-BC-APPLICATION-DEPLOYMENT, NAPMS-S2-BC-BUSINESS-CONNECTIVITY, NAPMS-S2-BC-ACCESS-POLICY]
+  frozen_migration_evidence: [docs/requirements/first-mvp-vendor-neutral-policy-export.md, docs/requirements/application-catalogue-domain-target.md, docs/requirements/access-policy-core.md, docs/domain/application-communication-catalogue/target-tactical-model.md, docs/domain/application-deployment/tactical-model.md, docs/domain/business-connectivity/target-tactical-model.md, docs/domain/access-policy/tactical-model.md]
+checks:
+  - {id: journey-completeness, result: PASS, note: The selected MVP runs from Resource/Application description through concrete deployment business justification and accepted policy truth to complete vendor-neutral export.}
+  - {id: strategic-ownership, result: PASS, note: The slice reuses accepted H16/H12 ownership and does not create a peer export/materialization Bounded Context.}
+  - {id: tactical-consistency, result: PASS, note: ACC revision immutability deployment identity ConnectivityNeed justification and Access Policy effective-state rules compose without ownership collapse.}
+  - {id: materialization-completeness, result: PASS, note: Missing or ambiguous required owner truth yields Unresolved rather than a silently partial policy.}
+  - {id: scope-discipline, result: PASS, note: Enforcement placement provider rendering remediation operations evidence recognition and time-travel remain outside first MVP.}
+  - {id: hidden-human-choice, result: PASS, note: No additional product/domain choice is required to enter system-level architecture; customer-specific approval mechanics remain explicitly deferred.}
+validated_targets: [NAPMS-S1-FIRST-MVP-POLICY-EXPORT, NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL]
+conclusion: The first MVP journey has sufficient accepted S1-S2 semantics to proceed to one system-wide S3 architecture baseline.

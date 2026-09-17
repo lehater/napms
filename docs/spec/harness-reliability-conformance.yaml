@@ -1,0 +1,48 @@
+version: 1
+revision: 2
+kind: harness-reliability-conformance-extension
+id: DOCS-V2-HARNESS-RELIABILITY-CONFORMANCE
+status: active
+owner_phase: H1
+last_updated: 2026-09-17
+purpose: >-
+  Preserve the reliability properties that prevent lost, duplicated, stale or unauthorized
+  design changes while keeping their bookkeeping behind the design-facing Harness boundary.
+quality_bar:
+  design_visible:
+    - durable resumability from repository state
+    - explicit blockers and missing human truth
+    - stale/invalid design cannot silently pass
+    - authorization boundaries cannot be crossed implicitly
+  runtime_internal:
+    - operation identity
+    - input fingerprints
+    - execution basis
+    - version binding
+    - idempotency
+    - compare-and-swap or equivalent conflict detection
+    - diagnostic plumbing
+invariants:
+  - id: HR2-DURABLE-RESUME
+    rule: Current design progress and next meaningful work are recoverable from repository state without chat memory.
+  - id: HR2-NO-SILENT-WEAKENING
+    rule: Missing required design truth, authority or structural integrity cannot be replaced by a weaker heuristic.
+  - id: HR2-STALE-WRITE-SAFE
+    rule: Infrastructure detects material consumed-input changes before persistence and does not silently overwrite them.
+  - id: HR2-IDEMPOTENT
+    rule: Retrying persistence cannot duplicate semantic effects.
+  - id: HR2-PROJECT-AGNOSTIC
+    rule: Generic Harness behavior does not encode project-specific domain semantics.
+  - id: HR2-INTERNAL-METADATA-NOT-WORK
+    rule: Reliability metadata is generated automatically and never requires a separate design task, capsule, gate transaction or user decision.
+replay_boundary:
+  deterministic_required_for: [schema-and-reference-checks, lifecycle-state-effects-after-outcome, authorization-boundaries, dependency-impact]
+  not_required_for: [natural-language-explanation, semantic-judge-rationale]
+fail_closed_boundary:
+  required_for: [missing-human-truth, missing-authority, invalid-reference, stale-conflicting-input, invalid-current-state]
+  not_a_reason_for_global_preflight: true
+  rule: Failure in unrelated historical or graph state does not block an ordinary design change unless it can affect that change.
+evidence:
+  design_requirement: compact-current-result-and-basis-reference-when-needed
+  runtime_may_record_more: true
+  full-execution-basis-as-design-artifact: false

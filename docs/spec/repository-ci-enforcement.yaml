@@ -1,0 +1,37 @@
+version: 1
+revision: 2
+kind: repository-ci-enforcement-design
+id: DOCS-V2-REPOSITORY-CI-ENFORCEMENT
+status: active
+owner_phase: H11
+last_updated: 2026-09-17
+purpose: >-
+  Define a thin future repository enforcement boundary for deterministic integrity checks.
+  Repository/CI enforcement must reuse the same checks as local validation and must not turn
+  semantic design judgment or Harness bookkeeping into a second workflow.
+authority:
+  design_only: true
+  no_workflow_or_ci_change_authorized: true
+principles:
+  - one implementation per deterministic rule, reused locally and in hosted CI
+  - select checks from changed/affected artifact classes rather than running the entire Harness
+  - generated indexes/registries may be verified mechanically
+  - semantic LLM readiness judgments are not required to rerun in CI
+  - runtime trace/receipt completeness is not a merge condition unless needed for a concrete safety guarantee
+  - CI capability is repository metadata, not Task Capsule content
+future_check_classes:
+  always_when_applicable: [yaml-or-schema-syntax, stable-reference-resolution, generated-index-consistency]
+  affected_only: [dependency-integrity, lineage-integrity, stale-evidence-detection]
+  not_hosted-ci-responsibility: [semantic-design-sufficiency, stakeholder-question-quality, natural-language-judge-replay]
+change_selection:
+  rule: Map changed paths/artifact types to the smallest deterministic check set that can detect an invalid repository state caused by that change.
+  unknown_changed_design_type: fail-with-actionable-diagnostic
+  unrelated_historical_material: no-check-unless-referenced-by-current-design
+binding:
+  hosted_result_bound_to_candidate_revision: true
+  local_and_hosted_deterministic_semantics_equivalent: true
+non_goals:
+  - enforce one commit per Harness operation
+  - require validation evidence files for every design edit
+  - reproduce semantic judges in CI
+  - make CI a lifecycle-state owner

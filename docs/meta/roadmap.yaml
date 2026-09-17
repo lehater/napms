@@ -1,0 +1,68 @@
+version: 1
+revision: 12
+kind: meta-roadmap
+id: DOCS-V2-HARNESS-ROADMAP
+status: complete
+scope: universal-project-design-harness
+purpose: Guide design from initial problem to implementation readiness before product code is written, preserving visible machine-readable linked design truth.
+operating_constraints:
+  - docs/ is the sole canonical current documentation authority after H20 cutover and physical namespace normalization.
+  - docs-legacy/ is retired frozen migration evidence and cannot override accepted docs truth.
+  - Corrections and newly accepted design truth are written only to docs/; reverse synchronization into docs-legacy/ is forbidden.
+  - Product code/tests are not sources of product/domain/architecture truth during documentation design.
+  - Product implementation, product tests and merge require their own explicit authorization.
+principles:
+  - {id: P-DESIGN-FIRST, statement: Harness exists to improve design; operational bookkeeping is never a design step.}
+  - {id: P-MACHINE-READABLE, statement: Canonical design artifacts are machine-readable and human-readable views are projections where practical.}
+  - {id: P-DERIVATION, statement: Material derived design identifies accepted predecessors evidence constraints or human decisions.}
+  - {id: P-HUMAN-TRUTH, statement: Agents derive consequences but do not invent missing business truth.}
+  - {id: P-REPO-STATE, statement: Durable design/process state lives in the repository rather than chat memory.}
+  - {id: P-AFFECTED-ONLY, statement: Revalidate changed/affected design and reuse current unrelated evidence.}
+  - {id: P-INTERNALIZE-PLUMBING, statement: IDs fingerprints receipts caching and atomic persistence are runtime details unless independently meaningful to design.}
+  - {id: P-GRAPH-NOT-WATERFALL, statement: Stage labels describe maturity; artifact dependencies and affected-impact determine rework.}
+  - {id: P-LEGACY-IS-EVIDENCE, statement: Retired legacy documentation is migration evidence not a parallel truth store.}
+design_roadmap:
+  - {stage: S0, name: Discovery / Problem Framing, outcome: bounded problem goals evidence constraints and enough domain landscape to choose meaningful process slices}
+  - {stage: S1, name: Requirements Engineering, outcome: observable outcomes behavior business rules acceptance examples and applicable qualities}
+  - {stage: S2, name: Domain Design, outcome: process strategic and tactical domain semantics with evidence-backed boundaries and consistency rules}
+  - {stage: S3, name: Software Architecture / Solution Design, outcome: technical realization runtime structure integrations and contracts constrained by accepted domain design and quality goals}
+  - {stage: S4, name: Implementation Design / Implementation Readiness, outcome: exact executable and verifiable implementation slice without unresolved required product/domain/architecture invention}
+work_model:
+  unit: meaningful-design-work
+  coherent_cycle: [discover-or-design, affected-validation, readiness-if-boundary, persistence, continue]
+  separate_gate_execution_required: false
+  serialized_task_capsule_required: false
+  stop_on_success: false
+  real_stop_conditions: [NEED_MORE_DATA, BLOCKED, REOPEN, missing-authority, requested-scope-complete]
+program_phases:
+  completed: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15, H16, H17, H18, H19, H20]
+  active: null
+H12: {objective: Validate the simplified design order against a bounded NAPMS migration slice through G2., result: PASS}
+H13: {objective: Plan the smallest runtime needed after H12., result: PASS, result_ref: docs/meta/h13-minimal-runtime-plan.yaml}
+H14: {objective: Implement and validate the minimal repository-local Harness runtime., result: PASS, result_ref: docs/meta/h14-runtime-implementation.yaml}
+H15: {objective: Make the H14 runtime the single documentation validation entrypoint while isolating obsolete legacy validation semantics., result: PASS, result_ref: docs/meta/h15-integration-plan.yaml}
+H16: {objective: Migrate and revalidate the accepted strategic DDD baseline for NAPMS as a whole into canonical S2 anchors., result: PASS}
+H17: {objective: Establish the narrow MVP journey and revalidate the S0-S2 semantics needed by it., journey: describe resources and application/components/interactions -> create and accept a policy rule -> materialize and export resulting policy, result: PASS}
+H18:
+  objective: Design S3 architecture for the complete MVP journey on one system baseline.
+  result: PASS
+  result_ref: docs/migration/revalidated/h18-mvp-architecture/validation/h18-change-set-validation.yaml
+  accepted_baseline: {delivery: HTTP/JSON with one OpenAPI application contract, backend: modular monolith with in-process module contracts, persistence: one PostgreSQL database with module-owned schemas, authorization: backend session identity plus Authority Management admission}
+H19:
+  objective: Complete S4 implementation design and G4 for the end-to-end MVP journey.
+  result: PASS
+  result_ref: docs/migration/revalidated/h19-mvp-implementation-readiness/validation/h19-change-set-validation.yaml
+  accepted_result: {implementation_readiness: NAPMS-S4-FIRST-MVP-IMPLEMENTATION-READINESS, verification_intent: NAPMS-S4-FIRST-MVP-TEST-INTENT, gate: G4, gate_result: PASS}
+H20:
+  objective: Perform documentation namespace cutover after the migrated strategic baseline and MVP design have proven the new system usable as the sole documentation authority.
+  result: PASS
+  result_ref: docs/meta/h20-namespace-cutover.yaml
+  accepted_result: {canonical_namespace: docs/, retired_namespace: docs-legacy/, retired_mode: frozen-migration-evidence-only, competing_current_truth_store: false, physical_namespace_normalization: complete}
+program_exit:
+  - Strategic DDD for the NAPMS domain is canonical in the documentation system.
+  - The selected MVP journey reaches implementation readiness through linked machine-readable artifacts.
+  - Material design decisions trace backward to accepted evidence decisions and constraints.
+  - Work resumes from repository state without chat history.
+  - Missing human truth is explicit rather than invented.
+  - Legacy documentation is retired from normal authority and cannot act as a competing truth store.
+  - Normal design work is not dominated by Harness bookkeeping.

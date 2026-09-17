@@ -1,0 +1,125 @@
+version: 1
+revision: 2
+kind: agent-execution-context-model
+id: DOCS-V2-AGENT-EXECUTION-CONTEXT-V2
+status: active
+owner_phase: H9
+last_updated: 2026-09-17
+
+purpose: >-
+  Define the minimum context and authority rules needed for an agent to perform meaningful
+  design work from durable repository state. The execution model must protect human-owned truth
+  and authorization boundaries without turning runtime bookkeeping into design artifacts.
+
+authority:
+  integration_contract: docs-v2/spec/harness-control-plane.yaml
+  preserves:
+    - durable resumability
+    - minimal semantic context
+    - no invention of human-owned business truth
+    - bounded mutation and implementation authorization
+    - fail-closed access outside authorized project/repository scope
+  supersedes:
+    - mandatory serialized Task Capsule v2
+    - one-capsule-per-task-or-gate execution
+    - manual operation-id and execution-basis construction
+    - audited context-expansion records for reads inside authorized semantic dependencies
+    - per-task tool allowlists when repository/project authority already bounds the work
+
+execution_model:
+  visible_unit: meaningful-design-work
+  allowed_work:
+    - create-or-update-design-artifact
+    - coherent-design-change-set
+    - materialize-human-decision
+    - validate-current-change
+    - evaluate-lifecycle-readiness
+    - rework-or-reopen-affected-design
+  ordinary_cycle: >-
+    Recover current scope state, load targets and direct semantic dependencies, perform the
+    requested design work, validate changed semantics, evaluate readiness when a meaningful
+    boundary is reached, persist the coherent result, and continue while no real stop condition exists.
+  task_capsule:
+    required: false
+    role: optional-runtime-internal-manifest
+    canonical: false
+    rule: A runtime may generate one for transport/debugging, but design progress cannot depend on it.
+
+context:
+  required_base:
+    - current scope/workstream state
+    - current design target or next meaningful work
+    - direct accepted predecessors and decisions needed by that work
+    - applicable artifact/method contract
+  lazy_resolution: true
+  forbidden_as_design_truth:
+    - chat memory
+    - product code or tests when current program restrictions forbid them
+    - generated projections
+    - historical candidate material not explicitly rematerialized
+  broad_load_rule: Do not scan the repository when direct graph/reference resolution is sufficient.
+
+semantic_authority:
+  accepted_fact_sources:
+    - accepted current design anchors
+    - accepted human decisions
+    - authoritative evidence explicitly allowed by the current project state
+  non_authoritative:
+    - hypotheses
+    - recommendations
+    - examples not generalized by human authority
+    - process state
+    - runtime metadata
+  missing_human_truth: NEED_MORE_DATA
+  contradiction_or_earlier_owner_gap: REOPEN
+
+mutation_authority:
+  rule: >-
+    Mutate only the requested/derived coherent design scope and its process/evidence references.
+    Product implementation, CI/workflow changes, cutover and merge require their own explicit authorization.
+  implementation_guard:
+    requires_current_G4_authorization: true
+    scope_must_be_contained: true
+
+validation_handoff:
+  changed_content: validate-with-minimum-applicable-profile
+  unchanged_current_evidence: reuse
+  lifecycle_boundary: evaluate-readiness-after-current-inputs-are-valid
+  separate_execution_required: false
+
+stop_conditions:
+  - human-owned truth is missing
+  - required authority is missing
+  - current inputs changed materially before persistence
+  - earlier-stage design must be reopened
+  - requested work expands outside authorized scope
+  - repository/project state is inconsistent enough that safe continuation is impossible
+
+persistence:
+  design_visible:
+    - canonical changed artifacts
+    - human decisions/questions when material
+    - current scope state
+    - compact validation/readiness evidence when needed
+  infrastructure_internal:
+    - operation ids
+    - fingerprints
+    - execution basis
+    - idempotency keys
+    - validator version binding
+    - atomic write/CAS metadata
+  rule: Infrastructure metadata may protect persistence but must not create additional design tasks.
+
+conformance:
+  - id: AX2-DESIGN-WORK-NO-CAPSULE
+    given: ordinary authorized design change
+    expect: {serialized_task_capsule_required: false, design_work_allowed: true}
+  - id: AX2-GATE-SAME-WORK-CYCLE
+    given: current validated design reaches lifecycle boundary
+    expect: {readiness_may_be_evaluated_now: true, separate_capsule_required: false}
+  - id: AX2-HUMAN-TRUTH-STOPS
+    given: required human-owned semantic choice is missing
+    expect: {route: NEED_MORE_DATA}
+  - id: AX2-IMPLEMENTATION-BOUNDARY
+    given: implementation requested without current exact G4 authority
+    expect: {implementation_allowed: false}

@@ -1,0 +1,24 @@
+version: 1
+kind: validation-evidence
+id: H12-S2-PROCESS-CHANGE-SET-VALIDATION
+scope_id: H12-RC-CURATION-MVP
+recorded_at: '2026-09-17'
+profile: changed-and-affected-design
+result: PASS
+targets:
+  - {anchor_id: NAPMS-S2-DEC-RC-MVP-AUTHORITY, fingerprint: 'sha256-jcs-v1:51e8bcf5aeb930ba4083f404832ba1b2b78a517faee141b122d1373b15c366ca', result: PASS}
+  - {anchor_id: NAPMS-S2-DEC-RC-RESPONSIBILITY-ROLES, fingerprint: 'sha256-jcs-v1:d24a63a791f1a1d0472fd72faab280a7a95a812d6a435d66186e345ec9948521', result: PASS}
+  - {anchor_id: NAPMS-S2-RC-CURATION-PROCESS, fingerprint: 'sha256-jcs-v1:c56fb4884b58a177312ef3822cb90aacdcafb095fb7224f1c3f2124e9bfa5747', result: PASS}
+checks:
+  - {id: format-and-required-fields, result: PASS, note: All three anchors use the H3 envelope and their H6/H7-required payload fields are present.}
+  - {id: reference-resolution, result: PASS, note: All current anchor dependencies referenced by the change set are accepted/current inputs in the active scope.}
+  - {id: human-authority, result: PASS, note: The two non-derivable domain choices are captured as durable stakeholder responses in lifecycle state and materialized as S2 domain decisions.}
+  - {id: process-lineage, result: PASS, note: Commands/events are derived from accepted S1 behavior or the materialized decisions; no agent hypothesis is asserted as authoritative process truth.}
+  - {id: authority-boundary, result: PASS, note: Resource Responsibility remains separate from Authority; MVP mutation admission uses the fixed catalogue-wide curation authority.}
+  - {id: hotspots, result: PASS, note: Scoped authorization and mandatory responsibility coverage/transfer-gap semantics are explicitly deferred nonblocking and are not used as current process truth.}
+readiness:
+  checkpoint: S2-PROCESS-DISCOVERY
+  result: PASS
+  next: S2-TACTICAL / Tactical DDD
+notes:
+  - Validation is specification/manual, not CI. Existing unchanged S0/S1/S2-Strategic evidence is reused.

@@ -1,0 +1,22 @@
+version: 1
+kind: validation-evidence
+id: H18-FIRST-MVP-ARCHITECTURE-VALIDATION
+scope: H18-FIRST-MVP-ARCHITECTURE
+recorded_at: '2026-09-17'
+result: PASS
+basis:
+  accepted_upstream: [NAPMS-S1-FIRST-MVP-POLICY-EXPORT, NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL, NAPMS-S2-BC-AUTHORITY-MANAGEMENT]
+  architecture_evidence: [docs/architecture/current-architecture.md]
+  stakeholder_decisions: [HTTP/JSON frontend-backend boundary with one OpenAPI contract]
+checks:
+  - {id: whole-journey-system-shape, result: PASS, note: One frontend modular-monolith backend and PostgreSQL topology covers the complete accepted MVP journey rather than one context in isolation.}
+  - {id: domain-boundary-preservation, result: PASS, note: Backend module ownership follows accepted domain boundaries and policy export remains non-peer composition.}
+  - {id: delivery-boundary, result: PASS, note: HTTP/JSON is selected once at the frontend-backend boundary and OpenAPI is the canonical application API contract representation; HTTP is not introduced between backend modules.}
+  - {id: persistence-boundary, result: PASS, note: PostgreSQL is one physical persistence engine while schemas and repository contracts remain module-owned and cross-module direct mutation is prohibited.}
+  - {id: authorization-boundary, result: PASS, note: Backend session identity plus Authority Management admission protects application use cases; frontend state and domain metadata cannot substitute for authority.}
+  - {id: consistency, result: PASS, note: Local aggregate transactions and explicit in-process orchestration avoid invented distributed-system semantics.}
+  - {id: mvp-exclusions, result: PASS, note: Provider rendering enforcement operations and evidence ingestion remain outside the first MVP runtime.}
+  - {id: unresolved-architecture, result: PASS, note: No material S3 architecture question remains that would force a Bounded Context to choose its own transport deployment persistence or authorization model.}
+validated_targets:
+  - {anchor_id: NAPMS-S3-FIRST-MVP-SYSTEM-ARCHITECTURE, fingerprint: sha256-json-v1:1dd7e7f60080811a8be993761252b701445d30b8b194c5f23ebe2495a962a33e}
+conclusion: The complete first-MVP journey has one coherent S3 system architecture baseline and can advance to implementation design without reopening per-context topology choices.

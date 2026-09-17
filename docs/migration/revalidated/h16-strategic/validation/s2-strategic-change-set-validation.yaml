@@ -1,0 +1,19 @@
+version: 1
+kind: validation-evidence
+id: H16-NAPMS-STRATEGIC-S2-VALIDATION
+scope: H16-NAPMS-STRATEGIC
+recorded_at: '2026-09-17'
+result: PASS
+basis:
+  frozen_evidence: [docs/domain/strategic-model.md, docs/domain/strategic-model.json, docs/domain/context-map.md, docs/domain/capabilities.md, docs/domain/semantic-ownership.md]
+  accepted_overlap: [NAPMS-S2-RC-CAPABILITY-MAP, NAPMS-S2-RC-BOUNDED-CONTEXT, NAPMS-S2-AM-BOUNDED-CONTEXT]
+checks:
+  - {id: whole-domain-coverage, result: PASS, note: All ten peer Bounded Context responsibilities in the accepted strategic baseline are represented through new H16 anchors or reconciled H12 RC/AM anchors.}
+  - {id: ownership-separation, result: PASS, note: Application communication deployment resource policy authority evidence realization and operations ownership remain separate.}
+  - {id: non-peer-compositions, result: PASS, note: Required Policy Materialization and Evidence Access Recognition remain compositions rather than invented peer Bounded Contexts.}
+  - {id: legacy-correction-precedence, result: PASS, note: H12 Resource Catalogue and Authority Management accepted truth is reused and legacy wording does not override it.}
+  - {id: strategic-guardrails, result: PASS, note: Evidence is not authorization unresolved is not empty policy excess is not removal authority and execution success is not convergence.}
+  - {id: hidden-human-choice, result: PASS, note: Migration exposed no material strategic contradiction requiring new stakeholder truth.}
+  - {id: implementation-leakage, result: PASS, note: No transport database package deployment or service topology is selected.}
+validated_targets: [NAPMS-S2-NAPMS-CAPABILITY-MAP, NAPMS-S2-BC-BUSINESS-CONNECTIVITY, NAPMS-S2-BC-ACCESS-POLICY, NAPMS-S2-BC-APPLICATION-COMMUNICATION-CATALOGUE, NAPMS-S2-BC-APPLICATION-DEPLOYMENT, NAPMS-S2-BC-NETWORK-ENFORCEMENT-PLACEMENT, NAPMS-S2-BC-TECHNICAL-ACCESS-EVIDENCE, NAPMS-S2-BC-ACCESS-POLICY-REALIZATION, NAPMS-S2-BC-NETWORK-ENVIRONMENT-OPERATIONS, NAPMS-S2-NAPMS-CONTEXT-RELATIONSHIPS]
+conclusion: Whole-domain strategic DDD baseline is coherent enough to become current docs-v2 truth for H16; tactical models remain outside this migration.

@@ -1,0 +1,20 @@
+version: 2
+kind: downstream-semantic-conflict-register
+id: H12-S1-RC-CURATION-DOWNSTREAM-CONFLICTS
+classification: process-state
+canonical_product_domain_truth: false
+scope:
+  scope_id: H12-RC-CURATION-MVP
+  owner_stage: S1
+conflicts:
+- conflict_id: H12-S1-RC-ADDRESS-CARDINALITY
+  status: resolved-by-stakeholder-correction
+  earliest_owner_stage: S1
+  current_owner_ref: NAPMS-S1-RC-CURATION-BEHAVIOR
+  corrected_rule: For MVP one Resource has at most one effective AddressSpace at a logical time; when present it is exactly one HostAddress or one Prefix.
+  previous_incorrect_rule: A new endpoint/realization version supports one or more technical addresses.
+  resolution_basis: explicit-stakeholder-correction-2026-09-17
+  disposition: correct-upstream-and-all-affected-downstream-documents
+  h7_question_required_now: false
+  note: The prior register incorrectly treated the already-decided single-AddressSpace model as a downstream conflict.
+recorded_at: '2026-09-17'

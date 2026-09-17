@@ -1,0 +1,26 @@
+anchor_id: NAPMS-S2-NAPMS-CONTEXT-RELATIONSHIPS
+type_id: context-relationship-map
+owner_stage: S2
+scope: {scope_id: H16-NAPMS-STRATEGIC, product_area: NAPMS whole-domain strategic landscape, lifecycle_boundary: S2 Strategic domain design}
+status: ACCEPTED
+canonical_payload:
+  relationships:
+    - {from: Business Connectivity, to: Access Policy, semantics: Connectivity Need supplies business justification but is not authorization.}
+    - {from: Authority Management, to: Access Policy, semantics: Access Policy consumes effective action admission without importing authority internals.}
+    - {from: Application Communication Catalogue, to: Application Deployment, semantics: Deployment references Component identity while ACC retains component ownership.}
+    - {from: Resource Catalogue, to: Application Deployment, semantics: Deployment references Resource identity while RC retains resource realization semantics.}
+    - {from: Access Policy, to: Required Policy Materialization, semantics: Current effective PolicyRule supplies desired concrete access.}
+    - {from: Application Communication Catalogue, to: Required Policy Materialization, semantics: Immutable InteractionContractRevision supplies exact traffic semantics.}
+    - {from: Application Deployment, to: Required Policy Materialization, semantics: Concrete source and destination deployments identify the policy subject.}
+    - {from: Resource Catalogue, to: Required Policy Materialization, semantics: Resource AddressSpace supplies current technical realization.}
+    - {from: Network Enforcement Placement, to: Required Policy Materialization, semantics: Placement supplies candidate enforcement relevance.}
+    - {from: Technical Access Evidence, to: Evidence Access Recognition, semantics: Normalized evidence may be correlated but does not itself create desired policy.}
+    - {from: Evidence Access Recognition, to: Access Policy, semantics: Recognized candidates enter the same RuleChange lifecycle and cannot bypass formal acceptance.}
+    - {from: Required Policy Materialization, to: Access Policy Realization, semantics: TargetRequiredPolicy is compared with configured effective policy.}
+    - {from: Access Policy Realization, to: Network Environment Operations, semantics: VerifiedChangeIntent may be rendered and executed; execution success alone is not convergence.}
+  strategic_invariants: [No Shared Kernel between peer contexts, unresolved input is not empty policy, evidence is not authorization, excess is not automatic removal authority, execution success is not convergence proof]
+  logical_derivation: {basis_refs: [{kind: evidence, path: docs/domain/context-map.md}, {kind: evidence, path: docs/domain/semantic-ownership.md}], derivation_kind: migration-revalidation, rationale: Preserve material whole-domain collaboration semantics while making non-peer compositions explicit., method_rule_ids: [DDD-MR-CONTEXT-RELATIONSHIP]}
+provenance: {origin_kind: imported-current-docs, source_refs: [{kind: repository-file, path: docs/domain/context-map.md}, {kind: repository-file, path: docs/domain/semantic-ownership.md}], authority_basis: imported-current-docs-ref-before-cutover, recorded_at: '2026-09-17'}
+semantic_refs: [{relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S2-NAPMS-CAPABILITY-MAP}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}]
+semantic_fingerprint: h16-context-relationships-v1
+validation: {freshness: CURRENT, evidence_ref: docs-v2/migration/revalidated/h16-strategic/validation/s2-strategic-change-set-validation.yaml, evidence_target: NAPMS-S2-NAPMS-CONTEXT-RELATIONSHIPS, validated_fingerprint: h16-context-relationships-v1, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: harness-plus-semantic-review}

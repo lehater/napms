@@ -1,0 +1,67 @@
+version: 1
+revision: 2
+kind: validation-gate-engine-specification
+id: DOCS-V2-VALIDATION-GATE-ENGINE
+status: active
+owner_phase: H8
+last_updated: 2026-09-17
+purpose: >-
+  Validate changed design semantics and lifecycle readiness with the smallest sufficient set of
+  checks. Validation protects the artifact graph and human truth; it does not create a parallel
+  workflow of execution-basis, receipt and gate transactions.
+authority:
+  integration_contract: docs-v2/spec/harness-control-plane.yaml
+  preserves: [schema-integrity, reference-integrity, lineage, human-authority, semantic-consistency, lifecycle-readiness, stale-input-detection]
+  internalizes: [operation-id, execution-basis, validator-version-binding, idempotency-key, atomic-write-metadata]
+principles:
+  - deterministic structural checks run before semantic judgment
+  - validate changed targets and affected graph only
+  - reuse current evidence for unchanged inputs
+  - semantic judgment runs only when content or readiness meaningfully requires it
+  - gate/checkpoint readiness does not rerun unrelated per-anchor validation
+  - missing human-owned truth routes to NEED_MORE_DATA
+  - validation metadata never becomes product/domain truth
+profiles:
+  design-change:
+    required: [format-or-schema, stable-reference-resolution, required-lineage-and-provenance]
+    semantic_when: material-semantic-content-changed
+    semantic_question: Does the changed design follow accepted inputs without inventing human-owned truth?
+  lifecycle-boundary:
+    prerequisite: current changed-design validation
+    required: [applicable-readiness-guarantee]
+    semantic_question: Is the current applicable design sufficient to move to the next design work?
+  high-impact-change:
+    when: accepted-upstream-change-affects-downstream-design
+    required: [dependency-impact, freshness-invalidation]
+validation_order:
+  - structural-integrity
+  - reference-and-lineage-integrity
+  - human-authority-when-applicable
+  - semantic-consistency-when-material
+  - lifecycle-readiness-at-boundary
+result_model:
+  outcomes: [PASS, FAIL, REWORK, REOPEN, BLOCKED, NEED_MORE_DATA]
+  evidence: >-
+    Persist only enough durable evidence to explain accepted state and invalidate it when its
+    semantic basis changes. One compact record may cover a coherent change set and its readiness
+    decision. Full validator catalogs and execution bases are optional runtime/debug data.
+  separate_gate_evidence_file_required: false
+  separate_validation_transaction_required: false
+freshness:
+  unchanged_current_inputs: reuse-existing-evidence
+  changed_semantic_input: invalidate-dependent-evidence
+  unrelated_graph_region: do-not-revalidate
+runtime_safety:
+  rule: >-
+    A runtime must detect conflicting/stale inputs before persistence and make retries idempotent,
+    but these protections are infrastructure concerns and do not add design steps.
+conformance:
+  - id: VE2-CHANGESET-MINIMAL
+    given: coherent design change with current unrelated evidence
+    expect: {unrelated_validation_runs: false}
+  - id: VE2-GATE-NO-REVALIDATION
+    given: current validated inputs at lifecycle boundary
+    expect: {readiness_only_additional_check: true, separate_execution_required: false}
+  - id: VE2-HUMAN-TRUTH
+    given: semantic decision requires missing human fact
+    expect: {route: NEED_MORE_DATA}

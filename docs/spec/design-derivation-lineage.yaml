@@ -1,0 +1,284 @@
+version: 1
+kind: design-derivation-lineage-contract
+id: DOCS-V2-DESIGN-DERIVATION-LINEAGE
+status: active
+owner_phase: H5
+owner_task: H5-T2
+last_updated: 2026-09-16
+
+purpose: >
+  Define the logical derivation lineage that makes a project design explainable from initial
+  problem/evidence/authority roots through requirements, DDD, architecture and implementation
+  readiness. Dependency impact answers what becomes affected by change; derivation lineage
+  answers why an artifact exists, which accepted project knowledge it follows from and which
+  durable decision or method justified each non-derivable choice.
+
+authority:
+  extends:
+    id: DOCS-V2-DEPENDENCY-REGISTRY-IMPACT
+    path: docs-v2/spec/dependency-registry-impact.yaml
+  depends_on:
+    - id: DOCS-V2-DESIGN-ANCHOR-CONTRACT
+      path: docs-v2/spec/design-anchor.yaml
+    - id: DOCS-V2-ARTIFACT-TYPE-REGISTRY
+      path: docs-v2/spec/artifact-type-registry.yaml
+  defines:
+    - distinction between impact dependency and logical derivation lineage
+    - accepted-root and accepted-non-root lineage requirements
+    - minimum durable derivation record
+    - lineage completeness and acyclicity rules
+    - backward explainability contract
+    - human-readable project-book projection contract
+  does_not_define:
+    - project-specific business/domain truth
+    - detailed DDD derivation methods or schemas owned by H6
+    - human question/decision capture protocol owned by H7
+    - executable validation engine owned by H8
+    - physical repository layout
+    - product code or runtime Harness implementation
+
+universal_scope:
+  project_specific_semantics_in_harness: forbidden
+  napms_role: pilot-and-migration-case
+  process_span:
+    start: idea-problem-evidence
+    end: implementation-readiness-before-first-product-code
+  methods:
+    primary: Domain-Driven Design
+    adjacent_methods: permitted when they preserve the same anchor/lineage/authority invariants
+
+concepts:
+  impact_dependency: >
+    A relation used to determine whether a change invalidates or dirties another artifact.
+    It is governed by H5 impact modes and may contain cycles where the declared semantics allow them.
+  derivation_lineage: >
+    A directed logical explanation of how accepted design semantics were obtained from prior
+    accepted anchors, evidence, constraints, methods and durable human decisions.
+  root_basis: >
+    Durable project input that does not itself need an earlier Design Anchor but still requires
+    provenance and authority. Roots are inputs to design, not unexplained agent assertions.
+  design_rationale: >
+    Concise durable justification sufficient for another reviewer or agent to understand a
+    design step. It records project reasoning outcomes, rules and trade-offs, not private chain-of-thought.
+
+root_policy:
+  permitted_root_bases:
+    - problem-or-opportunity statement backed by durable stakeholder/external provenance
+    - external or non-negotiable constraint with durable provenance
+    - durable evidence/observation
+    - explicit stakeholder decision or mandate that is not derivable from earlier accepted project truth
+  root_anchor_rule: >
+    An accepted Design Anchor with no earlier Design Anchor predecessor MUST explicitly declare
+    a permitted root basis through H3 provenance/evidence/authority references. Agent proposal
+    alone is never a root authority.
+  forbidden_root_bases:
+    - agent plausibility
+    - chat-only statement not persisted with provenance
+    - product implementation inferred as design truth
+    - generated projection
+
+lineage_relations:
+  lineage_bearing_h5_relations:
+    - DERIVES_FROM
+    - CONSTRAINED_BY
+    - REALIZES
+    - REFINES
+    - DECIDED_BY
+    - EVIDENCED_BY
+  non_lineage_relation:
+    - REFERENCES
+  semantics:
+    DERIVES_FROM: output semantics are obtained by synthesis, classification, decomposition or other declared derivation from the input
+    CONSTRAINED_BY: output choice is bounded by the referenced accepted constraint/decision
+    REALIZES: later design concretely realizes accepted upstream behavior/domain/architecture intent
+    REFINES: output adds owned detail while preserving accepted predecessor semantics
+    DECIDED_BY: a non-derivable choice is justified by a durable accepted stage-owned decision
+    EVIDENCED_BY: an assertion/root basis is justified by durable evidence without granting evidence independent design authority
+
+lineage_record:
+  storage_rule: >
+    Each accepted non-root anchor MUST expose a deterministic logical_derivation projection
+    from its canonical payload and H5 semantic_refs. H6 and later type schemas may specialize
+    the representation but must preserve these logical fields.
+  required_fields:
+    - basis_refs
+    - derivation_kind
+    - rationale
+  optional_fields:
+    - method_rule_ids
+    - decision_refs
+    - evidence_refs
+    - rejected_alternative_refs
+  derivation_kind_allowed:
+    - direct
+    - synthesis
+    - decomposition
+    - classification
+    - mapping
+    - refinement
+    - realization
+    - constrained-choice
+    - human-decision
+  basis_refs_rule: >
+    Every basis ref resolves through H5 structured references and is lineage-bearing; free-text
+    mentions and filesystem paths cannot satisfy lineage.
+  rationale_rule: >
+    Rationale states the durable logical justification at reviewable design level. It MUST NOT
+    store hidden/private model reasoning and MUST NOT substitute unsupported inference for human authority.
+  method_rule_ids_rule: >
+    When a derivation claims to follow a deterministic or named project/design rule, the rule
+    or method specification identifier must be durable and referenceable.
+  human_choice_rule: >
+    A derivation containing a non-derivable human-owned choice requires DECIDED_BY or equivalent
+    H3 authority provenance to a durable human decision; rationale text alone is insufficient.
+
+acceptance_lineage_guards:
+  accepted_non_root:
+    - at least one lineage-bearing basis ref is present
+    - logical_derivation record is structurally valid
+    - every current anchor basis resolves ACCEPTED plus CURRENT under H5
+    - evidence basis resolves with current required fingerprint/provenance
+    - non-derivable human-owned choices have durable authority
+    - lineage graph for the accepted revision is acyclic
+    - backward traversal reaches one or more permitted roots
+  accepted_root:
+    - root basis is explicitly declared
+    - root provenance/authority is durable
+    - root is not justified only by an agent proposal
+  rejection:
+    missing_lineage: FAIL
+    dangling_lineage_ref: FAIL
+    unexplained_agent_assertion: NEED_MORE_DATA when human-owned and non-derivable
+    lineage_cycle: FAIL
+    rationale_without_authority_for_human_choice: FAIL
+
+lineage_graph:
+  source: H5 semantic_refs plus deterministic logical_derivation projections from canonical anchors
+  canonical_truth: false
+  graph_role: generated explanation/index over canonical anchors
+  direction: predecessor/root -> derived artifact
+  acyclic_required: true
+  reason_for_stricter_rule_than_impact_graph: >
+    Impact dependencies may be mutually constraining, but logical derivation cannot validly
+    explain A by B and B by A without an earlier independent basis. A derivation cycle means
+    the design explanation is incomplete and must be refactored to expose the real predecessor/decision.
+  backward_explainability:
+    input: accepted anchor_id plus current semantic_fingerprint
+    output:
+      - ordered predecessor anchors/evidence/decisions
+      - typed lineage relations
+      - durable rationales/method rules
+      - terminal root bases
+    success_rule: complete traversal contains no dangling ref, unsupported authority or cycle
+  forward_use: >
+    The same explicit semantic refs may participate in H5 impact calculation according to
+    their effective impact mode; lineage does not create a second parallel dependency source.
+
+project_book_projection:
+  classification: projection
+  canonical: false
+  generated_from:
+    - accepted/current anchor registry
+    - derivation lineage graph
+    - durable decisions and evidence refs
+  default_reading_order:
+    primary: lifecycle stage S0 -> S1 -> S2 -> S3 -> S4
+    within_stage: stable topological order of derivation lineage, then anchor_id
+  chapter_minimum:
+    - artifact identity/type/status
+    - design purpose or owned semantic summary
+    - derived-from predecessor list
+    - relevant evidence/constraints/decisions
+    - concise derivation rationale
+    - canonical source reference
+    - downstream design consequences when generated safely from typed refs
+  rules:
+    - generated prose MUST NOT add semantic claims absent from canonical anchors/decisions/evidence
+    - editing the projection does not edit canonical truth
+    - the same graph can generate focused views by stage, bounded context, journey, requirement or implementation slice
+    - a reader must be able to follow the book backward from a design choice to its problem/evidence/decision basis
+
+h6_handoff:
+  required_behavior:
+    - Every H6 strategic/process/tactical output declares explicit accepted predecessors.
+    - Capability-to-context, context relationships, candidate aggregates and tactical models record derivation kind and rationale.
+    - Event Storming/process discovery records which commands/events/policies came from stakeholder examples/evidence versus derivable consequences.
+    - Candidate aggregate boundaries cannot be accepted as unexplained agent inference.
+    - H6 schemas must make logical_derivation deterministically projectable and fingerprint-relevant.
+
+conformance_cases:
+  - id: DL-CF-NONROOT-LINEAGE-COMPLETE
+    oracle: deterministic
+    given: {status: ACCEPTED, root: false, lineage_basis_count: 2, lineage_refs_resolve_current: true, root_reachable: true}
+    expect: {lineage_acceptance_guard: PASS}
+
+  - id: DL-CF-NONROOT-MISSING-LINEAGE-REJECTED
+    oracle: deterministic
+    given: {status_requested: ACCEPTED, root: false, lineage_basis_count: 0}
+    expect: {result: FAIL, reason: missing-derivation-lineage}
+
+  - id: DL-CF-ROOT-REQUIRES-DURABLE-BASIS
+    oracle: deterministic
+    given: {root: true, durable_root_basis_present: true, agent_only_authority: false}
+    expect: {root_lineage_guard: PASS}
+
+  - id: DL-CF-AGENT-ONLY-ROOT-REJECTED
+    oracle: semantic
+    given: {root: true, origin_kind: agent-proposal, durable_human_or_external_basis_present: false}
+    expect: {accepted: false, route: NEED_MORE_DATA}
+
+  - id: DL-CF-HUMAN-CHOICE-REQUIRES-DECISION
+    oracle: semantic
+    given: {non_derivable_human_owned_choice: true, rationale_present: true, durable_decision_ref_present: false}
+    expect: {accepted: false, rationale_alone_sufficient: false, route: NEED_MORE_DATA}
+
+  - id: DL-CF-LINEAGE-CYCLE-REJECTED
+    oracle: deterministic
+    given:
+      lineage_edges:
+        - {from: A1, to: A2}
+        - {from: A2, to: A1}
+    expect: {result: FAIL, reason: derivation-cycle}
+
+  - id: DL-CF-REFERENCE-NOT-LINEAGE
+    oracle: deterministic
+    given: {only_relation: REFERENCES, root: false}
+    expect: {lineage_basis_count: 0, acceptance_guard: FAIL}
+
+  - id: DL-CF-BACKWARD-EXPLAINABLE
+    oracle: deterministic
+    given:
+      target: S4-PLAN
+      lineage_path: [S4-PLAN, S3-ARCH, S2-DOMAIN, S1-REQ, S0-PROBLEM]
+      all_refs_current: true
+      rationales_present: true
+    expect: {complete_explanation: true, terminal_root: S0-PROBLEM}
+
+  - id: DL-CF-PROJECT-BOOK-NONCANONICAL
+    oracle: deterministic
+    given: {projection_edited: true, canonical_anchors_unchanged: true}
+    expect: {product_design_truth_changed: false, projection_regeneration_allowed: true}
+
+  - id: DL-CF-PROJECT-BOOK-NO-INVENTED-CLAIMS
+    oracle: semantic
+    given: {generated_book_claim_has_no_anchor_decision_or_evidence_basis: true}
+    expect: {projection_valid: false, invented_claim_persisted_as_truth: false}
+
+h5_extension_exit_evaluation:
+  checks:
+    - universal project-design Harness intent is explicit
+    - accepted non-root anchors require explicit derivation lineage
+    - accepted roots require durable provenance/authority
+    - lineage and impact use one semantic-reference source rather than parallel graphs
+    - derivation lineage is acyclic even though the general impact graph may contain cycles
+    - non-derivable human choice requires durable decision authority
+    - backward lineage can explain accepted artifacts to permitted roots
+    - human-readable project-book projection is reproducible and non-canonical
+    - no project-specific NAPMS semantics are introduced into Harness rules
+    - no product/domain cutover is performed
+
+restrictions:
+  executable_validators_created_or_changed: false
+  executable_tests_created_or_changed: false
+  runtime_implementation_created_or_changed: false
+  workflow_ci_created_or_changed: false

@@ -1,33 +1,39 @@
-# NAPMS documentation
+# NAPMS canonical documentation
 
-The working documentation tree is the project specification for the system as it exists and as it is currently designed to evolve. It must be sufficient to reconstruct the designed system from zero without inventing product, domain or architecture decisions.
+Status: CANONICAL.
 
-Two kinds of current truth may coexist and must be labelled explicitly:
+`docs/` is the sole current documentation authority for NAPMS. It contains the machine-readable linked design graph, Harness specifications and durable workstream state used to take design from problem framing through implementation readiness.
 
-- **as-built** — the accepted design contract for capabilities that exist in the current product/runtime;
-- **target** — the accepted design contract for the current intended model when it differs from as-built or is not implemented yet.
+`docs-legacy/` is retired, frozen pre-cutover migration evidence only. It cannot override accepted truth in `docs/` and must not receive new design truth.
 
-Implemented does not mean historical. A requirement, architecture contract, API contract, persistence decision, UI specification or ADR remains in the working tree while it is required to reproduce the current designed system.
+## Start here
 
-Documentation ownership:
+For continuation of project design or Harness work:
 
-- `requirements/` — current product and quality contracts, including implemented/as-built behavior and current target behavior;
-- `domain/` — current Strategic/Tactical DDD, semantic ownership and target/as-built domain contracts where both are needed;
-- `architecture/` — current as-built and target architecture, boundaries, composition and structural constraints;
-- `decisions/` — design decisions still required to understand or reproduce current as-built/target architecture; superseded-only decision history does not belong here;
-- `engineering/` — current API, persistence, runtime, configuration, operational and implementation-facing contracts;
-- `ui/` — current UI requirements, screen/wireframe specifications and reusable design guidance;
-- `plans/active/` — selected execution state only;
-- `process/` — reusable development and agent protocols.
+1. read `meta/workstream-state.yaml`;
+2. read `meta/roadmap.yaml` when lifecycle/program context is required;
+3. load only the accepted anchors and specifications directly needed by the task;
+4. follow semantic references rather than reconstructing truth from implementation code or historical chat.
 
-The selected next implementation MVP is `requirements/first-mvp-vendor-neutral-policy-export.md`; its execution state is `plans/active/README.md`. The slice starts from current effective Access Policy truth and composes AP + ACC + AD + RC into one complete vendor-neutral table/export without firewall/device/provider context. That narrower next slice does not invalidate project documentation for already implemented capabilities or for the broader accepted target model.
+## Current design maturity
 
-Git history is the archive only for genuinely replaced material: superseded specifications that no longer describe any current as-built or target state, completed migrations, completed plans/checkpoints, audit snapshots and obsolete alternatives.
+The strategic NAPMS DDD baseline is canonical here. The selected first-MVP journey has accepted S1 requirements, S2 tactical domain design, S3 system architecture and S4 implementation/verification design. G4 is PASS for that exact MVP design scope. Implementation readiness does not itself authorize product-code or product-test changes.
 
-## Reconstruction test
+## Repository areas
 
-Before deleting project documentation, ask:
+- `spec/` — Documentation System / Harness contracts.
+- `migration/revalidated/` — accepted/revalidated NAPMS design anchors and their validation evidence.
+- `meta/` — roadmap, durable workstream state and Harness evolution records.
+- `horizontal/` — retained earlier projections/evidence from the redesign; canonical truth is determined by accepted anchors and their semantic references.
+- `migration/` — migration provenance; historical source material does not outrank accepted anchors.
 
-> If production code disappeared, would the remaining documentation still let a competent team reconstruct the designed current system and distinguish as-built from target without making a new product/domain/architecture decision?
+## Authority rules
 
-If the answer becomes no, the document or its still-required content must remain in the working project specification.
+- accepted current anchors are the design truth for their owned semantics;
+- human-owned truth is never invented;
+- product code and tests are implementation/evidence, not substitutes for product/domain/architecture design truth;
+- generated views do not override canonical sources;
+- changed design is revalidated through its affected semantic graph;
+- operational Harness bookkeeping stays behind the design boundary rather than becoming a design process of its own.
+
+H20 authority cutover and its physical namespace normalization completed on 2026-09-17. Normal project documentation is now simply `docs/`; the former documentation tree is retained only under `docs-legacy/` as explicitly retired evidence.

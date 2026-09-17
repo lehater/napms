@@ -1,0 +1,131 @@
+version: 1
+kind: harness-runtime-plan
+id: DOCS-V2-H13-MINIMAL-RUNTIME
+status: ACCEPTED
+owner_phase: H13
+last_updated: 2026-09-17
+purpose: >-
+  Define the smallest runtime boundary justified by H12. The runtime protects and accelerates
+  meaningful design work; it does not become a workflow engine that agents must serve.
+basis:
+  pilot: H12-RC-CURATION-MVP
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s2-tactical-g2-validation.yaml
+  observed_needs:
+    - current repository/scope state must be recovered deterministically before work
+    - changed anchors need structural and reference checks without global preflight
+    - accepted upstream changes need affected-only propagation and stale evidence invalidation
+    - coherent multi-file persistence needs stale-head/conflict protection and retry safety
+    - lifecycle readiness needs to be computed from current design state without a separate gate transaction
+    - operational metadata must remain invisible unless diagnosing a failure
+runtime_boundary:
+  input_from_agent:
+    - current scope identifier or workstream pointer
+    - semantic design changes
+    - changed target paths/anchor identities
+    - human authority/answers when required
+    - requested readiness evaluation when a meaningful boundary is reached
+  output_to_agent:
+    - current design context and next meaningful work
+    - validation outcome with actionable semantic/structural findings
+    - affected anchors/checkpoints that require revalidation
+    - readiness result when applicable
+    - blocker/question when human truth or authority is missing
+    - persisted coherent result or explicit conflict
+  internal_only:
+    - operation identity
+    - semantic fingerprints and canonicalization cache
+    - dependency graph/index generation
+    - validation-basis/version binding
+    - compare-and-swap persistence basis
+    - retry/idempotency metadata
+    - diagnostic trace
+minimal_components:
+  - component_id: RUNTIME-STATE-LOADER
+    responsibility: Resolve workstream state, active scope state and directly required design dependencies from repository truth.
+    must_not: [reconstruct-state-from-chat, load-entire-repository-by-default]
+  - component_id: RUNTIME-ANCHOR-INDEX
+    responsibility: Build/refresh a generated index of current anchors and explicit semantic edges needed for reference resolution and impact traversal.
+    must_not: [own-product-truth, require-manual-registry-maintenance]
+  - component_id: RUNTIME-VALIDATOR
+    responsibility: Run deterministic format/schema/reference/lineage checks and invoke semantic judgment only when material.
+    must_not: [run-unrelated-global-preflight, create-validation-task-capsule]
+  - component_id: RUNTIME-IMPACT
+    responsibility: Compute reverse affected set from explicit semantic dependencies and invalidate only dependent current evidence/state.
+    must_not: [restart-whole-lifecycle, infer-semantic-edges-from-text-mentions]
+  - component_id: RUNTIME-READINESS
+    responsibility: Evaluate applicable checkpoint/gate guarantees from current validated design state.
+    must_not: [create-separate-gate-transaction, rerun-unrelated-anchor-validation]
+  - component_id: RUNTIME-PERSISTENCE
+    responsibility: Persist one coherent change set with expected-head conflict detection and idempotent retry semantics.
+    must_not: [silently-overwrite-newer-inputs, split-design-and-evidence-into-mandatory-separate-commits]
+execution_flow:
+  - load-current-state-and-direct-context
+  - accept-semantic-change-set
+  - validate-changed-structure-references-lineage
+  - compute-and-mark-affected-if-semantic-basis-changed
+  - run-material-semantic-consistency-check
+  - evaluate-readiness-if-boundary-reached
+  - compare-current-repository-basis-with-consumed-basis
+  - persist-coherent-result-or-return-conflict
+  - continue-with-next-meaningful-design-work-unless-real-stop
+persistence_contract:
+  optimistic_concurrency: expected-repository-head-or-equivalent
+  atomic_unit: coherent repository change set
+  retry: same semantic change must not duplicate semantic effects
+  conflict: stale consumed basis fails closed and requires reload/re-evaluation
+  design_visible_receipt_required: false
+validation_contract:
+  deterministic_first: [parse-and-schema, duplicate-identity, reference-resolution, owner-stage/type, required-lineage]
+  graph_checks: [current-dependency-validity, relation-validity, affected-set]
+  semantic_when: changed content, human-owned truth boundary, upstream-conformance question, or readiness sufficiency requires judgment
+  evidence: compact durable result sufficient to explain current accepted state
+  cache: optional and discardable; canonical artifacts/state remain source of truth
+readiness_contract:
+  source: lifecycle-state-machine plus current accepted/current anchors and blockers
+  result_model: [PASS, FAIL, REWORK, REOPEN, BLOCKED, NEED_MORE_DATA]
+  gate_as_execution_unit: false
+human_boundary:
+  runtime_may_detect: [missing-authority, missing-human-owned-truth, ambiguous-conflicting-authoritative-input]
+  runtime_may_not: [invent-business-rule, select-non-derivable-domain-policy, silently-weaken-upstream-constraint]
+  response: return smallest actionable question/blocker with affected semantic location
+not_in_minimal_runtime:
+  - Task Capsule as a required user-visible abstraction
+  - user-authored operation IDs or execution bases
+  - separate validation/gate/evidence transactions
+  - mandatory validation receipt per anchor
+  - global semantic judge on every operation
+  - database or service deployment solely for Harness state
+  - background daemon or queue without demonstrated need
+  - workflow/CI integration as a prerequisite for local/agent use
+  - automatic product code generation
+  - physical docs namespace cutover
+implementation_shape:
+  preferred_initial_shape: single repository-local command/library boundary with pure deterministic core functions and a thin Git adapter
+  state_storage: canonical docs-v2 artifacts and lifecycle/workstream state; generated indexes/caches are rebuildable
+  integration_order:
+    - repository read/state loader
+    - parser/schema/reference validation
+    - generated anchor/dependency index and affected traversal
+    - readiness evaluation
+    - safe coherent Git persistence
+    - semantic-judge adapter only where deterministic checks are insufficient
+  rationale: >-
+    H12 demonstrated that design can proceed without a workflow service. The failures worth automating are
+    repository-state recovery, reference/impact bookkeeping, validation consistency and stale-write safety.
+    A single local boundary minimizes new architecture while leaving room to split components only after measured need.
+implementation_acceptance_tests_when_authorized:
+  - resume from repository state with no chat history
+  - reject dangling/ambiguous current anchor reference before semantic judgment
+  - change one upstream anchor and return exactly its semantic affected set, leaving unrelated current evidence reusable
+  - reject stale-head persistence and preserve newer repository state
+  - retry same coherent persistence without duplicate semantic effects
+  - reach a readiness boundary and evaluate it without a second execution transaction
+  - route missing human-owned truth to NEED_MORE_DATA without inventing an answer
+  - rebuild generated index/cache without changing canonical design truth
+implementation_authorization:
+  status: NOT_AUTHORIZED
+  allowed_now: specification-and-planning-only
+  forbidden_now: [runtime-code, executable-tests, workflow-ci, product-code, namespace-cutover]
+exit_assessment:
+  H13_planning: PASS
+  reason: Minimal runtime responsibilities, boundaries, exclusions, safety properties and implementation acceptance tests are explicit without adding a new user-visible Harness workflow concept.
