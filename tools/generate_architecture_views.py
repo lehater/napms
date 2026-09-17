@@ -75,7 +75,7 @@ def load_strategic_model() -> tuple[list[str], list[str], list[dict[str, str]]]:
     relationships = relationship_payload.get("relationships", [])
 
     normalized_relationships: list[dict[str, str]] = []
-    for relationship in relationships:
+    for index, relationship in enumerate(relationships, start=1):
         source = relationship.get("from")
         target = relationship.get("to")
         semantics = relationship.get("semantics")
@@ -87,7 +87,14 @@ def load_strategic_model() -> tuple[list[str], list[str], list[dict[str, str]]]:
                     f"{CONTEXT_RELATIONSHIPS}: relationship {endpoint_name} endpoint {endpoint_value!r} "
                     "is not declared by the accepted capability map"
                 )
-        normalized_relationships.append({"from": source, "to": target, "semantics": semantics})
+        normalized_relationships.append(
+            {
+                "id": f"R{index:02d}",
+                "from": source,
+                "to": target,
+                "semantics": semantics,
+            }
+        )
 
     return peer_names, composition_names, normalized_relationships
 
@@ -109,6 +116,12 @@ def diagram_prelude(title: str) -> list[str]:
         "skinparam shadowing false",
         "skinparam roundcorner 12",
         "skinparam ArrowColor #5b6573",
+        "skinparam ArrowFontColor #3f4752",
+        "skinparam ArrowFontSize 9",
+        "skinparam legendBackgroundColor #FFFFFF",
+        "skinparam legendBorderColor #FFFFFF",
+        "skinparam legendFontColor #27313d",
+        "skinparam legendFontSize 10",
         "skinparam rectangle {",
         "  BorderColor #2f5597",
         "  FontColor #1f2937",
@@ -123,21 +136,34 @@ def append_relationship_legend(
     *,
     include_composition_notation: bool,
 ) -> None:
-    lines.extend(["", "legend bottom", "  <b>Notation</b>", "  Blue = peer Bounded Context"])
+    notation = "Blue = peer Bounded Context"
     if include_composition_notation:
-        lines.append("  Grey = non-peer composition")
+        notation += "; grey = non-peer composition"
     lines.extend(
         [
-            "  Arrows show accepted collaboration direction; no DDD Context Mapping pattern is inferred.",
+            "",
+            "legend bottom",
+            f"  <b>Notation:</b> {notation}",
+            "  Arrow numbers identify accepted collaboration relationships; no DDD Context Mapping pattern is inferred.",
             "",
             "  <b>Relationships</b>",
         ]
     )
     for relationship in relationships:
-        lines.append(f"  {relationship['from']} -> {relationship['to']}")
+        lines.append(
+            f"  <b>{relationship['id']}</b>  {relationship['from']} -> {relationship['to']}"
+        )
         for semantic_line in wrapped_lines(relationship["semantics"]):
-            lines.append(f"    {semantic_line}")
+            lines.append(f"      {semantic_line}")
     lines.append("endlegend")
+
+
+def append_relationships(lines: list[str], relationships: list[dict[str, str]]) -> None:
+    lines.append("")
+    for relationship in relationships:
+        lines.append(
+            f"{plantuml_alias(relationship['from'])} --> {plantuml_alias(relationship['to'])} : {relationship['id']}"
+        )
 
 
 def render_context_map(
@@ -154,12 +180,7 @@ def render_context_map(
     for name in peer_names:
         lines.append(f'rectangle "{plantuml_text(name)}" as {plantuml_alias(name)} #dbeafe')
 
-    lines.append("")
-    for relationship in peer_relationships:
-        lines.append(
-            f"{plantuml_alias(relationship['from'])} --> {plantuml_alias(relationship['to'])}"
-        )
-
+    append_relationships(lines, peer_relationships)
     append_relationship_legend(lines, peer_relationships, include_composition_notation=False)
     lines.extend(["", "@enduml", ""])
     return "\n".join(lines)
@@ -179,12 +200,7 @@ def render_collaboration_map(
         for name in composition_names:
             lines.append(f'rectangle "{plantuml_text(name)}" as {plantuml_alias(name)} #f3f4f6')
 
-    lines.append("")
-    for relationship in relationships:
-        lines.append(
-            f"{plantuml_alias(relationship['from'])} --> {plantuml_alias(relationship['to'])}"
-        )
-
+    append_relationships(lines, relationships)
     append_relationship_legend(lines, relationships, include_composition_notation=True)
     lines.extend(["", "@enduml", ""])
     return "\n".join(lines)
