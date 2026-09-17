@@ -1,4 +1,4 @@
-version: 4
+version: 5
 kind: lifecycle-scope-state
 id: NAPMS-H12-RC-CURATION-LIFECYCLE
 scope_id: H12-RC-CURATION-MVP
@@ -23,15 +23,16 @@ process_contracts:
     id: DOCS-V2-AGENT-EXECUTION-CONTEXT-V2
     version: 1
 current_task:
-  id: H12-G1-1
-  kind: gate-evaluation
-  lifecycle_stage: S1
+  id: H12-T4
+  kind: design-task
+  lifecycle_stage: S2
+  checkpoint: S2-STRATEGIC
   state: NOT_STARTED
-  task_spec_ref: docs-v2/spec/napms-migration-revalidation.yaml#H12-G1-1
+  task_spec_ref: docs-v2/spec/napms-migration-revalidation.yaml#H12-T4
   transaction_boundary: separate-capsule
   orchestration_session:
     may_chain_after_prior_commit: true
-    continuation_deferred_reason: H12-T3-transaction-boundary
+    continuation_deferred_reason: H12-G1-1-transaction-boundary
 completed_tasks:
 - id: H12-T2
   result: PASS
@@ -48,9 +49,13 @@ completed_tasks:
   result: PASS
   effect: S1-requirements-materialized-and-validated
   evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/s1-change-set-validation.yaml
+- id: H12-G1-1
+  result: PASS
+  effect: S1-accepted-S2-strategic-eligible
+  evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/h12-g1-gate-evidence.yaml
 stage_states:
   S0: ACCEPTED
-  S1: IN_PROGRESS
+  S1: ACCEPTED
   S2: NOT_STARTED
   S3: NOT_STARTED
   S4: NOT_STARTED
@@ -60,7 +65,7 @@ s2_checkpoints:
   S2-TACTICAL: NOT_STARTED
 gates:
   G0: PASS
-  G1: NOT_EVALUATED
+  G1: PASS
   G2: NOT_EVALUATED
   G3: NOT_EVALUATED
   G4: NOT_EVALUATED
@@ -94,6 +99,8 @@ current_validation_evidence:
   historical_superseded_receipts:
   - docs-v2/migration/revalidated/h12-rc-curation/validation/s0-problem-anchor-validation.yaml
   - docs-v2/migration/revalidated/h12-rc-curation/validation/s0-journey-anchor-validation.yaml
+  G1_gate:
+    evidence_ref: docs-v2/migration/revalidated/h12-rc-curation/validation/h12-g1-gate-evidence.yaml
 current_process_state_refs:
   S1_examples: docs-v2/migration/revalidated/h12-rc-curation/s1/example-records.yaml
   S1_downstream_conflicts: docs-v2/migration/revalidated/h12-rc-curation/s1/downstream-conflicts.yaml
@@ -116,7 +123,7 @@ source_authority:
 blocking_questions: []
 blockers: []
 next_when_current_task_passes:
-  id: H12-T4
+  id: H12-T5
   same_capsule: false
   same_orchestration_session_allowed: true
   guard: control-plane continuation guards pass
