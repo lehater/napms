@@ -59,6 +59,11 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
     }
 
     views {
+        properties {
+            "plantuml.url" "http://napms-plantuml:8080"
+            "plantuml.format" "svg"
+        }
+
         systemContext napms "SystemContext" {
             include *
             description "NAPMS first-MVP system context."
@@ -77,6 +82,12 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
         deployment napms mvp "MVPDeployment" {
             include *
             description "Deployment mapping for the accepted MVP baseline: browser frontend, one backend runtime, and one PostgreSQL runtime."
+        }
+
+        image * "DomainContextMap" {
+            plantuml "generated/context-map.puml"
+            title "DDD Context Map"
+            description "Generated projection of the accepted strategic S2 capability and context-relationship anchors."
         }
 
         styles {
