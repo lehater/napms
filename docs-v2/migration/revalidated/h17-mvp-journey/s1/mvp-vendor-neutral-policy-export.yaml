@@ -1,0 +1,86 @@
+anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT
+type_id: product-requirement
+owner_stage: S1
+scope:
+  scope_id: H17-FIRST-MVP-JOURNEY
+  product_area: First end-to-end MVP vendor-neutral policy export
+  lifecycle_boundary: S1 Requirements Engineering
+status: CANDIDATE
+canonical_payload:
+  goal: Establish current effective Access Policy truth and export the complete applicable policy set as one vendor-neutral technical policy view inspectable as a table and downloadable as CSV.
+  journey:
+    - Define Resources and their current AddressSpace realization.
+    - Define one Application with Components and directed same-Application Interactions.
+    - Create immutable InteractionContractRevision traffic semantics for an Interaction.
+    - Define concrete ComponentDeployments, each binding exactly one Component to exactly one Resource for this MVP.
+    - Propose access for one concrete source ComponentDeployment and one concrete destination ComponentDeployment using one exact InteractionContractRevision.
+    - Establish current effective PolicyRule truth through the formal Pending to Accepted or Rejected RuleChange lifecycle.
+    - Request the complete current effective policy export.
+    - Materialize each effective rule using exact traffic revision, concrete deployments and current Resource AddressSpace.
+    - Inspect the complete vendor-neutral result as a table and export the same semantics as CSV.
+  participating_strategic_owners:
+    - Resource Catalogue
+    - Application Communication Catalogue
+    - Application Deployment
+    - Access Policy
+  supporting_owner:
+    - Authority Management
+  workflow_composition:
+    name: Full Vendor-Neutral Policy Export
+    peer_bounded_context: false
+    responsibility: Compose accepted owner truth into a complete vendor-neutral policy view without owning Resource, Application, Deployment or Policy truth.
+  required_semantics:
+    - Interaction endpoints belong to the same Application.
+    - InteractionContractRevision is immutable and contains one or more vendor-neutral traffic alternatives.
+    - One ComponentDeployment binds exactly one Component to exactly one Resource for the MVP.
+    - One current PolicyRule represents one directed concrete source/destination ComponentDeployment pair and its exact current InteractionContractRevision.
+    - Pending or Rejected changes do not replace already effective rule semantics; only an Accepted applicable change may do so.
+    - Missing or ambiguous required materialization input makes the complete export Unresolved rather than silently partial.
+    - Table and CSV are representations of the same successful materialization result.
+  output_row_minimum:
+    - source AddressSpace
+    - destination AddressSpace
+    - protocol/service semantics
+    - applicable source/destination port or range
+    - PolicyRule provenance
+    - InteractionContractRevision provenance
+    - source/destination ComponentDeployment provenance
+    - source/destination Resource provenance
+  non_goals:
+    - Network Enforcement Placement or firewall selection
+    - provider/device/ACL-specific rendering
+    - configured-state comparison or remediation
+    - Network Environment Operations or device mutation
+    - evidence-derived proposal recognition as a prerequisite
+    - time-travel/as-of export
+  acceptance_examples:
+    - One effective HTTPS rule between concrete deployments whose Resources have HostAddresses yields one TCP destination-port 443 row.
+    - A pending or rejected traffic revision change leaves the previous accepted revision in the export.
+    - A missing required Resource AddressSpace makes the full export Unresolved.
+    - A Prefix remains a Prefix and is not expanded into hosts.
+    - A withdrawn PolicyRule contributes no current export row.
+    - The displayed table and downloaded CSV preserve the same policy meaning.
+  logical_derivation:
+    basis_refs:
+      - {kind: evidence, path: docs/requirements/first-mvp-vendor-neutral-policy-export.md}
+      - {kind: evidence, path: docs/requirements/application-catalogue-domain-target.md}
+      - {kind: evidence, path: docs/requirements/access-policy-core.md}
+    derivation_kind: migration-revalidation
+    rationale: Re-express the already selected first-MVP end-to-end journey against the accepted H16 strategic ownership model, excluding unrelated realization and operations concerns.
+provenance:
+  origin_kind: mixed
+  source_refs:
+    - {kind: repository-file, path: docs/requirements/first-mvp-vendor-neutral-policy-export.md, blob_sha: 662e0d77ad527b6292e18e06394f228fc937f438}
+    - {kind: repository-file, path: docs/requirements/application-catalogue-domain-target.md, blob_sha: 4c6484ef8d9af782aa3bfdd2d95c5a4f48cf4994}
+    - {kind: repository-file, path: docs/requirements/access-policy-core.md, blob_sha: 59c458acc8ae83092d1b27137d1e70b02674bb22}
+    - {kind: stakeholder-confirmation, date: '2026-09-17', statement: MVP is the narrow journey from resources/application description and rule creation to generated/exported final policy.}
+  authority_basis: imported-current-docs-ref-before-cutover
+  recorded_at: '2026-09-17'
+semantic_refs:
+  - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-NAPMS-CONTEXT-RELATIONSHIPS}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-APPLICATION-COMMUNICATION-CATALOGUE}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-APPLICATION-DEPLOYMENT}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-BC-ACCESS-POLICY}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: CONSTRAINED_BY, target: {kind: anchor-current, anchor_id: NAPMS-S2-RC-BOUNDED-CONTEXT}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+semantic_fingerprint: pending-h17-validation
+validation: {freshness: STALE, evidence_ref: null, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: pending-H17-validation}
