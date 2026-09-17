@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This repository contains the canonical NAPMS design specification plus implementation and executable evidence. Current design truth is owned by accepted anchors under `docs-v2/`; the old `docs/` tree is retired migration evidence and is not a competing source of truth.
+This repository contains the canonical NAPMS design specification plus implementation and executable evidence. Current design truth is owned by accepted anchors under `docs/`; `docs-legacy/` is retired migration evidence and is not a competing source of truth.
 
 ## Task-first startup
 
@@ -10,20 +10,20 @@ Start from the explicit user task and load only the context required to perform 
 
 For non-trivial design, architecture, implementation-planning or Harness work:
 1. read this file;
-2. read `docs-v2/meta/workstream-state.yaml`;
-3. read `docs-v2/meta/roadmap.yaml` when lifecycle/program context is required;
-4. load only directly applicable `docs-v2/spec/**` contracts and accepted design anchors;
+2. read `docs/meta/workstream-state.yaml`;
+3. read `docs/meta/roadmap.yaml` when lifecycle/program context is required;
+4. load only directly applicable `docs/spec/**` contracts and accepted design anchors;
 5. follow semantic references for affected truth rather than scanning implementation or retired documentation.
 
 The durable workstream state, not chat history, determines where design work resumes.
 
 ## Source of truth
 
-- `docs-v2/migration/revalidated/` — canonical accepted/revalidated NAPMS design anchors and validation evidence.
-- `docs-v2/spec/` — Documentation System / Harness contracts.
-- `docs-v2/meta/` — roadmap and durable workstream/process state.
-- `docs-v2/horizontal/` and migration material — supporting retained redesign/migration evidence or projections; accepted anchors remain authoritative for owned semantics.
-- `docs/` — RETIRED, frozen pre-cutover migration evidence only; never use it to override accepted `docs-v2/` truth and do not write new design truth there.
+- `docs/migration/revalidated/` — canonical accepted/revalidated NAPMS design anchors and validation evidence.
+- `docs/spec/` — Documentation System / Harness contracts.
+- `docs/meta/` — roadmap and durable workstream/process state.
+- `docs/horizontal/` and migration material — supporting retained redesign/migration evidence or projections; accepted anchors remain authoritative for owned semantics.
+- `docs-legacy/` — RETIRED, frozen pre-cutover migration evidence only; never use it to override accepted `docs/` truth and do not write new design truth there.
 - `backend/src/` + `backend/tests/` — backend implementation and executable evidence, not product/domain/architecture design authority.
 - `web/` — frontend implementation/evidence; apply its scoped instructions when authorized frontend implementation work is performed.
 - `.github/workflows/` — executable hosted CI gates and their exact triggers/commands.
@@ -38,9 +38,9 @@ Preserve accepted architecture unless an explicit design change or contradictory
 
 ## Documentation changes
 
-Write current design truth only under `docs-v2/`. Preserve semantic ownership and derivation links, revalidate changed/affected design, and keep Harness bookkeeping internal unless it is independently meaningful to design.
+Write current design truth only under `docs/`. Preserve semantic ownership and derivation links, revalidate changed/affected design, and keep Harness bookkeeping internal unless it is independently meaningful to design.
 
-Do not reverse-sync accepted corrections into retired `docs/`. Historical provenance belongs in Git history or explicitly marked migration evidence, not in a second current truth store.
+Do not reverse-sync accepted corrections into retired `docs-legacy/`. Historical provenance belongs in Git history or explicitly marked migration evidence, not in a second current truth store.
 
 ## Change discipline
 
