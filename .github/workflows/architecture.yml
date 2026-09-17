@@ -1,0 +1,26 @@
+name: architecture gate
+
+on:
+  pull_request:
+    paths:
+      - "docs/architecture/structurizr/**"
+      - "Makefile"
+      - ".github/workflows/architecture.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/architecture/structurizr/**"
+      - "Makefile"
+      - ".github/workflows/architecture.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  structurizr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate canonical Structurizr workspace
+        run: make architecture-check

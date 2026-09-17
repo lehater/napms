@@ -1,4 +1,7 @@
-.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-check docs-v2-harness-check skill-routing-eval knowledge-check check
+.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-check docs-v2-harness-check skill-routing-eval knowledge-check architecture architecture-check check
+
+STRUCTURIZR_IMAGE ?= structurizr/structurizr:2026.06.28-noble
+STRUCTURIZR_DIR := $(CURDIR)/docs/architecture/structurizr
 
 test:
 	cd backend && python -m pytest -q -m "not postgres"
@@ -38,6 +41,12 @@ dev-restore:
 	@test -n "$(BACKUP)" || (echo "Usage: make dev-restore BACKUP=backups/napms.napms.dump CONFIRM_RESET=yes" >&2; exit 2)
 	@test "$(CONFIRM_RESET)" = "yes" || (echo "Restore replaces the local PostgreSQL volume; rerun with CONFIRM_RESET=yes" >&2; exit 2)
 	python tools/local_postgres_backup.py restore-clean "$(BACKUP)" --confirm-reset
+
+architecture:
+	docker run --rm -it -p 8080:8080 -v "$(STRUCTURIZR_DIR):/usr/local/structurizr" $(STRUCTURIZR_IMAGE) local
+
+architecture-check:
+	docker run --rm -v "$(STRUCTURIZR_DIR):/usr/local/structurizr:ro" $(STRUCTURIZR_IMAGE) validate -workspace /usr/local/structurizr/workspace.dsl
 
 harness-check:
 	python tools/validate_harness.py
