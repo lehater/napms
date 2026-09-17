@@ -6,12 +6,21 @@ branch: meta/docs-v2-m7-pilot
 last_updated: 2026-09-17
 program: {status: ACTIVE, current_phase: H12, current_phase_state: IN_PROGRESS, completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11]}
 control_plane:
-  contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 2}
+  contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 3}
   rule: meaningful design work is the visible unit; runtime reliability bookkeeping is internal
 active_scope: {scope_id: H12-RC-CURATION-MVP, state_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml, state_owner: sole-writable-lifecycle-owner}
+documentation_authority:
+  evolving_authority: docs-v2/
+  legacy_source: docs/
+  legacy_status: frozen-read-only-migration-input
+  reverse_sync: forbidden
+  namespace_cutover: deferred
+  target_after_namespace_cutover: {authoritative_docs: docs/, legacy_docs: docs-legacy/}
 carry_forward:
   - Harness guides design from problem/discovery to implementation readiness before code.
-  - docs/ remains canonical NAPMS product/domain/architecture truth until explicit cutover.
+  - docs-v2/ is the authoritative evolving design documentation during migration; accepted Harness outputs supersede contradictory legacy docs/ statements within migrated/affected scope.
+  - docs/ is frozen legacy documentation used only as historical/migration evidence; do not edit it and do not synchronize corrected docs-v2 truth back into it.
+  - Physical namespace cutover is deferred: after migration/stabilization rename legacy docs/ to docs-legacy/ and docs-v2/ to docs/ as one controlled change.
   - Product code/tests cannot reconstruct missing design truth during H12.
   - Human-owned truth is never invented; material gaps become questions/blockers.
   - Domain stories/process evidence precede settled slices/boundaries; Strategic and Process Discovery may refine each other.
@@ -26,13 +35,14 @@ restrictions:
   product_implementation_authorization: none
   executable_test_change_authorization: none
   workflow_ci_change_authorization: none
-  canonical_cutover_authorization: false
+  namespace_cutover_authorization: false
   merge_authorization: false
 blockers: []
 resume_protocol:
   - Read this file first.
   - Read roadmap.yaml for design dependency order and slice-selection rules.
   - Read active_scope.state_ref for current design maturity, blockers and next meaningful work.
+  - Treat docs/ only as frozen migration evidence; never edit it or treat it as higher authority than accepted docs-v2 design in migrated/affected scope.
   - Load only target artifacts, direct semantic dependencies and applicable method/schema contracts.
   - Before classifying a semantic mismatch as a conflict/question, resolve authority and derivation precedence; downstream divergence from a clear upstream constraint is REWORK, not NEED_MORE_DATA.
   - Perform coherent meaningful design work; validate changed/affected design and readiness at reached boundaries.

@@ -1,5 +1,5 @@
 version: 1
-revision: 3
+revision: 4
 kind: meta-roadmap
 id: DOCS-V2-HARNESS-ROADMAP
 status: active
@@ -9,10 +9,13 @@ purpose: >-
   Preserve a visible, machine-readable graph of design artifacts and decisions so design can be
   discovered, reviewed, corrected, resumed and projected as coherent documentation.
 operating_constraints:
-  - docs/ remains canonical NAPMS product/project design truth until explicit cutover.
+  - docs-v2/ is the authoritative evolving documentation system during migration.
+  - docs/ is frozen legacy documentation: read-only migration evidence, not a writable or overriding source of current design truth for migrated/affected scope.
+  - Corrections and newly accepted design truth are written only to docs-v2/; reverse synchronization into docs/ is forbidden.
+  - Physical namespace cutover is deferred until migration/stabilization; target is docs/ for the new system and docs-legacy/ for the frozen historical system.
   - Product code/tests are not sources of product/domain/architecture truth during current documentation design.
   - Current work may modify only docs-v2/**.
-  - No product implementation, executable test, runtime/workflow/CI, cutover or merge change is authorized.
+  - No product implementation, executable test, runtime/workflow/CI, namespace cutover or merge change is authorized.
 principles:
   - id: P-DESIGN-FIRST
     statement: Harness exists to improve design; operational bookkeeping is never a design step.
@@ -36,6 +39,8 @@ principles:
     statement: Discover domain stories, processes, language and hotspots before treating a slice or Bounded Context boundary as settled.
   - id: P-GRAPH-NOT-WATERFALL
     statement: Stage labels describe maturity; artifact dependencies and affected-impact determine rework rather than a one-way document sequence.
+  - id: P-LEGACY-IS-EVIDENCE
+    statement: Legacy documentation is migration evidence, not a parallel truth store; accepted new-Harness design may correct it without back-porting changes.
 design_roadmap:
   - stage: S0
     name: Discovery / Problem Framing
@@ -118,6 +123,13 @@ core_capabilities:
   execution_safety:
     contracts: [harness-control-plane, agent-execution-context-v2, harness-reliability-conformance]
     visibility: infrastructure-behind-design-boundary
+  migration_authority:
+    legacy_path: docs/
+    evolving_path: docs-v2/
+    legacy_mode: frozen-read-only-evidence
+    reverse_sync: forbidden
+    namespace_cutover: deferred
+    target_paths: {evolving: docs/, legacy: docs-legacy/}
 historical_or_optional_operational_design:
   - harness-execution-kernel
   - per-operation execution-basis artifacts
@@ -139,4 +151,5 @@ program_exit:
   - Process slices and Bounded Context boundaries are evidence-backed rather than selected from implementation structure or agent convenience.
   - Work resumes from repository state without chat history.
   - Missing human truth is explicit rather than invented.
+  - Legacy documentation remains immutable migration evidence rather than a competing truth store.
   - Normal design work is not dominated by Harness bookkeeping.

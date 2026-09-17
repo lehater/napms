@@ -1,5 +1,5 @@
 version: 1
-revision: 2
+revision: 3
 kind: harness-control-plane
 id: DOCS-V2-HARNESS-CONTROL-PLANE
 status: active
@@ -16,10 +16,23 @@ purpose: >-
 authority:
   integration_precedence: >-
     This contract is the active integration interpretation for execution boundaries, gate
-    execution, validation evidence and resume behavior. Component specifications remain
-    authoritative for the design semantics they own, but clauses that require a separate
-    Task Capsule/transaction solely to persist, validate or advance design work are superseded
-    by this control-plane interpretation.
+    execution, validation evidence, resume behavior and documentation migration authority.
+    Component specifications remain authoritative for the design semantics they own, but clauses
+    that require separate execution ceremony or treat frozen legacy docs/ as the current writable
+    design authority are superseded by this control-plane interpretation.
+  documentation_migration:
+    evolving_authority: docs-v2/
+    legacy_source: docs/
+    legacy_status: frozen-read-only-migration-evidence
+    rule: >-
+      Accepted design produced or revalidated by the new Harness in docs-v2/ is current design truth
+      for its migrated/affected scope. Legacy docs/ may supply provenance and evidence, but it cannot
+      override accepted docs-v2 design merely because it is older or was previously canonical.
+    reverse_sync: forbidden
+    namespace_cutover:
+      status: deferred
+      target: {authoritative_docs: docs/, legacy_docs: docs-legacy/}
+      rule: Perform the physical rename only as a controlled cutover after migration/stabilization.
   preserves:
     - S0 -> S1 -> S2 -> S3 -> S4 lifecycle order
     - G0-G4 readiness guarantees
@@ -30,11 +43,11 @@ authority:
     - deterministic structural/reference validation
     - stale-input detection and safe persistence
   does_not_define:
-    - NAPMS product/domain/architecture truth
+    - NAPMS product/domain/architecture truth by itself
     - new lifecycle stages or artifact types
     - executable runtime, tests, workflow or CI changes
     - product implementation authorization
-    - canonical docs cutover
+    - physical namespace cutover authorization
     - merge authorization
 
 core_rule:
@@ -45,11 +58,7 @@ core_rule:
     unless that additional artifact carries independent design meaning.
 
 work_model:
-  visible_units:
-    - design-artifact
-    - coherent-design-change-set
-    - human-decision-or-answer
-    - lifecycle-readiness-check
+  visible_units: [design-artifact, coherent-design-change-set, human-decision-or-answer, lifecycle-readiness-check]
   ordinary_flow: >-
     Read the current design state, perform the next meaningful design work, validate what was
     changed, evaluate readiness when a stage/checkpoint boundary is reached, and persist the
@@ -72,34 +81,18 @@ progressive_rigor:
     Optional DDD work and expensive semantic checks run only when their applicability or the
     significance of the decision requires them.
   ordinary_anchor_or_change_set:
-    required:
-      - canonical format/schema integrity
-      - stable reference resolution
-      - required lineage/provenance
-      - semantic consistency when content changed materially
+    required: [canonical-format-schema-integrity, stable-reference-resolution, required-lineage-provenance, semantic-consistency-when-material]
   lifecycle_boundary:
-    additional:
-      - readiness/sufficiency check for the applicable gate or checkpoint
+    additional: [readiness-sufficiency-check]
   high_risk_or_authority_boundary:
-    additional_when_applicable:
-      - explicit human authority
-      - impact/freshness analysis
-      - exact authorization scope
+    additional_when_applicable: [explicit-human-authority, impact-freshness-analysis, exact-authorization-scope]
   no_global_preflight_rule: >-
     Do not revalidate unrelated Harness contracts, registries, graph regions or historical
     evidence for an ordinary operation when current reusable evidence already establishes them.
 
 operational_internals:
   visibility: implementation-detail
-  may_be_generated_or_managed_automatically:
-    - operation_id
-    - execution_basis
-    - semantic_fingerprint
-    - validator_and_spec_version_binding
-    - validation_receipt
-    - idempotency_key
-    - atomic_repository_write
-    - cache_or_engine_bundle
+  may_be_generated_or_managed_automatically: [operation_id, execution_basis, semantic_fingerprint, validator_and_spec_version_binding, validation_receipt, idempotency_key, atomic_repository_write, cache_or_engine_bundle]
   agent_contract: >-
     The agent supplies the design intent, semantic inputs, changed targets and any required human
     authority. Infrastructure derives operational identities and bookkeeping automatically.
@@ -113,6 +106,10 @@ context_model:
   rule: >-
     Load current scope state, the design targets and direct semantic dependencies needed for the
     work. Resolve additional dependencies lazily when the graph shows they are relevant.
+  legacy_read_rule: >-
+    Read docs/ only when needed as migration evidence or provenance. Never edit it, never back-port
+    corrected truth into it, and never use a contradictory legacy statement to override accepted
+    docs-v2 truth in migrated/affected scope.
   no_capsule_requirement: >-
     A serialized Task Capsule is not required for ordinary design work. A runtime may generate a
     compact internal execution manifest when useful, but design progress and authority must remain
@@ -123,107 +120,72 @@ context_model:
     semantic dependency closure.
 
 validation_model:
-  order:
-    - structural-and-reference-integrity
-    - lineage-and-human-authority-when-applicable
-    - semantic-consistency-when-material
-    - lifecycle-readiness-at-boundary
-  reuse_rule: >-
-    Current evidence for unchanged inputs is reused. Gate/checkpoint evaluation does not rerun
-    unrelated per-anchor validation.
+  order: [structural-and-reference-integrity, lineage-and-human-authority-when-applicable, semantic-consistency-when-material, lifecycle-readiness-at-boundary]
+  reuse_rule: Current evidence for unchanged inputs is reused. Gate/checkpoint evaluation does not rerun unrelated per-anchor validation.
   evidence_rule: >-
     Persist the smallest evidence needed to explain the current accepted state and invalidate it
     when its semantic basis changes. Operational validator catalogs and complete execution bases
     may be generated internally and are not required as design artifacts.
   semantic_split:
-    anchor_consistency: >-
-      Check that changed design content follows accepted inputs and does not invent human-owned truth.
-    lifecycle_readiness: >-
-      Check that the applicable stage/checkpoint guarantee is sufficient to move forward.
+    anchor_consistency: Check that changed design content follows accepted inputs and does not invent human-owned truth.
+    lifecycle_readiness: Check that the applicable stage/checkpoint guarantee is sufficient to move forward.
 
 state_ownership:
   scope_lifecycle_state:
     role: sole-writable-owner
-    owns:
-      - current meaningful design work
-      - stage/checkpoint/gate states
-      - blockers and blocking questions
-      - accepted anchor references
-      - current validation/readiness evidence references when useful
+    owns: [current-meaningful-design-work, stage-checkpoint-gate-states, blockers-and-blocking-questions, accepted-anchor-references, current-validation-readiness-evidence-when-useful]
   global_workstream_state:
     role: program-pointer-and-restrictions
-    forbidden_duplicates:
-      - scope current work
-      - scope stage state
-      - scope gate state
+    forbidden_duplicates: [scope-current-work, scope-stage-state, scope-gate-state]
   state_minimization_rule: >-
     Do not persist transaction/capsule bookkeeping in lifecycle state unless it is required to
     recover an interrupted unsafe write. Normal resume is from design state, not transaction history.
 
 stop_conditions:
-  mandatory:
-    - route == NEED_MORE_DATA
-    - route == BLOCKED
-    - route == REOPEN and earlier design truth must change
-    - required human decision or approval is missing
-    - requested action crosses an authorization/tool boundary not granted
-    - consumed semantic input changed before persistence
-    - user-requested scope is complete
-  not_stops:
-    - design artifact persisted successfully
-    - validation completed successfully
-    - checkpoint PASS
-    - G0-G3 PASS
-    - next meaningful design work is already eligible and within requested scope
+  mandatory: [route-NEED_MORE_DATA, route-BLOCKED, route-REOPEN, required-human-decision-missing, authorization-tool-boundary-not-granted, consumed-semantic-input-changed, requested-scope-complete]
+  not_stops: [design-artifact-persisted, validation-PASS, checkpoint-PASS, G0-G3-PASS, eligible-next-design-work]
 
 repository_rule:
   coherent_commit: >-
     One repository commit may contain the coherent design changes, their readiness result and
     state update. Git commits are persistence units, not design-semantic transaction boundaries.
-  current_product_domain_authority: docs/
-  docs_v2_role_before_cutover: candidate-design-and-harness-workspace
+  evolving_product_domain_authority: docs-v2/
+  legacy_migration_source: docs/
+  legacy_mutation: forbidden
+  reverse_sync_to_legacy: forbidden
+  namespace_cutover: deferred
+  post_cutover_paths: {evolving_product_domain_authority: docs/, legacy_migration_source: docs-legacy/}
 
 amendments:
   H1_H2:
-    effective_rule: >-
-      Interpret one-execution-unit and persist-and-stop scenarios as safety requirements for
-      atomic persistence, not as a requirement to split adjacent design work and readiness checks
-      into separate capsules or transactions.
+    effective_rule: Interpret one-execution-unit and persist-and-stop scenarios as safety requirements for atomic persistence, not as a requirement to split adjacent design work and readiness checks.
   H8:
-    effective_rule: >-
-      Collapse ordinary validation to the minimal applicable checks in validation_model. Detailed
-      execution-basis and receipt schemas are optional runtime internals unless needed to diagnose
-      a concrete stale/retry/concurrency failure.
+    effective_rule: Collapse ordinary validation to the minimal applicable checks in validation_model; detailed execution-basis and receipt schemas are runtime internals unless needed for a concrete failure.
   H9:
-    effective_rule: >-
-      Task Capsule v2 is no longer a mandatory design-work abstraction. A runtime may derive an
-      internal manifest from durable state; agents do not create or manage capsules as workflow steps.
+    effective_rule: Task Capsule v2 is no longer a mandatory design-work abstraction; agents do not create or manage capsules as workflow steps.
   H10:
-    effective_rule: >-
-      Preserve regression coverage for failures that can corrupt design truth or violate authority.
-      Transaction/capsule-shape conformance is not a product-quality goal by itself.
+    effective_rule: Preserve regression coverage for failures that can corrupt design truth or violate authority; transaction/capsule-shape conformance is not a product-quality goal by itself.
   H12:
     effective_rule: >-
-      Continue the NAPMS pilot from its current durable design state. Do not create separate gate
-      or checkpoint transactions merely to satisfy historical H12 sequencing. Evaluate readiness
-      when the relevant design work is current, persist the coherent result, then continue.
+      Continue the NAPMS pilot from current durable docs-v2 design state. Use frozen docs/ as migration
+      evidence only. Do not create separate gate/checkpoint transactions merely to satisfy historical sequencing.
 
 conformance_cases:
   - id: CP-CF-DESIGN-WORK-IS-PRIMARY
     given: {design_change_complete: true, readiness_check_due: true, real_stop_condition: false}
     expect: {separate_capsule_required: false, separate_transaction_required: false, continuation_allowed: true}
-  - id: CP-CF-OPERATIONAL-METADATA-INTERNAL
-    given: {operation_id_not_manually_supplied: true, runtime_can_generate_it: true}
-    expect: {design_work_blocked: false}
-  - id: CP-CF-REUSE-CURRENT-EVIDENCE
-    given: {input_unchanged: true, current_validation_exists: true, gate_due: true}
-    expect: {rerun_unrelated_anchor_validation: false}
+  - id: CP-CF-LEGACY-DOES-NOT-OVERRIDE
+    given: {legacy_docs_statement_conflicts_with_accepted_docs_v2_truth: true, scope_migrated_or_affected: true}
+    expect: {legacy_override_allowed: false, reverse_sync_required: false, docs_v2_remains_current: true}
+  - id: CP-CF-LEGACY-IMMUTABLE
+    given: {correction_discovered_during_migration: true}
+    expect: {edit_legacy_docs: false, persist_correction_in_docs_v2: true}
+  - id: CP-CF-NAMESPACE-CUTOVER-DEFERRED
+    given: {migration_in_progress: true}
+    expect: {rename_docs_now: false, target_names_preserved_for_later_cutover: true}
   - id: CP-CF-HUMAN-TRUTH-STILL-STOPS
     given: {required_human_owned_truth_missing: true}
     expect: {route: NEED_MORE_DATA, continuation_allowed: false}
   - id: CP-CF-STALE-INPUT-STILL-FAILS
     given: {consumed_semantic_input_changed_before_persist: true}
     expect: {persist_allowed: false}
-  - id: CP-CF-DDD-APPLICABILITY-PRESERVED
-    given: {ddd_checkpoint_applicable: false}
-    expect: {fabricated_acceptance_required: false, checkpoint_may_be_skipped: true}
