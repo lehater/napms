@@ -1,0 +1,47 @@
+version: 1
+kind: harness-runtime-implementation-state
+id: DOCS-V2-H14-MINIMAL-RUNTIME-IMPLEMENTATION
+status: IN_PROGRESS
+owner_phase: H14
+last_updated: 2026-09-17
+authorization:
+  granted: true
+  source: explicit-stakeholder-instruction
+  granted_at: 2026-09-17
+  allowed: [Harness runtime code, Harness executable regression tests, Harness runtime dependency declaration, docs-v2 state/evidence]
+  forbidden: [product implementation, product tests, workflow-ci changes, namespace cutover, merge]
+implementation:
+  runtime_path: tools/docs_v2_harness.py
+  tests_path: tools/test_docs_v2_harness.py
+  dependency_path: tools/requirements-docs-v2-harness.txt
+  persistence_write_boundary: docs-v2/**
+  implemented_capabilities:
+    - repository workstream/roadmap resume loading
+    - YAML anchor discovery and duplicate identity rejection
+    - current anchor reference/relation validation
+    - generated reverse semantic dependency graph
+    - transitive affected-set calculation
+    - lifecycle readiness evaluation without separate gate transaction
+    - missing human-owned truth NEED_MORE_DATA route
+    - expected-Git-head stale basis rejection
+    - idempotent coherent docs-v2 persistence
+    - deterministic semantic fingerprint helper
+verification:
+  local_unit_run:
+    result: PASS
+    command: python tools/test_docs_v2_harness.py
+    tests: 10
+    environment_note: Tests were executed against the exact candidate runtime/test contents before repository persistence.
+  covered_acceptance:
+    resume_without_chat_history: PASS
+    dangling_reference_rejection: PASS
+    affected_only_transitive_graph: PASS
+    stale_head_rejection: PASS
+    idempotent_retry: PASS
+    readiness_without_gate_transaction: PASS
+    missing_human_truth: PASS
+    generated_index_rebuild: PASS
+remaining_before_H14_exit:
+  - Run the runtime against the actual branch docs-v2 corpus after persistence and correct only failures relevant to the minimal boundary.
+  - Reconcile or retire pre-H12 executable Harness validators that enforce obsolete Task Capsule/legacy-docs authority semantics before wiring any CI.
+workflow_ci: NOT_AUTHORIZED

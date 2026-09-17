@@ -1,4 +1,4 @@
-version: 5
+version: 6
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
@@ -6,60 +6,51 @@ branch: meta/docs-v2-m7-pilot
 last_updated: 2026-09-17
 program:
   status: ACTIVE
-  current_phase: H13
-  current_phase_state: COMPLETE
+  current_phase: H14
+  current_phase_state: IN_PROGRESS
   completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13]
 control_plane:
   contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 3}
-  rule: meaningful design work is the visible unit; runtime reliability bookkeeping is internal
-completed_pilot_scope: {scope_id: H12-RC-CURATION-MVP, state_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml, exit_gate: G2, result: PASS}
+  rule: meaningful design work is visible; runtime reliability bookkeeping is internal
 current_work:
-  phase: H13
-  name: Minimal Harness runtime planning
-  state: COMPLETE
-  result_ref: docs-v2/meta/h13-minimal-runtime-plan.yaml
-  result: PASS
-next_meaningful_work:
-  requires_authorization: true
-  option: implement-minimal-harness-runtime
-  scope: runtime code and executable regression tests for the accepted H13 boundary
-  reason: H13 planning is complete; current restrictions explicitly prohibit runtime/test implementation.
+  phase: H14
+  name: Minimal Harness runtime implementation
+  state: IN_PROGRESS
+  plan_ref: docs-v2/meta/h13-minimal-runtime-plan.yaml
+  implementation_state_ref: docs-v2/meta/h14-runtime-implementation.yaml
+  next: run the persisted runtime against the actual docs-v2 corpus and reconcile relevant failures
+runtime_authorization:
+  granted: true
+  source: explicit stakeholder instruction on 2026-09-17
+  allowed: [Harness runtime code, Harness executable regression tests, Harness runtime dependency declaration, docs-v2 state/evidence]
+  forbidden: [product implementation, product tests, workflow-ci changes, namespace cutover, merge]
 documentation_authority:
   evolving_authority: docs-v2/
   legacy_source: docs/
   legacy_status: frozen-read-only-migration-input
   reverse_sync: forbidden
   namespace_cutover: deferred
-  target_after_namespace_cutover: {authoritative_docs: docs/, legacy_docs: docs-legacy/}
 carry_forward:
-  - Harness guides design from problem/discovery to implementation readiness before code.
-  - docs-v2/ is authoritative evolving design documentation during migration; docs/ is frozen legacy evidence only.
-  - Product code/tests cannot reconstruct missing design truth during documentation design.
   - Human-owned truth is never invented; material gaps become questions/blockers.
-  - Domain stories/process evidence precede settled slices/boundaries; Strategic and Process Discovery may refine each other.
-  - Tactical acceptance requires current relevant strategic boundaries and process evidence.
   - Design documentation is a graph; affected-only revalidation replaces waterfall restart.
-  - Downstream design conforms to current applicable upstream authoritative constraints; clear divergence is REWORK, not automatically a human question.
-  - Readiness gates are lifecycle guarantees, not separate execution units; current unrelated evidence is reused.
+  - Downstream design conforms to applicable upstream authoritative constraints.
+  - Readiness gates are lifecycle guarantees, not separate execution units.
   - Operational IDs, fingerprints, execution bases, receipts, caching and atomicity are infrastructure details.
-  - H12 demonstrated the corrected flow through G2 on Resource Catalogue curation without Task Capsule/gate transaction ceremony.
-  - H13 selects a single repository-local runtime boundary with deterministic validation/impact/readiness core plus thin Git persistence; generated indexes/caches are rebuildable and non-authoritative.
+  - H13 selected a single repository-local runtime boundary with deterministic validation/impact/readiness core plus thin Git persistence.
+  - H14 runtime persistence may write only docs-v2/** even though runtime/test implementation itself lives under tools/.
 restrictions:
   product_implementation_authorization: none
-  executable_test_change_authorization: none
-  runtime_implementation_authorization: none
+  product_test_change_authorization: none
+  harness_runtime_implementation_authorization: granted-H14
+  harness_executable_test_authorization: granted-H14
   workflow_ci_change_authorization: none
   namespace_cutover_authorization: false
   merge_authorization: false
-blockers:
-  - id: H13-B-RUNTIME-AUTHORIZATION
-    kind: authorization-boundary
-    statement: Runtime implementation and executable tests require explicit stakeholder authorization.
+blockers: []
 resume_protocol:
-  - Read this file first.
-  - Read roadmap.yaml and docs-v2/meta/h13-minimal-runtime-plan.yaml.
-  - Treat H12 pilot artifacts only as evidence for the accepted runtime boundary unless new design evidence requires reopening them.
+  - Read this file first, then roadmap.yaml, then the H14 implementation state.
   - Treat docs/ only as frozen migration evidence; never edit it.
-  - Do not implement runtime code or executable tests until explicit authorization is granted.
-  - If runtime implementation is authorized, implement only the accepted minimal boundary first and validate with the listed acceptance tests before adding architecture.
-  - Do not add Task Capsule, separate gate transaction, daemon/service, database or CI dependency without demonstrated need and explicit affected design change.
+  - Continue only the accepted minimal runtime boundary; do not add Task Capsule, separate gate transaction, daemon/service, database or CI dependency.
+  - Run changed/affected validation rather than global semantic ceremony.
+  - Runtime persistence of canonical design is restricted to docs-v2/** and must fail on stale repository basis.
+  - Product code/tests remain outside H14 authority and cannot supply missing design truth.
