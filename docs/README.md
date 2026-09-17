@@ -2,9 +2,9 @@
 
 Status: CANONICAL.
 
-`docs-v2/` is the sole current documentation authority for NAPMS after H20 cutover. It contains the machine-readable linked design graph, Harness specifications and durable workstream state used to take design from problem framing through implementation readiness.
+`docs/` is the sole current documentation authority for NAPMS. It contains the machine-readable linked design graph, Harness specifications and durable workstream state used to take design from problem framing through implementation readiness.
 
-`docs/` is retired, frozen migration evidence only. It cannot override accepted truth here and must not receive new design truth.
+`docs-legacy/` is retired, frozen pre-cutover migration evidence only. It cannot override accepted truth in `docs/` and must not receive new design truth.
 
 ## Start here
 
@@ -36,4 +36,4 @@ The strategic NAPMS DDD baseline is canonical here. The selected first-MVP journ
 - changed design is revalidated through its affected semantic graph;
 - operational Harness bookkeeping stays behind the design boundary rather than becoming a design process of its own.
 
-H20 completed the authority cutover on 2026-09-17. The old `docs/` tree remains only as explicitly retired evidence so there is one normal documentation authority: this namespace.
+H20 authority cutover and its physical namespace normalization completed on 2026-09-17. Normal project documentation is now simply `docs/`; the former documentation tree is retained only under `docs-legacy/` as explicitly retired evidence.
