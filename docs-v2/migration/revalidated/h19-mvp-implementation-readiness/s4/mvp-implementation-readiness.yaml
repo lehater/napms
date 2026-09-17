@@ -1,0 +1,125 @@
+anchor_id: NAPMS-S4-FIRST-MVP-IMPLEMENTATION-READINESS
+type_id: implementation-plan
+owner_stage: S4
+scope: {scope_id: H19-FIRST-MVP-IMPLEMENTATION, product_area: Complete first MVP journey, lifecycle_boundary: S4 Implementation Design / Implementation Readiness}
+status: CANDIDATE
+canonical_payload:
+  goal: Make the accepted first-MVP journey directly implementable and verifiable without reopening product, domain or system architecture decisions.
+  implementation_boundary:
+    includes: [browser workflow, HTTP/JSON application API, modular-monolith application/domain modules, PostgreSQL persistence, Authority Management admission, complete vendor-neutral policy materialization, table projection, CSV export]
+    excludes: [provider-specific rendering, Network Enforcement Placement, Access Policy Realization, Network Environment Operations, Technical Access Evidence ingestion or recognition, external IdP, distributed services]
+    rule: Implement one end-to-end vertical journey; module ownership remains the accepted S2/S3 ownership and is not replaced by feature-local duplicate models.
+  application_api:
+    contract: One OpenAPI document is the canonical frontend/backend contract.
+    session:
+      login: Establish authenticated server-side session from local username/password credentials.
+      caller_identity: Protected operations derive actor identity from the session; actor identity is not accepted as a command field.
+    operations:
+      - {id: resources.create, method: POST, path: /api/resources, intent: Create Resource with optional current AddressSpace, owner: Resource Catalogue}
+      - {id: resources.list, method: GET, path: /api/resources, intent: List Resources needed by MVP authoring, owner: Resource Catalogue}
+      - {id: resources.set-address-space, method: PUT, path: '/api/resources/{resourceId}/address-space', intent: Establish or replace current HostAddress or Prefix realization, owner: Resource Catalogue}
+      - {id: applications.create, method: POST, path: /api/applications, intent: Create ApplicationDefinition, owner: Application Communication Catalogue}
+      - {id: components.create, method: POST, path: '/api/applications/{applicationId}/components', intent: Add Component to ApplicationDefinition, owner: Application Communication Catalogue}
+      - {id: interactions.create, method: POST, path: '/api/applications/{applicationId}/interactions', intent: Create directed same-Application Interaction, owner: Application Communication Catalogue}
+      - {id: interaction-revisions.publish, method: POST, path: '/api/interactions/{interactionId}/revisions', intent: Publish immutable vendor-neutral traffic revision containing one or more complete alternatives, owner: Application Communication Catalogue}
+      - {id: deployments.create, method: POST, path: /api/component-deployments, intent: Bind one Component to one Resource as concrete deployment, owner: Application Deployment}
+      - {id: business-processes.create, method: POST, path: /api/business-processes, intent: Create BusinessProcess used by MVP justification, owner: Business Connectivity}
+      - {id: connectivity-needs.create, method: POST, path: '/api/business-processes/{businessProcessId}/connectivity-needs', intent: Create current Process-backed ConnectivityNeed for stable Interaction, owner: Business Connectivity}
+      - {id: policy-rules.propose, method: POST, path: /api/policy-rules, intent: Create or address rule for directed deployment pair and submit Pending RuleChange using exact revision and current ConnectivityNeed, owner: Access Policy}
+      - {id: rule-changes.decide, method: POST, path: '/api/policy-rules/{policyRuleId}/changes/{ruleChangeId}/decision', intent: Accept or reject Pending RuleChange, owner: Access Policy}
+      - {id: policy-rules.withdraw, method: POST, path: '/api/policy-rules/{policyRuleId}/withdrawal', intent: Withdraw current effectiveness while preserving history, owner: Access Policy}
+      - {id: policy-export.table, method: GET, path: /api/policy-export, intent: Return complete current vendor-neutral materialization or explicit Unresolved causes, owner: Policy Export composition}
+      - {id: policy-export.csv, method: GET, path: /api/policy-export.csv, intent: Return CSV representation of the same successful materialization semantics, owner: Policy Export composition}
+    outcome_rules:
+      - Mutation validation failures are explicit non-success application outcomes and do not partially mutate owner state.
+      - Protected mutation without effective authority is denied fail-closed.
+      - Policy export has two semantic outcomes: complete Success or Unresolved with causes; partial-success omission is forbidden.
+      - Stable identifiers returned by create/publish operations are the references used by later journey steps.
+  module_contracts:
+    Resource Catalogue: [CreateResource, SetCurrentAddressSpace, ResolveResource, ListResources]
+    Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionContractRevision, ResolveComponent, ResolveInteraction, ResolveInteractionContractRevision]
+    Application Deployment: [CreateComponentDeployment, ResolveComponentDeployment]
+    Business Connectivity: [CreateBusinessProcess, CreateConnectivityNeed, ResolveCurrentConnectivityNeed]
+    Access Policy: [SubmitRuleChange, DecideRuleChange, WithdrawPolicyRule, ListEffectivePolicyRules]
+    Authority Management: [Admit(actor, action, scope)]
+    Policy Export composition: [MaterializeCurrentPolicy]
+    ownership_rule: Contracts expose owner semantics; callers never read or mutate another module's tables as an integration mechanism.
+  persistence_realization:
+    database: PostgreSQL
+    schema_ownership:
+      resource_catalogue: [resource, resource_address_space]
+      application_communication_catalogue: [application_definition, component, interaction, interaction_contract_revision]
+      application_deployment: [component_deployment]
+      business_connectivity: [business_process, connectivity_need]
+      access_policy: [policy_rule, rule_change]
+      authority_management: [actor, authority_assignment]
+    rules:
+      - Primary keys are stable owner identities; foreign semantic references across modules are stored as referenced IDs but validated/resolved through owner contracts.
+      - Immutable InteractionContractRevision rows are append-only after publication.
+      - PolicyRule decision history is retained; effectiveRevisionRef is current state and does not erase RuleChange history.
+      - ComponentDeployment identity retains fixed componentRef and resourceRef; retirement/history is not represented by destructive replacement.
+      - Current AddressSpace is owner state in Resource Catalogue; materialization reads it through RC semantics rather than copying it into policy state.
+      - Migrations are organized by owning module and applied together by backend deployment.
+  use_case_sequence:
+    - {step: 1, action: Author Resources and current AddressSpace, modules: [Authority Management, Resource Catalogue]}
+    - {step: 2, action: Author Application Components directed Interaction and immutable traffic revision, modules: [Authority Management, Application Communication Catalogue]}
+    - {step: 3, action: Bind source and destination Components to Resources as ComponentDeployments, modules: [Authority Management, Application Deployment, Application Communication Catalogue, Resource Catalogue]}
+    - {step: 4, action: Establish BusinessProcess and current ConnectivityNeed for the Interaction, modules: [Authority Management, Business Connectivity, Application Communication Catalogue]}
+    - {step: 5, action: Submit RuleChange for exact deployment pair and exact revision with current Need basis, modules: [Authority Management, Access Policy, Application Deployment, Application Communication Catalogue, Business Connectivity]}
+    - {step: 6, action: Decide Pending RuleChange and establish effective PolicyRule only on Accepted applicable outcome, modules: [Authority Management, Access Policy]}
+    - {step: 7, action: Materialize all current effective rules using exact revision deployments Resources and current AddressSpace, modules: [Policy Export composition, Access Policy, Application Communication Catalogue, Application Deployment, Resource Catalogue]}
+    - {step: 8, action: Render one successful materialization as table and CSV without semantic divergence, modules: [Policy Export composition, frontend]}
+  frontend_flow:
+    principle: UI follows the accepted journey and consumes the application API; it does not recreate domain authorization or invariant logic as authoritative truth.
+    screens_or_steps: [Resources, Application and Components, Interactions and Traffic, Deployments, Business Connectivity, Policy Rule and Decision, Current Policy Export]
+    behavior: Each step exposes stable references/results needed by the next step; validation errors remain attached to the operation that produced them; export Unresolved causes are visible rather than hidden.
+  implementation_slices:
+    - {slice: foundation, outcome: backend composition root PostgreSQL migration runner session authentication Authority Management admission and OpenAPI boundary can support protected use cases}
+    - {slice: authoring, outcome: RC ACC AD and Business Connectivity authoring steps persist owner state and expose the references required by policy creation}
+    - {slice: policy, outcome: Access Policy submission decision withdrawal and effective-rule query enforce accepted lifecycle and cross-module validation}
+    - {slice: export, outcome: composition materializes complete effective policy and exposes semantically identical table JSON and CSV representations}
+    - {slice: frontend, outcome: browser workflow drives the complete journey through the OpenAPI application boundary}
+    - {slice: verification, outcome: automated module contract integration and end-to-end tests prove the accepted journey and failure semantics}
+    dependency_rule: Slices are implementation ordering aids inside one vertical design; they are not independent product milestones and do not authorize partial semantic substitutes.
+  verification_intent:
+    module:
+      - ACC rejects cross-Application Interaction and preserves immutable published revisions.
+      - AD deployment binds exactly one ComponentRef and one ResourceRef and keeps them fixed for its identity.
+      - Business Connectivity requires Process-backed Need and does not treat Need as authorization.
+      - Access Policy preserves previous effective revision for Pending or Rejected changes and advances it only on Accepted applicable change.
+      - Authority Management fails closed for missing or ambiguous protected-action authority.
+    integration:
+      - Policy submission resolves exact deployments revision endpoint compatibility and current ConnectivityNeed through module contracts before owned transition.
+      - Materialization joins EffectivePolicyRule to exact ACC revision AD deployments and current RC AddressSpace without cross-module table mutation.
+      - Missing required AddressSpace or other required materialization input yields Unresolved and no partial successful export.
+      - Prefix input remains Prefix semantics and is not expanded to host rows.
+      - Withdrawal removes the rule from current export while retaining policy history.
+    end_to_end:
+      - Create two Resources with HostAddresses; create one Application with two Components and HTTPS Interaction; publish TCP destination 443 revision; create two deployments; create Process-backed Need; submit and accept RuleChange; policy table contains the expected row; CSV preserves the same meaning.
+      - Reject a later revision change and verify the previously accepted revision remains in current export.
+      - Remove or omit a required current AddressSpace and verify export is Unresolved rather than partial.
+      - Attempt deliberate RuleChange without current Process-backed ConnectivityNeed and verify submission is rejected.
+      - Attempt protected mutation without admission and verify no owner state changes.
+  completion_definition:
+    - One OpenAPI contract covers every application operation required by the accepted journey and its explicit outcomes.
+    - PostgreSQL migrations establish only module-owned persistence needed by the journey.
+    - Backend module interfaces preserve accepted semantic ownership and no internal HTTP boundary is introduced.
+    - Browser workflow completes the journey without requiring hidden/manual state fabrication.
+    - Automated verification covers the accepted happy path plus rejection withdrawal authorization and Unresolved export semantics.
+    - No implementation step requires deciding new product/domain/system-architecture truth.
+  open_questions: []
+  logical_derivation:
+    basis_refs: [{kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}, {kind: anchor-current, anchor_id: NAPMS-S3-FIRST-MVP-SYSTEM-ARCHITECTURE}]
+    derivation_kind: implementation-design-from-accepted-s1-s3
+    rationale: Translate the accepted end-to-end MVP semantics and system architecture into one exact implementation and verification shape while preserving owner boundaries and adding no new business semantics.
+provenance:
+  origin_kind: derived
+  source_refs: [{kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}, {kind: anchor-current, anchor_id: NAPMS-S3-FIRST-MVP-SYSTEM-ARCHITECTURE}]
+  authority_basis: accepted-upstream-design
+  recorded_at: '2026-09-17'
+semantic_refs:
+  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S2-FIRST-MVP-JOURNEY-DOMAIN-MODEL}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+  - {relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S3-FIRST-MVP-SYSTEM-ARCHITECTURE}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}
+semantic_fingerprint: pending-h19-validation
+validation: {freshness: STALE, evidence_ref: null, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: pending-H19-validation}
