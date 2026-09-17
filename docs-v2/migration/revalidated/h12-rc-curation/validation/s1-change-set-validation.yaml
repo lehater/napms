@@ -1,0 +1,137 @@
+version: 1
+kind: validation-evidence
+schema_version: cp-v1
+evidence_id: H12-T3-VE-S1-CHANGESET-1
+evidence_kind: change-set-anchor-validation
+evaluation_id: H12-T3-EVAL-S1-CHANGESET-1
+operation_id: H12-T3-OP-1
+scope:
+  scope_id: H12-RC-CURATION-MVP
+  lifecycle_stage: S1
+execution_basis_fingerprint: sha256-jcs-v1:559afe8f9c594b3e5b229d237b89e261c94b462586c7c56a537d116106fbcebf
+validation_profile_id: change-set-anchor-acceptance
+validation_profile_version: cp-v1
+targets:
+- anchor_id: NAPMS-S1-RC-CURATION-BEHAVIOR
+  semantic_fingerprint: sha256-jcs-v1:1c70355ed0db0c2cf67d9167bf662f6351d665080ea5f4a3ac68e8e9821d2722
+- anchor_id: NAPMS-S1-RC-CURATION-AUTHORIZATION
+  semantic_fingerprint: sha256-jcs-v1:abdfa0128b7311173305ca8e3641d5b1a96cf0076b726bd386e9324cf6e68f2c
+- anchor_id: NAPMS-S1-RC-CURATION-INTEGRITY
+  semantic_fingerprint: sha256-jcs-v1:e505118d22c45bd930386310d38cb9939697df774293a7b92505e9a6a8f03460
+execution_basis:
+  task_or_gate_id: H12-T3
+  operation_id: H12-T3-OP-1
+  durable_state_ref: docs-v2/migration/revalidated/h12-rc-curation/lifecycle-scope-state.yaml
+  durable_state_fingerprint: git-blob-sha1:e0f32375b2e2aae6af3c59af70a0d41c35b77c65
+  expected_repository_head: git-commit:81d5b110dd883184d1bd3397f515d9a9930a1f51
+  authority_closure:
+  - current accepted S0 anchors/evidence for H12-RC-CURATION-MVP
+  - H12-T3 canonical docs/requirements sources
+  - active Harness contracts required for H3/H4/H5/H7 change-set acceptance
+  - H12 migration finding for the known downstream address-cardinality conflict
+  consumed_inputs:
+  - ref: NAPMS-S0-RC-CURATION-PROBLEM
+    fingerprint: sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
+  - ref: NAPMS-S0-RC-CURATION-JOURNEY
+    fingerprint: sha256-jcs-v1:5401681959c4ef07ce2b990b28ff2df1ee2eb5756b3d6355b641ab4f0f5bd475
+  - ref: H12-P0-VE-S0-CHANGESET-1
+    fingerprint: git-blob-sha1:8c31e902fa519ced537f50a31bbc5d5d12b62f2b
+  - ref: docs/requirements/catalogue-curation.md
+    fingerprint: git-blob-sha1:92833e29efc3bfdb6503e5b600e48296b8fb6041
+  - ref: docs/requirements/catalogue-curation-acceptance-examples.md
+    fingerprint: git-blob-sha1:c98ab5174740b890c9b4b240530f1b9eec89cc91
+  - ref: docs/requirements/catalogue-curation-security.md
+    fingerprint: git-blob-sha1:cef21bf26c44aae1b02e3313149278606892d26c
+  contract_versions:
+    DOCS-V2-HARNESS-CONTROL-PLANE: 1
+    DOCS-V2-DESIGN-ANCHOR-CONTRACT: 1
+    DOCS-V2-ARTIFACT-TYPE-REGISTRY: 2
+    DOCS-V2-DEPENDENCY-REGISTRY-IMPACT: 1
+    DOCS-V2-DESIGN-DERIVATION-LINEAGE: 1
+    DOCS-V2-HUMAN-KNOWLEDGE-ACQUISITION: 1
+    DOCS-V2-VALIDATION-GATE-ENGINE: 1
+    DOCS-V2-LIFECYCLE-STATE-MACHINE: 1
+    DOCS-V2-NAPMS-MIGRATION-REVALIDATION: 2
+  validation_profile:
+    id: change-set-anchor-acceptance
+    version: cp-v1
+  semantic_judges:
+    SJ-ANCHOR-CONSISTENCY: cp-v1
+dependency_snapshot:
+  NAPMS-S1-RC-CURATION-BEHAVIOR:
+  - target_kind: anchor
+    relation: DERIVES_FROM
+    anchor_id: NAPMS-S0-RC-CURATION-PROBLEM
+    semantic_fingerprint: sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
+  - target_kind: anchor
+    relation: REFINES
+    anchor_id: NAPMS-S0-RC-CURATION-JOURNEY
+    semantic_fingerprint: sha256-jcs-v1:5401681959c4ef07ce2b990b28ff2df1ee2eb5756b3d6355b641ab4f0f5bd475
+  NAPMS-S1-RC-CURATION-AUTHORIZATION:
+  - target_kind: anchor
+    relation: DERIVES_FROM
+    anchor_id: NAPMS-S0-RC-CURATION-PROBLEM
+    semantic_fingerprint: sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
+  - target_kind: anchor
+    relation: REFINES
+    anchor_id: NAPMS-S0-RC-CURATION-JOURNEY
+    semantic_fingerprint: sha256-jcs-v1:5401681959c4ef07ce2b990b28ff2df1ee2eb5756b3d6355b641ab4f0f5bd475
+  NAPMS-S1-RC-CURATION-INTEGRITY:
+  - target_kind: anchor
+    relation: DERIVES_FROM
+    anchor_id: NAPMS-S0-RC-CURATION-PROBLEM
+    semantic_fingerprint: sha256-jcs-v1:b7b3162275fcd1df95904284f6846412278f332d3393e2aa8e9786ac6e914b12
+  - target_kind: anchor
+    relation: REFINES
+    anchor_id: NAPMS-S0-RC-CURATION-JOURNEY
+    semantic_fingerprint: sha256-jcs-v1:5401681959c4ef07ce2b990b28ff2df1ee2eb5756b3d6355b641ab4f0f5bd475
+supplementary_process_state:
+- id: H12-S1-RC-CURATION-EXAMPLES
+  ref: docs-v2/migration/revalidated/h12-rc-curation/s1/example-records.yaml
+  authority: concrete-only-H7-examples
+- id: H12-S1-RC-CURATION-DOWNSTREAM-CONFLICTS
+  ref: docs-v2/migration/revalidated/h12-rc-curation/s1/downstream-conflicts.yaml
+  authority: process-state-conflict-marker
+validator_bundle:
+  deterministic:
+    DV-HARNESS-SELF: h8-v1
+    DV-EXECUTION-BASIS: h8-v1
+    DV-FORMAT-SCHEMA: h8-v1
+    DV-TYPE-OWNER: h8-v1
+    DV-APPLICABILITY: h8-v1
+    DV-LIFECYCLE: h8-v1
+    DV-FINGERPRINT: h8-v1
+    DV-REGISTRY: h8-v1
+    DV-REFERENCE: h8-v1
+    DV-DEPENDENCY-GRAPH: h8-v1
+    DV-LINEAGE: h8-v1
+    DV-AUTHORITY: h8-v1
+    DV-FRESHNESS: h8-v1
+  semantic:
+    SJ-ANCHOR-CONSISTENCY: cp-v1
+deterministic_result:
+  aggregate: PASS
+  finding_codes: []
+  note: Specification-guided manual pre-runtime evaluation. Three same-stage/same-scope S1 anchors were checked as one change
+    set; graph/lineage/freshness checks were compiled once where equivalent. H7 example records remain concrete-only process
+    state and the downstream cardinality conflict remains non-authoritative process state.
+semantic_result:
+  judge_id: SJ-ANCHOR-CONSISTENCY
+  judge_version: cp-v1
+  outcome: PASS
+  finding_codes: []
+  supporting_refs:
+  - docs/requirements/catalogue-curation.md@92833e29efc3bfdb6503e5b600e48296b8fb6041
+  - docs/requirements/catalogue-curation-security.md@cef21bf26c44aae1b02e3313149278606892d26c
+  - docs/requirements/catalogue-curation-acceptance-examples.md@c98ab5174740b890c9b4b240530f1b9eec89cc91
+  - NAPMS-S0-RC-CURATION-PROBLEM
+  - NAPMS-S0-RC-CURATION-JOURNEY
+  rationale_summary: The change set refines accepted S0 problem/journey truth into current observable Resource-curation behavior,
+    explicit mutation-admission behavior and history/integrity qualities. It preserves the canonical one-or-more technical-address
+    requirement, keeps concrete examples non-generalized, records the later single-AddressSpace narrowing only as a downstream
+    conflict, and introduces no S2 domain model or S3 realization choice.
+aggregate_result: PASS
+recorded_at: '2026-09-17'
+diagnostic_summary: 'H12-T3 S1 reconstruction under control-plane v1. No H7 question was required: current S1 truth follows
+  directly from canonical requirements and explicit example-precedence rules. G1 was not evaluated.'
+evidence_fingerprint: sha256-jcs-v1:a9cc027cda2389db7cde22e086bc47d821b67415c4c482960c52642c9cb3a0ae

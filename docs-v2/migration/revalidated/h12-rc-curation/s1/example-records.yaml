@@ -1,0 +1,76 @@
+version: 1
+kind: h7-example-record-set
+id: H12-S1-RC-CURATION-EXAMPLES
+classification: process-state
+canonical_product_domain_truth: false
+scope:
+  scope_id: H12-RC-CURATION-MVP
+  lifecycle_stage: S1
+protocol:
+  id: DOCS-V2-HUMAN-KNOWLEDGE-ACQUISITION
+  version: 1
+source:
+  path: docs/requirements/catalogue-curation-acceptance-examples.md
+  blob_sha: c98ab5174740b890c9b4b240530f1b9eec89cc91
+  status_in_source: accepted examples for I27 Stage 0
+  canonical_behavior_owner: docs/requirements/catalogue-curation.md
+examples:
+- example_id: I27-RC-EXAMPLE-A
+  example_kind: acceptance-example
+  concrete_situation: An authorized curator onboards Resource `checkout-web-prod` with endpoint `10.10.10.10` and Responsibility
+    Scope `payments-team` as part of the wider application/resource onboarding example.
+  observed_or_expected_outcome: The Resource becomes available to downstream connectivity discovery according to existing
+    catalogue visibility/scope rules; client-authored stable UUIDs, provenance refs and database fact IDs are not required.
+  provenance_ref: docs/requirements/catalogue-curation-acceptance-examples.md#Example-A
+  generalization_status: concrete-only
+  related_requirement_refs:
+  - NAPMS-S1-RC-CURATION-BEHAVIOR
+  - NAPMS-S1-RC-CURATION-AUTHORIZATION
+  scope_note: Application/Component/Deployment portions remain outside this bounded Resource Catalogue S1 slice.
+- example_id: I27-RC-EXAMPLE-F
+  example_kind: acceptance-example
+  concrete_situation: Resource `orders-prod` moves from address `10.20.20.20` to `10.20.20.30`.
+  observed_or_expected_outcome: The current Resource Realization Version is ended/replaced and a new temporal realization
+    is created while Resource identity remains unchanged; historical as-of behavior may still resolve the old address.
+  provenance_ref: docs/requirements/catalogue-curation-acceptance-examples.md#Example-F
+  generalization_status: concrete-only
+  related_requirement_refs:
+  - NAPMS-S1-RC-CURATION-BEHAVIOR
+  - NAPMS-S1-RC-CURATION-INTEGRITY
+  generalization_guard: This one-address replacement example does not establish a universal maximum-one address cardinality.
+- example_id: I27-RC-EXAMPLE-G
+  example_kind: acceptance-example
+  concrete_situation: A person is recorded as `TechnicalOwner` for Resource `orders-prod`.
+  observed_or_expected_outcome: The person may be displayed as an operational contact, but that relation alone grants no Resource
+    mutation or other protected policy action.
+  provenance_ref: docs/requirements/catalogue-curation-acceptance-examples.md#Example-G
+  generalization_status: concrete-only
+  related_requirement_refs:
+  - NAPMS-S1-RC-CURATION-AUTHORIZATION
+- example_id: I27-RC-EXAMPLE-I
+  example_kind: acceptance-example
+  concrete_situation: A Resource is retired.
+  observed_or_expected_outcome: The example expects it to stop being selectable as Active for new authoring while historical
+    bindings, realization facts and policy references remain readable where existing contracts permit.
+  provenance_ref: docs/requirements/catalogue-curation-acceptance-examples.md#Example-I
+  generalization_status: concrete-only
+  related_requirement_refs:
+  - NAPMS-S1-RC-CURATION-INTEGRITY
+  generalization_guard: The canonical requirement still lists catalogue retirement/inactivation semantics as a blocking domain
+    decision; this example is preserved and is not promoted to a universal retirement rule.
+- example_id: I27-RC-EXAMPLE-J
+  example_kind: edge-case
+  concrete_situation: Two browser sessions edit the same catalogue entity; session A succeeds and session B later submits
+    against an older version.
+  observed_or_expected_outcome: The second mutation receives an explicit concurrency conflict rather than silently overwriting
+    A's change.
+  provenance_ref: docs/requirements/catalogue-curation-acceptance-examples.md#Example-J
+  generalization_status: concrete-only
+  related_requirement_refs:
+  - NAPMS-S1-RC-CURATION-INTEGRITY
+  generalization_guard: The exact HTTP version/ETag or command-concurrency representation remains a later design decision.
+rules:
+  examples_are_not_universal_rules: true
+  examples_are_not_design_anchors: true
+  same_example_not_copied_into_multiple_anchors: true
+recorded_at: '2026-09-17'
