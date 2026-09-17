@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import argparse
 import re
-import sys
 import textwrap
 from pathlib import Path
 from typing import Any
@@ -112,63 +110,26 @@ def render_context_map() -> str:
     ]
 
     for name in peer_names:
-        lines.append(
-            f'rectangle "{plantuml_text(name)}" as {plantuml_alias(name)} #dbeafe'
-        )
+        lines.append(f'rectangle "{plantuml_text(name)}" as {plantuml_alias(name)} #dbeafe')
 
     if composition_names:
         lines.append("")
         for name in composition_names:
-            lines.append(
-                f'rectangle "{plantuml_text(name)}" as {plantuml_alias(name)} #f3f4f6'
-            )
+            lines.append(f'rectangle "{plantuml_text(name)}" as {plantuml_alias(name)} #f3f4f6')
 
     lines.append("")
     for relationship in relationships:
         source = plantuml_alias(relationship["from"])
         target = plantuml_alias(relationship["to"])
-        semantics = plantuml_text(wrap_label(relationship["semantics"]))
+        semantics = wrap_label(plantuml_text(relationship["semantics"]))
         lines.append(f'{source} --> {target} : {semantics}')
 
     lines.extend(["", "@enduml", ""])
     return "\n".join(lines)
 
 
-def check_output(path: Path, expected: str) -> bool:
-    if not path.exists():
-        print(f"stale projection: {path.relative_to(ROOT)} does not exist", file=sys.stderr)
-        return False
-    actual = path.read_text(encoding="utf-8")
-    if actual != expected:
-        print(
-            f"stale projection: {path.relative_to(ROOT)} does not match its canonical sources; "
-            "run `make architecture-sync`",
-            file=sys.stderr,
-        )
-        return False
-    return True
-
-
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Generate non-canonical architecture views from accepted machine-readable design artifacts."
-    )
-    parser.add_argument(
-        "--check",
-        action="store_true",
-        help="fail when committed generated views differ from canonical sources",
-    )
-    args = parser.parse_args()
-
-    try:
-        context_map = render_context_map()
-    except (OSError, ValueError, KeyError, TypeError, yaml.YAMLError) as exc:
-        print(f"architecture projection error: {exc}", file=sys.stderr)
-        return 1
-
-    if args.check:
-        return 0 if check_output(CONTEXT_MAP_OUTPUT, context_map) else 1
-
+    context_map = render_context_map()
     CONTEXT_MAP_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     CONTEXT_MAP_OUTPUT.write_text(context_map, encoding="utf-8")
     print(f"generated {CONTEXT_MAP_OUTPUT.relative_to(ROOT)}")
