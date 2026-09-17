@@ -2,16 +2,9 @@ anchor_id: NAPMS-S2-BC-ACCESS-POLICY-REALIZATION
 type_id: bounded-context
 owner_stage: S2
 scope: {scope_id: H16-NAPMS-STRATEGIC, product_area: NAPMS whole-domain strategic landscape, lifecycle_boundary: S2 Strategic domain design}
-status: CANDIDATE
-canonical_payload:
-  name: Access Policy Realization
-  purpose: Own source-neutral comparison of required and configured effective access.
-  responsibility: [required-vs-configured assessment, semantic delta, accepted additive change design and verification]
-  boundary_basis: {cohesion_rationale: Assessment delta and verified source-neutral change intent share one realization language., separation_rationale: Provider syntax rendering and target mutation remain integration/NEO responsibilities., rejected_boundary_alternatives: [provider-native syntax inside APR core, execution success as convergence proof]}
-  capability_selectors: [{anchor_id: NAPMS-S2-NAPMS-CAPABILITY-MAP, item_id: CAP-ACCESS-POLICY-REALIZATION}]
-  model_language_ownership: {owned_terms_or_model_scope: [configured effective policy, required policy comparison, missing, excess, VerifiedChangeIntent], explicitly_external_terms: [provider syntax, target mutation]}
-  logical_derivation: {basis_refs: [{kind: evidence, path: docs/domain/strategic-model.json}], derivation_kind: migration-revalidation, rationale: Re-express the accepted source-neutral realization boundary., method_rule_ids: [DDD-MR-BOUNDED-CONTEXT-DERIVATION]}
-provenance: {origin_kind: imported-current-docs, source_refs: [{kind: repository-file, path: docs/domain/strategic-model.json, blob_sha: 4d8e8385cfd6f6e71ee4a8ab6d5bf8186766cdc7}], authority_basis: imported-current-docs-ref-before-cutover, recorded_at: '2026-09-17'}
-semantic_refs: []
-semantic_fingerprint: pending-h16-validation
-validation: {freshness: STALE, evidence_ref: null, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: pending-H16-validation}
+status: ACCEPTED
+canonical_payload: {name: Access Policy Realization, purpose: Own required-versus-configured assessment change design and convergence verification., responsibility: [configured policy interpretation input comparison, required-versus-configured assessment, VerifiedChangeIntent design, post-change convergence verification], boundary_basis: {cohesion_rationale: Comparison change intent and verification share realization semantics., separation_rationale: Provider rendering execution and desired policy ownership remain external., rejected_boundary_alternatives: [treat execution success as convergence]}, capability_selectors: [{anchor_id: NAPMS-S2-NAPMS-CAPABILITY-MAP, item_id: CAP-ACCESS-POLICY-REALIZATION}], model_language_ownership: {owned_terms_or_model_scope: [ConfiguredEffectivePolicySnapshot, VerifiedChangeIntent, convergence], explicitly_external_terms: [PolicyRule, provider rendering, execution]}, logical_derivation: {basis_refs: [{kind: evidence, path: docs/domain/semantic-ownership.md}], derivation_kind: migration-revalidation, rationale: Preserve comparison and verification as distinct from provider execution., method_rule_ids: [DDD-MR-BOUNDED-CONTEXT-DERIVATION]}}
+provenance: {origin_kind: imported-current-docs, source_refs: [{kind: repository-file, path: docs/domain/semantic-ownership.md}], authority_basis: imported-current-docs-ref-before-cutover, recorded_at: '2026-09-17'}
+semantic_refs: [{relation: DERIVES_FROM, target: {kind: anchor-current, anchor_id: NAPMS-S2-NAPMS-CAPABILITY-MAP}, impact: semantic, rationale_ref: canonical_payload.logical_derivation.rationale}]
+semantic_fingerprint: h16-bc-apr-v1
+validation: {freshness: CURRENT, evidence_ref: docs-v2/migration/revalidated/h16-strategic/validation/s2-strategic-change-set-validation.yaml, evidence_target: NAPMS-S2-BC-ACCESS-POLICY-REALIZATION, validated_fingerprint: h16-bc-apr-v1, profile: changed-and-affected-design, profile_version: cp-v2, enforcement_status: harness-plus-semantic-review}

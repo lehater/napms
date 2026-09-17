@@ -1,4 +1,4 @@
-version: 15
+version: 16
 kind: meta-workstream-state
 id: DOCS-V2-HARNESS-STATE
 roadmap: docs-v2/meta/roadmap.yaml
@@ -6,25 +6,19 @@ branch: meta/docs-v2-m7-pilot
 last_updated: 2026-09-17
 program:
   status: ACTIVE
-  current_phase: H16
-  current_phase_state: MIGRATING_STRATEGIC_DDD
-  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15]
+  current_phase: H17
+  current_phase_state: ESTABLISHING_MVP_JOURNEY
+  completed_phases: [H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15, H16]
 control_plane:
   contract: {id: DOCS-V2-HARNESS-CONTROL-PLANE, path: docs-v2/spec/harness-control-plane.yaml, version: 1, revision: 3}
   rule: meaningful design work is visible; runtime reliability bookkeeping is internal
 current_work:
-  phase: H16
-  name: Whole-domain strategic DDD migration and revalidation
+  phase: H17
+  name: Narrow MVP journey S0-S2 revalidation
   state: IN_PROGRESS
-  predecessor_ref: docs-v2/meta/h15-integration-plan.yaml
-  next: extract the accepted whole-domain strategic DDD baseline from frozen docs evidence into canonical docs-v2 S2 anchors, reconciling the already-revalidated Resource Catalogue and Authority Management anchors rather than duplicating them
-  source_evidence:
-    - docs/domain/strategic-model.md
-    - docs/domain/strategic-model.json
-    - docs/domain/context-map.md
-    - docs/domain/capabilities.md
-    - docs/domain/semantic-ownership.md
-  target_scope: NAPMS strategic domain landscape across all target Bounded Contexts
+  predecessor_ref: docs-v2/migration/revalidated/h16-strategic/validation/s2-strategic-change-set-validation.yaml
+  next: establish the end-to-end MVP journey from resources plus application/components/interactions through an accepted policy rule to materialized/exported policy, then revalidate only participating S0-S2 semantics
+  target_scope: resources plus application/components/interactions -> policy rule -> materialized/exported policy
 documentation_authority:
   evolving_authority: docs-v2/
   legacy_source: docs/
@@ -35,13 +29,10 @@ carry_forward:
   - Human-owned truth is never invented; material gaps become questions/blockers.
   - Design documentation is a graph; affected-only revalidation replaces waterfall restart.
   - Downstream design conforms to applicable upstream authoritative constraints.
-  - Readiness gates are lifecycle guarantees not separate execution units.
-  - H14 minimal runtime and H15 shared docs-v2 validation entrypoint are complete and passing.
-  - Canonical design anchors may be YAML documents or Markdown documents with YAML front matter.
-  - Pre-H12 Task Capsule validators remain legacy-only and outside the docs-v2 validation path.
-  - H12 Resource Catalogue strategic truth already accepted in docs-v2 must be reconciled into the whole-domain strategic baseline, not replaced by stale legacy wording.
-  - Do not continue isolated Resource Catalogue S3 work until the whole-domain strategic baseline and narrow MVP journey are established.
-  - After strategic migration, tactical/requirements work narrows to the confirmed MVP journey: resources plus application/components/interactions -> policy rule -> materialized/exported policy.
+  - H16 whole-domain strategic DDD baseline is accepted in docs-v2; H12 Resource Catalogue and Authority Management anchors remain current overlapping truth.
+  - Strategic landscape remains broad while H17 tactical and requirements elaboration narrows to the MVP journey.
+  - Product code/tests remain outside design authority.
+  - Normal design work must not be dominated by Harness bookkeeping.
 restrictions:
   product_implementation_authorization: none
   product_test_change_authorization: none
@@ -51,9 +42,10 @@ restrictions:
 blockers: []
 resume_protocol:
   - Read this file first then roadmap.yaml.
-  - During H16 read only the frozen strategic DDD evidence directly needed for the current strategic anchor plus already-accepted docs-v2 anchors that overlap it.
+  - For H17 load the accepted H16 strategic anchors and only frozen requirements/domain evidence directly relevant to the MVP journey.
   - Treat docs/ only as frozen migration evidence; never edit it and never let it override accepted docs-v2 corrections.
-  - Materialize broad strategic S2 truth across the domain before resuming narrow MVP tactical/architecture work.
+  - Keep tactical and requirements elaboration narrow to the confirmed MVP journey while retaining broad strategic context.
   - Preserve the accepted minimal runtime boundary and use changed/affected validation.
   - Product code/tests remain outside current authority and cannot supply missing design truth.
-  - Ask the stakeholder only when migration exposes a material contradiction or missing human-owned strategic truth.
+  - Ask the stakeholder only when the MVP journey exposes a material contradiction or missing human-owned product/domain truth.
+blockers: []
