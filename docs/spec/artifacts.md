@@ -29,7 +29,7 @@ A decision record is owned by the stage that owns the truth being decided. The g
 1. Store knowledge in Git as source, not as screenshots or manually exported renderings.
 2. When a standard machine-readable notation adequately expresses the knowledge, that source is canonical.
 3. Markdown remains canonical for knowledge that is primarily narrative: problem framing, requirements, rationale, decisions and plans.
-4. Generated SVG/PNG/HTML/PDF views are projections unless an explicit consumer requires them as source; reproducible projections should normally not be committed.
+4. Generated SVG/PNG/HTML/PDF/diagram-source views are projections unless an explicit consumer requires them as source; reproducible projections should normally not be committed.
 5. Do not duplicate the same truth in multiple canonical artifacts. Cross-artifact views use references or generated projections.
 6. Artifact identity follows the owned concept, not a gate name. Passing G1/G2/etc. changes lifecycle state; it does not rename the artifact.
 
@@ -47,8 +47,8 @@ A decision record is owned by the stage that owns the truth being decided. The g
 | `requirements-glossary` | S1 | conditional: terminology ambiguity is material before domain discovery | Markdown | G1 |
 | `capability-map` | S2 | mandatory when strategic domain boundaries are being discovered/revalidated across more than one material capability | Markdown table or machine-readable mapping | G2; demonstrates capability grouping, semantic cohesion and candidate/accepted ownership rather than assuming BCs from legacy structure |
 | `domain-distillation` | S2 | conditional: multiple subdomains/capability clusters have materially different strategic importance or build/buy/invest treatment | Markdown or machine-readable classification | G2; records Core / Supporting / Generic (or explicitly justified equivalent) strategic classification |
-| `context-map` | S2 | conditional: more than one bounded context or boundary relation is relevant | PlantUML `.puml` | G2 |
-| `context-relationship-map` | S2 | conditional: two or more bounded contexts collaborate/integrate and the relationship pattern affects autonomy/model integrity | machine-readable mapping plus optional PlantUML projection | G2; records upstream/downstream direction and applicable DDD Context Mapping pattern such as Customer-Supplier, Conformist, ACL, OHS/Published Language, Partnership, Shared Kernel or Separate Ways |
+| `context-map` | S2 | optional: a visual multi-context review surface is useful | generated PlantUML `.puml` (or equivalent generated view) from accepted S2 anchors | human review projection only; never owns G2 boundary/relationship semantics |
+| `context-relationship-map` | S2 | conditional: two or more bounded contexts collaborate/integrate and the relationship pattern affects autonomy/model integrity | machine-readable mapping | G2; owns upstream/downstream direction and applicable DDD Context Mapping semantics; may generate `context-map` |
 | `domain-model` | S2 | mandatory for each affected bounded context whose semantics/model change | PlantUML `.puml` plus minimal explanatory Markdown only where notation is insufficient | G2 |
 | `domain-glossary` | S2 | conditional: domain terms/invariants require durable definition | Markdown | G2 |
 | `state-model` | S2 | conditional: entity/aggregate lifecycle has material states/transitions | PlantUML state diagram `.puml` | G2 |
@@ -81,7 +81,7 @@ S1 behavior / language
 -> distill strategic importance when material
 -> accept Bounded Context ownership
 -> classify inter-context relationships
--> context map
+-> generate a context map when useful for human review
 -> tactical domain models only after strategic boundaries are sufficient
 ```
 
@@ -90,6 +90,8 @@ S1 behavior / language
 `domain-distillation` prevents strategic design from treating every part of the domain as equally differentiating. Where applicable it identifies Core, Supporting and Generic subdomains (or an explicitly justified project vocabulary) and records the consequence for modeling/investment attention. This classification is strategic, not deployment topology.
 
 `context-relationship-map` records model/team relationship semantics rather than merely drawing arrows. Directional data/reference flow alone is insufficient when a DDD relationship pattern is material. `Shared Kernel` must never be inferred merely because contexts share identifiers or schemas.
+
+`context-map` is a review projection over accepted S2 sources, not a second semantic owner. A generator may combine bounded-context/capability identity with `context-relationship-map`; changing the picture never substitutes for changing those canonical inputs.
 
 ## Stage output profile
 
@@ -134,12 +136,14 @@ Do not manually duplicate information solely to obtain traceability. Prefer stab
 
 ## Generated projections
 
-Allowed projections include rendered diagrams, browsable API documentation, capability/context views, context-centric requirement indexes, traceability reports and documentation sites. A projection:
+Allowed projections include rendered diagrams, generated diagram-source files, browsable API documentation, capability/context views, context-centric requirement indexes, traceability reports and documentation sites. A projection:
 
 - identifies its canonical source(s);
 - is reproducible when practical;
 - never becomes an independent source of truth by being easier to read;
 - does not need to be committed when CI/local tooling can regenerate it.
+
+The current Context Map pilot follows this rule directly: accepted machine-readable S2 anchors generate `docs-generated/architecture/context-map.puml`, which Structurizr presents as an image view. `docs-generated/` is disposable and non-canonical.
 
 ## Artifact specification contract
 
