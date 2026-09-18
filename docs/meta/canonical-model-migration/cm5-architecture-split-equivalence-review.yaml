@@ -3,7 +3,7 @@ kind: canonical-model-migration-equivalence-review
 id: NAPMS-CM5-ARCHITECTURE-SPLIT-EQUIVALENCE
 phase: CM5
 unit: SYSTEM-ARCHITECTURE
-status: PENDING_CI
+status: PASS
 reviewed_at: 2026-09-18
 check_command: make canonical-model-check
 
@@ -20,4 +20,8 @@ criteria:
   - Structurizr contains the accepted frontend backend PostgreSQL topology six domain modules policy-export composition and main owner-contract relationships
   - missing OpenAPI and physical persistence details are explicit gaps rather than inferred from implementation
   - no async boundary is introduced
-result: awaiting_clean_ci
+result: PASS
+evidence:
+  commit: 20e51df6c870bb864cf2b75f9c68d99a23c4ac0a
+  workflow_run: 35291152800
+  workflow_job: 105434054140

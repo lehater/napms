@@ -15,12 +15,12 @@ program:
   completed_phases: [CM0, CM1, CM2, CM3, CM4]
 
 current_work:
-  task_id: CM5-01
-  name: Reconcile architecture contracts and persistence ownership
+  task_id: CM5-02
+  name: Complete canonical OpenAPI and physical persistence design
   state: IN_PROGRESS
   objective: Split accepted H18/H19 technical truth among the smallest specialized canonical owners without copying structural truth or inventing missing contract/persistence details.
   source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM5
-  authority_unit: SYSTEM-ARCHITECTURE
+  authority_unit: HTTP-CONTRACT
   predecessor_result:
     unit: MVP-JOURNEY
     result: PASS
@@ -35,7 +35,12 @@ current_work:
     - Split accepted non-structural H18 rules into docs/architecture/mvp-system-rules.yaml.
     - Moved accepted H18/H19 persistence baseline into docs/architecture/persistence/mvp-persistence.yaml with the missing physical detail explicitly marked unresolved.
     - Moved accepted H18/H19 HTTP boundary operations and API-wide rules into docs/contracts/http/napms-api-requirements.yaml with the incomplete OpenAPI detail explicitly marked unresolved.
-  next_action: Run canonical-model-check on a clean checkout. If PASS, cut over the known architecture/persistence/API-requirement truth, then design the remaining OpenAPI and physical persistence details without using product code as truth.
+  completed_actions:
+    - Cut over the accepted H18/H19 architecture split after clean canonical-model-check CI.
+    - Structurizr plus mvp-system-rules.yaml now own accepted system architecture truth.
+    - napms-api-requirements.yaml now owns the accepted HTTP operation/rule baseline while explicitly marking missing OpenAPI detail.
+    - mvp-persistence.yaml now owns the accepted PostgreSQL/schema/table baseline while explicitly marking missing physical detail.
+  next_action: Design the canonical OpenAPI document from accepted use-case/domain/API requirements, recording technical representation decisions explicitly and using no product code as design truth. Then design the physical persistence detail and generate ERD.
   stop_conditions:
     - a structural mismatch would require silently changing accepted architecture
     - OpenAPI request/response semantics would have to be inferred from product code
