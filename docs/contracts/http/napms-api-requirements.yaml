@@ -3,6 +3,7 @@ kind: http-contract-requirements
 id: NAPMS-MVP-HTTP-CONTRACT-REQUIREMENTS
 status: COMPLETE_CANONICAL_OPENAPI
 
+requirements_ref: docs/requirements/first-mvp-policy-export.yaml
 target_contract_format: OpenAPI
 delivery_protocol: HTTP
 payload_style: JSON for application commands and queries; CSV for the explicit policy export representation.

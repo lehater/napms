@@ -307,10 +307,16 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
 
     for authority in sorted(non_root_authorities):
         declared = contract_provider_authorities.get(authority, set())
-        missing_upstream = sorted(external_dependency_owners[authority] - declared)
+        actual = external_dependency_owners[authority]
+        missing_upstream = sorted(actual - declared)
         if missing_upstream:
             raise VerticalError(
                 f"Authority {authority} input contract misses upstream Authorities {missing_upstream}"
+            )
+        non_graph_upstream = sorted(declared - actual)
+        if non_graph_upstream:
+            raise VerticalError(
+                f"Authority {authority} input contract has non-graph upstream Authorities {non_graph_upstream}"
             )
 
     redundant_terminal = sorted(terminal_capability_ids & consumed_public_capabilities)

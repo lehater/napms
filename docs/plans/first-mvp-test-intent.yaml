@@ -8,6 +8,12 @@ purpose: Define minimum verification proving implementation realizes accepted MV
 design_refs:
   requirements: docs/requirements/first-mvp-policy-export.yaml
   journey: docs/model/use-cases/first-mvp-policy-export.yaml
+  resource_catalogue_domain: docs/model/contexts/resource-catalogue/domain-model.yaml
+  authority_management_language: docs/model/contexts/authority-management/language.yaml
+  application_communication_domain: docs/model/contexts/application-communication-catalogue/domain-model.yaml
+  application_deployment_domain: docs/model/contexts/application-deployment/domain-model.yaml
+  business_connectivity_domain: docs/model/contexts/business-connectivity/domain-model.yaml
+  access_policy_domain: docs/model/contexts/access-policy/domain-model.yaml
   implementation_readiness: docs/plans/first-mvp-implementation-readiness.yaml
   application_architecture: docs/architecture/mvp-system-rules.yaml
   security_architecture: docs/architecture/mvp-security-architecture.yaml

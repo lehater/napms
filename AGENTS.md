@@ -46,7 +46,8 @@ The model is about decision ownership and downstream knowledge needs, not workfl
 - `NOT_APPLICABLE` requires explicit canonical evidence;
 - unresolved Questions block directly named artifacts and their downstream dependency closure;
 - every node in the current canonical graph has exactly one Authority binding;
-- every capability listed in `provides` is a public Authority output and must be consumed by another Authority/consumer or declared explicitly terminal with a reason.
+- every capability listed in `provides` is a public Authority output and must be consumed by another Authority/consumer or declared explicitly terminal with a reason;
+- for every non-root Authority, the set of upstream Authorities in its input contract must equal the set implied by cross-Authority dependencies in `docs/canonical-graph.yaml`: neither hidden dependencies nor phantom contract inputs are allowed.
 
 Do not publish internal intermediate facts merely because a canonical artifact exists. Artifact ownership and public capability exposure are separate decisions.
 

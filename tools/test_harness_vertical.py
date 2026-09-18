@@ -73,6 +73,15 @@ def main() -> int:
     })
     expect_error(lambda: evaluate(graph, invalid_root), "root authority ACCESS-POLICY has external upstream Authorities")
 
+    phantom_input = copy.deepcopy(projection)
+    contract = next(item for item in phantom_input["contracts"] if item["id"] == "AUTHORITY-MANAGEMENT-INPUT")
+    contract["requires"].append({
+        "id": "phantom-product-input",
+        "capability": "requirements.first-mvp.behavior",
+        "authority": "PRODUCT-REQUIREMENTS",
+    })
+    expect_error(lambda: evaluate(graph, phantom_input), "input contract has non-graph upstream Authorities")
+
     dead_public_output = copy.deepcopy(projection)
     system_rules = next(item for item in dead_public_output["bindings"] if item["artifact"] == "SYSTEM-RULES")
     system_rules["provides"].append("architecture.unused-public-output")

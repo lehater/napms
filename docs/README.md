@@ -49,7 +49,8 @@ It defines:
 - what each downstream responsibility requires;
 - explicit `NOT_APPLICABLE` evidence for conditional needs;
 - Questions as upstream semantic blockers;
-- public-output closure: every capability in `provides` is either consumed downstream or explicitly declared as a terminal result with a reason.
+- public-output closure: every capability in `provides` is either consumed downstream or explicitly declared as a terminal result with a reason;
+- graph/contract closure: each non-root Authority's declared upstream owners exactly match the cross-Authority dependencies in the canonical graph.
 
 A binding may have an empty `provides` list when the artifact is canonical and owned but its semantics are internal to the Authority's public contract. Do not expose language/process/decision fragments as public capabilities unless another Authority actually consumes them.
 

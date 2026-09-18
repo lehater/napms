@@ -1,4 +1,4 @@
-version: 6
+version: 7
 kind: canonical-design-control
 id: NAPMS-DESIGN-CONTROL
 status: PILOT_CURRENT
@@ -47,6 +47,7 @@ authority_boundary_convergence:
   recurse_rule: If any check fails, split the candidate and apply the same checks to each child.
   stop_rule: Stop only when all three checks pass for every Authority and every current canonical-graph node has exactly one Authority binding.
   output_rule: A declared public capability must have a downstream consumer or an explicit terminal-capability declaration with a reason.
+  graph_contract_rule: For every non-root Authority, upstream Authority sets in canonical dependencies and input contracts must match exactly; hidden graph edges and phantom contract inputs are both invalid.
   internal_output_rule: Canonical artifacts may have no public capability when they only refine semantics internal to one Authority.
   anti_split_rule: Never split only because files, tables, services, screens, packages, technologies or deployment units differ.
 
@@ -84,6 +85,7 @@ specialized_owners:
 rules:
   - Every current canonical-graph node has exactly one Authority binding.
   - Every capability in provides is a public output contract and must be consumed downstream or explicitly terminal.
+  - Input contracts and canonical cross-Authority dependencies must agree on the same upstream Authority set.
   - Internal canonical refinements do not need public capabilities merely to prove they exist.
   - One semantic fact has one current owner; other artifacts reference or derive from it.
   - A lifecycle stage or documentation folder is never accepted as an Authority merely because it groups work.
