@@ -49,8 +49,10 @@ for field in ("topology","ownership","mutation_rule","read_rule","migration_rule
         fail(f"persistence H18 field {field} differs")
 if persist.get("database")!=i["persistence"]["database"]:
     fail("persistence database differs")
-if persist.get("schemas")!=i["persistence"]["schemas"]:
-    fail("persistence schemas differ")
+detail_schemas=persist.get("schemas",{})
+detail_table_set={schema:list(sdef.get("tables",{}).keys()) for schema,sdef in detail_schemas.items()}
+if detail_table_set!=i["persistence"]["schemas"]:
+    fail(f"persistence schema/table ownership differs: {detail_table_set}")
 if persist.get("rules")!=i["persistence"]["rules"]:
     fail("persistence rules differ")
 if persist.get("physical_detail_status")!="NOT_YET_DESIGNED":
