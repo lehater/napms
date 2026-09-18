@@ -1,60 +1,29 @@
-version: 1
-kind: mvp-technical-representation-decisions
+version: 2
+kind: shared-technical-conventions
 id: NAPMS-MVP-TECHNICAL-REPRESENTATION
-status: ACCEPTED_CM5_DESIGN
+status: PILOT_CURRENT
 recorded_at: 2026-09-18
 
-scope: Technical representation choices needed to complete the accepted first-MVP HTTP and PostgreSQL contracts without changing product/domain semantics.
+scope: Shared technical representation conventions consumed by multiple first-MVP technical contracts without changing product/domain semantics.
 
 decisions:
   - id: TECH-ID-UUID
-    choice: Stable owner identifiers are represented as UUID strings at the HTTP boundary and PostgreSQL uuid values in persistence.
+    choice: Stable owner identifiers are represented as UUID strings at external serialization boundaries and PostgreSQL uuid values in persistence.
     rationale: Opaque UUIDs preserve owner-defined identity without embedding business meaning or coupling identifiers to mutable attributes.
 
   - id: TECH-TIME-RFC3339
     choice: Application timestamps are RFC 3339 date-time values; PostgreSQL stores them as timestamptz.
-    rationale: Temporal Resource facts and decision history require unambiguous instants; timezone-normalized storage is technical representation only.
+    rationale: Temporal facts and decision history require unambiguous instants; timezone-normalized storage is technical representation only.
 
   - id: TECH-PROVENANCE-ENVELOPE
-    choice: Provenance is a small extensible envelope with required source and recordedAt plus optional detail; PostgreSQL stores it as jsonb.
-    rationale: Accepted models require retained provenance but deliberately did not prescribe its technical fields. The envelope preserves source/time and allows owner-specific detail without inventing domain fields.
-
-  - id: TECH-CROSS-MODULE-REF
-    choice: Cross-module references use UUID values but are not database foreign keys across module-owned schemas.
-    rationale: Accepted architecture requires cross-module semantic resolution through owner contracts and forbids treating another module's tables as integration contracts.
-
-  - id: TECH-LOCAL-FK
-    choice: References wholly inside one module-owned schema use PostgreSQL foreign keys where the accepted model establishes ownership/cardinality.
-    rationale: Local relational integrity can enforce accepted aggregate/module structure without coupling module persistence contracts.
-
-  - id: TECH-TRAFFIC-JSONB
-    choice: An immutable InteractionContractRevision stores its ordered vendor-neutral traffic alternatives as jsonb matching the OpenAPI TrafficAlternative schema.
-    rationale: The accepted table inventory has one interaction_contract_revision table and no normalized traffic child table; JSONB preserves all alternatives without adding a new domain owner or table.
+    choice: Provenance uses an extensible envelope with required source and recordedAt plus optional detail; PostgreSQL stores it as jsonb.
+    rationale: Accepted models require retained provenance without prescribing owner-specific technical fields.
 
   - id: TECH-ADDRESS-REPRESENTATION
     choice: AddressSpace is represented by kind plus value, where kind is HostAddress or Prefix and value is the normalized textual address/prefix.
-    rationale: This is the direct technical representation of the accepted AddressSpace XOR semantics without introducing endpoint/interface concepts.
+    rationale: This is the shared technical representation of the accepted AddressSpace XOR semantics without introducing endpoint/interface concepts.
 
-  - id: TECH-SESSION-COOKIE
-    choice: The OpenAPI contract represents backend session authentication as an HTTP-only cookie security scheme named napms_session.
-    rationale: Accepted architecture requires server-side session identity and forbids caller-supplied actor identity. Session storage implementation remains outside the HTTP contract.
-
-  - id: TECH-HTTP-OUTCOMES
-    choice:
-      unauthenticated: 401
-      authorization_denied: 403
-      optimistic_or_idempotency_conflict: 409
-      domain_rejection_or_unresolved_materialization: 422
-      persistence_or_transport_uncertainty: 503
-    rationale: Accepted requirements require these outcome classes to remain distinguishable. HTTP status mapping is a technical adapter decision.
-
-  - id: TECH-CREATE-STATUS
-    choice: Successful create/publish/submit operations return HTTP 201 with the stable owner identifier(s); mutation/decision/withdrawal updates return HTTP 200.
-    rationale: The accepted API rule requires stable identifiers from create/publish operations; status selection is transport-level realization.
-
-non_decisions:
-  - No provider/device/firewall representation is introduced.
-  - No asynchronous messaging boundary is introduced.
-  - No customer-specific approval/quorum semantics are introduced.
-  - No Resource interface or multi-address model is introduced.
-  - No cross-module database foreign keys are introduced.
+ownership_boundary:
+  http_specific_choices: docs/contracts/http/napms-api-requirements.yaml
+  persistence_specific_choices: docs/architecture/persistence/mvp-persistence.yaml
+  application_interaction_choices: docs/architecture/mvp-system-rules.yaml

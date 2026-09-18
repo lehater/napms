@@ -37,8 +37,10 @@ def main() -> int:
 
     baseline = evaluate(graph, projection)
     assert baseline["satisfied"]
-    assert "DOMAIN-DESIGN" not in {item["id"] for item in projection["authorities"]}
-    assert "SYSTEM-ARCHITECTURE" not in {item["id"] for item in projection["authorities"]}
+    authority_ids = {item["id"] for item in projection["authorities"]}
+    assert "DOMAIN-DESIGN" not in authority_ids
+    assert "SYSTEM-ARCHITECTURE" not in authority_ids
+    assert "TECHNICAL-REPRESENTATION" not in authority_ids
     assert requirement(baseline, "IMPLEMENTATION-PLAN-INPUT", "asynchronous-contract")["status"] == "NOT_APPLICABLE"
 
     bad_boundary = copy.deepcopy(projection)
@@ -53,11 +55,21 @@ def main() -> int:
     assert gap["status"] == "DESIGN_GAP"
     assert gap["question"]["authority"] == "HTTP-CONTRACT"
 
+    missing_security = copy.deepcopy(projection)
+    security = next(item for item in missing_security["bindings"] if item["artifact"] == "SECURITY-ARCHITECTURE")
+    security["provides"].remove("architecture.security-boundary")
+    result = evaluate(graph, missing_security)
+    gap = requirement(result, "IMPLEMENTATION-CONSUMER", "security-boundary")
+    assert gap["status"] == "DESIGN_GAP"
+    assert gap["question"]["authority"] == "SECURITY-ARCHITECTURE"
+
     missing_na_evidence = copy.deepcopy(projection)
-    tech = next(item for item in missing_na_evidence["bindings"] if item["artifact"] == "TECH-REPRESENTATION")
-    tech["provides"].remove("architecture.async-messaging-not-applicable")
+    system_rules = next(item for item in missing_na_evidence["bindings"] if item["artifact"] == "SYSTEM-RULES")
+    system_rules["provides"].remove("architecture.async-messaging-not-applicable")
     result = evaluate(graph, missing_na_evidence)
-    assert requirement(result, "IMPLEMENTATION-PLAN-INPUT", "asynchronous-contract")["status"] == "DESIGN_GAP"
+    gap = requirement(result, "IMPLEMENTATION-PLAN-INPUT", "asynchronous-contract")
+    assert gap["status"] == "DESIGN_GAP"
+    assert gap["question"]["authority"] == "APPLICATION-ARCHITECTURE"
 
     blocked_upstream = copy.deepcopy(projection)
     blocked_upstream["questions"].append({
@@ -71,11 +83,11 @@ def main() -> int:
     assert requirement(result, "IMPLEMENTATION-CONSUMER", "http-contract")["status"] == "BLOCKED"
     assert requirement(result, "IMPLEMENTATION-CONSUMER", "persistence")["status"] == "BLOCKED"
 
-    wrong_owner = copy.deepcopy(projection)
-    binding = next(item for item in wrong_owner["bindings"] if item["artifact"] == "RC-DOMAIN")
-    binding["authority"] = "ACCESS-POLICY"
-    result_fn = lambda: evaluate(graph, wrong_owner)
-    expect_error(result_fn, "expected RESOURCE-CATALOGUE")
+    wrong_expected_owner = copy.deepcopy(projection)
+    contract = next(item for item in wrong_expected_owner["contracts"] if item["id"] == "IMPLEMENTATION-CONSUMER")
+    req = next(item for item in contract["requires"] if item["id"] == "resource")
+    req["authority"] = "ACCESS-POLICY"
+    expect_error(lambda: evaluate(graph, wrong_expected_owner), "expected ACCESS-POLICY")
 
     print("Harness documentation vertical acceptance PASS")
     return 0

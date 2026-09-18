@@ -1,4 +1,4 @@
-version: 2
+version: 3
 kind: test-intent
 id: NAPMS-FIRST-MVP-TEST-INTENT
 status: PILOT_CURRENT
@@ -9,7 +9,9 @@ design_refs:
   requirements: docs/requirements/first-mvp-policy-export.yaml
   journey: docs/model/use-cases/first-mvp-policy-export.yaml
   implementation_readiness: docs/plans/first-mvp-implementation-readiness.yaml
-  system_rules: docs/architecture/mvp-system-rules.yaml
+  application_architecture: docs/architecture/mvp-system-rules.yaml
+  security_architecture: docs/architecture/mvp-security-architecture.yaml
+  module_contracts: docs/architecture/mvp-module-contracts.yaml
   http_contract: docs/contracts/http/napms.openapi.yaml
   persistence: docs/architecture/persistence/mvp-persistence.yaml
   quality_requirements: docs/architecture/mvp-quality-requirements.yaml
@@ -32,7 +34,7 @@ required_scenarios:
   - {id: MVP-ACC-007, expect: Traffic change creates a new immutable revision and historical revision remains resolvable.}
   - {id: MVP-AD-008, expect: Redeployment of same Component to another Resource requires another ComponentDeployment identity.}
   - {id: MVP-AP-009, expect: Withdrawal removes rule from current export while retaining policy history.}
-  - {id: MVP-EXP-010, expect: Prefix remains Prefix and is not expanded to host rows.}
+  - {id: MVP-EXP-010, expect: Prefix remains Prefix and is not expanded to hosts.}
   - {id: MVP-QUAL-011, expect: Persistence or transport uncertainty is not reported as successful mutation.}
   - {id: MVP-SEC-012, expect: Caller-supplied identity, UI state or direct persistence access cannot substitute for Authority Management admission.}
   - {id: MVP-OBS-013, expect: Diagnostic evidence distinguishes authorization denial, domain rejection, Unresolved materialization and infrastructure uncertainty without exposing credentials or session secrets.}

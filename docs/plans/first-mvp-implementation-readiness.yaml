@@ -1,4 +1,4 @@
-version: 3
+version: 4
 kind: implementation-readiness
 id: NAPMS-FIRST-MVP-IMPLEMENTATION-READINESS
 status: PILOT_CURRENT
@@ -10,11 +10,12 @@ design_refs:
   journey: docs/model/use-cases/first-mvp-policy-export.yaml
   strategic_model: docs/model/strategic/bounded-contexts.yaml
   system_structure: docs/architecture/structurizr/workspace.dsl
-  system_rules: docs/architecture/mvp-system-rules.yaml
+  application_architecture: docs/architecture/mvp-system-rules.yaml
+  security_architecture: docs/architecture/mvp-security-architecture.yaml
   module_contracts: docs/architecture/mvp-module-contracts.yaml
+  shared_technical_conventions: docs/architecture/mvp-technical-representation.yaml
   http_contract: docs/contracts/http/napms.openapi.yaml
   persistence: docs/architecture/persistence/mvp-persistence.yaml
-  technical_representation: docs/architecture/mvp-technical-representation.yaml
   quality_requirements: docs/architecture/mvp-quality-requirements.yaml
   threat_model: docs/architecture/mvp-threat-model.yaml
   observability: docs/architecture/mvp-observability.yaml
@@ -50,6 +51,7 @@ completion_definition:
   - OpenAPI covers every required journey operation and explicit outcome.
   - PostgreSQL migrations establish only module-owned state needed by the journey.
   - Backend interfaces implement the canonical module contracts and introduce no internal HTTP.
+  - Protected operations implement the canonical security boundary and Authority Management admission.
   - Browser completes the journey without hidden/manual state fabrication.
   - Implementation preserves the quality, threat-control and observability constraints referenced above.
   - Verification covers happy path, rejection, withdrawal, authorization and Unresolved export.

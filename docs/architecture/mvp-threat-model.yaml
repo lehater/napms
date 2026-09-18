@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: threat-model
 id: NAPMS-MVP-THREAT-MODEL
 status: PILOT_CURRENT
@@ -16,12 +16,12 @@ threats:
     category: Spoofing
     concern: Caller attempts to choose or forge actor identity.
     control: Backend session establishes actor identity; actor identity is not accepted from caller-supplied fields.
-    refs: [SYSTEM-RULES, TECH-REPRESENTATION]
+    refs: [SECURITY-ARCHITECTURE]
   - id: TM-TAMPER-001
     category: Tampering
     concern: Caller or one module attempts mutation without authority or bypasses owner semantics.
     control: Protected use cases require Authority Management admission; cross-module mutation occurs through owner contracts rather than foreign tables.
-    refs: [SYSTEM-RULES, PERSISTENCE]
+    refs: [SECURITY-ARCHITECTURE, MODULE-CONTRACTS, PERSISTENCE]
   - id: TM-REPUDIATE-001
     category: Repudiation
     concern: Policy and catalogue changes lose decision/history provenance.
@@ -30,22 +30,22 @@ threats:
   - id: TM-DISCLOSE-001
     category: Information-Disclosure
     concern: Session credentials or protected state are exposed through an unsafe identity boundary.
-    control: Session authentication uses an HTTP-only cookie and protected application operations require authenticated identity/admission.
-    refs: [TECH-REPRESENTATION, SYSTEM-RULES]
+    control: Session authentication uses the accepted HTTP-only cookie contract and protected operations require authenticated identity/admission.
+    refs: [SECURITY-ARCHITECTURE, HTTP-REQUIREMENTS]
   - id: TM-DOS-001
     category: Denial-of-Service
     concern: Persistence or transport uncertainty is misrepresented as a successful operation.
-    control: Persistence or transport uncertainty has an explicit unavailable outcome and must not become silent success.
-    refs: [TECH-REPRESENTATION]
+    control: Persistence or transport uncertainty has an explicit unavailable HTTP outcome and must not become silent success.
+    refs: [HTTP-REQUIREMENTS]
   - id: TM-ELEVATE-001
     category: Elevation-of-Privilege
     concern: UI state, domain metadata or direct persistence access is treated as authorization.
     control: Authority Management admission is the authorization authority; UI and domain metadata never substitute for it.
-    refs: [SYSTEM-RULES]
+    refs: [SECURITY-ARCHITECTURE, AM-LANGUAGE]
 
 deferred_nonblocking:
   - Production edge protections such as rate limiting, TLS termination topology, secret rotation and infrastructure hardening require a production deployment baseline.
-  - External identity-provider threats are not applicable to the current MVP because no external IdP is part of the accepted architecture.
+  - External identity-provider threats are not applicable because no external IdP is part of the accepted first-MVP security architecture.
 
 provenance:
   basis: Derived from current accepted security, persistence and HTTP-boundary decisions during the Harness documentation-vertical pilot.

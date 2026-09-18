@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: http-contract-requirements
 id: NAPMS-MVP-HTTP-CONTRACT-REQUIREMENTS
 status: COMPLETE_CANONICAL_OPENAPI
@@ -39,6 +39,18 @@ rules:
   - Mutation rejection is atomic.
   - Export returns complete Success or explicit Unresolved; partial success is forbidden.
   - Create/publish operations return stable owner identifiers used by later steps.
+
+transport_decisions:
+  security_scheme: Backend session authentication is represented as an HTTP-only cookie security scheme named napms_session.
+  outcome_status:
+    unauthenticated: 401
+    authorization_denied: 403
+    optimistic_or_idempotency_conflict: 409
+    domain_rejection_or_unresolved_materialization: 422
+    persistence_or_transport_uncertainty: 503
+  success_status:
+    create_publish_submit: 201
+    mutation_decision_withdrawal: 200
 
 error_rule: Domain rejection and Unresolved materialization are explicit application outcomes; missing materialization input is never represented as a silently partial successful export.
 

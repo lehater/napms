@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: observability-requirements
 id: NAPMS-MVP-OBSERVABILITY
 status: PILOT_CURRENT
@@ -7,7 +7,7 @@ scope: Minimum diagnostic observability required to implement and verify the fir
 requirements:
   - id: OBS-OUTCOME-001
     requirement: Diagnostic output must distinguish success from authorization denial, domain rejection, Unresolved materialization and persistence/transport uncertainty without exposing credentials or session secrets.
-    basis_refs: [SYSTEM-RULES, TECH-REPRESENTATION]
+    basis_refs: [SYSTEM-RULES, SECURITY-ARCHITECTURE, HTTP-REQUIREMENTS]
   - id: OBS-CORRELATION-002
     requirement: One HTTP request or application-use-case execution must be traceable across application orchestration and owner-module calls using a technical correlation identifier.
     basis_refs: [C4-STRUCTURE, SYSTEM-RULES]
