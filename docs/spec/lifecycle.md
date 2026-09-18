@@ -25,7 +25,7 @@ This is not a waterfall. Start at the earliest stage whose accepted truth may ch
 - An **artifact** materializes that knowledge in its canonical representation.
 - A **gate** validates sufficient current evidence for the next stage; a gate is not a product artifact.
 - A **change scope** is the smallest stable semantic slice being evaluated.
-- An **implementation lease** is G4 authorization for exactly one evaluated implementation scope.
+- **Implementation readiness** means an evaluated scope is executable and verifiable; it does not authorize an agent to modify product code.
 
 Later stages must not invent unresolved truth owned by an earlier stage merely to continue.
 
@@ -49,7 +49,7 @@ Detailed working methods belong to stage-specific instructions. Artifact type de
 | G1 | observable behavior, applicable qualities and acceptance intent are sufficient for domain design without redefining S0 constraints |
 | G2 | affected domain semantics, responsibility and boundary ownership are sufficient for architecture |
 | G3 | realization and contracts are sufficient to derive a concrete implementation-ready slice |
-| G4 | the exact selected slice has sufficient current upstream evidence, dependencies and validation intent to authorize implementation |
+| G4 | the exact selected slice has sufficient current upstream evidence, dependencies and validation intent to be implementation-ready |
 
 A gate evaluates only artifacts applicable to the current scope. `conditional` artifacts block only when their applicability condition is true. `optional` artifacts never become mandatory merely because a template exists.
 
@@ -86,24 +86,20 @@ When accepted upstream truth materially changes:
 
 1. identify downstream guarantees that actually depend on it;
 2. mark only those guarantees `DIRTY`;
-3. revoke any dependent G4 implementation lease immediately;
+3. mark any dependent G4 readiness result invalid immediately;
 4. reopen the owning stage;
 5. resolve the smallest affected delta;
 6. revalidate dirty downstream stages in dependency order.
 
 Do not restart unaffected stages and do not treat `DIRTY` as proof that prior work is wrong.
 
-## Implementation authorization
+## Implementation readiness and authorization
 
-Implementation is allowed only after G4 PASS for an exact scope. Authorization records:
+G4 PASS means the exact evaluated scope is implementation-ready. It does not grant permission to modify product code or product tests.
 
-```text
-Implementation authorization: G4 PASS
-Authorized scope: <stable exact slice>
-Authorization basis: <current accepted upstream and G4 evidence>
-```
+Implementation authorization is a separate operational/user decision and must be explicit for the requested scope. A prior authorization cannot be inferred from G4, a readiness artifact, or repository state.
 
-The lease is invalid when the scope changes materially, an upstream dependency becomes dirty, or implementation evidence exposes an unresolved earlier-stage decision. Resume only after the owning stage is resolved and a new applicable G4 PASS exists.
+A G4 readiness result becomes invalid when the scope changes materially, an upstream dependency becomes dirty, or implementation evidence exposes an unresolved earlier-stage decision. Re-establish readiness after the owning stage is resolved; obtain implementation authorization separately when code/test changes are requested.
 
 ## Validation feedback
 
@@ -138,7 +134,7 @@ One agent execution should complete one concrete task or one gate evaluation, pe
 
 ## Ownership boundaries
 
-This specification owns lifecycle routing, stage/gate semantics, dirty/reopen propagation and implementation authorization.
+This specification owns lifecycle routing, stage/gate semantics, dirty/reopen propagation and implementation readiness semantics.
 
 It does **not** own:
 
@@ -150,4 +146,4 @@ It does **not** own:
 
 ## M1 exit
 
-M1 is complete when S0-S4 responsibilities, G0-G4 guarantees, states, reopen/dirty behavior, implementation authorization and minimal agent routing data are defined without requiring detailed artifact schemas.
+M1 is complete when S0-S4 responsibilities, G0-G4 guarantees, states, reopen/dirty behavior, implementation readiness semantics and minimal agent routing data are defined without requiring detailed artifact schemas.
