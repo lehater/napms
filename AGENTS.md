@@ -25,6 +25,27 @@ Repository state, not chat history, determines where work resumes.
 
 Product code/tests are implementation/evidence. Never use them to invent or reconstruct missing product/domain/architecture semantics.
 
+## Semantic harvesting during elicitation
+
+When asking a user or stakeholder a question, do not treat the answer only as a value for that one question. Also notice any additional product/domain semantics stated or implied strongly enough to matter, including:
+
+- requirement or constraint;
+- use case, user journey, journey step, actor or goal;
+- business rule or invariant;
+- domain term or meaning distinction;
+- capability/responsibility/boundary clue;
+- contradiction, exception or unresolved question.
+
+Discovered does not mean accepted. Keep observation, interpretation and acceptance separate.
+
+If the additional semantic point is explicitly confirmed or otherwise becomes accepted in the exchange, persist it in the smallest current canonical owner found through `docs/canonical-graph.yaml`, then revalidate only affected downstream nodes.
+
+If it is still only a candidate but is important enough to survive the conversation, preserve it as evidence/candidate/question in the nearest relevant discovery artifact or active workstream state. Do not insert an unaccepted candidate into a canonical domain/use-case/architecture model as if it were decided truth.
+
+Harvesting is secondary to the user's current task: do not derail an interview by opening every side topic immediately. Capture material side findings and continue the current line unless a contradiction blocks it.
+
+For explicit evidence synthesis or substantial harvesting across one or more stakeholder answers, use the `stakeholder-evidence-synthesis` Skill.
+
 ## Work
 
 Change the smallest owning artifact set. Follow graph dependencies for downstream impact. Regenerate projections rather than editing generated diagrams.
