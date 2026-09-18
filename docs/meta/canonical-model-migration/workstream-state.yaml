@@ -25,7 +25,11 @@ current_work:
     unit: APPLICATION-DEPLOYMENT
     result: PASS
     review: docs/meta/canonical-model-migration/cm3-ad-equivalence-review.yaml
-  next_action: Extract only BusinessProcess and ConnectivityNeed aggregate semantics, invariants and public semantics; preserve the explicit separation of business justification from authorization/realization; validate then cut over.
+  completed_actions:
+    - Extracted only the accepted H17 Business Connectivity participating-context payload.
+    - Preserved BusinessProcess/ConnectivityNeed aggregate semantics and the explicit justification-not-authorization invariants.
+    - Did not invent aggregate internals or duplicate Access Policy/ACC ownership.
+  next_action: Run canonical-model-check on a clean branch checkout. If PASS, cut over BUSINESS-CONNECTIVITY and continue with Access Policy.
   stop_conditions:
     - BusinessProcess/ConnectivityNeed structure beyond accepted H17 aggregate semantics would have to be invented
     - Access Policy authorization semantics would be copied into Business Connectivity

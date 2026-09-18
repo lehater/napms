@@ -1,0 +1,14 @@
+version: 1
+kind: canonical-model-migration-equivalence-review
+id: NAPMS-CM3-BC-EQUIVALENCE
+phase: CM3
+unit: BUSINESS-CONNECTIVITY
+status: PENDING_CI
+reviewed_at: 2026-09-18
+check_command: make canonical-model-check
+criteria:
+  - accepted H17 BusinessProcess and ConnectivityNeed aggregate semantics are preserved exactly
+  - accepted invariants preserve business justification as distinct from authorization and realization
+  - CM1 strategic Business Connectivity definition is referenced rather than duplicated
+  - no aggregate internals or associations are invented beyond accepted H17 truth
+result: awaiting_clean_ci
