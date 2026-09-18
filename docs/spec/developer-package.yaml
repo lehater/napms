@@ -1,0 +1,218 @@
+version: 1
+kind: developer-package-specification
+id: NAPMS-DEVELOPER-PACKAGE
+status: DRAFT
+
+purpose: Define the stable, self-contained handoff contract from canonical design to implementation-facing documentation. This specification maps existing design truth to industry-standard developer artifacts; it does not own product, domain or architecture semantics.
+
+package:
+  output_root: developer-package/
+  generated: true
+  manually_editable: false
+  self_contained: true
+  history_owner: git
+  ready_rule: A READY package contains only PROVIDED or NOT_APPLICABLE aspects. Any DESIGN_GAP blocks handoff.
+
+aspect_statuses:
+  specification: [REQUIRED, CONDITIONAL]
+  resolved_package: [PROVIDED, NOT_APPLICABLE]
+  blocking: DESIGN_GAP
+
+mapping_rules:
+  - Canonical design remains the only design source of truth.
+  - Package processors may select, copy, render, format and compose canonical facts, but never invent semantics.
+  - NOT_APPLICABLE requires evidence in a canonical owner; absence of a file is not evidence.
+  - Standard executable contracts are copied byte-for-byte when practical rather than paraphrased.
+  - Generated package files are never edited manually.
+  - Package consumers must not need access to design-workstream, migration or Harness-internal artifacts.
+
+aspects:
+  - id: scope
+    requirement: REQUIRED
+    sources: [MVP-IMPLEMENTATION-READINESS, FIRST-MVP-JOURNEY]
+    representation: {practice: implementation-scope, format: markdown}
+    processor: render
+    current: PROVIDED
+
+  - id: use-cases
+    requirement: REQUIRED
+    sources: [FIRST-MVP-JOURNEY]
+    representation: {practice: use-case, format: markdown}
+    processor: render
+    current: PROVIDED
+
+  - id: ubiquitous-language
+    requirement: REQUIRED
+    source_kinds: [domain-language]
+    representation: {practice: DDD-Ubiquitous-Language, format: markdown}
+    processor: render
+    current: PROVIDED
+
+  - id: bounded-contexts
+    requirement: REQUIRED
+    sources: [STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]
+    representation: {practice: DDD-Context-Map, formats: [puml, svg]}
+    processor: existing-projection
+    current: PROVIDED
+
+  - id: tactical-domain-models
+    requirement: REQUIRED
+    source_kinds: [tactical-domain-model]
+    representation: {standard: UML, profile: DDD, formats: [puml, svg]}
+    processor: existing-projection
+    current: PROVIDED
+
+  - id: domain-processes
+    requirement: CONDITIONAL
+    source_kinds: [domain-process]
+    representation: {standard: BPMN-or-UML-Activity, formats: [source, svg]}
+    processor: render
+    current: DESIGN_GAP
+    gap: Current process projection exists, but the handoff notation has not yet been classified as business-process BPMN versus UML Activity.
+
+  - id: domain-events
+    requirement: CONDITIONAL
+    representation: {practice: DDD-Domain-Events}
+    current: DESIGN_GAP
+    gap: Current canonical design does not explicitly establish whether domain events are absent or merely undocumented.
+
+  - id: system-context
+    requirement: REQUIRED
+    sources: [C4-STRUCTURE]
+    representation: {standard: C4, level: system-context, format: svg}
+    processor: structurizr
+    current: PROVIDED
+
+  - id: containers
+    requirement: REQUIRED
+    sources: [C4-STRUCTURE]
+    representation: {standard: C4, level: container, format: svg}
+    processor: structurizr
+    current: PROVIDED
+
+  - id: components
+    requirement: REQUIRED
+    sources: [C4-STRUCTURE]
+    representation: {standard: C4, level: component, format: svg}
+    processor: structurizr
+    current: PROVIDED
+
+  - id: deployment
+    requirement: REQUIRED
+    sources: [C4-STRUCTURE]
+    representation: {standard: C4, level: deployment, format: svg}
+    processor: structurizr
+    current: PROVIDED
+
+  - id: runtime-scenarios
+    requirement: REQUIRED
+    sources: [FIRST-MVP-JOURNEY, C4-STRUCTURE, SYSTEM-RULES]
+    representation: {standard: UML, diagram: sequence, formats: [puml, svg]}
+    processor: render
+    current: DESIGN_GAP
+    gap: Journey/process projections exist, but a developer-facing runtime sequence view is not explicitly provided.
+
+  - id: architecture-rules
+    requirement: REQUIRED
+    sources: [SYSTEM-RULES]
+    representation: {practice: architecture-rules, format: markdown}
+    processor: render
+    current: PROVIDED
+
+  - id: architecture-decisions
+    requirement: REQUIRED
+    sources: [TECH-REPRESENTATION]
+    representation: {practice: ADR, format: markdown}
+    processor: render
+    current: PROVIDED
+
+  - id: synchronous-external-contract
+    requirement: CONDITIONAL
+    sources: [OPENAPI]
+    representation: {standard: OpenAPI, format: yaml}
+    processor: exact-copy
+    current: PROVIDED
+
+  - id: asynchronous-external-contract
+    requirement: CONDITIONAL
+    evidence: {node: TECH-REPRESENTATION, statement: No asynchronous messaging boundary is introduced.}
+    representation: {standard: AsyncAPI}
+    current: NOT_APPLICABLE
+
+  - id: grpc-contract
+    requirement: CONDITIONAL
+    evidence: {node: MVP-IMPLEMENTATION-READINESS, statement: First MVP application boundary is HTTP/JSON and distributed services are excluded.}
+    representation: {standard: Protocol-Buffers}
+    current: NOT_APPLICABLE
+
+  - id: internal-module-contracts
+    requirement: REQUIRED
+    sources: [MVP-IMPLEMENTATION-READINESS, SYSTEM-RULES]
+    representation: {practice: module-contracts, format: markdown}
+    processor: render
+    current: PROVIDED
+
+  - id: state-persistence
+    requirement: REQUIRED
+    sources: [PERSISTENCE]
+    representation: {practice: ERD, formats: [puml, svg]}
+    processor: existing-projection
+    current: PROVIDED
+
+  - id: event-persistence
+    requirement: CONDITIONAL
+    current: DESIGN_GAP
+    gap: Event Sourcing is not selected by current persistence design, but no canonical owner explicitly declares event persistence/Event Sourcing not applicable.
+
+  - id: authentication-authorization
+    requirement: REQUIRED
+    sources: [SYSTEM-RULES, TECH-REPRESENTATION, OPENAPI]
+    representation: {practice: security-model, format: markdown}
+    processor: render
+    current: PROVIDED
+
+  - id: threat-model
+    requirement: CONDITIONAL
+    representation: {practice: threat-modeling, notation: STRIDE-DFD}
+    current: DESIGN_GAP
+    gap: No current canonical threat model and no canonical NOT_APPLICABLE decision were found.
+
+  - id: quality-requirements
+    requirement: REQUIRED
+    representation: {standard: ISO-IEC-25010, practice: quality-scenarios, format: markdown}
+    current: DESIGN_GAP
+    gap: No current canonical quality-requirements owner was found.
+
+  - id: observability
+    requirement: CONDITIONAL
+    representation: {practice: observability-specification, format: markdown}
+    current: DESIGN_GAP
+    gap: Current canonical design neither specifies observability nor declares it not applicable; legacy evidence is not current authority.
+
+  - id: acceptance-specification
+    requirement: REQUIRED
+    sources: [MVP-TEST-INTENT]
+    representation: {practice: BDD, format: gherkin-or-readable-scenarios}
+    processor: render
+    current: PROVIDED
+
+  - id: verification-strategy
+    requirement: REQUIRED
+    sources: [MVP-TEST-INTENT]
+    representation: {practice: test-strategy, format: markdown}
+    processor: render
+    current: PROVIDED
+
+  - id: implementation-slices
+    requirement: REQUIRED
+    sources: [MVP-IMPLEMENTATION-READINESS]
+    representation: {practice: implementation-plan, format: markdown}
+    processor: render
+    current: PROVIDED
+
+  - id: completion-criteria
+    requirement: REQUIRED
+    sources: [MVP-IMPLEMENTATION-READINESS, MVP-TEST-INTENT]
+    representation: {practice: definition-of-done, format: markdown}
+    processor: render
+    current: PROVIDED
