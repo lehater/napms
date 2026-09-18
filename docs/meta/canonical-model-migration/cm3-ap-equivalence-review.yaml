@@ -3,7 +3,7 @@ kind: canonical-model-migration-equivalence-review
 id: NAPMS-CM3-AP-EQUIVALENCE
 phase: CM3
 unit: ACCESS-POLICY
-status: PENDING_CI
+status: PASS
 reviewed_at: 2026-09-18
 check_command: make canonical-model-check
 criteria:
@@ -12,4 +12,8 @@ criteria:
   - CM1 strategic Access Policy purpose responsibility boundary and language ownership are not duplicated
   - Business Connectivity justification ACC traffic semantics and Application Deployment endpoint ownership remain external
   - H17 cross-context flow materialization and explicit deferrals remain with the later MVP-JOURNEY migration unit
-result: awaiting_clean_ci
+result: PASS
+evidence:
+  commit: 07e4d98841c59a9390cd528e25181523c10a2f26
+  workflow_run: 35290720647
+  workflow_job: 105432755445

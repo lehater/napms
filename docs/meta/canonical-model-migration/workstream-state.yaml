@@ -10,29 +10,30 @@ ledger: docs/meta/canonical-model-migration/migration-ledger.yaml
 
 program:
   status: ACTIVE
-  current_phase: CM3
+  current_phase: CM4
   current_phase_state: IN_PROGRESS
-  completed_phases: [CM0, CM1, CM2]
+  completed_phases: [CM0, CM1, CM2, CM3]
 
 current_work:
-  task_id: CM3-AP
-  name: Migrate Access Policy tactical semantics
+  task_id: CM4-MVP-JOURNEY
+  name: Migrate first-MVP cross-context journey
   state: IN_PROGRESS
-  objective: Move only the accepted H17 Access Policy tactical submodel into its target owner without duplicating CM1 strategic truth or the H17 cross-context journey.
-  source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM3
-  authority_unit: ACCESS-POLICY
+  objective: Move the accepted H17 S1 requirement and cross-context tactical flow into one stable use-case owner while referencing context-owned models instead of duplicating them.
+  source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM4
+  authority_unit: MVP-JOURNEY
   predecessor_result:
-    unit: BUSINESS-CONNECTIVITY
+    unit: ACCESS-POLICY
     result: PASS
-    review: docs/meta/canonical-model-migration/cm3-bc-equivalence-review.yaml
+    review: docs/meta/canonical-model-migration/cm3-ap-equivalence-review.yaml
   completed_actions:
-    - Cut over Business Connectivity after clean canonical-model-check CI.
-    - Extracted the accepted H17 PolicyRule aggregate RuleChange child entity invariants and public semantics.
-    - Kept Business Connectivity ACC Application Deployment and journey/materialization semantics external.
-  next_action: Run canonical-model-check on a clean branch checkout. If PASS, cut over ACCESS-POLICY and complete CM3.
+    - Completed CM3 after clean Access Policy equivalence CI.
+    - Built the first-MVP use-case candidate from accepted H17 S1 plus H17 cross-context flow/materialization/deferrals.
+    - Replaced duplicated participating-context tactical payloads with references to CM2/CM3 target owners.
+  next_action: Run canonical-model-check on a clean branch checkout. If PASS, cut over MVP-JOURNEY and complete CM4.
   stop_conditions:
-    - Access Policy tactical content would require semantics beyond the accepted H17 participating-context payload
-    - cross-context journey or materialization semantics would be copied into Access Policy
+    - any accepted H17 requirement or cross-context flow semantic would be lost
+    - a participating-context tactical model would need to be duplicated
+    - a non-peer composition would be promoted to a peer Bounded Context
 
 authority:
   namespace: docs/

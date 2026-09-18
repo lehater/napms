@@ -1,0 +1,15 @@
+version: 1
+kind: canonical-model-migration-equivalence-review
+id: NAPMS-CM4-MVP-JOURNEY-EQUIVALENCE
+phase: CM4
+unit: MVP-JOURNEY
+status: PENDING_CI
+reviewed_at: 2026-09-18
+check_command: make canonical-model-check
+criteria:
+  - all accepted H17 S1 requirement fields are preserved exactly
+  - H17 cross-context flow materialization join and explicit deferrals are preserved exactly
+  - participating-context tactical models are referenced from their CM2/CM3 target owners rather than duplicated
+  - Full Vendor-Neutral Policy Export remains explicitly non-peer
+  - strategic non-peer composition and relationship truth stays owned by docs/model/strategic
+result: awaiting_clean_ci

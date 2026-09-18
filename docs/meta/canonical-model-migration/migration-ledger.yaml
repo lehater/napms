@@ -155,8 +155,8 @@ units:
 
   - id: ACCESS-POLICY
     phase: CM3
-    status: EQUIVALENCE_REVIEW
-    authority: legacy
+    status: COMPLETE
+    authority: target
     source_paths:
       - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
     source_selector: canonical_payload.participating_contexts.Access Policy
@@ -169,20 +169,40 @@ units:
       - docs/model/contexts/access-policy/domain-model.yaml
     ownership_note: Only the Access Policy participating-context tactical payload moves here. CM1 owns strategic Access Policy purpose/responsibility/language. H17 cross-context flow materialization and explicit deferrals remain with MVP-JOURNEY.
     cutover_check:
-      state: PENDING_CI
+      state: PASS
       review: docs/meta/canonical-model-migration/cm3-ap-equivalence-review.yaml
       command: make canonical-model-check
+      evidence: {commit: 07e4d98841c59a9390cd528e25181523c10a2f26, workflow_run: 35290720647, workflow_job: 105432755445}
 
   - id: MVP-JOURNEY
     phase: CM4
-    status: PENDING
+    status: EQUIVALENCE_REVIEW
     authority: legacy
     source_paths:
       - docs/migration/revalidated/h17-mvp-journey/s1/mvp-vendor-neutral-policy-export.yaml
       - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
+    source_selectors:
+      - canonical_payload
+      - canonical_payload.cross_context_flow
+      - canonical_payload.materialization_join
+      - canonical_payload.explicit_deferrals
+    depends_on_target:
+      - docs/model/strategic/capabilities.yaml
+      - docs/model/strategic/bounded-contexts.yaml
+      - docs/model/strategic/context-relationships.yaml
+      - docs/model/contexts/resource-catalogue/domain-model.yaml
+      - docs/model/contexts/application-communication-catalogue/domain-model.yaml
+      - docs/model/contexts/application-deployment/domain-model.yaml
+      - docs/model/contexts/business-connectivity/domain-model.yaml
+      - docs/model/contexts/access-policy/domain-model.yaml
+      - docs/model/contexts/authority-management/language.yaml
     target_paths:
       - docs/model/use-cases/first-mvp-policy-export.yaml
-    cutover_check: {state: NOT_RUN}
+    ownership_note: The use case owns accepted end-to-end requirement and cross-context flow/materialization semantics. Context-owned tactical semantics and strategic non-peer composition truth are referenced, not duplicated.
+    cutover_check:
+      state: PENDING_CI
+      review: docs/meta/canonical-model-migration/cm4-mvp-journey-equivalence-review.yaml
+      command: make canonical-model-check
 
   - id: NON-PEER-COMPOSITIONS
     phase: CM1
