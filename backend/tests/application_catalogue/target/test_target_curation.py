@@ -168,6 +168,24 @@ class FakeCatalogue:
     def get_interaction_definition(self, interaction_definition_id):
         return self.interaction_definitions.get(interaction_definition_id)
 
+    def find_interaction_definition_by_pair(
+        self,
+        *,
+        application_id,
+        source_component_id,
+        destination_component_id,
+    ):
+        return next(
+            (
+                item
+                for item in self.interaction_definitions.values()
+                if item.application_id == application_id
+                and item.source_component_id == source_component_id
+                and item.destination_component_id == destination_component_id
+            ),
+            None,
+        )
+
     def add_interaction_definition(self, value):
         self.interaction_definitions[value.interaction_definition_id] = value
 
@@ -317,6 +335,35 @@ def _select(catalogue, identities, provenance, deployment, definition, key):
     )
     assert result.outcome is TargetMutationOutcome.CREATED
     return result
+
+
+def test_create_interaction_definition_rejects_duplicate_directed_pair() -> None:
+    catalogue = _catalogue()
+    identities = FakeIdentities()
+    provenance = FakeProvenance()
+    first = _create_definition(catalogue, identities, provenance)
+
+    result = CreateInteractionDefinition(
+        authority=PermitAuthority(),
+        catalogue=catalogue,
+        identities=identities,
+        provenance=provenance,
+    ).execute(
+        CreateInteractionDefinitionCommand(
+            application_id=UUID(int=1),
+            source_component_id=UUID(int=2),
+            destination_component_id=UUID(int=3),
+            traffic_alternatives=_traffic(8443),
+            actor_id="actor-1",
+            effective_time=NOW,
+            idempotency_key="duplicate-directed-pair",
+        )
+    )
+
+    assert result.outcome is TargetMutationOutcome.ALREADY_EXISTS
+    assert len(catalogue.interaction_definitions) == 1
+    assert catalogue.interaction_definitions[first.interaction_definition_id] == first
+    assert catalogue.commits == 1
 
 
 def test_create_interaction_definition_rejects_component_from_another_application() -> None:
