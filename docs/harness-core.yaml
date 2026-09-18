@@ -32,7 +32,7 @@ authorities:
       atomic: true
 
   - id: STRATEGIC-DOMAIN-DESIGN
-    responsibility: Own strategic DDD engineering knowledge: capability model, Bounded Context decomposition and context relationships.
+    responsibility: "Own strategic DDD engineering knowledge: capability model, Bounded Context decomposition and context relationships."
     boundary:
       semantic_cohesion: These artifacts jointly answer how the domain is partitioned and related at strategic level.
       independent_change: Strategic decomposition can evolve without directly editing each tactical model or technical architecture.
@@ -48,7 +48,7 @@ authorities:
       atomic: true
 
   - id: TACTICAL-DOMAIN-DESIGN
-    responsibility: Own tactical DDD engineering knowledge across the selected Bounded Contexts: language, decisions, processes, aggregates, invariants and public domain semantics.
+    responsibility: "Own tactical DDD engineering knowledge across the selected Bounded Contexts: language, decisions, processes, aggregates, invariants and public domain semantics."
     boundary:
       semantic_cohesion: All artifacts answer how accepted domain behavior is modeled tactically; individual Bounded Contexts are subjects/artifact partitions, not separate Harness Authorities.
       independent_change: Tactical modeling can evolve while strategic boundaries/use-case contracts remain stable and without deciding technical transport/storage.
@@ -88,7 +88,7 @@ authorities:
       atomic: true
 
   - id: DATA-DESIGN
-    responsibility: Own physical persistence engineering knowledge: PostgreSQL topology, schema ownership, relational constraints and storage representations.
+    responsibility: "Own physical persistence engineering knowledge: PostgreSQL topology, schema ownership, relational constraints and storage representations."
     boundary:
       semantic_cohesion: Decisions define one physical data-storage model.
       independent_change: Storage design can evolve behind stable domain/application/interface contracts.
