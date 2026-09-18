@@ -10,30 +10,31 @@ ledger: docs/meta/canonical-model-migration/migration-ledger.yaml
 
 program:
   status: ACTIVE
-  current_phase: CM4
+  current_phase: CM5
   current_phase_state: IN_PROGRESS
-  completed_phases: [CM0, CM1, CM2, CM3]
+  completed_phases: [CM0, CM1, CM2, CM3, CM4]
 
 current_work:
-  task_id: CM4-MVP-JOURNEY
-  name: Migrate first-MVP cross-context journey
+  task_id: CM5-01
+  name: Reconcile architecture contracts and persistence ownership
   state: IN_PROGRESS
-  objective: Move the accepted H17 S1 requirement and cross-context tactical flow into one stable use-case owner while referencing context-owned models instead of duplicating them.
-  source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM4
-  authority_unit: MVP-JOURNEY
+  objective: Split accepted H18/H19 technical truth among the smallest specialized canonical owners without copying structural truth or inventing missing contract/persistence details.
+  source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM5
+  authority_unit: SYSTEM-ARCHITECTURE
   predecessor_result:
-    unit: ACCESS-POLICY
+    unit: MVP-JOURNEY
     result: PASS
-    review: docs/meta/canonical-model-migration/cm3-ap-equivalence-review.yaml
+    review: docs/meta/canonical-model-migration/cm4-mvp-journey-equivalence-review.yaml
   completed_actions:
-    - Completed CM3 after clean Access Policy equivalence CI.
-    - Built the first-MVP use-case candidate from accepted H17 S1 plus H17 cross-context flow/materialization/deferrals.
-    - Replaced duplicated participating-context tactical payloads with references to CM2/CM3 target owners.
-  next_action: Run canonical-model-check on a clean branch checkout. If PASS, cut over MVP-JOURNEY and complete CM4.
+    - Cut over the first-MVP journey after clean canonical-model-check CI.
+    - Inventoried H18 H19 Structurizr and existing OpenAPI evidence.
+    - Identified target ownership split for structural C4 architecture architecture rules HTTP contract and physical persistence.
+    - Confirmed that no accepted full-system OpenAPI or complete physical persistence model currently exists.
+  next_action: Reconcile Structurizr against H18 structural semantics and create a machine-readable architecture-rules target for the accepted non-structural H18 constraints.
   stop_conditions:
-    - any accepted H17 requirement or cross-context flow semantic would be lost
-    - a participating-context tactical model would need to be duplicated
-    - a non-peer composition would be promoted to a peer Bounded Context
+    - a structural mismatch would require silently changing accepted architecture
+    - OpenAPI request/response semantics would have to be inferred from product code
+    - physical persistence details would have to be guessed rather than explicitly designed
 
 authority:
   namespace: docs/

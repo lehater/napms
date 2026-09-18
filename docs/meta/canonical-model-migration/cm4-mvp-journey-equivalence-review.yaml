@@ -3,7 +3,7 @@ kind: canonical-model-migration-equivalence-review
 id: NAPMS-CM4-MVP-JOURNEY-EQUIVALENCE
 phase: CM4
 unit: MVP-JOURNEY
-status: PENDING_CI
+status: PASS
 reviewed_at: 2026-09-18
 check_command: make canonical-model-check
 criteria:
@@ -12,4 +12,8 @@ criteria:
   - participating-context tactical models are referenced from their CM2/CM3 target owners rather than duplicated
   - Full Vendor-Neutral Policy Export remains explicitly non-peer
   - strategic non-peer composition and relationship truth stays owned by docs/model/strategic
-result: awaiting_clean_ci
+result: PASS
+evidence:
+  commit: ec3171b05f417294e373c35e090cee2a6654da24
+  workflow_run: 35290862998
+  workflow_job: 105433185925

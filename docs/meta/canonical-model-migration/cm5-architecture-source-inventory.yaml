@@ -1,0 +1,103 @@
+version: 1
+kind: canonical-model-migration-source-inventory
+id: NAPMS-CM5-ARCHITECTURE-SOURCE-INVENTORY
+task_ref: CM5-01
+phase: CM5
+status: INVENTORIED
+recorded_at: 2026-09-18
+
+accepted_sources:
+  system_architecture:
+    path: docs/migration/revalidated/h18-mvp-architecture/s3/mvp-system-architecture.yaml
+    accepted_anchor: NAPMS-S3-FIRST-MVP-SYSTEM-ARCHITECTURE
+  implementation_readiness:
+    path: docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-implementation-readiness.yaml
+    accepted_anchor: NAPMS-S4-FIRST-MVP-IMPLEMENTATION-READINESS
+  structurizr:
+    path: docs/architecture/structurizr/workspace.dsl
+    role: already-canonical structural/C4 model
+  http_pilot_evidence:
+    path: docs/pilot/materialized/contracts/http/resource-catalogue.openapi.yaml
+    role: non-canonical pilot evidence only
+
+target_ownership:
+  structural_c4:
+    owner: docs/architecture/structurizr/workspace.dsl
+    source_semantics:
+      - H18 system_shape
+      - H18 backend_modules structural realization
+      - H18 deployment baseline
+      - H18 explicit module interaction topology where represented
+    rule: Structurizr owns topology and structural relationships only; do not duplicate those in a second structural model.
+
+  architecture_rules:
+    candidate_owner: docs/architecture/mvp-system-rules.yaml
+    source_semantics:
+      - H18 architecture_goal
+      - H18 frontend_backend_boundary design/error rules that are not the OpenAPI contract itself
+      - H18 interaction_rules
+      - H18 authorization
+      - H18 consistency
+      - H18 deployment external-dependency/evolution rules
+      - H18 excluded_from_mvp_runtime
+      - H18 persistence ownership/mutation/read/transaction rules that constrain but do not define physical columns
+    rule: Keep non-C4 architectural constraints machine-readable without pretending Structurizr owns them.
+
+  http_contract:
+    candidate_owner: docs/contracts/http/napms.openapi.yaml
+    source_semantics:
+      - H18 frontend_backend_boundary protocol payload style canonical-contract decision and required capabilities
+      - H19 application_api operations and API-wide rules
+    gap: No accepted full-system OpenAPI document currently exists. The Resource Catalogue OpenAPI file is explicitly a non-canonical pilot subset.
+    rule: Do not infer request/response schemas from product code. Build the canonical OpenAPI only from accepted design truth; unresolved contract details must remain explicit gaps.
+
+  persistence:
+    candidate_owner: docs/architecture/persistence/mvp-persistence.yaml
+    source_semantics:
+      - H18 PostgreSQL topology and module ownership/mutation/read/migration/transaction rules
+      - H19 module schema-to-table ownership
+      - H19 persistence rules
+    gap: Accepted truth does not define columns, primary keys, foreign keys, nullability, cardinalities, indexes, checks or full physical relation semantics.
+    rule: Do not call the current table-ownership model an ERD. A real ERD is generated only after the missing physical model is designed explicitly.
+
+findings:
+  - Structurizr already covers the accepted three deployment units, modular-monolith backend modules, PostgreSQL container and main module relationships.
+  - Structurizr does not and should not carry all authorization consistency error and persistence-policy rules from H18.
+  - H18 says one canonical OpenAPI contract exists conceptually; H19 fixes the required operation list and API-wide rules, but there is no accepted full-system OpenAPI artifact.
+  - The only repository OpenAPI under docs is a Resource Catalogue pilot candidate and is explicitly non-canonical.
+  - H19 persistence truth is schema/table ownership plus behavioral rules, not a complete physical data model.
+  - AsyncAPI is not applicable to the accepted MVP because backend module interaction is in-process and no asynchronous integration boundary is accepted.
+  - CM5 should therefore split H18/H19 semantics among specialized owners instead of moving the H18 YAML wholesale.
+
+reconciliation_checks:
+  structurizr:
+    - one browser frontend
+    - one modular-monolith backend
+    - one PostgreSQL database
+    - RC ACC AD BC AP AM plus non-peer policy-export composition
+    - HTTP/JSON frontend-to-backend boundary
+    - in-process owner-contract module relationships
+    - accepted MVP deployment topology
+  architecture_rules:
+    - no internal HTTP between BC modules
+    - no duplicate mutable cross-module truth
+    - protected use cases use backend session identity plus Authority Management admission
+    - fail-closed unknown/ambiguous authority
+    - export is complete Success or explicit Unresolved
+    - no direct cross-module table mutation
+    - excluded runtime concerns stay excluded
+  http_contract:
+    - exactly the H19 accepted operation set unless an explicit design change is made
+    - protected operations do not accept caller-supplied actor identity
+    - mutation rejection is atomic
+    - export cannot return silent partial success
+  persistence:
+    - one PostgreSQL
+    - module-owned schemas/table sets match H19
+    - physical columns/keys/cardinalities remain unresolved until explicitly designed
+
+next:
+  - Reconcile Structurizr against H18 structural semantics and record any unsupported or extra assertions.
+  - Create the architecture-rules target from non-structural H18 semantics.
+  - Build an OpenAPI contract only to the precision justified by accepted H18/H19 truth; record any schema/outcome gaps rather than guessing.
+  - Design the missing physical persistence model as an explicit CM5 design task before ERD generation.

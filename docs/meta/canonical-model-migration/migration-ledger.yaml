@@ -176,8 +176,8 @@ units:
 
   - id: MVP-JOURNEY
     phase: CM4
-    status: EQUIVALENCE_REVIEW
-    authority: legacy
+    status: COMPLETE
+    authority: target
     source_paths:
       - docs/migration/revalidated/h17-mvp-journey/s1/mvp-vendor-neutral-policy-export.yaml
       - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
@@ -200,9 +200,10 @@ units:
       - docs/model/use-cases/first-mvp-policy-export.yaml
     ownership_note: The use case owns accepted end-to-end requirement and cross-context flow/materialization semantics. Context-owned tactical semantics and strategic non-peer composition truth are referenced, not duplicated.
     cutover_check:
-      state: PENDING_CI
+      state: PASS
       review: docs/meta/canonical-model-migration/cm4-mvp-journey-equivalence-review.yaml
       command: make canonical-model-check
+      evidence: {commit: ec3171b05f417294e373c35e090cee2a6654da24, workflow_run: 35290862998, workflow_job: 105433185925}
 
   - id: NON-PEER-COMPOSITIONS
     phase: CM1
@@ -219,7 +220,8 @@ units:
 
   - id: SYSTEM-ARCHITECTURE
     phase: CM5
-    status: PARTIALLY_TARGET
+    status: IN_PROGRESS
+    source_inventory: docs/meta/canonical-model-migration/cm5-architecture-source-inventory.yaml
     authority: mixed-temporary
     source_paths:
       - docs/migration/revalidated/h18-mvp-architecture/s3/mvp-system-architecture.yaml
@@ -230,7 +232,8 @@ units:
 
   - id: HTTP-CONTRACT
     phase: CM5
-    status: PENDING
+    status: GAP_IDENTIFIED
+    source_inventory: docs/meta/canonical-model-migration/cm5-architecture-source-inventory.yaml
     authority: legacy
     source_paths:
       - docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-implementation-readiness.yaml
@@ -242,6 +245,7 @@ units:
   - id: PERSISTENCE-MODEL
     phase: CM5
     status: GAP_IDENTIFIED
+    source_inventory: docs/meta/canonical-model-migration/cm5-architecture-source-inventory.yaml
     authority: legacy-partial
     source_paths:
       - docs/migration/revalidated/h18-mvp-architecture/s3/mvp-system-architecture.yaml

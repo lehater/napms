@@ -76,7 +76,7 @@ phases:
 
   - id: CM4
     name: Cross-context journeys
-    status: ACTIVE
+    status: COMPLETE
     depends_on: [CM3]
     objective: Normalize current cross-context use cases/journeys while reusing non-peer compositions already owned by the strategic spine.
     exit_criteria:
@@ -87,7 +87,7 @@ phases:
 
   - id: CM5
     name: Architecture contracts and persistence normalization
-    status: PENDING
+    status: ACTIVE
     depends_on: [CM4]
     objective: Reconcile system-level S3 truth with specialized canonical notations and add missing physical persistence truth.
     exit_criteria:
