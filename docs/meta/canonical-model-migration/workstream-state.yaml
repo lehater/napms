@@ -25,7 +25,11 @@ current_work:
     unit: APPLICATION-COMMUNICATION-CATALOGUE
     result: PASS
     review: docs/meta/canonical-model-migration/cm3-acc-equivalence-review.yaml
-  next_action: Extract only the Application Deployment participating-context payload, preserve aggregate invariants and public semantics, generate a review projection without invented internals, validate then cut over.
+  completed_actions:
+    - Extracted only the accepted H17 Application Deployment participating-context payload.
+    - Preserved ComponentDeployment aggregate invariants and public semantics without inventing internal entities.
+    - Kept ACC Component and RC Resource ownership external.
+  next_action: Run canonical-model-check on a clean branch checkout. If PASS, cut over APPLICATION-DEPLOYMENT and continue with Business Connectivity.
   stop_conditions:
     - extraction would require inventing ComponentDeployment internals beyond accepted H17 semantics
     - ACC or RC ownership would be copied into Application Deployment
