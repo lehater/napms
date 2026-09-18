@@ -57,7 +57,20 @@ check_body=target_body("design-check")
 sync_body=target_body("design-sync")
 if "check_canonical_graph.py" not in check_body:
     fail("design-check does not validate canonical graph")
-if "check_cm" in check_body or "migration/revalidated" in check_body:
+legacy_checks=(
+    "check_cm1_strategic_equivalence.py",
+    "check_cm2_resource_catalogue_equivalence.py",
+    "check_cm3_authority_management_equivalence.py",
+    "check_cm3_acc_equivalence.py",
+    "check_cm3_ad_equivalence.py",
+    "check_cm3_bc_equivalence.py",
+    "check_cm3_ap_equivalence.py",
+    "check_cm4_mvp_journey_equivalence.py",
+    "check_cm5_architecture_split.py",
+    "check_cm6_s4_equivalence.py",
+    "canonical-model-check",
+)
+if any(item in check_body for item in legacy_checks) or "migration/revalidated" in check_body:
     fail("design-check still depends on migration equivalence")
 for generator in ("generate_strategic_views.py","generate_resource_catalogue_views.py","generate_acc_view.py","generate_ad_view.py","generate_bc_view.py","generate_ap_view.py","generate_mvp_journey_view.py","generate_persistence_erd.py"):
     if generator not in sync_body:
