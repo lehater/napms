@@ -26,6 +26,7 @@ on:
       - "tools/check_cm3_ap_equivalence.py"
       - "tools/check_cm4_mvp_journey_equivalence.py"
       - "tools/check_cm5_architecture_split.py"
+      - "tools/check_cm5_openapi_design.py"
       - "tools/generate_bc_view.py"
       - "tools/generate_ap_view.py"
       - "tools/generate_mvp_journey_view.py"

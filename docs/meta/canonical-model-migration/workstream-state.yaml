@@ -40,7 +40,11 @@ current_work:
     - Structurizr plus mvp-system-rules.yaml now own accepted system architecture truth.
     - napms-api-requirements.yaml now owns the accepted HTTP operation/rule baseline while explicitly marking missing OpenAPI detail.
     - mvp-persistence.yaml now owns the accepted PostgreSQL/schema/table baseline while explicitly marking missing physical detail.
-  next_action: Design the canonical OpenAPI document from accepted use-case/domain/API requirements, recording technical representation decisions explicitly and using no product code as design truth. Then design the physical persistence detail and generate ERD.
+  completed_actions:
+    - Designed docs/contracts/http/napms.openapi.yaml from accepted target requirements/domain models only.
+    - Recorded CM5 technical representation choices in docs/architecture/mvp-technical-representation.yaml.
+    - Added deterministic checks for exact operation coverage, session identity, outcome separation and no trusted actor request fields.
+  next_action: Run canonical-model-check on a clean checkout. If PASS, mark the OpenAPI contract complete and proceed to full physical persistence detail plus ERD generation.
   stop_conditions:
     - a structural mismatch would require silently changing accepted architecture
     - OpenAPI request/response semantics would have to be inferred from product code

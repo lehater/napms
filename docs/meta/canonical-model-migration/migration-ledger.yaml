@@ -237,7 +237,7 @@ units:
 
   - id: HTTP-CONTRACT
     phase: CM5
-    status: DESIGNING_OPENAPI
+    status: OPENAPI_REVIEW
     source_inventory: docs/meta/canonical-model-migration/cm5-architecture-source-inventory.yaml
     authority: target
     source_paths:
@@ -247,10 +247,10 @@ units:
       - docs/contracts/http/napms.openapi.yaml
     note: Accepted HTTP/API requirement truth is migrated first. The full OpenAPI remains an explicit design gap until request/response/outcome schema details are designed without using implementation code as truth.
     cutover_check:
-      state: BASELINE_PASS_FULL_OPENAPI_PENDING
-      review: docs/meta/canonical-model-migration/cm5-architecture-split-equivalence-review.yaml
+      state: OPENAPI_PENDING_CI
+      baseline_review: docs/meta/canonical-model-migration/cm5-architecture-split-equivalence-review.yaml
+      design_review: docs/meta/canonical-model-migration/cm5-openapi-design-review.yaml
       command: make canonical-model-check
-      evidence: {commit: 20e51df6c870bb864cf2b75f9c68d99a23c4ac0a, workflow_run: 35291152800, workflow_job: 105434054140}
 
   - id: PERSISTENCE-MODEL
     phase: CM5
