@@ -226,6 +226,12 @@ contracts:
       - {id: relationships, capability: domain.context-relationships, authority: DOMAIN-TOPOLOGY}
       - {id: materialization, capability: application.policy-export.materialization, authority: POLICY-EXPORT-COMPOSITION}
       - {id: runtime, capability: architecture.runtime-structure, authority: RUNTIME-TOPOLOGY}
+      - {id: resource, capability: domain.resource-catalogue.semantics, authority: RESOURCE-CATALOGUE}
+      - {id: authority, capability: domain.authority-management.semantics, authority: AUTHORITY-MANAGEMENT}
+      - {id: communication, capability: domain.application-communication.semantics, authority: APPLICATION-COMMUNICATION-CATALOGUE}
+      - {id: deployment, capability: domain.application-deployment.semantics, authority: APPLICATION-DEPLOYMENT}
+      - {id: business, capability: domain.business-connectivity.semantics, authority: BUSINESS-CONNECTIVITY}
+      - {id: policy, capability: domain.access-policy.semantics, authority: ACCESS-POLICY}
 
   - id: SECURITY-ARCHITECTURE-INPUT
     consumer: SECURITY-ARCHITECTURE
