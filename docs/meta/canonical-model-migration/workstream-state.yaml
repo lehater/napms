@@ -15,26 +15,20 @@ program:
   completed_phases: [CM0, CM1, CM2]
 
 current_work:
-  task_id: CM3-AM
-  name: Migrate Authority Management context-owned semantics
+  task_id: CM3-ACC
+  name: Migrate Application Communication Catalogue tactical semantics
   state: IN_PROGRESS
-  objective: Move remaining Authority Management-owned language/tactical semantics into target owners while reusing the CM1 strategic definition and CM2 use-case admission references.
+  objective: Move the accepted H17 Application Communication Catalogue tactical submodel into its target owner without copying the CM1 strategic definition or H17 cross-context journey.
   source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM3
-  authority_unit: AUTHORITY-MANAGEMENT
+  authority_unit: APPLICATION-COMMUNICATION-CATALOGUE
   predecessor_result:
-    phase: CM2
+    unit: AUTHORITY-MANAGEMENT
     result: PASS
-    review: docs/meta/canonical-model-migration/cm2-resource-catalogue-equivalence-review.yaml
-  completed_actions:
-    - Confirmed CM1 already owns Authority Management purpose responsibility boundary and owned-language scope.
-    - Confirmed accepted H17 tactical model contains no Authority Management tactical payload.
-    - Isolated the one remaining accepted AM-owned glossary definition: Effective Authority.
-    - Created only docs/model/contexts/authority-management/language.yaml; no tactical aggregate model was invented.
-  next_action: Run canonical-model-check on a clean branch checkout. If PASS, cut over AUTHORITY-MANAGEMENT and continue with Application Communication Catalogue.
+    review: docs/meta/canonical-model-migration/cm3-authority-management-equivalence-review.yaml
+  next_action: Extract only the Application Communication Catalogue participating_context payload from accepted H17 tactical truth, preserve aggregate entities invariants and public semantics, generate a review projection without inferred associations, validate then cut over.
   stop_conditions:
-    - remaining AM semantics are already fully owned by strategic or use-case target artifacts
-    - a new AM aggregate model would require invention beyond accepted H17 truth
-    - RC-owned semantics would be duplicated into AM
+    - extraction would require adding aggregate/entity relationships not present in accepted H17 truth
+    - cross-context journey or materialization semantics would be copied into ACC ownership
 
 authority:
   namespace: docs/

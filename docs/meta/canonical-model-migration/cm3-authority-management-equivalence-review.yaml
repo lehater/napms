@@ -3,7 +3,7 @@ kind: canonical-model-migration-equivalence-review
 id: NAPMS-CM3-AM-EQUIVALENCE
 phase: CM3
 unit: AUTHORITY-MANAGEMENT
-status: PENDING_CI
+status: PASS
 reviewed_at: 2026-09-18
 check_command: make canonical-model-check
 criteria:
@@ -11,4 +11,11 @@ criteria:
   - target language references the CM1 strategic Authority Management owner
   - Resource Catalogue-owned glossary terms are not copied into Authority Management
   - no tactical aggregate/entity model is invented because accepted H17 tactical truth contains no Authority Management tactical payload
-result: awaiting_clean_ci
+result: PASS
+evidence:
+  branch_commit: f2ef2421d7395914d51a27c5fcec9ccd89d1c7f4
+  workflow_run: 35289509871
+  workflow_job: 105429090739
+  observed:
+    - Effective Authority definition preserved
+    - no Authority Management tactical aggregate invented because H17 contains no AM tactical payload
