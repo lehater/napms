@@ -8,7 +8,7 @@ scenarios:
   - id: QR-CORRECTNESS-001
     characteristic: functional-suitability
     requirement: A successful policy materialization is complete; missing required owner input yields Unresolved and never a silently partial result.
-    evidence_refs: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, SYSTEM-RULES, MVP-TEST-INTENT]
+    evidence_refs: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, SYSTEM-RULES]
   - id: QR-SECURITY-001
     characteristic: security
     requirement: Protected mutations require authenticated session identity and effective Authority Management admission; caller-supplied identity and UI visibility never authorize mutation.
@@ -23,8 +23,8 @@ scenarios:
     evidence_refs: [SYSTEM-RULES, PERSISTENCE]
   - id: QR-OPERABILITY-001
     characteristic: interaction-capability
-    requirement: The browser journey exposes validation, authorization denial and Unresolved outcomes without hidden or manually fabricated state.
-    evidence_refs: [MVP-IMPLEMENTATION-READINESS, MVP-TEST-INTENT]
+    requirement: User-visible validation, authorization denial and Unresolved outcomes must remain distinguishable rather than being collapsed into successful behavior.
+    evidence_refs: [FIRST-MVP-REQUIREMENTS, SYSTEM-RULES, OPENAPI]
 
 unresolved_quality_questions:
   - Numeric latency, throughput, availability and scale targets are not present in accepted upstream product truth. They remain unspecified rather than being invented by Architecture.
