@@ -20,6 +20,7 @@ Repository state, not chat history, determines where work resumes.
 - `docs/contracts/http/napms.openapi.yaml` — HTTP contract.
 - `docs/plans/**` — implementation-readiness and verification intent.
 - `docs/canonical-graph.yaml` — routing/dependency metadata only.
+- `docs/harness-core.yaml` — selected Harness integration metadata only; it references canonical-graph node IDs and never owns artifact paths, dependencies or product/domain/architecture semantics.
 - `docs-generated/**` — generated non-canonical views.
 - `docs/migration/revalidated/**` and `docs-legacy/**` — historical migration evidence.
 
@@ -51,6 +52,8 @@ For explicit evidence synthesis or substantial harvesting across one or more sta
 Change the smallest owning artifact set. Follow graph dependencies for downstream impact. Regenerate projections rather than editing generated diagrams.
 
 Use `make design-check`, `make design-sync`, and `python tools/check_canonical_graph.py --affected <NODE-ID>`.
+
+When Harness is used, treat `docs/harness-core.yaml` as a selected projection over `docs/canonical-graph.yaml`: Authority/Capability/Question metadata may be declared there, but routing remains owned by the canonical graph. Do not copy `path` or `depends_on` into Harness metadata.
 
 A Bounded Context is not automatically a service, process, database, team or deployment unit. Current MVP remains one browser frontend, one modular-monolith backend and one PostgreSQL database with module-owned persistence and in-process owner contracts.
 
