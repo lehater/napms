@@ -88,6 +88,20 @@ def main() -> int:
     assert requirement(result, "IMPLEMENTATION-CONSUMER", "http-contract")["status"] == "BLOCKED"
     assert requirement(result, "IMPLEMENTATION-CONSUMER", "persistence")["status"] == "BLOCKED"
 
+    blocked_deep_upstream = copy.deepcopy(projection)
+    blocked_deep_upstream["questions"].append({
+        "id": "Q-RC-CURATION-REQUIREMENT",
+        "authority": "RESOURCE-CATALOGUE-REQUIREMENTS",
+        "text": "Resolve a Resource Catalogue curation requirement uncertainty.",
+        "blocks": ["RC-CURATION"],
+    })
+    result = evaluate(graph, blocked_deep_upstream)
+    assert requirement(result, "RESOURCE-CATALOGUE-DOMAIN-INPUT", "behavior")["status"] == "BLOCKED"
+    resource = requirement(result, "IMPLEMENTATION-CONSUMER", "resource")
+    assert resource["status"] == "BLOCKED"
+    assert resource["blocked_by"] == ["Q-RC-CURATION-REQUIREMENT"]
+    assert requirement(result, "IMPLEMENTATION-CONSUMER", "flow")["status"] == "BLOCKED"
+
     wrong_expected_owner = copy.deepcopy(projection)
     contract = next(item for item in wrong_expected_owner["contracts"] if item["id"] == "IMPLEMENTATION-CONSUMER")
     req = next(item for item in contract["requires"] if item["id"] == "resource")
