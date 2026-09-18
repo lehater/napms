@@ -17,7 +17,14 @@ def _source_files(path: Path):
 
 
 def test_web_source_has_final_root_taxonomy():
-    assert _entries(WEB) == {"app", "features", "components", "lib", "vite-env.d.ts"}
+    assert _entries(WEB) == {
+        "app",
+        "features",
+        "components",
+        "design-system",
+        "lib",
+        "vite-env.d.ts",
+    }
     assert _entries(WEB / "components") == {"ui"}
 
 
