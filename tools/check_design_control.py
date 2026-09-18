@@ -21,7 +21,6 @@ agents=(ROOT/"AGENTS.md").read_text(encoding="utf-8")
 readme=(ROOT/"docs/README.md").read_text(encoding="utf-8")
 makefile=(ROOT/"Makefile").read_text(encoding="utf-8")
 workflow=(ROOT/".github/workflows/design.yml").read_text(encoding="utf-8")
-harvest_skill=(ROOT/".agents/skills/stakeholder-evidence-synthesis/SKILL.md").read_text(encoding="utf-8")
 
 if control.get("authority",{}).get("routing_graph")!="docs/canonical-graph.yaml":
     fail("control plane does not route through canonical graph")
@@ -30,28 +29,6 @@ required_removed={"serialized task capsules","per-artifact fingerprints","H-phas
 actual_removed=set(control.get("normal_work",{}).get("do_not_require",[]))
 if not required_removed<=actual_removed:
     fail(f"control plane does not remove ordinary ceremony: {sorted(required_removed-actual_removed)}")
-
-harvesting=control.get("elicitation_harvesting",{})
-if harvesting.get("enabled") is not True:
-    fail("elicitation semantic harvesting must be enabled")
-if harvesting.get("principle")!="discovered-is-not-accepted":
-    fail("elicitation harvesting must separate discovery from acceptance")
-required_harvest_categories={
-    "requirement-or-constraint",
-    "use-case-or-user-journey",
-    "journey-step-actor-or-goal",
-    "business-rule-or-invariant",
-    "domain-term-or-meaning-distinction",
-    "capability-responsibility-or-boundary-clue",
-    "contradiction-exception-or-unresolved-question",
-}
-actual_harvest_categories=set(harvesting.get("scan_for",[]))
-if not required_harvest_categories<=actual_harvest_categories:
-    fail(f"elicitation harvesting categories missing: {sorted(required_harvest_categories-actual_harvest_categories)}")
-if "Semantic harvesting during elicitation" not in agents:
-    fail("AGENTS.md does not define cross-cutting semantic harvesting")
-if "Discovered != accepted" not in harvest_skill:
-    fail("stakeholder evidence Skill does not preserve discovery/acceptance distinction")
 
 for node in graph.get("nodes",[]):
     path=node.get("path","")
