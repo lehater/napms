@@ -44,17 +44,17 @@ def main() -> int:
     result = evaluate(graph, missing_na_evidence)
     assert requirement(result, "ARCHITECTURE-TO-IMPLEMENTATION-DESIGN", "asynchronous-contract")["status"] == "DESIGN_GAP"
 
-    blocked_http = copy.deepcopy(projection)
-    blocked_http["questions"].append({
-        "id": "Q-HTTP-CONTRACT",
+    blocked_upstream = copy.deepcopy(projection)
+    blocked_upstream["questions"].append({
+        "id": "Q-SYSTEM-RULE",
         "authority": "SYSTEM-ARCHITECTURE",
-        "text": "Resolve an HTTP contract uncertainty.",
-        "blocks": ["OPENAPI"],
+        "text": "Resolve an architecture rule uncertainty.",
+        "blocks": ["SYSTEM-RULES"],
     })
-    result = evaluate(graph, blocked_http)
+    result = evaluate(graph, blocked_upstream)
     blocked = requirement(result, "IMPLEMENTATION-CONSUMER", "http-contract")
     assert blocked["status"] == "BLOCKED"
-    assert blocked["blocked_by"] == ["Q-HTTP-CONTRACT"]
+    assert blocked["blocked_by"] == ["Q-SYSTEM-RULE"]
 
     print("Harness documentation vertical acceptance PASS")
     return 0

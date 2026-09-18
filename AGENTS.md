@@ -13,18 +13,40 @@ Repository state, not chat history, determines where work resumes.
 
 ## Current design authority
 
+- `docs/requirements/**` — accepted product intent, behavior, scope and acceptance truth.
 - `docs/model/**` — strategic/tactical/domain/use-case truth.
 - `docs/architecture/structurizr/workspace.dsl` — structural C4/deployment architecture.
 - `docs/architecture/mvp-system-rules.yaml` — non-C4 architecture constraints.
+- `docs/architecture/mvp-technical-representation.yaml` — technical representation decisions.
 - `docs/architecture/persistence/mvp-persistence.yaml` — physical persistence design.
+- `docs/architecture/mvp-quality-requirements.yaml` — architecture-significant quality constraints.
+- `docs/architecture/mvp-threat-model.yaml` — first-MVP threat model.
+- `docs/architecture/mvp-observability.yaml` — diagnostic/observability requirements.
 - `docs/contracts/http/napms.openapi.yaml` — HTTP contract.
-- `docs/plans/**` — implementation-readiness and verification intent.
+- `docs/plans/**` — implementation design/readiness and verification intent.
 - `docs/canonical-graph.yaml` — routing/dependency metadata only.
-- `docs/harness-core.yaml` — selected Harness integration metadata only; it references canonical-graph node IDs and never owns artifact paths, dependencies or product/domain/architecture semantics.
+- `docs/harness-core.yaml` — NAPMS-owned Authority/Capability/Question/consumer-contract projection over the canonical graph; it never owns artifact paths, dependencies or product/domain/architecture semantics.
 - `docs-generated/**` — generated non-canonical views.
 - `docs/migration/revalidated/**` and `docs-legacy/**` — historical migration evidence.
 
 Product code/tests are implementation/evidence. Never use them to invent or reconstruct missing product/domain/architecture semantics.
+
+## Documentation vertical
+
+For the first-MVP pilot, responsibility boundaries are checked through `docs/harness-core.yaml`.
+
+The model is about decision ownership and downstream knowledge needs, not workflow state:
+
+- each selected canonical artifact belongs to one Authority;
+- bindings declare the capabilities that artifact provides;
+- contracts declare what a downstream responsibility needs;
+- a missing capability is a design gap and must be routed to the owning Authority;
+- `NOT_APPLICABLE` requires explicit canonical evidence;
+- unresolved Questions block directly named artifacts and their downstream dependency closure.
+
+Use `python tools/check_harness_vertical.py` for the real first-MVP contracts and `python tools/test_harness_vertical.py` for acceptance/regression behavior.
+
+This repository does not import, pin or call the separate `lehater/harness` repository. The local files are NAPMS-owned copies/adaptations of the ideas being piloted here.
 
 ## Semantic harvesting during elicitation
 
@@ -53,7 +75,7 @@ Change the smallest owning artifact set. Follow graph dependencies for downstrea
 
 Use `make design-check`, `make design-sync`, and `python tools/check_canonical_graph.py --affected <NODE-ID>`.
 
-When Harness is used, treat `docs/harness-core.yaml` as a selected projection over `docs/canonical-graph.yaml`: Authority/Capability/Question metadata may be declared there, but routing remains owned by the canonical graph. Do not copy `path` or `depends_on` into Harness metadata.
+When a downstream consumer reports missing knowledge, do not patch another Authority's canonical artifact opportunistically. Route the gap to the Authority that may decide it; after canonical repair, rerun affected contracts and projections.
 
 A Bounded Context is not automatically a service, process, database, team or deployment unit. Current MVP remains one browser frontend, one modular-monolith backend and one PostgreSQL database with module-owned persistence and in-process owner contracts.
 

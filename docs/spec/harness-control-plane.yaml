@@ -1,26 +1,30 @@
-version: 3
+version: 4
 kind: canonical-design-control
 id: NAPMS-DESIGN-CONTROL
-status: CURRENT
+status: PILOT_CURRENT
 
-purpose: Keep design work visible, linked and machine-checkable without making Harness bookkeeping a design process.
+purpose: Keep engineering knowledge visible, owned, linked and machine-checkable from requirements through implementation input without making Harness bookkeeping a design process.
 
 authority:
   canonical_root: docs/
   routing_graph: docs/canonical-graph.yaml
+  responsibility_contracts: docs/harness-core.yaml
   generated_root: docs-generated/
   generated_is_authority: false
   retired_migration_evidence: [docs/migration/revalidated/, docs-legacy/]
   product_code_tests_as_design_truth: forbidden
+  external_harness_runtime_dependency: forbidden
 
 normal_work:
   start:
     - Read AGENTS.md.
     - Read docs/canonical-graph.yaml to locate the owning artifact and direct dependencies.
+    - Read docs/harness-core.yaml when work crosses an Authority boundary or prepares downstream implementation/verification.
     - Read a current workstream state only when the task belongs to an active workstream.
   cycle:
     - change the smallest owning canonical artifact set
     - determine downstream impact from the graph
+    - evaluate affected responsibility contracts
     - run the smallest applicable semantic/format validators
     - regenerate affected projections
     - persist coherent design and durable workstream state
@@ -31,30 +35,42 @@ normal_work:
     - per-artifact fingerprints
     - copied provenance wrappers
     - a universal design DSL
+    - runtime access to the separate lehater/harness repository
 
 commands:
   validate: make design-check
+  validate_vertical: python tools/check_harness_vertical.py
+  regression_vertical: python tools/test_harness_vertical.py
   regenerate: make design-sync
   affected_example: python tools/check_canonical_graph.py --affected AP-DOMAIN
 
 stop_conditions:
   - required human-owned product/domain truth is missing
   - current canonical owners contradict each other materially
+  - a required consumer capability is DESIGN_GAP
+  - an unresolved Question blocks a required provider or its downstream dependency closure
   - a requested action lacks required authorization
   - a consumed canonical input changes before a coherent write
   - requested scope is complete
 
 specialized_owners:
+  requirements: docs/requirements/
   structural_c4: docs/architecture/structurizr/workspace.dsl
   http: docs/contracts/http/napms.openapi.yaml
   persistence: docs/architecture/persistence/mvp-persistence.yaml
+  quality: docs/architecture/mvp-quality-requirements.yaml
+  security_review: docs/architecture/mvp-threat-model.yaml
+  observability: docs/architecture/mvp-observability.yaml
   semantic_domain: docs/model/
   implementation_readiness: docs/plans/
 
 rules:
-  - One semantic fact has one current owner; other artifacts reference it.
+  - One semantic fact has one current owner; other artifacts reference or derive from it.
   - Standard DSLs own only the truth they naturally express.
   - Generators never invent missing semantic details.
+  - Consumer contracts define required knowledge, not workflow state or approval.
+  - NOT_APPLICABLE requires canonical evidence; missing knowledge is not equivalent to non-applicability.
+  - Missing downstream knowledge is routed to the Authority allowed to decide it.
   - Bounded Context does not imply service process database team or deployment unit.
   - Implementation readiness never grants product implementation authorization.
   - Historical migration artifacts are evidence, not normal navigation.

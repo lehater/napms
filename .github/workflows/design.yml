@@ -9,6 +9,7 @@ on:
       - "docs/README.md"
       - "docs/canonical-graph.yaml"
       - "docs/harness-core.yaml"
+      - "docs/requirements/**"
       - "docs/discovery/**"
       - "docs/model/**"
       - "docs/architecture/**"
@@ -19,6 +20,8 @@ on:
       - "docs/spec/artifacts.md"
       - "docs/meta/current-workstream.yaml"
       - "tools/check_canonical_graph.py"
+      - "tools/check_harness_vertical.py"
+      - "tools/test_harness_vertical.py"
       - "tools/check_openapi_contract.py"
       - "tools/check_persistence_model.py"
       - "tools/check_design_control.py"
@@ -36,6 +39,7 @@ on:
       - "docs/README.md"
       - "docs/canonical-graph.yaml"
       - "docs/harness-core.yaml"
+      - "docs/requirements/**"
       - "docs/discovery/**"
       - "docs/model/**"
       - "docs/architecture/**"
@@ -46,6 +50,8 @@ on:
       - "docs/spec/artifacts.md"
       - "docs/meta/current-workstream.yaml"
       - "tools/check_canonical_graph.py"
+      - "tools/check_harness_vertical.py"
+      - "tools/test_harness_vertical.py"
       - "tools/check_openapi_contract.py"
       - "tools/check_persistence_model.py"
       - "tools/check_design_control.py"
@@ -65,5 +71,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate canonical design graph and projections
+      - name: Validate canonical design graph, responsibility contracts and projections
         run: make design-check

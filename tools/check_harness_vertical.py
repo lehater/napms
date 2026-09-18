@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import copy
 from pathlib import Path
 from typing import Any
 import yaml
@@ -20,6 +19,38 @@ def load_yaml(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise VerticalError(f"{path.relative_to(ROOT)} must be a mapping")
     return value
+
+
+def _blocked_questions(
+    graph: dict[str, Any], projection: dict[str, Any]
+) -> dict[str, list[str]]:
+    nodes = {item["id"]: item for item in graph.get("nodes", [])}
+    reverse = {node_id: set() for node_id in nodes}
+    for node_id, node in nodes.items():
+        for dep in node.get("depends_on", []) or []:
+            reverse[dep].add(node_id)
+
+    def closure(seed: str) -> set[str]:
+        if seed not in nodes:
+            raise VerticalError(f"Question blocks unknown canonical artifact {seed}")
+        result = {seed}
+        stack = [seed]
+        while stack:
+            current = stack.pop()
+            for downstream in reverse[current]:
+                if downstream not in result:
+                    result.add(downstream)
+                    stack.append(downstream)
+        return result
+
+    blocked: dict[str, set[str]] = {}
+    for question in projection.get("questions", []) or []:
+        if question.get("resolution") is not None:
+            continue
+        for seed in question.get("blocks", []) or []:
+            for artifact in closure(seed):
+                blocked.setdefault(artifact, set()).add(question["id"])
+    return {artifact: sorted(question_ids) for artifact, question_ids in blocked.items()}
 
 
 def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any]:
@@ -45,12 +76,7 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
         if len(owners) != 1:
             raise VerticalError(f"capability {capability} spans authorities {sorted(owners)}")
 
-    unresolved_by_artifact: dict[str, list[str]] = {}
-    for question in projection.get("questions", []) or []:
-        if question.get("resolution") is not None:
-            continue
-        for artifact in question.get("blocks", []) or []:
-            unresolved_by_artifact.setdefault(artifact, []).append(question["id"])
+    blocked_by_artifact = _blocked_questions(graph, projection)
 
     result = {"satisfied": True, "contracts": []}
     contract_ids: set[str] = set()
@@ -90,7 +116,7 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
                         f"is owned by {sorted(owners)}, expected {expected_authority}"
                     )
                 blocked_by = sorted(
-                    {q for provider in providers for q in unresolved_by_artifact.get(provider, [])}
+                    {q for provider in providers for q in blocked_by_artifact.get(provider, [])}
                 )
                 status = "BLOCKED" if blocked_by else "PROVIDED"
             else:
@@ -105,7 +131,7 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
                             f"is owned by {sorted(owners)}, expected {expected_authority}"
                         )
                     blocked_by = sorted(
-                        {q for provider in evidence_providers for q in unresolved_by_artifact.get(provider, [])}
+                        {q for provider in evidence_providers for q in blocked_by_artifact.get(provider, [])}
                     )
                     providers = evidence_providers
                     status = "BLOCKED" if blocked_by else "NOT_APPLICABLE"
