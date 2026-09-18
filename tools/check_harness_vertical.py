@@ -21,8 +21,48 @@ def load_yaml(path: Path) -> dict[str, Any]:
     return value
 
 
+def _ids(items: Any, label: str) -> set[str]:
+    if not isinstance(items, list):
+        raise VerticalError(f"{label} must be a list")
+    result: set[str] = set()
+    for item in items:
+        if not isinstance(item, dict) or not isinstance(item.get("id"), str) or not item["id"]:
+            raise VerticalError(f"{label} entries require non-empty id")
+        if item["id"] in result:
+            raise VerticalError(f"{label} id {item['id']} is duplicated")
+        result.add(item["id"])
+    return result
+
+
+def _validate_authority_boundaries(projection: dict[str, Any]) -> set[str]:
+    authorities = projection.get("authorities", [])
+    authority_ids = _ids(authorities, "authorities")
+    for authority in authorities:
+        boundary = authority.get("boundary")
+        if not isinstance(boundary, dict):
+            raise VerticalError(f"authority {authority['id']}: boundary evidence is required")
+        for key in ("semantic_cohesion", "independent_change", "public_contract"):
+            if not isinstance(boundary.get(key), str) or not boundary[key].strip():
+                raise VerticalError(f"authority {authority['id']}: boundary.{key} is required")
+        if boundary.get("atomic") is not True:
+            raise VerticalError(f"authority {authority['id']}: boundary must explicitly conclude atomic: true")
+
+    for cluster in projection.get("decomposed_clusters", []) or []:
+        if not isinstance(cluster, dict) or not cluster.get("id"):
+            raise VerticalError("decomposed cluster requires id")
+        if cluster["id"] in authority_ids:
+            raise VerticalError(f"decomposed cluster {cluster['id']} may not remain an Authority")
+        replacements = cluster.get("replaced_by", [])
+        if not isinstance(replacements, list) or not replacements:
+            raise VerticalError(f"decomposed cluster {cluster['id']}: replacements are required")
+        missing = sorted(set(replacements) - authority_ids)
+        if missing:
+            raise VerticalError(f"decomposed cluster {cluster['id']}: unknown replacements {missing}")
+    return authority_ids
+
+
 def _blocked_questions(
-    graph: dict[str, Any], projection: dict[str, Any]
+    graph: dict[str, Any], projection: dict[str, Any], authority_ids: set[str], artifact_authority: dict[str, str]
 ) -> dict[str, list[str]]:
     nodes = {item["id"]: item for item in graph.get("nodes", [])}
     reverse = {node_id: set() for node_id in nodes}
@@ -44,8 +84,22 @@ def _blocked_questions(
         return result
 
     blocked: dict[str, set[str]] = {}
+    question_ids: set[str] = set()
     for question in projection.get("questions", []) or []:
-        if question.get("resolution") is not None:
+        if not isinstance(question, dict) or not question.get("id") or question["id"] in question_ids:
+            raise VerticalError("Question IDs must be present and unique")
+        question_ids.add(question["id"])
+        authority = question.get("authority")
+        if authority not in authority_ids:
+            raise VerticalError(f"Question {question['id']}: unknown authority {authority}")
+        if not isinstance(question.get("text"), str) or not question["text"].strip():
+            raise VerticalError(f"Question {question['id']}: text is required")
+        resolution = question.get("resolution")
+        if resolution is not None:
+            if resolution not in artifact_authority:
+                raise VerticalError(f"Question {question['id']}: unknown resolution artifact {resolution}")
+            if artifact_authority[resolution] != authority:
+                raise VerticalError(f"Question {question['id']}: resolution authority mismatch")
             continue
         for seed in question.get("blocks", []) or []:
             for artifact in closure(seed):
@@ -55,20 +109,30 @@ def _blocked_questions(
 
 def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any]:
     nodes = {item["id"]: item for item in graph.get("nodes", [])}
-    authorities = {item.get("id") for item in projection.get("authorities", []) if isinstance(item, dict)}
+    authority_ids = _validate_authority_boundaries(projection)
+    consumer_ids = _ids(projection.get("consumers", []) or [], "consumers")
+    if authority_ids & consumer_ids:
+        raise VerticalError(f"consumer-only IDs overlap Authorities: {sorted(authority_ids & consumer_ids)}")
+
     bindings = projection.get("bindings", [])
     provider_map: dict[str, list[str]] = {}
     artifact_authority: dict[str, str] = {}
 
     for binding in bindings:
-        artifact = binding["artifact"]
-        authority = binding["authority"]
+        if not isinstance(binding, dict):
+            raise VerticalError("binding must be a mapping")
+        artifact = binding.get("artifact")
+        authority = binding.get("authority")
         if artifact not in nodes:
             raise VerticalError(f"binding references unknown canonical artifact {artifact}")
-        if authority not in authorities:
+        if artifact in artifact_authority:
+            raise VerticalError(f"artifact {artifact} has multiple Authority bindings")
+        if authority not in authority_ids:
             raise VerticalError(f"binding {artifact} references unknown authority {authority}")
         artifact_authority[artifact] = authority
         for capability in binding.get("provides", []) or []:
+            if not isinstance(capability, str) or not capability:
+                raise VerticalError(f"binding {artifact}: invalid capability")
             provider_map.setdefault(capability, []).append(artifact)
 
     for capability, providers in provider_map.items():
@@ -76,7 +140,12 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
         if len(owners) != 1:
             raise VerticalError(f"capability {capability} spans authorities {sorted(owners)}")
 
-    blocked_by_artifact = _blocked_questions(graph, projection)
+    bound_authorities = set(artifact_authority.values())
+    unbound = sorted(authority_ids - bound_authorities)
+    if unbound:
+        raise VerticalError(f"Authorities without canonical artifacts: {unbound}")
+
+    blocked_by_artifact = _blocked_questions(graph, projection, authority_ids, artifact_authority)
 
     result = {"satisfied": True, "contracts": []}
     contract_ids: set[str] = set()
@@ -87,8 +156,8 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
             raise VerticalError("contract IDs must be present and unique")
         contract_ids.add(contract_id)
         consumer = contract.get("consumer")
-        if consumer not in authorities:
-            raise VerticalError(f"contract {contract_id}: unknown consumer authority {consumer}")
+        if consumer not in authority_ids and consumer not in consumer_ids:
+            raise VerticalError(f"contract {contract_id}: unknown consumer {consumer}")
 
         requirement_ids: set[str] = set()
         contract_result = {"id": contract_id, "consumer": consumer, "satisfied": True, "requirements": []}
@@ -99,7 +168,7 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
             if not requirement_id or requirement_id in requirement_ids:
                 raise VerticalError(f"contract {contract_id}: requirement IDs must be present and unique")
             requirement_ids.add(requirement_id)
-            if expected_authority not in authorities:
+            if expected_authority not in authority_ids:
                 raise VerticalError(f"contract {contract_id}/{requirement_id}: unknown authority {expected_authority}")
             if not isinstance(capability, str) or not capability:
                 raise VerticalError(f"contract {contract_id}/{requirement_id}: capability is required")

@@ -22,16 +22,17 @@ nodes:
   - {id: AP-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/access-policy/domain-model.yaml, depends_on: [ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, STRATEGIC-CONTEXTS]}
   - {id: FIRST-MVP-JOURNEY, kind: cross-context-use-case, path: docs/model/use-cases/first-mvp-policy-export.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, STRATEGIC-RELATIONSHIPS, RC-DOMAIN, AM-LANGUAGE, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN]}
   - {id: C4-STRUCTURE, kind: structural-architecture, path: docs/architecture/structurizr/workspace.dsl, depends_on: [STRATEGIC-CONTEXTS, FIRST-MVP-JOURNEY]}
-  - {id: SYSTEM-RULES, kind: architecture-rules, path: docs/architecture/mvp-system-rules.yaml, depends_on: [C4-STRUCTURE, FIRST-MVP-JOURNEY]}
-  - {id: TECH-REPRESENTATION, kind: technical-decisions, path: docs/architecture/mvp-technical-representation.yaml, depends_on: [SYSTEM-RULES]}
+  - {id: SYSTEM-RULES, kind: architecture-rules, path: docs/architecture/mvp-system-rules.yaml, depends_on: [C4-STRUCTURE, FIRST-MVP-JOURNEY, STRATEGIC-RELATIONSHIPS]}
+  - {id: MODULE-CONTRACTS, kind: module-contract-design, path: docs/architecture/mvp-module-contracts.yaml, depends_on: [SYSTEM-RULES, FIRST-MVP-JOURNEY, STRATEGIC-RELATIONSHIPS, RC-DOMAIN, AM-LANGUAGE, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN]}
+  - {id: TECH-REPRESENTATION, kind: technical-decisions, path: docs/architecture/mvp-technical-representation.yaml, depends_on: [SYSTEM-RULES, RC-DOMAIN, ACC-DOMAIN]}
   - {id: HTTP-REQUIREMENTS, kind: contract-requirements, path: docs/contracts/http/napms-api-requirements.yaml, depends_on: [SYSTEM-RULES, FIRST-MVP-JOURNEY]}
   - {id: OPENAPI, kind: http-contract, path: docs/contracts/http/napms.openapi.yaml, depends_on: [HTTP-REQUIREMENTS, TECH-REPRESENTATION]}
   - {id: PERSISTENCE, kind: physical-persistence-model, path: docs/architecture/persistence/mvp-persistence.yaml, depends_on: [SYSTEM-RULES, TECH-REPRESENTATION, RC-DOMAIN, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN, AM-LANGUAGE]}
-  - {id: QUALITY-REQUIREMENTS, kind: quality-requirements, path: docs/architecture/mvp-quality-requirements.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, SYSTEM-RULES, TECH-REPRESENTATION]}
+  - {id: QUALITY-REQUIREMENTS, kind: quality-requirements, path: docs/architecture/mvp-quality-requirements.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, SYSTEM-RULES, OPENAPI, PERSISTENCE]}
   - {id: THREAT-MODEL, kind: threat-model, path: docs/architecture/mvp-threat-model.yaml, depends_on: [SYSTEM-RULES, TECH-REPRESENTATION, PERSISTENCE]}
   - {id: OBSERVABILITY, kind: observability-requirements, path: docs/architecture/mvp-observability.yaml, depends_on: [C4-STRUCTURE, SYSTEM-RULES, TECH-REPRESENTATION, PERSISTENCE]}
-  - {id: MVP-IMPLEMENTATION-READINESS, kind: implementation-readiness, path: docs/plans/first-mvp-implementation-readiness.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, C4-STRUCTURE, SYSTEM-RULES, OPENAPI, PERSISTENCE, QUALITY-REQUIREMENTS, THREAT-MODEL, OBSERVABILITY]}
-  - {id: MVP-TEST-INTENT, kind: test-intent, path: docs/plans/first-mvp-test-intent.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, MVP-IMPLEMENTATION-READINESS, QUALITY-REQUIREMENTS, THREAT-MODEL, OBSERVABILITY]}
+  - {id: MVP-IMPLEMENTATION-READINESS, kind: implementation-plan, path: docs/plans/first-mvp-implementation-readiness.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, C4-STRUCTURE, SYSTEM-RULES, MODULE-CONTRACTS, TECH-REPRESENTATION, OPENAPI, PERSISTENCE, QUALITY-REQUIREMENTS, THREAT-MODEL, OBSERVABILITY]}
+  - {id: MVP-TEST-INTENT, kind: test-intent, path: docs/plans/first-mvp-test-intent.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, MODULE-CONTRACTS, MVP-IMPLEMENTATION-READINESS, QUALITY-REQUIREMENTS, THREAT-MODEL, OBSERVABILITY]}
 
 projections:
   - {id: CONTEXT-MAP, source_ids: [STRATEGIC-CAPABILITIES, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS], command: python tools/generate_strategic_views.py, outputs: [docs-generated/architecture/context-map.puml, docs-generated/architecture/strategic-collaboration-map.puml]}

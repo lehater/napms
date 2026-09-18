@@ -1,25 +1,176 @@
-version: 2
+version: 3
 kind: harness-canonical-graph-projection
 id: NAPMS-FIRST-MVP-DOCUMENTATION-VERTICAL
 status: PILOT
-scope: First-MVP engineering-knowledge vertical from requirements through implementation input and verification design.
+scope: First-MVP engineering-knowledge ownership graph from accepted requirements and domain owners through implementation input and verification design.
 source_graph: canonical-graph.yaml
 
-principle: Each downstream responsibility declares the capabilities it requires. Missing upstream semantics are routed to the owning authority instead of being invented downstream. Contracts are completeness checks, not workflow state.
+principle: Authority boundaries follow semantic decision ownership, not lifecycle stages. Each Authority must pass the same boundary checks: semantic cohesion, independent change, and a stable public contract with unambiguous Question routing.
+
+decomposed_clusters:
+  - id: DOMAIN-DESIGN
+    replaced_by: [DOMAIN-TOPOLOGY, RESOURCE-CATALOGUE, AUTHORITY-MANAGEMENT, APPLICATION-COMMUNICATION-CATALOGUE, APPLICATION-DEPLOYMENT, BUSINESS-CONNECTIVITY, ACCESS-POLICY, POLICY-EXPORT-COMPOSITION]
+  - id: SYSTEM-ARCHITECTURE
+    replaced_by: [RUNTIME-TOPOLOGY, APPLICATION-ARCHITECTURE, TECHNICAL-REPRESENTATION, HTTP-CONTRACT, PERSISTENCE-DESIGN, QUALITY-CONSTRAINTS, SECURITY-ANALYSIS, OBSERVABILITY-DESIGN]
+  - id: IMPLEMENTATION-DESIGN
+    replaced_by: [IMPLEMENTATION-PLAN]
 
 authorities:
   - id: PRODUCT-REQUIREMENTS
-    responsibility: Own accepted product intent, scope, externally observable behavior and acceptance examples.
-  - id: DOMAIN-DESIGN
-    responsibility: Own strategic/tactical domain semantics and cross-context domain/application flow.
-  - id: SYSTEM-ARCHITECTURE
-    responsibility: Own runtime/deployment structure, technical constraints, contracts, persistence, quality, security and operability design.
-  - id: IMPLEMENTATION-DESIGN
-    responsibility: Turn accepted upstream design into executable implementation slices and explicit completion criteria without inventing upstream semantics.
+    responsibility: Own accepted first-MVP intent, externally observable behavior, scope boundaries and acceptance examples.
+    boundary:
+      semantic_cohesion: One product slice and its externally meaningful success/failure expectations.
+      independent_change: Product intent can change without deciding domain internals or technical realization.
+      public_contract: Provides goal/scope, behavior and acceptance semantics to all downstream consumers; product Questions route here.
+      atomic: true
+
+  - id: DOMAIN-TOPOLOGY
+    responsibility: Own the strategic capability map, Bounded Context boundaries and semantic relationships between those contexts.
+    boundary:
+      semantic_cohesion: These artifacts jointly decide the strategic ownership topology of the domain.
+      independent_change: Strategic boundaries can be revised without changing each context's private tactical model in the same decision.
+      public_contract: Provides accepted context identities, capability ownership and relationship semantics; strategic-boundary Questions route here.
+      atomic: true
+
+  - id: RESOURCE-CATALOGUE
+    responsibility: Own Resource identity/lifecycle, AddressSpace realization, scope affiliation and responsibility semantics.
+    boundary:
+      semantic_cohesion: Resource catalogue facts share one language, lifecycle and invariant set.
+      independent_change: Resource semantics can evolve behind stable Resource identities/contracts without importing peer-private models.
+      public_contract: Provides Resource and current realization semantics; Resource Questions route here.
+      atomic: true
+
+  - id: AUTHORITY-MANAGEMENT
+    responsibility: Own actor/action/scope authority and protected-action admission semantics.
+    boundary:
+      semantic_cohesion: Actor, action, scope and effective authority form one reusable authorization model.
+      independent_change: Authority evaluation can evolve independently from Resource, Policy and presentation semantics.
+      public_contract: Provides effective admission semantics; authorization-meaning Questions route here.
+      atomic: true
+
+  - id: APPLICATION-COMMUNICATION-CATALOGUE
+    responsibility: Own Application, Component, Interaction and immutable InteractionContractRevision semantics.
+    boundary:
+      semantic_cohesion: Application structure and intended communication revisions form one language and lifecycle.
+      independent_change: Communication intent can evolve without owning deployment placement or policy lifecycle.
+      public_contract: Provides component/interaction identities and exact traffic revision semantics; communication-model Questions route here.
+      atomic: true
+
+  - id: APPLICATION-DEPLOYMENT
+    responsibility: Own ComponentDeployment identity and Component-to-Resource placement semantics.
+    boundary:
+      semantic_cohesion: Deployment identity is the cohesive relation between one ComponentRef and one ResourceRef.
+      independent_change: Placement can change independently from Component definition and Resource realization by creating/retiring deployment identities.
+      public_contract: Provides concrete deployment endpoint semantics; placement Questions route here.
+      atomic: true
+
+  - id: BUSINESS-CONNECTIVITY
+    responsibility: Own BusinessProcess and ConnectivityNeed semantics expressing why communication is needed.
+    boundary:
+      semantic_cohesion: Business process and connectivity need share one business-justification language and lifecycle.
+      independent_change: Business justification can evolve independently from authorization and technical realization.
+      public_contract: Provides current Process-backed ConnectivityNeed semantics; business-justification Questions route here.
+      atomic: true
+
+  - id: ACCESS-POLICY
+    responsibility: Own PolicyRule, RuleChange decisions, current effective revision and withdrawal semantics.
+    boundary:
+      semantic_cohesion: Proposal/decision history and current effective policy are one policy lifecycle.
+      independent_change: Policy lifecycle can evolve while referencing externally owned deployments, revisions and business justification.
+      public_contract: Provides current effective PolicyRule and decision history semantics; policy Questions route here.
+      atomic: true
+
+  - id: POLICY-EXPORT-COMPOSITION
+    responsibility: Own the cross-context first-MVP composition flow and complete-or-Unresolved materialization semantics without re-owning source facts.
+    boundary:
+      semantic_cohesion: All decisions concern orchestration of the same vendor-neutral policy materialization use case.
+      independent_change: Composition order/result semantics can evolve while source context ownership remains stable.
+      public_contract: Provides cross-context flow and materialization contract; composition Questions route here, source-fact Questions route to their source Authorities.
+      atomic: true
+
+  - id: RUNTIME-TOPOLOGY
+    responsibility: Own the C4 runtime structure and deployment mapping for the first-MVP system baseline.
+    boundary:
+      semantic_cohesion: Containers, components and deployment nodes describe one runtime topology.
+      independent_change: Runtime placement can change independently from transport payloads and persistence schema details when public contracts remain stable.
+      public_contract: Provides system/container/component/deployment topology; runtime-placement Questions route here.
+      atomic: true
+
+  - id: APPLICATION-ARCHITECTURE
+    responsibility: Own application-boundary organization, in-process module interaction rules, consistency rules, module contracts and the accepted session/admission boundary.
+    boundary:
+      semantic_cohesion: These decisions define how the modular monolith coordinates domain owners at the application boundary.
+      independent_change: Application coordination can evolve independently from HTTP schema, database layout and runtime placement while preserving their contracts.
+      public_contract: Provides module interaction/consistency/security-boundary rules and explicit module contracts; orchestration Questions route here.
+      atomic: true
+
+  - id: TECHNICAL-REPRESENTATION
+    responsibility: Own cross-boundary technical representation conventions needed consistently by HTTP and PostgreSQL realization.
+    boundary:
+      semantic_cohesion: Decisions translate already-owned identities, time, provenance and outcomes into stable technical representations without changing semantic meaning.
+      independent_change: Representation conventions can change independently from domain ownership if dependent technical contracts are revised coherently.
+      public_contract: Provides identifier/time/provenance/reference/outcome representation conventions and explicit non-decisions; representation Questions route here.
+      atomic: true
+
+  - id: HTTP-CONTRACT
+    responsibility: Own the external HTTP/JSON/CSV application contract and its OpenAPI realization.
+    boundary:
+      semantic_cohesion: Operations, payloads, status mapping and security declaration form one external application protocol contract.
+      independent_change: The HTTP adapter contract can evolve independently from internal module APIs and persistence when accepted behavior is preserved.
+      public_contract: Provides the canonical HTTP contract; transport-contract Questions route here.
+      atomic: true
+
+  - id: PERSISTENCE-DESIGN
+    responsibility: Own the first-MVP PostgreSQL topology, module-owned schemas, relational constraints and physical representation rules.
+    boundary:
+      semantic_cohesion: Tables, constraints, local references and migration rules form one physical persistence design.
+      independent_change: Physical storage can evolve independently from domain semantics and HTTP shape while preserving owner contracts.
+      public_contract: Provides persistence schema/constraint design; storage Questions route here.
+      atomic: true
+
+  - id: QUALITY-CONSTRAINTS
+    responsibility: Own architecture-significant quality constraints derived from accepted product and architecture truth without inventing production SLOs.
+    boundary:
+      semantic_cohesion: All decisions express cross-cutting implementation qualities that constrain realization and verification.
+      independent_change: Quality constraints may evolve with new accepted quality needs without reallocating domain ownership.
+      public_contract: Provides explicit quality constraints and explicit unknown numeric targets; quality Questions route here or upstream to PRODUCT-REQUIREMENTS when the missing fact is product-owned.
+      atomic: true
+
+  - id: SECURITY-ANALYSIS
+    responsibility: Own threat analysis and security-control coverage for the accepted first-MVP trust boundaries.
+    boundary:
+      semantic_cohesion: Threats and mapped controls form one security analysis over a fixed system baseline.
+      independent_change: Threat analysis can evolve independently from domain semantics while consuming the accepted security/application architecture.
+      public_contract: Provides threat/control coverage and deferrals; threat-analysis Questions route here, missing security decisions route to their owning architecture/product Authority.
+      atomic: true
+
+  - id: OBSERVABILITY-DESIGN
+    responsibility: Own diagnostic observability requirements needed to verify and operate the first-MVP modular monolith.
+    boundary:
+      semantic_cohesion: Correlation, outcome diagnostics and dependency health form one diagnostic contract.
+      independent_change: Observability realization can evolve independently from domain semantics and business behavior while preserving privacy/quality constraints.
+      public_contract: Provides diagnostic requirements and explicit non-requirements; observability Questions route here.
+      atomic: true
+
+  - id: IMPLEMENTATION-PLAN
+    responsibility: Own executable implementation slicing, sequencing and completion criteria after all upstream semantic/architecture decisions are available.
+    boundary:
+      semantic_cohesion: Decisions concern only how to order and complete realization work for the accepted first-MVP design.
+      independent_change: Slice order can change without redefining upstream product/domain/architecture truth.
+      public_contract: Provides implementation slices and completion criteria; missing upstream semantics route to their original Authority rather than being decided here.
+      atomic: true
+
   - id: VERIFICATION-DESIGN
-    responsibility: Define how accepted requirements/domain/architecture will be proven by implementation evidence.
+    responsibility: Own verification levels and scenarios proving implementation realizes accepted requirements/domain/architecture truth.
+    boundary:
+      semantic_cohesion: All decisions concern evidence needed to prove the same accepted design.
+      independent_change: Verification strategy can evolve independently from implementation structure while retaining traceability to canonical owners.
+      public_contract: Provides verification strategy and acceptance scenarios; test-evidence Questions route here, missing design truth routes upstream.
+      atomic: true
+
+consumers:
   - id: IMPLEMENTATION
-    responsibility: Realize the supplied design while owning only implementation-local choices that do not change upstream semantics.
+    purpose: Realize the complete first-MVP design without inventing product, domain or architecture decisions.
 
 bindings:
   - artifact: FIRST-MVP-REQUIREMENTS
@@ -27,68 +178,70 @@ bindings:
     provides: [requirements.first-mvp.goal-scope, requirements.first-mvp.behavior, requirements.first-mvp.acceptance]
 
   - artifact: STRATEGIC-CAPABILITIES
-    authority: DOMAIN-DESIGN
+    authority: DOMAIN-TOPOLOGY
     provides: [domain.capability-map]
   - artifact: STRATEGIC-CONTEXTS
-    authority: DOMAIN-DESIGN
+    authority: DOMAIN-TOPOLOGY
     provides: [domain.bounded-contexts]
   - artifact: STRATEGIC-RELATIONSHIPS
-    authority: DOMAIN-DESIGN
+    authority: DOMAIN-TOPOLOGY
     provides: [domain.context-relationships]
+
   - artifact: RC-DOMAIN
-    authority: DOMAIN-DESIGN
-    provides: [domain.first-mvp.tactical-semantics]
+    authority: RESOURCE-CATALOGUE
+    provides: [domain.resource-catalogue.semantics]
   - artifact: AM-LANGUAGE
-    authority: DOMAIN-DESIGN
-    provides: [domain.first-mvp.tactical-semantics]
+    authority: AUTHORITY-MANAGEMENT
+    provides: [domain.authority-management.semantics]
   - artifact: ACC-DOMAIN
-    authority: DOMAIN-DESIGN
-    provides: [domain.first-mvp.tactical-semantics]
+    authority: APPLICATION-COMMUNICATION-CATALOGUE
+    provides: [domain.application-communication.semantics]
   - artifact: AD-DOMAIN
-    authority: DOMAIN-DESIGN
-    provides: [domain.first-mvp.tactical-semantics]
+    authority: APPLICATION-DEPLOYMENT
+    provides: [domain.application-deployment.semantics]
   - artifact: BC-DOMAIN
-    authority: DOMAIN-DESIGN
-    provides: [domain.first-mvp.tactical-semantics]
+    authority: BUSINESS-CONNECTIVITY
+    provides: [domain.business-connectivity.semantics]
   - artifact: AP-DOMAIN
-    authority: DOMAIN-DESIGN
-    provides: [domain.first-mvp.tactical-semantics]
+    authority: ACCESS-POLICY
+    provides: [domain.access-policy.semantics]
   - artifact: FIRST-MVP-JOURNEY
-    authority: DOMAIN-DESIGN
-    provides: [domain.first-mvp.cross-context-flow]
+    authority: POLICY-EXPORT-COMPOSITION
+    provides: [application.policy-export.flow, application.policy-export.materialization]
 
   - artifact: C4-STRUCTURE
-    authority: SYSTEM-ARCHITECTURE
-    provides: [architecture.runtime-structure, architecture.deployment]
+    authority: RUNTIME-TOPOLOGY
+    provides: [architecture.runtime-structure, architecture.deployment-topology]
   - artifact: SYSTEM-RULES
-    authority: SYSTEM-ARCHITECTURE
-    provides: [architecture.system-rules, architecture.security-baseline]
+    authority: APPLICATION-ARCHITECTURE
+    provides: [architecture.application-boundary, architecture.module-interaction, architecture.consistency-rules, architecture.security-baseline, architecture.runtime-exclusions]
+  - artifact: MODULE-CONTRACTS
+    authority: APPLICATION-ARCHITECTURE
+    provides: [architecture.module-contracts]
   - artifact: TECH-REPRESENTATION
-    authority: SYSTEM-ARCHITECTURE
-    provides: [architecture.technical-decisions, architecture.async-messaging-not-applicable]
+    authority: TECHNICAL-REPRESENTATION
+    provides: [architecture.technical-representations, architecture.async-messaging-not-applicable]
   - artifact: HTTP-REQUIREMENTS
-    authority: SYSTEM-ARCHITECTURE
+    authority: HTTP-CONTRACT
     provides: [architecture.http-requirements]
   - artifact: OPENAPI
-    authority: SYSTEM-ARCHITECTURE
+    authority: HTTP-CONTRACT
     provides: [architecture.http-contract]
   - artifact: PERSISTENCE
-    authority: SYSTEM-ARCHITECTURE
+    authority: PERSISTENCE-DESIGN
     provides: [architecture.persistence]
   - artifact: QUALITY-REQUIREMENTS
-    authority: SYSTEM-ARCHITECTURE
-    provides: [architecture.quality-requirements]
+    authority: QUALITY-CONSTRAINTS
+    provides: [architecture.quality-constraints]
   - artifact: THREAT-MODEL
-    authority: SYSTEM-ARCHITECTURE
-    provides: [architecture.threat-model]
+    authority: SECURITY-ANALYSIS
+    provides: [architecture.threat-analysis]
   - artifact: OBSERVABILITY
-    authority: SYSTEM-ARCHITECTURE
+    authority: OBSERVABILITY-DESIGN
     provides: [architecture.observability]
-
   - artifact: MVP-IMPLEMENTATION-READINESS
-    authority: IMPLEMENTATION-DESIGN
-    provides: [implementation.plan, implementation.module-contracts, implementation.completion-criteria]
-
+    authority: IMPLEMENTATION-PLAN
+    provides: [implementation.plan, implementation.completion-criteria]
   - artifact: MVP-TEST-INTENT
     authority: VERIFICATION-DESIGN
     provides: [verification.strategy, verification.acceptance-scenarios]
@@ -96,79 +249,149 @@ bindings:
 questions: []
 
 contracts:
-  - id: REQUIREMENTS-TO-DOMAIN
-    consumer: DOMAIN-DESIGN
+  - id: POLICY-EXPORT-COMPOSITION-INPUT
+    consumer: POLICY-EXPORT-COMPOSITION
     requires:
-      - {id: goal-scope, capability: requirements.first-mvp.goal-scope, authority: PRODUCT-REQUIREMENTS}
+      - {id: behavior, capability: requirements.first-mvp.behavior, authority: PRODUCT-REQUIREMENTS}
+      - {id: relationships, capability: domain.context-relationships, authority: DOMAIN-TOPOLOGY}
+      - {id: resource, capability: domain.resource-catalogue.semantics, authority: RESOURCE-CATALOGUE}
+      - {id: authority, capability: domain.authority-management.semantics, authority: AUTHORITY-MANAGEMENT}
+      - {id: communication, capability: domain.application-communication.semantics, authority: APPLICATION-COMMUNICATION-CATALOGUE}
+      - {id: deployment, capability: domain.application-deployment.semantics, authority: APPLICATION-DEPLOYMENT}
+      - {id: business-basis, capability: domain.business-connectivity.semantics, authority: BUSINESS-CONNECTIVITY}
+      - {id: policy, capability: domain.access-policy.semantics, authority: ACCESS-POLICY}
+
+  - id: RUNTIME-TOPOLOGY-INPUT
+    consumer: RUNTIME-TOPOLOGY
+    requires:
+      - {id: scope, capability: requirements.first-mvp.goal-scope, authority: PRODUCT-REQUIREMENTS}
+      - {id: contexts, capability: domain.bounded-contexts, authority: DOMAIN-TOPOLOGY}
+      - {id: flow, capability: application.policy-export.flow, authority: POLICY-EXPORT-COMPOSITION}
+
+  - id: APPLICATION-ARCHITECTURE-INPUT
+    consumer: APPLICATION-ARCHITECTURE
+    requires:
+      - {id: behavior, capability: requirements.first-mvp.behavior, authority: PRODUCT-REQUIREMENTS}
+      - {id: relationships, capability: domain.context-relationships, authority: DOMAIN-TOPOLOGY}
+      - {id: materialization, capability: application.policy-export.materialization, authority: POLICY-EXPORT-COMPOSITION}
+      - {id: runtime, capability: architecture.runtime-structure, authority: RUNTIME-TOPOLOGY}
+
+  - id: TECHNICAL-REPRESENTATION-INPUT
+    consumer: TECHNICAL-REPRESENTATION
+    requires:
+      - {id: application-boundary, capability: architecture.application-boundary, authority: APPLICATION-ARCHITECTURE}
+      - {id: module-interaction, capability: architecture.module-interaction, authority: APPLICATION-ARCHITECTURE}
+      - {id: resource-semantics, capability: domain.resource-catalogue.semantics, authority: RESOURCE-CATALOGUE}
+      - {id: communication-semantics, capability: domain.application-communication.semantics, authority: APPLICATION-COMMUNICATION-CATALOGUE}
+
+  - id: HTTP-CONTRACT-INPUT
+    consumer: HTTP-CONTRACT
+    requires:
       - {id: behavior, capability: requirements.first-mvp.behavior, authority: PRODUCT-REQUIREMENTS}
       - {id: acceptance, capability: requirements.first-mvp.acceptance, authority: PRODUCT-REQUIREMENTS}
+      - {id: flow, capability: application.policy-export.flow, authority: POLICY-EXPORT-COMPOSITION}
+      - {id: application-boundary, capability: architecture.application-boundary, authority: APPLICATION-ARCHITECTURE}
+      - {id: representations, capability: architecture.technical-representations, authority: TECHNICAL-REPRESENTATION}
 
-  - id: DOMAIN-TO-ARCHITECTURE
-    consumer: SYSTEM-ARCHITECTURE
+  - id: PERSISTENCE-DESIGN-INPUT
+    consumer: PERSISTENCE-DESIGN
     requires:
-      - {id: goal-scope, capability: requirements.first-mvp.goal-scope, authority: PRODUCT-REQUIREMENTS}
-      - {id: behavior, capability: requirements.first-mvp.behavior, authority: PRODUCT-REQUIREMENTS}
-      - {id: capability-map, capability: domain.capability-map, authority: DOMAIN-DESIGN}
-      - {id: bounded-contexts, capability: domain.bounded-contexts, authority: DOMAIN-DESIGN}
-      - {id: context-relationships, capability: domain.context-relationships, authority: DOMAIN-DESIGN}
-      - {id: tactical-semantics, capability: domain.first-mvp.tactical-semantics, authority: DOMAIN-DESIGN}
-      - {id: cross-context-flow, capability: domain.first-mvp.cross-context-flow, authority: DOMAIN-DESIGN}
+      - {id: resource, capability: domain.resource-catalogue.semantics, authority: RESOURCE-CATALOGUE}
+      - {id: authority, capability: domain.authority-management.semantics, authority: AUTHORITY-MANAGEMENT}
+      - {id: communication, capability: domain.application-communication.semantics, authority: APPLICATION-COMMUNICATION-CATALOGUE}
+      - {id: deployment, capability: domain.application-deployment.semantics, authority: APPLICATION-DEPLOYMENT}
+      - {id: business, capability: domain.business-connectivity.semantics, authority: BUSINESS-CONNECTIVITY}
+      - {id: policy, capability: domain.access-policy.semantics, authority: ACCESS-POLICY}
+      - {id: consistency, capability: architecture.consistency-rules, authority: APPLICATION-ARCHITECTURE}
+      - {id: representations, capability: architecture.technical-representations, authority: TECHNICAL-REPRESENTATION}
 
-  - id: ARCHITECTURE-TO-IMPLEMENTATION-DESIGN
-    consumer: IMPLEMENTATION-DESIGN
+  - id: QUALITY-CONSTRAINTS-INPUT
+    consumer: QUALITY-CONSTRAINTS
     requires:
-      - {id: behavior, capability: requirements.first-mvp.behavior, authority: PRODUCT-REQUIREMENTS}
-      - {id: acceptance, capability: requirements.first-mvp.acceptance, authority: PRODUCT-REQUIREMENTS}
-      - {id: domain-semantics, capability: domain.first-mvp.tactical-semantics, authority: DOMAIN-DESIGN}
-      - {id: cross-context-flow, capability: domain.first-mvp.cross-context-flow, authority: DOMAIN-DESIGN}
-      - {id: runtime, capability: architecture.runtime-structure, authority: SYSTEM-ARCHITECTURE}
-      - {id: deployment, capability: architecture.deployment, authority: SYSTEM-ARCHITECTURE}
-      - {id: system-rules, capability: architecture.system-rules, authority: SYSTEM-ARCHITECTURE}
-      - {id: technical-decisions, capability: architecture.technical-decisions, authority: SYSTEM-ARCHITECTURE}
-      - {id: http-contract, capability: architecture.http-contract, authority: SYSTEM-ARCHITECTURE}
-      - {id: persistence, capability: architecture.persistence, authority: SYSTEM-ARCHITECTURE}
-      - {id: quality, capability: architecture.quality-requirements, authority: SYSTEM-ARCHITECTURE}
-      - {id: threat-model, capability: architecture.threat-model, authority: SYSTEM-ARCHITECTURE}
-      - {id: observability, capability: architecture.observability, authority: SYSTEM-ARCHITECTURE}
+      - {id: requirements, capability: requirements.first-mvp.behavior, authority: PRODUCT-REQUIREMENTS}
+      - {id: materialization, capability: application.policy-export.materialization, authority: POLICY-EXPORT-COMPOSITION}
+      - {id: application-rules, capability: architecture.application-boundary, authority: APPLICATION-ARCHITECTURE}
+      - {id: http-contract, capability: architecture.http-contract, authority: HTTP-CONTRACT}
+      - {id: persistence, capability: architecture.persistence, authority: PERSISTENCE-DESIGN}
+
+  - id: SECURITY-ANALYSIS-INPUT
+    consumer: SECURITY-ANALYSIS
+    requires:
+      - {id: security-baseline, capability: architecture.security-baseline, authority: APPLICATION-ARCHITECTURE}
+      - {id: representations, capability: architecture.technical-representations, authority: TECHNICAL-REPRESENTATION}
+      - {id: persistence, capability: architecture.persistence, authority: PERSISTENCE-DESIGN}
+
+  - id: OBSERVABILITY-DESIGN-INPUT
+    consumer: OBSERVABILITY-DESIGN
+    requires:
+      - {id: runtime, capability: architecture.runtime-structure, authority: RUNTIME-TOPOLOGY}
+      - {id: application-rules, capability: architecture.application-boundary, authority: APPLICATION-ARCHITECTURE}
+      - {id: representations, capability: architecture.technical-representations, authority: TECHNICAL-REPRESENTATION}
+      - {id: persistence, capability: architecture.persistence, authority: PERSISTENCE-DESIGN}
+
+  - id: IMPLEMENTATION-PLAN-INPUT
+    consumer: IMPLEMENTATION-PLAN
+    requires:
+      - {id: scope, capability: requirements.first-mvp.goal-scope, authority: PRODUCT-REQUIREMENTS}
+      - {id: flow, capability: application.policy-export.flow, authority: POLICY-EXPORT-COMPOSITION}
+      - {id: runtime, capability: architecture.runtime-structure, authority: RUNTIME-TOPOLOGY}
+      - {id: module-contracts, capability: architecture.module-contracts, authority: APPLICATION-ARCHITECTURE}
+      - {id: representations, capability: architecture.technical-representations, authority: TECHNICAL-REPRESENTATION}
+      - {id: http-contract, capability: architecture.http-contract, authority: HTTP-CONTRACT}
+      - {id: persistence, capability: architecture.persistence, authority: PERSISTENCE-DESIGN}
+      - {id: quality, capability: architecture.quality-constraints, authority: QUALITY-CONSTRAINTS}
+      - {id: security, capability: architecture.threat-analysis, authority: SECURITY-ANALYSIS}
+      - {id: observability, capability: architecture.observability, authority: OBSERVABILITY-DESIGN}
       - id: asynchronous-contract
         capability: architecture.async-contract
-        authority: SYSTEM-ARCHITECTURE
+        authority: TECHNICAL-REPRESENTATION
         not_applicable: {evidence_capability: architecture.async-messaging-not-applicable}
 
-  - id: DESIGN-TO-VERIFICATION
+  - id: VERIFICATION-DESIGN-INPUT
     consumer: VERIFICATION-DESIGN
     requires:
       - {id: acceptance, capability: requirements.first-mvp.acceptance, authority: PRODUCT-REQUIREMENTS}
-      - {id: domain-semantics, capability: domain.first-mvp.tactical-semantics, authority: DOMAIN-DESIGN}
-      - {id: cross-context-flow, capability: domain.first-mvp.cross-context-flow, authority: DOMAIN-DESIGN}
-      - {id: system-rules, capability: architecture.system-rules, authority: SYSTEM-ARCHITECTURE}
-      - {id: security, capability: architecture.security-baseline, authority: SYSTEM-ARCHITECTURE}
-      - {id: http-contract, capability: architecture.http-contract, authority: SYSTEM-ARCHITECTURE}
-      - {id: persistence, capability: architecture.persistence, authority: SYSTEM-ARCHITECTURE}
-      - {id: quality, capability: architecture.quality-requirements, authority: SYSTEM-ARCHITECTURE}
-      - {id: threat-model, capability: architecture.threat-model, authority: SYSTEM-ARCHITECTURE}
-      - {id: implementation-plan, capability: implementation.plan, authority: IMPLEMENTATION-DESIGN}
+      - {id: resource, capability: domain.resource-catalogue.semantics, authority: RESOURCE-CATALOGUE}
+      - {id: authority, capability: domain.authority-management.semantics, authority: AUTHORITY-MANAGEMENT}
+      - {id: communication, capability: domain.application-communication.semantics, authority: APPLICATION-COMMUNICATION-CATALOGUE}
+      - {id: deployment, capability: domain.application-deployment.semantics, authority: APPLICATION-DEPLOYMENT}
+      - {id: business, capability: domain.business-connectivity.semantics, authority: BUSINESS-CONNECTIVITY}
+      - {id: policy, capability: domain.access-policy.semantics, authority: ACCESS-POLICY}
+      - {id: materialization, capability: application.policy-export.materialization, authority: POLICY-EXPORT-COMPOSITION}
+      - {id: module-contracts, capability: architecture.module-contracts, authority: APPLICATION-ARCHITECTURE}
+      - {id: http-contract, capability: architecture.http-contract, authority: HTTP-CONTRACT}
+      - {id: persistence, capability: architecture.persistence, authority: PERSISTENCE-DESIGN}
+      - {id: quality, capability: architecture.quality-constraints, authority: QUALITY-CONSTRAINTS}
+      - {id: security, capability: architecture.threat-analysis, authority: SECURITY-ANALYSIS}
+      - {id: observability, capability: architecture.observability, authority: OBSERVABILITY-DESIGN}
+      - {id: implementation-plan, capability: implementation.plan, authority: IMPLEMENTATION-PLAN}
 
   - id: IMPLEMENTATION-CONSUMER
     consumer: IMPLEMENTATION
     requires:
-      - {id: goal-scope, capability: requirements.first-mvp.goal-scope, authority: PRODUCT-REQUIREMENTS}
+      - {id: scope, capability: requirements.first-mvp.goal-scope, authority: PRODUCT-REQUIREMENTS}
       - {id: behavior, capability: requirements.first-mvp.behavior, authority: PRODUCT-REQUIREMENTS}
       - {id: acceptance, capability: requirements.first-mvp.acceptance, authority: PRODUCT-REQUIREMENTS}
-      - {id: domain-semantics, capability: domain.first-mvp.tactical-semantics, authority: DOMAIN-DESIGN}
-      - {id: cross-context-flow, capability: domain.first-mvp.cross-context-flow, authority: DOMAIN-DESIGN}
-      - {id: runtime, capability: architecture.runtime-structure, authority: SYSTEM-ARCHITECTURE}
-      - {id: deployment, capability: architecture.deployment, authority: SYSTEM-ARCHITECTURE}
-      - {id: system-rules, capability: architecture.system-rules, authority: SYSTEM-ARCHITECTURE}
-      - {id: security, capability: architecture.security-baseline, authority: SYSTEM-ARCHITECTURE}
-      - {id: technical-decisions, capability: architecture.technical-decisions, authority: SYSTEM-ARCHITECTURE}
-      - {id: http-contract, capability: architecture.http-contract, authority: SYSTEM-ARCHITECTURE}
-      - {id: persistence, capability: architecture.persistence, authority: SYSTEM-ARCHITECTURE}
-      - {id: quality, capability: architecture.quality-requirements, authority: SYSTEM-ARCHITECTURE}
-      - {id: threat-model, capability: architecture.threat-model, authority: SYSTEM-ARCHITECTURE}
-      - {id: observability, capability: architecture.observability, authority: SYSTEM-ARCHITECTURE}
-      - {id: implementation-plan, capability: implementation.plan, authority: IMPLEMENTATION-DESIGN}
-      - {id: module-contracts, capability: implementation.module-contracts, authority: IMPLEMENTATION-DESIGN}
-      - {id: completion-criteria, capability: implementation.completion-criteria, authority: IMPLEMENTATION-DESIGN}
-      - {id: verification-strategy, capability: verification.strategy, authority: VERIFICATION-DESIGN}
+      - {id: resource, capability: domain.resource-catalogue.semantics, authority: RESOURCE-CATALOGUE}
+      - {id: authority, capability: domain.authority-management.semantics, authority: AUTHORITY-MANAGEMENT}
+      - {id: communication, capability: domain.application-communication.semantics, authority: APPLICATION-COMMUNICATION-CATALOGUE}
+      - {id: deployment, capability: domain.application-deployment.semantics, authority: APPLICATION-DEPLOYMENT}
+      - {id: business, capability: domain.business-connectivity.semantics, authority: BUSINESS-CONNECTIVITY}
+      - {id: policy, capability: domain.access-policy.semantics, authority: ACCESS-POLICY}
+      - {id: flow, capability: application.policy-export.flow, authority: POLICY-EXPORT-COMPOSITION}
+      - {id: materialization, capability: application.policy-export.materialization, authority: POLICY-EXPORT-COMPOSITION}
+      - {id: runtime, capability: architecture.runtime-structure, authority: RUNTIME-TOPOLOGY}
+      - {id: deployment-topology, capability: architecture.deployment-topology, authority: RUNTIME-TOPOLOGY}
+      - {id: application-boundary, capability: architecture.application-boundary, authority: APPLICATION-ARCHITECTURE}
+      - {id: module-contracts, capability: architecture.module-contracts, authority: APPLICATION-ARCHITECTURE}
+      - {id: security-baseline, capability: architecture.security-baseline, authority: APPLICATION-ARCHITECTURE}
+      - {id: representations, capability: architecture.technical-representations, authority: TECHNICAL-REPRESENTATION}
+      - {id: http-contract, capability: architecture.http-contract, authority: HTTP-CONTRACT}
+      - {id: persistence, capability: architecture.persistence, authority: PERSISTENCE-DESIGN}
+      - {id: quality, capability: architecture.quality-constraints, authority: QUALITY-CONSTRAINTS}
+      - {id: security-analysis, capability: architecture.threat-analysis, authority: SECURITY-ANALYSIS}
+      - {id: observability, capability: architecture.observability, authority: OBSERVABILITY-DESIGN}
+      - {id: implementation-plan, capability: implementation.plan, authority: IMPLEMENTATION-PLAN}
+      - {id: completion, capability: implementation.completion-criteria, authority: IMPLEMENTATION-PLAN}
+      - {id: verification, capability: verification.strategy, authority: VERIFICATION-DESIGN}
       - {id: acceptance-scenarios, capability: verification.acceptance-scenarios, authority: VERIFICATION-DESIGN}

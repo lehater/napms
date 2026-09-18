@@ -1,0 +1,23 @@
+version: 1
+kind: module-contract-design
+id: NAPMS-FIRST-MVP-MODULE-CONTRACTS
+status: PILOT_CURRENT
+
+purpose: Own the explicit in-process application/module contracts required to coordinate domain owners without turning persistence tables or HTTP into internal integration boundaries.
+
+contracts:
+  Resource Catalogue: [CreateResource, SetCurrentAddressSpace, ResolveResource]
+  Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionContractRevision, ResolveComponent, ResolveInteractionContractRevision]
+  Application Deployment: [CreateComponentDeployment, ResolveComponentDeployment]
+  Business Connectivity: [CreateBusinessProcess, CreateConnectivityNeed, ResolveCurrentConnectivityNeed]
+  Access Policy: [SubmitRuleChange, DecideRuleChange, WithdrawPolicyRule, ListEffectivePolicyRules]
+  Authority Management: ['Admit(actor, action, scope)']
+  Policy Export Composition: [MaterializeCurrentPolicy]
+
+rules:
+  - Cross-module semantics use owner contracts; tables are not integration contracts.
+  - Contracts expose owner-approved semantic operations/results and never transfer ownership of another module's mutable truth.
+  - Internal HTTP is not introduced between modules in the first-MVP modular monolith.
+  - Missing owner semantics must be resolved by the owning domain Authority rather than added opportunistically to a consumer contract.
+
+basis_refs: [FIRST-MVP-JOURNEY, SYSTEM-RULES, STRATEGIC-RELATIONSHIPS]
