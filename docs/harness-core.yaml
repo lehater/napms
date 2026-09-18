@@ -1,34 +1,174 @@
-version: 1
+version: 2
 kind: harness-canonical-graph-projection
-id: NAPMS-ACC-INTERACTION-PROJECTION
-status: CURRENT_SELECTED_SCOPE
-scope: ACC interaction directed-pair uniqueness consumer scenario.
+id: NAPMS-FIRST-MVP-DOCUMENTATION-VERTICAL
+status: PILOT
+scope: First-MVP engineering-knowledge vertical from requirements through implementation input and verification design.
 source_graph: canonical-graph.yaml
 
+principle: Each downstream responsibility declares the capabilities it requires. Missing upstream semantics are routed to the owning authority instead of being invented downstream. Contracts are completeness checks, not workflow state.
+
 authorities:
-  - id: APPLICATION-COMMUNICATION-CATALOGUE
+  - id: PRODUCT-REQUIREMENTS
+    responsibility: Own accepted product intent, scope, externally observable behavior and acceptance examples.
+  - id: DOMAIN-DESIGN
+    responsibility: Own strategic/tactical domain semantics and cross-context domain/application flow.
   - id: SYSTEM-ARCHITECTURE
+    responsibility: Own runtime/deployment structure, technical constraints, contracts, persistence, quality, security and operability design.
+  - id: IMPLEMENTATION-DESIGN
+    responsibility: Turn accepted upstream design into executable implementation slices and explicit completion criteria without inventing upstream semantics.
   - id: VERIFICATION-DESIGN
+    responsibility: Define how accepted requirements/domain/architecture will be proven by implementation evidence.
+  - id: IMPLEMENTATION
+    responsibility: Realize the supplied design while owning only implementation-local choices that do not change upstream semantics.
 
 bindings:
+  - artifact: FIRST-MVP-REQUIREMENTS
+    authority: PRODUCT-REQUIREMENTS
+    provides: [requirements.first-mvp.goal-scope, requirements.first-mvp.behavior, requirements.first-mvp.acceptance]
+
+  - artifact: STRATEGIC-CAPABILITIES
+    authority: DOMAIN-DESIGN
+    provides: [domain.capability-map]
+  - artifact: STRATEGIC-CONTEXTS
+    authority: DOMAIN-DESIGN
+    provides: [domain.bounded-contexts]
+  - artifact: STRATEGIC-RELATIONSHIPS
+    authority: DOMAIN-DESIGN
+    provides: [domain.context-relationships]
+  - artifact: RC-DOMAIN
+    authority: DOMAIN-DESIGN
+    provides: [domain.first-mvp.tactical-semantics]
+  - artifact: AM-LANGUAGE
+    authority: DOMAIN-DESIGN
+    provides: [domain.first-mvp.tactical-semantics]
   - artifact: ACC-DOMAIN
-    authority: APPLICATION-COMMUNICATION-CATALOGUE
-    provides:
-      - acc.interaction.directed-pair-uniqueness.semantics
+    authority: DOMAIN-DESIGN
+    provides: [domain.first-mvp.tactical-semantics]
+  - artifact: AD-DOMAIN
+    authority: DOMAIN-DESIGN
+    provides: [domain.first-mvp.tactical-semantics]
+  - artifact: BC-DOMAIN
+    authority: DOMAIN-DESIGN
+    provides: [domain.first-mvp.tactical-semantics]
+  - artifact: AP-DOMAIN
+    authority: DOMAIN-DESIGN
+    provides: [domain.first-mvp.tactical-semantics]
+  - artifact: FIRST-MVP-JOURNEY
+    authority: DOMAIN-DESIGN
+    provides: [domain.first-mvp.cross-context-flow]
 
-  - artifact: PERSISTENCE
+  - artifact: C4-STRUCTURE
     authority: SYSTEM-ARCHITECTURE
-    provides:
-      - acc.interaction.directed-pair-uniqueness.persistence-design
-
+    provides: [architecture.runtime-structure, architecture.deployment]
+  - artifact: SYSTEM-RULES
+    authority: SYSTEM-ARCHITECTURE
+    provides: [architecture.system-rules, architecture.security-baseline]
+  - artifact: TECH-REPRESENTATION
+    authority: SYSTEM-ARCHITECTURE
+    provides: [architecture.technical-decisions, architecture.async-messaging-not-applicable]
+  - artifact: HTTP-REQUIREMENTS
+    authority: SYSTEM-ARCHITECTURE
+    provides: [architecture.http-requirements]
   - artifact: OPENAPI
     authority: SYSTEM-ARCHITECTURE
-    provides:
-      - acc.interaction.create.conflict-contract
+    provides: [architecture.http-contract]
+  - artifact: PERSISTENCE
+    authority: SYSTEM-ARCHITECTURE
+    provides: [architecture.persistence]
+  - artifact: QUALITY-REQUIREMENTS
+    authority: SYSTEM-ARCHITECTURE
+    provides: [architecture.quality-requirements]
+  - artifact: THREAT-MODEL
+    authority: SYSTEM-ARCHITECTURE
+    provides: [architecture.threat-model]
+  - artifact: OBSERVABILITY
+    authority: SYSTEM-ARCHITECTURE
+    provides: [architecture.observability]
+
+  - artifact: MVP-IMPLEMENTATION-READINESS
+    authority: IMPLEMENTATION-DESIGN
+    provides: [implementation.plan, implementation.module-contracts, implementation.completion-criteria]
 
   - artifact: MVP-TEST-INTENT
     authority: VERIFICATION-DESIGN
-    provides:
-      - acc.interaction.directed-pair-uniqueness.verification-intent
+    provides: [verification.strategy, verification.acceptance-scenarios]
 
 questions: []
+
+contracts:
+  - id: REQUIREMENTS-TO-DOMAIN
+    consumer: DOMAIN-DESIGN
+    requires:
+      - {id: goal-scope, capability: requirements.first-mvp.goal-scope, authority: PRODUCT-REQUIREMENTS}
+      - {id: behavior, capability: requirements.first-mvp.behavior, authority: PRODUCT-REQUIREMENTS}
+      - {id: acceptance, capability: requirements.first-mvp.acceptance, authority: PRODUCT-REQUIREMENTS}
+
+  - id: DOMAIN-TO-ARCHITECTURE
+    consumer: SYSTEM-ARCHITECTURE
+    requires:
+      - {id: goal-scope, capability: requirements.first-mvp.goal-scope, authority: PRODUCT-REQUIREMENTS}
+      - {id: behavior, capability: requirements.first-mvp.behavior, authority: PRODUCT-REQUIREMENTS}
+      - {id: capability-map, capability: domain.capability-map, authority: DOMAIN-DESIGN}
+      - {id: bounded-contexts, capability: domain.bounded-contexts, authority: DOMAIN-DESIGN}
+      - {id: context-relationships, capability: domain.context-relationships, authority: DOMAIN-DESIGN}
+      - {id: tactical-semantics, capability: domain.first-mvp.tactical-semantics, authority: DOMAIN-DESIGN}
+      - {id: cross-context-flow, capability: domain.first-mvp.cross-context-flow, authority: DOMAIN-DESIGN}
+
+  - id: ARCHITECTURE-TO-IMPLEMENTATION-DESIGN
+    consumer: IMPLEMENTATION-DESIGN
+    requires:
+      - {id: behavior, capability: requirements.first-mvp.behavior, authority: PRODUCT-REQUIREMENTS}
+      - {id: acceptance, capability: requirements.first-mvp.acceptance, authority: PRODUCT-REQUIREMENTS}
+      - {id: domain-semantics, capability: domain.first-mvp.tactical-semantics, authority: DOMAIN-DESIGN}
+      - {id: cross-context-flow, capability: domain.first-mvp.cross-context-flow, authority: DOMAIN-DESIGN}
+      - {id: runtime, capability: architecture.runtime-structure, authority: SYSTEM-ARCHITECTURE}
+      - {id: deployment, capability: architecture.deployment, authority: SYSTEM-ARCHITECTURE}
+      - {id: system-rules, capability: architecture.system-rules, authority: SYSTEM-ARCHITECTURE}
+      - {id: technical-decisions, capability: architecture.technical-decisions, authority: SYSTEM-ARCHITECTURE}
+      - {id: http-contract, capability: architecture.http-contract, authority: SYSTEM-ARCHITECTURE}
+      - {id: persistence, capability: architecture.persistence, authority: SYSTEM-ARCHITECTURE}
+      - {id: quality, capability: architecture.quality-requirements, authority: SYSTEM-ARCHITECTURE}
+      - {id: threat-model, capability: architecture.threat-model, authority: SYSTEM-ARCHITECTURE}
+      - {id: observability, capability: architecture.observability, authority: SYSTEM-ARCHITECTURE}
+      - id: asynchronous-contract
+        capability: architecture.async-contract
+        authority: SYSTEM-ARCHITECTURE
+        not_applicable: {evidence_capability: architecture.async-messaging-not-applicable}
+
+  - id: DESIGN-TO-VERIFICATION
+    consumer: VERIFICATION-DESIGN
+    requires:
+      - {id: acceptance, capability: requirements.first-mvp.acceptance, authority: PRODUCT-REQUIREMENTS}
+      - {id: domain-semantics, capability: domain.first-mvp.tactical-semantics, authority: DOMAIN-DESIGN}
+      - {id: cross-context-flow, capability: domain.first-mvp.cross-context-flow, authority: DOMAIN-DESIGN}
+      - {id: system-rules, capability: architecture.system-rules, authority: SYSTEM-ARCHITECTURE}
+      - {id: security, capability: architecture.security-baseline, authority: SYSTEM-ARCHITECTURE}
+      - {id: http-contract, capability: architecture.http-contract, authority: SYSTEM-ARCHITECTURE}
+      - {id: persistence, capability: architecture.persistence, authority: SYSTEM-ARCHITECTURE}
+      - {id: quality, capability: architecture.quality-requirements, authority: SYSTEM-ARCHITECTURE}
+      - {id: threat-model, capability: architecture.threat-model, authority: SYSTEM-ARCHITECTURE}
+      - {id: implementation-plan, capability: implementation.plan, authority: IMPLEMENTATION-DESIGN}
+
+  - id: IMPLEMENTATION-CONSUMER
+    consumer: IMPLEMENTATION
+    requires:
+      - {id: goal-scope, capability: requirements.first-mvp.goal-scope, authority: PRODUCT-REQUIREMENTS}
+      - {id: behavior, capability: requirements.first-mvp.behavior, authority: PRODUCT-REQUIREMENTS}
+      - {id: acceptance, capability: requirements.first-mvp.acceptance, authority: PRODUCT-REQUIREMENTS}
+      - {id: domain-semantics, capability: domain.first-mvp.tactical-semantics, authority: DOMAIN-DESIGN}
+      - {id: cross-context-flow, capability: domain.first-mvp.cross-context-flow, authority: DOMAIN-DESIGN}
+      - {id: runtime, capability: architecture.runtime-structure, authority: SYSTEM-ARCHITECTURE}
+      - {id: deployment, capability: architecture.deployment, authority: SYSTEM-ARCHITECTURE}
+      - {id: system-rules, capability: architecture.system-rules, authority: SYSTEM-ARCHITECTURE}
+      - {id: security, capability: architecture.security-baseline, authority: SYSTEM-ARCHITECTURE}
+      - {id: technical-decisions, capability: architecture.technical-decisions, authority: SYSTEM-ARCHITECTURE}
+      - {id: http-contract, capability: architecture.http-contract, authority: SYSTEM-ARCHITECTURE}
+      - {id: persistence, capability: architecture.persistence, authority: SYSTEM-ARCHITECTURE}
+      - {id: quality, capability: architecture.quality-requirements, authority: SYSTEM-ARCHITECTURE}
+      - {id: threat-model, capability: architecture.threat-model, authority: SYSTEM-ARCHITECTURE}
+      - {id: observability, capability: architecture.observability, authority: SYSTEM-ARCHITECTURE}
+      - {id: implementation-plan, capability: implementation.plan, authority: IMPLEMENTATION-DESIGN}
+      - {id: module-contracts, capability: implementation.module-contracts, authority: IMPLEMENTATION-DESIGN}
+      - {id: completion-criteria, capability: implementation.completion-criteria, authority: IMPLEMENTATION-DESIGN}
+      - {id: verification-strategy, capability: verification.strategy, authority: VERIFICATION-DESIGN}
+      - {id: acceptance-scenarios, capability: verification.acceptance-scenarios, authority: VERIFICATION-DESIGN}

@@ -1,16 +1,20 @@
-version: 1
+version: 2
 kind: test-intent
 id: NAPMS-FIRST-MVP-TEST-INTENT
-status: ACCEPTED_CURRENT
+status: PILOT_CURRENT
 
 purpose: Define minimum verification proving implementation realizes accepted MVP semantics; tests never create design truth.
 
 design_refs:
+  requirements: docs/requirements/first-mvp-policy-export.yaml
   journey: docs/model/use-cases/first-mvp-policy-export.yaml
   implementation_readiness: docs/plans/first-mvp-implementation-readiness.yaml
   system_rules: docs/architecture/mvp-system-rules.yaml
   http_contract: docs/contracts/http/napms.openapi.yaml
   persistence: docs/architecture/persistence/mvp-persistence.yaml
+  quality_requirements: docs/architecture/mvp-quality-requirements.yaml
+  threat_model: docs/architecture/mvp-threat-model.yaml
+  observability: docs/architecture/mvp-observability.yaml
 
 levels:
   module: owner invariants and lifecycle
@@ -29,5 +33,8 @@ required_scenarios:
   - {id: MVP-AD-008, expect: Redeployment of same Component to another Resource requires another ComponentDeployment identity.}
   - {id: MVP-AP-009, expect: Withdrawal removes rule from current export while retaining policy history.}
   - {id: MVP-EXP-010, expect: Prefix remains Prefix and is not expanded to host rows.}
+  - {id: MVP-QUAL-011, expect: Persistence or transport uncertainty is not reported as successful mutation.}
+  - {id: MVP-SEC-012, expect: Caller-supplied identity, UI state or direct persistence access cannot substitute for Authority Management admission.}
+  - {id: MVP-OBS-013, expect: Diagnostic evidence distinguishes authorization denial, domain rejection, Unresolved materialization and infrastructure uncertainty without exposing credentials or session secrets.}
 
-trace_rule: Every scenario traces to the accepted canonical design graph; implementation tests are evidence, not product/domain/architecture authority.
+trace_rule: Every scenario traces to accepted canonical requirements/domain/architecture; implementation tests are evidence, not product/domain/architecture authority.

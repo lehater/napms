@@ -1,0 +1,25 @@
+version: 1
+kind: observability-requirements
+id: NAPMS-MVP-OBSERVABILITY
+status: PILOT_CURRENT
+scope: Minimum diagnostic observability required to implement and verify the first-MVP modular monolith without introducing a telemetry platform.
+
+requirements:
+  - id: OBS-OUTCOME-001
+    requirement: Diagnostic output must distinguish success from authorization denial, domain rejection, Unresolved materialization and persistence/transport uncertainty without exposing credentials or session secrets.
+    basis_refs: [SYSTEM-RULES, TECH-REPRESENTATION, MVP-TEST-INTENT]
+  - id: OBS-CORRELATION-002
+    requirement: One HTTP request or application-use-case execution must be traceable across application orchestration and owner-module calls using a technical correlation identifier.
+    basis_refs: [C4-STRUCTURE, SYSTEM-RULES]
+  - id: OBS-DEPENDENCY-003
+    requirement: Local operation must make backend startup failure distinguishable from PostgreSQL connectivity failure.
+    basis_refs: [C4-STRUCTURE, PERSISTENCE]
+
+not_required:
+  - Distributed tracing backend because distributed services are outside the accepted first-MVP architecture.
+  - A production metrics platform, dashboards or numeric production SLOs; no such upstream requirement is currently accepted.
+
+evolution_rule: Add metrics, tracing and production SLOs only when requirements or deployment architecture justify them; observability tooling must not redefine domain events or semantic ownership.
+
+provenance:
+  basis: Architecture-owned diagnostic requirements added for the implementation consumer during the Harness documentation-vertical pilot.

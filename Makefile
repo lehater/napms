@@ -47,6 +47,7 @@ dev-restore:
 
 design-sync:
 	python tools/check_canonical_graph.py
+	python tools/check_harness_vertical.py
 	python tools/generate_strategic_views.py
 	python tools/generate_resource_catalogue_views.py
 	python tools/generate_acc_view.py
@@ -58,6 +59,8 @@ design-sync:
 
 design-check:
 	python tools/check_canonical_graph.py
+	python tools/check_harness_vertical.py
+	python tools/test_harness_vertical.py
 	python tools/check_openapi_contract.py
 	python tools/check_persistence_model.py
 	python tools/check_design_control.py
@@ -74,16 +77,9 @@ design-check:
 architecture: design-sync
 	@docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true
 	@docker run -d --rm --name $(PLANTUML_CONTAINER) -p 127.0.0.1:8081:8080 $(PLANTUML_SERVER_IMAGE) >/dev/null
-	@trap 'docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true' EXIT INT TERM; \
-		docker run --rm -it -p 127.0.0.1:8080:8080 \
-		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" \
-		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" \
-		$(STRUCTURIZR_IMAGE) local
+	@trap 'docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true' EXIT INT TERM; 		docker run --rm -it -p 127.0.0.1:8080:8080 		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" 		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" 		$(STRUCTURIZR_IMAGE) local
 
 architecture-check: design-sync
-	docker run --rm \
-		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" \
-		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" \
-		$(STRUCTURIZR_IMAGE) validate -workspace /usr/local/structurizr/workspace.dsl
+	docker run --rm 		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" 		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" 		$(STRUCTURIZR_IMAGE) validate -workspace /usr/local/structurizr/workspace.dsl
 
 check: test design-check

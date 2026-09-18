@@ -1,11 +1,12 @@
-version: 1
+version: 2
 kind: implementation-readiness
 id: NAPMS-FIRST-MVP-IMPLEMENTATION-READINESS
-status: ACCEPTED_CURRENT
+status: PILOT_CURRENT
 
 goal: Make the accepted first-MVP journey directly implementable and verifiable without reopening product, domain or system architecture decisions.
 
 design_refs:
+  requirements: docs/requirements/first-mvp-policy-export.yaml
   journey: docs/model/use-cases/first-mvp-policy-export.yaml
   strategic_model: docs/model/strategic/bounded-contexts.yaml
   system_structure: docs/architecture/structurizr/workspace.dsl
@@ -13,6 +14,9 @@ design_refs:
   http_contract: docs/contracts/http/napms.openapi.yaml
   persistence: docs/architecture/persistence/mvp-persistence.yaml
   technical_representation: docs/architecture/mvp-technical-representation.yaml
+  quality_requirements: docs/architecture/mvp-quality-requirements.yaml
+  threat_model: docs/architecture/mvp-threat-model.yaml
+  observability: docs/architecture/mvp-observability.yaml
 
 implementation_boundary:
   includes: [browser workflow, HTTP/JSON application API, modular-monolith modules, PostgreSQL persistence, Authority Management admission, vendor-neutral policy materialization, table and CSV export]
@@ -44,7 +48,7 @@ frontend:
   rule: UI drives the API and displays validation/Unresolved outcomes; it never becomes authority for domain invariants or authorization.
 
 implementation_slices:
-  - 'foundation: session/auth admission, OpenAPI edge, composition root, PostgreSQL migrations'
+  - 'foundation: session/auth admission, OpenAPI edge, composition root, PostgreSQL migrations and diagnostic correlation'
   - 'authoring: RC + ACC + AD + Business Connectivity'
   - 'policy: Access Policy lifecycle and cross-module validation'
   - 'export: complete materialization + JSON table + CSV'
@@ -56,8 +60,10 @@ completion_definition:
   - PostgreSQL migrations establish only module-owned state needed by the journey.
   - Backend interfaces preserve accepted ownership and introduce no internal HTTP.
   - Browser completes the journey without hidden/manual state fabrication.
+  - Implementation preserves the quality, threat-control and observability constraints referenced above.
   - Verification covers happy path, rejection, withdrawal, authorization and Unresolved export.
   - No coding step requires a new product/domain/system-architecture decision.
 
-open_questions: []
+open_questions:
+  - Numeric performance, availability and scale targets are not present in accepted product truth and must not be invented during implementation.
 implementation_authorization: NOT_GRANTED_BY_THIS_ARTIFACT
