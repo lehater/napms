@@ -15,6 +15,20 @@ on:
       - "backend/pyproject.toml"
       - "Makefile"
       - ".github/workflows/postgres.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/src/napms/contexts/access_policy/infrastructure/persistence/postgres/**"
+      - "backend/src/napms/contexts/authority_management/**"
+      - "backend/src/napms/contexts/application_catalogue/**"
+      - "backend/src/napms/contexts/resource_catalogue/**"
+      - "backend/src/napms/contexts/technical_access_evidence/**"
+      - "backend/src/napms/contexts/network_enforcement_placement/infrastructure/persistence/postgres/**"
+      - "backend/src/napms/platform/**"
+      - "backend/tests/integration/postgres/**"
+      - "backend/pyproject.toml"
+      - "Makefile"
+      - ".github/workflows/postgres.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
