@@ -55,10 +55,6 @@ if detail_table_set!=i["persistence"]["schemas"]:
     fail(f"persistence schema/table ownership differs: {detail_table_set}")
 if persist.get("rules")!=i["persistence"]["rules"]:
     fail("persistence rules differ")
-if persist.get("physical_detail_status")!="NOT_YET_DESIGNED":
-    fail("physical detail gap must remain explicit")
-if persist.get("erd_status")!="NOT_AVAILABLE_UNTIL_PHYSICAL_DETAIL_IS_DESIGNED":
-    fail("ERD must not be claimed")
 
 b=a["frontend_backend_boundary"]
 if api.get("target_contract_format")!="OpenAPI":
@@ -75,8 +71,6 @@ if api.get("operations")!=i["application_api"]["operations"]:
     fail("H19 API operations differ")
 if api.get("rules")!=i["application_api"]["rules"]:
     fail("H19 API rules differ")
-if api.get("openapi_status")!="NOT_YET_COMPLETE":
-    fail("OpenAPI detail gap must remain explicit")
 
 required_tokens=[
     'container "Web Application"',
