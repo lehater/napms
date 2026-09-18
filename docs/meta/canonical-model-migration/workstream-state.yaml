@@ -1,4 +1,4 @@
-version: 2
+version: 3
 kind: canonical-model-migration-workstream-state
 id: NAPMS-CANONICAL-MODEL-MIGRATION-STATE
 branch: meta/canonical-model-migration
@@ -9,55 +9,50 @@ roadmap: docs/meta/canonical-model-migration/roadmap.yaml
 ledger: docs/meta/canonical-model-migration/migration-ledger.yaml
 
 program:
-  status: ACTIVE
-  current_phase: CM7
-  current_phase_state: IN_PROGRESS
-  completed_phases: [CM0, CM1, CM2, CM3, CM4, CM5, CM6]
+  status: COMPLETE
+  current_phase: null
+  current_phase_state: PROGRAM_COMPLETE
+  completed_phases: [CM0, CM1, CM2, CM3, CM4, CM5, CM6, CM7]
 
 current_work:
-  task_id: CM7-01
-  name: Close canonical-model migration
-  state: IN_PROGRESS
-  objective: Retire migration-only runtime/CI/navigation after all semantic and Harness authority has moved to stable canonical owners.
-  predecessor_result:
-    phase: CM6
-    result: PASS
-    evidence:
-      design_commit: dbc38ae4d622ebe3a3542cddf32af1fd7be7fe4c
-      design_workflow_run: 35292783890
-      design_workflow_job: 105439015431
-      migration_commit: 778542123fe59279b8e577dc82d630f1c429fe89
-      migration_workflow_run: 35292755419
-      migration_workflow_job: 105438928676
-  completed_actions:
-    - Cut over every semantic design unit to target owners.
-    - Cut over implementation-readiness/test-intent to stable docs/plans owners.
-    - Cut over normal design navigation and validation to docs/canonical-graph.yaml plus make design-check/design-sync.
-    - Replaced gate/capsule/process-oriented Skill instructions with owner/affected-graph routing.
-    - Prepared retirement of old Harness docs-v2 knowledge and migration workflows/Make targets.
-    - Connected all generated domain/process/journey/ERD projections to the Structurizr review workspace.
-  next_action: Run current design and architecture CI on the closeout candidate. If PASS, mark CM7/program complete and clear the active-workstream pointer.
-  stop_conditions:
-    - any ledger unit is not target/subsumed-target
-    - normal design still depends on retired migration/Harness workflow
-    - current CI cannot validate the stable canonical graph
+  task_id: null
+  name: Canonical-model migration complete
+  state: COMPLETE
+  completed_result:
+    canonical_routing: docs/canonical-graph.yaml
+    validation: make design-check
+    projection_sync: make design-sync
+    architecture_viewer: make architecture
+    pull_request: 135
+  next_action: No automatic migration continuation. Normal design work starts from AGENTS.md and docs/canonical-graph.yaml.
 
 authority:
-  canonical_routing: docs/canonical-graph.yaml
   canonical_root: docs/
+  canonical_routing: docs/canonical-graph.yaml
   generated_root: docs-generated/
-  migration_ledger_role: historical cutover audit after CM7
-  historical_evidence:
-    - docs/migration/revalidated/
-    - docs-legacy/
+  migration_revalidated_role: frozen-historical-evidence
+  docs_legacy_role: retired-historical-evidence
 
 carry_forward:
-  - Current semantic owners are under docs/model docs/architecture docs/contracts and docs/plans as routed by docs/canonical-graph.yaml.
+  - Current semantic owners are routed by docs/canonical-graph.yaml.
   - Structurizr DSL owns C4 structural/deployment truth; generated image views are disposable projections.
-  - Product code/tests are implementation/evidence and cannot reconstruct missing design truth.
+  - Product code/tests are implementation/evidence and cannot reconstruct missing product/domain/architecture truth.
   - Implementation readiness does not authorize implementation.
   - Product implementation product-test changes and merge require separate explicit authorization.
   - Missing human-owned truth remains explicit rather than invented.
+  - Historical H0-H20 and CM0-CM7 process records are provenance, not the normal design workflow.
+
+verification:
+  design:
+    result: PASS
+    commit: caceb792938bd96ea4500f9a53df92d0586300bf
+    workflow_run: 35293392064
+    workflow_job: 105440852388
+  architecture:
+    result: PASS
+    commit: caceb792938bd96ea4500f9a53df92d0586300bf
+    workflow_run: 35293392062
+    workflow_job: 105440852464
 
 restrictions:
   product_implementation_authorization: none
@@ -68,8 +63,10 @@ restrictions:
 blockers: []
 
 resume_protocol:
-  - Read this file only when continuing the still-active CM7 closeout.
-  - For normal design work use AGENTS.md and docs/canonical-graph.yaml.
+  - This migration is complete; do not invent CM8.
+  - For normal design work read AGENTS.md then docs/canonical-graph.yaml and only the current owners needed by the task.
+  - Read this migration state/ledger only for provenance or audit.
   - Do not restore retired gate/capsule/H-phase mechanics into normal design.
-  - Do not use migration/revalidated or docs-legacy as current authority.
+  - Do not use docs/migration/revalidated or docs-legacy as current authority.
+  - Do not write product code/tests without separate explicit authorization.
   - Do not merge without explicit authorization.

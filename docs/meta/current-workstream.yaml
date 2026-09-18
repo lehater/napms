@@ -1,7 +1,7 @@
-version: 1
+version: 2
 kind: current-workstream-pointer
-status: ACTIVE
-workstream_id: NAPMS-CANONICAL-MODEL-MIGRATION
-state: docs/meta/canonical-model-migration/workstream-state.yaml
-roadmap: docs/meta/canonical-model-migration/roadmap.yaml
-rule: Read the referenced state only when continuing this active migration. Normal design navigation begins with docs/canonical-graph.yaml.
+status: NONE
+normal_start: docs/canonical-graph.yaml
+last_completed_workstream: NAPMS-CANONICAL-MODEL-MIGRATION
+history_ref: docs/meta/canonical-model-migration/workstream-state.yaml
+rule: Normal design starts from AGENTS.md and docs/canonical-graph.yaml. Read historical workstream records only for provenance or audit.

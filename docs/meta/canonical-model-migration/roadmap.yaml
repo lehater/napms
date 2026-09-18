@@ -1,7 +1,7 @@
 version: 1
 kind: canonical-model-migration-roadmap
 id: NAPMS-CANONICAL-MODEL-MIGRATION-ROADMAP
-status: active
+status: complete
 strategy: docs/meta/canonical-model-migration/strategy.md
 state: docs/meta/canonical-model-migration/workstream-state.yaml
 ledger: docs/meta/canonical-model-migration/migration-ledger.yaml
@@ -112,7 +112,7 @@ phases:
 
   - id: CM7
     name: Migration closeout
-    status: ACTIVE
+    status: COMPLETE
     depends_on: [CM6]
     objective: Close the temporary migration control plane after all authority has moved.
     exit_criteria:

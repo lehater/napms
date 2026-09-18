@@ -1,7 +1,7 @@
 version: 1
 kind: canonical-model-migration-closeout
 id: NAPMS-CM7-CLOSEOUT
-status: PENDING_CI
+status: PASS
 recorded_at: 2026-09-18
 
 authority_result:
@@ -42,8 +42,16 @@ skill_result:
   retired_references: [docs/process lifecycle routing, G0-G4 workflow gates, REOPEN stage commands, active capsule requirements]
 
 verification:
-  design_check: PENDING_CI
-  architecture_check: PENDING_CI
+  design_check:
+    result: PASS
+    commit: caceb792938bd96ea4500f9a53df92d0586300bf
+    workflow_run: 35293392064
+    workflow_job: 105440852388
+  architecture_check:
+    result: PASS
+    commit: caceb792938bd96ea4500f9a53df92d0586300bf
+    workflow_run: 35293392062
+    workflow_job: 105440852464
 
 independent_authorization:
   product_implementation: not granted
