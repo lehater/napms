@@ -20,7 +20,10 @@ aggregates:
     external_policy_boundary: Authority Management admission occurs before protected mutation and is not part of Resource aggregate truth.
 
 entities:
-  - {entity_id: ENTITY-RESOURCE, name: Resource, identity: ResourceId, continuity: Stable catalogue identity independent of current realization, affiliation or responsibility presence.}
+  - entity_id: ENTITY-RESOURCE
+    name: Resource
+    identity: ResourceId
+    continuity: Stable catalogue identity independent of current realization, affiliation or responsibility presence.
   - entity_id: ENTITY-RESOURCE-REALIZATION-FACT
     name: ResourceRealizationFact
     identity: Stable fact identity sufficient to preserve and reference history; exact identifier representation belongs to later design.
@@ -47,13 +50,27 @@ value_objects:
   - {value_object_id: VO-PROVENANCE, name: Provenance, semantics: Required origin/audit information retained with historical catalogue facts; exact technical fields belong to later design.}
 
 invariants:
-  - {invariant_id: INV-RC-STABLE-RESOURCE-IDENTITY, rule: Changing, ending or replacing Resource realization, affiliation or responsibility facts never changes ResourceId., basis_refs: [NAPMS-UC-RC-CURATION#behavior, NAPMS-RC-CURATION-PROCESS]}
-  - {invariant_id: INV-RC-SINGLE-EFFECTIVE-ADDRESS-SPACE, rule: At one logical time a Resource has zero or one effective ResourceRealizationFact; when present its AddressSpace is exactly one HostAddress or one Prefix., basis_refs: [NAPMS-UC-RC-CURATION#behavior, NAPMS-RC-CURATION-PROCESS]}
-  - {invariant_id: INV-RC-HISTORY-PRESERVED, rule: Ending or replacing a temporal realization, affiliation or responsibility fact preserves the historical fact and provenance; supported mutation does not silently rewrite history., basis_refs: [NAPMS-UC-RC-CURATION#integrity, NAPMS-RC-CURATION-PROCESS]}
-  - {invariant_id: INV-RC-VALID-TEMPORAL-FACTS, rule: Temporal intervals must be valid and overlapping effective facts that violate an accepted fact-set invariant are rejected explicitly., basis_refs: [NAPMS-UC-RC-CURATION#integrity]}
-  - {invariant_id: INV-RC-OPTIONAL-CURRENT-RELATIONS, rule: A Resource remains valid when no current realization, scope affiliation or responsibility exists; absence is explicit in the current projection., basis_refs: [NAPMS-UC-RC-CURATION#behavior, NAPMS-RC-CURATION-PROCESS]}
-  - {invariant_id: INV-RC-RESPONSIBILITY-NOT-AUTHORITY, rule: Resource Scope Affiliation and Resource Responsibility never grant Resource Catalogue mutation authority by themselves., basis_refs: [NAPMS-UC-RC-CURATION#authorization]}
-  - {invariant_id: INV-RC-RESPONSIBILITY-ROLE-EXTENSIBLE, rule: ResponsibilityRole is extensible and overlapping assignments are allowed unless a later accepted requirement introduces a coverage/exclusivity rule., basis_refs: [NAPMS-RC-DOMAIN-DECISIONS#DEC-RC-RESPONSIBILITY-ROLES]}
+  - invariant_id: INV-RC-STABLE-RESOURCE-IDENTITY
+    rule: Changing, ending or replacing Resource realization, affiliation or responsibility facts never changes ResourceId.
+    basis_refs: [NAPMS-UC-RC-CURATION#behavior, NAPMS-RC-CURATION-PROCESS]
+  - invariant_id: INV-RC-SINGLE-EFFECTIVE-ADDRESS-SPACE
+    rule: At one logical time a Resource has zero or one effective ResourceRealizationFact; when present its AddressSpace is exactly one HostAddress or one Prefix.
+    basis_refs: [NAPMS-UC-RC-CURATION#behavior, NAPMS-RC-CURATION-PROCESS]
+  - invariant_id: INV-RC-HISTORY-PRESERVED
+    rule: Ending or replacing a temporal realization, affiliation or responsibility fact preserves the historical fact and provenance; supported mutation does not silently rewrite history.
+    basis_refs: [NAPMS-UC-RC-CURATION#integrity, NAPMS-RC-CURATION-PROCESS]
+  - invariant_id: INV-RC-VALID-TEMPORAL-FACTS
+    rule: Temporal intervals must be valid and overlapping effective facts that violate an accepted fact-set invariant are rejected explicitly.
+    basis_refs: [NAPMS-UC-RC-CURATION#integrity]
+  - invariant_id: INV-RC-OPTIONAL-CURRENT-RELATIONS
+    rule: A Resource remains valid when no current realization, scope affiliation or responsibility exists; absence is explicit in the current projection.
+    basis_refs: [NAPMS-UC-RC-CURATION#behavior, NAPMS-RC-CURATION-PROCESS]
+  - invariant_id: INV-RC-RESPONSIBILITY-NOT-AUTHORITY
+    rule: Resource Scope Affiliation and Resource Responsibility never grant Resource Catalogue mutation authority by themselves.
+    basis_refs: [NAPMS-UC-RC-CURATION#authorization]
+  - invariant_id: INV-RC-RESPONSIBILITY-ROLE-EXTENSIBLE
+    rule: ResponsibilityRole is extensible and overlapping assignments are allowed unless a later accepted requirement introduces a coverage/exclusivity rule.
+    basis_refs: [NAPMS-RC-DOMAIN-DECISIONS#DEC-RC-RESPONSIBILITY-ROLES]
 
 domain_services: []
 
