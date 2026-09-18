@@ -15,8 +15,9 @@ def render(m):
 def main():
     p=argparse.ArgumentParser();p.add_argument("--check",action="store_true");a=p.parse_args();m=yaml.safe_load(SOURCE.read_text(encoding="utf-8"))
     if a.check:
-        with tempfile.TemporaryDirectory(prefix="napms-bc-view-") as tmp:
-            path=Path(tmp)/"business-connectivity-domain.puml";path.write_text(render(m),encoding="utf-8");print(f"generated {path}")
+        path=OUT/"business-connectivity-domain.puml";expected=render(m)
+        if not path.is_file() or path.read_text(encoding="utf-8") != expected: raise SystemExit(f"generated projection is stale: {path.relative_to(ROOT)}; run make design-sync")
+        print(f"checked {path.relative_to(ROOT)}")
     else:
         OUT.mkdir(parents=True,exist_ok=True);path=OUT/"business-connectivity-domain.puml";path.write_text(render(m),encoding="utf-8");print(f"generated {path.relative_to(ROOT)}")
 if __name__=="__main__": main()
