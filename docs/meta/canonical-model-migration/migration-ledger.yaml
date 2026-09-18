@@ -116,8 +116,8 @@ units:
 
   - id: APPLICATION-DEPLOYMENT
     phase: CM3
-    status: EQUIVALENCE_REVIEW
-    authority: legacy
+    status: COMPLETE
+    authority: target
     source_paths:
       - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
     source_selector: canonical_payload.participating_contexts.Application Deployment
@@ -129,9 +129,10 @@ units:
       - docs/model/contexts/application-deployment/domain-model.yaml
     ownership_note: Only the Application Deployment tactical payload moves here. Component and Resource semantics remain owned by ACC and RC.
     cutover_check:
-      state: PENDING_CI
+      state: PASS
       review: docs/meta/canonical-model-migration/cm3-ad-equivalence-review.yaml
       command: make canonical-model-check
+      evidence: {commit: 289347121bc344fe8242e0484b6fd40f6a6dbe42, workflow_run: 35289805819, workflow_job: 105429969043}
 
   - id: BUSINESS-CONNECTIVITY
     phase: CM3
