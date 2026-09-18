@@ -78,16 +78,22 @@ units:
 
   - id: AUTHORITY-MANAGEMENT
     phase: CM3
-    status: PENDING
+    status: EQUIVALENCE_REVIEW
     authority: legacy
     source_paths:
-      - docs/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-authority-management.yaml
       - docs/migration/revalidated/h12-rc-curation/s2/strategic/domain-glossary.yaml
+    scope_evidence_paths:
       - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
+    depends_on_target:
+      - docs/model/strategic/bounded-contexts.yaml#BC-AUTHORITY-MANAGEMENT
+      - docs/model/use-cases/resource-catalogue-curation.yaml#authorization
     target_paths:
-      - docs/model/contexts/authority-management/
-    ownership_note: The shared H12 glossary remains a legacy source for the Authority Management-owned Effective Authority term until CM3; CM2 moves only RC-owned glossary terms.
-    cutover_check: {state: NOT_RUN}
+      - docs/model/contexts/authority-management/language.yaml
+    ownership_note: CM1 already owns the Authority Management strategic boundary. H17 has no Authority Management tactical payload, so CM3 must not invent an aggregate model. The only remaining accepted context-owned semantic is the Effective Authority glossary definition.
+    cutover_check:
+      state: PENDING_CI
+      review: docs/meta/canonical-model-migration/cm3-authority-management-equivalence-review.yaml
+      command: make canonical-model-check
 
   - id: APPLICATION-COMMUNICATION-CATALOGUE
     phase: CM3

@@ -25,7 +25,12 @@ current_work:
     phase: CM2
     result: PASS
     review: docs/meta/canonical-model-migration/cm2-resource-catalogue-equivalence-review.yaml
-  next_action: Reconcile the shared H12 glossary and H17 tactical AM semantics against the already-canonical CM1 Authority Management strategic owner; create only the target artifacts that own remaining semantic facts, then validate and cut over.
+  completed_actions:
+    - Confirmed CM1 already owns Authority Management purpose responsibility boundary and owned-language scope.
+    - Confirmed accepted H17 tactical model contains no Authority Management tactical payload.
+    - Isolated the one remaining accepted AM-owned glossary definition: Effective Authority.
+    - Created only docs/model/contexts/authority-management/language.yaml; no tactical aggregate model was invented.
+  next_action: Run canonical-model-check on a clean branch checkout. If PASS, cut over AUTHORITY-MANAGEMENT and continue with Application Communication Catalogue.
   stop_conditions:
     - remaining AM semantics are already fully owned by strategic or use-case target artifacts
     - a new AM aggregate model would require invention beyond accepted H17 truth
