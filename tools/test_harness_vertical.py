@@ -42,6 +42,11 @@ def main() -> int:
     assert "DOMAIN-DESIGN" not in authority_ids
     assert "SYSTEM-ARCHITECTURE" not in authority_ids
     assert "TECHNICAL-REPRESENTATION" not in authority_ids
+    assert {item["id"] for item in projection["root_authorities"]} == {
+        "PRODUCT-REQUIREMENTS",
+        "RESOURCE-CATALOGUE-DISCOVERY",
+        "DOMAIN-TOPOLOGY",
+    }
     assert requirement(baseline, "IMPLEMENTATION-PLAN-INPUT", "asynchronous-contract")["status"] == "NOT_APPLICABLE"
 
     bad_boundary = copy.deepcopy(projection)
@@ -51,6 +56,20 @@ def main() -> int:
     missing_binding = copy.deepcopy(projection)
     missing_binding["bindings"] = [item for item in missing_binding["bindings"] if item["artifact"] != "RC-DISCOVERY"]
     expect_error(lambda: evaluate(graph, missing_binding), "Canonical artifacts without Authority binding")
+
+    missing_input_contract = copy.deepcopy(projection)
+    missing_input_contract["contracts"] = [
+        item for item in missing_input_contract["contracts"]
+        if item["id"] != "ACCESS-POLICY-INPUT"
+    ]
+    expect_error(lambda: evaluate(graph, missing_input_contract), "non-root Authorities without input contract")
+
+    invalid_root = copy.deepcopy(projection)
+    invalid_root["root_authorities"].append({
+        "id": "ACCESS-POLICY",
+        "reason": "Invalid regression root.",
+    })
+    expect_error(lambda: evaluate(graph, invalid_root), "root authority ACCESS-POLICY has external upstream Authorities")
 
     missing_http = copy.deepcopy(projection)
     openapi = next(item for item in missing_http["bindings"] if item["artifact"] == "OPENAPI")

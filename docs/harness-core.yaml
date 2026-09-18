@@ -106,6 +106,14 @@ authorities:
     responsibility: Own verification levels and scenarios proving implementation realizes accepted canonical truth.
     boundary: {semantic_cohesion: "One verification evidence design.", independent_change: "Verification strategy evolves independently while retaining traceability.", public_contract: "Provides verification strategy/scenarios; design gaps route upstream.", atomic: true}
 
+root_authorities:
+  - id: PRODUCT-REQUIREMENTS
+    reason: Accepted first-MVP product requirement is a current root of this selected design graph; its historical/stakeholder evidence is provenance, not another current semantic owner.
+  - id: RESOURCE-CATALOGUE-DISCOVERY
+    reason: Problem/evidence discovery is an input root; it does not require another current canonical engineering decision.
+  - id: DOMAIN-TOPOLOGY
+    reason: Strategic capability ownership is the accepted semantic topology root for the current domain graph.
+
 consumers:
   - id: IMPLEMENTATION
     purpose: Realize the complete first-MVP design without inventing product, domain or architecture decisions.
@@ -144,6 +152,37 @@ bindings:
 questions: []
 
 contracts:
+  - id: AUTHORITY-MANAGEMENT-INPUT
+    consumer: AUTHORITY-MANAGEMENT
+    requires:
+      - {id: contexts, capability: domain.bounded-contexts, authority: DOMAIN-TOPOLOGY}
+
+  - id: APPLICATION-COMMUNICATION-CATALOGUE-INPUT
+    consumer: APPLICATION-COMMUNICATION-CATALOGUE
+    requires:
+      - {id: contexts, capability: domain.bounded-contexts, authority: DOMAIN-TOPOLOGY}
+
+  - id: APPLICATION-DEPLOYMENT-INPUT
+    consumer: APPLICATION-DEPLOYMENT
+    requires:
+      - {id: contexts, capability: domain.bounded-contexts, authority: DOMAIN-TOPOLOGY}
+      - {id: communication, capability: domain.application-communication.semantics, authority: APPLICATION-COMMUNICATION-CATALOGUE}
+      - {id: resource, capability: domain.resource-catalogue.semantics, authority: RESOURCE-CATALOGUE}
+
+  - id: BUSINESS-CONNECTIVITY-INPUT
+    consumer: BUSINESS-CONNECTIVITY
+    requires:
+      - {id: contexts, capability: domain.bounded-contexts, authority: DOMAIN-TOPOLOGY}
+      - {id: communication, capability: domain.application-communication.semantics, authority: APPLICATION-COMMUNICATION-CATALOGUE}
+
+  - id: ACCESS-POLICY-INPUT
+    consumer: ACCESS-POLICY
+    requires:
+      - {id: contexts, capability: domain.bounded-contexts, authority: DOMAIN-TOPOLOGY}
+      - {id: communication, capability: domain.application-communication.semantics, authority: APPLICATION-COMMUNICATION-CATALOGUE}
+      - {id: deployment, capability: domain.application-deployment.semantics, authority: APPLICATION-DEPLOYMENT}
+      - {id: business, capability: domain.business-connectivity.semantics, authority: BUSINESS-CONNECTIVITY}
+
   - id: RESOURCE-CATALOGUE-REQUIREMENTS-INPUT
     consumer: RESOURCE-CATALOGUE-REQUIREMENTS
     requires:
@@ -200,6 +239,7 @@ contracts:
     consumer: SHARED-TECHNICAL-CONVENTIONS
     requires:
       - {id: application-boundary, capability: architecture.application-boundary, authority: APPLICATION-ARCHITECTURE}
+      - {id: materialization, capability: application.policy-export.materialization, authority: POLICY-EXPORT-COMPOSITION}
       - {id: resource-semantics, capability: domain.resource-catalogue.semantics, authority: RESOURCE-CATALOGUE}
 
   - id: HTTP-CONTRACT-INPUT

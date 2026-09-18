@@ -114,6 +114,15 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
     if authority_ids & consumer_ids:
         raise VerticalError(f"consumer-only IDs overlap Authorities: {sorted(authority_ids & consumer_ids)}")
 
+    roots = projection.get("root_authorities", []) or []
+    root_ids = _ids(roots, "root_authorities")
+    unknown_roots = sorted(root_ids - authority_ids)
+    if unknown_roots:
+        raise VerticalError(f"root_authorities reference unknown Authorities: {unknown_roots}")
+    for root in roots:
+        if not isinstance(root.get("reason"), str) or not root["reason"].strip():
+            raise VerticalError(f"root authority {root['id']}: reason is required")
+
     bindings = projection.get("bindings", [])
     provider_map: dict[str, list[str]] = {}
     artifact_authority: dict[str, str] = {}
@@ -149,10 +158,25 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
     if unbound:
         raise VerticalError(f"Authorities without canonical artifacts: {unbound}")
 
+    external_dependency_owners: dict[str, set[str]] = {authority: set() for authority in authority_ids}
+    for artifact, owner in artifact_authority.items():
+        for dependency in nodes[artifact].get("depends_on", []) or []:
+            dependency_owner = artifact_authority[dependency]
+            if dependency_owner != owner:
+                external_dependency_owners[owner].add(dependency_owner)
+
+    for root_id in sorted(root_ids):
+        if external_dependency_owners[root_id]:
+            raise VerticalError(
+                f"root authority {root_id} has external upstream Authorities "
+                f"{sorted(external_dependency_owners[root_id])}"
+            )
+
     blocked_by_artifact = _blocked_questions(graph, projection, authority_ids, artifact_authority)
 
     result = {"satisfied": True, "contracts": []}
     contract_ids: set[str] = set()
+    contract_provider_authorities: dict[str, set[str]] = {}
 
     for contract in projection.get("contracts", []) or []:
         contract_id = contract.get("id")
@@ -174,6 +198,7 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
             requirement_ids.add(requirement_id)
             if expected_authority not in authority_ids:
                 raise VerticalError(f"contract {contract_id}/{requirement_id}: unknown authority {expected_authority}")
+            contract_provider_authorities.setdefault(consumer, set()).add(expected_authority)
             if not isinstance(capability, str) or not capability:
                 raise VerticalError(f"contract {contract_id}/{requirement_id}: capability is required")
 
@@ -239,6 +264,25 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
 
     if not result["contracts"]:
         raise VerticalError("at least one consumer contract is required")
+
+    non_root_authorities = authority_ids - root_ids
+    missing_input_contracts = sorted(
+        authority for authority in non_root_authorities
+        if authority not in contract_provider_authorities
+    )
+    if missing_input_contracts:
+        raise VerticalError(
+            f"non-root Authorities without input contract: {missing_input_contracts}"
+        )
+
+    for authority in sorted(non_root_authorities):
+        declared = contract_provider_authorities.get(authority, set())
+        missing_upstream = sorted(external_dependency_owners[authority] - declared)
+        if missing_upstream:
+            raise VerticalError(
+                f"Authority {authority} input contract misses upstream Authorities {missing_upstream}"
+            )
+
     return result
 
 
