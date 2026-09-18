@@ -29,7 +29,10 @@ current_work:
     - Completed canonical OpenAPI design and HTTP contract validation.
     - Completed first-MVP physical persistence design and generated ERD projection.
     - Confirmed the complete CM1-CM5 target graph passes canonical-model-check on a clean checkout.
-  next_action: Inventory the current active Harness specs/navigation and replace normal design entrypoints with the canonical graph plus lightweight validate/sync commands; keep migration-era files as evidence rather than deleting them.
+  completed_actions:
+    - Identified H19 implementation-readiness and test-intent as the remaining current S4 truth still reachable only through migration/revalidated paths.
+    - Built stable S4 target owners under docs/plans while replacing duplicated API/persistence payloads with references to CM5 canonical owners.
+  next_action: Run canonical-model-check on a clean checkout. If PASS, cut over the stable S4 owners; then rewrite normal docs/AGENTS/spec entrypoints so design work no longer navigates through migration/revalidated.
   stop_conditions:
     - simplification would remove still-current semantic authority
     - normal design would again depend on migration/revalidated paths

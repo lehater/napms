@@ -1,0 +1,33 @@
+version: 1
+kind: test-intent
+id: NAPMS-FIRST-MVP-TEST-INTENT
+status: ACCEPTED_CURRENT
+
+purpose: Define minimum verification proving implementation realizes accepted MVP semantics; tests never create design truth.
+
+design_refs:
+  journey: docs/model/use-cases/first-mvp-policy-export.yaml
+  implementation_readiness: docs/plans/first-mvp-implementation-readiness.yaml
+  system_rules: docs/architecture/mvp-system-rules.yaml
+  http_contract: docs/contracts/http/napms.openapi.yaml
+  persistence: docs/architecture/persistence/mvp-persistence.yaml
+
+levels:
+  module: owner invariants and lifecycle
+  integration: cross-module resolution, admission, persistence ownership and materialization
+  application_api: HTTP/session mapping to application semantics
+  end_to_end: complete authoring-to-export journey
+
+required_scenarios:
+  - {id: MVP-E2E-001, expect: Two addressed Resources + one Application/two Components + HTTPS TCP/443 revision + deployments + Process-backed Need + admitted actor + accepted RuleChange yields complete TCP/443 table row and semantically identical CSV.}
+  - {id: MVP-POL-002, expect: Pending or Rejected later change leaves previous accepted revision effective.}
+  - {id: MVP-EXP-003, expect: Missing required current AddressSpace yields Unresolved with causes and no partial success.}
+  - {id: MVP-BC-004, expect: Deliberate RuleChange without current Process-backed ConnectivityNeed is rejected with no policy mutation.}
+  - {id: MVP-AUTH-005, expect: Protected mutation without effective admission is denied with owner state unchanged.}
+  - {id: MVP-ACC-006, expect: Cross-Application Interaction is rejected.}
+  - {id: MVP-ACC-007, expect: Traffic change creates a new immutable revision and historical revision remains resolvable.}
+  - {id: MVP-AD-008, expect: Redeployment of same Component to another Resource requires another ComponentDeployment identity.}
+  - {id: MVP-AP-009, expect: Withdrawal removes rule from current export while retaining policy history.}
+  - {id: MVP-EXP-010, expect: Prefix remains Prefix and is not expanded to host rows.}
+
+trace_rule: Every scenario traces to the accepted canonical design graph; implementation tests are evidence, not product/domain/architecture authority.

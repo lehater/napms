@@ -271,6 +271,28 @@ units:
       command: make canonical-model-check
       evidence: {commit: 3df49d5e6c3263df65eced71707b925cca5075c8, workflow_run: 35291802262, workflow_job: 105436035483}
 
+  - id: IMPLEMENTATION-READINESS
+    phase: CM6
+    status: EQUIVALENCE_REVIEW
+    authority: legacy
+    source_paths:
+      - docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-implementation-readiness.yaml
+      - docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-test-intent.yaml
+    depends_on_target:
+      - docs/model/use-cases/first-mvp-policy-export.yaml
+      - docs/architecture/structurizr/workspace.dsl
+      - docs/architecture/mvp-system-rules.yaml
+      - docs/contracts/http/napms.openapi.yaml
+      - docs/architecture/persistence/mvp-persistence.yaml
+    target_paths:
+      - docs/plans/first-mvp-implementation-readiness.yaml
+      - docs/plans/first-mvp-test-intent.yaml
+    ownership_note: S4 owns implementation sequencing/readiness and verification intent. API/persistence/system/domain semantics remain owned by their specialized target artifacts and are referenced rather than copied.
+    cutover_check:
+      state: PENDING_CI
+      review: docs/meta/canonical-model-migration/cm6-s4-equivalence-review.yaml
+      command: make canonical-model-check
+
   - id: HARNESS-RUNTIME
     phase: CM6
     status: IN_PROGRESS

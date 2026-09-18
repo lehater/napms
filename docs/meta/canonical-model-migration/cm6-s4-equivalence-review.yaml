@@ -1,0 +1,15 @@
+version: 1
+kind: canonical-model-migration-equivalence-review
+id: NAPMS-CM6-S4-STABLE-OWNER-EQUIVALENCE
+phase: CM6
+unit: IMPLEMENTATION-READINESS
+status: PENDING_CI
+reviewed_at: 2026-09-18
+check_command: make canonical-model-check
+criteria:
+  - H19 implementation-readiness goal boundary module contracts sequence frontend slices completion and open questions are preserved exactly
+  - duplicated H19 API and persistence payloads are replaced by references to their now-canonical CM5 owners
+  - H19 test levels and required scenarios are preserved exactly
+  - S4 artifacts state explicitly that implementation readiness does not grant implementation authorization
+  - no product code or tests are used as design input
+result: awaiting_clean_ci

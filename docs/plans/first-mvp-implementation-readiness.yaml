@@ -1,0 +1,63 @@
+version: 1
+kind: implementation-readiness
+id: NAPMS-FIRST-MVP-IMPLEMENTATION-READINESS
+status: ACCEPTED_CURRENT
+
+goal: Make the accepted first-MVP journey directly implementable and verifiable without reopening product, domain or system architecture decisions.
+
+design_refs:
+  journey: docs/model/use-cases/first-mvp-policy-export.yaml
+  strategic_model: docs/model/strategic/bounded-contexts.yaml
+  system_structure: docs/architecture/structurizr/workspace.dsl
+  system_rules: docs/architecture/mvp-system-rules.yaml
+  http_contract: docs/contracts/http/napms.openapi.yaml
+  persistence: docs/architecture/persistence/mvp-persistence.yaml
+  technical_representation: docs/architecture/mvp-technical-representation.yaml
+
+implementation_boundary:
+  includes: [browser workflow, HTTP/JSON application API, modular-monolith modules, PostgreSQL persistence, Authority Management admission, vendor-neutral policy materialization, table and CSV export]
+  excludes: [provider-specific rendering, Network Enforcement Placement, Access Policy Realization, Network Environment Operations, Technical Access Evidence, external IdP, distributed services]
+  rule: Implement one end-to-end vertical journey while preserving accepted module ownership.
+
+module_contracts:
+  Resource Catalogue: [CreateResource, SetCurrentAddressSpace, ResolveResource]
+  Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionContractRevision, ResolveComponent, ResolveInteractionContractRevision]
+  Application Deployment: [CreateComponentDeployment, ResolveComponentDeployment]
+  Business Connectivity: [CreateBusinessProcess, CreateConnectivityNeed, ResolveCurrentConnectivityNeed]
+  Access Policy: [SubmitRuleChange, DecideRuleChange, WithdrawPolicyRule, ListEffectivePolicyRules]
+  Authority Management: ['Admit(actor, action, scope)']
+  Policy Export composition: [MaterializeCurrentPolicy]
+  rule: Cross-module semantics use owner contracts; tables are not integration contracts.
+
+vertical_sequence:
+  - Author Resources and AddressSpace
+  - Author Application Components Interaction and traffic revision
+  - Create source and destination ComponentDeployments
+  - Establish BusinessProcess and current ConnectivityNeed
+  - Submit RuleChange for exact deployments/revision/Need
+  - Decide Pending RuleChange
+  - Materialize all current effective rules
+  - Render same successful result as table and CSV
+
+frontend:
+  steps: [Resources, Application and Components, Interactions and Traffic, Deployments, Business Connectivity, Policy Rule and Decision, Current Policy Export]
+  rule: UI drives the API and displays validation/Unresolved outcomes; it never becomes authority for domain invariants or authorization.
+
+implementation_slices:
+  - 'foundation: session/auth admission, OpenAPI edge, composition root, PostgreSQL migrations'
+  - 'authoring: RC + ACC + AD + Business Connectivity'
+  - 'policy: Access Policy lifecycle and cross-module validation'
+  - 'export: complete materialization + JSON table + CSV'
+  - 'frontend: complete browser journey'
+  - 'verification: module + integration + API + end-to-end proof'
+
+completion_definition:
+  - OpenAPI covers every required journey operation and explicit outcome.
+  - PostgreSQL migrations establish only module-owned state needed by the journey.
+  - Backend interfaces preserve accepted ownership and introduce no internal HTTP.
+  - Browser completes the journey without hidden/manual state fabrication.
+  - Verification covers happy path, rejection, withdrawal, authorization and Unresolved export.
+  - No coding step requires a new product/domain/system-architecture decision.
+
+open_questions: []
+implementation_authorization: NOT_GRANTED_BY_THIS_ARTIFACT
