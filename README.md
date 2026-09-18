@@ -6,27 +6,58 @@ The repository working tree represents current project truth. Git history is the
 
 ## Selected implementation MVP
 
-The selected first implementation slice is defined by `docs/requirements/first-mvp-vendor-neutral-policy-export.md`:
+The selected first implementation slice is the end-to-end vendor-neutral policy export journey defined by `docs/model/use-cases/first-mvp-policy-export.yaml`.
 
-```text
-AP current effective Policy Rules
-        +
-ACC InteractionContractRevision
-        +
-AD ApplicationDeployment + ComponentPlacement
-        +
-RC Resource + AddressSpace
-        |
-        v
-Full Vendor-Neutral Policy Export
-        |
-        +--> table
-        `--> CSV/vendor-neutral data
+It combines current effective Access Policy rules with the accepted Application Communication Catalogue, Application Deployment, Business Connectivity, Resource Catalogue and Authority Management semantics to materialize the current vendor-neutral policy as a table and CSV data.
+
+The export contains access-list-oriented source/destination address, protocol and port/range semantics without firewall, device, ACL or provider-specific context.
+
+Implementation readiness is defined by `docs/plans/first-mvp-implementation-readiness.yaml`. It describes an implementable slice but does not by itself authorize product implementation.
+
+## Design and architecture
+
+`docs/` is the sole canonical current design/documentation authority. Generated views are projections and are not sources of truth.
+
+For non-trivial design, architecture or implementation-planning work:
+
+1. read `AGENTS.md`;
+2. read `docs/canonical-graph.yaml` to locate the semantic owner and direct dependencies;
+3. read `docs/meta/current-workstream.yaml`; follow a referenced workstream only when one is active;
+4. load only the affected canonical artifacts.
+
+Current major owners include:
+
+- `docs/model/` — strategic, tactical and use-case semantics;
+- `docs/architecture/structurizr/workspace.dsl` — canonical C4 structural/deployment architecture;
+- `docs/architecture/mvp-system-rules.yaml` — non-C4 architecture constraints;
+- `docs/architecture/persistence/mvp-persistence.yaml` — physical persistence design;
+- `docs/contracts/http/napms.openapi.yaml` — HTTP application contract;
+- `docs/plans/` — implementation-readiness and verification intent;
+- `docs/canonical-graph.yaml` — routing and dependency metadata.
+
+Validate current canonical design:
+
+```bash
+make design-check
 ```
 
-The export contains access-list-oriented source/destination address, protocol and port/range semantics without firewall, device, ACL or provider context.
+Regenerate disposable projections:
 
-The complete target domain remains defined by `docs/domain/strategic-model.md`. Current execution state is `docs/plans/active/README.md`.
+```bash
+make design-sync
+```
+
+Run the local Structurizr architecture viewer:
+
+```bash
+make architecture
+```
+
+Validate the Structurizr workspace:
+
+```bash
+make architecture-check
+```
 
 ## Local Docker start
 
@@ -61,8 +92,6 @@ Restore into a clean replacement PostgreSQL volume:
 make dev-restore BACKUP=backups/napms.napms.dump CONFIRM_RESET=yes
 ```
 
-See `docs/engineering/local-backup-recovery.md` and `docs/engineering/local-upgrade-procedure.md` for current operational contracts.
-
 ## Native development
 
 ```bash
@@ -83,16 +112,19 @@ npm run build
 ## Repository layout
 
 ```text
-backend/src/napms/         product code
-backend/tests/             executable specifications and integration tests
-web/                       React Web UI
-docs/requirements/         current product contracts
-docs/domain/               current DDD model
-docs/architecture/         current architecture contracts
-docs/engineering/          current runtime/operational contracts
-docs/ui/                   current reusable UI guidance
-docs/plans/active/         current execution state
-docs/process/              repository working protocols
+backend/src/napms/                 product code
+backend/tests/                     executable specifications and integration tests
+web/                               React Web UI
+docs/discovery/                    current discovery evidence
+docs/model/                        canonical domain and use-case model
+docs/architecture/                 canonical architecture and persistence design
+docs/contracts/                    application contracts
+docs/plans/                        implementation-readiness and verification intent
+docs/meta/current-workstream.yaml  current workstream pointer
+docs/canonical-graph.yaml          canonical routing/dependency graph
+docs-generated/                    generated, disposable non-canonical views
+docs-legacy/                       retired frozen migration evidence
+tools/                             repository validation/generation tooling
 ```
 
-See `AGENTS.md` and `docs/README.md` before changing product/domain/architecture semantics.
+See `AGENTS.md` and `docs/README.md` before changing product, domain or architecture semantics.
