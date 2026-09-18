@@ -87,7 +87,7 @@ phases:
 
   - id: CM5
     name: Architecture contracts and persistence normalization
-    status: ACTIVE
+    status: COMPLETE
     depends_on: [CM4]
     objective: Reconcile system-level S3 truth with specialized canonical notations and add missing physical persistence truth.
     exit_criteria:
@@ -100,7 +100,7 @@ phases:
 
   - id: CM6
     name: Simplify Harness around canonical graph
-    status: PENDING
+    status: ACTIVE
     depends_on: [CM5]
     objective: Remove migration-era ceremony from normal design work and adapt validation to the proven target model.
     exit_criteria:

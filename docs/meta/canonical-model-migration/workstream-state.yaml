@@ -10,46 +10,30 @@ ledger: docs/meta/canonical-model-migration/migration-ledger.yaml
 
 program:
   status: ACTIVE
-  current_phase: CM5
+  current_phase: CM6
   current_phase_state: IN_PROGRESS
-  completed_phases: [CM0, CM1, CM2, CM3, CM4]
+  completed_phases: [CM0, CM1, CM2, CM3, CM4, CM5]
 
 current_work:
-  task_id: CM5-02
-  name: Complete canonical OpenAPI and physical persistence design
+  task_id: CM6-01
+  name: Simplify Harness around the canonical graph
   state: IN_PROGRESS
-  objective: Split accepted H18/H19 technical truth among the smallest specialized canonical owners without copying structural truth or inventing missing contract/persistence details.
-  source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM5
-  authority_unit: PERSISTENCE-MODEL
+  objective: Make the new semantic/architecture/contract paths the normal design navigation and reduce validation/orchestration to small deterministic checks without H-phase ceremony.
+  source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM6
+  authority_unit: HARNESS-RUNTIME
   predecessor_result:
-    unit: MVP-JOURNEY
+    phase: CM5
     result: PASS
-    review: docs/meta/canonical-model-migration/cm4-mvp-journey-equivalence-review.yaml
+    evidence: {commit: 3df49d5e6c3263df65eced71707b925cca5075c8, workflow_run: 35291802262, workflow_job: 105436035483}
   completed_actions:
-    - Cut over the first-MVP journey after clean canonical-model-check CI.
-    - Inventoried H18 H19 Structurizr and existing OpenAPI evidence.
-    - Identified target ownership split for structural C4 architecture architecture rules HTTP contract and physical persistence.
-    - Confirmed that no accepted full-system OpenAPI or complete physical persistence model currently exists.
-  completed_actions:
-    - Reconciled accepted H18 structural responsibilities against the existing Structurizr workspace.
-    - Split accepted non-structural H18 rules into docs/architecture/mvp-system-rules.yaml.
-    - Moved accepted H18/H19 persistence baseline into docs/architecture/persistence/mvp-persistence.yaml with the missing physical detail explicitly marked unresolved.
-    - Moved accepted H18/H19 HTTP boundary operations and API-wide rules into docs/contracts/http/napms-api-requirements.yaml with the incomplete OpenAPI detail explicitly marked unresolved.
-  completed_actions:
-    - Cut over the accepted H18/H19 architecture split after clean canonical-model-check CI.
-    - Structurizr plus mvp-system-rules.yaml now own accepted system architecture truth.
-    - napms-api-requirements.yaml now owns the accepted HTTP operation/rule baseline while explicitly marking missing OpenAPI detail.
-    - mvp-persistence.yaml now owns the accepted PostgreSQL/schema/table baseline while explicitly marking missing physical detail.
-  completed_actions:
-    - Completed the canonical OpenAPI contract after clean CI.
-    - Designed the full first-MVP physical persistence detail without adding tables beyond the accepted H19 ownership set.
-    - Kept cross-module references as owner-contract UUID refs rather than database FKs.
-    - Added a deterministic ERD generator that draws only local database foreign keys.
-  next_action: Run canonical-model-check on a clean checkout. If PASS, mark persistence and CM5 complete, then begin CM6 Harness simplification around the proven canonical graph.
+    - Completed canonical OpenAPI design and HTTP contract validation.
+    - Completed first-MVP physical persistence design and generated ERD projection.
+    - Confirmed the complete CM1-CM5 target graph passes canonical-model-check on a clean checkout.
+  next_action: Inventory the current active Harness specs/navigation and replace normal design entrypoints with the canonical graph plus lightweight validate/sync commands; keep migration-era files as evidence rather than deleting them.
   stop_conditions:
-    - a structural mismatch would require silently changing accepted architecture
-    - OpenAPI request/response semantics would have to be inferred from product code
-    - physical persistence details would have to be guessed rather than explicitly designed
+    - simplification would remove still-current semantic authority
+    - normal design would again depend on migration/revalidated paths
+    - a new universal DSL or lifecycle layer would be introduced
 
 authority:
   namespace: docs/

@@ -255,7 +255,7 @@ units:
 
   - id: PERSISTENCE-MODEL
     phase: CM5
-    status: EQUIVALENCE_REVIEW
+    status: COMPLETE
     source_inventory: docs/meta/canonical-model-migration/cm5-architecture-source-inventory.yaml
     authority: target
     source_paths:
@@ -265,14 +265,15 @@ units:
       - docs/architecture/persistence/mvp-persistence.yaml
     note: Accepted PostgreSQL/module/table ownership is migrated into the target model. Columns/keys/cardinalities/indexes/checks remain an explicit design gap; ERD stays unavailable until that gap is resolved.
     cutover_check:
-      state: PHYSICAL_DETAIL_PENDING_CI
+      state: PASS
       baseline_review: docs/meta/canonical-model-migration/cm5-architecture-split-equivalence-review.yaml
       design_review: docs/meta/canonical-model-migration/cm5-persistence-design-review.yaml
       command: make canonical-model-check
+      evidence: {commit: 3df49d5e6c3263df65eced71707b925cca5075c8, workflow_run: 35291802262, workflow_job: 105436035483}
 
   - id: HARNESS-RUNTIME
     phase: CM6
-    status: PENDING
+    status: IN_PROGRESS
     authority: legacy
     source_paths:
       - docs/spec/
