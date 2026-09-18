@@ -331,6 +331,13 @@ class CreateInteractionDefinition:
         ):
             return InteractionDefinitionMutationResult(TargetMutationOutcome.INPUT_INVALID)
 
+        if self._catalogue.find_interaction_definition_by_pair(
+            application_id=application.application_id,
+            source_component_id=source.component_id,
+            destination_component_id=destination.component_id,
+        ) is not None:
+            return InteractionDefinitionMutationResult(TargetMutationOutcome.ALREADY_EXISTS)
+
         interaction_definition_id = self._identities.new_interaction_definition_id()
         try:
             value = InteractionDefinition(
