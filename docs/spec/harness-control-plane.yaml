@@ -32,21 +32,6 @@ normal_work:
     - copied provenance wrappers
     - a universal design DSL
 
-elicitation_harvesting:
-  enabled: true
-  principle: discovered-is-not-accepted
-  scan_for:
-    - requirement-or-constraint
-    - use-case-or-user-journey
-    - journey-step-actor-or-goal
-    - business-rule-or-invariant
-    - domain-term-or-meaning-distinction
-    - capability-responsibility-or-boundary-clue
-    - contradiction-exception-or-unresolved-question
-  accepted_item_rule: Persist in the smallest canonical owner found through docs/canonical-graph.yaml and revalidate only affected downstream nodes.
-  unaccepted_item_rule: If durable capture is useful, preserve as evidence/candidate/question in the nearest relevant discovery artifact or active workstream state; never masquerade as accepted canonical semantics.
-  interaction_rule: Harvest side semantics without derailing the current elicitation line unless a contradiction blocks progress.
-
 commands:
   validate: make design-check
   regenerate: make design-sync
