@@ -237,7 +237,7 @@ units:
 
   - id: HTTP-CONTRACT
     phase: CM5
-    status: OPENAPI_REVIEW
+    status: COMPLETE
     source_inventory: docs/meta/canonical-model-migration/cm5-architecture-source-inventory.yaml
     authority: target
     source_paths:
@@ -247,14 +247,15 @@ units:
       - docs/contracts/http/napms.openapi.yaml
     note: Accepted HTTP/API requirement truth is migrated first. The full OpenAPI remains an explicit design gap until request/response/outcome schema details are designed without using implementation code as truth.
     cutover_check:
-      state: OPENAPI_PENDING_CI
+      state: PASS
       baseline_review: docs/meta/canonical-model-migration/cm5-architecture-split-equivalence-review.yaml
       design_review: docs/meta/canonical-model-migration/cm5-openapi-design-review.yaml
       command: make canonical-model-check
+      evidence: {commit: 0e6af93fec84c3ca69f293326afa0116db629f56, workflow_run: 35291523524, workflow_job: 105435186265}
 
   - id: PERSISTENCE-MODEL
     phase: CM5
-    status: DESIGNING_PHYSICAL_DETAIL
+    status: EQUIVALENCE_REVIEW
     source_inventory: docs/meta/canonical-model-migration/cm5-architecture-source-inventory.yaml
     authority: target
     source_paths:
@@ -264,10 +265,10 @@ units:
       - docs/architecture/persistence/mvp-persistence.yaml
     note: Accepted PostgreSQL/module/table ownership is migrated into the target model. Columns/keys/cardinalities/indexes/checks remain an explicit design gap; ERD stays unavailable until that gap is resolved.
     cutover_check:
-      state: BASELINE_PASS_PHYSICAL_DETAIL_PENDING
-      review: docs/meta/canonical-model-migration/cm5-architecture-split-equivalence-review.yaml
+      state: PHYSICAL_DETAIL_PENDING_CI
+      baseline_review: docs/meta/canonical-model-migration/cm5-architecture-split-equivalence-review.yaml
+      design_review: docs/meta/canonical-model-migration/cm5-persistence-design-review.yaml
       command: make canonical-model-check
-      evidence: {commit: 20e51df6c870bb864cf2b75f9c68d99a23c4ac0a, workflow_run: 35291152800, workflow_job: 105434054140}
 
   - id: HARNESS-RUNTIME
     phase: CM6

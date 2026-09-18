@@ -59,6 +59,7 @@ canonical-model-sync:
 	python tools/check_cm4_mvp_journey_equivalence.py
 	python tools/check_cm5_architecture_split.py
 	python tools/check_cm5_openapi_design.py
+	python tools/check_cm5_persistence_design.py
 	python tools/generate_strategic_views.py
 	python tools/generate_resource_catalogue_views.py
 	python tools/generate_acc_view.py
@@ -66,6 +67,7 @@ canonical-model-sync:
 	python tools/generate_bc_view.py
 	python tools/generate_ap_view.py
 	python tools/generate_mvp_journey_view.py
+	python tools/generate_persistence_erd.py
 
 canonical-model-check:
 	python tools/check_cm1_strategic_equivalence.py
@@ -78,6 +80,7 @@ canonical-model-check:
 	python tools/check_cm4_mvp_journey_equivalence.py
 	python tools/check_cm5_architecture_split.py
 	python tools/check_cm5_openapi_design.py
+	python tools/check_cm5_persistence_design.py
 	python tools/generate_strategic_views.py --check
 	python tools/generate_resource_catalogue_views.py --check
 	python tools/generate_acc_view.py --check
@@ -85,6 +88,7 @@ canonical-model-check:
 	python tools/generate_bc_view.py --check
 	python tools/generate_ap_view.py --check
 	python tools/generate_mvp_journey_view.py --check
+	python tools/generate_persistence_erd.py --check
 
 harness-check:
 	python tools/validate_harness.py

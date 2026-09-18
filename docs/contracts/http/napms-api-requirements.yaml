@@ -1,7 +1,7 @@
 version: 1
 kind: http-contract-requirements
 id: NAPMS-MVP-HTTP-CONTRACT-REQUIREMENTS
-status: ACCEPTED_REQUIREMENTS_WITH_OPENAPI_DETAIL_GAP
+status: COMPLETE_CANONICAL_OPENAPI
 
 target_contract_format: OpenAPI
 delivery_protocol: HTTP
@@ -42,13 +42,13 @@ rules:
 
 error_rule: Domain rejection and Unresolved materialization are explicit application outcomes; missing materialization input is never represented as a silently partial successful export.
 
-openapi_status: NOT_YET_COMPLETE
-missing_openapi_design:
+openapi_status: COMPLETE
+resolved_openapi_design:
   - operation request schemas
   - success response schemas
   - explicit domain-rejection response schemas and status mapping
   - Unresolved export response schema and status mapping
-  - stable identifier schema details
-  - common authentication/session declaration
-  - CSV response media-type/schema details
+  - stable UUID identifier representation
+  - common backend-session cookie declaration
+  - CSV success representation and Unresolved non-CSV outcome
 canonical_openapi_target: docs/contracts/http/napms.openapi.yaml

@@ -3,7 +3,7 @@ kind: cm5-technical-design-review
 id: NAPMS-CM5-OPENAPI-DESIGN
 phase: CM5
 unit: HTTP-CONTRACT
-status: PENDING_CI
+status: PASS
 reviewed_at: 2026-09-18
 sources:
   - docs/contracts/http/napms-api-requirements.yaml
@@ -27,4 +27,8 @@ checks:
   - InteractionContractRevision requires one or more vendor-neutral traffic alternatives
   - RuleChange decision remains Accepted or Rejected from Pending
   - no provider-specific or async contract semantics are introduced
-result: awaiting_clean_ci
+result: PASS
+evidence:
+  commit: 0e6af93fec84c3ca69f293326afa0116db629f56
+  workflow_run: 35291523524
+  workflow_job: 105435186265

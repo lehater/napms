@@ -20,7 +20,7 @@ current_work:
   state: IN_PROGRESS
   objective: Split accepted H18/H19 technical truth among the smallest specialized canonical owners without copying structural truth or inventing missing contract/persistence details.
   source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM5
-  authority_unit: HTTP-CONTRACT
+  authority_unit: PERSISTENCE-MODEL
   predecessor_result:
     unit: MVP-JOURNEY
     result: PASS
@@ -41,10 +41,11 @@ current_work:
     - napms-api-requirements.yaml now owns the accepted HTTP operation/rule baseline while explicitly marking missing OpenAPI detail.
     - mvp-persistence.yaml now owns the accepted PostgreSQL/schema/table baseline while explicitly marking missing physical detail.
   completed_actions:
-    - Designed docs/contracts/http/napms.openapi.yaml from accepted target requirements/domain models only.
-    - Recorded CM5 technical representation choices in docs/architecture/mvp-technical-representation.yaml.
-    - Added deterministic checks for exact operation coverage, session identity, outcome separation and no trusted actor request fields.
-  next_action: Run canonical-model-check on a clean checkout. If PASS, mark the OpenAPI contract complete and proceed to full physical persistence detail plus ERD generation.
+    - Completed the canonical OpenAPI contract after clean CI.
+    - Designed the full first-MVP physical persistence detail without adding tables beyond the accepted H19 ownership set.
+    - Kept cross-module references as owner-contract UUID refs rather than database FKs.
+    - Added a deterministic ERD generator that draws only local database foreign keys.
+  next_action: Run canonical-model-check on a clean checkout. If PASS, mark persistence and CM5 complete, then begin CM6 Harness simplification around the proven canonical graph.
   stop_conditions:
     - a structural mismatch would require silently changing accepted architecture
     - OpenAPI request/response semantics would have to be inferred from product code
