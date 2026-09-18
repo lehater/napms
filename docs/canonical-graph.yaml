@@ -5,6 +5,7 @@ status: CURRENT
 rule: This file owns routing/dependency metadata only. Semantic truth remains in each node path.
 
 nodes:
+  - {id: FIRST-MVP-REQUIREMENTS, kind: product-requirements, path: docs/requirements/first-mvp-policy-export.yaml, depends_on: []}
   - {id: RC-DISCOVERY, kind: discovery, path: docs/discovery/resource-catalogue.yaml, depends_on: []}
   - {id: STRATEGIC-CAPABILITIES, kind: strategic-model, path: docs/model/strategic/capabilities.yaml, depends_on: []}
   - {id: STRATEGIC-CONTEXTS, kind: strategic-model, path: docs/model/strategic/bounded-contexts.yaml, depends_on: [STRATEGIC-CAPABILITIES]}
@@ -19,15 +20,15 @@ nodes:
   - {id: AD-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/application-deployment/domain-model.yaml, depends_on: [ACC-DOMAIN, RC-DOMAIN, STRATEGIC-CONTEXTS]}
   - {id: BC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/business-connectivity/domain-model.yaml, depends_on: [ACC-DOMAIN, STRATEGIC-CONTEXTS]}
   - {id: AP-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/access-policy/domain-model.yaml, depends_on: [ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, STRATEGIC-CONTEXTS]}
-  - {id: FIRST-MVP-JOURNEY, kind: cross-context-use-case, path: docs/model/use-cases/first-mvp-policy-export.yaml, depends_on: [STRATEGIC-RELATIONSHIPS, RC-DOMAIN, AM-LANGUAGE, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN]}
+  - {id: FIRST-MVP-JOURNEY, kind: cross-context-use-case, path: docs/model/use-cases/first-mvp-policy-export.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, STRATEGIC-RELATIONSHIPS, RC-DOMAIN, AM-LANGUAGE, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN]}
   - {id: C4-STRUCTURE, kind: structural-architecture, path: docs/architecture/structurizr/workspace.dsl, depends_on: [STRATEGIC-CONTEXTS, FIRST-MVP-JOURNEY]}
   - {id: SYSTEM-RULES, kind: architecture-rules, path: docs/architecture/mvp-system-rules.yaml, depends_on: [C4-STRUCTURE, FIRST-MVP-JOURNEY]}
   - {id: TECH-REPRESENTATION, kind: technical-decisions, path: docs/architecture/mvp-technical-representation.yaml, depends_on: [SYSTEM-RULES]}
   - {id: HTTP-REQUIREMENTS, kind: contract-requirements, path: docs/contracts/http/napms-api-requirements.yaml, depends_on: [SYSTEM-RULES, FIRST-MVP-JOURNEY]}
   - {id: OPENAPI, kind: http-contract, path: docs/contracts/http/napms.openapi.yaml, depends_on: [HTTP-REQUIREMENTS, TECH-REPRESENTATION]}
   - {id: PERSISTENCE, kind: physical-persistence-model, path: docs/architecture/persistence/mvp-persistence.yaml, depends_on: [SYSTEM-RULES, TECH-REPRESENTATION, RC-DOMAIN, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN, AM-LANGUAGE]}
-  - {id: MVP-IMPLEMENTATION-READINESS, kind: implementation-readiness, path: docs/plans/first-mvp-implementation-readiness.yaml, depends_on: [FIRST-MVP-JOURNEY, C4-STRUCTURE, SYSTEM-RULES, OPENAPI, PERSISTENCE]}
-  - {id: MVP-TEST-INTENT, kind: test-intent, path: docs/plans/first-mvp-test-intent.yaml, depends_on: [MVP-IMPLEMENTATION-READINESS]}
+  - {id: MVP-IMPLEMENTATION-READINESS, kind: implementation-readiness, path: docs/plans/first-mvp-implementation-readiness.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, C4-STRUCTURE, SYSTEM-RULES, OPENAPI, PERSISTENCE]}
+  - {id: MVP-TEST-INTENT, kind: test-intent, path: docs/plans/first-mvp-test-intent.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, MVP-IMPLEMENTATION-READINESS]}
 
 projections:
   - {id: CONTEXT-MAP, source_ids: [STRATEGIC-CAPABILITIES, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS], command: python tools/generate_strategic_views.py, outputs: [docs-generated/architecture/context-map.puml, docs-generated/architecture/strategic-collaboration-map.puml]}
@@ -36,5 +37,5 @@ projections:
   - {id: AD-VIEW, source_ids: [AD-DOMAIN], command: python tools/generate_ad_view.py, outputs: [docs-generated/architecture/application-deployment-domain.puml]}
   - {id: BC-VIEW, source_ids: [BC-DOMAIN], command: python tools/generate_bc_view.py, outputs: [docs-generated/architecture/business-connectivity-domain.puml]}
   - {id: AP-VIEW, source_ids: [AP-DOMAIN], command: python tools/generate_ap_view.py, outputs: [docs-generated/architecture/access-policy-domain.puml]}
-  - {id: MVP-JOURNEY-VIEW, source_ids: [FIRST-MVP-JOURNEY], command: python tools/generate_mvp_journey_view.py, outputs: [docs-generated/architecture/first-mvp-policy-export.puml]}
+  - {id: MVP-JOURNEY-VIEW, source_ids: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY], command: python tools/generate_mvp_journey_view.py, outputs: [docs-generated/architecture/first-mvp-policy-export.puml]}
   - {id: ERD, source_ids: [PERSISTENCE], command: python tools/generate_persistence_erd.py, outputs: [docs-generated/architecture/mvp-persistence-erd.puml]}

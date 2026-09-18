@@ -1,0 +1,56 @@
+version: 1
+kind: product-requirements
+id: NAPMS-FIRST-MVP-REQUIREMENTS
+status: ACCEPTED_CURRENT
+
+purpose: Own the accepted first-MVP product intent, observable journey, scope boundaries and acceptance examples independently of domain and technical realization.
+
+goal: Establish current effective Access Policy truth and export the complete applicable policy set as one vendor-neutral technical policy view inspectable as a table and downloadable as CSV.
+
+journey:
+  - Define Resources and their current AddressSpace realization.
+  - Define one Application with Components and directed same-Application Interactions.
+  - Create immutable InteractionContractRevision traffic semantics for an Interaction.
+  - Define concrete ComponentDeployments, each binding exactly one Component to exactly one Resource for this MVP.
+  - Establish a current Process-backed ConnectivityNeed for the required Interaction as business justification.
+  - Propose access for one concrete source ComponentDeployment and one concrete destination ComponentDeployment using one exact InteractionContractRevision and the current ConnectivityNeed basis.
+  - Establish current effective PolicyRule truth through the formal Pending to Accepted or Rejected RuleChange lifecycle.
+  - Request the complete current effective policy export.
+  - Materialize each effective rule using exact traffic revision, concrete deployments and current Resource AddressSpace.
+  - Inspect the complete vendor-neutral result as a table and export the same semantics as CSV.
+
+output_row_minimum:
+  - source AddressSpace
+  - destination AddressSpace
+  - protocol/service semantics
+  - applicable source/destination port or range
+  - PolicyRule provenance
+  - InteractionContractRevision provenance
+  - source/destination ComponentDeployment provenance
+  - source/destination Resource provenance
+
+non_goals:
+  - Network Enforcement Placement or firewall selection
+  - provider/device/ACL-specific rendering
+  - configured-state comparison or remediation
+  - Network Environment Operations or device mutation
+  - evidence-derived proposal recognition as a prerequisite
+  - time-travel/as-of export
+
+acceptance_examples:
+  - One effective HTTPS rule between concrete deployments whose Resources have HostAddresses yields one TCP destination-port 443 row.
+  - A deliberate RuleChange without a current Process-backed ConnectivityNeed is not a valid formal submission.
+  - A ConnectivityNeed supplies business justification but does not itself authorize access.
+  - A pending or rejected traffic revision change leaves the previous accepted revision in the export.
+  - A missing required Resource AddressSpace makes the full export Unresolved.
+  - A Prefix remains a Prefix and is not expanded into hosts.
+  - A withdrawn PolicyRule contributes no current export row.
+  - The displayed table and downloaded CSV preserve the same policy meaning.
+
+evidence:
+  rematerialized_from: docs/migration/revalidated/h17-mvp-journey/s1/mvp-vendor-neutral-policy-export.yaml
+  accepted_requirement_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT
+  stakeholder_confirmation:
+    date: 2026-09-17
+    statement: MVP is the narrow journey from resources/application description and rule creation to generated/exported final policy.
+  rule: Historical migration material is evidence only; this current artifact is the canonical requirements owner.
