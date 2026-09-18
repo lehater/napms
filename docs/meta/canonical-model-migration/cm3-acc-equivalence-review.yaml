@@ -1,0 +1,14 @@
+version: 1
+kind: canonical-model-migration-equivalence-review
+id: NAPMS-CM3-ACC-EQUIVALENCE
+phase: CM3
+unit: APPLICATION-COMMUNICATION-CATALOGUE
+status: PENDING_CI
+reviewed_at: 2026-09-18
+check_command: make canonical-model-check
+criteria:
+  - accepted H17 ACC aggregate entity invariant and public semantics are preserved exactly
+  - CM1 strategic ACC definition is referenced rather than duplicated
+  - H17 cross-context flow and materialization semantics remain outside ACC ownership
+  - generated ACC view does not infer entity associations absent from accepted H17 truth
+result: awaiting_clean_ci

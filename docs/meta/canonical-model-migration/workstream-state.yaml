@@ -25,7 +25,11 @@ current_work:
     unit: AUTHORITY-MANAGEMENT
     result: PASS
     review: docs/meta/canonical-model-migration/cm3-authority-management-equivalence-review.yaml
-  next_action: Extract only the Application Communication Catalogue participating_context payload from accepted H17 tactical truth, preserve aggregate entities invariants and public semantics, generate a review projection without inferred associations, validate then cut over.
+  completed_actions:
+    - Extracted only the accepted H17 Application Communication Catalogue participating-context payload.
+    - Created one tactical domain owner with aggregate entities invariants and public semantics; CM1 strategic truth is referenced, not repeated.
+    - Added a generated review view that deliberately does not infer entity associations.
+  next_action: Run canonical-model-check on a clean branch checkout. If PASS, cut over APPLICATION-COMMUNICATION-CATALOGUE and continue with Application Deployment.
   stop_conditions:
     - extraction would require adding aggregate/entity relationships not present in accepted H17 truth
     - cross-context journey or materialization semantics would be copied into ACC ownership
