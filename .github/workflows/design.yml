@@ -1,0 +1,67 @@
+name: design
+
+on:
+  push:
+    paths:
+      - "AGENTS.md"
+      - ".agents/**"
+      - "backend/tests/evals/**"
+      - "docs/README.md"
+      - "docs/canonical-graph.yaml"
+      - "docs/discovery/**"
+      - "docs/model/**"
+      - "docs/architecture/**"
+      - "docs/contracts/**"
+      - "docs/plans/**"
+      - "docs/spec/harness-control-plane.yaml"
+      - "docs/spec/repository-layout.md"
+      - "docs/spec/artifacts.md"
+      - "docs/meta/current-workstream.yaml"
+      - "tools/check_canonical_graph.py"
+      - "tools/check_openapi_contract.py"
+      - "tools/check_persistence_model.py"
+      - "tools/check_design_control.py"
+      - "tools/validate_skill_routing.py"
+      - "tools/generate_*_view.py"
+      - "tools/generate_*_views.py"
+      - "tools/generate_persistence_erd.py"
+      - "Makefile"
+      - ".github/workflows/design.yml"
+  pull_request:
+    paths:
+      - "AGENTS.md"
+      - ".agents/**"
+      - "backend/tests/evals/**"
+      - "docs/README.md"
+      - "docs/canonical-graph.yaml"
+      - "docs/discovery/**"
+      - "docs/model/**"
+      - "docs/architecture/**"
+      - "docs/contracts/**"
+      - "docs/plans/**"
+      - "docs/spec/harness-control-plane.yaml"
+      - "docs/spec/repository-layout.md"
+      - "docs/spec/artifacts.md"
+      - "docs/meta/current-workstream.yaml"
+      - "tools/check_canonical_graph.py"
+      - "tools/check_openapi_contract.py"
+      - "tools/check_persistence_model.py"
+      - "tools/check_design_control.py"
+      - "tools/validate_skill_routing.py"
+      - "tools/generate_*_view.py"
+      - "tools/generate_*_views.py"
+      - "tools/generate_persistence_erd.py"
+      - "Makefile"
+      - ".github/workflows/design.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate canonical design graph and projections
+        run: make design-check

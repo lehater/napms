@@ -1,0 +1,9 @@
+version: 1
+kind: context-language
+id: NAPMS-AM-LANGUAGE
+bounded_context_ref: BC-AUTHORITY-MANAGEMENT
+
+terms:
+  - term_id: TERM-EFFECTIVE-AUTHORITY
+    term: Effective Authority
+    definition: Authority Management determination of whether an Actor may perform an Action for the applicable scope and time.

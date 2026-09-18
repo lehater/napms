@@ -1,0 +1,43 @@
+version: 1
+kind: canonical-model-migration-equivalence-review
+id: NAPMS-CM2-RC-EQUIVALENCE
+phase: CM2
+unit: RESOURCE-CATALOGUE
+status: PASS
+reviewed_at: 2026-09-18
+check_command: make canonical-model-check
+
+criteria:
+  - accepted/current S0 problem and journey preserved in one discovery owner
+  - accepted/current S1 behavior authorization and integrity preserved in one use-case owner
+  - H12 local capability map retained only as derived discovery evidence while whole-domain capability authority remains strategic
+  - Resource Catalogue-owned glossary terms preserved; Authority Management term remains externally owned
+  - accepted domain decisions preserved without lifecycle question/response bookkeeping
+  - process commands events policies explicit flows timeline external-system semantics and hotspots preserved
+  - process origin_class provenance fields are intentionally omitted from current semantic model
+  - process candidate aggregate is intentionally omitted because the accepted tactical domain model now owns Resource as an aggregate
+  - tactical aggregate entities value objects invariants command semantics and explicit deferrals preserved
+  - invariant basis references point to target owners rather than retired migration anchors
+  - strategic BC purpose responsibility boundary and relationship truth are referenced from CM1 owners and not duplicated
+  - no S3 persistence API or UI realization detail is introduced
+  - domain/process diagrams are generated from the target artifacts and remain noncanonical
+
+dispositions:
+  local_capability_map: retained_as_discovery_evidence_not_peer_strategic_authority
+  effective_authority_glossary_term: remains_owned_by_authority_management_and_is_not_copied_into_rc_language
+  process_origin_class: migration_provenance_omitted
+  process_candidate_aggregate: superseded_by_accepted_tactical_aggregate
+  logical_derivation_and_envelope_metadata: migration_trace_retained_in_ledger_and_review_not_semantic_payload
+
+result: PASS
+evidence:
+  branch_commit: a79ab612248f980785759dd502c7d6f810939235
+  workflow_run: 35289333880
+  workflow_job: 105428557141
+  observed:
+    - CM1 strategic equivalence PASS
+    - CM2 Resource Catalogue equivalence PASS
+    - S0 problem and journey preserved
+    - S1 behavior authorization and integrity preserved
+    - Resource Catalogue language/domain decisions/process/tactical semantics preserved
+    - Resource Catalogue domain/process projections generated successfully

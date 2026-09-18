@@ -1,39 +1,45 @@
-# NAPMS canonical documentation
+# NAPMS design documentation
 
 Status: CANONICAL.
 
-`docs/` is the sole current documentation authority for NAPMS. It contains the machine-readable linked design graph, Harness specifications and durable workstream state used to take design from problem framing through implementation readiness.
-
-`docs-legacy/` is retired, frozen pre-cutover migration evidence only. It cannot override accepted truth in `docs/` and must not receive new design truth.
+`docs/` is the sole current design/documentation authority. Current truth is organized by semantic ownership, not by historical migration phase.
 
 ## Start here
 
-For continuation of project design or Harness work:
+For non-trivial design/architecture/planning work:
 
-1. read `meta/workstream-state.yaml`;
-2. read `meta/roadmap.yaml` when lifecycle/program context is required;
-3. load only the accepted anchors and specifications directly needed by the task;
-4. follow semantic references rather than reconstructing truth from implementation code or historical chat.
+1. read `../AGENTS.md`;
+2. read `canonical-graph.yaml` to locate the owning artifact and direct dependencies;
+3. read `meta/current-workstream.yaml`; if it points to an active workstream, follow that workstream's resume protocol;
+4. load only the owning artifacts and affected dependencies needed by the task.
 
-## Current design maturity
+Do not reconstruct missing product/domain/architecture truth from product code, tests, old chat, or retired migration artifacts.
 
-The strategic NAPMS DDD baseline is canonical here. The selected first-MVP journey has accepted S1 requirements, S2 tactical domain design, S3 system architecture and S4 implementation/verification design. G4 is PASS for that exact MVP design scope. Implementation readiness does not itself authorize product-code or product-test changes.
+## Current canonical areas
 
-## Repository areas
+- `discovery/` — evidence/problem discovery that still matters to current design.
+- `model/strategic/` — capability, Bounded Context and relationship ownership.
+- `model/contexts/` — context-owned tactical semantics.
+- `model/use-cases/` — cross-context/application journeys and use cases.
+- `architecture/structurizr/workspace.dsl` — canonical C4 structural/deployment model.
+- `architecture/mvp-system-rules.yaml` — non-C4 system architecture rules.
+- `architecture/persistence/mvp-persistence.yaml` — canonical first-MVP physical persistence model.
+- `contracts/http/napms.openapi.yaml` — canonical first-MVP HTTP contract.
+- `plans/` — implementation readiness and verification intent; these never authorize implementation by themselves.
+- `canonical-graph.yaml` — routing/dependency metadata only; it does not duplicate semantic truth.
 
-- `spec/` — Documentation System / Harness contracts.
-- `migration/revalidated/` — accepted/revalidated NAPMS design anchors and their validation evidence.
-- `meta/` — roadmap, durable workstream state and Harness evolution records.
-- `horizontal/` — retained earlier projections/evidence from the redesign; canonical truth is determined by accepted anchors and their semantic references.
-- `migration/` — migration provenance; historical source material does not outrank accepted anchors.
+## Generated views
 
-## Authority rules
+`docs-generated/` is disposable and non-canonical. Context maps, domain/process diagrams, journey views and ERD are generated from the owners above.
 
-- accepted current anchors are the design truth for their owned semantics;
-- human-owned truth is never invented;
-- product code and tests are implementation/evidence, not substitutes for product/domain/architecture design truth;
-- generated views do not override canonical sources;
-- changed design is revalidated through its affected semantic graph;
-- operational Harness bookkeeping stays behind the design boundary rather than becoming a design process of its own.
+Use `make design-check` to validate current canonical truth and `make design-sync` to regenerate projections.
 
-H20 authority cutover and its physical namespace normalization completed on 2026-09-17. Normal project documentation is now simply `docs/`; the former documentation tree is retained only under `docs-legacy/` as explicitly retired evidence.
+To inspect downstream impact: `python tools/check_canonical_graph.py --affected AP-DOMAIN`.
+
+## Historical material
+
+- `migration/revalidated/` — frozen evidence from the earlier anchor-shaped migration, not normal current-truth navigation.
+- `horizontal/`, `review/`, `pilot/` — retained redesign/migration/pilot evidence where still useful.
+- `docs-legacy/` — retired pre-cutover evidence only.
+
+Historical material cannot override the current canonical owners.

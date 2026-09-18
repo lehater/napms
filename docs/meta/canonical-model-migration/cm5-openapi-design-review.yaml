@@ -1,0 +1,34 @@
+version: 1
+kind: cm5-technical-design-review
+id: NAPMS-CM5-OPENAPI-DESIGN
+phase: CM5
+unit: HTTP-CONTRACT
+status: PASS
+reviewed_at: 2026-09-18
+sources:
+  - docs/contracts/http/napms-api-requirements.yaml
+  - docs/model/use-cases/first-mvp-policy-export.yaml
+  - docs/model/use-cases/resource-catalogue-curation.yaml
+  - docs/model/contexts/resource-catalogue/domain-model.yaml
+  - docs/model/contexts/application-communication-catalogue/domain-model.yaml
+  - docs/model/contexts/application-deployment/domain-model.yaml
+  - docs/model/contexts/business-connectivity/domain-model.yaml
+  - docs/model/contexts/access-policy/domain-model.yaml
+technical_decisions_ref: docs/architecture/mvp-technical-representation.yaml
+target: docs/contracts/http/napms.openapi.yaml
+checks:
+  - exact accepted H19 method/path set is represented with no additional operations
+  - session identity is represented by cookie security and no request schema contains a trusted actor field
+  - stable create/publish identifiers are returned
+  - domain rejection authorization conflict uncertainty and Unresolved export remain distinguishable
+  - JSON export is complete Success only; Unresolved has no partial rows
+  - CSV is returned only for a successful complete export
+  - AddressSpace remains HostAddress xor Prefix
+  - InteractionContractRevision requires one or more vendor-neutral traffic alternatives
+  - RuleChange decision remains Accepted or Rejected from Pending
+  - no provider-specific or async contract semantics are introduced
+result: PASS
+evidence:
+  commit: 0e6af93fec84c3ca69f293326afa0116db629f56
+  workflow_run: 35291523524
+  workflow_job: 105435186265

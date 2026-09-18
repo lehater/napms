@@ -1,32 +1,18 @@
 ---
 name: domain-model-change
-description: "Use when a new requirement, code finding, or design question may change NAPMS domain semantics: aggregate invariants, semantic identity/lifecycle, ubiquitous language, authority/responsibility ownership, Bounded Context boundaries, or cross-context contracts. Classify the highest affected truth layer, update it first, then propagate downward."
+description: "Use when a requirement, evidence item, design question or implementation finding may change NAPMS domain semantics: language, identity/lifecycle, invariants, responsibility ownership, Bounded Context boundaries or cross-context contracts. Update the smallest current semantic owner first and propagate only affected downstream design."
 ---
 
 # Domain Model Change
 
-Use `docs/process/domain-change-protocol.md` as the focused re-entry classifier.
+1. State the observed trigger without converting it into a conclusion.
+2. Use `docs/canonical-graph.yaml` to locate the smallest current owner: use-case/requirement, one context model/process, or strategic model.
+3. Read that owner and only the direct dependencies needed to judge the change.
+4. Separate known facts, hypotheses, missing human truth and contradictions.
+5. For strategic changes, require evidence of changed language/responsibility/decision ownership, independent lifecycle/invariants, authority boundary or context relationship; a journey/class/table/API is not itself a Bounded Context argument.
+6. For tactical changes, preserve semantic identity, lifecycle and invariant ownership separately from persistence/framework realization.
+7. Change the highest semantic owner that actually changed, then use the graph to identify downstream artifacts requiring revalidation.
+8. Record a durable decision only when its rationale/trade-off is itself needed to reproduce or safely evolve the design.
+9. Run `make design-check` and `make design-sync` for affected projections.
 
-When the lifecycle routes work to S2, use `docs/process/domain-design-stage.md` for S2/G2 responsibility and routing. Load:
-- `docs/process/strategic-ddd-convergence.md` only when Strategic DDD is actually affected;
-- `docs/process/tactical-ddd-stage.md` only when Tactical DDD work is active.
-
-## Procedure
-
-1. State the observed trigger without turning it into a conclusion.
-2. Classify the highest affected layer: implementation, requirements/quality, Tactical DDD inside one BC, or Strategic DDD/context relationship.
-3. If Requirements are affected, `REOPEN(S1)` rather than deciding product behavior here.
-4. For S2 work, inspect only the smallest affected current domain/requirements evidence plus any current ADR that materially constrains the semantic boundary.
-5. Apply `docs/process/decision-protocol.md` to material unknowns or conflicts.
-6. For Strategic DDD, require evidence of changed language, responsibility/decision ownership, independent lifecycle/invariants, authority boundary or context relationship. Treat candidate context groupings as candidates until the strategic convergence protocol accepts them.
-7. For Tactical DDD, challenge semantic identity, lifecycle and invariant ownership; keep domain guarantees separate from persistence/framework realization.
-8. Update the highest affected current owner first. Update or add an ADR only when the consequential choice/rationale itself remains required project knowledge under `decision-protocol.md`.
-9. Preserve unresolved consequential discoveries only in the smallest existing current owner when they must survive the session; do not create discovery archives or traceability histories.
-10. Return to the S2 gate and propagate only required deltas after G2 passes.
-11. Run `make knowledge-check` plus applicable code checks when implementation changes are later performed.
-
-## Guardrail
-
-A journey, use case or capability is not automatically a Bounded Context. A class, database table, API, protocol, framework, deployment unit or code-sharing concern is not by itself a Bounded Context argument.
-
-Do not preload the whole strategic model, every context, all ADRs, or all known journeys/use cases when the semantic question is local. Expand only when the current boundary question demonstrates the need.
+Missing business truth remains an explicit question/blocker; do not fill it with implementation assumptions.

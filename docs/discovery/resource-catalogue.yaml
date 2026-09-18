@@ -1,0 +1,80 @@
+version: 1
+kind: discovery-slice
+id: NAPMS-DISCOVERY-RC-CURATION
+
+problem: |-
+  # Resource Catalogue curation problem
+
+  ## Need
+
+  Normal local NAPMS users cannot onboard or maintain the access-relevant Resource catalogue through supported product workflows; the current supported onboarding path relies on out-of-band seed/database changes.
+
+  ## Affected actor
+
+  A responsible local catalogue user who needs to introduce or maintain access-relevant Resources for existing NAPMS access workflows.
+
+  ## Desired outcome
+
+  Provide a supported self-service path for maintaining the Resource catalogue knowledge needed by downstream Connectivity, Needs, Decisions, Rules, Checker and Realization workflows without direct seed/SQL edits.
+
+  ## Scope boundary
+
+  This S0 statement owns only the problem, actor and intended outcome. It does not define realization/address cardinality, domain boundaries, aggregate structure, API shape, persistence, UI layout or mutation-authority policy.
+
+  ## Non-goal boundary
+
+  The problem is not to build a generic CMDB or application-portfolio system; catalogue curation exists only to support NAPMS access outcomes.
+
+journey: |-
+  # Resource Catalogue self-service onboarding journey
+
+  ## Actor
+
+  A responsible local catalogue user who is admitted to perform the applicable catalogue-curation workflow.
+
+  ## Goal
+
+  Make a new or changed access-relevant Resource usable by normal NAPMS access workflows without direct database/seed edits.
+
+  ## Journey
+
+  1. Register or identify the Resource through a supported product workflow.
+  2. Supply or maintain the Resource realization information needed by downstream access workflows.
+  3. Associate the Resource with relevant Responsibility Scope information when needed.
+  4. Maintain operational responsibility/contact information when needed.
+  5. Inspect the resulting Resource catalogue representation through the supported product.
+  6. Use the Resource from the existing downstream connectivity/access workflow.
+
+  ## Successful outcome
+
+  The Resource can participate in the intended NAPMS access workflow through supported catalogue curation, and routine onboarding no longer depends on out-of-band seed/SQL edits.
+
+  ## Scope boundary
+
+  This S0 journey preserves actor, goal, broad flow and intended outcome only. Exact observable curation behavior and cardinalities belong to S1; domain ownership and invariants belong to S2; API, persistence and UI realization belong to S3.
+
+capability_discovery_evidence:
+  role: derived-slice-evidence
+  strategic_authority_ref: NAPMS-STRATEGIC-CAPABILITIES
+  capabilities:
+    - capability_id: CAP-RC-RESOURCE-CURATION
+      name: Resource catalogue curation
+      business_outcome: Responsible local users can maintain the access-relevant Resource catalogue through supported product workflows for downstream NAPMS access outcomes.
+      responsibility: Maintain Resource identity/lifecycle, time-qualified technical realization information, Resource Scope Affiliation and Resource Responsibility/contact facts.
+      language_terms: [Resource, technical realization, Resource Scope Affiliation, Resource Responsibility]
+      basis_refs: [NAPMS-UC-RC-CURATION#behavior, NAPMS-UC-RC-CURATION#integrity]
+    - capability_id: CAP-AM-CURATION-ADMISSION
+      name: Catalogue mutation admission
+      business_outcome: Protected Resource Catalogue mutations are admitted or denied from effective actor/action/scope authority without treating catalogue facts as permission.
+      responsibility: Evaluate Resource Catalogue curation action admission for the authenticated actor, fixed catalogue administrative scope and effective time.
+      language_terms: [Actor, Action, Effective Authority, ResponsibilityScopeRef]
+      basis_refs: [NAPMS-UC-RC-CURATION#authorization]
+  clustering:
+    - cluster_id: CLUSTER-RC-RESOURCE-CATALOGUE
+      capability_ids: [CAP-RC-RESOURCE-CURATION]
+      rationale: Resource identity, realization history, scope affiliation and responsibility/contact use one cohesive Resource catalogue language and lifecycle.
+      status: accepted
+    - cluster_id: CLUSTER-AM-AUTHORITY
+      capability_ids: [CAP-AM-CURATION-ADMISSION]
+      rationale: Action admission uses an independently reusable authority model whose meaning is distinct from Resource catalogue ownership, responsibility and visibility.
+      status: accepted

@@ -1,0 +1,15 @@
+version: 1
+kind: tactical-domain-model
+id: NAPMS-ACC-DOMAIN-MODEL
+bounded_context_ref: BC-APPLICATION-COMMUNICATION-CATALOGUE
+
+aggregate: ApplicationDefinition
+entities: [Component, Interaction, InteractionContractRevision]
+invariants:
+  - A Component belongs to exactly one ApplicationDefinition for its lifetime.
+  - An Interaction is a stable directed pair of Components inside one ApplicationDefinition; cross-Application Interaction is invalid.
+  - At most one Interaction exists for one directed Component pair inside an ApplicationDefinition.
+  - Interaction endpoints are immutable; traffic change creates a new immutable InteractionContractRevision instead of changing Interaction identity.
+  - Every published InteractionContractRevision contains at least one vendor-neutral traffic alternative and remains historically resolvable.
+  - Exactly one published revision is ACC-current for an Interaction, but changing it never silently changes an effective PolicyRule.
+public_semantics: [ApplicationRef, ComponentRef, InteractionRef, InteractionContractRevisionRef, ResolveInteractionContractRevision, CurrentInteractionContractRevision]

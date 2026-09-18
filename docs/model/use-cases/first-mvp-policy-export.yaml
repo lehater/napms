@@ -1,0 +1,108 @@
+version: 1
+kind: cross-context-use-case
+id: FIRST-MVP-POLICY-EXPORT
+
+goal: Establish current effective Access Policy truth and export the complete applicable policy set as one vendor-neutral technical policy view inspectable as a table and downloadable as CSV.
+
+journey:
+  - Define Resources and their current AddressSpace realization.
+  - Define one Application with Components and directed same-Application Interactions.
+  - Create immutable InteractionContractRevision traffic semantics for an Interaction.
+  - Define concrete ComponentDeployments, each binding exactly one Component to exactly one Resource for this MVP.
+  - Establish a current Process-backed ConnectivityNeed for the required Interaction as business justification.
+  - Propose access for one concrete source ComponentDeployment and one concrete destination ComponentDeployment using one exact InteractionContractRevision and the current ConnectivityNeed basis.
+  - Establish current effective PolicyRule truth through the formal Pending to Accepted or Rejected RuleChange lifecycle.
+  - Request the complete current effective policy export.
+  - Materialize each effective rule using exact traffic revision, concrete deployments and current Resource AddressSpace.
+  - Inspect the complete vendor-neutral result as a table and export the same semantics as CSV.
+
+participating_strategic_owners:
+  - Resource Catalogue
+  - Application Communication Catalogue
+  - Application Deployment
+  - Business Connectivity
+  - Access Policy
+
+supporting_owner:
+  - Authority Management
+
+workflow_composition:
+  name: Full Vendor-Neutral Policy Export
+  peer_bounded_context: false
+  responsibility: Compose accepted owner truth into a complete vendor-neutral policy view without owning Resource, Application, Deployment, Business Connectivity or Policy truth.
+
+required_semantics:
+  - Interaction endpoints belong to the same Application.
+  - InteractionContractRevision is immutable and contains one or more vendor-neutral traffic alternatives.
+  - One ComponentDeployment binds exactly one Component to exactly one Resource for the MVP.
+  - Deliberate RuleChange submission requires a current Process-backed ConnectivityNeed whose required Interaction supplies business justification but never authorization.
+  - One current PolicyRule represents one directed concrete source/destination ComponentDeployment pair and its exact current InteractionContractRevision.
+  - Pending or Rejected changes do not replace already effective rule semantics; only an Accepted applicable change may do so.
+  - Missing or ambiguous required materialization input makes the complete export Unresolved rather than silently partial.
+  - Table and CSV are representations of the same successful materialization result.
+
+output_row_minimum:
+  - source AddressSpace
+  - destination AddressSpace
+  - protocol/service semantics
+  - applicable source/destination port or range
+  - PolicyRule provenance
+  - InteractionContractRevision provenance
+  - source/destination ComponentDeployment provenance
+  - source/destination Resource provenance
+
+non_goals:
+  - Network Enforcement Placement or firewall selection
+  - provider/device/ACL-specific rendering
+  - configured-state comparison or remediation
+  - Network Environment Operations or device mutation
+  - evidence-derived proposal recognition as a prerequisite
+  - time-travel/as-of export
+
+acceptance_examples:
+  - One effective HTTPS rule between concrete deployments whose Resources have HostAddresses yields one TCP destination-port 443 row.
+  - A deliberate RuleChange without a current Process-backed ConnectivityNeed is not a valid formal submission.
+  - A ConnectivityNeed supplies business justification but does not itself authorize access.
+  - A pending or rejected traffic revision change leaves the previous accepted revision in the export.
+  - A missing required Resource AddressSpace makes the full export Unresolved.
+  - A Prefix remains a Prefix and is not expanded into hosts.
+  - A withdrawn PolicyRule contributes no current export row.
+  - The displayed table and downloaded CSV preserve the same policy meaning.
+
+cross_context_flow:
+  - {step: 1, owner: Resource Catalogue, result: Resources exist with current AddressSpace facts required for later materialization.}
+  - {step: 2, owner: Application Communication Catalogue, result: 'Application, Components, directed Interaction and exact immutable traffic revision exist.'}
+  - {step: 3, owner: Application Deployment, result: Concrete source and destination ComponentDeployments bind the Interaction endpoint Components to Resources.}
+  - {step: 4, owner: Business Connectivity, result: A current Process-backed ConnectivityNeed references the stable Interaction and supplies the deliberate business basis.}
+  - {step: 5, owner: Access Policy, result: A RuleChange for the concrete deployment pair and exact revision is submitted with the Need basis and reaches Accepted or Rejected formal outcome.}
+  - {step: 6, owner: Access Policy, result: Only an Accepted applicable change establishes current EffectivePolicyRule truth.}
+  - {step: 7, owner: Full Vendor-Neutral Policy Export composition, result: 'EffectivePolicyRule is joined with exact ACC revision, AD deployment-to-Resource facts and current RC AddressSpace facts; unresolved required input makes the complete export Unresolved rather than partial.'}
+
+materialization_join:
+  policy: EffectivePolicyRule(policyRuleRef, sourceComponentDeploymentRef, destinationComponentDeploymentRef, revisionRef)
+  traffic: ResolveInteractionContractRevision(revisionRef) -> complete traffic alternatives and endpoint Components
+  endpoints: ResolveComponentDeployment(source/destination refs) -> componentRef plus resourceRef
+  addresses: Resource Catalogue current Resource realization -> zero-or-one AddressSpace per Resource
+  result_rule: 'Every traffic alternative is preserved; no provider-specific rendering or enforcement placement is introduced.'
+
+explicit_deferrals:
+  - customer-specific approval workflow
+  - quorum or bilateral approver model
+  - evidence recognition as a prerequisite to deliberate policy creation
+  - provider/device/firewall-specific policy rendering
+  - Network Enforcement Placement and Network Environment Operations
+  - deployment provider runtime concepts and multi-address endpoint selection
+  - transport, persistence and API realization
+
+context_model_refs:
+  Resource Catalogue: docs/model/contexts/resource-catalogue/domain-model.yaml
+  Application Communication Catalogue: docs/model/contexts/application-communication-catalogue/domain-model.yaml
+  Application Deployment: docs/model/contexts/application-deployment/domain-model.yaml
+  Business Connectivity: docs/model/contexts/business-connectivity/domain-model.yaml
+  Access Policy: docs/model/contexts/access-policy/domain-model.yaml
+  Authority Management: docs/model/contexts/authority-management/language.yaml
+
+strategic_refs:
+  capabilities: docs/model/strategic/capabilities.yaml
+  bounded_contexts: docs/model/strategic/bounded-contexts.yaml
+  context_relationships: docs/model/strategic/context-relationships.yaml

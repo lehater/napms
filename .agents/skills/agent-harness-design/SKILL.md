@@ -1,44 +1,27 @@
 ---
 name: agent-harness-design
-description: "Use when designing, reviewing, or auditing the NAPMS repository environment for coding agents: context loading, AGENTS routing, Skills, lifecycle/gates, active-plan continuity, process protocols, validators/evals and CI. Prefer the smallest change that removes demonstrated Harness problems. Do not use for product/domain architecture."
+description: "Use when designing, reviewing or auditing the NAPMS repository environment for coding/design agents: context loading, AGENTS routing, Skills, canonical graph navigation, validators/evals and CI. Prefer the smallest change that removes a demonstrated problem. Do not use for product/domain architecture."
 ---
 
 # Agent Harness Design
 
-## Start here
+Start from root `AGENTS.md`, `docs/canonical-graph.yaml` and the specific agent/CI files implicated by the problem. Do not preload historical H/CM process records.
 
-Classify the Harness concern before loading process detail.
-
-- For startup/context loading, AGENTS/Skill routing, validator/eval or CI discoverability work, stay task-local and do not preload the product change lifecycle.
-- Load `docs/process/change-lifecycle.md` only when the Harness change actually modifies or evaluates S0-S4/G0-G4 progression, reopen/dirty propagation or implementation-lease semantics.
-- Load only the additional protocol/project artifacts required by the demonstrated Harness problem.
-
-## Audit dimensions
-
-- stage/gate progression and upstream re-entry;
-- no-invention and blocked-unknown handling;
-- startup/progressive disclosure;
-- context promotion/discard/rollover;
-- current-plan recoverability without forcing current-plan context into unrelated tasks;
-- project truth vs process vs Skill ownership;
-- Skill trigger overlap;
-- validator/eval and CI alignment;
-- CI discoverability: agents can find applicable hosted gates, exact triggers/commands and manual-dispatch fallback without blind repository scans;
-- stale/dead paths and duplicated truth;
+Audit:
+- startup and progressive disclosure;
+- canonical-owner routing and affected dependency discovery;
+- workstream resume behavior;
+- Skill trigger overlap and stale instructions;
+- validator/CI discoverability and exact commands;
+- duplicated/stale truth or generated output presented as authority;
 - unnecessary Harness complexity.
 
-Classify findings P0-P3.
-
-## Rules
-
-- one agent + repository instructions/Skills is the default;
-- lifecycle protocols decide when product lifecycle work is required; Skills describe judgement-heavy reusable work;
-- deterministic invariants belong in validators, not prose-only Skills;
-- deterministic routing-corpus validation is not evidence that a model routed correctly; score actual observations separately when routing behavior is under test;
-- extend before adding;
-- no current project facts in reusable Skill bodies;
-- do not turn the conceptual lifecycle into a runtime workflow engine/state-machine framework without demonstrated need;
-- durable accepted truth/problems/execution state must be promoted out of conversation history before context rollover;
-- completed audit artifacts are not permanent repository archives;
-- before treating a required deterministic check as unavailable, inspect the applicable `.github/workflows/` definition and distinguish repository capability from connector/runtime capability;
-- run `make harness-check` after changes, locally when possible or through the equivalent hosted workflow when local execution is unavailable.
+Rules:
+- one agent plus repository instructions/Skills is the default;
+- deterministic invariants belong in small validators;
+- no task capsules, lifecycle engines, gate state machines or universal design DSL without demonstrated independent need;
+- durable current truth/state lives in canonical owners/workstream state, not chat;
+- completed audit/migration artifacts are history, not normal workflow;
+- inspect `.github/workflows/` before claiming a repository check is unavailable;
+- run `make design-check` after changes that affect normal design navigation/control;
+- run `python tools/validate_skill_routing.py` when Skill routing metadata/corpus changes.

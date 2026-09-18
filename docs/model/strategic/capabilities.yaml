@@ -1,0 +1,78 @@
+version: 1
+kind: strategic-capability-model
+id: NAPMS-STRATEGIC-CAPABILITIES
+
+capabilities:
+  - capability_id: CAP-BUSINESS-CONNECTIVITY
+    name: Business Connectivity
+    business_outcome: Maintain why application connectivity is needed
+    responsibility: Own Business Process and Connectivity Need semantics.
+    language_terms: [Business Process, Connectivity Need]
+  - capability_id: CAP-ACCESS-POLICY
+    name: Access Policy
+    business_outcome: Maintain concrete access policy lifecycle and current effective policy.
+    responsibility: Own PolicyRule RuleChange formal decisions withdrawal and current effective revision.
+    language_terms: [PolicyRule, RuleChange, Accepted, Rejected, withdrawal]
+  - capability_id: CAP-AUTHORITY-MANAGEMENT
+    name: Authority Management
+    business_outcome: Evaluate effective actor action scope authority.
+    responsibility: Own authority evaluation semantics.
+    language_terms: [ActorRef, ActionRef, ResponsibilityScopeRef, Effective Authority]
+  - capability_id: CAP-RESOURCE-CATALOGUE
+    name: Resource Catalogue
+    business_outcome: Maintain access-relevant resource truth.
+    responsibility: Own Resource identity lifecycle address realization scope affiliation and responsibility.
+    language_terms: [Resource, AddressSpace, Resource Scope Affiliation, Resource Responsibility]
+  - capability_id: CAP-APPLICATION-COMMUNICATION-CATALOGUE
+    name: Application Communication Catalogue
+    business_outcome: Describe applications components and intended interactions.
+    responsibility: Own Application Component Interaction and immutable InteractionContractRevision semantics.
+    language_terms: [Application, Component, Interaction, InteractionContractRevision]
+  - capability_id: CAP-APPLICATION-DEPLOYMENT
+    name: Application Deployment
+    business_outcome: Relate components to concrete resource placements.
+    responsibility: Own ComponentDeployment ComponentRef ResourceRef truth.
+    language_terms: [ComponentDeployment, ComponentRef, ResourceRef]
+  - capability_id: CAP-NETWORK-ENFORCEMENT-PLACEMENT
+    name: Network Enforcement Placement
+    business_outcome: Identify candidate enforcement targets and policy locators.
+    responsibility: Own enforcement placement relevance.
+    language_terms: [enforcement target, policy locator]
+  - capability_id: CAP-TECHNICAL-ACCESS-EVIDENCE
+    name: Technical Access Evidence
+    business_outcome: Preserve canonical normalized source-qualified technical evidence.
+    responsibility: Own immutable technical evidence meaning and history.
+    language_terms: [technical evidence, source provenance]
+  - capability_id: CAP-ACCESS-POLICY-REALIZATION
+    name: Access Policy Realization
+    business_outcome: Assess required versus configured access and design verifiable changes.
+    responsibility: Own comparison change design and convergence verification.
+    language_terms: [ConfiguredEffectivePolicySnapshot, VerifiedChangeIntent, convergence]
+  - capability_id: CAP-NETWORK-ENVIRONMENT-OPERATIONS
+    name: Network Environment Operations
+    business_outcome: Execute controlled provider or device mutation lifecycle.
+    responsibility: Own controlled execution lifecycle.
+    language_terms: [execution, provider mutation]
+
+peer_bounded_context_capabilities:
+  - CAP-BUSINESS-CONNECTIVITY
+  - CAP-ACCESS-POLICY
+  - CAP-AUTHORITY-MANAGEMENT
+  - CAP-RESOURCE-CATALOGUE
+  - CAP-APPLICATION-COMMUNICATION-CATALOGUE
+  - CAP-APPLICATION-DEPLOYMENT
+  - CAP-NETWORK-ENFORCEMENT-PLACEMENT
+  - CAP-TECHNICAL-ACCESS-EVIDENCE
+  - CAP-ACCESS-POLICY-REALIZATION
+  - CAP-NETWORK-ENVIRONMENT-OPERATIONS
+
+non_peer_compositions:
+  - id: Required Policy Materialization
+    responsibility: Compose current policy application communication deployment resource and placement truth into target required policy without owning those inputs.
+  - id: Evidence Access Recognition
+    responsibility: Correlate technical evidence with resource deployment application and policy semantics without becoming an authoritative peer model.
+
+integration_capabilities:
+  - source-specific technical evidence collection and translation
+  - provider configured-policy interpretation
+  - provider target rendering

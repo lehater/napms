@@ -47,11 +47,9 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
             client = deploymentNode "Client" "User-side runtime for the NAPMS browser frontend." "Web browser" {
                 containerInstance napms.web
             }
-
             applicationRuntime = deploymentNode "Backend Runtime" "Runtime hosting the single NAPMS modular-monolith backend deployment unit." "Application runtime" {
                 containerInstance napms.backend
             }
-
             databaseRuntime = deploymentNode "Database Runtime" "Runtime hosting the single PostgreSQL deployment unit." "PostgreSQL runtime" {
                 containerInstance napms.db
             }
@@ -59,24 +57,77 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
     }
 
     views {
+        properties {
+            "plantuml.url" "http://127.0.0.1:8081"
+            "plantuml.format" "svg"
+        }
+
         systemContext napms "SystemContext" {
             include *
             description "NAPMS first-MVP system context."
         }
-
         container napms "Containers" {
             include *
             description "NAPMS first-MVP runtime topology: browser frontend, modular-monolith backend, and PostgreSQL."
         }
-
         component napms.backend "BackendComponents" {
             include *
             description "Domain-aligned modules and policy-export composition inside the modular-monolith backend."
         }
-
         deployment napms mvp "MVPDeployment" {
             include *
             description "Deployment mapping for the accepted MVP baseline: browser frontend, one backend runtime, and one PostgreSQL runtime."
+        }
+
+        image * "DomainContextMap" {
+            plantuml "generated/context-map.puml"
+            title "DDD Context Map"
+            description "Generated projection of current strategic Bounded Context ownership and relationships."
+        }
+        image * "StrategicCollaborationMap" {
+            plantuml "generated/strategic-collaboration-map.puml"
+            title "Strategic Collaboration Map"
+            description "Generated projection including peer contexts and non-peer compositions."
+        }
+        image * "ResourceCatalogueDomain" {
+            plantuml "generated/resource-catalogue-domain.puml"
+            title "Resource Catalogue Domain Model"
+            description "Generated projection of the current Resource Catalogue tactical model."
+        }
+        image * "ResourceCatalogueProcess" {
+            plantuml "generated/resource-catalogue-process.puml"
+            title "Resource Catalogue Process"
+            description "Generated projection of current Resource Catalogue process flows."
+        }
+        image * "ApplicationCommunicationCatalogueDomain" {
+            plantuml "generated/application-communication-catalogue-domain.puml"
+            title "Application Communication Catalogue"
+            description "Generated projection of the current ACC tactical model."
+        }
+        image * "ApplicationDeploymentDomain" {
+            plantuml "generated/application-deployment-domain.puml"
+            title "Application Deployment"
+            description "Generated projection of the current Application Deployment model."
+        }
+        image * "BusinessConnectivityDomain" {
+            plantuml "generated/business-connectivity-domain.puml"
+            title "Business Connectivity"
+            description "Generated projection of the current Business Connectivity model."
+        }
+        image * "AccessPolicyDomain" {
+            plantuml "generated/access-policy-domain.puml"
+            title "Access Policy"
+            description "Generated projection of the current Access Policy model."
+        }
+        image * "FirstMVPJourney" {
+            plantuml "generated/first-mvp-policy-export.puml"
+            title "First MVP Policy Export Journey"
+            description "Generated cross-context flow for the accepted first-MVP journey."
+        }
+        image * "MVPPersistenceERD" {
+            plantuml "generated/mvp-persistence-erd.puml"
+            title "MVP Physical Persistence ERD"
+            description "Generated ERD from the canonical physical persistence model."
         }
 
         styles {

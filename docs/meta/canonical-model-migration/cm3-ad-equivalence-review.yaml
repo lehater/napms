@@ -1,0 +1,18 @@
+version: 1
+kind: canonical-model-migration-equivalence-review
+id: NAPMS-CM3-AD-EQUIVALENCE
+phase: CM3
+unit: APPLICATION-DEPLOYMENT
+status: PASS
+reviewed_at: 2026-09-18
+check_command: make canonical-model-check
+criteria:
+  - accepted H17 ComponentDeployment aggregate invariants and public semantics are preserved exactly
+  - CM1 strategic AD definition is referenced rather than duplicated
+  - ACC Component and RC Resource remain external references rather than copied ownership
+  - H17 cross-context flow remains outside AD ownership
+result: PASS
+evidence:
+  branch_commit: 289347121bc344fe8242e0484b6fd40f6a6dbe42
+  workflow_run: 35289805819
+  workflow_job: 105429969043

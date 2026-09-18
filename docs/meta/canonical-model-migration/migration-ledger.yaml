@@ -1,0 +1,325 @@
+version: 1
+kind: canonical-model-migration-ledger
+id: NAPMS-CANONICAL-MODEL-MIGRATION-LEDGER
+last_updated: 2026-09-18
+authority_rule: legacy means accepted source paths remain current; target means target_paths are current and legacy paths are evidence only.
+
+units:
+  - id: STRATEGIC-SPINE
+    phase: CM1
+    status: COMPLETE
+    authority: target
+    source_paths:
+      - docs/migration/revalidated/h16-strategic/s2/strategic/capability-map.yaml
+      - docs/migration/revalidated/h16-strategic/s2/strategic/context-relationships.yaml
+      - docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-access-policy.yaml
+      - docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-application-communication-catalogue.yaml
+      - docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-application-deployment.yaml
+      - docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-business-connectivity.yaml
+      - docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-network-enforcement-placement.yaml
+      - docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-technical-access-evidence.yaml
+      - docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-access-policy-realization.yaml
+      - docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-network-environment-operations.yaml
+      - docs/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-resource-catalogue.yaml
+      - docs/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-authority-management.yaml
+      - docs/migration/revalidated/h12-rc-curation/s2/strategic/context-relationships.yaml
+    source_inventory: docs/meta/canonical-model-migration/cm1-strategic-source-inventory.yaml
+    target_paths:
+      - docs/model/strategic/capabilities.yaml
+      - docs/model/strategic/bounded-contexts.yaml
+      - docs/model/strategic/context-relationships.yaml
+    cutover_check:
+      state: PASS
+      review: docs/meta/canonical-model-migration/cm1-strategic-equivalence-review.yaml
+      command: make canonical-model-check
+      evidence: {commit: 4dd2332940acd05a1913403808b98ecac55d8633, workflow_run: 35288550441}
+      requires:
+        - preserve accepted peer BC and non-peer composition distinction
+        - preserve capability ownership
+        - preserve generic semantic relationships without inventing stronger DDD patterns
+        - generate Context Map from target truth
+
+  - id: RESOURCE-CATALOGUE
+    phase: CM2
+    status: COMPLETE
+    authority: target
+    source_paths:
+      - docs/migration/revalidated/h12-rc-curation/s0/problem-statement.md
+      - docs/migration/revalidated/h12-rc-curation/s0/user-journey.md
+      - docs/migration/revalidated/h12-rc-curation/s1/resource-curation-behavior.md
+      - docs/migration/revalidated/h12-rc-curation/s1/resource-curation-authorization.md
+      - docs/migration/revalidated/h12-rc-curation/s1/resource-curation-integrity.md
+      - docs/migration/revalidated/h12-rc-curation/s2/strategic/capability-map.yaml
+      - docs/migration/revalidated/h12-rc-curation/s2/strategic/domain-glossary.yaml
+      - docs/migration/revalidated/h12-rc-curation/s2/process/mvp-authority-decision.yaml
+      - docs/migration/revalidated/h12-rc-curation/s2/process/responsibility-role-decision.yaml
+      - docs/migration/revalidated/h12-rc-curation/s2/process/resource-curation-process.yaml
+      - docs/migration/revalidated/h12-rc-curation/s2/tactical/resource-catalogue-domain-model.yaml
+    depends_on_target:
+      - docs/model/strategic/capabilities.yaml
+      - docs/model/strategic/bounded-contexts.yaml#BC-RESOURCE-CATALOGUE
+      - docs/model/strategic/bounded-contexts.yaml#BC-AUTHORITY-MANAGEMENT
+      - docs/model/strategic/context-relationships.yaml
+    target_paths:
+      - docs/discovery/resource-catalogue.yaml
+      - docs/model/use-cases/resource-catalogue-curation.yaml
+      - docs/model/contexts/resource-catalogue/language.yaml
+      - docs/model/contexts/resource-catalogue/decisions.yaml
+      - docs/model/contexts/resource-catalogue/process-model.yaml
+      - docs/model/contexts/resource-catalogue/domain-model.yaml
+    ownership_note: Strategic BC purpose responsibility boundary and relationships remain owned by CM1. H12 local capability clustering is retained as discovery evidence, not as a second strategic authority. The Effective Authority glossary term remains owned by Authority Management.
+    architecture_ref: docs/architecture/structurizr/workspace.dsl
+    evidence_ref: architecture/model-layout-pilot@13a39b7b80b7beaec65bef98ea415ae908fc3bcf
+    cutover_check:
+      state: PASS
+      review: docs/meta/canonical-model-migration/cm2-resource-catalogue-equivalence-review.yaml
+      command: make canonical-model-check
+      evidence: {commit: a79ab612248f980785759dd502c7d6f810939235, workflow_run: 35289333880, workflow_job: 105428557141}
+
+  - id: AUTHORITY-MANAGEMENT
+    phase: CM3
+    status: COMPLETE
+    authority: target
+    source_paths:
+      - docs/migration/revalidated/h12-rc-curation/s2/strategic/domain-glossary.yaml
+    scope_evidence_paths:
+      - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
+    depends_on_target:
+      - docs/model/strategic/bounded-contexts.yaml#BC-AUTHORITY-MANAGEMENT
+      - docs/model/use-cases/resource-catalogue-curation.yaml#authorization
+    target_paths:
+      - docs/model/contexts/authority-management/language.yaml
+    ownership_note: CM1 already owns the Authority Management strategic boundary. H17 has no Authority Management tactical payload, so CM3 must not invent an aggregate model. The only remaining accepted context-owned semantic is the Effective Authority glossary definition.
+    cutover_check:
+      state: PASS
+      review: docs/meta/canonical-model-migration/cm3-authority-management-equivalence-review.yaml
+      command: make canonical-model-check
+      evidence: {commit: f2ef2421d7395914d51a27c5fcec9ccd89d1c7f4, workflow_run: 35289509871, workflow_job: 105429090739}
+
+  - id: APPLICATION-COMMUNICATION-CATALOGUE
+    phase: CM3
+    status: COMPLETE
+    authority: target
+    source_paths:
+      - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
+    source_selector: canonical_payload.participating_contexts.Application Communication Catalogue
+    depends_on_target:
+      - docs/model/strategic/bounded-contexts.yaml#BC-APPLICATION-COMMUNICATION-CATALOGUE
+    target_paths:
+      - docs/model/contexts/application-communication-catalogue/domain-model.yaml
+    ownership_note: Only the ACC participating-context tactical payload moves here. H17 cross-context flow materialization and explicit deferrals remain with the later MVP-JOURNEY migration unit.
+    cutover_check:
+      state: PASS
+      review: docs/meta/canonical-model-migration/cm3-acc-equivalence-review.yaml
+      command: make canonical-model-check
+      evidence: {commit: ab98d68409fe5085841f6848f975146231fb545b, workflow_run: 35289682146, workflow_job: 105429598007}
+
+  - id: APPLICATION-DEPLOYMENT
+    phase: CM3
+    status: COMPLETE
+    authority: target
+    source_paths:
+      - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
+    source_selector: canonical_payload.participating_contexts.Application Deployment
+    depends_on_target:
+      - docs/model/strategic/bounded-contexts.yaml#BC-APPLICATION-DEPLOYMENT
+      - docs/model/contexts/application-communication-catalogue/domain-model.yaml
+      - docs/model/contexts/resource-catalogue/domain-model.yaml
+    target_paths:
+      - docs/model/contexts/application-deployment/domain-model.yaml
+    ownership_note: Only the Application Deployment tactical payload moves here. Component and Resource semantics remain owned by ACC and RC.
+    cutover_check:
+      state: PASS
+      review: docs/meta/canonical-model-migration/cm3-ad-equivalence-review.yaml
+      command: make canonical-model-check
+      evidence: {commit: 289347121bc344fe8242e0484b6fd40f6a6dbe42, workflow_run: 35289805819, workflow_job: 105429969043}
+
+  - id: BUSINESS-CONNECTIVITY
+    phase: CM3
+    status: COMPLETE
+    authority: target
+    source_paths:
+      - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
+    source_selector: canonical_payload.participating_contexts.Business Connectivity
+    depends_on_target:
+      - docs/model/strategic/bounded-contexts.yaml#BC-BUSINESS-CONNECTIVITY
+      - docs/model/contexts/application-communication-catalogue/domain-model.yaml
+    target_paths:
+      - docs/model/contexts/business-connectivity/domain-model.yaml
+    ownership_note: Business Connectivity owns justification semantics only. ACC Interaction is referenced; Access Policy authorization/realization remains external.
+    cutover_check:
+      state: PASS
+      review: docs/meta/canonical-model-migration/cm3-bc-equivalence-review.yaml
+      command: make canonical-model-check
+      evidence: {commit: 59c21077df4dc9c8f0be78d7427a9cf55e9d0be2, workflow_run: 35289920051, workflow_job: 105430317241}
+
+  - id: ACCESS-POLICY
+    phase: CM3
+    status: COMPLETE
+    authority: target
+    source_paths:
+      - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
+    source_selector: canonical_payload.participating_contexts.Access Policy
+    depends_on_target:
+      - docs/model/strategic/bounded-contexts.yaml#BC-ACCESS-POLICY
+      - docs/model/contexts/application-communication-catalogue/domain-model.yaml
+      - docs/model/contexts/application-deployment/domain-model.yaml
+      - docs/model/contexts/business-connectivity/domain-model.yaml
+    target_paths:
+      - docs/model/contexts/access-policy/domain-model.yaml
+    ownership_note: Only the Access Policy participating-context tactical payload moves here. CM1 owns strategic Access Policy purpose/responsibility/language. H17 cross-context flow materialization and explicit deferrals remain with MVP-JOURNEY.
+    cutover_check:
+      state: PASS
+      review: docs/meta/canonical-model-migration/cm3-ap-equivalence-review.yaml
+      command: make canonical-model-check
+      evidence: {commit: 07e4d98841c59a9390cd528e25181523c10a2f26, workflow_run: 35290720647, workflow_job: 105432755445}
+
+  - id: MVP-JOURNEY
+    phase: CM4
+    status: COMPLETE
+    authority: target
+    source_paths:
+      - docs/migration/revalidated/h17-mvp-journey/s1/mvp-vendor-neutral-policy-export.yaml
+      - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
+    source_selectors:
+      - canonical_payload
+      - canonical_payload.cross_context_flow
+      - canonical_payload.materialization_join
+      - canonical_payload.explicit_deferrals
+    depends_on_target:
+      - docs/model/strategic/capabilities.yaml
+      - docs/model/strategic/bounded-contexts.yaml
+      - docs/model/strategic/context-relationships.yaml
+      - docs/model/contexts/resource-catalogue/domain-model.yaml
+      - docs/model/contexts/application-communication-catalogue/domain-model.yaml
+      - docs/model/contexts/application-deployment/domain-model.yaml
+      - docs/model/contexts/business-connectivity/domain-model.yaml
+      - docs/model/contexts/access-policy/domain-model.yaml
+      - docs/model/contexts/authority-management/language.yaml
+    target_paths:
+      - docs/model/use-cases/first-mvp-policy-export.yaml
+    ownership_note: The use case owns accepted end-to-end requirement and cross-context flow/materialization semantics. Context-owned tactical semantics and strategic non-peer composition truth are referenced, not duplicated.
+    cutover_check:
+      state: PASS
+      review: docs/meta/canonical-model-migration/cm4-mvp-journey-equivalence-review.yaml
+      command: make canonical-model-check
+      evidence: {commit: ec3171b05f417294e373c35e090cee2a6654da24, workflow_run: 35290862998, workflow_job: 105433185925}
+
+  - id: NON-PEER-COMPOSITIONS
+    phase: CM1
+    status: SUBSUMED
+    authority: target
+    source_paths:
+      - docs/migration/revalidated/h16-strategic/s2/strategic/capability-map.yaml
+      - docs/migration/revalidated/h16-strategic/s2/strategic/context-relationships.yaml
+    target_paths:
+      - docs/model/strategic/capabilities.yaml
+      - docs/model/strategic/context-relationships.yaml
+    note: CM1 established these as strategic truth; CM4 must reference them and must not create a second composition owner.
+    cutover_check: {state: PASS, review: docs/meta/canonical-model-migration/cm1-strategic-equivalence-review.yaml}
+
+  - id: SYSTEM-ARCHITECTURE
+    phase: CM5
+    status: COMPLETE
+    source_inventory: docs/meta/canonical-model-migration/cm5-architecture-source-inventory.yaml
+    authority: target
+    source_paths:
+      - docs/migration/revalidated/h18-mvp-architecture/s3/mvp-system-architecture.yaml
+    target_paths:
+      - docs/architecture/structurizr/workspace.dsl
+      - docs/architecture/mvp-system-rules.yaml
+    note: Structurizr DSL already owns structural C4 truth; CM5 must reconcile and retire any remaining H18 truth not owned by an explicit target artifact before authority can become target.
+    cutover_check:
+      state: PASS
+      review: docs/meta/canonical-model-migration/cm5-architecture-split-equivalence-review.yaml
+      command: make canonical-model-check
+      evidence: {commit: 20e51df6c870bb864cf2b75f9c68d99a23c4ac0a, workflow_run: 35291152800, workflow_job: 105434054140}
+
+  - id: HTTP-CONTRACT
+    phase: CM5
+    status: COMPLETE
+    source_inventory: docs/meta/canonical-model-migration/cm5-architecture-source-inventory.yaml
+    authority: target
+    source_paths:
+      - docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-implementation-readiness.yaml
+    target_paths:
+      - docs/contracts/http/napms-api-requirements.yaml
+      - docs/contracts/http/napms.openapi.yaml
+    note: Accepted HTTP/API requirement truth is migrated first. The full OpenAPI remains an explicit design gap until request/response/outcome schema details are designed without using implementation code as truth.
+    cutover_check:
+      state: PASS
+      baseline_review: docs/meta/canonical-model-migration/cm5-architecture-split-equivalence-review.yaml
+      design_review: docs/meta/canonical-model-migration/cm5-openapi-design-review.yaml
+      command: make canonical-model-check
+      evidence: {commit: 0e6af93fec84c3ca69f293326afa0116db629f56, workflow_run: 35291523524, workflow_job: 105435186265}
+
+  - id: PERSISTENCE-MODEL
+    phase: CM5
+    status: COMPLETE
+    source_inventory: docs/meta/canonical-model-migration/cm5-architecture-source-inventory.yaml
+    authority: target
+    source_paths:
+      - docs/migration/revalidated/h18-mvp-architecture/s3/mvp-system-architecture.yaml
+      - docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-implementation-readiness.yaml
+    target_paths:
+      - docs/architecture/persistence/mvp-persistence.yaml
+    note: Accepted PostgreSQL/module/table ownership is migrated into the target model. Columns/keys/cardinalities/indexes/checks remain an explicit design gap; ERD stays unavailable until that gap is resolved.
+    cutover_check:
+      state: PASS
+      baseline_review: docs/meta/canonical-model-migration/cm5-architecture-split-equivalence-review.yaml
+      design_review: docs/meta/canonical-model-migration/cm5-persistence-design-review.yaml
+      command: make canonical-model-check
+      evidence: {commit: 3df49d5e6c3263df65eced71707b925cca5075c8, workflow_run: 35291802262, workflow_job: 105436035483}
+
+  - id: IMPLEMENTATION-READINESS
+    phase: CM6
+    status: COMPLETE
+    authority: target
+    source_paths:
+      - docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-implementation-readiness.yaml
+      - docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-test-intent.yaml
+    depends_on_target:
+      - docs/model/use-cases/first-mvp-policy-export.yaml
+      - docs/architecture/structurizr/workspace.dsl
+      - docs/architecture/mvp-system-rules.yaml
+      - docs/contracts/http/napms.openapi.yaml
+      - docs/architecture/persistence/mvp-persistence.yaml
+    target_paths:
+      - docs/plans/first-mvp-implementation-readiness.yaml
+      - docs/plans/first-mvp-test-intent.yaml
+    ownership_note: S4 owns implementation sequencing/readiness and verification intent. API/persistence/system/domain semantics remain owned by their specialized target artifacts and are referenced rather than copied.
+    cutover_check:
+      state: PASS
+      review: docs/meta/canonical-model-migration/cm6-s4-equivalence-review.yaml
+      command: make canonical-model-check
+      evidence: {commit: 4f4c0e893b5f032d03e0c1b5e1c0843b08206401, workflow_run: 35291993955, workflow_job: 105436618975}
+
+  - id: HARNESS-RUNTIME
+    phase: CM6
+    status: COMPLETE
+    authority: target
+    source_paths:
+      - docs/spec/
+      - docs/meta/roadmap.yaml
+      - docs/meta/workstream-state.yaml
+    target_paths:
+      - docs/canonical-graph.yaml
+      - docs/spec/harness-control-plane.yaml
+      - docs/spec/repository-layout.md
+      - docs/spec/artifacts.md
+      - docs/README.md
+      - docs/meta/current-workstream.yaml
+      - AGENTS.md
+      - .agents/skills/
+      - tools/check_canonical_graph.py
+      - tools/check_openapi_contract.py
+      - tools/check_persistence_model.py
+      - tools/check_design_control.py
+      - Makefile
+      - .github/workflows/design.yml
+    note: Historical H0-H20/CM controls are provenance only. Normal design uses canonical graph owners specialized validators deterministic generators and the design workflow.
+    cutover_check:
+      state: PASS
+      review: docs/meta/canonical-model-migration/cm6-harness-simplification-review.yaml
+      command: make design-check
+      evidence: {commit: dbc38ae4d622ebe3a3542cddf32af1fd7be7fe4c, workflow_run: 35292783890, workflow_job: 105439015431}

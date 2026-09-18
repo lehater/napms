@@ -1,0 +1,30 @@
+version: 1
+kind: canonical-model-migration-equivalence-review
+id: NAPMS-CM1-STRATEGIC-EQUIVALENCE
+phase: CM1
+unit: STRATEGIC-SPINE
+status: PASS
+reviewed_at: 2026-09-18
+check_command: make canonical-model-check
+criteria:
+  - accepted/current source status validated before semantic comparison
+  - H16 capabilities clustering non-peer compositions and integration capabilities preserved
+  - ten peer Bounded Context semantic payloads preserved from their accepted H12/H16 owners
+  - H16 whole-domain relationships and strategic invariants preserved exactly
+  - H12 Authority Management upstream -> Resource Catalogue downstream relationship preserved with empty stronger-pattern set
+  - generic whole-domain arrows do not acquire invented named DDD patterns
+  - generated Context Map includes peer BCs only and remains a projection
+  - generated collaboration map may show non-peer compositions but does not promote them to BCs
+result: PASS
+evidence:
+  branch_commit: 4dd2332940acd05a1913403808b98ecac55d8633
+  workflow_run: 35288550441
+  workflow_job: 105426171177
+  observed:
+    - CM1 strategic equivalence PASS
+    - 10 capabilities preserved
+    - 10 peer Bounded Contexts preserved
+    - 13 whole-domain relationships preserved
+    - 1 explicit upstream/downstream Context Mapping relationship preserved
+    - 2 non-peer compositions preserved
+    - generated Context Map and strategic collaboration projection completed successfully

@@ -1,0 +1,90 @@
+version: 1
+kind: canonical-model-migration-source-inventory
+id: NAPMS-CM1-STRATEGIC-SOURCE-INVENTORY
+task_ref: CM1-01
+phase: CM1
+status: INVENTORIED
+authority: legacy
+recorded_at: 2026-09-18
+
+target_owners:
+  capabilities: docs/model/strategic/capabilities.yaml
+  bounded_contexts: docs/model/strategic/bounded-contexts.yaml
+  context_relationships: docs/model/strategic/context-relationships.yaml
+
+sources:
+  capability_model:
+    path: docs/migration/revalidated/h16-strategic/s2/strategic/capability-map.yaml
+    accepted_anchor: NAPMS-S2-NAPMS-CAPABILITY-MAP
+    target_owner: capabilities
+    carries:
+      - whole-domain capabilities
+      - accepted peer-context clustering
+      - non-peer compositions
+      - integration capabilities
+
+  whole_domain_relationships:
+    path: docs/migration/revalidated/h16-strategic/s2/strategic/context-relationships.yaml
+    accepted_anchor: NAPMS-S2-NAPMS-CONTEXT-RELATIONSHIPS
+    target_owner: context_relationships
+    carries:
+      - whole-domain collaboration semantics
+      - strategic invariants
+    migration_rule: Preserve from/to/semantics as accepted; do not infer Customer-Supplier ACL OHS PL or another named DDD pattern where none is already accepted.
+
+  resource_catalogue_local_relationship:
+    path: docs/migration/revalidated/h12-rc-curation/s2/strategic/context-relationships.yaml
+    accepted_anchor: NAPMS-S2-RC-CONTEXT-RELATIONSHIPS
+    target_owner: context_relationships
+    carries:
+      - Authority Management upstream -> Resource Catalogue downstream curation-admission relationship
+      - explicit empty stronger-pattern set
+    migration_rule: Preserve the generic upstream/downstream decision and the explicit fact that no stronger named Context Mapping pattern is asserted.
+
+bounded_context_sources:
+  - name: Resource Catalogue
+    path: docs/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-resource-catalogue.yaml
+    accepted_anchor: NAPMS-S2-BC-RESOURCE-CATALOGUE
+    source_reason: H12 contains the corrected current Resource Catalogue boundary.
+  - name: Authority Management
+    path: docs/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-authority-management.yaml
+    accepted_anchor: NAPMS-S2-BC-AUTHORITY-MANAGEMENT
+    source_reason: H12 contains the accepted current Authority Management boundary used by RC curation.
+  - name: Access Policy
+    path: docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-access-policy.yaml
+    accepted_anchor: NAPMS-S2-BC-ACCESS-POLICY
+  - name: Application Communication Catalogue
+    path: docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-application-communication-catalogue.yaml
+    accepted_anchor: NAPMS-S2-BC-APPLICATION-COMMUNICATION-CATALOGUE
+  - name: Application Deployment
+    path: docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-application-deployment.yaml
+    accepted_anchor: NAPMS-S2-BC-APPLICATION-DEPLOYMENT
+  - name: Business Connectivity
+    path: docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-business-connectivity.yaml
+    accepted_anchor: NAPMS-S2-BC-BUSINESS-CONNECTIVITY
+  - name: Network Enforcement Placement
+    path: docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-network-enforcement-placement.yaml
+    accepted_anchor: NAPMS-S2-BC-NETWORK-ENFORCEMENT-PLACEMENT
+  - name: Technical Access Evidence
+    path: docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-technical-access-evidence.yaml
+    accepted_anchor: NAPMS-S2-BC-TECHNICAL-ACCESS-EVIDENCE
+  - name: Access Policy Realization
+    path: docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-access-policy-realization.yaml
+    accepted_anchor: NAPMS-S2-BC-ACCESS-POLICY-REALIZATION
+  - name: Network Environment Operations
+    path: docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-network-environment-operations.yaml
+    accepted_anchor: NAPMS-S2-BC-NETWORK-ENVIRONMENT-OPERATIONS
+
+inventory_findings:
+  - The strategic spine has ten peer Bounded Contexts: eight from H16 plus corrected Resource Catalogue and Authority Management sources from H12.
+  - Required Policy Materialization and Evidence Access Recognition are non-peer compositions and must not be promoted to Bounded Contexts merely for visualization.
+  - H16 whole-domain relationships are semantic collaborations; a generic from/to arrow is not automatically a named DDD Context Mapping pattern.
+  - The accepted H12 Authority Management -> Resource Catalogue relation does contain explicit upstream/downstream direction but deliberately no stronger pattern.
+  - Context Map must be generated from the target strategic owners after semantic migration; a hand-maintained PlantUML map cannot be a peer authority.
+
+next:
+  - Validate each listed source has accepted/current status before copying semantic payload.
+  - Build capabilities.yaml from the accepted capability payload without migration/provenance wrapper fields.
+  - Build bounded-contexts.yaml from these ten accepted context owners.
+  - Build context-relationships.yaml from H16 whole-domain relationships plus the accepted H12 RC/AM relationship, preserving scope and pattern certainty.
+  - Run semantic-equivalence review before changing STRATEGIC-SPINE authority.

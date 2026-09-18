@@ -1,0 +1,89 @@
+version: 1
+kind: use-case-model
+id: NAPMS-UC-RC-CURATION
+depends_on:
+  - NAPMS-DISCOVERY-RC-CURATION
+bounded_context_refs:
+  - BC-RESOURCE-CATALOGUE
+  - BC-AUTHORITY-MANAGEMENT
+
+behavior: |-
+  # Resource Catalogue curation behavior
+
+  ## Supported user behavior
+
+  For an authenticated user admitted to Resource Catalogue curation, the supported product workflow shall allow the user to:
+
+  1. create/register an access-relevant Resource identity with required provenance;
+  2. inspect Resource details;
+  3. establish a time-qualified Resource realization with one AddressSpace, either one HostAddress or one Prefix;
+  4. end or replace time-qualified realization facts without rewriting historical facts;
+  5. affiliate the Resource with one or more Responsibility Scopes using the existing time-qualified affiliation semantics;
+  6. end or replace a scope affiliation without changing Resource identity;
+  7. maintain Resource Responsibility assignments for supported person/team references and roles; and
+  8. inspect the effective/current Resource projection while retaining access to technical identifiers and provenance.
+
+  ## Resource discovery and missing relations
+
+  The Resource workspace shall provide server-backed paging, search/filter over Resource reference and available display/contact information, and scope-focused filtering using effective Resource Scope Affiliation.
+
+  A Resource remains a Resource when no effective scope affiliation or realization exists. Missing current realization, scope affiliation or relevant operational responsibility/contact information shall be represented explicitly rather than hidden or fabricated.
+
+  ## Cardinality contract
+
+  For the MVP, one Resource has at most one effective AddressSpace at one logical time. When present, that AddressSpace is exactly one HostAddress or one Prefix. Multiple simultaneous addresses/prefixes and endpoint/interface abstractions are outside the MVP unless a later accepted requirement changes this rule.
+
+  ## Ownership boundary
+
+  This requirement owns observable Resource-curation behavior only. Resource domain invariants and model boundaries belong to S2; API, persistence and UI realization choices belong to S3.
+
+authorization: |-
+  # Resource Catalogue mutation authorization
+
+  ## Admission
+
+  Every Resource Catalogue mutation shall use the authenticated session Actor and the server-owned `CurateResourceCatalogue @ resource-catalogue` administrative action/scope. The owning backend use case selects that action/scope and evaluates Authority Management admission for the Actor and effective time before persistence.
+
+  The client shall not supply trusted actor identity, catalogue authority scope or server action time.
+
+  ## Separation from catalogue facts
+
+  None of the following facts grants Resource Catalogue mutation permission by itself:
+
+  - Resource Scope Affiliation;
+  - Resource Responsibility or owner/contact role;
+  - ability to read a Resource or catalogue workspace;
+  - ability to read Connectivity/Checker;
+  - `ProposeConnectivity` or `DecideConnectivity`;
+  - Access Rule read or mutation authority.
+
+  A Responsibility Scope carried as business data in a Resource affiliation mutation shall not replace the fixed `resource-catalogue` authorization scope.
+
+  ## Read and mutation behavior
+
+  UI visibility or enabled state for create/edit actions is presentation only. Direct invocation of the corresponding backend mutation shall still be denied when Authority Management admission is absent.
+
+  Catalogue read visibility continues to follow the existing baseline until a separate accepted requirement changes it.
+
+  ## Failure behavior
+
+  Authorization denial shall remain distinguishable from domain/structural validation failure, optimistic concurrency conflict, idempotency conflict and persistence/transport uncertainty. Protected internal authority or provenance details shall not be leaked merely to explain a denial.
+
+integrity: |-
+  # Resource Catalogue integrity and history quality
+
+  ## Historical integrity
+
+  Time-qualified Resource realization, scope-affiliation and responsibility facts shall be maintained by adding, ending or replacing versions/relations according to their owning semantics. Supported curation shall not silently rewrite historical facts as non-temporal scalar fields.
+
+  ## Validation integrity
+
+  Catalogue mutations shall fail explicitly when required identifiers, references or provenance are missing; temporal intervals are invalid; or overlapping effective facts violate accepted catalogue invariants.
+
+  Immutable identities or revisions already referenced by downstream business truth shall not be silently rewritten.
+
+  ## Submission safety
+
+  Duplicate submission shall be idempotent when a natural command identity/idempotency contract exists, or otherwise be prevented and reported safely.
+
+  This quality requirement does not select a transport representation, ETag scheme, persistence technology or command-identity design; those realization decisions belong to later stages.

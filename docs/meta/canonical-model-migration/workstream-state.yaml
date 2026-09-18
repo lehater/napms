@@ -1,0 +1,72 @@
+version: 3
+kind: canonical-model-migration-workstream-state
+id: NAPMS-CANONICAL-MODEL-MIGRATION-STATE
+branch: meta/canonical-model-migration
+base_main_sha: 8a50f3154a320b620095a1475cafebada2d370f4
+last_updated: 2026-09-18
+strategy: docs/meta/canonical-model-migration/strategy.md
+roadmap: docs/meta/canonical-model-migration/roadmap.yaml
+ledger: docs/meta/canonical-model-migration/migration-ledger.yaml
+
+program:
+  status: COMPLETE
+  current_phase: null
+  current_phase_state: PROGRAM_COMPLETE
+  completed_phases: [CM0, CM1, CM2, CM3, CM4, CM5, CM6, CM7]
+
+current_work:
+  task_id: null
+  name: Canonical-model migration complete
+  state: COMPLETE
+  completed_result:
+    canonical_routing: docs/canonical-graph.yaml
+    validation: make design-check
+    projection_sync: make design-sync
+    architecture_viewer: make architecture
+    pull_request: 135
+  next_action: No automatic migration continuation. Normal design work starts from AGENTS.md and docs/canonical-graph.yaml.
+
+authority:
+  canonical_root: docs/
+  canonical_routing: docs/canonical-graph.yaml
+  generated_root: docs-generated/
+  migration_revalidated_role: frozen-historical-evidence
+  docs_legacy_role: retired-historical-evidence
+
+carry_forward:
+  - Current semantic owners are routed by docs/canonical-graph.yaml.
+  - Structurizr DSL owns C4 structural/deployment truth; generated image views are disposable projections.
+  - Product code/tests are implementation/evidence and cannot reconstruct missing product/domain/architecture truth.
+  - Implementation readiness does not authorize implementation.
+  - Product implementation product-test changes and merge require separate explicit authorization.
+  - Missing human-owned truth remains explicit rather than invented.
+  - Historical H0-H20 and CM0-CM7 process records are provenance, not the normal design workflow.
+
+verification:
+  design:
+    result: PASS
+    commit: caceb792938bd96ea4500f9a53df92d0586300bf
+    workflow_run: 35293392064
+    workflow_job: 105440852388
+  architecture:
+    result: PASS
+    commit: caceb792938bd96ea4500f9a53df92d0586300bf
+    workflow_run: 35293392062
+    workflow_job: 105440852464
+
+restrictions:
+  product_implementation_authorization: none
+  product_test_change_authorization: none
+  product_code_tests_as_design_truth: forbidden
+  merge_authorization: false
+
+blockers: []
+
+resume_protocol:
+  - This migration is complete; do not invent CM8.
+  - For normal design work read AGENTS.md then docs/canonical-graph.yaml and only the current owners needed by the task.
+  - Read this migration state/ledger only for provenance or audit.
+  - Do not restore retired gate/capsule/H-phase mechanics into normal design.
+  - Do not use docs/migration/revalidated or docs-legacy as current authority.
+  - Do not write product code/tests without separate explicit authorization.
+  - Do not merge without explicit authorization.

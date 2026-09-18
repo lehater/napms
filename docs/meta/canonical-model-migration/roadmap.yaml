@@ -1,0 +1,129 @@
+version: 1
+kind: canonical-model-migration-roadmap
+id: NAPMS-CANONICAL-MODEL-MIGRATION-ROADMAP
+status: complete
+strategy: docs/meta/canonical-model-migration/strategy.md
+state: docs/meta/canonical-model-migration/workstream-state.yaml
+ledger: docs/meta/canonical-model-migration/migration-ledger.yaml
+
+principles:
+  - {id: ONE-OWNER, statement: Each current semantic fact has one current canonical owner.}
+  - {id: VERTICAL-CUTOVER, statement: Tactical/domain truth migrates by semantic ownership slice with explicit per-slice cutover.}
+  - {id: STRATEGIC-SPINE-FIRST, statement: Establish the small whole-domain strategic spine before most tactical slices.}
+  - {id: PROJECTIONS-NONCANONICAL, statement: Generated diagrams and rendered views never own semantic truth.}
+  - {id: NO-INFERENCE, statement: Migration and generators preserve accepted decisions and do not invent missing design.}
+  - {id: REPO-RESUME, statement: Roadmap state and migration authority are recoverable from repository files without chat history.}
+  - {id: LIGHTWEIGHT-HARNESS, statement: Migration must reduce rather than recreate Harness bookkeeping.}
+
+phases:
+  - id: CM0
+    name: Bootstrap migration control records
+    status: COMPLETE
+    objective: Make strategy, roadmap, workstream state and per-slice authority durable in the repository before semantic migration starts.
+    exit_criteria:
+      - strategy.md defines target ownership, migration method and cutover protocol.
+      - roadmap.yaml defines ordered work and phase exits.
+      - workstream-state.yaml defines resume protocol and current task.
+      - migration-ledger.yaml lists migration units and authority state.
+
+  - id: CM1
+    name: Establish strategic spine
+    status: COMPLETE
+    depends_on: [CM0]
+    objective: Create the stable whole-domain strategic model in target paths without reopening accepted strategic semantics.
+    planned_outputs:
+      - docs/model/strategic/capabilities.yaml
+      - docs/model/strategic/bounded-contexts.yaml
+      - docs/model/strategic/context-relationships.yaml
+    exit_criteria:
+      - Target strategic artifacts preserve accepted capability, BC, relationship and non-peer-composition semantics.
+      - Named DDD relationship patterns are copied only where they are already accepted; none are inferred from generic semantic arrows.
+      - Context Map is generated from target strategic truth.
+      - STRATEGIC-SPINE ledger unit has authority target.
+      - No parallel editable strategic truth remains.
+
+  - id: CM2
+    name: Resource Catalogue vertical cutover
+    status: COMPLETE
+    depends_on: [CM1]
+    objective: Perform the first real vertical cutover for Resource Catalogue from discovery and requirements through tactical domain/process truth.
+    exit_criteria:
+      - S0 problem/journey and S1 behavior/authorization/integrity have stable target owners.
+      - H12 local capability clustering is retained only as discovery evidence; whole-domain strategic capability authority remains CM1.
+      - Resource Catalogue-owned language domain decisions domain/process artifacts preserve accepted H12 semantics without duplicating the strategic BC owner.
+      - The Authority Management-owned Effective Authority glossary term remains with its owner rather than being copied into RC language.
+      - Strategic purpose responsibility boundary and relationship truth are referenced from docs/model/strategic/**.
+      - NAPMS-specific invariants policies hotspots and explicit deferrals remain explicit.
+      - Generated domain/process projections derive from target artifacts.
+      - Architecture is referenced, not duplicated.
+      - RESOURCE-CATALOGUE ledger unit has authority target.
+
+  - id: CM3
+    name: Remaining domain slices
+    status: COMPLETE
+    depends_on: [CM2]
+    objective: Migrate remaining context-owned semantic truth one slice at a time.
+    unit_order:
+      - AUTHORITY-MANAGEMENT
+      - APPLICATION-COMMUNICATION-CATALOGUE
+      - APPLICATION-DEPLOYMENT
+      - BUSINESS-CONNECTIVITY
+      - ACCESS-POLICY
+    exit_criteria:
+      - Every listed MVP context ledger unit has authority target.
+      - Each slice uses only files justified by its actual complexity.
+      - Cross-context semantics are referenced from strategic/journey owners rather than duplicated locally.
+
+  - id: CM4
+    name: Cross-context journeys
+    status: COMPLETE
+    depends_on: [CM3]
+    objective: Normalize current cross-context use cases/journeys while reusing non-peer compositions already owned by the strategic spine.
+    exit_criteria:
+      - First-MVP journey has one stable target owner.
+      - Required Policy Materialization and other non-peer compositions remain explicitly non-peer and are referenced from their strategic owner rather than copied.
+      - Cross-context use cases do not become owned by an arbitrary BC.
+      - Generated journey/collaboration projections contain no independent truth.
+
+  - id: CM5
+    name: Architecture contracts and persistence normalization
+    status: COMPLETE
+    depends_on: [CM4]
+    objective: Reconcile system-level S3 truth with specialized canonical notations and add missing physical persistence truth.
+    exit_criteria:
+      - Structurizr DSL is the sole structural/C4 authority and H18 structural duplication is retired from current navigation.
+      - OpenAPI has one canonical contract location and architecture references it rather than repeating operations.
+      - AsyncAPI is absent unless a real async boundary has been accepted.
+      - A machine-readable physical persistence model owns tables columns keys relationships nullability indexes/checks where designed.
+      - ERD is generated from the physical persistence model.
+      - Domain entities are not treated as persistence schema by default.
+
+  - id: CM6
+    name: Simplify Harness around canonical graph
+    status: COMPLETE
+    depends_on: [CM5]
+    objective: Remove migration-era ceremony from normal design work and adapt validation to the proven target model.
+    exit_criteria:
+      - Normal validation discovers canonical artifacts and checks references/dependency impact without H-phase bookkeeping.
+      - Specialized validators are used for specialized formats.
+      - Projection generation is deterministic and repository-local.
+      - Current design work no longer requires migration/revalidated paths for navigation.
+      - No universal custom design DSL has been introduced.
+
+  - id: CM7
+    name: Migration closeout
+    status: COMPLETE
+    depends_on: [CM6]
+    objective: Close the temporary migration control plane after all authority has moved.
+    exit_criteria:
+      - Every ledger unit is target or explicitly excluded with rationale.
+      - Legacy migration-shaped artifacts are frozen evidence only.
+      - Resume documentation points directly at the stable canonical model.
+      - Temporary migration-only controls are marked complete/history.
+      - Product implementation/test/merge authorization remains independent.
+
+change_policy:
+  semantics_change_during_migration: requires_explicit_design_decision_and_affected_revalidation
+  generated_outputs: never_authority
+  reverse_sync: forbidden
+  merge: separately_authorized

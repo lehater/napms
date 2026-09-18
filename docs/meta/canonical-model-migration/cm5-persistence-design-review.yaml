@@ -1,0 +1,31 @@
+version: 1
+kind: cm5-technical-design-review
+id: NAPMS-CM5-PERSISTENCE-DESIGN
+phase: CM5
+unit: PERSISTENCE-MODEL
+status: PASS
+reviewed_at: 2026-09-18
+sources:
+  - docs/architecture/persistence/mvp-persistence.yaml
+  - docs/architecture/mvp-technical-representation.yaml
+  - docs/model/contexts/resource-catalogue/domain-model.yaml
+  - docs/model/contexts/application-communication-catalogue/domain-model.yaml
+  - docs/model/contexts/application-deployment/domain-model.yaml
+  - docs/model/contexts/business-connectivity/domain-model.yaml
+  - docs/model/contexts/access-policy/domain-model.yaml
+  - docs/model/contexts/authority-management/language.yaml
+target: docs/architecture/persistence/mvp-persistence.yaml
+projection: docs-generated/architecture/mvp-persistence-erd.puml
+checks:
+  - exact accepted H19 schema/table set is retained and no extra domain table is introduced
+  - every table has concrete columns/types/nullability and one primary key
+  - local same-module ownership references use explicit local foreign keys
+  - cross-module owner references are UUID values with no database foreign keys
+  - accepted RC current AddressSpace ACC immutable/current revision AD fixed refs BC process ownership AP pair/pending/history constraints are represented
+  - Authority Management persistence is limited to the accepted actor/authority_assignment tables and actor/action/scope/time semantics
+  - ERD is generated only from this physical model and draws only local database foreign keys
+result: PASS
+evidence:
+  commit: 3df49d5e6c3263df65eced71707b925cca5075c8
+  workflow_run: 35291802262
+  workflow_job: 105436035483

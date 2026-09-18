@@ -1,0 +1,13 @@
+version: 1
+kind: tactical-domain-model
+id: NAPMS-BC-DOMAIN-MODEL
+bounded_context_ref: BC-BUSINESS-CONNECTIVITY
+
+aggregate_semantics: [BusinessProcess, ConnectivityNeed]
+invariants:
+  - Every deliberate ConnectivityNeed belongs to exactly one BusinessProcess in the MVP model.
+  - A ConnectivityNeed references stable ACC Interaction meaning rather than Resource, address, ComponentDeployment, PolicyRule or one traffic revision.
+  - A current ConnectivityNeed supplies business justification only; it never implies authorization or network realization.
+  - Deliberate RuleChange submission requires a current Process-backed ConnectivityNeed basis.
+  - Loss of business justification does not rewrite historical RuleChanges or automatically revoke Access Policy truth.
+public_semantics: [ConnectivityNeedRef, BusinessProcessRef, required InteractionRef, current justification status, business provenance]
