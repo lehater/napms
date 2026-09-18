@@ -39,7 +39,7 @@ def render(m):
         lines.append("}")
     lines.append("")
     for src,dst,label in fks:
-        lines.append(f'{src} }o--|| {dst} : "{esc(label)}"')
+        lines.append(f'{src} }}o--|| {dst} : "{esc(label)}"')
     lines += [
       "",
       "legend left",
