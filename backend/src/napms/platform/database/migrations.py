@@ -83,6 +83,11 @@ MIGRATIONS: tuple[Migration, ...] = (
         "migrations/0005_application_catalogue_target.sql",
     ),
     Migration(
+        "application-catalogue/0006",
+        "napms.contexts.application_catalogue.infrastructure.persistence.postgres",
+        "migrations/0006_interaction_directed_pair_uniqueness.sql",
+    ),
+    Migration(
         "resource-catalogue/0001",
         "napms.contexts.resource_catalogue.infrastructure.persistence.postgres",
         "migrations/0001_resource_catalogue.sql",
