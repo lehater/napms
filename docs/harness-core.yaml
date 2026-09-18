@@ -1,0 +1,31 @@
+version: 1
+kind: harness-canonical-graph-projection
+source_graph: canonical-graph.yaml
+
+authorities:
+  - id: APPLICATION-COMMUNICATION-CATALOGUE
+  - id: SYSTEM-ARCHITECTURE
+  - id: VERIFICATION-DESIGN
+
+bindings:
+  - artifact: ACC-DOMAIN
+    authority: APPLICATION-COMMUNICATION-CATALOGUE
+    provides:
+      - acc.interaction.directed-pair-uniqueness.semantics
+
+  - artifact: PERSISTENCE
+    authority: SYSTEM-ARCHITECTURE
+    provides:
+      - acc.interaction.directed-pair-uniqueness.persistence-design
+
+  - artifact: OPENAPI
+    authority: SYSTEM-ARCHITECTURE
+    provides:
+      - acc.interaction.create.conflict-contract
+
+  - artifact: MVP-TEST-INTENT
+    authority: VERIFICATION-DESIGN
+    provides:
+      - acc.interaction.directed-pair-uniqueness.verification-intent
+
+questions: []
