@@ -15,24 +15,24 @@ program:
   completed_phases: [CM0, CM1, CM2]
 
 current_work:
-  task_id: CM3-BC
-  name: Migrate Business Connectivity tactical semantics
+  task_id: CM3-AP
+  name: Migrate Access Policy tactical semantics
   state: IN_PROGRESS
-  objective: Move the accepted H17 Business Connectivity tactical submodel into its target owner without copying the CM1 strategic definition or H17 cross-context journey.
+  objective: Move only the accepted H17 Access Policy tactical submodel into its target owner without duplicating CM1 strategic truth or the H17 cross-context journey.
   source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM3
-  authority_unit: BUSINESS-CONNECTIVITY
+  authority_unit: ACCESS-POLICY
   predecessor_result:
-    unit: APPLICATION-DEPLOYMENT
+    unit: BUSINESS-CONNECTIVITY
     result: PASS
-    review: docs/meta/canonical-model-migration/cm3-ad-equivalence-review.yaml
+    review: docs/meta/canonical-model-migration/cm3-bc-equivalence-review.yaml
   completed_actions:
-    - Extracted only the accepted H17 Business Connectivity participating-context payload.
-    - Preserved BusinessProcess/ConnectivityNeed aggregate semantics and the explicit justification-not-authorization invariants.
-    - Did not invent aggregate internals or duplicate Access Policy/ACC ownership.
-  next_action: Run canonical-model-check on a clean branch checkout. If PASS, cut over BUSINESS-CONNECTIVITY and continue with Access Policy.
+    - Cut over Business Connectivity after clean canonical-model-check CI.
+    - Extracted the accepted H17 PolicyRule aggregate RuleChange child entity invariants and public semantics.
+    - Kept Business Connectivity ACC Application Deployment and journey/materialization semantics external.
+  next_action: Run canonical-model-check on a clean branch checkout. If PASS, cut over ACCESS-POLICY and complete CM3.
   stop_conditions:
-    - BusinessProcess/ConnectivityNeed structure beyond accepted H17 aggregate semantics would have to be invented
-    - Access Policy authorization semantics would be copied into Business Connectivity
+    - Access Policy tactical content would require semantics beyond the accepted H17 participating-context payload
+    - cross-context journey or materialization semantics would be copied into Access Policy
 
 authority:
   namespace: docs/

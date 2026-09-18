@@ -1,0 +1,15 @@
+version: 1
+kind: canonical-model-migration-equivalence-review
+id: NAPMS-CM3-AP-EQUIVALENCE
+phase: CM3
+unit: ACCESS-POLICY
+status: PENDING_CI
+reviewed_at: 2026-09-18
+check_command: make canonical-model-check
+criteria:
+  - accepted H17 PolicyRule aggregate and RuleChange child-entity semantics are preserved exactly
+  - accepted Access Policy invariants and public semantics are preserved exactly
+  - CM1 strategic Access Policy purpose responsibility boundary and language ownership are not duplicated
+  - Business Connectivity justification ACC traffic semantics and Application Deployment endpoint ownership remain external
+  - H17 cross-context flow materialization and explicit deferrals remain with the later MVP-JOURNEY migration unit
+result: awaiting_clean_ci

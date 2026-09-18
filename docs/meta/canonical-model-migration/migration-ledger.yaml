@@ -136,8 +136,8 @@ units:
 
   - id: BUSINESS-CONNECTIVITY
     phase: CM3
-    status: EQUIVALENCE_REVIEW
-    authority: legacy
+    status: COMPLETE
+    authority: target
     source_paths:
       - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
     source_selector: canonical_payload.participating_contexts.Business Connectivity
@@ -148,20 +148,30 @@ units:
       - docs/model/contexts/business-connectivity/domain-model.yaml
     ownership_note: Business Connectivity owns justification semantics only. ACC Interaction is referenced; Access Policy authorization/realization remains external.
     cutover_check:
-      state: PENDING_CI
+      state: PASS
       review: docs/meta/canonical-model-migration/cm3-bc-equivalence-review.yaml
       command: make canonical-model-check
+      evidence: {commit: 59c21077df4dc9c8f0be78d7427a9cf55e9d0be2, workflow_run: 35289920051, workflow_job: 105430317241}
 
   - id: ACCESS-POLICY
     phase: CM3
-    status: PENDING
+    status: EQUIVALENCE_REVIEW
     authority: legacy
     source_paths:
-      - docs/migration/revalidated/h16-strategic/s2/strategic/bounded-context-access-policy.yaml
       - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
+    source_selector: canonical_payload.participating_contexts.Access Policy
+    depends_on_target:
+      - docs/model/strategic/bounded-contexts.yaml#BC-ACCESS-POLICY
+      - docs/model/contexts/application-communication-catalogue/domain-model.yaml
+      - docs/model/contexts/application-deployment/domain-model.yaml
+      - docs/model/contexts/business-connectivity/domain-model.yaml
     target_paths:
-      - docs/model/contexts/access-policy/
-    cutover_check: {state: NOT_RUN}
+      - docs/model/contexts/access-policy/domain-model.yaml
+    ownership_note: Only the Access Policy participating-context tactical payload moves here. CM1 owns strategic Access Policy purpose/responsibility/language. H17 cross-context flow materialization and explicit deferrals remain with MVP-JOURNEY.
+    cutover_check:
+      state: PENDING_CI
+      review: docs/meta/canonical-model-migration/cm3-ap-equivalence-review.yaml
+      command: make canonical-model-check
 
   - id: MVP-JOURNEY
     phase: CM4

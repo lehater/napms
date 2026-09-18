@@ -3,7 +3,7 @@ kind: canonical-model-migration-equivalence-review
 id: NAPMS-CM3-BC-EQUIVALENCE
 phase: CM3
 unit: BUSINESS-CONNECTIVITY
-status: PENDING_CI
+status: PASS
 reviewed_at: 2026-09-18
 check_command: make canonical-model-check
 criteria:
@@ -11,4 +11,8 @@ criteria:
   - accepted invariants preserve business justification as distinct from authorization and realization
   - CM1 strategic Business Connectivity definition is referenced rather than duplicated
   - no aggregate internals or associations are invented beyond accepted H17 truth
-result: awaiting_clean_ci
+result: PASS
+evidence:
+  commit: 59c21077df4dc9c8f0be78d7427a9cf55e9d0be2
+  workflow_run: 35289920051
+  workflow_job: 105430317241

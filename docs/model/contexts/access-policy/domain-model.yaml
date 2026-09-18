@@ -1,0 +1,23 @@
+version: 1
+kind: tactical-domain-model
+id: NAPMS-AP-DOMAIN-MODEL
+bounded_context_ref: BC-ACCESS-POLICY
+
+aggregate: PolicyRule
+child_entity: RuleChange
+invariants:
+  - One non-Retired PolicyRule exists per exact directed source/destination ComponentDeployment pair.
+  - Rule endpoints are immutable for PolicyRule identity; traffic revision is proposed/effective state rather than identity.
+  - Every RuleChange revisionRef resolves to one exact immutable ACC InteractionContractRevision whose endpoint Components match the two concrete ComponentDeployments.
+  - At most one Pending RuleChange exists per Active PolicyRule in the MVP.
+  - RuleChange state is Pending to Accepted or Rejected; Pending and Rejected changes never overwrite the current effective revision.
+  - Acceptance atomically records the formal outcome and advances effectiveRevisionRef only while the change remains applicable.
+  - Withdrawal clears current effectiveness without deleting the PolicyRule or its decision history.
+  - Evidence is provenance/input rather than authorization and is not required by this first deliberate journey.
+public_semantics:
+  - EffectivePolicyRule
+  - PolicyRuleRef
+  - sourceComponentDeploymentRef
+  - destinationComponentDeploymentRef
+  - revisionRef
+  - currentDecisionProvenance
