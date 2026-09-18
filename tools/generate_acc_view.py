@@ -39,10 +39,11 @@ def main():
     p=argparse.ArgumentParser(); p.add_argument("--check",action="store_true"); a=p.parse_args()
     model=load(SOURCE)
     if a.check:
-        with tempfile.TemporaryDirectory(prefix="napms-acc-view-") as tmp:
-            path=Path(tmp)/"application-communication-catalogue-domain.puml"
-            path.write_text(render(model),encoding="utf-8")
-            print(f"generated {path}")
+        expected=render(model)
+        path=DEFAULT_OUT/"application-communication-catalogue-domain.puml"
+        if not path.is_file() or path.read_text(encoding="utf-8") != expected:
+            raise SystemExit(f"generated projection is stale: {path.relative_to(ROOT)}; run make design-sync")
+        print(f"checked {path.relative_to(ROOT)}")
     else:
         DEFAULT_OUT.mkdir(parents=True,exist_ok=True)
         path=DEFAULT_OUT/"application-communication-catalogue-domain.puml"
