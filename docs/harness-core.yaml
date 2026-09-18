@@ -1,5 +1,8 @@
 version: 1
 kind: harness-canonical-graph-projection
+id: NAPMS-ACC-INTERACTION-PROJECTION
+status: CURRENT_SELECTED_SCOPE
+scope: ACC interaction directed-pair uniqueness consumer scenario.
 source_graph: canonical-graph.yaml
 
 authorities:
