@@ -223,5 +223,23 @@
       "domain-model-change",
       "resolve-decision"
     ]
+  },
+  {
+    "id": "stakeholder-harvest-single-answer",
+    "prompt": "Во время интервью я отвечаю на конкретные вопросы. Кроме прямого ответа замечай попутно новые use cases, шаги user journey, правила и противоречия, не объявляй их автоматически принятыми и сохраняй существенные находки туда, где им место.",
+    "expected_skill": "stakeholder-evidence-synthesis",
+    "not_expected_skills": [
+      "user-journey-validation",
+      "implement-slice"
+    ]
+  },
+  {
+    "id": "stakeholder-harvest-candidate-not-truth",
+    "prompt": "Из этого одного ответа пользователя выдели дополнительные requirements и journey candidates. Подтверждённое положи в текущего владельца, а неподтверждённое сохрани только как candidate/question, чтобы оно не потерялось.",
+    "expected_skill": "stakeholder-evidence-synthesis",
+    "not_expected_skills": [
+      "domain-model-change",
+      "resolve-decision"
+    ]
   }
 ]
