@@ -317,6 +317,30 @@ def test_target_chain_persists_compatibility_projection_and_keeps_legacy_distinc
         assert definition.outcome is TargetMutationOutcome.CREATED
         assert definition.interaction_definition is not None
 
+        duplicate = CreateInteractionDefinition(
+            authority=PermittedAccAuthority(),
+            catalogue=acc,
+            identities=identities,
+            provenance=provenance,
+        ).execute(
+            CreateInteractionDefinitionCommand(
+                application_id=application.application_id,
+                source_component_id=component_ids[0],
+                destination_component_id=component_ids[1],
+                traffic_alternatives=_traffic(),
+                actor_id="actor-1",
+                effective_time=NOW,
+                idempotency_key="interaction-web-api-duplicate",
+            )
+        )
+        assert duplicate.outcome is TargetMutationOutcome.ALREADY_EXISTS
+        assert duplicate.interaction_definition is None
+        assert acc.find_interaction_definition_by_pair(
+            application_id=application.application_id,
+            source_component_id=component_ids[0],
+            destination_component_id=component_ids[1],
+        ) == definition.interaction_definition
+
         deployment = CreateApplicationDeployment(
             authority=PermittedAccAuthority(),
             catalogue=acc,

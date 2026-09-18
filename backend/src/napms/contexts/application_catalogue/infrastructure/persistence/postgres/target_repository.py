@@ -184,8 +184,30 @@ class PostgresTargetApplicationCatalogueRepository(
         )
         return self._interaction_definition(row) if row is not None else None
 
+    def find_interaction_definition_by_pair(
+        self,
+        *,
+        application_id: UUID,
+        source_component_id: UUID,
+        destination_component_id: UUID,
+    ) -> InteractionDefinition | None:
+        row = self._fetchone(
+            """
+            SELECT interaction_definition_id, application_id,
+                   source_component_id, destination_component_id,
+                   traffic_payload, provenance_reference,
+                   lifecycle_state, retirement_provenance_reference, version
+            FROM napms_application_catalogue.interaction_definitions
+            WHERE application_id = %s
+              AND source_component_id = %s
+              AND destination_component_id = %s
+            """,
+            (application_id, source_component_id, destination_component_id),
+        )
+        return self._interaction_definition(row) if row is not None else None
+
     def add_interaction_definition(self, value: InteractionDefinition) -> None:
-        self._execute(
+        self._execute_unique_as_concurrency(
             """
             INSERT INTO napms_application_catalogue.interaction_definitions (
                 interaction_definition_id, application_id,

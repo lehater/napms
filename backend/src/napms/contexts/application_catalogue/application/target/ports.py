@@ -183,6 +183,14 @@ class TargetApplicationCatalogueRepository(
         interaction_definition_id: UUID,
     ) -> InteractionDefinition | None: ...
 
+    def find_interaction_definition_by_pair(
+        self,
+        *,
+        application_id: UUID,
+        source_component_id: UUID,
+        destination_component_id: UUID,
+    ) -> InteractionDefinition | None: ...
+
     def add_interaction_definition(self, value: InteractionDefinition) -> None: ...
 
     def save_interaction_definition(
