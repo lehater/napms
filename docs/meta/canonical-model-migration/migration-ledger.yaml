@@ -41,8 +41,8 @@ units:
 
   - id: RESOURCE-CATALOGUE
     phase: CM2
-    status: EQUIVALENCE_REVIEW
-    authority: legacy
+    status: COMPLETE
+    authority: target
     source_paths:
       - docs/migration/revalidated/h12-rc-curation/s0/problem-statement.md
       - docs/migration/revalidated/h12-rc-curation/s0/user-journey.md
@@ -71,9 +71,10 @@ units:
     architecture_ref: docs/architecture/structurizr/workspace.dsl
     evidence_ref: architecture/model-layout-pilot@13a39b7b80b7beaec65bef98ea415ae908fc3bcf
     cutover_check:
-      state: PENDING_CI
+      state: PASS
       review: docs/meta/canonical-model-migration/cm2-resource-catalogue-equivalence-review.yaml
       command: make canonical-model-check
+      evidence: {commit: a79ab612248f980785759dd502c7d6f810939235, workflow_run: 35289333880, workflow_job: 105428557141}
 
   - id: AUTHORITY-MANAGEMENT
     phase: CM3

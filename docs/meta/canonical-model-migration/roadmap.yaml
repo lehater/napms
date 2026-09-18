@@ -44,7 +44,7 @@ phases:
 
   - id: CM2
     name: Resource Catalogue vertical cutover
-    status: ACTIVE
+    status: COMPLETE
     depends_on: [CM1]
     objective: Perform the first real vertical cutover for Resource Catalogue from discovery and requirements through tactical domain/process truth.
     exit_criteria:
@@ -60,7 +60,7 @@ phases:
 
   - id: CM3
     name: Remaining domain slices
-    status: PENDING
+    status: ACTIVE
     depends_on: [CM2]
     objective: Migrate remaining context-owned semantic truth one slice at a time.
     unit_order:

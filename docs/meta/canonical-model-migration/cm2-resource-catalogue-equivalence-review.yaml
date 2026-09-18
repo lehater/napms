@@ -3,7 +3,7 @@ kind: canonical-model-migration-equivalence-review
 id: NAPMS-CM2-RC-EQUIVALENCE
 phase: CM2
 unit: RESOURCE-CATALOGUE
-status: PENDING_CI
+status: PASS
 reviewed_at: 2026-09-18
 check_command: make canonical-model-check
 
@@ -29,4 +29,15 @@ dispositions:
   process_candidate_aggregate: superseded_by_accepted_tactical_aggregate
   logical_derivation_and_envelope_metadata: migration_trace_retained_in_ledger_and_review_not_semantic_payload
 
-result: awaiting_clean_ci
+result: PASS
+evidence:
+  branch_commit: a79ab612248f980785759dd502c7d6f810939235
+  workflow_run: 35289333880
+  workflow_job: 105428557141
+  observed:
+    - CM1 strategic equivalence PASS
+    - CM2 Resource Catalogue equivalence PASS
+    - S0 problem and journey preserved
+    - S1 behavior authorization and integrity preserved
+    - Resource Catalogue language/domain decisions/process/tactical semantics preserved
+    - Resource Catalogue domain/process projections generated successfully

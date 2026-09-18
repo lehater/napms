@@ -10,36 +10,26 @@ ledger: docs/meta/canonical-model-migration/migration-ledger.yaml
 
 program:
   status: ACTIVE
-  current_phase: CM2
+  current_phase: CM3
   current_phase_state: IN_PROGRESS
-  completed_phases: [CM0, CM1]
+  completed_phases: [CM0, CM1, CM2]
 
 current_work:
-  task_id: CM2-01
-  name: Migrate Resource Catalogue tactical semantic slice
+  task_id: CM3-AM
+  name: Migrate Authority Management context-owned semantics
   state: IN_PROGRESS
-  objective: Move the accepted Resource Catalogue vertical slice from S0/S1 through S2 into stable semantic owners without duplicating the strategic BC definition.
-  source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM2
-  authority_unit: RESOURCE-CATALOGUE
+  objective: Move remaining Authority Management-owned language/tactical semantics into target owners while reusing the CM1 strategic definition and CM2 use-case admission references.
+  source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM3
+  authority_unit: AUTHORITY-MANAGEMENT
   predecessor_result:
-    phase: CM1
+    phase: CM2
     result: PASS
-    review: docs/meta/canonical-model-migration/cm1-strategic-equivalence-review.yaml
-    target_owners:
-      - docs/model/strategic/capabilities.yaml
-      - docs/model/strategic/bounded-contexts.yaml
-      - docs/model/strategic/context-relationships.yaml
-  completed_actions:
-    - Expanded CM2 to include the accepted S0 problem/journey and S1 requirements because the tactical/process model directly depends on them.
-    - Split the shared H12 glossary by ownership: RC terms move in CM2; Effective Authority remains with Authority Management for CM3.
-    - Kept H12 local capability clustering as discovery evidence instead of creating a second strategic capability authority.
-    - Created target discovery use-case language decision process and domain-model candidates plus deterministic equivalence/projection checks.
-  next_action: Run canonical-model-check on a clean branch checkout. If all equivalence and projection checks pass, record CM2 PASS and switch RESOURCE-CATALOGUE authority to target.
+    review: docs/meta/canonical-model-migration/cm2-resource-catalogue-equivalence-review.yaml
+  next_action: Reconcile the shared H12 glossary and H17 tactical AM semantics against the already-canonical CM1 Authority Management strategic owner; create only the target artifacts that own remaining semantic facts, then validate and cut over.
   stop_conditions:
-    - accepted H12 glossary tactical or process semantics cannot be represented without loss
-    - target files would repeat strategic purpose boundary or relationship truth instead of referencing it
-    - a tactical or process decision would have to be invented
-    - architecture or persistence detail would leak into the domain model
+    - remaining AM semantics are already fully owned by strategic or use-case target artifacts
+    - a new AM aggregate model would require invention beyond accepted H17 truth
+    - RC-owned semantics would be duplicated into AM
 
 authority:
   namespace: docs/
