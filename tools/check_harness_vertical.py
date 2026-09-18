@@ -140,6 +140,10 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
         if len(owners) != 1:
             raise VerticalError(f"capability {capability} spans authorities {sorted(owners)}")
 
+    unbound_artifacts = sorted(set(nodes) - set(artifact_authority))
+    if unbound_artifacts:
+        raise VerticalError(f"Canonical artifacts without Authority binding: {unbound_artifacts}")
+
     bound_authorities = set(artifact_authority.values())
     unbound = sorted(authority_ids - bound_authorities)
     if unbound:

@@ -1,4 +1,4 @@
-version: 4
+version: 5
 kind: canonical-design-control
 id: NAPMS-DESIGN-CONTROL
 status: PILOT_CURRENT
@@ -22,6 +22,7 @@ normal_work:
     - Read docs/harness-core.yaml when work crosses an Authority boundary or prepares downstream implementation/verification.
     - Read a current workstream state only when the task belongs to an active workstream.
   cycle:
+    - challenge affected Authority boundaries with the recursive boundary-convergence checks
     - change the smallest owning canonical artifact set
     - determine downstream impact from the graph
     - evaluate affected responsibility contracts
@@ -36,6 +37,16 @@ normal_work:
     - copied provenance wrappers
     - a universal design DSL
     - runtime access to the separate lehater/harness repository
+
+authority_boundary_convergence:
+  candidate_rule: Stage, folder, artifact family and discipline names are hypotheses, not accepted Authority boundaries.
+  checks:
+    semantic_cohesion: One coherent family of authoritative decisions/facts; no independently meaningful owner is hidden inside.
+    independent_change: The area's semantics/lifecycle/invariants can evolve without understanding a peer-private model.
+    public_contract: Required inputs, public semantic outputs and Question routing are unambiguous.
+  recurse_rule: If any check fails, split the candidate and apply the same checks to each child.
+  stop_rule: Stop only when all three checks pass for every Authority and every current canonical-graph node has exactly one Authority binding.
+  anti_split_rule: Never split only because files, tables, services, screens, packages, technologies or deployment units differ.
 
 commands:
   validate: make design-check
@@ -56,6 +67,10 @@ stop_conditions:
 specialized_owners:
   requirements: docs/requirements/
   structural_c4: docs/architecture/structurizr/workspace.dsl
+  application_architecture: docs/architecture/mvp-system-rules.yaml
+  security_architecture: docs/architecture/mvp-security-architecture.yaml
+  module_contracts: docs/architecture/mvp-module-contracts.yaml
+  shared_technical_conventions: docs/architecture/mvp-technical-representation.yaml
   http: docs/contracts/http/napms.openapi.yaml
   persistence: docs/architecture/persistence/mvp-persistence.yaml
   quality: docs/architecture/mvp-quality-requirements.yaml
@@ -65,7 +80,9 @@ specialized_owners:
   implementation_readiness: docs/plans/
 
 rules:
+  - Every current canonical-graph node has exactly one Authority binding.
   - One semantic fact has one current owner; other artifacts reference or derive from it.
+  - A lifecycle stage or documentation folder is never accepted as an Authority merely because it groups work.
   - Standard DSLs own only the truth they naturally express.
   - Generators never invent missing semantic details.
   - Consumer contracts define required knowledge, not workflow state or approval.

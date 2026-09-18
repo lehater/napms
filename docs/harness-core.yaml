@@ -2,7 +2,7 @@ version: 4
 kind: harness-canonical-graph-projection
 id: NAPMS-FIRST-MVP-DOCUMENTATION-VERTICAL
 status: PILOT
-scope: First-MVP engineering-knowledge ownership graph from accepted requirements and domain owners through implementation input and verification design.
+scope: Complete Authority ownership projection for the current canonical design graph plus first-MVP downstream consumer contracts.
 source_graph: canonical-graph.yaml
 
 principle: Authority boundaries follow semantic decision ownership, not lifecycle stages. Each Authority must pass semantic-cohesion, independent-change and stable-public-contract checks.
@@ -21,6 +21,14 @@ authorities:
   - id: PRODUCT-REQUIREMENTS
     responsibility: Own accepted first-MVP intent, externally observable behavior, scope boundaries and acceptance examples.
     boundary: {semantic_cohesion: "One product slice and its observable expectations.", independent_change: "Product intent changes without deciding domain internals or technical realization.", public_contract: "Provides goal/scope, behavior and acceptance; product Questions route here.", atomic: true}
+
+  - id: RESOURCE-CATALOGUE-DISCOVERY
+    responsibility: Own the Resource Catalogue curation problem, affected actor, desired outcome and discovery evidence without deciding requirements/domain/architecture realization.
+    boundary: {semantic_cohesion: "One Resource Catalogue curation problem/evidence slice.", independent_change: "Problem evidence can be revised before changing accepted behavior or domain semantics.", public_contract: "Provides problem/outcome evidence; discovery Questions route here.", atomic: true}
+
+  - id: RESOURCE-CATALOGUE-REQUIREMENTS
+    responsibility: Own observable Resource Catalogue curation behavior, mutation-admission requirements and integrity expectations.
+    boundary: {semantic_cohesion: "One externally meaningful Resource Catalogue curation behavior contract.", independent_change: "Behavior requirements can change without directly editing tactical domain or technical realization.", public_contract: "Provides curation behavior/authorization/integrity requirements; requirement Questions route here.", atomic: true}
 
   - id: DOMAIN-TOPOLOGY
     responsibility: Own strategic capability ownership, Bounded Context boundaries and semantic context relationships.
@@ -104,9 +112,14 @@ consumers:
 
 bindings:
   - {artifact: FIRST-MVP-REQUIREMENTS, authority: PRODUCT-REQUIREMENTS, provides: [requirements.first-mvp.goal-scope, requirements.first-mvp.behavior, requirements.first-mvp.acceptance]}
+  - {artifact: RC-DISCOVERY, authority: RESOURCE-CATALOGUE-DISCOVERY, provides: [discovery.resource-catalogue.problem, discovery.resource-catalogue.outcome]}
   - {artifact: STRATEGIC-CAPABILITIES, authority: DOMAIN-TOPOLOGY, provides: [domain.capability-map]}
   - {artifact: STRATEGIC-CONTEXTS, authority: DOMAIN-TOPOLOGY, provides: [domain.bounded-contexts]}
   - {artifact: STRATEGIC-RELATIONSHIPS, authority: DOMAIN-TOPOLOGY, provides: [domain.context-relationships]}
+  - {artifact: RC-CURATION, authority: RESOURCE-CATALOGUE-REQUIREMENTS, provides: [requirements.resource-catalogue-curation.behavior, requirements.resource-catalogue-curation.authorization, requirements.resource-catalogue-curation.integrity]}
+  - {artifact: RC-LANGUAGE, authority: RESOURCE-CATALOGUE, provides: [domain.resource-catalogue.language]}
+  - {artifact: RC-DECISIONS, authority: RESOURCE-CATALOGUE, provides: [domain.resource-catalogue.decisions]}
+  - {artifact: RC-PROCESS, authority: RESOURCE-CATALOGUE, provides: [domain.resource-catalogue.process]}
   - {artifact: RC-DOMAIN, authority: RESOURCE-CATALOGUE, provides: [domain.resource-catalogue.semantics]}
   - {artifact: AM-LANGUAGE, authority: AUTHORITY-MANAGEMENT, provides: [domain.authority-management.semantics]}
   - {artifact: ACC-DOMAIN, authority: APPLICATION-COMMUNICATION-CATALOGUE, provides: [domain.application-communication.semantics]}
@@ -131,6 +144,23 @@ bindings:
 questions: []
 
 contracts:
+  - id: RESOURCE-CATALOGUE-REQUIREMENTS-INPUT
+    consumer: RESOURCE-CATALOGUE-REQUIREMENTS
+    requires:
+      - {id: problem, capability: discovery.resource-catalogue.problem, authority: RESOURCE-CATALOGUE-DISCOVERY}
+      - {id: outcome, capability: discovery.resource-catalogue.outcome, authority: RESOURCE-CATALOGUE-DISCOVERY}
+      - {id: contexts, capability: domain.bounded-contexts, authority: DOMAIN-TOPOLOGY}
+      - {id: relationships, capability: domain.context-relationships, authority: DOMAIN-TOPOLOGY}
+
+  - id: RESOURCE-CATALOGUE-DOMAIN-INPUT
+    consumer: RESOURCE-CATALOGUE
+    requires:
+      - {id: behavior, capability: requirements.resource-catalogue-curation.behavior, authority: RESOURCE-CATALOGUE-REQUIREMENTS}
+      - {id: authorization, capability: requirements.resource-catalogue-curation.authorization, authority: RESOURCE-CATALOGUE-REQUIREMENTS}
+      - {id: integrity, capability: requirements.resource-catalogue-curation.integrity, authority: RESOURCE-CATALOGUE-REQUIREMENTS}
+      - {id: contexts, capability: domain.bounded-contexts, authority: DOMAIN-TOPOLOGY}
+      - {id: relationships, capability: domain.context-relationships, authority: DOMAIN-TOPOLOGY}
+
   - id: POLICY-EXPORT-COMPOSITION-INPUT
     consumer: POLICY-EXPORT-COMPOSITION
     requires:

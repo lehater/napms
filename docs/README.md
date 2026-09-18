@@ -23,8 +23,10 @@ Do not reconstruct missing product/domain/architecture truth from product code, 
 - `model/contexts/` — context-owned tactical semantics.
 - `model/use-cases/` — cross-context/application flows derived from requirements and context-owned semantics.
 - `architecture/structurizr/workspace.dsl` — canonical C4 structural/deployment model.
-- `architecture/mvp-system-rules.yaml` — non-C4 system architecture rules.
-- `architecture/mvp-technical-representation.yaml` — technical representation decisions.
+- `architecture/mvp-system-rules.yaml` — application/module coordination and integration-boundary rules.
+- `architecture/mvp-security-architecture.yaml` — authentication/admission security architecture.
+- `architecture/mvp-module-contracts.yaml` — in-process module/application contracts.
+- `architecture/mvp-technical-representation.yaml` — shared technical representation conventions.
 - `architecture/persistence/mvp-persistence.yaml` — canonical first-MVP physical persistence model.
 - `architecture/mvp-quality-requirements.yaml` — architecture-significant first-MVP quality constraints.
 - `architecture/mvp-threat-model.yaml` — first-MVP architecture threat model.
@@ -40,7 +42,9 @@ The first-MVP Harness pilot uses `harness-core.yaml` to make responsibility boun
 
 It defines:
 
-- which Authority owns each selected canonical artifact;
+- exactly one Authority for every current canonical-graph node;
+- three explicit boundary checks for every Authority: semantic cohesion, independent change and stable public contract/Question routing;
+- recursive decomposition of broad candidates until those checks pass;
 - which capabilities each artifact provides;
 - what each downstream responsibility requires;
 - explicit `NOT_APPLICABLE` evidence for conditional needs;

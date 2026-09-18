@@ -16,8 +16,10 @@ Repository state, not chat history, determines where work resumes.
 - `docs/requirements/**` — accepted product intent, behavior, scope and acceptance truth.
 - `docs/model/**` — strategic/tactical/domain/use-case truth.
 - `docs/architecture/structurizr/workspace.dsl` — structural C4/deployment architecture.
-- `docs/architecture/mvp-system-rules.yaml` — non-C4 architecture constraints.
-- `docs/architecture/mvp-technical-representation.yaml` — technical representation decisions.
+- `docs/architecture/mvp-system-rules.yaml` — application-boundary, module-interaction, consistency and integration-boundary architecture.
+- `docs/architecture/mvp-security-architecture.yaml` — authentication identity boundary and protected-action admission architecture.
+- `docs/architecture/mvp-module-contracts.yaml` — canonical in-process module/application contracts.
+- `docs/architecture/mvp-technical-representation.yaml` — technical conventions shared by multiple concrete contracts.
 - `docs/architecture/persistence/mvp-persistence.yaml` — physical persistence design.
 - `docs/architecture/mvp-quality-requirements.yaml` — architecture-significant quality constraints.
 - `docs/architecture/mvp-threat-model.yaml` — first-MVP threat model.
@@ -42,7 +44,18 @@ The model is about decision ownership and downstream knowledge needs, not workfl
 - contracts declare what a downstream responsibility needs;
 - a missing capability is a design gap and must be routed to the owning Authority;
 - `NOT_APPLICABLE` requires explicit canonical evidence;
-- unresolved Questions block directly named artifacts and their downstream dependency closure.
+- unresolved Questions block directly named artifacts and their downstream dependency closure;
+- every node in the current canonical graph has exactly one Authority binding.
+
+### Authority boundary convergence
+
+A stage, folder, artifact family or familiar discipline name is only a candidate Authority boundary. Recursively challenge it until all three checks pass:
+
+1. **semantic cohesion** — the area owns one coherent family of authoritative decisions/facts rather than several independently meaningful owners;
+2. **independent change** — its semantics/lifecycle/invariants can evolve without requiring knowledge of a peer's private model;
+3. **stable public contract** — required inputs, public semantic outputs and Question routing are unambiguous.
+
+If any check fails, split the candidate into smaller Authorities and run the same checks again. Stop only when all three pass and the current canonical graph has no unowned node. Do not split merely by file, table, service, screen, package, technology or deployment unit.
 
 Use `python tools/check_harness_vertical.py` for the real first-MVP contracts and `python tools/test_harness_vertical.py` for acceptance/regression behavior.
 

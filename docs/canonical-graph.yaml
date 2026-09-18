@@ -13,7 +13,7 @@ nodes:
   - {id: RC-CURATION, kind: use-case, path: docs/model/use-cases/resource-catalogue-curation.yaml, depends_on: [RC-DISCOVERY, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
   - {id: RC-LANGUAGE, kind: domain-language, path: docs/model/contexts/resource-catalogue/language.yaml, depends_on: [STRATEGIC-CONTEXTS]}
   - {id: RC-DECISIONS, kind: domain-decisions, path: docs/model/contexts/resource-catalogue/decisions.yaml, depends_on: [RC-CURATION]}
-  - {id: RC-PROCESS, kind: domain-process, path: docs/model/contexts/resource-catalogue/process-model.yaml, depends_on: [RC-CURATION, RC-LANGUAGE, STRATEGIC-RELATIONSHIPS]}
+  - {id: RC-PROCESS, kind: domain-process, path: docs/model/contexts/resource-catalogue/process-model.yaml, depends_on: [RC-CURATION, RC-LANGUAGE, RC-DECISIONS, STRATEGIC-RELATIONSHIPS]}
   - {id: RC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/resource-catalogue/domain-model.yaml, depends_on: [RC-PROCESS, RC-LANGUAGE]}
   - {id: AM-LANGUAGE, kind: domain-language, path: docs/model/contexts/authority-management/language.yaml, depends_on: [STRATEGIC-CONTEXTS]}
   - {id: ACC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/application-communication-catalogue/domain-model.yaml, depends_on: [STRATEGIC-CONTEXTS]}
