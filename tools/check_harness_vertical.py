@@ -61,6 +61,29 @@ def _validate_authority_boundaries(projection: dict[str, Any]) -> set[str]:
     return authority_ids
 
 
+def _validate_authority_dag(external_dependency_owners: dict[str, set[str]]) -> None:
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(authority: str, path: list[str]) -> None:
+        if authority in visited:
+            return
+        if authority in visiting:
+            start = path.index(authority)
+            cycle = path[start:] + [authority]
+            raise VerticalError(f"Authority dependency cycle: {' -> '.join(cycle)}")
+        visiting.add(authority)
+        path.append(authority)
+        for upstream in sorted(external_dependency_owners[authority]):
+            visit(upstream, path)
+        path.pop()
+        visiting.remove(authority)
+        visited.add(authority)
+
+    for authority in sorted(external_dependency_owners):
+        visit(authority, [])
+
+
 def _blocked_questions(
     graph: dict[str, Any], projection: dict[str, Any], authority_ids: set[str], artifact_authority: dict[str, str]
 ) -> dict[str, list[str]]:
@@ -189,6 +212,8 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
             dependency_owner = artifact_authority[dependency]
             if dependency_owner != owner:
                 external_dependency_owners[owner].add(dependency_owner)
+
+    _validate_authority_dag(external_dependency_owners)
 
     for root_id in sorted(root_ids):
         if external_dependency_owners[root_id]:
@@ -334,6 +359,10 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
     result["public_capabilities"] = {
         "consumed": sorted(consumed_public_capabilities & set(provider_map)),
         "terminal": sorted(terminal_capability_ids),
+    }
+    result["authority_dependencies"] = {
+        authority: sorted(upstream)
+        for authority, upstream in sorted(external_dependency_owners.items())
     }
     return result
 

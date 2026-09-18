@@ -56,6 +56,7 @@ The model is about engineering-decision ownership and downstream knowledge needs
 - every node in the current canonical graph has exactly one Authority binding;
 - every capability listed in `provides` is a public Authority output and must be consumed by another Authority/consumer or declared explicitly terminal with a reason;
 - for every non-root Authority, the set of upstream Authorities in its input contract must equal the set implied by cross-Authority dependencies in `docs/canonical-graph.yaml`: neither hidden dependencies nor phantom contract inputs are allowed.
+- the resulting engineering-Authority dependency graph must remain acyclic; a cycle is evidence that decision families were grouped incorrectly or dependencies are wrong.
 
 Do not publish internal intermediate facts merely because a canonical artifact exists. Artifact ownership and public capability exposure are separate decisions.
 

@@ -79,6 +79,17 @@ def main() -> int:
     assert baseline["public_capabilities"]["consumed"]
     assert requirement(baseline, "IMPLEMENTATION-DESIGN-INPUT", "asynchronous-contract")["status"] == "NOT_APPLICABLE"
 
+    assert baseline["authority_dependencies"]["DISCOVERY"] == []
+    assert baseline["authority_dependencies"]["TACTICAL-DOMAIN-DESIGN"] == [
+        "DOMAIN-USE-CASE-DESIGN",
+        "STRATEGIC-DOMAIN-DESIGN",
+    ]
+
+    cyclic_graph = copy.deepcopy(graph)
+    system_rules_node = next(item for item in cyclic_graph["nodes"] if item["id"] == "SYSTEM-RULES")
+    system_rules_node["depends_on"].append("QUALITY-REQUIREMENTS")
+    expect_error(lambda: evaluate(cyclic_graph, projection), "Authority dependency cycle")
+
     bad_boundary = copy.deepcopy(projection)
     del bad_boundary["authorities"][0]["boundary"]["public_contract"]
     expect_error(lambda: evaluate(graph, bad_boundary), "boundary.public_contract")
