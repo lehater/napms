@@ -123,12 +123,19 @@ class ReadRecorder:
         )
 
 
-def _client(*, read=None, create_definition=None, update_traffic=None):
+def _client(
+    *,
+    read=None,
+    create_definition=None,
+    create_interaction=None,
+    update_traffic=None,
+):
     sessions = InMemorySessionStore(new_session_id=lambda: "session-1")
     sessions.create(AuthenticatedActor(actor_id="actor-1", login="local-admin"))
     applications = SimpleNamespace(
         read=read or ReadRecorder(),
         create_definition=create_definition,
+        create_interaction_definition=create_interaction,
         update_interaction_traffic=update_traffic,
     )
     scope = SimpleNamespace(applications=applications)
@@ -260,6 +267,45 @@ def test_target_create_definition_uses_session_actor_clock_and_idempotency():
     assert command.description == "Customer relationship management"
     assert command.domain == "Sales"
     assert command.owner_reference == "team:crm"
+
+
+def test_target_create_interaction_maps_duplicate_pair_to_conflict():
+    recorder = ExecuteRecorder(
+        InteractionDefinitionMutationResult(
+            outcome=TargetMutationOutcome.ALREADY_EXISTS,
+        )
+    )
+    client, _ = _client(create_interaction=recorder)
+
+    response = client.post(
+        f"/api/v1/catalogues/application-definitions/{APP}/interactions",
+        json={
+            "sourceComponentId": str(SOURCE),
+            "destinationComponentId": str(DESTINATION),
+            "trafficAlternatives": [
+                {
+                    "protocol": "tcp",
+                    "sourcePorts": {"kind": "Any", "ranges": []},
+                    "destinationPorts": {
+                        "kind": "Ranges",
+                        "ranges": [{"first": 443, "last": 443}],
+                    },
+                    "serviceReference": "https",
+                }
+            ],
+        },
+        headers={"Idempotency-Key": "duplicate-directed-pair"},
+        cookies={"napms_session": "session-1"},
+    )
+
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "CatalogueAlreadyExists"
+    command = recorder.calls[0]
+    assert command.application_id == APP
+    assert command.source_component_id == SOURCE
+    assert command.destination_component_id == DESTINATION
+    assert command.actor_id == "actor-1"
+    assert command.effective_time == NOW
 
 
 def test_target_dependency_conflict_returns_exact_count_and_bounded_preview():
