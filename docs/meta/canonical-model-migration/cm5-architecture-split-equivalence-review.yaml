@@ -1,0 +1,23 @@
+version: 1
+kind: canonical-model-migration-equivalence-review
+id: NAPMS-CM5-ARCHITECTURE-SPLIT-EQUIVALENCE
+phase: CM5
+unit: SYSTEM-ARCHITECTURE
+status: PENDING_CI
+reviewed_at: 2026-09-18
+check_command: make canonical-model-check
+
+target_owners:
+  structural_c4: docs/architecture/structurizr/workspace.dsl
+  architecture_rules: docs/architecture/mvp-system-rules.yaml
+  persistence_baseline: docs/architecture/persistence/mvp-persistence.yaml
+  http_contract_requirements: docs/contracts/http/napms-api-requirements.yaml
+
+criteria:
+  - H18 non-structural interaction authorization consistency deployment-policy and application-boundary rules are preserved exactly
+  - H18 persistence baseline and H19 schema/table ownership rules are preserved exactly in the persistence owner
+  - H18/H19 accepted HTTP boundary operation and API-wide rules are preserved exactly in contract requirements
+  - Structurizr contains the accepted frontend backend PostgreSQL topology six domain modules policy-export composition and main owner-contract relationships
+  - missing OpenAPI and physical persistence details are explicit gaps rather than inferred from implementation
+  - no async boundary is introduced
+result: awaiting_clean_ci

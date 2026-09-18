@@ -220,15 +220,19 @@ units:
 
   - id: SYSTEM-ARCHITECTURE
     phase: CM5
-    status: IN_PROGRESS
+    status: EQUIVALENCE_REVIEW
     source_inventory: docs/meta/canonical-model-migration/cm5-architecture-source-inventory.yaml
     authority: mixed-temporary
     source_paths:
       - docs/migration/revalidated/h18-mvp-architecture/s3/mvp-system-architecture.yaml
     target_paths:
       - docs/architecture/structurizr/workspace.dsl
+      - docs/architecture/mvp-system-rules.yaml
     note: Structurizr DSL already owns structural C4 truth; CM5 must reconcile and retire any remaining H18 truth not owned by an explicit target artifact before authority can become target.
-    cutover_check: {state: NOT_RUN}
+    cutover_check:
+      state: PENDING_CI
+      review: docs/meta/canonical-model-migration/cm5-architecture-split-equivalence-review.yaml
+      command: make canonical-model-check
 
   - id: HTTP-CONTRACT
     phase: CM5
@@ -238,9 +242,13 @@ units:
     source_paths:
       - docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-implementation-readiness.yaml
     target_paths:
-      - docs/contracts/openapi/
-    note: Locate the current OpenAPI artifact/authority during CM5; do not invent operations from implementation code.
-    cutover_check: {state: NOT_RUN}
+      - docs/contracts/http/napms-api-requirements.yaml
+      - docs/contracts/http/napms.openapi.yaml
+    note: Accepted HTTP/API requirement truth is migrated first. The full OpenAPI remains an explicit design gap until request/response/outcome schema details are designed without using implementation code as truth.
+    cutover_check:
+      state: PENDING_CI
+      review: docs/meta/canonical-model-migration/cm5-architecture-split-equivalence-review.yaml
+      command: make canonical-model-check
 
   - id: PERSISTENCE-MODEL
     phase: CM5
@@ -251,9 +259,12 @@ units:
       - docs/migration/revalidated/h18-mvp-architecture/s3/mvp-system-architecture.yaml
       - docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-implementation-readiness.yaml
     target_paths:
-      - docs/architecture/persistence/
-    note: Current accepted truth owns PostgreSQL/module/table ownership but not a complete column/key/cardinality/index model. CM5 must design the missing physical model explicitly before ERD generation.
-    cutover_check: {state: NOT_RUN}
+      - docs/architecture/persistence/mvp-persistence.yaml
+    note: Accepted PostgreSQL/module/table ownership is migrated into the target model. Columns/keys/cardinalities/indexes/checks remain an explicit design gap; ERD stays unavailable until that gap is resolved.
+    cutover_check:
+      state: PENDING_CI
+      review: docs/meta/canonical-model-migration/cm5-architecture-split-equivalence-review.yaml
+      command: make canonical-model-check
 
   - id: HARNESS-RUNTIME
     phase: CM6

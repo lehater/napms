@@ -57,6 +57,7 @@ canonical-model-sync:
 	python tools/check_cm3_bc_equivalence.py
 	python tools/check_cm3_ap_equivalence.py
 	python tools/check_cm4_mvp_journey_equivalence.py
+	python tools/check_cm5_architecture_split.py
 	python tools/generate_strategic_views.py
 	python tools/generate_resource_catalogue_views.py
 	python tools/generate_acc_view.py
@@ -74,6 +75,7 @@ canonical-model-check:
 	python tools/check_cm3_bc_equivalence.py
 	python tools/check_cm3_ap_equivalence.py
 	python tools/check_cm4_mvp_journey_equivalence.py
+	python tools/check_cm5_architecture_split.py
 	python tools/generate_strategic_views.py --check
 	python tools/generate_resource_catalogue_views.py --check
 	python tools/generate_acc_view.py --check

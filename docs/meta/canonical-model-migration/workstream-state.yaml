@@ -30,7 +30,12 @@ current_work:
     - Inventoried H18 H19 Structurizr and existing OpenAPI evidence.
     - Identified target ownership split for structural C4 architecture architecture rules HTTP contract and physical persistence.
     - Confirmed that no accepted full-system OpenAPI or complete physical persistence model currently exists.
-  next_action: Reconcile Structurizr against H18 structural semantics and create a machine-readable architecture-rules target for the accepted non-structural H18 constraints.
+  completed_actions:
+    - Reconciled accepted H18 structural responsibilities against the existing Structurizr workspace.
+    - Split accepted non-structural H18 rules into docs/architecture/mvp-system-rules.yaml.
+    - Moved accepted H18/H19 persistence baseline into docs/architecture/persistence/mvp-persistence.yaml with the missing physical detail explicitly marked unresolved.
+    - Moved accepted H18/H19 HTTP boundary operations and API-wide rules into docs/contracts/http/napms-api-requirements.yaml with the incomplete OpenAPI detail explicitly marked unresolved.
+  next_action: Run canonical-model-check on a clean checkout. If PASS, cut over the known architecture/persistence/API-requirement truth, then design the remaining OpenAPI and physical persistence details without using product code as truth.
   stop_conditions:
     - a structural mismatch would require silently changing accepted architecture
     - OpenAPI request/response semantics would have to be inferred from product code

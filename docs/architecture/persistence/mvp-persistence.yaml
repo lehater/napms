@@ -1,0 +1,40 @@
+version: 1
+kind: physical-persistence-model
+id: NAPMS-MVP-PERSISTENCE
+status: ACCEPTED_BASELINE_WITH_EXPLICIT_DETAIL_GAP
+
+database: PostgreSQL
+topology: One physical PostgreSQL database for the MVP backend.
+ownership: Each domain module owns its persistence schema/repository contract inside the shared database.
+mutation_rule: No module directly mutates another module's tables or persistence model.
+read_rule: Cross-module semantics are obtained through owner module contracts; composition may combine owner-published read projections without transferring ownership.
+migration_rule: Schema migrations are applied as one backend deployment concern while preserving module ownership in migration organization.
+transaction_rule: Aggregate invariants are transactional inside the owner module; the modular monolith may use one local database transaction where one application use case coordinates owner operations, without redefining semantic ownership.
+
+schemas:
+  resource_catalogue: [resource, resource_address_space]
+  application_communication_catalogue: [application_definition, component, interaction, interaction_contract_revision]
+  application_deployment: [component_deployment]
+  business_connectivity: [business_process, connectivity_need]
+  access_policy: [policy_rule, rule_change]
+  authority_management: [actor, authority_assignment]
+
+rules:
+  - Stable owner IDs are persisted as cross-module references and resolved through owner contracts.
+  - Published InteractionContractRevision is append-only.
+  - Policy decision history is retained; current effectiveness does not erase RuleChange history.
+  - ComponentDeployment componentRef/resourceRef are fixed for its identity.
+  - Current AddressSpace remains RC-owned and is resolved at materialization time.
+  - Module-owned migrations are applied together with backend deployment.
+
+physical_detail_status: NOT_YET_DESIGNED
+missing_physical_design:
+  - columns and concrete data types
+  - primary and alternate keys
+  - foreign-key realization and cross-module reference constraints
+  - nullability
+  - cardinalities not already fixed by accepted domain semantics
+  - indexes and uniqueness constraints
+  - database check constraints
+  - exact temporal and provenance column layout
+erd_status: NOT_AVAILABLE_UNTIL_PHYSICAL_DETAIL_IS_DESIGNED

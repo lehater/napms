@@ -1,0 +1,54 @@
+version: 1
+kind: http-contract-requirements
+id: NAPMS-MVP-HTTP-CONTRACT-REQUIREMENTS
+status: ACCEPTED_REQUIREMENTS_WITH_OPENAPI_DETAIL_GAP
+
+target_contract_format: OpenAPI
+delivery_protocol: HTTP
+payload_style: JSON for application commands and queries; CSV for the explicit policy export representation.
+contract_rule: One OpenAPI application contract; HTTP operations are use-case boundary adapters, not per-context services.
+design_rule: API operations are organized around MVP use cases and resources exposed by the application boundary; they are not one network API per Bounded Context.
+
+required_capabilities:
+  - manage Resources and AddressSpace
+  - manage Application/Components/Interactions and traffic revisions
+  - manage ComponentDeployments
+  - manage BusinessProcess/ConnectivityNeed
+  - submit and decide RuleChange
+  - view complete current vendor-neutral policy table
+  - download same result as CSV
+
+operations:
+  - POST /api/resources
+  - PUT /api/resources/{resourceId}/address-space
+  - POST /api/applications
+  - POST /api/applications/{applicationId}/components
+  - POST /api/applications/{applicationId}/interactions
+  - POST /api/interactions/{interactionId}/revisions
+  - POST /api/component-deployments
+  - POST /api/business-processes
+  - POST /api/business-processes/{businessProcessId}/connectivity-needs
+  - POST /api/policy-rules
+  - POST /api/policy-rules/{policyRuleId}/changes/{ruleChangeId}/decision
+  - POST /api/policy-rules/{policyRuleId}/withdrawal
+  - GET /api/policy-export
+  - GET /api/policy-export.csv
+
+rules:
+  - Protected operations derive actor identity from backend session, never request actor fields.
+  - Mutation rejection is atomic.
+  - Export returns complete Success or explicit Unresolved; partial success is forbidden.
+  - Create/publish operations return stable owner identifiers used by later steps.
+
+error_rule: Domain rejection and Unresolved materialization are explicit application outcomes; missing materialization input is never represented as a silently partial successful export.
+
+openapi_status: NOT_YET_COMPLETE
+missing_openapi_design:
+  - operation request schemas
+  - success response schemas
+  - explicit domain-rejection response schemas and status mapping
+  - Unresolved export response schema and status mapping
+  - stable identifier schema details
+  - common authentication/session declaration
+  - CSV response media-type/schema details
+canonical_openapi_target: docs/contracts/http/napms.openapi.yaml
