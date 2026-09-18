@@ -15,24 +15,20 @@ program:
   completed_phases: [CM0, CM1, CM2]
 
 current_work:
-  task_id: CM3-ACC
-  name: Migrate Application Communication Catalogue tactical semantics
+  task_id: CM3-AD
+  name: Migrate Application Deployment tactical semantics
   state: IN_PROGRESS
-  objective: Move the accepted H17 Application Communication Catalogue tactical submodel into its target owner without copying the CM1 strategic definition or H17 cross-context journey.
+  objective: Move the accepted H17 Application Deployment tactical submodel into its target owner without copying the CM1 strategic definition or H17 cross-context journey.
   source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM3
-  authority_unit: APPLICATION-COMMUNICATION-CATALOGUE
+  authority_unit: APPLICATION-DEPLOYMENT
   predecessor_result:
-    unit: AUTHORITY-MANAGEMENT
+    unit: APPLICATION-COMMUNICATION-CATALOGUE
     result: PASS
-    review: docs/meta/canonical-model-migration/cm3-authority-management-equivalence-review.yaml
-  completed_actions:
-    - Extracted only the accepted H17 Application Communication Catalogue participating-context payload.
-    - Created one tactical domain owner with aggregate entities invariants and public semantics; CM1 strategic truth is referenced, not repeated.
-    - Added a generated review view that deliberately does not infer entity associations.
-  next_action: Run canonical-model-check on a clean branch checkout. If PASS, cut over APPLICATION-COMMUNICATION-CATALOGUE and continue with Application Deployment.
+    review: docs/meta/canonical-model-migration/cm3-acc-equivalence-review.yaml
+  next_action: Extract only the Application Deployment participating-context payload, preserve aggregate invariants and public semantics, generate a review projection without invented internals, validate then cut over.
   stop_conditions:
-    - extraction would require adding aggregate/entity relationships not present in accepted H17 truth
-    - cross-context journey or materialization semantics would be copied into ACC ownership
+    - extraction would require inventing ComponentDeployment internals beyond accepted H17 semantics
+    - ACC or RC ownership would be copied into Application Deployment
 
 authority:
   namespace: docs/

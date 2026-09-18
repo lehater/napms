@@ -98,8 +98,8 @@ units:
 
   - id: APPLICATION-COMMUNICATION-CATALOGUE
     phase: CM3
-    status: EQUIVALENCE_REVIEW
-    authority: legacy
+    status: COMPLETE
+    authority: target
     source_paths:
       - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
     source_selector: canonical_payload.participating_contexts.Application Communication Catalogue
@@ -109,9 +109,10 @@ units:
       - docs/model/contexts/application-communication-catalogue/domain-model.yaml
     ownership_note: Only the ACC participating-context tactical payload moves here. H17 cross-context flow materialization and explicit deferrals remain with the later MVP-JOURNEY migration unit.
     cutover_check:
-      state: PENDING_CI
+      state: PASS
       review: docs/meta/canonical-model-migration/cm3-acc-equivalence-review.yaml
       command: make canonical-model-check
+      evidence: {commit: ab98d68409fe5085841f6848f975146231fb545b, workflow_run: 35289682146, workflow_job: 105429598007}
 
   - id: APPLICATION-DEPLOYMENT
     phase: CM3
