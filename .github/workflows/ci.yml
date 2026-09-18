@@ -13,6 +13,18 @@ on:
       - "backend/pyproject.toml"
       - "Makefile"
       - ".github/workflows/ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/src/**"
+      - "backend/tests/access_policy/**"
+      - "backend/tests/application_catalogue/**"
+      - "backend/tests/authority_management/**"
+      - "backend/tests/platform/**"
+      - "backend/tests/architecture/**"
+      - "backend/pyproject.toml"
+      - "Makefile"
+      - ".github/workflows/ci.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
