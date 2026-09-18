@@ -33,11 +33,19 @@ Repository state, not chat history, determines where work resumes.
 
 Product code/tests are implementation/evidence. Never use them to invent or reconstruct missing product/domain/architecture semantics.
 
-## Documentation vertical
+## Engineering-knowledge vertical
 
-For the first-MVP pilot, responsibility boundaries are checked through `docs/harness-core.yaml`.
+For the pilot, engineering-design responsibility boundaries are checked through `docs/harness-core.yaml`.
 
-The model is about decision ownership and downstream knowledge needs, not workflow state:
+Keep three levels distinct:
+
+- **Authority** — owns one kind of engineering decision/knowledge (for example Strategic DDD, System Architecture, Interface Design);
+- **Artifact** — canonical or generated representation of that knowledge (for example context-map sources, C4 DSL, OpenAPI, persistence model);
+- **subject matter** — Bounded Contexts, aggregates, modules, endpoints and other things described inside an artifact.
+
+A Bounded Context or domain module is not a Harness Authority merely because it has semantic ownership inside DDD. The Context Map is an engineering artifact/projection owned by Strategic Domain Design; the contexts shown on it are its subject matter.
+
+The model is about engineering-decision ownership and downstream knowledge needs, not workflow state:
 
 - each selected canonical artifact belongs to one Authority;
 - bindings declare the capabilities that artifact provides;
@@ -53,13 +61,13 @@ Do not publish internal intermediate facts merely because a canonical artifact e
 
 ### Authority boundary convergence
 
-A stage, folder, artifact family or familiar discipline name is only a candidate Authority boundary. Recursively challenge it until all three checks pass:
+An engineering discipline/decision family is only a candidate Authority boundary. Recursively challenge it until all three checks pass:
 
 1. **semantic cohesion** — the area owns one coherent family of authoritative decisions/facts rather than several independently meaningful owners;
 2. **independent change** — its semantics/lifecycle/invariants can evolve without requiring knowledge of a peer's private model;
 3. **stable public contract** — required inputs, public semantic outputs and Question routing are unambiguous.
 
-If any check fails, split the candidate into smaller Authorities and run the same checks again. Stop only when all three pass and the current canonical graph has no unowned node. Do not split merely by file, table, service, screen, package, technology or deployment unit.
+If any check fails, split the engineering responsibility into smaller decision families and run the same checks again. Stop only when all three pass and the current canonical graph has no unowned node. Do not split by Bounded Context, aggregate, module, file, table, service, screen, package, technology or deployment unit unless that split also proves a distinct engineering-decision owner.
 
 Use `python tools/check_harness_vertical.py` for the real first-MVP contracts and `python tools/test_harness_vertical.py` for acceptance/regression behavior.
 
@@ -92,7 +100,7 @@ Change the smallest owning artifact set. Follow graph dependencies for downstrea
 
 Use `make design-check`, `make design-sync`, and `python tools/check_canonical_graph.py --affected <NODE-ID>`.
 
-When a downstream consumer reports missing knowledge, do not patch another Authority's canonical artifact opportunistically. Route the gap to the Authority that may decide it; after canonical repair, rerun affected contracts and projections.
+When a downstream consumer reports missing knowledge, route the gap to the engineering Authority that owns that kind of decision; do not route it merely to the Bounded Context or module mentioned by the missing fact. After canonical repair, rerun affected contracts and projections.
 
 A Bounded Context is not automatically a service, process, database, team or deployment unit. Current MVP remains one browser frontend, one modular-monolith backend and one PostgreSQL database with module-owned persistence and in-process owner contracts.
 

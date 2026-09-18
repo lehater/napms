@@ -38,18 +38,46 @@ def main() -> int:
     baseline = evaluate(graph, projection)
     assert baseline["satisfied"]
     assert {item["id"] for item in graph["nodes"]} == {item["artifact"] for item in projection["bindings"]}
+
     authority_ids = {item["id"] for item in projection["authorities"]}
-    assert "DOMAIN-DESIGN" not in authority_ids
-    assert "SYSTEM-ARCHITECTURE" not in authority_ids
-    assert "TECHNICAL-REPRESENTATION" not in authority_ids
-    assert {item["id"] for item in projection["root_authorities"]} == {
+    expected_engineering_authorities = {
+        "DISCOVERY",
         "PRODUCT-REQUIREMENTS",
-        "RESOURCE-CATALOGUE-DISCOVERY",
-        "DOMAIN-TOPOLOGY",
+        "STRATEGIC-DOMAIN-DESIGN",
+        "DOMAIN-USE-CASE-DESIGN",
+        "TACTICAL-DOMAIN-DESIGN",
+        "APPLICATION-JOURNEY-DESIGN",
+        "SYSTEM-ARCHITECTURE",
+        "SECURITY-ARCHITECTURE-DESIGN",
+        "INTERFACE-DESIGN",
+        "DATA-DESIGN",
+        "QUALITY-DESIGN",
+        "SECURITY-ANALYSIS",
+        "OPERABILITY-DESIGN",
+        "IMPLEMENTATION-DESIGN",
+        "VERIFICATION-DESIGN",
     }
-    assert requirement(baseline, "IMPLEMENTATION-PLAN-INPUT", "asynchronous-contract")["status"] == "NOT_APPLICABLE"
+    assert authority_ids == expected_engineering_authorities
+
+    # Domain subjects/Bounded Contexts are content inside design artifacts, not Harness Authorities.
+    for domain_subject in {
+        "RESOURCE-CATALOGUE",
+        "AUTHORITY-MANAGEMENT",
+        "APPLICATION-COMMUNICATION-CATALOGUE",
+        "APPLICATION-DEPLOYMENT",
+        "BUSINESS-CONNECTIVITY",
+        "ACCESS-POLICY",
+    }:
+        assert domain_subject not in authority_ids
+
+    assert {item["id"] for item in projection["root_authorities"]} == {
+        "DISCOVERY",
+        "PRODUCT-REQUIREMENTS",
+        "STRATEGIC-DOMAIN-DESIGN",
+    }
     assert baseline["public_capabilities"]["terminal"] == []
     assert baseline["public_capabilities"]["consumed"]
+    assert requirement(baseline, "IMPLEMENTATION-DESIGN-INPUT", "asynchronous-contract")["status"] == "NOT_APPLICABLE"
 
     bad_boundary = copy.deepcopy(projection)
     del bad_boundary["authorities"][0]["boundary"]["public_contract"]
@@ -62,106 +90,107 @@ def main() -> int:
     missing_input_contract = copy.deepcopy(projection)
     missing_input_contract["contracts"] = [
         item for item in missing_input_contract["contracts"]
-        if item["id"] != "ACCESS-POLICY-INPUT"
+        if item["id"] != "TACTICAL-DOMAIN-DESIGN-INPUT"
     ]
     expect_error(lambda: evaluate(graph, missing_input_contract), "non-root Authorities without input contract")
 
     invalid_root = copy.deepcopy(projection)
     invalid_root["root_authorities"].append({
-        "id": "ACCESS-POLICY",
+        "id": "DATA-DESIGN",
         "reason": "Invalid regression root.",
     })
-    expect_error(lambda: evaluate(graph, invalid_root), "root authority ACCESS-POLICY has external upstream Authorities")
+    expect_error(lambda: evaluate(graph, invalid_root), "root authority DATA-DESIGN has external upstream Authorities")
 
     phantom_input = copy.deepcopy(projection)
-    contract = next(item for item in phantom_input["contracts"] if item["id"] == "AUTHORITY-MANAGEMENT-INPUT")
+    contract = next(item for item in phantom_input["contracts"] if item["id"] == "DOMAIN-USE-CASE-DESIGN-INPUT")
     contract["requires"].append({
         "id": "phantom-product-input",
-        "capability": "requirements.first-mvp.behavior",
+        "capability": "engineering.requirements.product-intent",
         "authority": "PRODUCT-REQUIREMENTS",
     })
     expect_error(lambda: evaluate(graph, phantom_input), "input contract has non-graph upstream Authorities")
 
     dead_public_output = copy.deepcopy(projection)
     system_rules = next(item for item in dead_public_output["bindings"] if item["artifact"] == "SYSTEM-RULES")
-    system_rules["provides"].append("architecture.unused-public-output")
+    system_rules["provides"].append("engineering.architecture.unused-output")
     expect_error(lambda: evaluate(graph, dead_public_output), "Unconsumed public capabilities")
 
     explicit_terminal = copy.deepcopy(dead_public_output)
     explicit_terminal["terminal_capabilities"].append({
-        "capability": "architecture.unused-public-output",
-        "authority": "APPLICATION-ARCHITECTURE",
+        "capability": "engineering.architecture.unused-output",
+        "authority": "SYSTEM-ARCHITECTURE",
         "reason": "Regression fixture: explicit terminal result has no downstream consumer in this graph.",
     })
     terminal_result = evaluate(graph, explicit_terminal)
     assert terminal_result["satisfied"]
-    assert terminal_result["public_capabilities"]["terminal"] == ["architecture.unused-public-output"]
+    assert terminal_result["public_capabilities"]["terminal"] == ["engineering.architecture.unused-output"]
 
     redundant_terminal = copy.deepcopy(projection)
     redundant_terminal["terminal_capabilities"].append({
-        "capability": "architecture.http-contract",
-        "authority": "HTTP-CONTRACT",
+        "capability": "engineering.interface.http-contract",
+        "authority": "INTERFACE-DESIGN",
         "reason": "Invalid regression fixture because the capability is already consumed.",
     })
     expect_error(lambda: evaluate(graph, redundant_terminal), "terminal capabilities are already consumed downstream")
 
     missing_http = copy.deepcopy(projection)
     openapi = next(item for item in missing_http["bindings"] if item["artifact"] == "OPENAPI")
-    openapi["provides"].remove("architecture.http-contract")
+    openapi["provides"].remove("engineering.interface.http-contract")
     result = evaluate(graph, missing_http)
-    gap = requirement(result, "IMPLEMENTATION-CONSUMER", "http-contract")
+    gap = requirement(result, "IMPLEMENTATION-CONSUMER", "interface")
     assert gap["status"] == "DESIGN_GAP"
-    assert gap["question"]["authority"] == "HTTP-CONTRACT"
+    assert gap["question"]["authority"] == "INTERFACE-DESIGN"
 
     missing_security = copy.deepcopy(projection)
     security = next(item for item in missing_security["bindings"] if item["artifact"] == "SECURITY-ARCHITECTURE")
-    security["provides"].remove("architecture.security-boundary")
+    security["provides"].remove("engineering.architecture.security")
     result = evaluate(graph, missing_security)
-    gap = requirement(result, "IMPLEMENTATION-CONSUMER", "security-boundary")
+    gap = requirement(result, "IMPLEMENTATION-CONSUMER", "security-architecture")
     assert gap["status"] == "DESIGN_GAP"
-    assert gap["question"]["authority"] == "SECURITY-ARCHITECTURE"
+    assert gap["question"]["authority"] == "SECURITY-ARCHITECTURE-DESIGN"
 
     missing_na_evidence = copy.deepcopy(projection)
     system_rules = next(item for item in missing_na_evidence["bindings"] if item["artifact"] == "SYSTEM-RULES")
-    system_rules["provides"].remove("architecture.async-messaging-not-applicable")
+    system_rules["provides"].remove("engineering.architecture.async-messaging-not-applicable")
     result = evaluate(graph, missing_na_evidence)
-    gap = requirement(result, "IMPLEMENTATION-PLAN-INPUT", "asynchronous-contract")
+    gap = requirement(result, "IMPLEMENTATION-DESIGN-INPUT", "asynchronous-contract")
     assert gap["status"] == "DESIGN_GAP"
-    assert gap["question"]["authority"] == "APPLICATION-ARCHITECTURE"
+    assert gap["question"]["authority"] == "SYSTEM-ARCHITECTURE"
 
-    blocked_upstream = copy.deepcopy(projection)
-    blocked_upstream["questions"].append({
-        "id": "Q-APPLICATION-ARCH",
-        "authority": "APPLICATION-ARCHITECTURE",
-        "text": "Resolve an application-architecture uncertainty.",
+    blocked_architecture = copy.deepcopy(projection)
+    blocked_architecture["questions"].append({
+        "id": "Q-SYSTEM-ARCHITECTURE",
+        "authority": "SYSTEM-ARCHITECTURE",
+        "text": "Resolve a system-architecture uncertainty.",
         "blocks": ["SYSTEM-RULES"],
     })
-    result = evaluate(graph, blocked_upstream)
-    assert requirement(result, "IMPLEMENTATION-CONSUMER", "module-contracts")["status"] == "BLOCKED"
-    assert requirement(result, "IMPLEMENTATION-CONSUMER", "http-contract")["status"] == "BLOCKED"
+    result = evaluate(graph, blocked_architecture)
+    assert requirement(result, "IMPLEMENTATION-CONSUMER", "architecture-rules")["status"] == "BLOCKED"
+    assert requirement(result, "IMPLEMENTATION-CONSUMER", "interface")["status"] == "BLOCKED"
     assert requirement(result, "IMPLEMENTATION-CONSUMER", "persistence")["status"] == "BLOCKED"
 
-    blocked_deep_upstream = copy.deepcopy(projection)
-    blocked_deep_upstream["questions"].append({
-        "id": "Q-RC-CURATION-REQUIREMENT",
-        "authority": "RESOURCE-CATALOGUE-REQUIREMENTS",
-        "text": "Resolve a Resource Catalogue curation requirement uncertainty.",
+    blocked_domain_use_case = copy.deepcopy(projection)
+    blocked_domain_use_case["questions"].append({
+        "id": "Q-DOMAIN-USE-CASE",
+        "authority": "DOMAIN-USE-CASE-DESIGN",
+        "text": "Resolve a domain use-case uncertainty.",
         "blocks": ["RC-CURATION"],
     })
-    result = evaluate(graph, blocked_deep_upstream)
-    assert requirement(result, "RESOURCE-CATALOGUE-DOMAIN-INPUT", "behavior")["status"] == "BLOCKED"
-    resource = requirement(result, "IMPLEMENTATION-CONSUMER", "resource")
-    assert resource["status"] == "BLOCKED"
-    assert resource["blocked_by"] == ["Q-RC-CURATION-REQUIREMENT"]
-    assert requirement(result, "IMPLEMENTATION-CONSUMER", "flow")["status"] == "BLOCKED"
+    result = evaluate(graph, blocked_domain_use_case)
+    tactical = requirement(result, "TACTICAL-DOMAIN-DESIGN-INPUT", "use-case-model")
+    assert tactical["status"] == "BLOCKED"
+    impl_tactical = requirement(result, "IMPLEMENTATION-CONSUMER", "tactical-domain")
+    assert impl_tactical["status"] == "BLOCKED"
+    assert impl_tactical["blocked_by"] == ["Q-DOMAIN-USE-CASE"]
+    assert requirement(result, "IMPLEMENTATION-CONSUMER", "journey")["status"] == "BLOCKED"
 
     wrong_expected_owner = copy.deepcopy(projection)
     contract = next(item for item in wrong_expected_owner["contracts"] if item["id"] == "IMPLEMENTATION-CONSUMER")
-    req = next(item for item in contract["requires"] if item["id"] == "resource")
-    req["authority"] = "ACCESS-POLICY"
-    expect_error(lambda: evaluate(graph, wrong_expected_owner), "expected ACCESS-POLICY")
+    req = next(item for item in contract["requires"] if item["id"] == "interface")
+    req["authority"] = "DATA-DESIGN"
+    expect_error(lambda: evaluate(graph, wrong_expected_owner), "expected DATA-DESIGN")
 
-    print("Harness documentation vertical acceptance PASS")
+    print("Harness engineering-knowledge vertical acceptance PASS")
     return 0
 
 

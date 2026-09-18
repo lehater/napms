@@ -348,8 +348,8 @@ def main() -> int:
             providers = ",".join(item["providers"]) or "-"
             print(f"  {item['id']}: {item['status']} [{providers}]")
     if not result["satisfied"]:
-        raise SystemExit("Harness documentation vertical has unresolved DESIGN_GAP/BLOCKED requirements")
-    print("Harness documentation vertical PASS")
+        raise SystemExit("Harness engineering-knowledge vertical has unresolved DESIGN_GAP/BLOCKED requirements")
+    print("Harness engineering-knowledge vertical PASS")
     return 0
 
 

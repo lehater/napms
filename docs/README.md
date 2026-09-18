@@ -36,9 +36,18 @@ Do not reconstruct missing product/domain/architecture truth from product code, 
 - `canonical-graph.yaml` — routing/dependency metadata only; it does not duplicate semantic truth.
 - `harness-core.yaml` — NAPMS-owned ownership/capability/consumer-contract projection over the canonical graph.
 
-## Documentation vertical
+## Engineering-knowledge vertical
 
-The first-MVP Harness pilot uses `harness-core.yaml` to make responsibility boundaries explicit without turning them into workflow state.
+The Harness pilot uses `harness-core.yaml` to make engineering-decision boundaries explicit without turning them into workflow state.
+
+The model deliberately separates:
+
+- **engineering Authority** — a kind of design knowledge/decision ownership;
+- **canonical artifact** — where that knowledge is recorded;
+- **projection artifact** — a generated view of canonical knowledge;
+- **subject matter** — the contexts, aggregates, modules and interfaces described by those artifacts.
+
+For example, Strategic Domain Design owns the strategic DDD artifacts. `CONTEXT-MAP` / `docs-generated/architecture/context-map.puml` is a projection artifact. Resource Catalogue, Access Policy and the other Bounded Contexts shown on it are subject matter, not separate Harness Authorities.
 
 It defines:
 
@@ -63,7 +72,7 @@ python tools/test_harness_vertical.py
 
 or `make design-check`.
 
-A downstream gap is not repaired by editing another Authority's artifact. It becomes a Question for the semantic owner. An unresolved Question blocks affected downstream contracts through canonical dependency closure.
+A downstream gap is not repaired by editing another engineering Authority's artifact. It becomes a Question for the Authority that owns that kind of project decision. An unresolved Question blocks affected downstream contracts through canonical dependency closure.
 
 The repository has no runtime dependency on the separate `lehater/harness` project. This is an NAPMS-owned local application of the same ideas.
 
