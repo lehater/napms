@@ -121,13 +121,13 @@ consumers:
 bindings:
   - {artifact: FIRST-MVP-REQUIREMENTS, authority: PRODUCT-REQUIREMENTS, provides: [requirements.first-mvp.goal-scope, requirements.first-mvp.behavior, requirements.first-mvp.acceptance]}
   - {artifact: RC-DISCOVERY, authority: RESOURCE-CATALOGUE-DISCOVERY, provides: [discovery.resource-catalogue.problem, discovery.resource-catalogue.outcome]}
-  - {artifact: STRATEGIC-CAPABILITIES, authority: DOMAIN-TOPOLOGY, provides: [domain.capability-map]}
+  - {artifact: STRATEGIC-CAPABILITIES, authority: DOMAIN-TOPOLOGY, provides: []}
   - {artifact: STRATEGIC-CONTEXTS, authority: DOMAIN-TOPOLOGY, provides: [domain.bounded-contexts]}
   - {artifact: STRATEGIC-RELATIONSHIPS, authority: DOMAIN-TOPOLOGY, provides: [domain.context-relationships]}
   - {artifact: RC-CURATION, authority: RESOURCE-CATALOGUE-REQUIREMENTS, provides: [requirements.resource-catalogue-curation.behavior, requirements.resource-catalogue-curation.authorization, requirements.resource-catalogue-curation.integrity]}
-  - {artifact: RC-LANGUAGE, authority: RESOURCE-CATALOGUE, provides: [domain.resource-catalogue.language]}
-  - {artifact: RC-DECISIONS, authority: RESOURCE-CATALOGUE, provides: [domain.resource-catalogue.decisions]}
-  - {artifact: RC-PROCESS, authority: RESOURCE-CATALOGUE, provides: [domain.resource-catalogue.process]}
+  - {artifact: RC-LANGUAGE, authority: RESOURCE-CATALOGUE, provides: []}
+  - {artifact: RC-DECISIONS, authority: RESOURCE-CATALOGUE, provides: []}
+  - {artifact: RC-PROCESS, authority: RESOURCE-CATALOGUE, provides: []}
   - {artifact: RC-DOMAIN, authority: RESOURCE-CATALOGUE, provides: [domain.resource-catalogue.semantics]}
   - {artifact: AM-LANGUAGE, authority: AUTHORITY-MANAGEMENT, provides: [domain.authority-management.semantics]}
   - {artifact: ACC-DOMAIN, authority: APPLICATION-COMMUNICATION-CATALOGUE, provides: [domain.application-communication.semantics]}
@@ -140,7 +140,7 @@ bindings:
   - {artifact: MODULE-CONTRACTS, authority: APPLICATION-ARCHITECTURE, provides: [architecture.module-contracts]}
   - {artifact: SECURITY-ARCHITECTURE, authority: SECURITY-ARCHITECTURE, provides: [architecture.security-boundary, architecture.authentication-baseline]}
   - {artifact: TECH-REPRESENTATION, authority: SHARED-TECHNICAL-CONVENTIONS, provides: [architecture.shared-technical-conventions]}
-  - {artifact: HTTP-REQUIREMENTS, authority: HTTP-CONTRACT, provides: [architecture.http-requirements, architecture.http-transport-decisions]}
+  - {artifact: HTTP-REQUIREMENTS, authority: HTTP-CONTRACT, provides: [architecture.http-transport-decisions]}
   - {artifact: OPENAPI, authority: HTTP-CONTRACT, provides: [architecture.http-contract]}
   - {artifact: PERSISTENCE, authority: PERSISTENCE-DESIGN, provides: [architecture.persistence]}
   - {artifact: QUALITY-REQUIREMENTS, authority: QUALITY-CONSTRAINTS, provides: [architecture.quality-constraints]}
@@ -150,6 +150,8 @@ bindings:
   - {artifact: MVP-TEST-INTENT, authority: VERIFICATION-DESIGN, provides: [verification.strategy, verification.acceptance-scenarios]}
 
 questions: []
+
+terminal_capabilities: []
 
 contracts:
   - id: AUTHORITY-MANAGEMENT-INPUT
@@ -306,7 +308,10 @@ contracts:
       - {id: flow, capability: application.policy-export.flow, authority: POLICY-EXPORT-COMPOSITION}
       - {id: runtime, capability: architecture.runtime-structure, authority: RUNTIME-TOPOLOGY}
       - {id: module-contracts, capability: architecture.module-contracts, authority: APPLICATION-ARCHITECTURE}
+      - {id: module-interaction, capability: architecture.module-interaction, authority: APPLICATION-ARCHITECTURE}
+      - {id: integration-boundary, capability: architecture.integration-boundary, authority: APPLICATION-ARCHITECTURE}
       - {id: security-boundary, capability: architecture.security-boundary, authority: SECURITY-ARCHITECTURE}
+      - {id: authentication-baseline, capability: architecture.authentication-baseline, authority: SECURITY-ARCHITECTURE}
       - {id: conventions, capability: architecture.shared-technical-conventions, authority: SHARED-TECHNICAL-CONVENTIONS}
       - {id: http-contract, capability: architecture.http-contract, authority: HTTP-CONTRACT}
       - {id: persistence, capability: architecture.persistence, authority: PERSISTENCE-DESIGN}
@@ -356,7 +361,10 @@ contracts:
       - {id: deployment-topology, capability: architecture.deployment-topology, authority: RUNTIME-TOPOLOGY}
       - {id: application-boundary, capability: architecture.application-boundary, authority: APPLICATION-ARCHITECTURE}
       - {id: module-contracts, capability: architecture.module-contracts, authority: APPLICATION-ARCHITECTURE}
+      - {id: module-interaction, capability: architecture.module-interaction, authority: APPLICATION-ARCHITECTURE}
+      - {id: integration-boundary, capability: architecture.integration-boundary, authority: APPLICATION-ARCHITECTURE}
       - {id: security-boundary, capability: architecture.security-boundary, authority: SECURITY-ARCHITECTURE}
+      - {id: authentication-baseline, capability: architecture.authentication-baseline, authority: SECURITY-ARCHITECTURE}
       - {id: conventions, capability: architecture.shared-technical-conventions, authority: SHARED-TECHNICAL-CONVENTIONS}
       - {id: http-contract, capability: architecture.http-contract, authority: HTTP-CONTRACT}
       - {id: persistence, capability: architecture.persistence, authority: PERSISTENCE-DESIGN}

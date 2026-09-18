@@ -45,7 +45,10 @@ The model is about decision ownership and downstream knowledge needs, not workfl
 - a missing capability is a design gap and must be routed to the owning Authority;
 - `NOT_APPLICABLE` requires explicit canonical evidence;
 - unresolved Questions block directly named artifacts and their downstream dependency closure;
-- every node in the current canonical graph has exactly one Authority binding.
+- every node in the current canonical graph has exactly one Authority binding;
+- every capability listed in `provides` is a public Authority output and must be consumed by another Authority/consumer or declared explicitly terminal with a reason.
+
+Do not publish internal intermediate facts merely because a canonical artifact exists. Artifact ownership and public capability exposure are separate decisions.
 
 ### Authority boundary convergence
 

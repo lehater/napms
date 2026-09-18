@@ -149,6 +149,31 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
         if len(owners) != 1:
             raise VerticalError(f"capability {capability} spans authorities {sorted(owners)}")
 
+    terminal_capability_ids: set[str] = set()
+    for item in projection.get("terminal_capabilities", []) or []:
+        if not isinstance(item, dict):
+            raise VerticalError("terminal capability entries must be mappings")
+        capability = item.get("capability")
+        authority = item.get("authority")
+        reason = item.get("reason")
+        if not isinstance(capability, str) or not capability:
+            raise VerticalError("terminal capability requires capability")
+        if capability in terminal_capability_ids:
+            raise VerticalError(f"terminal capability {capability} is duplicated")
+        terminal_capability_ids.add(capability)
+        if authority not in authority_ids:
+            raise VerticalError(f"terminal capability {capability}: unknown authority {authority}")
+        if not isinstance(reason, str) or not reason.strip():
+            raise VerticalError(f"terminal capability {capability}: reason is required")
+        providers = provider_map.get(capability, [])
+        if not providers:
+            raise VerticalError(f"terminal capability {capability}: no canonical provider")
+        owners = {artifact_authority[provider] for provider in providers}
+        if owners != {authority}:
+            raise VerticalError(
+                f"terminal capability {capability}: owned by {sorted(owners)}, expected {authority}"
+            )
+
     unbound_artifacts = sorted(set(nodes) - set(artifact_authority))
     if unbound_artifacts:
         raise VerticalError(f"Canonical artifacts without Authority binding: {unbound_artifacts}")
@@ -177,6 +202,7 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
     result = {"satisfied": True, "contracts": []}
     contract_ids: set[str] = set()
     contract_provider_authorities: dict[str, set[str]] = {}
+    consumed_public_capabilities: set[str] = set()
 
     for contract in projection.get("contracts", []) or []:
         contract_id = contract.get("id")
@@ -201,6 +227,8 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
             contract_provider_authorities.setdefault(consumer, set()).add(expected_authority)
             if not isinstance(capability, str) or not capability:
                 raise VerticalError(f"contract {contract_id}/{requirement_id}: capability is required")
+            if consumer != expected_authority:
+                consumed_public_capabilities.add(capability)
 
             providers = sorted(provider_map.get(capability, []))
             status = None
@@ -220,6 +248,8 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
             else:
                 na = requirement.get("not_applicable")
                 evidence_capability = na.get("evidence_capability") if isinstance(na, dict) else None
+                if evidence_capability and consumer != expected_authority:
+                    consumed_public_capabilities.add(evidence_capability)
                 evidence_providers = sorted(provider_map.get(evidence_capability, [])) if evidence_capability else []
                 if evidence_providers:
                     owners = {artifact_authority[item] for item in evidence_providers}
@@ -283,6 +313,22 @@ def evaluate(graph: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any
                 f"Authority {authority} input contract misses upstream Authorities {missing_upstream}"
             )
 
+    redundant_terminal = sorted(terminal_capability_ids & consumed_public_capabilities)
+    if redundant_terminal:
+        raise VerticalError(
+            f"terminal capabilities are already consumed downstream: {redundant_terminal}"
+        )
+
+    unconsumed_public = sorted(
+        set(provider_map) - consumed_public_capabilities - terminal_capability_ids
+    )
+    if unconsumed_public:
+        raise VerticalError(f"Unconsumed public capabilities: {unconsumed_public}")
+
+    result["public_capabilities"] = {
+        "consumed": sorted(consumed_public_capabilities & set(provider_map)),
+        "terminal": sorted(terminal_capability_ids),
+    }
     return result
 
 

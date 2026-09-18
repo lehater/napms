@@ -48,6 +48,8 @@ def main() -> int:
         "DOMAIN-TOPOLOGY",
     }
     assert requirement(baseline, "IMPLEMENTATION-PLAN-INPUT", "asynchronous-contract")["status"] == "NOT_APPLICABLE"
+    assert baseline["public_capabilities"]["terminal"] == []
+    assert baseline["public_capabilities"]["consumed"]
 
     bad_boundary = copy.deepcopy(projection)
     del bad_boundary["authorities"][0]["boundary"]["public_contract"]
@@ -70,6 +72,29 @@ def main() -> int:
         "reason": "Invalid regression root.",
     })
     expect_error(lambda: evaluate(graph, invalid_root), "root authority ACCESS-POLICY has external upstream Authorities")
+
+    dead_public_output = copy.deepcopy(projection)
+    system_rules = next(item for item in dead_public_output["bindings"] if item["artifact"] == "SYSTEM-RULES")
+    system_rules["provides"].append("architecture.unused-public-output")
+    expect_error(lambda: evaluate(graph, dead_public_output), "Unconsumed public capabilities")
+
+    explicit_terminal = copy.deepcopy(dead_public_output)
+    explicit_terminal["terminal_capabilities"].append({
+        "capability": "architecture.unused-public-output",
+        "authority": "APPLICATION-ARCHITECTURE",
+        "reason": "Regression fixture: explicit terminal result has no downstream consumer in this graph.",
+    })
+    terminal_result = evaluate(graph, explicit_terminal)
+    assert terminal_result["satisfied"]
+    assert terminal_result["public_capabilities"]["terminal"] == ["architecture.unused-public-output"]
+
+    redundant_terminal = copy.deepcopy(projection)
+    redundant_terminal["terminal_capabilities"].append({
+        "capability": "architecture.http-contract",
+        "authority": "HTTP-CONTRACT",
+        "reason": "Invalid regression fixture because the capability is already consumed.",
+    })
+    expect_error(lambda: evaluate(graph, redundant_terminal), "terminal capabilities are already consumed downstream")
 
     missing_http = copy.deepcopy(projection)
     openapi = next(item for item in missing_http["bindings"] if item["artifact"] == "OPENAPI")
