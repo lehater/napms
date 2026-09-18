@@ -100,7 +100,7 @@ phases:
 
   - id: CM6
     name: Simplify Harness around canonical graph
-    status: ACTIVE
+    status: COMPLETE
     depends_on: [CM5]
     objective: Remove migration-era ceremony from normal design work and adapt validation to the proven target model.
     exit_criteria:
@@ -112,7 +112,7 @@ phases:
 
   - id: CM7
     name: Migration closeout
-    status: PENDING
+    status: ACTIVE
     depends_on: [CM6]
     objective: Close the temporary migration control plane after all authority has moved.
     exit_criteria:

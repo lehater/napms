@@ -1,7 +1,10 @@
-.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore design-sync design-check harness-check docs-v2-harness-check skill-routing-eval knowledge-check architecture architecture-check canonical-model-sync canonical-model-check check
+.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore design-sync design-check architecture architecture-check check
 
 STRUCTURIZR_IMAGE ?= structurizr/structurizr:2026.06.28-noble
 STRUCTURIZR_DIR := $(CURDIR)/docs/architecture/structurizr
+GENERATED_ARCH_DIR := $(CURDIR)/docs-generated/architecture
+PLANTUML_SERVER_IMAGE ?= plantuml/plantuml-server:jetty
+PLANTUML_CONTAINER ?= napms-plantuml
 
 test:
 	cd backend && python -m pytest -q -m "not postgres"
@@ -42,13 +45,6 @@ dev-restore:
 	@test "$(CONFIRM_RESET)" = "yes" || (echo "Restore replaces the local PostgreSQL volume; rerun with CONFIRM_RESET=yes" >&2; exit 2)
 	python tools/local_postgres_backup.py restore-clean "$(BACKUP)" --confirm-reset
 
-architecture:
-	docker run --rm -it -p 8080:8080 -v "$(STRUCTURIZR_DIR):/usr/local/structurizr" $(STRUCTURIZR_IMAGE) local
-
-architecture-check:
-	docker run --rm -v "$(STRUCTURIZR_DIR):/usr/local/structurizr:ro" $(STRUCTURIZR_IMAGE) validate -workspace /usr/local/structurizr/workspace.dsl
-
-
 design-sync:
 	python tools/check_canonical_graph.py
 	python tools/generate_strategic_views.py
@@ -62,80 +58,32 @@ design-sync:
 
 design-check:
 	python tools/check_canonical_graph.py
-	python tools/check_cm5_openapi_design.py
-	python tools/check_cm5_persistence_design.py
-	python tools/check_cm6_harness_simplification.py
-	python tools/generate_strategic_views.py --check
-	python tools/generate_resource_catalogue_views.py --check
-	python tools/generate_acc_view.py --check
-	python tools/generate_ad_view.py --check
-	python tools/generate_bc_view.py --check
-	python tools/generate_ap_view.py --check
-	python tools/generate_mvp_journey_view.py --check
-	python tools/generate_persistence_erd.py --check
-
-canonical-model-sync:
-	python tools/check_cm1_strategic_equivalence.py
-	python tools/check_cm2_resource_catalogue_equivalence.py
-	python tools/check_cm3_authority_management_equivalence.py
-	python tools/check_cm3_acc_equivalence.py
-	python tools/check_cm3_ad_equivalence.py
-	python tools/check_cm3_bc_equivalence.py
-	python tools/check_cm3_ap_equivalence.py
-	python tools/check_cm4_mvp_journey_equivalence.py
-	python tools/check_cm5_architecture_split.py
-	python tools/check_cm5_openapi_design.py
-	python tools/check_cm5_persistence_design.py
-	python tools/check_cm6_s4_equivalence.py
-	python tools/generate_strategic_views.py
-	python tools/generate_resource_catalogue_views.py
-	python tools/generate_acc_view.py
-	python tools/generate_ad_view.py
-	python tools/generate_bc_view.py
-	python tools/generate_ap_view.py
-	python tools/generate_mvp_journey_view.py
-	python tools/generate_persistence_erd.py
-
-canonical-model-check:
-	python tools/check_cm1_strategic_equivalence.py
-	python tools/check_cm2_resource_catalogue_equivalence.py
-	python tools/check_cm3_authority_management_equivalence.py
-	python tools/check_cm3_acc_equivalence.py
-	python tools/check_cm3_ad_equivalence.py
-	python tools/check_cm3_bc_equivalence.py
-	python tools/check_cm3_ap_equivalence.py
-	python tools/check_cm4_mvp_journey_equivalence.py
-	python tools/check_cm5_architecture_split.py
-	python tools/check_cm5_openapi_design.py
-	python tools/check_cm5_persistence_design.py
-	python tools/check_cm6_s4_equivalence.py
-	python tools/generate_strategic_views.py --check
-	python tools/generate_resource_catalogue_views.py --check
-	python tools/generate_acc_view.py --check
-	python tools/generate_ad_view.py --check
-	python tools/generate_bc_view.py --check
-	python tools/generate_ap_view.py --check
-	python tools/generate_mvp_journey_view.py --check
-	python tools/generate_persistence_erd.py --check
-
-harness-check:
-	python tools/validate_harness.py
-	python tools/validate_plans.py
-	python tools/validate_plan_capsule_sync.py
+	python tools/check_openapi_contract.py
+	python tools/check_persistence_model.py
+	python tools/check_design_control.py
 	python tools/validate_skill_routing.py
-	python tools/validate_lifecycle_transitions.py
+	python tools/generate_strategic_views.py --check
+	python tools/generate_resource_catalogue_views.py --check
+	python tools/generate_acc_view.py --check
+	python tools/generate_ad_view.py --check
+	python tools/generate_bc_view.py --check
+	python tools/generate_ap_view.py --check
+	python tools/generate_mvp_journey_view.py --check
+	python tools/generate_persistence_erd.py --check
 
-docs-v2-harness-check:
-	python tools/test_docs_v2_harness.py
-	python tools/test_docs_v2_harness_resume_refs.py
-	python tools/test_docs_v2_harness_frontmatter.py
-	python tools/docs_v2_harness.py --root . validate
+architecture: design-sync
+	@docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true
+	@docker run -d --rm --name $(PLANTUML_CONTAINER) -p 127.0.0.1:8081:8080 $(PLANTUML_SERVER_IMAGE) >/dev/null
+	@trap 'docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true' EXIT INT TERM; \
+		docker run --rm -it -p 127.0.0.1:8080:8080 \
+		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" \
+		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" \
+		$(STRUCTURIZR_IMAGE) local
 
-skill-routing-eval:
-	@test -n "$(ROUTING_RESULTS)" || (echo "Usage: make skill-routing-eval ROUTING_RESULTS=path/to/results.json [ROUTING_BASELINE=path/to/baseline.json]" >&2; exit 2)
-	python tools/evaluate_skill_routing_results.py "$(ROUTING_RESULTS)" $(if $(ROUTING_BASELINE),--baseline "$(ROUTING_BASELINE)")
+architecture-check: design-sync
+	docker run --rm \
+		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" \
+		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" \
+		$(STRUCTURIZR_IMAGE) validate -workspace /usr/local/structurizr/workspace.dsl
 
-knowledge-check:
-	python tools/validate_domain_model.py
-
-check: test design-check knowledge-check
+check: test design-check

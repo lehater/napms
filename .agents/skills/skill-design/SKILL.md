@@ -1,35 +1,20 @@
 ---
 name: skill-design
-description: "Use when admitting, reviewing, refactoring, or validating one NAPMS repository Agent Skill. Decide whether the workflow deserves a Skill, make its trigger/responsibility distinct, keep project truth out, ensure progressive disclosure and routing-eval coverage, and prefer extending an existing Skill over overlap."
+description: "Use when admitting, reviewing, refactoring or validating one NAPMS repository Agent Skill. Decide whether the workflow deserves a Skill, keep its trigger distinct, keep current project truth out, and prefer extending an existing Skill over overlap."
 ---
 
 # Skill Design
 
-## Admission test
+A workflow deserves a Skill only when it is repeatable, stable, distinguishable by prompt intent and judgement-heavy enough that a validator alone is insufficient.
 
-A workflow becomes a Skill only when it is:
-- repeatable;
-- stable enough to centralize;
-- distinguishable by prompt intent;
-- judgement-heavy enough that a validator alone is insufficient;
-- valuable across multiple future tasks.
-
-Classify a candidate as:
-- **ADMIT** — new stable responsibility;
-- **EXTEND** — existing Skill owns it;
-- **PROTOCOL** — shared mechanics, deliberately non-routable;
-- **DEFER** — plausible but insufficiently exercised;
-- **REJECT** — trivial/one-off/overlapping.
-
-## Acceptance
+Classify candidates as ADMIT, EXTEND, DEFER or REJECT.
 
 Check:
-- directory and frontmatter name match;
-- concise trigger description includes neighbor boundaries;
-- body owns workflow, not current NAPMS facts;
-- shared mechanics link to `docs/process/`;
-- routing corpus includes positive and confusable negative cases;
-- `make harness-check` passes deterministic structure/coverage checks;
-- when a Skill trigger/boundary changes, evaluate actual model routing observations against `skill-routing-cases.json` when a model runner is available; do not treat corpus validation alone as routing evidence.
+- directory/frontmatter name match;
+- trigger description clearly separates neighboring Skills;
+- body owns reusable judgement, not current NAPMS facts;
+- current owners are discovered through root `AGENTS.md` / `docs/canonical-graph.yaml`, not hard-coded into reusable workflow text;
+- no retired gate/capsule/process instructions remain;
+- routing corpus has positive and confusable-negative cases.
 
-Use `tools/evaluate_skill_routing_results.py` to score captured model-routing observations and compare context/tooling metrics when assessing Harness changes.
+Run `python tools/validate_skill_routing.py` after routing changes. Use captured model-routing observations when actual routing behavior is under evaluation; corpus structure alone is not routing evidence.

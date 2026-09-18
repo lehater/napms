@@ -296,8 +296,8 @@ units:
 
   - id: HARNESS-RUNTIME
     phase: CM6
-    status: EQUIVALENCE_REVIEW
-    authority: legacy
+    status: COMPLETE
+    authority: target
     source_paths:
       - docs/spec/
       - docs/meta/roadmap.yaml
@@ -310,12 +310,16 @@ units:
       - docs/README.md
       - docs/meta/current-workstream.yaml
       - AGENTS.md
+      - .agents/skills/
       - tools/check_canonical_graph.py
-      - tools/check_cm6_harness_simplification.py
+      - tools/check_openapi_contract.py
+      - tools/check_persistence_model.py
+      - tools/check_design_control.py
       - Makefile
       - .github/workflows/design.yml
-    note: Historical H0-H20/CM controls remain provenance. Normal design now uses the canonical graph, specialized validators and deterministic generators directly.
+    note: Historical H0-H20/CM controls are provenance only. Normal design uses canonical graph owners specialized validators deterministic generators and the design workflow.
     cutover_check:
-      state: PENDING_CI
+      state: PASS
       review: docs/meta/canonical-model-migration/cm6-harness-simplification-review.yaml
       command: make design-check
+      evidence: {commit: dbc38ae4d622ebe3a3542cddf32af1fd7be7fe4c, workflow_run: 35292783890, workflow_job: 105439015431}

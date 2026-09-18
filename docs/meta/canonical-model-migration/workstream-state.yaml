@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: canonical-model-migration-workstream-state
 id: NAPMS-CANONICAL-MODEL-MIGRATION-STATE
 branch: meta/canonical-model-migration
@@ -10,71 +10,66 @@ ledger: docs/meta/canonical-model-migration/migration-ledger.yaml
 
 program:
   status: ACTIVE
-  current_phase: CM6
+  current_phase: CM7
   current_phase_state: IN_PROGRESS
-  completed_phases: [CM0, CM1, CM2, CM3, CM4, CM5]
+  completed_phases: [CM0, CM1, CM2, CM3, CM4, CM5, CM6]
 
 current_work:
-  task_id: CM6-01
-  name: Simplify Harness around the canonical graph
+  task_id: CM7-01
+  name: Close canonical-model migration
   state: IN_PROGRESS
-  objective: Make the new semantic/architecture/contract paths the normal design navigation and reduce validation/orchestration to small deterministic checks without H-phase ceremony.
-  source_of_task: docs/meta/canonical-model-migration/roadmap.yaml#CM6
-  authority_unit: HARNESS-RUNTIME
+  objective: Retire migration-only runtime/CI/navigation after all semantic and Harness authority has moved to stable canonical owners.
   predecessor_result:
-    phase: CM5
+    phase: CM6
     result: PASS
-    evidence: {commit: 3df49d5e6c3263df65eced71707b925cca5075c8, workflow_run: 35291802262, workflow_job: 105436035483}
+    evidence:
+      design_commit: dbc38ae4d622ebe3a3542cddf32af1fd7be7fe4c
+      design_workflow_run: 35292783890
+      design_workflow_job: 105439015431
+      migration_commit: 778542123fe59279b8e577dc82d630f1c429fe89
+      migration_workflow_run: 35292755419
+      migration_workflow_job: 105438928676
   completed_actions:
-    - Completed CM5 OpenAPI/persistence design and clean target validation.
-    - Cut over stable S4 implementation-readiness and test-intent owners after clean CI.
-    - Built docs/canonical-graph.yaml as routing/dependency metadata over current semantic owners.
-    - Replaced the normal Harness control contract with a small design-control contract.
-    - Added make design-check and make design-sync plus a dedicated current-design CI workflow.
-    - Rewrote AGENTS/docs entrypoints so normal design navigation does not pass through migration/revalidated.
-  next_action: Run both design and migration checks on a clean checkout. If PASS, cut over HARNESS-RUNTIME and complete CM6, then perform CM7 migration closeout.
+    - Cut over every semantic design unit to target owners.
+    - Cut over implementation-readiness/test-intent to stable docs/plans owners.
+    - Cut over normal design navigation and validation to docs/canonical-graph.yaml plus make design-check/design-sync.
+    - Replaced gate/capsule/process-oriented Skill instructions with owner/affected-graph routing.
+    - Prepared retirement of old Harness docs-v2 knowledge and migration workflows/Make targets.
+    - Connected all generated domain/process/journey/ERD projections to the Structurizr review workspace.
+  next_action: Run current design and architecture CI on the closeout candidate. If PASS, mark CM7/program complete and clear the active-workstream pointer.
   stop_conditions:
-    - simplification would remove still-current semantic authority
-    - normal design would again depend on migration/revalidated paths
-    - a new universal DSL or lifecycle layer would be introduced
+    - any ledger unit is not target/subsumed-target
+    - normal design still depends on retired migration/Harness workflow
+    - current CI cannot validate the stable canonical graph
 
 authority:
-  namespace: docs/
-  per_unit_resolution: docs/meta/canonical-model-migration/migration-ledger.yaml
-  rule: During migration the ledger determines whether legacy accepted anchors or target paths are current for each listed unit.
-  generated_paths: noncanonical-disposable
+  canonical_routing: docs/canonical-graph.yaml
+  canonical_root: docs/
+  generated_root: docs-generated/
+  migration_ledger_role: historical cutover audit after CM7
+  historical_evidence:
+    - docs/migration/revalidated/
+    - docs-legacy/
 
 carry_forward:
-  - H17 first-MVP S1-S2 journey and tactical slice remain accepted truth until their ledger unit cuts over.
-  - H18 S3 architecture remains accepted truth; Structurizr workspace is already canonical structural/C4 architecture.
-  - H19 S4 implementation-readiness truth remains accepted until corresponding target owners exist.
-  - Product code/tests are implementation/evidence and cannot be used to reconstruct design truth.
-  - Product implementation readiness does not authorize implementation.
-  - Normal work must stay lightweight; migration bookkeeping exists only to make authority and resume state unambiguous.
-  - Context Mapper pilot is evidence only and does not make CML a canonical dependency.
-  - Generated-projections pilot is evidence only until equivalent projection plumbing is adopted in this workstream.
-
-experiment_evidence:
-  - {ref: architecture/model-layout-pilot@13a39b7b80b7beaec65bef98ea415ae908fc3bcf, use: Resource Catalogue target-layout and Context Mapper comparison evidence}
-  - {ref: architecture/generated-projections@876c08fb72b08f18a014227f79e4041c8b623d73, use: deterministic generated-projection and Structurizr review-surface evidence}
+  - Current semantic owners are under docs/model docs/architecture docs/contracts and docs/plans as routed by docs/canonical-graph.yaml.
+  - Structurizr DSL owns C4 structural/deployment truth; generated image views are disposable projections.
+  - Product code/tests are implementation/evidence and cannot reconstruct missing design truth.
+  - Implementation readiness does not authorize implementation.
+  - Product implementation product-test changes and merge require separate explicit authorization.
+  - Missing human-owned truth remains explicit rather than invented.
 
 restrictions:
   product_implementation_authorization: none
   product_test_change_authorization: none
   product_code_tests_as_design_truth: forbidden
-  semantic_redesign_authorization: none-by-default
   merge_authorization: false
 
 blockers: []
 
 resume_protocol:
-  - Read this file first for any continuation of the canonical-model migration.
-  - Then read roadmap.yaml and migration-ledger.yaml; read strategy.md when the migration method or authority rule is relevant.
-  - Treat the ledger authority field as the temporary source of truth for where each migrating slice currently lives.
-  - Load only the accepted source anchors listed for the current ledger unit plus directly required dependencies.
-  - Do not use product code/tests to fill design gaps.
-  - Do not use pilot branches as semantic authority; they are evidence of shape/tooling only.
-  - Do not invent a next CM phase; follow roadmap.yaml and update this file when meaningful work changes state.
-  - After every successful cutover, update migration-ledger.yaml and this state in the same change.
-  - If a semantic gap or contradiction appears, stop the affected cutover and record it instead of weakening accepted meaning.
+  - Read this file only when continuing the still-active CM7 closeout.
+  - For normal design work use AGENTS.md and docs/canonical-graph.yaml.
+  - Do not restore retired gate/capsule/H-phase mechanics into normal design.
+  - Do not use migration/revalidated or docs-legacy as current authority.
   - Do not merge without explicit authorization.

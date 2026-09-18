@@ -3,7 +3,7 @@ kind: canonical-model-migration-equivalence-review
 id: NAPMS-CM6-HARNESS-SIMPLIFICATION
 phase: CM6
 unit: HARNESS-RUNTIME
-status: PENDING_CI
+status: PASS
 reviewed_at: 2026-09-18
 check_command: make design-check
 criteria:
@@ -15,4 +15,8 @@ criteria:
   - AGENTS.md and docs/README.md point to canonical graph plus an active-workstream pointer
   - migration/revalidated and docs-legacy remain historical evidence and cannot override current owners
   - no universal custom semantic DSL is introduced
-result: awaiting_clean_ci
+result: PASS
+evidence:
+  commit: dbc38ae4d622ebe3a3542cddf32af1fd7be7fe4c
+  workflow_run: 35292783890
+  workflow_job: 105439015431

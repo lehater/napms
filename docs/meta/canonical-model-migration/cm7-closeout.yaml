@@ -1,0 +1,51 @@
+version: 1
+kind: canonical-model-migration-closeout
+id: NAPMS-CM7-CLOSEOUT
+status: PENDING_CI
+recorded_at: 2026-09-18
+
+authority_result:
+  current_routing: docs/canonical-graph.yaml
+  all_ledger_units_target_or_subsumed_target: true
+  migration_revalidated_role: frozen evidence only
+  docs_legacy_role: retired evidence only
+  generated_output_role: disposable projection only
+
+normal_runtime:
+  validate: make design-check
+  regenerate: make design-sync
+  architecture_viewer: make architecture
+  design_ci: .github/workflows/design.yml
+  architecture_ci: .github/workflows/architecture.yml
+
+retired_runtime:
+  workflows:
+    - .github/workflows/harness.yml
+    - .github/workflows/docs-v2-harness.yml
+    - .github/workflows/knowledge.yml
+    - .github/workflows/canonical-model-migration.yml
+  make_targets:
+    - harness-check
+    - docs-v2-harness-check
+    - knowledge-check
+    - canonical-model-check
+    - canonical-model-sync
+  ordinary_workflow_mechanics:
+    - H-phase/gate transactions
+    - task capsules
+    - implementation leases
+    - per-artifact fingerprints/receipts
+    - universal custom design DSL
+
+skill_result:
+  rule: Skills locate current truth through root AGENTS.md and docs/canonical-graph.yaml, then update the smallest owner and graph-affected downstream artifacts.
+  retired_references: [docs/process lifecycle routing, G0-G4 workflow gates, REOPEN stage commands, active capsule requirements]
+
+verification:
+  design_check: PENDING_CI
+  architecture_check: PENDING_CI
+
+independent_authorization:
+  product_implementation: not granted
+  product_tests: not granted
+  merge: not granted

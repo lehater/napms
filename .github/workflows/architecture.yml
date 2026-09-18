@@ -1,15 +1,25 @@
-name: architecture gate
+name: architecture
 
 on:
   pull_request:
     paths:
-      - "docs/architecture/structurizr/**"
+      - "docs/canonical-graph.yaml"
+      - "docs/model/**"
+      - "docs/architecture/**"
+      - "tools/generate_*_view.py"
+      - "tools/generate_*_views.py"
+      - "tools/generate_persistence_erd.py"
       - "Makefile"
       - ".github/workflows/architecture.yml"
   push:
     branches: [main]
     paths:
-      - "docs/architecture/structurizr/**"
+      - "docs/canonical-graph.yaml"
+      - "docs/model/**"
+      - "docs/architecture/**"
+      - "tools/generate_*_view.py"
+      - "tools/generate_*_views.py"
+      - "tools/generate_persistence_erd.py"
       - "Makefile"
       - ".github/workflows/architecture.yml"
 
@@ -22,5 +32,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate canonical Structurizr workspace
+      - name: Validate canonical Structurizr workspace and generated views
         run: make architecture-check
