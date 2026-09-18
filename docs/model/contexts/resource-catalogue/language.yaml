@@ -1,0 +1,28 @@
+version: 1
+kind: context-language
+id: NAPMS-RC-LANGUAGE
+bounded_context_ref: BC-RESOURCE-CATALOGUE
+depends_on:
+  - NAPMS-UC-RC-CURATION
+
+terms:
+  - term_id: TERM-RESOURCE
+    term: Resource
+    definition: An access-relevant catalogue identity independent of whether current realization, scope-affiliation or responsibility facts are present.
+  - term_id: TERM-ADDRESS-SPACE
+    term: AddressSpace
+    definition: The MVP Resource realization value; exactly one HostAddress or one Prefix when present. One Resource has at most one effective AddressSpace at one logical time.
+  - term_id: TERM-RESOURCE-REALIZATION
+    term: Resource technical realization
+    definition: A time-qualified Resource fact establishing one AddressSpace; replacement changes the effective HostAddress-or-Prefix without changing Resource identity and preserves history.
+  - term_id: TERM-RESOURCE-SCOPE-AFFILIATION
+    term: Resource Scope Affiliation
+    definition: A time-qualified Resource Catalogue fact associating a Resource with a Responsibility Scope reference; it does not grant curation authority.
+  - term_id: TERM-RESOURCE-RESPONSIBILITY
+    term: Resource Responsibility
+    definition: A Resource Catalogue fact recording operational person/team responsibility or contact roles; it is not mutation permission.
+
+external_term_refs:
+  - term: Effective Authority
+    owner_context_ref: BC-AUTHORITY-MANAGEMENT
+    note: Definition remains with Authority Management; Resource Catalogue only consumes the meaning.

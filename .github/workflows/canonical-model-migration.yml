@@ -6,18 +6,26 @@ on:
     paths:
       - "docs/meta/canonical-model-migration/**"
       - "docs/model/**"
-      - "docs/migration/revalidated/h12-rc-curation/s2/strategic/**"
+      - "docs/discovery/**"
+      - "docs/migration/revalidated/h12-rc-curation/s0/**"
+      - "docs/migration/revalidated/h12-rc-curation/s1/**"
+      - "docs/migration/revalidated/h12-rc-curation/s2/**"
       - "docs/migration/revalidated/h16-strategic/s2/strategic/**"
       - "tools/check_cm1_strategic_equivalence.py"
+      - "tools/check_cm2_resource_catalogue_equivalence.py"
       - "tools/generate_strategic_views.py"
+      - "tools/generate_resource_catalogue_views.py"
       - "Makefile"
       - ".github/workflows/canonical-model-migration.yml"
   pull_request:
     paths:
       - "docs/meta/canonical-model-migration/**"
       - "docs/model/**"
+      - "docs/discovery/**"
       - "tools/check_cm1_strategic_equivalence.py"
+      - "tools/check_cm2_resource_catalogue_equivalence.py"
       - "tools/generate_strategic_views.py"
+      - "tools/generate_resource_catalogue_views.py"
       - "Makefile"
       - ".github/workflows/canonical-model-migration.yml"
 
@@ -26,5 +34,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate strategic semantic equivalence and projections
+      - name: Validate canonical semantic equivalence and projections
         run: make canonical-model-check

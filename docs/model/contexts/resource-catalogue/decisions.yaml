@@ -1,0 +1,38 @@
+version: 1
+kind: domain-decision-set
+id: NAPMS-RC-DOMAIN-DECISIONS
+bounded_context_ref: BC-RESOURCE-CATALOGUE
+depends_on:
+  - NAPMS-UC-RC-CURATION
+
+decisions:
+  - decision_id: DEC-RC-MVP-AUTHORITY
+    decision: For the MVP, Resource Catalogue mutation authorization uses one catalogue-wide CurateResourceCatalogue action; resource-level authorization scopes are deferred.
+    decision_scope: Resource Catalogue mutation authority for H12/I27 MVP
+    chosen_option_or_resolution: Global catalogue-level mutation authority without per-resource scopes.
+    rationale: The stakeholder selected the smallest MVP authorization model. Resource Responsibility remains business data and does not grant mutation authority.
+    consequences:
+      - Every protected Resource Catalogue mutation checks CurateResourceCatalogue for the authenticated Actor using the fixed resource-catalogue scope.
+      - Resource-level or responsibility-derived authorization is not part of the MVP.
+      - Scoped authorization may be designed later from concrete customer requirements without changing Resource Responsibility into permission.
+    rejected_options:
+      - Per-resource explicit ACLs for MVP
+      - Responsibility Scope as the MVP authorization scope
+      - Independent fine-grained Authority Scopes for MVP
+    revisit_conditions:
+      - A confirmed customer requirement needs different mutation rights for different subsets of Resources.
+
+  - decision_id: DEC-RC-RESPONSIBILITY-ROLES
+    decision: Resource Responsibility roles are extensible and time-qualified; examples such as Owner, Operator and Access Approver are not a closed role set and do not grant Authority.
+    decision_scope: Resource Responsibility role semantics for the Resource Catalogue
+    chosen_option_or_resolution: Extensible responsibility roles with temporal assignments.
+    rationale: The stakeholder confirmed that organizations may use one, several or many responsibility roles and may transfer those responsibilities between people/teams/organizations over time.
+    consequences:
+      - A Resource may carry multiple responsibility assignments whose roles and responsible parties can differ.
+      - Responsibility assignments preserve time-qualified history when responsibility changes.
+      - Small organizations may concentrate responsibilities; larger organizations may separate them.
+      - Responsibility remains independent from mutation permission.
+    rejected_options:
+      - Closed Owner/Operator/Access Approver enum
+    revisit_conditions:
+      - A later requirement introduces governed role taxonomy constraints or mandatory role coverage.

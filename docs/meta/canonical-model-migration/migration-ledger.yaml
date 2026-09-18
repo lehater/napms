@@ -41,22 +41,39 @@ units:
 
   - id: RESOURCE-CATALOGUE
     phase: CM2
-    status: PENDING
+    status: EQUIVALENCE_REVIEW
     authority: legacy
     source_paths:
+      - docs/migration/revalidated/h12-rc-curation/s0/problem-statement.md
+      - docs/migration/revalidated/h12-rc-curation/s0/user-journey.md
+      - docs/migration/revalidated/h12-rc-curation/s1/resource-curation-behavior.md
+      - docs/migration/revalidated/h12-rc-curation/s1/resource-curation-authorization.md
+      - docs/migration/revalidated/h12-rc-curation/s1/resource-curation-integrity.md
+      - docs/migration/revalidated/h12-rc-curation/s2/strategic/capability-map.yaml
       - docs/migration/revalidated/h12-rc-curation/s2/strategic/domain-glossary.yaml
-      - docs/migration/revalidated/h12-rc-curation/s2/tactical/resource-catalogue-domain-model.yaml
+      - docs/migration/revalidated/h12-rc-curation/s2/process/mvp-authority-decision.yaml
+      - docs/migration/revalidated/h12-rc-curation/s2/process/responsibility-role-decision.yaml
       - docs/migration/revalidated/h12-rc-curation/s2/process/resource-curation-process.yaml
+      - docs/migration/revalidated/h12-rc-curation/s2/tactical/resource-catalogue-domain-model.yaml
     depends_on_target:
+      - docs/model/strategic/capabilities.yaml
       - docs/model/strategic/bounded-contexts.yaml#BC-RESOURCE-CATALOGUE
+      - docs/model/strategic/bounded-contexts.yaml#BC-AUTHORITY-MANAGEMENT
       - docs/model/strategic/context-relationships.yaml
     target_paths:
+      - docs/discovery/resource-catalogue.yaml
+      - docs/model/use-cases/resource-catalogue-curation.yaml
       - docs/model/contexts/resource-catalogue/language.yaml
-      - docs/model/contexts/resource-catalogue/domain-model.yaml
+      - docs/model/contexts/resource-catalogue/decisions.yaml
       - docs/model/contexts/resource-catalogue/process-model.yaml
-    ownership_note: Strategic BC purpose responsibility boundary and language ownership are already canonical in bounded-contexts.yaml; CM2 must reference them rather than duplicate them.
+      - docs/model/contexts/resource-catalogue/domain-model.yaml
+    ownership_note: Strategic BC purpose responsibility boundary and relationships remain owned by CM1. H12 local capability clustering is retained as discovery evidence, not as a second strategic authority. The Effective Authority glossary term remains owned by Authority Management.
+    architecture_ref: docs/architecture/structurizr/workspace.dsl
     evidence_ref: architecture/model-layout-pilot@13a39b7b80b7beaec65bef98ea415ae908fc3bcf
-    cutover_check: {state: NOT_RUN}
+    cutover_check:
+      state: PENDING_CI
+      review: docs/meta/canonical-model-migration/cm2-resource-catalogue-equivalence-review.yaml
+      command: make canonical-model-check
 
   - id: AUTHORITY-MANAGEMENT
     phase: CM3
@@ -64,9 +81,11 @@ units:
     authority: legacy
     source_paths:
       - docs/migration/revalidated/h12-rc-curation/s2/strategic/bounded-context-authority-management.yaml
+      - docs/migration/revalidated/h12-rc-curation/s2/strategic/domain-glossary.yaml
       - docs/migration/revalidated/h17-mvp-journey/s2/tactical/mvp-journey-domain-model.yaml
     target_paths:
       - docs/model/contexts/authority-management/
+    ownership_note: The shared H12 glossary remains a legacy source for the Authority Management-owned Effective Authority term until CM3; CM2 moves only RC-owned glossary terms.
     cutover_check: {state: NOT_RUN}
 
   - id: APPLICATION-COMMUNICATION-CATALOGUE

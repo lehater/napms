@@ -50,11 +50,15 @@ architecture-check:
 
 canonical-model-sync:
 	python tools/check_cm1_strategic_equivalence.py
+	python tools/check_cm2_resource_catalogue_equivalence.py
 	python tools/generate_strategic_views.py
+	python tools/generate_resource_catalogue_views.py
 
 canonical-model-check:
 	python tools/check_cm1_strategic_equivalence.py
+	python tools/check_cm2_resource_catalogue_equivalence.py
 	python tools/generate_strategic_views.py --check
+	python tools/generate_resource_catalogue_views.py --check
 
 harness-check:
 	python tools/validate_harness.py

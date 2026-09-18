@@ -46,11 +46,14 @@ phases:
     name: Resource Catalogue vertical cutover
     status: ACTIVE
     depends_on: [CM1]
-    objective: Use the proven Resource Catalogue pilot shape for the first real context cutover.
+    objective: Perform the first real vertical cutover for Resource Catalogue from discovery and requirements through tactical domain/process truth.
     exit_criteria:
-      - language/domain/process target artifacts preserve accepted H12 semantics without duplicating the strategic BC owner.
-      - Strategic purpose responsibility boundary and language ownership are referenced from docs/model/strategic/bounded-contexts.yaml.
-      - NAPMS-specific invariants and policies remain explicit.
+      - S0 problem/journey and S1 behavior/authorization/integrity have stable target owners.
+      - H12 local capability clustering is retained only as discovery evidence; whole-domain strategic capability authority remains CM1.
+      - Resource Catalogue-owned language domain decisions domain/process artifacts preserve accepted H12 semantics without duplicating the strategic BC owner.
+      - The Authority Management-owned Effective Authority glossary term remains with its owner rather than being copied into RC language.
+      - Strategic purpose responsibility boundary and relationship truth are referenced from docs/model/strategic/**.
+      - NAPMS-specific invariants policies hotspots and explicit deferrals remain explicit.
       - Generated domain/process projections derive from target artifacts.
       - Architecture is referenced, not duplicated.
       - RESOURCE-CATALOGUE ledger unit has authority target.
