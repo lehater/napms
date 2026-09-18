@@ -1,0 +1,40 @@
+version: 1
+kind: canonical-design-graph
+id: NAPMS-CANONICAL-DESIGN-GRAPH
+status: CURRENT
+rule: This file owns routing/dependency metadata only. Semantic truth remains in each node path.
+
+nodes:
+  - {id: RC-DISCOVERY, kind: discovery, path: docs/discovery/resource-catalogue.yaml, depends_on: []}
+  - {id: STRATEGIC-CAPABILITIES, kind: strategic-model, path: docs/model/strategic/capabilities.yaml, depends_on: []}
+  - {id: STRATEGIC-CONTEXTS, kind: strategic-model, path: docs/model/strategic/bounded-contexts.yaml, depends_on: [STRATEGIC-CAPABILITIES]}
+  - {id: STRATEGIC-RELATIONSHIPS, kind: strategic-model, path: docs/model/strategic/context-relationships.yaml, depends_on: [STRATEGIC-CONTEXTS]}
+  - {id: RC-CURATION, kind: use-case, path: docs/model/use-cases/resource-catalogue-curation.yaml, depends_on: [RC-DISCOVERY, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
+  - {id: RC-LANGUAGE, kind: domain-language, path: docs/model/contexts/resource-catalogue/language.yaml, depends_on: [STRATEGIC-CONTEXTS]}
+  - {id: RC-DECISIONS, kind: domain-decisions, path: docs/model/contexts/resource-catalogue/decisions.yaml, depends_on: [RC-CURATION]}
+  - {id: RC-PROCESS, kind: domain-process, path: docs/model/contexts/resource-catalogue/process-model.yaml, depends_on: [RC-CURATION, RC-LANGUAGE, STRATEGIC-RELATIONSHIPS]}
+  - {id: RC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/resource-catalogue/domain-model.yaml, depends_on: [RC-PROCESS, RC-LANGUAGE]}
+  - {id: AM-LANGUAGE, kind: domain-language, path: docs/model/contexts/authority-management/language.yaml, depends_on: [STRATEGIC-CONTEXTS]}
+  - {id: ACC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/application-communication-catalogue/domain-model.yaml, depends_on: [STRATEGIC-CONTEXTS]}
+  - {id: AD-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/application-deployment/domain-model.yaml, depends_on: [ACC-DOMAIN, RC-DOMAIN, STRATEGIC-CONTEXTS]}
+  - {id: BC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/business-connectivity/domain-model.yaml, depends_on: [ACC-DOMAIN, STRATEGIC-CONTEXTS]}
+  - {id: AP-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/access-policy/domain-model.yaml, depends_on: [ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, STRATEGIC-CONTEXTS]}
+  - {id: FIRST-MVP-JOURNEY, kind: cross-context-use-case, path: docs/model/use-cases/first-mvp-policy-export.yaml, depends_on: [STRATEGIC-RELATIONSHIPS, RC-DOMAIN, AM-LANGUAGE, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN]}
+  - {id: C4-STRUCTURE, kind: structural-architecture, path: docs/architecture/structurizr/workspace.dsl, depends_on: [STRATEGIC-CONTEXTS, FIRST-MVP-JOURNEY]}
+  - {id: SYSTEM-RULES, kind: architecture-rules, path: docs/architecture/mvp-system-rules.yaml, depends_on: [C4-STRUCTURE, FIRST-MVP-JOURNEY]}
+  - {id: TECH-REPRESENTATION, kind: technical-decisions, path: docs/architecture/mvp-technical-representation.yaml, depends_on: [SYSTEM-RULES]}
+  - {id: HTTP-REQUIREMENTS, kind: contract-requirements, path: docs/contracts/http/napms-api-requirements.yaml, depends_on: [SYSTEM-RULES, FIRST-MVP-JOURNEY]}
+  - {id: OPENAPI, kind: http-contract, path: docs/contracts/http/napms.openapi.yaml, depends_on: [HTTP-REQUIREMENTS, TECH-REPRESENTATION]}
+  - {id: PERSISTENCE, kind: physical-persistence-model, path: docs/architecture/persistence/mvp-persistence.yaml, depends_on: [SYSTEM-RULES, TECH-REPRESENTATION, RC-DOMAIN, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN, AM-LANGUAGE]}
+  - {id: MVP-IMPLEMENTATION-READINESS, kind: implementation-readiness, path: docs/plans/first-mvp-implementation-readiness.yaml, depends_on: [FIRST-MVP-JOURNEY, C4-STRUCTURE, SYSTEM-RULES, OPENAPI, PERSISTENCE]}
+  - {id: MVP-TEST-INTENT, kind: test-intent, path: docs/plans/first-mvp-test-intent.yaml, depends_on: [MVP-IMPLEMENTATION-READINESS]}
+
+projections:
+  - {id: CONTEXT-MAP, source_ids: [STRATEGIC-CAPABILITIES, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS], command: python tools/generate_strategic_views.py, outputs: [docs-generated/architecture/context-map.puml, docs-generated/architecture/strategic-collaboration-map.puml]}
+  - {id: RC-VIEWS, source_ids: [RC-DOMAIN, RC-PROCESS], command: python tools/generate_resource_catalogue_views.py, outputs: [docs-generated/architecture/resource-catalogue-domain.puml, docs-generated/architecture/resource-catalogue-process.puml]}
+  - {id: ACC-VIEW, source_ids: [ACC-DOMAIN], command: python tools/generate_acc_view.py, outputs: [docs-generated/architecture/application-communication-catalogue-domain.puml]}
+  - {id: AD-VIEW, source_ids: [AD-DOMAIN], command: python tools/generate_ad_view.py, outputs: [docs-generated/architecture/application-deployment-domain.puml]}
+  - {id: BC-VIEW, source_ids: [BC-DOMAIN], command: python tools/generate_bc_view.py, outputs: [docs-generated/architecture/business-connectivity-domain.puml]}
+  - {id: AP-VIEW, source_ids: [AP-DOMAIN], command: python tools/generate_ap_view.py, outputs: [docs-generated/architecture/access-policy-domain.puml]}
+  - {id: MVP-JOURNEY-VIEW, source_ids: [FIRST-MVP-JOURNEY], command: python tools/generate_mvp_journey_view.py, outputs: [docs-generated/architecture/first-mvp-policy-export.puml]}
+  - {id: ERD, source_ids: [PERSISTENCE], command: python tools/generate_persistence_erd.py, outputs: [docs-generated/architecture/mvp-persistence-erd.puml]}

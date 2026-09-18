@@ -273,8 +273,8 @@ units:
 
   - id: IMPLEMENTATION-READINESS
     phase: CM6
-    status: EQUIVALENCE_REVIEW
-    authority: legacy
+    status: COMPLETE
+    authority: target
     source_paths:
       - docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-implementation-readiness.yaml
       - docs/migration/revalidated/h19-mvp-implementation-readiness/s4/mvp-test-intent.yaml
@@ -289,20 +289,33 @@ units:
       - docs/plans/first-mvp-test-intent.yaml
     ownership_note: S4 owns implementation sequencing/readiness and verification intent. API/persistence/system/domain semantics remain owned by their specialized target artifacts and are referenced rather than copied.
     cutover_check:
-      state: PENDING_CI
+      state: PASS
       review: docs/meta/canonical-model-migration/cm6-s4-equivalence-review.yaml
       command: make canonical-model-check
+      evidence: {commit: 4f4c0e893b5f032d03e0c1b5e1c0843b08206401, workflow_run: 35291993955, workflow_job: 105436618975}
 
   - id: HARNESS-RUNTIME
     phase: CM6
-    status: IN_PROGRESS
+    status: EQUIVALENCE_REVIEW
     authority: legacy
     source_paths:
       - docs/spec/
       - docs/meta/roadmap.yaml
       - docs/meta/workstream-state.yaml
     target_paths:
-      - tools/
-      - docs/spec/
-    note: Simplify only after target semantic/architecture layout has been proven by multiple cutovers.
-    cutover_check: {state: NOT_RUN}
+      - docs/canonical-graph.yaml
+      - docs/spec/harness-control-plane.yaml
+      - docs/spec/repository-layout.md
+      - docs/spec/artifacts.md
+      - docs/README.md
+      - docs/meta/current-workstream.yaml
+      - AGENTS.md
+      - tools/check_canonical_graph.py
+      - tools/check_cm6_harness_simplification.py
+      - Makefile
+      - .github/workflows/design.yml
+    note: Historical H0-H20/CM controls remain provenance. Normal design now uses the canonical graph, specialized validators and deterministic generators directly.
+    cutover_check:
+      state: PENDING_CI
+      review: docs/meta/canonical-model-migration/cm6-harness-simplification-review.yaml
+      command: make design-check

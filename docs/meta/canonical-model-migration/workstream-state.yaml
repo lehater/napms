@@ -26,13 +26,13 @@ current_work:
     result: PASS
     evidence: {commit: 3df49d5e6c3263df65eced71707b925cca5075c8, workflow_run: 35291802262, workflow_job: 105436035483}
   completed_actions:
-    - Completed canonical OpenAPI design and HTTP contract validation.
-    - Completed first-MVP physical persistence design and generated ERD projection.
-    - Confirmed the complete CM1-CM5 target graph passes canonical-model-check on a clean checkout.
-  completed_actions:
-    - Identified H19 implementation-readiness and test-intent as the remaining current S4 truth still reachable only through migration/revalidated paths.
-    - Built stable S4 target owners under docs/plans while replacing duplicated API/persistence payloads with references to CM5 canonical owners.
-  next_action: Run canonical-model-check on a clean checkout. If PASS, cut over the stable S4 owners; then rewrite normal docs/AGENTS/spec entrypoints so design work no longer navigates through migration/revalidated.
+    - Completed CM5 OpenAPI/persistence design and clean target validation.
+    - Cut over stable S4 implementation-readiness and test-intent owners after clean CI.
+    - Built docs/canonical-graph.yaml as routing/dependency metadata over current semantic owners.
+    - Replaced the normal Harness control contract with a small design-control contract.
+    - Added make design-check and make design-sync plus a dedicated current-design CI workflow.
+    - Rewrote AGENTS/docs entrypoints so normal design navigation does not pass through migration/revalidated.
+  next_action: Run both design and migration checks on a clean checkout. If PASS, cut over HARNESS-RUNTIME and complete CM6, then perform CM7 migration closeout.
   stop_conditions:
     - simplification would remove still-current semantic authority
     - normal design would again depend on migration/revalidated paths

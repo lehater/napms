@@ -1,0 +1,18 @@
+version: 1
+kind: canonical-model-migration-equivalence-review
+id: NAPMS-CM6-HARNESS-SIMPLIFICATION
+phase: CM6
+unit: HARNESS-RUNTIME
+status: PENDING_CI
+reviewed_at: 2026-09-18
+check_command: make design-check
+criteria:
+  - normal design navigation starts from docs/canonical-graph.yaml rather than migration/revalidated anchors
+  - graph owns routing only and every node has one existing canonical path with no dependency cycle
+  - normal design-check does not run CM/H migration equivalence checks
+  - normal design-sync regenerates projections only from current target owners
+  - docs/spec/harness-control-plane.yaml no longer requires H phases gates task capsules fingerprints or transaction artifacts for ordinary design
+  - AGENTS.md and docs/README.md point to canonical graph plus an active-workstream pointer
+  - migration/revalidated and docs-legacy remain historical evidence and cannot override current owners
+  - no universal custom semantic DSL is introduced
+result: awaiting_clean_ci

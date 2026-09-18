@@ -1,0 +1,57 @@
+name: design
+
+on:
+  push:
+    paths:
+      - "AGENTS.md"
+      - "docs/README.md"
+      - "docs/canonical-graph.yaml"
+      - "docs/discovery/**"
+      - "docs/model/**"
+      - "docs/architecture/**"
+      - "docs/contracts/**"
+      - "docs/plans/**"
+      - "docs/spec/harness-control-plane.yaml"
+      - "docs/spec/repository-layout.md"
+      - "docs/spec/artifacts.md"
+      - "docs/meta/current-workstream.yaml"
+      - "tools/check_canonical_graph.py"
+      - "tools/check_cm5_openapi_design.py"
+      - "tools/check_cm5_persistence_design.py"
+      - "tools/check_cm6_harness_simplification.py"
+      - "tools/generate_*_view.py"
+      - "tools/generate_*_views.py"
+      - "tools/generate_persistence_erd.py"
+      - "Makefile"
+      - ".github/workflows/design.yml"
+  pull_request:
+    paths:
+      - "AGENTS.md"
+      - "docs/README.md"
+      - "docs/canonical-graph.yaml"
+      - "docs/discovery/**"
+      - "docs/model/**"
+      - "docs/architecture/**"
+      - "docs/contracts/**"
+      - "docs/plans/**"
+      - "docs/spec/harness-control-plane.yaml"
+      - "docs/spec/repository-layout.md"
+      - "docs/spec/artifacts.md"
+      - "docs/meta/current-workstream.yaml"
+      - "tools/check_canonical_graph.py"
+      - "tools/check_cm5_openapi_design.py"
+      - "tools/check_cm5_persistence_design.py"
+      - "tools/check_cm6_harness_simplification.py"
+      - "tools/generate_*_view.py"
+      - "tools/generate_*_views.py"
+      - "tools/generate_persistence_erd.py"
+      - "Makefile"
+      - ".github/workflows/design.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate canonical design graph and projections
+        run: make design-check

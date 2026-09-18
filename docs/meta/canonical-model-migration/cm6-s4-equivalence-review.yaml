@@ -3,7 +3,7 @@ kind: canonical-model-migration-equivalence-review
 id: NAPMS-CM6-S4-STABLE-OWNER-EQUIVALENCE
 phase: CM6
 unit: IMPLEMENTATION-READINESS
-status: PENDING_CI
+status: PASS
 reviewed_at: 2026-09-18
 check_command: make canonical-model-check
 criteria:
@@ -12,4 +12,8 @@ criteria:
   - H19 test levels and required scenarios are preserved exactly
   - S4 artifacts state explicitly that implementation readiness does not grant implementation authorization
   - no product code or tests are used as design input
-result: awaiting_clean_ci
+result: PASS
+evidence:
+  commit: 4f4c0e893b5f032d03e0c1b5e1c0843b08206401
+  workflow_run: 35291993955
+  workflow_job: 105436618975
