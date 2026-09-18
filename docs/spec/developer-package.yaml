@@ -65,16 +65,18 @@ aspects:
   - id: domain-processes
     requirement: CONDITIONAL
     source_kinds: [domain-process]
-    representation: {standard: BPMN-or-UML-Activity, formats: [source, svg]}
-    processor: render
-    current: DESIGN_GAP
-    gap: Current process projection exists, but the handoff notation has not yet been classified as business-process BPMN versus UML Activity.
+    representation: {standard: UML, diagram: activity, formats: [puml, svg]}
+    processor: existing-projection
+    current: PROVIDED
+    rationale: The current RC process model describes domain command/policy/event flow rather than a cross-organizational business process; BPMN would add semantics not owned by the source.
 
   - id: domain-events
     requirement: CONDITIONAL
-    representation: {practice: DDD-Domain-Events}
-    current: DESIGN_GAP
-    gap: Current canonical design does not explicitly establish whether domain events are absent or merely undocumented.
+    sources: [RC-PROCESS]
+    representation: {practice: DDD-Domain-Events, format: markdown}
+    processor: render
+    current: PROVIDED
+    rationale: RC-PROCESS explicitly owns named domain events and their command causation; other contexts need no invented event catalogue unless their canonical models introduce events.
 
   - id: system-context
     requirement: REQUIRED
@@ -161,8 +163,12 @@ aspects:
 
   - id: event-persistence
     requirement: CONDITIONAL
-    current: DESIGN_GAP
-    gap: Event Sourcing is not selected by current persistence design, but no canonical owner explicitly declares event persistence/Event Sourcing not applicable.
+    evidence:
+      node: PERSISTENCE
+      statement: Current physical model persists module-owned relational state and retained histories; no event store or event-sourced aggregate persistence is defined.
+    representation: {practice: event-store-model}
+    current: NOT_APPLICABLE
+    rationale: Domain events in the process model do not imply Event Sourcing; the accepted first-MVP persistence owner is explicitly complete and defines PostgreSQL state/history persistence.
 
   - id: authentication-authorization
     requirement: REQUIRED
