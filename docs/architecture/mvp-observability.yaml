@@ -124,7 +124,7 @@ evolution_rule: Add signal types, health dependencies, alertability or SLO-deriv
 
 research_result:
   atomicity:
-    semantic_cohesion: Runtime evidence, correlation, health-state evidence and dependency diagnosability answer one question: what must be observable to diagnose accepted runtime behavior.
+    semantic_cohesion: "Runtime evidence, correlation, health-state evidence and dependency diagnosability answer one question: what must be observable to diagnose accepted runtime behavior."
     independent_change: Evidence shape and signal projection can evolve without changing domain/interface semantics or selecting implementation libraries.
     public_contract: Produces engineering.operability.runtime-evidence for implementation and verification consumers.
   boundary_result: OPERABILITY-DESIGN remains coherent on a long-running HTTP service when restricted to runtime evidence/diagnosability. Generic runtime policy, configuration, security and reliability semantics remain with their existing owners.
