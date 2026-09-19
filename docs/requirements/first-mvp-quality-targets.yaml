@@ -1,0 +1,17 @@
+version: 1
+kind: product-quality-targets
+id: NAPMS-FIRST-MVP-QUALITY-TARGETS
+status: WAITING_FOR_PRODUCT_INPUT
+
+purpose: Own explicit numeric first-MVP quality targets when product/stakeholder intent supplies them. Values must not be inferred from architecture defaults or implementation convenience.
+
+targets:
+  latency: null
+  throughput: null
+  availability: null
+  scale: null
+
+unresolved:
+  question_id: MVP-NUMERIC-QUALITY-TARGETS
+  reason: Accepted product requirements contain no numeric latency, throughput, availability or scale targets.
+  answer_from: external-product-input
