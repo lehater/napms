@@ -61,3 +61,28 @@ Therefore the correct current-Harness behavior is to remain `COMPLETE`.
 No Core Question, new Design Profile expectation, schema or artifact skill is
 justified. Product/test changes remain subject to the repository's separate
 implementation-authorization rule.
+
+
+## Project-native NOT_APPLICABLE contracts
+
+NAPMS also has a project-native consumer requirement whose requested capability is
+not applicable when an accepted architecture capability proves that fact:
+
+`engineering.interface.async-contract`
+is marked not applicable by
+`engineering.architecture.async-messaging-not-applicable`.
+
+The transient-profile bridge maps that requirement to the evidence capability
+instead of inventing a Harness-specific N/A status.
+
+Observed behavior:
+
+- with the evidence capability present, the derived `IMPLEMENTATION-DESIGN`
+  profile is `COMPLETE`;
+- when only that evidence capability is removed from the projected model,
+  `ASYNCHRONOUS-CONTRACT` becomes `CREATE`;
+- no special Core state or target-state extension is required.
+
+Conclusion: project-native applicability policy remains in the target consumer
+contract. Harness only asks whether the accepted evidence knowledge it relies on
+is present and unblocked.
