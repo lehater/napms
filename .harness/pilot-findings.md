@@ -86,3 +86,58 @@ Observed behavior:
 Conclusion: project-native applicability policy remains in the target consumer
 contract. Harness only asks whether the accepted evidence knowledge it relies on
 is present and unblocked.
+
+
+## Whole-vertical profile projection
+
+All 13 current NAPMS consumer/input contracts can be translated into transient
+Design Profiles and evaluate `COMPLETE` against the current projected model.
+
+This shows that the bridge is not specific to `IMPLEMENTATION-CONSUMER`; it
+also handles the Authority input contracts across domain, architecture,
+interface, data, quality, security, operability, implementation and verification.
+
+An in-memory unresolved Question blocking `RESOURCE-DETAIL-UI` produces the
+same root blocker in both systems:
+
+- the NAPMS vertical reports the affected consumer requirement as `BLOCKED`;
+- external Harness reports `RESOURCE-DETAIL-UI -> WAIT` and leaves downstream
+  implementation/verification expectations `PENDING`.
+
+The difference is presentation/actionability, not semantic disagreement.
+
+## Subject-specific knowledge coverage
+
+NAPMS also demonstrates an important Design Profile boundary.
+
+The broad capability `engineering.domain.tactical-model` is intentionally
+provided by several artifacts under the same `TACTICAL-DOMAIN-DESIGN`
+Authority. Those artifacts cover different Bounded Context subjects.
+
+A Design Profile expectation with:
+
+- subject `BC-RESOURCE-CATALOGUE`;
+- broad capability `engineering.domain.tactical-model`;
+
+is insufficient to prove Resource Catalogue coverage. If the RC provider loses
+that broad capability, other tactical providers still satisfy capability
+resolution and a naive profile remains `COMPLETE`.
+
+The target-owned `docs/engineering-knowledge-completeness.yaml` policy already
+solves this at the project level by matching subject + knowledge coverage.
+
+The current-Harness pilot therefore derives ephemeral scoped capabilities from
+that accepted coverage metadata, for example:
+
+`napms.coverage.tactical-domain-model.BC-RESOURCE-CATALOGUE`.
+
+With scoped capabilities:
+
+- current accepted coverage evaluates `COMPLETE`;
+- removing only the RC scoped capability yields exactly the RC expectation as
+  `CREATE`;
+- no Subject entity, provider-selector field or other Core extension is needed.
+
+Conclusion: `subject` is expectation scope/reporting, while `CapabilityId`
+is the provider-resolution key. Subject-specific completeness requires a
+sufficiently scoped capability or a target-owned coverage adapter/check.
