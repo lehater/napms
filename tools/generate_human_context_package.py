@@ -7,7 +7,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 HARNESS = ROOT / "docs/harness-core.yaml"
 GRAPH = ROOT / "docs/canonical-graph.yaml"
-DEFAULT_OUT = ROOT / "docs-generated/implementation-package"
+DEFAULT_OUT = ROOT / "docs-generated/implementation-package"\nSECTIONS = {\n    "discovery": "01-product", "product-requirements": "01-product",\n    "strategic-model": "02-domain", "use-case": "02-domain", "domain-language": "02-domain",\n    "domain-decisions": "02-domain", "domain-process": "02-domain", "tactical-domain-model": "02-domain",\n    "cross-context-use-case": "03-application", "ui-navigation-model": "03-application", "ui-screen-contract": "03-application",\n    "structural-architecture": "04-architecture", "application-architecture-rules": "04-architecture",\n    "module-contract-design": "04-architecture", "security-architecture": "04-architecture",\n    "shared-technical-conventions": "05-interfaces", "contract-requirements": "05-interfaces", "http-contract": "05-interfaces",\n    "physical-persistence-model": "06-data", "quality-requirements": "07-quality", "threat-model": "07-quality",\n    "observability-requirements": "07-quality", "implementation-plan": "08-implementation", "test-intent": "09-verification",\n}
 
 def load(path):
     return yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -82,7 +82,7 @@ def materialize(consumer_id, out):
             raise SystemExit("Canonical artifact does not exist: " + node["path"])
         dst = sources / node["path"]
         dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, dst)
+        shutil.copy2(src, dst)\n        section = SECTIONS.get(node["kind"], "99-reference")\n        human_dir = human / section\n        human_dir.mkdir(parents=True, exist_ok=True)\n        human_doc = human_dir / (node["id"].lower() + ".md")\n        body = src.read_text(encoding="utf-8")\n        human_doc.write_text(\n            "# " + node["id"].replace("-", " ").title() + "\\n\\n"\n            "> Generated view. Do not edit. Canonical source: `" + node["path"] + "`\\n\\n"\n            "Artifact kind: `" + node["kind"] + "`\\n\\n"\n            "## Canonical content\\n\\n```yaml\\n" + body.rstrip() + "\\n```\\n",\n            encoding="utf-8",\n        )
 
 def main():
     parser = argparse.ArgumentParser()
