@@ -280,6 +280,7 @@ contracts:
       - {id: module-contracts, capability: engineering.architecture.module-contracts, authority: SYSTEM-ARCHITECTURE}
       - {id: security-architecture, capability: engineering.architecture.security, authority: SECURITY-ARCHITECTURE-DESIGN}
       - {id: interface, capability: engineering.interface.http-contract, authority: INTERFACE-DESIGN}
+      - {id: resource-detail-ui, capability: engineering.interface.resource-detail-ui, authority: INTERFACE-DESIGN}
       - {id: persistence, capability: engineering.data.persistence-model, authority: DATA-DESIGN}
       - {id: quality, capability: engineering.quality.constraints, authority: QUALITY-DESIGN}
       - {id: security-analysis, capability: engineering.security.threat-analysis, authority: SECURITY-ANALYSIS}
