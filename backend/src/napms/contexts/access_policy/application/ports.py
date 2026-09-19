@@ -161,6 +161,26 @@ class ConnectivityDecisionPort(Protocol):
     ) -> ConnectivityDecision: ...
 
 
+class AccessRuleLookup(Protocol):
+    def get_by_id(self, rule_id: UUID) -> AccessRule | None: ...
+
+
+class AccessRulePageSource(Protocol):
+    def list_by_governance_scopes(
+        self,
+        scopes: tuple[str, ...],
+        *,
+        offset: int,
+        limit: int,
+    ) -> tuple[AccessRule, ...]: ...
+
+
+class AccessRuleStateStore(Protocol):
+    def get_by_id(self, rule_id: UUID) -> AccessRule | None: ...
+    def save(self, rule: AccessRule) -> None: ...
+    def commit(self) -> None: ...
+
+
 class AccessRuleRepository(Protocol):
     def find_by_identity(self, identity: RuleSemanticIdentity) -> AccessRule | None: ...
     def find_inventory_summaries(
