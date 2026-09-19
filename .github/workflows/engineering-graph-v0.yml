@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: lehater/harness
-          ref: 96697576e42773128fb4a75192684e147f333466
+          ref: dbf9d5a8a755c85de644bf4bb4012f8e110670b5
           path: .harness-tool
 
       - uses: actions/setup-python@v5
