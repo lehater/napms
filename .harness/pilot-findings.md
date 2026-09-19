@@ -141,3 +141,44 @@ With scoped capabilities:
 Conclusion: `subject` is expectation scope/reporting, while `CapabilityId`
 is the provider-resolution key. Subject-specific completeness requires a
 sufficiently scoped capability or a target-owned coverage adapter/check.
+
+
+## Full consumer-contract projection
+
+The pilot now derives transient Design Profiles for every current NAPMS
+engineering input/consumer contract, not only IMPLEMENTATION.
+
+All 13 contracts evaluate `COMPLETE` against the current accepted projection.
+
+This includes:
+
+- engineering Authorities such as System Architecture, Interface Design,
+  Verification Design and Implementation Design;
+- the final IMPLEMENTATION consumer;
+- the project-native NOT_APPLICABLE evidence case.
+
+The result supports using existing consumer contracts as the profile-policy owner
+rather than maintaining parallel Harness expectation lists.
+
+## Question compatibility
+
+An in-memory unresolved Interface Design Question blocking
+`RESOURCE-DETAIL-UI` was evaluated by both:
+
+- NAPMS local `tools/check_harness_vertical.py`;
+- external Harness Core/Design Profile projection.
+
+Both produced the same semantic result:
+
+- the Resource detail UI knowledge is blocked;
+- the implementation consumer cannot use that capability;
+- downstream implementation-plan/completion/verification knowledge is not
+  prematurely actionable.
+
+The real resolved NAPMS question
+`MVP-NUMERIC-QUALITY-TARGETS` also projects without becoming unresolved.
+External Harness accepts the NAPMS `resolution` field and validates that its
+resolution artifact belongs to the addressed Authority.
+
+Harness now carries a compact acceptance fixture for this richer projection
+compatibility so the behavior is not protected only by NAPMS CI.
