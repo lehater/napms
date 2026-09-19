@@ -12,6 +12,7 @@ design_rule: API operations are organized around MVP use cases and resources exp
 
 required_capabilities:
   - manage Resources and AddressSpace
+  - inspect Resource detail with current and ended/replaced realization, scope-affiliation and responsibility history
   - manage Application/Components/Interactions and traffic revisions
   - manage ComponentDeployments
   - manage BusinessProcess/ConnectivityNeed
@@ -21,6 +22,7 @@ required_capabilities:
 
 operations:
   - POST /api/resources
+  - GET /api/resources/{resourceId}
   - PUT /api/resources/{resourceId}/address-space
   - POST /api/applications
   - POST /api/applications/{applicationId}/components
@@ -65,3 +67,13 @@ resolved_openapi_design:
   - common backend-session cookie declaration
   - CSV success representation and Unresolved non-CSV outcome
 canonical_openapi_target: docs/contracts/http/napms.openapi.yaml
+
+resource_detail_history:
+  operation: GET /api/resources/{resourceId}
+  contract:
+    - return stable Resource identity;
+    - expose current facts separately from ended/replaced historical facts;
+    - cover realization, Responsibility Scope affiliation and Resource Responsibility/contact fact sets;
+    - retain temporal validity and provenance for historical facts;
+    - represent missing current facts explicitly without deleting history.
+  consumer_reason: Supports Resource detail inspection without requiring direct database access and makes replacement/end outcomes verifiable through the supported product.
