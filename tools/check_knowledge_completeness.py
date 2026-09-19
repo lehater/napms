@@ -11,16 +11,29 @@ def load(path):
 def coverage_for_node(node):
     path = node["path"]
     if not path.endswith((".yaml", ".yml")):
-        return None
+        return []
     data = load(ROOT / path)
+
     coverage = data.get("knowledge_coverage")
-    if not isinstance(coverage, dict):
-        return None
-    subject = coverage.get("subject")
-    knowledge = coverage.get("knowledge")
-    if not subject or not knowledge:
-        return None
-    return subject, knowledge
+    if isinstance(coverage, dict):
+        subject = coverage.get("subject")
+        knowledge = coverage.get("knowledge")
+        if subject and knowledge:
+            return [(subject, knowledge)]
+
+    knowledge_by_kind = {
+        "use-case": "domain-use-case",
+        "tactical-domain-model": "tactical-domain-model",
+    }
+    knowledge = knowledge_by_kind.get(node.get("kind"))
+    if not knowledge:
+        return []
+
+    subjects = []
+    if data.get("bounded_context_ref"):
+        subjects.append(data["bounded_context_ref"])
+    subjects.extend(data.get("bounded_context_refs", []) or [])
+    return [(subject, knowledge) for subject in dict.fromkeys(subjects)]
 
 def main():
     profile = load(MODEL)
@@ -31,8 +44,7 @@ def main():
     context_ids = {x["name"]: x["context_id"] for x in strategic["contexts"]}
     coverage_index = {}
     for node in graph["nodes"]:
-        coverage = coverage_for_node(node)
-        if coverage:
+        for coverage in coverage_for_node(node):
             coverage_index.setdefault(coverage, []).append(node)
 
     incomplete = []
