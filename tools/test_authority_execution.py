@@ -106,7 +106,10 @@ def main() -> int:
     assert root["input_contracts"] == []
     assert root["input_artifacts"] == []
     assert root["supporting_input_artifacts"] == []
-    assert root["access"]["write"] == ["docs/requirements/first-mvp-policy-export.yaml"]
+    assert set(root["access"]["write"]) == {
+        "docs/requirements/first-mvp-policy-export.yaml",
+        "docs/requirements/first-mvp-quality-targets.yaml",
+    }
 
     blocked_projection = copy.deepcopy(projection)
     blocked_projection["questions"].append(
