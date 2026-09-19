@@ -32,6 +32,7 @@ def main() -> int:
     assert architecture["input_contracts"] == ["SYSTEM-ARCHITECTURE-INPUT"]
     assert {item["authority"] for item in architecture["input_artifacts"]} == {
         "APPLICATION-JOURNEY-DESIGN",
+        "DOMAIN-USE-CASE-DESIGN",
         "PRODUCT-REQUIREMENTS",
         "STRATEGIC-DOMAIN-DESIGN",
         "TACTICAL-DOMAIN-DESIGN",
@@ -81,7 +82,9 @@ def main() -> int:
     assert interface["input_contracts"] == ["INTERFACE-DESIGN-INPUT"]
     assert {item["id"] for item in interface["owned_artifacts"]} == {
         "HTTP-REQUIREMENTS",
+        "MVP-UI-NAVIGATION",
         "OPENAPI",
+        "RESOURCE-DETAIL-UI",
         "TECH-REPRESENTATION",
     }
     assert {item["authority"] for item in interface["input_artifacts"]} == {
