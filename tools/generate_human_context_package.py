@@ -7,7 +7,18 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 HARNESS = ROOT / "docs/harness-core.yaml"
 GRAPH = ROOT / "docs/canonical-graph.yaml"
-DEFAULT_OUT = ROOT / "docs-generated/implementation-package"\nSECTIONS = {\n    "discovery": "01-product", "product-requirements": "01-product",\n    "strategic-model": "02-domain", "use-case": "02-domain", "domain-language": "02-domain",\n    "domain-decisions": "02-domain", "domain-process": "02-domain", "tactical-domain-model": "02-domain",\n    "cross-context-use-case": "03-application", "ui-navigation-model": "03-application", "ui-screen-contract": "03-application",\n    "structural-architecture": "04-architecture", "application-architecture-rules": "04-architecture",\n    "module-contract-design": "04-architecture", "security-architecture": "04-architecture",\n    "shared-technical-conventions": "05-interfaces", "contract-requirements": "05-interfaces", "http-contract": "05-interfaces",\n    "physical-persistence-model": "06-data", "quality-requirements": "07-quality", "threat-model": "07-quality",\n    "observability-requirements": "07-quality", "implementation-plan": "08-implementation", "test-intent": "09-verification",\n}
+DEFAULT_OUT = ROOT / "docs-generated/implementation-package"
+SECTIONS = {
+    "discovery": "01-product", "product-requirements": "01-product",
+    "strategic-model": "02-domain", "use-case": "02-domain", "domain-language": "02-domain",
+    "domain-decisions": "02-domain", "domain-process": "02-domain", "tactical-domain-model": "02-domain",
+    "cross-context-use-case": "03-application", "ui-navigation-model": "03-application", "ui-screen-contract": "03-application",
+    "structural-architecture": "04-architecture", "application-architecture-rules": "04-architecture",
+    "module-contract-design": "04-architecture", "security-architecture": "04-architecture",
+    "shared-technical-conventions": "05-interfaces", "contract-requirements": "05-interfaces", "http-contract": "05-interfaces",
+    "physical-persistence-model": "06-data", "quality-requirements": "07-quality", "threat-model": "07-quality",
+    "observability-requirements": "07-quality", "implementation-plan": "08-implementation", "test-intent": "09-verification",
+}
 
 def load(path):
     return yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -58,14 +69,17 @@ def render_readme(consumer_id, roots, nodes):
         "This package owns no engineering truth. Edit the canonical source and regenerate this projection. "
         "The sources directory is a snapshot of the resolved canonical artifacts; manifest.yaml records "
         "the exact dependency closure used to build this package.", ""]
-    return "\n".join(lines)
+    return "
+".join(lines)
 
 def materialize(consumer_id, out):
     roots, nodes = resolve(consumer_id)
     if out.exists():
         shutil.rmtree(out)
     sources = out / "sources"
+    human = out / "human"
     sources.mkdir(parents=True)
+    human.mkdir(parents=True)
     manifest = {
         "version": 1,
         "kind": "human-context-package-manifest",
@@ -82,7 +96,30 @@ def materialize(consumer_id, out):
             raise SystemExit("Canonical artifact does not exist: " + node["path"])
         dst = sources / node["path"]
         dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, dst)\n        section = SECTIONS.get(node["kind"], "99-reference")\n        human_dir = human / section\n        human_dir.mkdir(parents=True, exist_ok=True)\n        human_doc = human_dir / (node["id"].lower() + ".md")\n        body = src.read_text(encoding="utf-8")\n        human_doc.write_text(\n            "# " + node["id"].replace("-", " ").title() + "\\n\\n"\n            "> Generated view. Do not edit. Canonical source: `" + node["path"] + "`\\n\\n"\n            "Artifact kind: `" + node["kind"] + "`\\n\\n"\n            "## Canonical content\\n\\n```yaml\\n" + body.rstrip() + "\\n```\\n",\n            encoding="utf-8",\n        )
+        shutil.copy2(src, dst)
+        section = SECTIONS.get(node["kind"], "99-reference")
+        human_dir = human / section
+        human_dir.mkdir(parents=True, exist_ok=True)
+        human_doc = human_dir / (node["id"].lower() + ".md")
+        body = src.read_text(encoding="utf-8")
+        human_doc.write_text(
+            "# " + node["id"].replace("-", " ").title() + "\
+\
+"
+            "> Generated view. Do not edit. Canonical source: `" + node["path"] + "`\
+\
+"
+            "Artifact kind: `" + node["kind"] + "`\
+\
+"
+            "## Canonical content\
+\
+```yaml\
+" + body.rstrip() + "\
+```\
+",
+            encoding="utf-8",
+        )
 
 def main():
     parser = argparse.ArgumentParser()
