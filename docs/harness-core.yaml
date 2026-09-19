@@ -203,6 +203,7 @@ bindings:
   - {artifact: THREAT-MODEL, authority: SECURITY-ANALYSIS, provides: [engineering.security.threat-analysis]}
   - {artifact: OBSERVABILITY, authority: OPERABILITY-DESIGN, provides: [engineering.operability.observability]}
   - {artifact: ENGINEERING-DESIGN-POLICY, authority: ENGINEERING-POLICY, provides: [engineering.policy.design-constraints]}
+  - {artifact: MVP-COMPONENT-DESIGN, authority: COMPONENT-DESIGN, provides: [engineering.implementation.component-design]}
   - {artifact: MVP-IMPLEMENTATION-READINESS, authority: IMPLEMENTATION-DESIGN, provides: [engineering.implementation.plan, engineering.implementation.completion-criteria]}
   - {artifact: MVP-TEST-INTENT, authority: VERIFICATION-DESIGN, provides: [engineering.verification.strategy, engineering.verification.acceptance-scenarios]}
 
