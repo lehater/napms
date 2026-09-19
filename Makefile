@@ -1,4 +1,4 @@
-.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore design-sync design-check architecture architecture-check check
+.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore design-sync design-check authority-context human-implementation-package architecture architecture-check check
 
 STRUCTURIZR_IMAGE ?= structurizr/structurizr:2026.06.28-noble
 STRUCTURIZR_DIR := $(CURDIR)/docs/architecture/structurizr
@@ -47,6 +47,8 @@ dev-restore:
 
 design-sync:
 	python tools/check_canonical_graph.py
+	python tools/check_harness_vertical.py
+	python tools/check_knowledge_completeness.py
 	python tools/generate_strategic_views.py
 	python tools/generate_resource_catalogue_views.py
 	python tools/generate_acc_view.py
@@ -58,6 +60,10 @@ design-sync:
 
 design-check:
 	python tools/check_canonical_graph.py
+	python tools/check_harness_vertical.py
+	python tools/check_knowledge_completeness.py
+	python tools/test_harness_vertical.py
+	python tools/test_authority_execution.py
 	python tools/check_openapi_contract.py
 	python tools/check_persistence_model.py
 	python tools/check_design_control.py
@@ -71,19 +77,19 @@ design-check:
 	python tools/generate_mvp_journey_view.py --check
 	python tools/generate_persistence_erd.py --check
 
+authority-context:
+	@test -n "$(AUTHORITY)" || (echo "Usage: make authority-context AUTHORITY=SYSTEM-ARCHITECTURE" >&2; exit 2)
+	python tools/prepare_authority_execution.py "$(AUTHORITY)"
+
+human-implementation-package:
+	python tools/generate_human_context_package.py --consumer IMPLEMENTATION-CONSUMER
+
 architecture: design-sync
 	@docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true
 	@docker run -d --rm --name $(PLANTUML_CONTAINER) -p 127.0.0.1:8081:8080 $(PLANTUML_SERVER_IMAGE) >/dev/null
-	@trap 'docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true' EXIT INT TERM; \
-		docker run --rm -it -p 127.0.0.1:8080:8080 \
-		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" \
-		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" \
-		$(STRUCTURIZR_IMAGE) local
+	@trap 'docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true' EXIT INT TERM; 		docker run --rm -it -p 127.0.0.1:8080:8080 		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" 		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" 		$(STRUCTURIZR_IMAGE) local
 
 architecture-check: design-sync
-	docker run --rm \
-		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" \
-		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" \
-		$(STRUCTURIZR_IMAGE) validate -workspace /usr/local/structurizr/workspace.dsl
+	docker run --rm 		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" 		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" 		$(STRUCTURIZR_IMAGE) validate -workspace /usr/local/structurizr/workspace.dsl
 
 check: test design-check

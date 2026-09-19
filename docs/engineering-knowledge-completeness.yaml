@@ -1,0 +1,39 @@
+version: 3
+kind: engineering-completeness-profile
+id: NAPMS-FIRST-MVP-ENGINEERING-PROFILE
+status: PILOT
+
+purpose: Declare NAPMS-specific structural knowledge expectations for the accepted first-MVP scope. The matching mechanism is generic; these rules are project engineering policy, not universal Harness semantics.
+
+sources:
+  journey: docs/model/use-cases/first-mvp-policy-export.yaml
+  strategic_contexts: docs/model/strategic/bounded-contexts.yaml
+  canonical_graph: docs/canonical-graph.yaml
+
+knowledge_types:
+  - tactical-domain-model
+  - domain-use-case
+
+expectation_rules:
+  - id: MVP-TACTICAL-COVERAGE
+    rationale: Participating strategic owners need explicit tactical semantics before the first-MVP journey is implemented.
+    subjects_from: journey.participating_strategic_owners
+    expects: tactical-domain-model
+
+  - id: MVP-SUPPORTING-TACTICAL-COVERAGE
+    rationale: Supporting owners used by the journey need explicit tactical semantics for the behavior consumed by the journey.
+    subjects_from: journey.supporting_owner
+    expects: tactical-domain-model
+
+  # Pilot result: a blanket domain-use-case expectation for every participating
+  # strategic owner was tested and rejected. It produced thin artifacts that mostly
+  # restated accepted product intent or tactical invariants instead of adding an
+  # independently owned class of engineering knowledge. Context-focused use-case
+  # artifacts remain valid when a concrete project need justifies them (for example,
+  # Resource Catalogue curation), but participation alone does not require one.
+
+principles:
+  - Harness completeness mechanism matches Expectations against canonical Coverage.
+  - This profile owns which Expectations NAPMS chooses to assert.
+  - Experimental rules may reveal gaps but must not be treated as accepted methodology until reviewed.
+  - Structural presence does not assert semantic correctness.

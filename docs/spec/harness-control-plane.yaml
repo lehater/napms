@@ -1,26 +1,31 @@
-version: 3
+version: 13
 kind: canonical-design-control
 id: NAPMS-DESIGN-CONTROL
-status: CURRENT
+status: PILOT_CURRENT
 
-purpose: Keep design work visible, linked and machine-checkable without making Harness bookkeeping a design process.
+purpose: Keep engineering knowledge visible, owned, linked and machine-checkable from requirements through implementation input without making Harness bookkeeping a design process.
 
 authority:
   canonical_root: docs/
   routing_graph: docs/canonical-graph.yaml
+  responsibility_contracts: docs/harness-core.yaml
   generated_root: docs-generated/
   generated_is_authority: false
   retired_migration_evidence: [docs/migration/revalidated/, docs-legacy/]
   product_code_tests_as_design_truth: forbidden
+  external_harness_runtime_dependency: forbidden
 
 normal_work:
   start:
     - Read AGENTS.md.
     - Read docs/canonical-graph.yaml to locate the owning artifact and direct dependencies.
+    - Read docs/harness-core.yaml when work crosses an Authority boundary or prepares downstream implementation/verification.
     - Read a current workstream state only when the task belongs to an active workstream.
   cycle:
+    - challenge affected Authority boundaries with the recursive boundary-convergence checks
     - change the smallest owning canonical artifact set
     - determine downstream impact from the graph
+    - evaluate affected responsibility contracts
     - run the smallest applicable semantic/format validators
     - regenerate affected projections
     - persist coherent design and durable workstream state
@@ -31,30 +36,83 @@ normal_work:
     - per-artifact fingerprints
     - copied provenance wrappers
     - a universal design DSL
+    - runtime access to the separate lehater/harness repository
+
+authority_boundary_convergence:
+  candidate_rule: Engineering decision families are Authority hypotheses. Bounded Contexts, aggregates, modules and artifact filenames are subject/representation boundaries unless separately proven to own a distinct kind of engineering decision.
+  checks:
+    semantic_cohesion: One coherent family of authoritative decisions/facts; no independently meaningful owner is hidden inside.
+    independent_change: The area's semantics/lifecycle/invariants can evolve without understanding a peer-private model.
+    public_contract: Required inputs, public semantic outputs and Question routing are unambiguous.
+  recurse_rule: If any check fails, split the candidate and apply the same checks to each child.
+  stop_rule: Stop only when all three checks pass for every Authority and every current canonical-graph node has exactly one Authority binding.
+  output_rule: A declared public capability must have a downstream consumer or an explicit terminal-capability declaration with a reason.
+  graph_contract_rule: For every non-root Authority, upstream Authority sets in canonical dependencies and input contracts must match exactly; hidden graph edges and phantom contract inputs are both invalid.
+  authority_dag_rule: The engineering-Authority dependency graph must be acyclic; a cycle means Authority boundaries or canonical dependencies require correction.
+  internal_output_rule: Canonical artifacts may have no public capability when they only refine semantics internal to one Authority.
+  anti_split_rule: Never split only because Bounded Contexts, aggregates, files, tables, modules, services, screens, packages, technologies or deployment units differ.
 
 commands:
   validate: make design-check
+  validate_vertical: python tools/check_harness_vertical.py
+  regression_vertical: python tools/test_harness_vertical.py
+  regression_authority_execution: python tools/test_authority_execution.py
+  prepare_authority_context: make authority-context AUTHORITY=SYSTEM-ARCHITECTURE
   regenerate: make design-sync
   affected_example: python tools/check_canonical_graph.py --affected AP-DOMAIN
+
+authority_execution:
+  purpose: Deterministically prepare the bounded engineering context for one Authority before creating or updating its canonical artifacts.
+  persistent_state: false
+  input_source: The Authority's consumer contract resolved to canonical provider artifacts.
+  provider_support_rule: Include the provider artifact's dependency closure only while dependencies remain inside the same provider Authority; never cross into an undeclared Authority.
+  own_context: The Authority's current canonical artifacts are also readable because they are the only permitted write targets.
+  write_rule: Only canonical artifacts bound to the selected Authority may be modified; changed paths can be checked with prepare_authority_execution.py --check-write.
+  reference_fence: An owned canonical artifact may reference another canonical artifact path only when that path is present in the Authority execution context; undeclared downstream/cross-Authority path references are invalid.
+  ready_rule: Artifact production is allowed only when every required capability is PROVIDED or canonically NOT_APPLICABLE.
+  blocked_rule: BLOCKED or DESIGN_GAP stops artifact production and routes the issue to the upstream engineering Authority.
+  postcondition: After owned artifacts change, rerun design validation to republish capabilities and reevaluate downstream contracts.
+  anti_workflow_rule: Execution context is ephemeral routing data; it is not a stage, task capsule, approval, maturity state or project workflow record.
 
 stop_conditions:
   - required human-owned product/domain truth is missing
   - current canonical owners contradict each other materially
+  - a required consumer capability is DESIGN_GAP
+  - an unresolved Question blocks a required provider or its downstream dependency closure
   - a requested action lacks required authorization
   - a consumed canonical input changes before a coherent write
   - requested scope is complete
 
 specialized_owners:
+  requirements: docs/requirements/
   structural_c4: docs/architecture/structurizr/workspace.dsl
+  application_architecture: docs/architecture/mvp-system-rules.yaml
+  security_architecture: docs/architecture/mvp-security-architecture.yaml
+  module_contracts: docs/architecture/mvp-module-contracts.yaml
+  shared_technical_conventions: docs/architecture/mvp-technical-representation.yaml
   http: docs/contracts/http/napms.openapi.yaml
   persistence: docs/architecture/persistence/mvp-persistence.yaml
+  quality: docs/architecture/mvp-quality-requirements.yaml
+  security_review: docs/architecture/mvp-threat-model.yaml
+  observability: docs/architecture/mvp-observability.yaml
   semantic_domain: docs/model/
   implementation_readiness: docs/plans/
 
 rules:
-  - One semantic fact has one current owner; other artifacts reference it.
+  - Every current canonical-graph node has exactly one Authority binding.
+  - Every capability in provides is a public output contract and must be consumed downstream or explicitly terminal.
+  - Input contracts and canonical cross-Authority dependencies must agree on the same upstream Authority set.
+  - Cross-Authority dependencies must form a DAG.
+  - Internal canonical refinements do not need public capabilities merely to prove they exist.
+  - One semantic fact has one current owner; other artifacts reference or derive from it.
+  - A lifecycle stage or documentation folder is never accepted as an Authority merely because it groups work.
+  - A Bounded Context or domain module is subject matter inside engineering artifacts and is not a Harness Authority merely because DDD gives it semantic ownership.
+  - Context Map, C4 views, OpenAPI, ERD and similar representations are artifacts/projections owned by engineering Authorities; they are not Authorities themselves.
   - Standard DSLs own only the truth they naturally express.
   - Generators never invent missing semantic details.
+  - Consumer contracts define required knowledge, not workflow state or approval.
+  - NOT_APPLICABLE requires canonical evidence; missing knowledge is not equivalent to non-applicability.
+  - Missing downstream knowledge is routed to the Authority allowed to decide it.
   - Bounded Context does not imply service process database team or deployment unit.
   - Implementation readiness never grants product implementation authorization.
   - Historical migration artifacts are evidence, not normal navigation.

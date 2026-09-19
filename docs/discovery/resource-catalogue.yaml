@@ -78,3 +78,11 @@ capability_discovery_evidence:
       capability_ids: [CAP-AM-CURATION-ADMISSION]
       rationale: Action admission uses an independently reusable authority model whose meaning is distinct from Resource catalogue ownership, responsibility and visibility.
       status: accepted
+
+observations:
+  - id: OBS-RC-HISTORY-VISIBILITY
+    source: GitHub issue #55 / Resource authoring validation I29/J02
+    finding: The supported Resource detail workspace exposes effective/current realization, scope-affiliation and responsibility facts, but ended/replaced facts are not inspectable there after replacement or end operations.
+    consequence: Users cannot verify from the supported product that a replaced or ended fact was preserved as history, even though the product reports that the previous fact became historical.
+    desired_outcome: Users can inspect current and historical Resource facts through the supported product while preserving stable Resource identity, temporal validity and provenance.
+    status: accepted-problem-evidence

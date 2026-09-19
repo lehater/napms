@@ -1,0 +1,23 @@
+version: 1
+kind: security-architecture
+id: NAPMS-MVP-SECURITY-ARCHITECTURE
+status: PILOT_CURRENT
+
+purpose: Own the first-MVP authentication identity boundary and protected-action admission architecture without redefining Authority Management domain semantics.
+
+identity_boundary: Authenticated actor identity is established by the backend session boundary and is not accepted from caller-supplied actor fields.
+authentication_baseline: Local username/password authentication with server-side session is sufficient for the first MVP.
+admission: Protected application use cases ask Authority Management for effective actor/action/scope admission and fail closed when required authority is unknown or ambiguous.
+ownership_rule: Frontend visibility, disabled controls, Resource responsibility, catalogue facts and other domain metadata never substitute for Authority Management admission.
+composition_rule: Application orchestration performs admission before invoking protected owner-module mutation; owner domain semantics remain unchanged by presentation concerns.
+
+external_identity:
+  external_idp: NOT_APPLICABLE
+  reason: No external identity provider is part of the accepted first-MVP runtime baseline.
+
+required_inputs:
+  - authenticated request/session boundary
+  - Authority Management effective admission semantics
+  - application use-case mutation boundaries
+
+security_questions_remaining: []

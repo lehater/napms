@@ -1,0 +1,21 @@
+version: 1
+kind: product-quality-targets
+id: NAPMS-FIRST-MVP-QUALITY-TARGETS
+status: ACCEPTED_CURRENT
+
+purpose: Own the first-MVP product decision about numeric quality targets without allowing architecture or implementation to invent them.
+
+decision:
+  numeric_latency_target: NOT_REQUIRED
+  numeric_throughput_target: NOT_REQUIRED
+  numeric_availability_target: NOT_REQUIRED
+  numeric_scale_target: NOT_REQUIRED
+  scope: first MVP
+  meaning: Numeric latency, throughput, availability and scale targets are not mandatory product requirements for the first MVP.
+
+rationale: Product input explicitly confirms that these numeric targets are not required for the first MVP. Existing qualitative correctness, security, integrity, maintainability and operability constraints remain applicable.
+
+provenance:
+  question_id: MVP-NUMERIC-QUALITY-TARGETS
+  answered_by: external-product-input
+  answer_date: 2026-09-19

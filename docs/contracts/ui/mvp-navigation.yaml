@@ -1,0 +1,38 @@
+version: 1
+kind: ui-navigation-model
+id: NAPMS-MVP-UI-NAVIGATION
+status: PILOT_CURRENT
+
+purpose: Define the minimum supported web-navigation knowledge needed by the Resource history pilot without designing the whole NAPMS UI.
+
+workspaces:
+  - id: RESOURCE-CATALOGUE
+    responsibility: Entry workspace for locating/selecting a Resource and starting existing Resource authoring journeys.
+  - id: RESOURCE-DETAIL
+    responsibility: Inspect one stable Resource identity, its current facts and its ended/replaced history.
+
+transitions:
+  - {from: RESOURCE-CATALOGUE, action: select-resource, to: RESOURCE-DETAIL, identity: ResourceId}
+  - {from: RESOURCE-DETAIL, action: back-to-catalogue, to: RESOURCE-CATALOGUE}
+  - {from: RESOURCE-DETAIL, action: open-history, to: RESOURCE-DETAIL, local_state: history-open}
+
+journey:
+  id: RESOURCE-HISTORY-INSPECTION
+  steps:
+    - User locates/selects a Resource in RESOURCE-CATALOGUE.
+    - System opens RESOURCE-DETAIL for the selected ResourceId.
+    - Current Resource facts are immediately readable.
+    - User opens History without leaving RESOURCE-DETAIL.
+    - Ended/replaced facts are inspectable with validity and provenance.
+    - After an existing replace/end action completes, RESOURCE-DETAIL refreshes so the new current fact and previous historical fact can be verified together.
+
+rules:
+  - Navigation passes stable ResourceId, never a database row identity.
+  - History is subordinate state of Resource detail, not a separate business object or independent workspace.
+  - Loading, not-found and error states do not change Resource domain semantics.
+  - This model owns navigation/interaction structure only; HTTP representation remains owned by the HTTP/OpenAPI contracts.
+
+out_of_scope:
+  - navigation for unrelated MVP capabilities
+  - global visual shell and styling
+  - component-library selection

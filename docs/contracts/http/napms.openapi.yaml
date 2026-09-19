@@ -30,6 +30,25 @@ paths:
         '422': {$ref: '#/components/responses/DomainRejected'}
         '503': {$ref: '#/components/responses/ServiceUncertain'}
 
+  /api/resources/{resourceId}:
+    get:
+      operationId: getResourceDetail
+      summary: Inspect current and historical Resource catalogue facts
+      parameters:
+        - {$ref: '#/components/parameters/ResourceId'}
+      responses:
+        '200':
+          description: Resource detail with current facts and ended/replaced history
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ResourceDetail'}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404':
+          description: Resource not found
+          content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
+        '503': {$ref: '#/components/responses/ServiceUncertain'}
+
   /api/resources/{resourceId}/address-space:
     put:
       operationId: setResourceAddressSpace
@@ -417,6 +436,84 @@ components:
         service: {type: string}
         sourcePort: {$ref: '#/components/schemas/PortRange'}
         destinationPort: {$ref: '#/components/schemas/PortRange'}
+
+    ValidityInterval:
+      type: object
+      additionalProperties: false
+      required: [validFrom, validTo]
+      properties:
+        validFrom: {$ref: '#/components/schemas/Timestamp'}
+        validTo:
+          oneOf:
+            - {$ref: '#/components/schemas/Timestamp'}
+            - {type: 'null'}
+
+    ResourceRealizationFactView:
+      type: object
+      additionalProperties: false
+      required: [factId, addressSpace, validity, provenance]
+      properties:
+        factId: {$ref: '#/components/schemas/StableId'}
+        addressSpace: {$ref: '#/components/schemas/AddressSpace'}
+        validity: {$ref: '#/components/schemas/ValidityInterval'}
+        provenance: {$ref: '#/components/schemas/Provenance'}
+
+    ResourceScopeAffiliationView:
+      type: object
+      additionalProperties: false
+      required: [factId, responsibilityScopeId, validity, provenance]
+      properties:
+        factId: {$ref: '#/components/schemas/StableId'}
+        responsibilityScopeId: {$ref: '#/components/schemas/StableId'}
+        validity: {$ref: '#/components/schemas/ValidityInterval'}
+        provenance: {$ref: '#/components/schemas/Provenance'}
+
+    ResourceResponsibilityView:
+      type: object
+      additionalProperties: false
+      required: [factId, responsiblePartyRef, role, validity, provenance]
+      properties:
+        factId: {$ref: '#/components/schemas/StableId'}
+        responsiblePartyRef: {type: string, minLength: 1}
+        role: {type: string, minLength: 1}
+        validity: {$ref: '#/components/schemas/ValidityInterval'}
+        provenance: {$ref: '#/components/schemas/Provenance'}
+
+    ResourceDetail:
+      type: object
+      additionalProperties: false
+      required: [resourceId, current, history]
+      properties:
+        resourceId: {$ref: '#/components/schemas/StableId'}
+        current:
+          type: object
+          additionalProperties: false
+          required: [realization, scopeAffiliations, responsibilities]
+          properties:
+            realization:
+              oneOf:
+                - {$ref: '#/components/schemas/ResourceRealizationFactView'}
+                - {type: 'null'}
+            scopeAffiliations:
+              type: array
+              items: {$ref: '#/components/schemas/ResourceScopeAffiliationView'}
+            responsibilities:
+              type: array
+              items: {$ref: '#/components/schemas/ResourceResponsibilityView'}
+        history:
+          type: object
+          additionalProperties: false
+          required: [realizations, scopeAffiliations, responsibilities]
+          properties:
+            realizations:
+              type: array
+              items: {$ref: '#/components/schemas/ResourceRealizationFactView'}
+            scopeAffiliations:
+              type: array
+              items: {$ref: '#/components/schemas/ResourceScopeAffiliationView'}
+            responsibilities:
+              type: array
+              items: {$ref: '#/components/schemas/ResourceResponsibilityView'}
 
     CreateResourceRequest:
       type: object

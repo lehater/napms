@@ -13,18 +13,66 @@ Repository state, not chat history, determines where work resumes.
 
 ## Current design authority
 
+- `docs/requirements/**` — accepted product intent, behavior, scope and acceptance truth.
 - `docs/model/**` — strategic/tactical/domain/use-case truth.
 - `docs/architecture/structurizr/workspace.dsl` — structural C4/deployment architecture.
-- `docs/architecture/mvp-system-rules.yaml` — non-C4 architecture constraints.
+- `docs/architecture/mvp-system-rules.yaml` — application-boundary, module-interaction, consistency and integration-boundary architecture.
+- `docs/architecture/mvp-security-architecture.yaml` — authentication identity boundary and protected-action admission architecture.
+- `docs/architecture/mvp-module-contracts.yaml` — canonical in-process module/application contracts.
+- `docs/architecture/mvp-technical-representation.yaml` — technical conventions shared by multiple concrete contracts.
 - `docs/architecture/persistence/mvp-persistence.yaml` — physical persistence design.
+- `docs/architecture/mvp-quality-requirements.yaml` — architecture-significant quality constraints.
+- `docs/architecture/mvp-threat-model.yaml` — first-MVP threat model.
+- `docs/architecture/mvp-observability.yaml` — diagnostic/observability requirements.
 - `docs/contracts/http/napms.openapi.yaml` — HTTP contract.
-- `docs/plans/**` — implementation-readiness and verification intent.
+- `docs/plans/**` — implementation design/readiness and verification intent.
 - `docs/canonical-graph.yaml` — routing/dependency metadata only.
-- `docs/harness-core.yaml` — selected Harness integration metadata only; it references canonical-graph node IDs and never owns artifact paths, dependencies or product/domain/architecture semantics.
+- `docs/harness-core.yaml` — NAPMS-owned Authority/Capability/Question/consumer-contract projection over the canonical graph; it never owns artifact paths, dependencies or product/domain/architecture semantics.
 - `docs-generated/**` — generated non-canonical views.
 - `docs/migration/revalidated/**` and `docs-legacy/**` — historical migration evidence.
 
 Product code/tests are implementation/evidence. Never use them to invent or reconstruct missing product/domain/architecture semantics.
+
+## Engineering-knowledge vertical
+
+For the pilot, engineering-design responsibility boundaries are checked through `docs/harness-core.yaml`.
+
+Keep three levels distinct:
+
+- **Authority** — owns one kind of engineering decision/knowledge (for example Strategic DDD, System Architecture, Interface Design);
+- **Artifact** — canonical or generated representation of that knowledge (for example context-map sources, C4 DSL, OpenAPI, persistence model);
+- **subject matter** — Bounded Contexts, aggregates, modules, endpoints and other things described inside an artifact.
+
+A Bounded Context or domain module is not a Harness Authority merely because it has semantic ownership inside DDD. The Context Map is an engineering artifact/projection owned by Strategic Domain Design; the contexts shown on it are its subject matter.
+
+The model is about engineering-decision ownership and downstream knowledge needs, not workflow state:
+
+- each selected canonical artifact belongs to one Authority;
+- bindings declare the capabilities that artifact provides;
+- contracts declare what a downstream responsibility needs;
+- a missing capability is a design gap and must be routed to the owning Authority;
+- `NOT_APPLICABLE` requires explicit canonical evidence;
+- unresolved Questions block directly named artifacts and their downstream dependency closure;
+- every node in the current canonical graph has exactly one Authority binding;
+- every capability listed in `provides` is a public Authority output and must be consumed by another Authority/consumer or declared explicitly terminal with a reason;
+- for every non-root Authority, the set of upstream Authorities in its input contract must equal the set implied by cross-Authority dependencies in `docs/canonical-graph.yaml`: neither hidden dependencies nor phantom contract inputs are allowed.
+- the resulting engineering-Authority dependency graph must remain acyclic; a cycle is evidence that decision families were grouped incorrectly or dependencies are wrong.
+
+Do not publish internal intermediate facts merely because a canonical artifact exists. Artifact ownership and public capability exposure are separate decisions.
+
+### Authority boundary convergence
+
+An engineering discipline/decision family is only a candidate Authority boundary. Recursively challenge it until all three checks pass:
+
+1. **semantic cohesion** — the area owns one coherent family of authoritative decisions/facts rather than several independently meaningful owners;
+2. **independent change** — its semantics/lifecycle/invariants can evolve without requiring knowledge of a peer's private model;
+3. **stable public contract** — required inputs, public semantic outputs and Question routing are unambiguous.
+
+If any check fails, split the engineering responsibility into smaller decision families and run the same checks again. Stop only when all three pass and the current canonical graph has no unowned node. Do not split by Bounded Context, aggregate, module, file, table, service, screen, package, technology or deployment unit unless that split also proves a distinct engineering-decision owner.
+
+Use `python tools/check_harness_vertical.py` for the real first-MVP contracts and `python tools/test_harness_vertical.py` for acceptance/regression behavior.
+
+This repository does not import, pin or call the separate `lehater/harness` repository. The local files are NAPMS-owned copies/adaptations of the ideas being piloted here.
 
 ## Semantic harvesting during elicitation
 
@@ -49,11 +97,38 @@ For explicit evidence synthesis or substantial harvesting across one or more sta
 
 ## Work
 
+For work that creates or updates artifacts inside one engineering Authority, first prepare its bounded execution context:
+
+```sh
+make authority-context AUTHORITY=SYSTEM-ARCHITECTURE
+```
+
+The execution context is ephemeral routing data, not a canonical artifact, work item, approval or workflow state. It contains only:
+
+- canonical provider artifacts for capabilities declared by that Authority's input contract;
+- supporting dependency artifacts inside each provider's own Authority (same-Authority closure only);
+- the Authority's own current artifacts;
+- its permitted write paths and public outputs;
+- blocking Questions or DESIGN_GAPs.
+
+If its status is `BLOCKED`, do not produce or patch the target Authority's artifacts to compensate; resolve the upstream Question/gap first. If it is `READY`, use only the listed upstream inputs plus the Authority's own artifacts as engineering context and write only owned paths.
+
+Before finalizing an Authority edit, the changed canonical paths can be checked against ownership:
+
+```sh
+python tools/prepare_authority_execution.py SYSTEM-ARCHITECTURE \
+  --check-write docs/architecture/mvp-system-rules.yaml docs/architecture/mvp-module-contracts.yaml
+```
+
+Then rerun `make design-check` so published capabilities and downstream contracts are re-evaluated.
+
+Canonical artifacts owned by the selected Authority must not reference canonical paths outside that execution context. A literal downstream canonical-path reference is treated as an ownership/dependency leak even when the canonical graph omitted that edge.
+
 Change the smallest owning artifact set. Follow graph dependencies for downstream impact. Regenerate projections rather than editing generated diagrams.
 
 Use `make design-check`, `make design-sync`, and `python tools/check_canonical_graph.py --affected <NODE-ID>`.
 
-When Harness is used, treat `docs/harness-core.yaml` as a selected projection over `docs/canonical-graph.yaml`: Authority/Capability/Question metadata may be declared there, but routing remains owned by the canonical graph. Do not copy `path` or `depends_on` into Harness metadata.
+When a downstream consumer reports missing knowledge, route the gap to the engineering Authority that owns that kind of decision; do not route it merely to the Bounded Context or module mentioned by the missing fact. After canonical repair, rerun affected contracts and projections.
 
 A Bounded Context is not automatically a service, process, database, team or deployment unit. Current MVP remains one browser frontend, one modular-monolith backend and one PostgreSQL database with module-owned persistence and in-process owner contracts.
 

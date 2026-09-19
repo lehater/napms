@@ -2,6 +2,9 @@ version: 1
 kind: tactical-domain-model
 id: NAPMS-BC-DOMAIN-MODEL
 bounded_context_ref: BC-BUSINESS-CONNECTIVITY
+knowledge_coverage:
+  subject: BC-BUSINESS-CONNECTIVITY
+  knowledge: tactical-domain-model
 
 aggregate_semantics: [BusinessProcess, ConnectivityNeed]
 invariants:

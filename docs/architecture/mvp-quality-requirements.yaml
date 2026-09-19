@@ -1,0 +1,33 @@
+version: 2
+kind: quality-requirements
+id: NAPMS-MVP-QUALITY-REQUIREMENTS
+status: PILOT_CURRENT
+scope: Architecture-significant quality constraints for the first MVP that are already implied by accepted requirements/domain/architecture truth. This file does not invent production SLOs.
+
+scenarios:
+  - id: QR-CORRECTNESS-001
+    characteristic: functional-suitability
+    requirement: A successful policy materialization is complete; missing required owner input yields Unresolved and never a silently partial result.
+    evidence_refs: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, SYSTEM-RULES]
+  - id: QR-SECURITY-001
+    characteristic: security
+    requirement: Protected mutations require authenticated session identity and effective Authority Management admission; caller-supplied identity and UI visibility never authorize mutation.
+    evidence_refs: [SECURITY-ARCHITECTURE, AM-LANGUAGE]
+  - id: QR-INTEGRITY-001
+    characteristic: reliability
+    requirement: Owner aggregate invariants and accepted policy transitions are transactional; persistence or transport uncertainty must not be represented as successful mutation.
+    evidence_refs: [SYSTEM-RULES, PERSISTENCE, HTTP-REQUIREMENTS]
+  - id: QR-MAINTAINABILITY-001
+    characteristic: maintainability
+    requirement: Module ownership and explicit in-process contracts remain visible in implementation and persistence; cross-module tables are not integration contracts.
+    evidence_refs: [SYSTEM-RULES, MODULE-CONTRACTS, PERSISTENCE]
+  - id: QR-OPERABILITY-001
+    characteristic: interaction-capability
+    requirement: User-visible validation, authorization denial and Unresolved outcomes must remain distinguishable rather than being collapsed into successful behavior.
+    evidence_refs: [FIRST-MVP-REQUIREMENTS, HTTP-REQUIREMENTS]
+
+unresolved_quality_questions:
+  - Numeric latency, throughput, availability and scale targets are not present in accepted upstream product truth. They remain unspecified rather than being invented by Architecture.
+
+provenance:
+  basis: Derived only from current accepted canonical requirements/domain/architecture constraints during the Harness documentation-vertical pilot.

@@ -2,6 +2,9 @@ version: 1
 kind: tactical-domain-model
 id: NAPMS-RC-DOMAIN-MODEL
 bounded_context_ref: BC-RESOURCE-CATALOGUE
+knowledge_coverage:
+  subject: BC-RESOURCE-CATALOGUE
+  knowledge: tactical-domain-model
 depends_on:
   - NAPMS-UC-RC-CURATION
   - NAPMS-RC-CURATION-PROCESS

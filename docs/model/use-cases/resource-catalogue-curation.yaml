@@ -1,6 +1,9 @@
 version: 1
 kind: use-case-model
 id: NAPMS-UC-RC-CURATION
+knowledge_coverage:
+  subject: BC-RESOURCE-CATALOGUE
+  knowledge: domain-use-case
 depends_on:
   - NAPMS-DISCOVERY-RC-CURATION
 bounded_context_refs:
@@ -21,13 +24,18 @@ behavior: |-
   5. affiliate the Resource with one or more Responsibility Scopes using the existing time-qualified affiliation semantics;
   6. end or replace a scope affiliation without changing Resource identity;
   7. maintain Resource Responsibility assignments for supported person/team references and roles; and
-  8. inspect the effective/current Resource projection while retaining access to technical identifiers and provenance.
+  8. inspect the effective/current Resource projection while retaining access to technical identifiers and provenance; and
+  9. inspect ended/replaced realization, scope-affiliation and responsibility facts as Resource history, including their temporal validity and provenance, without losing the immediately readable current state.
 
   ## Resource discovery and missing relations
 
   The Resource workspace shall provide server-backed paging, search/filter over Resource reference and available display/contact information, and scope-focused filtering using effective Resource Scope Affiliation.
 
   A Resource remains a Resource when no effective scope affiliation or realization exists. Missing current realization, scope affiliation or relevant operational responsibility/contact information shall be represented explicitly rather than hidden or fabricated.
+
+  ## Current and historical inspection
+
+  Resource detail shall distinguish effective/current facts from ended/replaced historical facts for technical realizations, Responsibility Scope affiliations and Resource Responsibility/contact assignments. Current facts remain immediately readable; historical facts remain inspectable through the supported product with their validity and provenance. Historical inspection shall not collapse temporal versions into mutable current state or require direct API/database access.
 
   ## Cardinality contract
 

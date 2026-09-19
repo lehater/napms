@@ -9,6 +9,8 @@ on:
       - "docs/README.md"
       - "docs/canonical-graph.yaml"
       - "docs/harness-core.yaml"
+      - "docs/engineering-knowledge-completeness.yaml"
+      - "docs/requirements/**"
       - "docs/discovery/**"
       - "docs/model/**"
       - "docs/architecture/**"
@@ -19,6 +21,9 @@ on:
       - "docs/spec/artifacts.md"
       - "docs/meta/current-workstream.yaml"
       - "tools/check_canonical_graph.py"
+      - "tools/check_harness_vertical.py"
+      - "tools/check_knowledge_completeness.py"
+      - "tools/test_harness_vertical.py"
       - "tools/check_openapi_contract.py"
       - "tools/check_persistence_model.py"
       - "tools/check_design_control.py"
@@ -26,6 +31,7 @@ on:
       - "tools/generate_*_view.py"
       - "tools/generate_*_views.py"
       - "tools/generate_persistence_erd.py"
+      - "tools/generate_human_context_package.py"
       - "Makefile"
       - ".github/workflows/design.yml"
   pull_request:
@@ -36,6 +42,7 @@ on:
       - "docs/README.md"
       - "docs/canonical-graph.yaml"
       - "docs/harness-core.yaml"
+      - "docs/requirements/**"
       - "docs/discovery/**"
       - "docs/model/**"
       - "docs/architecture/**"
@@ -46,6 +53,8 @@ on:
       - "docs/spec/artifacts.md"
       - "docs/meta/current-workstream.yaml"
       - "tools/check_canonical_graph.py"
+      - "tools/check_harness_vertical.py"
+      - "tools/test_harness_vertical.py"
       - "tools/check_openapi_contract.py"
       - "tools/check_persistence_model.py"
       - "tools/check_design_control.py"
@@ -53,6 +62,7 @@ on:
       - "tools/generate_*_view.py"
       - "tools/generate_*_views.py"
       - "tools/generate_persistence_erd.py"
+      - "tools/generate_human_context_package.py"
       - "Makefile"
       - ".github/workflows/design.yml"
 
@@ -65,5 +75,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate canonical design graph and projections
+      - name: Validate canonical design graph, responsibility contracts and projections
         run: make design-check
+      - name: Materialize human implementation package
+        run: make human-implementation-package
+      - name: Upload human implementation package
+        uses: actions/upload-artifact@v4
+        with:
+          name: implementation-documentation-package
+          path: docs-generated/implementation-package/

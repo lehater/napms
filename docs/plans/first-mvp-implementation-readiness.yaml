@@ -1,33 +1,30 @@
-version: 1
+version: 4
 kind: implementation-readiness
 id: NAPMS-FIRST-MVP-IMPLEMENTATION-READINESS
-status: ACCEPTED_CURRENT
+status: PILOT_CURRENT
 
-goal: Make the accepted first-MVP journey directly implementable and verifiable without reopening product, domain or system architecture decisions.
+goal: Turn the accepted first-MVP design into executable implementation slices and explicit completion criteria without reopening product, domain or architecture decisions.
 
 design_refs:
+  requirements: docs/requirements/first-mvp-policy-export.yaml
   journey: docs/model/use-cases/first-mvp-policy-export.yaml
-  strategic_model: docs/model/strategic/bounded-contexts.yaml
   system_structure: docs/architecture/structurizr/workspace.dsl
-  system_rules: docs/architecture/mvp-system-rules.yaml
+  application_architecture: docs/architecture/mvp-system-rules.yaml
+  security_architecture: docs/architecture/mvp-security-architecture.yaml
+  module_contracts: docs/architecture/mvp-module-contracts.yaml
+  shared_technical_conventions: docs/architecture/mvp-technical-representation.yaml
   http_contract: docs/contracts/http/napms.openapi.yaml
+  ui_navigation: docs/contracts/ui/mvp-navigation.yaml
+  resource_detail_ui: docs/contracts/ui/resource-detail.yaml
   persistence: docs/architecture/persistence/mvp-persistence.yaml
-  technical_representation: docs/architecture/mvp-technical-representation.yaml
+  quality_requirements: docs/architecture/mvp-quality-requirements.yaml
+  threat_model: docs/architecture/mvp-threat-model.yaml
+  observability: docs/architecture/mvp-observability.yaml
 
 implementation_boundary:
   includes: [browser workflow, HTTP/JSON application API, modular-monolith modules, PostgreSQL persistence, Authority Management admission, vendor-neutral policy materialization, table and CSV export]
   excludes: [provider-specific rendering, Network Enforcement Placement, Access Policy Realization, Network Environment Operations, Technical Access Evidence, external IdP, distributed services]
-  rule: Implement one end-to-end vertical journey while preserving accepted module ownership.
-
-module_contracts:
-  Resource Catalogue: [CreateResource, SetCurrentAddressSpace, ResolveResource]
-  Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionContractRevision, ResolveComponent, ResolveInteractionContractRevision]
-  Application Deployment: [CreateComponentDeployment, ResolveComponentDeployment]
-  Business Connectivity: [CreateBusinessProcess, CreateConnectivityNeed, ResolveCurrentConnectivityNeed]
-  Access Policy: [SubmitRuleChange, DecideRuleChange, WithdrawPolicyRule, ListEffectivePolicyRules]
-  Authority Management: ['Admit(actor, action, scope)']
-  Policy Export composition: [MaterializeCurrentPolicy]
-  rule: Cross-module semantics use owner contracts; tables are not integration contracts.
+  rule: Implement one end-to-end vertical journey while preserving accepted semantic and architecture ownership.
 
 vertical_sequence:
   - Author Resources and AddressSpace
@@ -44,20 +41,24 @@ frontend:
   rule: UI drives the API and displays validation/Unresolved outcomes; it never becomes authority for domain invariants or authorization.
 
 implementation_slices:
-  - 'foundation: session/auth admission, OpenAPI edge, composition root, PostgreSQL migrations'
+  - 'foundation: session/auth admission, OpenAPI edge, composition root, PostgreSQL migrations and diagnostic correlation'
   - 'authoring: RC + ACC + AD + Business Connectivity'
   - 'policy: Access Policy lifecycle and cross-module validation'
   - 'export: complete materialization + JSON table + CSV'
-  - 'frontend: complete browser journey'
+  - 'frontend: complete browser journey, including Resource detail current/history inspection'
   - 'verification: module + integration + API + end-to-end proof'
 
 completion_definition:
   - OpenAPI covers every required journey operation and explicit outcome.
   - PostgreSQL migrations establish only module-owned state needed by the journey.
-  - Backend interfaces preserve accepted ownership and introduce no internal HTTP.
+  - Backend interfaces implement the canonical module contracts and introduce no internal HTTP.
+  - Protected operations implement the canonical security boundary and Authority Management admission.
   - Browser completes the journey without hidden/manual state fabrication.
+  - Resource detail keeps current facts immediately readable and exposes ended/replaced realization, scope-affiliation and responsibility history with validity and provenance.
+  - Implementation preserves the quality, threat-control and observability constraints referenced above.
   - Verification covers happy path, rejection, withdrawal, authorization and Unresolved export.
   - No coding step requires a new product/domain/system-architecture decision.
 
-open_questions: []
+open_questions:
+  - Numeric performance, availability and scale targets are not present in accepted product truth and must not be invented during implementation.
 implementation_authorization: NOT_GRANTED_BY_THIS_ARTIFACT

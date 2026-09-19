@@ -1,12 +1,13 @@
-version: 1
-kind: system-architecture-rules
+version: 2
+kind: application-architecture-rules
 id: NAPMS-MVP-SYSTEM-RULES
+status: PILOT_CURRENT
 
+requirements_ref: docs/requirements/first-mvp-policy-export.yaml
 structural_model_ref: docs/architecture/structurizr/workspace.dsl
-persistence_model_ref: docs/architecture/persistence/mvp-persistence.yaml
-http_contract_requirements_ref: docs/contracts/http/napms-api-requirements.yaml
+module_contracts_ref: docs/architecture/mvp-module-contracts.yaml
 
-architecture_goal: Realize the complete accepted MVP journey on one frontend plus modular-monolith backend baseline, making system-wide technical choices once rather than independently per Bounded Context.
+architecture_goal: Realize the complete accepted MVP journey on one frontend plus modular-monolith backend baseline, making application-boundary and module-coordination choices once rather than independently per Bounded Context.
 
 application_boundary_rules:
   design_rule: API operations are organized around MVP use cases and resources exposed by the application boundary; they are not one network API per Bounded Context.
@@ -27,28 +28,16 @@ interaction_rules:
   - Access Policy acceptance validates exact deployment endpoints, exact immutable ACC revision and required current ConnectivityNeed basis through explicit module contracts before committing its owned transition.
   - Failure to resolve required materialization input propagates as Unresolved; the composition must not silently omit rows.
 
-authorization:
-  identity_boundary: Authenticated actor identity is established by the backend session boundary and is not accepted from caller-supplied actor fields.
-  authentication_baseline: Local username/password authentication with server-side session is sufficient for the MVP; no external identity provider is required.
-  admission: Protected application use cases ask Authority Management for effective actor/action/scope admission and fail closed when required authority is unknown or ambiguous.
-  ownership_rule: Frontend visibility, disabled controls, Resource responsibility, catalogue facts and other domain metadata never substitute for Authority Management admission.
-  composition_rule: Application orchestration performs admission before invoking protected owner-module mutation; owner domain semantics remain unchanged by presentation concerns.
-
 consistency:
   local: Aggregate invariants are enforced transactionally inside the owning module.
   cross_module: Cross-context validation uses explicit orchestration/contracts; do not manufacture distributed-service semantics inside the monolith.
   policy_acceptance: Formal Access Policy state transition is owned and committed by Access Policy after prerequisite semantic validation and protected-action admission.
-  export: 'Read composition may span modules; it returns Success with a complete result or Unresolved with explicit causes.'
+  export: Read composition may span modules; it returns Success with a complete result or Unresolved with explicit causes.
 
-deployment_policy:
-  external_dependencies: No external IdP, provider/device integration, evidence source or enforcement runtime is required for the first MVP journey.
-  evolution_rule: Module contracts and ownership boundaries permit later extraction only if a future quality/runtime need justifies it; extraction is not an MVP design goal.
-
-excluded_from_mvp_runtime:
-  - Network Enforcement Placement
-  - provider-specific rendering
-  - Access Policy Realization
-  - Network Environment Operations
-  - Technical Access Evidence ingestion/recognition
+integration_boundary:
+  asynchronous_messaging: NOT_APPLICABLE
+  asynchronous_messaging_reason: No asynchronous messaging boundary is introduced for the first-MVP modular monolith.
+  external_runtime_integrations_not_required: [provider/device integration, evidence source, enforcement runtime]
+  evolution_rule: Module contracts and ownership boundaries permit later extraction/integration only if a future quality/runtime need justifies it; extraction is not an MVP design goal.
 
 architecture_questions_remaining: []
