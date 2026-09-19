@@ -182,3 +182,42 @@ resolution artifact belongs to the addressed Authority.
 
 Harness now carries a compact acceptance fixture for this richer projection
 compatibility so the behavior is not protected only by NAPMS CI.
+
+
+## Explicit completeness coverage and subject specificity
+
+The NAPMS completeness pilot exposed two distinct issues.
+
+First, the project-local completeness checker used to infer coverage from
+`kind + bounded_context_ref` when explicit `knowledge_coverage` metadata was
+missing. That made an accepted coverage gap appear PRESENT. The checker now
+fails closed: only explicit `knowledge_coverage.subject + knowledge` declares
+coverage. Removing Resource Catalogue coverage now makes the accepted profile
+INCOMPLETE, while the unchanged repository remains COMPLETE.
+
+Second, the external Harness Design Profile resolves providers by
+`capability + authority`; `subject` is descriptive/profile identity and is
+not a provider filter. A broad capability such as
+`engineering.domain.tactical-model` therefore cannot by itself prove that a
+specific bounded context is covered when several same-Authority artifacts
+provide that broad capability.
+
+The NAPMS adapter derives subject-scoped coverage capabilities, for example:
+
+`napms.coverage.tactical-domain-model.BC-RESOURCE-CATALOGUE`
+
+The scoped coverage profile is COMPLETE in the accepted repository and becomes
+READY with exactly the Resource Catalogue expectation in CREATE when that
+specific scoped capability is removed.
+
+Conclusion for the agent layer:
+
+- project-owned consumer contracts define which engineering knowledge classes a
+  consumer needs;
+- project-owned completeness/coverage policy defines which subjects must be
+  covered;
+- both policies apply to the selected scope and must be evaluated/composed
+  before the agent claims COMPLETE;
+- no Core entity or provider-subject matching extension is required for this
+  phase as long as capabilities used for coverage are specific enough, or the
+  project-owned coverage check is evaluated alongside the consumer profile.
