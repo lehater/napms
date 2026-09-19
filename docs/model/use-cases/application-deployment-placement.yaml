@@ -1,0 +1,28 @@
+version: 1
+kind: use-case-model
+id: NAPMS-UC-AD-PLACEMENT
+bounded_context_refs:
+  - BC-APPLICATION-DEPLOYMENT
+
+purpose: Define the context-focused Application Deployment behavior required by the accepted first-MVP product intent without deciding tactical structure or technical realization.
+
+behavior: |-
+  # Application Deployment placement behavior
+
+  For the accepted first-MVP journey, the supported behavior shall allow the user to:
+
+  1. select an existing Application Communication Catalogue Component;
+  2. select an existing Resource;
+  3. create a concrete ComponentDeployment binding that Component to that Resource;
+  4. create distinct source and destination ComponentDeployments required by a directed Interaction; and
+  5. retain stable deployment references so downstream Access Policy and policy materialization can resolve the exact Component-to-Resource placement.
+
+  Moving the same logical Component to another Resource is represented as another concrete deployment rather than silently changing the meaning of an existing deployment reference. Resource AddressSpace remains Resource Catalogue truth and is resolved separately during materialization.
+
+inputs:
+  product_intent: docs/requirements/first-mvp-policy-export.yaml
+  strategic_model: docs/model/strategic/bounded-contexts.yaml
+  application_communication_model: docs/model/contexts/application-communication-catalogue/domain-model.yaml
+  resource_catalogue_model: docs/model/contexts/resource-catalogue/domain-model.yaml
+
+ownership_boundary: This artifact owns context-focused observable Application Deployment behavior for the accepted MVP slice. Component and Resource truth remain owned by their source contexts; aggregate invariants belong to tactical domain design; API, persistence and UI realization belong to later engineering authorities.
