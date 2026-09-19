@@ -153,6 +153,58 @@ jobs:
           )
           PY
 
+      - name: Verify scoped coverage profile avoids subject false positive
+        run: |
+          python .harness/derive_coverage_profile.py \
+            --harness-root .harness-tool \
+            --profile-output /tmp/coverage-profile.yaml \
+            --model-output /tmp/coverage-model.yaml
+          python - <<'PY'
+          import copy
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from target_state import evaluate_target_state
+
+          profile = yaml.safe_load(Path("/tmp/coverage-profile.yaml").read_text())
+          model = yaml.safe_load(Path("/tmp/coverage-model.yaml").read_text())
+
+          result = evaluate_target_state(profile, model)
+          assert result["status"] == "COMPLETE", result
+          assert result["create"] == [], result
+          assert result["wait"] == [], result
+
+          rc_expectation = next(
+              item
+              for item in profile["expectations"]
+              if item["subject"] == "BC-RESOURCE-CATALOGUE"
+              and item["capability"].startswith(
+                  "napms.coverage.tactical-domain-model."
+              )
+          )
+          rc_capability = rc_expectation["capability"]
+
+          without_rc = copy.deepcopy(model)
+          rc_artifact = next(
+              item for item in without_rc["artifacts"]
+              if item["id"] == "RC-DOMAIN"
+          )
+          rc_artifact["provides"] = [
+              value
+              for value in rc_artifact["provides"]
+              if value != rc_capability
+          ]
+
+          missing = evaluate_target_state(profile, without_rc)
+          assert missing["status"] == "READY", missing
+          assert {item["expectation"] for item in missing["create"]} == {
+              rc_expectation["id"]
+          }, missing
+          assert missing["wait"] == [], missing
+          PY
+
       - name: Verify unresolved artifact Question routes to WAIT
         run: |
           python - <<'PY'
