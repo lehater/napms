@@ -25,11 +25,12 @@ expectation_rules:
     subjects_from: journey.supporting_owner
     expects: tactical-domain-model
 
-  - id: MVP-DOMAIN-USE-CASE-COVERAGE
-    status: EXPERIMENTAL
-    rationale: Test whether context-focused use-case knowledge is needed for every participating strategic owner; this is not yet an accepted universal rule.
-    subjects_from: journey.participating_strategic_owners
-    expects: domain-use-case
+  # Pilot result: a blanket domain-use-case expectation for every participating
+  # strategic owner was tested and rejected. It produced thin artifacts that mostly
+  # restated accepted product intent or tactical invariants instead of adding an
+  # independently owned class of engineering knowledge. Context-focused use-case
+  # artifacts remain valid when a concrete project need justifies them (for example,
+  # Resource Catalogue curation), but participation alone does not require one.
 
 principles:
   - Harness completeness mechanism matches Expectations against canonical Coverage.
