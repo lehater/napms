@@ -6,7 +6,7 @@ status: PILOT_CURRENT
 purpose: Own the explicit in-process application/module contracts required to coordinate domain owners without turning persistence tables or HTTP into internal integration boundaries.
 
 contracts:
-  Resource Catalogue: [CreateResource, SetCurrentAddressSpace, ResolveResource]
+  Resource Catalogue: [CreateResource, SetCurrentAddressSpace, GetResourceDetail, ResolveResource]
   Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionContractRevision, ResolveComponent, ResolveInteractionContractRevision]
   Application Deployment: [CreateComponentDeployment, ResolveComponentDeployment]
   Business Connectivity: [CreateBusinessProcess, CreateConnectivityNeed, ResolveCurrentConnectivityNeed]
@@ -21,3 +21,13 @@ rules:
   - Missing owner semantics must be resolved by the owning domain Authority rather than added opportunistically to a consumer contract.
 
 basis_refs: [FIRST-MVP-JOURNEY, SYSTEM-RULES, STRATEGIC-RELATIONSHIPS]
+
+resource_catalogue_query_contracts:
+  GetResourceDetail:
+    input: ResourceId
+    output: Resource detail containing stable identity plus current and ended/replaced ResourceRealizationFact, ResourceScopeAffiliation and ResourceResponsibility facts.
+    semantics:
+      - Current facts remain directly distinguishable from historical facts.
+      - Historical facts retain validity interval and provenance supplied by the owning Resource Catalogue model.
+      - Absence of a current fact is explicit and does not remove historical facts or Resource identity.
+    ownership: Resource Catalogue owns the returned business facts; this contract only defines the in-process application query boundary.
