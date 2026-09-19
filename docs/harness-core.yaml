@@ -304,6 +304,7 @@ contracts:
       - {id: persistence, capability: engineering.data.persistence-model, authority: DATA-DESIGN}
       - {id: quality, capability: engineering.quality.constraints, authority: QUALITY-DESIGN}
       - {id: observability, capability: engineering.operability.observability, authority: OPERABILITY-DESIGN}
+      - {id: threat-analysis, capability: engineering.security.threat-analysis, authority: SECURITY-ANALYSIS}
 
   - id: IMPLEMENTATION-DESIGN-INPUT
     consumer: IMPLEMENTATION-DESIGN
