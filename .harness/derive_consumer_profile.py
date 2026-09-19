@@ -78,14 +78,7 @@ def derive(
         )
     contract = contracts[0]
 
-    model = load_projection(projection_path)
-    if drop_capability:
-        for artifact in model.get("artifacts", []):
-            artifact["provides"] = [
-                value
-                for value in artifact.get("provides", []) or []
-                if value != drop_capability
-            ]
+    complete_model = load_projection(projection_path)
 
     requirements = contract.get("requires", []) or []
     capability_to_expectation: dict[str, str] = {}
@@ -110,7 +103,10 @@ def derive(
             }
         )
 
-    dependency_map = _dependency_expectations(model, capability_to_expectation)
+    dependency_map = _dependency_expectations(
+        complete_model,
+        capability_to_expectation,
+    )
     expectations: list[dict[str, Any]] = []
     for item in normalized:
         expectation = {
@@ -123,6 +119,17 @@ def derive(
         if dependencies:
             expectation["depends_on"] = dependencies
         expectations.append(expectation)
+
+    model = complete_model
+    if drop_capability:
+        import copy
+        model = copy.deepcopy(complete_model)
+        for artifact in model.get("artifacts", []):
+            artifact["provides"] = [
+                value
+                for value in artifact.get("provides", []) or []
+                if value != drop_capability
+            ]
 
     profile = {
         "version": 1,
