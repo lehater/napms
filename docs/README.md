@@ -80,7 +80,7 @@ To prepare the bounded input/output context for one engineering Authority:
 make authority-context AUTHORITY=SYSTEM-ARCHITECTURE
 ```
 
-This command does not create workflow state or a persistent task capsule. It deterministically resolves the Authority's declared input capabilities to canonical provider artifacts, lists only its owned write paths/public outputs, and returns `BLOCKED` when a required input is missing or blocked.
+This command does not create workflow state or a persistent task capsule. It deterministically resolves the Authority's declared input capabilities to canonical provider artifacts, adds only the provider's same-Authority dependency closure needed to understand that public capability, lists only the selected Authority's owned write paths/public outputs, and returns `BLOCKED` when a required input is missing or blocked. It never follows undeclared cross-Authority dependencies while building the execution context.
 
 A downstream gap is not repaired by editing another engineering Authority's artifact. It becomes a Question for the Authority that owns that kind of project decision. An unresolved Question blocks affected downstream contracts through canonical dependency closure.
 

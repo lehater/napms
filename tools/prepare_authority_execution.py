@@ -26,6 +26,29 @@ def _index_projection(
     return nodes, bindings, capability_providers
 
 
+def _same_authority_dependency_closure(
+    artifact_id: str,
+    nodes: dict[str, dict[str, Any]],
+    bindings: dict[str, dict[str, Any]],
+) -> set[str]:
+    owner = bindings[artifact_id]["authority"]
+    result: set[str] = set()
+    stack = [artifact_id]
+    while stack:
+        current = stack.pop()
+        for dependency in nodes[current].get("depends_on", []) or []:
+            if dependency not in bindings:
+                raise VerticalError(
+                    f"canonical dependency {dependency} of {current} has no Authority binding"
+                )
+            if bindings[dependency]["authority"] != owner:
+                continue
+            if dependency not in result:
+                result.add(dependency)
+                stack.append(dependency)
+    return result
+
+
 def build_execution_context(
     authority_id: str,
     graph: dict[str, Any],
@@ -72,6 +95,7 @@ def build_execution_context(
 
     requirements: list[dict[str, Any]] = []
     input_artifact_ids: set[str] = set()
+    supporting_artifact_ids: set[str] = set()
     blockers: list[dict[str, Any]] = []
 
     for spec in contract_specs:
@@ -84,6 +108,9 @@ def build_execution_context(
                 provider = bindings[artifact_id]
                 node = nodes[artifact_id]
                 input_artifact_ids.add(artifact_id)
+                supporting_artifact_ids.update(
+                    _same_authority_dependency_closure(artifact_id, nodes, bindings)
+                )
                 provider_artifacts.append(
                     {
                         "id": artifact_id,
@@ -152,11 +179,22 @@ def build_execution_context(
         for artifact_id in sorted(input_artifact_ids)
     ]
 
+    supporting_artifact_ids.difference_update(input_artifact_ids)
+    supporting_input_artifacts = [
+        {
+            "id": artifact_id,
+            "authority": bindings[artifact_id]["authority"],
+            "kind": nodes[artifact_id].get("kind"),
+            "path": nodes[artifact_id].get("path"),
+        }
+        for artifact_id in sorted(supporting_artifact_ids)
+    ]
+
     status = "ROOT" if authority_id in root_ids else ("BLOCKED" if blockers else "READY")
     allowed_reads = sorted(
         {
             item["path"]
-            for item in input_artifacts + owned_artifacts
+            for item in input_artifacts + supporting_input_artifacts + owned_artifacts
             if item.get("path")
         }
     )
@@ -172,6 +210,7 @@ def build_execution_context(
         "input_contracts": [item["id"] for item in contract_specs],
         "requirements": requirements,
         "input_artifacts": input_artifacts,
+        "supporting_input_artifacts": supporting_input_artifacts,
         "owned_artifacts": owned_artifacts,
         "public_outputs": sorted(public_outputs),
         "downstream_consumers": downstream,
@@ -181,7 +220,7 @@ def build_execution_context(
             "write": allowed_writes,
         },
         "execution_rules": [
-            "Use only declared input artifacts plus the Authority's own current artifacts as engineering context.",
+            "Use only declared input capability providers, their same-Authority internal dependency closure, and the selected Authority's own current artifacts as engineering context.",
             "Write only artifacts owned by this Authority.",
             "Do not invent missing upstream semantics; a BLOCKED or DESIGN_GAP input stops artifact production.",
             "After edits, run design validation so public capabilities and downstream contracts are re-evaluated.",

@@ -35,6 +35,12 @@ def main() -> int:
         "MODULE-CONTRACTS",
         "SYSTEM-RULES",
     }
+    architecture_support = {item["id"] for item in architecture["supporting_input_artifacts"]}
+    assert {"STRATEGIC-CAPABILITIES", "STRATEGIC-CONTEXTS"} <= architecture_support
+    assert {"RC-LANGUAGE", "RC-DECISIONS", "RC-PROCESS"} <= architecture_support
+    # Internal support may cross artifacts inside the provider Authority, but must not
+    # bypass the consumer contract into another engineering Authority.
+    assert "RC-CURATION" not in architecture_support
     assert set(architecture["access"]["write"]) == {
         "docs/architecture/mvp-module-contracts.yaml",
         "docs/architecture/mvp-system-rules.yaml",
@@ -68,6 +74,7 @@ def main() -> int:
     assert root["status"] == "ROOT"
     assert root["input_contracts"] == []
     assert root["input_artifacts"] == []
+    assert root["supporting_input_artifacts"] == []
     assert root["access"]["write"] == ["docs/requirements/first-mvp-policy-export.yaml"]
 
     blocked_projection = copy.deepcopy(projection)

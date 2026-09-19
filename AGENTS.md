@@ -105,7 +105,8 @@ make authority-context AUTHORITY=SYSTEM-ARCHITECTURE
 
 The execution context is ephemeral routing data, not a canonical artifact, work item, approval or workflow state. It contains only:
 
-- capabilities/artifacts declared by that Authority's input contract;
+- canonical provider artifacts for capabilities declared by that Authority's input contract;
+- supporting dependency artifacts inside each provider's own Authority (same-Authority closure only);
 - the Authority's own current artifacts;
 - its permitted write paths and public outputs;
 - blocking Questions or DESIGN_GAPs.
