@@ -1,30 +1,38 @@
-version: 2
-kind: engineering-knowledge-completeness
-id: NAPMS-FIRST-MVP-KNOWLEDGE-COMPLETENESS
+version: 3
+kind: engineering-completeness-profile
+id: NAPMS-FIRST-MVP-ENGINEERING-PROFILE
 status: PILOT
 
-purpose: Configure structural completeness rules for the accepted first-MVP scope. Expected subjects and ordinary coverage are derived from canonical engineering artifacts rather than repeated here.
+purpose: Declare NAPMS-specific structural knowledge expectations for the accepted first-MVP scope. The matching mechanism is generic; these rules are project engineering policy, not universal Harness semantics.
 
 sources:
   journey: docs/model/use-cases/first-mvp-policy-export.yaml
   strategic_contexts: docs/model/strategic/bounded-contexts.yaml
   canonical_graph: docs/canonical-graph.yaml
 
-rules:
+knowledge_types:
+  - tactical-domain-model
+  - domain-use-case
+
+expectation_rules:
   - id: MVP-TACTICAL-COVERAGE
-    dimension: tactical-domain-design
+    rationale: Participating strategic owners need explicit tactical semantics before the first-MVP journey is implemented.
     subjects_from: journey.participating_strategic_owners
-    supporting_subjects_from: journey.supporting_owner
-    coverage_kind: tactical-domain-model
-    supporting_coverage_kinds: [tactical-domain-model, domain-language]
+    expects: tactical-domain-model
+
+  - id: MVP-SUPPORTING-TACTICAL-COVERAGE
+    rationale: Supporting owners used by the journey need explicit tactical semantics for the behavior consumed by the journey.
+    subjects_from: journey.supporting_owner
+    expects: tactical-domain-model
 
   - id: MVP-DOMAIN-USE-CASE-COVERAGE
-    dimension: domain-use-case-design
+    status: EXPERIMENTAL
+    rationale: Test whether context-focused use-case knowledge is needed for every participating strategic owner; this is not yet an accepted universal rule.
     subjects_from: journey.participating_strategic_owners
-    coverage_kind: use-case
+    expects: domain-use-case
 
 principles:
-  - Expected subjects come from accepted canonical scope/journey semantics.
-  - Coverage comes from canonical artifact metadata and artifact content, not a duplicated PRESENT/MISSING table.
-  - Supporting owners may use a lighter accepted knowledge form than participating strategic owners when the canonical journey explicitly marks them supporting.
-  - This checker validates structural presence only; semantic correctness remains human review.
+  - Harness completeness mechanism matches Expectations against canonical Coverage.
+  - This profile owns which Expectations NAPMS chooses to assert.
+  - Experimental rules may reveal gaps but must not be treated as accepted methodology until reviewed.
+  - Structural presence does not assert semantic correctness.
