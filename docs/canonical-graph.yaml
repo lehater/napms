@@ -28,7 +28,8 @@ nodes:
   - {id: TECH-REPRESENTATION, kind: shared-technical-conventions, path: docs/architecture/mvp-technical-representation.yaml, depends_on: [SYSTEM-RULES, FIRST-MVP-JOURNEY, RC-DOMAIN]}
   - {id: HTTP-REQUIREMENTS, kind: contract-requirements, path: docs/contracts/http/napms-api-requirements.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, SYSTEM-RULES, MODULE-CONTRACTS, SECURITY-ARCHITECTURE, FIRST-MVP-JOURNEY, TECH-REPRESENTATION]}
   - {id: OPENAPI, kind: http-contract, path: docs/contracts/http/napms.openapi.yaml, depends_on: [HTTP-REQUIREMENTS, TECH-REPRESENTATION]}
-  - {id: MVP-UI-NAVIGATION, kind: ui-navigation-model, path: docs/contracts/ui/mvp-navigation.yaml, depends_on: [FIRST-MVP-JOURNEY, MODULE-CONTRACTS, OPENAPI]}\n  - {id: RESOURCE-DETAIL-UI, kind: ui-screen-contract, path: docs/contracts/ui/resource-detail.yaml, depends_on: [MVP-UI-NAVIGATION, MODULE-CONTRACTS, OPENAPI]}
+  - {id: MVP-UI-NAVIGATION, kind: ui-navigation-model, path: docs/contracts/ui/mvp-navigation.yaml, depends_on: [FIRST-MVP-JOURNEY, MODULE-CONTRACTS, OPENAPI]}
+  - {id: RESOURCE-DETAIL-UI, kind: ui-screen-contract, path: docs/contracts/ui/resource-detail.yaml, depends_on: [MVP-UI-NAVIGATION, MODULE-CONTRACTS, OPENAPI]}
   - {id: PERSISTENCE, kind: physical-persistence-model, path: docs/architecture/persistence/mvp-persistence.yaml, depends_on: [SYSTEM-RULES, TECH-REPRESENTATION, RC-DOMAIN, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN, AM-LANGUAGE]}
   - {id: QUALITY-REQUIREMENTS, kind: quality-requirements, path: docs/architecture/mvp-quality-requirements.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, SYSTEM-RULES, SECURITY-ARCHITECTURE, MODULE-CONTRACTS, OPENAPI, PERSISTENCE]}
   - {id: THREAT-MODEL, kind: threat-model, path: docs/architecture/mvp-threat-model.yaml, depends_on: [SYSTEM-RULES, SECURITY-ARCHITECTURE, MODULE-CONTRACTS, HTTP-REQUIREMENTS, TECH-REPRESENTATION, PERSISTENCE]}
