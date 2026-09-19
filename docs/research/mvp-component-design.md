@@ -126,3 +126,4 @@ Architecture tests should reject inner-layer framework imports, cross-module rep
 ## Implementation freedoms
 
 Coding may choose private helpers, local class/function representation, concrete construction technique, file split inside the accepted module taxonomy and local algorithms. Coding may not change module/application contract ownership, cross-module dependency direction, security admission placement, transaction/materialization semantics or introduce a new integration mechanism without reopening the owning design Authority.
+
