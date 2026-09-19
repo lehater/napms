@@ -22,7 +22,5 @@ behavior: |-
 inputs:
   product_intent: docs/requirements/first-mvp-policy-export.yaml
   strategic_model: docs/model/strategic/bounded-contexts.yaml
-  application_communication_model: docs/model/contexts/application-communication-catalogue/domain-model.yaml
-  resource_catalogue_model: docs/model/contexts/resource-catalogue/domain-model.yaml
 
 ownership_boundary: This artifact owns context-focused observable Application Deployment behavior for the accepted MVP slice. Component and Resource truth remain owned by their source contexts; aggregate invariants belong to tactical domain design; API, persistence and UI realization belong to later engineering authorities.
