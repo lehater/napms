@@ -1,0 +1,40 @@
+version: 1
+kind: ui-contract
+id: NAPMS-RESOURCE-DETAIL-UI
+status: PILOT_CURRENT
+
+purpose: Define the supported Resource detail presentation needed to inspect current and historical Resource Catalogue facts without database or raw-API access.
+
+screen:
+  id: RESOURCE-DETAIL
+  resource_identity: ResourceId remains visible as the stable identity of the workspace.
+  current:
+    priority: primary
+    behavior:
+      - Show the effective/current technical realization immediately when present; show explicit absence otherwise.
+      - Show effective/current Responsibility Scope affiliations.
+      - Show effective/current Resource Responsibility/contact assignments.
+  history:
+    priority: secondary-inspectable
+    behavior:
+      - Provide an explicit history section or disclosure distinct from current facts.
+      - Show ended/replaced technical realizations, scope affiliations and responsibilities.
+      - For every historical fact expose its validity interval and provenance.
+      - Do not present ended/replaced facts as current and do not collapse versions into mutable current state.
+
+interaction:
+  - Current facts are readable without opening history.
+  - Historical facts are reachable from Resource detail without database or raw-API access.
+  - After an end/replace operation, the user can verify that the previous fact remains in history.
+  - Existing Resource authoring actions retain their current behavior.
+
+data_contract:
+  source: GET /api/resources/{resourceId}
+  mapping:
+    current: ResourceDetail.current
+    history: ResourceDetail.history
+
+out_of_scope:
+  - visual styling system
+  - exact component library choice
+  - pagination of per-Resource history until evidence requires it
