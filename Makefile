@@ -48,6 +48,7 @@ dev-restore:
 design-sync:
 	python tools/check_canonical_graph.py
 	python tools/check_harness_vertical.py
+	python tools/check_knowledge_completeness.py
 	python tools/generate_strategic_views.py
 	python tools/generate_resource_catalogue_views.py
 	python tools/generate_acc_view.py
@@ -80,7 +81,7 @@ authority-context:
 	python tools/prepare_authority_execution.py "$(AUTHORITY)"
 
 human-implementation-package:
-	python tools/generate_human_context_package.py --consumer IMPLEMENTATION-CONSUMER --scope resource-history --scope-root RESOURCE-DETAIL-UI --scope-root MVP-IMPLEMENTATION-READINESS --scope-root MVP-TEST-INTENT
+	python tools/generate_human_context_package.py --consumer IMPLEMENTATION-CONSUMER
 
 architecture: design-sync
 	@docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true
