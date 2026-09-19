@@ -60,7 +60,7 @@ def render_readme(consumer_id, roots, nodes):
         "> Generated view. Do not edit. Canonical sources are listed below.", "",
         "Consumer: " + consumer_id, "",
         "This is the human-readable control view of the exact canonical knowledge resolved for implementation.", "",
-        "## Direct consumer artifacts", ""
+        "## Direct consumer artifacts", "",
     ]
     lines += ["- " + item for item in roots]
     lines += ["", "## Resolved canonical knowledge", ""]
@@ -69,8 +69,7 @@ def render_readme(consumer_id, roots, nodes):
         "This package owns no engineering truth. Edit the canonical source and regenerate this projection. "
         "The sources directory is a snapshot of the resolved canonical artifacts; manifest.yaml records "
         "the exact dependency closure used to build this package.", ""]
-    return "
-".join(lines)
+    return chr(10).join(lines)
 
 def materialize(consumer_id, out):
     roots, nodes = resolve(consumer_id)
@@ -90,6 +89,7 @@ def materialize(consumer_id, out):
     }
     (out / "manifest.yaml").write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
     (out / "README.md").write_text(render_readme(consumer_id, roots, nodes), encoding="utf-8")
+    nl = chr(10)
     for node in nodes:
         src = ROOT / node["path"]
         if not src.exists():
@@ -101,25 +101,15 @@ def materialize(consumer_id, out):
         human_dir = human / section
         human_dir.mkdir(parents=True, exist_ok=True)
         human_doc = human_dir / (node["id"].lower() + ".md")
-        body = src.read_text(encoding="utf-8")
-        human_doc.write_text(
-            "# " + node["id"].replace("-", " ").title() + "\
-\
-"
-            "> Generated view. Do not edit. Canonical source: `" + node["path"] + "`\
-\
-"
-            "Artifact kind: `" + node["kind"] + "`\
-\
-"
-            "## Canonical content\
-\
-```yaml\
-" + body.rstrip() + "\
-```\
-",
-            encoding="utf-8",
+        body = src.read_text(encoding="utf-8").rstrip()
+        rendered = (
+            "# " + node["id"].replace("-", " ").title() + nl + nl
+            + "> Generated view. Do not edit. Canonical source: " + node["path"] + nl + nl
+            + "Artifact kind: " + node["kind"] + nl + nl
+            + "## Canonical content" + nl + nl + "~~~yaml" + nl
+            + body + nl + "~~~" + nl
         )
+        human_doc.write_text(rendered, encoding="utf-8")
 
 def main():
     parser = argparse.ArgumentParser()
