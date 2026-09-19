@@ -4,58 +4,82 @@ import sys, yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL = ROOT / "docs/engineering-knowledge-completeness.yaml"
-GRAPH = ROOT / "docs/canonical-graph.yaml"
-VALID = {"PRESENT", "PARTIAL", "MISSING", "NOT_REQUIRED"}
 
 def load(path):
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
+def subject_for_node(node):
+    path = node["path"]
+    if not path.endswith((".yaml", ".yml")):
+        return None
+    data = load(ROOT / path)
+    if node["kind"] == "use-case":
+        owners = data.get("bounded_context") or data.get("owner") or data.get("context")
+        if isinstance(owners, str):
+            return owners
+        # Current RC use-case is explicitly Resource Catalogue curation.
+        if "resource-catalogue" in path:
+            return "Resource Catalogue"
+    if node["kind"] in {"tactical-domain-model", "domain-language"}:
+        context = data.get("bounded_context") or data.get("context") or data.get("name")
+        if isinstance(context, str):
+            return context
+        mapping = {
+            "resource-catalogue": "Resource Catalogue",
+            "authority-management": "Authority Management",
+            "application-communication-catalogue": "Application Communication Catalogue",
+            "application-deployment": "Application Deployment",
+            "business-connectivity": "Business Connectivity",
+            "access-policy": "Access Policy",
+        }
+        for token, subject in mapping.items():
+            if token in path:
+                return subject
+    return None
+
 def main():
-    model, graph = load(MODEL), load(GRAPH)
-    artifact_ids = {n["id"] for n in graph["nodes"]}
-    errors, incomplete = [], []
-    print("Engineering knowledge completeness")
-    for expectation in model.get("expectations", []):
-        eid = expectation["id"]
-        required = expectation.get("required_subjects", [])
-        coverage = expectation.get("coverage", {})
-        if set(required) != set(coverage):
-            errors.append(f"{eid}: required_subjects and coverage keys differ")
-        present = partial = missing = 0
-        for subject in required:
-            item = coverage.get(subject, {})
-            status = item.get("status")
-            artifacts = item.get("artifacts", [])
-            if status not in VALID:
-                errors.append(f"{eid}/{subject}: invalid status {status!r}")
-                continue
-            unknown = [a for a in artifacts if a not in artifact_ids]
-            if unknown:
-                errors.append(f"{eid}/{subject}: unknown artifacts {unknown}")
-            if status == "MISSING" and artifacts:
-                errors.append(f"{eid}/{subject}: MISSING must not reference artifacts")
-            if status in {"PRESENT", "PARTIAL"} and not artifacts:
-                errors.append(f"{eid}/{subject}: {status} must reference evidence")
-            if status == "PRESENT": present += 1
-            elif status == "PARTIAL": partial += 1
-            elif status == "MISSING": missing += 1
+    cfg = load(MODEL)
+    journey = load(ROOT / cfg["sources"]["journey"])
+    graph = load(ROOT / cfg["sources"]["canonical_graph"])
+    nodes = graph["nodes"]
+    by_kind = {}
+    for node in nodes:
+        by_kind.setdefault(node["kind"], []).append(node)
+
+    errors = []
+    incomplete = []
+    print("Engineering knowledge completeness (derived)")
+    for rule in cfg["rules"]:
+        subjects = list(journey.get(rule["subjects_from"].split(".")[-1], []))
+        supporting = []
+        if rule.get("supporting_subjects_from"):
+            supporting = list(journey.get(rule["supporting_subjects_from"].split(".")[-1], []))
+        rows = []
+        for subject in subjects:
+            matches = [n for n in by_kind.get(rule["coverage_kind"], []) if subject_for_node(n) == subject]
+            status = "PRESENT" if matches else "MISSING"
+            rows.append((subject, status, [n["id"] for n in matches]))
+        for subject in supporting:
+            kinds = rule.get("supporting_coverage_kinds", [rule["coverage_kind"]])
+            matches = [n for kind in kinds for n in by_kind.get(kind, []) if subject_for_node(n) == subject]
+            status = "PRESENT" if matches else "MISSING"
+            rows.append((subject, status, [n["id"] for n in matches]))
+        present = sum(1 for _,s,_ in rows if s == "PRESENT")
+        missing = sum(1 for _,s,_ in rows if s == "MISSING")
+        print(f"- {rule['id']}: PRESENT={present} MISSING={missing}")
+        for subject, status, artifacts in rows:
+            evidence = ",".join(artifacts) if artifacts else "-"
+            print(f"  {status:7} {subject} [{evidence}]")
             if status != "PRESENT":
-                incomplete.append((eid, subject, status))
-        print(f"- {eid}: PRESENT={present} PARTIAL={partial} MISSING={missing}")
-        for excluded in expectation.get("excluded_subjects", []):
-            if not excluded.get("reason"):
-                errors.append(f"{eid}/{excluded.get('subject')}: exclusion requires reason")
+                incomplete.append((rule["id"], subject))
     if errors:
-        print("\nStructural errors:")
-        for error in errors: print("  ERROR", error)
+        for e in errors: print("ERROR", e)
         return 2
+    print("\nCompleteness result:", "INCOMPLETE" if incomplete else "COMPLETE")
     if incomplete:
-        print("\nIncomplete knowledge:")
-        for eid, subject, status in incomplete:
-            print(f"  {status:7} {eid} :: {subject}")
-        print("\nCompleteness result: INCOMPLETE (diagnostic pilot; semantic review remains human)")
-    else:
-        print("\nCompleteness result: COMPLETE")
+        print("Missing derived knowledge:")
+        for rule, subject in incomplete:
+            print(f"  {rule} :: {subject}")
     return 0
 
 if __name__ == "__main__":
