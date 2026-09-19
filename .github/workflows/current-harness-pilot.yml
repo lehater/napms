@@ -103,6 +103,56 @@ jobs:
           print(results)
           PY
 
+      - name: Demonstrate subject-specific coverage limit
+        run: |
+          python - <<'PY'
+          import copy
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from adapters.canonical_graph import load_projection
+          from target_state import evaluate_target_state
+
+          model = load_projection(Path("docs/harness-core.yaml"))
+          profile = {
+              "version": 1,
+              "kind": "harness-design-profile",
+              "id": "SUBJECT-COVERAGE-PILOT",
+              "expectations": [
+                  {
+                      "id": "RC-TACTICAL",
+                      "subject": "BC-RESOURCE-CATALOGUE",
+                      "capability": "engineering.domain.tactical-model",
+                      "authority": "TACTICAL-DOMAIN-DESIGN",
+                  },
+              ],
+          }
+
+          complete = evaluate_target_state(profile, model)
+          assert complete["status"] == "COMPLETE", complete
+
+          without_rc = copy.deepcopy(model)
+          for artifact in without_rc["artifacts"]:
+              if artifact["id"] == "RC-DOMAIN":
+                  artifact["provides"] = [
+                      value
+                      for value in artifact.get("provides", [])
+                      if value != "engineering.domain.tactical-model"
+                  ]
+
+          # Current Harness resolves only by capability+authority. Other tactical
+          # providers therefore still satisfy this expectation even though the
+          # expected subject is specifically Resource Catalogue.
+          false_positive = evaluate_target_state(profile, without_rc)
+          assert false_positive["status"] == "COMPLETE", false_positive
+          print(
+              "KNOWN LIMIT: subject-specific coverage is not provider-matched; "
+              "RC expectation remains COMPLETE after RC-DOMAIN loses the capability"
+          )
+          PY
+
       - name: Verify unresolved artifact Question routes to WAIT
         run: |
           python - <<'PY'
