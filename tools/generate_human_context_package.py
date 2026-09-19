@@ -26,7 +26,7 @@ def load(path):
 def resolve(consumer_id):
     harness, graph = load(HARNESS), load(GRAPH)
     providers = {}
-    for item in harness.get("artifact_providers", []):
+    for item in harness.get("bindings", []):
         for capability in item.get("provides", []):
             providers[capability] = item["artifact"]
     contracts = {item["id"]: item for item in harness.get("contracts", [])}
