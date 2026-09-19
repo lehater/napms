@@ -61,6 +61,7 @@ design-sync:
 design-check:
 	python tools/check_canonical_graph.py
 	python tools/check_harness_vertical.py
+	python tools/check_knowledge_completeness.py
 	python tools/test_harness_vertical.py
 	python tools/test_authority_execution.py
 	python tools/check_openapi_contract.py
