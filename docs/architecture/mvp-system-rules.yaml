@@ -6,8 +6,6 @@ status: PILOT_CURRENT
 requirements_ref: docs/requirements/first-mvp-policy-export.yaml
 structural_model_ref: docs/architecture/structurizr/workspace.dsl
 module_contracts_ref: docs/architecture/mvp-module-contracts.yaml
-persistence_model_ref: docs/architecture/persistence/mvp-persistence.yaml
-http_contract_requirements_ref: docs/contracts/http/napms-api-requirements.yaml
 
 architecture_goal: Realize the complete accepted MVP journey on one frontend plus modular-monolith backend baseline, making application-boundary and module-coordination choices once rather than independently per Bounded Context.
 
