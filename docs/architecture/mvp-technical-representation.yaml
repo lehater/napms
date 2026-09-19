@@ -1,29 +1,29 @@
-version: 2
+version: 3
 kind: shared-technical-conventions
 id: NAPMS-MVP-TECHNICAL-REPRESENTATION
 status: PILOT_CURRENT
-recorded_at: 2026-09-18
+recorded_at: 2026-09-19
 
-scope: Shared technical representation conventions consumed by multiple first-MVP technical contracts without changing product/domain semantics.
+scope: Shared external/interface representation conventions consumed by first-MVP technical contracts without changing product/domain semantics or deciding physical persistence.
 
 decisions:
   - id: TECH-ID-UUID
-    choice: Stable owner identifiers are represented as UUID strings at external serialization boundaries and PostgreSQL uuid values in persistence.
-    rationale: Opaque UUIDs preserve owner-defined identity without embedding business meaning or coupling identifiers to mutable attributes.
+    choice: Stable owner identifiers are represented as UUID strings at external serialization boundaries.
+    rationale: Opaque UUID strings preserve owner-defined identity without embedding business meaning or coupling identifiers to mutable attributes.
 
   - id: TECH-TIME-RFC3339
-    choice: Application timestamps are RFC 3339 date-time values; PostgreSQL stores them as timestamptz.
-    rationale: Temporal facts and decision history require unambiguous instants; timezone-normalized storage is technical representation only.
+    choice: Application timestamps are represented as RFC 3339 date-time values at external serialization boundaries.
+    rationale: Temporal facts and decision history require an unambiguous portable instant representation; physical storage is owned by Data Design.
 
   - id: TECH-PROVENANCE-ENVELOPE
-    choice: Provenance uses an extensible envelope with required source and recordedAt plus optional detail; PostgreSQL stores it as jsonb.
-    rationale: Accepted models require retained provenance without prescribing owner-specific technical fields.
+    choice: Provenance uses an extensible external representation with required source and recordedAt plus optional detail.
+    rationale: Accepted models require retained provenance without prescribing owner-specific fields or physical storage representation.
 
   - id: TECH-ADDRESS-REPRESENTATION
     choice: AddressSpace is represented by kind plus value, where kind is HostAddress or Prefix and value is the normalized textual address/prefix.
     rationale: This is the shared technical representation of the accepted AddressSpace XOR semantics without introducing endpoint/interface concepts.
 
 ownership_boundary:
-  http_specific_choices: docs/contracts/http/napms-api-requirements.yaml
-  persistence_specific_choices: docs/architecture/persistence/mvp-persistence.yaml
-  application_interaction_choices: docs/architecture/mvp-system-rules.yaml
+  application_interaction_choices: SYSTEM-ARCHITECTURE
+  http_specific_choices: INTERFACE-DESIGN
+  persistence_specific_choices: DATA-DESIGN
