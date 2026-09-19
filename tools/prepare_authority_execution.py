@@ -228,6 +228,43 @@ def build_execution_context(
     }
 
 
+def find_undeclared_canonical_references(
+    context: dict[str, Any],
+    graph: dict[str, Any],
+    repo_root: Path,
+) -> list[dict[str, str]]:
+    allowed_reads = set(context["access"]["read"])
+    canonical_paths = sorted(
+        {
+            node.get("path")
+            for node in graph.get("nodes", []) or []
+            if isinstance(node, dict) and isinstance(node.get("path"), str)
+        }
+    )
+    violations: list[dict[str, str]] = []
+    for owned in context.get("owned_artifacts", []):
+        path = owned.get("path")
+        if not isinstance(path, str):
+            continue
+        artifact_path = repo_root / path
+        text = artifact_path.read_text(encoding="utf-8")
+        for referenced_path in canonical_paths:
+            if referenced_path == path:
+                continue
+            if referenced_path in text and referenced_path not in allowed_reads:
+                violations.append(
+                    {
+                        "artifact": owned["id"],
+                        "path": path,
+                        "referenced_path": referenced_path,
+                    }
+                )
+    return sorted(
+        violations,
+        key=lambda item: (item["artifact"], item["referenced_path"]),
+    )
+
+
 def validate_write_set(context: dict[str, Any], changed_paths: list[str]) -> list[str]:
     if context["status"] == "BLOCKED":
         raise VerticalError(
@@ -270,6 +307,15 @@ def main() -> int:
     graph = load_yaml(GRAPH)
     projection = load_yaml(PROJECTION)
     context = build_execution_context(args.authority, graph, projection)
+    context["undeclared_canonical_references"] = find_undeclared_canonical_references(
+        context, graph, Path(__file__).resolve().parents[1]
+    )
+
+    if context["undeclared_canonical_references"]:
+        raise VerticalError(
+            f"Authority {args.authority} artifacts reference canonical paths outside "
+            f"the execution context: {context['undeclared_canonical_references']}"
+        )
 
     if args.check_write is not None:
         context["validated_write_set"] = validate_write_set(context, args.check_write)

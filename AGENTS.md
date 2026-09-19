@@ -122,6 +122,8 @@ python tools/prepare_authority_execution.py SYSTEM-ARCHITECTURE \
 
 Then rerun `make design-check` so published capabilities and downstream contracts are re-evaluated.
 
+Canonical artifacts owned by the selected Authority must not reference canonical paths outside that execution context. A literal downstream canonical-path reference is treated as an ownership/dependency leak even when the canonical graph omitted that edge.
+
 Change the smallest owning artifact set. Follow graph dependencies for downstream impact. Regenerate projections rather than editing generated diagrams.
 
 Use `make design-check`, `make design-sync`, and `python tools/check_canonical_graph.py --affected <NODE-ID>`.

@@ -11,7 +11,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
 from check_harness_vertical import VerticalError  # noqa: E402
-from prepare_authority_execution import build_execution_context, validate_write_set  # noqa: E402
+from prepare_authority_execution import (  # noqa: E402
+    build_execution_context,
+    find_undeclared_canonical_references,
+    validate_write_set,
+)
 
 
 def load(path: str):
@@ -24,6 +28,7 @@ def main() -> int:
 
     architecture = build_execution_context("SYSTEM-ARCHITECTURE", graph, projection)
     assert architecture["status"] == "READY"
+    assert find_undeclared_canonical_references(architecture, graph, ROOT) == []
     assert architecture["input_contracts"] == ["SYSTEM-ARCHITECTURE-INPUT"]
     assert {item["authority"] for item in architecture["input_artifacts"]} == {
         "APPLICATION-JOURNEY-DESIGN",
@@ -72,6 +77,7 @@ def main() -> int:
 
     interface = build_execution_context("INTERFACE-DESIGN", graph, projection)
     assert interface["status"] == "READY"
+    assert find_undeclared_canonical_references(interface, graph, ROOT) == []
     assert interface["input_contracts"] == ["INTERFACE-DESIGN-INPUT"]
     assert {item["id"] for item in interface["owned_artifacts"]} == {
         "HTTP-REQUIREMENTS",
@@ -87,6 +93,10 @@ def main() -> int:
     }
     # Same generic builder, different Authority: no System-Architecture hardcoding.
     assert architecture["access"]["write"] != interface["access"]["write"]
+
+    for authority in {item["id"] for item in projection["authorities"]}:
+        context = build_execution_context(authority, graph, projection)
+        assert find_undeclared_canonical_references(context, graph, ROOT) == [], authority
 
     root = build_execution_context("PRODUCT-REQUIREMENTS", graph, projection)
     assert root["status"] == "ROOT"
