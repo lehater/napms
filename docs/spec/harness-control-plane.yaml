@@ -1,4 +1,4 @@
-version: 9
+version: 10
 kind: canonical-design-control
 id: NAPMS-DESIGN-CONTROL
 status: PILOT_CURRENT
@@ -56,8 +56,21 @@ commands:
   validate: make design-check
   validate_vertical: python tools/check_harness_vertical.py
   regression_vertical: python tools/test_harness_vertical.py
+  regression_authority_execution: python tools/test_authority_execution.py
+  prepare_authority_context: make authority-context AUTHORITY=SYSTEM-ARCHITECTURE
   regenerate: make design-sync
   affected_example: python tools/check_canonical_graph.py --affected AP-DOMAIN
+
+authority_execution:
+  purpose: Deterministically prepare the bounded engineering context for one Authority before creating or updating its canonical artifacts.
+  persistent_state: false
+  input_source: The Authority's consumer contract resolved to canonical provider artifacts.
+  own_context: The Authority's current canonical artifacts are also readable because they are the only permitted write targets.
+  write_rule: Only canonical artifacts bound to the selected Authority may be modified.
+  ready_rule: Artifact production is allowed only when every required capability is PROVIDED or canonically NOT_APPLICABLE.
+  blocked_rule: BLOCKED or DESIGN_GAP stops artifact production and routes the issue to the upstream engineering Authority.
+  postcondition: After owned artifacts change, rerun design validation to republish capabilities and reevaluate downstream contracts.
+  anti_workflow_rule: Execution context is ephemeral routing data; it is not a stage, task capsule, approval, maturity state or project workflow record.
 
 stop_conditions:
   - required human-owned product/domain truth is missing

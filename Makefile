@@ -1,4 +1,4 @@
-.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore design-sync design-check architecture architecture-check check
+.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore design-sync design-check authority-context architecture architecture-check check
 
 STRUCTURIZR_IMAGE ?= structurizr/structurizr:2026.06.28-noble
 STRUCTURIZR_DIR := $(CURDIR)/docs/architecture/structurizr
@@ -61,6 +61,7 @@ design-check:
 	python tools/check_canonical_graph.py
 	python tools/check_harness_vertical.py
 	python tools/test_harness_vertical.py
+	python tools/test_authority_execution.py
 	python tools/check_openapi_contract.py
 	python tools/check_persistence_model.py
 	python tools/check_design_control.py
@@ -73,6 +74,10 @@ design-check:
 	python tools/generate_ap_view.py --check
 	python tools/generate_mvp_journey_view.py --check
 	python tools/generate_persistence_erd.py --check
+
+authority-context:
+	@test -n "$(AUTHORITY)" || (echo "Usage: make authority-context AUTHORITY=SYSTEM-ARCHITECTURE" >&2; exit 2)
+	python tools/prepare_authority_execution.py "$(AUTHORITY)"
 
 architecture: design-sync
 	@docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true

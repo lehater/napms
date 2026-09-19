@@ -97,6 +97,21 @@ For explicit evidence synthesis or substantial harvesting across one or more sta
 
 ## Work
 
+For work that creates or updates artifacts inside one engineering Authority, first prepare its bounded execution context:
+
+```sh
+make authority-context AUTHORITY=SYSTEM-ARCHITECTURE
+```
+
+The execution context is ephemeral routing data, not a canonical artifact, work item, approval or workflow state. It contains only:
+
+- capabilities/artifacts declared by that Authority's input contract;
+- the Authority's own current artifacts;
+- its permitted write paths and public outputs;
+- blocking Questions or DESIGN_GAPs.
+
+If its status is `BLOCKED`, do not produce or patch the target Authority's artifacts to compensate; resolve the upstream Question/gap first. If it is `READY`, use only the listed upstream inputs plus the Authority's own artifacts as engineering context, write only owned paths, then rerun design validation.
+
 Change the smallest owning artifact set. Follow graph dependencies for downstream impact. Regenerate projections rather than editing generated diagrams.
 
 Use `make design-check`, `make design-sync`, and `python tools/check_canonical_graph.py --affected <NODE-ID>`.

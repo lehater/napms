@@ -69,9 +69,18 @@ Run:
 ```sh
 python tools/check_harness_vertical.py
 python tools/test_harness_vertical.py
+python tools/test_authority_execution.py
 ```
 
 or `make design-check`.
+
+To prepare the bounded input/output context for one engineering Authority:
+
+```sh
+make authority-context AUTHORITY=SYSTEM-ARCHITECTURE
+```
+
+This command does not create workflow state or a persistent task capsule. It deterministically resolves the Authority's declared input capabilities to canonical provider artifacts, lists only its owned write paths/public outputs, and returns `BLOCKED` when a required input is missing or blocked.
 
 A downstream gap is not repaired by editing another engineering Authority's artifact. It becomes a Question for the Authority that owns that kind of project decision. An unresolved Question blocks affected downstream contracts through canonical dependency closure.
 
