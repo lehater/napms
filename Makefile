@@ -80,7 +80,7 @@ authority-context:
 	python tools/prepare_authority_execution.py "$(AUTHORITY)"
 
 human-implementation-package:
-	python tools/generate_human_context_package.py --consumer IMPLEMENTATION-CONSUMER
+	python tools/generate_human_context_package.py --consumer IMPLEMENTATION-CONSUMER --scope resource-history --scope-root RESOURCE-DETAIL-UI --scope-root MVP-IMPLEMENTATION-READINESS --scope-root MVP-TEST-INTENT
 
 architecture: design-sync
 	@docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true
