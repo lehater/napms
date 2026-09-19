@@ -13,6 +13,8 @@ nodes:
   - {id: RC-CURATION, kind: use-case, path: docs/model/use-cases/resource-catalogue-curation.yaml, depends_on: [RC-DISCOVERY, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
   - {id: ACC-AUTHORING, kind: use-case, path: docs/model/use-cases/application-communication-catalogue-authoring.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
   - {id: AD-PLACEMENT, kind: use-case, path: docs/model/use-cases/application-deployment-placement.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
+  - {id: BC-JUSTIFICATION, kind: use-case, path: docs/model/use-cases/business-connectivity-justification.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
+  - {id: AP-RULE-LIFECYCLE, kind: use-case, path: docs/model/use-cases/access-policy-rule-lifecycle.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
   - {id: RC-LANGUAGE, kind: domain-language, path: docs/model/contexts/resource-catalogue/language.yaml, depends_on: [STRATEGIC-CONTEXTS]}
   - {id: RC-DECISIONS, kind: domain-decisions, path: docs/model/contexts/resource-catalogue/decisions.yaml, depends_on: [RC-CURATION]}
   - {id: RC-PROCESS, kind: domain-process, path: docs/model/contexts/resource-catalogue/process-model.yaml, depends_on: [RC-CURATION, RC-LANGUAGE, RC-DECISIONS, STRATEGIC-RELATIONSHIPS]}
