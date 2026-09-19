@@ -15,7 +15,7 @@ design_refs:
   business_connectivity_domain: docs/model/contexts/business-connectivity/domain-model.yaml
   access_policy_domain: docs/model/contexts/access-policy/domain-model.yaml
   implementation_readiness: docs/plans/first-mvp-implementation-readiness.yaml
-  resource_detail_ui: docs/contracts/ui/resource-detail.yaml
+  ui_navigation: docs/contracts/ui/mvp-navigation.yaml\n  resource_detail_ui: docs/contracts/ui/resource-detail.yaml
   application_architecture: docs/architecture/mvp-system-rules.yaml
   security_architecture: docs/architecture/mvp-security-architecture.yaml
   module_contracts: docs/architecture/mvp-module-contracts.yaml
