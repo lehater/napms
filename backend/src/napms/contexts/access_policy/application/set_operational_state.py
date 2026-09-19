@@ -4,7 +4,7 @@ from enum import Enum
 from uuid import UUID
 
 from napms.contexts.access_policy.application.ports import (
-    AccessRuleRepository,
+    AccessRuleStateStore,
     AuthorityAction,
     AuthorityPort,
     TernaryOutcome,
@@ -35,7 +35,7 @@ class OperationalStateMutationResult:
 
 
 class SetAccessRuleOperationalState:
-    def __init__(self, *, authority: AuthorityPort, rules: AccessRuleRepository) -> None:
+    def __init__(self, *, authority: AuthorityPort, rules: AccessRuleStateStore) -> None:
         self._authority = authority
         self._rules = rules
 
