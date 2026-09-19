@@ -1,4 +1,4 @@
-.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore design-sync design-check authority-context architecture architecture-check check
+.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore design-sync design-check authority-context human-implementation-package architecture architecture-check check
 
 STRUCTURIZR_IMAGE ?= structurizr/structurizr:2026.06.28-noble
 STRUCTURIZR_DIR := $(CURDIR)/docs/architecture/structurizr
