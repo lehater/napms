@@ -193,7 +193,7 @@ questions:
   - id: MVP-NUMERIC-QUALITY-TARGETS
     authority: PRODUCT-REQUIREMENTS
     text: What numeric latency, throughput, availability and scale targets are required for the first MVP?
-    blocks: [MVP-QUALITY-TARGETS]
+    resolution: MVP-QUALITY-TARGETS
 terminal_capabilities: []
 
 contracts:
