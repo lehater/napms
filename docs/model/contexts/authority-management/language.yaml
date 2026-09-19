@@ -2,6 +2,9 @@ version: 1
 kind: context-language
 id: NAPMS-AM-LANGUAGE
 bounded_context_ref: BC-AUTHORITY-MANAGEMENT
+knowledge_coverage:
+  subject: BC-AUTHORITY-MANAGEMENT
+  knowledge: tactical-domain-model
 
 terms:
   - term_id: TERM-EFFECTIVE-AUTHORITY
