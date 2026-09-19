@@ -103,6 +103,82 @@ jobs:
           print(results)
           PY
 
+      - name: Verify unresolved artifact Question routes to WAIT
+        run: |
+          python - <<'PY'
+          import copy
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, "tools")
+          sys.path.insert(0, ".harness")
+          sys.path.insert(0, ".harness-tool")
+
+          from check_harness_vertical import evaluate as evaluate_napms
+          from derive_consumer_profile import derive
+          from target_state import evaluate_target_state
+
+          graph = yaml.safe_load(Path("docs/canonical-graph.yaml").read_text())
+          projection = yaml.safe_load(Path("docs/harness-core.yaml").read_text())
+
+          blocked_projection = copy.deepcopy(projection)
+          blocked_projection.setdefault("questions", []).append(
+              {
+                  "id": "Q-PILOT-RESOURCE-DETAIL-UI",
+                  "authority": "INTERFACE-DESIGN",
+                  "text": "What accepted interface decision resolves the pilot Resource detail blocker?",
+                  "blocks": ["RESOURCE-DETAIL-UI"],
+              }
+          )
+
+          local = evaluate_napms(graph, blocked_projection)
+          implementation = next(
+              item
+              for item in local["contracts"]
+              if item["id"] == "IMPLEMENTATION-CONSUMER"
+          )
+          local_requirement = next(
+              item
+              for item in implementation["requirements"]
+              if item["id"] == "resource-detail-ui"
+          )
+          assert local_requirement["status"] == "BLOCKED", local_requirement
+          assert local_requirement["blocked_by"] == [
+              "Q-PILOT-RESOURCE-DETAIL-UI"
+          ], local_requirement
+
+          temp_projection = Path("docs/.current-harness-question-pilot.yaml")
+          temp_projection.write_text(
+              yaml.safe_dump(blocked_projection, sort_keys=False),
+              encoding="utf-8",
+          )
+          try:
+              profile, model = derive(
+                  temp_projection,
+                  "IMPLEMENTATION",
+                  Path(".harness-tool"),
+              )
+              external = evaluate_target_state(profile, model)
+          finally:
+              temp_projection.unlink(missing_ok=True)
+
+          assert external["status"] == "BLOCKED", external
+          wait = {item["expectation"]: item for item in external["wait"]}
+          assert set(wait) == {"RESOURCE-DETAIL-UI"}, external
+          assert wait["RESOURCE-DETAIL-UI"]["questions"] == [
+              "Q-PILOT-RESOURCE-DETAIL-UI"
+          ], external
+
+          pending = {item["expectation"] for item in external["pending"]}
+          assert {
+              "IMPLEMENTATION-PLAN",
+              "COMPLETION",
+              "VERIFICATION",
+              "VERIFICATION-SCENARIOS",
+          }.issubset(pending), external
+          PY
+
       - name: Verify project-native not-applicable evidence maps to knowledge
         run: |
           python .harness/derive_consumer_profile.py \
