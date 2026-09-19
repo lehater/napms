@@ -65,6 +65,44 @@ jobs:
           assert result["pending"] == [], result
           PY
 
+      - name: Verify every NAPMS consumer contract projects complete
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness")
+          sys.path.insert(0, ".harness-tool")
+
+          from derive_consumer_profile import derive
+          from target_state import evaluate_target_state
+
+          projection_path = Path("docs/harness-core.yaml")
+          projection = yaml.safe_load(projection_path.read_text())
+          consumers = sorted({
+              item["consumer"]
+              for item in projection.get("contracts", [])
+          })
+
+          results = {}
+          for consumer in consumers:
+              profile, model = derive(
+                  projection_path,
+                  consumer,
+                  Path(".harness-tool"),
+              )
+              result = evaluate_target_state(profile, model)
+              results[consumer] = result["status"]
+              assert result["status"] == "COMPLETE", (consumer, result)
+              assert result["create"] == [], (consumer, result)
+              assert result["wait"] == [], (consumer, result)
+              assert result["pending"] == [], (consumer, result)
+
+          assert len(consumers) == 13, consumers
+          print(results)
+          PY
+
       - name: Verify project-native not-applicable evidence maps to knowledge
         run: |
           python .harness/derive_consumer_profile.py \
