@@ -15,25 +15,18 @@ def coverage_for_node(node):
     data = load(ROOT / path)
 
     coverage = data.get("knowledge_coverage")
-    if isinstance(coverage, dict):
-        subject = coverage.get("subject")
-        knowledge = coverage.get("knowledge")
-        if subject and knowledge:
-            return [(subject, knowledge)]
-
-    knowledge_by_kind = {
-        "use-case": "domain-use-case",
-        "tactical-domain-model": "tactical-domain-model",
-    }
-    knowledge = knowledge_by_kind.get(node.get("kind"))
-    if not knowledge:
+    if coverage is None:
         return []
+    if not isinstance(coverage, dict):
+        raise ValueError(f"{path}: knowledge_coverage must be a mapping")
 
-    subjects = []
-    if data.get("bounded_context_ref"):
-        subjects.append(data["bounded_context_ref"])
-    subjects.extend(data.get("bounded_context_refs", []) or [])
-    return [(subject, knowledge) for subject in dict.fromkeys(subjects)]
+    subject = coverage.get("subject")
+    knowledge = coverage.get("knowledge")
+    if not isinstance(subject, str) or not subject:
+        raise ValueError(f"{path}: knowledge_coverage.subject is required")
+    if not isinstance(knowledge, str) or not knowledge:
+        raise ValueError(f"{path}: knowledge_coverage.knowledge is required")
+    return [(subject, knowledge)]
 
 def main():
     profile = load(MODEL)
