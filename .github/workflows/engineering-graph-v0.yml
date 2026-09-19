@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: lehater/harness
-          ref: f442a3017e63ba4ab764d0bae4d790b24c3c0a94
+          ref: 0ffba4a846906847ee4349814b66048dabea869b
           path: .harness-tool
 
       - uses: actions/setup-python@v5
@@ -79,6 +79,33 @@ jobs:
               value.startswith("napms.coverage.tactical-domain-model.")
               for value in capabilities
           ), capabilities
+          PY
+
+      - name: Verify Engineering Graph owns Authority definitions
+        run: |
+          python - <<'PY'
+          import copy
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from engineering_graph import evaluate_engineering_target
+
+          graph = yaml.safe_load(Path("/tmp/engineering-graph.yaml").read_text())
+          model = yaml.safe_load(Path("/tmp/core-model.yaml").read_text())
+          without_authorities = copy.deepcopy(model)
+          without_authorities.pop("authorities", None)
+
+          result = evaluate_engineering_target(
+              graph,
+              "IMPLEMENTATION",
+              without_authorities,
+          )
+          assert result["status"] == "COMPLETE", result
+          assert result["create"] == [], result
+          assert result["wait"] == [], result
+          assert result["pending"] == [], result
           PY
 
       - name: Verify Resource Detail gap is one producer CREATE
