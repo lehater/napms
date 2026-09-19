@@ -84,11 +84,17 @@ def derive(
     capability_to_expectation: dict[str, str] = {}
     normalized: list[dict[str, str]] = []
     for requirement in requirements:
-        if requirement.get("not_applicable"):
-            continue
         requirement_id = requirement.get("id")
         capability = requirement.get("capability")
         authority = requirement.get("authority")
+        not_applicable = requirement.get("not_applicable")
+        if isinstance(not_applicable, dict):
+            evidence_capability = not_applicable.get("evidence_capability")
+            if not isinstance(evidence_capability, str) or not evidence_capability:
+                raise ValueError(
+                    f"not_applicable requirement lacks evidence capability: {requirement!r}"
+                )
+            capability = evidence_capability
         if not all(isinstance(value, str) and value for value in (requirement_id, capability, authority)):
             raise ValueError(f"invalid consumer requirement: {requirement!r}")
         expectation_id = _expectation_id(requirement_id)
