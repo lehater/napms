@@ -1,40 +1,90 @@
-version: 1
-kind: ui-contract
+version: 2
+kind: ui-screen-contract
 id: NAPMS-RESOURCE-DETAIL-UI
 status: PILOT_CURRENT
 
-purpose: Define the supported Resource detail presentation needed to inspect current and historical Resource Catalogue facts without database or raw-API access.
+purpose: Define the supported Resource detail workspace needed to inspect and author current Resource Catalogue facts while preserving inspectable history.
 
 screen:
   id: RESOURCE-DETAIL
+  route: /resources/{resourceId}
+  entry:
+    - Open a Resource from the Resource catalogue/list workspace.
+    - Deep-link by stable ResourceId when the caller already knows the Resource.
+  exits:
+    - Back to Resource catalogue/list workspace without changing Resource state.
   resource_identity: ResourceId remains visible as the stable identity of the workspace.
+
+  states:
+    loading:
+      meaning: Resource detail request is in progress.
+      presentation: Preserve workspace context and do not present stale facts as newly loaded truth.
+    loaded:
+      meaning: Resource exists and detail data is available.
+      presentation: Current facts are primary; history is secondary but directly inspectable.
+    empty-current:
+      meaning: Resource exists but one or more current fact categories have no effective fact.
+      presentation: Show explicit absence for that category while retaining available history.
+    not-found:
+      meaning: ResourceId does not resolve to a Resource.
+      presentation: Do not render an empty Resource as if it existed; offer return to Resource catalogue.
+    error:
+      meaning: Resource detail cannot currently be obtained.
+      presentation: Keep the failure distinct from not-found and allow retry.
+
   current:
     priority: primary
     behavior:
       - Show the effective/current technical realization immediately when present; show explicit absence otherwise.
       - Show effective/current Responsibility Scope affiliations.
       - Show effective/current Resource Responsibility/contact assignments.
+      - Existing authoring actions for replacing or ending supported facts remain available from the Resource workspace.
+
   history:
     priority: secondary-inspectable
+    initial_state: collapsed-or-summary
     behavior:
-      - Provide an explicit history section or disclosure distinct from current facts.
+      - Provide an explicit History disclosure/section distinct from current facts.
+      - Opening History does not navigate away from the Resource workspace.
       - Show ended/replaced technical realizations, scope affiliations and responsibilities.
       - For every historical fact expose its validity interval and provenance.
       - Do not present ended/replaced facts as current and do not collapse versions into mutable current state.
+      - Empty history is represented explicitly rather than by a missing or broken section.
 
 interaction:
-  - Current facts are readable without opening history.
-  - Historical facts are reachable from Resource detail without database or raw-API access.
-  - After an end/replace operation, the user can verify that the previous fact remains in history.
-  - Existing Resource authoring actions retain their current behavior.
+  - id: OPEN-RESOURCE
+    trigger: User selects a Resource from Resource catalogue/list.
+    transition: RESOURCE-CATALOGUE -> RESOURCE-DETAIL.loading -> RESOURCE-DETAIL.loaded|empty-current|not-found|error
+  - id: OPEN-HISTORY
+    trigger: User opens History in a loaded Resource detail.
+    transition: RESOURCE-DETAIL.current -> RESOURCE-DETAIL.current+history
+    invariant: Current facts remain visible/readable while history is inspected.
+  - id: REPLACE-OR-END-FACT
+    trigger: User completes an existing supported replace/end authoring action.
+    transition: RESOURCE-DETAIL -> refresh RESOURCE-DETAIL
+    postcondition:
+      - New effective fact, when applicable, appears in current.
+      - Previous ended/replaced fact appears in history with validity and provenance.
+  - id: RETRY-DETAIL
+    trigger: User retries from error state.
+    transition: RESOURCE-DETAIL.error -> RESOURCE-DETAIL.loading
+  - id: RETURN-TO-CATALOGUE
+    trigger: User leaves detail or returns from not-found.
+    transition: RESOURCE-DETAIL -> RESOURCE-CATALOGUE
 
 data_contract:
   source: GET /api/resources/{resourceId}
   mapping:
+    identity: ResourceDetail.resourceId
     current: ResourceDetail.current
     history: ResourceDetail.history
+  state_mapping:
+    http_200: loaded or empty-current according to current fact presence
+    http_404: not-found
+    other_failure: error
 
 out_of_scope:
   - visual styling system
   - exact component library choice
+  - pixel layout and responsive breakpoints
   - pagination of per-Resource history until evidence requires it
