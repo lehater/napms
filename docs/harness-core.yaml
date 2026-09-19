@@ -1,4 +1,4 @@
-version: 5
+version: 6
 kind: harness-canonical-graph-projection
 id: NAPMS-ENGINEERING-KNOWLEDGE-VERTICAL
 status: PILOT
@@ -112,11 +112,11 @@ authorities:
       atomic: true
 
   - id: OPERABILITY-DESIGN
-    responsibility: Own diagnostic/observability engineering requirements for implementation and verification.
+    responsibility: Own runtime evidence and diagnosability requirements derived from accepted product, architecture, interface, security, data and quality truth.
     boundary:
-      semantic_cohesion: Decisions define correlation, diagnostic outcomes and dependency-health visibility.
-      independent_change: Operability design can evolve without redefining domain or interface semantics.
-      public_contract: Provides observability/diagnostic requirements; operability Questions route here.
+      semantic_cohesion: Decisions define what runtime evidence must exist so accepted behavior, lifecycle state and technical dependency failure are diagnosable.
+      independent_change: Operability evidence can evolve without redefining product/domain/interface semantics or selecting telemetry implementation mechanics.
+      public_contract: Provides runtime evidence requirements to implementation and verification while routing configuration, failure, security and reliability semantics to their owning Authorities.
       atomic: true
 
   - id: IMPLEMENTATION-DESIGN
@@ -185,7 +185,7 @@ bindings:
   - {artifact: QUALITY-REQUIREMENTS, authority: QUALITY-DESIGN, provides: [engineering.quality.constraints]}
   - {artifact: MVP-QUALITY-TARGETS, authority: PRODUCT-REQUIREMENTS, provides: []}
   - {artifact: THREAT-MODEL, authority: SECURITY-ANALYSIS, provides: [engineering.security.threat-analysis]}
-  - {artifact: OBSERVABILITY, authority: OPERABILITY-DESIGN, provides: [engineering.operability.observability]}
+  - {artifact: OBSERVABILITY, authority: OPERABILITY-DESIGN, provides: [engineering.operability.runtime-evidence]}
   - {artifact: MVP-IMPLEMENTATION-READINESS, authority: IMPLEMENTATION-DESIGN, provides: [engineering.implementation.plan, engineering.implementation.completion-criteria]}
   - {artifact: MVP-TEST-INTENT, authority: VERIFICATION-DESIGN, provides: [engineering.verification.strategy, engineering.verification.acceptance-scenarios]}
 
@@ -291,7 +291,7 @@ contracts:
       - {id: persistence, capability: engineering.data.persistence-model, authority: DATA-DESIGN}
       - {id: quality, capability: engineering.quality.constraints, authority: QUALITY-DESIGN}
       - {id: security-analysis, capability: engineering.security.threat-analysis, authority: SECURITY-ANALYSIS}
-      - {id: observability, capability: engineering.operability.observability, authority: OPERABILITY-DESIGN}
+      - {id: observability, capability: engineering.operability.runtime-evidence, authority: OPERABILITY-DESIGN}
       - id: asynchronous-contract
         capability: engineering.interface.async-contract
         authority: SYSTEM-ARCHITECTURE
