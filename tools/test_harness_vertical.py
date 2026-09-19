@@ -115,9 +115,9 @@ def main() -> int:
     phantom_input = copy.deepcopy(projection)
     contract = next(item for item in phantom_input["contracts"] if item["id"] == "DOMAIN-USE-CASE-DESIGN-INPUT")
     contract["requires"].append({
-        "id": "phantom-product-input",
-        "capability": "engineering.requirements.product-intent",
-        "authority": "PRODUCT-REQUIREMENTS",
+        "id": "phantom-interface-input",
+        "capability": "engineering.interface.http-contract",
+        "authority": "INTERFACE-DESIGN",
     })
     expect_error(lambda: evaluate(graph, phantom_input), "input contract has non-graph upstream Authorities")
 
