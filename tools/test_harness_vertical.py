@@ -54,6 +54,8 @@ def main() -> int:
         "QUALITY-DESIGN",
         "SECURITY-ANALYSIS",
         "OPERABILITY-DESIGN",
+        "ENGINEERING-POLICY",
+        "COMPONENT-DESIGN",
         "IMPLEMENTATION-DESIGN",
         "VERIFICATION-DESIGN",
     }
