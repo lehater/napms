@@ -178,7 +178,8 @@ bindings:
   - {artifact: TECH-REPRESENTATION, authority: INTERFACE-DESIGN, provides: [engineering.interface.shared-representations]}
   - {artifact: HTTP-REQUIREMENTS, authority: INTERFACE-DESIGN, provides: []}
   - {artifact: OPENAPI, authority: INTERFACE-DESIGN, provides: [engineering.interface.http-contract]}
-  - {artifact: MVP-UI-NAVIGATION, authority: INTERFACE-DESIGN, provides: [engineering.interface.ui-navigation]}\n  - {artifact: RESOURCE-DETAIL-UI, authority: INTERFACE-DESIGN, provides: [engineering.interface.resource-detail-ui]}
+  - {artifact: MVP-UI-NAVIGATION, authority: INTERFACE-DESIGN, provides: [engineering.interface.ui-navigation]}
+  - {artifact: RESOURCE-DETAIL-UI, authority: INTERFACE-DESIGN, provides: [engineering.interface.resource-detail-ui]}
 
   - {artifact: PERSISTENCE, authority: DATA-DESIGN, provides: [engineering.data.persistence-model]}
   - {artifact: QUALITY-REQUIREMENTS, authority: QUALITY-DESIGN, provides: [engineering.quality.constraints]}
