@@ -309,7 +309,6 @@ contracts:
   - id: IMPLEMENTATION-DESIGN-INPUT
     consumer: IMPLEMENTATION-DESIGN
     requires:
-      - {id: test-design, capability: engineering.verification.test-design, authority: TEST-DESIGN}
       - {id: requirements, capability: engineering.requirements.product-intent, authority: PRODUCT-REQUIREMENTS}
       - {id: journey, capability: engineering.application.journey, authority: APPLICATION-JOURNEY-DESIGN}
       - {id: system-architecture, capability: engineering.architecture.c4-model, authority: SYSTEM-ARCHITECTURE}
