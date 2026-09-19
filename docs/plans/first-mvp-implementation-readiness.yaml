@@ -14,7 +14,7 @@ design_refs:
   module_contracts: docs/architecture/mvp-module-contracts.yaml
   shared_technical_conventions: docs/architecture/mvp-technical-representation.yaml
   http_contract: docs/contracts/http/napms.openapi.yaml
-  resource_detail_ui: docs/contracts/ui/resource-detail.yaml
+  ui_navigation: docs/contracts/ui/mvp-navigation.yaml\n  resource_detail_ui: docs/contracts/ui/resource-detail.yaml
   persistence: docs/architecture/persistence/mvp-persistence.yaml
   quality_requirements: docs/architecture/mvp-quality-requirements.yaml
   threat_model: docs/architecture/mvp-threat-model.yaml
