@@ -1,0 +1,403 @@
+name: current Harness pilot
+
+on:
+  push:
+    paths:
+      - ".harness/**"
+      - "docs/canonical-graph.yaml"
+      - "docs/harness-core.yaml"
+      - "docs/engineering-knowledge-completeness.yaml"
+      - "docs/model/use-cases/first-mvp-policy-export.yaml"
+      - "docs/model/strategic/bounded-contexts.yaml"
+      - "docs/model/contexts/**"
+      - "tools/check_harness_vertical.py"
+      - "tools/check_knowledge_completeness.py"
+      - ".github/workflows/current-harness-pilot.yml"
+  pull_request:
+    paths:
+      - ".harness/**"
+      - "docs/canonical-graph.yaml"
+      - "docs/harness-core.yaml"
+      - "docs/engineering-knowledge-completeness.yaml"
+      - "docs/model/use-cases/first-mvp-policy-export.yaml"
+      - "docs/model/strategic/bounded-contexts.yaml"
+      - "docs/model/contexts/**"
+      - "tools/check_harness_vertical.py"
+      - "tools/check_knowledge_completeness.py"
+      - ".github/workflows/current-harness-pilot.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-current-harness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout NAPMS
+        uses: actions/checkout@v4
+
+      - name: Checkout pinned current Harness
+        uses: actions/checkout@v4
+        with:
+          repository: lehater/harness
+          ref: 7b7d8882722a3aa1eecf76fe3edd92e5fcbf1735
+          path: .harness-tool
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install YAML dependency
+        run: python -m pip install PyYAML
+
+      - name: Verify existing NAPMS engineering vertical
+        run: python tools/check_harness_vertical.py
+
+      - name: Verify accepted completeness gaps fail closed
+        run: |
+          cp docs/model/contexts/resource-catalogue/domain-model.yaml /tmp/rc-domain-model.yaml
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+
+          path = Path("docs/model/contexts/resource-catalogue/domain-model.yaml")
+          data = yaml.safe_load(path.read_text())
+          data.pop("knowledge_coverage", None)
+          path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+          PY
+          if python tools/check_knowledge_completeness.py; then
+            echo "accepted completeness gap incorrectly passed" >&2
+            exit 1
+          fi
+          mv /tmp/rc-domain-model.yaml docs/model/contexts/resource-catalogue/domain-model.yaml
+          python tools/check_knowledge_completeness.py
+
+      - name: Derive current implementation consumer profile
+        run: |
+          python .harness/derive_consumer_profile.py             docs/harness-core.yaml IMPLEMENTATION             --harness-root .harness-tool             --profile-output /tmp/implementation-profile.yaml             --model-output /tmp/implementation-model.yaml
+
+      - name: Verify current implementation consumer is complete
+        run: |
+          python .harness-tool/target_state.py             /tmp/implementation-profile.yaml             /tmp/implementation-model.yaml
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from target_state import evaluate_target_state
+
+          profile = yaml.safe_load(Path("/tmp/implementation-profile.yaml").read_text())
+          model = yaml.safe_load(Path("/tmp/implementation-model.yaml").read_text())
+          result = evaluate_target_state(profile, model)
+          assert result["status"] == "COMPLETE", result
+          assert result["create"] == [], result
+          assert result["wait"] == [], result
+          assert result["pending"] == [], result
+          PY
+
+      - name: Verify every NAPMS consumer contract projects complete
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness")
+          sys.path.insert(0, ".harness-tool")
+
+          from derive_consumer_profile import derive
+          from target_state import evaluate_target_state
+
+          projection_path = Path("docs/harness-core.yaml")
+          projection = yaml.safe_load(projection_path.read_text())
+          consumers = sorted({
+              item["consumer"]
+              for item in projection.get("contracts", [])
+          })
+
+          results = {}
+          for consumer in consumers:
+              profile, model = derive(
+                  projection_path,
+                  consumer,
+                  Path(".harness-tool"),
+              )
+              result = evaluate_target_state(profile, model)
+              results[consumer] = result["status"]
+              assert result["status"] == "COMPLETE", (consumer, result)
+              assert result["create"] == [], (consumer, result)
+              assert result["wait"] == [], (consumer, result)
+              assert result["pending"] == [], (consumer, result)
+
+          assert len(consumers) == 13, consumers
+          print(results)
+          PY
+
+      - name: Demonstrate subject-specific coverage limit
+        run: |
+          python - <<'PY'
+          import copy
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from adapters.canonical_graph import load_projection
+          from target_state import evaluate_target_state
+
+          model = load_projection(Path("docs/harness-core.yaml"))
+          profile = {
+              "version": 1,
+              "kind": "harness-design-profile",
+              "id": "SUBJECT-COVERAGE-PILOT",
+              "expectations": [
+                  {
+                      "id": "RC-TACTICAL",
+                      "subject": "BC-RESOURCE-CATALOGUE",
+                      "capability": "engineering.domain.tactical-model",
+                      "authority": "TACTICAL-DOMAIN-DESIGN",
+                  },
+              ],
+          }
+
+          complete = evaluate_target_state(profile, model)
+          assert complete["status"] == "COMPLETE", complete
+
+          without_rc = copy.deepcopy(model)
+          for artifact in without_rc["artifacts"]:
+              if artifact["id"] == "RC-DOMAIN":
+                  artifact["provides"] = [
+                      value
+                      for value in artifact.get("provides", [])
+                      if value != "engineering.domain.tactical-model"
+                  ]
+
+          # Current Harness resolves only by capability+authority. Other tactical
+          # providers therefore still satisfy this expectation even though the
+          # expected subject is specifically Resource Catalogue.
+          false_positive = evaluate_target_state(profile, without_rc)
+          assert false_positive["status"] == "COMPLETE", false_positive
+          print(
+              "KNOWN LIMIT: subject-specific coverage is not provider-matched; "
+              "RC expectation remains COMPLETE after RC-DOMAIN loses the capability"
+          )
+          PY
+
+      - name: Verify scoped coverage profile avoids subject false positive
+        run: |
+          python .harness/derive_coverage_profile.py \
+            --harness-root .harness-tool \
+            --profile-output /tmp/coverage-profile.yaml \
+            --model-output /tmp/coverage-model.yaml
+          python - <<'PY'
+          import copy
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from target_state import evaluate_target_state
+
+          profile = yaml.safe_load(Path("/tmp/coverage-profile.yaml").read_text())
+          model = yaml.safe_load(Path("/tmp/coverage-model.yaml").read_text())
+
+          result = evaluate_target_state(profile, model)
+          assert result["status"] == "COMPLETE", result
+          assert result["create"] == [], result
+          assert result["wait"] == [], result
+
+          rc_expectation = next(
+              item
+              for item in profile["expectations"]
+              if item["subject"] == "BC-RESOURCE-CATALOGUE"
+              and item["capability"].startswith(
+                  "napms.coverage.tactical-domain-model."
+              )
+          )
+          rc_capability = rc_expectation["capability"]
+
+          without_rc = copy.deepcopy(model)
+          rc_artifact = next(
+              item for item in without_rc["artifacts"]
+              if item["id"] == "RC-DOMAIN"
+          )
+          rc_artifact["provides"] = [
+              value
+              for value in rc_artifact["provides"]
+              if value != rc_capability
+          ]
+
+          missing = evaluate_target_state(profile, without_rc)
+          assert missing["status"] == "READY", missing
+          assert {item["expectation"] for item in missing["create"]} == {
+              rc_expectation["id"]
+          }, missing
+          assert missing["wait"] == [], missing
+          PY
+
+      - name: Verify unresolved artifact Question routes to WAIT
+        run: |
+          python - <<'PY'
+          import copy
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, "tools")
+          sys.path.insert(0, ".harness")
+          sys.path.insert(0, ".harness-tool")
+
+          from check_harness_vertical import evaluate as evaluate_napms
+          from derive_consumer_profile import derive
+          from target_state import evaluate_target_state
+
+          graph = yaml.safe_load(Path("docs/canonical-graph.yaml").read_text())
+          projection = yaml.safe_load(Path("docs/harness-core.yaml").read_text())
+
+          blocked_projection = copy.deepcopy(projection)
+          blocked_projection.setdefault("questions", []).append(
+              {
+                  "id": "Q-PILOT-RESOURCE-DETAIL-UI",
+                  "authority": "INTERFACE-DESIGN",
+                  "text": "What accepted interface decision resolves the pilot Resource detail blocker?",
+                  "blocks": ["RESOURCE-DETAIL-UI"],
+              }
+          )
+
+          local = evaluate_napms(graph, blocked_projection)
+          implementation = next(
+              item
+              for item in local["contracts"]
+              if item["id"] == "IMPLEMENTATION-CONSUMER"
+          )
+          local_requirement = next(
+              item
+              for item in implementation["requirements"]
+              if item["id"] == "resource-detail-ui"
+          )
+          assert local_requirement["status"] == "BLOCKED", local_requirement
+          assert local_requirement["blocked_by"] == [
+              "Q-PILOT-RESOURCE-DETAIL-UI"
+          ], local_requirement
+
+          temp_projection = Path("docs/.current-harness-question-pilot.yaml")
+          temp_projection.write_text(
+              yaml.safe_dump(blocked_projection, sort_keys=False),
+              encoding="utf-8",
+          )
+          try:
+              profile, model = derive(
+                  temp_projection,
+                  "IMPLEMENTATION",
+                  Path(".harness-tool"),
+              )
+              external = evaluate_target_state(profile, model)
+          finally:
+              temp_projection.unlink(missing_ok=True)
+
+          assert external["status"] == "BLOCKED", external
+          wait = {item["expectation"]: item for item in external["wait"]}
+          assert set(wait) == {"RESOURCE-DETAIL-UI"}, external
+          assert wait["RESOURCE-DETAIL-UI"]["questions"] == [
+              "Q-PILOT-RESOURCE-DETAIL-UI"
+          ], external
+
+          pending = {item["expectation"] for item in external["pending"]}
+          assert {
+              "IMPLEMENTATION-PLAN",
+              "COMPLETION",
+              "VERIFICATION",
+              "VERIFICATION-SCENARIOS",
+          }.issubset(pending), external
+          PY
+
+      - name: Verify project-native not-applicable evidence maps to knowledge
+        run: |
+          python .harness/derive_consumer_profile.py \
+            docs/harness-core.yaml IMPLEMENTATION-DESIGN \
+            --harness-root .harness-tool \
+            --profile-output /tmp/implementation-design-profile.yaml \
+            --model-output /tmp/implementation-design-model.yaml
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from target_state import evaluate_target_state
+
+          profile = yaml.safe_load(
+              Path("/tmp/implementation-design-profile.yaml").read_text()
+          )
+          model = yaml.safe_load(
+              Path("/tmp/implementation-design-model.yaml").read_text()
+          )
+
+          by_id = {item["id"]: item for item in profile["expectations"]}
+          assert by_id["ASYNCHRONOUS-CONTRACT"]["capability"] == (
+              "engineering.architecture.async-messaging-not-applicable"
+          ), by_id["ASYNCHRONOUS-CONTRACT"]
+
+          result = evaluate_target_state(profile, model)
+          assert result["status"] == "COMPLETE", result
+          assert result["create"] == [], result
+          assert result["wait"] == [], result
+          assert result["pending"] == [], result
+          PY
+
+      - name: Verify missing not-applicable evidence opens CREATE
+        run: |
+          python .harness/derive_consumer_profile.py \
+            docs/harness-core.yaml IMPLEMENTATION-DESIGN \
+            --harness-root .harness-tool \
+            --profile-output /tmp/missing-na-profile.yaml \
+            --model-output /tmp/missing-na-model.yaml \
+            --drop-capability engineering.architecture.async-messaging-not-applicable
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from target_state import evaluate_target_state
+
+          profile = yaml.safe_load(Path("/tmp/missing-na-profile.yaml").read_text())
+          model = yaml.safe_load(Path("/tmp/missing-na-model.yaml").read_text())
+          result = evaluate_target_state(profile, model)
+
+          assert result["status"] == "READY", result
+          create = {item["expectation"] for item in result["create"]}
+          assert create == {"ASYNCHRONOUS-CONTRACT"}, result
+          assert result["wait"] == [], result
+          PY
+
+      - name: Verify missing UI capability opens bounded frontier
+        run: |
+          python .harness/derive_consumer_profile.py             docs/harness-core.yaml IMPLEMENTATION             --harness-root .harness-tool             --profile-output /tmp/missing-ui-profile.yaml             --model-output /tmp/missing-ui-model.yaml             --drop-capability engineering.interface.resource-detail-ui
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from target_state import evaluate_target_state
+
+          profile = yaml.safe_load(Path("/tmp/missing-ui-profile.yaml").read_text())
+          model = yaml.safe_load(Path("/tmp/missing-ui-model.yaml").read_text())
+          result = evaluate_target_state(profile, model)
+
+          assert result["status"] == "READY", result
+          assert {item["expectation"] for item in result["create"]} == {
+              "RESOURCE-DETAIL-UI"
+          }, result
+          assert result["wait"] == [], result
+
+          pending = {item["expectation"] for item in result["pending"]}
+          assert {
+              "IMPLEMENTATION-PLAN",
+              "COMPLETION",
+              "VERIFICATION",
+              "VERIFICATION-SCENARIOS",
+          }.issubset(pending), result
+          PY
