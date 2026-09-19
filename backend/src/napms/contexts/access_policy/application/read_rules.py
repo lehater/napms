@@ -5,7 +5,8 @@ from uuid import UUID
 
 from napms.contexts.access_policy.application.ports import (
     AccessRuleReadAuthorityDiscoveryPort,
-    AccessRuleRepository,
+    AccessRuleLookup,
+    AccessRulePageSource,
     AuthorityAction,
     AuthorityPort,
     TernaryOutcome,
@@ -43,7 +44,7 @@ class ListAuthorizedAccessRules:
         self,
         *,
         read_authority: AccessRuleReadAuthorityDiscoveryPort,
-        rules: AccessRuleRepository,
+        rules: AccessRulePageSource,
     ) -> None:
         self._read_authority = read_authority
         self._rules = rules
@@ -89,7 +90,7 @@ class ListAuthorizedAccessRules:
 
 
 class GetAuthorizedAccessRule:
-    def __init__(self, *, authority: AuthorityPort, rules: AccessRuleRepository) -> None:
+    def __init__(self, *, authority: AuthorityPort, rules: AccessRuleLookup) -> None:
         self._authority = authority
         self._rules = rules
 
