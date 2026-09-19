@@ -212,3 +212,7 @@ Recommended semantics:
 
 
 
+
+## Graph-model caveat discovered by experiment
+
+The current NAPMS canonical graph makes accepted Test Intent depend on Implementation Readiness. Attempting to place semantic Test Design after Test Intent and before Implementation Design creates a cycle. This is evidence that the current NAPMS ordering conflates verification intent with downstream implementation-readiness. The portability result therefore supports a future split/reordering rather than forcing the candidate capability into the current implementation consumer graph during research.
