@@ -1,0 +1,85 @@
+version: 1
+kind: engineering-knowledge-completeness
+id: NAPMS-FIRST-MVP-KNOWLEDGE-COMPLETENESS
+status: PILOT
+
+purpose: Define structural expectations for engineering knowledge required by the accepted first-MVP scope. This model checks presence and declared coverage, not semantic correctness.
+
+scope:
+  requirements: NAPMS-FIRST-MVP-REQUIREMENTS
+  implementation: NAPMS-FIRST-MVP-IMPLEMENTATION-READINESS
+
+status_values: [PRESENT, PARTIAL, MISSING, NOT_REQUIRED]
+
+expectations:
+  - id: MVP-TACTICAL-COVERAGE
+    dimension: tactical-domain-design
+    required_subjects:
+      - Resource Catalogue
+      - Authority Management
+      - Application Communication Catalogue
+      - Application Deployment
+      - Business Connectivity
+      - Access Policy
+    excluded_subjects:
+      - {subject: Network Enforcement Placement, reason: first-MVP requirements non_goal}
+      - {subject: Technical Access Evidence, reason: first-MVP requirements non_goal}
+      - {subject: Access Policy Realization, reason: first-MVP requirements non_goal}
+      - {subject: Network Environment Operations, reason: first-MVP requirements non_goal}
+    coverage:
+      Resource Catalogue: {status: PRESENT, artifacts: [RC-DOMAIN]}
+      Authority Management: {status: PARTIAL, artifacts: [AM-LANGUAGE], reason: no full tactical domain-model artifact}
+      Application Communication Catalogue: {status: PRESENT, artifacts: [ACC-DOMAIN]}
+      Application Deployment: {status: PRESENT, artifacts: [AD-DOMAIN]}
+      Business Connectivity: {status: PRESENT, artifacts: [BC-DOMAIN]}
+      Access Policy: {status: PRESENT, artifacts: [AP-DOMAIN]}
+
+  - id: MVP-DOMAIN-USE-CASE-COVERAGE
+    dimension: domain-use-case-design
+    required_subjects:
+      - Resource Catalogue
+      - Application Communication Catalogue
+      - Application Deployment
+      - Business Connectivity
+      - Access Policy
+    coverage:
+      Resource Catalogue: {status: PRESENT, artifacts: [RC-CURATION]}
+      Application Communication Catalogue: {status: MISSING, artifacts: []}
+      Application Deployment: {status: MISSING, artifacts: []}
+      Business Connectivity: {status: MISSING, artifacts: []}
+      Access Policy: {status: MISSING, artifacts: []}
+
+  - id: MVP-UI-INTERACTION-COVERAGE
+    dimension: ui-interaction-design
+    required_subjects:
+      - Resources
+      - Application and Components
+      - Interactions and Traffic
+      - Deployments
+      - Business Connectivity
+      - Policy Rule and Decision
+      - Current Policy Export
+    coverage:
+      Resources: {status: PARTIAL, artifacts: [MVP-UI-NAVIGATION, RESOURCE-DETAIL-UI], reason: Resource detail/history is designed but full Resource authoring interaction is not covered}
+      Application and Components: {status: MISSING, artifacts: []}
+      Interactions and Traffic: {status: MISSING, artifacts: []}
+      Deployments: {status: MISSING, artifacts: []}
+      Business Connectivity: {status: MISSING, artifacts: []}
+      Policy Rule and Decision: {status: MISSING, artifacts: []}
+      Current Policy Export: {status: MISSING, artifacts: []}
+
+  - id: MVP-VERIFICATION-COVERAGE
+    dimension: verification-design
+    required_subjects:
+      - complete-authoring-to-export
+      - resource-history-browser
+    coverage:
+      complete-authoring-to-export: {status: PARTIAL, artifacts: [MVP-TEST-INTENT], reason: end-to-end intent exists but explicit full browser traversal is not declared}
+      resource-history-browser: {status: PRESENT, artifacts: [MVP-TEST-INTENT]}
+
+rules:
+  - Every required subject must have exactly one coverage entry.
+  - PRESENT and PARTIAL coverage must reference existing canonical artifact ids.
+  - MISSING coverage must reference no artifact.
+  - Excluded subjects must carry an explicit canonical scope reason.
+  - Completeness status does not assert semantic correctness of referenced artifacts.
