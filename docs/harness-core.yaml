@@ -156,6 +156,7 @@ bindings:
   - {artifact: STRATEGIC-RELATIONSHIPS, authority: STRATEGIC-DOMAIN-DESIGN, provides: [engineering.domain.strategic-model]}
 
   - {artifact: RC-CURATION, authority: DOMAIN-USE-CASE-DESIGN, provides: [engineering.domain.use-case-model]}
+  - {artifact: ACC-AUTHORING, authority: DOMAIN-USE-CASE-DESIGN, provides: [engineering.domain.use-case-model]}
 
   - {artifact: RC-LANGUAGE, authority: TACTICAL-DOMAIN-DESIGN, provides: []}
   - {artifact: RC-DECISIONS, authority: TACTICAL-DOMAIN-DESIGN, provides: []}
@@ -195,6 +196,7 @@ contracts:
   - id: DOMAIN-USE-CASE-DESIGN-INPUT
     consumer: DOMAIN-USE-CASE-DESIGN
     requires:
+      - {id: product-intent, capability: engineering.requirements.product-intent, authority: PRODUCT-REQUIREMENTS}
       - {id: discovery, capability: engineering.discovery.problem-evidence, authority: DISCOVERY}
       - {id: strategic-model, capability: engineering.domain.strategic-model, authority: STRATEGIC-DOMAIN-DESIGN}
 
