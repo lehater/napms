@@ -1,0 +1,26 @@
+version: 1
+kind: use-case-model
+id: NAPMS-UC-ACC-AUTHORING
+bounded_context_refs:
+  - BC-APPLICATION-COMMUNICATION-CATALOGUE
+
+purpose: Define the context-focused Application Communication Catalogue behavior required by the accepted first-MVP product intent without deciding tactical structure or technical realization.
+
+behavior: |-
+  # Application Communication Catalogue authoring behavior
+
+  For the accepted first-MVP journey, the supported behavior shall allow the user to:
+
+  1. define one Application identity;
+  2. add Components that belong to that Application;
+  3. define a directed Interaction between two Components of the same Application;
+  4. create an immutable InteractionContractRevision containing the vendor-neutral traffic semantics for that Interaction; and
+  5. retain the exact revision so downstream policy truth can reference and resolve it without silently following later traffic changes.
+
+  An Interaction between Components of different Applications is outside the accepted behavior. Concrete ComponentDeployment placement, Resource realization, business justification and Access Policy decisions remain owned by their respective contexts.
+
+inputs:
+  product_intent: docs/requirements/first-mvp-policy-export.yaml
+  strategic_model: docs/model/strategic/bounded-contexts.yaml
+
+ownership_boundary: This artifact owns context-focused observable ACC behavior for the accepted MVP slice. Aggregate structure and invariants belong to tactical domain design; API, persistence and UI realization belong to later engineering authorities.
