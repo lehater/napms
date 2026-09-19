@@ -80,7 +80,7 @@ authorities:
       atomic: true
 
   - id: INTERFACE-DESIGN
-    responsibility: Own shared technical representations and the external HTTP/JSON/CSV contract, including OpenAPI.
+    responsibility: Own shared technical representations and supported external interface contracts, including HTTP/JSON/CSV and user-facing UI interaction/presentation contracts.
     boundary:
       semantic_cohesion: Decisions define machine-consumable boundary representations and external application interface contracts.
       independent_change: Interface representations can evolve without changing domain ownership or physical persistence design when semantics are preserved.
@@ -178,6 +178,7 @@ bindings:
   - {artifact: TECH-REPRESENTATION, authority: INTERFACE-DESIGN, provides: [engineering.interface.shared-representations]}
   - {artifact: HTTP-REQUIREMENTS, authority: INTERFACE-DESIGN, provides: []}
   - {artifact: OPENAPI, authority: INTERFACE-DESIGN, provides: [engineering.interface.http-contract]}
+  - {artifact: RESOURCE-DETAIL-UI, authority: INTERFACE-DESIGN, provides: [engineering.interface.resource-detail-ui]}
 
   - {artifact: PERSISTENCE, authority: DATA-DESIGN, provides: [engineering.data.persistence-model]}
   - {artifact: QUALITY-REQUIREMENTS, authority: QUALITY-DESIGN, provides: [engineering.quality.constraints]}
@@ -250,6 +251,7 @@ contracts:
       - {id: system-architecture, capability: engineering.architecture.rules, authority: SYSTEM-ARCHITECTURE}
       - {id: security-architecture, capability: engineering.architecture.security, authority: SECURITY-ARCHITECTURE-DESIGN}
       - {id: interface, capability: engineering.interface.http-contract, authority: INTERFACE-DESIGN}
+      - {id: resource-detail-ui, capability: engineering.interface.resource-detail-ui, authority: INTERFACE-DESIGN}
       - {id: persistence, capability: engineering.data.persistence-model, authority: DATA-DESIGN}
 
   - id: SECURITY-ANALYSIS-INPUT
