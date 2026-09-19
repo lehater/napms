@@ -2,6 +2,9 @@ version: 1
 kind: tactical-domain-model
 id: NAPMS-AP-DOMAIN-MODEL
 bounded_context_ref: BC-ACCESS-POLICY
+knowledge_coverage:
+  subject: BC-ACCESS-POLICY
+  knowledge: tactical-domain-model
 
 aggregate: PolicyRule
 child_entity: RuleChange
