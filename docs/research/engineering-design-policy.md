@@ -50,3 +50,4 @@ The accepted architecture explicitly has no internal HTTP between modules and no
 
 A component design must identify public components/contracts, responsibility, contract ownership, cross-module dependency direction, persistence/representation mappings, composition, security admission placement, critical first-MVP journey collaboration, forbidden dependencies and structural verification. It must also state implementation freedoms.
 
+
