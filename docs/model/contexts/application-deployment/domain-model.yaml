@@ -2,6 +2,9 @@ version: 1
 kind: tactical-domain-model
 id: NAPMS-AD-DOMAIN-MODEL
 bounded_context_ref: BC-APPLICATION-DEPLOYMENT
+knowledge_coverage:
+  subject: BC-APPLICATION-DEPLOYMENT
+  knowledge: tactical-domain-model
 
 aggregate: ComponentDeployment
 invariants:
