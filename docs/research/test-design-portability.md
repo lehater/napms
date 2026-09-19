@@ -207,3 +207,4 @@ Recommended semantics:
 - capability `test-design` is consumed by implementation/coding consumers when selected;
 - TDD RED/GREEN sequence is project engineering policy/process, not a universal Harness invariant;
 - test code is not a CanonicalArtifact merely because TDD writes it before production code.
+
