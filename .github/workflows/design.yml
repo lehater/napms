@@ -29,6 +29,7 @@ on:
       - "tools/generate_*_view.py"
       - "tools/generate_*_views.py"
       - "tools/generate_persistence_erd.py"
+      - "tools/generate_human_context_package.py"
       - "Makefile"
       - ".github/workflows/design.yml"
   pull_request:
@@ -59,6 +60,7 @@ on:
       - "tools/generate_*_view.py"
       - "tools/generate_*_views.py"
       - "tools/generate_persistence_erd.py"
+      - "tools/generate_human_context_package.py"
       - "Makefile"
       - ".github/workflows/design.yml"
 
@@ -73,3 +75,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate canonical design graph, responsibility contracts and projections
         run: make design-check
+      - name: Materialize human implementation package
+        run: make human-implementation-package
+      - name: Upload human implementation package
+        uses: actions/upload-artifact@v4
+        with:
+          name: implementation-documentation-package
+          path: docs-generated/implementation-package/
