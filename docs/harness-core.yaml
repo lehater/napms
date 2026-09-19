@@ -289,6 +289,22 @@ contracts:
       - {id: interface, capability: engineering.interface.http-contract, authority: INTERFACE-DESIGN}
       - {id: persistence, capability: engineering.data.persistence-model, authority: DATA-DESIGN}
 
+  - id: TEST-DESIGN-INPUT
+    consumer: TEST-DESIGN
+    requires:
+      - {id: verification-strategy, capability: engineering.verification.strategy, authority: VERIFICATION-DESIGN}
+      - {id: acceptance-scenarios, capability: engineering.verification.acceptance-scenarios, authority: VERIFICATION-DESIGN}
+      - {id: requirements, capability: engineering.requirements.product-intent, authority: PRODUCT-REQUIREMENTS}
+      - {id: tactical-model, capability: engineering.domain.tactical-model, authority: TACTICAL-DOMAIN-DESIGN}
+      - {id: application-journey, capability: engineering.application.journey, authority: APPLICATION-JOURNEY-DESIGN}
+      - {id: system-rules, capability: engineering.architecture.rules, authority: SYSTEM-ARCHITECTURE}
+      - {id: module-contracts, capability: engineering.architecture.module-contracts, authority: SYSTEM-ARCHITECTURE}
+      - {id: security, capability: engineering.architecture.security, authority: SECURITY-ARCHITECTURE-DESIGN}
+      - {id: http-contract, capability: engineering.interface.http-contract, authority: INTERFACE-DESIGN}
+      - {id: persistence, capability: engineering.data.persistence-model, authority: DATA-DESIGN}
+      - {id: quality, capability: engineering.quality.constraints, authority: QUALITY-DESIGN}
+      - {id: observability, capability: engineering.operability.observability, authority: OPERABILITY-DESIGN}
+
   - id: IMPLEMENTATION-DESIGN-INPUT
     consumer: IMPLEMENTATION-DESIGN
     requires:
