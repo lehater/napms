@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: lehater/harness
-          ref: 0ffba4a846906847ee4349814b66048dabea869b
+          ref: 8b88580bdeb38b844cbb896531281b2fb1745700
           path: .harness-tool
 
       - uses: actions/setup-python@v5
@@ -106,6 +106,41 @@ jobs:
           assert result["create"] == [], result
           assert result["wait"] == [], result
           assert result["pending"] == [], result
+          PY
+
+      - name: Verify not-applicable evidence is ordinary upstream knowledge
+        run: |
+          python - <<'PY'
+          import copy
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from engineering_graph import evaluate_engineering_target
+
+          graph = yaml.safe_load(Path("/tmp/engineering-graph.yaml").read_text())
+          model = yaml.safe_load(Path("/tmp/core-model.yaml").read_text())
+          evidence = "engineering.architecture.async-messaging-not-applicable"
+
+          missing = copy.deepcopy(model)
+          for artifact in missing["artifacts"]:
+              artifact["provides"] = [
+                  capability
+                  for capability in artifact.get("provides", [])
+                  if capability != evidence
+              ]
+
+          result = evaluate_engineering_target(
+              graph,
+              "IMPLEMENTATION",
+              missing,
+          )
+          assert result["status"] == "READY", result
+          assert {item["capability"] for item in result["create"]} == {
+              evidence
+          }, result
+          assert result["wait"] == [], result
           PY
 
       - name: Verify Resource Detail gap is one producer CREATE
