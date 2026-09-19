@@ -79,6 +79,9 @@ authority-context:
 	@test -n "$(AUTHORITY)" || (echo "Usage: make authority-context AUTHORITY=SYSTEM-ARCHITECTURE" >&2; exit 2)
 	python tools/prepare_authority_execution.py "$(AUTHORITY)"
 
+human-implementation-package:
+	python tools/generate_human_context_package.py --consumer IMPLEMENTATION-CONSUMER
+
 architecture: design-sync
 	@docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true
 	@docker run -d --rm --name $(PLANTUML_CONTAINER) -p 127.0.0.1:8081:8080 $(PLANTUML_SERVER_IMAGE) >/dev/null
