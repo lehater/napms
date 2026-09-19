@@ -1,25 +1,130 @@
-version: 2
-kind: observability-requirements
-id: NAPMS-MVP-OBSERVABILITY
-status: PILOT_CURRENT
-scope: Minimum diagnostic observability required to implement and verify the first-MVP modular monolith without introducing a telemetry platform.
+version: 3
+kind: operability-design
+id: NAPMS-MVP-OPERABILITY
+status: RESEARCH_CANDIDATE
+scope: Minimum runtime evidence and diagnosability contract required for the first-MVP long-running HTTP modular monolith without introducing an unrequired telemetry platform.
 
-requirements:
-  - id: OBS-OUTCOME-001
-    requirement: Diagnostic output must distinguish success from authorization denial, domain rejection, Unresolved materialization and persistence/transport uncertainty without exposing credentials or session secrets.
-    basis_refs: [SYSTEM-RULES, SECURITY-ARCHITECTURE, HTTP-REQUIREMENTS]
-  - id: OBS-CORRELATION-002
-    requirement: One HTTP request or application-use-case execution must be traceable across application orchestration and owner-module calls using a technical correlation identifier.
+responsibility: Define what runtime evidence must exist so accepted application outcomes, security decisions, lifecycle state and technical dependency failures are diagnosable without redefining their upstream semantics.
+
+upstream_ownership_retained:
+  product_and_domain:
+    - Success, authorization denial, domain rejection and Unresolved materialization semantics remain owned by requirements/domain/application design.
+    - Numeric latency, throughput, availability and scale targets are explicitly NOT_REQUIRED for the first MVP by product truth.
+  architecture:
+    - The long-running backend process, HTTP boundary, in-process modular monolith and PostgreSQL dependency topology remain owned by System Architecture.
+    - No asynchronous messaging/background worker boundary is introduced by Operability Design.
+  interface:
+    - HTTP status/public error representation and request/session boundary remain Interface Design decisions.
+  security:
+    - Authenticated identity, protected-action admission, credential/session-secret handling and disclosure constraints remain Security Architecture/Analysis decisions.
+  data:
+    - PostgreSQL persistence semantics and authoritative-state rules remain Data Design decisions.
+
+runtime_evidence:
+  - id: OPR-OUTCOME-001
+    requirement: Diagnostic evidence must distinguish success, authorization denial, domain rejection, Unresolved materialization and persistence/transport uncertainty without redefining those outcomes.
+    basis_refs: [SYSTEM-RULES, SECURITY-ARCHITECTURE, HTTP-REQUIREMENTS, QUALITY-REQUIREMENTS]
+  - id: OPR-CORRELATION-002
+    requirement: One HTTP request/application-use-case execution has one technical correlation identifier propagated through application orchestration, owner-module calls and applicable dependency diagnostics.
     basis_refs: [C4-STRUCTURE, SYSTEM-RULES]
-  - id: OBS-DEPENDENCY-003
-    requirement: Local operation must make backend startup failure distinguishable from PostgreSQL connectivity failure.
+  - id: OPR-DEPENDENCY-003
+    requirement: Diagnostic evidence distinguishes backend process/startup failure from PostgreSQL connectivity/readiness failure and from request execution failure.
     basis_refs: [C4-STRUCTURE, PERSISTENCE]
+  - id: OPR-COMPLETION-004
+    requirement: The outer runtime boundary emits one structured completion record for an application request/use-case with operation identity, correlation identity, semantic outcome category and elapsed duration; safe dependency identity is included when failure location depends on it.
+    basis_refs: [SYSTEM-RULES, HTTP-REQUIREMENTS]
+  - id: OPR-SENSITIVE-005
+    requirement: Default diagnostic evidence excludes credentials, session secrets, connection strings, raw protected payloads and unreviewed exception/dependency payloads.
+    basis_refs: [SECURITY-ARCHITECTURE, THREAT-MODEL]
+
+health_contract:
+  liveness:
+    meaning: The backend process/runtime is alive enough to answer the liveness probe.
+    dependency_traversal: forbidden
+    ownership_note: This is operational process evidence, not proof that PostgreSQL-backed application use cases can succeed.
+  readiness:
+    meaning: The backend is admitted to serve the accepted first-MVP HTTP use cases only when its required PostgreSQL runtime dependency is usable.
+    required_dependency: PostgreSQL
+    safe_output: Readiness exposes state only; it does not expose credentials, connection strings or database diagnostics.
+  distinction: Liveness and readiness are different operational questions and must remain distinguishable.
+
+failure_evidence:
+  - Authorization denial, domain rejection and Unresolved are semantic outcomes, not infrastructure failures.
+  - Persistence/transport uncertainty and unexpected defects are technical failures and must not be relabeled as successful/domain outcomes.
+  - Native database/framework exception types may be recorded internally when safe, but they do not become domain/application/interface contracts.
+  - Public error wording is not an Operability Design contract.
+
+lifecycle_and_resilience:
+  startup:
+    requirement: Required runtime construction and PostgreSQL readiness failure must be diagnosable before the runtime advertises readiness.
+  shutdown:
+    requirement: In-flight resource cleanup must preserve accepted transaction/state semantics; concrete framework shutdown hooks remain implementation freedom.
+  retries:
+    decision: NO_GENERAL_AUTOMATIC_RETRY_POLICY
+    rationale: Retryability depends on operation semantics, idempotency and authoritative outcome. A coding agent may not add retries merely as a framework/library default.
+  background_work:
+    decision: NOT_APPLICABLE
+    rationale: System Architecture explicitly introduces no asynchronous messaging/background worker boundary for the first MVP.
+  graceful_degradation:
+    decision: NOT_DEFINED_AS_GENERIC_POLICY
+    rationale: The accepted application contract already defines complete success vs explicit Unresolved/failure behavior; Operability Design must not invent a new degraded-success mode.
+
+configuration_boundary:
+  decision: NO_NEW_OPERABILITY_CONFIGURATION_MODEL
+  rule: Operability Design does not create environment variables, config files, precedence rules, runtime reload, feature flags or secret sources.
+  routing: If such sources become required, source/precedence/mutability belongs to the relevant Interface/Architecture/Security/Engineering Policy owner before implementation mechanics are selected.
+
+signals:
+  structured_logs:
+    required_semantics: [correlation, operation, outcome_category, duration, safe_dependency_context]
+    physical_encoding: implementation_freedom
+  metrics:
+    required: false
+    reason: No accepted numeric SLI/SLO or operator consumer requires a metrics platform for the first MVP.
+  distributed_traces:
+    required: false
+    reason: Distributed services are outside the accepted first-MVP architecture.
+  audit_events:
+    rule: Operational evidence does not replace authoritative business provenance/history owned by domain/data contracts.
+
+implementation_freedom:
+  - logging library and formatter
+  - telemetry SDK when optional local instrumentation is used
+  - correlation-context propagation mechanism
+  - private exception hierarchy and exception translation mechanics
+  - concrete health-handler framework mechanics
+  - private metric/span/event physical names when no external operational consumer fixes them
+  - resource-cleanup language/framework syntax
+
+implementation_must_not_invent:
+  - new semantic failure/outcome categories
+  - retries/backoff that can change observable or authoritative state semantics
+  - hidden configuration sources/defaults or runtime reload semantics
+  - a degraded-success mode
+  - sensitive diagnostic payload disclosure
+  - metrics/tracing/SLO infrastructure as an MVP completion requirement
+
+verification_obligations:
+  - One request/use-case execution is correlatable across orchestration and dependency evidence.
+  - Authorization denial, domain rejection, Unresolved and infrastructure uncertainty remain distinguishable.
+  - Liveness does not depend on PostgreSQL while readiness reflects the required PostgreSQL dependency.
+  - Startup/dependency failure does not advertise ready state.
+  - Default diagnostics do not expose credentials or session secrets.
+  - No unapproved automatic retry converts uncertain mutation outcome into success.
+  - Operational evidence does not replace business audit/provenance state.
 
 not_required:
-  - Distributed tracing backend because distributed services are outside the accepted first-MVP architecture.
-  - A production metrics platform, dashboards or numeric production SLOs; no such upstream requirement is currently accepted.
+  - Distributed tracing backend.
+  - Production metrics platform or dashboards.
+  - Numeric production SLOs.
+  - Background worker/queue observability.
+  - Dynamic runtime configuration or feature-flag infrastructure.
 
-evolution_rule: Add metrics, tracing and production SLOs only when requirements or deployment architecture justify them; observability tooling must not redefine domain events or semantic ownership.
+evolution_rule: Add signal types, health dependencies, alertability or SLO-derived evidence only when accepted product/quality/deployment/runtime consumers create the need. Tooling must not redefine semantic ownership.
 
-provenance:
-  basis: Architecture-owned diagnostic requirements added for the implementation consumer during the Harness documentation-vertical pilot.
+research_result:
+  atomicity:
+    semantic_cohesion: Runtime evidence, correlation, health-state evidence and dependency diagnosability answer one question: what must be observable to diagnose accepted runtime behavior.
+    independent_change: Evidence shape and signal projection can evolve without changing domain/interface semantics or selecting implementation libraries.
+    public_contract: Produces engineering.operability.runtime-evidence for implementation and verification consumers.
+  boundary_result: OPERABILITY-DESIGN remains coherent on a long-running HTTP service when restricted to runtime evidence/diagnosability. Generic runtime policy, configuration, security and reliability semantics remain with their existing owners.
