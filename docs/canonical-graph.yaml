@@ -28,11 +28,12 @@ nodes:
   - {id: TECH-REPRESENTATION, kind: shared-technical-conventions, path: docs/architecture/mvp-technical-representation.yaml, depends_on: [SYSTEM-RULES, FIRST-MVP-JOURNEY, RC-DOMAIN]}
   - {id: HTTP-REQUIREMENTS, kind: contract-requirements, path: docs/contracts/http/napms-api-requirements.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, SYSTEM-RULES, MODULE-CONTRACTS, SECURITY-ARCHITECTURE, FIRST-MVP-JOURNEY, TECH-REPRESENTATION]}
   - {id: OPENAPI, kind: http-contract, path: docs/contracts/http/napms.openapi.yaml, depends_on: [HTTP-REQUIREMENTS, TECH-REPRESENTATION]}
+  - {id: RESOURCE-DETAIL-UI, kind: ui-contract, path: docs/contracts/ui/resource-detail.yaml, depends_on: [MODULE-CONTRACTS, OPENAPI]}
   - {id: PERSISTENCE, kind: physical-persistence-model, path: docs/architecture/persistence/mvp-persistence.yaml, depends_on: [SYSTEM-RULES, TECH-REPRESENTATION, RC-DOMAIN, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN, AM-LANGUAGE]}
   - {id: QUALITY-REQUIREMENTS, kind: quality-requirements, path: docs/architecture/mvp-quality-requirements.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, SYSTEM-RULES, SECURITY-ARCHITECTURE, MODULE-CONTRACTS, OPENAPI, PERSISTENCE]}
   - {id: THREAT-MODEL, kind: threat-model, path: docs/architecture/mvp-threat-model.yaml, depends_on: [SYSTEM-RULES, SECURITY-ARCHITECTURE, MODULE-CONTRACTS, HTTP-REQUIREMENTS, TECH-REPRESENTATION, PERSISTENCE]}
   - {id: OBSERVABILITY, kind: observability-requirements, path: docs/architecture/mvp-observability.yaml, depends_on: [C4-STRUCTURE, SYSTEM-RULES, SECURITY-ARCHITECTURE, HTTP-REQUIREMENTS, PERSISTENCE]}
-  - {id: MVP-IMPLEMENTATION-READINESS, kind: implementation-plan, path: docs/plans/first-mvp-implementation-readiness.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, C4-STRUCTURE, SYSTEM-RULES, SECURITY-ARCHITECTURE, MODULE-CONTRACTS, TECH-REPRESENTATION, OPENAPI, PERSISTENCE, QUALITY-REQUIREMENTS, THREAT-MODEL, OBSERVABILITY]}
+  - {id: MVP-IMPLEMENTATION-READINESS, kind: implementation-plan, path: docs/plans/first-mvp-implementation-readiness.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, C4-STRUCTURE, SYSTEM-RULES, SECURITY-ARCHITECTURE, MODULE-CONTRACTS, TECH-REPRESENTATION, OPENAPI, PERSISTENCE, QUALITY-REQUIREMENTS, THREAT-MODEL, OBSERVABILITY, RESOURCE-DETAIL-UI]}
   - {id: MVP-TEST-INTENT, kind: test-intent, path: docs/plans/first-mvp-test-intent.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, RC-DOMAIN, AM-LANGUAGE, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN, SYSTEM-RULES, SECURITY-ARCHITECTURE, MODULE-CONTRACTS, OPENAPI, PERSISTENCE, MVP-IMPLEMENTATION-READINESS, QUALITY-REQUIREMENTS, THREAT-MODEL, OBSERVABILITY]}
 
 projections:
