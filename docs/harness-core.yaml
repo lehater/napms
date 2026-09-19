@@ -119,6 +119,14 @@ authorities:
       public_contract: Provides observability/diagnostic requirements; operability Questions route here.
       atomic: true
 
+  - id: TEST-DESIGN
+    responsibility: Own executable observable test contracts, scenario oracles and property/state-machine test obligations derived from accepted verification and design knowledge.
+    boundary:
+      semantic_cohesion: Test preconditions, operations, expected outcomes, invariants, failure distinctions and traceability.
+      independent_change: Executable scenario design can evolve without redefining product/domain/architecture truth or concrete test code.
+      public_contract: Provides test-design knowledge sufficient for TDD/test implementation without forcing coding agents to invent material test oracles.
+      atomic: true
+
   - id: IMPLEMENTATION-DESIGN
     responsibility: Own implementation slicing, sequencing and completion criteria after upstream engineering decisions are available.
     boundary:
@@ -186,6 +194,7 @@ bindings:
   - {artifact: MVP-QUALITY-TARGETS, authority: PRODUCT-REQUIREMENTS, provides: []}
   - {artifact: THREAT-MODEL, authority: SECURITY-ANALYSIS, provides: [engineering.security.threat-analysis]}
   - {artifact: OBSERVABILITY, authority: OPERABILITY-DESIGN, provides: [engineering.operability.observability]}
+  - {artifact: TEST-DESIGN-PORTABILITY, authority: TEST-DESIGN, provides: [engineering.verification.test-design]}
   - {artifact: MVP-IMPLEMENTATION-READINESS, authority: IMPLEMENTATION-DESIGN, provides: [engineering.implementation.plan, engineering.implementation.completion-criteria]}
   - {artifact: MVP-TEST-INTENT, authority: VERIFICATION-DESIGN, provides: [engineering.verification.strategy, engineering.verification.acceptance-scenarios]}
 
@@ -195,6 +204,10 @@ questions:
     text: What numeric latency, throughput, availability and scale targets are required for the first MVP?
     resolution: MVP-QUALITY-TARGETS
 terminal_capabilities: []
+
+  # Research-only candidate. If promoted, implementation consumers require this
+  # capability when the project selects explicit pre-code Test Design.
+
 
 contracts:
   - id: DOMAIN-USE-CASE-DESIGN-INPUT
