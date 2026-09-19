@@ -1,0 +1,178 @@
+name: Engineering Graph v0 pilot
+
+on:
+  pull_request:
+    paths:
+      - ".harness/**"
+      - ".github/workflows/engineering-graph-v0.yml"
+      - "docs/harness-core.yaml"
+      - "docs/engineering-knowledge-completeness.yaml"
+      - "docs/canonical-graph.yaml"
+  push:
+    paths:
+      - ".harness/**"
+      - ".github/workflows/engineering-graph-v0.yml"
+      - "docs/harness-core.yaml"
+      - "docs/engineering-knowledge-completeness.yaml"
+      - "docs/canonical-graph.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-engineering-graph:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout NAPMS
+        uses: actions/checkout@v4
+
+      - name: Checkout pinned Engineering Graph Harness
+        uses: actions/checkout@v4
+        with:
+          repository: lehater/harness
+          ref: f442a3017e63ba4ab764d0bae4d790b24c3c0a94
+          path: .harness-tool
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install YAML dependency
+        run: python -m pip install PyYAML
+
+      - name: Derive one Engineering Graph from NAPMS policy sources
+        run: |
+          python .harness/derive_engineering_graph.py             --harness-root .harness-tool             --graph-output /tmp/engineering-graph.yaml             --model-output /tmp/core-model.yaml
+
+      - name: Validate derived Engineering Graph
+        run: python .harness-tool/engineering_graph.py validate /tmp/engineering-graph.yaml
+
+      - name: Verify first-MVP implementation target is complete
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from engineering_graph import evaluate_engineering_target
+
+          graph = yaml.safe_load(Path("/tmp/engineering-graph.yaml").read_text())
+          model = yaml.safe_load(Path("/tmp/core-model.yaml").read_text())
+          result = evaluate_engineering_target(graph, "IMPLEMENTATION", model)
+
+          assert result["status"] == "COMPLETE", result
+          assert result["create"] == [], result
+          assert result["wait"] == [], result
+          assert result["pending"] == [], result
+
+          capabilities = {
+              item["capability"]
+              for item in result["profile"]["expectations"]
+          }
+          assert "engineering.requirements.product-intent" in capabilities
+          assert "engineering.architecture.rules" in capabilities
+          assert "engineering.interface.resource-detail-ui" in capabilities
+          assert "engineering.implementation.plan" in capabilities
+          assert "engineering.verification.strategy" in capabilities
+          assert any(
+              value.startswith("napms.coverage.tactical-domain-model.")
+              for value in capabilities
+          ), capabilities
+          PY
+
+      - name: Verify Resource Detail gap is one producer CREATE
+        run: |
+          python - <<'PY'
+          import copy
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from engineering_graph import evaluate_engineering_target
+
+          graph = yaml.safe_load(Path("/tmp/engineering-graph.yaml").read_text())
+          model = yaml.safe_load(Path("/tmp/core-model.yaml").read_text())
+
+          missing = copy.deepcopy(model)
+          for artifact in missing["artifacts"]:
+              artifact["provides"] = [
+                  capability
+                  for capability in artifact.get("provides", [])
+                  if capability != "engineering.interface.resource-detail-ui"
+              ]
+
+          result = evaluate_engineering_target(graph, "IMPLEMENTATION", missing)
+          assert result["status"] == "READY", result
+          assert {item["capability"] for item in result["create"]} == {
+              "engineering.interface.resource-detail-ui"
+          }, result
+          assert result["wait"] == [], result
+          PY
+
+      - name: Verify scoped Resource Catalogue coverage cannot collapse
+        run: |
+          python - <<'PY'
+          import copy
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from engineering_graph import evaluate_engineering_target
+
+          graph = yaml.safe_load(Path("/tmp/engineering-graph.yaml").read_text())
+          model = yaml.safe_load(Path("/tmp/core-model.yaml").read_text())
+          capability = (
+              "napms.coverage.tactical-domain-model."
+              "BC-RESOURCE-CATALOGUE"
+          )
+
+          missing = copy.deepcopy(model)
+          for artifact in missing["artifacts"]:
+              artifact["provides"] = [
+                  value
+                  for value in artifact.get("provides", [])
+                  if value != capability
+              ]
+
+          result = evaluate_engineering_target(graph, "IMPLEMENTATION", missing)
+          assert result["status"] == "READY", result
+          assert {item["capability"] for item in result["create"]} == {
+              capability
+          }, result
+          PY
+
+      - name: Verify unresolved Interface Question routes to WAIT
+        run: |
+          python - <<'PY'
+          import copy
+          import sys
+          from pathlib import Path
+          import yaml
+
+          sys.path.insert(0, ".harness-tool")
+          from engineering_graph import evaluate_engineering_target
+
+          graph = yaml.safe_load(Path("/tmp/engineering-graph.yaml").read_text())
+          model = yaml.safe_load(Path("/tmp/core-model.yaml").read_text())
+
+          blocked = copy.deepcopy(model)
+          blocked["questions"].append(
+              {
+                  "id": "Q-ENGINEERING-GRAPH-UI",
+                  "authority": "INTERFACE-DESIGN",
+                  "text": "Which accepted Resource Detail interface decision is authoritative?",
+                  "blocks": ["RESOURCE-DETAIL-UI"],
+              }
+          )
+
+          result = evaluate_engineering_target(graph, "IMPLEMENTATION", blocked)
+          assert result["status"] == "BLOCKED", result
+          wait = {item["capability"]: item for item in result["wait"]}
+          assert "engineering.interface.resource-detail-ui" in wait, result
+          assert wait["engineering.interface.resource-detail-ui"]["questions"] == [
+              "Q-ENGINEERING-GRAPH-UI"
+          ], result
+          PY
