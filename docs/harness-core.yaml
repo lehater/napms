@@ -195,7 +195,6 @@ contracts:
   - id: DOMAIN-USE-CASE-DESIGN-INPUT
     consumer: DOMAIN-USE-CASE-DESIGN
     requires:
-      - {id: product-intent, capability: engineering.requirements.product-intent, authority: PRODUCT-REQUIREMENTS}
       - {id: discovery, capability: engineering.discovery.problem-evidence, authority: DISCOVERY}
       - {id: strategic-model, capability: engineering.domain.strategic-model, authority: STRATEGIC-DOMAIN-DESIGN}
 
