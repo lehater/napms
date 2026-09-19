@@ -1,6 +1,9 @@
 version: 1
 kind: use-case-model
 id: NAPMS-UC-RC-CURATION
+knowledge_coverage:
+  subject: BC-RESOURCE-CATALOGUE
+  knowledge: domain-use-case
 depends_on:
   - NAPMS-DISCOVERY-RC-CURATION
 bounded_context_refs:
