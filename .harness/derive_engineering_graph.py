@@ -91,8 +91,12 @@ def derive(
             contracts_by_consumer,
             authority_id,
         )
+        seen_productions: set[str] = set()
         for binding in bindings_by_authority.get(authority_id, []):
             for capability in binding.get("provides", []) or []:
+                if capability in seen_productions:
+                    continue
+                seen_productions.add(capability)
                 production = {
                     "capability": capability,
                     "requires": deepcopy(common_requirements),
