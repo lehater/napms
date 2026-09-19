@@ -29,7 +29,7 @@ def resolve(consumer_id):
     for item in harness.get("artifact_providers", []):
         for capability in item.get("provides", []):
             providers[capability] = item["artifact"]
-    contracts = {item["id"]: item for item in harness.get("input_contracts", [])}
+    contracts = {item["id"]: item for item in harness.get("contracts", [])}
     if consumer_id not in contracts:
         raise SystemExit("Unknown consumer/input contract: " + consumer_id)
     node_by_id = {item["id"]: item for item in graph["nodes"]}
