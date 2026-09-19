@@ -23,7 +23,7 @@ SECTIONS = {
 def load(path):
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
-def resolve(consumer_id, scope_roots=None):
+def resolve(consumer_id):
     harness, graph = load(HARNESS), load(GRAPH)
     providers = {}
     for item in harness.get("bindings", []):
@@ -44,23 +44,6 @@ def resolve(consumer_id, scope_roots=None):
     if unresolved:
         raise SystemExit("Unresolved capabilities: " + ", ".join(sorted(unresolved)))
     roots = list(dict.fromkeys(roots))
-    if scope_roots:
-        unknown = [item for item in scope_roots if item not in node_by_id]
-        if unknown:
-            raise SystemExit("Unknown scope roots: " + ", ".join(unknown))
-        allowed = set()
-        def collect(node_id):
-            if node_id in allowed:
-                return
-            allowed.add(node_id)
-            for dep in node_by_id[node_id].get("depends_on", []):
-                collect(dep)
-        for root in scope_roots:
-            collect(root)
-        roots = [item for item in roots if item in allowed]
-        for item in scope_roots:
-            if item not in roots:
-                roots.append(item)
     closure = set()
     def visit(node_id):
         if node_id in closure:
@@ -72,12 +55,12 @@ def resolve(consumer_id, scope_roots=None):
         visit(root)
     return roots, [node for node in graph["nodes"] if node["id"] in closure]
 
-def render_readme(consumer_id, roots, nodes, scope):
+def render_readme(consumer_id, roots, nodes):
     lines = [
         "# Implementation Documentation Package", "",
         "> Generated view. Do not edit. Canonical sources are listed below.", "",
         "Consumer: " + consumer_id, "",
-        "Scope: " + (scope or "full-consumer"), "",
+        "Scope: full-consumer", "",
         "This is the human-readable control view of the exact canonical knowledge resolved for implementation.", "",
         "## Direct consumer artifacts", "",
     ]
@@ -90,8 +73,8 @@ def render_readme(consumer_id, roots, nodes, scope):
         "the exact dependency closure used to build this package.", ""]
     return chr(10).join(lines)
 
-def materialize(consumer_id, out, scope=None, scope_roots=None):
-    roots, nodes = resolve(consumer_id, scope_roots)
+def materialize(consumer_id, out):
+    roots, nodes = resolve(consumer_id)
     if out.exists():
         shutil.rmtree(out)
     sources = out / "sources"
@@ -102,13 +85,13 @@ def materialize(consumer_id, out, scope=None, scope_roots=None):
         "version": 1,
         "kind": "human-context-package-manifest",
         "consumer": consumer_id,
-        "scope": scope or "full-consumer",
+        "scope": "full-consumer",
         "generated_from": ["docs/harness-core.yaml", "docs/canonical-graph.yaml"],
         "direct_artifacts": roots,
         "artifacts": [{"id": n["id"], "kind": n["kind"], "canonical_path": n["path"]} for n in nodes],
     }
     (out / "manifest.yaml").write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
-    (out / "README.md").write_text(render_readme(consumer_id, roots, nodes, scope), encoding="utf-8")
+    (out / "README.md").write_text(render_readme(consumer_id, roots, nodes), encoding="utf-8")
     nl = chr(10)
     for node in nodes:
         src = ROOT / node["path"]
@@ -135,10 +118,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--consumer", default="IMPLEMENTATION-CONSUMER")
     parser.add_argument("--out", default=str(DEFAULT_OUT))
-    parser.add_argument("--scope")
-    parser.add_argument("--scope-root", action="append", default=[])
     args = parser.parse_args()
-    materialize(args.consumer, Path(args.out), args.scope, args.scope_root or None)
+    materialize(args.consumer, Path(args.out))
 
 if __name__ == "__main__":
     main()
