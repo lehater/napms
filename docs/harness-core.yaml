@@ -292,6 +292,7 @@ contracts:
       - {id: tactical-model, capability: engineering.domain.tactical-model, authority: TACTICAL-DOMAIN-DESIGN}
       - {id: journey, capability: engineering.application.materialization-semantics, authority: APPLICATION-JOURNEY-DESIGN}
       - {id: system-architecture, capability: engineering.architecture.rules, authority: SYSTEM-ARCHITECTURE}
+      - {id: module-contracts, capability: engineering.architecture.module-contracts, authority: SYSTEM-ARCHITECTURE}
       - {id: security-architecture, capability: engineering.architecture.security, authority: SECURITY-ARCHITECTURE-DESIGN}
       - {id: interface, capability: engineering.interface.http-contract, authority: INTERFACE-DESIGN}
       - {id: persistence, capability: engineering.data.persistence-model, authority: DATA-DESIGN}
