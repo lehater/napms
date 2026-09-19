@@ -15,6 +15,7 @@ design_refs:
   business_connectivity_domain: docs/model/contexts/business-connectivity/domain-model.yaml
   access_policy_domain: docs/model/contexts/access-policy/domain-model.yaml
   implementation_readiness: docs/plans/first-mvp-implementation-readiness.yaml
+  resource_detail_ui: docs/contracts/ui/resource-detail.yaml
   application_architecture: docs/architecture/mvp-system-rules.yaml
   security_architecture: docs/architecture/mvp-security-architecture.yaml
   module_contracts: docs/architecture/mvp-module-contracts.yaml
@@ -44,5 +45,6 @@ required_scenarios:
   - {id: MVP-QUAL-011, expect: Persistence or transport uncertainty is not reported as successful mutation.}
   - {id: MVP-SEC-012, expect: Caller-supplied identity, UI state or direct persistence access cannot substitute for Authority Management admission.}
   - {id: MVP-OBS-013, expect: Diagnostic evidence distinguishes authorization denial, domain rejection, Unresolved materialization and infrastructure uncertainty without exposing credentials or session secrets.}
+  - {id: MVP-RC-014, expect: After replacing or ending a Resource realization, scope affiliation or responsibility, Resource detail keeps current facts immediately readable and exposes the ended fact in history with validity and provenance through the supported browser workflow.}
 
 trace_rule: Every scenario traces to accepted canonical requirements/domain/architecture; implementation tests are evidence, not product/domain/architecture authority.
