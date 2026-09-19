@@ -111,7 +111,16 @@ The execution context is ephemeral routing data, not a canonical artifact, work 
 - its permitted write paths and public outputs;
 - blocking Questions or DESIGN_GAPs.
 
-If its status is `BLOCKED`, do not produce or patch the target Authority's artifacts to compensate; resolve the upstream Question/gap first. If it is `READY`, use only the listed upstream inputs plus the Authority's own artifacts as engineering context, write only owned paths, then rerun design validation.
+If its status is `BLOCKED`, do not produce or patch the target Authority's artifacts to compensate; resolve the upstream Question/gap first. If it is `READY`, use only the listed upstream inputs plus the Authority's own artifacts as engineering context and write only owned paths.
+
+Before finalizing an Authority edit, the changed canonical paths can be checked against ownership:
+
+```sh
+python tools/prepare_authority_execution.py SYSTEM-ARCHITECTURE \
+  --check-write docs/architecture/mvp-system-rules.yaml docs/architecture/mvp-module-contracts.yaml
+```
+
+Then rerun `make design-check` so published capabilities and downstream contracts are re-evaluated.
 
 Change the smallest owning artifact set. Follow graph dependencies for downstream impact. Regenerate projections rather than editing generated diagrams.
 

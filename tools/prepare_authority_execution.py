@@ -228,6 +228,21 @@ def build_execution_context(
     }
 
 
+def validate_write_set(context: dict[str, Any], changed_paths: list[str]) -> list[str]:
+    if context["status"] == "BLOCKED":
+        raise VerticalError(
+            f"Authority {context['authority']} is BLOCKED; artifact production is not allowed"
+        )
+    allowed = set(context["access"]["write"])
+    normalized = [Path(path).as_posix().lstrip("./") for path in changed_paths]
+    outside = sorted(set(normalized) - allowed)
+    if outside:
+        raise VerticalError(
+            f"Authority {context['authority']} may not write outside owned artifacts: {outside}"
+        )
+    return sorted(set(normalized))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Prepare a bounded engineering context for one Harness Authority."
@@ -244,11 +259,20 @@ def main() -> int:
         action="store_true",
         help="Return zero even when the Authority is blocked; useful for inspection.",
     )
+    parser.add_argument(
+        "--check-write",
+        nargs="*",
+        metavar="PATH",
+        help="Validate that changed canonical paths are owned by this Authority.",
+    )
     args = parser.parse_args()
 
     graph = load_yaml(GRAPH)
     projection = load_yaml(PROJECTION)
     context = build_execution_context(args.authority, graph, projection)
+
+    if args.check_write is not None:
+        context["validated_write_set"] = validate_write_set(context, args.check_write)
 
     if args.format == "json":
         import json

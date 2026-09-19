@@ -10,7 +10,8 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
-from prepare_authority_execution import build_execution_context  # noqa: E402
+from check_harness_vertical import VerticalError  # noqa: E402
+from prepare_authority_execution import build_execution_context, validate_write_set  # noqa: E402
 
 
 def load(path: str):
@@ -52,6 +53,23 @@ def main() -> int:
         for item in architecture["downstream_consumers"]
     )
 
+    assert validate_write_set(
+        architecture,
+        [
+            "docs/architecture/mvp-system-rules.yaml",
+            "docs/architecture/mvp-module-contracts.yaml",
+        ],
+    ) == [
+        "docs/architecture/mvp-module-contracts.yaml",
+        "docs/architecture/mvp-system-rules.yaml",
+    ]
+    try:
+        validate_write_set(architecture, ["docs/contracts/http/napms.openapi.yaml"])
+    except VerticalError as exc:
+        assert "may not write outside owned artifacts" in str(exc)
+    else:
+        raise AssertionError("System Architecture must not be allowed to edit Interface Design artifacts")
+
     interface = build_execution_context("INTERFACE-DESIGN", graph, projection)
     assert interface["status"] == "READY"
     assert interface["input_contracts"] == ["INTERFACE-DESIGN-INPUT"]
@@ -92,6 +110,12 @@ def main() -> int:
     assert journey["status"] == "BLOCKED"
     assert journey["blocked_by"] == ["Q-JOURNEY"]
     assert blocked["blockers"][0]["owner"] == "APPLICATION-JOURNEY-DESIGN"
+    try:
+        validate_write_set(blocked, ["docs/architecture/mvp-system-rules.yaml"])
+    except VerticalError as exc:
+        assert "is BLOCKED; artifact production is not allowed" in str(exc)
+    else:
+        raise AssertionError("Blocked Authority must not produce artifacts")
 
     gap_projection = copy.deepcopy(projection)
     journey_binding = next(

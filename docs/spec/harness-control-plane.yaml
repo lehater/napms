@@ -1,4 +1,4 @@
-version: 11
+version: 12
 kind: canonical-design-control
 id: NAPMS-DESIGN-CONTROL
 status: PILOT_CURRENT
@@ -67,7 +67,7 @@ authority_execution:
   input_source: The Authority's consumer contract resolved to canonical provider artifacts.
   provider_support_rule: Include the provider artifact's dependency closure only while dependencies remain inside the same provider Authority; never cross into an undeclared Authority.
   own_context: The Authority's current canonical artifacts are also readable because they are the only permitted write targets.
-  write_rule: Only canonical artifacts bound to the selected Authority may be modified.
+  write_rule: Only canonical artifacts bound to the selected Authority may be modified; changed paths can be checked with prepare_authority_execution.py --check-write.
   ready_rule: Artifact production is allowed only when every required capability is PROVIDED or canonically NOT_APPLICABLE.
   blocked_rule: BLOCKED or DESIGN_GAP stops artifact production and routes the issue to the upstream engineering Authority.
   postcondition: After owned artifacts change, rerun design validation to republish capabilities and reevaluate downstream contracts.
