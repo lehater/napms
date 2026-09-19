@@ -119,6 +119,22 @@ authorities:
       public_contract: Provides observability/diagnostic requirements; operability Questions route here.
       atomic: true
 
+  - id: ENGINEERING-POLICY
+    responsibility: Own cross-cutting engineering design constraints selected for NAPMS implementation-facing design.
+    boundary:
+      semantic_cohesion: Normative implementation-design principles and explicit anti-pattern constraints.
+      independent_change: Policy can evolve without redefining product/domain semantics.
+      public_contract: Provides reviewable design obligations to component and implementation design.
+      atomic: true
+
+  - id: COMPONENT-DESIGN
+    responsibility: Own implementation-facing component decomposition, ports/contracts, dependency ownership and composition boundaries.
+    boundary:
+      semantic_cohesion: Decisions constrain code structure while preserving accepted module/domain/application semantics.
+      independent_change: Component realization can evolve behind stable architecture/module/interface contracts.
+      public_contract: Provides code-design boundaries sufficient for implementation without inventing structural dependencies.
+      atomic: true
+
   - id: IMPLEMENTATION-DESIGN
     responsibility: Own implementation slicing, sequencing and completion criteria after upstream engineering decisions are available.
     boundary:
@@ -186,6 +202,7 @@ bindings:
   - {artifact: MVP-QUALITY-TARGETS, authority: PRODUCT-REQUIREMENTS, provides: []}
   - {artifact: THREAT-MODEL, authority: SECURITY-ANALYSIS, provides: [engineering.security.threat-analysis]}
   - {artifact: OBSERVABILITY, authority: OPERABILITY-DESIGN, provides: [engineering.operability.observability]}
+  - {artifact: ENGINEERING-DESIGN-POLICY, authority: ENGINEERING-POLICY, provides: [engineering.policy.design-constraints]}
   - {artifact: MVP-IMPLEMENTATION-READINESS, authority: IMPLEMENTATION-DESIGN, provides: [engineering.implementation.plan, engineering.implementation.completion-criteria]}
   - {artifact: MVP-TEST-INTENT, authority: VERIFICATION-DESIGN, provides: [engineering.verification.strategy, engineering.verification.acceptance-scenarios]}
 
@@ -276,9 +293,21 @@ contracts:
       - {id: interface, capability: engineering.interface.http-contract, authority: INTERFACE-DESIGN}
       - {id: persistence, capability: engineering.data.persistence-model, authority: DATA-DESIGN}
 
+  - id: COMPONENT-DESIGN-INPUT
+    consumer: COMPONENT-DESIGN
+    requires:
+      - {id: engineering-policy, capability: engineering.policy.design-constraints, authority: ENGINEERING-POLICY}
+      - {id: journey, capability: engineering.application.journey, authority: APPLICATION-JOURNEY-DESIGN}
+      - {id: architecture-rules, capability: engineering.architecture.rules, authority: SYSTEM-ARCHITECTURE}
+      - {id: module-contracts, capability: engineering.architecture.module-contracts, authority: SYSTEM-ARCHITECTURE}
+      - {id: security-architecture, capability: engineering.architecture.security, authority: SECURITY-ARCHITECTURE-DESIGN}
+      - {id: interface, capability: engineering.interface.http-contract, authority: INTERFACE-DESIGN}
+      - {id: persistence, capability: engineering.data.persistence-model, authority: DATA-DESIGN}
+
   - id: IMPLEMENTATION-DESIGN-INPUT
     consumer: IMPLEMENTATION-DESIGN
     requires:
+      - {id: component-design, capability: engineering.implementation.component-design, authority: COMPONENT-DESIGN}
       - {id: requirements, capability: engineering.requirements.product-intent, authority: PRODUCT-REQUIREMENTS}
       - {id: journey, capability: engineering.application.journey, authority: APPLICATION-JOURNEY-DESIGN}
       - {id: system-architecture, capability: engineering.architecture.c4-model, authority: SYSTEM-ARCHITECTURE}
@@ -335,6 +364,7 @@ contracts:
       - {id: quality, capability: engineering.quality.constraints, authority: QUALITY-DESIGN}
       - {id: security-analysis, capability: engineering.security.threat-analysis, authority: SECURITY-ANALYSIS}
       - {id: observability, capability: engineering.operability.observability, authority: OPERABILITY-DESIGN}
+      - {id: component-design, capability: engineering.implementation.component-design, authority: COMPONENT-DESIGN}
       - {id: implementation-plan, capability: engineering.implementation.plan, authority: IMPLEMENTATION-DESIGN}
       - {id: completion, capability: engineering.implementation.completion-criteria, authority: IMPLEMENTATION-DESIGN}
       - {id: verification, capability: engineering.verification.strategy, authority: VERIFICATION-DESIGN}
