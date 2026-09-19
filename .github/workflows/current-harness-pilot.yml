@@ -6,12 +6,24 @@ on:
       - ".harness/**"
       - "docs/canonical-graph.yaml"
       - "docs/harness-core.yaml"
+      - "docs/engineering-knowledge-completeness.yaml"
+      - "docs/model/use-cases/first-mvp-policy-export.yaml"
+      - "docs/model/strategic/bounded-contexts.yaml"
+      - "docs/model/contexts/**"
+      - "tools/check_harness_vertical.py"
+      - "tools/check_knowledge_completeness.py"
       - ".github/workflows/current-harness-pilot.yml"
   pull_request:
     paths:
       - ".harness/**"
       - "docs/canonical-graph.yaml"
       - "docs/harness-core.yaml"
+      - "docs/engineering-knowledge-completeness.yaml"
+      - "docs/model/use-cases/first-mvp-policy-export.yaml"
+      - "docs/model/strategic/bounded-contexts.yaml"
+      - "docs/model/contexts/**"
+      - "tools/check_harness_vertical.py"
+      - "tools/check_knowledge_completeness.py"
       - ".github/workflows/current-harness-pilot.yml"
 
 permissions:
@@ -40,6 +52,25 @@ jobs:
 
       - name: Verify existing NAPMS engineering vertical
         run: python tools/check_harness_vertical.py
+
+      - name: Verify accepted completeness gaps fail closed
+        run: |
+          cp docs/model/contexts/resource-catalogue/domain-model.yaml /tmp/rc-domain-model.yaml
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+
+          path = Path("docs/model/contexts/resource-catalogue/domain-model.yaml")
+          data = yaml.safe_load(path.read_text())
+          data.pop("knowledge_coverage", None)
+          path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+          PY
+          if python tools/check_knowledge_completeness.py; then
+            echo "accepted completeness gap incorrectly passed" >&2
+            exit 1
+          fi
+          mv /tmp/rc-domain-model.yaml docs/model/contexts/resource-catalogue/domain-model.yaml
+          python tools/check_knowledge_completeness.py
 
       - name: Derive current implementation consumer profile
         run: |
