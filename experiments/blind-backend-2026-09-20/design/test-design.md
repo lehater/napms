@@ -6,6 +6,17 @@ Test framework/fixture mechanics are implementation freedoms. Each contract defi
 
 ## Resource Description
 
+### T-RESOURCE-AUTHORITY-SCOPE
+Precondition: register Resource R with authorityScopeRef S1 plus arbitrary Site/OWNER/ADMINISTRATOR facts.  
+Operation: read/update Resource and its non-scope metadata.  
+Oracle: authorityScopeRef remains S1 and is not inferred/replaced from Site/responsibility/address.
+
+### T-RESOURCE-ENDPOINT-LOGICAL-UNIT
+Precondition: Resources R1 and R2 are distinct logical access-management units.  
+Operation: add endpoints only by explicit parent Resource command; vary addresses/Site/owners so they overlap.  
+Oracle: no automatic grouping/move/merge occurs from those similarities; endpoint membership changes only through the explicit accepted parent-Resource operation set.
+
+
 ### T-RES-IDENTITY
 Precondition: Resource R / Endpoint E has address A1.  
 Operation: set A2.  
@@ -110,6 +121,11 @@ Precondition: Interaction I = C1 -> C2; C3 exists but is not an I participant.
 Operation: declare Need(I,C3).  
 Oracle: validation rejects; no Need state committed.
 
+### T-PROCESS-CRITICALITY
+Precondition: BusinessProcess P version V.  
+Operation: set criticalityLabel "tier-a", then clear it using current ETags.  
+Oracle: label is preserved/cleared as opaque text, BusinessProcess version advances on actual change, and no score/order/authority/Need/Rule behavior changes.
+
 ### T-NEED-NOT-PERMISSION
 Precondition: active Need N exists.  
 Operation: no permission decision.  
@@ -126,6 +142,17 @@ Operation: mutate organization/Need with V, then stale V.
 Oracle: owner version guards child mutation; no Need-specific optimistic version.
 
 ## Access Request / permission
+
+### T-REQUEST-SCOPED-AUTHORITY
+Precondition: source Resource scope S1, destination Resource scope S2, current Need; authenticated actor has access.request grant for both scopes effective at admissionAt.  
+Operation: submit AccessRequest.  
+Oracle: request succeeds and stores immutable requestAuthorityEvidence for S1/S2 with grant bounds and exact admissionAt.
+
+### T-REQUEST-SCOPED-AUTHORITY-DENIED
+Variants: missing S2 grant; S2 grant expired before admissionAt; grant starts after admissionAt; only instance permission string named access.request.  
+Operation: submit AccessRequest.  
+Oracle: 403/no AccessRequest/idempotent mutation; Site/OWNER/Process responsibility never substitutes for the missing scoped grant.
+
 
 ### T-REQUEST-DIRECTION
 Precondition: revision describes C1 -> C2; deployments D1(C1), D2(C2); current Need N for Interaction.  
@@ -264,6 +291,16 @@ Oracle: request is not rejected because selected count exceeds 200; exact suppli
 Precondition: NAPMS_HTTP_MAX_REQUEST_BODY_BYTES = B.  
 Operation: send a JSON body larger than B to a body-bearing route; separately send a valid body <= B.  
 Oracle: oversized -> 413 PAYLOAD_TOO_LARGE before semantic mutation; within bound follows normal route semantics; no hidden body-size default.
+
+### T-EXPORT-SCOPED-AUTHORITY
+Precondition: selected Rules resolve scopes S1/S2; actor has policy.export grants effective for both at database-owned evaluationAt.  
+Operation: materialize explicit subset.  
+Oracle: admission succeeds; response exportAuthorityEvidence contains actor + S1/S2 + grant bounds + the exact evaluationAt.
+
+### T-EXPORT-SCOPED-AUTHORITY-DENIED
+Variants: one selected scope missing; grant expires immediately before evaluationAt; grant begins after evaluationAt; ALL selection contains one unauthorized scope.  
+Operation: materialize.  
+Oracle: 403 before materialization result/rows are exposed; unrelated policy.read or instance permission string never substitutes.
 
 ### T-MATERIALIZE-COMPLETE
 Precondition: one selected effective Rule; two source addresses, one destination, two traffic clauses.  
@@ -441,6 +478,16 @@ Oracle: current authorization fails 403 before replay result is disclosed.
 Missing/malformed/expired/wrong issuer/audience/invalid signature with usable key material.  
 Oracle: 401 before application data access.
 
+### T-AUTH-AUTHORITY-CLAIM
+Variants:
+- claim absent;
+- valid access.request/policy.export objects;
+- missing action/scope;
+- wrong claim/object type;
+- invalid NumericDate bound;
+- effectiveFrom >= effectiveUntil.
+Oracle: absent claim yields no scoped grants; valid objects normalize exactly; malformed variants -> 401.
+
 ### T-AUTH-PERMISSION-CLAIM
 Variants:
 - permission claim absent;
@@ -532,7 +579,7 @@ Variants: valid cached key within max-stale; cache too old; unknown kid + failed
 Oracle: usable cache may validate; inability to establish validity -> 503/readiness DOWN, never fail-open/false 401.
 
 ### T-ACTOR-SPOOF
-Request contains actor/permission/server-owned provenance fields.  
+Request contains actor/permission/authority-grant/server-owned provenance fields.  
 Oracle: strict DTO rejects; trusted principal unchanged.
 
 ### T-FORWARDED-IDENTITY-IGNORED
