@@ -1,0 +1,102 @@
+version: 1
+kind: harness-engineering-coverage-map
+catalog: software-engineering-baseline/v0
+project: NAPMS
+scope: first-mvp
+
+rows:
+  - concern: problem.discovery
+    state: COVERED
+    artifacts: [RC-DISCOVERY]
+    paths: [docs/discovery/resource-catalogue.yaml]
+  - concern: product.intent
+    state: COVERED
+    capabilities: [engineering.requirements.product-intent, engineering.requirements.acceptance]
+    artifacts: [FIRST-MVP-REQUIREMENTS]
+    paths: [docs/requirements/first-mvp-product-requirements.yaml]
+  - concern: domain.semantics
+    state: COVERED
+    capabilities: [engineering.domain.strategic-model, engineering.domain.tactical-model]
+    artifacts: [STRATEGIC-CAPABILITIES, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS, RC-DOMAIN, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN]
+  - concern: application.use-cases
+    state: COVERED
+    capabilities: [engineering.domain.use-case-model, engineering.application.journey]
+    artifacts: [RC-CURATION, FIRST-MVP-JOURNEY]
+  - concern: architecture.structure
+    state: COVERED
+    capabilities: [engineering.architecture.c4-model, engineering.architecture.rules, engineering.architecture.module-contracts]
+    artifacts: [C4-STRUCTURE, SYSTEM-RULES, MODULE-CONTRACTS]
+    paths:
+      - docs/architecture/structurizr/workspace.dsl
+      - docs/architecture/mvp-system-rules.yaml
+      - docs/architecture/mvp-module-contracts.yaml
+  - concern: interface.machine
+    state: COVERED
+    capabilities: [engineering.interface.http-contract]
+    artifacts: [HTTP-REQUIREMENTS, OPENAPI]
+  - concern: interface.human
+    state: MISSING
+    capabilities: [engineering.frontend.human-interface]
+    artifacts: [MVP-UI-NAVIGATION, RESOURCE-DETAIL-UI]
+    rationale: Narrow UI navigation/screen artifacts exist, but the full frontend Human Interface capability is still missing.
+  - concern: data.persistence
+    state: COVERED
+    capabilities: [engineering.data.persistence-model]
+    artifacts: [PERSISTENCE]
+  - concern: security.architecture
+    state: COVERED
+    capabilities: [engineering.architecture.security]
+    artifacts: [SECURITY-ARCHITECTURE]
+  - concern: security.analysis
+    state: COVERED
+    capabilities: [engineering.security.threat-analysis]
+    artifacts: [THREAT-MODEL]
+  - concern: privacy.governance
+    state: UNASSESSED
+  - concern: obligation.external
+    state: UNASSESSED
+  - concern: quality.attributes
+    state: COVERED
+    capabilities: [engineering.quality.constraints]
+    artifacts: [QUALITY-REQUIREMENTS, MVP-QUALITY-TARGETS]
+  - concern: reliability.concurrency
+    state: COVERED
+    artifacts: [SYSTEM-RULES, QUALITY-REQUIREMENTS]
+    rationale: Snapshot consistency, failure semantics and materialization consistency are explicit.
+  - concern: operability.observability
+    state: COVERED
+    capabilities: [engineering.operability.observability]
+    artifacts: [OBSERVABILITY]
+  - concern: engineering.policy
+    state: UNASSESSED
+    rationale: No independent project Engineering Policy capability is currently part of the first-MVP graph.
+  - concern: dependencies.supply-chain
+    state: UNASSESSED
+  - concern: build.reproducibility
+    state: UNASSESSED
+  - concern: component.design
+    state: MISSING
+    capabilities: [engineering.frontend.component-design]
+    rationale: Backend module contracts exist, but the reusable Component Design capability currently exists only on the incomplete frontend path.
+  - concern: implementation.design
+    state: COVERED
+    capabilities: [engineering.implementation.plan, engineering.implementation.completion-criteria]
+    artifacts: [MVP-IMPLEMENTATION-READINESS]
+  - concern: verification.strategy
+    state: COVERED
+    capabilities: [engineering.verification.strategy, engineering.verification.acceptance-scenarios]
+    artifacts: [MVP-TEST-INTENT]
+  - concern: test.design
+    state: MISSING
+    capabilities: [engineering.frontend.test-design]
+    rationale: Existing MVP test intent covers backend verification, but canonical Test Design capability is not yet present for frontend.
+  - concern: change.transition
+    state: UNASSESSED
+  - concern: accessibility
+    state: UNASSESSED
+  - concern: internationalization
+    state: UNASSESSED
+  - concern: safety
+    state: UNASSESSED
+  - concern: ai.risk
+    state: UNASSESSED
