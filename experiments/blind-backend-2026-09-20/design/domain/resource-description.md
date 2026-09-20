@@ -75,7 +75,7 @@ Identity: `EndpointRef`, stable within Resource lifecycle.
 
 State:
 - current AddressRealization? = HostAddress | Prefix;
-- address-history entries with effectiveFrom/effectiveTo and provenance.
+- address-history entries with effectiveFrom/effectiveTo and changedBySubject.
 
 Invariants:
 - zero or one current address realization per Endpoint;
