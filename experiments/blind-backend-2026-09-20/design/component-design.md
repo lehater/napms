@@ -55,7 +55,7 @@ Result:
 - IdentityDependencyUnavailable -> 503.
 
 OIDC adapter contract:
-- enforces HTTPS-only configured issuer/discovery/jwks_uri with downgrade rejection, then validates exact configured allowed algorithms, issuer, audience, exp/nbf skew, sub and permission-claim shape from Security Architecture;
+- enforces HTTPS-only configured issuer/discovery/jwks_uri with downgrade rejection, then validates exact configured allowed algorithms, issuer, audience, exp/nbf skew, sub, permission-claim and scoped authority-claim shapes from Security Architecture;
 - exposes `initializeValidationMaterial()` used before listener start;
 - owns one single-flight bounded validation-material refresh path shared by initialization/readiness/protected validation;
 - one attempt is full discovery+JWKS validation; successful refresh atomically replaces material and records lastSuccessfulValidationMaterialRefreshAt; failed refresh preserves prior material/timestamp;
