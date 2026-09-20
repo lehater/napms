@@ -1,28 +1,16 @@
-version: 1
+version: 2
 kind: context-language
 id: NAPMS-RC-LANGUAGE
 bounded_context_ref: BC-RESOURCE-CATALOGUE
-depends_on:
-  - NAPMS-UC-RC-CURATION
+depends_on: [NAPMS-UC-RC-CURATION]
 
 terms:
-  - term_id: TERM-RESOURCE
-    term: Resource
-    definition: An access-relevant catalogue identity independent of whether current realization, scope-affiliation or responsibility facts are present.
-  - term_id: TERM-ADDRESS-SPACE
-    term: AddressSpace
-    definition: The MVP Resource realization value; exactly one HostAddress or one Prefix when present. One Resource has at most one effective AddressSpace at one logical time.
-  - term_id: TERM-RESOURCE-REALIZATION
-    term: Resource technical realization
-    definition: A time-qualified Resource fact establishing one AddressSpace; replacement changes the effective HostAddress-or-Prefix without changing Resource identity and preserves history.
-  - term_id: TERM-RESOURCE-SCOPE-AFFILIATION
-    term: Resource Scope Affiliation
-    definition: A time-qualified Resource Catalogue fact associating a Resource with a Responsibility Scope reference; it does not grant curation authority.
-  - term_id: TERM-RESOURCE-RESPONSIBILITY
-    term: Resource Responsibility
-    definition: A Resource Catalogue fact recording operational person/team responsibility or contact roles; it is not mutation permission.
+  - {term_id: TERM-RESOURCE, term: Resource, definition: Stable logical access-management unit independent from current address realization.}
+  - {term_id: TERM-AUTHORITY-SCOPE, term: AuthorityScopeRef, definition: Required immutable opaque Resource affiliation used by protected scoped admission; it is not derived from Site responsibility or address.}
+  - {term_id: TERM-ENDPOINT, term: ResourceEndpoint, definition: Stable logical network presence inside one Resource lifecycle; it may exist without a current address.}
+  - {term_id: TERM-ADDRESS-REALIZATION, term: AddressRealization, definition: Zero-or-one current HOST or PREFIX for one Endpoint.}
+  - {term_id: TERM-SITE, term: Site, definition: Reusable descriptive Resource location identity.}
+  - {term_id: TERM-RESPONSIBILITY, term: Resource Responsibility, definition: Singular current OWNER or ADMINISTRATOR organizational responsibility with history; never security authority.}
 
 external_term_refs:
-  - term: Effective Authority
-    owner_context_ref: BC-AUTHORITY-MANAGEMENT
-    note: Definition remains with Authority Management; Resource Catalogue only consumes the meaning.
+  - {term: Effective Authority, owner_context_ref: BC-AUTHORITY-MANAGEMENT, note: Authority Management evaluates authenticated grants for exact action scope and time.}
