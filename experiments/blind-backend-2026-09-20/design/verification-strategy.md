@@ -172,11 +172,17 @@ A caller possessing policy.export but not policy.read can explain every exported
 ## V5 — Security
 
 - valid identity requires non-empty sub.
-- signature/issuer/audience/required exp and present nbf validate.
+- token alg must be in configured asymmetric allow-list and key type-compatible; none/HS*/unknown reject.
+- issuer exact-match; aud required string-or-array containing configured audience.
+- exp required and nbf optional use configured clock skew exactly.
 - missing permission claim -> authenticated empty permission set.
 - permission claim present -> array<string>; wrong type/non-string -> 401.
 - duplicate strings collapse; unknown permission strings grant no known permission.
-- unavailable/unusable OIDC validation key dependency -> 503 rather than false 401/fail-open.
+- invalid token against established usable key -> 401.
+- inability to establish validity because key material is unavailable/stale -> 503 rather than false 401/fail-open.
+- initial metadata/JWKS acquisition succeeds before listener start; initial failure exits non-zero.
+- runtime unknown-kid/readiness refresh is bounded and single-flight.
+- refresh failure with still-usable cache preserves readiness; beyond max-stale without refresh -> readiness DOWN.
 - exact operation permission matrix; no permission implication.
 - request/decide/manage/read/export independent.
 - Resource responsibility, Process organization and Need existence never grant authorization.
@@ -202,11 +208,11 @@ Mechanical checks prove:
 
 ## V7 — Operability/configuration
 
-- every required NAPMS_* key is validated before listener start, including NAPMS_HTTP_MAX_REQUEST_BODY_BYTES.
+- every required NAPMS_* key is validated before listener start, including NAPMS_HTTP_MAX_REQUEST_BODY_BYTES, NAPMS_OIDC_ALLOWED_ALGS and NAPMS_OIDC_CLOCK_SKEW.
 - unknown NAPMS_* key fails startup.
 - no config-file/CLI/runtime-reload override path exists.
 - required numeric timeout/retry/body-size values have no hidden defaults.
-- OIDC fetch retry/backoff/max-stale exact.
+- OIDC initial pre-listen acquisition + runtime single-flight fetch retry/backoff/max-stale exact.
 - DB statements, Need locks and idempotency-key waits obey request/statement deadlines.
 - no automatic DB mutation retry.
 - correlation propagates through required events.
