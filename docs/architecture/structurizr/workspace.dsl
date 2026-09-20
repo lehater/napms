@@ -125,13 +125,33 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
         }
 
         styles {
-            element "Element" { shape RoundedBox }
-            element "Person" { shape Person background #08427b color #ffffff }
-            element "Software System" { background #1168bd color #ffffff }
-            element "Container" { background #438dd5 color #ffffff }
-            element "Component" { background #85bbf0 color #000000 }
-            element "Database" { shape Cylinder }
-            element "Deployment Node" { background #f5f5f5 color #333333 }
+            element "Element" {
+                shape RoundedBox
+            }
+            element "Person" {
+                shape Person
+                background #08427b
+                color #ffffff
+            }
+            element "Software System" {
+                background #1168bd
+                color #ffffff
+            }
+            element "Container" {
+                background #438dd5
+                color #ffffff
+            }
+            element "Component" {
+                background #85bbf0
+                color #000000
+            }
+            element "Database" {
+                shape Cylinder
+            }
+            element "Deployment Node" {
+                background #f5f5f5
+                color #333333
+            }
         }
     }
 
