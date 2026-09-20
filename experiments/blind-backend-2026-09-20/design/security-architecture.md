@@ -83,9 +83,9 @@ Recording ALLOWED/DENIED requires authenticated `access.decide`. The backend rec
 
 ## Interface protection
 
-- HTTPS is mandatory outside a trusted loopback/dev environment.
+- external caller traffic is HTTPS to deployment ingress/reverse proxy/load balancer; the application-owned listener is plaintext only inside the trusted deployment boundary and must not be exposed directly to an untrusted network; application TLS certificates/keys are not an MVP responsibility.
 - Bearer tokens are accepted only in the Authorization header.
-- No identity/permission override through request body/query/header aliases.
+- No identity/permission override through request body/query/header aliases, including `X-Forwarded-User`, `X-Remote-User`, or proxy-supplied permission headers. Forwarded network metadata never establishes application identity.
 - Mutation responses never echo tokens/secrets.
 - Error disclosure distinguishes authentication/authorization/domain failure without exposing internal stack/schema/secret data.
 
