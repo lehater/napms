@@ -28,48 +28,63 @@ for path,item in api.get("paths",{}).items():
 if actual!=req["operations"]:
     fail(f"operation set/order differs: {actual}")
 
-sec=api.get("components",{}).get("securitySchemes",{}).get("SessionCookie")
-if not (isinstance(sec,dict) and sec.get("type")=="apiKey" and sec.get("in")=="cookie" and sec.get("name")=="napms_session"):
-    fail("session cookie security differs")
+sec=api.get("components",{}).get("securitySchemes",{}).get("OIDCBearer")
+if not (isinstance(sec,dict) and sec.get("type")=="http" and sec.get("scheme")=="bearer" and sec.get("bearerFormat")=="JWT"):
+    fail("OIDC bearer security differs")
 
 schemas=api.get("components",{}).get("schemas",{})
 def walk(value,path=""):
     if isinstance(value,dict):
         for key,item in value.items():
-            if key.lower() in {"actor","actorid","actor_id"}:
-                fail(f"trusted actor field appears at {path}/{key}")
+            if key.lower() in {"actor","actorid","actor_id","permissions","authoritygrants","authority_grants"}:
+                fail(f"trusted security field appears in request schema at {path}/{key}")
             walk(item,f"{path}/{key}")
     elif isinstance(value,list):
         for index,item in enumerate(value):
             walk(item,f"{path}/{index}")
 walk({k:v for k,v in schemas.items() if k.endswith("Request")})
 
-refs=[item.get("$ref") for item in schemas.get("AddressSpace",{}).get("oneOf",[]) if isinstance(item,dict)]
+refs=[item.get("$ref") for item in schemas.get("AddressRealization",{}).get("oneOf",[]) if isinstance(item,dict)]
 if refs!=["#/components/schemas/HostAddress","#/components/schemas/Prefix"]:
-    fail("AddressSpace XOR representation differs")
+    fail("AddressRealization XOR representation differs")
 
-traffic=schemas.get("PublishRevisionRequest",{}).get("properties",{}).get("trafficAlternatives",{})
+traffic=schemas.get("PublishRevisionRequest",{}).get("properties",{}).get("trafficClauses",{})
 if traffic.get("minItems")!=1:
-    fail("revision must require at least one traffic alternative")
+    fail("revision must require at least one traffic clause")
 
-if "rows" not in schemas.get("PolicyExportSuccess",{}).get("required",[]):
-    fail("successful export must contain complete rows")
-if "rows" in schemas.get("PolicyExportUnresolved",{}).get("properties",{}):
-    fail("Unresolved export must not contain partial rows")
+interaction=schemas.get("CreateInteractionRequest",{}).get("required",[])
+if interaction!=["sourceComponentRef","destinationComponentRef"]:
+    fail("Interaction contract must not require one owning Application")
 
-csv=api["paths"]["/api/policy-export.csv"]["get"]["responses"]
-if "text/csv" not in csv["200"].get("content",{}):
-    fail("CSV success media type missing")
-if "text/csv" in csv["422"].get("content",{}):
-    fail("Unresolved CSV response must not return CSV")
+decision=schemas.get("DecideAccessRequestRequest",{}).get("properties",{}).get("result",{})
+if decision.get("enum")!=["ALLOWED","DENIED"]:
+    fail("permission decision enum differs")
 
-decision=schemas.get("DecideRuleChangeRequest",{}).get("properties",{}).get("decision",{})
-if decision.get("enum")!=["Accepted","Rejected"]:
-    fail("decision enum differs")
+operational=schemas.get("SetPolicyRuleOperationalStateRequest",{}).get("properties",{}).get("effectState",{})
+if operational.get("enum")!=["ACTIVE","INACTIVE"]:
+    fail("PolicyRule operational state differs")
+
+materialization=schemas.get("PolicyMaterializationResult",{})
+required=set(materialization.get("required",[]))
+for field in ("evaluationAt","exportAuthorityEvidence","ruleProvenance","rows","issues"):
+    if field not in required:
+        fail(f"materialization missing required {field}")
+
+request=schemas.get("PolicyMaterializationRequest",{}).get("properties",{}).get("policyRuleRefs",{})
+if request.get("minItems")!=1 or request.get("uniqueItems") is not True:
+    fail("explicit Rule subset contract differs")
+
+create_resource=schemas.get("CreateResourceRequest",{})
+if "authorityScopeRef" not in create_resource.get("required",[]):
+    fail("Resource authorityScopeRef missing")
+
+process=schemas.get("CreateProcessRequest",{}).get("properties",{})
+if "criticalityLabel" not in process:
+    fail("BusinessProcess criticalityLabel missing")
 
 text=API.read_text(encoding="utf-8")
-for forbidden in ("Kafka","RabbitMQ","provider-specific"):
+for forbidden in ("RuleChange","SessionCookie","napms_session","same Application"):
     if forbidden in text:
-        fail(f"unexpected out-of-scope contract term: {forbidden}")
+        fail(f"stale contract term remains: {forbidden}")
 
 print("OpenAPI contract PASS")
