@@ -17,13 +17,15 @@ Support the narrow end-to-end backend journey from describing Resources and appl
 5. Resource-level Site, Owner and Administrator information is representable; Owner and Administrator are organizational groups, are distinct responsibilities and do not imply security authority.
 6. At one current time a Resource has at most one current Owner group and at most one current Administrator group.
 7. Basic history of changing Resource Site/responsibility/network-realization facts remains explainable.
+8. Each Resource is explicitly affiliated with one stable authority scope used for protected request/export admission; Site, Owner and Administrator do not define this authority scope.
+9. Multiple Endpoints may belong to one Resource only as an explicit assertion that they form one logical access-management unit; the product never auto-groups unrelated endpoints by address, Site, owner or naming similarity.
 
 ### PR-APPLICATION
 
-8. The product can define reusable Applications containing Components that represent communication participants/roles.
-9. It can define directed Interactions between Components. Structural validity follows explicit source/destination Component references and described communication semantics; source and destination Components may belong to different Applications. An Interaction represents one independently meaningful communication reason and carries the complete minimal traffic semantics for that reason.
-10. Traffic that must be independently applicable/authorized/managed is represented by a distinct Interaction rather than merged solely because endpoints match.
-11. A concrete Component deployment is identifiable separately from reusable application meaning and is associated with a Resource, not with a current IP address.
+10. The product can define reusable Applications containing Components that represent communication participants/roles.
+11. It can define directed Interactions between Components. Structural validity follows explicit source/destination Component references and described communication semantics; source and destination Components may belong to different Applications. An Interaction represents one independently meaningful communication reason and carries the complete minimal traffic semantics for that reason.
+12. Traffic that must be independently applicable/authorized/managed is represented by a distinct Interaction rather than merged solely because endpoints match.
+13. A concrete Component deployment is identifiable separately from reusable application meaning and is associated with a Resource, not with a current IP address.
 
 ### PR-BUSINESS
 
@@ -37,11 +39,12 @@ Support the narrow end-to-end backend journey from describing Resources and appl
 19. An already authorized/current access may acquire additional Process/Need justification later without creating a duplicate current access solely for that new justification.
 20. Retiring/loss of a Need does not rewrite historical requests, decisions or prior justification provenance.
 21. If an authorization has no currently known Need, that condition remains distinguishable for reconciliation, but the product does not automatically revoke/deactivate the authorization solely for that reason.
+22. Business Process importance/criticality is representable as a stakeholder-defined descriptive label for downstream impact analysis; the MVP defines no score, ordering or propagation rule.
 
 ### PR-ACCESS
 
 22. A deliberate request for connectivity is expressed using semantic application/deployment references rather than raw firewall/vendor syntax.
-23. Authority to submit/request connectivity is distinct from the permission decision whether connectivity is allowed.
+23. Authority to submit/request connectivity is distinct from the permission decision whether connectivity is allowed. Submission requires effective `access.request` authority for every distinct Resource authority scope participating in the requested source/destination Deployments at submission time.
 24. A denied permission decision creates no new authoritative current desired access.
 25. A permission decision remains correlated to the exact semantic access that was requested; identity-defining semantic change must not silently inherit/rewrite a historical decision.
 26. Reprocessing or separately allowing the same semantic access must resolve the same authoritative current access rather than create a duplicate.
@@ -49,11 +52,11 @@ Support the narrow end-to-end backend journey from describing Resources and appl
 28. An authorized actor can change the current access ACTIVE <-> INACTIVE without a new permission decision. The stable access identity, permission provenance and audit/history remain.
 29. A current access may carry supported declarative effective conditions. These conditions determine whether an ACTIVE access contributes desired effect at the evaluation time without periodically rewriting its stored ACTIVE/INACTIVE state.
 30. Technical realization/address changes alone do not silently rewrite current-access identity or historical permission provenance.
-31. The backend preserves enough provenance to explain the semantic request, permission evidence, business justifications, operational state/effective condition and current technical realization contributing to desired access.
+31. The backend preserves enough provenance to explain the semantic request, the requesting actor and effective request-authority scope/time used for admission, permission evidence, business justifications, operational state/effective condition and current technical realization contributing to desired access.
 
 ### PR-POLICY-OUTPUT
 
-32. Current desired access may be selected for export as a domain-policy subset. Selection is expressed in domain-policy identity, not vendor/device syntax.
+32. Current desired access may be selected for export as a domain-policy subset. Selection is expressed in domain-policy identity, not vendor/device syntax. Export requires effective `policy.export` authority at the evaluation time for every distinct Resource authority scope referenced by the selected Rules.
 33. At one logical evaluation time, a selected current access contributes desired effect only when it is backed by accepted permission evidence, is ACTIVE and its supported declarative effective conditions are satisfied.
 34. Selected access that is INACTIVE or conditionally non-effective contributes no rows; missing technical realization for that non-effective access does not make the export incomplete.
 35. Effective selected access can be materialized into a vendor-neutral normalized technical policy result.
@@ -77,7 +80,7 @@ Recurring/periodic schedule syntax is deferred until a concrete accepted use cas
 
 ## Deferred accepted problem-space input
 
-Stakeholder evidence says business importance/criticality may be useful for downstream impact analysis, while its attributes, scale and propagation semantics are explicitly unresolved. The selected policy-export MVP does not consume criticality. No criticality field/enum/score belongs to this MVP contract.
+Business importance/criticality is representable as an opaque stakeholder-defined non-empty label on Business Process. The selected policy-export MVP does not consume or interpret it. Numeric scoring, ordering and propagation semantics remain deliberately unspecified.
 
 ## Current non-goals
 
@@ -88,8 +91,8 @@ Stakeholder evidence says business importance/criticality may be useful for down
 - recurring/periodic schedule DSL beyond the absolute effective window;
 - brownfield traffic recognition/reverse attribution as an MVP prerequisite;
 - BPMN/workflow engine for Business Process modeling;
-- speculative Process hierarchy/monetary valuation or automatic criticality propagation;
-- business-impact/criticality analysis in the selected MVP;
+- speculative Process hierarchy/monetary valuation or automatic criticality scoring/propagation;
+- automated business-impact analysis in the selected MVP;
 - frontend layout/component/visual design.
 
 ## Acceptance semantics
@@ -100,6 +103,9 @@ Stakeholder evidence says business importance/criticality may be useful for down
 - An Interaction is invalid when it lacks a meaningful directed source Component, destination Component or non-empty supported traffic meaning; it is not invalid merely because the Components belong to different Applications.
 - A deliberate Access Request without a current Process-backed Need is rejected; the Need participantComponentRef must be one of the Interaction's source/destination Components but does not have to represent both sides.
 - Possessing request authority does not make the permission outcome allowed.
+- Access Request submission fails closed unless the actor has effective `access.request` authority for all distinct source/destination Resource authority scopes at submission time.
+- Policy export fails closed unless the actor has effective `policy.export` authority for all distinct Resource authority scopes represented by the selected Rules at the export evaluation time.
+- Site, Owner/Administrator and Business Process responsibility never substitute for authority-scope admission.
 - DENIED creates no new current access.
 - Two independently allowed requests for the same semantic access resolve one current access identity and preserve both authorization/request provenance items.
 - A later additional current Need for the same access attaches justification without duplicating that access.
