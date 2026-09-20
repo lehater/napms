@@ -14,4 +14,5 @@ backups/
 web/node_modules/
 web/playwright-report/
 web/test-results/
+.harness-tool/
 docs-generated/\n
