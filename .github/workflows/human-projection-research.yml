@@ -1,0 +1,36 @@
+name: Human Projection Research
+
+on:
+  push:
+    branches: [research/human-documentation-projection-v1]
+    paths:
+      - "docs/research/human-projection/**"
+      - "tools/test_human_projection_research.py"
+      - ".github/workflows/human-projection-research.yml"
+  pull_request:
+    paths:
+      - "docs/research/human-projection/**"
+      - "tools/test_human_projection_research.py"
+      - ".github/workflows/human-projection-research.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Checkout Harness research prototype
+        uses: actions/checkout@v5
+        with:
+          repository: lehater/harness
+          ref: 6731c0e913bacd9bbc0aa34f61b650198d8a9d16
+          path: .human-projection-harness
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14.7"
+      - run: python -m pip install PyYAML
+      - env:
+          HUMAN_PROJECTION_HARNESS: .human-projection-harness
+        run: python tools/test_human_projection_research.py
