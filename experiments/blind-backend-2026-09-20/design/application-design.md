@@ -10,7 +10,7 @@ Compose owner-domain contracts into supported backend commands/queries. Applicat
 
 For every protected mutation:
 
-1. authenticate and authorize exact Security permission;
+1. authenticate and authorize the exact Security permission or scoped authority required by the operation;
 2. strictly validate Interface request/header preconditions;
 3. for Idempotent-create, perform idempotency replay/conflict lookup before evaluating current If-Match on a NEW command;
 4. resolve required peer facts through public owner ports in the command transaction snapshot;
@@ -24,7 +24,7 @@ Aggregate concurrency owners:
 - Resource owns Endpoint/address/Site/OWNER/ADMINISTRATOR changes;
 - Application owns Component creation;
 - Interaction is an independent Application Communication aggregate: creation validates referenced Components read-only; Interaction owns revision publication;
-- BusinessProcess owns responsible organization/Need create/retire;
+- BusinessProcess owns responsible organization/criticality/Need create/retire;
 - AccessRequest owns final decision;
 - PolicyRule owns operational/window and justification-association mutation.
 
@@ -35,7 +35,7 @@ Aggregate concurrency owners:
 - Application/Component records are immutable after creation except Application aggregate version advances for Component creation.
 - Interaction source/destination/purpose are immutable; published InteractionRevisions are immutable.
 - Cross-Application Interaction is valid when both ComponentRefs resolve and directed communication semantics are explicit; no same-Application check is permitted.
-- BusinessProcess name/description and Need business basis are immutable.
+- BusinessProcess name/description and Need business basis are immutable; responsible organization and criticalityLabel use BusinessProcess-version mutations.
 - same accepted state-set request is a semantic no-op where explicitly defined by owner contract.
 
 ## SubmitAccessRequest
@@ -43,13 +43,15 @@ Aggregate concurrency owners:
 Inside one write transaction:
 
 1. idempotency NEW/replay decision for the concrete target command;
-2. through the transaction-bound Business Connectivity port, acquire the current Need FOR SHARE-equivalent validation lock and resolve BusinessProcess/Interaction/participant facts; the lock remains until AccessRequest commit;
-3. resolve exact InteractionRevision;
-4. resolve source/destination Deployments and verify Component direction;
-5. verify Need Interaction matches revision's Interaction and Need participantComponentRef equals that Interaction's source or destination Component;
-6. create immutable `AccessSubject(sourceDeploymentRef,destinationDeploymentRef,interactionRevisionRef)`;
-7. persist AccessRequest with initialNeedRef, validatedBusinessProcessVersion, actor/time;
-8. commit idempotency result.
+2. establish server-owned `admissionAt` from the write transaction clock;
+3. through the transaction-bound Business Connectivity port, acquire the current Need FOR SHARE-equivalent validation lock and resolve BusinessProcess/Interaction/participant facts; the lock remains until AccessRequest commit;
+4. resolve exact InteractionRevision;
+5. resolve source/destination Deployments, their Resources and each Resource AuthorityScopeRef; verify Component direction;
+6. verify Need Interaction matches revision's Interaction and Need participantComponentRef equals that Interaction's source or destination Component;
+7. deduplicate source/destination AuthorityScopeRefs and require effective scoped `access.request` authority for each at admissionAt; collect immutable RequestAuthorityEvidence for the exact grants used;
+8. create immutable `AccessSubject(sourceDeploymentRef,destinationDeploymentRef,interactionRevisionRef)`;
+9. persist AccessRequest with initialNeedRef, validatedBusinessProcessVersion, actor/admissionAt and RequestAuthorityEvidence;
+10. commit idempotency result.
 
 Need is required submission justification but is not part of AccessSubject.
 
@@ -116,7 +118,7 @@ Input selection:
 - explicit unique non-empty PolicyRuleRef set -> exactly that subset; no semantic count limit exists beyond Interface request-body safety;
 - unknown selected Rule -> REFERENCE_INVALID.
 
-One read-only REPEATABLE READ (or stronger) snapshot is opened and `evaluationAt` is recorded. The same snapshot remains open through both phases below.
+One read-only REPEATABLE READ (or stronger) snapshot is opened and database-owned `evaluationAt` is recorded. Export authority is evaluated against that exact time. The same snapshot remains open through both phases below.
 
 ### Phase 1 — preflight before HTTP response commitment
 
@@ -126,12 +128,13 @@ One read-only REPEATABLE READ (or stronger) snapshot is opened and `evaluationAt
    - ACTIVE outside effectiveWindow -> non-effective;
    - ACTIVE inside/unbounded window -> effective;
 3. page AuthorizationEvidence and justification associations for **every selected Rule**; resolve every referenced Need as current or retired in bounded batches and construct the complete per-Rule export provenance projection; an accepted provenance reference that cannot be resolved is REFERENCE_UNRESOLVABLE and makes the materialization UNRESOLVED regardless of Rule effectiveness;
-4. for every selected effective Rule resolve exact InteractionRevision, Deployments, Resources and current addressed Endpoints in bounded/chunked reads;
-5. determine every stable MaterializationIssue and nonEffective reason; provenance-reference issues may belong to any selected Rule, while technical-realization issues belong only to selected effective Rules;
-6. verify required DB/dependency reads complete successfully;
-7. compute final application status COMPLETE only when every selected Rule has complete permission/business provenance and every selected effective Rule has complete technical realization; otherwise UNRESOLVED;
-8. do not build the full normalized row set in memory;
-9. do not commit/write HTTP response status, headers or body yet.
+4. for every selected Rule resolve source/destination Deployments, Resources and Resource AuthorityScopeRefs sufficiently to derive the selected domain-policy scope; deduplicate scope refs and require effective scoped `policy.export` authority for every one at evaluationAt; record ExportAuthorityEvidence;
+5. for every selected effective Rule resolve exact InteractionRevision and current addressed Endpoints in bounded/chunked reads;
+6. determine every stable MaterializationIssue and nonEffective reason; provenance-reference issues may belong to any selected Rule, while technical-realization issues belong only to selected effective Rules;
+7. verify required DB/dependency reads complete successfully;
+8. compute final application status COMPLETE only when every selected Rule has complete permission/business provenance and every selected effective Rule has complete technical realization; otherwise UNRESOLVED;
+9. do not build the full normalized row set in memory;
+10. do not commit/write HTTP response status, headers or body yet.
 
 If any dependency/runtime error prevents preflight completion, abort the snapshot and propagate DEPENDENCY_UNAVAILABLE/INTERNAL failure so Interface Design can return 503/500 before response commitment.
 
@@ -142,7 +145,7 @@ After preflight succeeded:
 1. repeat the bounded selected-Rule/fact traversal in the still-open snapshot;
 2. stream the already-determined HTTP-200 application result incrementally;
 3. emit nonEffective/issues consistently with Phase 1;
-4. stream one complete MaterializedRuleProvenance record per selected Rule, including all authorization evidence, all participant-attributed Need justifications/currentness and reconciliation flags;
+4. emit top-level ExportAuthorityEvidence for the authenticated export actor and every distinct selected AuthorityScopeRef, then stream one complete MaterializedRuleProvenance record per selected Rule, including all authorization evidence, all participant-attributed Need justifications/currentness and reconciliation flags;
 5. for effective resolvable Rules expand source endpoints × destination endpoints × TrafficClauses and stream normalized rows;
 6. each technical row carries PolicyRuleRef, InteractionRevisionRef and explicit Resource-address actor/time facts; its business/permission explanation is the corresponding ruleProvenance record in the same export;
 7. paginated policy.read endpoints remain an independent audit/read convenience, not a requirement to explain the export.
