@@ -1,34 +1,9 @@
 version: 0
 kind: harness-representation-contract-experiment
-
-representations:
-  - knowledge_kind: structural-architecture
-    family: standard-notation
-    notation: structurizr-dsl
-    canonical_paths:
-      - docs/architecture/structurizr/workspace.dsl
-    validator:
-      kind: project
-      contract: docs/spec/artifact-type-registry.yaml
-    structured_semantics: true
-    projections:
-      - kind: c4-views
-        renderer: structurizr
-
-  - knowledge_kind: http-interface-contract
-    family: standard-notation
-    notation: openapi
-    validator:
-      kind: project
-      contract: docs/spec/artifact-type-registry.yaml
-    structured_semantics: true
-
-  - knowledge_kind: project-native-typed-model
-    family: project-native-typed
-    validator:
-      kind: project
-      contract: docs/spec/artifact-type-registry.yaml
-    structured_semantics: true
-    projections:
-      - kind: plantuml
-        ownership: disposable
+status: falsified
+hypothesis: representation contract is keyed by knowledge_kind
+result: >-
+  Falsified by the existing NAPMS canonical model. Canonical artifact kinds already
+  vary inside one engineering Authority, one broad CapabilityId may have providers
+  of different artifact kinds, and project-native standard notations carry their
+  own representation rules. Retained only as negative experiment evidence.
