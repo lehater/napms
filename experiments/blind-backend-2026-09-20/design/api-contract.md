@@ -447,6 +447,8 @@ Contract:
 - `limit` default 50;
 - valid `limit` range 1–200;
 - cursor is opaque, query-specific and forward-only;
+- malformed cursor or a cursor reused for a different route/parent/query -> `400 INVALID_INPUT`;
+- each ordinary page is a coherent current read for that request; no cross-request historical/snapshot guarantee is promised across pages;
 - no silent truncation;
 - parent/current entity views expose scalar counts rather than unbounded child arrays.
 
