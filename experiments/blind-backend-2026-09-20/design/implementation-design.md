@@ -50,6 +50,8 @@ Implement the Operability Design keys exactly:
 - `NAPMS_OIDC_ISSUER`
 - `NAPMS_OIDC_AUDIENCE`
 - `NAPMS_OIDC_PERMISSION_CLAIM`
+- `NAPMS_OIDC_ALLOWED_ALGS`
+- `NAPMS_OIDC_CLOCK_SKEW`
 - `NAPMS_DB_STATEMENT_TIMEOUT`
 - `NAPMS_HTTP_REQUEST_TIMEOUT`
 - `NAPMS_HTTP_MAX_REQUEST_BODY_BYTES`
@@ -66,17 +68,19 @@ Requirements:
 - no config files/flags/runtime reload/feature flags;
 - no hidden numeric defaults for required timeout/retry/body-size keys;
 - DSN value is secret/redacted;
-- OIDC adapter must surface “invalid token” separately from “cannot establish validity because key dependency is unavailable”.
+- OIDC adapter must enforce Security Architecture's exact alg/aud/exp/nbf/sub/permission-claim contract and surface “invalid token” separately from “cannot establish validity because key dependency is unavailable”;
+- after parsing config, initialize OIDC metadata/JWKS with the accepted bounded retries before opening listener; failure aborts startup;
+- runtime refresh is one single-flight path shared by readiness/protected validation; no independent fetch storms.
 
 ## Slice order
 
 ### I1 — Runtime skeleton and owner boundaries
 
-Create module/package skeleton, composition root, strict startup configuration, PostgreSQL pool/migration runner, correlation context, health probes, shutdown handling and architecture dependency checks. No product behavior beyond startup/health.
+Create module/package skeleton, composition root, strict startup configuration, PostgreSQL pool/migration runner, OIDC initial validation-material acquisition, correlation context, health probes, shutdown handling and architecture dependency checks. No product behavior beyond startup/health.
 
 Completion:
 - fresh DB migration;
-- valid config starts and invalid/missing/unknown config fails before listen;
+- valid config + usable initial OIDC validation material starts; invalid/missing/unknown config or failed initial OIDC acquisition fails before listen;
 - live/ready and graceful shutdown contracts executable;
 - forbidden dependency checks executable.
 
@@ -210,6 +214,8 @@ Private function/type names, helper decomposition, exact Go filenames, SQL/index
 Collection pagination/default/max/no-truncation, configured request-body byte enforcement, absence of a semantic subset-count cap, self-contained export provenance, materialization two-phase response-commit boundary and bounded-memory semantics are also not coding freedoms. Exact cursor encoding/chunk size/stream-buffer implementation remain free.
 
 PostgreSQL owner-write/read-snapshot isolation and current-Need FOR SHARE validation-lock semantics are not coding freedoms.
+
+OIDC algorithm allow-list source, clock-skew semantics and initial/single-flight key acquisition lifecycle are not coding freedoms.
 
 The following are **not** coding freedoms: same-vs-cross Application validity, ConnectivityNeed participantComponent semantics, AccessSubject fields, Rule uniqueness, Need exclusion from Rule identity, evidence/justification ownership, operational audit-history exposure, automatic-vs-nonautomatic Need revocation, ACTIVE/window semantics, policy subset behavior, endpoint DTO/status/header semantics, permission mapping/claim representation, aggregate concurrency owner, idempotency scope/order, transaction boundaries, OIDC failure classification, configuration precedence/reload/retry semantics, logging safety or materialization COMPLETE/UNRESOLVED meaning.
 
