@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[1]
 HARNESS=Path(os.environ.get("HUMAN_PROJECTION_HARNESS", ROOT/".human-projection-harness"))
 sys.path.insert(0,str(HARNESS))
 from engineering_graph import evaluate_engineering_target
-from human_projection import compile_manifest, materialize_package, validate_projection_ir, validate_recipe
+from human_projection import compile_manifest, materialize_package, resolve_visual_assets, validate_projection_ir, validate_recipe
 from integration_alignment import validate_project_alignment
 from harness import CoreError
 
@@ -180,6 +180,44 @@ def main():
             manifest=mutated_manifest,
             source_root=source_copy,
             require_evidence=True,
+        )
+
+    visuals=resolve_visual_assets(
+        backend,
+        source.get("projections", []),
+        source_root=ROOT,
+    )
+    visual_ids={item["id"] for item in visuals}
+    assert {
+        "CONTEXT-MAP",
+        "RC-VIEWS",
+        "ACC-VIEW",
+        "AD-VIEW",
+        "BC-VIEW",
+        "AP-VIEW",
+        "MVP-JOURNEY-VIEW",
+        "ERD",
+    } <= visual_ids, visual_ids
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        visual_package=Path(temp_dir)/"visual-package"
+        visual_result=materialize_package(
+            backend,
+            plan,
+            backend_ir,
+            visual_package,
+            mode="REVIEW",
+            source_root=ROOT,
+            visual_assets=visuals,
+            asset_root=ROOT,
+        )
+        assert len(visual_result["visuals"]) == sum(
+            len(item["outputs"]) for item in visuals
+        )
+        assert (visual_package/"visuals.yaml").is_file()
+        assert any(
+            path.endswith("first-mvp-policy-export.puml")
+            for path in visual_result["visuals"]
         )
 
     frontend=compile_manifest(graph,model,"FRONTEND-IMPLEMENTATION",harness_version="research-prototype",project_revision="napms-research",source_root=ROOT)
