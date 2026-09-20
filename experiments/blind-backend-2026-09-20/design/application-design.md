@@ -1,125 +1,157 @@
 # Blind backend application design
 
-Status: ACCEPTED candidate after Coding-Agent Challenge 01
+Status: ACCEPTED after Source Corpus amendment 01
 
 ## Responsibility
 
-Application Design composes domain-owner contracts into supported backend commands/queries. It owns orchestration and materialization semantics, not domain truth or HTTP representation.
+Compose owner-domain contracts into supported backend commands/queries. Application Design owns orchestration, atomicity across Access Policy-owned records, policy selection/materialization and reconciliation projection; it does not re-own peer domain truth.
 
 ## Common command semantics
 
 For every protected mutation:
 
-1. authenticate and admission-check the exact Security Architecture permission;
-2. validate Interface-owned idempotency/concurrency preconditions before invoking domain mutation;
-3. resolve required cross-owner references only through public owner ports;
-4. invoke exactly one semantic owner's aggregate mutation;
-5. commit owner state, required history and idempotency evidence atomically where the operation is Interface-marked Idempotent-create;
-6. return owner result/version or an explicit accepted rejection/conflict.
+1. authenticate and authorize exact Security permission;
+2. strictly validate Interface request/header preconditions;
+3. for Idempotent-create, perform idempotency replay/conflict lookup before evaluating current If-Match on a NEW command;
+4. resolve required peer facts through public owner ports in the command transaction snapshot;
+5. mutate exactly one semantic owner's state;
+6. commit owner state/history + idempotency result atomically when applicable;
+7. return accepted result/version or explicit error.
 
-No command writes two semantic owners in one transaction.
+No command writes two semantic owners.
 
-Nested mutations use the version of their owning aggregate:
-- Resource owns Endpoint/Site-assignment/responsibility changes;
+Aggregate concurrency owners:
+- Resource owns Endpoint/address/Site/OWNER/ADMINISTRATOR changes;
 - Application owns Component/Interaction/revision creation;
-- BusinessProcess owns organization/Need creation/retirement;
-- AccessRequest owns final decision state;
-- PolicyRule owns effect state.
-
-A semantic no-op explicitly accepted upstream does not create a new version/history entry merely because a request was received.
+- BusinessProcess owns responsible organization/Need create/retire;
+- AccessRequest owns final decision;
+- PolicyRule owns operational/window and justification-association mutation.
 
 ## Catalogue/application curation
 
-- Site and ResponsibilityGroup are immutable after registration.
-- Resource display name is immutable; Resource mutation is limited to Endpoint/address, Site assignment and responsibility assignment/end.
-- Application children and published revisions are created under Application optimistic concurrency; published revision content is immutable.
-- ComponentDeployment is immutable after registration.
-- BusinessProcess name/description and Need business basis are immutable; only responsible organization and Need lifecycle mutate.
-
-Interface-marked create commands use the shared idempotency contract; an idempotent replay returns the original semantic creation rather than invoking a second domain mutation.
+- Site, ResponsibilityGroup and ComponentDeployment are immutable after registration in selected MVP.
+- Resource role set is singular per role; replacing OWNER/ADMINISTRATOR closes prior assignment atomically.
+- Application published revisions are immutable.
+- BusinessProcess name/description and Need business basis are immutable.
+- same accepted state-set request is a semantic no-op where explicitly defined by owner contract.
 
 ## SubmitAccessRequest
 
-1. open one database transaction whose snapshot is shared by peer validation reads and the Access Policy write;
-2. resolve the ACTIVE Need and its owning BusinessProcess version in that snapshot;
-3. resolve exact immutable InteractionRevision;
-4. resolve source/destination Deployments and confirm their ComponentRefs match Interaction direction;
-5. admission-check `access.request`;
-6. create immutable AccessRequest subject/provenance including validated BusinessProcess version;
-7. persist AccessRequest plus Idempotency-Key record atomically.
+Inside one write transaction:
 
-The accepted meaning of “Need is current at submission” is the Need state observed in the same database transaction snapshot that commits the AccessRequest. Later Need retirement does not rewrite the accepted request/decision/rule.
+1. idempotency NEW/replay decision for the concrete target command;
+2. resolve current Need and BusinessProcess version;
+3. resolve exact InteractionRevision;
+4. resolve source/destination Deployments and verify Component direction;
+5. verify Need Interaction matches revision's Interaction;
+6. create immutable `AccessSubject(sourceDeploymentRef,destinationDeploymentRef,interactionRevisionRef)`;
+7. persist AccessRequest with initialNeedRef, validatedBusinessProcessVersion, actor/time;
+8. commit idempotency result.
+
+Need is required submission justification but is not part of AccessSubject.
 
 ## RecordPermissionDecision
 
-1. admission-check `access.decide`;
-2. require current AccessRequest version and accepted Idempotency-Key;
-3. locate the exact PENDING AccessRequest;
-4. accept external ALLOWED or DENIED plus optional opaque external decision reference;
-5. atomically store the final decision;
-6. for ALLOWED, establish exactly one PolicyRule for that AccessRequest in the same transaction;
-7. store idempotency result in that transaction.
+Inside one Access Policy transaction:
 
-Outcomes:
-- exact same idempotency key/fingerprint -> replay original result;
-- different fingerprint for same key -> IDEMPOTENCY_CONFLICT;
-- a different command attempts to finalize an already-final request -> DECISION_ALREADY_FINAL;
-- no intermediate ALLOWED-without-Rule state is observable.
+1. authorize `access.decide`;
+2. resolve idempotency replay/conflict before NEW-command AccessRequest ETag check;
+3. load PENDING request under expected version;
+4. record final ALLOWED or DENIED decision;
+5. if DENIED: commit request + idempotency, no Rule mutation;
+6. if ALLOWED:
+   - resolve/create PolicyRule by unique AccessSubject;
+   - when newly created, initialize ACTIVE with unbounded effective window and initial operational history;
+   - append AuthorizationEvidence for this AccessRequest;
+   - attach initialNeedRef justification if absent;
+   - do **not** reset existing Rule state/window when Rule already existed;
+7. commit request, Rule/evidence/association and idempotency atomically.
 
-The mechanism/reasons producing the permission decision remain outside NAPMS ownership.
+Concurrent ALLOWED requests for same AccessSubject converge on one PolicyRule using Data Design's unique subject resolution.
 
-## SetPolicyRuleEffect
+## ManagePolicyRuleOperationalState
 
-1. admission-check `access.manage`;
-2. require current PolicyRule version;
-3. if requested state equals current state, return the unchanged Rule/version and append no history;
-4. otherwise change ACTIVE/INACTIVE preserving immutable request/decision subject/provenance;
-5. commit Rule plus state-history row atomically.
+1. authorize `access.manage`;
+2. require current Rule ETag;
+3. normalize `effectState + EffectiveWindow`;
+4. same normalized values -> no-op, unchanged ETag/history;
+5. otherwise update state/window, increment Rule version and append operational history.
+
+No new permission decision is required.
+
+## AttachPolicyRuleJustification
+
+Inside one transaction:
+
+1. authorize `access.manage`;
+2. idempotency replay/conflict before NEW-command Rule ETag check;
+3. load Rule under expected version;
+4. resolve Need as CURRENT through Business Connectivity in the same snapshot;
+5. require Need Interaction to equal the Interaction owning Rule.interactionRevisionRef;
+6. if Need association already exists, return semantic no-op/replay result;
+7. append JustificationAssociation and increment Rule version;
+8. do not add AuthorizationEvidence and do not change effect state/window;
+9. commit association + idempotency.
+
+Need retirement later does not mutate Access Policy.
+
+## ReadPolicyRule
+
+Compose:
+- Access Policy Rule/evidence/justification refs/history;
+- Business Connectivity current/historical Need facts.
+
+For each associated Need return current/retired status and Process/business basis. If no associated Need is current, add `NO_CURRENT_BUSINESS_JUSTIFICATION`.
+
+This flag is diagnostic/reconciliation semantics, not revocation/effectiveness.
 
 ## MaterializeCurrentPolicy
 
-Input: no caller-selected historical time. The backend establishes `evaluationAt` when one read transaction begins.
+Input selection:
+- absent Rule list -> all current Rules;
+- explicit unique non-empty PolicyRuleRef set -> exactly that domain-policy subset;
+- unknown selected Rule -> REFERENCE_INVALID.
 
-Algorithm:
+Within one coherent read snapshot:
 
-1. open one read-only coherent database snapshot and record `evaluationAt`;
-2. read all current ACTIVE PolicyRules;
-3. for each Rule resolve exact InteractionRevision and immutable source/destination Deployments;
-4. resolve each Deployment Resource and every current addressed Endpoint in the same snapshot;
-5. if source has no current address, add `SOURCE_REALIZATION_MISSING`;
-6. if destination has no current address, add `DESTINATION_REALIZATION_MISSING`;
-7. if an accepted referenced fact cannot be resolved, add `REFERENCE_UNRESOLVABLE`;
-8. for fully resolvable Rules, expand every source endpoint × destination endpoint × TrafficClause combination while preserving HOST/PREFIX and exact source/destination port semantics;
-9. emit rows with independent Rule/Need/decision/revision/deployment/resource/endpoint provenance;
-10. return `COMPLETE` only when no Rule has an issue; otherwise return `UNRESOLVED` with diagnostic rows/issues.
+1. record server-owned `evaluationAt`;
+2. resolve selected Rules;
+3. evaluate operational effectiveness:
+   - INACTIVE -> non-effective;
+   - ACTIVE outside effectiveWindow -> non-effective;
+   - ACTIVE inside/unbounded window -> effective;
+4. for every selected Rule resolve current/retired Need justification status and reconciliation flags regardless of effectiveness;
+5. skip technical realization completeness checks for non-effective Rules;
+6. for every effective Rule resolve exact InteractionRevision, Deployments, Resources and all current addressed Endpoints;
+7. expand source endpoints × destination endpoints × TrafficClauses exactly;
+8. preserve Rule identity, all authorization evidence, all business justifications/currentness, reconciliation flags and technical provenance;
+9. missing source/destination realization or accepted reference -> stable MaterializationIssue;
+10. return COMPLETE iff every selected effective Rule resolves fully, otherwise UNRESOLVED;
+11. dependency/runtime failure preventing evaluation propagates as failure and is never converted into UNRESOLVED.
 
-`UNRESOLVED` is an application result, not an exception/failure. A database/runtime dependency failure that prevents evaluation is a dependency failure and maps through Interface Design to HTTP 503.
-
-Historical/time-travel materialization is outside this MVP.
+Zero current Need is not a MaterializationIssue and does not make an otherwise effective Rule non-effective.
 
 ## Consistency semantics
 
-- one owning aggregate version controls every mutable command as listed above;
-- cross-owner validation reads may share the owning write transaction snapshot while peer schemas remain read-only;
-- immutable external references are never silently rebound;
-- accepted Resource/Need history preserves facts after later change;
-- policy materialization uses one shared read snapshot; no mixed current points in time;
-- no automatic database mutation retry exists; Interface idempotency is the recovery mechanism for client retry/unknown commit outcome.
+- every command writes one semantic owner only;
+- cross-owner validation reads may share owner write transaction snapshot while peers remain read-only;
+- historical refs/evidence/justification associations are never silently rebound or erased;
+- no automatic DB mutation retry; client retry uses Interface idempotency;
+- idempotency replay precedes NEW-command optimistic precondition evaluation;
+- policy materialization uses one snapshot including Business Connectivity Need currentness;
+- current evaluation time is server-owned; historical caller-selected export is outside MVP.
 
 ## Synchronous/asynchronous applicability
 
-All current MVP commands/queries are synchronous. No accepted behavior requires asynchronous completion, message broker or eventual consistency.
+All selected MVP commands/queries are synchronous. No message broker/eventual completion is required. Post-commit diagnostics are non-authoritative.
 
-Post-commit diagnostic signals may be emitted, but:
-- they are not domain truth;
-- no product outcome depends on their delivery.
+## Application errors/outcomes
 
-## Application outcome/error classes
-
-Domain/admission/conflict failures preserved for Interface mapping:
-
+Errors:
 - NOT_FOUND / INVALID_REFERENCE
 - VALIDATION_REJECTED
+- NEED_NOT_CURRENT
+- INTERACTION_MISMATCH
 - UNSUPPORTED_TRAFFIC_SEMANTICS
 - UNAUTHORIZED / FORBIDDEN
 - CONFLICT_STALE_VERSION
@@ -128,6 +160,4 @@ Domain/admission/conflict failures preserved for Interface mapping:
 - DEPENDENCY_UNAVAILABLE
 - INTERNAL_FAILURE
 
-Policy materialization additionally has the non-error application outcome `UNRESOLVED` with stable issue codes owned by Interface/Application design.
-
-Interface Design owns HTTP/status/body/header representation without reinterpreting these meanings.
+Materialization `UNRESOLVED` is a normal application result with stable issues, not an error.
