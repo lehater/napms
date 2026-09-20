@@ -11,6 +11,7 @@ Only observable product behavior/scope is retained here. Exact domain identity t
 - The first product slice covers an end-to-end path from application-backed connectivity intent/request through a permission decision and current desired-access state to a complete, explainable, vendor-neutral normalized policy export.
 - Provider/device-specific rendering, direct firewall/provider execution and configured-state reconciliation are outside that first slice.
 - Users operate on trusted semantic catalogue/domain references rather than raw firewall/vendor syntax when enough semantic information exists.
+- A structurally valid described interaction is determined by the explicit directed communication contract and valid Component references; there is no blanket requirement that source and destination Components belong to the same Application.
 - Permission to submit/request connectivity is distinct from the decision whether connectivity is allowed.
 - A denied connectivity decision must not create effective desired access.
 - The permission decision remains correlated to the exact submitted access meaning; later identity-defining semantic change must not silently inherit/rewrite the historical decision.
@@ -40,6 +41,7 @@ Only observable product behavior/scope is retained here. Exact domain identity t
 - Technical realization changes alone do not silently rewrite the business permission/intention they realize.
 - Missing or stale required realization information blocks a successful complete policy export only for selected access that is effective at evaluation time.
 - Equivalent technical effects originating from independently meaningful access intent remain independently explainable when merging would lose provenance.
+- A valid described interaction must not be rejected solely because its source and destination Components belong to different Applications.
 
 ## Deliberately not imported from the historical product files
 
