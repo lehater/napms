@@ -1,0 +1,203 @@
+version: 1
+kind: harness-core-model
+id: NAPMS-BLIND-PRE-VERIFICATION
+authorities: []
+artifacts:
+  - id: SOURCE-CORPUS
+    authority: DISCOVERY
+    path: experiments/blind-backend-2026-09-20/source-corpus.yaml
+    provides: []
+    depends_on: []
+  - id: SOURCE-NETWORK-INTENT
+    authority: DISCOVERY
+    path: experiments/blind-backend-2026-09-20/source-evidence-network-intent.md
+    provides: []
+    depends_on: []
+  - id: SOURCE-PRODUCT-WAVE1
+    authority: PRODUCT-REQUIREMENTS
+    path: experiments/blind-backend-2026-09-20/source-product-wave1.md
+    provides: []
+    depends_on: []
+  - id: PROBLEM-EVIDENCE
+    authority: DISCOVERY
+    path: experiments/blind-backend-2026-09-20/design/problem-evidence.md
+    provides:
+      - napms.backend.problem-evidence
+    depends_on:
+      - SOURCE-CORPUS
+      - SOURCE-NETWORK-INTENT
+  - id: PRODUCT-REQUIREMENTS
+    authority: PRODUCT-REQUIREMENTS
+    path: experiments/blind-backend-2026-09-20/design/product-requirements.md
+    provides:
+      - napms.backend.product-requirements
+      - napms.backend.acceptance-semantics
+    depends_on:
+      - PROBLEM-EVIDENCE
+      - SOURCE-PRODUCT-WAVE1
+      - SOURCE-CORPUS
+  - id: STRATEGIC-DOMAIN
+    authority: STRATEGIC-DOMAIN-DESIGN
+    path: experiments/blind-backend-2026-09-20/design/strategic-domain.md
+    provides:
+      - napms.backend.strategic-domain-model
+    depends_on:
+      - PRODUCT-REQUIREMENTS
+  - id: DOMAIN-USE-CASES
+    authority: DOMAIN-USE-CASE-DESIGN
+    path: experiments/blind-backend-2026-09-20/design/domain-use-cases.md
+    provides:
+      - napms.backend.use-cases.resource-description
+      - napms.backend.use-cases.application-communication
+      - napms.backend.use-cases.application-deployment
+      - napms.backend.use-cases.business-connectivity
+      - napms.backend.use-cases.access-policy
+    depends_on:
+      - STRATEGIC-DOMAIN
+      - PRODUCT-REQUIREMENTS
+  - id: DOMAIN-RESOURCE
+    authority: TACTICAL-DOMAIN-DESIGN
+    path: experiments/blind-backend-2026-09-20/design/domain/resource-description.md
+    provides:
+      - napms.backend.domain.resource-description
+    depends_on:
+      - DOMAIN-USE-CASES
+      - STRATEGIC-DOMAIN
+  - id: DOMAIN-APP-COMM
+    authority: TACTICAL-DOMAIN-DESIGN
+    path: experiments/blind-backend-2026-09-20/design/domain/application-communication.md
+    provides:
+      - napms.backend.domain.application-communication
+    depends_on:
+      - DOMAIN-USE-CASES
+      - STRATEGIC-DOMAIN
+  - id: DOMAIN-DEPLOYMENT
+    authority: TACTICAL-DOMAIN-DESIGN
+    path: experiments/blind-backend-2026-09-20/design/domain/application-deployment.md
+    provides:
+      - napms.backend.domain.application-deployment
+    depends_on:
+      - DOMAIN-USE-CASES
+      - STRATEGIC-DOMAIN
+  - id: DOMAIN-BUSINESS
+    authority: TACTICAL-DOMAIN-DESIGN
+    path: experiments/blind-backend-2026-09-20/design/domain/business-connectivity.md
+    provides:
+      - napms.backend.domain.business-connectivity
+    depends_on:
+      - DOMAIN-USE-CASES
+      - STRATEGIC-DOMAIN
+  - id: DOMAIN-ACCESS
+    authority: TACTICAL-DOMAIN-DESIGN
+    path: experiments/blind-backend-2026-09-20/design/domain/access-policy.md
+    provides:
+      - napms.backend.domain.access-policy
+    depends_on:
+      - DOMAIN-USE-CASES
+      - STRATEGIC-DOMAIN
+  - id: APPLICATION-DESIGN
+    authority: APPLICATION-DESIGN
+    path: experiments/blind-backend-2026-09-20/design/application-design.md
+    provides:
+      - napms.backend.application-design
+    depends_on:
+      - DOMAIN-RESOURCE
+      - DOMAIN-APP-COMM
+      - DOMAIN-DEPLOYMENT
+      - DOMAIN-BUSINESS
+      - DOMAIN-ACCESS
+  - id: QUALITY-DESIGN
+    authority: QUALITY-DESIGN
+    path: experiments/blind-backend-2026-09-20/design/quality-design.md
+    provides:
+      - napms.backend.quality-design
+    depends_on:
+      - PRODUCT-REQUIREMENTS
+      - APPLICATION-DESIGN
+  - id: SYSTEM-ARCHITECTURE
+    authority: SYSTEM-ARCHITECTURE
+    path: experiments/blind-backend-2026-09-20/design/system-architecture.md
+    provides:
+      - napms.backend.system-architecture
+    depends_on:
+      - APPLICATION-DESIGN
+      - QUALITY-DESIGN
+  - id: SECURITY-ARCHITECTURE
+    authority: SECURITY-ARCHITECTURE
+    path: experiments/blind-backend-2026-09-20/design/security-architecture.md
+    provides:
+      - napms.backend.security-architecture
+    depends_on:
+      - PRODUCT-REQUIREMENTS
+      - DOMAIN-ACCESS
+      - SYSTEM-ARCHITECTURE
+  - id: API-CONTRACT
+    authority: INTERFACE-DESIGN
+    path: experiments/blind-backend-2026-09-20/design/api-contract.md
+    provides:
+      - napms.backend.api-contract
+    depends_on:
+      - PRODUCT-REQUIREMENTS
+      - APPLICATION-DESIGN
+      - SYSTEM-ARCHITECTURE
+      - SECURITY-ARCHITECTURE
+  - id: PERSISTENCE-DESIGN
+    authority: DATA-DESIGN
+    path: experiments/blind-backend-2026-09-20/design/persistence-design.md
+    provides:
+      - napms.backend.persistence-design
+    depends_on:
+      - DOMAIN-RESOURCE
+      - DOMAIN-APP-COMM
+      - DOMAIN-DEPLOYMENT
+      - DOMAIN-BUSINESS
+      - DOMAIN-ACCESS
+      - APPLICATION-DESIGN
+      - SYSTEM-ARCHITECTURE
+      - SECURITY-ARCHITECTURE
+  - id: OPERABILITY-DESIGN
+    authority: OPERABILITY-DESIGN
+    path: experiments/blind-backend-2026-09-20/design/operability-design.md
+    provides:
+      - napms.backend.operability-design
+    depends_on:
+      - SYSTEM-ARCHITECTURE
+      - SECURITY-ARCHITECTURE
+      - API-CONTRACT
+      - PERSISTENCE-DESIGN
+  - id: ENGINEERING-POLICY
+    authority: ENGINEERING-POLICY
+    path: experiments/blind-backend-2026-09-20/design/engineering-policy.md
+    provides:
+      - napms.backend.engineering-policy
+    depends_on:
+      - QUALITY-DESIGN
+      - SYSTEM-ARCHITECTURE
+      - SECURITY-ARCHITECTURE
+      - API-CONTRACT
+      - PERSISTENCE-DESIGN
+  - id: COMPONENT-DESIGN
+    authority: COMPONENT-DESIGN
+    path: experiments/blind-backend-2026-09-20/design/component-design.md
+    provides:
+      - napms.backend.component-design
+    depends_on:
+      - APPLICATION-DESIGN
+      - SYSTEM-ARCHITECTURE
+      - API-CONTRACT
+      - PERSISTENCE-DESIGN
+      - SECURITY-ARCHITECTURE
+      - OPERABILITY-DESIGN
+      - ENGINEERING-POLICY
+  - id: SECURITY-ANALYSIS
+    authority: SECURITY-ANALYSIS
+    path: experiments/blind-backend-2026-09-20/design/security-analysis.md
+    provides:
+      - napms.backend.security-coverage
+    depends_on:
+      - SECURITY-ARCHITECTURE
+      - API-CONTRACT
+      - PERSISTENCE-DESIGN
+      - OPERABILITY-DESIGN
+      - ENGINEERING-POLICY
+questions: []
