@@ -1,7 +1,7 @@
 version: 1
 kind: product-quality-targets
 id: NAPMS-FIRST-MVP-QUALITY-TARGETS
-status: ACCEPTED_CURRENT
+status: ACCEPTED_SOURCE_DECISION
 
 purpose: Own the first-MVP product decision about numeric quality targets without allowing architecture or implementation to invent them.
 
@@ -19,3 +19,9 @@ provenance:
   question_id: MVP-NUMERIC-QUALITY-TARGETS
   answered_by: external-product-input
   answer_date: 2026-09-19
+
+canonicalized_as: REQ-QUAL-001
+canonical_requirements_ref: docs/requirements/first-mvp-product-requirements.yaml
+rule: >-
+  This artifact preserves the explicit product answer/provenance. The canonical
+  current requirement is REQ-QUAL-001 in product-requirements/v1.

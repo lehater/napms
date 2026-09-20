@@ -3,7 +3,7 @@ from pathlib import Path
 import argparse,tempfile,yaml
 
 ROOT=Path(__file__).resolve().parents[1]
-REQUIREMENTS=ROOT/"docs/requirements/first-mvp-policy-export.yaml"
+REQUIREMENTS=ROOT/"docs/requirements/first-mvp-product-requirements.yaml"
 SOURCE=ROOT/"docs/model/use-cases/first-mvp-policy-export.yaml"
 OUT=ROOT/"docs-generated/architecture"
 
@@ -26,7 +26,7 @@ def render(requirements,m):
       "stop",
       "",
       "legend left",
-      f'  Goal: {esc(requirements["goal"])}',
+      f'  Goal: {esc(requirements["content"]["purpose"])}',
       f'  Composition: {esc(m["workflow_composition"]["name"])} (non-peer)',
       "  Generated view contains no independent truth.",
       "endlegend",

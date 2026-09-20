@@ -1,12 +1,12 @@
 version: 4
 kind: implementation-readiness
 id: NAPMS-FIRST-MVP-IMPLEMENTATION-READINESS
-status: PILOT_CURRENT
+status: STALE_AFTER_REQUIREMENTS_RECONCILIATION
 
 goal: Turn the accepted first-MVP design into executable implementation slices and explicit completion criteria without reopening product, domain or architecture decisions.
 
 design_refs:
-  requirements: docs/requirements/first-mvp-policy-export.yaml
+  requirements: docs/requirements/first-mvp-product-requirements.yaml
   journey: docs/model/use-cases/first-mvp-policy-export.yaml
   system_structure: docs/architecture/structurizr/workspace.dsl
   application_architecture: docs/architecture/mvp-system-rules.yaml

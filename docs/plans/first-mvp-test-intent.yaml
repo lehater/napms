@@ -1,12 +1,12 @@
 version: 3
 kind: test-intent
 id: NAPMS-FIRST-MVP-TEST-INTENT
-status: PILOT_CURRENT
+status: STALE_AFTER_REQUIREMENTS_RECONCILIATION
 
 purpose: Define minimum verification proving implementation realizes accepted MVP semantics; tests never create design truth.
 
 design_refs:
-  requirements: docs/requirements/first-mvp-policy-export.yaml
+  requirements: docs/requirements/first-mvp-product-requirements.yaml
   journey: docs/model/use-cases/first-mvp-policy-export.yaml
   resource_catalogue_domain: docs/model/contexts/resource-catalogue/domain-model.yaml
   authority_management_language: docs/model/contexts/authority-management/language.yaml
