@@ -18,7 +18,6 @@ design_refs:
   quality_requirements: docs/architecture/mvp-quality-requirements.yaml
   threat_model: docs/architecture/mvp-threat-model.yaml
   observability: docs/architecture/mvp-observability.yaml
-  verification: docs/plans/first-mvp-test-intent.yaml
 
 implementation_boundary:
   includes: [backend HTTP/JSON API, modular-monolith modules, PostgreSQL persistence, OIDC authentication, scoped/time authority admission, vendor-neutral policy materialization]
