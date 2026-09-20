@@ -244,20 +244,59 @@ Rules:
 - same scoped key + different fingerprint -> IDEMPOTENCY_CONFLICT;
 - NEW commands then evaluate If-Match and execute;
 - idempotency row and authoritative mutation commit atomically;
-- concurrent identical keys serialize through PK uniqueness/locking and converge to one committed semantic result;
-- in-progress/unknown commit handling never fabricates success.
+- concurrent identical keys serialize through PK uniqueness/locking;
+- if the competing first transaction commits, the waiter reads/replays its committed result;
+- if the competing first transaction rolls back, the waiter may become NEW and only then evaluates If-Match/mutates;
+- lock/wait is bounded by request + DB statement timeout;
+- if the result cannot be established before timeout or because DB availability fails, return DEPENDENCY_UNAVAILABLE / HTTP 503;
+- in-progress/unknown commit handling never fabricates success and never returns conflict solely because the identical command is still in progress.
 
 ## Transactions
 
+### Isolation modes
+
+**Owner write transaction**
+- PostgreSQL `READ COMMITTED`;
+- optimistic owner version/row locks enforce lost-update semantics;
+- used for ordinary Resource/Application/Interaction/BusinessProcess/AccessRequest/PolicyRule owner mutations unless mutable peer-currentness validation below is required.
+
+**Access Policy write with current-Need validation**
+- also PostgreSQL `READ COMMITTED`;
+- Business Connectivity transaction-bound read adapter executes `SELECT ... FOR SHARE` (or PostgreSQL-equivalent row share lock that conflicts with retirement/update) on the target ConnectivityNeed row;
+- it verifies status ACTIVE plus Interaction/participant facts;
+- the lock is held until the Access Policy transaction commits/rolls back;
+- Access Policy writes no Business Connectivity table;
+- Need retirement that wins first makes validation observe RETIRED; validation lock that wins first makes retirement wait until request/attachment commit;
+- lock wait is bounded by request context and DB statement timeout.
+
+This mode is mandatory for:
+- SubmitAccessRequest initial Need;
+- AttachPolicyRuleJustification additional Need.
+
+Immutable peer Component/InteractionRevision/Deployment/Resource identity validation does not require peer row locking.
+
+**Composed read snapshot**
+- PostgreSQL read-only `REPEATABLE READ` or stronger;
+- one snapshot shared by all involved owner read ports for that HTTP request/operation;
+- used for composed PolicyRule current view/justification page where Need currentness is joined semantically, and for CurrentPolicyMaterializer;
+- policy materialization keeps this snapshot open through both preflight and emit phases.
+
+### Mutation rules
+
 - every mutation writes only one semantic owner's tables;
-- Resource nested changes use one Resource-version transaction;
-- Application Component creation uses one Application-version transaction; Interaction creation is an independent insert after owner-local Component validation; Interaction revision publication uses one Interaction-version transaction;
-- BusinessProcess child changes use one BusinessProcess-version transaction;
-- SubmitAccessRequest performs peer validation reads plus the Access Policy insert in one database transaction snapshot; peer schemas are read-only;
+- Resource nested changes use one Resource-version owner-write transaction;
+- Application Component creation uses one Application-version owner-write transaction;
+- Interaction creation validates immutable Components then inserts independently; revision publication uses one Interaction-version owner-write transaction;
+- BusinessProcess child changes use one BusinessProcess-version owner-write transaction;
 - final ALLOWED decision plus unique-subject PolicyRule resolve/create, authorization evidence, initial justification and idempotency result is one Access Policy transaction;
-- optimistic mutation uses `WHERE version = expected`; zero updated rows -> STALE_VERSION;
 - Rule operational/justification mutation uses one expected PolicyRule version transaction;
-- policy materialization opens one read-only REPEATABLE READ transaction and every owner read port, including Business Connectivity current-Need resolution, shares that snapshot; backend assigns `evaluationAt` for that current snapshot.
+- optimistic mutation uses `WHERE version = expected`; zero updated rows -> STALE_VERSION;
+- no application-level automatic retry of a failed/unknown mutation.
+
+### Materialization
+
+CurrentPolicyMaterializer opens one read-only REPEATABLE READ transaction. Preflight and emit reuse exactly that snapshot/evaluationAt. Every owner read port, including Business Connectivity current-Need resolution, is bound to it.
+
 
 ## Migrations
 
