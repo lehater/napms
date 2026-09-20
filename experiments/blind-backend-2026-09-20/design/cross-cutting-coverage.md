@@ -13,7 +13,7 @@ This is an analysis view, not a second owner of decisions.
 | Idempotency | COVERED | Target-scoped key/fingerprint, exact persisted original response replay before NEW-If-Match, no MVP TTL, atomic result recording, concurrent commit/rollback/503 resolution. |
 | Time semantics | COVERED | Resource temporal history; materialization evaluationAt is PostgreSQL transaction_timestamp() from the exact REPEATABLE READ snapshot; PolicyRule absolute [effectiveFrom,effectiveUntil) window; OIDC exp/nbf use configured skew; no historical export API. |
 | Current-access identity | COVERED | Access Policy: one Rule per source Deployment + destination Deployment + exact InteractionRevision; Need/address excluded. |
-| Permission evidence | COVERED | Append-only ALLOWED AccessRequest evidence; multiple decisions for same semantic access may support one Rule. |
+| Permission evidence | COVERED | Append-only ALLOWED AccessRequest evidence includes immutable request actor + scoped authority evidence; multiple decisions for same semantic access may support one Rule. |
 | Business justification | COVERED | Need includes participantComponentRef for independent source/destination attribution; associations append-only; currentness owned by Business Connectivity; zero-current justification becomes reconciliation flag, not revocation. |
 | Cross-Application communication | COVERED | Application Communication: Interaction is an independent aggregate and may reference Components from different Applications. |
 | Configuration | COVERED | Operability startup-only environment contract, validation, unknown-key failure, no runtime reload. |
@@ -34,8 +34,8 @@ This is an analysis view, not a second owner of decisions.
 | Internationalization/localization | NOT_APPLICABLE to backend semantics | No locale-sensitive behavior/output requirement. |
 | Provider/network device integration | NOT_APPLICABLE | Explicit MVP non-goal. |
 | Brownfield evidence/reconciliation/remediation | PARTIALLY NOT_APPLICABLE | Device/config reconciliation excluded; only source-required NO_CURRENT_BUSINESS_JUSTIFICATION condition is represented. |
-| Business criticality/impact scoring | DEFERRED_NONBLOCKING | Source says potentially useful but representation/propagation unresolved and current export does not consume it. |
+| Business criticality/impact | COVERED | BusinessProcess carries opaque criticalityLabel for downstream analysis; score/order/propagation remain intentionally unspecified/not required. |
 | Recurring/periodic schedule language | DEFERRED_NONBLOCKING | Source requires supported declarative effective condition; MVP closes this with absolute effective window only. Recurrence reopens Product Requirements when concrete semantics are required. |
-| Authorization scope granularity | COVERED for selected MVP / reopenable | Security treats current backend instance as the authorization scope; token validity supplies action time. Narrower tenant/resource/application scope requires new Product/Security input. |
+| Authorization scope/time | COVERED | Resource owns AuthorityScopeRef; request/export require effective action grants for every relevant scope at server-owned admissionAt/evaluationAt and preserve authority evidence. |
 
 No row creates a new requirement. Every state traces to accepted scope/design or a stated reopening condition.
