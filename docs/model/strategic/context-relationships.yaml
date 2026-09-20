@@ -1,33 +1,36 @@
-version: 1
+version: 2
 kind: strategic-context-relationship-model
 id: NAPMS-STRATEGIC-CONTEXT-RELATIONSHIPS
 
 whole_domain_relationships:
-  - {from: Business Connectivity, to: Access Policy, semantics: Connectivity Need supplies business justification but is not authorization.}
-  - {from: Authority Management, to: Access Policy, semantics: Access Policy consumes effective action admission without importing authority internals.}
-  - {from: Application Communication Catalogue, to: Application Deployment, semantics: Deployment references Component identity while ACC retains component ownership.}
-  - {from: Resource Catalogue, to: Application Deployment, semantics: Deployment references Resource identity while RC retains resource realization semantics.}
-  - {from: Access Policy, to: Required Policy Materialization, semantics: Current effective PolicyRule supplies desired concrete access.}
-  - {from: Application Communication Catalogue, to: Required Policy Materialization, semantics: Immutable InteractionContractRevision supplies exact traffic semantics.}
-  - {from: Application Deployment, to: Required Policy Materialization, semantics: Concrete source and destination deployments identify the policy subject.}
-  - {from: Resource Catalogue, to: Required Policy Materialization, semantics: Resource AddressSpace supplies current technical realization.}
-  - {from: Network Enforcement Placement, to: Required Policy Materialization, semantics: Placement supplies candidate enforcement relevance.}
-  - {from: Technical Access Evidence, to: Evidence Access Recognition, semantics: Normalized evidence may be correlated but does not itself create desired policy.}
-  - {from: Evidence Access Recognition, to: Access Policy, semantics: Recognized candidates enter the same RuleChange lifecycle and cannot bypass formal acceptance.}
-  - {from: Required Policy Materialization, to: Access Policy Realization, semantics: TargetRequiredPolicy is compared with configured effective policy.}
-  - {from: Access Policy Realization, to: Network Environment Operations, semantics: VerifiedChangeIntent may be rendered and executed; execution success alone is not convergence.}
+  - {from: Resource Catalogue, to: Authority Management, semantics: Resource supplies immutable AuthorityScopeRef affiliation; it does not grant actor authority.}
+  - {from: Authority Management, to: Access Policy, semantics: AccessRequest submission consumes effective access.request authority for all participating Resource scopes at admission time.}
+  - {from: Authority Management, to: Required Policy Materialization, semantics: Export consumes effective policy.export authority for all selected Resource scopes at evaluation time.}
+  - {from: Application Communication Catalogue, to: Application Deployment, semantics: Deployment references Component identity while ACC retains communication ownership.}
+  - {from: Resource Catalogue, to: Application Deployment, semantics: Deployment references Resource identity while RC retains realization and scope ownership.}
+  - {from: Application Communication Catalogue, to: Business Connectivity, semantics: Need references reusable Interaction plus one participant Component.}
+  - {from: Business Connectivity, to: Access Policy, semantics: Current Need supplies business justification but never permission.}
+  - {from: Application Deployment, to: Access Policy, semantics: AccessSubject references concrete source and destination deployments.}
+  - {from: Application Communication Catalogue, to: Access Policy, semantics: AccessSubject references exact immutable InteractionRevision.}
+  - {from: Access Policy, to: Required Policy Materialization, semantics: Selected PolicyRules supply authoritative desired access.}
+  - {from: Business Connectivity, to: Required Policy Materialization, semantics: Need currentness supplies reconciliation status without automatic revocation.}
+  - {from: Application Communication Catalogue, to: Required Policy Materialization, semantics: Exact InteractionRevision supplies traffic semantics.}
+  - {from: Application Deployment, to: Required Policy Materialization, semantics: Deployments identify participating Resources.}
+  - {from: Resource Catalogue, to: Required Policy Materialization, semantics: Current addressed Endpoints supply technical realization and AuthorityScopeRefs.}
 
 context_mapping_relationships:
-  - relationship_id: REL-AM-RC-CURATION-ADMISSION
-    from: Authority Management
-    to: Resource Catalogue
+  - relationship_id: REL-AM-RC-SCOPE
+    from: Resource Catalogue
+    to: Authority Management
     direction: upstream-downstream
     patterns: []
-    semantics: Authority Management supplies protected-action admission semantics consumed by Resource Catalogue curation. Resource Catalogue consumes only the admission result while keeping AM assignment/effective-authority models external; no Shared Kernel or stronger Context Mapping pattern is asserted without additional accepted evidence.
+    semantics: Resource Catalogue publishes AuthorityScopeRef affiliation; Authority Management evaluates actor grants without owning Resource facts.
 
 strategic_invariants:
   - No Shared Kernel between peer contexts
-  - unresolved input is not empty policy
-  - evidence is not authorization
-  - excess is not automatic removal authority
-  - execution success is not convergence proof
+  - business justification is not permission
+  - Resource responsibility is not authority
+  - denied permission creates no PolicyRule
+  - technical realization does not define access identity
+  - zero current Need does not automatically revoke access
+  - unresolved effective materialization is not successful complete policy

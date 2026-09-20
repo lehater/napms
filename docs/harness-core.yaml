@@ -145,7 +145,7 @@ root_authorities:
 
 consumers:
   - id: IMPLEMENTATION
-    purpose: Realize accepted engineering knowledge without inventing product, domain or architecture decisions.
+    purpose: Realize the accepted first-MVP backend engineering knowledge without inventing product, domain, architecture, interface, data, security, operability or verification decisions.
 
 bindings:
   - {artifact: FIRST-MVP-REQUIREMENTS, authority: PRODUCT-REQUIREMENTS, provides: [engineering.requirements.product-intent, engineering.requirements.acceptance]}
@@ -189,11 +189,7 @@ bindings:
   - {artifact: MVP-IMPLEMENTATION-READINESS, authority: IMPLEMENTATION-DESIGN, provides: [engineering.implementation.plan, engineering.implementation.completion-criteria]}
   - {artifact: MVP-TEST-INTENT, authority: VERIFICATION-DESIGN, provides: [engineering.verification.strategy, engineering.verification.acceptance-scenarios]}
 
-questions:
-  - id: MVP-NUMERIC-QUALITY-TARGETS
-    authority: PRODUCT-REQUIREMENTS
-    text: What numeric latency, throughput, availability and scale targets are required for the first MVP?
-    resolution: MVP-QUALITY-TARGETS
+questions: []
 terminal_capabilities: []
 
 contracts:
@@ -257,7 +253,6 @@ contracts:
       - {id: system-architecture, capability: engineering.architecture.rules, authority: SYSTEM-ARCHITECTURE}
       - {id: security-architecture, capability: engineering.architecture.security, authority: SECURITY-ARCHITECTURE-DESIGN}
       - {id: interface, capability: engineering.interface.http-contract, authority: INTERFACE-DESIGN}
-      - {id: resource-detail-ui, capability: engineering.interface.resource-detail-ui, authority: INTERFACE-DESIGN}
       - {id: persistence, capability: engineering.data.persistence-model, authority: DATA-DESIGN}
 
   - id: SECURITY-ANALYSIS-INPUT
@@ -286,7 +281,6 @@ contracts:
       - {id: module-contracts, capability: engineering.architecture.module-contracts, authority: SYSTEM-ARCHITECTURE}
       - {id: security-architecture, capability: engineering.architecture.security, authority: SECURITY-ARCHITECTURE-DESIGN}
       - {id: interface, capability: engineering.interface.http-contract, authority: INTERFACE-DESIGN}
-      - {id: ui-navigation, capability: engineering.interface.ui-navigation, authority: INTERFACE-DESIGN}
       - {id: resource-detail-ui, capability: engineering.interface.resource-detail-ui, authority: INTERFACE-DESIGN}
       - {id: persistence, capability: engineering.data.persistence-model, authority: DATA-DESIGN}
       - {id: quality, capability: engineering.quality.constraints, authority: QUALITY-DESIGN}

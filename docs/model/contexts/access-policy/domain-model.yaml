@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: tactical-domain-model
 id: NAPMS-AP-DOMAIN-MODEL
 bounded_context_ref: BC-ACCESS-POLICY
@@ -6,21 +6,32 @@ knowledge_coverage:
   subject: BC-ACCESS-POLICY
   knowledge: tactical-domain-model
 
-aggregate: PolicyRule
-child_entity: RuleChange
+aggregates: [AccessRequest, PolicyRule]
+entities: [AuthorizationEvidence, JustificationAssociation, OperationalHistory]
+access_subject: [sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef]
 invariants:
-  - One non-Retired PolicyRule exists per exact directed source/destination ComponentDeployment pair.
-  - Rule endpoints are immutable for PolicyRule identity; traffic revision is proposed/effective state rather than identity.
-  - Every RuleChange revisionRef resolves to one exact immutable ACC InteractionContractRevision whose endpoint Components match the two concrete ComponentDeployments.
-  - At most one Pending RuleChange exists per Active PolicyRule in the MVP.
-  - RuleChange state is Pending to Accepted or Rejected; Pending and Rejected changes never overwrite the current effective revision.
-  - Acceptance atomically records the formal outcome and advances effectiveRevisionRef only while the change remains applicable.
-  - Withdrawal clears current effectiveness without deleting the PolicyRule or its decision history.
-  - Evidence is provenance/input rather than authorization and is not required by this first deliberate journey.
+  - AccessSubject equality requires exact sourceDeploymentRef destinationDeploymentRef and immutable interactionRevisionRef.
+  - NeedRef and current technical realization are not AccessSubject identity.
+  - AccessRequest is immutable after submission except one final ALLOWED or DENIED decision.
+  - AccessRequest stores submitter/time initialNeedRef and immutable RequestAuthorityEvidence covering every participating Resource AuthorityScopeRef.
+  - DENIED creates no PolicyRule and no authorization evidence.
+  - Exactly one PolicyRule exists per AccessSubject.
+  - First ALLOWED creation starts PolicyRule ACTIVE with unbounded EffectiveWindow.
+  - Repeated ALLOWED requests for the same AccessSubject converge on one PolicyRule and append AuthorizationEvidence.
+  - Additional current matching Needs attach as justification without duplicating PolicyRule or creating permission evidence.
+  - PolicyRule ACTIVE and INACTIVE are reversible without a new permission decision.
+  - EffectiveWindow uses optional inclusive effectiveFrom and exclusive effectiveUntil and does not redefine Rule identity.
+  - Need retirement/currentness never mutates PolicyRule; zero current Needs does not automatically deactivate it.
+  - Resource address or Endpoint realization changes never redefine PolicyRule identity or historical permission evidence.
+  - Operational changes are audited; evidence-only or justification-only changes do not create operational-history entries.
 public_semantics:
-  - EffectivePolicyRule
+  - AccessRequestRef
+  - AccessSubject
   - PolicyRuleRef
-  - sourceComponentDeploymentRef
-  - destinationComponentDeploymentRef
-  - revisionRef
-  - currentDecisionProvenance
+  - AuthorizationEvidence
+  - RequestAuthorityEvidence
+  - JustificationAssociation
+  - Active
+  - Inactive
+  - EffectiveWindow
+  - NO_CURRENT_BUSINESS_JUSTIFICATION

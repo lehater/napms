@@ -1,38 +1,29 @@
-version: 1
+version: 2
 kind: domain-decision-set
 id: NAPMS-RC-DOMAIN-DECISIONS
 bounded_context_ref: BC-RESOURCE-CATALOGUE
-depends_on:
-  - NAPMS-UC-RC-CURATION
+depends_on: [NAPMS-UC-RC-CURATION]
 
 decisions:
-  - decision_id: DEC-RC-MVP-AUTHORITY
-    decision: For the MVP, Resource Catalogue mutation authorization uses one catalogue-wide CurateResourceCatalogue action; resource-level authorization scopes are deferred.
-    decision_scope: Resource Catalogue mutation authority for H12/I27 MVP
-    chosen_option_or_resolution: Global catalogue-level mutation authority without per-resource scopes.
-    rationale: The stakeholder selected the smallest MVP authorization model. Resource Responsibility remains business data and does not grant mutation authority.
+  - decision_id: DEC-RC-AUTHORITY-SCOPE
+    decision: Every Resource has one immutable AuthorityScopeRef used by protected request/export admission.
+    rationale: Canonical requirements require effective authority for relevant scope/time and Resource owns the domain-policy scope affiliation.
     consequences:
-      - Every protected Resource Catalogue mutation checks CurateResourceCatalogue for the authenticated Actor using the fixed resource-catalogue scope.
-      - Resource-level or responsibility-derived authorization is not part of the MVP.
-      - Scoped authorization may be designed later from concrete customer requirements without changing Resource Responsibility into permission.
-    rejected_options:
-      - Per-resource explicit ACLs for MVP
-      - Responsibility Scope as the MVP authorization scope
-      - Independent fine-grained Authority Scopes for MVP
-    revisit_conditions:
-      - A confirmed customer requirement needs different mutation rights for different subsets of Resources.
+      - Scope is explicit Resource truth.
+      - Site OWNER ADMINISTRATOR BusinessProcess and address never manufacture scope or authority.
+      - Changing Resource scope identity is outside the first MVP; a materially different scope requires another Resource identity or future accepted migration semantics.
 
-  - decision_id: DEC-RC-RESPONSIBILITY-ROLES
-    decision: Resource Responsibility roles are extensible and time-qualified; examples such as Owner, Operator and Access Approver are not a closed role set and do not grant Authority.
-    decision_scope: Resource Responsibility role semantics for the Resource Catalogue
-    chosen_option_or_resolution: Extensible responsibility roles with temporal assignments.
-    rationale: The stakeholder confirmed that organizations may use one, several or many responsibility roles and may transfer those responsibilities between people/teams/organizations over time.
+  - decision_id: DEC-RC-ENDPOINT
+    decision: Resource owns stable logical Endpoint identities and each Endpoint has zero or one current HOST-or-PREFIX realization.
+    rationale: Resource identity and logical network presence must survive address changes.
     consequences:
-      - A Resource may carry multiple responsibility assignments whose roles and responsible parties can differ.
-      - Responsibility assignments preserve time-qualified history when responsibility changes.
-      - Small organizations may concentrate responsibilities; larger organizations may separate them.
-      - Responsibility remains independent from mutation permission.
-    rejected_options:
-      - Closed Owner/Operator/Access Approver enum
-    revisit_conditions:
-      - A later requirement introduces governed role taxonomy constraints or mandatory role coverage.
+      - Multiple Endpoints are allowed only as explicit members of one logical Resource access-management unit.
+      - No automatic endpoint grouping or address-to-Resource inference exists.
+      - Prefix remains Prefix and is not expanded to hosts by Resource Catalogue.
+
+  - decision_id: DEC-RC-RESPONSIBILITY
+    decision: First MVP Resource responsibility roles are OWNER and ADMINISTRATOR organizational groups, singular per role at one time, with history.
+    rationale: Accepted stakeholder requirements distinguish ownership/administration from security authority.
+    consequences:
+      - Responsibility assignments do not grant application authority.
+      - Replacement or clear preserves history.

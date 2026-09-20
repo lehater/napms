@@ -1,27 +1,38 @@
-version: 3
+version: 4
 kind: shared-technical-conventions
 id: NAPMS-MVP-TECHNICAL-REPRESENTATION
-status: PILOT_CURRENT
-recorded_at: 2026-09-19
+status: CURRENT
 
-scope: Shared external/interface representation conventions consumed by first-MVP technical contracts without changing product/domain semantics or deciding physical persistence.
+scope: Shared external/interface representation conventions for the corrected backend MVP.
 
 decisions:
   - id: TECH-ID-UUID
-    choice: Stable owner identifiers are represented as UUID strings at external serialization boundaries.
-    rationale: Opaque UUID strings preserve owner-defined identity without embedding business meaning or coupling identifiers to mutable attributes.
+    choice: Stable owner identifiers are opaque UUID strings at external serialization boundaries.
+    rationale: Preserve owner-defined identity without embedding mutable business meaning.
 
   - id: TECH-TIME-RFC3339
-    choice: Application timestamps are represented as RFC 3339 date-time values at external serialization boundaries.
-    rationale: Temporal facts and decision history require an unambiguous portable instant representation; physical storage is owned by Data Design.
+    choice: External timestamps are RFC 3339 date-time values.
+    rationale: Authority evidence, effective windows, history and evaluationAt require portable instants.
 
-  - id: TECH-PROVENANCE-ENVELOPE
-    choice: Provenance uses an extensible external representation with required source and recordedAt plus optional detail.
-    rationale: Accepted models require retained provenance without prescribing owner-specific fields or physical storage representation.
+  - id: TECH-ADDRESS-REALIZATION
+    choice: AddressRealization is kind HOST or PREFIX plus canonical textual value.
+    rationale: Preserve Host/Prefix distinction and exact IPv4/IPv6 semantics; Prefix is never silently expanded or masked.
 
-  - id: TECH-ADDRESS-REPRESENTATION
-    choice: AddressSpace is represented by kind plus value, where kind is HostAddress or Prefix and value is the normalized textual address/prefix.
-    rationale: This is the shared technical representation of the accepted AddressSpace XOR semantics without introducing endpoint/interface concepts.
+  - id: TECH-TRAFFIC
+    choice: TrafficClause uses numeric ipProtocol 0..255 and canonical source/destination PortRange arrays; only TCP 6 and UDP 17 may have ports.
+    rationale: Avoid protocol-name ambiguity and preserve exact normalized traffic semantics.
+
+  - id: TECH-ETAG
+    choice: Mutable aggregate optimistic versions are exposed as ETag and consumed through If-Match where the API contract requires concurrency control.
+    rationale: Keep aggregate concurrency explicit at the boundary.
+
+  - id: TECH-IDEMPOTENCY
+    choice: Idempotent state-creating commands use Idempotency-Key and exact persisted response replay scoped by principal method route normalized target and key.
+    rationale: Retry must not reconstruct responses from later mutable state or duplicate authoritative mutations.
+
+  - id: TECH-PROVENANCE
+    choice: Provenance is explicit typed fields owned by the relevant semantic contract; no generic caller-writable provenance blob is canonical.
+    rationale: Preserve request authority, permission, business and technical explainability without ambiguous generic metadata.
 
 ownership_boundary:
   application_interaction_choices: SYSTEM-ARCHITECTURE

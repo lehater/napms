@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: context-language
 id: NAPMS-AM-LANGUAGE
 bounded_context_ref: BC-AUTHORITY-MANAGEMENT
@@ -9,4 +9,15 @@ knowledge_coverage:
 terms:
   - term_id: TERM-EFFECTIVE-AUTHORITY
     term: Effective Authority
-    definition: Authority Management determination of whether an Actor may perform an Action for the applicable scope and time.
+    definition: Fail-closed determination that authenticated Actor may perform exact Action for exact AuthorityScopeRef at one effective time.
+  - term_id: TERM-AUTHORITY-GRANT
+    term: AuthorityGrant
+    definition: Authenticated claim with action scope and optional half-open effectiveFrom/effectiveUntil bounds.
+  - term_id: TERM-AUTHORITY-SCOPE
+    term: AuthorityScopeRef
+    definition: Opaque stable scope identity published by Resource Catalogue; Site responsibility Process metadata and addresses do not create it.
+
+rules:
+  - access.request and policy.export are scoped actions and are not granted by instance permission strings.
+  - Every distinct required scope must have an effective matching AuthorityGrant.
+  - Missing malformed unknown or out-of-window authority fails closed.

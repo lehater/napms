@@ -1,43 +1,51 @@
-version: 2
+version: 3
 kind: application-architecture-rules
 id: NAPMS-MVP-SYSTEM-RULES
-status: PILOT_CURRENT
+status: CURRENT
 
-requirements_ref: docs/requirements/first-mvp-policy-export.yaml
+requirements_ref: docs/requirements/first-mvp-product-requirements.yaml
 structural_model_ref: docs/architecture/structurizr/workspace.dsl
 module_contracts_ref: docs/architecture/mvp-module-contracts.yaml
 
-architecture_goal: Realize the complete accepted MVP journey on one frontend plus modular-monolith backend baseline, making application-boundary and module-coordination choices once rather than independently per Bounded Context.
+architecture_goal: Realize the accepted backend MVP as one modular-monolith process plus PostgreSQL and external OIDC, preserving owner boundaries and complete policy materialization.
 
 application_boundary_rules:
-  design_rule: API operations are organized around MVP use cases and resources exposed by the application boundary; they are not one network API per Bounded Context.
+  design_rule: One HTTP/JSON application boundary orchestrates owner modules; internal Bounded Context interaction is in-process through explicit contracts.
   required_capabilities:
-    - manage Resources and AddressSpace
-    - manage Application/Components/Interactions and traffic revisions
-    - manage ComponentDeployments
-    - manage BusinessProcess/ConnectivityNeed
-    - submit and decide RuleChange
-    - view complete current vendor-neutral policy table
-    - download same result as CSV
-  error_rule: Domain rejection and Unresolved materialization are explicit application outcomes; missing materialization input is never represented as a silently partial successful export.
+    - manage Resource Site responsibility AuthorityScopeRef Endpoints and address realization
+    - manage reusable Applications Components Interactions and immutable InteractionRevisions
+    - create ComponentDeployments
+    - manage BusinessProcess criticality and participant-attributed ConnectivityNeeds
+    - submit AccessRequests and record final ALLOWED or DENIED decisions
+    - manage PolicyRule Active/Inactive EffectiveWindow and additional Need justification
+    - materialize all current policy or explicit Rule subset with scoped export admission
+  error_rule: Missing effective technical realization yields explicit UNRESOLVED; dependency failure is not a successful materialization.
 
 interaction_rules:
-  - Backend domain modules interact in-process through explicit module/application interfaces; HTTP is not an internal Bounded Context boundary.
-  - Cross-module references use owner-defined identities and resolved semantics; consuming modules do not duplicate another module's mutable truth.
-  - Policy export composition is read/orchestration logic and must not become an alternate owner of Resource, ACC, Deployment, Connectivity or Policy state.
-  - Access Policy acceptance validates exact deployment endpoints, exact immutable ACC revision and required current ConnectivityNeed basis through explicit module contracts before committing its owned transition.
-  - Failure to resolve required materialization input propagates as Unresolved; the composition must not silently omit rows.
+  - Owner modules interact in-process through public application/read ports; HTTP and database tables are not internal integration boundaries.
+  - Cross-owner references are opaque owner-defined identities; consumers do not duplicate peer mutable truth.
+  - AccessRequest submission validates current Need under an owner-provided lock and resolves source/destination Resource AuthorityScopeRefs before scoped request admission.
+  - DENIED finalization mutates only AccessRequest and creates no PolicyRule.
+  - ALLOWED finalization atomically resolves or creates one Rule per AccessSubject and appends authorization and justification evidence.
+  - Policy materialization is read-only composition and owns no domain truth.
+  - Materialization uses one read-only REPEATABLE READ snapshot and database transaction_timestamp() as evaluationAt.
+  - Export authority for every distinct selected Resource scope is evaluated at the same evaluationAt before result exposure.
+  - Preflight determines COMPLETE or UNRESOLVED before HTTP 200 commitment; post-commit stream failure is not a valid export artifact.
 
 consistency:
-  local: Aggregate invariants are enforced transactionally inside the owning module.
-  cross_module: Cross-context validation uses explicit orchestration/contracts; do not manufacture distributed-service semantics inside the monolith.
-  policy_acceptance: Formal Access Policy state transition is owned and committed by Access Policy after prerequisite semantic validation and protected-action admission.
-  export: Read composition may span modules; it returns Success with a complete result or Unresolved with explicit causes.
+  local: Aggregate invariants are transactional in the owning module.
+  request_submission: Business Connectivity current-Need validation lock is held through Access Policy request commit; Access Policy does not write peer state.
+  allowed_finalization: AccessRequest finalization PolicyRule resolve/create AuthorizationEvidence initial justification and idempotency result commit atomically.
+  export: One shared read snapshot covers selection authority evaluation effectiveness provenance and technical realization.
 
-integration_boundary:
+deployment:
+  baseline: One stateless backend binary with explicit migrate and serve modes, PostgreSQL, external HTTPS OIDC issuer and trusted ingress terminating external TLS.
+  migration_rule: migrate serializes with PostgreSQL advisory lock and immutable migration checksums; serve never runs DDL and verifies exact schema before listen.
   asynchronous_messaging: NOT_APPLICABLE
-  asynchronous_messaging_reason: No asynchronous messaging boundary is introduced for the first-MVP modular monolith.
-  external_runtime_integrations_not_required: [provider/device integration, evidence source, enforcement runtime]
-  evolution_rule: Module contracts and ownership boundaries permit later extraction/integration only if a future quality/runtime need justifies it; extraction is not an MVP design goal.
 
-architecture_questions_remaining: []
+excluded_from_mvp_runtime:
+  - provider-specific rendering
+  - firewall/provider mutation
+  - configured-state reconciliation
+  - historical policy export
+  - distributed services

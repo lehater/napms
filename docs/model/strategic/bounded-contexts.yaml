@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: bounded-context-model
 id: NAPMS-BOUNDED-CONTEXTS
 
@@ -6,135 +6,100 @@ contexts:
   - context_id: BC-RESOURCE-CATALOGUE
     capability_ref: CAP-RESOURCE-CATALOGUE
     name: Resource Catalogue
-    purpose: Own the access-domain meaning and lifecycle of Resources and the Resource catalogue facts needed by downstream NAPMS workflows.
-    responsibility:
-      - Resource identity and lifecycle
-      - time-qualified Resource realization as zero-or-one effective AddressSpace, where AddressSpace is HostAddress or Prefix
-      - Resource Scope Affiliation
-      - Resource Responsibility and operational contact facts
+    purpose: Own logical Resource identity and access-relevant Resource truth.
+    responsibility: [Resource identity, immutable AuthorityScopeRef affiliation, logical Endpoint membership, current HostAddress-or-Prefix realization, Site, OWNER and ADMINISTRATOR responsibility, basic history]
     boundary_basis:
-      cohesion_rationale: Resource identity, realization history, scope affiliation and responsibility/contact use one cohesive Resource catalogue language and lifecycle.
-      separation_rationale: Actor/action admission is not Resource catalogue truth; Authority Management remains outside this boundary.
-      rejected_boundary_alternatives: [merge Authority Management into Resource Catalogue, treat UI or persistence as the domain boundary]
+      cohesion_rationale: Resource identity, logical network presence, realization and responsibility change together as Resource catalogue truth.
+      separation_rationale: Application meaning, deployment placement, business need, permission and actor authority remain external.
     model_language_ownership:
-      owned_terms_or_model_scope: [Resource, AddressSpace, HostAddress, Prefix, Resource technical realization, Resource Scope Affiliation, Resource Responsibility]
-      explicitly_external_terms: [Actor, Action, Effective Authority, ResponsibilityScopeRef identity/authority semantics]
+      owned_terms_or_model_scope: [Resource, AuthorityScopeRef, ResourceEndpoint, HostAddress, Prefix, Site, ResponsibilityGroup]
+      explicitly_external_terms: [Application, ComponentDeployment, ConnectivityNeed, PolicyRule, AuthorityGrant]
 
   - context_id: BC-AUTHORITY-MANAGEMENT
     capability_ref: CAP-AUTHORITY-MANAGEMENT
     name: Authority Management
-    purpose: Own effective actor/action/scope authority and the assignment semantics used to derive protected-action admission.
-    responsibility:
-      - effective actor/action/scope authority
-      - authority assignment/membership-role semantics used to derive it
-      - fail-closed protected-action admission
+    purpose: Own effective actor/action/scope/time evaluation semantics.
+    responsibility: [evaluate authenticated AuthorityGrant sets fail-closed for exact action scope and time]
     boundary_basis:
-      cohesion_rationale: Actor, action, scope and effective-time authority are one independently reusable authorization model used by protected actions across contexts.
-      separation_rationale: Resource ownership, Resource Scope Affiliation, Resource Responsibility and catalogue read visibility are Resource/catalogue facts, not authority assignments and cannot substitute for the Authority Management model.
+      cohesion_rationale: Actor, action, scope and effective time form one reusable admission rule.
+      separation_rationale: Resource owns Resource-to-scope affiliation; authentication supplies actor/grants; domain metadata never manufactures authority.
     model_language_ownership:
-      owned_terms_or_model_scope: [Actor, Action, Effective Authority, authority assignment, ResponsibilityScopeRef as authority correlation]
-      explicitly_external_terms: [Resource, Resource Scope Affiliation, Resource Responsibility]
-
-  - context_id: BC-ACCESS-POLICY
-    capability_ref: CAP-ACCESS-POLICY
-    name: Access Policy
-    purpose: Own concrete access policy lifecycle and current effective policy truth.
-    responsibility: [Policy Rule identity and directed ComponentDeployment subject, RuleChange proposal history and formal Pending/Accepted/Rejected outcome, current effective revision withdrawal and decision provenance]
-    boundary_basis:
-      cohesion_rationale: RuleChange decisions directly govern the same PolicyRule current effective semantics and belong to one lifecycle owner.
-      separation_rationale: Business justification authority evaluation deployment and traffic-definition semantics remain independently owned.
-      rejected_boundary_alternatives: [separate Access Governance owner for the same current authorization truth]
-    model_language_ownership:
-      owned_terms_or_model_scope: [PolicyRule, RuleChange, Pending, Accepted, Rejected, withdrawal]
-      explicitly_external_terms: [Connectivity Need, Effective Authority, ComponentDeployment, InteractionContractRevision]
+      owned_terms_or_model_scope: [ActorRef, ActionRef, AuthorityScopeRef, AuthorityGrant, Effective Authority]
+      explicitly_external_terms: [Resource, Site, ResponsibilityGroup, BusinessProcess]
 
   - context_id: BC-APPLICATION-COMMUNICATION-CATALOGUE
     capability_ref: CAP-APPLICATION-COMMUNICATION-CATALOGUE
     name: Application Communication Catalogue
-    purpose: Own application structure and intended interaction semantics.
-    responsibility: [Application identity, Component identity, Interaction identity, immutable InteractionContractRevision]
+    purpose: Own reusable application communication meaning.
+    responsibility: [Application identity, Component identity, independent directed Interaction identity, immutable InteractionRevision traffic semantics]
     boundary_basis:
-      cohesion_rationale: Application components interactions and their traffic contract revisions form one language for intended application communication.
-      separation_rationale: Concrete deployment placement resource realization and policy lifecycle are external concerns.
-      rejected_boundary_alternatives: [own ComponentDeployment placement]
+      cohesion_rationale: Reusable application communication meaning changes independently from deployment and Resource realization.
+      separation_rationale: Concrete deployment, Resource realization, business need and access permission remain external.
     model_language_ownership:
-      owned_terms_or_model_scope: [Application, Component, Interaction, InteractionContractRevision]
+      owned_terms_or_model_scope: [Application, Component, Interaction, InteractionRevision, TrafficClause]
       explicitly_external_terms: [ComponentDeployment, Resource, PolicyRule]
 
   - context_id: BC-APPLICATION-DEPLOYMENT
     capability_ref: CAP-APPLICATION-DEPLOYMENT
     name: Application Deployment
-    purpose: Own concrete placement of an application component on a resource.
-    responsibility: [ComponentDeployment identity, ComponentRef plus ResourceRef placement truth]
+    purpose: Own concrete deployment of one Component on one Resource.
+    responsibility: [ComponentDeployment identity, immutable ComponentRef and ResourceRef placement truth]
     boundary_basis:
-      cohesion_rationale: Deployment identity connects an application component definition to a concrete resource without importing either model.
-      separation_rationale: Component semantics belong to ACC and address or scope semantics belong to Resource Catalogue.
-      rejected_boundary_alternatives: [put deployment placement inside ACC, put deployment placement inside Resource Catalogue]
+      cohesion_rationale: Concrete placement is independently governed from reusable application and Resource realization.
+      separation_rationale: Component semantics remain ACC-owned and Resource realization RC-owned.
     model_language_ownership:
       owned_terms_or_model_scope: [ComponentDeployment]
-      explicitly_external_terms: [Component, Resource, AddressSpace]
+      explicitly_external_terms: [Component, Resource, AddressRealization]
 
   - context_id: BC-BUSINESS-CONNECTIVITY
     capability_ref: CAP-BUSINESS-CONNECTIVITY
     name: Business Connectivity
     purpose: Own why application connectivity is needed.
-    responsibility: [Business Process identity and lifecycle, Connectivity Need and business attribution/current justification]
+    responsibility: [BusinessProcess, responsible organization, descriptive criticalityLabel, participant-attributed ConnectivityNeed currentness/history]
     boundary_basis:
-      cohesion_rationale: Business process and connectivity need share the language of business justification rather than authorization or technical realization.
-      separation_rationale: A Need is not policy authorization and may outlive one concrete deployment pair or traffic revision.
-      rejected_boundary_alternatives: [merge business need into Access Policy]
+      cohesion_rationale: Business process and Need share business-justification semantics.
+      separation_rationale: Business justification is not permission and is independent from concrete deployment/address.
     model_language_ownership:
-      owned_terms_or_model_scope: [Business Process, Connectivity Need, business justification]
-      explicitly_external_terms: [PolicyRule, ComponentDeployment, InteractionContractRevision]
+      owned_terms_or_model_scope: [BusinessProcess, ConnectivityNeed, criticalityLabel, business justification]
+      explicitly_external_terms: [PolicyRule, ComponentDeployment, AuthorityGrant]
+
+  - context_id: BC-ACCESS-POLICY
+    capability_ref: CAP-ACCESS-POLICY
+    name: Access Policy
+    purpose: Own deliberate access requests, permission outcomes and authoritative current desired access.
+    responsibility: [AccessRequest, AccessSubject, final ALLOWED or DENIED outcome, one PolicyRule per exact subject, AuthorizationEvidence, justification associations, Active/Inactive state, EffectiveWindow, audit history]
+    boundary_basis:
+      cohesion_rationale: Request subject, permission evidence and resulting authoritative desired-access state form one lifecycle owner.
+      separation_rationale: Need currentness, Resource realization, communication semantics and authority evaluation remain independently owned.
+    model_language_ownership:
+      owned_terms_or_model_scope: [AccessRequest, AccessSubject, PolicyRule, AuthorizationEvidence, Active, Inactive, EffectiveWindow]
+      explicitly_external_terms: [ConnectivityNeed, AuthorityGrant, ComponentDeployment, InteractionRevision]
 
   - context_id: BC-NETWORK-ENFORCEMENT-PLACEMENT
     capability_ref: CAP-NETWORK-ENFORCEMENT-PLACEMENT
     name: Network Enforcement Placement
-    purpose: Own candidate enforcement target and policy-locator relevance.
-    responsibility: [candidate enforcement target relevance, policy locator semantics]
-    boundary_basis:
-      cohesion_rationale: Placement answers where a required policy can be enforced.
-      separation_rationale: It does not own desired policy evidence or execution.
-      rejected_boundary_alternatives: [merge placement into policy realization]
-    model_language_ownership:
-      owned_terms_or_model_scope: [enforcement target, policy locator]
-      explicitly_external_terms: [PolicyRule, technical evidence, execution]
-
+    purpose: Future enforcement-placement capability outside first MVP.
+    responsibility: [future placement semantics]
+    boundary_basis: {cohesion_rationale: Future concern., separation_rationale: Outside first MVP.}
+    model_language_ownership: {owned_terms_or_model_scope: [enforcement target], explicitly_external_terms: [PolicyRule]}
   - context_id: BC-TECHNICAL-ACCESS-EVIDENCE
     capability_ref: CAP-TECHNICAL-ACCESS-EVIDENCE
     name: Technical Access Evidence
-    purpose: Own canonical normalized source-qualified technical evidence.
-    responsibility: [evidence meaning and invariants, immutable evidence history, source provenance]
-    boundary_basis:
-      cohesion_rationale: Evidence facts share source-qualified technical observation semantics.
-      separation_rationale: Evidence does not create desired policy authorization or application/resource truth.
-      rejected_boundary_alternatives: [treat evidence as authorization]
-    model_language_ownership:
-      owned_terms_or_model_scope: [technical evidence, source provenance]
-      explicitly_external_terms: [PolicyRule, Resource, ComponentDeployment]
-
+    purpose: Future evidence capability outside first MVP.
+    responsibility: [future evidence semantics]
+    boundary_basis: {cohesion_rationale: Future concern., separation_rationale: Outside first MVP.}
+    model_language_ownership: {owned_terms_or_model_scope: [technical evidence], explicitly_external_terms: [PolicyRule]}
   - context_id: BC-ACCESS-POLICY-REALIZATION
     capability_ref: CAP-ACCESS-POLICY-REALIZATION
     name: Access Policy Realization
-    purpose: Own required-versus-configured assessment change design and convergence verification.
-    responsibility: [configured policy interpretation input comparison, required-versus-configured assessment, VerifiedChangeIntent design, post-change convergence verification]
-    boundary_basis:
-      cohesion_rationale: Comparison change intent and verification share realization semantics.
-      separation_rationale: Provider rendering execution and desired policy ownership remain external.
-      rejected_boundary_alternatives: [treat execution success as convergence]
-    model_language_ownership:
-      owned_terms_or_model_scope: [ConfiguredEffectivePolicySnapshot, VerifiedChangeIntent, convergence]
-      explicitly_external_terms: [PolicyRule, provider rendering, execution]
-
+    purpose: Future reconciliation capability outside first MVP.
+    responsibility: [future required-vs-configured assessment]
+    boundary_basis: {cohesion_rationale: Future concern., separation_rationale: Outside first MVP.}
+    model_language_ownership: {owned_terms_or_model_scope: [convergence], explicitly_external_terms: [PolicyRule]}
   - context_id: BC-NETWORK-ENVIRONMENT-OPERATIONS
     capability_ref: CAP-NETWORK-ENVIRONMENT-OPERATIONS
     name: Network Environment Operations
-    purpose: Own controlled provider or device mutation lifecycle.
-    responsibility: [controlled mutation execution lifecycle, execution outcome]
-    boundary_basis:
-      cohesion_rationale: Execution lifecycle has operational semantics distinct from policy comparison.
-      separation_rationale: Apply success is not convergence proof and provider rendering is an integration capability.
-      rejected_boundary_alternatives: [make execution own convergence]
-    model_language_ownership:
-      owned_terms_or_model_scope: [controlled execution, execution outcome]
-      explicitly_external_terms: [VerifiedChangeIntent, convergence, provider rendering]
+    purpose: Future provider/device execution capability outside first MVP.
+    responsibility: [future execution lifecycle]
+    boundary_basis: {cohesion_rationale: Future concern., separation_rationale: Outside first MVP.}
+    model_language_ownership: {owned_terms_or_model_scope: [execution], explicitly_external_terms: [PolicyRule]}

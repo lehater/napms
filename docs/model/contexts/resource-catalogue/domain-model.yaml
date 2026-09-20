@@ -1,98 +1,77 @@
-version: 1
+version: 2
 kind: tactical-domain-model
 id: NAPMS-RC-DOMAIN-MODEL
 bounded_context_ref: BC-RESOURCE-CATALOGUE
 knowledge_coverage:
   subject: BC-RESOURCE-CATALOGUE
   knowledge: tactical-domain-model
-depends_on:
-  - NAPMS-UC-RC-CURATION
-  - NAPMS-RC-CURATION-PROCESS
-  - NAPMS-RC-DOMAIN-DECISIONS
-  - NAPMS-RC-LANGUAGE
+depends_on: [NAPMS-UC-RC-CURATION, NAPMS-RC-CURATION-PROCESS, NAPMS-RC-LANGUAGE]
 
 aggregates:
   - aggregate_id: AGG-RESOURCE
     name: Resource
     root_entity_ref: ENTITY-RESOURCE
     consistency_basis:
-      - Resource identity remains stable while temporal realization, affiliation and responsibility facts change.
-      - Realization mutation must preserve the maximum-one-effective-AddressSpace invariant atomically for one Resource.
-      - Ending/replacing temporal Resource facts must preserve their history/provenance rather than rewrite them as current scalars.
-    owned_fact_sets: [ResourceRealizationFact, ResourceScopeAffiliation, ResourceResponsibility]
-    external_policy_boundary: Authority Management admission occurs before protected mutation and is not part of Resource aggregate truth.
+      - Resource identity is stable and independent from address realization.
+      - AuthorityScopeRef is required and immutable after Resource registration.
+      - Endpoint membership is explicit membership in one logical access-management unit.
+      - Resource nested mutations use one Resource aggregate version.
+    owned_fact_sets: [ResourceEndpoint, SiteAssignment, ResourceResponsibility]
+    external_policy_boundary: Actor authority is evaluated outside Resource truth.
 
 entities:
   - entity_id: ENTITY-RESOURCE
     name: Resource
     identity: ResourceId
-    continuity: Stable catalogue identity independent of current realization, affiliation or responsibility presence.
-  - entity_id: ENTITY-RESOURCE-REALIZATION-FACT
-    name: ResourceRealizationFact
-    identity: Stable fact identity sufficient to preserve and reference history; exact identifier representation belongs to later design.
+    continuity: Stable logical access-management unit independent from address realization.
+    attributes: [AuthorityScopeRef]
+  - entity_id: ENTITY-RESOURCE-ENDPOINT
+    name: ResourceEndpoint
+    identity: EndpointRef
     owner_aggregate_ref: AGG-RESOURCE
-    attributes: [AddressSpace, ValidityInterval, Provenance]
-  - entity_id: ENTITY-RESOURCE-SCOPE-AFFILIATION
-    name: ResourceScopeAffiliation
-    identity: Stable affiliation-fact identity sufficient to preserve history; exact identifier representation belongs to later design.
+    attributes: [AddressRealization]
+  - entity_id: ENTITY-RESOURCE-SITE-ASSIGNMENT
+    name: SiteAssignment
+    identity: StableHistoryFactRef
     owner_aggregate_ref: AGG-RESOURCE
-    attributes: [ResponsibilityScopeRef, ValidityInterval, Provenance]
+    attributes: [ValidityInterval]
   - entity_id: ENTITY-RESOURCE-RESPONSIBILITY
     name: ResourceResponsibility
-    identity: Stable responsibility-assignment identity sufficient to preserve history; exact identifier representation belongs to later design.
+    identity: StableHistoryFactRef
     owner_aggregate_ref: AGG-RESOURCE
-    attributes: [ResponsiblePartyRef, ResponsibilityRole, ValidityInterval, Provenance]
+    attributes: [ResponsibilityRole, ValidityInterval]
 
 value_objects:
-  - {value_object_id: VO-RESOURCE-ID, name: ResourceId, semantics: Stable Resource identity value; equality by identifier value.}
-  - {value_object_id: VO-ADDRESS-SPACE, name: AddressSpace, semantics: Exactly one of HostAddress or Prefix; equality by normalized address/prefix value and kind., variants: [HostAddress, Prefix]}
-  - {value_object_id: VO-VALIDITY-INTERVAL, name: ValidityInterval, semantics: Time interval qualifying a historical fact; equality by interval bounds.}
-  - {value_object_id: VO-RESPONSIBILITY-SCOPE-REF, name: ResponsibilityScopeRef, semantics: Reference to a Responsibility Scope; it is business affiliation data and does not grant RC mutation authority.}
-  - {value_object_id: VO-RESPONSIBLE-PARTY-REF, name: ResponsiblePartyRef, semantics: Supported person or team reference used by Resource Responsibility.}
-  - {value_object_id: VO-RESPONSIBILITY-ROLE, name: ResponsibilityRole, semantics: Extensible role value; roles may overlap and are not a closed permission enum.}
-  - {value_object_id: VO-PROVENANCE, name: Provenance, semantics: Required origin/audit information retained with historical catalogue facts; exact technical fields belong to later design.}
+  - {value_object_id: VO-RESOURCE-ID, name: ResourceId, semantics: Stable opaque Resource identity.}
+  - {value_object_id: VO-ENDPOINT-REF, name: EndpointRef, semantics: Stable logical endpoint identity inside Resource lifecycle.}
+  - {value_object_id: VO-AUTHORITY-SCOPE-REF, name: AuthorityScopeRef, semantics: Required opaque immutable scope identity used for protected admission; Site/responsibility/address do not imply it.}
+  - {value_object_id: VO-ADDRESS-REALIZATION, name: AddressRealization, semantics: Zero-or-one current HostAddress or Prefix for one Endpoint., variants: [HostAddress, Prefix]}
+  - {value_object_id: VO-VALIDITY-INTERVAL, name: ValidityInterval, semantics: Half-open interval preserving historical Resource facts.}
+  - {value_object_id: VO-RESPONSIBILITY-ROLE, name: ResponsibilityRole, semantics: OWNER or ADMINISTRATOR for the first MVP.}
+  - {value_object_id: VO-STABLE-HISTORY-FACT-REF, name: StableHistoryFactRef, semantics: Opaque history identity.}
 
 invariants:
-  - invariant_id: INV-RC-STABLE-RESOURCE-IDENTITY
-    rule: Changing, ending or replacing Resource realization, affiliation or responsibility facts never changes ResourceId.
-    basis_refs: [NAPMS-UC-RC-CURATION#behavior, NAPMS-RC-CURATION-PROCESS]
-  - invariant_id: INV-RC-SINGLE-EFFECTIVE-ADDRESS-SPACE
-    rule: At one logical time a Resource has zero or one effective ResourceRealizationFact; when present its AddressSpace is exactly one HostAddress or one Prefix.
-    basis_refs: [NAPMS-UC-RC-CURATION#behavior, NAPMS-RC-CURATION-PROCESS]
-  - invariant_id: INV-RC-HISTORY-PRESERVED
-    rule: Ending or replacing a temporal realization, affiliation or responsibility fact preserves the historical fact and provenance; supported mutation does not silently rewrite history.
-    basis_refs: [NAPMS-UC-RC-CURATION#integrity, NAPMS-RC-CURATION-PROCESS]
-  - invariant_id: INV-RC-VALID-TEMPORAL-FACTS
-    rule: Temporal intervals must be valid and overlapping effective facts that violate an accepted fact-set invariant are rejected explicitly.
-    basis_refs: [NAPMS-UC-RC-CURATION#integrity]
-  - invariant_id: INV-RC-OPTIONAL-CURRENT-RELATIONS
-    rule: A Resource remains valid when no current realization, scope affiliation or responsibility exists; absence is explicit in the current projection.
-    basis_refs: [NAPMS-UC-RC-CURATION#behavior, NAPMS-RC-CURATION-PROCESS]
-  - invariant_id: INV-RC-RESPONSIBILITY-NOT-AUTHORITY
-    rule: Resource Scope Affiliation and Resource Responsibility never grant Resource Catalogue mutation authority by themselves.
-    basis_refs: [NAPMS-UC-RC-CURATION#authorization]
-  - invariant_id: INV-RC-RESPONSIBILITY-ROLE-EXTENSIBLE
-    rule: ResponsibilityRole is extensible and overlapping assignments are allowed unless a later accepted requirement introduces a coverage/exclusivity rule.
-    basis_refs: [NAPMS-RC-DOMAIN-DECISIONS#DEC-RC-RESPONSIBILITY-ROLES]
+  - {invariant_id: INV-RC-STABLE-RESOURCE, rule: ResourceRef never derives from current address.}
+  - {invariant_id: INV-RC-SCOPE, rule: Every Resource has one immutable non-empty AuthorityScopeRef independent from Site responsibility and address.}
+  - {invariant_id: INV-RC-ENDPOINT-IDENTITY, rule: EndpointRef survives address set change and clear; Endpoint may exist with no address.}
+  - {invariant_id: INV-RC-ENDPOINT-ADDRESS, rule: One Endpoint has zero or one current address realization and it is exactly HostAddress or Prefix.}
+  - {invariant_id: INV-RC-LOGICAL-UNIT, rule: Multiple Endpoints may share one Resource only as an explicit assertion that they remain one logical access-management unit; no automatic grouping by address Site responsibility or name is allowed.}
+  - {invariant_id: INV-RC-PREFIX, rule: Prefix remains Prefix and is never silently expanded or masked from host bits.}
+  - {invariant_id: INV-RC-RESPONSIBILITY, rule: At most one current OWNER and one current ADMINISTRATOR exist; responsibility never grants authority.}
+  - {invariant_id: INV-RC-HISTORY, rule: Address Site and responsibility changes preserve explanatory history.}
 
 domain_services: []
 
 command_semantics:
-  register_resource: Establish Resource with stable ResourceId and required provenance.
-  set_address_space: Allowed when no effective realization exists at the effective time; establish one HostAddress-or-Prefix fact.
-  end_address_space: End the effective realization fact while retaining history; Resource remains valid with no current realization.
-  replace_address_space: End the effective realization and establish its successor without changing ResourceId or rewriting history.
-  affiliate_scope: Establish a time-qualified ResponsibilityScopeRef fact; it does not alter authorization scope.
-  end_scope_affiliation: End the selected affiliation fact without changing ResourceId.
-  assign_responsibility: Establish a time-qualified person/team ResponsibilityRole assignment; assignment does not grant authority.
-  end_responsibility: End the selected assignment while preserving history.
+  register_resource: Create Resource with display name and immutable AuthorityScopeRef.
+  add_endpoint: Explicitly add one logical Endpoint to the Resource access-management unit.
+  set_endpoint_address: Set or replace current HostAddress-or-Prefix while preserving Endpoint identity/history.
+  clear_endpoint_address: Remove current realization while preserving Endpoint identity/history.
+  set_site: Replace or clear Site with history.
+  set_responsibility: Replace or clear OWNER or ADMINISTRATOR with history.
 
 deliberately_not_decided_here:
-  - persistence tables/documents and transaction technology
-  - API/HTTP shapes and UI workflow
-  - exact technical identifier representation for temporal fact entities
-  - exact command/idempotency token mechanism
-  - optimistic concurrency/ETag mechanism
-  - Resource retirement semantics outside the selected slice
-  - future resource-scoped authorization
-  - mandatory responsibility coverage/transfer policy
+  - persistence technology
+  - HTTP representation
+  - provider or firewall rendering
+  - Resource deletion or rename

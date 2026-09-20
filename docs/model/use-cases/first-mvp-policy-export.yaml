@@ -1,11 +1,11 @@
-version: 2
+version: 3
 kind: cross-context-use-case
 id: FIRST-MVP-POLICY-EXPORT
-status: STALE_AFTER_REQUIREMENTS_RECONCILIATION
+status: CURRENT
 
 requirements_ref: docs/requirements/first-mvp-product-requirements.yaml
 requirements_id: NAPMS-FIRST-MVP-PRODUCT-REQUIREMENTS
-purpose: Realize the accepted first-MVP requirements as a cross-context domain/application flow while preserving each context's semantic ownership.
+purpose: Realize all accepted first-MVP backend requirements without moving semantic ownership into the composition layer.
 
 participating_strategic_owners:
   - Resource Catalogue
@@ -18,35 +18,44 @@ supporting_owner:
   - Authority Management
 
 workflow_composition:
-  name: Full Vendor-Neutral Policy Export
+  name: Current Vendor-Neutral Policy Materialization
   peer_bounded_context: false
-  responsibility: Compose accepted owner truth into a complete vendor-neutral policy view without owning Resource, Application, Deployment, Business Connectivity or Policy truth.
+  responsibility: Compose selected owner truth and scoped export admission into a complete vendor-neutral result without owning domain truth.
 
 required_semantics:
-  - Interaction endpoints belong to the same Application.
-  - InteractionContractRevision is immutable and contains one or more vendor-neutral traffic alternatives.
-  - One ComponentDeployment binds exactly one Component to exactly one Resource for the MVP.
-  - Deliberate RuleChange submission requires a current Process-backed ConnectivityNeed whose required Interaction supplies business justification but never authorization.
-  - One current PolicyRule represents one directed concrete source/destination ComponentDeployment pair and its exact current InteractionContractRevision.
-  - Pending or Rejected changes do not replace already effective rule semantics; only an Accepted applicable change may do so.
-  - Missing or ambiguous required materialization input makes the complete export Unresolved rather than silently partial.
-  - Table and CSV are representations of the same successful materialization result.
+  - Resource has immutable AuthorityScopeRef and explicit logical Endpoints whose current address may change independently.
+  - Cross-Application Interaction is valid when Component references and communication semantics are valid.
+  - Several independent Interactions may exist for the same directed Component pair.
+  - ComponentDeployment binds one Component to one Resource and is independent from current address.
+  - Deliberate AccessRequest requires one current participant-attributed Process-backed ConnectivityNeed.
+  - AccessRequest requires effective access.request authority for all distinct source/destination Resource scopes at server-owned admissionAt.
+  - DENIED creates no PolicyRule.
+  - ALLOWED resolves one PolicyRule per exact AccessSubject(source Deployment, destination Deployment, immutable InteractionRevision).
+  - PolicyRule supports reversible ACTIVE/INACTIVE and absolute EffectiveWindow without new permission decision.
+  - Additional current Needs add justification without duplicating Rule; zero current Needs is reconciliation and not automatic revocation.
+  - Export selects all Rules or an explicit Rule subset and requires effective policy.export authority for all distinct selected Resource scopes at evaluationAt.
+  - One database-owned logical evaluationAt and one coherent read snapshot govern effectiveness and materialization.
+  - Every selected Rule has self-contained permission/business provenance; only selected effective Rules require complete technical realization.
+  - Missing required realization for an effective Rule makes the result UNRESOLVED rather than silently partial.
 
 cross_context_flow:
-  - {step: 1, owner: Resource Catalogue, result: Resources exist with current AddressSpace facts required for later materialization.}
-  - {step: 2, owner: Application Communication Catalogue, result: 'Application, Components, directed Interaction and exact immutable traffic revision exist.'}
-  - {step: 3, owner: Application Deployment, result: Concrete source and destination ComponentDeployments bind the Interaction endpoint Components to Resources.}
-  - {step: 4, owner: Business Connectivity, result: A current Process-backed ConnectivityNeed references the stable Interaction and supplies the deliberate business basis.}
-  - {step: 5, owner: Access Policy, result: A RuleChange for the concrete deployment pair and exact revision is submitted with the Need basis and reaches Accepted or Rejected formal outcome.}
-  - {step: 6, owner: Access Policy, result: Only an Accepted applicable change establishes current EffectivePolicyRule truth.}
-  - {step: 7, owner: Full Vendor-Neutral Policy Export composition, result: 'EffectivePolicyRule is joined with exact ACC revision, AD deployment-to-Resource facts and current RC AddressSpace facts; unresolved required input makes the complete export Unresolved rather than partial.'}
+  - {step: 1, owner: Resource Catalogue, result: Resources exist with immutable AuthorityScopeRef plus logical Endpoints and current HostAddress-or-Prefix realization when known.}
+  - {step: 2, owner: Application Communication Catalogue, result: Applications Components independent directed Interactions and exact immutable InteractionRevisions exist.}
+  - {step: 3, owner: Application Deployment, result: Concrete source and destination ComponentDeployments bind participating Components to Resources.}
+  - {step: 4, owner: Business Connectivity, result: Current Process-backed participant-attributed ConnectivityNeed supplies business justification.}
+  - {step: 5, owner: Authority Management, result: Request actor is effective for access.request on every distinct participating Resource scope at admissionAt.}
+  - {step: 6, owner: Access Policy, result: AccessRequest is submitted; DENIED creates no Rule and ALLOWED resolves one exact-subject PolicyRule with authorization evidence and initial justification.}
+  - {step: 7, owner: Access Policy, result: PolicyRule may be ACTIVE or INACTIVE and may carry an absolute EffectiveWindow; additional Needs may attach without changing identity.}
+  - {step: 8, owner: Authority Management, result: Export actor is effective for policy.export on every distinct selected Resource scope at the database-owned evaluationAt.}
+  - {step: 9, owner: Current Vendor-Neutral Policy Materialization, result: One coherent snapshot produces COMPLETE or UNRESOLVED self-contained policy output with provenance and normalized technical rows.}
 
 materialization_join:
-  policy: EffectivePolicyRule(policyRuleRef, sourceComponentDeploymentRef, destinationComponentDeploymentRef, revisionRef)
-  traffic: ResolveInteractionContractRevision(revisionRef) -> complete traffic alternatives and endpoint Components
-  endpoints: ResolveComponentDeployment(source/destination refs) -> componentRef plus resourceRef
-  addresses: Resource Catalogue current Resource realization -> zero-or-one AddressSpace per Resource
-  result_rule: 'Every traffic alternative is preserved; no provider-specific rendering or enforcement placement is introduced.'
+  policy: PolicyRule exact AccessSubject plus operational state window authorization evidence and justification refs
+  traffic: ResolveInteractionRevision(interactionRevisionRef) -> canonical TrafficClauses
+  endpoints: ResolveComponentDeployment(source/destination) -> ResourceRef; Resource -> all current addressed Endpoints
+  business: Resolve associated Needs -> current or retired justification plus reconciliation
+  authority: selected Resource AuthorityScopeRefs -> effective policy.export grants at evaluationAt
+  result_rule: Preserve independent Rule provenance and exact traffic semantics; no provider-specific rendering.
 
 context_model_refs:
   Resource Catalogue: docs/model/contexts/resource-catalogue/domain-model.yaml

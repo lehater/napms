@@ -6,12 +6,12 @@ ROOT=Path(__file__).resolve().parents[1]
 MODEL=ROOT/"docs/architecture/persistence/mvp-persistence.yaml"
 
 EXPECTED={
- "resource_catalogue":{"resource","resource_address_space"},
- "application_communication_catalogue":{"application_definition","component","interaction","interaction_contract_revision"},
+ "resource_catalogue":{"resource","site","responsibility_group","resource_site_history","resource_endpoint","resource_endpoint_address_history","resource_responsibility_history"},
+ "application_communication_catalogue":{"application","component","interaction","interaction_revision","interaction_traffic_clause","interaction_port_range"},
  "application_deployment":{"component_deployment"},
  "business_connectivity":{"business_process","connectivity_need"},
- "access_policy":{"policy_rule","rule_change"},
- "authority_management":{"actor","authority_assignment"},
+ "access_policy":{"access_request","access_request_authority_evidence","policy_rule","policy_rule_authorization_evidence","policy_rule_justification","policy_rule_operational_history"},
+ "application_edge":{"idempotency_record"},
 }
 
 def fail(message):
@@ -37,8 +37,8 @@ for schema,names in EXPECTED.items():
         columns=tdef.get("columns",[])
         if not columns:
             fail(f"{schema}.{table}: no columns")
-        if len([c for c in columns if c.get("primary_key")])!=1:
-            fail(f"{schema}.{table}: expected one primary key")
+        if not any(c.get("primary_key") for c in columns):
+            fail(f"{schema}.{table}: missing primary key")
         col_names={c["name"] for c in columns}
         for fk in tdef.get("local_foreign_keys",[]):
             ref_schema,ref_table=fk["references"].split(".",1)
@@ -56,25 +56,42 @@ def table(schema,name):
 def index_names(schema,name):
     return {item["name"] for item in table(schema,name).get("indexes",[])}
 
-for key,index in {
- ("resource_catalogue","resource_address_space"):"uq_resource_address_space_current",
- ("application_communication_catalogue","interaction"):"uq_interaction_directed_pair",
- ("application_communication_catalogue","interaction_contract_revision"):"uq_interaction_current_revision",
- ("access_policy","policy_rule"):"uq_policy_rule_non_retired_pair",
- ("access_policy","rule_change"):"uq_rule_change_pending_per_rule",
-}.items():
+required_indexes={
+ ("resource_catalogue","resource_endpoint_address_history"):"uq_endpoint_current_address",
+ ("resource_catalogue","resource_responsibility_history"):"uq_resource_current_responsibility",
+ ("application_communication_catalogue","interaction_revision"):"uq_interaction_revision_no",
+ ("access_policy","policy_rule"):"uq_policy_rule_access_subject",
+ ("access_policy","policy_rule_authorization_evidence"):"uq_authorization_request",
+ ("access_policy","policy_rule_justification"):"uq_rule_need_justification",
+ ("application_edge","idempotency_record"):"uq_idempotency_scope",
+}
+for key,index in required_indexes.items():
     if index not in index_names(*key):
         fail(f"required invariant index missing: {index}")
 
-for key,names in {
+required_external={
  ("application_deployment","component_deployment"):{"component_ref","resource_ref"},
- ("business_connectivity","connectivity_need"):{"interaction_ref"},
- ("access_policy","policy_rule"):{"source_component_deployment_ref","destination_component_deployment_ref","effective_revision_ref"},
- ("access_policy","rule_change"):{"revision_ref","connectivity_need_ref"},
-}.items():
+ ("business_connectivity","connectivity_need"):{"interaction_ref","participant_component_ref"},
+ ("access_policy","access_request"):{"source_deployment_ref","destination_deployment_ref","interaction_revision_ref","initial_need_ref"},
+ ("access_policy","policy_rule"):{"source_deployment_ref","destination_deployment_ref","interaction_revision_ref"},
+ ("access_policy","policy_rule_justification"):{"need_ref"},
+}
+for key,names in required_external.items():
     columns={c["name"]:c for c in table(*key)["columns"]}
     for name in names:
         if name not in columns or "external_owner" not in columns[name]:
             fail(f"external owner reference missing: {key}.{name}")
+
+resource_cols={c["name"] for c in table("resource_catalogue","resource")["columns"]}
+if "authority_scope_ref" not in resource_cols:
+    fail("Resource authority_scope_ref missing")
+
+process_cols={c["name"] for c in table("business_connectivity","business_process")["columns"]}
+if "criticality_label" not in process_cols:
+    fail("BusinessProcess criticality_label missing")
+
+interaction_cols={c["name"] for c in table("application_communication_catalogue","interaction")["columns"]}
+if "application_ref" in interaction_cols:
+    fail("Interaction must not carry one owning application_ref")
 
 print("Persistence model PASS")

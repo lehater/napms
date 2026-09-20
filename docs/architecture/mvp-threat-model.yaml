@@ -1,51 +1,19 @@
-version: 2
+version: 3
 kind: threat-model
 id: NAPMS-MVP-THREAT-MODEL
-status: PILOT_CURRENT
-scope: First-MVP browser, HTTP application boundary, modular-monolith backend, PostgreSQL state and CSV export.
-method: STRIDE-oriented architecture threat review
-
-trust_boundaries:
-  - browser_to_backend_http
-  - backend_session_identity
-  - backend_to_postgresql
-  - csv_export_to_user
+status: CURRENT
+scope: OIDC HTTP modular-monolith PostgreSQL and vendor-neutral policy materialization.
+method: STRIDE-oriented design review
 
 threats:
-  - id: TM-SPOOF-001
-    category: Spoofing
-    concern: Caller attempts to choose or forge actor identity.
-    control: Backend session establishes actor identity; actor identity is not accepted from caller-supplied fields.
-    refs: [SECURITY-ARCHITECTURE]
-  - id: TM-TAMPER-001
-    category: Tampering
-    concern: Caller or one module attempts mutation without authority or bypasses owner semantics.
-    control: Protected use cases require Authority Management admission; cross-module mutation occurs through owner contracts rather than foreign tables.
-    refs: [SECURITY-ARCHITECTURE, MODULE-CONTRACTS, PERSISTENCE]
-  - id: TM-REPUDIATE-001
-    category: Repudiation
-    concern: Policy and catalogue changes lose decision/history provenance.
-    control: Accepted persistence retains provenance and policy/change history; immutable published revisions are preserved.
-    refs: [PERSISTENCE, TECH-REPRESENTATION]
-  - id: TM-DISCLOSE-001
-    category: Information-Disclosure
-    concern: Session credentials or protected state are exposed through an unsafe identity boundary.
-    control: Session authentication uses the accepted HTTP-only cookie contract and protected operations require authenticated identity/admission.
-    refs: [SECURITY-ARCHITECTURE, HTTP-REQUIREMENTS]
-  - id: TM-DOS-001
-    category: Denial-of-Service
-    concern: Persistence or transport uncertainty is misrepresented as a successful operation.
-    control: Persistence or transport uncertainty has an explicit unavailable HTTP outcome and must not become silent success.
-    refs: [HTTP-REQUIREMENTS]
-  - id: TM-ELEVATE-001
-    category: Elevation-of-Privilege
-    concern: UI state, domain metadata or direct persistence access is treated as authorization.
-    control: Authority Management admission is the authorization authority; UI and domain metadata never substitute for it.
-    refs: [SECURITY-ARCHITECTURE, AM-LANGUAGE]
+  - {id: TM-SPOOF-001, category: Spoofing, concern: Caller forges actor permissions or authority., control: Only validated bearer JWT establishes Principal permissions and AuthorityGrants; caller or forwarded overrides are ignored.}
+  - {id: TM-AUTHZ-002, category: Elevation-of-Privilege, concern: One valid scope grant is reused for other Resource scopes., control: Request and export require matching effective grant for every distinct relevant AuthorityScopeRef.}
+  - {id: TM-METADATA-003, category: Elevation-of-Privilege, concern: Site owner administrator Process or Need metadata is treated as authority., control: Those facts explicitly never create AuthorityGrants or AuthorityScopeRef.}
+  - {id: TM-PERM-004, category: Tampering, concern: DENIED request creates desired access or old decision silently applies to changed traffic., control: DENIED creates no Rule; AccessSubject includes exact immutable InteractionRevision.}
+  - {id: TM-PROV-005, category: Repudiation, concern: Request export authority or permission provenance is lost., control: RequestAuthorityEvidence AuthorizationEvidence and ExportAuthorityEvidence preserve actor scope time and decision provenance.}
+  - {id: TM-EXPORT-006, category: Information-Disclosure, concern: Export subset exposes Rules outside actor scope., control: All selected Resource scopes are authorized before materialization result exposure.}
+  - {id: TM-OIDC-007, category: Spoofing, concern: Algorithm confusion stale keys or downgrade issuer/JWKS transport., control: Asymmetric allow-list kid exact issuer audience time validation HTTPS-only discovery/JWKS and deterministic max-stale policy.}
+  - {id: TM-DOS-008, category: Denial-of-Service, concern: Large export or dependency failure yields partial successful artifact., control: Request-body bound bounded/chunked traversal preflight before HTTP 200 and truncated stream is not a valid artifact.}
 
 deferred_nonblocking:
-  - Production edge protections such as rate limiting, TLS termination topology, secret rotation and infrastructure hardening require a production deployment baseline.
-  - External identity-provider threats are not applicable because no external IdP is part of the accepted first-MVP security architecture.
-
-provenance:
-  basis: Derived from current accepted security, persistence and HTTP-boundary decisions during the Harness documentation-vertical pilot.
+  - production infrastructure hardening beyond the accepted application and deployment boundary

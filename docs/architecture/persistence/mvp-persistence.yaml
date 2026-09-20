@@ -1,227 +1,333 @@
-version: 2
+version: 3
 kind: physical-persistence-model
 id: NAPMS-MVP-PERSISTENCE
-status: COMPLETE_FOR_FIRST_MVP
-technical_decisions_ref: docs/architecture/mvp-technical-representation.yaml
+status: CURRENT
 
 database: PostgreSQL
-topology: One physical PostgreSQL database for the MVP backend.
-ownership: Each domain module owns its persistence schema/repository contract inside the shared database.
-mutation_rule: No module directly mutates another module's tables or persistence model.
-read_rule: Cross-module semantics are obtained through owner module contracts; composition may combine owner-published read projections without transferring ownership.
-migration_rule: Schema migrations are applied as one backend deployment concern while preserving module ownership in migration organization.
-transaction_rule: Aggregate invariants are transactional inside the owner module; the modular monolith may use one local database transaction where one application use case coordinates owner operations, without redefining semantic ownership.
-
-representation_rules:
-  identifier_type: uuid
-  timestamp_type: timestamptz
-  provenance_type: jsonb
-  provenance_shape: {required: [source, recordedAt], optional: [detail]}
-  cross_module_reference_rule: UUID value only; no database foreign key across module-owned schemas. Resolve through the owner module contract.
-  local_reference_rule: Use database foreign keys inside one module-owned schema when ownership/cardinality is already accepted.
-  immutable_revision_payload: InteractionContractRevision traffic alternatives are stored as jsonb matching the canonical OpenAPI TrafficAlternative array.
-  address_space: {kind_column: address_kind, value_column: address_value, allowed_kinds: [HostAddress, Prefix]}
+ownership_rule: One physical database; every table has one module/technical owner. No cross-owner database foreign keys.
+cross_owner_reference_rule: Cross-owner refs are opaque values validated through owner contracts.
 
 schemas:
   resource_catalogue:
     tables:
       resource:
         columns:
-          - {name: resource_id, type: uuid, nullable: false, primary_key: true}
+          - {name: resource_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: display_name, type: text, nullable: false}
+          - {name: authority_scope_ref, type: text, nullable: false}
+          - {name: version, type: bigint, nullable: false}
           - {name: created_at, type: timestamptz, nullable: false}
-          - {name: provenance, type: jsonb, nullable: false}
         indexes: []
         checks: []
-      resource_address_space:
+      site:
         columns:
-          - {name: address_space_fact_id, type: uuid, nullable: false, primary_key: true}
-          - {name: resource_id, type: uuid, nullable: false}
+          - {name: site_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: name, type: text, nullable: false}
+          - {name: description, type: text, nullable: true}
+        indexes: []
+        checks: []
+      responsibility_group:
+        columns:
+          - {name: group_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: display_name, type: text, nullable: false}
+          - {name: external_reference, type: text, nullable: true}
+        indexes: []
+        checks: []
+      resource_site_history:
+        columns:
+          - {name: history_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: resource_ref, type: uuid, nullable: false}
+          - {name: site_ref, type: uuid, nullable: true}
+          - {name: effective_from, type: timestamptz, nullable: false}
+          - {name: effective_to, type: timestamptz, nullable: true}
+        local_foreign_keys:
+          - {columns: [resource_ref], references: resource_catalogue.resource, target_columns: [resource_ref], on_delete: restrict}
+          - {columns: [site_ref], references: resource_catalogue.site, target_columns: [site_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_resource_current_site, unique: true, columns: [resource_ref], where: effective_to IS NULL}
+        checks: []
+      resource_endpoint:
+        columns:
+          - {name: endpoint_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: resource_ref, type: uuid, nullable: false}
+          - {name: created_at, type: timestamptz, nullable: false}
+        local_foreign_keys:
+          - {columns: [resource_ref], references: resource_catalogue.resource, target_columns: [resource_ref], on_delete: restrict}
+        indexes: []
+        checks: []
+      resource_endpoint_address_history:
+        columns:
+          - {name: address_fact_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: endpoint_ref, type: uuid, nullable: false}
           - {name: address_kind, type: text, nullable: false}
           - {name: address_value, type: text, nullable: false}
-          - {name: valid_from, type: timestamptz, nullable: false}
-          - {name: valid_to, type: timestamptz, nullable: true}
-          - {name: provenance, type: jsonb, nullable: false}
+          - {name: effective_from, type: timestamptz, nullable: false}
+          - {name: effective_to, type: timestamptz, nullable: true}
+          - {name: changed_by_subject, type: text, nullable: false}
         local_foreign_keys:
-          - {columns: [resource_id], references: resource_catalogue.resource, target_columns: [resource_id], on_delete: restrict}
+          - {columns: [endpoint_ref], references: resource_catalogue.resource_endpoint, target_columns: [endpoint_ref], on_delete: restrict}
         indexes:
-          - {name: uq_resource_address_space_current, unique: true, columns: [resource_id], where: valid_to IS NULL}
-          - {name: ix_resource_address_space_history, unique: false, columns: [resource_id, valid_from]}
+          - {name: uq_endpoint_current_address, unique: true, columns: [endpoint_ref], where: effective_to IS NULL}
         checks:
-          - {name: ck_resource_address_kind, expression: "address_kind IN ('HostAddress','Prefix')"}
-          - {name: ck_resource_address_interval, expression: "valid_to IS NULL OR valid_to > valid_from"}
-        owner_enforced_invariants:
-          - No two effective ResourceRealizationFact intervals may overlap for the same Resource; application transaction validation covers arbitrary effective-time overlap beyond the current-row unique index.
+          - {name: ck_endpoint_address_kind, expression: "address_kind IN ('HOST','PREFIX')"}
+      resource_responsibility_history:
+        columns:
+          - {name: assignment_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: resource_ref, type: uuid, nullable: false}
+          - {name: role, type: text, nullable: false}
+          - {name: group_ref, type: uuid, nullable: false}
+          - {name: effective_from, type: timestamptz, nullable: false}
+          - {name: effective_to, type: timestamptz, nullable: true}
+        local_foreign_keys:
+          - {columns: [resource_ref], references: resource_catalogue.resource, target_columns: [resource_ref], on_delete: restrict}
+          - {columns: [group_ref], references: resource_catalogue.responsibility_group, target_columns: [group_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_resource_current_responsibility, unique: true, columns: [resource_ref, role], where: effective_to IS NULL}
+        checks:
+          - {name: ck_resource_responsibility_role, expression: "role IN ('OWNER','ADMINISTRATOR')"}
 
   application_communication_catalogue:
     tables:
-      application_definition:
+      application:
         columns:
-          - {name: application_id, type: uuid, nullable: false, primary_key: true}
+          - {name: application_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: name, type: text, nullable: false}
+          - {name: version, type: bigint, nullable: false}
           - {name: created_at, type: timestamptz, nullable: false}
         indexes: []
         checks: []
       component:
         columns:
-          - {name: component_id, type: uuid, nullable: false, primary_key: true}
-          - {name: application_id, type: uuid, nullable: false}
+          - {name: component_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: application_ref, type: uuid, nullable: false}
+          - {name: name, type: text, nullable: false}
           - {name: created_at, type: timestamptz, nullable: false}
         local_foreign_keys:
-          - {columns: [application_id], references: application_communication_catalogue.application_definition, target_columns: [application_id], on_delete: restrict}
-        indexes:
-          - {name: uq_component_application_identity, unique: true, columns: [application_id, component_id]}
+          - {columns: [application_ref], references: application_communication_catalogue.application, target_columns: [application_ref], on_delete: restrict}
+        indexes: []
         checks: []
       interaction:
         columns:
-          - {name: interaction_id, type: uuid, nullable: false, primary_key: true}
-          - {name: application_id, type: uuid, nullable: false}
-          - {name: source_component_id, type: uuid, nullable: false}
-          - {name: destination_component_id, type: uuid, nullable: false}
+          - {name: interaction_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: source_component_ref, type: uuid, nullable: false}
+          - {name: destination_component_ref, type: uuid, nullable: false}
+          - {name: purpose, type: text, nullable: true}
+          - {name: version, type: bigint, nullable: false}
           - {name: created_at, type: timestamptz, nullable: false}
         local_foreign_keys:
-          - {columns: [application_id], references: application_communication_catalogue.application_definition, target_columns: [application_id], on_delete: restrict}
-          - {columns: [application_id, source_component_id], references: application_communication_catalogue.component, target_columns: [application_id, component_id], on_delete: restrict}
-          - {columns: [application_id, destination_component_id], references: application_communication_catalogue.component, target_columns: [application_id, component_id], on_delete: restrict}
+          - {columns: [source_component_ref], references: application_communication_catalogue.component, target_columns: [component_ref], on_delete: restrict}
+          - {columns: [destination_component_ref], references: application_communication_catalogue.component, target_columns: [component_ref], on_delete: restrict}
         indexes:
-          - {name: uq_interaction_directed_pair, unique: true, columns: [application_id, source_component_id, destination_component_id]}
+          - {name: ix_interaction_pair, unique: false, columns: [source_component_ref, destination_component_ref]}
         checks: []
-      interaction_contract_revision:
+      interaction_revision:
         columns:
-          - {name: revision_id, type: uuid, nullable: false, primary_key: true}
-          - {name: interaction_id, type: uuid, nullable: false}
-          - {name: revision_sequence, type: bigint, nullable: false}
-          - {name: traffic_alternatives, type: jsonb, nullable: false}
-          - {name: published_at, type: timestamptz, nullable: false}
-          - {name: is_current, type: boolean, nullable: false}
-          - {name: provenance, type: jsonb, nullable: false}
+          - {name: revision_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: interaction_ref, type: uuid, nullable: false}
+          - {name: revision_no, type: bigint, nullable: false}
+          - {name: created_at, type: timestamptz, nullable: false}
+          - {name: created_by_subject, type: text, nullable: false}
         local_foreign_keys:
-          - {columns: [interaction_id], references: application_communication_catalogue.interaction, target_columns: [interaction_id], on_delete: restrict}
+          - {columns: [interaction_ref], references: application_communication_catalogue.interaction, target_columns: [interaction_ref], on_delete: restrict}
         indexes:
-          - {name: uq_interaction_revision_sequence, unique: true, columns: [interaction_id, revision_sequence]}
-          - {name: uq_interaction_current_revision, unique: true, columns: [interaction_id], where: is_current}
+          - {name: uq_interaction_revision_no, unique: true, columns: [interaction_ref, revision_no]}
+        checks: []
+      interaction_traffic_clause:
+        columns:
+          - {name: clause_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: revision_ref, type: uuid, nullable: false}
+          - {name: clause_ordinal, type: integer, nullable: false}
+          - {name: ip_protocol, type: integer, nullable: false}
+        local_foreign_keys:
+          - {columns: [revision_ref], references: application_communication_catalogue.interaction_revision, target_columns: [revision_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_revision_clause_ordinal, unique: true, columns: [revision_ref, clause_ordinal]}
         checks:
-          - {name: ck_revision_sequence_positive, expression: "revision_sequence > 0"}
-          - {name: ck_traffic_alternatives_nonempty, expression: "jsonb_typeof(traffic_alternatives) = 'array' AND jsonb_array_length(traffic_alternatives) > 0"}
-        mutation_policy: append_only_after_publish
+          - {name: ck_ip_protocol, expression: "ip_protocol BETWEEN 0 AND 255"}
+      interaction_port_range:
+        columns:
+          - {name: range_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: clause_ref, type: uuid, nullable: false}
+          - {name: direction, type: text, nullable: false}
+          - {name: range_ordinal, type: integer, nullable: false}
+          - {name: port_from, type: integer, nullable: false}
+          - {name: port_to, type: integer, nullable: false}
+        local_foreign_keys:
+          - {columns: [clause_ref], references: application_communication_catalogue.interaction_traffic_clause, target_columns: [clause_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_clause_direction_range, unique: true, columns: [clause_ref, direction, range_ordinal]}
+        checks:
+          - {name: ck_port_direction, expression: "direction IN ('SOURCE','DESTINATION')"}
+          - {name: ck_port_bounds, expression: "port_from BETWEEN 0 AND 65535 AND port_to BETWEEN port_from AND 65535"}
 
   application_deployment:
     tables:
       component_deployment:
         columns:
-          - {name: component_deployment_id, type: uuid, nullable: false, primary_key: true}
+          - {name: deployment_ref, type: uuid, nullable: false, primary_key: true}
           - {name: component_ref, type: uuid, nullable: false, external_owner: application_communication_catalogue}
           - {name: resource_ref, type: uuid, nullable: false, external_owner: resource_catalogue}
-          - {name: lifecycle_status, type: text, nullable: false}
           - {name: created_at, type: timestamptz, nullable: false}
-          - {name: retired_at, type: timestamptz, nullable: true}
-          - {name: provenance, type: jsonb, nullable: false}
-        indexes:
-          - {name: ix_component_deployment_component_ref, unique: false, columns: [component_ref]}
-          - {name: ix_component_deployment_resource_ref, unique: false, columns: [resource_ref]}
-        checks:
-          - {name: ck_component_deployment_status, expression: "lifecycle_status IN ('Active','Retired')"}
-          - {name: ck_component_deployment_retired_at, expression: "(lifecycle_status = 'Active' AND retired_at IS NULL) OR (lifecycle_status = 'Retired' AND retired_at IS NOT NULL)"}
+        indexes: []
+        checks: []
 
   business_connectivity:
     tables:
       business_process:
         columns:
-          - {name: business_process_id, type: uuid, nullable: false, primary_key: true}
+          - {name: process_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: name, type: text, nullable: false}
+          - {name: description, type: text, nullable: true}
+          - {name: organization_external_reference, type: text, nullable: true}
+          - {name: organization_display_name, type: text, nullable: true}
+          - {name: criticality_label, type: text, nullable: true}
+          - {name: version, type: bigint, nullable: false}
           - {name: created_at, type: timestamptz, nullable: false}
-          - {name: provenance, type: jsonb, nullable: false}
         indexes: []
         checks: []
       connectivity_need:
         columns:
-          - {name: connectivity_need_id, type: uuid, nullable: false, primary_key: true}
-          - {name: business_process_id, type: uuid, nullable: false}
+          - {name: need_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: process_ref, type: uuid, nullable: false}
           - {name: interaction_ref, type: uuid, nullable: false, external_owner: application_communication_catalogue}
-          - {name: valid_from, type: timestamptz, nullable: false}
-          - {name: valid_to, type: timestamptz, nullable: true}
-          - {name: provenance, type: jsonb, nullable: false}
+          - {name: participant_component_ref, type: uuid, nullable: false, external_owner: application_communication_catalogue}
+          - {name: business_basis, type: text, nullable: false}
+          - {name: status, type: text, nullable: false}
+          - {name: created_at, type: timestamptz, nullable: false}
+          - {name: created_by_subject, type: text, nullable: false}
+          - {name: retired_at, type: timestamptz, nullable: true}
         local_foreign_keys:
-          - {columns: [business_process_id], references: business_connectivity.business_process, target_columns: [business_process_id], on_delete: restrict}
+          - {columns: [process_ref], references: business_connectivity.business_process, target_columns: [process_ref], on_delete: restrict}
         indexes:
-          - {name: ix_connectivity_need_process, unique: false, columns: [business_process_id]}
-          - {name: ix_connectivity_need_interaction_ref, unique: false, columns: [interaction_ref]}
+          - {name: ix_need_interaction, unique: false, columns: [interaction_ref]}
         checks:
-          - {name: ck_connectivity_need_interval, expression: "valid_to IS NULL OR valid_to > valid_from"}
+          - {name: ck_need_status, expression: "status IN ('ACTIVE','RETIRED')"}
 
   access_policy:
     tables:
+      access_request:
+        columns:
+          - {name: request_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: source_deployment_ref, type: uuid, nullable: false, external_owner: application_deployment}
+          - {name: destination_deployment_ref, type: uuid, nullable: false, external_owner: application_deployment}
+          - {name: interaction_revision_ref, type: uuid, nullable: false, external_owner: application_communication_catalogue}
+          - {name: initial_need_ref, type: uuid, nullable: false, external_owner: business_connectivity}
+          - {name: validated_business_process_version, type: bigint, nullable: false}
+          - {name: submitter_subject, type: text, nullable: false}
+          - {name: submitted_at, type: timestamptz, nullable: false}
+          - {name: decision_result, type: text, nullable: true}
+          - {name: external_decision_ref, type: text, nullable: true}
+          - {name: decided_by_subject, type: text, nullable: true}
+          - {name: decided_at, type: timestamptz, nullable: true}
+          - {name: version, type: bigint, nullable: false}
+        indexes: []
+        checks:
+          - {name: ck_request_decision, expression: "decision_result IS NULL OR decision_result IN ('ALLOWED','DENIED')"}
+      access_request_authority_evidence:
+        columns:
+          - {name: evidence_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: request_ref, type: uuid, nullable: false}
+          - {name: scope_ref, type: text, nullable: false}
+          - {name: action, type: text, nullable: false}
+          - {name: grant_effective_from, type: timestamptz, nullable: true}
+          - {name: grant_effective_until, type: timestamptz, nullable: true}
+          - {name: evaluated_at, type: timestamptz, nullable: false}
+        local_foreign_keys:
+          - {columns: [request_ref], references: access_policy.access_request, target_columns: [request_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_request_authority_scope, unique: true, columns: [request_ref, scope_ref, action]}
+        checks:
+          - {name: ck_request_authority_action, expression: "action = 'access.request'"}
       policy_rule:
         columns:
-          - {name: policy_rule_id, type: uuid, nullable: false, primary_key: true}
-          - {name: source_component_deployment_ref, type: uuid, nullable: false, external_owner: application_deployment}
-          - {name: destination_component_deployment_ref, type: uuid, nullable: false, external_owner: application_deployment}
-          - {name: lifecycle_status, type: text, nullable: false}
-          - {name: effective_revision_ref, type: uuid, nullable: true, external_owner: application_communication_catalogue}
-          - {name: current_decision_provenance, type: jsonb, nullable: true}
+          - {name: rule_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: source_deployment_ref, type: uuid, nullable: false, external_owner: application_deployment}
+          - {name: destination_deployment_ref, type: uuid, nullable: false, external_owner: application_deployment}
+          - {name: interaction_revision_ref, type: uuid, nullable: false, external_owner: application_communication_catalogue}
+          - {name: effect_state, type: text, nullable: false}
+          - {name: effective_from, type: timestamptz, nullable: true}
+          - {name: effective_until, type: timestamptz, nullable: true}
+          - {name: version, type: bigint, nullable: false}
           - {name: created_at, type: timestamptz, nullable: false}
-          - {name: retired_at, type: timestamptz, nullable: true}
-          - {name: retirement_provenance, type: jsonb, nullable: true}
         indexes:
-          - {name: uq_policy_rule_non_retired_pair, unique: true, columns: [source_component_deployment_ref, destination_component_deployment_ref], where: "lifecycle_status <> 'Retired'"}
-          - {name: ix_policy_rule_effective_revision_ref, unique: false, columns: [effective_revision_ref]}
+          - {name: uq_policy_rule_access_subject, unique: true, columns: [source_deployment_ref, destination_deployment_ref, interaction_revision_ref]}
         checks:
-          - {name: ck_policy_rule_status, expression: "lifecycle_status IN ('Active','Retired')"}
-          - {name: ck_policy_rule_retirement, expression: "(lifecycle_status = 'Active' AND retired_at IS NULL AND retirement_provenance IS NULL) OR (lifecycle_status = 'Retired' AND retired_at IS NOT NULL AND retirement_provenance IS NOT NULL)"}
-      rule_change:
+          - {name: ck_rule_effect_state, expression: "effect_state IN ('ACTIVE','INACTIVE')"}
+      policy_rule_authorization_evidence:
         columns:
-          - {name: rule_change_id, type: uuid, nullable: false, primary_key: true}
-          - {name: policy_rule_id, type: uuid, nullable: false}
-          - {name: revision_ref, type: uuid, nullable: false, external_owner: application_communication_catalogue}
-          - {name: connectivity_need_ref, type: uuid, nullable: false, external_owner: business_connectivity}
-          - {name: state, type: text, nullable: false}
-          - {name: submitted_at, type: timestamptz, nullable: false}
-          - {name: decided_at, type: timestamptz, nullable: true}
-          - {name: submission_provenance, type: jsonb, nullable: false}
-          - {name: decision_provenance, type: jsonb, nullable: true}
+          - {name: evidence_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: rule_ref, type: uuid, nullable: false}
+          - {name: access_request_ref, type: uuid, nullable: false}
+          - {name: external_decision_ref, type: text, nullable: true}
+          - {name: decided_by_subject, type: text, nullable: false}
+          - {name: decided_at, type: timestamptz, nullable: false}
         local_foreign_keys:
-          - {columns: [policy_rule_id], references: access_policy.policy_rule, target_columns: [policy_rule_id], on_delete: restrict}
+          - {columns: [rule_ref], references: access_policy.policy_rule, target_columns: [rule_ref], on_delete: restrict}
+          - {columns: [access_request_ref], references: access_policy.access_request, target_columns: [request_ref], on_delete: restrict}
         indexes:
-          - {name: uq_rule_change_pending_per_rule, unique: true, columns: [policy_rule_id], where: "state = 'Pending'"}
-          - {name: ix_rule_change_revision_ref, unique: false, columns: [revision_ref]}
-          - {name: ix_rule_change_connectivity_need_ref, unique: false, columns: [connectivity_need_ref]}
-        checks:
-          - {name: ck_rule_change_state, expression: "state IN ('Pending','Accepted','Rejected')"}
-          - {name: ck_rule_change_decision_fields, expression: "(state = 'Pending' AND decided_at IS NULL AND decision_provenance IS NULL) OR (state IN ('Accepted','Rejected') AND decided_at IS NOT NULL AND decision_provenance IS NOT NULL)"}
-        owner_enforced_invariants:
-          - Acceptance and effective_revision_ref update are one Access Policy transaction after prerequisite owner-contract validation.
-
-  authority_management:
-    tables:
-      actor:
-        columns:
-          - {name: actor_id, type: uuid, nullable: false, primary_key: true}
-          - {name: username, type: text, nullable: false}
-          - {name: password_hash, type: text, nullable: false}
-          - {name: active, type: boolean, nullable: false}
-          - {name: created_at, type: timestamptz, nullable: false}
-        indexes:
-          - {name: uq_actor_username, unique: true, columns: [username]}
+          - {name: uq_authorization_request, unique: true, columns: [access_request_ref]}
         checks: []
-      authority_assignment:
+      policy_rule_justification:
         columns:
-          - {name: authority_assignment_id, type: uuid, nullable: false, primary_key: true}
-          - {name: actor_id, type: uuid, nullable: false}
-          - {name: action_ref, type: text, nullable: false}
-          - {name: scope_ref, type: text, nullable: false}
-          - {name: valid_from, type: timestamptz, nullable: false}
-          - {name: valid_to, type: timestamptz, nullable: true}
+          - {name: association_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: rule_ref, type: uuid, nullable: false}
+          - {name: need_ref, type: uuid, nullable: false, external_owner: business_connectivity}
+          - {name: attached_at, type: timestamptz, nullable: false}
+          - {name: attached_by_subject, type: text, nullable: false}
+          - {name: source_access_request_ref, type: uuid, nullable: true}
         local_foreign_keys:
-          - {columns: [actor_id], references: authority_management.actor, target_columns: [actor_id], on_delete: restrict}
+          - {columns: [rule_ref], references: access_policy.policy_rule, target_columns: [rule_ref], on_delete: restrict}
         indexes:
-          - {name: ix_authority_assignment_lookup, unique: false, columns: [actor_id, action_ref, scope_ref, valid_from]}
-        checks:
-          - {name: ck_authority_assignment_interval, expression: "valid_to IS NULL OR valid_to > valid_from"}
+          - {name: uq_rule_need_justification, unique: true, columns: [rule_ref, need_ref]}
+        checks: []
+      policy_rule_operational_history:
+        columns:
+          - {name: history_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: rule_ref, type: uuid, nullable: false}
+          - {name: rule_version, type: bigint, nullable: false}
+          - {name: effect_state, type: text, nullable: false}
+          - {name: effective_from, type: timestamptz, nullable: true}
+          - {name: effective_until, type: timestamptz, nullable: true}
+          - {name: changed_by_subject, type: text, nullable: false}
+          - {name: changed_at, type: timestamptz, nullable: false}
+        local_foreign_keys:
+          - {columns: [rule_ref], references: access_policy.policy_rule, target_columns: [rule_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_rule_operational_version, unique: true, columns: [rule_ref, rule_version]}
+        checks: []
 
-rules:
-  - Stable owner IDs are persisted as cross-module references and resolved through owner contracts.
-  - Published InteractionContractRevision is append-only.
-  - Policy decision history is retained; current effectiveness does not erase RuleChange history.
-  - ComponentDeployment componentRef/resourceRef are fixed for its identity.
-  - Current AddressSpace remains RC-owned and is resolved at materialization time.
-  - Module-owned migrations are applied together with backend deployment.
+  application_edge:
+    tables:
+      idempotency_record:
+        columns:
+          - {name: record_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: principal_subject, type: text, nullable: false}
+          - {name: http_method, type: text, nullable: false}
+          - {name: route_template, type: text, nullable: false}
+          - {name: target_key, type: text, nullable: false}
+          - {name: idempotency_key, type: text, nullable: false}
+          - {name: request_fingerprint, type: text, nullable: false}
+          - {name: response_status, type: integer, nullable: false}
+          - {name: response_body_json_bytes, type: bytea, nullable: false}
+          - {name: location, type: text, nullable: true}
+          - {name: response_etag, type: text, nullable: true}
+          - {name: committed_at, type: timestamptz, nullable: false}
+        indexes:
+          - {name: uq_idempotency_scope, unique: true, columns: [principal_subject, http_method, route_template, target_key, idempotency_key]}
+        checks: []
+
+transaction_rules:
+  - ordinary owner writes use READ COMMITTED and owner optimistic versioning where declared
+  - AccessRequest submission and justification attachment use Business Connectivity owner-provided current-Need lock held through Access Policy commit
+  - policy materialization uses read-only REPEATABLE READ; first statement transaction_timestamp() is evaluationAt for the whole preflight and emit
+  - no automatic mutation retry
+  - no cross-owner database foreign keys
+
+migration_rules:
+  - explicit migrate mode only applies DDL
+  - migrate uses exclusive PostgreSQL advisory lock
+  - applied migration ids and immutable checksums are verified
+  - serve applies no DDL and refuses schema mismatch
 
 physical_detail_status: COMPLETE_FOR_FIRST_MVP
 erd_status: GENERATED_FROM_THIS_MODEL

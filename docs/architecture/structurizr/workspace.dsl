@@ -2,26 +2,28 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
     !identifiers hierarchical
 
     model {
-        user = person "NAPMS User" "Authors catalogue, connectivity, and access-policy data and inspects the current vendor-neutral policy."
+        user = person "NAPMS User" "Uses NAPMS backend capabilities through supported clients."
+        oidc = softwareSystem "OIDC Identity Provider" "External trusted issuer used for bearer-token authentication and scoped authority claims." "External"
 
         napms = softwareSystem "NAPMS" "Network Access Policy Management System" {
-            web = container "Web Application" "Browser UI for the complete MVP authoring and policy-export journey." "Web application"
+            web = container "Web Application" "Separate browser client consuming the backend API." "Web application"
 
-            backend = container "Backend" "Modular monolith exposing the NAPMS application API and coordinating domain modules." "Python" {
-                rc = component "Resource Catalogue" "Owns Resource and current AddressSpace realization."
-                acc = component "Application Communication Catalogue" "Owns ApplicationDefinition, Component, Interaction, and immutable InteractionContractRevision realization."
-                ad = component "Application Deployment" "Owns ComponentDeployment realization."
-                bc = component "Business Connectivity" "Owns BusinessProcess and ConnectivityNeed realization."
-                ap = component "Access Policy" "Owns PolicyRule, RuleChange, and current effective policy-rule realization."
-                am = component "Authority Management" "Owns effective actor/action/scope authority and protected-action admission."
-                export = component "Policy Export Composition" "Read-only orchestration that materializes a complete vendor-neutral policy and table/CSV projections; owns no domain truth."
+            backend = container "Backend" "Stateless modular monolith exposing the NAPMS HTTP/JSON application API." "Application" {
+                rc = component "Resource Catalogue" "Owns Resource identity, immutable AuthorityScopeRef, logical Endpoints, current address realization, Site/responsibility and history."
+                acc = component "Application Communication Catalogue" "Owns Application, Component, independent directed Interaction and immutable InteractionRevision traffic semantics."
+                ad = component "Application Deployment" "Owns immutable ComponentDeployment placement."
+                bc = component "Business Connectivity" "Owns BusinessProcess, criticality attribution and participant-side ConnectivityNeed currentness/history."
+                ap = component "Access Policy" "Owns AccessRequest, final permission outcomes, PolicyRule identity, evidence, justification and operational/effective state."
+                am = component "Authority Management" "Evaluates authenticated actor/action/scope/time AuthorityGrants; owns no persisted assignments in the MVP."
+                export = component "Policy Materialization" "Read-only shared-snapshot orchestration for scoped complete vendor-neutral policy output; owns no domain truth."
             }
 
-            db = container "PostgreSQL" "Single physical MVP database containing module-owned persistence schemas." "PostgreSQL" "Database"
+            db = container "PostgreSQL" "Single physical MVP database containing module-owned persistence plus technical idempotency state." "PostgreSQL" "Database"
         }
 
         user -> napms.web "Uses"
-        napms.web -> napms.backend "Uses application API" "HTTP/JSON; CSV export"
+        napms.web -> napms.backend "Uses application API" "HTTPS/JSON"
+        napms.backend -> oidc "Fetches OIDC discovery/JWKS and validates bearer JWT" "HTTPS"
         napms.backend -> napms.db "Uses module-owned persistence" "PostgreSQL protocol"
 
         napms.backend.rc -> napms.db "Reads/writes Resource Catalogue-owned schema"
@@ -29,28 +31,30 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
         napms.backend.ad -> napms.db "Reads/writes Application Deployment-owned schema"
         napms.backend.bc -> napms.db "Reads/writes Business Connectivity-owned schema"
         napms.backend.ap -> napms.db "Reads/writes Access Policy-owned schema"
-        napms.backend.am -> napms.db "Reads/writes Authority Management-owned schema"
+        napms.backend -> napms.db "Reads/writes technical idempotency records"
 
-        napms.backend.ad -> napms.backend.acc "Resolves Component identities through owner contract"
-        napms.backend.ad -> napms.backend.rc "Resolves Resource identities through owner contract"
-        napms.backend.ap -> napms.backend.ad "Validates exact deployment endpoints through owner contract"
-        napms.backend.ap -> napms.backend.acc "Validates exact immutable traffic revision through owner contract"
-        napms.backend.ap -> napms.backend.bc "Validates current ConnectivityNeed basis through owner contract"
-        napms.backend.ap -> napms.backend.am "Requests protected-action admission"
-        napms.backend.export -> napms.backend.ap "Reads effective PolicyRules"
-        napms.backend.export -> napms.backend.acc "Resolves traffic revision semantics"
-        napms.backend.export -> napms.backend.ad "Resolves deployment endpoints"
-        napms.backend.export -> napms.backend.rc "Resolves current AddressSpace"
-        napms.backend.export -> napms.backend.bc "Resolves current connectivity basis"
+        napms.backend.ad -> napms.backend.acc "Resolves Component identity"
+        napms.backend.ad -> napms.backend.rc "Resolves Resource identity"
+        napms.backend.ap -> napms.backend.ad "Resolves exact deployments"
+        napms.backend.ap -> napms.backend.acc "Validates exact immutable InteractionRevision"
+        napms.backend.ap -> napms.backend.bc "Locks/resolves current Need for request/justification validation"
+        napms.backend.ap -> napms.backend.rc "Resolves participating Resource AuthorityScopeRefs"
+        napms.backend.ap -> napms.backend.am "Requires scoped access.request authority"
+        napms.backend.export -> napms.backend.ap "Reads selected PolicyRules and provenance"
+        napms.backend.export -> napms.backend.acc "Resolves traffic semantics"
+        napms.backend.export -> napms.backend.ad "Resolves deployment-to-Resource facts"
+        napms.backend.export -> napms.backend.rc "Resolves AuthorityScopeRefs and current addressed Endpoints"
+        napms.backend.export -> napms.backend.bc "Resolves Need currentness/history"
+        napms.backend.export -> napms.backend.am "Requires scoped policy.export authority at evaluationAt"
 
         mvp = deploymentEnvironment "MVP Baseline" {
-            client = deploymentNode "Client" "User-side runtime for the NAPMS browser frontend." "Web browser" {
+            client = deploymentNode "Client" "User-side runtime." "Web browser" {
                 containerInstance napms.web
             }
-            applicationRuntime = deploymentNode "Backend Runtime" "Runtime hosting the single NAPMS modular-monolith backend deployment unit." "Application runtime" {
+            applicationRuntime = deploymentNode "Backend Runtime" "Trusted runtime behind TLS-terminating ingress." "Application runtime" {
                 containerInstance napms.backend
             }
-            databaseRuntime = deploymentNode "Database Runtime" "Runtime hosting the single PostgreSQL deployment unit." "PostgreSQL runtime" {
+            databaseRuntime = deploymentNode "Database Runtime" "PostgreSQL runtime." "PostgreSQL runtime" {
                 containerInstance napms.db
             }
         }
@@ -64,70 +68,60 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
 
         systemContext napms "SystemContext" {
             include *
-            description "NAPMS first-MVP system context."
+            description "NAPMS first-MVP system context including external OIDC."
         }
         container napms "Containers" {
             include *
-            description "NAPMS first-MVP runtime topology: browser frontend, modular-monolith backend, and PostgreSQL."
+            description "Backend modular monolith, PostgreSQL and separate browser client."
         }
         component napms.backend "BackendComponents" {
             include *
-            description "Domain-aligned modules and policy-export composition inside the modular-monolith backend."
+            description "Domain-aligned backend modules and policy materialization composition."
         }
         deployment napms mvp "MVPDeployment" {
             include *
-            description "Deployment mapping for the accepted MVP baseline: browser frontend, one backend runtime, and one PostgreSQL runtime."
+            description "Backend and PostgreSQL deployment baseline."
         }
 
         image * "DomainContextMap" {
             plantuml "generated/context-map.puml"
             title "DDD Context Map"
-            description "Generated projection of current strategic Bounded Context ownership and relationships."
         }
         image * "StrategicCollaborationMap" {
             plantuml "generated/strategic-collaboration-map.puml"
             title "Strategic Collaboration Map"
-            description "Generated projection including peer contexts and non-peer compositions."
         }
         image * "ResourceCatalogueDomain" {
             plantuml "generated/resource-catalogue-domain.puml"
             title "Resource Catalogue Domain Model"
-            description "Generated projection of the current Resource Catalogue tactical model."
         }
         image * "ResourceCatalogueProcess" {
             plantuml "generated/resource-catalogue-process.puml"
             title "Resource Catalogue Process"
-            description "Generated projection of current Resource Catalogue process flows."
         }
         image * "ApplicationCommunicationCatalogueDomain" {
             plantuml "generated/application-communication-catalogue-domain.puml"
             title "Application Communication Catalogue"
-            description "Generated projection of the current ACC tactical model."
         }
         image * "ApplicationDeploymentDomain" {
             plantuml "generated/application-deployment-domain.puml"
             title "Application Deployment"
-            description "Generated projection of the current Application Deployment model."
         }
         image * "BusinessConnectivityDomain" {
             plantuml "generated/business-connectivity-domain.puml"
             title "Business Connectivity"
-            description "Generated projection of the current Business Connectivity model."
         }
         image * "AccessPolicyDomain" {
             plantuml "generated/access-policy-domain.puml"
             title "Access Policy"
-            description "Generated projection of the current Access Policy model."
         }
         image * "FirstMVPJourney" {
             plantuml "generated/first-mvp-policy-export.puml"
-            title "First MVP Policy Export Journey"
-            description "Generated cross-context flow for the accepted first-MVP journey."
+            title "First MVP Policy Materialization Journey"
         }
         image * "MVPPersistenceERD" {
             plantuml "generated/mvp-persistence-erd.puml"
             title "MVP Physical Persistence ERD"
-            description "Generated ERD from the canonical physical persistence model."
         }
 
         styles {
