@@ -19,7 +19,7 @@ No local password/account lifecycle is introduced by the MVP.
 
 ## Admission model
 
-Protected operations require explicit permission. Missing/invalid identity, missing permission, malformed scope or authorization uncertainty fails closed.
+Protected operations require explicit permission. Missing/invalid identity, missing permission or authorization uncertainty fails closed.
 
 Permission vocabulary:
 - `resource.read`, `resource.write`
@@ -33,7 +33,29 @@ Permission vocabulary:
 
 The distinction between `access.request` and `access.decide` preserves the product rule that request authority is not permission to allow access. Resource Owner/Administrator and Business Process responsibility never create these permissions.
 
-Current MVP permission scope is whole backend instance. Per-Resource/Application scopes are not invented without product input. A future scoped model is a Security/Product extension.
+Current MVP permission scope is the whole backend instance. Per-Resource/Application scopes are not invented without product input. A future scoped model is a Product/Security extension.
+
+### Canonical operation-to-permission matrix
+
+| Operation class | Required permission |
+| --- | --- |
+| GET Site / ResponsibilityGroup / Resource / Resource history | `resource.read` |
+| Create/update Site / ResponsibilityGroup / Resource / Endpoint / address / responsibility | `resource.write` |
+| GET Application / Interaction / InteractionRevision | `application.read` |
+| Create/update Application / Component / Interaction / InteractionRevision | `application.write` |
+| GET ComponentDeployment | `deployment.read` |
+| Create ComponentDeployment | `deployment.write` |
+| GET BusinessProcess / ConnectivityNeed | `business.read` |
+| Create/update BusinessProcess / ConnectivityNeed, retire Need | `business.write` |
+| Submit AccessRequest | `access.request` |
+| Record ALLOWED/DENIED permission decision | `access.decide` |
+| Change PolicyRule ACTIVE/INACTIVE | `access.manage` |
+| GET AccessRequest / PolicyRule | `policy.read` |
+| Materialize current normalized policy | `policy.export` |
+
+No permission implies another permission. In particular, `access.request`, `access.decide`, `access.manage` and `policy.export` are independent.
+
+Health endpoints are not application-data operations. `/health/live` and `/health/ready` expose only minimal status and may be unauthenticated inside the deployment health-check boundary; deployment/network policy must prevent them from becoming an information-rich public interface.
 
 ## Decision authenticity
 
@@ -42,7 +64,7 @@ Recording ALLOWED/DENIED requires authenticated `access.decide`. The backend rec
 ## Interface protection
 
 - HTTPS is mandatory outside a trusted loopback/dev environment.
-- Bearer tokens accepted only in Authorization header.
+- Bearer tokens are accepted only in the Authorization header.
 - No identity/permission override through request body/query/header aliases.
 - Mutation responses never echo tokens/secrets.
 - Error disclosure distinguishes authentication/authorization/domain failure without exposing internal stack/schema/secret data.
