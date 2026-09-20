@@ -27,10 +27,18 @@ Immutable state:
 - `initialNeedRef`;
 - `validatedBusinessProcessVersion` at submission;
 - `submitterSubject`;
-- `submittedAt`.
+- `submittedAt`;
+- `requestAuthorityEvidence:[RequestAuthorityEvidence]`.
 
 Final state:
 - `permissionDecision?: PermissionDecision`.
+
+`RequestAuthorityEvidence`:
+- `action:"access.request"`;
+- `scopeRef: AuthorityScopeRef`;
+- `effectiveFrom?`, `effectiveUntil?` — copied from the accepted AuthorityGrant;
+- `evaluatedAt` — server-owned admission time;
+- one entry for every distinct participating Resource authority scope.
 
 `PermissionDecision`:
 - `result: ALLOWED | DENIED`;
@@ -42,7 +50,8 @@ Invariants:
 - initialNeedRef is current under the accepted current-Need validation lock through submission commit;
 - initial Need's InteractionRef matches the Interaction owning subject.interactionRevisionRef;
 - source/destination Deployment Components match revision direction;
-- AccessSubject/initialNeed/provenance are immutable after submission;
+- AccessSubject/initialNeed/requestAuthorityEvidence/provenance are immutable after submission;
+- requestAuthorityEvidence covers every distinct AuthorityScopeRef of the source/destination Resources and each evidence item was effective at submittedAt/admissionAt;
 - one AccessRequest receives at most one final decision;
 - DENIED never creates permission evidence or a PolicyRule by itself.
 
@@ -76,6 +85,7 @@ One entry per ALLOWED AccessRequest associated with this Rule:
 - `accessRequestRef` unique;
 - `submittedBySubject`;
 - `submittedAt`;
+- all immutable `requestAuthorityEvidence` copied from that AccessRequest;
 - `initialNeedRef`;
 - optional `externalDecisionRef`;
 - `decidedBySubject`;
