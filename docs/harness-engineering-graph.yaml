@@ -125,6 +125,13 @@ authorities:
           - engineering.domain.tactical-model
           - engineering.domain.use-case-model
           - engineering.application.journey
+      - capability: engineering.frontend.architecture
+        knowledge_kind: system-architecture
+        requires:
+          - engineering.frontend.human-interface
+          - engineering.interface.http-contract
+          - engineering.architecture.security
+          - engineering.quality.constraints
 
   - id: SECURITY-ARCHITECTURE-DESIGN
     responsibility: Own authentication, identity-boundary and protected-action admission architecture.
@@ -183,6 +190,14 @@ authorities:
           - engineering.architecture.rules
           - engineering.architecture.module-contracts
           - engineering.architecture.security
+      - capability: engineering.frontend.human-interface
+        knowledge_kind: human-interface-design
+        requires:
+          - engineering.requirements.product-intent
+          - engineering.domain.tactical-model
+          - engineering.application.journey
+          - engineering.architecture.security
+          - engineering.interface.http-contract
 
   - id: DATA-DESIGN
     responsibility: Own physical persistence engineering knowledge.
@@ -285,6 +300,27 @@ authorities:
           - engineering.operability.observability
           - engineering.architecture.async-messaging-not-applicable
 
+  - id: COMPONENT-DESIGN
+    responsibility: Own implementation-facing frontend component and dependency boundaries.
+    boundary:
+      semantic_cohesion: Component responsibilities and dependency contracts form one code-facing design family.
+      independent_change: Component decomposition can change behind stable interface and architecture contracts.
+      public_contract: Provides code-facing frontend component design.
+    produces:
+      - capability: engineering.frontend.component-design
+        knowledge_kind: component-design
+        requires:
+          - engineering.frontend.human-interface
+          - engineering.frontend.architecture
+          - engineering.interface.http-contract
+
+      - capability: engineering.frontend.implementation-design
+        knowledge_kind: implementation-design
+        requires:
+          - engineering.frontend.component-design
+          - engineering.frontend.verification
+          - engineering.frontend.test-design
+
   - id: VERIFICATION-DESIGN
     responsibility: Own verification levels, traceability and scenarios proving implementation realizes accepted engineering knowledge.
     boundary:
@@ -327,6 +363,26 @@ authorities:
           - engineering.operability.observability
           - engineering.implementation.plan
 
+      - capability: engineering.frontend.verification
+        knowledge_kind: verification-strategy
+        requires:
+          - engineering.requirements.product-intent
+          - engineering.frontend.human-interface
+          - engineering.frontend.architecture
+
+  - id: TEST-DESIGN
+    responsibility: Own executable frontend behavioral test contracts before implementation.
+    boundary:
+      semantic_cohesion: Preconditions, operations and observable frontend oracles form one executable-test design family.
+      independent_change: Test contracts can survive frontend implementation refactoring.
+      public_contract: Provides executable frontend test design.
+    produces:
+      - capability: engineering.frontend.test-design
+        knowledge_kind: test-design
+        requires:
+          - engineering.frontend.verification
+          - engineering.frontend.human-interface
+
 consumers:
   - id: BACKEND-IMPLEMENTATION
     purpose: Realize the accepted first-MVP backend engineering knowledge without inventing product, domain, architecture, interface, data, security, operability or verification decisions.
@@ -354,14 +410,8 @@ consumers:
       - engineering.verification.acceptance-scenarios
 
   - id: FRONTEND-IMPLEMENTATION
-    purpose: Realize the browser frontend from accepted frontend-specific engineering knowledge without inventing missing interaction or security decisions.
+    purpose: Realize the browser frontend without inventing user-visible, security, architecture, component or test decisions.
     requires:
-      - engineering.requirements.product-intent
-      - engineering.domain.tactical-model
-      - engineering.application.journey
-      - engineering.architecture.security
-      - engineering.interface.http-contract
-      - engineering.interface.ui-navigation
-      - engineering.interface.resource-detail-ui
+      - engineering.frontend.implementation-design
 
 terminal_capabilities: []
