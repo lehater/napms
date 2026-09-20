@@ -36,7 +36,7 @@ IMPLEMENTATION may claim realization complete only when every item below has exe
 
 15. **Persistence ownership** — schema/migrations match Data Design: no cross-owner write coupling/FKs, no false interaction.application_ref, unique AccessSubject Rule, evidence/justification uniqueness, explicit histories and owner-local constraints.
 
-16. **Security** — OIDC HTTPS-only configured issuer/discovery/jwks_uri with downgrade rejection, configured asymmetric algorithm allow-list/key compatibility, required kid, exact issuer/audience/exp/nbf/skew/sub/permission-claim semantics and 401-vs-503 dependency distinction are proven; request/decide/manage/read/export remain separate and forwarded identity/permission headers cannot establish authority; secret/log/error rules hold.
+16. **Security** — OIDC HTTPS-only configured issuer/discovery/jwks_uri with downgrade rejection, configured asymmetric algorithm allow-list/key compatibility, required kid, exact issuer/audience/exp/nbf/skew/sub/permission-claim semantics, deterministic full-refresh attempt semantics and >0 max-stale age measured from last successful full refresh are proven; provider cache headers cannot extend that window; 401-vs-503 distinction is proven; request/decide/manage/read/export remain separate and forwarded identity/permission headers cannot establish authority; secret/log/error rules hold.
 
 17. **Operability** — startup-only configuration including body-size bound, unknown-key failure, no hidden required defaults, OIDC retry/cache policy, DB/lock waits, diagnostic evidence, health/readiness, cancellation, materialization commit boundary, graceful shutdown and redaction are proven.
 
