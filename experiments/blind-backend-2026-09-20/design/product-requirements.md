@@ -28,8 +28,8 @@ Support the narrow end-to-end backend journey from describing Resources and appl
 ### PR-BUSINESS
 
 12. The product can identify/describe a Business Process and associate descriptive organizational responsibility with it.
-13. The product can represent a Connectivity Need stating that the Process requires an application-level Interaction.
-14. Connectivity Need is independent from concrete Access Request and from IP/current deployment realization.
+13. The product can represent a Connectivity Need stating that the Process requires an application-level Interaction from the perspective of one participating Component. Source-side and destination-side participants may contribute independent Needs for the same Interaction.
+14. Connectivity Need references reusable Interaction + participant Component meaning and is independent from concrete Access Request, Deployment and IP/current realization.
 15. One Process can have multiple Needs; the same Interaction can support Needs from multiple Processes.
 16. One Need can lead to multiple concrete Access Requests over time or for different deployments.
 17. A deliberate Access Request requires a current Process-backed Connectivity Need at submission time.
@@ -98,7 +98,7 @@ Stakeholder evidence says business importance/criticality may be useful for down
 - Changing a Resource address preserves Resource identity/history.
 - Replacing current Owner/Administrator closes the prior role assignment and leaves at most one current assignment for that role.
 - An Interaction is invalid when it lacks a meaningful directed source Component, destination Component or non-empty supported traffic meaning; it is not invalid merely because the Components belong to different Applications.
-- A deliberate Access Request without a current Process-backed Need is rejected.
+- A deliberate Access Request without a current Process-backed Need is rejected; the Need participantComponentRef must be one of the Interaction's source/destination Components but does not have to represent both sides.
 - Possessing request authority does not make the permission outcome allowed.
 - DENIED creates no new current access.
 - Two independently allowed requests for the same semantic access resolve one current access identity and preserve both authorization/request provenance items.
