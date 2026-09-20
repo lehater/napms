@@ -7,6 +7,7 @@ on:
       - "docs/harness-core.yaml"
       - "docs/harness-engineering-graph.yaml"
       - "tools/check_harness_vertical.py"
+      - "tools/test_unified_harness_migration.py"
       - ".github/workflows/unified-harness.yml"
   push:
     branches: [main]
@@ -64,6 +65,11 @@ jobs:
               "engineering.frontend.human-interface"
           }, frontend
           PY
+
+      - name: Run migration mutation differential
+        env:
+          HARNESS_ROOT: .harness-tool
+        run: python tools/test_unified_harness_migration.py
 
       - name: Prove capability-scoped Authority context
         run: |
