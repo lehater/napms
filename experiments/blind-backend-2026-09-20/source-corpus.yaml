@@ -8,6 +8,21 @@ classification_rule: >-
   material is excluded by default.
 
 source_inputs:
+  - id: SRC-NETWORK-INTENT-001
+    class: SOURCE_INPUT
+    kind: stakeholder-discovery-evidence
+    statement_ref: experiments/blind-backend-2026-09-20/source-evidence-network-intent.md
+    provenance:
+      repository_path: docs-legacy/engineering/context-problems/stakeholder-network-intent-evidence.md
+      recorded_at: 2026-09-13/14
+      source_kind: stakeholder-discussion-harvest
+      original_status: non-authoritative-stakeholder-evidence
+    admissibility: >-
+      The original explicitly identifies itself as source/discovery evidence and
+      explicitly forbids treating mentioned concepts as accepted Bounded Contexts,
+      aggregates, persistence or Context Map decisions. The experimental copy removes
+      prior solution/context names and preserves source-level observations only.
+
   - id: SRC-MVP-001
     class: SOURCE_INPUT
     kind: stakeholder-product-decision
