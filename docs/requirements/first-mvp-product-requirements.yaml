@@ -1,0 +1,360 @@
+version: 1
+kind: harness-knowledge-artifact
+artifact: NAPMS-FIRST-MVP-PRODUCT-REQUIREMENTS
+schema: product-requirements/v1
+title: NAPMS First-MVP Product Requirements
+
+content:
+  purpose: >-
+    Define the accepted observable first-MVP product behavior from semantic
+    resource/application/connectivity description through permission and current
+    desired access to a complete, explainable vendor-neutral policy export.
+
+  requirements:
+    - id: REQ-MVP-001
+      statement: >-
+        The first MVP shall support the end-to-end journey from describing Resources,
+        Applications, Components and directed Interactions through connectivity request
+        and permission decision to current desired access and normalized policy export.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#Scope
+        - current-stakeholder-input:2026-09-20
+      rationale: Preserve the explicitly selected narrow MVP outcome.
+
+    - id: REQ-AUTH-001
+      statement: >-
+        Connectivity request submission shall require effective request authority for
+        the relevant scope at the relevant time.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-001
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E1
+
+    - id: REQ-AUTH-002
+      statement: >-
+        Policy export shall require effective read/export authority covering the
+        selected domain-policy scope.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-008
+
+    - id: REQ-INT-001
+      statement: >-
+        A described directed Interaction shall be valid from its explicit communication
+        semantics and valid Component references; it shall not be rejected solely
+        because source and destination Components belong to different Applications.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E1
+        - stakeholder-network-intent:application-communication
+      rationale: Preserve the accepted negative constraint against a blanket same-Application rule.
+
+    - id: REQ-INT-002
+      statement: >-
+        The product shall allow multiple independently meaningful directed Interactions
+        between the same Component pair when their communication reasons or independent
+        applicability are distinct.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-network-intent:application-communication
+
+    - id: REQ-INT-003
+      statement: >-
+        Each Interaction shall represent one independently meaningful communication
+        reason and the complete minimal traffic semantics required for that reason.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-network-intent:application-communication
+
+    - id: REQ-DEP-001
+      statement: >-
+        A concrete Component deployment shall identify deployment of a concrete
+        Component on a Resource independently from the Resource's current IP address.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-network-intent:application-communication
+
+    - id: REQ-RES-001
+      statement: >-
+        Resource identity shall be independent from its current network address.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-network-intent:resource-evidence
+
+    - id: REQ-RES-002
+      statement: >-
+        A logical Resource endpoint/presence shall retain its identity when its current
+        address changes and may exist before any address is known.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-network-intent:resource-evidence
+
+    - id: REQ-RES-003
+      statement: >-
+        For the first MVP, each logical Resource endpoint shall have at most one current
+        address realization, represented as either one host address or one network prefix.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-network-intent:resource-evidence
+
+    - id: REQ-RES-004
+      statement: >-
+        A Resource may have several logical endpoints only while they remain one logical
+        access-management unit sharing significant Resource-level meaning.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-network-intent:resource-evidence
+
+    - id: REQ-RES-005
+      statement: >-
+        The first MVP shall represent reusable Site, owning organizational group and
+        administering organizational group for a Resource, and ownership/administration
+        shall not itself grant security authority.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-network-intent:resource-evidence
+
+    - id: REQ-RES-006
+      statement: >-
+        Changes to Resource network realization, Site and responsibility facts required
+        by the first MVP shall preserve basic history sufficient to explain prior states.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-network-intent:resource-evidence
+
+    - id: REQ-BUS-001
+      statement: >-
+        Deliberate connectivity requests shall have structured Process-backed business
+        justification, and business justification shall remain distinct from permission.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-business-connectivity:SRC-BC-001
+        - stakeholder-business-connectivity:SRC-BC-002
+
+    - id: REQ-BUS-002
+      statement: >-
+        A Connectivity Need shall be representable independently from a concrete Access
+        Request, deployment, Resource endpoint or IP address.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-business-connectivity:SRC-BC-002
+
+    - id: REQ-BUS-003
+      statement: >-
+        A Connectivity Need shall identify the Business Process, required Interaction and
+        dependent participant/component perspective that provides its business basis.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-business-connectivity:SRC-BC-002
+
+    - id: REQ-BUS-004
+      statement: >-
+        Source-side and destination-side participants shall be able to contribute
+        business justification for the same Interaction independently.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-business-connectivity:SRC-BC-002
+
+    - id: REQ-BUS-005
+      statement: >-
+        One Connectivity Need may lead to multiple concrete connectivity requests over
+        time or for different deployments, and one Interaction may support Needs from
+        multiple Business Processes.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-business-connectivity:SRC-BC-002
+
+    - id: REQ-BUS-006
+      statement: >-
+        Currently authorized access may acquire additional Process/Need justification
+        without requiring duplicate authoritative access solely because justification
+        was added.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-business-connectivity:SRC-BC-002
+
+    - id: REQ-BUS-007
+      statement: >-
+        Loss or retirement of a Connectivity Need shall not rewrite historical requests
+        or permission decisions, and loss of all current known Needs shall remain
+        distinguishable without requiring automatic revocation.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-business-connectivity:SRC-BC-002
+
+    - id: REQ-PERM-001
+      statement: >-
+        Permission to submit/request connectivity shall remain distinct from the
+        decision whether that connectivity is Allowed or NotAllowed.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-001
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E2
+
+    - id: REQ-PERM-002
+      statement: >-
+        A permission decision shall remain correlated to the exact immutable semantic
+        access subject that was proposed, and an identity-defining semantic change shall
+        require another decision subject rather than silently inheriting the old decision.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-002
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E5
+
+    - id: REQ-PERM-003
+      statement: >-
+        A NotAllowed decision shall create no authoritative desired-access Rule.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-003
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E2
+
+    - id: REQ-RULE-001
+      statement: >-
+        For one accepted semantic access identity, the product shall maintain one stable
+        authoritative current-access identity; repeated processing of the same Allowed
+        semantic access shall not create a duplicate solely because it was processed again.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-004
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E3-E4
+
+    - id: REQ-RULE-002
+      statement: >-
+        First successful materialization of Allowed access shall make the resulting
+        authoritative current access operationally Active.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-004
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E3
+
+    - id: REQ-RULE-003
+      statement: >-
+        An authorized actor shall be able to change authoritative current access
+        Active to Inactive and back without a new connectivity permission decision;
+        identity, history and prior decision provenance shall be preserved and the
+        transition shall be auditable.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-005
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E7
+
+    - id: REQ-RULE-004
+      statement: >-
+        Allowed access may carry supported declarative effective conditions that
+        determine contribution at evaluation time without redefining access identity
+        or periodically rewriting stored Active/Inactive state.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-006
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E8
+
+    - id: REQ-RULE-005
+      statement: >-
+        Changes in IP address, endpoint realization, virtual machine, provider or other
+        technical realization alone shall not change authoritative access identity or
+        rewrite its historical permission decision.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-007
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E6
+
+    - id: REQ-EXP-001
+      statement: >-
+        An authorized actor shall be able to select all current desired policy or an
+        explicit domain-policy subset for export without expressing selection in
+        vendor/device syntax.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-008
+
+    - id: REQ-EXP-002
+      statement: >-
+        Selected access shall contribute desired effect at export evaluation time only
+        when it is authoritative from an Allowed decision, operationally Active and all
+        supported declarative effective conditions are satisfied.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-008
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E8-E11
+
+    - id: REQ-EXP-003
+      statement: >-
+        Policy export shall be evaluated for one logical evaluation time and required
+        source facts used for included effective access shall be coherent for that time.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-009
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E9-E10
+
+    - id: REQ-EXP-004
+      statement: >-
+        The product shall produce a complete vendor-neutral normalized policy export for
+        the selected effective access without requiring downstream consumers to
+        reconstruct missing semantic meaning.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-010
+
+    - id: REQ-EXP-005
+      statement: >-
+        Missing, stale or unknown technical realization required by selected effective
+        access shall prevent the result from being presented as a complete successful
+        export; diagnostic partial information may be returned only as explicitly
+        unresolved or degraded output.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-009-REQ-W1-011
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E10
+
+    - id: REQ-EXP-006
+      statement: >-
+        Selected access that is Inactive or otherwise non-effective at evaluation time
+        shall contribute no policy row, and missing technical realization for that
+        non-effective access shall not by itself make the effective-policy export incomplete.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E11
+
+    - id: REQ-EXP-007
+      statement: >-
+        Normalization may expand one semantic access requirement into multiple technical
+        rows when required, but it shall not broaden or narrow represented traffic
+        semantics or merge independently authoritative access when doing so would lose
+        provenance.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-012
+        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E12-E13
+
+    - id: REQ-PROV-001
+      statement: >-
+        The product shall preserve end-to-end explainable provenance from requesting
+        actor and effective authority scope/time through request subject, permission
+        decision, authoritative access identity, relevant operational state/effective
+        conditions and source realization facts to normalized export rows and evaluation time.
+      status: ACCEPTED
+      source_refs:
+        - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-013
+
+    - id: REQ-QUAL-001
+      statement: >-
+        Numeric latency, throughput, availability and scale targets shall not be mandatory
+        product requirements for the first MVP.
+      status: ACCEPTED
+      source_refs:
+        - docs/requirements/first-mvp-quality-targets.yaml#decision
+      rationale: Preserve the explicit 2026-09-19 product answer rather than treating these targets as unknown.
+
+  non_goals:
+    - Provider/device-specific configuration rendering.
+    - Direct firewall/provider execution and deployment.
+    - Configured-state reconciliation/remediation.
+    - Internal Connectivity Decision policy/process/review mechanics.
+    - Word/Excel/XUIT transition compatibility.
+    - Firewall/topology placement calculation.
+    - BPMN/workflow-engine semantics for Business Processes.
+    - Automatic criticality propagation/scoring rules.
+    - Automatic revocation solely because current known business justification disappears.
+    - Rule operational states beyond Active/Inactive unless separately accepted.
