@@ -9,7 +9,7 @@ Greenfield realization of the blind backend design only. Existing NAPMS producti
 ## Selected realization stack
 
 - Language: Go, current supported stable toolchain at implementation start.
-- Runtime: one stateless HTTP process using Go standard HTTP/context facilities; no application framework is required.
+- Runtime: one Go binary with explicit `migrate` and `serve` modes. `serve` is one stateless HTTP process using Go standard HTTP/context facilities; no application framework is required.
 - Database: PostgreSQL.
 - Database access: explicit bound SQL through a PostgreSQL driver/pool; no ORM.
 - JSON: strict decoder that can reject unknown fields as required by Interface Design.
@@ -41,6 +41,14 @@ Suggested top-level realization:
 
 Equivalent names are allowed if dependency/ownership boundaries remain mechanically recognizable.
 
+## Process modes
+
+- `napms migrate`: requires DB DSN + DB statement timeout; acquires exclusive PostgreSQL advisory migration lock, validates ordered migration checksums, applies pending migrations transactionally and exits. It creates no HTTP/OIDC/application services.
+- `napms serve`: validates full serve configuration, verifies schema ids/checksums are exactly current, initializes OIDC validation material, then opens the HTTP listener. It never applies migrations.
+- mode selection is not configuration precedence and accepts no configuration values via CLI flags.
+
+External TLS is deployment-owned: ingress/reverse proxy/load balancer terminates HTTPS; the internal serve listener is plaintext only inside the trusted deployment boundary and must not be publicly exposed. No TLS certificate/key configuration is implemented by the application.
+
 ## Runtime configuration realization
 
 Implement the Operability Design keys exactly:
@@ -63,7 +71,9 @@ Implement the Operability Design keys exactly:
 - optional `NAPMS_LOG_LEVEL`.
 
 Requirements:
-- parse/validate once before opening the listener;
+- migrate profile requires only DATABASE_DSN + DB_STATEMENT_TIMEOUT; any supplied other known NAPMS_* keys are validated, unknown keys fail;
+- serve profile requires the full serve set;
+- parse/validate once before mode work/listener;
 - reject unknown `NAPMS_*` names;
 - no config files/flags/runtime reload/feature flags;
 - no hidden numeric defaults for required timeout/retry/body-size keys;
@@ -76,10 +86,10 @@ Requirements:
 
 ### I1 — Runtime skeleton and owner boundaries
 
-Create module/package skeleton, composition root, strict startup configuration, PostgreSQL pool/migration runner, OIDC initial validation-material acquisition, correlation context, health probes, shutdown handling and architecture dependency checks. No product behavior beyond startup/health.
+Create module/package skeleton, composition root, strict mode-specific startup configuration, dedicated MigrationRunner/SchemaVerifier, PostgreSQL pool, OIDC initial validation-material acquisition for serve, correlation context, health probes, shutdown handling and architecture dependency checks. No product behavior beyond startup/health.
 
 Completion:
-- fresh DB migration;
+- `migrate` initializes a fresh DB; concurrent migrate processes serialize; `serve` accepts only exact current migration ids/checksums and never applies DDL;
 - valid config + usable initial OIDC validation material starts; invalid/missing/unknown config or failed initial OIDC acquisition fails before listen;
 - live/ready and graceful shutdown contracts executable;
 - forbidden dependency checks executable.
@@ -186,19 +196,19 @@ Completion: V8 and all Test Design obligations green; no manual DB state fabrica
 - address storage may use validated canonical text or PostgreSQL network types only if HOST/PREFIX distinction, IPv4/IPv6 family, mapped-IPv6 identity and strict no-host-bits Prefix semantics are preserved; never let a database cast silently mask a Prefix;
 - traffic storage follows Persistence Design exactly: ipProtocol integer 0..255; separate normalized source/destination range rows; ports only for TCP(6)/UDP(17); no protocol-name alias parsing at HTTP/domain boundary;
 - Resource/Application/Interaction/BusinessProcess/AccessRequest/PolicyRule optimistic versions follow Persistence Design exactly; no duplicate child version semantics;
-- transaction runner sets isolation explicitly; current materialization uses REPEATABLE READ or stronger;
+- transaction runner sets isolation explicitly; current materialization uses read-only REPEATABLE READ and obtains evaluationAt from the first statement's PostgreSQL transaction_timestamp();
 - prepared/bound parameters only;
-- migration identity is immutable; changed applied migration content is rejected where runner checksum support exists.
+- migration identity/checksum is immutable and mandatory; changed/unknown/missing migration state is rejected. `migrate` uses an exclusive PostgreSQL advisory lock; `serve` only verifies.
 
 ## Completion criteria
 
 IMPLEMENTATION is complete only when:
 
 1. every HTTP operation, request/response shape, status/header rule, growing-collection pagination rule and authorization mapping in Interface/Security Design exists;
-2. required Idempotency-Key and If-Match semantics are applied exactly to the declared operations;
+2. required Idempotency-Key and If-Match semantics are applied exactly; idempotency stores exact response JSON bytes/status/Location/ETag for replay, never reconstructs from current state, and committed records have no MVP TTL;
 3. every domain invariant and application consistency rule is enforced at its owner;
 4. PostgreSQL schema/migrations realize Persistence Design including Resource Site/address/responsibility history, independent Application/Interaction aggregate ownership, one Rule per AccessSubject, evidence/justification uniqueness and idempotency replay data;
-5. CurrentPolicyMaterializer evaluates selection + ACTIVE/window semantics, performs complete bounded preflight before HTTP 200 commitment, derives Need reconciliation without revocation, cannot return COMPLETE with unresolved selected-effective Rule input, returns preflight dependency failure as 503/500, and treats post-commit stream failure as incomplete/non-artifact rather than a successful export;
+5. CurrentPolicyMaterializer obtains evaluationAt from the same DB snapshot transaction_timestamp(), evaluates selection + ACTIVE/window semantics, performs complete bounded preflight before HTTP 200 commitment, derives Need reconciliation without revocation, cannot return COMPLETE with unresolved selected-effective Rule input, returns preflight dependency failure as 503/500, and treats post-commit stream failure as incomplete/non-artifact rather than a successful export;
 6. materialization response is self-contained for explainability: one complete provenance record per selected Rule preserves all permission/business evidence/currentness/reconciliation, while normalized rows preserve exact traffic semantics and correlate by PolicyRuleRef; paginated Rule endpoints are supplemental, not required to explain export;
 7. OIDC authentication/cache/fail-closed dependency distinctions hold;
 8. startup configuration, no-reload, retry/timeout, logging/metrics/health/cancellation/shutdown/redaction semantics are observable;
@@ -209,13 +219,15 @@ IMPLEMENTATION is complete only when:
 
 ## Explicit coding-agent freedoms
 
-Private function/type names, helper decomposition, exact Go filenames, SQL/index/query optimization preserving accepted contracts, choice among maintained libraries that satisfy those contracts, migration-runner implementation, logger/metrics library, test framework/helpers, UUID library, composition wiring syntax and local refactorings.
+Private function/type names, helper decomposition, exact Go filenames, SQL/index/query optimization preserving accepted contracts, choice among maintained libraries that satisfy those contracts, internal migration-runner code/library preserving the fixed migrate/serve/advisory-lock/checksum contract, logger/metrics library, test framework/helpers, UUID library, composition wiring syntax and local refactorings.
 
 Collection pagination/default/max/no-truncation, configured request-body byte enforcement, absence of a semantic subset-count cap, self-contained export provenance, materialization two-phase response-commit boundary and bounded-memory semantics are also not coding freedoms. Exact cursor encoding/chunk size/stream-buffer implementation remain free.
 
 PostgreSQL owner-write/read-snapshot isolation and current-Need FOR SHARE validation-lock semantics are not coding freedoms.
 
-OIDC algorithm allow-list source, clock-skew semantics and initial/single-flight key acquisition lifecycle are not coding freedoms.
+OIDC algorithm allow-list source, required kid semantics, clock-skew semantics and initial/single-flight key acquisition lifecycle are not coding freedoms.
+
+Migrate-vs-serve ownership, advisory migration serialization, exact schema verification, DB-snapshot evaluationAt and exact persisted idempotency replay/retention are not coding freedoms.
 
 The following are **not** coding freedoms: same-vs-cross Application validity, ConnectivityNeed participantComponent semantics, AccessSubject fields, Rule uniqueness, Need exclusion from Rule identity, evidence/justification ownership, operational audit-history exposure, automatic-vs-nonautomatic Need revocation, ACTIVE/window semantics, policy subset behavior, endpoint DTO/status/header semantics, permission mapping/claim representation, aggregate concurrency owner, idempotency scope/order, transaction boundaries, OIDC failure classification, configuration precedence/reload/retry semantics, logging safety or materialization COMPLETE/UNRESOLVED meaning.
 
