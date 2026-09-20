@@ -55,7 +55,7 @@ Result:
 - IdentityDependencyUnavailable -> 503.
 
 OIDC adapter contract:
-- validates exact configured allowed algorithms, issuer, audience, exp/nbf skew, sub and permission-claim shape from Security Architecture;
+- enforces HTTPS-only configured issuer/discovery/jwks_uri with downgrade rejection, then validates exact configured allowed algorithms, issuer, audience, exp/nbf skew, sub and permission-claim shape from Security Architecture;
 - exposes `initializeValidationMaterial()` used before listener start;
 - owns one single-flight bounded metadata/JWKS refresh path shared by initialization/readiness/protected validation;
 - preserves max-stale/fail-closed 401-vs-503 semantics from Operability/Security.
@@ -304,8 +304,8 @@ Within one `runReadSnapshot` transaction/snapshot:
 **Preflight**
 1. obtain selected Rule cores: page all cores for ALL mode or chunk the explicit Rule set supplied within the configured request-body bound;
 2. evaluate INACTIVE/effectiveWindow;
-3. page AuthorizationEvidence and justification associations; batch Need currentness and build complete per-Rule export provenance;
-4. resolve every effective Rule's exact revision/deployment/resource/current-address facts using bounded reads;
+3. for every selected Rule, page AuthorizationEvidence and justification associations; batch-resolve every referenced Need and build complete per-Rule export provenance; any unresolved accepted provenance reference yields REFERENCE_UNRESOLVABLE even if the Rule is non-effective;
+4. only for selected effective Rules, resolve exact revision/deployment/resource/current-address technical facts using bounded reads;
 5. determine nonEffective entries, stable MaterializationIssues and final COMPLETE/UNRESOLVED;
 6. complete every required dependency read before any HTTP response is committed;
 7. retain only compact preflight state needed to start emission, not the full normalized row set or full audit arrays.
