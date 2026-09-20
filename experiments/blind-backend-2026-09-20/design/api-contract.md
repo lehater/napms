@@ -153,7 +153,7 @@ ResponsibilityGroup records are immutable in the selected MVP and carry no autho
 
 - `resourceRef`, `displayName`;
 - `siteRef: string|null`;
-- `endpoints: [{endpointRef, currentAddress: AddressRealization|null}]`;
+- `endpointCount`;
 - current `responsibilities: {owner:null|{assignmentRef,groupRef,effectiveFrom}, administrator:null|{assignmentRef,groupRef,effectiveFrom}}`.
 
 Operations:
@@ -162,6 +162,9 @@ Operations:
   - body: `{displayName, siteRef?}`; supplied SiteRef must resolve;
   - `201` ResourceView + Resource ETag.
 - `GET /v1/resources/{resourceRef}` -> ResourceView + Resource ETag.
+- `GET /v1/resources/{resourceRef}/endpoints?cursor=&limit=`
+  - returns `{items:[EndpointView],nextCursor:null|string}`;
+  - `EndpointView={endpointRef,currentAddress:AddressRealization|null}`.
 - `GET /v1/resources/{resourceRef}/history?cursor=&limit=`
   - returns `{items:[ResourceHistoryFact], nextCursor:null|string}`;
   - `limit` default 50, valid 1–200;
@@ -201,7 +204,7 @@ No Resource rename operation is part of the selected MVP.
 
 ### Application / Component
 
-`ApplicationView = {applicationRef, name, components:[ComponentView]}`.
+`ApplicationView = {applicationRef, name, componentCount}`.
 
 `ComponentView = {componentRef, applicationRef, name}`.
 
@@ -209,6 +212,8 @@ No Resource rename operation is part of the selected MVP.
   - body: `{name}`;
   - `201` ApplicationView + Application ETag.
 - `GET /v1/applications/{applicationRef}` -> ApplicationView + Application ETag.
+- `GET /v1/applications/{applicationRef}/components?cursor=&limit=`
+  - returns `{items:[ComponentView],nextCursor:null|string}`.
 - **Idempotent-create + If-Match Application** `POST /v1/applications/{applicationRef}/components`
   - body: `{name}`;
   - `201` ComponentView + new Application ETag.
@@ -217,7 +222,7 @@ Application/Component names are immutable in selected MVP.
 
 ### Interaction
 
-`InteractionView = {interactionRef, sourceComponentRef, destinationComponentRef, purpose:null|string, revisionRefs:[...]}`.
+`InteractionView = {interactionRef, sourceComponentRef, destinationComponentRef, purpose:null|string, revisionCount}`.
 
 - **Idempotent-create** `POST /v1/interactions`
   - body: `{sourceComponentRef,destinationComponentRef,purpose?}`;
@@ -226,6 +231,8 @@ Application/Component names are immutable in selected MVP.
   - no Application aggregate is mutated;
   - `201` InteractionView + Interaction ETag.
 - `GET /v1/interactions/{interactionRef}` -> InteractionView + Interaction ETag.
+- `GET /v1/interactions/{interactionRef}/revisions?cursor=&limit=`
+  - returns `{items:[{revisionRef,createdAt,createdBySubject}],nextCursor:null|string}`.
 - **Idempotent-create + If-Match Interaction** `POST /v1/interactions/{interactionRef}/revisions`
   - body: `{trafficClauses:[TrafficClause,...]}`, non-empty;
   - `201` InteractionRevisionView + new Interaction ETag.
@@ -253,7 +260,7 @@ No update/move/retire/delete operation and no independent deployment label are p
 
 `ResponsibleOrganization = {externalReference?:string, displayName:string}`.
 
-`ProcessView = {processRef, name, description:null|string, responsibleOrganization:null|ResponsibleOrganization, needs:[NeedSummary]}`.
+`ProcessView = {processRef, name, description:null|string, responsibleOrganization:null|ResponsibleOrganization, needCount}`.
 
 `NeedSummary = {needRef, processRef, interactionRef, participantComponentRef, businessBasis, status:"ACTIVE"|"RETIRED", createdAt, createdBySubject, retiredAt:null|string}`.
 
@@ -261,6 +268,8 @@ No update/move/retire/delete operation and no independent deployment label are p
   - body: `{name, description?, responsibleOrganization?}`;
   - `201` ProcessView + BusinessProcess ETag.
 - `GET /v1/processes/{processRef}` -> ProcessView + BusinessProcess ETag.
+- `GET /v1/processes/{processRef}/needs?cursor=&limit=`
+  - returns `{items:[NeedSummary],nextCursor:null|string}`.
 - **If-Match BusinessProcess** `PUT /v1/processes/{processRef}/responsible-organization`
   - body: `{responsibleOrganization:ResponsibleOrganization|null}`;
   - `200` ProcessView + new BusinessProcess ETag.
@@ -324,8 +333,9 @@ If non-null, at least one bound is required and when both exist `effectiveFrom <
 - `subject:{sourceDeploymentRef,destinationDeploymentRef,interactionRevisionRef}`;
 - `effectState:"ACTIVE"|"INACTIVE"`;
 - `effectiveWindow:EffectiveWindow`;
-- `authorizationEvidence:[AuthorizationEvidenceView,...]`;
-- `justifications:[JustificationView,...]`;
+- `authorizationEvidenceCount`;
+- `justificationCount`;
+- `currentJustificationCount`;
 - `reconciliationFlags:["NO_CURRENT_BUSINESS_JUSTIFICATION"]|[]`;
 - `createdAt`.
 
@@ -338,6 +348,15 @@ Operations:
 - `GET /v1/policy-rules/{policyRuleRef}`
   - resolves current Need status from Business Connectivity;
   - returns PolicyRuleView + PolicyRule ETag.
+
+- `GET /v1/policy-rules/{policyRuleRef}/authorization-evidence?cursor=&limit=`
+  - permission: `policy.read`;
+  - returns `{items:[AuthorizationEvidenceView],nextCursor:null|string}`.
+
+- `GET /v1/policy-rules/{policyRuleRef}/justifications?cursor=&limit=`
+  - permission: `policy.read`;
+  - resolves current Need status from Business Connectivity in one read snapshot;
+  - returns `{items:[JustificationView],nextCursor:null|string}`.
 
 - `GET /v1/policy-rules/{policyRuleRef}/history?cursor=&limit=`
   - permission: `policy.read`;
@@ -372,8 +391,8 @@ A Rule with zero current Need justifications remains a Rule; it exposes reconcil
 - read-only, no Idempotency-Key/If-Match;
 - body is either:
   - `{}` — select all current PolicyRules; or
-  - `{policyRuleRefs:[...]}` — explicit non-empty unique Rule subset;
-- duplicate refs -> `400 INVALID_INPUT`;
+  - `{policyRuleRefs:[...]}` — explicit unique Rule subset with 1–200 refs;
+- duplicate refs, empty explicit list or more than 200 refs -> `400 INVALID_INPUT`;
 - unknown RuleRef -> `422 REFERENCE_INVALID`;
 - backend establishes `evaluationAt` from the coherent database read snapshot;
 - computation success returns HTTP 200 for both COMPLETE and UNRESOLVED.
@@ -387,15 +406,16 @@ Before resolving technical realization, each selected Rule is evaluated:
 Response:
 - `status:"COMPLETE"|"UNRESOLVED"`;
 - `evaluationAt`;
-- `selectedPolicyRuleRefs:[...]`;
+- `selection:{mode:"ALL"|"EXPLICIT",selectedRuleCount}`;
 - `nonEffective:[{policyRuleRef, reason:"INACTIVE"|"OUTSIDE_EFFECTIVE_WINDOW"}]`;
 - `rows:[NormalizedPolicyRow]`;
 - `issues:[MaterializationIssue]`.
 
 `NormalizedPolicyRow` contains:
 - `policyRuleRef`;
-- `authorizationEvidence:[{accessRequestRef,externalDecisionRef:null|string}]`;
-- `justifications:[{needRef,processRef,participantComponentRef,needStatus:"ACTIVE"|"RETIRED",needCreatedAt,needCreatedBySubject}]`;
+- `authorizationEvidenceCount`;
+- `justificationCount`;
+- `currentJustificationCount`;
 - `reconciliationFlags:["NO_CURRENT_BUSINESS_JUSTIFICATION"]|[]`;
 - `interactionRevisionRef`;
 - source: `{deploymentRef,resourceRef,endpointRef,address:AddressRealization,addressEffectiveFrom,addressChangedBySubject}`;
@@ -418,10 +438,26 @@ Rules:
 - dependency/runtime failure preventing evaluation is `503 DEPENDENCY_UNAVAILABLE`, not UNRESOLVED;
 - historical caller-selected `asOf` is not supported.
 
-## Pagination
+## Pagination and growing collections
 
-Selected-MVP paginated surfaces:
+All ordinary growing collection reads use the same page envelope:
+`{items:[...],nextCursor:null|string}`.
+
+Contract:
+- `limit` default 50;
+- valid `limit` range 1–200;
+- cursor is opaque, query-specific and forward-only;
+- no silent truncation;
+- parent/current entity views expose scalar counts rather than unbounded child arrays.
+
+Paginated surfaces:
+- Resource endpoints;
 - Resource history;
+- Application Components;
+- Interaction revisions;
+- BusinessProcess Needs;
+- PolicyRule AuthorizationEvidence;
+- PolicyRule justifications;
 - PolicyRule operational history.
 
-Both use opaque forward-only cursors, default limit 50, valid range 1–200. Cursors are query-specific, are not stable identifiers and cannot be interpreted by clients.
+Policy materialization is the export exception: `rows`, `nonEffective` and `issues` may be large and are emitted from one coherent snapshot in one HTTP response; implementation may stream their JSON arrays incrementally. Materialized rows carry PolicyRuleRef plus compact evidence/justification counts/reconciliation flags. Full business/permission audit is resolved via the paginated PolicyRule endpoints.
