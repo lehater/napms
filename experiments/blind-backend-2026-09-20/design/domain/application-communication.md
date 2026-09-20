@@ -72,20 +72,29 @@ State:
 - createdBySubject.
 
 TrafficClause:
-- protocol: normalized protocol name or numeric protocol identifier;
-- source port ranges;
-- destination port ranges.
+- `ipProtocol`: integer 0..255, the canonical IP protocol / IPv6 Next Header number;
+- normalized source port ranges;
+- normalized destination port ranges.
+
+Port semantics:
+- only TCP(6) and UDP(17) are port-bearing in the selected MVP representation;
+- for TCP/UDP, an empty source/destination range list means all ports on that side;
+- for every other ipProtocol, both port-range lists must be empty and there is no port dimension;
+- the canonical domain/HTTP boundary accepts no protocol-name aliases.
+
+PortRange:
+- inclusive `from..to`, 0..65535;
+- input lists are canonicalized by sorting and merging overlapping or directly adjacent ranges;
+- canonicalization preserves exactly the set of ports and never widens across a gap.
 
 Invariants:
-- revision traffic meaning is non-empty and internally valid;
-- source/destination ports are allowed only for protocols whose accepted semantics use ports;
-- empty port set means unrestricted on that side where ports are applicable, never “unknown”;
+- revision has at least one TrafficClause;
+- ipProtocol is 0..255;
+- attempting to express ports for a non-TCP/UDP protocol is UNSUPPORTED_TRAFFIC_SEMANTICS;
+- protocol-specific semantics needing fields absent from this model (for example ICMP type/code or SCTP port semantics) are unsupported rather than approximated;
 - published revision is immutable;
 - changing decision-relevant traffic meaning creates a new revision;
-- traffic representation is provider/firewall-neutral;
-- unsupported protocol-specific semantics are rejected rather than approximated.
-
-The selected MVP does not invent protocol-specific fields such as ICMP type/code without accepted source input.
+- traffic representation is provider/firewall-neutral.
 
 ## Consistency boundaries
 
