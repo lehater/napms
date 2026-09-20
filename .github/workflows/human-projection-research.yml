@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: lehater/harness
-          ref: 6731c0e913bacd9bbc0aa34f61b650198d8a9d16
+          ref: dd70966fdb74296b4c2431dba131006e9c336f0b
           path: .human-projection-harness
       - uses: actions/setup-python@v6
         with:
