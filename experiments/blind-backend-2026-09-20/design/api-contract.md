@@ -37,20 +37,37 @@ Nested Resource mutations use the Resource ETag.
 Nested Application mutations use the Application ETag.  
 Nested Business Process / Connectivity Need mutations use the BusinessProcess ETag.  
 AccessRequest decision uses the AccessRequest ETag.  
-PolicyRule effect mutation uses the PolicyRule ETag.
+PolicyRule operational-state/effective-window and justification mutations use the PolicyRule ETag.
 
 ### Idempotency
 
 `Idempotency-Key` is required for every operation explicitly marked **Idempotent-create**. It is an opaque non-empty value up to 128 UTF-8 bytes without control characters.
 
-Scope is `authenticated-principal + operation + key`.
+Idempotency scope is:
 
-- first committed request stores request fingerprint and committed semantic result;
-- same key + same fingerprint returns the original HTTP status/body/Location and current correlation header;
-- same key + different fingerprint -> `409 IDEMPOTENCY_CONFLICT`;
-- a key whose commit outcome is still unknown never fabricates success.
+`authenticated principal subject + HTTP method + canonical route template + normalized path parameter values + key`.
 
-Idempotency is required for state-creating POSTs and the permission-decision command because ALLOWED can create a PolicyRule. Read-only policy materialization does not use an idempotency key.
+The deterministic request fingerprint contains the same canonical target plus the normalized accepted JSON body. Correlation id and `If-Match` are not part of the fingerprint.
+
+For an operation that requires both Idempotency-Key and If-Match, processing order is normative:
+
+1. authenticate and authorize the current caller;
+2. strictly decode/validate the target and request body enough to compute the canonical fingerprint;
+3. inspect the idempotency record;
+4. if the same key/fingerprint already committed, replay the original committed status/body/Location/ETag **before** checking the now-current aggregate ETag;
+5. if the same scoped key has a different fingerprint, return `409 IDEMPOTENCY_CONFLICT`;
+6. only for a NEW idempotency record, evaluate `If-Match` and execute the mutation.
+
+This permits a client to safely retry a command with the original pre-mutation ETag after an uncertain response without receiving a false `STALE_VERSION`.
+
+Committed replay returns:
+- original semantic HTTP status;
+- original response body;
+- original `Location` when present;
+- original response `ETag` when present;
+- the correlation header for the current retry request.
+
+An in-progress/unknown outcome never fabricates success. Idempotency is required for state-creating POSTs, permission-decision finalization and justification attachment. Read-only policy materialization does not use an idempotency key.
 
 ### Success conventions
 
@@ -137,7 +154,7 @@ ResponsibilityGroup records are immutable in the selected MVP and carry no autho
 - `resourceRef`, `displayName`;
 - `siteRef: string|null`;
 - `endpoints: [{endpointRef, currentAddress: AddressRealization|null}]`;
-- current `responsibilities: [{assignmentRef, role: OWNER|ADMINISTRATOR, groupRef, effectiveFrom}]`.
+- current `responsibilities: {owner:null|{assignmentRef,groupRef,effectiveFrom}, administrator:null|{assignmentRef,groupRef,effectiveFrom}}`.
 
 Operations:
 
@@ -166,12 +183,17 @@ Operations:
 - **If-Match Resource** `PUT /v1/resources/{resourceRef}/site`
   - body: `{siteRef:string|null}`; null clears current Site;
   - `200` ResourceView + new Resource ETag.
-- **Idempotent-create + If-Match Resource** `POST /v1/resources/{resourceRef}/responsibilities`
-  - body: `{role:"OWNER"|"ADMINISTRATOR", groupRef}`;
-  - `201` current responsibility assignment + new Resource ETag.
-- **If-Match Resource** `DELETE /v1/resources/{resourceRef}/responsibilities/{assignmentRef}`
-  - ends the current assignment; already-ended or foreign assignment -> `422 VALIDATION_REJECTED`;
-  - `200` ResourceView + new Resource ETag.
+- **If-Match Resource** `PUT /v1/resources/{resourceRef}/responsibilities/{role}`
+  - `role` is `OWNER|ADMINISTRATOR`;
+  - body: `{groupRef}`;
+  - supplied Group must resolve;
+  - setting a different group closes the prior current assignment for that role and opens the new one atomically;
+  - setting the already-current group is a semantic no-op with unchanged ETag;
+  - `200` ResourceView + resulting Resource ETag.
+- **If-Match Resource** `DELETE /v1/resources/{resourceRef}/responsibilities/{role}`
+  - clears the current assignment for the role while preserving history;
+  - clearing an already-empty role is a semantic no-op with unchanged ETag;
+  - `200` ResourceView + resulting Resource ETag.
 
 No Resource rename operation is part of the selected MVP.
 
@@ -247,82 +269,134 @@ Process description and Need business basis are immutable in the selected MVP af
 
 ## Access Policy
 
+### AccessSubject
+
+External representations identify the semantic access using:
+`{sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef}`.
+
+`needRef` is submission/business justification and is not part of semantic current-access identity.
+
 ### AccessRequest
 
 `AccessRequestView` contains:
-
 - `requestRef`;
-- `sourceDeploymentRef`, `destinationDeploymentRef`;
-- `interactionRevisionRef`, `needRef`;
+- `subject:{sourceDeploymentRef,destinationDeploymentRef,interactionRevisionRef}`;
+- `initialNeedRef`;
 - `status:"PENDING"|"ALLOWED"|"DENIED"`;
 - `submitterSubject`, `submittedAt`;
-- when final: `decisionRef:null|string`, `decidedBySubject`, `decidedAt`.
+- when final: `externalDecisionRef:null|string`, `decidedBySubject`, `decidedAt`.
 
 - **Idempotent-create** `POST /v1/access-requests`
-  - body: `{sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef, needRef}`;
+  - body: `{sourceDeploymentRef,destinationDeploymentRef,interactionRevisionRef,needRef}`;
+  - Need must be current and match the Interaction at the submission snapshot;
   - `201` pending AccessRequestView + AccessRequest ETag.
 - `GET /v1/access-requests/{requestRef}` -> AccessRequestView + AccessRequest ETag.
 - **Idempotent-create + If-Match AccessRequest** `POST /v1/access-requests/{requestRef}/decision`
   - body: `{result:"ALLOWED"|"DENIED", externalDecisionRef?}`;
-  - `200` `{request:AccessRequestView, policyRule:PolicyRuleView|null}` + new AccessRequest ETag;
-  - ALLOWED returns the established/resolved PolicyRule; DENIED returns null;
-  - conflicting second final decision -> `409 DECISION_ALREADY_FINAL`; exact idempotent replay is handled by Idempotency-Key.
+  - `200` `{request:AccessRequestView, policyRule:PolicyRuleView|null}` + resulting AccessRequest ETag;
+  - DENIED returns `policyRule:null`;
+  - ALLOWED resolves/creates the one PolicyRule for AccessSubject, appends authorization evidence and attaches the request's initial Need if not already associated;
+  - repeated ALLOWED for the same AccessSubject does not create a duplicate Rule and does not reset that Rule's operational state/effective window;
+  - conflicting finalization of the same request -> `409 DECISION_ALREADY_FINAL`.
 
-### PolicyRule
+### PolicyRule representations
+
+`EffectiveWindow = null | {effectiveFrom?:timestamp, effectiveUntil?:timestamp}`.
+
+If non-null, at least one bound is required and when both exist `effectiveFrom < effectiveUntil`.
+
+`AuthorizationEvidenceView = {accessRequestRef, externalDecisionRef:null|string, decidedBySubject, decidedAt}`.
+
+`JustificationView = {needRef, processRef, interactionRef, businessBasis, needStatus:"ACTIVE"|"RETIRED", attachedAt, attachedBySubject, sourceAccessRequestRef:null|string}`.
 
 `PolicyRuleView` contains:
-
-- `policyRuleRef`, `accessRequestRef`;
-- `sourceDeploymentRef`, `destinationDeploymentRef`;
-- `interactionRevisionRef`, `needRef`, `decisionRef:null|string`;
+- `policyRuleRef`;
+- `subject:{sourceDeploymentRef,destinationDeploymentRef,interactionRevisionRef}`;
 - `effectState:"ACTIVE"|"INACTIVE"`;
+- `effectiveWindow:EffectiveWindow`;
+- `authorizationEvidence:[AuthorizationEvidenceView,...]`;
+- `justifications:[JustificationView,...]`;
+- `reconciliationFlags:["NO_CURRENT_BUSINESS_JUSTIFICATION"]|[]`;
 - `createdAt`.
 
-- `GET /v1/policy-rules/{policyRuleRef}` -> PolicyRuleView + PolicyRule ETag.
-- **If-Match PolicyRule** `PUT /v1/policy-rules/{policyRuleRef}/effect`
-  - body: `{effectState:"ACTIVE"|"INACTIVE"}`;
-  - setting the already-current state is a semantic no-op and returns `200` with the unchanged ETag;
-  - otherwise returns updated PolicyRuleView + new ETag.
+Ordering is deterministic:
+- authorization evidence by `decidedAt`, then requestRef;
+- justifications by `attachedAt`, then needRef.
+
+Operations:
+
+- `GET /v1/policy-rules/{policyRuleRef}`
+  - resolves current Need status from Business Connectivity;
+  - returns PolicyRuleView + PolicyRule ETag.
+
+- **If-Match PolicyRule** `PUT /v1/policy-rules/{policyRuleRef}/operational`
+  - body: `{effectState:"ACTIVE"|"INACTIVE", effectiveWindow:EffectiveWindow}`;
+  - same state + same normalized window is a semantic no-op with unchanged ETag/history;
+  - otherwise updates operational state/window atomically and returns updated PolicyRuleView + new ETag.
+
+- **Idempotent-create + If-Match PolicyRule** `POST /v1/policy-rules/{policyRuleRef}/justifications`
+  - body: `{needRef}`;
+  - Need must be current at the mutation snapshot and its Interaction must match the Rule's Interaction;
+  - attaches business justification without changing permission or Rule identity;
+  - attaching an already-associated Need is a semantic idempotent replay/result and does not create duplicate association/history;
+  - `200` updated PolicyRuleView + resulting ETag.
+
+No justification detach/delete operation exists in the MVP. Need retirement is owned by Business Connectivity and remains visible through `needStatus`.
+
+A Rule with zero current Need justifications remains a Rule; it exposes reconciliation flag `NO_CURRENT_BUSINESS_JUSTIFICATION` and is not automatically deactivated.
 
 ## Current Policy Materialization
 
 `POST /v1/policy-materializations`
 
-- no request body;
 - requires `policy.export`;
 - read-only, no Idempotency-Key/If-Match;
+- body is either:
+  - `{}` — select all current PolicyRules; or
+  - `{policyRuleRefs:[...]}` — explicit non-empty unique Rule subset;
+- duplicate refs -> `400 INVALID_INPUT`;
+- unknown RuleRef -> `422 REFERENCE_INVALID`;
 - backend establishes `evaluationAt` from the coherent database read snapshot;
-- always `200` when computation itself succeeds.
+- computation success returns HTTP 200 for both COMPLETE and UNRESOLVED.
+
+Before resolving technical realization, each selected Rule is evaluated:
+- INACTIVE -> non-effective, no output row and no realization completeness obligation;
+- ACTIVE but outside effectiveWindow -> non-effective, same treatment;
+- ACTIVE and inside window -> effective and must be resolved;
+- zero current Need justifications does **not** make the Rule non-effective; it produces reconciliation flag `NO_CURRENT_BUSINESS_JUSTIFICATION`.
 
 Response:
-
 - `status:"COMPLETE"|"UNRESOLVED"`;
 - `evaluationAt`;
+- `selectedPolicyRuleRefs:[...]`;
+- `nonEffective:[{policyRuleRef, reason:"INACTIVE"|"OUTSIDE_EFFECTIVE_WINDOW"}]`;
 - `rows:[NormalizedPolicyRow]`;
 - `issues:[MaterializationIssue]`.
 
 `NormalizedPolicyRow` contains:
-
-- `policyRuleRef`, `accessRequestRef`, `needRef`;
-- `decisionRef:null|string`, `interactionRevisionRef`;
-- source: `{deploymentRef, resourceRef, endpointRef, address:AddressRealization, realizationEffectiveFrom, realizationProvenance}`;
+- `policyRuleRef`;
+- `authorizationEvidence:[{accessRequestRef,externalDecisionRef:null|string}]`;
+- `justifications:[{needRef,processRef,needStatus:"ACTIVE"|"RETIRED"}]`;
+- `reconciliationFlags:["NO_CURRENT_BUSINESS_JUSTIFICATION"]|[]`;
+- `interactionRevisionRef`;
+- source: `{deploymentRef,resourceRef,endpointRef,address:AddressRealization,realizationEffectiveFrom,realizationProvenance}`;
 - destination: same shape;
 - `protocol`, `sourcePorts:[PortRange]`, `destinationPorts:[PortRange]`.
 
-Independent Rule provenance is never merged away even when two rows have equal technical effect.
+Independent PolicyRule provenance is never merged away even when two rows have equal technical effect.
 
 `MaterializationIssue = {policyRuleRef, code, detail}`, where code is one of:
-
 - `SOURCE_REALIZATION_MISSING`;
 - `DESTINATION_REALIZATION_MISSING`;
 - `REFERENCE_UNRESOLVABLE`.
 
 Rules:
-
-- `COMPLETE` requires `issues=[]` and complete rows for every current ACTIVE Rule;
-- `UNRESOLVED` requires at least one issue;
-- rows returned with `UNRESOLVED` are diagnostic only and are never a successful export artifact;
-- dependency/runtime failure that prevents evaluation is `503 DEPENDENCY_UNAVAILABLE`, not `UNRESOLVED`;
+- COMPLETE requires no issue for any selected **effective** Rule;
+- UNRESOLVED requires at least one issue;
+- diagnostic rows returned with UNRESOLVED are not a successful export artifact;
+- INACTIVE/out-of-window Rules never create realization issues;
+- missing current Need alone never creates a MaterializationIssue;
+- dependency/runtime failure preventing evaluation is `503 DEPENDENCY_UNAVAILABLE`, not UNRESOLVED;
 - historical caller-selected `asOf` is not supported.
 
 ## Pagination
