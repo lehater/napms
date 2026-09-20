@@ -107,16 +107,16 @@ Evidence: tests against a fresh real supported PostgreSQL instance.
 
 ### Idempotency
 - scope = principal + method + route + normalized target + key.
-- same committed fingerprint replays exact original status/body/Location/ETag before stale If-Match check.
+- same committed fingerprint replays exact persisted original JSON body bytes/status/Location/ETag before stale If-Match check, even after the aggregate has changed later.
 - same scope/different fingerprint -> IDEMPOTENCY_CONFLICT.
 - same key/different target is independent.
 - concurrent identical: first commit -> replay; first rollback -> waiter proceeds NEW; unresolved timeout/DB failure -> DEPENDENCY_UNAVAILABLE.
 - state + idempotency result commit atomically.
-- no automatic application mutation retry.
+- committed idempotency records have no selected-MVP TTL/expiry; no automatic application mutation retry.
 
 ### Read snapshots
 - composed PolicyRule reads resolving Need status use read-only REPEATABLE READ.
-- materialization preflight and emit use the same read-only REPEATABLE READ snapshot/evaluationAt.
+- materialization preflight and emit use the same read-only REPEATABLE READ snapshot; the first DB statement both establishes that snapshot and returns transaction_timestamp(), which is the exact evaluationAt.
 
 ## V4 — HTTP/API contract
 
@@ -172,7 +172,7 @@ A caller possessing policy.export but not policy.read can explain every exported
 ## V5 — Security
 
 - valid identity requires non-empty sub.
-- token alg must be in configured asymmetric allow-list and key type-compatible; none/HS*/unknown reject.
+- token alg must be in configured asymmetric allow-list and key type-compatible; none/HS*/unknown reject; kid is required non-empty string.
 - issuer exact-match; aud required string-or-array containing configured audience.
 - exp required and nbf optional use configured clock skew exactly.
 - missing permission claim -> authenticated empty permission set.
@@ -180,6 +180,7 @@ A caller possessing policy.export but not policy.read can explain every exported
 - duplicate strings collapse; unknown permission strings grant no known permission.
 - invalid token against established usable key -> 401.
 - inability to establish validity because key material is unavailable/stale -> 503 rather than false 401/fail-open.
+- missing/wrong-type kid -> 401 without refresh; unknown kid -> bounded refresh, successful refresh still missing kid -> 401, refresh dependency failure preventing validity -> 503.
 - initial metadata/JWKS acquisition succeeds before listener start; initial failure exits non-zero.
 - runtime unknown-kid/readiness refresh is bounded and single-flight.
 - refresh failure with still-usable cache preserves readiness; beyond max-stale without refresh -> readiness DOWN.
@@ -208,7 +209,7 @@ Mechanical checks prove:
 
 ## V7 — Operability/configuration
 
-- every required NAPMS_* key is validated before listener start, including NAPMS_HTTP_MAX_REQUEST_BODY_BYTES, NAPMS_OIDC_ALLOWED_ALGS and NAPMS_OIDC_CLOCK_SKEW.
+- mode-specific configuration is enforced: migrate requires DB DSN/statement timeout only; serve requires full serve set. Unknown NAPMS_* fails both modes.
 - unknown NAPMS_* key fails startup.
 - no config-file/CLI/runtime-reload override path exists.
 - required numeric timeout/retry/body-size values have no hidden defaults.
@@ -219,12 +220,16 @@ Mechanical checks prove:
 - liveness is process-only; readiness requires DB + usable OIDC validation material.
 - cancellation propagates to DB/materialization.
 - materialization success event is emitted only after a syntactically complete result; truncated/aborted stream never emits successful completion.
+- `migrate` acquires exclusive advisory migration lock, verifies immutable ids/checksums, applies pending migrations transactionally and starts no listener.
+- concurrent migrators serialize; failure leaves last fully committed migration.
+- `serve` never applies DDL and refuses pending/missing/unknown/checksum-mismatched schema before listener.
+- external TLS is deployment-owned; application has no TLS-cert config and ignores forwarded identity/permission headers.
 - graceful shutdown: ready DOWN, stop new requests, drain to grace, then cancel.
 - diagnostics contain no secret/full body.
 
 ## V8 — Fresh-start end-to-end
 
-From empty PostgreSQL using migrations + public HTTP only:
+From empty PostgreSQL: run binary `migrate`, then `serve`, then use public HTTP only:
 
 1. create Site/groups/Resources/Endpoints/current addresses;
 2. create Application A/C1 and Application B/C2;
