@@ -39,7 +39,7 @@ Final state:
 - `decidedAt`.
 
 Invariants:
-- initialNeedRef is current at the submission transaction snapshot;
+- initialNeedRef is current under the accepted current-Need validation lock through submission commit;
 - initial Need's InteractionRef matches the Interaction owning subject.interactionRevisionRef;
 - source/destination Deployment Components match revision direction;
 - AccessSubject/initialNeed/provenance are immutable after submission;
@@ -74,9 +74,14 @@ Children/history:
 
 One entry per ALLOWED AccessRequest associated with this Rule:
 - `accessRequestRef` unique;
+- `submittedBySubject`;
+- `submittedAt`;
+- `initialNeedRef`;
 - optional `externalDecisionRef`;
 - `decidedBySubject`;
 - `decidedAt`.
+
+The request fields are projected from immutable AccessRequest owner state; they are not independently mutable evidence fields.
 
 It proves accepted permission provenance. Multiple ALLOWED requests for the same AccessSubject can contribute multiple evidence entries without duplicating the Rule.
 
@@ -140,4 +145,4 @@ Current business justification status is reported separately and does not enter 
 - AccessRequest finalization is atomic per AccessRequest version.
 - ALLOWED finalization plus unique-subject Rule resolve/create, evidence and initial justification association is one database transaction.
 - PolicyRule operational mutation and justification attachment are atomic per PolicyRule version.
-- Cross-context Need/Interaction/Deployment validation uses read-only peer owner facts in the same database transaction snapshot; no peer owner state is written.
+- mutable Need currentness uses the Business Connectivity owner-provided validation lock held through Access Policy commit; immutable Interaction/Deployment facts are read-only peer facts; no peer owner state is written.
