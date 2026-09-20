@@ -17,17 +17,18 @@ Each mutation:
 4. commits one owner transaction;
 5. returns owner identity/version or explicit rejection/conflict.
 
-No command updates two domain owners in one transaction.
+No command writes two domain owners in one transaction.
 
 ### SubmitAccessRequest
 
-1. resolve active Need and exact InteractionRevision;
-2. resolve source/destination Deployments and confirm their ComponentRefs match Interaction direction;
-3. admission-check submit action;
-4. call Access Policy SubmitAccessRequest with immutable references/provenance;
-5. commit Access Policy transaction.
+1. open one database transaction whose snapshot is shared by the validation read ports and the Access Policy write port;
+2. resolve active Need and exact InteractionRevision in that transaction snapshot;
+3. resolve source/destination Deployments and confirm their ComponentRefs match Interaction direction;
+4. admission-check submit action;
+5. call Access Policy SubmitAccessRequest with immutable references/provenance, including the owner versions/revision identities validated;
+6. commit only Access Policy-owned state plus idempotency evidence.
 
-Validation reads do not transfer ownership; Access Policy persists stable references/provenance, not copies of mutable Resource address data.
+This is not a distributed/cross-owner write transaction: peer contexts are read-only participants. The accepted meaning of "Need is current at submission" is the Need state observed in the same database transaction snapshot that commits the AccessRequest.
 
 ### RecordPermissionDecision
 
@@ -48,27 +49,30 @@ The mechanism/reasons that produce the decision remain outside current NAPMS own
 
 ## Query/materialization flows
 
-### MaterializeCurrentPolicy(asOf)
+### MaterializeCurrentPolicy
 
-Input: logical `asOf`; optional selection/filter must not change semantic meaning.
+Input: no historical `asOf` is accepted from the caller. The backend establishes `evaluationAt` when the read transaction begins.
 
 Algorithm:
-1. read all PolicyRules effective at `asOf`;
-2. for each Rule resolve exact InteractionRevision and source/destination Deployments;
-3. resolve each Deployment's Resource and all current ResourceEndpoints valid at `asOf`;
-4. require at least one trustworthy addressed endpoint on each side; missing/ambiguous required realization creates an unresolved item;
-5. expand each InteractionRevision traffic clause over source/destination endpoint combinations, preserving HostAddress/Prefix form;
-6. emit normalized rows carrying RuleRef, NeedRef, decision provenance, InteractionRevisionRef, DeploymentRefs, ResourceRefs and relevant realization provenance;
-7. if any selected/effective Rule is unresolved, return overall status UNRESOLVED plus diagnostics/partial rows; partial rows are not a successful export;
-8. otherwise return COMPLETE with one coherent logical snapshot.
+1. open one read-only coherent database snapshot and record `evaluationAt`;
+2. read all current ACTIVE PolicyRules from that snapshot;
+3. for each Rule resolve exact InteractionRevision and source/destination Deployments;
+4. resolve each Deployment's Resource and every endpoint whose address is current in the same snapshot;
+5. require at least one trustworthy addressed endpoint on each side; missing/ambiguous required realization creates an unresolved item;
+6. expand each InteractionRevision traffic clause over source/destination endpoint combinations, preserving HostAddress/Prefix and source/destination port-range meaning;
+7. emit normalized rows carrying RuleRef, NeedRef, decision provenance, InteractionRevisionRef, DeploymentRefs, ResourceRefs and relevant realization provenance;
+8. if any effective Rule is unresolved, return overall status UNRESOLVED plus diagnostics/partial rows; partial rows are not a successful export;
+9. otherwise return COMPLETE with one coherent logical snapshot and `evaluationAt`.
+
+Historical/time-travel materialization is explicitly outside this MVP.
 
 ## Consistency semantics
 
 - Commands use one owning aggregate transaction and optimistic version checks.
-- Cross-context validation is precondition checking, not a distributed transaction.
-- If an upstream reference becomes invalid after a request/rule is accepted, historical reference remains resolvable; current materialization may become UNRESOLVED rather than silently rebinding.
-- Policy materialization is read-only and must observe a coherent logical snapshot. Architecture/Data Design must provide snapshot semantics sufficient to avoid mixing incompatible points in time.
-- Idempotency is required for retried permission recording/materialization and SHOULD be available for externally retried create commands via request idempotency key; exact transport representation belongs to Interface Design.
+- Cross-context validation reads may share the owning write transaction snapshot when one physical database provides the required consistency; peer schemas remain read-only.
+- If an upstream reference later changes or becomes unavailable, historical reference remains resolvable; current materialization may become UNRESOLVED rather than silently rebinding.
+- Policy materialization is read-only and must observe a coherent logical snapshot. Architecture/Data Design must prevent mixing incompatible current points in time.
+- Idempotency is required for retried permission recording and externally retried create commands where duplicate creation would be material; exact transport representation belongs to Interface Design.
 
 ## Synchronous/asynchronous applicability
 
@@ -78,6 +82,7 @@ All current MVP commands/queries can be synchronous. No source requirement needs
 
 - NOT_FOUND / INVALID_REFERENCE
 - VALIDATION_REJECTED
+- UNSUPPORTED_TRAFFIC_SEMANTICS
 - UNAUTHORIZED / FORBIDDEN / AUTHORITY_UNKNOWN
 - CONFLICT_STALE_VERSION
 - DECISION_ALREADY_FINAL
