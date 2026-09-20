@@ -1,6 +1,6 @@
 # Backend security analysis
 
-Status: ACCEPTED after Source Corpus amendment 01
+Status: ACCEPTED after Coding-Agent Challenge 02 repairs
 
 Scope: selected blind backend MVP. This analysis reviews accepted design and routes gaps; it does not invent entitlement/business permission semantics.
 
@@ -19,13 +19,14 @@ Scope: selected blind backend MVP. This analysis reviews accepted design and rou
 | Forged/expired/wrong issuer/audience/signature token | COVERED | Fixed OIDC issuer/audience, signature/time validation, fail closed. |
 | OIDC key dependency unavailable is misreported as invalid user | COVERED | Operability/Auth contract distinguishes invalid credential 401 from unverifiable credential 503. |
 | Caller spoofs actor/permissions | COVERED | Principal/permissions only from trusted token; strict unknown-field rejection. |
+| Permission claim missing/wrong type interpreted inconsistently | COVERED | Missing claim = empty permission set; present claim must be array<string>; wrong type/non-string = invalid credential; unknown values grant nothing. |
 | Unauthorized read/mutation/export/decision | COVERED | Exact operation permission matrix; no implication. |
 | Request authority confused with permission decision | COVERED | `access.request` and `access.decide` independent. |
 | Business Need grants permission | COVERED | Need required as justification for request/attachment but never creates permission/Rule without ALLOWED evidence. |
 | Resource Owner/Admin or Process organization grants app authorization | COVERED | Explicitly forbidden by Product/Security contracts. |
 | Unauthorized Rule operational/effective-window change | COVERED | `access.manage` + PolicyRule If-Match. |
 | Unauthorized justification attachment | COVERED | `access.manage` + current matching Need validation + Rule If-Match/idempotency. |
-| Retired/mismatched Need attached | COVERED | Same-snapshot Business Connectivity currentness + Interaction match before association. |
+| Retired/mismatched/foreign-participant Need attached | COVERED | Same-snapshot Need currentness + Interaction match + participantComponentRef membership before association. |
 | Need retirement silently revokes or silently remains “current” | COVERED | Currentness owned/read from Business Connectivity; Access Policy stores only association; zero-current Need is reconciliation flag, not auth mutation. |
 | Duplicate PolicyRule through concurrent ALLOWED requests | COVERED | Unique AccessSubject + atomic resolve/create; evidence/association append in same transaction. |
 | Duplicate AuthorizationEvidence | COVERED | AccessRequestRef unique evidence constraint. |
@@ -62,25 +63,26 @@ Scope: selected blind backend MVP. This analysis reviews accepted design and rou
 - If-Match bypass is permitted only for an authenticated/authorized exact idempotent replay of the same committed command;
 - a new idempotency command cannot bypass stale-version checks;
 - AccessSubject equality is exact opaque-ref equality; no attacker-controlled normalization can merge distinct IDs;
-- attaching justification does not add AuthorizationEvidence or change operational state;
+- attaching justification does not add AuthorizationEvidence or change operational state; participantComponentRef is read from trusted Business Connectivity Need, never supplied as a Rule-side override;
 - Rule reads/materialization resolve Need currentness through Business Connectivity rather than trusting copied status;
 - zero current Need never implies automatic permission/revocation behavior;
 - no permission is inferred from Resource ownership, Process organization, Need existence, ALLOWED evidence from a different AccessSubject, or technical address equality.
 
 ## Verification obligations
 
-- invalid credential variants -> 401, unavailable validation key material -> 503;
+- invalid credential variants -> 401, including malformed permission-claim type/non-string elements; missing permission claim yields authenticated empty permissions; unavailable validation key material -> 503;
 - exact permission matrix including operational/window/justification management and subset export;
 - caller-supplied actor/permission/server-owned fields rejected;
 - request vs decide vs manage vs read/export independence;
 - concurrent ALLOWED requests converge on one Rule;
 - duplicate evidence/justification cannot be created;
-- retired/mismatched Need cannot be newly attached;
+- retired/mismatched Need or Need whose participantComponentRef is not an Interaction participant cannot be newly attached;
 - Need retirement is reflected on subsequent read/materialization without Access Policy mutation;
 - same-target same-key replay succeeds before stale ETag; different target with same key is independent; different fingerprint conflicts;
 - no mutation retry after unknown DB outcome;
 - secrets/tokens absent from Problem/log samples;
 - hostile strings never alter SQL query shape;
-- inactive/out-of-window selected Rule does not require/expose current technical realization in output rows.
+- inactive/out-of-window selected Rule does not require/expose current technical realization in output rows;
+- PolicyRule operational history requires policy.read and reveals only accepted business-audit fields, not tokens/secrets.
 
 Blocking security Questions: none for the current MVP as presently scoped. Deferred concerns have explicit reopen conditions.
