@@ -227,9 +227,11 @@ amendments:
       be reevaluated before freeze.
 
 final_freeze:
-  semantic_gate: CODING_AGENT_CHALLENGE_10_PASS
+  semantic_gate: CODING_AGENT_CHALLENGE_13_PASS
   date: 2026-09-20
+  source_semantics_changed_after_initial_source_freeze: false
+  supersedes_invalidated_gate: CODING_AGENT_CHALLENGE_10_PASS
   rule: >-
-    No new SOURCE_INPUT may be added and no excluded prior NAPMS derived design may be
-    consulted until the blind design freeze marker is created. Post-freeze old-design
+    No new SOURCE_INPUT may be added. Prior NAPMS derived design remains forbidden until
+    the replacement blind design freeze marker is created. After that marker, old-design
     access is comparison-only and cannot retroactively alter the frozen reconstruction.
