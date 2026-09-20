@@ -9,7 +9,7 @@ Use one stateless backend application process as a modular monolith plus one ACI
 Rationale:
 - accepted flows are synchronous;
 - domain owners need strong local transactions;
-- AccessRequest submission needs one coherent validation/write snapshot without cross-owner writes;
+- AccessRequest submission/justification attachment need owner-provided current-Need validation locking through Access Policy commit without cross-owner writes;
 - complete policy materialization requires a coherent cross-module read snapshot;
 - no accepted independent scaling/deployment requirement justifies network-separated services.
 
@@ -43,14 +43,15 @@ Technical edge modules:
 
 Writes:
 - exactly one semantic owner is mutated per command;
-- optimistic aggregate version checks;
-- a command may use one database transaction to perform peer-owner validation reads plus its owner write, while peer tables remain read-only;
+- ordinary owner writes use PostgreSQL READ COMMITTED plus optimistic aggregate versions;
+- mutable current-Need validation uses a Business Connectivity owner-provided row share lock held through the Access Policy commit; Access Policy still performs no peer write;
+- immutable peer references use read-only owner contracts without extra locking;
 - database uniqueness/foreign-key constraints stay inside a module's owned schema; cross-owner references are opaque values validated through public ports.
 
 Policy materialization:
 - runs read-only under database REPEATABLE READ (or stronger equivalent) across module-owned schemas in the same physical relational database;
 - owner query ports accept the shared read-snapshot context so all resolved facts come from one database snapshot;
-- the backend records server-owned `evaluationAt` for that snapshot; historical/time-travel policy materialization is not part of the MVP.
+- the first statement of the REPEATABLE READ transaction returns database `transaction_timestamp()`; that exact value is `evaluationAt` for effectiveness and response; historical/time-travel policy materialization is not part of the MVP.
 
 ## Interaction style
 
@@ -76,3 +77,10 @@ The process is horizontally replicable only when all authoritative state remains
 - UI rendering;
 - configured-state reconciliation;
 - historical policy export.
+
+
+## Process modes and external transport
+
+The same binary has explicit `migrate` and `serve` modes. Migration is never performed implicitly by serve. Serve verifies exact schema state before listener startup.
+
+The Go application process exposes HTTP inside the trusted deployment boundary. External HTTPS is terminated by a deployment ingress/reverse proxy/load balancer; the application does not own TLS certificates or invent TLS configuration keys in this MVP. The deployment must not expose the internal plaintext listener directly to an untrusted network. The application does not trust forwarded identity/permission headers; only the bearer-token contract establishes caller identity.
