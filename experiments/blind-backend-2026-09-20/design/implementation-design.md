@@ -147,7 +147,7 @@ Implement read-only shared-snapshot CurrentPolicyMaterializer with:
 - NO_CURRENT_BUSINESS_JUSTIFICATION reconciliation flag;
 - no automatic deactivation when current Need count is zero;
 - exact normalized traffic/address expansion for selected effective Rules only;
-- all authorization evidence + participant-attributed justification provenance + explicit Resource-address/InteractionRevision/Need actor-time fields; no generic provenance blob;
+- PolicyRuleRef + evidence/justification/current-justification counts + reconciliation in normalized rows, with full participant-attributed evidence/justification audit via paginated Rule endpoints; explicit Resource-address/InteractionRevision/Need actor-time fields; no generic provenance blob;
 - stable nonEffective and MaterializationIssue representations.
 
 Completion:
@@ -156,7 +156,7 @@ Completion:
 - zero-current-Need Rule can still COMPLETE with reconciliation flag;
 - effective missing realization -> UNRESOLVED;
 - dependency failure -> HTTP 503;
-- subset/all selection and snapshot tests green.
+- subset/all selection, bounded/chunked one-snapshot processing and streaming-output tests green.
 
 ### I7 — Security and operability closure
 
@@ -189,12 +189,12 @@ Completion: V8 and all Test Design obligations green; no manual DB state fabrica
 
 IMPLEMENTATION is complete only when:
 
-1. every HTTP operation, request/response shape, status/header rule and authorization mapping in Interface/Security Design exists;
+1. every HTTP operation, request/response shape, status/header rule, growing-collection pagination rule and authorization mapping in Interface/Security Design exists;
 2. required Idempotency-Key and If-Match semantics are applied exactly to the declared operations;
 3. every domain invariant and application consistency rule is enforced at its owner;
 4. PostgreSQL schema/migrations realize Persistence Design including Resource Site/address/responsibility history, independent Application/Interaction aggregate ownership, one Rule per AccessSubject, evidence/justification uniqueness and idempotency replay data;
 5. CurrentPolicyMaterializer evaluates selection + ACTIVE/window semantics before realization, derives Need reconciliation without revocation, cannot return COMPLETE with unresolved selected-effective Rule input, and never converts dependency failure into application UNRESOLVED;
-6. normalized rows preserve exact traffic semantics, Rule identity, all permission evidence, business justifications/currentness and independent provenance;
+6. normalized rows preserve exact traffic semantics and Rule identity with compact evidence/justification counts/reconciliation plus explicit source-fact actor/time; full permission/business audit is reachable by PolicyRuleRef through bounded paginated endpoints;
 7. OIDC authentication/cache/fail-closed dependency distinctions hold;
 8. startup configuration, no-reload, retry/timeout, logging/metrics/health/cancellation/shutdown/redaction semantics are observable;
 9. architecture/component dependency checks pass;
@@ -205,6 +205,8 @@ IMPLEMENTATION is complete only when:
 ## Explicit coding-agent freedoms
 
 Private function/type names, helper decomposition, exact Go filenames, SQL/index/query optimization preserving accepted contracts, choice among maintained libraries that satisfy those contracts, migration-runner implementation, logger/metrics library, test framework/helpers, UUID library, composition wiring syntax and local refactorings.
+
+Collection pagination/default/max/no-truncation and materialization bounded-memory semantics are also not coding freedoms. Exact cursor encoding/chunk size/stream-buffer implementation remain free.
 
 The following are **not** coding freedoms: same-vs-cross Application validity, ConnectivityNeed participantComponent semantics, AccessSubject fields, Rule uniqueness, Need exclusion from Rule identity, evidence/justification ownership, operational audit-history exposure, automatic-vs-nonautomatic Need revocation, ACTIVE/window semantics, policy subset behavior, endpoint DTO/status/header semantics, permission mapping/claim representation, aggregate concurrency owner, idempotency scope/order, transaction boundaries, OIDC failure classification, configuration precedence/reload/retry semantics, logging safety or materialization COMPLETE/UNRESOLVED meaning.
 
