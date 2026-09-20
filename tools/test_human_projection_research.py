@@ -57,7 +57,9 @@ def main():
     assert len(backend["sources"])>10
     assert not backend["unresolved"]
 
-    backend_ir=synthetic_ir(plan)
+    backend_ir=load("docs/research/human-projection/backend-narrative-ir.yaml")
+    backend_ir["manifest_digest"]=plan["manifest_digest"]
+
     with tempfile.TemporaryDirectory() as temp_dir:
         review=Path(temp_dir)/"review"
         result=materialize_package(
