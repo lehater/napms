@@ -269,6 +269,9 @@ rows:
   - concern: verification.reliability
     state: COVERED
     artifacts: [MVP-TEST-INTENT, SYSTEM-RULES]
-  - concern: verification.interface
-    state: PARTIAL
-    rationale: Research projection only; machine interface verification exists while frontend test design remains incomplete.
+  - concern: verification.interface.machine
+    state: COVERED
+    artifacts: [MVP-TEST-INTENT, HTTP-REQUIREMENTS]
+  - concern: verification.interface.human
+    state: MISSING
+    rationale: Frontend human-interface and test-design coverage is incomplete for the selected first-MVP map.
