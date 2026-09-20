@@ -274,3 +274,80 @@ Blocking owners:
 - INTERFACE-DESIGN: complete Human Interface Design.
 
 After those P0 repairs, produce frontend System Architecture, Component Design, Verification/Test Design and terminal Implementation Design through the existing Harness producer/consumer model.
+
+
+## Post-design comparison with current Web implementation
+
+The existing `web/` implementation was inspected only after the blind design result above.
+
+### Useful implementation evidence
+
+The current React frontend already demonstrates several sound implementation patterns:
+
+- feature-oriented source structure;
+- a reusable design-system layer;
+- explicit Resource/Application/Rule/etc. pages;
+- visible loading/error/domain-status components;
+- responsive desktop/mobile shell mechanics;
+- Resource detail/history implementation material consistent with the current Resource UI pilot.
+
+These facts show implementation capability, not canonical target semantics.
+
+### Material mismatch — authentication
+
+Current Web code implements a local username/password session flow:
+
+- `POST /api/v1/session`;
+- `GET /api/v1/session`;
+- `DELETE /api/v1/session`;
+- browser-visible login/password form.
+
+Current canonical Security Architecture instead requires OIDC bearer JWT validation and defines no username/password session API.
+
+Therefore current Web authentication is legacy/non-canonical relative to the selected target architecture.
+
+This independently confirms P0-2: browser authentication/session architecture must be decided before target frontend implementation can be considered ready.
+
+### Material mismatch — navigation/domain vocabulary
+
+Current Web navigation exposes legacy/current-runtime surfaces including:
+
+- Connectivity;
+- Checker;
+- Needs/requirements;
+- Decisions;
+- Rules;
+- Effective;
+- Export;
+- Realization.
+
+Some of these are useful historical/product directions, but several belong to broader or superseded models described in `docs-legacy/**`, not to the narrow selected first-MVP canonical journey.
+
+They must not be promoted wholesale into target navigation merely because code exists.
+
+### Machine-interface mismatch
+
+Current Web feature APIs rely on a broader `/api/**` surface than the selected canonical OpenAPI shown in `docs/contracts/http/napms.openapi.yaml`.
+
+This is implementation evidence that a usable UI needs richer read/discovery contracts.
+
+It does not authorize keeping undocumented endpoints. The correct repair is to promote required application/read semantics and then canonicalize the external interface.
+
+## Final validation result
+
+The experiment validates both positive and negative Harness behavior.
+
+Positive:
+- blind journey/interface reconstruction is possible from accepted NAPMS knowledge;
+- the Resource Detail pilot matches the reconstructed semantics;
+- the existing Authority model is sufficient;
+- no frontend-specific Core/Authority is needed.
+
+Negative/gap detection:
+- no frontend consumer exists;
+- browser auth/session architecture is missing and current implementation contradicts target security;
+- read/discovery contracts are incomplete for the full UI;
+- complete Human Interface Design is absent;
+- downstream frontend architecture/component/test/implementation design therefore cannot yet be accepted.
+
+The correct target-state result for a dedicated frontend consumer is **BLOCKED**, not COMPLETE.
