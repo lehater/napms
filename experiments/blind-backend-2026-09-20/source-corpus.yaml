@@ -8,6 +8,21 @@ classification_rule: >-
   material is excluded by default.
 
 source_inputs:
+  - id: SRC-WAVE1-PRODUCT-001
+    class: SOURCE_INPUT
+    kind: initial-accepted-product-requirements
+    statement_ref: experiments/blind-backend-2026-09-20/source-product-wave1.md
+    provenance:
+      bootstrap_commit: c403ceeda2837d8956e3d093fef95c1bd69d0c6f
+      provenance_path_at_bootstrap: docs/baseline/migration-provenance.md
+      source_baseline: lehater/sssr_xlam@d1abb6fac6b4147e28abce9c934ceffbba25570f
+      copied_class: accepted-current-product-requirements-and-acceptance-examples
+    admissibility: >-
+      Bootstrap provenance explicitly classifies these materials as accepted product
+      requirements copied into the greenfield repository. The experimental copy retains
+      only observable product behavior/scope and excludes embedded domain/architecture
+      decisions.
+
   - id: SRC-NETWORK-INTENT-001
     class: SOURCE_INPUT
     kind: stakeholder-discovery-evidence
