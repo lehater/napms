@@ -1,0 +1,114 @@
+version: 1
+kind: harness-source-coverage
+id: NAPMS-BLIND-BACKEND-POST-FREEZE-SOURCE-COVERAGE
+source_baseline: napms bootstrap c403ceeda2837d8956e3d093fef95c1bd69d0c6f + accepted external product input through 2026-09-19
+coverage_status: INCOMPLETE
+
+statements:
+  - id: W1-001-SUBMIT-AUTH-SCOPE
+    source_ref: c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-001
+    text: An actor with effective request authority for the relevant scope may submit a proposal.
+  - id: W1-002-DECISION-SUBJECT
+    source_ref: c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-002
+    text: Permission decision remains correlated to the exact immutable semantic subject proposed.
+  - id: W1-003-NOTALLOWED-NO-RULE
+    source_ref: c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-003
+    text: NotAllowed produces no authoritative Access Rule.
+  - id: W1-004-IDEMPOTENT-RULE
+    source_ref: c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-004
+    text: Same allowed semantic identity resolves one stable authoritative Rule and starts Active.
+  - id: W1-005-ACTIVE-INACTIVE
+    source_ref: c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-005
+    text: Active and Inactive are reversible without a new permission decision and preserve identity/history.
+  - id: W1-006-EFFECTIVE-CONDITIONS
+    source_ref: c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-006
+    text: Allowed access may carry declarative operational/effective conditions including schedule/periodicity where applicable.
+  - id: W1-007-TECHNICAL-REALIZATION
+    source_ref: c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-007
+    text: Technical realization changes alone do not change Rule identity or rewrite historical permission.
+  - id: W1-008-EXPORT-AUTH-SCOPE
+    source_ref: c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-008
+    text: Export subset selection requires the required read/export authority for the relevant domain-policy scope.
+  - id: W1-009-LOGICAL-TIME
+    source_ref: c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-009
+    text: Export uses one logical evaluation time and required realization must be valid/coherent for it.
+  - id: W1-010-COMPLETE-EXPORT
+    source_ref: c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-010
+    text: Successful export is complete, vendor-neutral and sufficiently explainable.
+  - id: W1-011-NO-PARTIAL-SUCCESS
+    source_ref: c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-011
+    text: Missing required realization prevents complete successful export; diagnostics may be explicit non-success.
+  - id: W1-012-INDEPENDENT-PROVENANCE
+    source_ref: c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-012
+    text: Normalization must preserve independent Rule/decision provenance and not broaden/narrow semantics.
+  - id: W1-013-AUTHORITY-PROVENANCE-SCOPE-TIME
+    source_ref: c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-013
+    text: End-to-end provenance includes requesting actor and effective authority scope/time.
+  - id: W1-E1-NO-SAME-APPLICATION
+    source_ref: c403ceed:docs/requirements/wave1-acceptance-examples.md#E1
+    text: No blanket same-Application invariant; validity follows described interaction and valid references.
+  - id: Q-001-NUMERIC-TARGETS
+    source_ref: docs/requirements/first-mvp-quality-targets.yaml#decision
+    text: Numeric latency, throughput, availability and scale targets are explicitly NOT_REQUIRED for first MVP.
+
+dispositions:
+  - statement_id: W1-001-SUBMIT-AUTH-SCOPE
+    classification: QUESTION
+    authority: PRODUCT-REQUIREMENTS
+    question: The frozen Source Corpus preserved request-authority-vs-permission distinction but lost the relevant-scope constraint; source coverage cannot be COMPLETE.
+  - statement_id: W1-002-DECISION-SUBJECT
+    classification: ADMITTED
+    admitted_ref: experiments/blind-backend-2026-09-20/source-product-wave1.md
+    sanitized_statement: Permission decision remains correlated to the exact submitted access meaning.
+  - statement_id: W1-003-NOTALLOWED-NO-RULE
+    classification: ADMITTED
+    admitted_ref: experiments/blind-backend-2026-09-20/source-product-wave1.md
+    sanitized_statement: A denied connectivity decision must not create effective desired access or an authoritative Rule.
+  - statement_id: W1-004-IDEMPOTENT-RULE
+    classification: ADMITTED
+    admitted_ref: experiments/blind-backend-2026-09-20/source-product-wave1.md
+    sanitized_statement: Reprocessing the same already-allowed semantic access must not create duplicate authoritative current access.
+  - statement_id: W1-005-ACTIVE-INACTIVE
+    classification: ADMITTED
+    admitted_ref: experiments/blind-backend-2026-09-20/source-product-wave1.md
+    sanitized_statement: Active and Inactive transitions preserve identity/history/permission provenance without a new decision.
+  - statement_id: W1-006-EFFECTIVE-CONDITIONS
+    classification: ADMITTED
+    admitted_ref: experiments/blind-backend-2026-09-20/source-product-wave1.md
+    sanitized_statement: Supported declarative effective conditions determine desired effect without rewriting Active/Inactive state.
+  - statement_id: W1-007-TECHNICAL-REALIZATION
+    classification: ADMITTED
+    admitted_ref: experiments/blind-backend-2026-09-20/source-product-wave1.md
+    sanitized_statement: Technical realization changes alone do not rewrite semantic access identity or historical permission.
+  - statement_id: W1-008-EXPORT-AUTH-SCOPE
+    classification: QUESTION
+    authority: PRODUCT-REQUIREMENTS
+    question: The frozen Source Corpus preserved domain-policy subset selection but lost required read/export authority scoped to the selected policy scope.
+  - statement_id: W1-009-LOGICAL-TIME
+    classification: ADMITTED
+    admitted_ref: experiments/blind-backend-2026-09-20/source-product-wave1.md
+    sanitized_statement: Export is evaluated for one logical evaluation time and required realization must be coherent.
+  - statement_id: W1-010-COMPLETE-EXPORT
+    classification: ADMITTED
+    admitted_ref: experiments/blind-backend-2026-09-20/source-product-wave1.md
+    sanitized_statement: Export is complete, explainable and vendor-neutral for the selected effective access.
+  - statement_id: W1-011-NO-PARTIAL-SUCCESS
+    classification: ADMITTED
+    admitted_ref: experiments/blind-backend-2026-09-20/source-product-wave1.md
+    sanitized_statement: Missing required realization blocks complete success; partial diagnostics are explicit non-success.
+  - statement_id: W1-012-INDEPENDENT-PROVENANCE
+    classification: ADMITTED
+    admitted_ref: experiments/blind-backend-2026-09-20/source-product-wave1.md
+    sanitized_statement: Normalization preserves independent access provenance and exact traffic meaning.
+  - statement_id: W1-013-AUTHORITY-PROVENANCE-SCOPE-TIME
+    classification: QUESTION
+    authority: PRODUCT-REQUIREMENTS
+    question: General provenance was preserved, but requesting actor plus effective authority scope/time was omitted from the frozen sanitized source.
+  - statement_id: W1-E1-NO-SAME-APPLICATION
+    classification: ADMITTED
+    admitted_ref: experiments/blind-backend-2026-09-20/source-corpus.yaml#SC-AMEND-002
+    sanitized_statement: A valid described interaction is not invalid solely because its Components belong to different Applications.
+  - statement_id: Q-001-NUMERIC-TARGETS
+    classification: QUESTION
+    authority: PRODUCT-REQUIREMENTS
+    question: Explicit NOT_REQUIRED product input from 2026-09-19 was not admitted; frozen design treated these targets as unknown/deferred.
