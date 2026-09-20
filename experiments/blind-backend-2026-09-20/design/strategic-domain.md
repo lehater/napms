@@ -1,71 +1,81 @@
 # Blind strategic domain design
 
-Status: ACCEPTED candidate for experiment
+Status: ACCEPTED after Source Corpus amendment 01
 
 ## Decomposition basis
 
-Boundaries are derived only from the frozen source corpus using semantic cohesion, independent change and public-contract tests.
+Boundaries are derived only from the amended Source Corpus using semantic cohesion, independent change and public-contract tests.
 
 ## Bounded Context: Resource Description
 
 **Purpose.** Own logical Resource identity, logical network presence, current address realization, Site/Owner/Administrator meaning and basic history.
 
-**Why separate.** Resource/network realization changes independently from application definitions, deployments, business needs and access permission. Address is explicitly not Resource identity.
+**Why separate.** Resource/network realization changes independently from application definitions, deployments, business need and permission. Address is explicitly not Resource identity.
 
-**Public semantic contract.** Resolve a stable Resource reference to current network realization and provenance/history status needed by downstream application/policy materialization.
+**Public semantic contract.** Resolve stable Resource references to current network realization and explanatory Site/responsibility/address history.
 
 ## Bounded Context: Application Communication
 
 **Purpose.** Own reusable Application, Component and directed Interaction meaning, including independently meaningful traffic semantics.
 
-**Why separate.** Application communication meaning is reusable across concrete deployments and network realization and can change without moving deployments/resources.
+**Why separate.** Reusable communication meaning changes independently from concrete deployment and network realization.
 
-**Public semantic contract.** Resolve stable application/component/interaction references and an exact communication-semantic revision suitable for durable downstream reference.
+**Public semantic contract.** Resolve stable Application/Component/Interaction references and exact immutable communication-semantic revisions.
 
 ## Bounded Context: Application Deployment
 
 **Purpose.** Own concrete identity of a deployed Component and its association to a Resource.
 
-**Why separate.** Deployment placement changes independently from reusable Application/Interaction meaning and from Resource address changes.
+**Why separate.** Concrete placement changes independently from reusable Application/Interaction meaning and Resource address realization.
 
-**Public semantic contract.** Resolve a stable Deployment reference to exactly one Component meaning and one Resource reference for the current MVP.
+**Public semantic contract.** Resolve a stable Deployment reference to exactly one Component and one Resource for the selected MVP.
 
 ## Bounded Context: Business Connectivity
 
-**Purpose.** Own Business Process and Connectivity Need meaning and business justification/history for why an application Interaction is required.
+**Purpose.** Own Business Process and Connectivity Need meaning, currentness and history: why an application Interaction is needed.
 
-**Why separate.** Business need survives deployment/address changes and does not itself grant technical permission.
+**Why separate.** Business justification survives deployment/address changes, may be added or retired independently from access permission, and does not itself authorize access.
 
-**Public semantic contract.** Resolve a current Process-backed Need to the required application Interaction and business provenance.
+**Public semantic contract.** Resolve a Need to Process/Interaction/business provenance and distinguish current from retired justification without rewriting history.
 
 ## Bounded Context: Access Policy
 
-**Purpose.** Own deliberate concrete access-request subject, consumed permission outcome, current desired-access truth and its business/decision provenance.
+**Purpose.** Own deliberate access requests, consumed permission outcomes, one authoritative current-access identity per semantic access, operational/effective state, authorization evidence and associations to business justifications.
 
-**Why separate.** Permission/effective desired-access meaning changes independently from resource realization and application definition while referencing their stable semantics.
+**Why separate.** Permission/current desired-access truth changes independently from Resource realization and Business Need lifecycle while referring to their stable semantics.
 
-**Public semantic contract.** Expose current effective desired-access subjects using stable Deployment and exact Interaction-semantic references plus business justification/decision provenance.
+**Public semantic contract.** Expose current access subjects, permission evidence, ACTIVE/INACTIVE + declarative effectiveness, justification references and auditable history. It does not own whether a referenced Need is currently active; that remains Business Connectivity truth.
 
 ## External semantic dependency: Connectivity Permission Decision
 
-The MVP requires a permission outcome distinct from request authority, but the accepted source explicitly leaves the internal decision mechanism/reasons/workflow outside the selected baseline. Therefore the decision mechanism is not promoted to a NAPMS Bounded Context. Access Policy consumes a stable decision result correlated to one exact access request.
+The MVP consumes a final permission outcome distinct from request authority. Internal decision reasons, approval policy, human/automatic mechanism, exceptions and supersession remain outside current NAPMS ownership. Access Policy consumes a stable final result correlated to one exact AccessRequest.
 
 ## Application composition, not Bounded Context: Policy Materialization
 
-Complete vendor-neutral policy output composes current desired access with Application Communication, Application Deployment and Resource Description truth at one logical evaluation time. It owns transformation semantics but no independent business truth; therefore it belongs to APPLICATION-DESIGN rather than strategic domain ownership.
+Vendor-neutral policy materialization composes:
+- selected current Access Policy;
+- current Business Connectivity justification status;
+- exact Application Communication semantics;
+- Application Deployment placement;
+- current Resource realization.
+
+It owns transformation/selection orchestration and completeness semantics, but no independent business truth. It remains APPLICATION-DESIGN rather than a Bounded Context.
 
 ## Relationships
 
-- Business Connectivity references Application Communication Interaction meaning, never current addresses.
-- Application Deployment references one Application Communication Component and one Resource Description Resource.
-- Access Policy references source/destination Application Deployments, one exact Interaction semantic revision and a current Business Connectivity Need at deliberate request submission.
-- Access Policy consumes a Connectivity Permission Decision correlated to the exact request.
-- Policy Materialization reads current effective Access Policy and resolves required data from the other contexts without becoming owner of their truth.
+- Business Connectivity references reusable Application Communication Interaction meaning, never current addresses/deployments.
+- Application Deployment references one Component and one Resource.
+- An AccessRequest references source/destination Deployments, one exact InteractionRevision and one current Need as submission justification.
+- NeedRef is **not** part of current-access semantic identity.
+- ALLOWED AccessRequests for the same semantic access resolve the same authoritative current access and add permission/provenance evidence rather than duplicate it.
+- Access Policy may associate additional NeedRefs with an existing current access; association itself does not grant permission.
+- Business Connectivity retirement/currentness of those Needs is resolved dynamically and never rewritten by Access Policy.
+- Policy Materialization derives a reconciliation condition when an access has no current known Need; it does not auto-revoke/deactivate it.
 
 ## Explicitly deferred problem-space areas
 
-Brownfield evidence recognition, enforcement-placement discovery, configured-policy comparison, provider rendering, network mutation and cleanup optimization remain outside the selected MVP and do not create Bounded Contexts in this graph.
+Brownfield evidence recognition, enforcement-placement discovery, configured-policy comparison, provider rendering, network mutation, cleanup optimization, permission-decision supersession policy and recurring schedule language remain outside the selected MVP.
 
 ## Atomicity review
 
-All five contexts have distinct semantic cohesion, independently changing truth and a public downstream contract. Policy Materialization fails the independent-truth test and therefore remains application composition. Permission Decision fails the current system-ownership test and remains an external semantic dependency until product input requires NAPMS to own that decision process.
+All five contexts have distinct semantic cohesion, independently changing truth and public contracts. Policy Materialization owns no independent domain truth and remains application composition. Permission Decision remains external until accepted input requires NAPMS to own that decision process.
