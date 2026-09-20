@@ -123,7 +123,7 @@ Objectives:
 - Resource responsibility routes are role-addressed and preserve singular current role;
 - cross-Application `POST /v1/interactions` succeeds;
 - Interaction revision publication requires Interaction ETag, not Application ETag;
-- Rule response exposes all authorization evidence, justifications/current status/participantComponent attribution and reconciliation flag;
+- Rule current response exposes bounded scalar counts + reconciliation flag; full authorization evidence and participant-attributed justifications are available through separate cursor-paged policy.read endpoints;
 - Rule operational history endpoint exposes CREATED/OPERATIONAL_CHANGED events with actor/time/state/window, cursor-bounded, and no-op/evidence-only/justification-only changes create no operational event;
 - Rule operational endpoint covers ACTIVE/INACTIVE + effectiveWindow;
 - justification attachment is independently authorized/idempotent;
