@@ -20,7 +20,7 @@ Scope: selected blind backend MVP. This analysis reviews accepted design and rou
 | OIDC key dependency unavailable is misreported as invalid user | COVERED | Invalid token with established key -> 401; inability to establish validity -> 503. |
 | JWT algorithm confusion / unsafe library default | COVERED | none/HS*/unknown/unconfigured algorithms rejected; token alg must match configured asymmetric allow-list and JWKS key type. |
 | Cold-start or unready key-cache recovery deadlock/fetch storm | COVERED | Initial JWKS acquisition gates listener; runtime readiness/protected validation share one bounded single-flight refresh; max-stale controls continued cache use. |
-| Caller spoofs actor/permissions | COVERED | Principal/permissions only from trusted token; strict unknown-field rejection. |
+| Caller spoofs actor/permissions | COVERED | Principal/permissions only from trusted bearer token; body/query and forwarded identity/permission headers cannot override them. |
 | Permission claim missing/wrong type interpreted inconsistently | COVERED | Missing claim = empty permission set; present claim must be array<string>; wrong type/non-string = invalid credential; unknown values grant nothing. |
 | Unauthorized read/mutation/export/decision | COVERED | Exact operation permission matrix; no implication. |
 | Request authority confused with permission decision | COVERED | `access.request` and `access.decide` independent. |
@@ -46,7 +46,7 @@ Scope: selected blind backend MVP. This analysis reviews accepted design and rou
 | Mass assignment | COVERED | Explicit DTO/command mapping; server-owned fields rejected. |
 | Token/secret/DSN disclosure | COVERED | Allow-listed diagnostics, secret redaction, no token persistence. |
 | Internal stack/schema disclosure | COVERED | Stable Problem contract; stack only protected internal log. |
-| Insecure transport | COVERED | HTTPS outside explicit loopback/dev. |
+| Insecure transport | COVERED | External HTTPS terminates at trusted deployment ingress; internal plaintext listener is deployment-private and never directly exposed to untrusted network. |
 | Request-controlled issuer/JWKS/URL SSRF | COVERED/NOT_APPLICABLE | OIDC source is startup config, not request input; no caller-provided URL fetch operation. |
 | CSRF | NOT_APPLICABLE | Bearer Authorization header, no ambient cookie/session auth. Reopen if browser cookie auth appears. |
 | CORS | DEFERRED_NONBLOCKING | Frontend/browser deployment excluded; resolve before cross-origin browser exposure. |
