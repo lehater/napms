@@ -1,0 +1,15 @@
+version: 1
+kind: blind-experiment-harness-pin
+source_repository: lehater/harness
+source_commit: 92e9cc37305c0709aefa0c0f6fcdab76e5f6db3e
+copied_unmodified:
+  - harness.py
+  - target_state.py
+  - engineering_graph.py
+purpose: >-
+  Reproduce Engineering Graph/Core target-state evaluation inside the isolated NAPMS
+  research branch without requiring runtime access from CI to another repository.
+rule: >-
+  These files are an exact experiment-local copy of the pinned Harness runtime and
+  must not be edited to make the experiment pass. Any required behavior change belongs
+  to a separately documented Harness defect/fix branch.
