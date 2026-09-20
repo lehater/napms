@@ -1,0 +1,15 @@
+version: 1
+kind: harness-human-projection
+id: napms-evidence-sample
+consumer: BACKEND-IMPLEMENTATION
+
+documents:
+  - id: assurance-sample
+    title: Architecture Assurance Sample
+    sections:
+      - id: system
+        select: {artifacts: [SYSTEM-RULES]}
+      - id: security
+        select: {artifacts: [SECURITY-ARCHITECTURE]}
+      - id: quality
+        select: {artifacts: [QUALITY-REQUIREMENTS]}
