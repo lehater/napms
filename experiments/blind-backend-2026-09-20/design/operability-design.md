@@ -14,7 +14,7 @@ Required structured event classes:
 
 - `request.completed`: correlationId, operation, HTTP status class, application outcome code when present, duration;
 - `authn.failed`: correlationId, reason category `MISSING|MALFORMED|INVALID_SIGNATURE|EXPIRED|ISSUER|AUDIENCE`; never token contents;
-- `authz.denied`: correlationId, operation, required permission, principal subject;
+- `authz.denied`: correlationId, operation, required permission or scoped action, safe scopeRef when applicable, principal subject;
 - `command.committed`: correlationId, owner module, command kind, safe aggregate ref, resulting version where applicable;
 - `command.conflict`: correlationId, owner module, command kind, `STALE_VERSION|IDEMPOTENCY_CONFLICT|DECISION_ALREADY_FINAL`;
 - `permission.recorded`: correlationId, requestRef, ALLOWED|DENIED, deciding principal subject, optional safe decisionRef;
@@ -33,7 +33,7 @@ Instrumentation must expose at minimum:
 
 - request count and duration by operation/outcome class;
 - authentication failure count by safe reason category;
-- authorization denial count by operation/permission;
+- authorization denial count by operation and permission/scoped-action;
 - stale-version, idempotency-conflict and final-decision-conflict counts;
 - policy materialization duration, input-rule count, output-row count and unresolved count;
 - database operation failure/timeout count;
@@ -65,7 +65,8 @@ Serve-mode required environment keys:
 | `NAPMS_DATABASE_DSN` | PostgreSQL connection DSN | yes |
 | `NAPMS_OIDC_ISSUER` | absolute HTTPS issuer URL; no HTTP/local-production exception | no |
 | `NAPMS_OIDC_AUDIENCE` | non-empty required audience | no |
-| `NAPMS_OIDC_PERMISSION_CLAIM` | non-empty top-level claim name containing effective permission strings | no |
+| `NAPMS_OIDC_PERMISSION_CLAIM` | non-empty top-level claim name containing instance permission strings | no |
+| `NAPMS_OIDC_AUTHORITY_CLAIM` | non-empty top-level claim name containing scoped/time AuthorityGrant objects | no |
 | `NAPMS_OIDC_ALLOWED_ALGS` | non-empty unique comma-separated subset of RS256,RS384,RS512,PS256,PS384,PS512,ES256,ES384,ES512,EdDSA; HS*/none/unknown forbidden | no |
 | `NAPMS_OIDC_CLOCK_SKEW` | duration >= 0 applied to exp/nbf validation only | no |
 | `NAPMS_DB_STATEMENT_TIMEOUT` | duration > 0 | no |
@@ -109,7 +110,7 @@ The application never logs the value of a key classified secret.
 
 ## OIDC key/cache/dependency semantics
 
-Configuration (issuer/audience/permission-claim/allowed-algs/clock-skew) is immutable for process lifetime.
+Configuration (issuer/audience/permission-claim/authority-claim/allowed-algs/clock-skew) is immutable for process lifetime.
 
 ### Initial acquisition
 
