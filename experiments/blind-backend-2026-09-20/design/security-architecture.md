@@ -35,6 +35,9 @@ Authenticated principal:
 - the configured authority claim, when present, must be a JSON array of objects `{action,scope,effectiveFrom?,effectiveUntil?}`;
 - authority `action` and `scope` are required non-empty strings;
 - `effectiveFrom`/`effectiveUntil`, when present, are NumericDate values with half-open semantics `[effectiveFrom,effectiveUntil)`; when both exist, effectiveFrom < effectiveUntil;
+- missing authority claim yields an authenticated Principal with an empty AuthorityGrant set;
+- duplicate authority objects collapse by exact action/scope/bounds tuple;
+- unknown authority actions grant nothing because ScopedAuthorizer recognizes only `access.request` and `policy.export`;
 - malformed authority claim/object/bounds is an invalid credential/token-format failure (401);
 - missing permission claim yields an authenticated Principal with an empty permission set;
 - wrong permission-claim type or non-string element is an invalid credential/token-format failure (401);
