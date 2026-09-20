@@ -25,7 +25,7 @@ Domain/application modules:
 
 Technical edge modules:
 - `api` — external request/response adapter;
-- `authn_authz` — OIDC validation and permission admission;
+- `authn_authz` — OIDC validation, instance-permission admission and scoped/time AuthorityGrant admission;
 - persistence adapters owned by each domain module;
 - `runtime` — composition/configuration/health/telemetry wiring.
 
@@ -37,14 +37,15 @@ Technical edge modules:
 - Cross-domain references cross module boundaries as opaque refs plus minimal public facts.
 - API maps external representations to application commands/queries; domain models are not serialized directly.
 - Persistence adapters implement module-owned repository ports.
-- Policy Materialization consumes public read ports from owners; it cannot mutate peer truth.
+- Policy Materialization consumes public read ports from owners; it cannot mutate peer truth. It resolves selected Resource AuthorityScopeRefs and performs scoped export admission at the same evaluationAt used by the read snapshot.
 
 ## Transactions and consistency
 
 Writes:
 - exactly one semantic owner is mutated per command;
 - ordinary owner writes use PostgreSQL READ COMMITTED plus optimistic aggregate versions;
-- mutable current-Need validation uses a Business Connectivity owner-provided row share lock held through the Access Policy commit; Access Policy still performs no peer write;
+- mutable current-Need validation uses a Business Connectivity owner-provided row share lock held through the Access Policy commit;
+- AccessRequest submission resolves Resource AuthorityScopeRefs in the same owner-write transaction and evaluates request authority at database-owned admissionAt before commit; Access Policy still performs no peer write;
 - immutable peer references use read-only owner contracts without extra locking;
 - database uniqueness/foreign-key constraints stay inside a module's owned schema; cross-owner references are opaque values validated through public ports.
 
