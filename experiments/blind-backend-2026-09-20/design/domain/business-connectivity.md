@@ -31,7 +31,8 @@ Immutable state:
 - `interactionRef`;
 - `participantComponentRef`;
 - non-empty `businessBasis`;
-- createdAt/provenance.
+- createdAt;
+- createdBySubject.
 
 Mutable lifecycle:
 - status ACTIVE | RETIRED;
