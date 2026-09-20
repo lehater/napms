@@ -242,7 +242,7 @@ Justification attachment increments PolicyRule version so concurrent Rule-manage
   key,
   request_fingerprint,
   response_status,
-  response_body_or_result_ref,
+  response_body_json_bytes,
   location nullable,
   response_etag nullable,
   committed_at,
@@ -256,7 +256,8 @@ Definitions:
 
 Rules:
 - authentication/authorization and strict body/target validation occur before idempotency lookup;
-- for an existing same-key/same-fingerprint committed record, original status/body/Location/ETag replay occurs before current If-Match evaluation;
+- for an existing same-key/same-fingerprint committed record, exact persisted response_status + response_body_json_bytes + Location + ETag replay occurs before current If-Match evaluation;
+- replay never reconstructs the response from current mutable domain state;
 - same scoped key + different fingerprint -> IDEMPOTENCY_CONFLICT;
 - NEW commands then evaluate If-Match and execute;
 - idempotency row and authoritative mutation commit atomically;
@@ -265,7 +266,8 @@ Rules:
 - if the competing first transaction rolls back, the waiter may become NEW and only then evaluates If-Match/mutates;
 - lock/wait is bounded by request + DB statement timeout;
 - if the result cannot be established before timeout or because DB availability fails, return DEPENDENCY_UNAVAILABLE / HTTP 503;
-- in-progress/unknown commit handling never fabricates success and never returns conflict solely because the identical command is still in progress.
+- in-progress/unknown commit handling never fabricates success and never returns conflict solely because the identical command is still in progress;
+- selected MVP applies no TTL/expiry to committed idempotency records because no accepted retry/idempotency window exists; any later expiry policy reopens Data + Interface Design.
 
 ## Transactions
 
@@ -311,16 +313,32 @@ Immutable peer Component/InteractionRevision/Deployment/Resource identity valida
 
 ### Materialization
 
-CurrentPolicyMaterializer opens one read-only REPEATABLE READ transaction. Preflight and emit reuse exactly that snapshot/evaluationAt. Every owner read port, including Business Connectivity current-Need resolution, is bound to it.
+CurrentPolicyMaterializer opens one read-only REPEATABLE READ transaction. The **first database statement** establishes the transaction snapshot and returns PostgreSQL `transaction_timestamp()`; that value is the sole `evaluationAt` used for Rule effective-window evaluation and response output. Preflight and emit reuse exactly that snapshot/evaluationAt. Every owner read port, including Business Connectivity current-Need resolution, is bound to it.
 
 
 ## Migrations
 
-- schema is created/evolved only by ordered versioned migrations;
-- the migration runner records immutable applied migration identity; changing already-applied migration content is an error when checksum support is available;
-- migration failure leaves the database at the last fully committed migration;
-- destructive/irreversible future migration requires Change Transition Design; none is part of initial greenfield schema.
+The application binary has two process modes:
+
+### migrate
+
+- connects to PostgreSQL using startup configuration;
+- acquires one exclusive PostgreSQL advisory lock dedicated to NAPMS schema migration;
+- validates the ordered embedded migration set and immutable checksum for every already-applied migration;
+- unknown applied migration id, missing expected earlier migration or checksum mismatch is a hard failure;
+- applies pending migrations in order;
+- each current greenfield migration runs in a PostgreSQL transaction; failure rolls back that migration and leaves the database at the previous fully committed version;
+- records migration id + checksum atomically with the migration;
+- concurrent migrators serialize on the advisory lock.
+
+### serve
+
+- never applies schema changes;
+- before listener start verifies the database applied migration ids/checksums exactly match the binary's expected set;
+- pending/missing/unknown/checksum-mismatched schema state is a startup failure.
+
+No destructive/non-transactional migration exists in the current greenfield set. A future migration requiring those semantics reopens Change Transition Design.
 
 ## Retention/data lifecycle
 
-Domain history required by accepted semantics is authoritative and is not automatically expired. No personal-data retention/deletion requirement is present in the source corpus; privacy/retention policy remains DEFERRED until an applicable external/product obligation appears.
+Domain history required by accepted semantics and committed idempotency replay records are authoritative for this MVP and are not automatically expired. No personal-data retention/deletion requirement is present in the source corpus; privacy/retention policy remains DEFERRED until an applicable external/product obligation appears.
