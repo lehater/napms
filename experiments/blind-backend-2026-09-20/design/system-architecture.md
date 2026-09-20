@@ -9,6 +9,7 @@ Use one stateless backend application process as a modular monolith plus one ACI
 Rationale:
 - accepted flows are synchronous;
 - domain owners need strong local transactions;
+- AccessRequest submission needs one coherent validation/write snapshot without cross-owner writes;
 - complete policy materialization requires a coherent cross-module read snapshot;
 - no accepted independent scaling/deployment requirement justifies network-separated services.
 
@@ -25,7 +26,7 @@ Domain/application modules:
 Technical edge modules:
 - `api` — external request/response adapter;
 - `authn_authz` — OIDC validation and permission admission;
-- `persistence` adapters owned by each domain module;
+- persistence adapters owned by each domain module;
 - `runtime` — composition/configuration/health/telemetry wiring.
 
 ## Dependency rules
@@ -41,24 +42,25 @@ Technical edge modules:
 ## Transactions and consistency
 
 Writes:
-- exactly one owning module transaction per command;
+- exactly one semantic owner is mutated per command;
 - optimistic aggregate version checks;
-- database uniqueness/foreign-key constraints only inside a module's owned schema unless a cross-owner reference is intentionally stored as opaque value.
+- a command may use one database transaction to perform peer-owner validation reads plus its owner write, while peer tables remain read-only;
+- database uniqueness/foreign-key constraints stay inside a module's owned schema; cross-owner references are opaque values validated through public ports.
 
 Policy materialization:
 - runs read-only under database REPEATABLE READ (or stronger equivalent) across module-owned schemas in the same physical relational database;
 - owner query ports accept the shared read-snapshot context so all resolved facts come from one database snapshot;
-- logical `asOf` remains a domain/query parameter distinct from database snapshot time.
+- the backend records server-owned `evaluationAt` for that snapshot; historical/time-travel policy materialization is not part of the MVP.
 
 ## Interaction style
 
-- external interface: synchronous HTTP/JSON selected as the simplest interoperable request/response boundary for the current CRUD/decision/materialization workload;
+- external interface: synchronous HTTP/JSON selected as the smallest interoperable request/response boundary for the current CRUD/decision/materialization workload;
 - internal interaction: synchronous in-process calls through public application/read ports;
 - asynchronous messaging: NOT_APPLICABLE to current accepted behavior.
 
 ## Persistence constraint
 
-A single physical relational database is architecture-significant because it provides atomic owner transactions plus coherent cross-module snapshot reads. Domain schemas remain module-owned. Concrete database vendor is an implementation freedom only if it supports required transaction isolation, constraints, migrations and JSON/time types used by Data Design; otherwise Implementation Design must select a compatible engine explicitly.
+A single physical relational database is architecture-significant because it provides atomic owner transactions plus coherent cross-module snapshot reads. Domain schemas remain module-owned. Concrete database vendor is an implementation freedom only if it supports required transaction isolation, constraints, migrations and time/network-address types used by Data Design; otherwise Implementation Design must select a compatible engine explicitly.
 
 ## Deployment/configuration boundary
 
@@ -72,4 +74,5 @@ The process is horizontally replicable only when all authoritative state remains
 - message broker;
 - provider/firewall adapters;
 - UI rendering;
-- configured-state reconciliation.
+- configured-state reconciliation;
+- historical policy export.
