@@ -16,6 +16,7 @@ Accepted design artifacts are the oracle. Existing NAPMS implementation/design i
 - Site assignment and singular OWNER/ADMINISTRATOR replacement/clear preserve non-overlapping history.
 - setting an already-current responsibility is a no-op.
 - address history preserves effectiveFrom/effectiveTo/changedBySubject.
+- HOST accepts canonical IPv4/IPv6 literal only; PREFIX requires CIDR with host bits already zero; host-bit prefixes reject rather than mask; mapped IPv6 is not silently converted to IPv4.
 - Site and ResponsibilityGroup remain immutable in selected MVP.
 
 ### Application Communication
@@ -24,6 +25,9 @@ Accepted design artifacts are the oracle. Existing NAPMS implementation/design i
 - Interaction subject is immutable.
 - published InteractionRevision is immutable; changed traffic meaning creates a new revision.
 - revision preserves createdAt/createdBySubject.
+- ipProtocol is integer 0..255 with no canonical name aliases.
+- only TCP(6)/UDP(17) permit port ranges; other protocols require empty port sets.
+- port lists canonicalize by sort + merge overlap/adjacency without crossing gaps.
 - unsupported traffic semantics reject rather than widen/approximate.
 
 ### Business Connectivity
@@ -39,7 +43,7 @@ Accepted design artifacts are the oracle. Existing NAPMS implementation/design i
 - AccessRequest subject/initial Need/provenance are immutable and finalizes once.
 - one PolicyRule exists per AccessSubject.
 - first Rule is ACTIVE with unbounded window.
-- AuthorizationEvidence is append-only/unique by AccessRequestRef.
+- AuthorizationEvidence is append-only/unique by AccessRequestRef and exports immutable request submitter/time/initialNeedRef plus decision actor/time.
 - JustificationAssociation is append-only/unique by NeedRef.
 - PolicyRule version covers evidence set, justification set and operational state/window.
 - state/window no-op changes version/history neither.
@@ -157,7 +161,7 @@ For Resource endpoints/history, Application Components, Interaction revisions, P
 Every successful materialization response contains:
 - one MaterializedRuleProvenance per selected Rule;
 - exact AccessSubject/state/window/effective-at-evaluation;
-- all AuthorizationEvidence;
+- all AuthorizationEvidence including submittedBySubject/submittedAt/initialNeedRef and decision provenance;
 - all participant-attributed Need justification/currentness;
 - reconciliation flags;
 - normalized technical rows referencing PolicyRuleRef;
