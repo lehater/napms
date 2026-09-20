@@ -156,7 +156,7 @@ Completion:
 - zero-current-Need Rule can still COMPLETE with reconciliation flag;
 - effective missing realization -> UNRESOLVED;
 - dependency failure -> HTTP 503;
-- subset/all selection, bounded/chunked one-snapshot processing and streaming-output tests green.
+- subset/all selection, two-phase preflight-before-HTTP-commit, bounded/chunked same-snapshot processing, preflight-503 and post-commit truncated-stream tests green.
 
 ### I7 — Security and operability closure
 
@@ -193,7 +193,7 @@ IMPLEMENTATION is complete only when:
 2. required Idempotency-Key and If-Match semantics are applied exactly to the declared operations;
 3. every domain invariant and application consistency rule is enforced at its owner;
 4. PostgreSQL schema/migrations realize Persistence Design including Resource Site/address/responsibility history, independent Application/Interaction aggregate ownership, one Rule per AccessSubject, evidence/justification uniqueness and idempotency replay data;
-5. CurrentPolicyMaterializer evaluates selection + ACTIVE/window semantics before realization, derives Need reconciliation without revocation, cannot return COMPLETE with unresolved selected-effective Rule input, and never converts dependency failure into application UNRESOLVED;
+5. CurrentPolicyMaterializer evaluates selection + ACTIVE/window semantics, performs complete bounded preflight before HTTP 200 commitment, derives Need reconciliation without revocation, cannot return COMPLETE with unresolved selected-effective Rule input, returns preflight dependency failure as 503/500, and treats post-commit stream failure as incomplete/non-artifact rather than a successful export;
 6. normalized rows preserve exact traffic semantics and Rule identity with compact evidence/justification counts/reconciliation plus explicit source-fact actor/time; full permission/business audit is reachable by PolicyRuleRef through bounded paginated endpoints;
 7. OIDC authentication/cache/fail-closed dependency distinctions hold;
 8. startup configuration, no-reload, retry/timeout, logging/metrics/health/cancellation/shutdown/redaction semantics are observable;
@@ -206,7 +206,7 @@ IMPLEMENTATION is complete only when:
 
 Private function/type names, helper decomposition, exact Go filenames, SQL/index/query optimization preserving accepted contracts, choice among maintained libraries that satisfy those contracts, migration-runner implementation, logger/metrics library, test framework/helpers, UUID library, composition wiring syntax and local refactorings.
 
-Collection pagination/default/max/no-truncation and materialization bounded-memory semantics are also not coding freedoms. Exact cursor encoding/chunk size/stream-buffer implementation remain free.
+Collection pagination/default/max/no-truncation, materialization two-phase response-commit boundary and bounded-memory semantics are also not coding freedoms. Exact cursor encoding/chunk size/stream-buffer implementation remain free.
 
 The following are **not** coding freedoms: same-vs-cross Application validity, ConnectivityNeed participantComponent semantics, AccessSubject fields, Rule uniqueness, Need exclusion from Rule identity, evidence/justification ownership, operational audit-history exposure, automatic-vs-nonautomatic Need revocation, ACTIVE/window semantics, policy subset behavior, endpoint DTO/status/header semantics, permission mapping/claim representation, aggregate concurrency owner, idempotency scope/order, transaction boundaries, OIDC failure classification, configuration precedence/reload/retry semantics, logging safety or materialization COMPLETE/UNRESOLVED meaning.
 
