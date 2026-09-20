@@ -123,11 +123,11 @@ Implement:
 - final ALLOWED/DENIED request decision;
 - one PolicyRule per unique AccessSubject;
 - atomic ALLOWED resolve/create Rule + AuthorizationEvidence + initial Need association;
-- multiple authorization-evidence entries and participant-attributed Need justifications without duplicating Rule;
+- multiple authorization-evidence entries and participant-attributed Need justifications without duplicating Rule; whole-Rule aggregate version advances on every newly appended evidence/justification set mutation;
 - ACTIVE/INACTIVE + absolute EffectiveWindow;
 - additional current-Need attachment with participantComponent validation;
 - derived NO_CURRENT_BUSINESS_JUSTIFICATION without copied Need currentness;
-- Rule operational/justification ETag concurrency and cursor-bounded operational audit history;
+- Rule operational/evidence/justification ETag concurrency and cursor-bounded operational audit history; evidence/justification-only mutation never creates operational-history row;
 - replay-before-If-Match idempotency semantics.
 
 Completion:
@@ -147,7 +147,7 @@ Implement read-only shared-snapshot CurrentPolicyMaterializer with:
 - NO_CURRENT_BUSINESS_JUSTIFICATION reconciliation flag;
 - no automatic deactivation when current Need count is zero;
 - exact normalized traffic/address expansion for selected effective Rules only;
-- all authorization evidence + participant-attributed justification provenance;
+- all authorization evidence + participant-attributed justification provenance + explicit Resource-address/InteractionRevision/Need actor-time fields; no generic provenance blob;
 - stable nonEffective and MaterializationIssue representations.
 
 Completion:
@@ -200,7 +200,7 @@ IMPLEMENTATION is complete only when:
 9. architecture/component dependency checks pass;
 10. every Test Design contract has executable evidence at the proper level;
 11. full fresh-database end-to-end acceptance journey and negative siblings pass;
-12. no implementation convention introduces a new product/domain/API/data/security/operability semantic decision.
+12. no implementation convention introduces a new product/domain/API/data/security/operability semantic decision, generic provenance schema or alternative Rule-version scope.
 
 ## Explicit coding-agent freedoms
 
