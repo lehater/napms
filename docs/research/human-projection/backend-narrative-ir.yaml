@@ -1,0 +1,115 @@
+version: 1
+kind: harness-human-projection-ir
+manifest_digest: __DYNAMIC__
+
+documents:
+  - id: overview
+    sections:
+      - id: product
+        claims:
+          - text: The first MVP covers the end-to-end path from describing Resources and application communication through connectivity request and permission decision to current desired access and vendor-neutral policy export.
+            sources: [FIRST-MVP-REQUIREMENTS]
+          - text: Resource identity and logical endpoint identity remain independent from current network address realization.
+            sources: [FIRST-MVP-REQUIREMENTS]
+      - id: discovery
+        claims:
+          - text: Resource Catalogue curation is intended to maintain stable Resource scope, logical endpoint, address-realization, Site and responsibility truth without direct database edits.
+            sources: [RC-DISCOVERY]
+          - text: Resource metadata such as Site or responsibility is distinct from actor authority.
+            sources: [RC-DISCOVERY]
+      - id: application-journey
+        claims:
+          - text: Policy materialization composes owner-held Resource, application communication, deployment, business-connectivity and access-policy truth without becoming the owner of those domain semantics.
+            sources: [FIRST-MVP-JOURNEY]
+          - text: A selected policy result is COMPLETE or UNRESOLVED; missing required realization for an effective Rule is never silently omitted.
+            sources: [FIRST-MVP-JOURNEY]
+
+  - id: domain
+    sections:
+      - id: strategic
+        claims:
+          - text: The first-MVP domain separates Resource Catalogue, Application Communication Catalogue, Application Deployment, Business Connectivity, Access Policy and Authority Management as independently owned capabilities.
+            sources: [STRATEGIC-CAPABILITIES, STRATEGIC-CONTEXTS]
+          - text: Business justification, technical deployment, Resource realization, permission and actor authority remain separate semantic responsibilities.
+            sources: [STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]
+      - id: use-cases
+        claims:
+          - text: Resource curation supports stable Resource identity, explicit logical Endpoints, replaceable or clearable current HOST/PREFIX realization, Site/responsibility maintenance and explanatory history.
+            sources: [RC-CURATION]
+          - text: Resource curation forbids automatic endpoint grouping by address, Site, responsibility or name.
+            sources: [RC-CURATION]
+      - id: tactical
+        claims:
+          - text: Tactical domain knowledge remains distributed across Resource Catalogue, Application Communication, Application Deployment, Business Connectivity and Access Policy owners, with Authority Management supplying effective actor/action/scope/time semantics.
+            sources: [RC-DOMAIN, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN, AM-LANGUAGE]
+
+  - id: architecture-and-interfaces
+    sections:
+      - id: system
+        claims:
+          - text: The backend is designed as one modular-monolith process with in-process owner-module contracts, PostgreSQL persistence and an external OIDC issuer.
+            sources: [SYSTEM-RULES]
+          - text: Internal bounded-context integration is not performed through internal HTTP or shared table ownership.
+            sources: [SYSTEM-RULES]
+          - text: Policy materialization uses one read-only REPEATABLE READ snapshot and one database-owned evaluationAt before result exposure.
+            sources: [SYSTEM-RULES]
+      - id: security
+        claims:
+          - text: Authentication uses OIDC bearer JWT with exact issuer/audience/time validation, an asymmetric algorithm allow-list and required kid-based key selection.
+            sources: [SECURITY-ARCHITECTURE]
+          - text: Request and export scoped admission require an effective matching AuthorityGrant for every relevant Resource AuthorityScopeRef; partial scope coverage fails closed.
+            sources: [SECURITY-ARCHITECTURE]
+          - text: Resource Site, OWNER/ADMINISTRATOR responsibility, BusinessProcess metadata and ConnectivityNeed existence do not themselves grant authority.
+            sources: [SECURITY-ARCHITECTURE]
+      - id: interfaces
+        claims:
+          - text: The external boundary is one HTTP/JSON API; internal module boundaries are not HTTP boundaries.
+            sources: [HTTP-REQUIREMENTS]
+          - text: Access request and policy export admission are based on server/database-owned times and scoped AuthorityGrants, while caller-supplied identity or authority fields are not trusted.
+            sources: [HTTP-REQUIREMENTS]
+          - text: COMPLETE and UNRESOLVED are successful application results, while dependency inability is a 503 failure before response commitment.
+            sources: [HTTP-REQUIREMENTS]
+      - id: data
+        claims:
+          - text: Persistence uses one PostgreSQL database with one owner per table and no cross-owner database foreign keys.
+            sources: [PERSISTENCE]
+          - text: Cross-owner references are opaque identifiers validated through owner contracts rather than shared persistence ownership.
+            sources: [PERSISTENCE]
+
+  - id: quality-and-operations
+    sections:
+      - id: quality
+        claims:
+          - text: A COMPLETE export must be coherent for one evaluationAt and include required provenance and all technical rows for selected effective Rules.
+            sources: [QUALITY-REQUIREMENTS]
+          - text: Numeric latency, throughput, availability and scale targets are explicitly not required for the first MVP.
+            sources: [QUALITY-REQUIREMENTS]
+      - id: security-analysis
+        claims:
+          - text: The threat model covers forged authority, scope-grant reuse, metadata-as-authority confusion, stale permission evidence, export disclosure, OIDC key/algorithm failures and partial-export denial-of-service cases.
+            sources: [THREAT-MODEL]
+          - text: Controls preserve request/export authority evidence and reject partial successful artifacts when dependency or stream completion cannot be established.
+            sources: [THREAT-MODEL]
+      - id: operability
+        claims:
+          - text: Every HTTP request carries a correlationId through application and database work, and materialization diagnostics distinguish COMPLETE from UNRESOLVED.
+            sources: [OBSERVABILITY]
+          - text: OIDC key-refresh failure, database unavailability and domain rejection must remain distinguishable without logging bearer tokens, credentials or secret material.
+            sources: [OBSERVABILITY]
+
+  - id: implementation-and-verification
+    sections:
+      - id: implementation
+        claims:
+          - text: The implementation boundary includes the backend HTTP/JSON API, modular-monolith modules, PostgreSQL persistence, OIDC authentication, scoped/time authority admission and vendor-neutral policy materialization.
+            sources: [MVP-IMPLEMENTATION-READINESS]
+          - text: Frontend implementation, provider-specific rendering, firewall mutation, configured-state reconciliation, historical export and distributed services are outside this backend implementation boundary.
+            sources: [MVP-IMPLEMENTATION-READINESS]
+          - text: The accepted implementation sequence proceeds from foundation and Resource/Application slices through deployment/business/access/materialization and closes with security, operability, migration and fresh-database verification.
+            sources: [MVP-IMPLEMENTATION-READINESS]
+      - id: verification
+        claims:
+          - text: Verification is organized across domain, integration, API/security and fresh-database end-to-end levels.
+            sources: [MVP-TEST-INTENT]
+          - text: Every accepted REQ-* must appear in at least one verification scenario or have an explicit non-test verification method.
+            sources: [MVP-TEST-INTENT]
