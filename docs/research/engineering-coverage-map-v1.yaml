@@ -149,9 +149,8 @@ rows:
     state: COVERED
     artifacts: [SYSTEM-RULES, QUALITY-REQUIREMENTS]
   - concern: reliability.availability
-    state: NOT_APPLICABLE
-    rationale: Numeric availability target is explicitly NOT_REQUIRED for first MVP scope.
-    evidence: [MVP-QUALITY-TARGETS]
+    state: UNASSESSED
+    rationale: Absence of a numeric availability target does not make the availability concern non-applicable.
   - concern: reliability.fault-tolerance
     state: COVERED
     artifacts: [SYSTEM-RULES, SECURITY-ARCHITECTURE]
@@ -179,21 +178,17 @@ rows:
     capabilities: [engineering.operability.observability]
     artifacts: [OBSERVABILITY]
   - concern: operability.metrics
-    state: COVERED
-    artifacts: [OBSERVABILITY]
-    rationale: Duration/count diagnostics are required; production SLO metric targets are explicitly not required.
+    state: UNASSESSED
+    rationale: Duration/count diagnostic fields do not by themselves prove a metrics/SLI design.
   - concern: operability.tracing
-    state: COVERED
-    artifacts: [OBSERVABILITY]
-    rationale: correlationId propagation is required; distributed tracing backend is explicitly not required.
+    state: UNASSESSED
+    rationale: Correlation identifiers are useful evidence, but do not by themselves prove a tracing design.
   - concern: operability.health
-    state: COVERED
-    artifacts: [OBSERVABILITY]
-    rationale: OIDC and database dependency states are distinguishable.
+    state: UNASSESSED
+    rationale: Distinguishable dependency failure states do not by themselves prove health/readiness diagnostics.
   - concern: operability.alerting
-    state: NOT_APPLICABLE
-    rationale: Numeric production SLO dashboards/alert thresholds are explicitly not required for first MVP.
-    evidence: [OBSERVABILITY, MVP-QUALITY-TARGETS]
+    state: UNASSESSED
+    rationale: Absence of numeric SLO alert thresholds does not make alerting non-applicable.
   - concern: operability.incident
     state: UNASSESSED
   - concern: operability.admin
@@ -201,24 +196,20 @@ rows:
     artifacts: [SYSTEM-RULES]
     rationale: Explicit migrate and serve modes exist.
   - concern: operability.capacity
-    state: NOT_APPLICABLE
-    rationale: Numeric scale/capacity target is explicitly NOT_REQUIRED for first MVP.
-    evidence: [MVP-QUALITY-TARGETS]
+    state: UNASSESSED
+    rationale: Absence of a numeric scale target does not make capacity/resource operations non-applicable.
 
   - concern: quality.performance.latency
-    state: NOT_APPLICABLE
-    rationale: Numeric latency target explicitly NOT_REQUIRED for first MVP.
-    evidence: [MVP-QUALITY-TARGETS]
+    state: UNASSESSED
+    rationale: No numeric latency target is required, but the latency concern itself is not thereby non-applicable.
   - concern: quality.performance.throughput
-    state: NOT_APPLICABLE
-    rationale: Numeric throughput target explicitly NOT_REQUIRED for first MVP.
-    evidence: [MVP-QUALITY-TARGETS]
+    state: UNASSESSED
+    rationale: No numeric throughput target is required, but the throughput concern itself is not thereby non-applicable.
   - concern: quality.performance.resource-efficiency
     state: UNASSESSED
   - concern: quality.performance.capacity
-    state: NOT_APPLICABLE
-    rationale: Numeric scale/capacity target explicitly NOT_REQUIRED for first MVP.
-    evidence: [MVP-QUALITY-TARGETS]
+    state: UNASSESSED
+    rationale: No numeric capacity target is required, but the capacity concern itself is not thereby non-applicable.
   - concern: quality.compatibility.interoperability
     state: COVERED
     artifacts: [HTTP-REQUIREMENTS, OPENAPI]
