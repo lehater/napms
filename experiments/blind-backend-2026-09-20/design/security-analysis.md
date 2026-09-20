@@ -16,8 +16,10 @@ Scope: selected blind backend MVP. This analysis reviews accepted design and rou
 
 | Concern | State | Accepted control |
 | --- | --- | --- |
-| Forged/expired/wrong issuer/audience/signature token | COVERED | Fixed OIDC issuer/audience, signature/time validation, fail closed. |
-| OIDC key dependency unavailable is misreported as invalid user | COVERED | Operability/Auth contract distinguishes invalid credential 401 from unverifiable credential 503. |
+| Forged/expired/wrong issuer/audience/signature token | COVERED | Exact configured asymmetric alg allow-list/key compatibility, issuer/audience, required exp/optional nbf with explicit skew, non-empty sub; fail closed. |
+| OIDC key dependency unavailable is misreported as invalid user | COVERED | Invalid token with established key -> 401; inability to establish validity -> 503. |
+| JWT algorithm confusion / unsafe library default | COVERED | none/HS*/unknown/unconfigured algorithms rejected; token alg must match configured asymmetric allow-list and JWKS key type. |
+| Cold-start or unready key-cache recovery deadlock/fetch storm | COVERED | Initial JWKS acquisition gates listener; runtime readiness/protected validation share one bounded single-flight refresh; max-stale controls continued cache use. |
 | Caller spoofs actor/permissions | COVERED | Principal/permissions only from trusted token; strict unknown-field rejection. |
 | Permission claim missing/wrong type interpreted inconsistently | COVERED | Missing claim = empty permission set; present claim must be array<string>; wrong type/non-string = invalid credential; unknown values grant nothing. |
 | Unauthorized read/mutation/export/decision | COVERED | Exact operation permission matrix; no implication. |
