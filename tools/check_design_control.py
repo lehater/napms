@@ -63,7 +63,7 @@ def target_body(target):
 
 check_body=target_body("design-check")
 sync_body=target_body("design-sync")
-for required in ("check_canonical_graph.py","check_openapi_contract.py","check_persistence_model.py","check_design_control.py"):
+for required in ("check_canonical_graph.py","check_harness_integration.py","check_openapi_contract.py","check_persistence_model.py","check_design_control.py"):
     if required not in check_body:
         fail(f"design-check missing {required}")
 for legacy in ("canonical-model-check","harness-check","docs-v2-harness-check","knowledge-check","check_cm"):
@@ -79,6 +79,18 @@ for retired in (".github/workflows/harness.yml",".github/workflows/docs-v2-harne
 
 if "make design-check" not in workflow:
     fail("design workflow does not run make design-check")
+if not (ROOT/".harness-version").exists():
+    fail("immutable Harness version pin is missing")
+for text,name in ((agents,"AGENTS.md"),(readme,"docs/README.md")):
+    if "harness-engineering-graph.yaml" not in text or "harness-projection.yaml" not in text:
+        fail(f"{name} does not route through unified Harness project inputs")
+for forbidden_local in (
+    "tools/check_harness_vertical.py",
+    "tools/test_harness_vertical.py",
+    "tools/test_authority_execution.py",
+):
+    if (ROOT/forbidden_local).exists():
+        fail(f"duplicated local Harness evaluator remains: {forbidden_local}")
 
 for path in sorted((ROOT/".agents/skills").glob("*/SKILL.md")):
     text=path.read_text(encoding="utf-8")
