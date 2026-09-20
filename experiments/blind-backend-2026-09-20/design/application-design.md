@@ -46,7 +46,7 @@ Inside one write transaction:
 2. resolve current Need and BusinessProcess version;
 3. resolve exact InteractionRevision;
 4. resolve source/destination Deployments and verify Component direction;
-5. verify Need Interaction matches revision's Interaction;
+5. verify Need Interaction matches revision's Interaction and Need participantComponentRef equals that Interaction's source or destination Component;
 6. create immutable `AccessSubject(sourceDeploymentRef,destinationDeploymentRef,interactionRevisionRef)`;
 7. persist AccessRequest with initialNeedRef, validatedBusinessProcessVersion, actor/time;
 8. commit idempotency result.
@@ -90,7 +90,7 @@ Inside one transaction:
 2. idempotency replay/conflict before NEW-command Rule ETag check;
 3. load Rule under expected version;
 4. resolve Need as CURRENT through Business Connectivity in the same snapshot;
-5. require Need Interaction to equal the Interaction owning Rule.interactionRevisionRef;
+5. require Need Interaction to equal the Interaction owning Rule.interactionRevisionRef and participantComponentRef to be one of that Interaction's participants;
 6. if Need association already exists, return semantic no-op/replay result;
 7. append JustificationAssociation and increment Rule version;
 8. do not add AuthorizationEvidence and do not change effect state/window;
@@ -104,7 +104,7 @@ Compose:
 - Access Policy Rule/evidence/justification refs/history;
 - Business Connectivity current/historical Need facts.
 
-For each associated Need return current/retired status and Process/business basis. If no associated Need is current, add `NO_CURRENT_BUSINESS_JUSTIFICATION`.
+For each associated Need return current/retired status, Process/business basis and participantComponentRef. If no associated Need is current, add `NO_CURRENT_BUSINESS_JUSTIFICATION`.
 
 This flag is diagnostic/reconciliation semantics, not revocation/effectiveness.
 
@@ -127,7 +127,7 @@ Within one coherent read snapshot:
 5. skip technical realization completeness checks for non-effective Rules;
 6. for every effective Rule resolve exact InteractionRevision, Deployments, Resources and all current addressed Endpoints;
 7. expand source endpoints × destination endpoints × TrafficClauses exactly;
-8. preserve Rule identity, all authorization evidence, all business justifications/currentness, reconciliation flags and technical provenance;
+8. preserve Rule identity, all authorization evidence, all business justifications/currentness/participantComponent attribution, reconciliation flags and technical provenance;
 9. missing source/destination realization or accepted reference -> stable MaterializationIssue;
 10. return COMPLETE iff every selected effective Rule resolves fully, otherwise UNRESOLVED;
 11. dependency/runtime failure preventing evaluation propagates as failure and is never converted into UNRESOLVED.
