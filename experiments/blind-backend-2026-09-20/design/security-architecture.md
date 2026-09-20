@@ -40,7 +40,7 @@ Current MVP permission scope is the whole backend instance. Per-Resource/Applica
 | Operation class | Required permission |
 | --- | --- |
 | GET Site / ResponsibilityGroup / Resource / Resource history | `resource.read` |
-| Create/update Site / ResponsibilityGroup / Resource / Endpoint / address / responsibility | `resource.write` |
+| Create Site / ResponsibilityGroup / Resource / Endpoint; set/clear Resource address/Site/OWNER/ADMINISTRATOR | `resource.write` |
 | GET Application / Interaction / InteractionRevision | `application.read` |
 | Create/update Application / Component / Interaction / InteractionRevision | `application.write` |
 | GET ComponentDeployment | `deployment.read` |
@@ -49,9 +49,10 @@ Current MVP permission scope is the whole backend instance. Per-Resource/Applica
 | Create/update BusinessProcess / ConnectivityNeed, retire Need | `business.write` |
 | Submit AccessRequest | `access.request` |
 | Record ALLOWED/DENIED permission decision | `access.decide` |
-| Change PolicyRule ACTIVE/INACTIVE | `access.manage` |
+| Change PolicyRule ACTIVE/INACTIVE or effective window | `access.manage` |
+| Attach an additional current Need justification to PolicyRule | `access.manage` |
 | GET AccessRequest / PolicyRule | `policy.read` |
-| Materialize current normalized policy | `policy.export` |
+| Materialize all current policy or an explicit PolicyRule subset | `policy.export` |
 
 No permission implies another permission. In particular, `access.request`, `access.decide`, `access.manage` and `policy.export` are independent.
 
