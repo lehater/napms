@@ -135,7 +135,7 @@ Completion:
 - T-RULE-UNIQUE-SUBJECT / DIFFERENT-SUBJECT / NO-NEED-IN-IDENTITY;
 - T-JUSTIFICATION-* and T-NEED-RETIREMENT-RECONCILIATION;
 - T-RULE-EFFECT-* / T-EFFECTIVE-WINDOW-*;
-- idempotency target-scope/replay-before-ETag/concurrency contracts;
+- idempotency target-scope/replay-before-ETag/concurrency contracts, including commit->replay, rollback->NEW and unresolved wait->503;
 - request/decide/manage/read permission separation.
 
 ### I6 — Current Policy Materialization
@@ -207,6 +207,8 @@ IMPLEMENTATION is complete only when:
 Private function/type names, helper decomposition, exact Go filenames, SQL/index/query optimization preserving accepted contracts, choice among maintained libraries that satisfy those contracts, migration-runner implementation, logger/metrics library, test framework/helpers, UUID library, composition wiring syntax and local refactorings.
 
 Collection pagination/default/max/no-truncation, materialization two-phase response-commit boundary and bounded-memory semantics are also not coding freedoms. Exact cursor encoding/chunk size/stream-buffer implementation remain free.
+
+PostgreSQL owner-write/read-snapshot isolation and current-Need FOR SHARE validation-lock semantics are not coding freedoms.
 
 The following are **not** coding freedoms: same-vs-cross Application validity, ConnectivityNeed participantComponent semantics, AccessSubject fields, Rule uniqueness, Need exclusion from Rule identity, evidence/justification ownership, operational audit-history exposure, automatic-vs-nonautomatic Need revocation, ACTIVE/window semantics, policy subset behavior, endpoint DTO/status/header semantics, permission mapping/claim representation, aggregate concurrency owner, idempotency scope/order, transaction boundaries, OIDC failure classification, configuration precedence/reload/retry semantics, logging safety or materialization COMPLETE/UNRESOLVED meaning.
 
