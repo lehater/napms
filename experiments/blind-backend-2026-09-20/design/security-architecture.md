@@ -4,16 +4,21 @@ Status: ACCEPTED after Source Corpus amendments 01–02
 
 ## Trust model
 
-External callers are untrusted until authenticated. The backend trusts identity only from a configured OpenID Connect issuer whose JWT signature, issuer, audience, expiry and not-before claims validate successfully.
+External callers are untrusted until authenticated. The backend trusts identity only from a configured OpenID Connect issuer whose JWT signature, issuer, audience and required expiry validate successfully; not-before is validated when present. Unsigned/none-algorithm tokens are rejected by the selected validation library.
 
 The relational database and configured OIDC issuer are trusted infrastructure dependencies inside the deployment boundary. Caller-supplied actor/resource ownership fields never establish authorization.
 
 ## Identity
 
 Authenticated principal:
-- stable `sub` from trusted issuer;
+- `sub` is required and must be a non-empty string from the validated token;
 - optional display attributes are non-authoritative;
-- effective permission strings are read from a configured token claim.
+- the configured permission claim, when present, must be a JSON array of strings;
+- missing permission claim yields an authenticated Principal with an empty permission set;
+- wrong permission-claim type or non-string element is an invalid credential/token-format failure (401);
+- duplicate permission strings collapse to a set;
+- unknown permission strings grant nothing by themselves because Authorizer recognizes only the exact canonical permission vocabulary;
+- no alternative body/query/header permission source exists.
 
 No local password/account lifecycle is introduced by the MVP.
 
