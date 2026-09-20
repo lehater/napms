@@ -38,7 +38,7 @@ Responsibilities:
 - establish/validate correlation id;
 - authenticate caller;
 - authorize exact operation permission;
-- strictly decode Interface DTOs;
+- enforce configured HTTP request-body byte limit, then strictly decode Interface DTOs;
 - enforce Idempotency-Key and If-Match presence/shape;
 - invoke application service;
 - map accepted result/error to exact status/body/Location/ETag/Problem.
@@ -222,14 +222,14 @@ Bounded read contracts:
 
 - `readRuleCore(PolicyRuleRef)` -> RuleRef, AccessSubject, effectState/effectiveWindow/version, authorizationEvidenceCount, justificationCount;
 - `pageAllRuleCores(cursor,limit)`;
-- `readRuleCores(set<PolicyRuleRef>)` for explicit materialization selection (Interface caps selection at 200);
+- `readRuleCores(set<PolicyRuleRef>)` for explicit materialization selection, internally chunked as needed; Interface imposes no semantic rule-count cap beyond request-body bytes;
 - `pageAuthorizationEvidence(PolicyRuleRef,cursor,limit)`;
 - `pageJustificationAssociations(PolicyRuleRef,cursor,limit)`;
 - `pageOperationalHistory(PolicyRuleRef,cursor,limit)`.
 
 Rule core never embeds unbounded child collections. Justification associations contain NeedRefs/attachment provenance only and do **not** claim current/retired Need status.
 
-For CurrentPolicyMaterializer, `pageAllRuleCores` and `pageJustificationAssociations` are iterated inside the one shared read snapshot. AuthorizationEvidence rows are not loaded merely to produce normalized technical rows; the Rule core evidence count + PolicyRuleRef provide export correlation, while full audit remains paginated through policy.read.
+For CurrentPolicyMaterializer, `pageAllRuleCores`, `pageAuthorizationEvidence` and `pageJustificationAssociations` are iterated inside the one shared read snapshot. Export emits complete per-Rule permission/business provenance once per selected Rule; normalized technical rows reference PolicyRuleRef rather than repeating those unbounded audit arrays.
 
 ### SubmitAccessRequest collaboration
 
@@ -289,18 +289,18 @@ Algorithmic contract:
 Within one `runReadSnapshot` transaction/snapshot:
 
 **Preflight**
-1. obtain selected Rule cores: page all cores for ALL mode or at most 200 explicit cores;
+1. obtain selected Rule cores: page all cores for ALL mode or chunk the explicit Rule set supplied within the configured request-body bound;
 2. evaluate INACTIVE/effectiveWindow;
-3. page justification associations and batch Need currentness to derive counts/reconciliation;
+3. page AuthorizationEvidence and justification associations; batch Need currentness and build complete per-Rule export provenance;
 4. resolve every effective Rule's exact revision/deployment/resource/current-address facts using bounded reads;
 5. determine nonEffective entries, stable MaterializationIssues and final COMPLETE/UNRESOLVED;
 6. complete every required dependency read before any HTTP response is committed;
-7. retain only compact counters/state needed to start emission, not the full row set.
+7. retain only compact preflight state needed to start emission, not the full normalized row set or full audit arrays.
 
 **Emit**
 8. repeat deterministic bounded traversal in the same snapshot;
 9. stream nonEffective/issues/rows for the preflight-determined result;
-10. rows preserve RuleRef, compact counts/reconciliation and explicit actor/time facts; full audit remains paginated by RuleRef.
+10. emit complete MaterializedRuleProvenance once per selected Rule, then rows correlate by RuleRef and preserve explicit technical actor/time facts; paginated policy.read remains an additional audit surface.
 
 Dependency/runtime failure in preflight propagates before response commitment. Transport/cancellation failure after commit aborts the stream; no valid complete export is fabricated.
 
