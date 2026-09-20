@@ -68,7 +68,8 @@ Identity: `InteractionRevisionRef`, immutable after publication.
 
 State:
 - one or more TrafficClause values;
-- createdAt/provenance.
+- createdAt;
+- createdBySubject.
 
 TrafficClause:
 - protocol: normalized protocol name or numeric protocol identifier;
