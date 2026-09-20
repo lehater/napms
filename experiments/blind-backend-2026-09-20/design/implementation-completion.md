@@ -6,7 +6,7 @@ Depends on: `implementation-design.md`, Verification Strategy and Test Design.
 
 IMPLEMENTATION may claim realization complete only when every item below has executable evidence.
 
-1. **External contract** — every accepted HTTP route, DTO, status, Problem code, Location, ETag, correlation and Idempotency-Key rule exists exactly as Interface Design states.
+1. **External contract** — every accepted HTTP route, DTO, status, Problem code, Location, ETag, correlation and Idempotency-Key rule exists exactly as Interface Design states; every growing ordinary collection uses the accepted cursor page contract and parent views contain counts rather than unbounded children.
 
 2. **Source/domain validity** — cross-Application Interaction is accepted when both Components/traffic semantics are valid; no blanket same-Application rule exists anywhere in API/domain/schema.
 
@@ -24,9 +24,9 @@ IMPLEMENTATION may claim realization complete only when every item below has exe
 
 9. **Operational effectiveness/audit** — first Rule is ACTIVE/unbounded; ACTIVE/INACTIVE and absolute effective window preserve Rule/permission identity; same operational values are no-op; evaluation uses inclusive lower/exclusive upper bounds; public policy.read history exposes CREATED/OPERATIONAL_CHANGED actor/time/state/window and excludes no-op history.
 
-10. **Policy selection/materialization** — all/current subset selection, nonEffective handling, exact endpoint/traffic expansion, COMPLETE/UNRESOLVED and stable issue semantics match Application/Interface Design. Only selected effective Rules impose realization completeness.
+10. **Policy selection/materialization** — all/current subset selection, nonEffective handling, exact endpoint/traffic expansion, COMPLETE/UNRESOLVED and stable issue semantics match Application/Interface Design; only selected effective Rules impose realization completeness; internal reads remain bounded/chunked in one snapshot and output can stream without complete-set buffering.
 
-11. **Provenance** — normalized output preserves independent PolicyRule identity, authorization evidence, participant-attributed Need justifications/currentness/reconciliation and explicit actor/time source facts; Resource address uses effectiveFrom/changedBySubject, InteractionRevision and Need use createdAt/createdBySubject; no generic public provenance blob is invented; technically equal independent Rules are not provenance-erased.
+11. **Provenance** — normalized output preserves independent PolicyRule identity plus evidence/justification/current-justification counts/reconciliation and explicit actor/time source facts; full authorization evidence and participant-attributed Need audit are available through paginated PolicyRule endpoints; Resource address uses effectiveFrom/changedBySubject, InteractionRevision and Need use createdAt/createdBySubject; no generic public provenance blob is invented; technically equal independent Rules are not provenance-erased.
 
 12. **Idempotency/concurrency recovery** — idempotency scope includes concrete target; same committed replay precedes current If-Match evaluation; different fingerprint conflicts; different targets do not collide; concurrent identical commands create at most one authoritative result; no automatic DB mutation retry.
 
