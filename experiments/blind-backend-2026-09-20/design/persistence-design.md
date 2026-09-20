@@ -26,7 +26,10 @@ Owner-local FKs:
 
 Required constraints:
 - non-empty trimmed names/display names;
-- address `kind` is HOST or PREFIX and value validates/normalizes accordingly before persistence;
+- address `kind` is HOST or PREFIX; both IPv4/IPv6 are accepted;
+- HOST stores a canonical single IP literal only;
+- PREFIX stores canonical CIDR only after verifying host bits are already zero; persistence adapters must reject rather than mask invalid prefix input;
+- IPv4-mapped IPv6 is not silently converted to IPv4;
 - one open-ended Site-history row per Resource; registration creates an initial row, including `site_ref = null` when no Site is assigned;
 - Site intervals for one Resource do not overlap;
 - at most one open-ended current address row per Endpoint and address intervals do not overlap;
@@ -57,7 +60,9 @@ Required constraints:
 
 - `interaction(interaction_ref PK, source_component_ref, destination_component_ref, purpose nullable, version, created_at)`
 - `interaction_revision(revision_ref PK, interaction_ref, revision_no, created_at, created_by_subject)`
-- `interaction_traffic_clause(revision_ref, ordinal, protocol, source_port_from nullable, source_port_to nullable, destination_port_from nullable, destination_port_to nullable, PK(revision_ref,ordinal))`
+- `interaction_traffic_clause(revision_ref, clause_ordinal, ip_protocol, PK(revision_ref,clause_ordinal))`
+- `interaction_source_port_range(revision_ref, clause_ordinal, range_ordinal, port_from, port_to, PK(revision_ref,clause_ordinal,range_ordinal))`
+- `interaction_destination_port_range(revision_ref, clause_ordinal, range_ordinal, port_from, port_to, PK(revision_ref,clause_ordinal,range_ordinal))`
 
 Owner-local FKs may reference Component because Application and Interaction live inside the same Application Communication owner:
 - source_component_ref -> component;
@@ -70,8 +75,11 @@ Required constraints:
 - source and destination ComponentRefs both exist;
 - revision number is unique within Interaction;
 - every published revision has at least one TrafficClause;
+- `ip_protocol` satisfies 0..255;
+- TCP(6)/UDP(17) may have zero or more source/destination range rows; zero rows means all ports on that side;
+- every other ip_protocol has zero source and zero destination port-range rows;
 - port bounds satisfy `0 <= from <= to <= 65535`;
-- null port bounds mean unrestricted/non-applicable only according to accepted TrafficClause semantics;
+- stored range rows are the canonical sorted/non-overlapping/non-adjacent normalization of the accepted input lists;
 - published revision rows/clauses are append-only;
 - Interaction source/destination/purpose are immutable after creation;
 - Interaction `version` guards revision publication only.
@@ -163,9 +171,17 @@ Required constraints:
   PK(rule_ref,access_request_ref)
 )`
 
-Owner-local FK to PolicyRule. AccessRequestRef remains an Access Policy-owned reference and may use owner-local FK.
+Owner-local FK to PolicyRule and owner-local FK/reference to immutable AccessRequest.
 
 Every row corresponds to one ALLOWED AccessRequest for the exact Rule AccessSubject. Evidence is append-only.
+
+The public/export AuthorizationEvidence projection joins the immutable AccessRequest row to expose:
+- submitter_subject;
+- submitted_at;
+- initial_need_ref;
+plus the decision fields above.
+
+Those request fields are not duplicated as independently mutable evidence columns.
 
 ### Business justification associations
 
