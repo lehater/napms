@@ -119,19 +119,20 @@ Input selection:
 Within one coherent read snapshot:
 
 1. record server-owned `evaluationAt`;
-2. resolve selected Rules;
+2. resolve selected Rule cores through bounded pages for ALL mode or the explicit <=200 Rule set;
 3. evaluate operational effectiveness:
    - INACTIVE -> non-effective;
    - ACTIVE outside effectiveWindow -> non-effective;
    - ACTIVE inside/unbounded window -> effective;
-4. for every selected Rule resolve current/retired Need justification status and reconciliation flags regardless of effectiveness;
-5. skip technical realization completeness checks for non-effective Rules;
-6. for every effective Rule resolve exact InteractionRevision, Deployments, Resources and all current addressed Endpoints;
-7. expand source endpoints × destination endpoints × TrafficClauses exactly;
-8. preserve Rule identity, all authorization evidence, all business justifications/currentness/participantComponent attribution and explicit actor/time facts, reconciliation flags, InteractionRevision createdAt/createdBySubject and Resource-address effectiveFrom/changedBySubject;
-9. missing source/destination realization or accepted reference -> stable MaterializationIssue;
-10. return COMPLETE iff every selected effective Rule resolves fully, otherwise UNRESOLVED;
-11. dependency/runtime failure preventing evaluation propagates as failure and is never converted into UNRESOLVED.
+4. for every selected Rule page its justification associations and resolve current/retired Need status in bounded batches; derive justificationCount/currentJustificationCount and reconciliation flags;
+5. use Rule's authorizationEvidenceCount for export correlation; full evidence rows are available only via paginated policy.read audit surface;
+6. skip technical realization completeness checks for non-effective Rules;
+7. for every effective Rule resolve exact InteractionRevision, Deployments, Resources and current addressed Endpoints in bounded/chunked reads;
+8. expand source endpoints × destination endpoints × TrafficClauses and stream normalized rows incrementally rather than building the complete export in memory;
+9. each row preserves RuleRef, evidence/justification counts, reconciliation flags, InteractionRevisionRef and explicit Resource-address actor/time provenance; full evidence/Need details remain resolvable by RuleRef;
+10. missing source/destination realization or accepted reference -> stable MaterializationIssue;
+11. return COMPLETE iff every selected effective Rule resolves fully, otherwise UNRESOLVED;
+12. dependency/runtime failure preventing evaluation propagates as failure and is never converted into UNRESOLVED.
 
 Zero current Need is not a MaterializationIssue and does not make an otherwise effective Rule non-effective.
 
@@ -142,7 +143,7 @@ Zero current Need is not a MaterializationIssue and does not make an otherwise e
 - historical refs/evidence/justification associations and explicit actor/time provenance are never silently rebound or erased;
 - no automatic DB mutation retry; client retry uses Interface idempotency;
 - idempotency replay precedes NEW-command optimistic precondition evaluation;
-- policy materialization uses one snapshot including Business Connectivity Need currentness;
+- ordinary paginated collection reads are coherent per request but do not promise a multi-request snapshot; policy materialization alone keeps one snapshot while paging/chunking all internal reads;
 - current evaluation time is server-owned; historical caller-selected export is outside MVP.
 
 ## Synchronous/asynchronous applicability
