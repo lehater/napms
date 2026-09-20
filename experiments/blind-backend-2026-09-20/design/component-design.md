@@ -121,7 +121,7 @@ Owner ports:
 
 Public `ResourceResolutionPort`:
 - `resolveResource(ResourceRef)`;
-- `currentEndpointAddresses(ResourceRef)` -> all current addressed endpoints with address/effectiveFrom/provenance.
+- `currentEndpointAddresses(ResourceRef)` -> all current addressed endpoints with address/effectiveFrom/changedBySubject.
 
 Responsibility set/clear is a Resource aggregate operation and enforces at most one current OWNER and ADMINISTRATOR.
 
@@ -154,7 +154,7 @@ Revision publication collaboration:
 Public `CommunicationResolutionPort`:
 - `resolveComponent(ComponentRef)` -> ComponentRef + owning ApplicationRef;
 - `resolveInteraction(InteractionRef)` -> source/destination ComponentRefs;
-- `resolveInteractionRevision(InteractionRevisionRef)` -> InteractionRef, source/destination ComponentRefs, immutable TrafficClauses, createdAt/provenance.
+- `resolveInteractionRevision(InteractionRevisionRef)` -> InteractionRef, source/destination ComponentRefs, immutable TrafficClauses, createdAt, createdBySubject.
 
 No public contract assumes source/destination Components share an Application.
 
@@ -180,8 +180,8 @@ Owner port:
 - BusinessProcessRepository: load/save Process under expected BusinessProcess version.
 
 Public `ConnectivityNeedResolutionPort`:
-- `resolveCurrentNeed(NeedRef)` -> ProcessRef, InteractionRef, participantComponentRef, businessProcessVersion, businessBasis, createdAt/provenance or explicit NOT_CURRENT;
-- `resolveNeed(NeedRef)` -> ProcessRef, InteractionRef, participantComponentRef, businessBasis, ACTIVE|RETIRED, createdAt/retiredAt/provenance;
+- `resolveCurrentNeed(NeedRef)` -> ProcessRef, InteractionRef, participantComponentRef, businessProcessVersion, businessBasis, createdAt, createdBySubject or explicit NOT_CURRENT;
+- `resolveNeed(NeedRef)` -> ProcessRef, InteractionRef, participantComponentRef, businessBasis, ACTIVE|RETIRED, createdAt, createdBySubject, retiredAt;
 - `resolveNeeds(set<NeedRef>)` -> same current/historical facts including participantComponentRef in caller-supplied snapshot.
 
 Access Policy stores NeedRef associations only; it never persists copied Need status/currentness.
@@ -204,7 +204,7 @@ Owner ports:
 ### PolicyRuleRepository
 - `resolveOrCreateBySubject(AccessSubject)` -> stable PolicyRuleRef; new Rule initializes ACTIVE/unbounded;
 - load Rule under expected PolicyRule version;
-- append AuthorizationEvidence uniquely by AccessRequestRef;
+- append AuthorizationEvidence uniquely by AccessRequestRef and advance PolicyRule aggregate version exactly once when adding new evidence to an existing Rule;
 - append JustificationAssociation uniquely by NeedRef;
 - update operational state/window;
 - read operational/evidence/association history;
@@ -246,7 +246,7 @@ Inside one Access Policy write transaction:
 - append authorization evidence;
 - append initial Need justification if absent.
 
-ALLOWED finalization + Rule/evidence/association + idempotency evidence are atomic.
+ALLOWED finalization + Rule/evidence/association + idempotency evidence are atomic. New Rule starts version 1. Existing Rule is row-serialized; adding new AuthorizationEvidence advances Rule version once, preserves operational state/window and adds no operational-history row.
 
 ### PolicyRule operational collaboration
 
