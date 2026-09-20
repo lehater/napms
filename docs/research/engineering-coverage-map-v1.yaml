@@ -1,0 +1,274 @@
+version: 1
+kind: harness-engineering-coverage-map
+catalog: software-engineering-concerns/v1-research
+project: NAPMS
+scope: first-mvp
+status: research
+
+rows:
+  - concern: intent.problem
+    state: COVERED
+    artifacts: [RC-DISCOVERY]
+  - concern: intent.scope
+    state: COVERED
+    artifacts: [FIRST-MVP-REQUIREMENTS]
+  - concern: intent.behavior
+    state: COVERED
+    capabilities: [engineering.requirements.product-intent, engineering.requirements.acceptance]
+    artifacts: [FIRST-MVP-REQUIREMENTS]
+  - concern: intent.quality-targets
+    state: COVERED
+    artifacts: [QUALITY-REQUIREMENTS, MVP-QUALITY-TARGETS]
+    rationale: Qualitative architecture-significant constraints are explicit and numeric latency/throughput/availability/scale targets are explicitly NOT_REQUIRED for first MVP.
+
+  - concern: domain.model
+    state: COVERED
+    capabilities: [engineering.domain.strategic-model, engineering.domain.tactical-model]
+    artifacts: [STRATEGIC-CAPABILITIES, STRATEGIC-CONTEXTS, RC-DOMAIN, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN]
+  - concern: domain.boundaries
+    state: COVERED
+    artifacts: [STRATEGIC-RELATIONSHIPS, MODULE-CONTRACTS]
+  - concern: domain.invariants
+    state: COVERED
+    artifacts: [RC-DOMAIN, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN, SYSTEM-RULES]
+  - concern: domain.time
+    state: COVERED
+    artifacts: [SYSTEM-RULES, PERSISTENCE]
+  - concern: domain.provenance
+    state: COVERED
+    artifacts: [SYSTEM-RULES, PERSISTENCE]
+
+  - concern: application.use-cases
+    state: COVERED
+    artifacts: [RC-CURATION, FIRST-MVP-JOURNEY]
+  - concern: application.orchestration
+    state: COVERED
+    artifacts: [SYSTEM-RULES, MODULE-CONTRACTS]
+  - concern: application.failures
+    state: COVERED
+    artifacts: [SYSTEM-RULES, QUALITY-REQUIREMENTS]
+  - concern: application.idempotency
+    state: COVERED
+    artifacts: [SYSTEM-RULES]
+
+  - concern: architecture.structure
+    state: COVERED
+    artifacts: [C4-STRUCTURE, SYSTEM-RULES]
+  - concern: architecture.boundaries
+    state: COVERED
+    artifacts: [MODULE-CONTRACTS, SYSTEM-RULES]
+  - concern: architecture.communication
+    state: COVERED
+    artifacts: [SYSTEM-RULES, HTTP-REQUIREMENTS]
+  - concern: architecture.deployment
+    state: COVERED
+    artifacts: [SYSTEM-RULES, SECURITY-ARCHITECTURE]
+  - concern: architecture.decisions
+    state: COVERED
+    artifacts: [SYSTEM-RULES, SECURITY-ARCHITECTURE, PERSISTENCE]
+
+  - concern: interface.machine.contract
+    state: COVERED
+    capabilities: [engineering.interface.http-contract]
+    artifacts: [HTTP-REQUIREMENTS, OPENAPI]
+  - concern: interface.machine.errors
+    state: COVERED
+    artifacts: [HTTP-REQUIREMENTS, SYSTEM-RULES]
+  - concern: interface.machine.compatibility
+    state: UNASSESSED
+  - concern: interface.human.journeys
+    state: MISSING
+    capabilities: [engineering.frontend.human-interface]
+    artifacts: [MVP-UI-NAVIGATION, RESOURCE-DETAIL-UI]
+    rationale: Narrow UI artifacts exist but full human-interface design remains incomplete.
+  - concern: interface.human.usability
+    state: UNASSESSED
+  - concern: interface.human.accessibility
+    state: UNASSESSED
+  - concern: interface.human.responsiveness
+    state: UNASSESSED
+  - concern: interface.human.i18n
+    state: UNASSESSED
+
+  - concern: data.model
+    state: COVERED
+    capabilities: [engineering.data.persistence-model]
+    artifacts: [PERSISTENCE]
+  - concern: data.integrity
+    state: COVERED
+    artifacts: [PERSISTENCE, SYSTEM-RULES, QUALITY-REQUIREMENTS]
+  - concern: data.lifecycle
+    state: UNASSESSED
+  - concern: data.quality
+    state: COVERED
+    artifacts: [QUALITY-REQUIREMENTS]
+    rationale: Export coherence and unresolved realization semantics prevent silent loss/misrepresentation.
+  - concern: data.provenance
+    state: COVERED
+    artifacts: [PERSISTENCE, SYSTEM-RULES, THREAT-MODEL]
+  - concern: data.reproducibility
+    state: COVERED
+    artifacts: [SYSTEM-RULES, PERSISTENCE]
+    rationale: Shared database snapshot and database-owned evaluationAt make one materialization internally reproducible.
+  - concern: data.classification
+    state: UNASSESSED
+
+  - concern: security.boundaries
+    state: COVERED
+    capabilities: [engineering.architecture.security]
+    artifacts: [SECURITY-ARCHITECTURE]
+  - concern: security.identity
+    state: COVERED
+    artifacts: [SECURITY-ARCHITECTURE]
+  - concern: security.authorization
+    state: COVERED
+    artifacts: [SECURITY-ARCHITECTURE, SYSTEM-RULES]
+  - concern: security.confidentiality
+    state: COVERED
+    artifacts: [SECURITY-ARCHITECTURE, OBSERVABILITY]
+  - concern: security.integrity
+    state: COVERED
+    artifacts: [SECURITY-ARCHITECTURE, THREAT-MODEL]
+  - concern: security.accountability
+    state: COVERED
+    artifacts: [THREAT-MODEL, OBSERVABILITY]
+  - concern: security.availability-abuse
+    state: COVERED
+    artifacts: [THREAT-MODEL]
+    rationale: Large-export/dependency abuse is explicitly analyzed; no numeric availability SLO is claimed.
+  - concern: security.threat-analysis
+    state: COVERED
+    capabilities: [engineering.security.threat-analysis]
+    artifacts: [THREAT-MODEL]
+  - concern: security.vulnerability-management
+    state: UNASSESSED
+  - concern: security.secure-development
+    state: UNASSESSED
+
+  - concern: reliability.failure-semantics
+    state: COVERED
+    artifacts: [SYSTEM-RULES, QUALITY-REQUIREMENTS]
+  - concern: reliability.availability
+    state: NOT_APPLICABLE
+    rationale: Numeric availability target is explicitly NOT_REQUIRED for first MVP scope.
+    evidence: [MVP-QUALITY-TARGETS]
+  - concern: reliability.fault-tolerance
+    state: COVERED
+    artifacts: [SYSTEM-RULES, SECURITY-ARCHITECTURE]
+    rationale: Dependency failure and unusable identity material fail explicitly instead of being represented as success.
+  - concern: reliability.recovery
+    state: UNASSESSED
+  - concern: reliability.consistency
+    state: COVERED
+    artifacts: [SYSTEM-RULES, PERSISTENCE, QUALITY-REQUIREMENTS]
+  - concern: reliability.retry-idempotency
+    state: COVERED
+    artifacts: [SYSTEM-RULES]
+  - concern: reliability.durability
+    state: COVERED
+    artifacts: [PERSISTENCE]
+  - concern: reliability.dependency-failure
+    state: COVERED
+    artifacts: [SYSTEM-RULES, SECURITY-ARCHITECTURE, OBSERVABILITY]
+
+  - concern: operability.configuration
+    state: COVERED
+    artifacts: [SECURITY-ARCHITECTURE, SYSTEM-RULES]
+  - concern: operability.logging
+    state: COVERED
+    capabilities: [engineering.operability.observability]
+    artifacts: [OBSERVABILITY]
+  - concern: operability.metrics
+    state: COVERED
+    artifacts: [OBSERVABILITY]
+    rationale: Duration/count diagnostics are required; production SLO metric targets are explicitly not required.
+  - concern: operability.tracing
+    state: COVERED
+    artifacts: [OBSERVABILITY]
+    rationale: correlationId propagation is required; distributed tracing backend is explicitly not required.
+  - concern: operability.health
+    state: COVERED
+    artifacts: [OBSERVABILITY]
+    rationale: OIDC and database dependency states are distinguishable.
+  - concern: operability.alerting
+    state: NOT_APPLICABLE
+    rationale: Numeric production SLO dashboards/alert thresholds are explicitly not required for first MVP.
+    evidence: [OBSERVABILITY, MVP-QUALITY-TARGETS]
+  - concern: operability.incident
+    state: UNASSESSED
+  - concern: operability.admin
+    state: COVERED
+    artifacts: [SYSTEM-RULES]
+    rationale: Explicit migrate and serve modes exist.
+  - concern: operability.capacity
+    state: NOT_APPLICABLE
+    rationale: Numeric scale/capacity target is explicitly NOT_REQUIRED for first MVP.
+    evidence: [MVP-QUALITY-TARGETS]
+
+  - concern: quality.performance.latency
+    state: NOT_APPLICABLE
+    rationale: Numeric latency target explicitly NOT_REQUIRED for first MVP.
+    evidence: [MVP-QUALITY-TARGETS]
+  - concern: quality.performance.throughput
+    state: NOT_APPLICABLE
+    rationale: Numeric throughput target explicitly NOT_REQUIRED for first MVP.
+    evidence: [MVP-QUALITY-TARGETS]
+  - concern: quality.performance.resource-efficiency
+    state: UNASSESSED
+  - concern: quality.performance.capacity
+    state: NOT_APPLICABLE
+    rationale: Numeric scale/capacity target explicitly NOT_REQUIRED for first MVP.
+    evidence: [MVP-QUALITY-TARGETS]
+  - concern: quality.compatibility.interoperability
+    state: COVERED
+    artifacts: [HTTP-REQUIREMENTS, OPENAPI]
+  - concern: quality.compatibility.coexistence
+    state: UNASSESSED
+  - concern: quality.maintainability.modularity
+    state: COVERED
+    artifacts: [MODULE-CONTRACTS, QUALITY-REQUIREMENTS]
+  - concern: quality.maintainability.reusability
+    state: UNASSESSED
+  - concern: quality.maintainability.analysability
+    state: COVERED
+    artifacts: [C4-STRUCTURE, MODULE-CONTRACTS, OBSERVABILITY]
+  - concern: quality.maintainability.modifiability
+    state: COVERED
+    artifacts: [MODULE-CONTRACTS, QUALITY-REQUIREMENTS]
+  - concern: quality.maintainability.testability
+    state: COVERED
+    artifacts: [MVP-TEST-INTENT]
+  - concern: quality.flexibility.adaptability
+    state: UNASSESSED
+  - concern: quality.flexibility.scalability
+    state: NOT_APPLICABLE
+    rationale: Numeric scale target explicitly NOT_REQUIRED for first MVP; distributed scaling is outside accepted runtime.
+    evidence: [MVP-QUALITY-TARGETS, SYSTEM-RULES]
+  - concern: quality.flexibility.installability
+    state: COVERED
+    artifacts: [SYSTEM-RULES]
+  - concern: quality.flexibility.replaceability
+    state: UNASSESSED
+
+  - concern: verification.strategy
+    state: COVERED
+    capabilities: [engineering.verification.strategy]
+    artifacts: [MVP-TEST-INTENT]
+  - concern: verification.requirement-traceability
+    state: COVERED
+    artifacts: [MVP-TEST-INTENT]
+  - concern: verification.functional
+    state: COVERED
+    artifacts: [MVP-TEST-INTENT]
+  - concern: verification.quality
+    state: COVERED
+    artifacts: [MVP-TEST-INTENT, QUALITY-REQUIREMENTS]
+  - concern: verification.security
+    state: COVERED
+    artifacts: [MVP-TEST-INTENT, THREAT-MODEL]
+  - concern: verification.reliability
+    state: COVERED
+    artifacts: [MVP-TEST-INTENT, SYSTEM-RULES]
+  - concern: verification.interface
+    state: PARTIAL
+    rationale: Research projection only; machine interface verification exists while frontend test design remains incomplete.
