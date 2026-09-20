@@ -34,7 +34,7 @@ Every mutation explicitly marked **If-Match** requires the current aggregate ETa
 - success returns the new aggregate ETag.
 
 Nested Resource mutations use the Resource ETag.  
-Nested Application mutations use the Application ETag.  
+Nested Application Component creation uses the Application ETag. Interaction revision publication uses the Interaction ETag.  
 Nested Business Process / Connectivity Need mutations use the BusinessProcess ETag.  
 AccessRequest decision uses the AccessRequest ETag.  
 PolicyRule operational-state/effective-window and justification mutations use the PolicyRule ETag.
@@ -199,13 +199,11 @@ No Resource rename operation is part of the selected MVP.
 
 ## Application Communication
 
-### Application
+### Application / Component
 
-`ApplicationView = {applicationRef, name, components:[ComponentView], interactions:[InteractionSummary]}`.
+`ApplicationView = {applicationRef, name, components:[ComponentView]}`.
 
 `ComponentView = {componentRef, applicationRef, name}`.
-
-`InteractionSummary = {interactionRef, applicationRef, sourceComponentRef, destinationComponentRef, purpose:null|string, revisionRefs:[...]}`.
 
 - **Idempotent-create** `POST /v1/applications`
   - body: `{name}`;
@@ -214,19 +212,30 @@ No Resource rename operation is part of the selected MVP.
 - **Idempotent-create + If-Match Application** `POST /v1/applications/{applicationRef}/components`
   - body: `{name}`;
   - `201` ComponentView + new Application ETag.
-- **Idempotent-create + If-Match Application** `POST /v1/applications/{applicationRef}/interactions`
-  - body: `{sourceComponentRef, destinationComponentRef, purpose?}`;
-  - both Components must belong to the named Application;
-  - `201` InteractionSummary + new Application ETag.
-- `GET /v1/interactions/{interactionRef}` -> InteractionSummary.
-- **Idempotent-create + If-Match Application** `POST /v1/applications/{applicationRef}/interactions/{interactionRef}/revisions`
+
+Application/Component names are immutable in selected MVP.
+
+### Interaction
+
+`InteractionView = {interactionRef, sourceComponentRef, destinationComponentRef, purpose:null|string, revisionRefs:[...]}`.
+
+- **Idempotent-create** `POST /v1/interactions`
+  - body: `{sourceComponentRef,destinationComponentRef,purpose?}`;
+  - both ComponentRefs must resolve;
+  - source and destination MAY belong to different Applications;
+  - no Application aggregate is mutated;
+  - `201` InteractionView + Interaction ETag.
+- `GET /v1/interactions/{interactionRef}` -> InteractionView + Interaction ETag.
+- **Idempotent-create + If-Match Interaction** `POST /v1/interactions/{interactionRef}/revisions`
   - body: `{trafficClauses:[TrafficClause,...]}`, non-empty;
-  - `201` InteractionRevisionView + new Application ETag.
+  - `201` InteractionRevisionView + new Interaction ETag.
 - `GET /v1/interaction-revisions/{revisionRef}` -> InteractionRevisionView.
 
 `InteractionRevisionView = {revisionRef, interactionRef, trafficClauses, createdAt, provenance}`.
 
-Published revisions are immutable.
+Published Interaction subject/purpose and published revisions are immutable. A new traffic meaning is a new revision; a different source/destination subject is a different Interaction.
+
+No blanket same-Application validation is permitted.
 
 ## Application Deployment
 
