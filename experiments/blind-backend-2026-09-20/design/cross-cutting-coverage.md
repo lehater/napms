@@ -14,17 +14,17 @@ This is an analysis view, not a second owner of decisions.
 | Time semantics | COVERED | Resource temporal history; server-owned materialization evaluationAt; PolicyRule absolute [effectiveFrom,effectiveUntil) window; OIDC token time; no historical export API. |
 | Current-access identity | COVERED | Access Policy: one Rule per source Deployment + destination Deployment + exact InteractionRevision; Need/address excluded. |
 | Permission evidence | COVERED | Append-only ALLOWED AccessRequest evidence; multiple decisions for same semantic access may support one Rule. |
-| Business justification | COVERED | Need associations append-only; currentness owned by Business Connectivity; zero-current justification becomes reconciliation flag, not revocation. |
+| Business justification | COVERED | Need includes participantComponentRef for independent source/destination attribution; associations append-only; currentness owned by Business Connectivity; zero-current justification becomes reconciliation flag, not revocation. |
 | Cross-Application communication | COVERED | Application Communication: Interaction is an independent aggregate and may reference Components from different Applications. |
 | Configuration | COVERED | Operability startup-only environment contract, validation, unknown-key failure, no runtime reload. |
-| Logging/diagnostics | COVERED | Operability allow-listed structured evidence; domain/history remains authoritative. |
+| Logging/diagnostics | COVERED | Operability allow-listed structured evidence; PolicyRule operational history is authoritative business audit and separately queryable; logs are not. |
 | Metrics/tracing | COVERED | Required dimensions/correlation; concrete telemetry library/exporter free. |
 | Health/readiness | COVERED | Liveness process-only; readiness DB + usable OIDC validation material. |
 | Retries/timeouts/cancellation | COVERED | No automatic DB mutation retry; bounded OIDC fetch; request cancellation and timeout propagate. |
 | Reliability/resilience | COVERED for MVP semantics | Explicit dependency unavailable/unknown-commit/replay behavior; no HA/SLA claim. |
 | Performance/capacity | DEFERRED_NONBLOCKING | No numeric source targets; bounded request timeout/history page size. |
 | Recovery/backup/continuity | DEFERRED_NONBLOCKING for code closure | Authoritative state identified but no accepted RPO/RTO. Required before production continuity claims. |
-| Data provenance | COVERED | Rule, all authorization evidence, Need justifications/currentness, revision/deployment/resource/endpoint facts carried to materialization. |
+| Data provenance | COVERED | Rule, all authorization evidence, Need participant attribution/currentness, revision/deployment/resource/endpoint facts carried to materialization. |
 | Data lifecycle/governance | COVERED/DEFERRED | Accepted histories retained; no external privacy/retention obligation supplied. |
 | Migrations | COVERED for greenfield | Ordered immutable versioned migrations; destructive future change reopens transition design. |
 | Change/transition design | NOT_APPLICABLE | Blind target is greenfield; migration from old NAPMS is post-freeze. |
