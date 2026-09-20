@@ -1,22 +1,19 @@
 # Tactical domain — Business Connectivity
 
-Status: ACCEPTED candidate after Coding-Agent Challenge 01
+Status: ACCEPTED after Coding-Agent Challenge 02
 
 ## Aggregate: BusinessProcess
 
 Identity: `ProcessRef`.
 
 State:
-- immutable non-empty `name`;
-- immutable optional `description`;
+- immutable non-empty name;
+- immutable optional description;
 - mutable `responsibleOrganization?: ResponsibleOrganization`;
-- ConnectivityNeed children.
+- ConnectivityNeed children;
+- aggregate version.
 
-`ResponsibleOrganization` is a descriptive business-attribution value containing:
-- required non-empty displayName;
-- optional opaque externalReference.
-
-It is not an authentication principal, authorization scope, or separately owned organizational master-data model.
+`ResponsibleOrganization` contains required non-empty displayName and optional opaque externalReference. It is descriptive attribution only, not authentication/authorization scope.
 
 Operations:
 - RegisterProcess
@@ -26,29 +23,34 @@ Operations:
 - ReadProcess
 - ReadNeedCurrent/History
 
-Process name/description are immutable in the selected MVP.
-
 ## Entity: ConnectivityNeed
 
-Identity: `NeedRef`, stable inside its BusinessProcess lifecycle.
+Identity: `NeedRef`, stable inside BusinessProcess lifecycle.
 
-State:
-- InteractionRef;
-- immutable non-empty businessBasis;
+Immutable state:
+- `interactionRef`;
+- `participantComponentRef`;
+- non-empty `businessBasis`;
+- createdAt/provenance.
+
+Mutable lifecycle:
 - status ACTIVE | RETIRED;
-- createdAt/retiredAt;
-- provenance.
+- retiredAt when RETIRED.
 
 Invariants:
-- Need references reusable Interaction meaning, not address/ResourceEndpoint/Deployment.
-- Need does not grant access permission.
-- one Process may own many Needs; one Interaction may be required by many Processes.
-- retiring a Need preserves history and does not rewrite historical requests/decisions.
-- a RETIRED Need cannot become ACTIVE again in the selected MVP.
-- business importance/criticality is deliberately absent until Product Requirements defines its representation and use.
+- InteractionRef resolves to reusable Interaction meaning.
+- participantComponentRef must equal either that Interaction's sourceComponentRef or destinationComponentRef.
+- participantComponentRef is reusable Component identity, never Deployment/Resource/address identity.
+- source-side and destination-side Needs for the same Interaction are independent and may coexist.
+- Need does not grant connectivity permission.
+- one Process may own many Needs; one Interaction may support many Needs from many Processes and participant sides.
+- Need survives concrete Deployment/address replacement while the referenced Interaction/Component business meaning remains.
+- retiring Need preserves history and never rewrites AccessRequest/decision/Rule provenance.
+- RETIRED is terminal in selected MVP.
+- business criticality/importance remains outside selected MVP until Product Requirements defines its representation/use.
 
-No Need description/basis edit is part of the selected MVP after creation.
+Need business basis/participant/Interaction are immutable after declaration.
 
 ## Consistency boundary
 
-Process organization change, Need creation and Need retirement are atomic within one BusinessProcess aggregate version. The version guards all child mutation to prevent lost updates.
+Responsible-organization change, Need creation and Need retirement are atomic under one BusinessProcess aggregate version. Need creation validates Interaction + participant Component through Application Communication read contract; it writes only Business Connectivity state.
