@@ -68,14 +68,15 @@ Opaque HTTP ETag <-> AggregateVersion mapping. Numeric/internal version is not e
 
 Application-owned transaction abstraction implemented by PostgreSQL infrastructure:
 
-- `runWrite(owner, operation)`: one transaction-bound owner write set + declared peer read ports in the same database snapshot;
-- `runReadSnapshot(operation)`: all declared read ports on one coherent read-only snapshot + evaluationAt.
+- `runWrite(owner, operation)`: PostgreSQL READ COMMITTED, one transaction-bound owner write set + declared transaction-bound peer read ports;
+- `runReadSnapshot(operation)`: PostgreSQL read-only REPEATABLE READ (or stronger), all declared read ports on one coherent snapshot + evaluationAt.
 
 Rules:
 - only declared semantic owner tables may be written;
 - DB transaction types do not leak inward;
 - request cancellation/deadline propagates;
-- no automatic mutation retry.
+- no automatic mutation retry;
+- transaction-bound peer ports may acquire read locks only when an accepted consistency contract requires them; this does not grant peer write ownership.
 
 ### IdempotentCommandGuard / IdempotencyPort
 
@@ -183,9 +184,9 @@ Owner ports:
 - BusinessProcessNeedReader: cursor-page Need summaries for one Process.
 
 Public `ConnectivityNeedResolutionPort`:
-- `resolveCurrentNeed(NeedRef)` -> ProcessRef, InteractionRef, participantComponentRef, businessProcessVersion, businessBasis, createdAt, createdBySubject or explicit NOT_CURRENT;
+- `lockAndResolveCurrentNeed(NeedRef)` — valid only inside transaction-bound Access Policy write validation; acquires owner-side PostgreSQL FOR SHARE-equivalent row lock blocking Need retirement/update until transaction end, then returns ProcessRef, InteractionRef, participantComponentRef, businessProcessVersion, businessBasis, createdAt, createdBySubject or explicit NOT_CURRENT;
 - `resolveNeed(NeedRef)` -> ProcessRef, InteractionRef, participantComponentRef, businessBasis, ACTIVE|RETIRED, createdAt, createdBySubject, retiredAt;
-- `resolveNeeds(set<NeedRef>)` -> same current/historical facts including participantComponentRef in caller-supplied snapshot.
+- `resolveNeeds(set<NeedRef>)` -> same current/historical facts including participantComponentRef in caller-supplied read snapshot.
 
 Access Policy stores NeedRef associations only; it never persists copied Need status/currentness.
 
@@ -235,7 +236,7 @@ For CurrentPolicyMaterializer, `pageAllRuleCores` and `pageJustificationAssociat
 Inside Access Policy `runWrite`:
 - Authorizer(`access.request`);
 - IdempotentCommandGuard;
-- ConnectivityNeedResolutionPort.resolveCurrentNeed;
+- ConnectivityNeedResolutionPort.lockAndResolveCurrentNeed;
 - CommunicationResolutionPort;
 - DeploymentResolutionPort;
 - AccessRequestRepository.
@@ -263,7 +264,7 @@ ALLOWED finalization + Rule/evidence/association + idempotency evidence are atom
 Inside one Access Policy write transaction:
 - Authorizer(`access.manage`);
 - IdempotentCommandGuard before NEW-command Rule-version check;
-- ConnectivityNeedResolutionPort.resolveCurrentNeed;
+- ConnectivityNeedResolutionPort.lockAndResolveCurrentNeed;
 - CommunicationResolutionPort to verify Need Interaction vs Rule revision Interaction and participantComponentRef membership;
 - PolicyRuleRepository append unique Need association;
 - new association increments Rule version; already-associated Need is no-op/replay.
