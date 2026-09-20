@@ -1,25 +1,40 @@
 # Tactical domain — Business Connectivity
 
-Status: ACCEPTED candidate
+Status: ACCEPTED candidate after Coding-Agent Challenge 01
 
 ## Aggregate: BusinessProcess
 
 Identity: `ProcessRef`.
 
 State:
-- name/description;
-- responsibleOrganization?: ResponsibleOrganization;
-- ConnectivityNeed children or references.
+- immutable non-empty `name`;
+- immutable optional `description`;
+- mutable `responsibleOrganization?: ResponsibleOrganization`;
+- ConnectivityNeed children.
 
-`ResponsibleOrganization` is a descriptive business-attribution value containing an opaque optional external reference and display name. It is not an authentication principal, authorization scope, or separately owned organizational master-data model.
+`ResponsibleOrganization` is a descriptive business-attribution value containing:
+- required non-empty displayName;
+- optional opaque externalReference.
 
-## Entity/Aggregate child: ConnectivityNeed
+It is not an authentication principal, authorization scope, or separately owned organizational master-data model.
 
-Identity: `NeedRef`.
+Operations:
+- RegisterProcess
+- SetResponsibleOrganization / ClearResponsibleOrganization
+- DeclareNeed
+- RetireNeed
+- ReadProcess
+- ReadNeedCurrent/History
+
+Process name/description are immutable in the selected MVP.
+
+## Entity: ConnectivityNeed
+
+Identity: `NeedRef`, stable inside its BusinessProcess lifecycle.
 
 State:
 - InteractionRef;
-- description/business basis;
+- immutable non-empty businessBasis;
 - status ACTIVE | RETIRED;
 - createdAt/retiredAt;
 - provenance.
@@ -29,17 +44,11 @@ Invariants:
 - Need does not grant access permission.
 - one Process may own many Needs; one Interaction may be required by many Processes.
 - retiring a Need preserves history and does not rewrite historical requests/decisions.
-- business importance/criticality is deliberately absent from this MVP model until Product Requirements defines its representation and use.
+- a RETIRED Need cannot become ACTIVE again in the selected MVP.
+- business importance/criticality is deliberately absent until Product Requirements defines its representation and use.
 
-Operations:
-- RegisterProcess
-- UpdateProcessDescription
-- SetResponsibleOrganization
-- DeclareNeed
-- UpdateNeedDescription
-- RetireNeed
-- ReadNeedCurrent/History
+No Need description/basis edit is part of the selected MVP after creation.
 
 ## Consistency boundary
 
-Process/Need mutation is atomic within one BusinessProcess aggregate version.
+Process organization change, Need creation and Need retirement are atomic within one BusinessProcess aggregate version. The version guards all child mutation to prevent lost updates.
