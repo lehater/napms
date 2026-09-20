@@ -166,7 +166,7 @@ Operations:
   - returns `{items:[ResourceHistoryFact], nextCursor:null|string}`;
   - `limit` default 50, valid 1–200;
   - ResourceHistoryFact is one of:
-    - `{kind:"ADDRESS", endpointRef, address:AddressRealization, effectiveFrom, effectiveTo:null|string, provenance}`;
+    - `{kind:"ADDRESS", endpointRef, address:AddressRealization, effectiveFrom, effectiveTo:null|string, changedBySubject}`;
     - `{kind:"SITE", siteRef:null|string, effectiveFrom, effectiveTo:null|string}`;
     - `{kind:"RESPONSIBILITY", assignmentRef, role, groupRef, effectiveFrom, effectiveTo:null|string}`.
 - **Idempotent-create + If-Match Resource** `POST /v1/resources/{resourceRef}/endpoints`
@@ -231,7 +231,7 @@ Application/Component names are immutable in selected MVP.
   - `201` InteractionRevisionView + new Interaction ETag.
 - `GET /v1/interaction-revisions/{revisionRef}` -> InteractionRevisionView.
 
-`InteractionRevisionView = {revisionRef, interactionRef, trafficClauses, createdAt, provenance}`.
+`InteractionRevisionView = {revisionRef, interactionRef, trafficClauses, createdAt, createdBySubject}`.
 
 Published Interaction subject/purpose and published revisions are immutable. A new traffic meaning is a new revision; a different source/destination subject is a different Interaction.
 
@@ -255,7 +255,7 @@ No update/move/retire/delete operation and no independent deployment label are p
 
 `ProcessView = {processRef, name, description:null|string, responsibleOrganization:null|ResponsibleOrganization, needs:[NeedSummary]}`.
 
-`NeedSummary = {needRef, processRef, interactionRef, participantComponentRef, businessBasis, status:"ACTIVE"|"RETIRED", createdAt, retiredAt:null|string}`.
+`NeedSummary = {needRef, processRef, interactionRef, participantComponentRef, businessBasis, status:"ACTIVE"|"RETIRED", createdAt, createdBySubject, retiredAt:null|string}`.
 
 - **Idempotent-create** `POST /v1/processes`
   - body: `{name, description?, responsibleOrganization?}`;
@@ -317,7 +317,7 @@ If non-null, at least one bound is required and when both exist `effectiveFrom <
 
 `AuthorizationEvidenceView = {accessRequestRef, externalDecisionRef:null|string, decidedBySubject, decidedAt}`.
 
-`JustificationView = {needRef, processRef, interactionRef, participantComponentRef, businessBasis, needStatus:"ACTIVE"|"RETIRED", attachedAt, attachedBySubject, sourceAccessRequestRef:null|string}`.
+`JustificationView = {needRef, processRef, interactionRef, participantComponentRef, businessBasis, needStatus:"ACTIVE"|"RETIRED", needCreatedAt, needCreatedBySubject, attachedAt, attachedBySubject, sourceAccessRequestRef:null|string}`.
 
 `PolicyRuleView` contains:
 - `policyRuleRef`;
@@ -395,10 +395,10 @@ Response:
 `NormalizedPolicyRow` contains:
 - `policyRuleRef`;
 - `authorizationEvidence:[{accessRequestRef,externalDecisionRef:null|string}]`;
-- `justifications:[{needRef,processRef,participantComponentRef,needStatus:"ACTIVE"|"RETIRED"}]`;
+- `justifications:[{needRef,processRef,participantComponentRef,needStatus:"ACTIVE"|"RETIRED",needCreatedAt,needCreatedBySubject}]`;
 - `reconciliationFlags:["NO_CURRENT_BUSINESS_JUSTIFICATION"]|[]`;
 - `interactionRevisionRef`;
-- source: `{deploymentRef,resourceRef,endpointRef,address:AddressRealization,realizationEffectiveFrom,realizationProvenance}`;
+- source: `{deploymentRef,resourceRef,endpointRef,address:AddressRealization,addressEffectiveFrom,addressChangedBySubject}`;
 - destination: same shape;
 - `protocol`, `sourcePorts:[PortRange]`, `destinationPorts:[PortRange]`.
 
