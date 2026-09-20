@@ -1,307 +1,331 @@
 # Backend component design
 
-Status: ACCEPTED candidate after Coding-Agent Challenge 01
+Status: ACCEPTED after Source Corpus amendment 01
 
 ## Design intent
 
-Provide coding-agent-visible public component and dependency contracts. Private helpers, concrete collections and local algorithms remain implementation freedoms.
+Expose implementation-facing responsibilities and narrow ports so a coding agent can realize the accepted design without reassigning semantic ownership. Private helpers, concrete collections, query plans and local algorithms remain implementation freedoms.
 
-## Boundary values
+## Shared contract values
 
-Public cross-module values are immutable and infrastructure-neutral:
-
+Infrastructure-neutral values crossing module boundaries:
 - opaque refs: ResourceRef, EndpointRef, SiteRef, ResponsibilityGroupRef, ApplicationRef, ComponentRef, InteractionRef, InteractionRevisionRef, DeploymentRef, ProcessRef, NeedRef, AccessRequestRef, PolicyRuleRef;
 - Principal(subject, permissions);
+- AggregateVersion;
+- AccessSubject(sourceDeploymentRef,destinationDeploymentRef,interactionRevisionRef);
 - AddressRealization = HostAddress | Prefix;
 - TrafficClause(protocol, sourcePortRanges, destinationPortRanges);
-- AggregateVersion;
+- EffectiveWindow(effectiveFrom?,effectiveUntil?);
+- NeedStatus = ACTIVE | RETIRED;
 - MaterializationStatus = COMPLETE | UNRESOLVED;
 - MaterializationIssueCode;
-- accepted application error categories.
+- ReconciliationFlag = NO_CURRENT_BUSINESS_JUSTIFICATION.
 
-These are owner-published contract values, not a shared mutable “common domain” model.
+These are owner-published contract values, not one shared mutable domain model.
 
 ## Runtime/platform components
 
 ### StartupConfigLoader
 
-Responsibility: read and validate the exact Operability Design `NAPMS_*` startup environment contract once before listener creation.
+Reads/validates the exact Operability Design `NAPMS_*` environment contract once before listener creation and returns immutable RuntimeConfig.
 
-Output: immutable RuntimeConfig.
-
-Forbidden:
-- reading environment variables from domain/application components;
-- config files/CLI override precedence;
-- runtime reload;
-- hidden numeric defaults for required keys.
+Forbidden: configuration files/CLI precedence, runtime reload, environment reads from domain/application code, hidden defaults for required timeout/retry values.
 
 ### ApiServer
 
-Responsibility:
+Responsibilities:
 - route HTTP;
 - establish/validate correlation id;
-- authenticate;
-- enforce the Security Architecture operation permission;
-- strictly decode the exact Interface DTO;
-- enforce required Idempotency-Key and If-Match headers;
-- invoke one application entry point;
-- map accepted result/error to exact HTTP status/body/headers.
+- authenticate caller;
+- authorize exact operation permission;
+- strictly decode Interface DTOs;
+- enforce Idempotency-Key and If-Match presence/shape;
+- invoke application service;
+- map accepted result/error to exact status/body/Location/ETag/Problem.
 
-Dependencies: Authenticator, Authorizer, ETagCodec, CorrelationContext, application entry points, ProblemMapper.
+Dependencies: Authenticator, Authorizer, ETagCodec, CorrelationContext, application services, ProblemMapper.
 
-Forbidden:
-- direct SQL/repositories;
-- domain-object deserialization from arbitrary JSON;
-- caller-controlled principal/permission;
-- inventing fallback status/error semantics.
+Forbidden: direct repositories/SQL, automatic DTO-to-domain binding, caller-controlled principal/permission, fallback semantics not present in Interface Design.
 
 ### Authenticator
 
-Responsibility: validate bearer token against configured OIDC trust.
-
-Result is exactly one of:
+Result:
 - Authenticated(Principal);
-- InvalidCredential -> Interface 401;
-- IdentityDependencyUnavailable -> Interface 503.
+- InvalidCredential -> 401;
+- IdentityDependencyUnavailable -> 503.
 
-The adapter owns bounded metadata/JWKS fetch/cache mechanics but must obey Operability/Security retry, max-stale and fail-closed semantics.
+OIDC metadata/JWKS fetch/cache mechanics obey Security + Operability max-attempt/max-stale/fail-closed semantics.
 
 ### Authorizer
 
-`require(Principal, Permission)` succeeds only for the exact required permission string. No permission implication, Resource responsibility or Process organization inference is allowed.
+`require(principal, permission)` checks only the exact configured permission string. No implicit permission hierarchy; Resource responsibility and Business Process organization never grant application authorization.
 
 ### ETagCodec
 
-Maps AggregateVersion <-> opaque quoted HTTP ETag.
-
-Only exact token equality is meaningful. API/application code does not expose numeric version as external concurrency semantics.
+Opaque HTTP ETag <-> AggregateVersion mapping. Numeric/internal version is not externally meaningful.
 
 ### ConsistencyRunner
 
-Application-owned abstraction implemented by relational infrastructure.
+Application-owned transaction abstraction implemented by PostgreSQL infrastructure:
 
-Contracts:
-
-- `runWrite(operation)`: supplies one transaction-bound semantic-owner repository set plus declared peer read ports bound to the same database snapshot;
-- `runReadSnapshot(operation)`: supplies all declared owner read ports in one coherent read-only snapshot plus `evaluationAt`.
+- `runWrite(owner, operation)`: one transaction-bound owner write set + declared peer read ports in the same database snapshot;
+- `runReadSnapshot(operation)`: all declared read ports on one coherent read-only snapshot + evaluationAt.
 
 Rules:
-- only the declared semantic owner may be written;
-- transaction/connection framework types do not leak into domain/public application contracts;
-- cancellation/deadline propagates from request context;
+- only declared semantic owner tables may be written;
+- DB transaction types do not leak inward;
+- request cancellation/deadline propagates;
 - no automatic mutation retry.
 
 ### IdempotentCommandGuard / IdempotencyPort
 
-Used only for Interface-marked Idempotent-create operations.
-
 Input:
 - principal subject;
-- stable operation id;
+- HTTP method;
+- canonical route template;
+- normalized target/path key;
 - Idempotency-Key;
-- deterministic canonical request fingerprint.
+- deterministic canonical accepted-body fingerprint.
 
-Transaction-bound decision:
+Decision:
+- REPLAY -> original committed semantic result/status/body/Location/ETag;
+- CONFLICT -> same scoped key, different fingerprint;
+- NEW -> command may continue to If-Match/domain mutation;
+- UNKNOWN/TIMEOUT -> never fabricate success.
 
-- NEW -> command may create state; committed semantic result/HTTP reconstruction data are finalized atomically with owner state;
-- REPLAY -> return the previously committed semantic result without re-running domain mutation;
-- CONFLICT -> same key/different fingerprint;
-- UNKNOWN/timeout -> never fabricate success.
+Normative ordering for operations also requiring If-Match:
+1. auth + strict target/body validation;
+2. idempotency lookup;
+3. REPLAY/CONFLICT ends processing;
+4. only NEW validates current aggregate version.
 
-Concurrent identical keys are serialized by persistence uniqueness/transaction semantics; after a competing transaction resolves, a loser re-reads the committed record or reports bounded dependency/timeout failure.
-
-The guard does not make non-idempotent commands retryable and is not a generic workflow engine.
+The guard is transaction-bound for NEW commands so idempotency evidence commits atomically with owner state.
 
 ### Clock / IdGenerator
 
-Narrow abstractions only where accepted behavior needs current time/new opaque identity.
+Narrow injectable abstractions only where accepted behavior needs current time/new opaque identity.
 
 ## Resource Description module
 
-Public application components:
+Public services:
 - ResourceCommandService
 - ResourceQueryService
 - SiteService
 - ResponsibilityGroupService
 
 Owner ports:
-- ResourceRepository: load/save one Resource aggregate under expected Resource version.
-- SiteRepository: register/read immutable Site.
-- ResponsibilityGroupRepository: register/read immutable group.
-- ResourceHistoryReader: bounded address/Site/responsibility history.
+- ResourceRepository: load/save one Resource aggregate by expected Resource version, including endpoint/Site/responsibility current state and history append;
+- SiteRepository: register/read immutable Site;
+- ResponsibilityGroupRepository: register/read immutable group;
+- ResourceHistoryReader: cursor-bounded address/Site/responsibility history.
 
-Public peer read port `ResourceResolutionPort`:
+Public `ResourceResolutionPort`:
 - `resolveResource(ResourceRef)`;
-- `currentEndpointAddresses(ResourceRef)` -> endpointRef, AddressRealization, effectiveFrom, provenance for every current addressed endpoint.
+- `currentEndpointAddresses(ResourceRef)` -> all current addressed endpoints with address/effectiveFrom/provenance.
 
-No peer receives persistence rows or Resource mutation methods.
+Responsibility set/clear is a Resource aggregate operation and enforces at most one current OWNER and ADMINISTRATOR.
 
 ## Application Communication module
 
-Public components:
+Public services:
 - ApplicationCommandService
 - ApplicationQueryService
 - InteractionRevisionQueryService
 
 Owner ports:
-- ApplicationRepository: load/save Application aggregate under expected Application version.
+- ApplicationRepository: load/save Application under expected Application version;
 - InteractionRevisionReader: immutable exact-revision lookup.
 
-Public peer read port `CommunicationResolutionPort`:
-- `resolveComponent(ComponentRef)` -> ApplicationRef + ComponentRef;
-- `resolveInteraction(InteractionRef)` -> ApplicationRef + source/destination ComponentRefs;
+Public `CommunicationResolutionPort`:
+- `resolveComponent(ComponentRef)`;
+- `resolveInteraction(InteractionRef)` -> source/destination ComponentRefs;
 - `resolveInteractionRevision(InteractionRevisionRef)` -> InteractionRef, source/destination ComponentRefs, immutable TrafficClauses, createdAt/provenance.
 
 ## Application Deployment module
 
-Public components:
+Public services:
 - DeploymentCommandService
 - DeploymentQueryService
 
 Owner port:
 - DeploymentRepository: insert/read immutable ComponentDeployment.
 
-Public peer read port `DeploymentResolutionPort`:
+Public `DeploymentResolutionPort`:
 - `resolveDeployment(DeploymentRef)` -> ComponentRef, ResourceRef, createdAt.
-
-Registration consumes CommunicationResolutionPort and ResourceResolutionPort; it stores only stable refs.
 
 ## Business Connectivity module
 
-Public components:
+Public services:
 - BusinessProcessCommandService
 - BusinessConnectivityQueryService
 
 Owner port:
-- BusinessProcessRepository: load/save Process aggregate under expected BusinessProcess version.
+- BusinessProcessRepository: load/save Process under expected BusinessProcess version.
 
-Public peer read port `ConnectivityNeedResolutionPort`:
-- `resolveCurrentNeed(NeedRef)` -> ProcessRef, InteractionRef, businessProcessVersion, createdAt/provenance;
-- returns explicit NOT_CURRENT for RETIRED Need;
-- historical resolution is query-only for explanation.
+Public `ConnectivityNeedResolutionPort`:
+- `resolveCurrentNeed(NeedRef)` -> ProcessRef, InteractionRef, businessProcessVersion, businessBasis, createdAt/provenance or explicit NOT_CURRENT;
+- `resolveNeed(NeedRef)` -> ProcessRef, InteractionRef, businessBasis, ACTIVE|RETIRED, createdAt/retiredAt/provenance;
+- `resolveNeeds(set<NeedRef>)` -> same current/historical facts in caller-supplied snapshot.
 
-Need creation consumes CommunicationResolutionPort to validate InteractionRef.
+Access Policy stores NeedRef associations only; it never persists copied Need status/currentness.
 
 ## Access Policy module
 
-Public components:
+Public services:
 - AccessRequestCommandService
 - PermissionDecisionCommandService
 - PolicyRuleCommandService
 - AccessPolicyQueryService
 
 Owner ports:
-- AccessRequestRepository
-- PolicyRuleRepository
-- AccessPolicyHistoryReader
-- transaction-bound IdempotencyPort
+
+### AccessRequestRepository
+- insert immutable pending request;
+- load under expected AccessRequest version;
+- finalize exactly once.
+
+### PolicyRuleRepository
+- `resolveOrCreateBySubject(AccessSubject)` -> stable PolicyRuleRef; new Rule initializes ACTIVE/unbounded;
+- load Rule under expected PolicyRule version;
+- append AuthorizationEvidence uniquely by AccessRequestRef;
+- append JustificationAssociation uniquely by NeedRef;
+- update operational state/window;
+- read operational/evidence/association history.
+
+Unique AccessSubject convergence is enforced in persistence; repository never creates two stable Rules for equal subject.
+
+### AccessPolicyReadPort
+For one snapshot:
+- `readRule(PolicyRuleRef)`;
+- `readAllRules()`;
+- `readRules(set<PolicyRuleRef>)`.
+
+Returned owner facts include:
+- PolicyRuleRef + AccessSubject;
+- effectState/effectiveWindow/version;
+- all AuthorizationEvidence;
+- all JustificationAssociation refs/provenance.
+
+It does **not** claim current/retired Need status.
 
 ### SubmitAccessRequest collaboration
 
-Inside one `ConsistencyRunner.runWrite` transaction:
+Inside Access Policy `runWrite`:
 - Authorizer(`access.request`);
 - IdempotentCommandGuard;
-- ConnectivityNeedResolutionPort;
+- ConnectivityNeedResolutionPort.resolveCurrentNeed;
 - CommunicationResolutionPort;
 - DeploymentResolutionPort;
 - AccessRequestRepository.
 
-The stored request includes the validated BusinessProcess version and exact immutable refs.
+### PermissionDecision collaboration
 
-### Permission decision collaboration
-
-Inside one write transaction:
+Inside one Access Policy write transaction:
 - Authorizer(`access.decide`);
-- IdempotentCommandGuard;
-- AccessRequestRepository under expected AccessRequest version;
-- PolicyRuleRepository.
+- IdempotentCommandGuard before NEW-command request-version check;
+- AccessRequestRepository;
+- PolicyRuleRepository.resolveOrCreateBySubject;
+- append authorization evidence;
+- append initial Need justification if absent.
 
-ALLOWED decision + first Rule are one atomic result.
+ALLOWED finalization + Rule/evidence/association + idempotency evidence are atomic.
 
-### Policy effect collaboration
+### PolicyRule operational collaboration
 
 - Authorizer(`access.manage`);
-- PolicyRuleRepository under expected PolicyRule version;
-- same-state command is a no-op with unchanged version/history.
+- PolicyRuleRepository under expected version;
+- same normalized state/window -> no-op, unchanged version/history.
 
-Public peer read port `EffectivePolicyReadPort`:
-- iterate current ACTIVE Rule subjects/provenance in the supplied read snapshot.
+### Additional justification collaboration
 
-## Current Policy Materialization component
+Inside one Access Policy write transaction:
+- Authorizer(`access.manage`);
+- IdempotentCommandGuard before NEW-command Rule-version check;
+- ConnectivityNeedResolutionPort.resolveCurrentNeed;
+- CommunicationResolutionPort to verify Need Interaction vs Rule revision Interaction;
+- PolicyRuleRepository append unique Need association;
+- new association increments Rule version; already-associated Need is no-op/replay.
+
+No justification delete/detach component exists in MVP.
+
+## Policy Materialization component
 
 ### CurrentPolicyMaterializer
 
-Responsibility: compose owner facts into current vendor-neutral policy without owning source truth.
+Responsibilities within `runReadSnapshot`:
 
-Dependencies inside `ConsistencyRunner.runReadSnapshot`:
-- EffectivePolicyReadPort;
+Dependencies:
+- AccessPolicyReadPort;
+- ConnectivityNeedResolutionPort.resolveNeeds;
 - CommunicationResolutionPort;
 - DeploymentResolutionPort;
 - ResourceResolutionPort.
 
-Contract:
-- resolve every ACTIVE Rule in the same snapshot;
-- produce SOURCE_REALIZATION_MISSING / DESTINATION_REALIZATION_MISSING / REFERENCE_UNRESOLVABLE exactly as accepted;
-- expand source endpoint × destination endpoint × TrafficClause;
-- preserve HOST/PREFIX and exact port semantics;
-- preserve independent Rule/Need/decision/revision/deployment/resource/endpoint provenance;
-- return COMPLETE iff no issue exists;
-- return UNRESOLVED as a normal application result when issues exist;
-- propagate actual dependency/runtime failure rather than converting it to UNRESOLVED.
+Algorithmic contract:
+1. obtain all Rules or exact selected Rule set;
+2. evaluate INACTIVE/effectiveWindow before technical realization requirements;
+3. resolve every associated Need through Business Connectivity and derive current/retired status;
+4. add `NO_CURRENT_BUSINESS_JUSTIFICATION` when current Need count is zero, without altering effectiveness;
+5. for every effective Rule resolve exact revision/deployments/resources/current endpoints;
+6. produce stable realization issues only for effective Rules;
+7. expand source endpoint × destination endpoint × TrafficClause exactly;
+8. preserve Rule identity, all authorization evidence, all justification/currentness, reconciliation flags and technical provenance;
+9. COMPLETE iff all selected effective Rules are resolvable; otherwise UNRESOLVED;
+10. propagate dependency/runtime failure rather than convert it to UNRESOLVED.
 
-No write repository and no durable materialization state exist in the MVP.
+No write repository or durable materialization state exists.
 
 ## Persistence adapters
 
-Each semantic owner has its own adapter set. A relational ConsistencyRunner coordinates transaction/snapshot lifetime and supplies transaction-bound adapters.
+One adapter set per semantic owner plus relational ConsistencyRunner/IdempotencyPort.
 
 Forbidden:
-- generic repository over arbitrary entities;
-- SQL from domain/application services;
-- peer schema mutation;
-- persistence row types crossing public module ports;
-- child-level concurrency versions that contradict owner aggregate versioning.
+- generic repository across semantic owners;
+- peer table mutation;
+- persistence rows through public ports;
+- copied Business Connectivity currentness in Access Policy;
+- child-specific concurrency versions contradicting aggregate ownership;
+- application-level mutation retry to resolve uniqueness/conflict.
 
 ## HTTP mapping boundary
 
-Dedicated mappers/codecs implement:
-- strict JSON DTO <-> application value mapping;
-- AddressRealization/TrafficClause validation;
-- parent aggregate If-Match semantics;
-- Idempotency-Key scope/fingerprint;
-- AggregateVersion <-> opaque ETag;
-- exact Problem code/status mapping;
-- COMPLETE/UNRESOLVED result mapping;
-- Resource history pagination cursor.
+Dedicated codecs/mappers own:
+- strict DTO decoding/null/unknown-field rules;
+- canonical idempotency target/fingerprint derivation;
+- replay-before-If-Match orchestration;
+- AggregateVersion/ETag;
+- Problem/status mapping;
+- Resource history cursor;
+- AccessSubject/evidence/justification views;
+- COMPLETE/UNRESOLVED/nonEffective/reconciliation representations.
 
-Private framework/request objects never cross into domain code.
+## Composition root
 
-## Composition
-
-Runtime composition constructs:
-
-1. StartupConfigLoader -> immutable RuntimeConfig;
-2. PostgreSQL pool/data source;
-3. owner repositories/read adapters + ConsistencyRunner;
+Constructs:
+1. StartupConfigLoader -> RuntimeConfig;
+2. PostgreSQL pool;
+3. owner adapters + ConsistencyRunner;
 4. IdempotencyPort;
 5. OIDC Authenticator + Authorizer;
-6. application services/public peer ports;
-7. ApiServer;
-8. observability/health/shutdown adapters.
+6. application services/peer ports;
+7. CurrentPolicyMaterializer;
+8. ApiServer;
+9. observability/health/shutdown adapters.
 
-No service locator is accessible from domain/application code.
+No service locator reaches domain/application code.
 
 ## Structural verification obligations
 
-- domain packages cannot import HTTP/runtime/PostgreSQL/OIDC/telemetry/config packages;
+- domain packages cannot import HTTP/PostgreSQL/OIDC/telemetry/config;
 - API handlers cannot import concrete repositories;
-- one owner adapter cannot mutate peer tables;
-- peer read ports return owner facts rather than persistence rows;
-- Policy Materialization has no write dependency;
-- only Resource/Application/BusinessProcess/AccessRequest/PolicyRule repositories expose optimistic version mutation;
-- environment reads occur only in StartupConfigLoader/bootstrap;
-- public HTTP DTOs do not appear in domain packages.
+- owner adapters cannot mutate peer schemas;
+- Access Policy code cannot persist/cache Need currentness as authoritative data;
+- CurrentPolicyMaterializer has no write dependency;
+- only Resource/Application/BusinessProcess/AccessRequest/PolicyRule owners expose mutable aggregate versions;
+- environment reads occur only at startup config/bootstrap;
+- public HTTP DTOs do not appear in domain packages;
+- resolve-or-create Rule uniqueness is owned by Access Policy persistence, not a generic global service.
 
 ## Implementation freedoms
 
-Private function/type names, internal collections, SQL query/index tuning, JSON/OIDC/logging libraries, DI wiring syntax, opaque pagination encoding, safe internal caching that preserves snapshot/cache-age contracts, and local refactoring remain free.
+Private Go type/function/file names, internal collections, SQL query/index strategy, exact upsert/locking implementation preserving one Rule per AccessSubject, JSON/OIDC/logging libraries, DI wiring, cursor encoding, test helpers and local refactoring remain free.
