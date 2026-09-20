@@ -284,16 +284,24 @@ Dependencies:
 - ResourceResolutionPort.
 
 Algorithmic contract:
-1. obtain exact selected Rule cores: page all cores for ALL mode or at most 200 explicit cores;
-2. evaluate INACTIVE/effectiveWindow before technical realization requirements;
-3. page each Rule's justification associations in the same snapshot; batch/page Need resolution and derive total/current counts + reconciliation flag;
-4. do not load full AuthorizationEvidence rows for export; use accepted aggregate evidence count and PolicyRuleRef correlation;
-5. for every effective Rule resolve exact revision/deployments/resources/current endpoints using bounded/chunked owner reads;
-6. produce stable realization issues only for effective Rules;
-7. expand source endpoint × destination endpoint × TrafficClause and stream rows incrementally;
-8. rows preserve RuleRef, compact counts/reconciliation and explicit technical actor/time facts; full evidence/justification audit stays available via paginated Rule endpoints;
-9. COMPLETE iff all selected effective Rules are resolvable; otherwise UNRESOLVED;
-10. propagate dependency/runtime failure rather than convert it to UNRESOLVED.
+
+Within one `runReadSnapshot` transaction/snapshot:
+
+**Preflight**
+1. obtain selected Rule cores: page all cores for ALL mode or at most 200 explicit cores;
+2. evaluate INACTIVE/effectiveWindow;
+3. page justification associations and batch Need currentness to derive counts/reconciliation;
+4. resolve every effective Rule's exact revision/deployment/resource/current-address facts using bounded reads;
+5. determine nonEffective entries, stable MaterializationIssues and final COMPLETE/UNRESOLVED;
+6. complete every required dependency read before any HTTP response is committed;
+7. retain only compact counters/state needed to start emission, not the full row set.
+
+**Emit**
+8. repeat deterministic bounded traversal in the same snapshot;
+9. stream nonEffective/issues/rows for the preflight-determined result;
+10. rows preserve RuleRef, compact counts/reconciliation and explicit actor/time facts; full audit remains paginated by RuleRef.
+
+Dependency/runtime failure in preflight propagates before response commitment. Transport/cancellation failure after commit aborts the stream; no valid complete export is fabricated.
 
 No write repository or durable materialization state exists.
 
