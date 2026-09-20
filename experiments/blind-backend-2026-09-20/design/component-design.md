@@ -180,9 +180,9 @@ Owner port:
 - BusinessProcessRepository: load/save Process under expected BusinessProcess version.
 
 Public `ConnectivityNeedResolutionPort`:
-- `resolveCurrentNeed(NeedRef)` -> ProcessRef, InteractionRef, businessProcessVersion, businessBasis, createdAt/provenance or explicit NOT_CURRENT;
-- `resolveNeed(NeedRef)` -> ProcessRef, InteractionRef, businessBasis, ACTIVE|RETIRED, createdAt/retiredAt/provenance;
-- `resolveNeeds(set<NeedRef>)` -> same current/historical facts in caller-supplied snapshot.
+- `resolveCurrentNeed(NeedRef)` -> ProcessRef, InteractionRef, participantComponentRef, businessProcessVersion, businessBasis, createdAt/provenance or explicit NOT_CURRENT;
+- `resolveNeed(NeedRef)` -> ProcessRef, InteractionRef, participantComponentRef, businessBasis, ACTIVE|RETIRED, createdAt/retiredAt/provenance;
+- `resolveNeeds(set<NeedRef>)` -> same current/historical facts including participantComponentRef in caller-supplied snapshot.
 
 Access Policy stores NeedRef associations only; it never persists copied Need status/currentness.
 
@@ -207,7 +207,8 @@ Owner ports:
 - append AuthorizationEvidence uniquely by AccessRequestRef;
 - append JustificationAssociation uniquely by NeedRef;
 - update operational state/window;
-- read operational/evidence/association history.
+- read operational/evidence/association history;
+- page operational history for the public PolicyRule history query.
 
 Unique AccessSubject convergence is enforced in persistence; repository never creates two stable Rules for equal subject.
 
@@ -259,7 +260,7 @@ Inside one Access Policy write transaction:
 - Authorizer(`access.manage`);
 - IdempotentCommandGuard before NEW-command Rule-version check;
 - ConnectivityNeedResolutionPort.resolveCurrentNeed;
-- CommunicationResolutionPort to verify Need Interaction vs Rule revision Interaction;
+- CommunicationResolutionPort to verify Need Interaction vs Rule revision Interaction and participantComponentRef membership;
 - PolicyRuleRepository append unique Need association;
 - new association increments Rule version; already-associated Need is no-op/replay.
 
@@ -312,7 +313,7 @@ Dedicated codecs/mappers own:
 - replay-before-If-Match orchestration;
 - AggregateVersion/ETag;
 - Problem/status mapping;
-- Resource history cursor;
+- Resource and PolicyRule-history cursors;
 - AccessSubject/evidence/justification views;
 - COMPLETE/UNRESOLVED/nonEffective/reconciliation representations.
 
