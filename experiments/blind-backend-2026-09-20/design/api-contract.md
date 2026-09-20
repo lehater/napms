@@ -59,11 +59,14 @@ No update/move/retire/delete operation is part of the selected MVP.
 
 ## Business Connectivity
 
-- `POST /v1/processes`.
+- `POST /v1/processes` with name, description and optional `responsibleOrganization: {externalReference?, displayName}`.
 - `GET /v1/processes/{processRef}`.
-- `POST /v1/processes/{processRef}/needs` with `interactionRef`, business basis and optional explicit criticality fields.
+- `PUT /v1/processes/{processRef}/responsible-organization`.
+- `POST /v1/processes/{processRef}/needs` with `interactionRef` and business basis.
 - `GET /v1/needs/{needRef}`.
 - `POST /v1/needs/{needRef}/retire`.
+
+Criticality/importance fields are intentionally absent from the selected MVP API.
 
 ## Access Policy
 
