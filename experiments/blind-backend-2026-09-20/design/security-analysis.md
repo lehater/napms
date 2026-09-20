@@ -20,7 +20,7 @@ Scope: selected blind backend MVP. This analysis reviews accepted design and rou
 | OIDC key dependency unavailable is misreported as invalid user | COVERED | Invalid token with established key -> 401; inability to establish validity -> 503. |
 | OIDC discovery/JWKS transport downgrade or issuer substitution | COVERED | Serve requires HTTPS issuer; discovery issuer exact-match; jwks_uri HTTPS-only; non-HTTPS redirects rejected. |
 | JWT algorithm confusion / unsafe library default | COVERED | none/HS*/unknown/unconfigured algorithms rejected; token alg must match configured asymmetric allow-list and JWKS key type. |
-| Cold-start or unready key-cache recovery deadlock/fetch storm | COVERED | Initial JWKS acquisition gates listener; runtime readiness/protected validation share one bounded single-flight refresh; max-stale controls continued cache use. |
+| Cold-start or unready key-cache recovery deadlock/fetch storm | COVERED | Initial validation-material acquisition gates listener; runtime readiness/protected validation share one bounded single-flight refresh; age is measured from last successful full refresh, >0 max-stale is authoritative, and provider cache headers cannot extend it. |
 | Caller spoofs actor/permissions | COVERED | Principal/permissions only from trusted bearer token; body/query and forwarded identity/permission headers cannot override them. |
 | Permission claim missing/wrong type interpreted inconsistently | COVERED | Missing claim = empty permission set; present claim must be array<string>; wrong type/non-string = invalid credential; unknown values grant nothing. |
 | Unauthorized read/mutation/export/decision | COVERED | Exact operation permission matrix; no implication. |
