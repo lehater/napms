@@ -4,11 +4,25 @@ Status: ACCEPTED after Source Corpus amendments 01–02
 
 ## Trust model
 
-External callers are untrusted until authenticated. The backend trusts identity only from a configured OpenID Connect issuer whose JWT signature, issuer, audience and required expiry validate successfully; not-before is validated when present. Unsigned/none-algorithm tokens are rejected by the selected validation library.
+External callers are untrusted until authenticated. The backend trusts identity only from a configured OpenID Connect issuer under the exact validation contract below.
+
+JWT validation:
+- token must be signed; `alg=none` is always rejected;
+- `alg` must be in startup-configured `NAPMS_OIDC_ALLOWED_ALGS`, a non-empty subset of `RS256,RS384,RS512,PS256,PS384,PS512,ES256,ES384,ES512,EdDSA`;
+- HMAC `HS*` algorithms are never accepted because this MVP configures no shared JWT verification secret;
+- selected JWKS public key type/curve must be compatible with the token algorithm;
+- `iss` is required and exactly equals configured issuer;
+- `aud` is required and is either string or array<string> containing the exact configured audience;
+- `exp` is required NumericDate; token is acceptable only while current time <= exp + configured clock skew;
+- `nbf`, when present, is NumericDate and requires current time + configured clock skew >= nbf;
+- `sub` is required non-empty string;
+- `iat` is not an authorization criterion.
 
 The relational database and configured OIDC issuer are trusted infrastructure dependencies inside the deployment boundary. Caller-supplied actor/resource ownership fields never establish authorization.
 
 ## Identity
+
+Validation clock skew is fixed for process lifetime by `NAPMS_OIDC_CLOCK_SKEW` and is applied only to exp/nbf comparisons above.
 
 Authenticated principal:
 - `sub` is required and must be a non-empty string from the validated token;
@@ -77,7 +91,7 @@ Recording ALLOWED/DENIED requires authenticated `access.decide`. The backend rec
 
 ## Secrets/credentials
 
-- OIDC issuer/audience metadata may be non-secret configuration.
+- OIDC issuer/audience/allowed-algorithms/clock-skew metadata are non-secret configuration.
 - client credentials, database credentials and signing/private material are secret configuration.
 - secrets are never logged and are redacted from diagnostic context.
 - application does not persist bearer tokens.
