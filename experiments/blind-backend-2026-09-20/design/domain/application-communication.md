@@ -22,15 +22,23 @@ Invariants:
 Identity: `InteractionRevisionRef`, immutable after publication.
 
 State:
-- protocol;
-- one or more traffic clauses containing destination port or port range where the protocol uses ports;
+- one or more TrafficClause values;
 - createdAt/provenance.
+
+TrafficClause:
+- protocol: normalized protocol name or IANA protocol number;
+- optional source port ranges;
+- optional destination port ranges.
 
 Invariants:
 - revision traffic meaning is non-empty and internally valid;
+- source/destination ports are permitted only for protocols whose semantics use ports;
+- an omitted port set means unrestricted ports for that side, not an unknown value;
 - revision is immutable once referenced/published;
 - modifying decision-relevant traffic meaning creates a new revision rather than rewriting an old one;
 - traffic representation is semantic/source-neutral, not provider/firewall syntax.
+
+The MVP does not invent protocol-specific fields such as ICMP type/code without accepted product evidence. A protocol whose accepted meaning cannot be expressed by protocol plus applicable port ranges must be rejected as unsupported rather than approximated.
 
 ## Operations
 
