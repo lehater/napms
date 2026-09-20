@@ -224,7 +224,7 @@ Oracle: duplicate/empty -> INVALID_INPUT; unknown -> REFERENCE_INVALID; no parti
 ### T-MATERIALIZE-COMPLETE
 Precondition: one selected effective Rule; two source addresses, one destination, two traffic clauses.  
 Operation: materialize.  
-Oracle: HTTP 200 COMPLETE; exact Cartesian expansion; exact ports/address kinds; authorization evidence + participant-attributed justifications + reconciliation flags preserved; source/destination rows contain addressEffectiveFrom/addressChangedBySubject; issues empty.
+Oracle: HTTP 200 COMPLETE; exact Cartesian expansion; exact ports/address kinds; each row contains PolicyRuleRef, authorizationEvidenceCount, justificationCount/currentJustificationCount, reconciliation flags and addressEffectiveFrom/addressChangedBySubject; full evidence/participant-attributed justification detail remains retrievable via paged Rule endpoints; issues empty.
 
 ### T-MATERIALIZE-NON-EFFECTIVE
 Precondition: selected Rule INACTIVE or ACTIVE outside window; technical address missing.  
@@ -314,6 +314,22 @@ Oracle: generated/echoed/400 behavior; required events use effective id.
 ### T-ETAG-MATRIX
 For every If-Match operation: missing/current/stale.  
 Oracle: 428 / success / 409 using correct aggregate owner (Resource, Application, Interaction, BusinessProcess, AccessRequest, PolicyRule).
+
+### T-PAGINATION-CONTRACT
+For Resource endpoints/history, Application Components, Interaction revisions, Process Needs, Rule evidence/justifications/history:  
+Precondition: more than one page of items.  
+Operation: read with omitted limit, explicit valid limits, malformed cursor and cursor from another parent/query.  
+Oracle:
+- default page is at most 50, explicit 1–200 honored;
+- nextCursor is opaque and forward traversal yields items without silent truncation for the tested stable dataset;
+- malformed/cross-query cursor -> 400 INVALID_INPUT;
+- parent current views expose counts rather than embedding the full growing collection;
+- no cross-request snapshot guarantee is asserted.
+
+### T-MATERIALIZE-BOUNDED-STREAM
+Precondition: export large enough to require multiple internal chunks.  
+Operation: materialize under instrumentation/fault-capable test adapter.  
+Oracle: one logical snapshot/evaluationAt; output semantics equal small in-memory reference result; implementation does not require materializing all Rule/fact/row data at once; output row order is not used as an oracle.
 
 ### T-PROBLEM-MAPPING
 Trigger each stable failure.  
@@ -414,3 +430,4 @@ Oracle: required event fields exist, secrets/full request bodies absent.
 - Source/destination participant Needs remain independently attributed through request/Rule/materialization provenance.
 - Arbitrary Need retirement sequences change only derived reconciliation status, not Rule permission/operational state.
 - Arbitrary idempotency replay/conflict/concurrency sequences never create duplicate authoritative entities.
+- Growing collection cardinality does not change parent DTO shape or bypass pagination contracts.
