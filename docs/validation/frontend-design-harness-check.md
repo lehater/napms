@@ -351,3 +351,46 @@ Negative/gap detection:
 - downstream frontend architecture/component/test/implementation design therefore cannot yet be accepted.
 
 The correct target-state result for a dedicated frontend consumer is **BLOCKED**, not COMPLETE.
+
+
+## Development authentication decision
+
+Development is a distinct deployment/runtime mode, but it does not introduce a second authentication model.
+
+### Development
+
+Use a local/mock OIDC issuer that produces JWT bearer tokens compatible with the canonical backend validation contract.
+
+Development tokens must exercise the same backend path as production tokens, including:
+- configured issuer validation;
+- audience validation;
+- expiry/time validation;
+- subject extraction;
+- instance-permission claims;
+- AuthorityGrant claims;
+- asymmetric signature verification according to the accepted backend security contract.
+
+Developer convenience may simplify token issuance and local sign-in, but must not bypass JWT validation or introduce trusted caller-supplied identity/authority fields.
+
+### Production
+
+Use the real configured OIDC provider with the same backend bearer-token validation path.
+
+### Explicitly rejected development shortcut
+
+Do not preserve a separate username/password + `/api/v1/session` authentication model as the target development architecture.
+
+The environment may simplify **how a token is obtained**, not **how identity/authority is validated by NAPMS**.
+
+### Remaining browser-security question
+
+This decision resolves the development-vs-production authentication mechanism distinction, but browser Security Architecture still needs to define the supported browser flow itself:
+
+- authorization-code/PKCE or another accepted browser OIDC flow;
+- callback/redirect ownership;
+- browser token/session storage boundary;
+- refresh/re-authentication behavior;
+- logout/invalidation behavior;
+- whether a BFF/session-cookie pattern is used or explicitly excluded.
+
+Therefore the full frontend Security Architecture remains BLOCKED until that browser lifecycle is accepted.
