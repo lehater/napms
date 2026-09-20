@@ -59,8 +59,8 @@ Objectives:
 - revision publication uses Interaction version;
 - SubmitAccessRequest validates current Need, exact revision and Deployment direction in one snapshot;
 - ALLOWED request finalization atomically resolves/creates one Rule by AccessSubject, appends evidence and initial justification;
-- concurrent ALLOWED requests for equal AccessSubject converge on one Rule;
-- a later ALLOWED request for existing Rule does not reset state/window;
+- concurrent ALLOWED requests for equal AccessSubject converge on one Rule; each new AuthorizationEvidence on an existing Rule advances the Rule aggregate version exactly once;
+- a later ALLOWED request for existing Rule does not reset state/window or append operational history, but does advance Rule version for the changed evidence/association set;
 - additional Need attachment requires current matching Need + valid participantComponentRef, adds no permission evidence and changes no operational state;
 - Need retirement is reflected on later Rule read/materialization without Access Policy mutation;
 - zero current Need derives NO_CURRENT_BUSINESS_JUSTIFICATION, not automatic revocation;
@@ -90,7 +90,7 @@ Objectives:
 ### Access Policy
 - unique AccessSubject constraint permits exactly one PolicyRule per subject;
 - concurrent ALLOWED requests converge to that Rule;
-- authorization evidence AccessRequest uniqueness enforced;
+- authorization evidence AccessRequest uniqueness enforced and evidence append participates in whole-Rule version serialization;
 - Rule+Need association uniqueness enforced;
 - Need status is not copied as authoritative state into Access Policy;
 - ALLOWED request decision + Rule/evidence/initial justification commit atomically;
@@ -124,7 +124,7 @@ Objectives:
 - cross-Application `POST /v1/interactions` succeeds;
 - Interaction revision publication requires Interaction ETag, not Application ETag;
 - Rule response exposes all authorization evidence, justifications/current status/participantComponent attribution and reconciliation flag;
-- Rule operational history endpoint exposes CREATED/OPERATIONAL_CHANGED events with actor/time/state/window, cursor-bounded, and no-op commands create no event;
+- Rule operational history endpoint exposes CREATED/OPERATIONAL_CHANGED events with actor/time/state/window, cursor-bounded, and no-op/evidence-only/justification-only changes create no operational event;
 - Rule operational endpoint covers ACTIVE/INACTIVE + effectiveWindow;
 - justification attachment is independently authorized/idempotent;
 - policy materialization accepts all/subset selection;
