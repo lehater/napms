@@ -1,6 +1,6 @@
 # Backend implementation design
 
-Status: ACCEPTED candidate after Coding-Agent Challenge 01
+Status: ACCEPTED candidate after Source Corpus amendment 02
 
 ## Implementation target
 
@@ -93,12 +93,16 @@ Completion:
 
 ### I3 — Application Communication
 
-Implement Application/Component/Interaction/immutable InteractionRevision, exact traffic normalization and Application-version child concurrency.
+Implement two aggregates inside the module:
+- Application + Component, where Application version guards Component creation;
+- independent Interaction + immutable InteractionRevision, where Interaction creation may reference Components from different Applications and Interaction version guards revision publication.
 
 Completion:
+- cross-Application Interaction acceptance and no false same-Application validation;
 - T-TRAFFIC-REVISION/property tests;
-- nested If-Match behavior;
-- idempotent creates;
+- Application ETag only for Component creation;
+- Interaction ETag only for revision publication;
+- idempotent Interaction/revision creates;
 - HTTP/persistence contracts.
 
 ### I4 — Application Deployment and Business Connectivity
@@ -156,7 +160,7 @@ Completion: V8 and all Test Design obligations green; no manual DB state fabrica
 - effective temporal rows use `timestamptz`;
 - address storage may use validated text or PostgreSQL network types only if HOST/PREFIX distinction and canonical output are preserved;
 - protocol storage uses a stable normalized identifier; accepted API aliases map at the adapter boundary;
-- Resource/Application/BusinessProcess/AccessRequest/PolicyRule optimistic versions follow Persistence Design exactly; no duplicate child version semantics;
+- Resource/Application/Interaction/BusinessProcess/AccessRequest/PolicyRule optimistic versions follow Persistence Design exactly; no duplicate child version semantics;
 - transaction runner sets isolation explicitly; current materialization uses REPEATABLE READ or stronger;
 - prepared/bound parameters only;
 - migration identity is immutable; changed applied migration content is rejected where runner checksum support exists.
