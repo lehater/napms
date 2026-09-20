@@ -86,9 +86,24 @@ Invariants:
 
 ## Value objects
 
-- HostAddress: normalized IP host address.
-- Prefix: normalized network prefix.
-- EffectiveInterval with half-open time semantics `[from,to)`.
+### HostAddress
+- one IPv4 or IPv6 address literal;
+- no CIDR suffix;
+- stored/emitted in canonical textual form;
+- IPv4 and IPv6 remain distinct families;
+- an IPv4-mapped IPv6 address remains IPv6 and is not silently “unmapped” to IPv4.
+
+### Prefix
+- one IPv4 or IPv6 CIDR prefix;
+- prefix length is valid for its family;
+- all host bits must already be zero on input;
+- input with host bits set is rejected rather than silently masked, because silent masking could change intended access meaning;
+- stored/emitted in canonical network-prefix textual form.
+
+### EffectiveInterval
+Half-open time semantics `[from,to)`.
+
+Address normalization is semantic validation. It must never silently broaden/narrow an address or prefix.
 
 ## Consistency boundary
 
