@@ -13,8 +13,8 @@ Status: ACCEPTED after Coding-Agent Challenge 04 repair
 - DENIED creates no new Rule/current access.
 - Need currentness is Business Connectivity truth; retirement does not silently rewrite permission/operational state.
 - PolicyRule effectiveness is evaluated from ACTIVE/INACTIVE + absolute effective window at one server-owned evaluationAt.
-- Policy materialization reports COMPLETE only when every selected **effective** Rule is fully resolvable.
-- INACTIVE/out-of-window selected Rules do not impose technical-realization completeness.
+- Policy materialization reports COMPLETE only when every selected Rule has complete permission/business provenance and every selected **effective** Rule is technically realizable.
+- INACTIVE/out-of-window selected Rules do not impose technical-realization completeness, but they still require complete self-contained provenance.
 - Zero current Need yields reconciliation evidence, not automatic revocation and not materialization failure by itself.
 - Normalization never broadens/narrows traffic semantics or erases independent Rule provenance.
 
@@ -94,7 +94,7 @@ Policy materialization is an export operation rather than an ordinary collection
 
 Requirements:
 - one read-only coherent snapshot remains open for a two-phase operation;
-- Phase 1 preflights all selected effective facts/issues/dependencies with bounded page/chunk reads and determines COMPLETE/UNRESOLVED before HTTP response commitment;
+- Phase 1 preflights provenance for all selected Rules plus technical facts for selected effective Rules with bounded page/chunk reads and determines COMPLETE/UNRESOLVED before HTTP response commitment;
 - dependency/runtime failure during preflight returns 503/500 before any 200 body is committed;
 - Phase 2 repeats bounded traversal in the same snapshot and streams the already-determined result;
 - implementation must not require holding the complete export row set in memory;
