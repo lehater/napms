@@ -33,6 +33,7 @@ Objectives:
 
 ### Business Connectivity
 - Need is business justification, not permission.
+- Need participantComponentRef must be one of its Interaction participants; source-side and destination-side Needs for the same Interaction remain independently representable.
 - Need retirement is terminal and preserves history.
 - Need currentness is independent from Access Policy state.
 
@@ -60,7 +61,7 @@ Objectives:
 - ALLOWED request finalization atomically resolves/creates one Rule by AccessSubject, appends evidence and initial justification;
 - concurrent ALLOWED requests for equal AccessSubject converge on one Rule;
 - a later ALLOWED request for existing Rule does not reset state/window;
-- additional Need attachment requires current matching Need, adds no permission evidence and changes no operational state;
+- additional Need attachment requires current matching Need + valid participantComponentRef, adds no permission evidence and changes no operational state;
 - Need retirement is reflected on later Rule read/materialization without Access Policy mutation;
 - zero current Need derives NO_CURRENT_BUSINESS_JUSTIFICATION, not automatic revocation;
 - materialization selection supports all Rules or explicit Rule subset;
@@ -122,7 +123,8 @@ Objectives:
 - Resource responsibility routes are role-addressed and preserve singular current role;
 - cross-Application `POST /v1/interactions` succeeds;
 - Interaction revision publication requires Interaction ETag, not Application ETag;
-- Rule response exposes all authorization evidence, justifications/current status and reconciliation flag;
+- Rule response exposes all authorization evidence, justifications/current status/participantComponent attribution and reconciliation flag;
+- Rule operational history endpoint exposes CREATED/OPERATIONAL_CHANGED events with actor/time/state/window, cursor-bounded, and no-op commands create no event;
 - Rule operational endpoint covers ACTIVE/INACTIVE + effectiveWindow;
 - justification attachment is independently authorized/idempotent;
 - policy materialization accepts all/subset selection;
@@ -137,7 +139,8 @@ Objectives:
 Evidence: black-box permission matrix, OIDC fault injection and persistence-boundary tests.
 
 Objectives:
-- invalid credential -> 401;
+- invalid credential -> 401, including permission claim wrong type/non-string elements;
+- missing permission claim -> authenticated principal with empty permission set and therefore 403 on protected operation;
 - inability to establish token validity due unusable key dependency -> 503;
 - request/decide/manage/read/export permissions remain independent;
 - Resource Owner/Admin, Process organization and Need existence never grant application authorization;
@@ -195,14 +198,14 @@ Positive journey intentionally exercises cross-Application communication:
 3. create Application B + destination Component;
 4. create one directed Interaction from A.Component -> B.Component and publish immutable revision;
 5. create source/destination ComponentDeployments;
-6. create BusinessProcess + active Need for Interaction;
+6. create BusinessProcess + active source-participant Need for Interaction; optionally create destination-participant Need independently;
 7. submit AccessRequest with request-only principal;
 8. record ALLOWED with separate decide-only principal;
 9. verify one ACTIVE/unbounded PolicyRule with authorization evidence + Need justification;
 10. materialize with export-only principal -> HTTP 200 COMPLETE with exact rows/provenance.
 
 Extended positive:
-11. attach a second current Need with manage-only principal -> same PolicyRule, extra justification;
+11. attach a second current Need from the other participant side with manage-only principal -> same PolicyRule, extra independently attributed justification;
 12. set effective window outside now -> materialization COMPLETE with Rule in nonEffective and no technical row;
 13. reactivate/effective window at now -> rows return without new permission decision.
 
