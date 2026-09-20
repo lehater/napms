@@ -433,6 +433,41 @@ Oracle:
 - unknown values grant no known permission;
 - wrong type/non-string element -> 401 invalid credential/token format.
 
+### T-AUTH-ALGORITHM-AUDIENCE-TIME
+Variants:
+- configured allowed RS256/ES256-style asymmetric algorithm with compatible JWKS key;
+- token alg not in allow-list;
+- alg=none;
+- HS256;
+- allowed alg with incompatible key type;
+- aud exact string;
+- aud array containing configured audience;
+- missing/wrong-type/nonmatching aud;
+- missing exp;
+- exp just inside/outside configured skew;
+- nbf just inside/outside configured skew;
+- empty/missing sub.
+
+Oracle: only variants satisfying Security Architecture validate; invalid claim/algorithm semantics -> 401; no library default expands the allow-list or time tolerance.
+
+### T-OIDC-INITIAL-ACQUISITION
+Precondition: valid startup config.  
+Variants: metadata/JWKS available with usable allowed key; dependency unavailable/invalid through all configured attempts.  
+Oracle: usable keys -> listener may start; failure -> runtime.startup.failed safe dependency category + non-zero exit before listener.
+
+### T-OIDC-SINGLE-FLIGHT-RECOVERY
+Precondition: running process; cached key states varied.  
+Variants:
+- unknown kid causes concurrent protected requests;
+- readiness and protected request trigger refresh concurrently;
+- refresh fails while cached key is within max-stale;
+- refresh fails after max-stale.
+Oracle:
+- one bounded in-flight refresh sequence is shared;
+- usable cache permits validation/readiness when appropriate;
+- beyond max-stale with failed refresh -> readiness DOWN and unverifiable protected token -> 503;
+- no fetch storm/fail-open/false 401.
+
 ### T-AUTH-KEY-DEPENDENCY
 Variants: valid cached key within max-stale; cache too old; unknown kid + failed bounded refresh.  
 Oracle: usable cache may validate; inability to establish validity -> 503/readiness DOWN, never fail-open/false 401.
