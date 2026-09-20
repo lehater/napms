@@ -9,8 +9,8 @@ Expose implementation-facing responsibilities and narrow ports so a coding agent
 ## Shared contract values
 
 Infrastructure-neutral values crossing module boundaries:
-- opaque refs: ResourceRef, EndpointRef, SiteRef, ResponsibilityGroupRef, ApplicationRef, ComponentRef, InteractionRef, InteractionRevisionRef, DeploymentRef, ProcessRef, NeedRef, AccessRequestRef, PolicyRuleRef;
-- Principal(subject, permissions);
+- opaque refs: ResourceRef, EndpointRef, AuthorityScopeRef, SiteRef, ResponsibilityGroupRef, ApplicationRef, ComponentRef, InteractionRef, InteractionRevisionRef, DeploymentRef, ProcessRef, NeedRef, AccessRequestRef, PolicyRuleRef;
+- Principal(subject, permissions, authorityGrants);
 - AggregateVersion;
 - AccessSubject(sourceDeploymentRef,destinationDeploymentRef,interactionRevisionRef);
 - AddressRealization = HostAddress | Prefix;
@@ -64,7 +64,9 @@ OIDC adapter contract:
 
 ### Authorizer
 
-`require(principal, permission)` checks only the exact configured permission string. No implicit permission hierarchy; Resource responsibility and Business Process organization never grant application authorization.
+`require(principal, permission)` checks only exact instance permission strings.
+`requireScoped(principal, action, scopeRefs, evaluatedAt)` requires one effective AuthorityGrant for every distinct scopeRef and returns immutable authority-evidence values used by the caller.
+No implicit hierarchy exists; Resource Site/responsibility, Business Process organization/criticality and Need existence never grant application authorization.
 
 ### ETagCodec
 
@@ -134,6 +136,7 @@ Owner ports:
 - SiteRepository: register/read immutable Site;
 - ResponsibilityGroupRepository: register/read immutable group;
 - ResourceEndpointReader: cursor-page EndpointView facts for one Resource;
+- ResourceScopeReader: resolve immutable AuthorityScopeRef for ResourceRef;
 - ResourceHistoryReader: cursor-bounded address/Site/responsibility history.
 
 Public `ResourceResolutionPort`:
@@ -195,7 +198,7 @@ Public services:
 - BusinessConnectivityQueryService
 
 Owner ports:
-- BusinessProcessRepository: load/save Process under expected BusinessProcess version;
+- BusinessProcessRepository: load/save Process including responsibleOrganization + criticalityLabel under expected BusinessProcess version;
 - BusinessProcessNeedReader: cursor-page Need summaries for one Process.
 
 Public `ConnectivityNeedResolutionPort`:
@@ -244,12 +247,12 @@ Bounded read contracts:
 
 Rule core never embeds unbounded child collections. Justification associations contain NeedRefs/attachment provenance only and do **not** claim current/retired Need status.
 
-For CurrentPolicyMaterializer, `pageAllRuleCores`, `pageAuthorizationEvidence` and `pageJustificationAssociations` are iterated inside the one shared read snapshot. Export emits complete per-Rule permission/business provenance once per selected Rule; normalized technical rows reference PolicyRuleRef rather than repeating those unbounded audit arrays.
+For CurrentPolicyMaterializer, selected Rule traversal first resolves distinct Resource AuthorityScopeRefs and calls ScopedAuthorizer(`policy.export`, scopes, evaluationAt), then `pageAllRuleCores`, `pageAuthorizationEvidence` and `pageJustificationAssociations` are iterated inside the one shared read snapshot. Export emits complete per-Rule permission/business provenance once per selected Rule; normalized technical rows reference PolicyRuleRef rather than repeating those unbounded audit arrays.
 
 ### SubmitAccessRequest collaboration
 
 Inside Access Policy `runWrite`:
-- Authorizer(`access.request`);
+- ScopedAuthorizer(`access.request`, distinct source/destination Resource scopes, admissionAt) -> RequestAuthorityEvidence;
 - IdempotentCommandGuard;
 - ConnectivityNeedResolutionPort.lockAndResolveCurrentNeed;
 - CommunicationResolutionPort;
@@ -315,7 +318,7 @@ Within one `runReadSnapshot` transaction/snapshot:
 **Emit**
 8. repeat deterministic bounded traversal in the same snapshot;
 9. stream nonEffective/issues/rows for the preflight-determined result;
-10. emit complete MaterializedRuleProvenance once per selected Rule, then rows correlate by RuleRef and preserve explicit technical actor/time facts; paginated policy.read remains an additional audit surface.
+10. emit ExportAuthorityEvidence once for the selected scope set plus complete MaterializedRuleProvenance once per selected Rule, then rows correlate by RuleRef and preserve explicit technical actor/time facts; paginated policy.read remains an additional audit surface.
 
 Dependency/runtime failure in preflight propagates before response commitment. Transport/cancellation failure after commit aborts the stream; no valid complete export is fabricated.
 
