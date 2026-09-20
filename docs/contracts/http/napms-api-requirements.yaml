@@ -1,79 +1,55 @@
-version: 2
+version: 3
 kind: http-contract-requirements
 id: NAPMS-MVP-HTTP-CONTRACT-REQUIREMENTS
 status: COMPLETE_CANONICAL_OPENAPI
 
-requirements_ref: docs/requirements/first-mvp-policy-export.yaml
+requirements_ref: docs/requirements/first-mvp-product-requirements.yaml
 target_contract_format: OpenAPI
-delivery_protocol: HTTP
-payload_style: JSON for application commands and queries; CSV for the explicit policy export representation.
-contract_rule: One OpenAPI application contract; HTTP operations are use-case boundary adapters, not per-context services.
-design_rule: API operations are organized around MVP use cases and resources exposed by the application boundary; they are not one network API per Bounded Context.
-
-required_capabilities:
-  - manage Resources and AddressSpace
-  - inspect Resource detail with current and ended/replaced realization, scope-affiliation and responsibility history
-  - manage Application/Components/Interactions and traffic revisions
-  - manage ComponentDeployments
-  - manage BusinessProcess/ConnectivityNeed
-  - submit and decide RuleChange
-  - view complete current vendor-neutral policy table
-  - download same result as CSV
+delivery_protocol: HTTP/JSON
+contract_rule: One external application API; internal module boundaries are not HTTP boundaries.
 
 operations:
-  - POST /api/resources
-  - GET /api/resources/{resourceId}
-  - PUT /api/resources/{resourceId}/address-space
-  - POST /api/applications
-  - POST /api/applications/{applicationId}/components
-  - POST /api/applications/{applicationId}/interactions
-  - POST /api/interactions/{interactionId}/revisions
-  - POST /api/component-deployments
-  - POST /api/business-processes
-  - POST /api/business-processes/{businessProcessId}/connectivity-needs
-  - POST /api/policy-rules
-  - POST /api/policy-rules/{policyRuleId}/changes/{ruleChangeId}/decision
-  - POST /api/policy-rules/{policyRuleId}/withdrawal
-  - GET /api/policy-export
-  - GET /api/policy-export.csv
+  - POST /v1/resources
+  - GET /v1/resources/{resourceRef}
+  - POST /v1/resources/{resourceRef}/endpoints
+  - PUT /v1/resources/{resourceRef}/endpoints/{endpointRef}/address
+  - POST /v1/applications
+  - POST /v1/applications/{applicationRef}/components
+  - POST /v1/interactions
+  - POST /v1/interactions/{interactionRef}/revisions
+  - POST /v1/deployments
+  - POST /v1/processes
+  - PUT /v1/processes/{processRef}/criticality
+  - POST /v1/processes/{processRef}/needs
+  - POST /v1/access-requests
+  - POST /v1/access-requests/{requestRef}/decision
+  - PUT /v1/policy-rules/{policyRuleRef}/operational-state
+  - POST /v1/policy-rules/{policyRuleRef}/justifications
+  - GET /v1/policy-rules/{policyRuleRef}
+  - POST /v1/policy-materializations
 
 rules:
-  - Protected operations derive actor identity from backend session, never request actor fields.
-  - Mutation rejection is atomic.
-  - Export returns complete Success or explicit Unresolved; partial success is forbidden.
-  - Create/publish operations return stable owner identifiers used by later steps.
+  - Authentication is OIDC Bearer token only; request bodies never contain trusted actor permission or authority fields.
+  - access.request is admitted from effective scoped AuthorityGrants for every source/destination Resource AuthorityScopeRef at server-owned admissionAt.
+  - policy.export is admitted from effective scoped AuthorityGrants for every selected Resource AuthorityScopeRef at database-owned evaluationAt.
+  - Cross-Application Interaction is allowed when referenced Components and traffic semantics are valid.
+  - Idempotent state-creating POST operations require Idempotency-Key; replay returns exact persisted original status/body/Location/ETag before NEW-command If-Match evaluation.
+  - Aggregate mutations requiring optimistic concurrency use If-Match and return current ETag.
+  - DENIED AccessRequest decision creates no PolicyRule.
+  - PolicyRule operational state supports ACTIVE or INACTIVE plus optional half-open EffectiveWindow.
+  - Policy materialization accepts all Rules or an explicit non-empty unique Rule subset.
+  - COMPLETE and UNRESOLVED are HTTP 200 application results; dependency inability is 503 before response commitment.
+  - Export response is self-contained with ExportAuthorityEvidence and per-Rule authorization/business provenance.
+  - Missing technical realization for a selected non-effective Rule does not make export incomplete.
 
 transport_decisions:
-  security_scheme: Backend session authentication is represented as an HTTP-only cookie security scheme named napms_session.
-  outcome_status:
-    unauthenticated: 401
-    authorization_denied: 403
-    optimistic_or_idempotency_conflict: 409
-    domain_rejection_or_unresolved_materialization: 422
-    persistence_or_transport_uncertainty: 503
-  success_status:
-    create_publish_submit: 201
-    mutation_decision_withdrawal: 200
+  security_scheme: HTTP bearer JWT security scheme named OIDCBearer.
+  unauthenticated: 401
+  authorization_denied: 403
+  stale_or_idempotency_conflict: 409
+  validation_or_reference_rejection: 422
+  dependency_unavailable: 503
+  payload_too_large: 413
 
-error_rule: Domain rejection and Unresolved materialization are explicit application outcomes; missing materialization input is never represented as a silently partial successful export.
-
-openapi_status: COMPLETE
-resolved_openapi_design:
-  - operation request schemas
-  - success response schemas
-  - explicit domain-rejection response schemas and status mapping
-  - Unresolved export response schema and status mapping
-  - stable UUID identifier representation
-  - common backend-session cookie declaration
-  - CSV success representation and Unresolved non-CSV outcome
 canonical_openapi_target: docs/contracts/http/napms.openapi.yaml
-
-resource_detail_history:
-  operation: GET /api/resources/{resourceId}
-  contract:
-    - return stable Resource identity;
-    - expose current facts separately from ended/replaced historical facts;
-    - cover realization, Responsibility Scope affiliation and Resource Responsibility/contact fact sets;
-    - retain temporal validity and provenance for historical facts;
-    - represent missing current facts explicitly without deleting history.
-  consumer_reason: Supports Resource detail inspection without requiring direct database access and makes replacement/end outcomes verifiable through the supported product.
+openapi_status: COMPLETE
