@@ -1,0 +1,31 @@
+version: 1
+kind: harness-human-projection-ir
+manifest_digest: __DYNAMIC__
+
+documents:
+  - id: assurance-sample
+    sections:
+      - id: system
+        claims:
+          - text: Policy materialization uses one read-only REPEATABLE READ snapshot and one database-owned evaluationAt.
+            sources: [SYSTEM-RULES]
+            evidence:
+              - source: SYSTEM-RULES
+                locator: consistency.export
+                excerpt: "One shared read snapshot covers selection authority evaluation effectiveness provenance and technical realization."
+      - id: security
+        claims:
+          - text: Every required Resource scope needs an effective matching grant; partial scope coverage fails before mutation or result exposure.
+            sources: [SECURITY-ARCHITECTURE]
+            evidence:
+              - source: SECURITY-ARCHITECTURE
+                locator: scoped_admission.rule
+                excerpt: "every required scope needs an effective matching grant; partial scope coverage fails 403 before mutation or result exposure."
+      - id: quality
+        claims:
+          - text: Numeric latency, throughput, availability and scale targets are explicitly not required for the first MVP.
+            sources: [QUALITY-REQUIREMENTS]
+            evidence:
+              - source: QUALITY-REQUIREMENTS
+                locator: not_required_numeric_targets
+                excerpt: "Numeric latency throughput availability and scale targets are explicitly NOT_REQUIRED, not unknown."
