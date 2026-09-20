@@ -214,21 +214,31 @@ Oracle: INVALID_INPUT/VALIDATION_REJECTED; no mutation.
 ### T-MATERIALIZE-ALL
 Precondition: several current Rules.  
 Operation: POST materialization with {}.  
-Oracle: selectedPolicyRuleRefs covers all current Rules deterministically; effectiveness then applied.
+Oracle: response selection is `{mode:"ALL",selectedRuleCount:<all current Rules>}`; one ruleProvenance record exists per selected Rule; effectiveness then applies.
 
 ### T-MATERIALIZE-SUBSET
 Precondition: Rules R1/R2/R3.  
 Operation: body {policyRuleRefs:[R1,R3]}.  
-Oracle: R2 absent from selected/nonEffective/rows/issues; only R1/R3 evaluated.
+Oracle: selection is EXPLICIT with count 2; exactly R1/R3 have ruleProvenance and are evaluated; R2 is absent from ruleProvenance/nonEffective/rows/issues. No semantic selected-Rule count limit is asserted beyond configured request-body bytes.
 
 ### T-MATERIALIZE-SELECTION-INVALID
 Variants: duplicate selected ref, unknown ref, explicit empty array.  
 Oracle: duplicate/empty -> INVALID_INPUT; unknown -> REFERENCE_INVALID; no partial materialization result.
 
+### T-MATERIALIZE-SUBSET-NO-DOMAIN-CAP
+Precondition: configured request-body limit can hold an explicit selection larger than 200 unique RuleRefs.  
+Operation: materialize that explicit subset.  
+Oracle: request is not rejected because selected count exceeds 200; exact supplied Rules are selected. Only transport byte limit may reject the request.
+
+### T-HTTP-BODY-LIMIT
+Precondition: NAPMS_HTTP_MAX_REQUEST_BODY_BYTES = B.  
+Operation: send a JSON body larger than B to a body-bearing route; separately send a valid body <= B.  
+Oracle: oversized -> 413 PAYLOAD_TOO_LARGE before semantic mutation; within bound follows normal route semantics; no hidden body-size default.
+
 ### T-MATERIALIZE-COMPLETE
 Precondition: one selected effective Rule; two source addresses, one destination, two traffic clauses.  
 Operation: materialize.  
-Oracle: HTTP 200 COMPLETE; exact Cartesian expansion; exact ports/address kinds; each row contains PolicyRuleRef, authorizationEvidenceCount, justificationCount/currentJustificationCount, reconciliation flags and addressEffectiveFrom/addressChangedBySubject; full evidence/participant-attributed justification detail remains retrievable via paged Rule endpoints; issues empty.
+Oracle: HTTP 200 COMPLETE; exact Cartesian expansion and ports/address kinds; response contains one complete ruleProvenance entry with all AuthorizationEvidence and participant-attributed Need justifications/currentness/reconciliation; each technical row references PolicyRuleRef and carries addressEffectiveFrom/addressChangedBySubject; the response is explainable by a policy.export-only caller without policy.read; issues empty.
 
 ### T-MATERIALIZE-NON-EFFECTIVE
 Precondition: selected Rule INACTIVE or ACTIVE outside window; technical address missing.  
@@ -308,13 +318,15 @@ Oracle follows the same winner semantics as request validation: retirement-first
 ## HTTP contract
 
 ### T-PROVENANCE-CONTRACT
-Precondition: authenticated actors create/change Resource address, publish InteractionRevision and declare ConnectivityNeed.  
-Operation: read Resource history, revision, Need and materialized row.  
+Precondition: authenticated actors create/change Resource address, publish InteractionRevision, declare participant-attributed Needs and create multiple ALLOWED requests for one AccessSubject.  
+Operation: read source facts and materialize using a principal with policy.export but without policy.read.  
 Oracle:
 - address fact exposes effectiveFrom/effectiveTo + changedBySubject;
 - revision exposes createdAt + createdBySubject;
-- Need exposes createdAt + createdBySubject;
-- materialized address exposes addressEffectiveFrom + addressChangedBySubject;
+- Need exposes createdAt + createdBySubject + participantComponentRef;
+- export ruleProvenance contains every AuthorizationEvidence and every associated Need with current/retired status/participant attribution/reconciliation;
+- materialized row exposes addressEffectiveFrom + addressChangedBySubject and correlates through PolicyRuleRef;
+- export remains explainable without separate policy.read calls;
 - no untyped public `provenance` object/string is required or emitted.
 
 ### T-STRICT-JSON
