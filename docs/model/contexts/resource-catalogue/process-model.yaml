@@ -1,69 +1,52 @@
-version: 1
+version: 2
 kind: domain-process-model
 id: NAPMS-RC-CURATION-PROCESS
-bounded_context_refs:
-  - BC-RESOURCE-CATALOGUE
-  - BC-AUTHORITY-MANAGEMENT
-depends_on:
-  - NAPMS-UC-RC-CURATION
-  - NAPMS-RC-DOMAIN-DECISIONS
+bounded_context_refs: [BC-RESOURCE-CATALOGUE, BC-AUTHORITY-MANAGEMENT]
+depends_on: [NAPMS-UC-RC-CURATION]
 
 name: Resource Catalogue curation lifecycle
 
 actors:
-  - {actor_id: ACTOR-CURATOR, name: Catalogue curator, role: Authenticated user whose protected mutations are admitted or denied by Authority Management.}
-  - {actor_id: ACTOR-READER, name: Catalogue reader, role: Authenticated consumer of allowed Resource projections.}
+  - {actor_id: ACTOR-CURATOR, name: Catalogue curator, role: Authenticated actor admitted by the protected-operation security contract.}
+  - {actor_id: ACTOR-READER, name: Catalogue reader, role: Authenticated consumer of Resource projections.}
 
 commands:
-  - {command_id: CMD-REGISTER-RESOURCE, name: Register Resource, intent: Establish stable Resource identity.}
-  - {command_id: CMD-SET-REALIZATION, name: Set Resource AddressSpace, intent: Establish one HostAddress or one Prefix when no effective AddressSpace exists.}
-  - {command_id: CMD-END-REALIZATION, name: End Resource AddressSpace, intent: End the effective AddressSpace without rewriting history.}
-  - {command_id: CMD-REPLACE-REALIZATION, name: Replace Resource AddressSpace, intent: End the effective HostAddress-or-Prefix and establish its successor while preserving Resource identity/history.}
-  - {command_id: CMD-AFFILIATE-SCOPE, name: Affiliate Resource With Responsibility Scope, intent: Establish time-qualified scope affiliation.}
-  - {command_id: CMD-END-SCOPE-AFFILIATION, name: End Resource Scope Affiliation, intent: End affiliation without changing Resource identity.}
-  - {command_id: CMD-ASSIGN-RESPONSIBILITY, name: Assign Resource Responsibility, intent: Establish time-qualified responsibility assignment.}
-  - {command_id: CMD-END-RESPONSIBILITY, name: End Resource Responsibility, intent: End assignment while preserving history.}
+  - {command_id: CMD-REGISTER-RESOURCE, name: Register Resource, intent: Establish stable Resource identity plus immutable AuthorityScopeRef.}
+  - {command_id: CMD-ADD-ENDPOINT, name: Add Endpoint, intent: Explicitly assert one logical Endpoint belongs to this Resource access-management unit.}
+  - {command_id: CMD-SET-ENDPOINT-ADDRESS, name: Set Endpoint Address, intent: Establish or replace one HostAddress or Prefix while preserving Endpoint identity/history.}
+  - {command_id: CMD-CLEAR-ENDPOINT-ADDRESS, name: Clear Endpoint Address, intent: Remove current realization while preserving identity/history.}
+  - {command_id: CMD-SET-SITE, name: Set Resource Site, intent: Replace or clear current Site with history.}
+  - {command_id: CMD-SET-RESPONSIBILITY, name: Set Resource Responsibility, intent: Replace or clear OWNER/ADMINISTRATOR with history.}
 
 domain_events:
   - {event_id: EVT-RESOURCE-REGISTERED, name: Resource Registered, caused_by_command_ref: CMD-REGISTER-RESOURCE}
-  - {event_id: EVT-REALIZATION-SET, name: Resource AddressSpace Set, caused_by_command_ref: CMD-SET-REALIZATION}
-  - {event_id: EVT-REALIZATION-ENDED, name: Resource AddressSpace Ended, caused_by_command_ref: CMD-END-REALIZATION}
-  - {event_id: EVT-REALIZATION-REPLACED, name: Resource AddressSpace Replaced, caused_by_command_ref: CMD-REPLACE-REALIZATION}
-  - {event_id: EVT-SCOPE-AFFILIATED, name: Resource Scope Affiliated, caused_by_command_ref: CMD-AFFILIATE-SCOPE}
-  - {event_id: EVT-SCOPE-AFFILIATION-ENDED, name: Resource Scope Affiliation Ended, caused_by_command_ref: CMD-END-SCOPE-AFFILIATION}
-  - {event_id: EVT-RESPONSIBILITY-ASSIGNED, name: Resource Responsibility Assigned, caused_by_command_ref: CMD-ASSIGN-RESPONSIBILITY}
-  - {event_id: EVT-RESPONSIBILITY-ENDED, name: Resource Responsibility Ended, caused_by_command_ref: CMD-END-RESPONSIBILITY}
+  - {event_id: EVT-ENDPOINT-ADDED, name: Endpoint Added, caused_by_command_ref: CMD-ADD-ENDPOINT}
+  - {event_id: EVT-ENDPOINT-ADDRESS-SET, name: Endpoint Address Set, caused_by_command_ref: CMD-SET-ENDPOINT-ADDRESS}
+  - {event_id: EVT-ENDPOINT-ADDRESS-CLEARED, name: Endpoint Address Cleared, caused_by_command_ref: CMD-CLEAR-ENDPOINT-ADDRESS}
+  - {event_id: EVT-SITE-SET, name: Resource Site Set, caused_by_command_ref: CMD-SET-SITE}
+  - {event_id: EVT-RESPONSIBILITY-SET, name: Resource Responsibility Set, caused_by_command_ref: CMD-SET-RESPONSIBILITY}
 
 policies:
-  - {policy_id: POLICY-MUTATION-ADMISSION, name: Admit every protected mutation, when: mutation attempted, then: Authority Management admits CurateResourceCatalogue or mutation does not change RC truth.}
-  - {policy_id: POLICY-SINGLE-ADDRESS-SPACE, name: Maximum one effective AddressSpace, when: realization is established or replaced, then: one Resource has at most one effective AddressSpace at a logical time and that value is either HostAddress or Prefix.}
-  - {policy_id: POLICY-PRESERVE-HISTORY, name: Preserve temporal history, when: temporal fact is ended or replaced, then: retain historical fact/provenance.}
-  - {policy_id: POLICY-MISSING-CURRENT, name: Missing current relations preserve Resource identity, when: realization/affiliation/responsibility is absent, then: Resource remains valid and absence is explicit.}
+  - {policy_id: POLICY-MUTATION-ADMISSION, name: Admit protected mutation, when: mutation attempted, then: Security admission succeeds or Resource truth is unchanged.}
+  - {policy_id: POLICY-EXPLICIT-ENDPOINT-MEMBERSHIP, name: Explicit logical-unit membership, when: Endpoint is added, then: caller explicitly chooses the parent Resource and no automatic grouping inference occurs.}
+  - {policy_id: POLICY-ENDPOINT-ADDRESS, name: One current Endpoint address, when: address changes, then: one Endpoint has zero or one HostAddress-or-Prefix and history is preserved.}
+  - {policy_id: POLICY-PRESERVE-HISTORY, name: Preserve history, when: address Site or responsibility changes, then: prior fact remains explainable.}
 
 process_flows:
-  - {flow_id: FLOW-REGISTER, name: Establish Resource identity, sequence: [POLICY-MUTATION-ADMISSION, CMD-REGISTER-RESOURCE, EVT-RESOURCE-REGISTERED]}
-  - flow_id: FLOW-REALIZATION
-    name: Maintain Resource AddressSpace over time
-    alternatives:
-      - [POLICY-MUTATION-ADMISSION, POLICY-SINGLE-ADDRESS-SPACE, CMD-SET-REALIZATION, EVT-REALIZATION-SET]
-      - [POLICY-MUTATION-ADMISSION, CMD-END-REALIZATION, POLICY-PRESERVE-HISTORY, EVT-REALIZATION-ENDED]
-      - [POLICY-MUTATION-ADMISSION, POLICY-SINGLE-ADDRESS-SPACE, CMD-REPLACE-REALIZATION, POLICY-PRESERVE-HISTORY, EVT-REALIZATION-REPLACED]
-  - {flow_id: FLOW-SCOPE-AFFILIATION, name: Maintain scope affiliation, alternatives: [[CMD-AFFILIATE-SCOPE, EVT-SCOPE-AFFILIATED], [CMD-END-SCOPE-AFFILIATION, EVT-SCOPE-AFFILIATION-ENDED]]}
-  - {flow_id: FLOW-RESPONSIBILITY, name: Maintain responsibility, alternatives: [[CMD-ASSIGN-RESPONSIBILITY, EVT-RESPONSIBILITY-ASSIGNED], [CMD-END-RESPONSIBILITY, EVT-RESPONSIBILITY-ENDED]]}
-  - {flow_id: FLOW-INSPECT-AND-HANDOFF, name: Inspect current Resource and expose stable ResourceRef/current facts, sequence: [read-resource, derive-current-projection, POLICY-MISSING-CURRENT, expose-resource-ref]}
+  - {flow_id: FLOW-REGISTER, name: Establish Resource, sequence: [POLICY-MUTATION-ADMISSION, CMD-REGISTER-RESOURCE, EVT-RESOURCE-REGISTERED]}
+  - {flow_id: FLOW-ENDPOINT, name: Maintain logical Endpoint and realization, alternatives: [[POLICY-MUTATION-ADMISSION, POLICY-EXPLICIT-ENDPOINT-MEMBERSHIP, CMD-ADD-ENDPOINT, EVT-ENDPOINT-ADDED], [POLICY-MUTATION-ADMISSION, POLICY-ENDPOINT-ADDRESS, CMD-SET-ENDPOINT-ADDRESS, POLICY-PRESERVE-HISTORY, EVT-ENDPOINT-ADDRESS-SET], [POLICY-MUTATION-ADMISSION, CMD-CLEAR-ENDPOINT-ADDRESS, POLICY-PRESERVE-HISTORY, EVT-ENDPOINT-ADDRESS-CLEARED]]}
+  - {flow_id: FLOW-SITE, name: Maintain Site, sequence: [POLICY-MUTATION-ADMISSION, CMD-SET-SITE, POLICY-PRESERVE-HISTORY, EVT-SITE-SET]}
+  - {flow_id: FLOW-RESPONSIBILITY, name: Maintain responsibility, sequence: [POLICY-MUTATION-ADMISSION, CMD-SET-RESPONSIBILITY, POLICY-PRESERVE-HISTORY, EVT-RESPONSIBILITY-SET]}
+  - {flow_id: FLOW-INSPECT-AND-HANDOFF, name: Inspect Resource, sequence: [read-resource, derive-current-projection, expose-resource-ref]}
 
 timeline:
   - {step_id: T1, sequence: 1, kind: branch, item_ref: FLOW-REGISTER}
-  - {step_id: T2, sequence: 2, kind: branch, item_ref: FLOW-REALIZATION}
-  - {step_id: T3, sequence: 3, kind: branch, item_ref: FLOW-SCOPE-AFFILIATION}
+  - {step_id: T2, sequence: 2, kind: branch, item_ref: FLOW-ENDPOINT}
+  - {step_id: T3, sequence: 3, kind: branch, item_ref: FLOW-SITE}
   - {step_id: T4, sequence: 4, kind: branch, item_ref: FLOW-RESPONSIBILITY}
   - {step_id: T5, sequence: 5, kind: read-handoff, item_ref: FLOW-INSPECT-AND-HANDOFF}
 
 external_systems:
-  - {external_system_id: EXT-AUTHORITY-MANAGEMENT, name: Authority Management, interaction_meaning: Admits or denies protected RC mutations.}
-  - {external_system_id: EXT-DOWNSTREAM-NAPMS, name: Downstream NAPMS workflows, interaction_meaning: Consume ResourceRef/current realization without owning RC truth.}
+  - {external_system_id: EXT-AUTHORITY-MANAGEMENT, name: Authority Management, interaction_meaning: Evaluates protected operation admission; it does not own Resource scope affiliation.}
 
-hotspots:
-  - {hotspot_id: HOTSPOT-SCOPED-AUTHORIZATION, question_or_uncertainty: Future resource-scoped authorization if customer evidence requires it., blocking: false, status: deferred-nonblocking}
-  - {hotspot_id: HOTSPOT-RESPONSIBILITY-COVERAGE, question_or_uncertainty: Mandatory responsibility coverage/transfer gaps and overlaps., blocking: false, status: deferred-nonblocking}
-  - {hotspot_id: HOTSPOT-RESOURCE-RETIREMENT, question_or_uncertainty: Retirement remains outside this selected outcome., blocking: false, status: deferred-outside-slice}
+hotspots: []
