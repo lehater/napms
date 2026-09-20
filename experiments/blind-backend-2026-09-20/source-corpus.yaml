@@ -1,0 +1,143 @@
+version: 1
+kind: experimental-source-corpus
+id: NAPMS-BLIND-BACKEND-SOURCE-CORPUS
+status: FROZEN_FOR_INITIAL_RECONSTRUCTION
+classification_rule: >-
+  Include only facts, evidence, requirements or externally imposed constraints whose
+  provenance shows they existed independently from engineering design. Ambiguous
+  material is excluded by default.
+
+source_inputs:
+  - id: SRC-MVP-001
+    class: SOURCE_INPUT
+    kind: stakeholder-product-decision
+    statement: >-
+      The MVP is the narrow journey from resource/application description and rule
+      creation to a generated/exported final policy.
+    provenance:
+      repository_path: docs/requirements/first-mvp-policy-export.yaml
+      recorded_at: 2026-09-17
+      source_kind: stakeholder-confirmation
+      original_statement_preserved: true
+    admissibility: >-
+      Explicit stakeholder product/scope statement. Only this preserved statement is
+      admitted; the surrounding rematerialized journey, model nouns and acceptance
+      details are not imported.
+
+  - id: SRC-BC-001
+    class: SOURCE_INPUT
+    kind: stakeholder-revalidated-observable-requirements
+    statement: >-
+      Network access must be explainable by business purpose rather than only by
+      technical addressing/rule details. Deliberate access requests require structured
+      business justification; observed brownfield traffic may be attributed later.
+    provenance:
+      repository_path: docs-legacy/requirements/business-connectivity-g1.md
+      recorded_at: 2026-09-14
+      source_kind: stakeholder-revalidation
+      artifact_status: accepted-at-observable-behavior-level
+      explicit_design_boundary: "BC boundary not decided"
+
+  - id: SRC-BC-002
+    class: SOURCE_INPUT
+    kind: stakeholder-revalidated-observable-requirements
+    statements:
+      - The product can identify and describe a Business Process as business context for required application connectivity.
+      - Organizational responsibility can be associated with a Business Process without equating that organization with an authorization scope.
+      - Business importance/criticality can be represented for downstream impact analysis; scoring and propagation rules are unspecified.
+      - A Connectivity Need is represented independently from a concrete Access Request.
+      - A Connectivity Need states that a Business Process requires an application-level interaction from a dependent participant/component perspective.
+      - A Connectivity Need is not identified by IP address, resource endpoint or concrete deployment.
+      - One Business Process may have many Connectivity Needs; one interaction may support Needs from many Processes.
+      - A Connectivity Need can survive address changes and concrete deployment replacement while the business requirement remains.
+      - One Connectivity Need may lead to multiple concrete Access Requests over time or for different deployments.
+      - A deliberate Access Request requires a Process-backed Connectivity Need at submission time.
+      - Observed traffic can be recognized before Process/Need attribution is known; the product must not fabricate a Process to recognize brownfield traffic.
+      - Source and destination participants can contribute attribution independently.
+      - A currently authorized access may later acquire additional Process/Need justification without requiring a duplicate policy rule solely for that justification.
+      - Loss of a known Need does not rewrite historical requests or approvals.
+      - Loss of all current known Needs for an authorization remains distinguishable as a reconciliation condition; automatic revocation is not required.
+    provenance:
+      repository_path: docs-legacy/requirements/business-connectivity-g1.md
+      recorded_at: 2026-09-14
+      source_kind: stakeholder-revalidation
+      artifact_status: accepted-at-observable-behavior-level
+      explicit_design_boundary: "identities/aggregates/persistence/state machines/context ownership intentionally open"
+
+  - id: SRC-BC-003
+    class: SOURCE_INPUT
+    kind: stakeholder-revalidated-non-goals
+    statements:
+      - Business Process modeling does not require a workflow/BPMN engine.
+      - Process hierarchy, subprocess/activity modeling and monetary valuation are not currently required.
+      - Process/Need is not proof of authorization.
+      - Observed traffic is not proof of Need.
+      - A destination-side Process is not mandatory solely because a source Process uses a shared service.
+      - Process criticality does not automatically propagate through an unspecified inheritance/max algorithm.
+    provenance:
+      repository_path: docs-legacy/requirements/business-connectivity-g1.md
+      recorded_at: 2026-09-14
+      source_kind: stakeholder-revalidation
+
+  - id: SRC-EXP-001
+    class: SOURCE_INPUT
+    kind: current-experiment-stakeholder-input
+    statement: >-
+      A user must be able to describe a Resource, an application and interactions
+      and obtain the resulting access policy.
+    provenance:
+      source_kind: current-experiment-instruction
+      recorded_at: 2026-09-20
+
+excluded_candidates:
+  - id: EXC-HORIZONTAL-S0
+    class: DERIVED_DESIGN
+    paths:
+      - docs/horizontal/s0/problem-landscape.md
+      - docs/horizontal/s0/user-journeys.md
+    reason: Explicitly reconstructed from accepted docs; therefore not independent source evidence.
+
+  - id: EXC-CURRENT-MVP-DETAILS
+    class: DERIVED_DESIGN
+    path: docs/requirements/first-mvp-policy-export.yaml
+    excluded_portions: [goal-details, journey, output_row_minimum, non_goals, acceptance_examples]
+    reason: Rematerialized from prior engineering/domain work; only the verbatim stakeholder confirmation is admitted.
+
+  - id: EXC-LEGACY-REQ-WITHOUT-PROVENANCE
+    class: AMBIGUOUS
+    path_pattern: docs-legacy/requirements/**
+    exception: docs-legacy/requirements/business-connectivity-g1.md
+    reason: Accepted-looking requirement artifacts without explicit independent stakeholder/external provenance cannot be proven source-level.
+
+  - id: EXC-STAKEHOLDER-DESIGN-CHOICES
+    class: DERIVED_DESIGN
+    examples:
+      - HTTP/JSON frontend-backend boundary
+      - OpenAPI as canonical API representation
+    reason: Human-approved but still engineering/representation choices produced during prior design.
+
+  - id: EXC-DESIGN-MATERIAL
+    class: DERIVED_DESIGN
+    path_patterns:
+      - docs/domain/**
+      - docs/architecture/**
+      - docs/model/**
+      - docs/spec/**
+      - docs/harness-core.yaml
+      - docs/canonical-graph.yaml
+      - docs/migration/**
+      - docs/pilot/**
+      - docs-legacy/domain/**
+      - docs-legacy/architecture/**
+      - docs-legacy/decisions/**
+      - backend/**
+      - web/**
+    reason: Prior engineering analysis, design, implementation or migration projection.
+
+ambiguous_not_used:
+  - candidate: "MVP Resource has zero-or-one effective HostAddress-or-Prefix at a logical time"
+    reason: Recorded as stakeholder correction, but surviving source is embedded in prior S1/S2 correction machinery and no raw independent response is available.
+  - candidate: "catalogue-wide Resource mutation authority"
+    reason: Human decision exists, but wording and provenance are inseparable from prior authorization/domain design.
+  - candidate: "extensible time-qualified Resource responsibility roles"
+    reason: Human response exists only through prior domain decision materialization; independent product-source wording is unavailable.
