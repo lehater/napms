@@ -39,6 +39,22 @@ content:
       source_refs:
         - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-008
 
+    - id: REQ-APP-001
+      statement: >-
+        An Application description shall be reusable across multiple concrete deployments
+        and shall describe communication structure independently from current network realization.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-network-intent:application-communication
+
+    - id: REQ-APP-002
+      statement: >-
+        A Component shall represent a participant/role in application network data exchange
+        rather than a network device.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-network-intent:application-communication
+
     - id: REQ-INT-001
       statement: >-
         A described directed Interaction shall be valid from its explicit communication
@@ -71,6 +87,15 @@ content:
       statement: >-
         A concrete Component deployment shall identify deployment of a concrete
         Component on a Resource independently from the Resource's current IP address.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-network-intent:application-communication
+
+    - id: REQ-DEP-002
+      statement: >-
+        For the first MVP, technical realization of an authorized Interaction shall consider
+        all current logical endpoints of the Resource associated with each participating
+        Component deployment.
       status: ACCEPTED
       source_refs:
         - stakeholder-network-intent:application-communication
@@ -179,6 +204,23 @@ content:
         Loss or retirement of a Connectivity Need shall not rewrite historical requests
         or permission decisions, and loss of all current known Needs shall remain
         distinguishable without requiring automatic revocation.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-business-connectivity:SRC-BC-002
+
+    - id: REQ-BUS-008
+      statement: >-
+        The product shall be able to identify and describe a Business Process and associate
+        organizational responsibility with it without treating that organization as an
+        authorization scope.
+      status: ACCEPTED
+      source_refs:
+        - stakeholder-business-connectivity:SRC-BC-002
+
+    - id: REQ-BUS-009
+      statement: >-
+        Business importance or criticality shall be representable for downstream impact
+        analysis, while scoring and propagation rules remain unspecified for the first MVP.
       status: ACCEPTED
       source_refs:
         - stakeholder-business-connectivity:SRC-BC-002
@@ -356,5 +398,6 @@ content:
     - Firewall/topology placement calculation.
     - BPMN/workflow-engine semantics for Business Processes.
     - Automatic criticality propagation/scoring rules.
+    - Network address translation calculation/rules; the product consumes the already meaningful corporate address/prefix.
     - Automatic revocation solely because current known business justification disappears.
     - Rule operational states beyond Active/Inactive unless separately accepted.
