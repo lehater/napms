@@ -107,10 +107,14 @@ Precondition: Need retired before submission snapshot.
 Operation: otherwise valid request.  
 Oracle: NEED_NOT_CURRENT; no AccessRequest.
 
-### T-REQUEST-SNAPSHOT-RACE
-Precondition: Need active; retirement races submission.  
-Operation: exercise both transaction orderings.  
-Oracle: validity matches Need state in request transaction snapshot; no mixed result.
+### T-REQUEST-NEED-LOCK-RACE
+Precondition: Need ACTIVE; retirement races AccessRequest submission.  
+Operation: exercise both lock orderings.  
+Oracle:
+- if retirement update/commit wins first, request observes RETIRED -> NEED_NOT_CURRENT;
+- if Access Policy current-Need FOR SHARE validation lock wins first, retirement blocks until request commits and request succeeds;
+- Access Policy never writes Business Connectivity tables;
+- lock wait obeys request/DB timeout.
 
 ### T-DECISION-FINALITY
 Precondition: pending request A.  
@@ -289,7 +293,17 @@ Oracle: 409 STALE_VERSION; no mutation/committed idempotency success.
 
 ### T-IDEMPOTENCY-CONCURRENT
 Operation: two concurrent identical scoped requests.  
-Oracle: at most one authoritative mutation; other converges to replay or bounded failure, never duplicate state.
+Oracle:
+- at most one authoritative mutation;
+- if first commits, waiter replays;
+- if first rolls back, waiter becomes NEW and then applies normal If-Match;
+- if resolution exceeds request/DB timeout, waiter gets 503 DEPENDENCY_UNAVAILABLE;
+- never duplicate state and never IDEMPOTENCY_CONFLICT solely because identical command is in progress.
+
+### T-JUSTIFICATION-NEED-LOCK-RACE
+Precondition: current Need N; Rule R; Need retirement races justification attachment.  
+Operation: exercise both lock orderings.  
+Oracle follows the same winner semantics as request validation: retirement-first rejects, validation-lock-first lets attachment commit before retirement; no peer write by Access Policy.
 
 ## HTTP contract
 
