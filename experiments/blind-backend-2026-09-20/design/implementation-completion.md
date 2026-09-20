@@ -14,13 +14,13 @@ IMPLEMENTATION may claim realization complete only when every item below has exe
 
 4. **Transaction consistency** — ordinary owner writes are PostgreSQL READ COMMITTED; request/justification current-Need validation uses owner-side FOR SHARE-equivalent lock held through Access Policy commit without peer writes; composed multi-owner reads/materialization use read-only REPEATABLE READ.
 
-5. **Resource truth/history** — current address/Site/singular OWNER/singular ADMINISTRATOR and required history are preserved, including explicit actor/time provenance and replacement/no-op behavior.
+5. **Resource truth/history** — immutable AuthorityScopeRef, explicit same-logical-unit Endpoint membership with no automatic grouping, current address/Site/singular OWNER/singular ADMINISTRATOR and required history are preserved, including explicit actor/time provenance and replacement/no-op behavior.
 
 6. **Current-access identity** — exactly one PolicyRule exists per AccessSubject(source Deployment, destination Deployment, exact InteractionRevision); NeedRef and technical realization are not Rule identity.
 
 7. **Permission evidence/version** — ALLOWED finalization is atomic with Rule resolve/create, AuthorizationEvidence and initial Need justification; DENIED creates no Rule/evidence; equal concurrent subjects converge on one Rule; each new AuthorizationEvidence on an existing Rule advances whole-Rule version exactly once without operational-history entry or state/window reset.
 
-8. **Business justification** — ConnectivityNeed preserves participantComponentRef; source/destination Needs remain independently attributable; additional current matching Need can attach without new permission evidence/duplicate Rule; currentness remains Business Connectivity truth; later retirement changes derived status only.
+8. **Business justification** — BusinessProcess preserves optional opaque criticalityLabel without score/order/propagation; ConnectivityNeed preserves participantComponentRef; source/destination Needs remain independently attributable; additional current matching Need can attach without new permission evidence/duplicate Rule; currentness remains Business Connectivity truth; later retirement changes derived status only.
 
 9. **Reconciliation** — zero current Need yields NO_CURRENT_BUSINESS_JUSTIFICATION and does not automatically revoke/deactivate Rule or make materialization incomplete.
 
@@ -30,13 +30,13 @@ IMPLEMENTATION may claim realization complete only when every item below has exe
 
 12. **Materialization reliability** — the first statement of one read-only REPEATABLE READ transaction establishes the snapshot and returns PostgreSQL transaction_timestamp() as exact evaluationAt; bounded preflight determines COMPLETE/UNRESOLVED and dependency success before HTTP 200 commitment; emit repeats bounded traversal in that same snapshot; post-commit stream failure cannot become a valid successful export.
 
-13. **Self-contained explainability** — export contains one complete MaterializedRuleProvenance per selected Rule with all authorization evidence, participant-attributed Need justifications/currentness and reconciliation; normalized rows correlate by PolicyRuleRef and preserve exact traffic + explicit technical actor/time facts. A policy.export-only caller can explain the export without requiring policy.read.
+13. **Self-contained explainability** — AccessRequest/AuthorizationEvidence preserve request authority scope/time; export contains ExportAuthorityEvidence for every selected Resource scope plus one complete MaterializedRuleProvenance per selected Rule with all authorization evidence, participant-attributed Need justifications/currentness and reconciliation; normalized rows correlate by PolicyRuleRef and preserve exact traffic + explicit technical actor/time facts. A policy.export-only caller can explain the export without requiring policy.read.
 
 14. **Idempotency/concurrency recovery** — concrete target is part of idempotency scope; exact persisted original response JSON/status/Location/ETag replay precedes NEW-command If-Match and is never reconstructed from current state; committed replay records have no selected-MVP TTL; different fingerprint conflicts; different targets do not collide; concurrent identical command resolves commit->replay, rollback->NEW, unresolved bounded wait/DB failure->503; no automatic DB mutation retry.
 
 15. **Persistence ownership** — schema/migrations match Data Design: no cross-owner write coupling/FKs, no false interaction.application_ref, unique AccessSubject Rule, evidence/justification uniqueness, explicit histories and owner-local constraints.
 
-16. **Security** — OIDC HTTPS-only configured issuer/discovery/jwks_uri with downgrade rejection, configured asymmetric algorithm allow-list/key compatibility, required kid, exact issuer/audience/exp/nbf/skew/sub/permission-claim semantics, deterministic full-refresh attempt semantics and >0 max-stale age measured from last successful full refresh are proven; provider cache headers cannot extend that window; 401-vs-503 distinction is proven; request/decide/manage/read/export remain separate and forwarded identity/permission headers cannot establish authority; secret/log/error rules hold.
+16. **Security** — OIDC HTTPS-only configured issuer/discovery/jwks_uri with downgrade rejection, configured asymmetric algorithm allow-list/key compatibility, required kid, exact issuer/audience/exp/nbf/skew/sub/permission-claim/authority-claim semantics; request/export require effective grants for every relevant AuthorityScopeRef at server-owned time and preserve evidence; deterministic full-refresh attempt semantics and >0 max-stale age measured from last successful full refresh are proven; provider cache headers cannot extend that window; 401-vs-503 distinction is proven; request/decide/manage/read/export remain separate and forwarded identity/permission headers cannot establish authority; secret/log/error rules hold.
 
 17. **Operability** — startup-only configuration including body-size bound, unknown-key failure, no hidden required defaults, OIDC retry/cache policy, DB/lock waits, diagnostic evidence, health/readiness, cancellation, materialization commit boundary, graceful shutdown and redaction are proven.
 
