@@ -1,0 +1,51 @@
+version: 1
+kind: harness-human-projection
+id: napms-backend-human-docs
+consumer: BACKEND-IMPLEMENTATION
+
+documents:
+  - id: overview
+    title: NAPMS System Overview
+    sections:
+      - id: product
+        select: {authorities: [PRODUCT-REQUIREMENTS]}
+      - id: discovery
+        select: {authorities: [DISCOVERY]}
+      - id: application-journey
+        select: {authorities: [APPLICATION-JOURNEY-DESIGN]}
+  - id: domain
+    title: Domain Design
+    sections:
+      - id: strategic
+        select: {authorities: [STRATEGIC-DOMAIN-DESIGN]}
+      - id: use-cases
+        select: {authorities: [DOMAIN-USE-CASE-DESIGN]}
+      - id: tactical
+        select: {authorities: [TACTICAL-DOMAIN-DESIGN]}
+  - id: architecture-and-interfaces
+    title: Architecture and Interfaces
+    sections:
+      - id: system
+        select: {authorities: [SYSTEM-ARCHITECTURE]}
+      - id: security
+        select: {authorities: [SECURITY-ARCHITECTURE-DESIGN]}
+      - id: interfaces
+        select: {authorities: [INTERFACE-DESIGN]}
+      - id: data
+        select: {authorities: [DATA-DESIGN]}
+  - id: quality-and-operations
+    title: Quality, Security Analysis and Operability
+    sections:
+      - id: quality
+        select: {authorities: [QUALITY-DESIGN]}
+      - id: security-analysis
+        select: {authorities: [SECURITY-ANALYSIS]}
+      - id: operability
+        select: {authorities: [OPERABILITY-DESIGN]}
+  - id: implementation-and-verification
+    title: Implementation and Verification
+    sections:
+      - id: implementation
+        select: {authorities: [IMPLEMENTATION-DESIGN]}
+      - id: verification
+        select: {authorities: [VERIFICATION-DESIGN]}
