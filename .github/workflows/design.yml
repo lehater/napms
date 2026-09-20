@@ -20,6 +20,8 @@ on:
       - "docs/spec/repository-layout.md"
       - "docs/spec/artifacts.md"
       - "docs/meta/current-workstream.yaml"
+      - "docs/meta/artifact-schema-experiments/**"
+      - "docs/meta/artifact-schema-experiments/**"
       - "tools/check_canonical_graph.py"
       - "tools/check_harness_vertical.py"
       - "tools/check_knowledge_completeness.py"
@@ -75,6 +77,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout Harness research experiment
+        uses: actions/checkout@v4
+        with:
+          repository: lehater/harness
+          ref: research/engineering-knowledge-projections
+          path: .harness-research-tool
+      - name: Validate artifact schema candidates
+        run: |
+          python .harness-research-tool/experiments/artifact_schemas/validate.py             docs/meta/artifact-schema-experiments/product-requirements.candidate.yaml             docs/meta/artifact-schema-experiments/implementation-design.candidate.yaml
+          if python .harness-research-tool/experiments/artifact_schemas/validate.py             .harness-research-tool/experiments/artifact_schemas/invalid-product-requirements.yaml; then
+            echo "invalid research fixture was unexpectedly accepted" >&2
+            exit 1
+          fi
+          echo "invalid research fixture rejected as expected"
       - name: Validate canonical design graph, responsibility contracts and projections
         run: make design-check
       - name: Materialize human implementation package
