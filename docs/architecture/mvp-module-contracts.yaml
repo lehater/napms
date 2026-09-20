@@ -1,33 +1,38 @@
-version: 1
+version: 2
 kind: module-contract-design
 id: NAPMS-FIRST-MVP-MODULE-CONTRACTS
-status: PILOT_CURRENT
+status: CURRENT
 
-purpose: Own the explicit in-process application/module contracts required to coordinate domain owners without turning persistence tables or HTTP into internal integration boundaries.
+purpose: Define explicit in-process contracts required to realize the corrected first-MVP design without table coupling or internal HTTP.
 
 contracts:
-  Resource Catalogue: [CreateResource, SetCurrentAddressSpace, GetResourceDetail, ResolveResource]
-  Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionContractRevision, ResolveComponent, ResolveInteractionContractRevision]
-  Application Deployment: [CreateComponentDeployment, ResolveComponentDeployment]
-  Business Connectivity: [CreateBusinessProcess, CreateConnectivityNeed, ResolveCurrentConnectivityNeed]
-  Access Policy: [SubmitRuleChange, DecideRuleChange, WithdrawPolicyRule, ListEffectivePolicyRules]
-  Authority Management: ['Admit(actor, action, scope)']
-  Policy Export Composition: [MaterializeCurrentPolicy]
+  Resource Catalogue: [RegisterResource, AddEndpoint, SetEndpointAddress, ClearEndpointAddress, SetSite, SetResponsibility, ResolveResource, ResolveAuthorityScope, CurrentEndpointAddresses]
+  Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionRevision, ResolveComponent, ResolveInteractionRevision]
+  Application Deployment: [RegisterComponentDeployment, ResolveComponentDeployment]
+  Business Connectivity: [RegisterBusinessProcess, SetResponsibleOrganization, SetCriticalityLabel, DeclareNeed, RetireNeed, LockAndResolveCurrentNeed, ResolveNeedCurrentOrHistory]
+  Access Policy: [SubmitAccessRequest, RecordPermissionDecision, SetPolicyRuleOperationalState, AttachPolicyRuleJustification, ReadPolicyRule, PageCurrentPolicyRules]
+  Authority Management: [RequireScopedAuthority]
+  Policy Materialization: [MaterializeCurrentPolicy]
 
 rules:
-  - Cross-module semantics use owner contracts; tables are not integration contracts.
-  - Contracts expose owner-approved semantic operations/results and never transfer ownership of another module's mutable truth.
-  - Internal HTTP is not introduced between modules in the first-MVP modular monolith.
-  - Missing owner semantics must be resolved by the owning domain Authority rather than added opportunistically to a consumer contract.
-
-basis_refs: [FIRST-MVP-JOURNEY, SYSTEM-RULES, STRATEGIC-RELATIONSHIPS]
+  - Tables are private persistence of owners and never module integration contracts.
+  - Internal HTTP is forbidden between modules in the modular monolith.
+  - Resource Catalogue owns Resource AuthorityScopeRef and Endpoint/address truth.
+  - Authority Management evaluates authenticated grants but never manufactures Resource scope.
+  - Business Connectivity owns Need currentness; Access Policy may validate or associate Need but does not copy currentness.
+  - Access Policy owns AccessRequest PolicyRule evidence and operational history.
+  - Policy Materialization uses owner read ports in one shared snapshot and writes no peer truth.
+  - Missing owner semantics must be routed to that owner instead of invented in a consumer.
 
 resource_catalogue_query_contracts:
-  GetResourceDetail:
-    input: ResourceId
-    output: Resource detail containing stable identity plus current and ended/replaced ResourceRealizationFact, ResourceScopeAffiliation and ResourceResponsibility facts.
-    semantics:
-      - Current facts remain directly distinguishable from historical facts.
-      - Historical facts retain validity interval and provenance supplied by the owning Resource Catalogue model.
-      - Absence of a current fact is explicit and does not remove historical facts or Resource identity.
-    ownership: Resource Catalogue owns the returned business facts; this contract only defines the in-process application query boundary.
+  ResolveResource:
+    output: [resourceRef, authorityScopeRef, siteRef, current responsibilities, endpointCount]
+  CurrentEndpointAddresses:
+    output: all current addressed Endpoints for one Resource with EndpointRef AddressRealization effectiveFrom changedBySubject
+
+authority_contract:
+  RequireScopedAuthority:
+    input: [Principal, action, distinct AuthorityScopeRefs, evaluatedAt]
+    output: exact immutable authority evidence for each required scope or FORBIDDEN
+
+basis_refs: [FIRST-MVP-JOURNEY, SYSTEM-RULES, STRATEGIC-RELATIONSHIPS]
