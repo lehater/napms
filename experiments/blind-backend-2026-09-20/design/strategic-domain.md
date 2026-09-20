@@ -8,11 +8,11 @@ Boundaries are derived only from the amended Source Corpus using semantic cohesi
 
 ## Bounded Context: Resource Description
 
-**Purpose.** Own logical Resource identity, logical network presence, current address realization, Site/Owner/Administrator meaning and basic history.
+**Purpose.** Own logical Resource identity, logical network presence, current address realization, immutable AuthorityScopeRef affiliation, Site/Owner/Administrator meaning and basic history.
 
 **Why separate.** Resource/network realization changes independently from application definitions, deployments, business need and permission. Address is explicitly not Resource identity.
 
-**Public semantic contract.** Resolve stable Resource references to current network realization and explanatory Site/responsibility/address history.
+**Public semantic contract.** Resolve stable Resource references to AuthorityScopeRef, current network realization and explanatory Site/responsibility/address history. Site/responsibility never imply authority scope.
 
 ## Bounded Context: Application Communication
 
@@ -32,7 +32,7 @@ Boundaries are derived only from the amended Source Corpus using semantic cohesi
 
 ## Bounded Context: Business Connectivity
 
-**Purpose.** Own Business Process and Connectivity Need meaning, currentness and history: why an application Interaction is needed.
+**Purpose.** Own Business Process, descriptive responsible organization/criticality and Connectivity Need meaning, currentness and history: why an application Interaction is needed.
 
 **Why separate.** Business justification survives deployment/address changes, may be added or retired independently from access permission, and does not itself authorize access.
 
@@ -52,8 +52,9 @@ The MVP consumes a final permission outcome distinct from request authority. Int
 
 ## Application composition, not Bounded Context: Policy Materialization
 
-Vendor-neutral policy materialization composes:
+Vendor-neutral policy materialization composes authenticated scoped export admission plus:
 - selected current Access Policy;
+- participating Resource AuthorityScopeRefs;
 - current Business Connectivity justification status;
 - exact Application Communication semantics;
 - Application Deployment placement;
