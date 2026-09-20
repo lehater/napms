@@ -1,9 +1,9 @@
-version: 4
+version: 5
 kind: implementation-readiness
 id: NAPMS-FIRST-MVP-IMPLEMENTATION-READINESS
-status: STALE_AFTER_REQUIREMENTS_RECONCILIATION
+status: CURRENT
 
-goal: Turn the accepted first-MVP design into executable implementation slices and explicit completion criteria without reopening product, domain or architecture decisions.
+goal: Implement the corrected first-MVP backend without reopening product domain architecture interface data security operability or verification decisions.
 
 design_refs:
   requirements: docs/requirements/first-mvp-product-requirements.yaml
@@ -14,51 +14,42 @@ design_refs:
   module_contracts: docs/architecture/mvp-module-contracts.yaml
   shared_technical_conventions: docs/architecture/mvp-technical-representation.yaml
   http_contract: docs/contracts/http/napms.openapi.yaml
-  ui_navigation: docs/contracts/ui/mvp-navigation.yaml
-  resource_detail_ui: docs/contracts/ui/resource-detail.yaml
   persistence: docs/architecture/persistence/mvp-persistence.yaml
   quality_requirements: docs/architecture/mvp-quality-requirements.yaml
   threat_model: docs/architecture/mvp-threat-model.yaml
   observability: docs/architecture/mvp-observability.yaml
+  verification: docs/plans/first-mvp-test-intent.yaml
 
 implementation_boundary:
-  includes: [browser workflow, HTTP/JSON application API, modular-monolith modules, PostgreSQL persistence, Authority Management admission, vendor-neutral policy materialization, table and CSV export]
-  excludes: [provider-specific rendering, Network Enforcement Placement, Access Policy Realization, Network Environment Operations, Technical Access Evidence, external IdP, distributed services]
-  rule: Implement one end-to-end vertical journey while preserving accepted semantic and architecture ownership.
+  includes: [backend HTTP/JSON API, modular-monolith modules, PostgreSQL persistence, OIDC authentication, scoped/time authority admission, vendor-neutral policy materialization]
+  excludes: [frontend implementation, provider-specific rendering, firewall/provider mutation, configured-state reconciliation, historical export, distributed services]
+  rule: Implement only accepted backend design; unexpected semantic gaps route upstream.
 
 vertical_sequence:
-  - Author Resources and AddressSpace
-  - Author Application Components Interaction and traffic revision
-  - Create source and destination ComponentDeployments
-  - Establish BusinessProcess and current ConnectivityNeed
-  - Submit RuleChange for exact deployments/revision/Need
-  - Decide Pending RuleChange
-  - Materialize all current effective rules
-  - Render same successful result as table and CSV
-
-frontend:
-  steps: [Resources, Application and Components, Interactions and Traffic, Deployments, Business Connectivity, Policy Rule and Decision, Current Policy Export]
-  rule: UI drives the API and displays validation/Unresolved outcomes; it never becomes authority for domain invariants or authorization.
-
-implementation_slices:
-  - 'foundation: session/auth admission, OpenAPI edge, composition root, PostgreSQL migrations and diagnostic correlation'
-  - 'authoring: RC + ACC + AD + Business Connectivity'
-  - 'policy: Access Policy lifecycle and cross-module validation'
-  - 'export: complete materialization + JSON table + CSV'
-  - 'frontend: complete browser journey, including Resource detail current/history inspection'
-  - 'verification: module + integration + API + end-to-end proof'
+  - foundation: migrate and serve modes, exact schema verification, PostgreSQL pool, OIDC/JWKS initialization, health and correlation
+  - resource: Site ResponsibilityGroup Resource AuthorityScopeRef Endpoint address history and responsibility history
+  - application: Application Component independent Interaction immutable InteractionRevision and canonical TrafficClause
+  - deployment_business: ComponentDeployment BusinessProcess criticality participant-attributed ConnectivityNeed
+  - access: AccessRequest scoped request authority final ALLOWED/DENIED PolicyRule evidence justification Active/Inactive EffectiveWindow
+  - materialization: all-or-subset selection scoped export authority one snapshot evaluationAt provenance and normalized rows
+  - closure: security operability migrations idempotency cancellation and fresh-database end-to-end verification
 
 completion_definition:
-  - OpenAPI covers every required journey operation and explicit outcome.
-  - PostgreSQL migrations establish only module-owned state needed by the journey.
-  - Backend interfaces implement the canonical module contracts and introduce no internal HTTP.
-  - Protected operations implement the canonical security boundary and Authority Management admission.
-  - Browser completes the journey without hidden/manual state fabrication.
-  - Resource detail keeps current facts immediately readable and exposes ended/replaced realization, scope-affiliation and responsibility history with validity and provenance.
-  - Implementation preserves the quality, threat-control and observability constraints referenced above.
-  - Verification covers happy path, rejection, withdrawal, authorization and Unresolved export.
-  - No coding step requires a new product/domain/system-architecture decision.
+  - Cross-Application Interaction and multiple independent Interactions for the same Component pair are supported.
+  - Resource has immutable AuthorityScopeRef and explicit logical Endpoint membership; no automatic grouping by address Site responsibility or name occurs.
+  - BusinessProcess criticalityLabel is representable without score ordering taxonomy or propagation.
+  - AccessRequest requires current participant-attributed Need plus effective scoped access.request authority for every participating Resource scope at admissionAt.
+  - DENIED creates no PolicyRule; ALLOWED converges one PolicyRule per exact AccessSubject including immutable InteractionRevision.
+  - PolicyRule supports reversible ACTIVE/INACTIVE and absolute EffectiveWindow without new permission decision.
+  - Additional Needs attach without duplicate Rule; zero current Needs yields reconciliation and no automatic revoke.
+  - Materialization supports ALL or explicit Rule subset and requires scoped policy.export authority for every selected Resource scope at evaluationAt.
+  - One read-only REPEATABLE READ snapshot and database transaction_timestamp() govern materialization.
+  - Export is self-contained for request authority permission business and technical provenance; only selected effective Rules require technical realization.
+  - Idempotency replays exact persisted response and has no first-MVP TTL.
+  - migrate owns DDL and advisory serialization; serve verifies exact migration IDs/checksums and never auto-migrates.
+  - OIDC HTTPS issuer/discovery/JWKS algorithm kid audience time subject permission and authority-claim semantics are proven.
+  - Numeric latency throughput availability and scale targets are explicitly NOT_REQUIRED for first MVP.
+  - Every required verification scenario has executable evidence before implementation is COMPLETE.
 
-open_questions:
-  - Numeric performance, availability and scale targets are not present in accepted product truth and must not be invented during implementation.
-implementation_authorization: NOT_GRANTED_BY_THIS_ARTIFACT
+open_questions: []
+implementation_authorization: DESIGN_COMPLETE_BACKEND
