@@ -78,7 +78,7 @@ Requirements:
 - no config files/flags/runtime reload/feature flags;
 - no hidden numeric defaults for required timeout/retry/body-size keys;
 - DSN value is secret/redacted;
-- OIDC adapter must enforce Security Architecture's exact alg/aud/exp/nbf/sub/permission-claim contract and surface “invalid token” separately from “cannot establish validity because key dependency is unavailable”;
+- OIDC adapter must enforce HTTPS-only configured issuer/discovery/jwks_uri with downgrade rejection plus Security Architecture's exact alg/kid/aud/exp/nbf/sub/permission-claim contract and surface “invalid token” separately from “cannot establish validity because key dependency is unavailable”;
 - after parsing config, initialize OIDC metadata/JWKS with the accepted bounded retries before opening listener; failure aborts startup;
 - runtime refresh is one single-flight path shared by readiness/protected validation; no independent fetch storms.
 
@@ -162,12 +162,12 @@ Implement read-only shared-snapshot CurrentPolicyMaterializer with:
 - NO_CURRENT_BUSINESS_JUSTIFICATION reconciliation flag;
 - no automatic deactivation when current Need count is zero;
 - exact canonical ipProtocol/port-range and IPv4/IPv6 HOST/PREFIX expansion for selected effective Rules only;
-- self-contained streamed `ruleProvenance` for every selected Rule containing AuthorizationEvidence with request submitter/time/initialNeed + decision actor/time and participant-attributed Need justification/currentness/reconciliation; normalized technical rows correlate by PolicyRuleRef and carry explicit Resource-address actor-time facts; paginated Rule endpoints remain an additional audit surface; no generic provenance blob;
+- self-contained streamed `ruleProvenance` for every selected Rule containing AuthorizationEvidence with request submitter/time/initialNeed + decision actor/time and participant-attributed Need justification/currentness/reconciliation; unresolved accepted provenance for any selected Rule makes the result UNRESOLVED even when that Rule is INACTIVE/out-of-window; normalized technical rows correlate by PolicyRuleRef and carry explicit Resource-address actor-time facts; paginated Rule endpoints remain an additional audit surface; no generic provenance blob;
 - stable nonEffective and MaterializationIssue representations.
 
 Completion:
 - COMPLETE and UNRESOLVED are HTTP 200 application results;
-- inactive/out-of-window selected Rules create nonEffective entries, not realization errors;
+- inactive/out-of-window selected Rules create nonEffective entries and waive only technical-realization requirements; provenance completeness remains mandatory;
 - zero-current-Need Rule can still COMPLETE with reconciliation flag;
 - effective missing realization -> UNRESOLVED;
 - dependency failure -> HTTP 503;
@@ -225,7 +225,7 @@ Collection pagination/default/max/no-truncation, configured request-body byte en
 
 PostgreSQL owner-write/read-snapshot isolation and current-Need FOR SHARE validation-lock semantics are not coding freedoms.
 
-OIDC algorithm allow-list source, required kid semantics, clock-skew semantics and initial/single-flight key acquisition lifecycle are not coding freedoms.
+OIDC HTTPS issuer/discovery/JWKS transport, algorithm allow-list source, required kid semantics, clock-skew semantics and initial/single-flight key acquisition lifecycle are not coding freedoms.
 
 Migrate-vs-serve ownership, advisory migration serialization, exact schema verification, DB-snapshot evaluationAt and exact persisted idempotency replay/retention are not coding freedoms.
 
