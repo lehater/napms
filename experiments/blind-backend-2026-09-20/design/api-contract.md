@@ -396,6 +396,10 @@ A Rule with zero current Need justifications remains a Rule; it exposes reconcil
 - unknown RuleRef -> `422 REFERENCE_INVALID`;
 - backend establishes `evaluationAt` from the coherent database read snapshot;
 - computation success returns HTTP 200 for both COMPLETE and UNRESOLVED.
+- server must complete the materialization preflight and determine COMPLETE/UNRESOLVED before committing the HTTP 200 response;
+- dependency/runtime failure during preflight returns the normal 503/500 Problem response before any materialization body is committed;
+- after successful preflight, rows/nonEffective/issues may be streamed from the same database snapshot;
+- a transport/client cancellation after response commitment produces an incomplete HTTP body, which is not a valid successful export artifact.
 
 Before resolving technical realization, each selected Rule is evaluated:
 - INACTIVE -> non-effective, no output row and no realization completeness obligation;
