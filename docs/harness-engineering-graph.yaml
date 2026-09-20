@@ -98,16 +98,12 @@ authorities:
         requires:
           - engineering.requirements.product-intent
           - engineering.domain.strategic-model
-          - engineering.domain.tactical-model
-          - engineering.domain.use-case-model
           - engineering.application.journey
       - capability: engineering.architecture.rules
         knowledge_kind: system-architecture
         requires:
           - engineering.requirements.product-intent
           - engineering.domain.strategic-model
-          - engineering.domain.tactical-model
-          - engineering.domain.use-case-model
           - engineering.application.journey
       - capability: engineering.architecture.module-contracts
         knowledge_kind: system-architecture
@@ -122,8 +118,6 @@ authorities:
         requires:
           - engineering.requirements.product-intent
           - engineering.domain.strategic-model
-          - engineering.domain.tactical-model
-          - engineering.domain.use-case-model
           - engineering.application.journey
       - capability: engineering.frontend.architecture
         knowledge_kind: system-architecture
