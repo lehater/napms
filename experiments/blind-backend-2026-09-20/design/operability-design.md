@@ -74,7 +74,7 @@ Serve-mode required environment keys:
 | `NAPMS_OIDC_HTTP_TIMEOUT` | duration > 0 for metadata/JWKS HTTP attempt | no |
 | `NAPMS_OIDC_FETCH_MAX_ATTEMPTS` | integer >= 1 | no |
 | `NAPMS_OIDC_FETCH_BACKOFF` | duration >= 0 between OIDC fetch attempts | no |
-| `NAPMS_JWKS_MAX_STALE` | duration >= 0 during which already-cached signing keys may remain usable if refresh fails | no |
+| `NAPMS_JWKS_MAX_STALE` | duration > 0; maximum age since the last successful full validation-material refresh during which that keyset remains usable | no |
 | `NAPMS_SHUTDOWN_GRACE` | duration > 0 for in-flight graceful shutdown | no |
 
 Optional:
@@ -124,7 +124,8 @@ After serve-mode configuration + exact database schema verification and before o
 ### Runtime refresh/cache
 
 - every metadata/JWKS HTTP attempt is HTTPS-only, rejects downgrade redirects, and is bounded by `NAPMS_OIDC_HTTP_TIMEOUT`;
-- one refresh sequence uses at most `NAPMS_OIDC_FETCH_MAX_ATTEMPTS` with configured backoff;
+- one **refresh attempt** is one complete HTTPS discovery fetch + exact discovery issuer/jwks_uri validation + JWKS fetch/key validation cycle;
+- one refresh sequence performs at most `NAPMS_OIDC_FETCH_MAX_ATTEMPTS` complete attempts, with `NAPMS_OIDC_FETCH_BACKOFF` only between failed attempts;
 - concurrent refresh triggers share one in-flight single-flight refresh; they do not fan out independent fetch storms;
 - bearer JWT requires non-empty string `kid`; missing/wrong-type kid -> 401 with no refresh;
 - unknown kid may trigger one bounded refresh sequence;
@@ -132,8 +133,13 @@ After serve-mode configuration + exact database schema verification and before o
 - if refresh cannot complete and token validity therefore cannot be established -> 503;
 - readiness, when no currently usable key material exists, may trigger one bounded single-flight refresh and reports UP only if usable material is established;
 - protected token validation may also trigger that refresh path when required;
-- cached signing keys remain usable after refresh failure only while cache age <= `NAPMS_JWKS_MAX_STALE`;
-- refresh failure does not force readiness DOWN while still-usable cached keys exist;
+- a successful full refresh atomically replaces the usable discovery/key material and records `lastSuccessfulValidationMaterialRefreshAt = now`;
+- a failed refresh leaves the prior usable material and that timestamp unchanged;
+- validation-material age is exactly `now - lastSuccessfulValidationMaterialRefreshAt`;
+- prior keys remain usable after refresh failure only while that age <= `NAPMS_JWKS_MAX_STALE`;
+- once age exceeds max-stale, the prior keyset is unusable for protected validation and readiness until a successful refresh;
+- provider HTTP cache headers may reduce transport work internally but cannot extend/redefine the application max-stale window;
+- refresh failure does not force readiness DOWN while still-usable cached keys remain within that window;
 - once no usable/non-stale validation material exists, readiness is DOWN;
 - cryptographically invalid token against established valid key material -> 401;
 - inability to establish token validity because required key material is unavailable/staler than allowed -> 503, not false 401/fail-open.
