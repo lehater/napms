@@ -1,0 +1,33 @@
+version: 1
+kind: harness-knowledge-kind-bindings
+project: NAPMS
+status: research
+
+bindings:
+  - capability: engineering.requirements.product-intent
+    knowledge_kinds: [engineering.intent.behavior]
+  - capability: engineering.domain.strategic-model
+    knowledge_kinds: [engineering.domain.model, engineering.domain.boundaries]
+  - capability: engineering.domain.tactical-model
+    knowledge_kinds: [engineering.domain.model, engineering.domain.invariants]
+  - capability: engineering.domain.use-case-model
+    knowledge_kinds: [engineering.application.use-cases]
+  - capability: engineering.application.journey
+    knowledge_kinds: [engineering.application.use-cases]
+  - capability: engineering.architecture.c4-model
+    knowledge_kinds: [engineering.architecture.structure]
+  - capability: engineering.architecture.module-contracts
+    knowledge_kinds: [engineering.architecture.boundaries]
+  - capability: engineering.interface.http-contract
+    knowledge_kinds: [engineering.interface.machine.contract]
+  - capability: engineering.data.persistence-model
+    knowledge_kinds: [engineering.data.model]
+  - capability: engineering.security.threat-analysis
+    knowledge_kinds: [engineering.security.threat-analysis]
+  - capability: engineering.verification.strategy
+    knowledge_kinds: [engineering.verification.strategy]
+
+# Intentionally unbound because current capability semantics are too broad:
+# - engineering.architecture.security
+# - engineering.quality.constraints
+# - engineering.operability.observability
