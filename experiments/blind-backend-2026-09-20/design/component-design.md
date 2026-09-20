@@ -54,7 +54,11 @@ Result:
 - InvalidCredential -> 401;
 - IdentityDependencyUnavailable -> 503.
 
-OIDC metadata/JWKS fetch/cache mechanics obey Security + Operability max-attempt/max-stale/fail-closed semantics.
+OIDC adapter contract:
+- validates exact configured allowed algorithms, issuer, audience, exp/nbf skew, sub and permission-claim shape from Security Architecture;
+- exposes `initializeValidationMaterial()` used before listener start;
+- owns one single-flight bounded metadata/JWKS refresh path shared by initialization/readiness/protected validation;
+- preserves max-stale/fail-closed 401-vs-503 semantics from Operability/Security.
 
 ### Authorizer
 
@@ -334,14 +338,15 @@ Dedicated codecs/mappers own:
 
 Constructs:
 1. StartupConfigLoader -> RuntimeConfig;
-2. PostgreSQL pool;
-3. owner adapters + ConsistencyRunner;
-4. IdempotencyPort;
-5. OIDC Authenticator + Authorizer;
-6. application services/peer ports;
-7. CurrentPolicyMaterializer;
-8. ApiServer;
-9. observability/health/shutdown adapters.
+2. OIDC Authenticator initial validation-material acquisition; failure aborts startup before listener;
+3. PostgreSQL pool;
+4. owner adapters + ConsistencyRunner;
+5. IdempotencyPort;
+6. Authorizer;
+7. application services/peer ports;
+8. CurrentPolicyMaterializer;
+9. ApiServer;
+10. observability/health/shutdown adapters.
 
 No service locator reaches domain/application code.
 
