@@ -48,7 +48,7 @@ def main():
     aligned=validate_project_alignment(source,projection,graph,target_consumer="BACKEND-IMPLEMENTATION")
     model=aligned["model"]
 
-    backend=compile_manifest(graph,model,"BACKEND-IMPLEMENTATION",harness_version="research-prototype",project_revision="napms-research",recipe_id="napms-backend-human-docs")
+    backend=compile_manifest(graph,model,"BACKEND-IMPLEMENTATION",harness_version="research-prototype",project_revision="napms-research",recipe_id="napms-backend-human-docs",source_root=ROOT)
     assert backend["target"]["status"]=="COMPLETE", backend["target"]
     plan=validate_recipe(load("docs/research/human-projection/backend.yaml"),backend)
     assert [d["id"] for d in plan["documents"]]==[
@@ -90,7 +90,7 @@ def main():
         assert (handoff/"manifest.yaml").is_file()
         assert (handoff/"sources/docs/canonical-graph.yaml").exists() is False
 
-    frontend=compile_manifest(graph,model,"FRONTEND-IMPLEMENTATION",harness_version="research-prototype",project_revision="napms-research")
+    frontend=compile_manifest(graph,model,"FRONTEND-IMPLEMENTATION",harness_version="research-prototype",project_revision="napms-research",source_root=ROOT)
     assert frontend["target"]["status"]=="READY", frontend["target"]
     unresolved={item["capability"] for item in frontend["unresolved"]}
     assert "engineering.frontend.human-interface" in unresolved, unresolved
