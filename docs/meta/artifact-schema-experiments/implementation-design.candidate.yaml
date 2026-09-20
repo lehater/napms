@@ -58,6 +58,8 @@ content:
     - Treating this artifact as implementation authorization.
   open_questions:
     - Numeric performance, availability and scale targets are not present in accepted product truth and must not be invented during implementation.
+  authorization_semantics:
+    - Implementation authorization is NOT_GRANTED_BY_THIS_ARTIFACT.
   design_refs:
     - docs/requirements/first-mvp-policy-export.yaml
     - docs/model/use-cases/first-mvp-policy-export.yaml
