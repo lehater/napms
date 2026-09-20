@@ -1,12 +1,13 @@
-version: 0
-kind: harness-artifact-schema-candidate
-schema: implementation-design/v0-experiment
+version: 1
+kind: harness-knowledge-artifact
 artifact: MVP-IMPLEMENTATION-READINESS
-source: docs/plans/first-mvp-implementation-readiness.yaml
-capability_claims:
-  - engineering.implementation.plan
-  - engineering.implementation.completion-criteria
-
+schema: implementation-design/v0-experiment
+title: NAPMS First MVP Implementation Design
+research:
+  source: docs/plans/first-mvp-implementation-readiness.yaml
+  capability_claims:
+    - engineering.implementation.plan
+    - engineering.implementation.completion-criteria
 content:
   purpose: >-
     Turn the accepted first-MVP design into executable implementation slices and
