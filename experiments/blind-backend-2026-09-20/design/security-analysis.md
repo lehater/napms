@@ -21,10 +21,10 @@ Scope: selected blind backend MVP. This analysis reviews accepted design and rou
 | OIDC discovery/JWKS transport downgrade or issuer substitution | COVERED | Serve requires HTTPS issuer; discovery issuer exact-match; jwks_uri HTTPS-only; non-HTTPS redirects rejected. |
 | JWT algorithm confusion / unsafe library default | COVERED | none/HS*/unknown/unconfigured algorithms rejected; token alg must match configured asymmetric allow-list and JWKS key type. |
 | Cold-start or unready key-cache recovery deadlock/fetch storm | COVERED | Initial validation-material acquisition gates listener; runtime readiness/protected validation share one bounded single-flight refresh; age is measured from last successful full refresh, >0 max-stale is authoritative, and provider cache headers cannot extend it. |
-| Caller spoofs actor/permissions | COVERED | Principal/permissions only from trusted bearer token; body/query and forwarded identity/permission headers cannot override them. |
+| Caller spoofs actor/permissions/scoped authority | COVERED | Principal, instance permissions and AuthorityGrants only from validated bearer token claims; body/query/forwarded headers cannot override them. |
 | Permission claim missing/wrong type interpreted inconsistently | COVERED | Missing claim = empty permission set; present claim must be array<string>; wrong type/non-string = invalid credential; unknown values grant nothing. |
-| Unauthorized read/mutation/export/decision | COVERED | Exact operation permission matrix; no implication. |
-| Request authority confused with permission decision | COVERED | `access.request` and `access.decide` independent. |
+| Unauthorized read/mutation/export/decision | COVERED | Exact operation admission matrix; request/export require all relevant effective scope grants at server-owned time; no implication. |
+| Request authority confused with permission decision | COVERED | scoped `access.request` authority and instance `access.decide` permission are independent; request authority evidence is preserved. |
 | Business Need grants permission | COVERED | Need required as justification for request/attachment but never creates permission/Rule without ALLOWED evidence. |
 | Resource Owner/Admin or Process organization grants app authorization | COVERED | Explicitly forbidden by Product/Security contracts. |
 | Unauthorized Rule operational/effective-window change | COVERED | `access.manage` + PolicyRule If-Match. |
@@ -41,7 +41,7 @@ Scope: selected blind backend MVP. This analysis reviews accepted design and rou
 | Unknown commit/retry duplicates state | COVERED | Idempotency state commits atomically; unknown never fabricates success; no automatic mutation retry. |
 | Lost update on aggregate/child | COVERED | Owner aggregate ETag/version; no child version bypass. |
 | Cross-context Need race at request/attach | COVERED | Validation read + Access Policy write share one DB snapshot. |
-| Export subset probes unauthorized data | COVERED for current permission model | `policy.export` gates materialization and `policy.read` gates direct Rule reads; no unprivileged existence oracle. |
+| Export subset probes unauthorized data | COVERED | selected Rules' Resource scopes are resolved internally; effective `policy.export` grant is required for every selected scope at evaluationAt before result/rows are exposed. |
 | Inactive/out-of-window Rule leaks technical realization unnecessarily | COVERED | Materializer evaluates effectiveness before technical realization and does not need peer technical facts for non-effective Rule. |
 | SQL injection | COVERED | Bound parameters + strict structured value normalization. |
 | Mass assignment | COVERED | Explicit DTO/command mapping; server-owned fields rejected. |
@@ -52,7 +52,7 @@ Scope: selected blind backend MVP. This analysis reviews accepted design and rou
 | CSRF | NOT_APPLICABLE | Bearer Authorization header, no ambient cookie/session auth. Reopen if browser cookie auth appears. |
 | CORS | DEFERRED_NONBLOCKING | Frontend/browser deployment excluded; resolve before cross-origin browser exposure. |
 | Rate limiting/abuse quotas | DEFERRED_NONBLOCKING | No public-internet/capacity target; bounded timeout/pagination constrain accidental amplification. |
-| Per-resource/application authorization scopes | DEFERRED_NONBLOCKING under current MVP scope decision | Current Security Architecture treats the backend instance as the authorization scope. Reopen if Product introduces narrower scope/tenant semantics. |
+| Resource/domain-policy authorization scope | COVERED | Resource owns immutable AuthorityScopeRef; request/export admission checks exact action/scope/time grants; Site/responsibility/Process metadata never manufacture scope. |
 | Encryption at rest/key rotation | DEFERRED_NONBLOCKING | No supplied regulatory/sensitivity obligation beyond ordinary deployment confidentiality. |
 | Supply-chain compromise | DEFERRED to implementation verification | Pin/reproduce/check selected dependencies in CI; package identity is not domain truth. |
 | Provider/device credentials | NOT_APPLICABLE | Rendering/execution outside MVP. |
@@ -74,7 +74,7 @@ Scope: selected blind backend MVP. This analysis reviews accepted design and rou
 ## Verification obligations
 
 - invalid credential variants -> 401, including malformed permission-claim type/non-string elements; missing permission claim yields authenticated empty permissions; unavailable validation key material -> 503;
-- exact permission matrix including operational/window/justification management and subset export;
+- exact instance-permission + scoped-authority matrix, including request and subset/ALL export scope/time coverage;
 - caller-supplied actor/permission/server-owned fields rejected;
 - request vs decide vs manage vs read/export independence;
 - concurrent ALLOWED requests converge on one Rule;
