@@ -28,15 +28,15 @@ IMPLEMENTATION may claim realization complete only when every item below has exe
 
 11. **Selection/materialization** — ALL or explicit unique non-empty PolicyRule subset is supported with no semantic Rule-count cap; explicit selection is bounded only by configured HTTP request-body bytes. Only selected effective Rules impose technical-realization completeness.
 
-12. **Materialization reliability** — bounded preflight inside one REPEATABLE READ snapshot determines COMPLETE/UNRESOLVED and dependency success before HTTP 200 commitment; emit repeats bounded traversal in that same snapshot; post-commit stream failure cannot become a valid successful export.
+12. **Materialization reliability** — the first statement of one read-only REPEATABLE READ transaction establishes the snapshot and returns PostgreSQL transaction_timestamp() as exact evaluationAt; bounded preflight determines COMPLETE/UNRESOLVED and dependency success before HTTP 200 commitment; emit repeats bounded traversal in that same snapshot; post-commit stream failure cannot become a valid successful export.
 
 13. **Self-contained explainability** — export contains one complete MaterializedRuleProvenance per selected Rule with all authorization evidence, participant-attributed Need justifications/currentness and reconciliation; normalized rows correlate by PolicyRuleRef and preserve exact traffic + explicit technical actor/time facts. A policy.export-only caller can explain the export without requiring policy.read.
 
-14. **Idempotency/concurrency recovery** — concrete target is part of idempotency scope; exact committed replay precedes NEW-command If-Match; different fingerprint conflicts; different targets do not collide; concurrent identical command resolves commit->replay, rollback->NEW, unresolved bounded wait/DB failure->503; no automatic DB mutation retry.
+14. **Idempotency/concurrency recovery** — concrete target is part of idempotency scope; exact persisted original response JSON/status/Location/ETag replay precedes NEW-command If-Match and is never reconstructed from current state; committed replay records have no selected-MVP TTL; different fingerprint conflicts; different targets do not collide; concurrent identical command resolves commit->replay, rollback->NEW, unresolved bounded wait/DB failure->503; no automatic DB mutation retry.
 
 15. **Persistence ownership** — schema/migrations match Data Design: no cross-owner write coupling/FKs, no false interaction.application_ref, unique AccessSubject Rule, evidence/justification uniqueness, explicit histories and owner-local constraints.
 
-16. **Security** — OIDC invalid credential vs unavailable-validation dependency distinction, permission-claim array/missing/wrong-type semantics, exact operation permissions and request/decide/manage/read/export separation are proven; secret/log/error rules hold.
+16. **Security** — OIDC configured asymmetric algorithm allow-list/key compatibility, required kid, exact issuer/audience/exp/nbf/skew/sub/permission-claim semantics and 401-vs-503 dependency distinction are proven; request/decide/manage/read/export remain separate and forwarded identity/permission headers cannot establish authority; secret/log/error rules hold.
 
 17. **Operability** — startup-only configuration including body-size bound, unknown-key failure, no hidden required defaults, OIDC retry/cache policy, DB/lock waits, diagnostic evidence, health/readiness, cancellation, materialization commit boundary, graceful shutdown and redaction are proven.
 
