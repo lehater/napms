@@ -11,7 +11,7 @@ Structured event classes:
 - `authn.failed`, `authz.denied`: reason category, never token;
 - `command.committed` / `command.conflict`: owner module, command kind, aggregate ref when safe, version;
 - `permission.recorded`: requestRef, result, principal subject, decisionRef when non-sensitive;
-- `policy.materialization.completed`: status COMPLETE/UNRESOLVED, asOf, ruleCount, rowCount, unresolvedCount, duration;
+- `policy.materialization.completed`: status COMPLETE/UNRESOLVED, evaluationAt, ruleCount, rowCount, unresolvedCount, duration;
 - `dependency.failure`: dependency class, timeout/unavailable/error category;
 - `unexpected.failure`: stable error class + correlationId, stack trace only in protected server logs.
 
