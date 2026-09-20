@@ -3,6 +3,8 @@ name: Unified Harness Integration
 on:
   pull_request:
     paths:
+      - ".harness-version"
+      - ".harness-version"
       - "docs/canonical-graph.yaml"
       - "docs/harness-core.yaml"
       - "docs/harness-engineering-graph.yaml"
@@ -27,11 +29,15 @@ jobs:
       - name: Checkout NAPMS
         uses: actions/checkout@v5
 
+      - name: Read pinned Harness version
+        id: harness-version
+        run: echo "sha=$(cat .harness-version)" >> "$GITHUB_OUTPUT"
+
       - name: Checkout pinned Harness
         uses: actions/checkout@v5
         with:
           repository: lehater/harness
-          ref: d2db626c2a6f5cc2cbdde5595b8025b6a1936047
+          ref: ${{ steps.harness-version.outputs.sha }}
           path: .harness-tool
 
       - uses: actions/setup-python@v6
