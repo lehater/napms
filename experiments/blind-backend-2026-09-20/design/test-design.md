@@ -275,6 +275,16 @@ Precondition: selected Rule INACTIVE or ACTIVE outside window; technical address
 Operation: materialize.  
 Oracle: HTTP 200 COMPLETE if all other effective Rules resolve; Rule appears in nonEffective with correct reason; no realization issue/row for it.
 
+### T-MATERIALIZE-NON-EFFECTIVE-PROVENANCE-MISSING
+Precondition: selected Rule is INACTIVE or outside effectiveWindow, but one accepted AuthorizationEvidence/Need provenance reference required for its ruleProvenance cannot be resolved.  
+Operation: materialize.  
+Oracle: HTTP 200 UNRESOLVED + REFERENCE_UNRESOLVABLE for that Rule; non-effectiveness waives only technical realization, not provenance completeness.
+
+### T-MATERIALIZE-NON-EFFECTIVE-TECHNICAL-MISSING
+Precondition: selected Rule is INACTIVE or outside effectiveWindow; complete permission/business provenance resolves; Deployment/Resource/address technical realization is missing.  
+Operation: materialize.  
+Oracle: Rule remains nonEffective, no technical MaterializationIssue is produced for it, and this missing technical realization alone does not prevent COMPLETE.
+
 ### T-MATERIALIZE-UNRESOLVED
 Precondition: selected effective Rule lacks source realization.  
 Operation: materialize.  
@@ -476,6 +486,15 @@ Oracle:
 Precondition: valid startup config.  
 Variants: metadata/JWKS available with usable allowed key; dependency unavailable/invalid through all configured attempts.  
 Oracle: usable keys -> listener may start; failure -> runtime.startup.failed safe dependency category + non-zero exit before listener.
+
+### T-OIDC-DISCOVERY-HTTPS-BOUNDARY
+Variants:
+- configured HTTPS issuer, discovery issuer exact match, HTTPS jwks_uri;
+- configured HTTP issuer;
+- discovery issuer mismatch;
+- HTTP jwks_uri;
+- HTTPS discovery/JWKS endpoint redirecting to HTTP.
+Oracle: only the first satisfies production serve contract; every mismatch/downgrade fails safely. Test identity infrastructure uses HTTPS or a controlled adapter below the production HTTP transport boundary; production config is never relaxed.
 
 ### T-OIDC-SINGLE-FLIGHT-RECOVERY
 Precondition: running process; cached key states varied.  
