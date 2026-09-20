@@ -509,6 +509,24 @@ Oracle:
 - beyond max-stale with failed refresh -> readiness DOWN and unverifiable protected token -> 503;
 - no fetch storm/fail-open/false 401.
 
+### T-OIDC-CACHE-AGE
+Precondition: successful validation-material refresh at T0; NAPMS_JWKS_MAX_STALE = D > 0.  
+Variants:
+- failed refresh at T0 + D - epsilon;
+- failed refresh at T0 + D + epsilon;
+- provider HTTP cache headers advertise lifetime longer than D;
+- successful full refresh at T1.
+Oracle:
+- prior keyset remains usable only in the first case;
+- after D it is unusable/readiness DOWN until success;
+- provider cache headers never extend D;
+- successful full refresh atomically replaces material and resets age origin to T1.
+
+### T-OIDC-REFRESH-ATTEMPT-BOUND
+Precondition: configured FETCH_MAX_ATTEMPTS=N and BACKOFF=B; inject discovery/JWKS failures at different stages.  
+Operation: trigger one refresh sequence.  
+Oracle: one attempt means complete discovery+validation+JWKS cycle; at most N attempts occur; B applies only between failed attempts; a successful attempt ends the sequence.
+
 ### T-AUTH-KEY-DEPENDENCY
 Variants: valid cached key within max-stale; cache too old; unknown kid + failed bounded refresh.  
 Oracle: usable cache may validate; inability to establish validity -> 503/readiness DOWN, never fail-open/false 401.
