@@ -12,7 +12,9 @@ IMPLEMENTATION may claim realization complete only when every item below has exe
 
 3. **Aggregate concurrency** — Resource, Application, Interaction, BusinessProcess, AccessRequest and PolicyRule own exactly the versions declared in design; child objects cannot create alternative optimistic-concurrency semantics.
 
-4. **Resource truth/history** — current address/Site/singular OWNER/singular ADMINISTRATOR and required history are preserved; replacement/no-op behavior is proven.
+4. **Transaction consistency** — ordinary owner writes are READ COMMITTED; current Need validation for request/justification uses owner-side FOR SHARE-equivalent lock held through Access Policy commit without peer writes; composed multi-owner reads/materialization use read-only REPEATABLE READ.
+
+5. **Resource truth/history** — current address/Site/singular OWNER/singular ADMINISTRATOR and required history are preserved; replacement/no-op behavior is proven.
 
 5. **Current-access identity** — exactly one PolicyRule exists per AccessSubject(source Deployment, destination Deployment, exact InteractionRevision); NeedRef and technical realization are not Rule identity.
 
@@ -28,7 +30,7 @@ IMPLEMENTATION may claim realization complete only when every item below has exe
 
 11. **Provenance** — normalized output preserves independent PolicyRule identity plus evidence/justification/current-justification counts/reconciliation and explicit actor/time source facts; full authorization evidence and participant-attributed Need audit are available through paginated PolicyRule endpoints; Resource address uses effectiveFrom/changedBySubject, InteractionRevision and Need use createdAt/createdBySubject; no generic public provenance blob is invented; technically equal independent Rules are not provenance-erased.
 
-12. **Idempotency/concurrency recovery** — idempotency scope includes concrete target; same committed replay precedes current If-Match evaluation; different fingerprint conflicts; different targets do not collide; concurrent identical commands create at most one authoritative result; no automatic DB mutation retry.
+12. **Idempotency/concurrency recovery** — idempotency scope includes concrete target; same committed replay precedes current If-Match evaluation; different fingerprint conflicts; different targets do not collide; concurrent identical command resolves commit->replay, rollback->NEW, unresolved bounded wait->503; no automatic DB mutation retry.
 
 13. **Persistence ownership** — PostgreSQL schema/migrations match Data Design: no cross-owner write coupling/FKs, no false `interaction.application_ref`, unique AccessSubject Rule, evidence/justification uniqueness, temporal history and owner-local constraints.
 
