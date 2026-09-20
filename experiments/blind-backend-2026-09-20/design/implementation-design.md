@@ -80,7 +80,9 @@ Requirements:
 - DSN value is secret/redacted;
 - OIDC adapter must enforce HTTPS-only configured issuer/discovery/jwks_uri with downgrade rejection plus Security Architecture's exact alg/kid/aud/exp/nbf/sub/permission-claim contract and surface “invalid token” separately from “cannot establish validity because key dependency is unavailable”;
 - after parsing config, initialize OIDC metadata/JWKS with the accepted bounded retries before opening listener; failure aborts startup;
-- runtime refresh is one single-flight path shared by readiness/protected validation; no independent fetch storms.
+- runtime refresh is one single-flight path shared by readiness/protected validation; one attempt is full discovery+JWKS validation, sequence length/backoff follow config exactly;
+- successful refresh atomically replaces material and records lastSuccessfulValidationMaterialRefreshAt; failed refresh preserves prior material/timestamp;
+- NAPMS_JWKS_MAX_STALE is >0 and measured from that timestamp; provider HTTP cache headers cannot extend it; no independent fetch storms.
 
 ## Slice order
 
@@ -225,7 +227,7 @@ Collection pagination/default/max/no-truncation, configured request-body byte en
 
 PostgreSQL owner-write/read-snapshot isolation and current-Need FOR SHARE validation-lock semantics are not coding freedoms.
 
-OIDC HTTPS issuer/discovery/JWKS transport, algorithm allow-list source, required kid semantics, clock-skew semantics and initial/single-flight key acquisition lifecycle are not coding freedoms.
+OIDC HTTPS issuer/discovery/JWKS transport, algorithm allow-list source, required kid semantics, clock-skew semantics, refresh-attempt unit, last-success cache-age origin/max-stale semantics and initial/single-flight key acquisition lifecycle are not coding freedoms.
 
 Migrate-vs-serve ownership, advisory migration serialization, exact schema verification, DB-snapshot evaluationAt and exact persisted idempotency replay/retention are not coding freedoms.
 
