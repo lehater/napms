@@ -107,12 +107,12 @@ Completion:
 
 ### I4 — Application Deployment and Business Connectivity
 
-Implement immutable ComponentDeployment registration/read; Process/ResponsibleOrganization; Need creation/terminal retirement with BusinessProcess-version concurrency.
+Implement immutable ComponentDeployment registration/read; Process/ResponsibleOrganization; Need creation with required participantComponentRef constrained to Interaction source/destination Component; terminal Need retirement with BusinessProcess-version concurrency.
 
 Completion:
 - deployment reference validation;
 - no deployment label/move/retire API;
-- Need lifecycle/history/currentness;
+- Need lifecycle/history/currentness + participant-side attribution;
 - process-child ETag/idempotency;
 - relevant authorization/API tests.
 
@@ -123,11 +123,11 @@ Implement:
 - final ALLOWED/DENIED request decision;
 - one PolicyRule per unique AccessSubject;
 - atomic ALLOWED resolve/create Rule + AuthorizationEvidence + initial Need association;
-- multiple authorization-evidence entries and Need justifications without duplicating Rule;
+- multiple authorization-evidence entries and participant-attributed Need justifications without duplicating Rule;
 - ACTIVE/INACTIVE + absolute EffectiveWindow;
-- additional current-Need attachment;
+- additional current-Need attachment with participantComponent validation;
 - derived NO_CURRENT_BUSINESS_JUSTIFICATION without copied Need currentness;
-- Rule operational/justification ETag concurrency;
+- Rule operational/justification ETag concurrency and cursor-bounded operational audit history;
 - replay-before-If-Match idempotency semantics.
 
 Completion:
@@ -147,7 +147,7 @@ Implement read-only shared-snapshot CurrentPolicyMaterializer with:
 - NO_CURRENT_BUSINESS_JUSTIFICATION reconciliation flag;
 - no automatic deactivation when current Need count is zero;
 - exact normalized traffic/address expansion for selected effective Rules only;
-- all authorization evidence + justification provenance;
+- all authorization evidence + participant-attributed justification provenance;
 - stable nonEffective and MaterializationIssue representations.
 
 Completion:
@@ -206,6 +206,6 @@ IMPLEMENTATION is complete only when:
 
 Private function/type names, helper decomposition, exact Go filenames, SQL/index/query optimization preserving accepted contracts, choice among maintained libraries that satisfy those contracts, migration-runner implementation, logger/metrics library, test framework/helpers, UUID library, composition wiring syntax and local refactorings.
 
-The following are **not** coding freedoms: same-vs-cross Application validity, AccessSubject fields, Rule uniqueness, Need exclusion from Rule identity, evidence/justification ownership, automatic-vs-nonautomatic Need revocation, ACTIVE/window semantics, policy subset behavior, endpoint DTO/status/header semantics, permission mapping, aggregate concurrency owner, idempotency scope/order, transaction boundaries, OIDC failure classification, configuration precedence/reload/retry semantics, logging safety or materialization COMPLETE/UNRESOLVED meaning.
+The following are **not** coding freedoms: same-vs-cross Application validity, ConnectivityNeed participantComponent semantics, AccessSubject fields, Rule uniqueness, Need exclusion from Rule identity, evidence/justification ownership, operational audit-history exposure, automatic-vs-nonautomatic Need revocation, ACTIVE/window semantics, policy subset behavior, endpoint DTO/status/header semantics, permission mapping/claim representation, aggregate concurrency owner, idempotency scope/order, transaction boundaries, OIDC failure classification, configuration precedence/reload/retry semantics, logging safety or materialization COMPLETE/UNRESOLVED meaning.
 
 If implementation discovers an expected behavior not decidable from the closure, it must stop that slice and report the missing upstream decision rather than select a convention.
