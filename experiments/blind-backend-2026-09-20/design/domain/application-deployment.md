@@ -1,6 +1,6 @@
 # Tactical domain — Application Deployment
 
-Status: ACCEPTED candidate
+Status: ACCEPTED candidate after Coding-Agent Challenge 01
 
 ## Aggregate: ComponentDeployment
 
@@ -9,20 +9,21 @@ Identity: `DeploymentRef`.
 State:
 - ComponentRef;
 - ResourceRef;
-- display label/metadata needed for human distinction;
-- createdAt;
-- version.
+- createdAt.
 
 Invariants:
-- one Deployment refers to exactly one Component and one Resource.
-- Resource address/IP is never copied into Deployment identity.
-- two concrete deployed instances of the same Component are different DeploymentRefs.
-- accepted MVP behavior does not define mutation of ComponentRef/ResourceRef, retirement, or deletion; references therefore remain stable once created.
-- in-place move semantics between Resources are outside the current MVP contract; create a distinct Deployment for materially different placement unless product input later defines migration identity.
+- one Deployment refers to exactly one Component and one Resource;
+- Resource address/IP is never copied into Deployment identity;
+- two concrete deployed instances of the same Component are different DeploymentRefs;
+- ComponentRef/ResourceRef are immutable after registration;
+- update, relocation, retirement and deletion are outside the selected MVP;
+- materially different placement is represented by a distinct Deployment unless future product input defines migration identity.
 
 Operations:
 - RegisterDeployment
 - ReadDeployment
+
+No independent display label/metadata is introduced without a product need; human presentation can resolve the referenced Component/Resource.
 
 ## Consistency boundary
 
