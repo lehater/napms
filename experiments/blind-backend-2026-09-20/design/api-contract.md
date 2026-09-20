@@ -460,10 +460,12 @@ Independent PolicyRule provenance is never merged away even when two rows have e
 `MaterializationIssue = {policyRuleRef, code, detail}`, where code is one of:
 - `SOURCE_REALIZATION_MISSING`;
 - `DESTINATION_REALIZATION_MISSING`;
-- `REFERENCE_UNRESOLVABLE`.
+- `REFERENCE_UNRESOLVABLE` — accepted semantic/provenance reference needed for the selected Rule cannot be resolved; applies independently of technical effectiveness.
 
 Rules:
-- COMPLETE requires no issue for any selected **effective** Rule;
+- COMPLETE requires complete `MaterializedRuleProvenance` for **every selected Rule** and no technical-realization issue for any selected **effective** Rule;
+- a selected INACTIVE/out-of-window Rule may omit technical realization without blocking COMPLETE, but its permission/business provenance must still resolve completely;
+- an accepted AuthorizationEvidence/Need/provenance reference that cannot be resolved produces `REFERENCE_UNRESOLVABLE` and overall UNRESOLVED even when the Rule is non-effective;
 - UNRESOLVED requires at least one issue;
 - diagnostic rows returned with UNRESOLVED are not a successful export artifact;
 - INACTIVE/out-of-window Rules never create realization issues;
