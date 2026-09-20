@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: tactical-domain-model
 id: NAPMS-AD-DOMAIN-MODEL
 bounded_context_ref: BC-APPLICATION-DEPLOYMENT
@@ -9,9 +9,9 @@ knowledge_coverage:
 aggregate: ComponentDeployment
 invariants:
   - One ComponentDeployment represents one concrete deployed Component instance.
-  - It references exactly one ACC ComponentRef and exactly one RC ResourceRef.
-  - ComponentRef and ResourceRef are fixed for that ComponentDeployment identity in the MVP.
-  - Redeployment of the same Component to another Resource creates another ComponentDeployment.
-  - Resource AddressSpace change does not change ComponentDeployment identity.
-  - Lifecycle is Active to Retired; retired identities remain historically explainable.
+  - It references exactly one ACC ComponentRef and one RC ResourceRef.
+  - ComponentRef and ResourceRef are immutable for deployment identity.
+  - Resource address change never changes ComponentDeployment identity.
+  - Another placement is another ComponentDeployment.
+  - Update relocation retirement and deletion are outside the selected MVP.
 public_semantics: [ComponentDeploymentRef, ResolveComponentDeployment]
