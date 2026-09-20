@@ -1,6 +1,6 @@
 # Backend operability design
 
-Status: ACCEPTED candidate after Coding-Agent Challenge 01
+Status: ACCEPTED after Coding-Agent Challenge 07 repair
 
 ## Responsibility
 
@@ -65,6 +65,7 @@ Required environment keys:
 | `NAPMS_OIDC_PERMISSION_CLAIM` | non-empty claim name containing effective permission strings | no |
 | `NAPMS_DB_STATEMENT_TIMEOUT` | duration > 0 | no |
 | `NAPMS_HTTP_REQUEST_TIMEOUT` | duration > 0, bounds one external request including materialization | no |
+| `NAPMS_HTTP_MAX_REQUEST_BODY_BYTES` | integer > 0; hard transport-safety limit for JSON request bodies; no hidden default | no |
 | `NAPMS_OIDC_HTTP_TIMEOUT` | duration > 0 for metadata/JWKS HTTP attempt | no |
 | `NAPMS_OIDC_FETCH_MAX_ATTEMPTS` | integer >= 1 | no |
 | `NAPMS_OIDC_FETCH_BACKOFF` | duration >= 0 between OIDC fetch attempts | no |
@@ -107,6 +108,7 @@ The application never logs the value of a key classified secret.
 ## Request timeout and cancellation
 
 - one external request is bounded by `NAPMS_HTTP_REQUEST_TIMEOUT`;
+- request JSON decoding is bounded by `NAPMS_HTTP_MAX_REQUEST_BODY_BYTES`; oversized body returns 413 PAYLOAD_TOO_LARGE before semantic command execution;
 - client cancellation and request timeout propagate to database/read materialization work;
 - cancellation before commit prevents success;
 - cancellation observed after a mutation committed does not rewrite the committed domain result; idempotent replay can recover the committed result;
