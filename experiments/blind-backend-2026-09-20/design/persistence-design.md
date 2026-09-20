@@ -87,12 +87,14 @@ No address, label, mutable relocation, retirement or independent version columns
 ## Business Connectivity
 
 - `business_process(process_ref PK, name, description nullable, organization_external_reference nullable, organization_display_name nullable, version, created_at)`
-- `connectivity_need(need_ref PK, process_ref, interaction_ref, business_basis, status, created_at, retired_at nullable)`
+- `connectivity_need(need_ref PK, process_ref, interaction_ref, participant_component_ref, business_basis, status, created_at, retired_at nullable)`
 
 Owner-local FK: Need -> BusinessProcess.
 
 Required constraints:
 - Process name and Need business basis are non-empty after trimming;
+- interaction_ref and participant_component_ref are immutable cross-owner opaque references validated through Application Communication at Need creation;
+- participant_component_ref must be one of the referenced Interaction participants at creation; no cross-owner FK is introduced;
 - organization display name is non-empty whenever organization attribution is present;
 - Need status is ACTIVE or RETIRED;
 - ACTIVE requires `retired_at IS NULL`; RETIRED requires `retired_at IS NOT NULL`;
@@ -191,7 +193,7 @@ NeedRef is a cross-owner opaque reference: no database FK into Business Connecti
   PK(rule_ref,version)
 )`
 
-Initial Rule creation records version 1 ACTIVE/unbounded. Every actual state/window change increments Rule version and appends one row. Same normalized state/window is a no-op.
+Initial Rule creation records version 1 ACTIVE/unbounded with changed_by_subject equal to the authenticated deciding principal and changed_at equal to creation/decision transaction time. Every actual state/window change increments Rule version and appends one row with authenticated managing principal/time. Same normalized state/window is a no-op. The API derives history kind CREATED for the initial row and OPERATIONAL_CHANGED for later rows.
 
 ### ALLOWED resolution/concurrency
 
