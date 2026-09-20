@@ -207,3 +207,21 @@ amendments:
       effectiveness, current-access identity, materialization selection/provenance or
       lifecycle must be reevaluated before freeze. Previously obtained structural
       IMPLEMENTATION COMPLETE remains only a Core-structure result, not semantic closure.
+
+  - id: SC-AMEND-002
+    discovered_during: coding-agent-challenge-02-cross-application-review
+    source:
+      bootstrap_commit: c403ceeda2837d8956e3d093fef95c1bd69d0c6f
+      path_at_bootstrap: docs/requirements/wave1-acceptance-examples.md
+      example: E1-valid-described-interaction
+    original_error: >-
+      Initial sanitization omitted the accepted negative constraint that a valid
+      described interaction must not gain an additional blanket same-Application
+      invariant.
+    reclassified_as_source_input:
+      - Structural validity follows the explicit directed interaction contract and valid Component references.
+      - Source and destination Components need not belong to the same Application.
+    consequence: >-
+      Application Communication tactical ownership, interface routes, persistence
+      constraints, component ports, concurrency ownership and downstream tests must
+      be reevaluated before freeze.
