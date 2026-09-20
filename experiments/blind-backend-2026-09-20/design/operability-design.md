@@ -97,7 +97,8 @@ The application never logs the value of a key classified secret.
 
 ## Database failure semantics
 
-- every database statement/transaction is bounded by the configured statement timeout and request context;
+- every database statement/transaction and row-lock/idempotency-key wait is bounded by the configured statement timeout and request context;
+- current-Need validation lock waits and competing idempotency-key waits that cannot resolve before deadline map to DEPENDENCY_UNAVAILABLE rather than fabricated conflict/success;
 - application commands do not retry database mutations automatically;
 - unknown commit outcome is surfaced as dependency/internal failure, never confirmed success;
 - the client may retry only through accepted Idempotency-Key semantics;
