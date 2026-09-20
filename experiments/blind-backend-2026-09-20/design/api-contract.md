@@ -18,7 +18,8 @@ JSON field naming: lower camel case.
 - missing required fields and explicit `null` are distinct;
 - `null` is accepted only where explicitly stated;
 - names/business-basis values marked required are non-empty after trimming;
-- server-owned identity, version, provenance and timestamps cannot be supplied by clients.
+- server-owned identity, version, provenance and timestamps cannot be supplied by clients;
+- request bodies are bounded by startup-configured `NAPMS_HTTP_MAX_REQUEST_BODY_BYTES`; exceeding it -> `413 PAYLOAD_TOO_LARGE`; this is a transport-safety bound, not a domain cardinality limit.
 
 ### Correlation
 
@@ -100,6 +101,7 @@ Stable mapping:
 | 403 | `FORBIDDEN` |
 | 404 | `NOT_FOUND` |
 | 409 | `STALE_VERSION`, `DECISION_ALREADY_FINAL`, `IDEMPOTENCY_CONFLICT` |
+| 413 | `PAYLOAD_TOO_LARGE` |
 | 422 | `REFERENCE_INVALID`, `NEED_NOT_CURRENT`, `INTERACTION_MISMATCH`, `UNSUPPORTED_TRAFFIC_SEMANTICS`, `VALIDATION_REJECTED` |
 | 428 | `PRECONDITION_REQUIRED` |
 | 503 | `DEPENDENCY_UNAVAILABLE` |
@@ -397,8 +399,8 @@ A Rule with zero current Need justifications remains a Rule; it exposes reconcil
 - read-only, no Idempotency-Key/If-Match;
 - body is either:
   - `{}` — select all current PolicyRules; or
-  - `{policyRuleRefs:[...]}` — explicit unique Rule subset with 1–200 refs;
-- duplicate refs, empty explicit list or more than 200 refs -> `400 INVALID_INPUT`;
+  - `{policyRuleRefs:[...]}` — explicit non-empty unique Rule subset; there is no domain count limit beyond the configured HTTP request-body safety bound;
+- duplicate refs or an explicit empty list -> `400 INVALID_INPUT`;
 - unknown RuleRef -> `422 REFERENCE_INVALID`;
 - backend establishes `evaluationAt` from the coherent database read snapshot;
 - computation success returns HTTP 200 for both COMPLETE and UNRESOLVED.
@@ -417,16 +419,24 @@ Response:
 - `status:"COMPLETE"|"UNRESOLVED"`;
 - `evaluationAt`;
 - `selection:{mode:"ALL"|"EXPLICIT",selectedRuleCount}`;
+- `ruleProvenance:[MaterializedRuleProvenance]`;
 - `nonEffective:[{policyRuleRef, reason:"INACTIVE"|"OUTSIDE_EFFECTIVE_WINDOW"}]`;
 - `rows:[NormalizedPolicyRow]`;
 - `issues:[MaterializationIssue]`.
 
+`MaterializedRuleProvenance` is emitted once per selected PolicyRule and contains:
+- `policyRuleRef`;
+- `subject:{sourceDeploymentRef,destinationDeploymentRef,interactionRevisionRef}`;
+- `effectState`, `effectiveWindow`;
+- `effectiveAtEvaluation:boolean`;
+- all `authorizationEvidence:[AuthorizationEvidenceView,...]`;
+- all `justifications:[JustificationView,...]` with current/retired Need status and participantComponentRef;
+- `reconciliationFlags`.
+
+This provenance is part of the export result itself and is available to a caller with `policy.export`; it does not require a second `policy.read` permission. It is emitted once per Rule to avoid repeating unbounded audit data in every technical row.
+
 `NormalizedPolicyRow` contains:
 - `policyRuleRef`;
-- `authorizationEvidenceCount`;
-- `justificationCount`;
-- `currentJustificationCount`;
-- `reconciliationFlags:["NO_CURRENT_BUSINESS_JUSTIFICATION"]|[]`;
 - `interactionRevisionRef`;
 - source: `{deploymentRef,resourceRef,endpointRef,address:AddressRealization,addressEffectiveFrom,addressChangedBySubject}`;
 - destination: same shape;
@@ -472,4 +482,4 @@ Paginated surfaces:
 - PolicyRule justifications;
 - PolicyRule operational history.
 
-Policy materialization is the export exception: `rows`, `nonEffective` and `issues` may be large and are emitted from one coherent snapshot in one HTTP response; implementation may stream their JSON arrays incrementally. Materialized rows carry PolicyRuleRef plus compact evidence/justification counts/reconciliation flags. Full business/permission audit is resolved via the paginated PolicyRule endpoints.
+Policy materialization is the export exception: `ruleProvenance`, `rows`, `nonEffective` and `issues` may be large and are emitted from one coherent snapshot in one HTTP response. Implementation may stream arrays/nested provenance arrays incrementally after preflight. Each Rule's complete permission/business provenance appears once in `ruleProvenance`; technical rows correlate by PolicyRuleRef. Paginated PolicyRule endpoints remain an independent read/audit surface, not a prerequisite for understanding an exported result.
