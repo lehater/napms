@@ -73,7 +73,7 @@ Opaque HTTP ETag <-> AggregateVersion mapping. Numeric/internal version is not e
 Application-owned transaction abstraction implemented by PostgreSQL infrastructure:
 
 - `runWrite(owner, operation)`: PostgreSQL READ COMMITTED, one transaction-bound owner write set + declared transaction-bound peer read ports;
-- `runReadSnapshot(operation)`: PostgreSQL read-only REPEATABLE READ (or stronger), all declared read ports on one coherent snapshot + evaluationAt.
+- `runReadSnapshot(operation)`: PostgreSQL read-only REPEATABLE READ (or stronger); its first database statement establishes the snapshot and returns database `transaction_timestamp()` as evaluationAt; all declared read ports share that exact snapshot/time.
 
 Rules:
 - only declared semantic owner tables may be written;
@@ -93,7 +93,7 @@ Input:
 - deterministic canonical accepted-body fingerprint.
 
 Decision:
-- REPLAY -> original committed semantic result/status/body/Location/ETag;
+- REPLAY -> exact persisted committed response status + canonical JSON body bytes + Location + ETag; current mutable state is never used to reconstruct replay;
 - CONFLICT -> same scoped key, different fingerprint;
 - NEW -> command may continue to If-Match/domain mutation;
 - UNKNOWN/TIMEOUT -> never fabricate success.
@@ -104,11 +104,20 @@ Normative ordering for operations also requiring If-Match:
 3. REPLAY/CONFLICT ends processing;
 4. only NEW validates current aggregate version.
 
-The guard is transaction-bound for NEW commands so idempotency evidence commits atomically with owner state.
+The guard is transaction-bound for NEW commands so exact replay bytes/metadata commit atomically with owner state. Committed idempotency records are not expired by this MVP.
 
 ### Clock / IdGenerator
 
-Narrow injectable abstractions only where accepted behavior needs current time/new opaque identity.
+Narrow injectable abstractions only where accepted behavior needs current time/new opaque identity. CurrentPolicyMaterializer does not use the application Clock for evaluationAt; that timestamp comes from ConsistencyRunner's database transaction snapshot.
+
+### MigrationRunner / SchemaVerifier
+
+The binary has two runtime modes:
+
+- `migrate`: MigrationRunner acquires one exclusive PostgreSQL advisory lock, verifies applied migration ids/checksums, applies pending migrations transactionally in order, and records id+checksum atomically.
+- `serve`: SchemaVerifier performs read-only exact expected-set/checksum validation; it never applies DDL/migrations.
+
+No listener is opened in migrate mode. Serve refuses to open a listener when schema state is pending/missing/unknown/checksum-mismatched.
 
 ## Resource Description module
 
@@ -336,17 +345,26 @@ Dedicated codecs/mappers own:
 
 ## Composition root
 
-Constructs:
-1. StartupConfigLoader -> RuntimeConfig;
-2. OIDC Authenticator initial validation-material acquisition; failure aborts startup before listener;
-3. PostgreSQL pool;
-4. owner adapters + ConsistencyRunner;
-5. IdempotencyPort;
-6. Authorizer;
-7. application services/peer ports;
-8. CurrentPolicyMaterializer;
-9. ApiServer;
-10. observability/health/shutdown adapters.
+### migrate mode
+1. StartupConfigLoader in migrate profile;
+2. PostgreSQL pool;
+3. MigrationRunner;
+4. exit success/failure; no OIDC/application services/listener.
+
+### serve mode
+1. StartupConfigLoader in serve profile;
+2. PostgreSQL pool;
+3. SchemaVerifier exact migration-set/checksum check;
+4. OIDC Authenticator initial validation-material acquisition;
+5. owner adapters + ConsistencyRunner;
+6. IdempotencyPort;
+7. Authorizer;
+8. application services/peer ports;
+9. CurrentPolicyMaterializer;
+10. ApiServer;
+11. observability/health/shutdown adapters.
+
+Any schema/OIDC initialization failure aborts before listener creation.
 
 No service locator reaches domain/application code.
 
