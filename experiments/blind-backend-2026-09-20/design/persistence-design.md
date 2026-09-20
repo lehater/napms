@@ -37,11 +37,10 @@ No address columns or mutable relocation/lifecycle columns are present in the se
 
 ## Business Connectivity
 
-- `business_process(process_ref PK, name, description, organization_reference nullable, version)`
+- `business_process(process_ref PK, name, description, organization_external_reference nullable, organization_display_name nullable, version)`
 - `connectivity_need(need_ref PK, process_ref, interaction_ref, business_basis, status, created_at, retired_at nullable, version)`
-- optional explicit criticality attributes use nullable typed columns only after API/domain acceptance; no computed propagation column.
 
-`organization_reference` is descriptive/external business attribution only; it has no authentication or authorization meaning.
+Organization fields are descriptive business attribution only; they have no authentication or authorization meaning. Criticality/importance columns are deliberately absent until Product Requirements defines that extension.
 
 ## Access Policy
 
