@@ -1,30 +1,34 @@
 version: 1
 kind: blind-backend-design-freeze
-id: NAPMS-BLIND-BACKEND-FREEZE-2026-09-20
-status: FROZEN
-frozen_design_commit: 936af0771faecf885edfac5eb930406cbcf3bf04
+id: NAPMS-BLIND-BACKEND-FREEZE-2026-09-20-V1
+status: INVALIDATED_BY_POST_FREEZE_BLIND_AUDIT
+historical_frozen_design_commit: 936af0771faecf885edfac5eb930406cbcf3bf04
 branch: research/blind-greenfield-backend-reconstruction
-semantic_gate:
+historical_semantic_gate:
   finding: experiments/blind-backend-2026-09-20/findings/coding-agent-challenge-10.md
-  result: PASS
+  result_at_the_time: PASS
+invalidation:
+  finding: experiments/blind-backend-2026-09-20/findings/freeze-invalidation-01.md
+  reason: >-
+    Additional blind implementation-consumer audits found blocking P1 semantic
+    closure gaps before any prior NAPMS derived-design comparison occurred.
 source_corpus:
   path: experiments/blind-backend-2026-09-20/source-corpus.yaml
   status: FROZEN_FINAL_BLIND_SOURCE_CORPUS
-blocking_questions: []
-blocking_p0_p1_design_findings: []
+  reopened: false
 comparison_boundary:
-  prior_napms_derived_design_access_before_freeze: forbidden
-  prior_napms_derived_design_access_after_freeze: comparison_only
-  frozen_reconstruction_mutation_from_comparison: forbidden
-implementation_consumer_claim: >-
-  The frozen blind backend closure is semantically sufficient for an IMPLEMENTATION
-  consumer to realize the selected MVP without choosing a substantial upstream
-  product, domain, architecture, interface, data, security, operability or
-  verification decision.
+  prior_napms_derived_design_access: FORBIDDEN_UNTIL_REPLACEMENT_FREEZE
+  comparison_started: false
+  contamination_detected: false
+implementation_consumer_claim:
+  historical_claim_valid: false
+  replacement_gate_required: true
 known_harness_findings:
   - H-FIND-001: artifact-skill/router coverage gaps observed on the unchanged Harness.
-  - structural COMPLETE alone did not constitute semantic consumer sufficiency; Coding-Agent Challenge was required.
+  - structural COMPLETE alone did not constitute semantic consumer sufficiency.
 next_steps:
-  - rerun unchanged Harness graph/core validation against the frozen snapshot
-  - classify/fix Harness defects without changing frozen NAPMS semantics
+  - run post-repair Coding-Agent Challenge
+  - create replacement final freeze at the exact accepted semantic snapshot
+  - rerun unchanged Harness validation against that snapshot
+  - fix observed Harness defects without changing frozen NAPMS semantics
   - only then open prior NAPMS derived design for comparison
