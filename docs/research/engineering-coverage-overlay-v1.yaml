@@ -1,0 +1,49 @@
+version: 1
+kind: harness-engineering-coverage-overlay
+project: NAPMS
+scope: first-mvp
+status: research
+
+# Only project-specific applicability/attention decisions live here.
+required:
+  - interface.human.journeys
+  - verification.interface.human
+  - data.lifecycle
+  - data.classification
+  - security.vulnerability-management
+  - security.secure-development
+  - reliability.recovery
+  - operability.incident
+  - quality.performance.resource-efficiency
+
+decisions:
+  - concern: reliability.availability
+    state: NOT_APPLICABLE
+    rationale: Numeric availability target is explicitly not required for first MVP.
+    evidence: [MVP-QUALITY-TARGETS]
+  - concern: operability.alerting
+    state: NOT_APPLICABLE
+    rationale: Numeric production SLO alert thresholds are explicitly not required for first MVP.
+    evidence: [OBSERVABILITY, MVP-QUALITY-TARGETS]
+  - concern: operability.capacity
+    state: NOT_APPLICABLE
+    rationale: Numeric scale/capacity target is explicitly not required for first MVP.
+    evidence: [MVP-QUALITY-TARGETS]
+  - concern: quality.performance.latency
+    state: NOT_APPLICABLE
+    rationale: Numeric latency target is explicitly not required for first MVP.
+    evidence: [MVP-QUALITY-TARGETS]
+  - concern: quality.performance.throughput
+    state: NOT_APPLICABLE
+    rationale: Numeric throughput target is explicitly not required for first MVP.
+    evidence: [MVP-QUALITY-TARGETS]
+  - concern: quality.performance.capacity
+    state: NOT_APPLICABLE
+    rationale: Numeric scale/capacity target is explicitly not required for first MVP.
+    evidence: [MVP-QUALITY-TARGETS]
+  - concern: quality.flexibility.scalability
+    state: NOT_APPLICABLE
+    rationale: Distributed scaling is outside accepted first-MVP runtime scope and no numeric scale target is required.
+    evidence: [SYSTEM-RULES, MVP-QUALITY-TARGETS]
+
+freshness: {}
