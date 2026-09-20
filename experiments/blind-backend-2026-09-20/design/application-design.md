@@ -113,23 +113,23 @@ This flag is diagnostic/reconciliation semantics, not revocation/effectiveness.
 
 Input selection:
 - absent Rule list -> all current Rules;
-- explicit unique non-empty PolicyRuleRef set -> exactly that subset, maximum 200;
+- explicit unique non-empty PolicyRuleRef set -> exactly that subset; no semantic count limit exists beyond Interface request-body safety;
 - unknown selected Rule -> REFERENCE_INVALID.
 
 One read-only REPEATABLE READ (or stronger) snapshot is opened and `evaluationAt` is recorded. The same snapshot remains open through both phases below.
 
 ### Phase 1 — preflight before HTTP response commitment
 
-1. resolve selected Rule cores through bounded pages for ALL mode or the explicit <=200 Rule set;
+1. resolve selected Rule cores through bounded pages for ALL mode or bounded/chunked lookup of the explicit Rule set supplied within the configured request-body limit;
 2. evaluate each Rule:
    - INACTIVE -> non-effective;
    - ACTIVE outside effectiveWindow -> non-effective;
    - ACTIVE inside/unbounded window -> effective;
-3. page justification associations; resolve Need current/retired state in bounded batches and derive justificationCount/currentJustificationCount/reconciliation;
+3. page AuthorizationEvidence and justification associations for every selected Rule; resolve Need current/retired state in bounded batches and construct the complete per-Rule export provenance projection;
 4. for every selected effective Rule resolve exact InteractionRevision, Deployments, Resources and current addressed Endpoints in bounded/chunked reads;
 5. determine every stable MaterializationIssue and nonEffective reason;
 6. verify required DB/dependency reads complete successfully;
-7. compute final application status COMPLETE or UNRESOLVED plus compact counts;
+7. compute final application status COMPLETE or UNRESOLVED and verify every selected Rule has a complete export provenance projection;
 8. do not build the full normalized row set in memory;
 9. do not commit/write HTTP response status, headers or body yet.
 
@@ -142,9 +142,10 @@ After preflight succeeded:
 1. repeat the bounded selected-Rule/fact traversal in the still-open snapshot;
 2. stream the already-determined HTTP-200 application result incrementally;
 3. emit nonEffective/issues consistently with Phase 1;
-4. for effective resolvable Rules expand source endpoints × destination endpoints × TrafficClauses and stream normalized rows;
-5. each row preserves PolicyRuleRef, evidence/justification/current-justification counts, reconciliation flags, InteractionRevisionRef and explicit Resource-address actor/time facts;
-6. full permission/Need audit remains resolvable by PolicyRuleRef through paginated policy.read endpoints.
+4. stream one complete MaterializedRuleProvenance record per selected Rule, including all authorization evidence, all participant-attributed Need justifications/currentness and reconciliation flags;
+5. for effective resolvable Rules expand source endpoints × destination endpoints × TrafficClauses and stream normalized rows;
+6. each technical row carries PolicyRuleRef, InteractionRevisionRef and explicit Resource-address actor/time facts; its business/permission explanation is the corresponding ruleProvenance record in the same export;
+7. paginated policy.read endpoints remain an independent audit/read convenience, not a requirement to explain the export.
 
 The two phases must be deterministic over the same snapshot. Phase 2 must not discover a semantic result different from Phase 1.
 
