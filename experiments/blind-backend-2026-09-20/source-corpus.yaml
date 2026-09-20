@@ -1,7 +1,7 @@
 version: 1
 kind: experimental-source-corpus
 id: NAPMS-BLIND-BACKEND-SOURCE-CORPUS
-status: AMENDED_AFTER_SOURCE_CLASSIFICATION_REVIEW
+status: FROZEN_FINAL_BLIND_SOURCE_CORPUS
 classification_rule: >-
   Include only facts, evidence, requirements or externally imposed constraints whose
   provenance shows they existed independently from engineering design. Ambiguous
@@ -225,3 +225,11 @@ amendments:
       Application Communication tactical ownership, interface routes, persistence
       constraints, component ports, concurrency ownership and downstream tests must
       be reevaluated before freeze.
+
+final_freeze:
+  semantic_gate: CODING_AGENT_CHALLENGE_10_PASS
+  date: 2026-09-20
+  rule: >-
+    No new SOURCE_INPUT may be added and no excluded prior NAPMS derived design may be
+    consulted until the blind design freeze marker is created. Post-freeze old-design
+    access is comparison-only and cannot retroactively alter the frozen reconstruction.
