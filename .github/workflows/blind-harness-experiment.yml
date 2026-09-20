@@ -1,0 +1,53 @@
+name: Blind Harness Experiment
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "experiments/blind-backend-2026-09-20/**"
+      - ".github/workflows/blind-harness-experiment.yml"
+
+jobs:
+  harness-engineering-graph:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install pinned Harness runtime dependency
+        run: python -m pip install --disable-pip-version-check PyYAML
+      - name: Validate Engineering Graph with pinned current Harness
+        run: |
+          ROOT=experiments/blind-backend-2026-09-20
+          python "$ROOT/harness-runtime/engineering_graph.py" validate "$ROOT/engineering-graph.yaml"
+      - name: Evaluate pre-verification frontier
+        run: |
+          ROOT=experiments/blind-backend-2026-09-20
+          python "$ROOT/harness-runtime/engineering_graph.py" evaluate             "$ROOT/engineering-graph.yaml" IMPLEMENTATION "$ROOT/core-model-pre-verification.yaml"             > "$ROOT/pre-verification-evaluation.json"
+          cat "$ROOT/pre-verification-evaluation.json"
+      - name: Evaluate final candidate closure
+        run: |
+          ROOT=experiments/blind-backend-2026-09-20
+          python "$ROOT/harness-runtime/engineering_graph.py" evaluate             "$ROOT/engineering-graph.yaml" IMPLEMENTATION "$ROOT/core-model.yaml"             > "$ROOT/final-evaluation.json"
+          cat "$ROOT/final-evaluation.json"
+      - name: Assert expected Harness behavior
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path("experiments/blind-backend-2026-09-20")
+          pre = json.loads((root / "pre-verification-evaluation.json").read_text())
+          final = json.loads((root / "final-evaluation.json").read_text())
+
+          assert pre["status"] == "READY", pre
+          creates = {item["capability"] for item in pre["create"]}
+          assert creates == {"napms.backend.verification-strategy"}, creates
+          assert not pre["wait"], pre["wait"]
+
+          assert final["status"] == "COMPLETE", final
+          assert not final["create"], final["create"]
+          assert not final["wait"], final["wait"]
+          assert not final["pending"], final["pending"]
+          print("Pinned Harness blind experiment structural closure PASS")
+          PY
