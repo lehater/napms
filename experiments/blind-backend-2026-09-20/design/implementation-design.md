@@ -52,6 +52,7 @@ Implement the Operability Design keys exactly:
 - `NAPMS_OIDC_PERMISSION_CLAIM`
 - `NAPMS_DB_STATEMENT_TIMEOUT`
 - `NAPMS_HTTP_REQUEST_TIMEOUT`
+- `NAPMS_HTTP_MAX_REQUEST_BODY_BYTES`
 - `NAPMS_OIDC_HTTP_TIMEOUT`
 - `NAPMS_OIDC_FETCH_MAX_ATTEMPTS`
 - `NAPMS_OIDC_FETCH_BACKOFF`
@@ -63,7 +64,7 @@ Requirements:
 - parse/validate once before opening the listener;
 - reject unknown `NAPMS_*` names;
 - no config files/flags/runtime reload/feature flags;
-- no hidden numeric defaults for required timeout/retry keys;
+- no hidden numeric defaults for required timeout/retry/body-size keys;
 - DSN value is secret/redacted;
 - OIDC adapter must surface “invalid token” separately from “cannot establish validity because key dependency is unavailable”.
 
@@ -147,7 +148,7 @@ Implement read-only shared-snapshot CurrentPolicyMaterializer with:
 - NO_CURRENT_BUSINESS_JUSTIFICATION reconciliation flag;
 - no automatic deactivation when current Need count is zero;
 - exact normalized traffic/address expansion for selected effective Rules only;
-- PolicyRuleRef + evidence/justification/current-justification counts + reconciliation in normalized rows, with full participant-attributed evidence/justification audit via paginated Rule endpoints; explicit Resource-address/InteractionRevision/Need actor-time fields; no generic provenance blob;
+- self-contained streamed `ruleProvenance` for every selected Rule containing all authorization evidence and participant-attributed Need justification/currentness/reconciliation; normalized technical rows correlate by PolicyRuleRef and carry explicit Resource-address actor-time facts; paginated Rule endpoints remain an additional audit surface; no generic provenance blob;
 - stable nonEffective and MaterializationIssue representations.
 
 Completion:
@@ -156,7 +157,7 @@ Completion:
 - zero-current-Need Rule can still COMPLETE with reconciliation flag;
 - effective missing realization -> UNRESOLVED;
 - dependency failure -> HTTP 503;
-- subset/all selection, two-phase preflight-before-HTTP-commit, bounded/chunked same-snapshot processing, preflight-503 and post-commit truncated-stream tests green.
+- all/subset selection with no semantic subset-count cap, configured request-body safety limit, two-phase preflight-before-HTTP-commit, bounded/chunked same-snapshot processing, self-contained provenance, preflight-503 and post-commit truncated-stream tests green.
 
 ### I7 — Security and operability closure
 
@@ -194,7 +195,7 @@ IMPLEMENTATION is complete only when:
 3. every domain invariant and application consistency rule is enforced at its owner;
 4. PostgreSQL schema/migrations realize Persistence Design including Resource Site/address/responsibility history, independent Application/Interaction aggregate ownership, one Rule per AccessSubject, evidence/justification uniqueness and idempotency replay data;
 5. CurrentPolicyMaterializer evaluates selection + ACTIVE/window semantics, performs complete bounded preflight before HTTP 200 commitment, derives Need reconciliation without revocation, cannot return COMPLETE with unresolved selected-effective Rule input, returns preflight dependency failure as 503/500, and treats post-commit stream failure as incomplete/non-artifact rather than a successful export;
-6. normalized rows preserve exact traffic semantics and Rule identity with compact evidence/justification counts/reconciliation plus explicit source-fact actor/time; full permission/business audit is reachable by PolicyRuleRef through bounded paginated endpoints;
+6. materialization response is self-contained for explainability: one complete provenance record per selected Rule preserves all permission/business evidence/currentness/reconciliation, while normalized rows preserve exact traffic semantics and correlate by PolicyRuleRef; paginated Rule endpoints are supplemental, not required to explain export;
 7. OIDC authentication/cache/fail-closed dependency distinctions hold;
 8. startup configuration, no-reload, retry/timeout, logging/metrics/health/cancellation/shutdown/redaction semantics are observable;
 9. architecture/component dependency checks pass;
@@ -206,7 +207,7 @@ IMPLEMENTATION is complete only when:
 
 Private function/type names, helper decomposition, exact Go filenames, SQL/index/query optimization preserving accepted contracts, choice among maintained libraries that satisfy those contracts, migration-runner implementation, logger/metrics library, test framework/helpers, UUID library, composition wiring syntax and local refactorings.
 
-Collection pagination/default/max/no-truncation, materialization two-phase response-commit boundary and bounded-memory semantics are also not coding freedoms. Exact cursor encoding/chunk size/stream-buffer implementation remain free.
+Collection pagination/default/max/no-truncation, configured request-body byte enforcement, absence of a semantic subset-count cap, self-contained export provenance, materialization two-phase response-commit boundary and bounded-memory semantics are also not coding freedoms. Exact cursor encoding/chunk size/stream-buffer implementation remain free.
 
 PostgreSQL owner-write/read-snapshot isolation and current-Need FOR SHARE validation-lock semantics are not coding freedoms.
 
