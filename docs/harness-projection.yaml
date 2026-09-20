@@ -1,0 +1,69 @@
+version: 1
+kind: harness-canonical-graph-projection
+id: NAPMS-HARNESS-PROJECTION
+source_graph: canonical-graph.yaml
+
+# Project-owned mapping only. Universal Harness semantics, Authority production
+# contracts, consumers and evaluation live in the pinned lehater/harness runtime.
+authorities:
+  - {id: DISCOVERY}
+  - {id: PRODUCT-REQUIREMENTS}
+  - {id: STRATEGIC-DOMAIN-DESIGN}
+  - {id: DOMAIN-USE-CASE-DESIGN}
+  - {id: TACTICAL-DOMAIN-DESIGN}
+  - {id: APPLICATION-JOURNEY-DESIGN}
+  - {id: SYSTEM-ARCHITECTURE}
+  - {id: SECURITY-ARCHITECTURE-DESIGN}
+  - {id: INTERFACE-DESIGN}
+  - {id: DATA-DESIGN}
+  - {id: QUALITY-DESIGN}
+  - {id: SECURITY-ANALYSIS}
+  - {id: OPERABILITY-DESIGN}
+  - {id: IMPLEMENTATION-DESIGN}
+  - {id: VERIFICATION-DESIGN}
+  - {id: COMPONENT-DESIGN}
+  - {id: TEST-DESIGN}
+
+bindings:
+  - {artifact: FIRST-MVP-REQUIREMENTS, authority: PRODUCT-REQUIREMENTS, provides: [engineering.requirements.product-intent, engineering.requirements.acceptance]}
+  - {artifact: RC-DISCOVERY, authority: DISCOVERY, provides: [engineering.discovery.problem-evidence]}
+
+  - {artifact: STRATEGIC-CAPABILITIES, authority: STRATEGIC-DOMAIN-DESIGN, provides: []}
+  - {artifact: STRATEGIC-CONTEXTS, authority: STRATEGIC-DOMAIN-DESIGN, provides: []}
+  - {artifact: STRATEGIC-RELATIONSHIPS, authority: STRATEGIC-DOMAIN-DESIGN, provides: [engineering.domain.strategic-model]}
+
+  - {artifact: RC-CURATION, authority: DOMAIN-USE-CASE-DESIGN, provides: [engineering.domain.use-case-model]}
+
+  - {artifact: RC-LANGUAGE, authority: TACTICAL-DOMAIN-DESIGN, provides: []}
+  - {artifact: RC-DECISIONS, authority: TACTICAL-DOMAIN-DESIGN, provides: []}
+  - {artifact: RC-PROCESS, authority: TACTICAL-DOMAIN-DESIGN, provides: []}
+  - {artifact: RC-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
+  - {artifact: AM-LANGUAGE, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
+  - {artifact: ACC-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
+  - {artifact: AD-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
+  - {artifact: BC-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
+  - {artifact: AP-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
+
+  - {artifact: FIRST-MVP-JOURNEY, authority: APPLICATION-JOURNEY-DESIGN, provides: [engineering.application.journey, engineering.application.materialization-semantics]}
+
+  - {artifact: C4-STRUCTURE, authority: SYSTEM-ARCHITECTURE, provides: [engineering.architecture.c4-model]}
+  - {artifact: SYSTEM-RULES, authority: SYSTEM-ARCHITECTURE, provides: [engineering.architecture.rules, engineering.architecture.async-messaging-not-applicable]}
+  - {artifact: MODULE-CONTRACTS, authority: SYSTEM-ARCHITECTURE, provides: [engineering.architecture.module-contracts]}
+
+  - {artifact: SECURITY-ARCHITECTURE, authority: SECURITY-ARCHITECTURE-DESIGN, provides: [engineering.architecture.security]}
+
+  - {artifact: TECH-REPRESENTATION, authority: INTERFACE-DESIGN, provides: [engineering.interface.shared-representations]}
+  - {artifact: HTTP-REQUIREMENTS, authority: INTERFACE-DESIGN, provides: []}
+  - {artifact: OPENAPI, authority: INTERFACE-DESIGN, provides: [engineering.interface.http-contract]}
+  - {artifact: MVP-UI-NAVIGATION, authority: INTERFACE-DESIGN, provides: [engineering.interface.ui-navigation]}
+  - {artifact: RESOURCE-DETAIL-UI, authority: INTERFACE-DESIGN, provides: [engineering.interface.resource-detail-ui]}
+
+  - {artifact: PERSISTENCE, authority: DATA-DESIGN, provides: [engineering.data.persistence-model]}
+  - {artifact: QUALITY-REQUIREMENTS, authority: QUALITY-DESIGN, provides: [engineering.quality.constraints]}
+  - {artifact: MVP-QUALITY-TARGETS, authority: PRODUCT-REQUIREMENTS, provides: []}
+  - {artifact: THREAT-MODEL, authority: SECURITY-ANALYSIS, provides: [engineering.security.threat-analysis]}
+  - {artifact: OBSERVABILITY, authority: OPERABILITY-DESIGN, provides: [engineering.operability.observability]}
+  - {artifact: MVP-IMPLEMENTATION-READINESS, authority: IMPLEMENTATION-DESIGN, provides: [engineering.implementation.plan, engineering.implementation.completion-criteria]}
+  - {artifact: MVP-TEST-INTENT, authority: VERIFICATION-DESIGN, provides: [engineering.verification.strategy, engineering.verification.acceptance-scenarios]}
+
+questions: []
