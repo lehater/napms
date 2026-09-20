@@ -117,6 +117,7 @@ Owner ports:
 - ResourceRepository: load/save one Resource aggregate by expected Resource version, including endpoint/Site/responsibility current state and history append;
 - SiteRepository: register/read immutable Site;
 - ResponsibilityGroupRepository: register/read immutable group;
+- ResourceEndpointReader: cursor-page EndpointView facts for one Resource;
 - ResourceHistoryReader: cursor-bounded address/Site/responsibility history.
 
 Public `ResourceResolutionPort`:
@@ -135,8 +136,9 @@ Public services:
 
 Owner ports:
 - `ApplicationRepository`: load/save Application under expected Application version for Component creation;
+- `ApplicationComponentReader`: cursor-page Components for one Application;
 - `InteractionRepository`: insert Interaction; load/save Interaction under expected Interaction version for revision publication;
-- `InteractionRevisionReader`: immutable exact-revision lookup.
+- `InteractionRevisionReader`: exact immutable revision lookup + cursor-page revision summaries for one Interaction.
 
 Interaction creation collaboration:
 - Authorizer(`application.write`);
@@ -176,8 +178,9 @@ Public services:
 - BusinessProcessCommandService
 - BusinessConnectivityQueryService
 
-Owner port:
-- BusinessProcessRepository: load/save Process under expected BusinessProcess version.
+Owner ports:
+- BusinessProcessRepository: load/save Process under expected BusinessProcess version;
+- BusinessProcessNeedReader: cursor-page Need summaries for one Process.
 
 Public `ConnectivityNeedResolutionPort`:
 - `resolveCurrentNeed(NeedRef)` -> ProcessRef, InteractionRef, participantComponentRef, businessProcessVersion, businessBasis, createdAt, createdBySubject or explicit NOT_CURRENT;
@@ -213,18 +216,19 @@ Owner ports:
 Unique AccessSubject convergence is enforced in persistence; repository never creates two stable Rules for equal subject.
 
 ### AccessPolicyReadPort
-For one snapshot:
-- `readRule(PolicyRuleRef)`;
-- `readAllRules()`;
-- `readRules(set<PolicyRuleRef>)`.
 
-Returned owner facts include:
-- PolicyRuleRef + AccessSubject;
-- effectState/effectiveWindow/version;
-- all AuthorizationEvidence;
-- all JustificationAssociation refs/provenance.
+Bounded read contracts:
 
-It does **not** claim current/retired Need status.
+- `readRuleCore(PolicyRuleRef)` -> RuleRef, AccessSubject, effectState/effectiveWindow/version, authorizationEvidenceCount, justificationCount;
+- `pageAllRuleCores(cursor,limit)`;
+- `readRuleCores(set<PolicyRuleRef>)` for explicit materialization selection (Interface caps selection at 200);
+- `pageAuthorizationEvidence(PolicyRuleRef,cursor,limit)`;
+- `pageJustificationAssociations(PolicyRuleRef,cursor,limit)`;
+- `pageOperationalHistory(PolicyRuleRef,cursor,limit)`.
+
+Rule core never embeds unbounded child collections. Justification associations contain NeedRefs/attachment provenance only and do **not** claim current/retired Need status.
+
+For CurrentPolicyMaterializer, `pageAllRuleCores` and `pageJustificationAssociations` are iterated inside the one shared read snapshot. AuthorizationEvidence rows are not loaded merely to produce normalized technical rows; the Rule core evidence count + PolicyRuleRef provide export correlation, while full audit remains paginated through policy.read.
 
 ### SubmitAccessRequest collaboration
 
@@ -280,14 +284,14 @@ Dependencies:
 - ResourceResolutionPort.
 
 Algorithmic contract:
-1. obtain all Rules or exact selected Rule set;
+1. obtain exact selected Rule cores: page all cores for ALL mode or at most 200 explicit cores;
 2. evaluate INACTIVE/effectiveWindow before technical realization requirements;
-3. resolve every associated Need through Business Connectivity and derive current/retired status;
-4. add `NO_CURRENT_BUSINESS_JUSTIFICATION` when current Need count is zero, without altering effectiveness;
-5. for every effective Rule resolve exact revision/deployments/resources/current endpoints;
+3. page each Rule's justification associations in the same snapshot; batch/page Need resolution and derive total/current counts + reconciliation flag;
+4. do not load full AuthorizationEvidence rows for export; use accepted aggregate evidence count and PolicyRuleRef correlation;
+5. for every effective Rule resolve exact revision/deployments/resources/current endpoints using bounded/chunked owner reads;
 6. produce stable realization issues only for effective Rules;
-7. expand source endpoint × destination endpoint × TrafficClause exactly;
-8. preserve Rule identity, all authorization evidence, all justification/currentness, reconciliation flags and technical provenance;
+7. expand source endpoint × destination endpoint × TrafficClause and stream rows incrementally;
+8. rows preserve RuleRef, compact counts/reconciliation and explicit technical actor/time facts; full evidence/justification audit stays available via paginated Rule endpoints;
 9. COMPLETE iff all selected effective Rules are resolvable; otherwise UNRESOLVED;
 10. propagate dependency/runtime failure rather than convert it to UNRESOLVED.
 
@@ -313,7 +317,7 @@ Dedicated codecs/mappers own:
 - replay-before-If-Match orchestration;
 - AggregateVersion/ETag;
 - Problem/status mapping;
-- Resource and PolicyRule-history cursors;
+- Resource endpoints/history, Application components, Interaction revisions, Process Needs and all PolicyRule child-history cursors;
 - AccessSubject/evidence/justification views;
 - COMPLETE/UNRESOLVED/nonEffective/reconciliation representations.
 
