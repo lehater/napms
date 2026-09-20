@@ -11,6 +11,10 @@ JWT validation:
 - `alg` must be in startup-configured `NAPMS_OIDC_ALLOWED_ALGS`, a non-empty subset of `RS256,RS384,RS512,PS256,PS384,PS512,ES256,ES384,ES512,EdDSA`;
 - HMAC `HS*` algorithms are never accepted because this MVP configures no shared JWT verification secret;
 - selected JWKS public key type/curve must be compatible with the token algorithm;
+- configured issuer is an absolute HTTPS URL;
+- OIDC discovery metadata `issuer` must exactly equal that configured issuer;
+- discovered `jwks_uri` must be an absolute HTTPS URL;
+- redirects from OIDC metadata/JWKS fetches to non-HTTPS locations are rejected;
 - `iss` is required and exactly equals configured issuer;
 - `aud` is required and is either string or array<string> containing the exact configured audience;
 - `exp` is required NumericDate; token is acceptable only while current time <= exp + configured clock skew;
@@ -91,7 +95,7 @@ Recording ALLOWED/DENIED requires authenticated `access.decide`. The backend rec
 
 ## Secrets/credentials
 
-- OIDC issuer/audience/allowed-algorithms/clock-skew metadata are non-secret configuration.
+- OIDC issuer/audience/allowed-algorithms/clock-skew metadata are non-secret configuration. In serve mode the configured OIDC issuer is always an absolute HTTPS URL.
 - client credentials, database credentials and signing/private material are secret configuration.
 - secrets are never logged and are redacted from diagnostic context.
 - application does not persist bearer tokens.
