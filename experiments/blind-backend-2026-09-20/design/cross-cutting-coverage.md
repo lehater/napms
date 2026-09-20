@@ -6,7 +6,7 @@ This is an analysis view, not a second owner of decisions.
 
 | Concern | State | Owner/result |
 | --- | --- | --- |
-| Failure/error semantics | COVERED | Application + Interface distinguish validation/auth/conflict, normal UNRESOLVED materialization, dependency and internal failure. |
+| Failure/error semantics | COVERED | Application + Interface distinguish validation/auth/conflict, normal UNRESOLVED materialization, preflight dependency/internal failure before HTTP commit, and incomplete post-commit transport stream. |
 | Concurrency | COVERED | Aggregate versions: Resource, Application, Interaction, BusinessProcess, AccessRequest, PolicyRule. Child objects cannot invent competing version semantics. |
 | Transactions | COVERED | One semantic owner written per transaction; ALLOWED request finalization + Rule/evidence/initial justification atomic; shared peer reads permitted. |
 | Consistency | COVERED | Strong owner writes; request/attachment validation and materialization use coherent DB snapshots; no silent rebinding. |
