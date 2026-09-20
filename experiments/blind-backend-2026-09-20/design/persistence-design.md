@@ -40,22 +40,43 @@ Site and ResponsibilityGroup are immutable after registration in the selected MV
 
 ## Application Communication tables
 
+### Application aggregate
+
 - `application(application_ref PK, name, version, created_at)`
 - `component(component_ref PK, application_ref, name, created_at)`
-- `interaction(interaction_ref PK, application_ref, source_component_ref, destination_component_ref, purpose nullable, created_at)`
-- `interaction_revision(revision_ref PK, interaction_ref, revision_no, created_at, provenance)`
-- `interaction_traffic_clause(revision_ref, ordinal, protocol, source_port_from nullable, source_port_to nullable, destination_port_from nullable, destination_port_to nullable, PK(revision_ref,ordinal))`
 
-Owner-local FKs ensure Component and Interaction children belong to Application and revisions belong to Interaction.
+Owner-local FK: Component -> Application.
 
 Required constraints:
 - Application/Component names are non-empty after trimming;
+- Component belongs to exactly one Application;
+- Application `version` guards Component creation only;
+- Application/Component subject fields are immutable in selected MVP.
+
+### Interaction aggregate
+
+- `interaction(interaction_ref PK, source_component_ref, destination_component_ref, purpose nullable, version, created_at)`
+- `interaction_revision(revision_ref PK, interaction_ref, revision_no, created_at, provenance)`
+- `interaction_traffic_clause(revision_ref, ordinal, protocol, source_port_from nullable, source_port_to nullable, destination_port_from nullable, destination_port_to nullable, PK(revision_ref,ordinal))`
+
+Owner-local FKs may reference Component because Application and Interaction live inside the same Application Communication owner:
+- source_component_ref -> component;
+- destination_component_ref -> component;
+- revision -> interaction.
+
+There is deliberately **no** interaction.application_ref column and no constraint requiring source/destination Components to share an Application.
+
+Required constraints:
+- source and destination ComponentRefs both exist;
 - revision number is unique within Interaction;
 - every published revision has at least one TrafficClause;
 - port bounds satisfy `0 <= from <= to <= 65535`;
-- null port bounds mean unrestricted/non-applicable only according to accepted TrafficClause semantics; unknown semantics cannot be stored as unrestricted;
+- null port bounds mean unrestricted/non-applicable only according to accepted TrafficClause semantics;
 - published revision rows/clauses are append-only;
-- Application `version` is the only optimistic-concurrency version for Component/Interaction/revision creation.
+- Interaction source/destination/purpose are immutable after creation;
+- Interaction `version` guards revision publication only.
+
+Creating Interaction performs validation + Interaction insert without updating either referenced Application row/version.
 
 ## Application Deployment
 
@@ -227,7 +248,7 @@ Rules:
 
 - every mutation writes only one semantic owner's tables;
 - Resource nested changes use one Resource-version transaction;
-- Application child/revision creation uses one Application-version transaction;
+- Application Component creation uses one Application-version transaction; Interaction creation is an independent insert after owner-local Component validation; Interaction revision publication uses one Interaction-version transaction;
 - BusinessProcess child changes use one BusinessProcess-version transaction;
 - SubmitAccessRequest performs peer validation reads plus the Access Policy insert in one database transaction snapshot; peer schemas are read-only;
 - final ALLOWED decision plus unique-subject PolicyRule resolve/create, authorization evidence, initial justification and idempotency result is one Access Policy transaction;
