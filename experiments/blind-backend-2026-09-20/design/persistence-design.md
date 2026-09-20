@@ -15,7 +15,7 @@ Cross-owner references are stored as opaque IDs and checked through public owner
 - `resource(resource_ref PK, display_name, version, created_at)`
 - `resource_site_history(resource_ref, effective_from, effective_to nullable, site_ref nullable, PK(resource_ref,effective_from))`
 - `resource_endpoint(endpoint_ref PK, resource_ref, created_at)`
-- `resource_endpoint_address_history(endpoint_ref, effective_from, effective_to nullable, kind, value, provenance, PK(endpoint_ref,effective_from))`
+- `resource_endpoint_address_history(endpoint_ref, effective_from, effective_to nullable, kind, value, changed_by_subject, PK(endpoint_ref,effective_from))`
 - `resource_responsibility_history(assignment_ref PK, resource_ref, role, group_ref, effective_from, effective_to nullable)`
 
 Owner-local FKs:
@@ -56,7 +56,7 @@ Required constraints:
 ### Interaction aggregate
 
 - `interaction(interaction_ref PK, source_component_ref, destination_component_ref, purpose nullable, version, created_at)`
-- `interaction_revision(revision_ref PK, interaction_ref, revision_no, created_at, provenance)`
+- `interaction_revision(revision_ref PK, interaction_ref, revision_no, created_at, created_by_subject)`
 - `interaction_traffic_clause(revision_ref, ordinal, protocol, source_port_from nullable, source_port_to nullable, destination_port_from nullable, destination_port_to nullable, PK(revision_ref,ordinal))`
 
 Owner-local FKs may reference Component because Application and Interaction live inside the same Application Communication owner:
@@ -87,7 +87,7 @@ No address, label, mutable relocation, retirement or independent version columns
 ## Business Connectivity
 
 - `business_process(process_ref PK, name, description nullable, organization_external_reference nullable, organization_display_name nullable, version, created_at)`
-- `connectivity_need(need_ref PK, process_ref, interaction_ref, participant_component_ref, business_basis, status, created_at, retired_at nullable)`
+- `connectivity_need(need_ref PK, process_ref, interaction_ref, participant_component_ref, business_basis, status, created_at, created_by_subject, retired_at nullable)`
 
 Owner-local FK: Need -> BusinessProcess.
 
@@ -200,20 +200,21 @@ Initial Rule creation records version 1 ACTIVE/unbounded with changed_by_subject
 Finalizing an ALLOWED AccessRequest performs in one transaction:
 
 1. lock/update AccessRequest final decision under expected request version;
-2. resolve-or-create PolicyRule by unique AccessSubject;
-3. when absent, insert ACTIVE/unbounded Rule;
-4. append AuthorizationEvidence for the request;
-5. insert initial Need justification with `ON CONFLICT(rule_ref,need_ref) DO NOTHING`;
-6. commit idempotency evidence.
+2. resolve/lock-or-create PolicyRule by unique AccessSubject;
+3. when absent, insert Rule at version 1 with ACTIVE/unbounded state, initial operational-history CREATED row, first AuthorizationEvidence and initial Need association;
+4. when Rule already exists, append the new AuthorizationEvidence, insert initial Need association if absent, preserve operational state/window, and increment PolicyRule version exactly once for this ALLOWED transaction;
+5. an existing Rule increments version because its aggregate evidence/association set changed even when the Need association already existed;
+6. no operational-history row is added for evidence/justification-only change;
+7. commit request, Rule aggregate mutation and idempotency evidence atomically.
 
-Concurrent ALLOWED requests for the same AccessSubject converge through the unique AccessSubject constraint. The transaction may use an atomic upsert/insert-on-conflict + select/lock pattern; this is one database command strategy, not an application-level mutation retry. At most one Rule identity survives.
+Concurrent ALLOWED requests for the same AccessSubject converge through the unique AccessSubject constraint plus PolicyRule row serialization. The transaction may use insert-on-conflict/select-for-update or an equivalent PostgreSQL strategy; this is not an application-level mutation retry. At most one Rule identity survives, and each newly appended AuthorizationEvidence advances Rule version once.
 
 Justification attachment under expected PolicyRule version:
 - validates current Need in the same transaction snapshot;
 - inserts association if absent;
 - if association already exists, returns semantic no-op without version/history change;
 - otherwise increments PolicyRule version only if the accepted implementation treats association-set change as Rule aggregate mutation; if so, no operational-history row is added because operational state did not change.
-For simplicity/canonical behavior in this design, **justification attachment increments PolicyRule version** so concurrent Rule-management commands cannot silently cross; operational history remains unchanged for association-only mutation.
+Justification attachment increments PolicyRule version so concurrent Rule-management commands cannot silently cross; operational history remains unchanged for association-only mutation. AuthorizationEvidence append follows the same whole-aggregate version rule.
 
 ## API idempotency
 
