@@ -305,7 +305,7 @@ Oracle: 403 before materialization result/rows are exposed; unrelated policy.rea
 ### T-MATERIALIZE-COMPLETE
 Precondition: one selected effective Rule; two source addresses, one destination, two traffic clauses.  
 Operation: materialize.  
-Oracle: HTTP 200 COMPLETE; exact Cartesian expansion and ports/address kinds; response contains one complete ruleProvenance entry with all AuthorizationEvidence and participant-attributed Need justifications/currentness/reconciliation; each technical row references PolicyRuleRef and carries addressEffectiveFrom/addressChangedBySubject; the response is explainable by a policy.export-only caller without policy.read; issues empty.
+Oracle: HTTP 200 COMPLETE; exact Cartesian expansion and ports/address kinds; response contains one complete ruleProvenance entry with all AuthorizationEvidence and participant-attributed Need justifications/currentness/reconciliation; each technical row references PolicyRuleRef and carries addressEffectiveFrom/addressChangedBySubject; the response is explainable by a caller admitted through scoped policy.export authority without policy.read; issues empty.
 
 ### T-MATERIALIZE-NON-EFFECTIVE
 Precondition: selected Rule INACTIVE or ACTIVE outside window; technical address missing.  
@@ -406,7 +406,7 @@ Oracle follows the same winner semantics as request validation: retirement-first
 
 ### T-PROVENANCE-CONTRACT
 Precondition: authenticated actors create/change Resource address, publish InteractionRevision, declare participant-attributed Needs and create multiple ALLOWED requests for one AccessSubject.  
-Operation: read source facts and materialize using a principal with policy.export but without policy.read.  
+Operation: read source facts and materialize using a principal with effective scoped policy.export grants for all selected Resource scopes but without policy.read.  
 Oracle:
 - address fact exposes effectiveFrom/effectiveTo + changedBySubject;
 - revision exposes createdAt + createdBySubject;
@@ -466,11 +466,12 @@ Oracle: exact status/code/correlationId; no secret/stack/schema.
 ## Security
 
 ### T-AUTH-MATRIX
-For every operation matrix row: token without required permission, then exactly required permission.  
-Oracle: first 403/no mutation; second normal semantic outcome; unrelated permission never implies it.
+For every instance-permission matrix row: token without required permission, then exactly required permission.
+For scoped access.request/policy.export rows: vary missing, expired, future and complete per-scope AuthorityGrants.
+Oracle: failed admission is 403/no mutation or no materialization result; exact required permission/grant set succeeds; unrelated permission/grant never implies another.
 
 ### T-AUTH-REPLAY
-Precondition: original idempotent command was committed by principal P with permission; P's current token lacks required permission.  
+Precondition: original idempotent command was committed by principal P with required permission/scoped authority; P's current token no longer satisfies current admission.  
 Operation: retry same key/fingerprint.  
 Oracle: current authorization fails 403 before replay result is disclosed.
 
