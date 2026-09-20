@@ -183,8 +183,10 @@ A caller possessing policy.export but not policy.read can explain every exported
 - missing/wrong-type kid -> 401 without refresh; unknown kid -> bounded refresh, successful refresh still missing kid -> 401, refresh dependency failure preventing validity -> 503.
 - configured issuer is HTTPS-only; discovery issuer exact-match and jwks_uri HTTPS-only are enforced with downgrade redirects rejected.
 - initial metadata/JWKS acquisition succeeds before listener start; initial failure exits non-zero.
-- runtime unknown-kid/readiness refresh is bounded and single-flight.
-- refresh failure with still-usable cache preserves readiness; beyond max-stale without refresh -> readiness DOWN.
+- runtime unknown-kid/readiness refresh is bounded and single-flight; one attempt is a full discovery+JWKS validation cycle and one sequence performs at most configured attempts with backoff between failures.
+- successful refresh atomically replaces validation material and resets lastSuccessfulValidationMaterialRefreshAt; failed refresh preserves prior material/timestamp.
+- cache age is now-lastSuccessfulValidationMaterialRefreshAt; max-stale must be >0 and provider cache headers cannot extend it.
+- refresh failure with still-usable cache preserves readiness; beyond max-stale without successful refresh -> readiness DOWN.
 - exact operation permission matrix; no permission implication.
 - request/decide/manage/read/export independent.
 - Resource responsibility, Process organization and Need existence never grant authorization.
