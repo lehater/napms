@@ -10,6 +10,7 @@ State:
 - immutable non-empty name;
 - immutable optional description;
 - mutable `responsibleOrganization?: ResponsibleOrganization`;
+- mutable `criticalityLabel?: string`;
 - ConnectivityNeed children;
 - aggregate version.
 
@@ -18,6 +19,7 @@ State:
 Operations:
 - RegisterProcess
 - SetResponsibleOrganization / ClearResponsibleOrganization
+- SetCriticalityLabel / ClearCriticalityLabel
 - DeclareNeed
 - RetireNeed
 - ReadProcess
@@ -48,10 +50,10 @@ Invariants:
 - Need survives concrete Deployment/address replacement while the referenced Interaction/Component business meaning remains.
 - retiring Need preserves history and never rewrites AccessRequest/decision/Rule provenance.
 - RETIRED is terminal in selected MVP.
-- business criticality/importance remains outside selected MVP until Product Requirements defines its representation/use.
+- criticalityLabel, when present, is trimmed non-empty stakeholder-defined descriptive text; no numeric score, ordering, taxonomy or propagation semantics are inferred.
 
 Need business basis/participant/Interaction are immutable after declaration.
 
 ## Consistency boundary
 
-Responsible-organization change, Need creation and Need retirement are atomic under one BusinessProcess aggregate version. Need creation validates Interaction + participant Component through Application Communication read contract; it writes only Business Connectivity state.
+Responsible-organization/criticality change, Need creation and Need retirement are atomic under one BusinessProcess aggregate version. Need creation validates Interaction + participant Component through Application Communication read contract; it writes only Business Connectivity state.
