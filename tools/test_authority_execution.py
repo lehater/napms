@@ -107,7 +107,7 @@ def main() -> int:
     assert root["input_artifacts"] == []
     assert root["supporting_input_artifacts"] == []
     assert set(root["access"]["write"]) == {
-        "docs/requirements/first-mvp-policy-export.yaml",
+        "docs/requirements/first-mvp-product-requirements.yaml",
         "docs/requirements/first-mvp-quality-targets.yaml",
     }
 
