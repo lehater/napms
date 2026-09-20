@@ -31,9 +31,9 @@ Status: ACCEPTED after Source Corpus amendment 01
 ## Business Connectivity
 
 - Register Business Process with optional descriptive responsible organization.
-- Declare active ConnectivityNeed from Process to one Interaction.
+- Declare active ConnectivityNeed from Process to one Interaction from the perspective of one participating Component; source-side and destination-side Needs may coexist independently.
 - Retire Need terminally while preserving historical provenance.
-- Resolve Need currentness and Process/Interaction/business provenance.
+- Resolve Need currentness and Process/Interaction/participantComponent/business provenance.
 - Need does not grant connectivity permission.
 - Business criticality/propagation remains outside current MVP.
 
@@ -41,7 +41,7 @@ Status: ACCEPTED after Source Corpus amendment 01
 
 ### Submit access
 
-- Submit AccessRequest for source Deployment, destination Deployment and exact InteractionRevision, using one current Need for that Interaction as submission justification.
+- Submit AccessRequest for source Deployment, destination Deployment and exact InteractionRevision, using one current Need for that Interaction as submission justification; Need participantComponentRef must match either endpoint Component of the Interaction.
 - Reject mismatched direction/revision or non-current Need.
 - AccessRequest captures immutable semantic access subject plus initial Need justification/provenance; Need does not become part of semantic current-access identity.
 
@@ -57,7 +57,7 @@ Status: ACCEPTED after Source Corpus amendment 01
 
 - Change Rule ACTIVE <-> INACTIVE without changing identity or requiring a new permission decision.
 - Set/clear an optional absolute effective window without changing identity/permission evidence.
-- Attach an additional **current** Need whose Interaction matches the Rule's Interaction to an existing Rule; attaching justification does not grant or refresh permission.
+- Attach an additional **current** Need whose Interaction matches the Rule's Interaction and whose participantComponentRef is one of that Interaction's participants; attaching justification does not grant or refresh permission.
 - Preserve every attached justification historically when its Need later retires; no detach/delete use case exists in MVP.
 - Read Rule including authorization evidence, justification references, operational/effective history.
 
