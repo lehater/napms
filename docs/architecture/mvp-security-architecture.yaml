@@ -1,23 +1,75 @@
-version: 1
+version: 2
 kind: security-architecture
 id: NAPMS-MVP-SECURITY-ARCHITECTURE
-status: PILOT_CURRENT
+status: CURRENT
 
-purpose: Own the first-MVP authentication identity boundary and protected-action admission architecture without redefining Authority Management domain semantics.
+purpose: Own OIDC authentication, exact instance-permission admission, scoped/time AuthorityGrant admission and protection boundaries without redefining business permission outcomes.
 
-identity_boundary: Authenticated actor identity is established by the backend session boundary and is not accepted from caller-supplied actor fields.
-authentication_baseline: Local username/password authentication with server-side session is sufficient for the first MVP.
-admission: Protected application use cases ask Authority Management for effective actor/action/scope admission and fail closed when required authority is unknown or ambiguous.
-ownership_rule: Frontend visibility, disabled controls, Resource responsibility, catalogue facts and other domain metadata never substitute for Authority Management admission.
-composition_rule: Application orchestration performs admission before invoking protected owner-module mutation; owner domain semantics remain unchanged by presentation concerns.
+authentication:
+  mechanism: OIDC bearer JWT
+  issuer: configured absolute HTTPS issuer
+  required_claims: [iss, aud, exp, sub]
+  optional_time_claims: [nbf]
+  key_contract:
+    - signed token only; alg none and all HS algorithms are forbidden
+    - alg must be startup-configured allowed asymmetric algorithm
+    - kid is required non-empty string
+    - discovery issuer must exactly match configured issuer
+    - discovery jwks_uri must be absolute HTTPS
+    - redirects to non-HTTPS are rejected
+  dependency_semantics:
+    - cryptographically invalid token with usable validation material -> 401
+    - inability to establish validity because required key material is unavailable or too stale -> 503
 
-external_identity:
-  external_idp: NOT_APPLICABLE
-  reason: No external identity provider is part of the accepted first-MVP runtime baseline.
+principal:
+  subject: validated non-empty sub
+  instance_permissions_claim: configured array of strings
+  authority_claim: configured array of AuthorityGrant objects
+  authority_grant_shape: {action: non-empty string, scope: non-empty string, effectiveFrom: optional NumericDate, effectiveUntil: optional NumericDate}
+  rules:
+    - malformed permission or authority claim is 401
+    - missing claim yields empty corresponding set
+    - unknown permissions or actions grant nothing
+    - caller body query and forwarded identity permission or authority headers never override bearer identity
 
-required_inputs:
-  - authenticated request/session boundary
-  - Authority Management effective admission semantics
-  - application use-case mutation boundaries
+instance_permissions:
+  - resource.read
+  - resource.write
+  - application.read
+  - application.write
+  - deployment.read
+  - deployment.write
+  - business.read
+  - business.write
+  - access.decide
+  - access.manage
+  - policy.read
+
+scoped_actions: [access.request, policy.export]
+
+scoped_admission:
+  access_request:
+    scope_source: distinct AuthorityScopeRefs of source and destination Resources
+    time: database-owned admissionAt
+    evidence: immutable RequestAuthorityEvidence stored with AccessRequest
+  policy_export:
+    scope_source: distinct AuthorityScopeRefs represented by selected PolicyRules
+    time: materialization database-owned evaluationAt
+    evidence: ExportAuthorityEvidence included in export result
+  rule: every required scope needs an effective matching grant; partial scope coverage fails 403 before mutation or result exposure.
+
+non_authority_facts:
+  - Resource Site
+  - Resource OWNER or ADMINISTRATOR responsibility
+  - BusinessProcess responsible organization or criticality
+  - ConnectivityNeed existence
+
+transport:
+  external: HTTPS terminated by trusted ingress/reverse proxy
+  application_listener: private plaintext inside trusted deployment boundary
+  bearer_location: Authorization header only
+
+secrets:
+  never_log: [bearer token, database credentials, private signing material]
 
 security_questions_remaining: []
