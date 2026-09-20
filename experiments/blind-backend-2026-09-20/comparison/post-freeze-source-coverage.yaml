@@ -3,6 +3,14 @@ kind: harness-source-coverage
 id: NAPMS-BLIND-BACKEND-POST-FREEZE-SOURCE-COVERAGE
 source_baseline: napms bootstrap c403ceeda2837d8956e3d093fef95c1bd69d0c6f + accepted external product input through 2026-09-19
 coverage_status: INCOMPLETE
+validator:
+  harness_commit: df1c1c2d53a822d01f2c61a7894eab0dab6e5eae
+  expected_questions:
+    - W1-001-SUBMIT-AUTH-SCOPE
+    - W1-008-EXPORT-AUTH-SCOPE
+    - W1-013-AUTHORITY-PROVENANCE-SCOPE-TIME
+    - Q-001-NUMERIC-TARGETS
+
 
 statements:
   - id: W1-001-SUBMIT-AUTH-SCOPE
