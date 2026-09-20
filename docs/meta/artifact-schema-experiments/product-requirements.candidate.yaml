@@ -1,12 +1,13 @@
-version: 0
-kind: harness-artifact-schema-candidate
-schema: product-requirements/v0-experiment
+version: 1
+kind: harness-knowledge-artifact
 artifact: FIRST-MVP-REQUIREMENTS
-source: docs/requirements/first-mvp-policy-export.yaml
-capability_claims:
-  - engineering.requirements.product-intent
-  - engineering.requirements.acceptance
-
+schema: product-requirements/v0-experiment
+title: NAPMS First MVP Product Requirements
+research:
+  source: docs/requirements/first-mvp-policy-export.yaml
+  capability_claims:
+    - engineering.requirements.product-intent
+    - engineering.requirements.acceptance
 content:
   purpose: Own the accepted first-MVP product intent, observable journey, scope boundaries and acceptance examples independently of domain and technical realization.
   goals:
