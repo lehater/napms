@@ -67,6 +67,7 @@ Inside one Access Policy transaction:
    - when newly created, initialize ACTIVE with unbounded effective window and initial operational history;
    - append AuthorizationEvidence for this AccessRequest;
    - attach initialNeedRef justification if absent;
+   - when Rule already existed, serialize on that Rule aggregate, advance Rule version exactly once for the new evidence/association set, and do not append operational history;
    - do **not** reset existing Rule state/window when Rule already existed;
 7. commit request, Rule/evidence/association and idempotency atomically.
 
@@ -104,7 +105,7 @@ Compose:
 - Access Policy Rule/evidence/justification refs/history;
 - Business Connectivity current/historical Need facts.
 
-For each associated Need return current/retired status, Process/business basis and participantComponentRef. If no associated Need is current, add `NO_CURRENT_BUSINESS_JUSTIFICATION`.
+For each associated Need return current/retired status, Process/business basis, participantComponentRef, createdAt and createdBySubject. If no associated Need is current, add `NO_CURRENT_BUSINESS_JUSTIFICATION`.
 
 This flag is diagnostic/reconciliation semantics, not revocation/effectiveness.
 
@@ -127,7 +128,7 @@ Within one coherent read snapshot:
 5. skip technical realization completeness checks for non-effective Rules;
 6. for every effective Rule resolve exact InteractionRevision, Deployments, Resources and all current addressed Endpoints;
 7. expand source endpoints × destination endpoints × TrafficClauses exactly;
-8. preserve Rule identity, all authorization evidence, all business justifications/currentness/participantComponent attribution, reconciliation flags and technical provenance;
+8. preserve Rule identity, all authorization evidence, all business justifications/currentness/participantComponent attribution and explicit actor/time facts, reconciliation flags, InteractionRevision createdAt/createdBySubject and Resource-address effectiveFrom/changedBySubject;
 9. missing source/destination realization or accepted reference -> stable MaterializationIssue;
 10. return COMPLETE iff every selected effective Rule resolves fully, otherwise UNRESOLVED;
 11. dependency/runtime failure preventing evaluation propagates as failure and is never converted into UNRESOLVED.
@@ -138,7 +139,7 @@ Zero current Need is not a MaterializationIssue and does not make an otherwise e
 
 - every command writes one semantic owner only;
 - cross-owner validation reads may share owner write transaction snapshot while peers remain read-only;
-- historical refs/evidence/justification associations are never silently rebound or erased;
+- historical refs/evidence/justification associations and explicit actor/time provenance are never silently rebound or erased;
 - no automatic DB mutation retry; client retry uses Interface idempotency;
 - idempotency replay precedes NEW-command optimistic precondition evaluation;
 - policy materialization uses one snapshot including Business Connectivity Need currentness;
