@@ -67,6 +67,12 @@ Committed replay returns:
 - original response `ETag` when present;
 - the correlation header for the current retry request.
 
+Concurrent same-scoped-key handling is bounded:
+- if the first transaction commits, the waiting identical request replays;
+- if it rolls back, the waiter proceeds as NEW and then evaluates If-Match;
+- if the first outcome cannot be established before configured request/DB timeout, or database availability prevents determination, return `503 DEPENDENCY_UNAVAILABLE`;
+- do not return IDEMPOTENCY_CONFLICT merely because an identical command is still in progress.
+
 An in-progress/unknown outcome never fabricates success. Idempotency is required for state-creating POSTs, permission-decision finalization and justification attachment. Read-only policy materialization does not use an idempotency key.
 
 ### Success conventions
