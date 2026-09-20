@@ -21,7 +21,7 @@ Support the narrow end-to-end backend journey from describing Resources and appl
 ### PR-APPLICATION
 
 8. The product can define reusable Applications containing Components that represent communication participants/roles.
-9. It can define directed Interactions between Components. An Interaction represents one independently meaningful communication reason and carries the complete minimal traffic semantics for that reason.
+9. It can define directed Interactions between Components. Structural validity follows explicit source/destination Component references and described communication semantics; source and destination Components may belong to different Applications. An Interaction represents one independently meaningful communication reason and carries the complete minimal traffic semantics for that reason.
 10. Traffic that must be independently applicable/authorized/managed is represented by a distinct Interaction rather than merged solely because endpoints match.
 11. A concrete Component deployment is identifiable separately from reusable application meaning and is associated with a Resource, not with a current IP address.
 
@@ -97,7 +97,7 @@ Stakeholder evidence says business importance/criticality may be useful for down
 - Creating a Resource before it has an address succeeds while current realization remains explicitly unresolved.
 - Changing a Resource address preserves Resource identity/history.
 - Replacing current Owner/Administrator closes the prior role assignment and leaves at most one current assignment for that role.
-- An Interaction is invalid when it lacks a meaningful directed source Component, destination Component or non-empty supported traffic meaning.
+- An Interaction is invalid when it lacks a meaningful directed source Component, destination Component or non-empty supported traffic meaning; it is not invalid merely because the Components belong to different Applications.
 - A deliberate Access Request without a current Process-backed Need is rejected.
 - Possessing request authority does not make the permission outcome allowed.
 - DENIED creates no new current access.
