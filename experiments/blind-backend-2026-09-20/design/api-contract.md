@@ -1,6 +1,6 @@
 # Backend HTTP/JSON contract
 
-Status: ACCEPTED candidate after Coding-Agent Challenge 01
+Status: ACCEPTED after Coding-Agent Challenge 02 repairs
 
 ## Boundary-wide rules
 
@@ -255,7 +255,7 @@ No update/move/retire/delete operation and no independent deployment label are p
 
 `ProcessView = {processRef, name, description:null|string, responsibleOrganization:null|ResponsibleOrganization, needs:[NeedSummary]}`.
 
-`NeedSummary = {needRef, processRef, interactionRef, businessBasis, status:"ACTIVE"|"RETIRED", createdAt, retiredAt:null|string}`.
+`NeedSummary = {needRef, processRef, interactionRef, participantComponentRef, businessBasis, status:"ACTIVE"|"RETIRED", createdAt, retiredAt:null|string}`.
 
 - **Idempotent-create** `POST /v1/processes`
   - body: `{name, description?, responsibleOrganization?}`;
@@ -265,8 +265,9 @@ No update/move/retire/delete operation and no independent deployment label are p
   - body: `{responsibleOrganization:ResponsibleOrganization|null}`;
   - `200` ProcessView + new BusinessProcess ETag.
 - **Idempotent-create + If-Match BusinessProcess** `POST /v1/processes/{processRef}/needs`
-  - body: `{interactionRef, businessBasis}`;
+  - body: `{interactionRef, participantComponentRef, businessBasis}`;
   - InteractionRef must resolve;
+  - participantComponentRef must equal that Interaction's sourceComponentRef or destinationComponentRef;
   - `201` NeedSummary + new BusinessProcess ETag.
 - `GET /v1/needs/{needRef}` -> NeedSummary.
 - **If-Match BusinessProcess** `POST /v1/processes/{processRef}/needs/{needRef}/retire`
@@ -316,7 +317,7 @@ If non-null, at least one bound is required and when both exist `effectiveFrom <
 
 `AuthorizationEvidenceView = {accessRequestRef, externalDecisionRef:null|string, decidedBySubject, decidedAt}`.
 
-`JustificationView = {needRef, processRef, interactionRef, businessBasis, needStatus:"ACTIVE"|"RETIRED", attachedAt, attachedBySubject, sourceAccessRequestRef:null|string}`.
+`JustificationView = {needRef, processRef, interactionRef, participantComponentRef, businessBasis, needStatus:"ACTIVE"|"RETIRED", attachedAt, attachedBySubject, sourceAccessRequestRef:null|string}`.
 
 `PolicyRuleView` contains:
 - `policyRuleRef`;
@@ -338,6 +339,15 @@ Operations:
   - resolves current Need status from Business Connectivity;
   - returns PolicyRuleView + PolicyRule ETag.
 
+- `GET /v1/policy-rules/{policyRuleRef}/history?cursor=&limit=`
+  - permission: `policy.read`;
+  - returns `{items:[PolicyRuleOperationalHistoryEvent], nextCursor:null|string}`;
+  - `limit` default 50, valid 1–200;
+  - `PolicyRuleOperationalHistoryEvent = {version, kind:"CREATED"|"OPERATIONAL_CHANGED", effectState, effectiveWindow, changedBySubject, changedAt}`;
+  - first Rule creation produces `CREATED` with ACTIVE/unbounded state;
+  - actual ACTIVE/INACTIVE or effectiveWindow changes produce `OPERATIONAL_CHANGED`;
+  - semantic no-op operational requests produce no history event.
+
 - **If-Match PolicyRule** `PUT /v1/policy-rules/{policyRuleRef}/operational`
   - body: `{effectState:"ACTIVE"|"INACTIVE", effectiveWindow:EffectiveWindow}`;
   - same state + same normalized window is a semantic no-op with unchanged ETag/history;
@@ -345,7 +355,7 @@ Operations:
 
 - **Idempotent-create + If-Match PolicyRule** `POST /v1/policy-rules/{policyRuleRef}/justifications`
   - body: `{needRef}`;
-  - Need must be current at the mutation snapshot and its Interaction must match the Rule's Interaction;
+  - Need must be current at the mutation snapshot, its Interaction must match the Rule's Interaction, and participantComponentRef must be one of that Interaction's source/destination Components;
   - attaches business justification without changing permission or Rule identity;
   - attaching an already-associated Need is a semantic idempotent replay/result and does not create duplicate association/history;
   - `200` updated PolicyRuleView + resulting ETag.
@@ -385,7 +395,7 @@ Response:
 `NormalizedPolicyRow` contains:
 - `policyRuleRef`;
 - `authorizationEvidence:[{accessRequestRef,externalDecisionRef:null|string}]`;
-- `justifications:[{needRef,processRef,needStatus:"ACTIVE"|"RETIRED"}]`;
+- `justifications:[{needRef,processRef,participantComponentRef,needStatus:"ACTIVE"|"RETIRED"}]`;
 - `reconciliationFlags:["NO_CURRENT_BUSINESS_JUSTIFICATION"]|[]`;
 - `interactionRevisionRef`;
 - source: `{deploymentRef,resourceRef,endpointRef,address:AddressRealization,realizationEffectiveFrom,realizationProvenance}`;
@@ -410,4 +420,8 @@ Rules:
 
 ## Pagination
 
-The only selected-MVP paginated surface is Resource history. Cursors are opaque, stable only for forward traversal of that query, and cannot be interpreted by clients.
+Selected-MVP paginated surfaces:
+- Resource history;
+- PolicyRule operational history.
+
+Both use opaque forward-only cursors, default limit 50, valid range 1–200. Cursors are query-specific, are not stable identifiers and cannot be interpreted by clients.
