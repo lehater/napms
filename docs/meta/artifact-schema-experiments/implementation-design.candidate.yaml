@@ -1,0 +1,75 @@
+version: 0
+kind: harness-artifact-schema-candidate
+schema: implementation-design/v0-experiment
+artifact: MVP-IMPLEMENTATION-READINESS
+source: docs/plans/first-mvp-implementation-readiness.yaml
+capability_claims:
+  - engineering.implementation.plan
+  - engineering.implementation.completion-criteria
+
+content:
+  purpose: >-
+    Turn the accepted first-MVP design into executable implementation slices and
+    explicit completion criteria without reopening product, domain or architecture
+    decisions.
+  design_sections:
+    - id: implementation-boundary
+      title: Implementation boundary
+      decisions:
+        - Include browser workflow, HTTP/JSON application API, modular-monolith modules, PostgreSQL persistence, Authority Management admission, vendor-neutral policy materialization, table and CSV export.
+        - Exclude provider-specific rendering, Network Enforcement Placement, Access Policy Realization, Network Environment Operations, Technical Access Evidence, external IdP and distributed services.
+        - Implement one end-to-end vertical journey while preserving accepted semantic and architecture ownership.
+    - id: vertical-sequence
+      title: Vertical sequence
+      decisions:
+        - Author Resources and AddressSpace.
+        - Author Application, Components, Interaction and traffic revision.
+        - Create source and destination ComponentDeployments.
+        - Establish BusinessProcess and current ConnectivityNeed.
+        - Submit RuleChange for exact deployments/revision/Need.
+        - Decide Pending RuleChange.
+        - Materialize all current effective rules.
+        - Render the same successful result as table and CSV.
+    - id: frontend
+      title: Frontend realization
+      decisions:
+        - Implement workflow steps Resources; Application and Components; Interactions and Traffic; Deployments; Business Connectivity; Policy Rule and Decision; Current Policy Export.
+        - UI drives the API and displays validation/Unresolved outcomes.
+        - UI never becomes authority for domain invariants or authorization.
+  implementation_slices:
+    - "Foundation: session/auth admission, OpenAPI edge, composition root, PostgreSQL migrations and diagnostic correlation."
+    - "Authoring: Resource Catalogue, Application Communication Catalogue, Application Deployment and Business Connectivity."
+    - "Policy: Access Policy lifecycle and cross-module validation."
+    - "Export: complete materialization plus JSON table plus CSV."
+    - "Frontend: complete browser journey, including Resource detail current/history inspection."
+    - "Verification: module, integration, API and end-to-end proof."
+  completion_criteria:
+    - OpenAPI covers every required journey operation and explicit outcome.
+    - PostgreSQL migrations establish only module-owned state needed by the journey.
+    - Backend interfaces implement the canonical module contracts and introduce no internal HTTP.
+    - Protected operations implement the canonical security boundary and Authority Management admission.
+    - Browser completes the journey without hidden/manual state fabrication.
+    - Resource detail keeps current facts immediately readable and exposes ended/replaced realization, scope-affiliation and responsibility history with validity and provenance.
+    - Implementation preserves the quality, threat-control and observability constraints referenced by the design.
+    - Verification covers happy path, rejection, withdrawal, authorization and Unresolved export.
+    - No coding step requires a new product/domain/system-architecture decision.
+  forbidden_decisions:
+    - Reopening accepted product, domain or architecture decisions during implementation.
+    - Treating this artifact as implementation authorization.
+  open_questions:
+    - Numeric performance, availability and scale targets are not present in accepted product truth and must not be invented during implementation.
+  design_refs:
+    - docs/requirements/first-mvp-policy-export.yaml
+    - docs/model/use-cases/first-mvp-policy-export.yaml
+    - docs/architecture/structurizr/workspace.dsl
+    - docs/architecture/mvp-system-rules.yaml
+    - docs/architecture/mvp-security-architecture.yaml
+    - docs/architecture/mvp-module-contracts.yaml
+    - docs/architecture/mvp-technical-representation.yaml
+    - docs/contracts/http/napms.openapi.yaml
+    - docs/contracts/ui/mvp-navigation.yaml
+    - docs/contracts/ui/resource-detail.yaml
+    - docs/architecture/persistence/mvp-persistence.yaml
+    - docs/architecture/mvp-quality-requirements.yaml
+    - docs/architecture/mvp-threat-model.yaml
+    - docs/architecture/mvp-observability.yaml
