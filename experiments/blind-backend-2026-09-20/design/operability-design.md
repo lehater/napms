@@ -62,7 +62,9 @@ Required environment keys:
 | `NAPMS_DATABASE_DSN` | PostgreSQL connection DSN | yes |
 | `NAPMS_OIDC_ISSUER` | absolute HTTPS issuer URL except explicitly local test issuer | no |
 | `NAPMS_OIDC_AUDIENCE` | non-empty required audience | no |
-| `NAPMS_OIDC_PERMISSION_CLAIM` | non-empty claim name containing effective permission strings | no |
+| `NAPMS_OIDC_PERMISSION_CLAIM` | non-empty top-level claim name containing effective permission strings | no |
+| `NAPMS_OIDC_ALLOWED_ALGS` | non-empty unique comma-separated subset of RS256,RS384,RS512,PS256,PS384,PS512,ES256,ES384,ES512,EdDSA; HS*/none/unknown forbidden | no |
+| `NAPMS_OIDC_CLOCK_SKEW` | duration >= 0 applied to exp/nbf validation only | no |
 | `NAPMS_DB_STATEMENT_TIMEOUT` | duration > 0 | no |
 | `NAPMS_HTTP_REQUEST_TIMEOUT` | duration > 0, bounds one external request including materialization | no |
 | `NAPMS_HTTP_MAX_REQUEST_BODY_BYTES` | integer > 0; hard transport-safety limit for JSON request bodies; no hidden default | no |
@@ -87,14 +89,31 @@ The application never logs the value of a key classified secret.
 
 ## OIDC key/cache/dependency semantics
 
-- issuer/audience/permission-claim configuration is fixed for the process lifetime;
-- token signature/issuer/audience/time checks always fail closed;
-- metadata/JWKS retrieval uses at most `NAPMS_OIDC_FETCH_MAX_ATTEMPTS`, each bounded by `NAPMS_OIDC_HTTP_TIMEOUT`, with the configured backoff;
-- cached signing keys may be used after refresh failure only while their cache age is <= `NAPMS_JWKS_MAX_STALE`;
-- a token that is cryptographically invalid against available valid keys -> `401 AUTHENTICATION_REQUIRED`;
-- when token validity cannot be established because required key material is unavailable/staler than permitted -> `503 DEPENDENCY_UNAVAILABLE`, not a false 401;
-- an unknown token key id may trigger one bounded refresh sequence; if key material still cannot be obtained, use the dependency-failure rule above;
-- readiness is false whenever the process lacks key material sufficient to validate protected traffic under these rules.
+Configuration (issuer/audience/permission-claim/allowed-algs/clock-skew) is immutable for process lifetime.
+
+### Initial acquisition
+
+After configuration validation and before opening the HTTP listener:
+1. fetch/validate OIDC metadata and JWKS using the bounded retry contract;
+2. require at least one usable public verification key compatible with configured allowed algorithms;
+3. if initial usable validation material cannot be established, emit safe `runtime.startup.failed` dependency evidence and exit non-zero;
+4. only after successful initial acquisition may the listener start/readiness become UP.
+
+### Runtime refresh/cache
+
+- every metadata/JWKS HTTP attempt is bounded by `NAPMS_OIDC_HTTP_TIMEOUT`;
+- one refresh sequence uses at most `NAPMS_OIDC_FETCH_MAX_ATTEMPTS` with configured backoff;
+- concurrent refresh triggers share one in-flight single-flight refresh; they do not fan out independent fetch storms;
+- unknown token key id may trigger one bounded refresh sequence;
+- readiness, when no currently usable key material exists, may trigger one bounded single-flight refresh and reports UP only if usable material is established;
+- protected token validation may also trigger that refresh path when required;
+- cached signing keys remain usable after refresh failure only while cache age <= `NAPMS_JWKS_MAX_STALE`;
+- refresh failure does not force readiness DOWN while still-usable cached keys exist;
+- once no usable/non-stale validation material exists, readiness is DOWN;
+- cryptographically invalid token against established valid key material -> 401;
+- inability to establish token validity because required key material is unavailable/staler than allowed -> 503, not false 401/fail-open.
+
+No product/domain background worker is required; refresh is triggered by initialization, readiness and protected validation paths.
 
 ## Database failure semantics
 
