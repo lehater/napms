@@ -12,6 +12,8 @@ Accepted design artifacts are the oracle. Existing NAPMS implementation/design i
 
 ### Resource Description
 - Resource/Endpoint identity survives address set/change/clear.
+- Resource requires immutable AuthorityScopeRef independent from Site/responsibility/address.
+- multiple Endpoints under one Resource are explicit logical-unit membership; implementation performs no automatic grouping from address/Site/responsibility/name.
 - Missing current address remains explicit.
 - Site assignment and singular OWNER/ADMINISTRATOR replacement/clear preserve non-overlapping history.
 - setting an already-current responsibility is a no-op.
@@ -36,6 +38,7 @@ Accepted design artifacts are the oracle. Existing NAPMS implementation/design i
 - source-side and destination-side Needs for one Interaction remain independently representable.
 - Need is independent from Deployment/IP.
 - retirement is terminal, preserves historical createdAt/createdBySubject and never rewrites permission/current-access state.
+- BusinessProcess criticalityLabel is representable/settable/clearable as opaque non-empty text and carries no scoring/order/propagation semantics.
 
 ### Access Policy
 - AccessSubject is exactly sourceDeploymentRef + destinationDeploymentRef + interactionRevisionRef.
@@ -167,7 +170,7 @@ Every successful materialization response contains:
 - normalized technical rows referencing PolicyRuleRef;
 - explicit address actor/time realization facts.
 
-A caller possessing policy.export but not policy.read can explain every exported/non-effective selected Rule from the export response itself.
+A caller admitted by effective scoped policy.export authority but without policy.read can explain every exported/non-effective selected Rule and the export admission scopes/time from the export response itself.
 
 ## V5 — Security
 
@@ -177,6 +180,7 @@ A caller possessing policy.export but not policy.read can explain every exported
 - exp required and nbf optional use configured clock skew exactly.
 - missing permission claim -> authenticated empty permission set.
 - permission claim present -> array<string>; wrong type/non-string -> 401.
+- authority claim present -> array<object{action,scope,effectiveFrom?,effectiveUntil?}>; malformed object/time bounds -> 401.
 - duplicate strings collapse; unknown permission strings grant no known permission.
 - invalid token against established usable key -> 401.
 - inability to establish validity because key material is unavailable/stale -> 503 rather than false 401/fail-open.
@@ -187,9 +191,12 @@ A caller possessing policy.export but not policy.read can explain every exported
 - successful refresh atomically replaces validation material and resets lastSuccessfulValidationMaterialRefreshAt; failed refresh preserves prior material/timestamp.
 - cache age is now-lastSuccessfulValidationMaterialRefreshAt; max-stale must be >0 and provider cache headers cannot extend it.
 - refresh failure with still-usable cache preserves readiness; beyond max-stale without successful refresh -> readiness DOWN.
-- exact operation permission matrix; no permission implication.
+- exact operation admission matrix; no permission/grant implication.
+- access.request requires effective scoped grant for every distinct source/destination Resource AuthorityScopeRef at server-owned admissionAt.
+- policy.export requires effective scoped grant for every distinct selected Resource AuthorityScopeRef at the same evaluationAt used for materialization.
+- request AuthorizationEvidence preserves request authority scope/time; materialization preserves export authority scope/time.
 - request/decide/manage/read/export independent.
-- Resource responsibility, Process organization and Need existence never grant authorization.
+- Resource Site/responsibility, Process organization/criticality and Need existence never grant authorization or manufacture authority scope.
 - current caller is authenticated/authorized again before idempotent replay.
 - actor/permission/server provenance cannot be mass-assigned.
 - tokens/DSN/secrets/stacks/schema absent from public errors and allow-listed diagnostics.
