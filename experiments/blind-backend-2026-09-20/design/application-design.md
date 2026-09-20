@@ -43,7 +43,7 @@ Aggregate concurrency owners:
 Inside one write transaction:
 
 1. idempotency NEW/replay decision for the concrete target command;
-2. resolve current Need and BusinessProcess version;
+2. through the transaction-bound Business Connectivity port, acquire the current Need FOR SHARE-equivalent validation lock and resolve BusinessProcess/Interaction/participant facts; the lock remains until AccessRequest commit;
 3. resolve exact InteractionRevision;
 4. resolve source/destination Deployments and verify Component direction;
 5. verify Need Interaction matches revision's Interaction and Need participantComponentRef equals that Interaction's source or destination Component;
@@ -90,7 +90,7 @@ Inside one transaction:
 1. authorize `access.manage`;
 2. idempotency replay/conflict before NEW-command Rule ETag check;
 3. load Rule under expected version;
-4. resolve Need as CURRENT through Business Connectivity in the same snapshot;
+4. acquire the Business Connectivity current-Need FOR SHARE-equivalent validation lock in the Access Policy write transaction; require ACTIVE and retain the lock through Rule-association commit;
 5. require Need Interaction to equal the Interaction owning Rule.interactionRevisionRef and participantComponentRef to be one of that Interaction's participants;
 6. if Need association already exists, return semantic no-op/replay result;
 7. append JustificationAssociation and increment Rule version;
@@ -158,7 +158,7 @@ Historical/time-travel export is outside MVP.
 ## Consistency semantics
 
 - every command writes one semantic owner only;
-- cross-owner validation reads may share owner write transaction snapshot while peers remain read-only;
+- ordinary owner writes use READ COMMITTED; mutable current-Need validation uses an owner-provided peer read lock held through the Access Policy commit, while peer tables remain read-only to Access Policy;
 - historical refs/evidence/justification associations and explicit actor/time provenance are never silently rebound or erased;
 - no automatic DB mutation retry; client retry uses Interface idempotency;
 - idempotency replay precedes NEW-command optimistic precondition evaluation;
