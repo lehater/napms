@@ -58,6 +58,7 @@ Implement the Operability Design keys exactly:
 - `NAPMS_OIDC_ISSUER`
 - `NAPMS_OIDC_AUDIENCE`
 - `NAPMS_OIDC_PERMISSION_CLAIM`
+- `NAPMS_OIDC_AUTHORITY_CLAIM`
 - `NAPMS_OIDC_ALLOWED_ALGS`
 - `NAPMS_OIDC_CLOCK_SKEW`
 - `NAPMS_DB_STATEMENT_TIMEOUT`
@@ -78,7 +79,7 @@ Requirements:
 - no config files/flags/runtime reload/feature flags;
 - no hidden numeric defaults for required timeout/retry/body-size keys;
 - DSN value is secret/redacted;
-- OIDC adapter must enforce HTTPS-only configured issuer/discovery/jwks_uri with downgrade rejection plus Security Architecture's exact alg/kid/aud/exp/nbf/sub/permission-claim contract and surface “invalid token” separately from “cannot establish validity because key dependency is unavailable”;
+- OIDC adapter must enforce HTTPS-only configured issuer/discovery/jwks_uri with downgrade rejection plus Security Architecture's exact alg/kid/aud/exp/nbf/sub/permission-claim/authority-claim contract and surface “invalid token” separately from “cannot establish validity because key dependency is unavailable”;
 - after parsing config, initialize OIDC metadata/JWKS with the accepted bounded retries before opening listener; failure aborts startup;
 - runtime refresh is one single-flight path shared by readiness/protected validation; one attempt is full discovery+JWKS validation, sequence length/backoff follow config exactly;
 - successful refresh atomically replaces material and records lastSuccessfulValidationMaterialRefreshAt; failed refresh preserves prior material/timestamp;
@@ -98,14 +99,14 @@ Completion:
 
 ### I2 — Resource Description
 
-Implement immutable Site and ResponsibilityGroup registration/read; Resource/Endpoint, Site assignment, address history and responsibility history; Resource-version optimistic concurrency; accepted HTTP representations.
+Implement immutable Site and ResponsibilityGroup registration/read; Resource with immutable AuthorityScopeRef, explicit Endpoint membership, Site assignment, address history and responsibility history; Resource-version optimistic concurrency; accepted HTTP representations.
 
 Completion:
 - T-RES-*;
 - Site-history preservation;
 - Resource stale-concurrency/ETag;
 - idempotent creates;
-- resource permission matrix;
+- Resource scope persistence/no-auto-grouping tests and resource permission matrix;
 - persistence integration.
 
 ### I3 — Application Communication
@@ -124,7 +125,7 @@ Completion:
 
 ### I4 — Application Deployment and Business Connectivity
 
-Implement immutable ComponentDeployment registration/read; Process/ResponsibleOrganization; Need creation with required participantComponentRef constrained to Interaction source/destination Component; terminal Need retirement with BusinessProcess-version concurrency.
+Implement immutable ComponentDeployment registration/read; Process/ResponsibleOrganization/opaque criticalityLabel; Need creation with required participantComponentRef constrained to Interaction source/destination Component; terminal Need retirement with BusinessProcess-version concurrency.
 
 Completion:
 - deployment reference validation;
@@ -153,18 +154,18 @@ Completion:
 - T-JUSTIFICATION-* and T-NEED-RETIREMENT-RECONCILIATION;
 - T-RULE-EFFECT-* / T-EFFECTIVE-WINDOW-*;
 - idempotency target-scope/replay-before-ETag/concurrency contracts, including commit->replay, rollback->NEW and unresolved wait->503;
-- request/decide/manage/read permission separation.
+- scoped request authority vs decide/manage/read separation, including immutable request authority evidence.
 
 ### I6 — Current Policy Materialization
 
 Implement read-only shared-snapshot CurrentPolicyMaterializer with:
-- all-Rules or explicit PolicyRule subset selection;
+- all-Rules or explicit PolicyRule subset selection with scoped export authority over every participating Resource scope at evaluationAt;
 - operational/effective-window evaluation before technical realization;
 - current/retired Need resolution from Business Connectivity;
 - NO_CURRENT_BUSINESS_JUSTIFICATION reconciliation flag;
 - no automatic deactivation when current Need count is zero;
 - exact canonical ipProtocol/port-range and IPv4/IPv6 HOST/PREFIX expansion for selected effective Rules only;
-- self-contained streamed `ruleProvenance` for every selected Rule containing AuthorizationEvidence with request submitter/time/initialNeed + decision actor/time and participant-attributed Need justification/currentness/reconciliation; unresolved accepted provenance for any selected Rule makes the result UNRESOLVED even when that Rule is INACTIVE/out-of-window; normalized technical rows correlate by PolicyRuleRef and carry explicit Resource-address actor-time facts; paginated Rule endpoints remain an additional audit surface; no generic provenance blob;
+- self-contained streamed `exportAuthorityEvidence` plus `ruleProvenance` for every selected Rule containing AuthorizationEvidence with request submitter/time/request-authority scope/time/initialNeed + decision actor/time and participant-attributed Need justification/currentness/reconciliation; unresolved accepted provenance for any selected Rule makes the result UNRESOLVED even when that Rule is INACTIVE/out-of-window; normalized technical rows correlate by PolicyRuleRef and carry explicit Resource-address actor-time facts; paginated Rule endpoints remain an additional audit surface; no generic provenance blob;
 - stable nonEffective and MaterializationIssue representations.
 
 Completion:
@@ -209,9 +210,9 @@ IMPLEMENTATION is complete only when:
 1. every HTTP operation, request/response shape, status/header rule, growing-collection pagination rule and authorization mapping in Interface/Security Design exists;
 2. required Idempotency-Key and If-Match semantics are applied exactly; idempotency stores exact response JSON bytes/status/Location/ETag for replay, never reconstructs from current state, and committed records have no MVP TTL;
 3. every domain invariant and application consistency rule is enforced at its owner;
-4. PostgreSQL schema/migrations realize Persistence Design including Resource Site/address/responsibility history, independent Application/Interaction aggregate ownership, one Rule per AccessSubject, evidence/justification uniqueness and idempotency replay data;
+4. PostgreSQL schema/migrations realize Persistence Design including immutable Resource AuthorityScopeRef, Resource Site/address/responsibility history, BusinessProcess criticalityLabel, AccessRequest authority evidence, independent Application/Interaction aggregate ownership, one Rule per AccessSubject, evidence/justification uniqueness and idempotency replay data;
 5. CurrentPolicyMaterializer obtains evaluationAt from the same DB snapshot transaction_timestamp(), evaluates selection + ACTIVE/window semantics, performs complete bounded preflight before HTTP 200 commitment, derives Need reconciliation without revocation, cannot return COMPLETE with unresolved selected-effective Rule input, returns preflight dependency failure as 503/500, and treats post-commit stream failure as incomplete/non-artifact rather than a successful export;
-6. materialization response is self-contained for explainability: one complete provenance record per selected Rule preserves all permission/business evidence/currentness/reconciliation, while normalized rows preserve exact traffic semantics and correlate by PolicyRuleRef; paginated Rule endpoints are supplemental, not required to explain export;
+6. materialization response is self-contained for explainability: export authority evidence preserves actor/scope/time admission and one complete provenance record per selected Rule preserves request-authority/permission/business evidence/currentness/reconciliation, while normalized rows preserve exact traffic semantics and correlate by PolicyRuleRef; paginated Rule endpoints are supplemental, not required to explain export;
 7. OIDC authentication/cache/fail-closed dependency distinctions hold;
 8. startup configuration, no-reload, retry/timeout, logging/metrics/health/cancellation/shutdown/redaction semantics are observable;
 9. architecture/component dependency checks pass;
@@ -231,6 +232,6 @@ OIDC HTTPS issuer/discovery/JWKS transport, algorithm allow-list source, require
 
 Migrate-vs-serve ownership, advisory migration serialization, exact schema verification, DB-snapshot evaluationAt and exact persisted idempotency replay/retention are not coding freedoms.
 
-The following are **not** coding freedoms: same-vs-cross Application validity, ConnectivityNeed participantComponent semantics, AccessSubject fields, Rule uniqueness, Need exclusion from Rule identity, evidence/justification ownership, operational audit-history exposure, automatic-vs-nonautomatic Need revocation, ACTIVE/window semantics, policy subset behavior, endpoint DTO/status/header semantics, permission mapping/claim representation, aggregate concurrency owner, idempotency scope/order, transaction boundaries, OIDC failure classification, configuration precedence/reload/retry semantics, logging safety or materialization COMPLETE/UNRESOLVED meaning.
+The following are **not** coding freedoms: same-vs-cross Application validity, ConnectivityNeed participantComponent semantics, AccessSubject fields, Rule uniqueness, Need exclusion from Rule identity, evidence/justification ownership, operational audit-history exposure, automatic-vs-nonautomatic Need revocation, ACTIVE/window semantics, policy subset behavior, endpoint DTO/status/header semantics, permission/scoped-authority mapping and claim representation, aggregate concurrency owner, idempotency scope/order, transaction boundaries, OIDC failure classification, configuration precedence/reload/retry semantics, logging safety or materialization COMPLETE/UNRESOLVED meaning.
 
 If implementation discovers an expected behavior not decidable from the closure, it must stop that slice and report the missing upstream decision rather than select a convention.
