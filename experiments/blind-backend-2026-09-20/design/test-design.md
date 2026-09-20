@@ -70,6 +70,16 @@ Precondition: Deployment D(C,R) exists.
 Operation: inspect API/application command surface.  
 Oracle: no update/move/retire/delete command exists in MVP.
 
+### T-NEED-PARTICIPANT-ATTRIBUTION
+Precondition: Interaction I = C1 -> C2.  
+Operation: create Need N1(Process P1,I,C1) and N2(Process P2,I,C2).  
+Oracle: both succeed independently; reads preserve participantComponentRef C1 vs C2; neither depends on a Deployment/IP.
+
+### T-NEED-PARTICIPANT-INVALID
+Precondition: Interaction I = C1 -> C2; C3 exists but is not an I participant.  
+Operation: declare Need(I,C3).  
+Oracle: validation rejects; no Need state committed.
+
 ### T-NEED-NOT-PERMISSION
 Precondition: active Need N exists.  
 Operation: no permission decision.  
@@ -137,7 +147,7 @@ Oracle: evidence/Need association append, but preexisting state/window remain un
 ### T-JUSTIFICATION-ATTACH
 Precondition: Rule S exists; current Need N2 matches Rule Interaction.  
 Operation: attach N2 with manage permission.  
-Oracle: same Rule; N2 added exactly once; no AuthorizationEvidence added; effectState/window unchanged; Rule version increments for first association.
+Oracle: same Rule; N2 added exactly once with its participantComponentRef preserved; no AuthorizationEvidence added; effectState/window unchanged; Rule version increments for first association.
 
 ### T-JUSTIFICATION-MISMATCH
 Precondition: current Need points to different Interaction.  
@@ -170,6 +180,11 @@ Oracle: RuleRef/evidence/justifications unchanged; operational history records a
 Precondition: Rule has state/window X at version V.  
 Operation: set X again.  
 Oracle: 200; ETag/version/history unchanged.
+
+### T-RULE-OPERATIONAL-HISTORY
+Precondition: Rule is created ACTIVE/unbounded by decider D, then manager M sets INACTIVE/window W and later ACTIVE/window W2.  
+Operation: GET /v1/policy-rules/{ruleRef}/history.  
+Oracle: cursor-bounded ordered events include CREATED(D,time,ACTIVE/unbounded) then exact OPERATIONAL_CHANGED(M,...) events; no authorization token/request body is exposed; semantic no-op operations add no event.
 
 ### T-EFFECTIVE-WINDOW-BOUNDARIES
 Precondition: ACTIVE Rule with [from, until).  
@@ -299,6 +314,23 @@ Oracle: current authorization fails 403 before replay result is disclosed.
 Missing/malformed/expired/wrong issuer/audience/invalid signature with usable key material.  
 Oracle: 401 before application data access.
 
+### T-AUTH-PERMISSION-CLAIM
+Variants:
+- permission claim absent;
+- [] empty array;
+- array containing required permission;
+- duplicate permissions;
+- unknown permission strings;
+- scalar/string/object claim;
+- array containing non-string element.
+
+Oracle:
+- absent/[] authenticate with empty set and protected operation returns 403;
+- required exact string authorizes only its matrix operation;
+- duplicates collapse;
+- unknown values grant no known permission;
+- wrong type/non-string element -> 401 invalid credential/token format.
+
 ### T-AUTH-KEY-DEPENDENCY
 Variants: valid cached key within max-stale; cache too old; unknown kid + failed bounded refresh.  
 Oracle: usable cache may validate; inability to establish validity -> 503/readiness DOWN, never fail-open/false 401.
@@ -359,5 +391,6 @@ Oracle: required event fields exist, secrets/full request bodies absent.
 - Equal AccessSubject ALLOWED request sequences converge on one Rule.
 - AuthorizationEvidence and Need associations are append-only sets keyed by request/Need.
 - PolicyRule ACTIVE <-> INACTIVE + effective-window changes preserve subject/evidence/justifications.
+- Source/destination participant Needs remain independently attributed through request/Rule/materialization provenance.
 - Arbitrary Need retirement sequences change only derived reconciliation status, not Rule permission/operational state.
 - Arbitrary idempotency replay/conflict/concurrency sequences never create duplicate authoritative entities.
