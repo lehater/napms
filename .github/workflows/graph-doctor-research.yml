@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: lehater/harness
-          ref: 34256efe16e4e3d9380418a405786a7b86f8075d
+          ref: af61b0ef36372e55c9d0760e86af80199f6623d2
           path: .graph-doctor-harness
       - uses: actions/setup-python@v6
         with:
