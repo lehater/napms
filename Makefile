@@ -5,6 +5,7 @@ STRUCTURIZR_DIR := $(CURDIR)/docs/architecture/structurizr
 GENERATED_ARCH_DIR := $(CURDIR)/docs-generated/architecture
 PLANTUML_SERVER_IMAGE ?= plantuml/plantuml-server:jetty
 PLANTUML_CONTAINER ?= napms-plantuml
+HARNESS_ROOT ?= $(CURDIR)/.harness-tool
 
 test:
 	cd backend && python -m pytest -q -m "not postgres"
@@ -47,7 +48,7 @@ dev-restore:
 
 design-sync:
 	python tools/check_canonical_graph.py
-	python tools/check_harness_vertical.py
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_harness_integration.py
 	python tools/check_knowledge_completeness.py
 	python tools/generate_strategic_views.py
 	python tools/generate_resource_catalogue_views.py
@@ -60,10 +61,8 @@ design-sync:
 
 design-check:
 	python tools/check_canonical_graph.py
-	python tools/check_harness_vertical.py
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_harness_integration.py
 	python tools/check_knowledge_completeness.py
-	python tools/test_harness_vertical.py
-	python tools/test_authority_execution.py
 	python tools/check_openapi_contract.py
 	python tools/check_persistence_model.py
 	python tools/check_design_control.py
@@ -78,11 +77,12 @@ design-check:
 	python tools/generate_persistence_erd.py --check
 
 authority-context:
-	@test -n "$(AUTHORITY)" || (echo "Usage: make authority-context AUTHORITY=SYSTEM-ARCHITECTURE" >&2; exit 2)
-	python tools/prepare_authority_execution.py "$(AUTHORITY)"
+	@test -n "$(AUTHORITY)" || (echo "Usage: make authority-context AUTHORITY=SYSTEM-ARCHITECTURE CAPABILITY=engineering.architecture.rules" >&2; exit 2)
+	@test -n "$(CAPABILITY)" || (echo "CAPABILITY is required; Authority contexts are capability-scoped" >&2; exit 2)
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/prepare_authority_execution.py "$(AUTHORITY)" --capability "$(CAPABILITY)"
 
 human-implementation-package:
-	python tools/generate_human_context_package.py --consumer IMPLEMENTATION-CONSUMER
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/generate_human_context_package.py --consumer BACKEND-IMPLEMENTATION
 
 architecture: design-sync
 	@docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true
