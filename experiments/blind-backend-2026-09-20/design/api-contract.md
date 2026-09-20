@@ -172,7 +172,7 @@ ResponsibilityGroup records are immutable in the selected MVP and carry no autho
 
 `ResourceView` contains:
 
-- `resourceRef`, `displayName`;
+- `resourceRef`, `displayName`, `authorityScopeRef`;
 - `siteRef: string|null`;
 - `endpointCount`;
 - current `responsibilities: {owner:null|{assignmentRef,groupRef,effectiveFrom}, administrator:null|{assignmentRef,groupRef,effectiveFrom}}`.
@@ -180,7 +180,7 @@ ResponsibilityGroup records are immutable in the selected MVP and carry no autho
 Operations:
 
 - **Idempotent-create** `POST /v1/resources`
-  - body: `{displayName, siteRef?}`; supplied SiteRef must resolve;
+  - body: `{displayName, authorityScopeRef, siteRef?}`; authorityScopeRef is required non-empty opaque scope identity and supplied SiteRef must resolve;
   - `201` ResourceView + Resource ETag.
 - `GET /v1/resources/{resourceRef}` -> ResourceView + Resource ETag.
 - `GET /v1/resources/{resourceRef}/endpoints?cursor=&limit=`
@@ -195,6 +195,7 @@ Operations:
     - `{kind:"RESPONSIBILITY", assignmentRef, role, groupRef, effectiveFrom, effectiveTo:null|string}`.
 - **Idempotent-create + If-Match Resource** `POST /v1/resources/{resourceRef}/endpoints`
   - body: `{}`;
+  - adding an Endpoint is an explicit assertion that it belongs to the same logical access-management unit as the Resource; the server never auto-groups/moves Endpoints based on address/Site/ownership;
   - `201` `{endpointRef, currentAddress:null}` + new Resource ETag.
 - `GET /v1/resources/{resourceRef}/endpoints/{endpointRef}`
   - returns `{endpointRef, currentAddress}`; `404` if endpoint does not belong to Resource.
@@ -281,18 +282,22 @@ No update/move/retire/delete operation and no independent deployment label are p
 
 `ResponsibleOrganization = {externalReference?:string, displayName:string}`.
 
-`ProcessView = {processRef, name, description:null|string, responsibleOrganization:null|ResponsibleOrganization, needCount}`.
+`ProcessView = {processRef, name, description:null|string, responsibleOrganization:null|ResponsibleOrganization, criticalityLabel:null|string, needCount}`.
 
 `NeedSummary = {needRef, processRef, interactionRef, participantComponentRef, businessBasis, status:"ACTIVE"|"RETIRED", createdAt, createdBySubject, retiredAt:null|string}`.
 
 - **Idempotent-create** `POST /v1/processes`
-  - body: `{name, description?, responsibleOrganization?}`;
+  - body: `{name, description?, responsibleOrganization?, criticalityLabel?}`;
   - `201` ProcessView + BusinessProcess ETag.
 - `GET /v1/processes/{processRef}` -> ProcessView + BusinessProcess ETag.
 - `GET /v1/processes/{processRef}/needs?cursor=&limit=`
   - returns `{items:[NeedSummary],nextCursor:null|string}`.
 - **If-Match BusinessProcess** `PUT /v1/processes/{processRef}/responsible-organization`
   - body: `{responsibleOrganization:ResponsibleOrganization|null}`;
+  - `200` ProcessView + new BusinessProcess ETag.
+- **If-Match BusinessProcess** `PUT /v1/processes/{processRef}/criticality`
+  - body: `{criticalityLabel:string|null}`; non-null value is trimmed non-empty opaque stakeholder label;
+  - no numeric score/order/propagation semantics are implied;
   - `200` ProcessView + new BusinessProcess ETag.
 - **Idempotent-create + If-Match BusinessProcess** `POST /v1/processes/{processRef}/needs`
   - body: `{interactionRef, participantComponentRef, businessBasis}`;
@@ -305,7 +310,7 @@ No update/move/retire/delete operation and no independent deployment label are p
   - need must belong to Process and be ACTIVE;
   - `200` retired NeedSummary + new BusinessProcess ETag.
 
-Process description and Need business basis are immutable in the selected MVP after creation. Criticality/importance fields are intentionally absent.
+Process description and Need business basis are immutable in the selected MVP after creation. responsibleOrganization and criticalityLabel are mutable BusinessProcess-version state.
 
 ## Access Policy
 
@@ -324,6 +329,7 @@ External representations identify the semantic access using:
 - `initialNeedRef`;
 - `status:"PENDING"|"ALLOWED"|"DENIED"`;
 - `submitterSubject`, `submittedAt`;
+- `requestAuthorityEvidence:[RequestAuthorityEvidenceView]`;
 - when final: `externalDecisionRef:null|string`, `decidedBySubject`, `decidedAt`.
 
 - **Idempotent-create** `POST /v1/access-requests`
@@ -345,7 +351,9 @@ External representations identify the semantic access using:
 
 If non-null, at least one bound is required and when both exist `effectiveFrom < effectiveUntil`.
 
-`AuthorizationEvidenceView = {accessRequestRef, submittedBySubject, submittedAt, initialNeedRef, externalDecisionRef:null|string, decidedBySubject, decidedAt}`.
+`RequestAuthorityEvidenceView = {action:"access.request",scopeRef,effectiveFrom:null|string,effectiveUntil:null|string,evaluatedAt}`.
+
+`AuthorizationEvidenceView = {accessRequestRef, submittedBySubject, submittedAt, requestAuthorityEvidence:[RequestAuthorityEvidenceView], initialNeedRef, externalDecisionRef:null|string, decidedBySubject, decidedAt}`.
 
 `JustificationView = {needRef, processRef, interactionRef, participantComponentRef, businessBasis, needStatus:"ACTIVE"|"RETIRED", needCreatedAt, needCreatedBySubject, attachedAt, attachedBySubject, sourceAccessRequestRef:null|string}`.
 
@@ -408,14 +416,14 @@ A Rule with zero current Need justifications remains a Rule; it exposes reconcil
 
 `POST /v1/policy-materializations`
 
-- requires `policy.export`;
+- requires effective scoped `policy.export` authority for every distinct Resource authorityScopeRef represented by the selected Rules at evaluationAt;
 - read-only, no Idempotency-Key/If-Match;
 - body is either:
   - `{}` — select all current PolicyRules; or
   - `{policyRuleRefs:[...]}` — explicit non-empty unique Rule subset; there is no domain count limit beyond the configured HTTP request-body safety bound;
 - duplicate refs or an explicit empty list -> `400 INVALID_INPUT`;
 - unknown RuleRef -> `422 REFERENCE_INVALID`;
-- backend establishes `evaluationAt` from the coherent database read snapshot;
+- backend establishes `evaluationAt` from the coherent database read snapshot, resolves the selected Rules' distinct Resource authorityScopeRefs and evaluates scoped export authority against that exact time;
 - computation success returns HTTP 200 for both COMPLETE and UNRESOLVED.
 - server must complete the materialization preflight and determine COMPLETE/UNRESOLVED before committing the HTTP 200 response;
 - dependency/runtime failure during preflight returns the normal 503/500 Problem response before any materialization body is committed;
@@ -432,6 +440,7 @@ Response:
 - `status:"COMPLETE"|"UNRESOLVED"`;
 - `evaluationAt`;
 - `selection:{mode:"ALL"|"EXPLICIT",selectedRuleCount}`;
+- `exportAuthorityEvidence:[ExportAuthorityEvidenceView]` where `ExportAuthorityEvidenceView={actorSubject,action:"policy.export",scopeRef,effectiveFrom:null|string,effectiveUntil:null|string,evaluatedAt}`;
 - `ruleProvenance:[MaterializedRuleProvenance]`;
 - `nonEffective:[{policyRuleRef, reason:"INACTIVE"|"OUTSIDE_EFFECTIVE_WINDOW"}]`;
 - `rows:[NormalizedPolicyRow]`;
@@ -446,7 +455,7 @@ Response:
 - all `justifications:[JustificationView,...]` with current/retired Need status and participantComponentRef;
 - `reconciliationFlags`.
 
-This provenance is part of the export result itself and is available to a caller with `policy.export`; it does not require a second `policy.read` permission. It is emitted once per Rule to avoid repeating unbounded audit data in every technical row.
+This provenance is part of the export result itself and is available to a caller admitted by scoped `policy.export` authority; it does not require a second `policy.read` permission. It is emitted once per Rule to avoid repeating unbounded audit data in every technical row.
 
 `NormalizedPolicyRow` contains:
 - `policyRuleRef`;
