@@ -1,7 +1,7 @@
 version: 1
 kind: experimental-source-corpus
 id: NAPMS-BLIND-BACKEND-SOURCE-CORPUS
-status: FROZEN_FOR_INITIAL_RECONSTRUCTION
+status: AMENDED_AFTER_SOURCE_CLASSIFICATION_REVIEW
 classification_rule: >-
   Include only facts, evidence, requirements or externally imposed constraints whose
   provenance shows they existed independently from engineering design. Ambiguous
@@ -19,9 +19,11 @@ source_inputs:
       copied_class: accepted-current-product-requirements-and-acceptance-examples
     admissibility: >-
       Bootstrap provenance explicitly classifies these materials as accepted product
-      requirements copied into the greenfield repository. The experimental copy retains
-      only observable product behavior/scope and excludes embedded domain/architecture
-      decisions.
+      requirements and acceptance examples copied into the greenfield repository.
+      The experimental copy retains observable product behavior, including operational
+      Active/Inactive behavior, declarative effectiveness, domain-policy selection and
+      same-semantic-access non-duplication, while excluding exact tactical identity,
+      ownership, API, persistence and architecture decisions.
 
   - id: SRC-NETWORK-INTENT-001
     class: SOURCE_INPUT
@@ -171,3 +173,37 @@ ambiguous_not_used:
     reason: Human decision exists, but wording and provenance are inseparable from prior authorization/domain design.
   - candidate: "extensible time-qualified Resource responsibility roles"
     reason: Human response exists only through prior domain decision materialization; independent product-source wording is unavailable.
+
+amendments:
+  - id: SC-AMEND-001
+    discovered_during: coding-agent-challenge-02-source-trace-review
+    source:
+      bootstrap_commit: c403ceeda2837d8956e3d093fef95c1bd69d0c6f
+      paths_at_bootstrap:
+        - docs/requirements/wave1-product-requirements.md
+        - docs/requirements/wave1-acceptance-examples.md
+      provenance_owner: docs/baseline/migration-provenance.md
+    original_error: >-
+      Initial sanitization correctly admitted the Wave-1 product baseline but excluded
+      some observable lifecycle/effectiveness behavior too broadly as if all lifecycle
+      language were tactical design.
+    reclassified_as_source_input:
+      - First allowed materialization creates/resolves one authoritative current access and starts it Active.
+      - Reprocessing the same allowed semantic access must not create duplicate authoritative current access.
+      - An authorized actor can change Active <-> Inactive without a new permission decision while preserving identity/history.
+      - Supported declarative effective conditions determine contribution at evaluation time without rewriting Active/Inactive state.
+      - Export may select a domain-policy subset.
+      - Effective contribution requires allowed authoritative access, Active state and satisfied declarative conditions.
+      - Inactive or otherwise non-effective selected access contributes no rows and missing realization for it does not make export incomplete.
+    still_excluded_as_derived_design:
+      - Exact semantic identity tuple/field layout.
+      - Named Bounded Context or domain-owner allocation.
+      - Aggregate/value-object/state-machine representation beyond observable behavior.
+      - API/DTO/transport representation.
+      - Persistence/event-log/version-token mechanism.
+      - Implementation-specific idempotency mechanism.
+    consequence: >-
+      Product Requirements and every downstream artifact depending on Access Policy
+      effectiveness, current-access identity, materialization selection/provenance or
+      lifecycle must be reevaluated before freeze. Previously obtained structural
+      IMPLEMENTATION COMPLETE remains only a Core-structure result, not semantic closure.
