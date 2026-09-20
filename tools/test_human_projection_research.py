@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[1]
 HARNESS=Path(os.environ.get("HUMAN_PROJECTION_HARNESS", ROOT/".human-projection-harness"))
 sys.path.insert(0,str(HARNESS))
 from engineering_graph import evaluate_engineering_target
-from human_projection import compile_manifest, materialize_package, validate_recipe
+from human_projection import compile_manifest, materialize_package, validate_projection_ir, validate_recipe
 from integration_alignment import validate_project_alignment
 
 def load(path):
@@ -89,6 +89,20 @@ def main():
         assert len(handoff_result["sources"])==len(backend["sources"])
         assert (handoff/"manifest.yaml").is_file()
         assert (handoff/"sources/docs/canonical-graph.yaml").exists() is False
+
+    evidence_plan=validate_recipe(
+        load("docs/research/human-projection/evidence-sample.yaml"),
+        backend,
+    )
+    evidence_ir=load("docs/research/human-projection/evidence-sample-ir.yaml")
+    evidence_ir["manifest_digest"]=evidence_plan["manifest_digest"]
+    validate_projection_ir(
+        evidence_ir,
+        evidence_plan,
+        manifest=backend,
+        source_root=ROOT,
+        require_evidence=True,
+    )
 
     frontend=compile_manifest(graph,model,"FRONTEND-IMPLEMENTATION",harness_version="research-prototype",project_revision="napms-research",source_root=ROOT)
     assert frontend["target"]["status"]=="READY", frontend["target"]
