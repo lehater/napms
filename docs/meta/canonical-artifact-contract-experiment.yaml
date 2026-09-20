@@ -1,6 +1,6 @@
 version: 0
 kind: canonical-artifact-contract-experiment
-status: research
+status: supported-so-far
 
 question: >-
   Is the reusable schema/format contract better attached to a canonical artifact
@@ -74,3 +74,8 @@ observations:
   - capability is too coarse to determine representation because one capability may have provider artifacts of different kinds
   - one artifact may materialize several public capabilities
   - the project already treats canonical artifact kind plus format/validator as a materialization concern
+
+result: >-
+  The experiment supports attaching reusable schema/profile metadata to concrete
+  CanonicalArtifact materializations while keeping Authority and Capability semantics
+  separate. This is pilot evidence only; no canonical Harness contract is accepted.
