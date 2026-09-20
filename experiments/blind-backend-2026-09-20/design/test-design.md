@@ -331,6 +331,16 @@ Precondition: export large enough to require multiple internal chunks.
 Operation: materialize under instrumentation/fault-capable test adapter.  
 Oracle: one logical snapshot/evaluationAt; output semantics equal small in-memory reference result; implementation does not require materializing all Rule/fact/row data at once; output row order is not used as an oracle.
 
+### T-MATERIALIZE-PREFLIGHT-DEPENDENCY-FAILURE
+Precondition: a required DB/owner read fails during preflight after some earlier Rules were successfully inspected.  
+Operation: materialize.  
+Oracle: no HTTP 200 materialization body was committed; response is 503 DEPENDENCY_UNAVAILABLE (or 500 for accepted unexpected failure); no COMPLETE event.
+
+### T-MATERIALIZE-POST-COMMIT-STREAM-FAILURE
+Precondition: preflight succeeds and HTTP 200 streaming begins; inject client cancellation/transport failure during emit.  
+Operation: continue materialization.  
+Oracle: response body is incomplete/truncated and cannot parse as a valid complete export; no fabricated closing COMPLETE result and no policy.materialization.completed success event.
+
 ### T-PROBLEM-MAPPING
 Trigger each stable failure.  
 Oracle: exact status/code/correlationId; no secret/stack/schema.
