@@ -7,12 +7,15 @@ Status: ACCEPTED after Coding-Agent Challenge 04 repair
 - No protected mutation returns success before its owning transaction commits.
 - Unknown/failed commit is never fabricated as success; recovery uses accepted idempotency semantics.
 - Concurrent mutation of one aggregate uses its accepted optimistic version and fails stale writes explicitly.
+- Resource multi-endpoint grouping is explicit caller-owned logical-unit membership; no layer may auto-group unrelated endpoints from addresses/Site/responsibility.
 - Cross-Application Interaction is valid when referenced Components and communication semantics are valid; quality/infrastructure layers must not reintroduce a same-Application constraint.
 - Equal AccessSubjects across multiple ALLOWED AccessRequests converge on one authoritative PolicyRule.
 - A new AuthorizationEvidence or justification association mutates the whole PolicyRule aggregate version; operational state/window is not reset by later ALLOWED evidence.
 - DENIED creates no new Rule/current access.
+- Business Process criticalityLabel is descriptive opaque metadata only; no scoring/order/propagation is inferred.
 - Need currentness is Business Connectivity truth; retirement does not silently rewrite permission/operational state.
 - PolicyRule effectiveness is evaluated from ACTIVE/INACTIVE + absolute effective window at one server-owned evaluationAt.
+- Request admission uses effective scoped authority at server-owned admissionAt; export uses effective scoped authority at the same database-owned evaluationAt used for policy effectiveness.
 - Policy materialization reports COMPLETE only when every selected Rule has complete permission/business provenance and every selected **effective** Rule is technically realizable.
 - INACTIVE/out-of-window selected Rules do not impose technical-realization completeness, but they still require complete self-contained provenance.
 - Zero current Need yields reconciliation evidence, not automatic revocation and not materialization failure by itself.
@@ -118,7 +121,7 @@ Exact SQL cursor/chunk size, HTTP buffering/chunking implementation and memory d
 
 ## Performance/capacity applicability
 
-Numeric latency, throughput, concurrency and dataset-size objectives are DEFERRED_NONBLOCKING because no source target exists.
+Numeric latency, throughput, availability/throughput scale and dataset-size objectives are explicitly NOT_REQUIRED for the first MVP. No numeric SLO/capacity gate is part of MVP completion.
 
 Correctness gates still include:
 - accepted pagination limits;
@@ -126,7 +129,7 @@ Correctness gates still include:
 - bounded materialization memory behavior;
 - no accidental N+1 external dependency fetch in materialization (all current dependencies are local DB owner reads).
 
-Reopen quantitative Performance/Capacity Design when concrete load/SLO inputs exist.
+A future accepted product/operational decision may introduce quantitative Performance/Capacity targets; until then their absence is intentional, not unknown.
 
 ## Availability/recovery applicability
 
