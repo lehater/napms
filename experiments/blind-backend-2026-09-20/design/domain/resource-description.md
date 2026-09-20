@@ -10,7 +10,7 @@ State:
 - immutable `displayName` in the selected MVP;
 - current `SiteRef?`;
 - Site assignment history;
-- responsibility assignments: role OWNER or ADMINISTRATOR, ResponsibilityGroupRef, validity interval;
+- current responsibility per role: OWNER -> ResponsibilityGroupRef? and ADMINISTRATOR -> ResponsibilityGroupRef?, plus assignment history;
 - ResourceEndpoint children;
 - version for optimistic concurrency.
 
@@ -20,13 +20,17 @@ Invariants:
 - Owner/Administrator references are organizational groups and grant no security authority.
 - SiteRef and ResponsibilityGroupRef must resolve to records owned by this context at mutation time.
 - changing/clearing Site preserves prior Site assignment facts and effective dates.
-- changing/ending responsibilities preserves prior assignment facts and effective dates.
+- at most one current OWNER assignment and at most one current ADMINISTRATOR assignment exist at any instant.
+- setting a role to a different group atomically closes the prior current assignment and opens the new assignment.
+- clearing a role closes the prior assignment.
+- setting an already-current group is a semantic no-op.
+- responsibility replacement/clear preserves prior assignment facts and effective dates.
 - all current/historical Resource facts needed for explanation remain Resource-domain truth.
 
 Operations:
 - RegisterResource
 - SetSite / ClearSite
-- AssignResponsibility / EndResponsibility
+- SetResponsibility / ClearResponsibility
 - AddEndpoint
 - SetEndpointAddress / ClearEndpointAddress
 - ReadResourceCurrent / ReadResourceHistory
