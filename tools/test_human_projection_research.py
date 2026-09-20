@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import os, sys, tempfile
+import copy, os, shutil, sys, tempfile
 from pathlib import Path
 import yaml
 
@@ -10,9 +10,19 @@ sys.path.insert(0,str(HARNESS))
 from engineering_graph import evaluate_engineering_target
 from human_projection import compile_manifest, materialize_package, validate_projection_ir, validate_recipe
 from integration_alignment import validate_project_alignment
+from harness import CoreError
 
 def load(path):
     return yaml.safe_load((ROOT/path).read_text(encoding="utf-8"))
+
+def expect_error(fn, contains):
+    try:
+        fn()
+    except CoreError as exc:
+        assert contains in str(exc), (contains, str(exc))
+    else:
+        raise AssertionError(f"expected CoreError containing {contains!r}")
+
 
 def synthetic_ir(plan):
     return {
@@ -103,6 +113,74 @@ def main():
         source_root=ROOT,
         require_evidence=True,
     )
+
+    # Controlled regeneration experiment: mutate one canonical quality fact in
+    # an isolated source snapshot. Old IR must fail first on manifest digest,
+    # and even a digest-only rebind must fail because the evidence excerpt is stale.
+    with tempfile.TemporaryDirectory() as temp_dir:
+        source_copy=Path(temp_dir)/"sources"
+        for item in backend["sources"]:
+            src=ROOT/item["path"]
+            dst=source_copy/item["path"]
+            dst.parent.mkdir(parents=True,exist_ok=True)
+            shutil.copy2(src,dst)
+
+        quality=source_copy/"docs/architecture/mvp-quality-requirements.yaml"
+        quality_text=quality.read_text(encoding="utf-8")
+        old_excerpt="Numeric latency throughput availability and scale targets are explicitly NOT_REQUIRED, not unknown."
+        new_excerpt="Numeric latency throughput availability and scale targets are explicitly REQUIRED for this controlled research mutation."
+        assert old_excerpt in quality_text
+        quality.write_text(quality_text.replace(old_excerpt,new_excerpt),encoding="utf-8")
+
+        mutated_manifest=compile_manifest(
+            graph,
+            model,
+            "BACKEND-IMPLEMENTATION",
+            harness_version="research-prototype",
+            project_revision="napms-controlled-mutation",
+            source_root=source_copy,
+        )
+        mutated_plan=validate_recipe(
+            load("docs/research/human-projection/evidence-sample.yaml"),
+            mutated_manifest,
+        )
+
+        stale_ir=copy.deepcopy(evidence_ir)
+        expect_error(
+            lambda: validate_projection_ir(
+                stale_ir,
+                mutated_plan,
+                manifest=mutated_manifest,
+                source_root=source_copy,
+                require_evidence=True,
+            ),
+            "manifest digest does not match",
+        )
+
+        digest_only=copy.deepcopy(evidence_ir)
+        digest_only["manifest_digest"]=mutated_plan["manifest_digest"]
+        expect_error(
+            lambda: validate_projection_ir(
+                digest_only,
+                mutated_plan,
+                manifest=mutated_manifest,
+                source_root=source_copy,
+                require_evidence=True,
+            ),
+            "excerpt not found",
+        )
+
+        regenerated=copy.deepcopy(digest_only)
+        quality_claim=regenerated["documents"][0]["sections"][2]["claims"][0]
+        quality_claim["text"]="Numeric latency, throughput, availability and scale targets are required in this controlled research mutation."
+        quality_claim["evidence"][0]["excerpt"]=new_excerpt
+        validate_projection_ir(
+            regenerated,
+            mutated_plan,
+            manifest=mutated_manifest,
+            source_root=source_copy,
+            require_evidence=True,
+        )
 
     frontend=compile_manifest(graph,model,"FRONTEND-IMPLEMENTATION",harness_version="research-prototype",project_revision="napms-research",source_root=ROOT)
     assert frontend["target"]["status"]=="READY", frontend["target"]
