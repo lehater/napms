@@ -335,6 +335,7 @@ External representations identify the semantic access using:
 - **Idempotent-create** `POST /v1/access-requests`
   - body: `{sourceDeploymentRef,destinationDeploymentRef,interactionRevisionRef,needRef}`;
   - Need must be current and match the Interaction at the submission snapshot;
+  - source/destination Resource scopes are derived server-side; missing/non-effective `access.request` grant for any distinct scope -> `403 FORBIDDEN` with no AccessRequest mutation;
   - `201` pending AccessRequestView + AccessRequest ETag.
 - `GET /v1/access-requests/{requestRef}` -> AccessRequestView + AccessRequest ETag.
 - **Idempotent-create + If-Match AccessRequest** `POST /v1/access-requests/{requestRef}/decision`
@@ -423,6 +424,7 @@ A Rule with zero current Need justifications remains a Rule; it exposes reconcil
   - `{policyRuleRefs:[...]}` — explicit non-empty unique Rule subset; there is no domain count limit beyond the configured HTTP request-body safety bound;
 - duplicate refs or an explicit empty list -> `400 INVALID_INPUT`;
 - unknown RuleRef -> `422 REFERENCE_INVALID`;
+- missing/non-effective `policy.export` grant for any distinct selected scope -> `403 FORBIDDEN` before status/rows/provenance are exposed;
 - backend establishes `evaluationAt` from the coherent database read snapshot, resolves the selected Rules' distinct Resource authorityScopeRefs and evaluates scoped export authority against that exact time;
 - computation success returns HTTP 200 for both COMPLETE and UNRESOLVED.
 - server must complete the materialization preflight and determine COMPLETE/UNRESOLVED before committing the HTTP 200 response;
