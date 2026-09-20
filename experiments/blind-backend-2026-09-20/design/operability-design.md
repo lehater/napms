@@ -109,7 +109,10 @@ The application never logs the value of a key classified secret.
 - client cancellation and request timeout propagate to database/read materialization work;
 - cancellation before commit prevents success;
 - cancellation observed after a mutation committed does not rewrite the committed domain result; idempotent replay can recover the committed result;
-- a cancelled/timeout materialization emits no COMPLETE result/event.
+- materialization preflight completes before HTTP 200 response commitment; preflight dependency failure maps to 503/500 normally;
+- a cancelled/timeout materialization before response commitment emits no COMPLETE/UNRESOLVED body;
+- cancellation/transport failure after streaming response commitment leaves an incomplete response and must not emit a successful COMPLETE materialization event;
+- `policy.materialization.completed` is emitted only after a syntactically complete response result has been produced by the application path; aborted/truncated streams emit dependency/unexpected/cancellation evidence instead.
 
 ## Health
 
