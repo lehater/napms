@@ -14,7 +14,7 @@ Infrastructure-neutral values crossing module boundaries:
 - AggregateVersion;
 - AccessSubject(sourceDeploymentRef,destinationDeploymentRef,interactionRevisionRef);
 - AddressRealization = HostAddress | Prefix;
-- TrafficClause(protocol, sourcePortRanges, destinationPortRanges);
+- TrafficClause(ipProtocol:uint8, canonicalSourcePortRanges, canonicalDestinationPortRanges);
 - EffectiveWindow(effectiveFrom?,effectiveUntil?);
 - NeedStatus = ACTIVE | RETIRED;
 - MaterializationStatus = COMPLETE | UNRESOLVED;
@@ -223,7 +223,7 @@ Bounded read contracts:
 - `readRuleCore(PolicyRuleRef)` -> RuleRef, AccessSubject, effectState/effectiveWindow/version, authorizationEvidenceCount, justificationCount;
 - `pageAllRuleCores(cursor,limit)`;
 - `readRuleCores(set<PolicyRuleRef>)` for explicit materialization selection, internally chunked as needed; Interface imposes no semantic rule-count cap beyond request-body bytes;
-- `pageAuthorizationEvidence(PolicyRuleRef,cursor,limit)`;
+- `pageAuthorizationEvidence(PolicyRuleRef,cursor,limit)` -> AccessRequestRef + submittedBySubject/submittedAt/initialNeedRef + decision provenance;
 - `pageJustificationAssociations(PolicyRuleRef,cursor,limit)`;
 - `pageOperationalHistory(PolicyRuleRef,cursor,limit)`.
 
