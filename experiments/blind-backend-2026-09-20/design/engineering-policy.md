@@ -38,7 +38,7 @@ Constrain implementation so accepted domain/application/architecture contracts r
 - Clock/time acquisition is injected at application/runtime boundaries where behavior depends on time.
 - Network values are validated before domain acceptance: HOST is canonical IPv4/IPv6 literal only; PREFIX requires canonical CIDR with host bits already zero and must never be silently masked; IPv4-mapped IPv6 is not silently unmapped.
 - TrafficClause uses canonical integer ipProtocol 0..255. Only TCP(6)/UDP(17) may carry port ranges; other protocols require empty port sets. Port ranges are sorted and overlapping/adjacent ranges merged without crossing gaps. No protocol-name alias layer exists at the canonical HTTP/domain boundary.
-- Port ranges are normalized, non-overlapping representation is optional, but semantic union must be preserved exactly.
+- Port-range canonicalization is mandatory: sort ascending and merge duplicate, overlapping and directly adjacent ranges; never merge across a gap; the resulting union must exactly equal the accepted input port set.
 - All SQL/data access uses parameter binding; string-built SQL containing untrusted values is forbidden.
 - Optimistic concurrency and idempotency semantics from Data Design are mandatory, not adapter conveniences.
 
