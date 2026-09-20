@@ -99,11 +99,13 @@ Requirements:
 - Phase 2 repeats bounded traversal in the same snapshot and streams the already-determined result;
 - implementation must not require holding the complete export row set in memory;
 - row order has no domain meaning unless Interface Design states otherwise;
-- PolicyRuleRef is the authoritative provenance correlation in every row;
-- full AuthorizationEvidence/Need-justification audit remains available through paginated Rule read endpoints rather than unbounded row sub-arrays;
+- every selected Rule emits one complete streamed export-provenance record containing its authorization evidence, participant-attributed Need justifications/currentness and reconciliation flags;
+- PolicyRuleRef correlates normalized technical rows to that provenance record;
+- full provenance is therefore self-contained in the export and does not require `policy.read`;
+- the same audit remains separately available through paginated Rule read endpoints;
 - transport/cancellation failure after response commitment yields an incomplete/truncated response, never a valid syntactically complete export.
 
-Exact SQL cursor/chunk size, HTTP buffering/chunking implementation and memory data structures are implementation freedoms so long as the response contract and one-snapshot semantics are preserved.
+Exact SQL cursor/chunk size, HTTP buffering/chunking implementation and memory data structures are implementation freedoms so long as the self-contained export provenance, response contract and one-snapshot semantics are preserved. Explicit subset size has no domain cardinality cap; only configured HTTP request-body bytes bound transport input.
 
 ## Reliability/failure semantics
 
