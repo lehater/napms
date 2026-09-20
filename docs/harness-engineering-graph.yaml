@@ -299,6 +299,12 @@ authorities:
           - engineering.security.threat-analysis
           - engineering.operability.observability
           - engineering.architecture.async-messaging-not-applicable
+      - capability: engineering.frontend.implementation-design
+        knowledge_kind: implementation-design
+        requires:
+          - engineering.frontend.component-design
+          - engineering.frontend.verification
+          - engineering.frontend.test-design
 
   - id: COMPONENT-DESIGN
     responsibility: Own implementation-facing frontend component and dependency boundaries.
@@ -313,13 +319,6 @@ authorities:
           - engineering.frontend.human-interface
           - engineering.frontend.architecture
           - engineering.interface.http-contract
-
-      - capability: engineering.frontend.implementation-design
-        knowledge_kind: implementation-design
-        requires:
-          - engineering.frontend.component-design
-          - engineering.frontend.verification
-          - engineering.frontend.test-design
 
   - id: VERIFICATION-DESIGN
     responsibility: Own verification levels, traceability and scenarios proving implementation realizes accepted engineering knowledge.
