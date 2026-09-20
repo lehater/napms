@@ -1,0 +1,30 @@
+version: 1
+kind: blind-backend-design-freeze
+id: NAPMS-BLIND-BACKEND-FREEZE-2026-09-20
+status: FROZEN
+frozen_design_commit: 936af0771faecf885edfac5eb930406cbcf3bf04
+branch: research/blind-greenfield-backend-reconstruction
+semantic_gate:
+  finding: experiments/blind-backend-2026-09-20/findings/coding-agent-challenge-10.md
+  result: PASS
+source_corpus:
+  path: experiments/blind-backend-2026-09-20/source-corpus.yaml
+  status: FROZEN_FINAL_BLIND_SOURCE_CORPUS
+blocking_questions: []
+blocking_p0_p1_design_findings: []
+comparison_boundary:
+  prior_napms_derived_design_access_before_freeze: forbidden
+  prior_napms_derived_design_access_after_freeze: comparison_only
+  frozen_reconstruction_mutation_from_comparison: forbidden
+implementation_consumer_claim: >-
+  The frozen blind backend closure is semantically sufficient for an IMPLEMENTATION
+  consumer to realize the selected MVP without choosing a substantial upstream
+  product, domain, architecture, interface, data, security, operability or
+  verification decision.
+known_harness_findings:
+  - H-FIND-001: artifact-skill/router coverage gaps observed on the unchanged Harness.
+  - structural COMPLETE alone did not constitute semantic consumer sufficiency; Coding-Agent Challenge was required.
+next_steps:
+  - rerun unchanged Harness graph/core validation against the frozen snapshot
+  - classify/fix Harness defects without changing frozen NAPMS semantics
+  - only then open prior NAPMS derived design for comparison
