@@ -72,7 +72,7 @@ An engineering discipline/decision family is only a candidate Authority boundary
 
 If any check fails, split the engineering responsibility into smaller decision families and run the same checks again. Stop only when all three pass and the current canonical graph has no unowned node. Do not split by Bounded Context, aggregate, module, file, table, service, screen, package, technology or deployment unit unless that split also proves a distinct engineering-decision owner.
 
-Use `make design-check` for the integrated project checks. CI checks out the exact Harness commit from `.harness-version`; local tooling uses the same runtime from `.harness-tool` (or `HARNESS_ROOT`).
+Use `make harness-bootstrap` to materialize the exact Harness commit from `.harness-version` into the ignored `.harness-tool/` checkout, then use `make design-check`. Every design command verifies that the checkout HEAD exactly matches the immutable pin. CI performs the same pinned checkout automatically.
 
 Universal Harness semantics are owned only by `lehater/harness`. NAPMS owns project graph/projection data and project-specific checks. Any generally useful evaluator change must be implemented and accepted in Harness first, then adopted here by updating the immutable pin.
 
