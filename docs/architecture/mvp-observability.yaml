@@ -1,25 +1,17 @@
-version: 2
+version: 3
 kind: observability-requirements
 id: NAPMS-MVP-OBSERVABILITY
-status: PILOT_CURRENT
-scope: Minimum diagnostic observability required to implement and verify the first-MVP modular monolith without introducing a telemetry platform.
+status: CURRENT
+scope: Diagnostic evidence needed to operate the corrected backend MVP.
 
 requirements:
-  - id: OBS-OUTCOME-001
-    requirement: Diagnostic output must distinguish success from authorization denial, domain rejection, Unresolved materialization and persistence/transport uncertainty without exposing credentials or session secrets.
-    basis_refs: [SYSTEM-RULES, SECURITY-ARCHITECTURE, HTTP-REQUIREMENTS]
-  - id: OBS-CORRELATION-002
-    requirement: One HTTP request or application-use-case execution must be traceable across application orchestration and owner-module calls using a technical correlation identifier.
-    basis_refs: [C4-STRUCTURE, SYSTEM-RULES]
-  - id: OBS-DEPENDENCY-003
-    requirement: Local operation must make backend startup failure distinguishable from PostgreSQL connectivity failure.
-    basis_refs: [C4-STRUCTURE, PERSISTENCE]
+  - {id: OBS-REQ-001, requirement: Every HTTP request has correlationId propagated through application and database work.}
+  - {id: OBS-AUTH-002, requirement: Authorization denial records operation and required permission or safe scopeRef without bearer contents.}
+  - {id: OBS-POLICY-003, requirement: Materialization completion records COMPLETE or UNRESOLVED evaluationAt selected-rule count row count unresolved count and duration only after a syntactically complete result.}
+  - {id: OBS-OIDC-004, requirement: OIDC refresh success failure and unusable-key dependency state are distinguishable without logging tokens or keys.}
+  - {id: OBS-DB-005, requirement: Database timeout unavailable and migration or schema failure are distinguishable from domain rejection.}
+  - {id: OBS-SECRET-006, requirement: Tokens database DSN or password and secret material are never logged.}
 
 not_required:
-  - Distributed tracing backend because distributed services are outside the accepted first-MVP architecture.
-  - A production metrics platform, dashboards or numeric production SLOs; no such upstream requirement is currently accepted.
-
-evolution_rule: Add metrics, tracing and production SLOs only when requirements or deployment architecture justify them; observability tooling must not redefine domain events or semantic ownership.
-
-provenance:
-  basis: Architecture-owned diagnostic requirements added for the implementation consumer during the Harness documentation-vertical pilot.
+  - Distributed tracing backend.
+  - Numeric production SLOs dashboards or alert thresholds because numeric latency throughput availability and scale targets are explicitly NOT_REQUIRED for first MVP.
