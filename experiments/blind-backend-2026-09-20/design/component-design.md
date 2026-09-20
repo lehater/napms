@@ -57,8 +57,10 @@ Result:
 OIDC adapter contract:
 - enforces HTTPS-only configured issuer/discovery/jwks_uri with downgrade rejection, then validates exact configured allowed algorithms, issuer, audience, exp/nbf skew, sub and permission-claim shape from Security Architecture;
 - exposes `initializeValidationMaterial()` used before listener start;
-- owns one single-flight bounded metadata/JWKS refresh path shared by initialization/readiness/protected validation;
-- preserves max-stale/fail-closed 401-vs-503 semantics from Operability/Security.
+- owns one single-flight bounded validation-material refresh path shared by initialization/readiness/protected validation;
+- one attempt is full discovery+JWKS validation; successful refresh atomically replaces material and records lastSuccessfulValidationMaterialRefreshAt; failed refresh preserves prior material/timestamp;
+- considers prior material usable only while now-lastSuccessfulValidationMaterialRefreshAt <= NAPMS_JWKS_MAX_STALE; provider cache headers cannot extend that window;
+- preserves fail-closed 401-vs-503 semantics from Operability/Security.
 
 ### Authorizer
 
