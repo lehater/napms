@@ -153,8 +153,8 @@ For Resource endpoints/history, Application Components, Interaction revisions, P
 - preflight completes before HTTP 200 commitment.
 - preflight dependency failure -> 503/500 Problem before materialization body.
 - COMPLETE and UNRESOLVED -> HTTP 200.
-- selected INACTIVE/out-of-window Rule is nonEffective and does not require technical realization.
-- effective unresolved Rule -> UNRESOLVED.
+- selected INACTIVE/out-of-window Rule is nonEffective and does not require technical realization, but its complete authorization/business provenance must still resolve.
+- unresolved permission/business provenance for any selected Rule -> UNRESOLVED; unresolved technical realization -> UNRESOLVED only for selected effective Rule.
 - post-commit client/transport failure yields incomplete body, not a valid export.
 
 ### Self-contained explainability
@@ -181,6 +181,7 @@ A caller possessing policy.export but not policy.read can explain every exported
 - invalid token against established usable key -> 401.
 - inability to establish validity because key material is unavailable/stale -> 503 rather than false 401/fail-open.
 - missing/wrong-type kid -> 401 without refresh; unknown kid -> bounded refresh, successful refresh still missing kid -> 401, refresh dependency failure preventing validity -> 503.
+- configured issuer is HTTPS-only; discovery issuer exact-match and jwks_uri HTTPS-only are enforced with downgrade redirects rejected.
 - initial metadata/JWKS acquisition succeeds before listener start; initial failure exits non-zero.
 - runtime unknown-kid/readiness refresh is bounded and single-flight.
 - refresh failure with still-usable cache preserves readiness; beyond max-stale without refresh -> readiness DOWN.
