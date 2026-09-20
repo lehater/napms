@@ -31,6 +31,9 @@ Required constraints:
 - Site intervals for one Resource do not overlap;
 - at most one open-ended current address row per Endpoint and address intervals do not overlap;
 - each responsibility assignment has one interval and can be ended once;
+- for each Resource/role there is at most one open-ended current assignment;
+- replacing a current OWNER or ADMINISTRATOR closes the prior row and opens the new row in one Resource-version transaction;
+- setting the same current group or clearing an already-empty role is a no-op;
 - Resource `version` is the only optimistic-concurrency version for Resource, endpoint/address, Site-assignment and responsibility mutations.
 
 Site and ResponsibilityGroup are immutable after registration in the selected MVP and need no optimistic-concurrency version.
@@ -79,31 +82,145 @@ Organization fields are descriptive business attribution only. Criticality/impor
 
 ## Access Policy
 
-- `access_request(request_ref PK, source_deployment_ref, destination_deployment_ref, interaction_revision_ref, need_ref, validated_business_process_version, submitter_subject, submitted_at, decision_result nullable, decision_ref nullable, decided_by_subject nullable, decided_at nullable, version)`
-- `policy_rule(rule_ref PK, access_request_ref UNIQUE, source_deployment_ref, destination_deployment_ref, interaction_revision_ref, need_ref, decision_ref nullable, effect_state, version, created_at)`
-- `policy_rule_state_history(rule_ref, version, effect_state, changed_by_subject, changed_at, PK(rule_ref,version))`
+### AccessRequest
+
+`access_request(
+  request_ref PK,
+  source_deployment_ref,
+  destination_deployment_ref,
+  interaction_revision_ref,
+  initial_need_ref,
+  validated_business_process_version,
+  submitter_subject,
+  submitted_at,
+  decision_result nullable,
+  external_decision_ref nullable,
+  decided_by_subject nullable,
+  decided_at nullable,
+  version
+)`
 
 Required constraints:
-- AccessRequest subject/provenance columns are immutable after insert;
-- `decision_result` is null, ALLOWED or DENIED;
-- decision fields change from all-null to one complete final decision at most once and are immutable afterward;
-- ALLOWED decision and first PolicyRule insert commit in the same transaction;
-- one AccessRequest has at most one PolicyRule through `access_request_ref UNIQUE`;
-- PolicyRule effect is ACTIVE or INACTIVE;
-- PolicyRule subject/provenance columns are immutable;
-- PolicyRule history receives one row for initial ACTIVE state and every actual later effect-state transition;
-- semantic no-op SetRuleEffect does not increment version or append history.
+- semantic request subject + initial_need_ref + submission provenance are immutable;
+- decision fields transition once from all-null to a complete ALLOWED or DENIED decision;
+- decision fields are immutable after finalization;
+- `decision_result` is null/ALLOWED/DENIED.
+
+### PolicyRule
+
+`policy_rule(
+  rule_ref PK,
+  source_deployment_ref,
+  destination_deployment_ref,
+  interaction_revision_ref,
+  effect_state,
+  effective_from nullable,
+  effective_until nullable,
+  version,
+  created_at,
+  UNIQUE(source_deployment_ref,destination_deployment_ref,interaction_revision_ref)
+)`
+
+Required constraints:
+- unique tuple is the physical realization of blind-derived AccessSubject identity;
+- effect_state is ACTIVE or INACTIVE;
+- when both window bounds exist, `effective_from < effective_until`;
+- subject columns and created_at are immutable;
+- first Rule creation starts ACTIVE with null/unbounded window;
+- later allowed evidence never resets operational columns.
+
+### Authorization evidence
+
+`policy_rule_authorization_evidence(
+  rule_ref,
+  access_request_ref UNIQUE,
+  external_decision_ref nullable,
+  decided_by_subject,
+  decided_at,
+  PK(rule_ref,access_request_ref)
+)`
+
+Owner-local FK to PolicyRule. AccessRequestRef remains an Access Policy-owned reference and may use owner-local FK.
+
+Every row corresponds to one ALLOWED AccessRequest for the exact Rule AccessSubject. Evidence is append-only.
+
+### Business justification associations
+
+`policy_rule_justification(
+  rule_ref,
+  need_ref,
+  attached_at,
+  attached_by_subject,
+  source_access_request_ref nullable,
+  PK(rule_ref,need_ref)
+)`
+
+NeedRef is a cross-owner opaque reference: no database FK into Business Connectivity. Association is append-only in MVP. Need current/retired status is resolved dynamically through Business Connectivity owner reads.
+
+### Operational history
+
+`policy_rule_operational_history(
+  rule_ref,
+  version,
+  effect_state,
+  effective_from nullable,
+  effective_until nullable,
+  changed_by_subject,
+  changed_at,
+  PK(rule_ref,version)
+)`
+
+Initial Rule creation records version 1 ACTIVE/unbounded. Every actual state/window change increments Rule version and appends one row. Same normalized state/window is a no-op.
+
+### ALLOWED resolution/concurrency
+
+Finalizing an ALLOWED AccessRequest performs in one transaction:
+
+1. lock/update AccessRequest final decision under expected request version;
+2. resolve-or-create PolicyRule by unique AccessSubject;
+3. when absent, insert ACTIVE/unbounded Rule;
+4. append AuthorizationEvidence for the request;
+5. insert initial Need justification with `ON CONFLICT(rule_ref,need_ref) DO NOTHING`;
+6. commit idempotency evidence.
+
+Concurrent ALLOWED requests for the same AccessSubject converge through the unique AccessSubject constraint. The transaction may use an atomic upsert/insert-on-conflict + select/lock pattern; this is one database command strategy, not an application-level mutation retry. At most one Rule identity survives.
+
+Justification attachment under expected PolicyRule version:
+- validates current Need in the same transaction snapshot;
+- inserts association if absent;
+- if association already exists, returns semantic no-op without version/history change;
+- otherwise increments PolicyRule version only if the accepted implementation treats association-set change as Rule aggregate mutation; if so, no operational-history row is added because operational state did not change.
+For simplicity/canonical behavior in this design, **justification attachment increments PolicyRule version** so concurrent Rule-management commands cannot silently cross; operational history remains unchanged for association-only mutation.
 
 ## API idempotency
 
-`idempotency_record(principal_subject, operation, key, request_fingerprint, response_status, response_body_or_result_ref, location nullable, committed_at, PK(principal_subject,operation,key))`.
+`idempotency_record(
+  principal_subject,
+  http_method,
+  route_template,
+  target_key,
+  key,
+  request_fingerprint,
+  response_status,
+  response_body_or_result_ref,
+  location nullable,
+  response_etag nullable,
+  committed_at,
+  PK(principal_subject,http_method,route_template,target_key,key)
+)`.
+
+Definitions:
+- `target_key` is the deterministic canonical concatenation/hash of normalized path-parameter values for that route; it prevents the same client key on different target Resources/Processes/Rules from colliding;
+- request fingerprint covers canonical method/route/target plus normalized accepted JSON body;
+- correlation id and If-Match are excluded from fingerprint.
 
 Rules:
-- key lexical validation is enforced at the HTTP boundary;
-- fingerprint is deterministic over the accepted operation and canonical request body;
-- same key + same fingerprint returns the original committed semantic result;
-- same key + different fingerprint -> conflict;
-- idempotency record and authoritative state created by that command commit atomically;
+- authentication/authorization and strict body/target validation occur before idempotency lookup;
+- for an existing same-key/same-fingerprint committed record, original status/body/Location/ETag replay occurs before current If-Match evaluation;
+- same scoped key + different fingerprint -> IDEMPOTENCY_CONFLICT;
+- NEW commands then evaluate If-Match and execute;
+- idempotency row and authoritative mutation commit atomically;
+- concurrent identical keys serialize through PK uniqueness/locking and converge to one committed semantic result;
 - in-progress/unknown commit handling never fabricates success.
 
 ## Transactions
@@ -113,9 +230,10 @@ Rules:
 - Application child/revision creation uses one Application-version transaction;
 - BusinessProcess child changes use one BusinessProcess-version transaction;
 - SubmitAccessRequest performs peer validation reads plus the Access Policy insert in one database transaction snapshot; peer schemas are read-only;
-- decision recording plus first PolicyRule insertion is one Access Policy transaction;
+- final ALLOWED decision plus unique-subject PolicyRule resolve/create, authorization evidence, initial justification and idempotency result is one Access Policy transaction;
 - optimistic mutation uses `WHERE version = expected`; zero updated rows -> STALE_VERSION;
-- policy materialization opens one read-only REPEATABLE READ transaction and every owner read port shares that snapshot; backend assigns `evaluationAt` for that current snapshot.
+- Rule operational/justification mutation uses one expected PolicyRule version transaction;
+- policy materialization opens one read-only REPEATABLE READ transaction and every owner read port, including Business Connectivity current-Need resolution, shares that snapshot; backend assigns `evaluationAt` for that current snapshot.
 
 ## Migrations
 
