@@ -32,11 +32,15 @@ Authenticated principal:
 - `sub` is required and must be a non-empty string from the validated token;
 - optional display attributes are non-authoritative;
 - the configured permission claim, when present, must be a JSON array of strings;
+- the configured authority claim, when present, must be a JSON array of objects `{action,scope,effectiveFrom?,effectiveUntil?}`;
+- authority `action` and `scope` are required non-empty strings;
+- `effectiveFrom`/`effectiveUntil`, when present, are NumericDate values with half-open semantics `[effectiveFrom,effectiveUntil)`; when both exist, effectiveFrom < effectiveUntil;
+- malformed authority claim/object/bounds is an invalid credential/token-format failure (401);
 - missing permission claim yields an authenticated Principal with an empty permission set;
 - wrong permission-claim type or non-string element is an invalid credential/token-format failure (401);
 - duplicate permission strings collapse to a set;
 - unknown permission strings grant nothing by themselves because Authorizer recognizes only the exact canonical permission vocabulary;
-- no alternative body/query/header permission source exists.
+- no alternative body/query/header permission or authority-grant source exists.
 
 No local password/account lifecycle is introduced by the MVP.
 
@@ -44,19 +48,37 @@ No local password/account lifecycle is introduced by the MVP.
 
 Protected operations require explicit permission. Missing/invalid identity, missing permission or authorization uncertainty fails closed.
 
-Permission vocabulary:
+Instance permission vocabulary:
 - `resource.read`, `resource.write`
 - `application.read`, `application.write`
 - `deployment.read`, `deployment.write`
 - `business.read`, `business.write`
-- `access.request`
 - `access.decide`
 - `access.manage`
-- `policy.read`, `policy.export`
+- `policy.read`
 
-The distinction between `access.request` and `access.decide` preserves the product rule that request authority is not permission to allow access. `access.manage` changes already-authorized current-access operational/justification metadata but never creates permission evidence. Resource Owner/Administrator, Business Process responsibility and Connectivity Need existence never create these permissions.
+Scoped authority actions:
+- `access.request`
+- `policy.export`
 
-Current MVP permission scope is the whole backend instance. Per-Resource/Application scopes are not invented without product input. A future scoped model is a Product/Security extension.
+`access.request` and `policy.export` are **not** granted by instance permission strings. They require effective scoped AuthorityGrants.
+
+An AuthorityGrant is effective for action A, scope S and time T iff action/scope exactly match and T is inside its optional half-open effective bounds.
+
+Request admission:
+- resolve source and destination Deployments to Resources and their explicit Resource-owned AuthorityScopeRefs;
+- deduplicate those scope refs;
+- at server-owned request `admissionAt`, require an effective `access.request` grant for every distinct participating scope;
+- record the exact actor/action/scope/grant-bounds/admissionAt evidence used.
+
+Export admission:
+- from the selected PolicyRules resolve the distinct participating Resource AuthorityScopeRefs;
+- at the same database-owned `evaluationAt` used for materialization, require an effective `policy.export` grant for every distinct selected scope;
+- record that export authority evidence in the materialization result.
+
+The distinction between scoped request authority and `access.decide` preserves the product rule that authority to request is not permission to allow. `access.manage` changes already-authorized current-access operational/justification metadata but never creates permission evidence.
+
+Resource Site/OWNER/ADMINISTRATOR, Business Process responsible organization and Connectivity Need existence never create or imply an AuthorityGrant.
 
 ### Canonical operation-to-permission matrix
 
@@ -70,20 +92,20 @@ Current MVP permission scope is the whole backend instance. Per-Resource/Applica
 | Create ComponentDeployment | `deployment.write` |
 | GET BusinessProcess / ConnectivityNeed | `business.read` |
 | Create BusinessProcess/ConnectivityNeed, set/clear responsible organization, retire Need | `business.write` |
-| Submit AccessRequest | `access.request` |
+| Submit AccessRequest | effective scoped `access.request` AuthorityGrant for every participating Resource AuthorityScopeRef at admissionAt |
 | Record ALLOWED/DENIED permission decision | `access.decide` |
 | Change PolicyRule ACTIVE/INACTIVE/effective window | `access.manage` |
 | Attach an additional current Need justification to PolicyRule | `access.manage` |
 | GET AccessRequest / PolicyRule | `policy.read` |
-| Materialize all current policy or an explicit PolicyRule subset | `policy.export` |
+| Materialize all current policy or an explicit PolicyRule subset | effective scoped `policy.export` AuthorityGrant for every selected Resource AuthorityScopeRef at evaluationAt |
 
-No permission implies another permission. In particular, `access.request`, `access.decide`, `access.manage` and `policy.export` are independent.
+No permission/grant implies another. In particular, scoped `access.request`, `access.decide`, `access.manage`, `policy.read` and scoped `policy.export` are independent.
 
 Health endpoints are not application-data operations. `/health/live` and `/health/ready` expose only minimal status and may be unauthenticated inside the deployment health-check boundary; deployment/network policy must prevent them from becoming an information-rich public interface.
 
 ## Decision authenticity
 
-Recording ALLOWED/DENIED requires authenticated `access.decide`. The backend records principal subject, timestamp and optional external decision reference as provenance. The human/organizational process that caused the decision remains outside current ownership.
+Recording ALLOWED/DENIED requires authenticated instance permission `access.decide`. The backend records principal subject, timestamp and optional external decision reference as provenance. The human/organizational process that caused the decision remains outside current ownership.
 
 ## Interface protection
 
@@ -95,7 +117,7 @@ Recording ALLOWED/DENIED requires authenticated `access.decide`. The backend rec
 
 ## Secrets/credentials
 
-- OIDC issuer/audience/allowed-algorithms/clock-skew metadata are non-secret configuration. In serve mode the configured OIDC issuer is always an absolute HTTPS URL.
+- OIDC issuer/audience/permission-claim/authority-claim/allowed-algorithms/clock-skew metadata are non-secret configuration. In serve mode the configured OIDC issuer is always an absolute HTTPS URL.
 - client credentials, database credentials and signing/private material are secret configuration.
 - secrets are never logged and are redacted from diagnostic context.
 - application does not persist bearer tokens.
