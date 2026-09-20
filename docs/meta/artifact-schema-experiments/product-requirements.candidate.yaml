@@ -53,5 +53,13 @@ content:
     - Network Environment Operations or device mutation.
     - Evidence-derived proposal recognition as a prerequisite.
     - Time-travel/as-of export.
-  evidence_refs:
-    - docs/migration/revalidated/h17-mvp-journey/s1/mvp-vendor-neutral-policy-export.yaml
+  evidence:
+    - kind: rematerialized-source
+      ref: docs/migration/revalidated/h17-mvp-journey/s1/mvp-vendor-neutral-policy-export.yaml
+    - kind: accepted-requirement-identity
+      accepted_requirement_id: NAPMS-S1-FIRST-MVP-POLICY-EXPORT
+    - kind: stakeholder-confirmation
+      date: "2026-09-17"
+      statement: MVP is the narrow journey from resources/application description and rule creation to generated/exported final policy.
+    - kind: ownership-rule
+      rule: Historical migration material is evidence only; this current artifact is the canonical requirements owner.
