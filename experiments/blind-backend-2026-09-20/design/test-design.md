@@ -1,147 +1,253 @@
 # Backend executable test design
 
-Status: ACCEPTED candidate
+Status: ACCEPTED candidate after Coding-Agent Challenge 01
 
-Framework and fixture mechanics are intentionally unspecified. Each contract defines precondition → operation → observable oracle.
+Framework/fixture/assertion mechanics remain implementation freedoms. Each contract defines precondition → operation → public/contract oracle.
 
-## Domain contracts
+## Resource/domain contracts
 
 ### T-RES-IDENTITY
-Precondition: Resource R/Endpoint E has address A1.  
-Operation: change E to valid address A2.  
-Oracle: ResourceRef and EndpointRef unchanged; current is A2; history still exposes A1 with a closed validity interval.  
-Forbidden oracle: table primary-key layout.
+Precondition: Resource R / Endpoint E has address A1.  
+Operation: change E to A2 with current Resource version.  
+Oracle: ResourceRef/EndpointRef unchanged; current is normalized A2; history retains A1 with closed interval.
 
 ### T-RES-MISSING
-Precondition: Resource/Endpoint exists without address.  
+Precondition: Resource/Endpoint exists with no current address.  
 Operation: read current Resource.  
-Oracle: endpoint exists with explicit no-current-address state; it is not omitted and not represented as 0.0.0.0/0.
+Oracle: Endpoint exists with `currentAddress:null`; not omitted and not converted to 0.0.0.0/0.
+
+### T-RES-SITE-HISTORY
+Precondition: Resource current Site S1.  
+Operation: set S2 then clear Site.  
+Oracle: Resource current Site becomes S2 then null; history has non-overlapping S1, S2 and explicit current-null assignment periods/effective transitions according to accepted persistence representation.
+
+### T-RES-RESPONSIBILITY-HISTORY
+Precondition: active OWNER assignment G1.  
+Operation: end assignment.  
+Oracle: current assignment disappears; historical fact remains with effectiveTo; group identity never grants permission.
+
+### T-RESOURCE-AGGREGATE-VERSION
+Precondition: Resource version V.  
+Operation: mutate Endpoint/address/Site/responsibility using V, then another nested mutation using stale V.  
+Oracle: first succeeds/new ETag; stale mutation is rejected; no child-specific version is required or accepted.
+
+### T-IMMUTABLE-CATALOGUE-LEAVES
+Precondition: Site, ResponsibilityGroup, ComponentDeployment exist.  
+Operation: inspect public contract.  
+Oracle: no selected-MVP update/move/retire/delete command exists for these immutable facts.
+
+## Application communication
 
 ### T-TRAFFIC-REVISION
-Precondition: Interaction I has published revision V1.  
-Operation: attempt to change V1 traffic meaning, then publish changed meaning.  
-Oracle: V1 remains unchanged; changed meaning receives distinct V2; unsupported protocol-specific semantics are rejected rather than widened.
+Precondition: Interaction I has published V1.  
+Operation: attempt to change V1; publish changed valid semantics.  
+Oracle: V1 unchanged; changed meaning is distinct V2; unsupported protocol-specific semantics are rejected, never widened.
+
+### T-APPLICATION-AGGREGATE-VERSION
+Precondition: Application ETag V.  
+Operation: add Component/Interaction/revision with V; then use stale V.  
+Oracle: child creation uses Application concurrency only; stale request -> STALE_VERSION.
+
+## Business connectivity
 
 ### T-NEED-NOT-PERMISSION
-Precondition: active Need N exists.  
-Operation: read/submit no permission decision.  
+Precondition: active Need N.  
+Operation: do not submit/record permission decision.  
 Oracle: no PolicyRule exists merely because N exists.
 
-### T-DECISION-FINALITY
-Precondition: pending AccessRequest A.  
-Operations: record DENIED then attempt ALLOWED; separately record ALLOWED then repeat same ALLOWED.  
-Oracle: conflicting second final decision is rejected; same accepted decision replay is idempotent; DENIED has no Rule; ALLOWED has one stable RuleRef.
+### T-NEED-TERMINAL
+Precondition: active Need N under BusinessProcess version V.  
+Operation: retire with V, then attempt second retirement/reactivation.  
+Oracle: first succeeds/new Process version; RETIRED is terminal; historical Need remains.
 
-### T-RULE-EFFECT-STATE
-Precondition: ALLOWED rule R is ACTIVE.  
-Operation: set INACTIVE then ACTIVE.  
-Oracle: RuleRef/request/decision provenance unchanged; materialization includes R only while ACTIVE.
+### T-BUSINESS-PROCESS-VERSION
+Precondition: Process version V.  
+Operation: create/retire Need or change responsible organization under V, then repeat another child mutation with stale V.  
+Oracle: stale mutation rejected; Need has no separate optimistic version.
 
-## Cross-owner application contracts
+## Access Policy and cross-owner contracts
 
 ### T-REQUEST-DIRECTION
-Precondition: revision V says Component C1 -> C2; deployments D1(C1), D2(C2); active Need N(I).  
-Operation: submit D2 -> D1 with V/N.  
-Oracle: INTERACTION_MISMATCH; no AccessRequest committed.
+Precondition: revision says C1 -> C2; D1(C1), D2(C2); active Need N.  
+Operation: submit D2 -> D1.  
+Oracle: INTERACTION_MISMATCH; no AccessRequest/idempotency success committed.
 
 ### T-REQUEST-NEED-CURRENT
-Precondition: Need N retired before submission transaction snapshot.  
-Operation: submit otherwise valid request.  
+Precondition: Need retired before submission snapshot.  
+Operation: otherwise valid submission.  
 Oracle: NEED_NOT_CURRENT; no AccessRequest.
 
 ### T-REQUEST-SNAPSHOT-RACE
-Precondition: N active; concurrent retirement and request submission are coordinated around transaction start.  
-Operation: execute both orders.  
-Oracle: request validity corresponds to N state in the submission transaction snapshot; no mixed/undefined outcome.
+Precondition: Need active; concurrent retirement and submission coordinated around transaction start.  
+Operation: execute both transaction orderings.  
+Oracle: validity matches Need state in submission transaction snapshot; no mixed outcome.
 
-### T-MATERIALIZE-COMPLETE
-Precondition: one ACTIVE Rule, exact revision, two source endpoints, one destination endpoint, two TrafficClauses.  
-Operation: materialize current policy.  
-Oracle: COMPLETE with exact Cartesian expansion required by endpoint × clause semantics, no broadened ports, each row carries the same Rule/Need/decision/revision provenance.
-
-### T-MATERIALIZE-UNRESOLVED
-Precondition: two ACTIVE Rules; one lacks any current source address.  
-Operation: materialize.  
-Oracle: overall UNRESOLVED; issue identifies affected Rule; any diagnostic rows are explicitly non-complete.
-
-### T-MATERIALIZE-INDEPENDENT-PROVENANCE
-Precondition: two different Rules produce technically equal address/protocol/port effects.  
-Operation: materialize.  
-Oracle: results retain two independent provenance chains; implementation cannot merge them into one provenance-less effect.
-
-### T-MATERIALIZE-SNAPSHOT
-Precondition: materialization transaction open; concurrent address change commits after its snapshot.  
-Operation: finish materialization.  
-Oracle: output reflects one coherent pre-change or post-change snapshot according to transaction ordering, never source from one snapshot and destination from another.
-
-## Persistence/atomicity contracts
-
-### T-STALE-WRITE
-Precondition: two readers hold aggregate version V.  
-Operation: first commits V+1; second writes with V.  
-Oracle: second gets STALE_VERSION and overwrites nothing.
-
-### T-IDEMPOTENCY
-Precondition: no prior key K.  
-Operation: send duplicate-sensitive create with K/payload P twice, then K/payload Q.  
-Oracle: first/second return same committed semantic result; third is IDEMPOTENCY_CONFLICT; only one authoritative creation exists.
+### T-DECISION-FINALITY
+Precondition: pending AccessRequest A.  
+Operations: DENIED then different ALLOWED command; separately ALLOWED then exact idempotent replay.  
+Oracle: conflicting later finalization -> DECISION_ALREADY_FINAL; exact replay returns original result; DENIED has no Rule; ALLOWED has one stable Rule.
 
 ### T-DECISION-ATOMICITY
 Precondition: pending request.  
-Operation: inject storage failure between decision persistence and Rule insert.  
-Oracle: transaction rolls back both; retry can reach one valid final outcome. No decided-without-rule ALLOWED state is observable.
+Operation: inject storage failure between final decision write and Rule insert.  
+Oracle: transaction exposes neither partial decision nor Rule; retry through accepted idempotency reaches at most one final result.
+
+### T-RULE-EFFECT-STATE
+Precondition: ALLOWED Rule R ACTIVE at version V.  
+Operation: set INACTIVE, repeat INACTIVE, then ACTIVE with current versions.  
+Oracle: actual transitions preserve RuleRef/request/decision provenance and append history; same-state request is no-op with unchanged ETag/history.
+
+## Policy materialization
+
+### T-MATERIALIZE-COMPLETE
+Precondition: one ACTIVE Rule, exact revision, two source endpoints, one destination endpoint, two TrafficClauses.  
+Operation: materialize.  
+Oracle: HTTP 200 COMPLETE; exact source endpoint × destination endpoint × clause rows; exact ports/address kinds; every row preserves independent provenance; issues empty.
+
+### T-MATERIALIZE-UNRESOLVED
+Precondition: active Rule lacks current source realization.  
+Operation: materialize.  
+Oracle: HTTP 200 UNRESOLVED; issue code SOURCE_REALIZATION_MISSING for that Rule; diagnostic rows are not a complete export.
+
+### T-MATERIALIZE-REFERENCE-UNRESOLVABLE
+Precondition: accepted historical reference cannot be resolved due integrity/failure fixture while database request itself is otherwise readable.  
+Operation: materialize.  
+Oracle: HTTP 200 UNRESOLVED with REFERENCE_UNRESOLVABLE; implementation never silently rebinds a newer ref.
+
+### T-MATERIALIZE-DEPENDENCY-FAILURE
+Precondition: database dependency cannot execute materialization.  
+Operation: materialize.  
+Oracle: HTTP 503 DEPENDENCY_UNAVAILABLE; no UNRESOLVED application result and no COMPLETE event.
+
+### T-MATERIALIZE-INDEPENDENT-PROVENANCE
+Precondition: two Rules produce technically equal effects.  
+Operation: materialize.  
+Oracle: independent Rule/Need/decision provenance remains represented; no provenance-erasing merge.
+
+### T-MATERIALIZE-SNAPSHOT
+Precondition: materialization snapshot open; concurrent Resource address change commits later.  
+Operation: complete materialization.  
+Oracle: one coherent pre-change or post-change snapshot according to ordering, never mixed source/destination facts.
+
+## Persistence/idempotency
+
+### T-IDEMPOTENCY-MATRIX
+For every Interface operation marked Idempotent-create:  
+Precondition: no record for principal P / operation O / key K.  
+Operation: send K + payload A twice, then K + different payload B.  
+Oracle: first commits once; second returns original status/body/Location semantic result without re-running mutation; third -> 409 IDEMPOTENCY_CONFLICT.
+
+### T-IDEMPOTENCY-CONCURRENT
+Precondition: no record for K.  
+Operation: two concurrent identical requests with P/O/K/fingerprint.  
+Oracle: at most one authoritative creation; other request replays committed result or receives bounded dependency/timeout failure, never duplicate success state.
+
+### T-IDEMPOTENCY-MISSING
+For every marked operation: omit key.  
+Oracle: request is rejected before domain mutation according to Interface contract; no state is created.
 
 ### T-MIGRATION-FRESH
-Precondition: empty supported PostgreSQL database.  
-Operation: apply ordered migrations once, then normal startup.  
-Oracle: schema ready with no manual seed required for structural correctness; second migration check does not reapply applied versions.
+Precondition: empty PostgreSQL database.  
+Operation: apply ordered migrations/start.  
+Oracle: structurally ready with no manual data injection; applied migration identity is not re-applied/rewritten.
 
-## API/security contracts
+## HTTP contract
+
+### T-STRICT-JSON
+Variants: unknown field, missing required field, forbidden null, caller-supplied server identity/time/version.  
+Oracle: exact INVALID_INPUT/validation response; no partial mutation.
+
+### T-CORRELATION
+Variants: no correlation header, valid supplied header, invalid supplied header.  
+Oracle: generated/echoed valid id; supplied valid id preserved; invalid -> 400; same id appears in required request diagnostic events.
+
+### T-ETAG-MATRIX
+For every Interface operation marked If-Match:  
+Variants: missing, current, stale.  
+Oracle: missing -> 428 PRECONDITION_REQUIRED; current -> normal result + new owner ETag when state changes; stale -> 409 STALE_VERSION; correct owner aggregate is guarded.
+
+### T-HTTP-SUCCESS-SHAPES
+For every documented route:  
+Oracle: exact status, Location when create, ETag where declared, required body fields/types/nullability; no undocumented semantic fields are required from the client.
+
+### T-PROBLEM-MAPPING
+Trigger each stable failure category.  
+Oracle: exact HTTP/code mapping, safe detail/correlationId, no stack/schema/secret.
+
+## Authentication/authorization
 
 ### T-AUTH-MATRIX
-For every row of the Security Architecture operation matrix:  
-Precondition: valid token without required permission, then with exactly required permission.  
-Operation: call operation with otherwise valid request.  
-Oracle: first FORBIDDEN/no mutation; second proceeds to normal domain outcome. Extra unrelated permission does not satisfy requirement.
+For every Security Architecture row: valid token without required permission then with exactly required permission.  
+Oracle: first 403/no mutation; second proceeds; unrelated permission does not imply required one.
 
-### T-AUTH-TOKEN-VALIDATION
-Precondition variants: missing, malformed, expired, wrong issuer, wrong audience, invalid signature.  
-Operation: call protected read.  
-Oracle: authentication failure before application data access.
+### T-AUTH-TOKEN-INVALID
+Variants: missing, malformed, expired, wrong issuer, wrong audience, invalid signature with usable key material.  
+Oracle: 401 before application-data access.
+
+### T-AUTH-KEY-DEPENDENCY
+Variants: cached usable key within max-stale; cache too old; unknown kid with failed bounded refresh.  
+Oracle: within-policy cached key may validate; inability to establish validity -> 503 DEPENDENCY_UNAVAILABLE/readiness DOWN, never false 401 or fail-open.
 
 ### T-ACTOR-SPOOF
-Precondition: valid principal P; body/header includes another actor identity.  
-Operation: protected mutation.  
-Oracle: provenance uses P; spoof field rejected/ignored according to DTO contract and never becomes trusted actor.
+Precondition: authenticated P; request attempts unknown actor/permission field.  
+Oracle: strict DTO rejects the field; trusted principal remains P.
 
 ### T-PROBLEM-DISCLOSURE
-Precondition: trigger validation, forbidden, dependency and unexpected failures with secret-like config/token values present in runtime.  
-Operation: inspect HTTP problem + captured structured logs.  
-Oracle: stable public code/correlationId; no token/password/connection secret; stack only protected internal log for unexpected failure.
+Trigger validation/forbidden/dependency/unexpected failures with secret-like runtime values.  
+Oracle: public Problem/log allow-list contains no token, DSN/password or protected secret; stack only protected internal unexpected-failure log.
 
-### T-ETAG
-Precondition: mutable aggregate current ETag V.  
-Operation: update with V then repeat with stale V.  
-Oracle: first succeeds/returns new ETag; second 409 STALE_VERSION.
+## Startup/configuration/operability
 
-## Operability contracts
+### T-CONFIG-REQUIRED
+For each required `NAPMS_*` key: remove or make invalid.  
+Oracle: startup event identifies safe key/category; process exits non-zero before listener.
+
+### T-CONFIG-UNKNOWN
+Precondition: otherwise valid config plus unknown `NAPMS_*` key.  
+Oracle: startup fails before listen; unknown typo is not ignored.
+
+### T-CONFIG-PRECEDENCE
+Attempt config file/CLI/runtime mutation.  
+Oracle: no supported application path overrides startup environment; accepted RuntimeConfig is immutable until restart.
+
+### T-CONFIG-NO-HIDDEN-DEFAULT
+Omit each required timeout/retry/max-stale/grace value.  
+Oracle: startup fails instead of choosing library/framework default.
+
+### T-OIDC-RETRY-BOUND
+Precondition: OIDC fetch dependency fails.  
+Operation: trigger refresh.  
+Oracle: attempts/backoff do not exceed configured values; no unbounded retry/background recovery path is required.
+
+### T-NO-MUTATION-RETRY
+Inject transient database error/unknown commit on mutation.  
+Oracle: application does not automatically replay the domain mutation; response is failure/unknown and safe client retry uses Idempotency-Key.
 
 ### T-HEALTH
-Precondition variants: healthy; DB unavailable; OIDC key material unavailable.  
-Operation: live + ready probes.  
-Oracle: live remains healthy while process can execute; ready fails when required dependency/config cannot support traffic; neither response exposes secret/detail.
+Variants: healthy, DB unavailable, usable cached OIDC key, unusable OIDC key.  
+Oracle: live reflects process only; ready reflects ability to serve protected traffic; body only UP/DOWN and correct 200/503.
 
 ### T-CANCELLATION
-Precondition: intentionally slow materialization read.  
-Operation: cancel request.  
-Oracle: database/read work is cancelled/bounded; no COMPLETE response/event is emitted.
+Precondition: slow materialization/database query.  
+Operation: cancel client/request timeout.  
+Oracle: work is cancelled/bounded; no COMPLETE response/event.
+
+### T-SHUTDOWN
+Precondition: in-flight request and configured shutdown grace.  
+Operation: SIGTERM.  
+Oracle: readiness DOWN first, no new application requests accepted, in-flight drains until grace then cancels; committed state is not reported rolled back.
+
+### T-DIAGNOSTIC-EVIDENCE
+Trigger successful command, conflict, auth failure, decision, COMPLETE/UNRESOLVED materialization, dependency failure and unexpected failure.  
+Oracle: required event class/fields exist and secrets/full request bodies do not.
 
 ## Property/state-machine obligations
 
-- generated valid address changes preserve Resource/Endpoint identity and non-overlapping history;
-- generated port ranges either normalize to exactly equivalent semantics or reject invalid overlap/range bounds—never widen silently;
-- AccessRequest state machine permits PENDING -> ALLOWED or PENDING -> DENIED exactly once;
-- PolicyRule state machine permits ACTIVE <-> INACTIVE while all immutable provenance fields remain constant;
-- arbitrary sequences of idempotent replay/conflicting replay never create duplicate authoritative entities.
+- arbitrary valid Resource address/Site/responsibility transitions preserve identity and non-overlapping effective history;
+- generated port ranges normalize to exactly equivalent semantics or reject invalid bounds; never widen silently;
+- AccessRequest permits PENDING -> ALLOWED or PENDING -> DENIED exactly once;
+- PolicyRule permits ACTIVE <-> INACTIVE while immutable provenance remains constant and same-state command is no-op;
+- arbitrary idempotent/conflicting replay sequences never create duplicate authoritative entities;
+- aggregate child command sequences never bypass owner version concurrency.
 
-Test implementation may use examples, property generators or state-machine frameworks; the observable contracts above are normative, not a specific framework.
+Test implementation may use example, property, state-machine or fault-injection frameworks; only the observable contracts above are normative.
