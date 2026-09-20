@@ -1,21 +1,66 @@
 # Tactical domain — Application Communication
 
-Status: ACCEPTED candidate
+Status: ACCEPTED after Source Corpus amendment 02
 
 ## Aggregate: Application
 
 Identity: `ApplicationRef`.
 
-Children:
-- Component(`ComponentRef`, name);
-- Interaction(`InteractionRef`, sourceComponentRef, destinationComponentRef, purpose, revisions).
+State:
+- immutable non-empty name;
+- Component children;
+- aggregate version.
+
+### Component
+
+Identity: `ComponentRef`.
+
+State:
+- immutable non-empty name;
+- owning ApplicationRef.
 
 Invariants:
-- Component belongs to exactly one Application.
-- Interaction is directed and references Components belonging to the same Application definition for this MVP.
-- One Interaction represents one independently meaningful communication reason.
-- Distinct reasons remain distinct Interactions even with equal traffic semantics.
-- Interaction has at least one published revision before it can be used by Access Policy.
+- a Component belongs to exactly one Application;
+- Component identity does not depend on Deployment, Resource or network address.
+
+Operations:
+- RegisterApplication
+- AddComponent
+- ReadApplication
+- ResolveComponent
+
+Consistency:
+- Component creation is atomic under Application aggregate version;
+- Application name/Component names are immutable in selected MVP.
+
+## Aggregate: Interaction
+
+Identity: `InteractionRef`.
+
+Immutable subject:
+- sourceComponentRef;
+- destinationComponentRef;
+- optional purpose/description.
+
+State:
+- immutable published InteractionRevision children;
+- aggregate version used only to serialize revision publication.
+
+Invariants:
+- Interaction is directed;
+- source and destination Components must both resolve, but MAY belong to different Applications;
+- there is no blanket same-Application invariant;
+- one Interaction represents one independently meaningful communication reason;
+- distinct reasons remain distinct Interactions even when Component pair and traffic semantics happen to be equal;
+- Interaction cannot be used for Access Policy until at least one revision exists.
+
+Operations:
+- DefineInteraction
+- PublishInteractionRevision
+- ReadInteraction
+- ResolveInteractionRevision
+
+Creation of an Interaction is independent from mutating either referenced Application aggregate. Component references are validated through public owner reads inside the same Application Communication context; referenced Applications/Components are not written.
 
 ## Entity: InteractionRevision
 
@@ -26,29 +71,26 @@ State:
 - createdAt/provenance.
 
 TrafficClause:
-- protocol: normalized protocol name or IANA protocol number;
-- optional source port ranges;
-- optional destination port ranges.
+- protocol: normalized protocol name or numeric protocol identifier;
+- source port ranges;
+- destination port ranges.
 
 Invariants:
 - revision traffic meaning is non-empty and internally valid;
-- source/destination ports are permitted only for protocols whose semantics use ports;
-- an omitted port set means unrestricted ports for that side, not an unknown value;
-- revision is immutable once referenced/published;
-- modifying decision-relevant traffic meaning creates a new revision rather than rewriting an old one;
-- traffic representation is semantic/source-neutral, not provider/firewall syntax.
+- source/destination ports are allowed only for protocols whose accepted semantics use ports;
+- empty port set means unrestricted on that side where ports are applicable, never “unknown”;
+- published revision is immutable;
+- changing decision-relevant traffic meaning creates a new revision;
+- traffic representation is provider/firewall-neutral;
+- unsupported protocol-specific semantics are rejected rather than approximated.
 
-The MVP does not invent protocol-specific fields such as ICMP type/code without accepted product evidence. A protocol whose accepted meaning cannot be expressed by protocol plus applicable port ranges must be rejected as unsupported rather than approximated.
+The selected MVP does not invent protocol-specific fields such as ICMP type/code without accepted source input.
 
-## Operations
+## Consistency boundaries
 
-- RegisterApplication
-- AddComponent
-- DefineInteraction
-- PublishInteractionRevision
-- ReadApplication
-- ResolveInteractionRevision
+Two independent aggregates exist inside this Bounded Context:
 
-## Consistency boundary
+1. **Application aggregate** — Application + Components; version serializes Component creation.
+2. **Interaction aggregate** — Interaction + immutable Revisions; version serializes revision publication.
 
-Application, its Components, Interaction identities and publication of one new immutable revision are committed atomically per Application aggregate version.
+Defining a cross-Application Interaction performs read-only validation of both ComponentRefs and writes only the new Interaction aggregate. No multi-Application write transaction or shared aggregate is introduced.
