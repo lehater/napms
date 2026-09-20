@@ -1,6 +1,6 @@
 # Blind backend security architecture
 
-Status: ACCEPTED candidate
+Status: ACCEPTED after Source Corpus amendments 01–02
 
 ## Trust model
 
@@ -31,7 +31,7 @@ Permission vocabulary:
 - `access.manage`
 - `policy.read`, `policy.export`
 
-The distinction between `access.request` and `access.decide` preserves the product rule that request authority is not permission to allow access. Resource Owner/Administrator and Business Process responsibility never create these permissions.
+The distinction between `access.request` and `access.decide` preserves the product rule that request authority is not permission to allow access. `access.manage` changes already-authorized current-access operational/justification metadata but never creates permission evidence. Resource Owner/Administrator, Business Process responsibility and Connectivity Need existence never create these permissions.
 
 Current MVP permission scope is the whole backend instance. Per-Resource/Application scopes are not invented without product input. A future scoped model is a Product/Security extension.
 
@@ -42,14 +42,14 @@ Current MVP permission scope is the whole backend instance. Per-Resource/Applica
 | GET Site / ResponsibilityGroup / Resource / Resource history | `resource.read` |
 | Create Site / ResponsibilityGroup / Resource / Endpoint; set/clear Resource address/Site/OWNER/ADMINISTRATOR | `resource.write` |
 | GET Application / Interaction / InteractionRevision | `application.read` |
-| Create/update Application / Component / Interaction / InteractionRevision | `application.write` |
+| Create Application/Component/Interaction and publish InteractionRevision | `application.write` |
 | GET ComponentDeployment | `deployment.read` |
 | Create ComponentDeployment | `deployment.write` |
 | GET BusinessProcess / ConnectivityNeed | `business.read` |
-| Create/update BusinessProcess / ConnectivityNeed, retire Need | `business.write` |
+| Create BusinessProcess/ConnectivityNeed, set/clear responsible organization, retire Need | `business.write` |
 | Submit AccessRequest | `access.request` |
 | Record ALLOWED/DENIED permission decision | `access.decide` |
-| Change PolicyRule ACTIVE/INACTIVE or effective window | `access.manage` |
+| Change PolicyRule ACTIVE/INACTIVE/effective window | `access.manage` |
 | Attach an additional current Need justification to PolicyRule | `access.manage` |
 | GET AccessRequest / PolicyRule | `policy.read` |
 | Materialize all current policy or an explicit PolicyRule subset | `policy.export` |
