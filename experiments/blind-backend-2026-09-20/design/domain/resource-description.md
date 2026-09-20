@@ -8,6 +8,7 @@ Identity: `ResourceRef` opaque stable identifier.
 
 State:
 - immutable `displayName` in the selected MVP;
+- immutable `authorityScopeRef: AuthorityScopeRef`;
 - current `SiteRef?`;
 - Site assignment history;
 - current responsibility per role: OWNER -> ResponsibilityGroupRef? and ADMINISTRATOR -> ResponsibilityGroupRef?, plus assignment history;
@@ -17,6 +18,9 @@ State:
 Invariants:
 - ResourceRef never derives from address.
 - Resource displayName is non-empty after trimming.
+- AuthorityScopeRef is required, opaque and independent from Site, OWNER/ADMINISTRATOR responsibility and address realization.
+- Resource is the explicit logical access-management unit: every Endpoint added to it is an explicit caller assertion that the Endpoint belongs to that same unit.
+- the domain never auto-groups Endpoints into a Resource from address, Site, responsibility, name similarity or other inferred facts; unrelated logical units require distinct Resources.
 - Owner/Administrator references are organizational groups and grant no security authority.
 - SiteRef and ResponsibilityGroupRef must resolve to records owned by this context at mutation time.
 - changing/clearing Site preserves prior Site assignment facts and effective dates.
@@ -85,6 +89,13 @@ Invariants:
 - Prefix is not expanded into hosts by this context.
 
 ## Value objects
+
+### AuthorityScopeRef
+- opaque non-empty stable scope identifier used only for protected admission;
+- Resource Description owns Resource -> AuthorityScopeRef affiliation;
+- Security admission owns whether an actor/action is effective for that scope/time;
+- Site, ResponsibilityGroup and address never imply or manufacture AuthorityScopeRef.
+
 
 ### HostAddress
 - one IPv4 or IPv6 address literal;
