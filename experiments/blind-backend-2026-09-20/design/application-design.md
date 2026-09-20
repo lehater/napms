@@ -1,6 +1,6 @@
 # Blind backend application design
 
-Status: ACCEPTED after Source Corpus amendment 01
+Status: ACCEPTED after Source Corpus amendment 02
 
 ## Responsibility
 
@@ -22,7 +22,8 @@ No command writes two semantic owners.
 
 Aggregate concurrency owners:
 - Resource owns Endpoint/address/Site/OWNER/ADMINISTRATOR changes;
-- Application owns Component/Interaction/revision creation;
+- Application owns Component creation;
+- Interaction is an independent Application Communication aggregate: creation validates referenced Components read-only; Interaction owns revision publication;
 - BusinessProcess owns responsible organization/Need create/retire;
 - AccessRequest owns final decision;
 - PolicyRule owns operational/window and justification-association mutation.
@@ -31,7 +32,9 @@ Aggregate concurrency owners:
 
 - Site, ResponsibilityGroup and ComponentDeployment are immutable after registration in selected MVP.
 - Resource role set is singular per role; replacing OWNER/ADMINISTRATOR closes prior assignment atomically.
-- Application published revisions are immutable.
+- Application/Component records are immutable after creation except Application aggregate version advances for Component creation.
+- Interaction source/destination/purpose are immutable; published InteractionRevisions are immutable.
+- Cross-Application Interaction is valid when both ComponentRefs resolve and directed communication semantics are explicit; no same-Application check is permitted.
 - BusinessProcess name/description and Need business basis are immutable.
 - same accepted state-set request is a semantic no-op where explicitly defined by owner contract.
 
