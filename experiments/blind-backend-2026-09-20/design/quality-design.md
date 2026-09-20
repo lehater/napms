@@ -90,12 +90,15 @@ Fixed-cardinality values are exempt:
 Policy materialization is an export operation rather than an ordinary collection-query endpoint.
 
 Requirements:
-- internal Rule/fact scans are page/chunk processed inside the one coherent read snapshot;
-- normalized output rows may be streamed incrementally in the single HTTP response;
+- one read-only coherent snapshot remains open for a two-phase operation;
+- Phase 1 preflights all selected effective facts/issues/dependencies with bounded page/chunk reads and determines COMPLETE/UNRESOLVED before HTTP response commitment;
+- dependency/runtime failure during preflight returns 503/500 before any 200 body is committed;
+- Phase 2 repeats bounded traversal in the same snapshot and streams the already-determined result;
 - implementation must not require holding the complete export row set in memory;
 - row order has no domain meaning unless Interface Design states otherwise;
 - PolicyRuleRef is the authoritative provenance correlation in every row;
-- full AuthorizationEvidence/Need-justification audit remains available through paginated Rule read endpoints rather than unbounded row sub-arrays.
+- full AuthorizationEvidence/Need-justification audit remains available through paginated Rule read endpoints rather than unbounded row sub-arrays;
+- transport/cancellation failure after response commitment yields an incomplete/truncated response, never a valid syntactically complete export.
 
 Exact SQL cursor/chunk size, HTTP buffering/chunking implementation and memory data structures are implementation freedoms so long as the response contract and one-snapshot semantics are preserved.
 
