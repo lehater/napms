@@ -26,7 +26,7 @@ IMPLEMENTATION may claim realization complete only when every item below has exe
 
 10. **Operational effectiveness/audit** — first Rule is ACTIVE/unbounded; ACTIVE/INACTIVE and absolute [effectiveFrom,effectiveUntil) preserve Rule/permission identity; same operational values are no-op; policy.read history exposes CREATED/OPERATIONAL_CHANGED actor/time/state/window and excludes no-op/evidence-only/justification-only entries.
 
-11. **Selection/materialization** — ALL or explicit unique non-empty PolicyRule subset is supported with no semantic Rule-count cap; explicit selection is bounded only by configured HTTP request-body bytes. Only selected effective Rules impose technical-realization completeness.
+11. **Selection/materialization** — ALL or explicit unique non-empty PolicyRule subset is supported with no semantic Rule-count cap; explicit selection is bounded only by configured HTTP request-body bytes. Every selected Rule must have complete permission/business provenance; only selected effective Rules additionally impose technical-realization completeness.
 
 12. **Materialization reliability** — the first statement of one read-only REPEATABLE READ transaction establishes the snapshot and returns PostgreSQL transaction_timestamp() as exact evaluationAt; bounded preflight determines COMPLETE/UNRESOLVED and dependency success before HTTP 200 commitment; emit repeats bounded traversal in that same snapshot; post-commit stream failure cannot become a valid successful export.
 
@@ -36,7 +36,7 @@ IMPLEMENTATION may claim realization complete only when every item below has exe
 
 15. **Persistence ownership** — schema/migrations match Data Design: no cross-owner write coupling/FKs, no false interaction.application_ref, unique AccessSubject Rule, evidence/justification uniqueness, explicit histories and owner-local constraints.
 
-16. **Security** — OIDC configured asymmetric algorithm allow-list/key compatibility, required kid, exact issuer/audience/exp/nbf/skew/sub/permission-claim semantics and 401-vs-503 dependency distinction are proven; request/decide/manage/read/export remain separate and forwarded identity/permission headers cannot establish authority; secret/log/error rules hold.
+16. **Security** — OIDC HTTPS-only configured issuer/discovery/jwks_uri with downgrade rejection, configured asymmetric algorithm allow-list/key compatibility, required kid, exact issuer/audience/exp/nbf/skew/sub/permission-claim semantics and 401-vs-503 dependency distinction are proven; request/decide/manage/read/export remain separate and forwarded identity/permission headers cannot establish authority; secret/log/error rules hold.
 
 17. **Operability** — startup-only configuration including body-size bound, unknown-key failure, no hidden required defaults, OIDC retry/cache policy, DB/lock waits, diagnostic evidence, health/readiness, cancellation, materialization commit boundary, graceful shutdown and redaction are proven.
 
@@ -44,6 +44,6 @@ IMPLEMENTATION may claim realization complete only when every item below has exe
 
 19. **Executable verification** — every accepted Test Design contract has evidence at its required domain/application/PostgreSQL/API/security/operability level.
 
-20. **Fresh start/no redesign** — empty PostgreSQL -> migrations -> complete public-HTTP journey succeeds without manual state fabrication, and code/tests introduce no new product/domain/architecture/interface/data/security/operability/verification semantic convention absent from accepted closure.
+20. **Fresh start/no redesign** — empty PostgreSQL -> `napms migrate` -> `napms serve` -> complete public-HTTP journey succeeds without manual state fabrication, and code/tests introduce no new product/domain/architecture/interface/data/security/operability/verification semantic convention absent from accepted closure.
 
 Any failure remains implementation/evidence work unless it exposes a genuine upstream semantic gap; such a gap reopens its owning Authority and invalidates IMPLEMENTATION COMPLETE.
