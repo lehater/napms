@@ -37,8 +37,10 @@ No child-level competing version is allowed.
 ### Cross-owner reads
 
 - Cross-owner references are validated synchronously through owner ports.
-- SubmitAccessRequest and justification attachment validate peer facts in the same database snapshot as the Access Policy write.
-- Peer owner tables are read-only participants.
+- Ordinary owner writes use PostgreSQL READ COMMITTED.
+- SubmitAccessRequest and justification attachment require mutable ConnectivityNeed currentness to remain valid through Access Policy commit; Business Connectivity supplies a transaction-bound FOR SHARE-equivalent Need read lock that blocks retirement/update until transaction end.
+- Peer owner tables remain read-only to Access Policy.
+- Composed multi-owner reads use read-only REPEATABLE READ snapshots.
 - Historical immutable refs are never silently rebound.
 
 ### Idempotency
@@ -48,7 +50,8 @@ For accepted duplicate-sensitive commands:
 - concrete target participates in idempotency scope;
 - different fingerprint conflicts;
 - state + idempotency result commit atomically;
-- automatic application-level mutation retry is forbidden.
+- automatic application-level mutation retry is forbidden;
+- concurrent identical idempotency wait resolves to replay after commit, NEW after rollback, or DEPENDENCY_UNAVAILABLE/503 on bounded timeout/DB failure; in-progress equality is never itself a conflict.
 
 ### Current policy materialization
 
