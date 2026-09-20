@@ -12,7 +12,7 @@ Cross-owner references are stored as opaque IDs and checked through public owner
 
 - `site(site_ref PK, name, description nullable, created_at)`
 - `responsibility_group(group_ref PK, display_name, external_reference nullable, created_at)`
-- `resource(resource_ref PK, display_name, version, created_at)`
+- `resource(resource_ref PK, display_name, authority_scope_ref, version, created_at)`
 - `resource_site_history(resource_ref, effective_from, effective_to nullable, site_ref nullable, PK(resource_ref,effective_from))`
 - `resource_endpoint(endpoint_ref PK, resource_ref, created_at)`
 - `resource_endpoint_address_history(endpoint_ref, effective_from, effective_to nullable, kind, value, changed_by_subject, PK(endpoint_ref,effective_from))`
@@ -26,6 +26,7 @@ Owner-local FKs:
 
 Required constraints:
 - non-empty trimmed names/display names;
+- resource.authority_scope_ref is required non-empty opaque scope identity and immutable after Resource registration;
 - address `kind` is HOST or PREFIX; both IPv4/IPv6 are accepted;
 - HOST stores a canonical single IP literal only;
 - PREFIX stores canonical CIDR only after verifying host bits are already zero; persistence adapters must reject rather than mask invalid prefix input;
@@ -94,7 +95,7 @@ No address, label, mutable relocation, retirement or independent version columns
 
 ## Business Connectivity
 
-- `business_process(process_ref PK, name, description nullable, organization_external_reference nullable, organization_display_name nullable, version, created_at)`
+- `business_process(process_ref PK, name, description nullable, organization_external_reference nullable, organization_display_name nullable, criticality_label nullable, version, created_at)`
 - `connectivity_need(need_ref PK, process_ref, interaction_ref, participant_component_ref, business_basis, status, created_at, created_by_subject, retired_at nullable)`
 
 Owner-local FK: Need -> BusinessProcess.
@@ -104,12 +105,13 @@ Required constraints:
 - interaction_ref and participant_component_ref are immutable cross-owner opaque references validated through Application Communication at Need creation;
 - participant_component_ref must be one of the referenced Interaction participants at creation; no cross-owner FK is introduced;
 - organization display name is non-empty whenever organization attribution is present;
+- criticality_label, when present, is trimmed non-empty descriptive text; no DB ordering/score/propagation semantics are attached to it;
 - Need status is ACTIVE or RETIRED;
 - ACTIVE requires `retired_at IS NULL`; RETIRED requires `retired_at IS NOT NULL`;
 - RETIRED is terminal in the selected MVP;
-- BusinessProcess `version` guards organization change, Need creation and Need retirement.
+- BusinessProcess `version` guards organization/criticality change, Need creation and Need retirement.
 
-Organization fields are descriptive business attribution only. Criticality/importance columns are absent until Product Requirements defines that extension.
+Organization fields are descriptive business attribution only. `criticality_label` is representational business metadata only and does not imply ordering, scoring, authority or propagation.
 
 ## Access Policy
 
@@ -131,8 +133,20 @@ Organization fields are descriptive business attribution only. Criticality/impor
   version
 )`
 
+Additional table:
+`access_request_authority_evidence(
+  request_ref,
+  scope_ref,
+  action,
+  grant_effective_from nullable,
+  grant_effective_until nullable,
+  evaluated_at,
+  PRIMARY KEY(request_ref,scope_ref,action)
+)`
+
 Required constraints:
 - semantic request subject + initial_need_ref + submission provenance are immutable;
+- request authority evidence is immutable, action is exactly access.request, covers each distinct participating Resource scope once, and evaluated_at equals the request admission/submission transaction time;
 - decision fields transition once from all-null to a complete ALLOWED or DENIED decision;
 - decision fields are immutable after finalization;
 - `decision_result` is null/ALLOWED/DENIED.
@@ -175,9 +189,10 @@ Owner-local FK to PolicyRule and owner-local FK/reference to immutable AccessReq
 
 Every row corresponds to one ALLOWED AccessRequest for the exact Rule AccessSubject. Evidence is append-only.
 
-The public/export AuthorizationEvidence projection joins the immutable AccessRequest row to expose:
+The public/export AuthorizationEvidence projection joins the immutable AccessRequest row and its authority-evidence rows to expose:
 - submitter_subject;
 - submitted_at;
+- requestAuthorityEvidence;
 - initial_need_ref;
 plus the decision fields above.
 
