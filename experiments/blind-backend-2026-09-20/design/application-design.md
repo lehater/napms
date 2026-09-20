@@ -113,28 +113,47 @@ This flag is diagnostic/reconciliation semantics, not revocation/effectiveness.
 
 Input selection:
 - absent Rule list -> all current Rules;
-- explicit unique non-empty PolicyRuleRef set -> exactly that domain-policy subset;
+- explicit unique non-empty PolicyRuleRef set -> exactly that subset, maximum 200;
 - unknown selected Rule -> REFERENCE_INVALID.
 
-Within one coherent read snapshot:
+One read-only REPEATABLE READ (or stronger) snapshot is opened and `evaluationAt` is recorded. The same snapshot remains open through both phases below.
 
-1. record server-owned `evaluationAt`;
-2. resolve selected Rule cores through bounded pages for ALL mode or the explicit <=200 Rule set;
-3. evaluate operational effectiveness:
+### Phase 1 — preflight before HTTP response commitment
+
+1. resolve selected Rule cores through bounded pages for ALL mode or the explicit <=200 Rule set;
+2. evaluate each Rule:
    - INACTIVE -> non-effective;
    - ACTIVE outside effectiveWindow -> non-effective;
    - ACTIVE inside/unbounded window -> effective;
-4. for every selected Rule page its justification associations and resolve current/retired Need status in bounded batches; derive justificationCount/currentJustificationCount and reconciliation flags;
-5. use Rule's authorizationEvidenceCount for export correlation; full evidence rows are available only via paginated policy.read audit surface;
-6. skip technical realization completeness checks for non-effective Rules;
-7. for every effective Rule resolve exact InteractionRevision, Deployments, Resources and current addressed Endpoints in bounded/chunked reads;
-8. expand source endpoints × destination endpoints × TrafficClauses and stream normalized rows incrementally rather than building the complete export in memory;
-9. each row preserves RuleRef, evidence/justification counts, reconciliation flags, InteractionRevisionRef and explicit Resource-address actor/time provenance; full evidence/Need details remain resolvable by RuleRef;
-10. missing source/destination realization or accepted reference -> stable MaterializationIssue;
-11. return COMPLETE iff every selected effective Rule resolves fully, otherwise UNRESOLVED;
-12. dependency/runtime failure preventing evaluation propagates as failure and is never converted into UNRESOLVED.
+3. page justification associations; resolve Need current/retired state in bounded batches and derive justificationCount/currentJustificationCount/reconciliation;
+4. for every selected effective Rule resolve exact InteractionRevision, Deployments, Resources and current addressed Endpoints in bounded/chunked reads;
+5. determine every stable MaterializationIssue and nonEffective reason;
+6. verify required DB/dependency reads complete successfully;
+7. compute final application status COMPLETE or UNRESOLVED plus compact counts;
+8. do not build the full normalized row set in memory;
+9. do not commit/write HTTP response status, headers or body yet.
+
+If any dependency/runtime error prevents preflight completion, abort the snapshot and propagate DEPENDENCY_UNAVAILABLE/INTERNAL failure so Interface Design can return 503/500 before response commitment.
+
+### Phase 2 — emit from the same snapshot
+
+After preflight succeeded:
+
+1. repeat the bounded selected-Rule/fact traversal in the still-open snapshot;
+2. stream the already-determined HTTP-200 application result incrementally;
+3. emit nonEffective/issues consistently with Phase 1;
+4. for effective resolvable Rules expand source endpoints × destination endpoints × TrafficClauses and stream normalized rows;
+5. each row preserves PolicyRuleRef, evidence/justification/current-justification counts, reconciliation flags, InteractionRevisionRef and explicit Resource-address actor/time facts;
+6. full permission/Need audit remains resolvable by PolicyRuleRef through paginated policy.read endpoints.
+
+The two phases must be deterministic over the same snapshot. Phase 2 must not discover a semantic result different from Phase 1.
+
+If client cancellation/transport failure occurs after HTTP response commitment, the response is truncated/incomplete and is not a valid policy export artifact. The server must not fabricate a closing COMPLETE body/event after the stream failed.
 
 Zero current Need is not a MaterializationIssue and does not make an otherwise effective Rule non-effective.
+
+Historical/time-travel export is outside MVP.
+
 
 ## Consistency semantics
 
