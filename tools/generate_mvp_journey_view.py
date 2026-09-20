@@ -3,7 +3,7 @@ from pathlib import Path
 import argparse,tempfile,yaml
 
 ROOT=Path(__file__).resolve().parents[1]
-REQUIREMENTS=ROOT/"docs/requirements/first-mvp-policy-export.yaml"
+REQUIREMENTS=ROOT/"docs/requirements/first-mvp-product-requirements.yaml"
 SOURCE=ROOT/"docs/model/use-cases/first-mvp-policy-export.yaml"
 OUT=ROOT/"docs-generated/architecture"
 
