@@ -1,9 +1,9 @@
-version: 3
+version: 4
 kind: test-intent
 id: NAPMS-FIRST-MVP-TEST-INTENT
-status: STALE_AFTER_REQUIREMENTS_RECONCILIATION
+status: CURRENT
 
-purpose: Define minimum verification proving implementation realizes accepted MVP semantics; tests never create design truth.
+purpose: Define minimum executable verification proving implementation realizes every accepted first-MVP requirement; tests do not create design truth.
 
 design_refs:
   requirements: docs/requirements/first-mvp-product-requirements.yaml
@@ -14,12 +14,8 @@ design_refs:
   application_deployment_domain: docs/model/contexts/application-deployment/domain-model.yaml
   business_connectivity_domain: docs/model/contexts/business-connectivity/domain-model.yaml
   access_policy_domain: docs/model/contexts/access-policy/domain-model.yaml
-  implementation_readiness: docs/plans/first-mvp-implementation-readiness.yaml
-  ui_navigation: docs/contracts/ui/mvp-navigation.yaml
-  resource_detail_ui: docs/contracts/ui/resource-detail.yaml
-  application_architecture: docs/architecture/mvp-system-rules.yaml
+  system_rules: docs/architecture/mvp-system-rules.yaml
   security_architecture: docs/architecture/mvp-security-architecture.yaml
-  module_contracts: docs/architecture/mvp-module-contracts.yaml
   http_contract: docs/contracts/http/napms.openapi.yaml
   persistence: docs/architecture/persistence/mvp-persistence.yaml
   quality_requirements: docs/architecture/mvp-quality-requirements.yaml
@@ -27,25 +23,54 @@ design_refs:
   observability: docs/architecture/mvp-observability.yaml
 
 levels:
-  module: owner invariants and lifecycle
-  integration: cross-module resolution, admission, persistence ownership and materialization
-  application_api: HTTP/session mapping to application semantics
-  end_to_end: complete authoring-to-export journey
+  domain: owner invariants and state transitions
+  integration: owner-contract locking transactions persistence and shared snapshot
+  api_security: HTTP OIDC admission idempotency concurrency and failure mapping
+  end_to_end: fresh database through complete vendor-neutral materialization
 
 required_scenarios:
-  - {id: MVP-E2E-001, expect: Two addressed Resources + one Application/two Components + HTTPS TCP/443 revision + deployments + Process-backed Need + admitted actor + accepted RuleChange yields complete TCP/443 table row and semantically identical CSV.}
-  - {id: MVP-POL-002, expect: Pending or Rejected later change leaves previous accepted revision effective.}
-  - {id: MVP-EXP-003, expect: Missing required current AddressSpace yields Unresolved with causes and no partial success.}
-  - {id: MVP-BC-004, expect: Deliberate RuleChange without current Process-backed ConnectivityNeed is rejected with no policy mutation.}
-  - {id: MVP-AUTH-005, expect: Protected mutation without effective admission is denied with owner state unchanged.}
-  - {id: MVP-ACC-006, expect: Cross-Application Interaction is rejected.}
-  - {id: MVP-ACC-007, expect: Traffic change creates a new immutable revision and historical revision remains resolvable.}
-  - {id: MVP-AD-008, expect: Redeployment of same Component to another Resource requires another ComponentDeployment identity.}
-  - {id: MVP-AP-009, expect: Withdrawal removes rule from current export while retaining policy history.}
-  - {id: MVP-EXP-010, expect: Prefix remains Prefix and is not expanded to hosts.}
-  - {id: MVP-QUAL-011, expect: Persistence or transport uncertainty is not reported as successful mutation.}
-  - {id: MVP-SEC-012, expect: Caller-supplied identity, UI state or direct persistence access cannot substitute for Authority Management admission.}
-  - {id: MVP-OBS-013, expect: Diagnostic evidence distinguishes authorization denial, domain rejection, Unresolved materialization and infrastructure uncertainty without exposing credentials or session secrets.}
-  - {id: MVP-RC-014, expect: After replacing or ending a Resource realization, scope affiliation or responsibility, Resource detail keeps current facts immediately readable and exposes the ended fact in history with validity and provenance through the supported browser workflow.}
+  - id: MVP-REQ-RESOURCE
+    verifies: [REQ-RES-001, REQ-RES-002, REQ-RES-003, REQ-RES-004, REQ-RES-005, REQ-RES-006]
+    expect: Resource identity and Endpoint identity survive realization changes; AuthorityScopeRef remains independent; no automatic endpoint grouping; Site/responsibility history remains explainable.
+  - id: MVP-REQ-APPLICATION
+    verifies: [REQ-APP-001, REQ-APP-002, REQ-INT-001, REQ-INT-002, REQ-INT-003]
+    expect: Cross-Application Interaction is accepted; multiple independent Interactions for the same pair are accepted; revision traffic semantics are immutable and canonical.
+  - id: MVP-REQ-DEPLOYMENT
+    verifies: [REQ-DEP-001, REQ-DEP-002]
+    expect: Deployment identity is independent from IP and materialization uses all current addressed Endpoints of each participating Resource.
+  - id: MVP-REQ-BUSINESS
+    verifies: [REQ-BUS-001, REQ-BUS-002, REQ-BUS-003, REQ-BUS-004, REQ-BUS-005, REQ-BUS-006, REQ-BUS-007, REQ-BUS-008, REQ-BUS-009]
+    expect: Participant-side Needs remain independent business justification; additional Needs do not duplicate Rule; retirement preserves history; zero current Needs does not revoke; criticalityLabel is opaque metadata.
+  - id: MVP-REQ-REQUEST-AUTHORITY
+    verifies: [REQ-AUTH-001, REQ-PERM-001]
+    expect: AccessRequest succeeds only with effective access.request grants for every distinct participating Resource scope at server-owned admissionAt and stores exact authority evidence.
+  - id: MVP-REQ-PERMISSION
+    verifies: [REQ-PERM-002, REQ-PERM-003, REQ-RULE-001, REQ-RULE-002]
+    expect: DENIED creates no Rule; ALLOWED creates or resolves exactly one Rule for exact Deployment pair plus immutable InteractionRevision and repeated allowed requests converge.
+  - id: MVP-REQ-RULE-OPERATIONS
+    verifies: [REQ-RULE-003, REQ-RULE-004, REQ-RULE-005]
+    expect: ACTIVE to INACTIVE to ACTIVE and EffectiveWindow preserve Rule identity and permission evidence; technical realization changes do not redefine access.
+  - id: MVP-REQ-EXPORT-AUTHORITY
+    verifies: [REQ-AUTH-002, REQ-EXP-001]
+    expect: ALL or explicit subset materialization fails before result exposure unless policy.export is effective for every selected Resource scope at evaluationAt.
+  - id: MVP-REQ-MATERIALIZATION
+    verifies: [REQ-EXP-002, REQ-EXP-003, REQ-EXP-004, REQ-EXP-005, REQ-EXP-006, REQ-EXP-007]
+    expect: One REPEATABLE READ snapshot and one evaluationAt produce COMPLETE or UNRESOLVED; non-effective Rules emit no rows and waive only technical-realization completeness; traffic semantics and provenance are never merged away.
+  - id: MVP-REQ-PROVENANCE
+    verifies: [REQ-PROV-001]
+    expect: Export contains ExportAuthorityEvidence and per-Rule request authority permission Need state and technical actor/time provenance sufficient for explanation without policy.read.
+  - id: MVP-REQ-QUALITY
+    verifies: [REQ-QUAL-001]
+    method: INSPECTION
+    expect: No implementation or acceptance gate invents mandatory numeric latency throughput availability or scale targets.
+  - id: MVP-OIDC
+    verifies: [REQ-AUTH-001, REQ-AUTH-002]
+    expect: HTTPS-only issuer/discovery/JWKS asymmetric algorithm allow-list required kid exact issuer/audience/exp/nbf/sub and malformed permission/authority claims have accepted 401 versus 503 behavior.
+  - id: MVP-IDEMPOTENCY
+    verifies: [REQ-MVP-001]
+    expect: Same key and fingerprint replays exact persisted response before current If-Match; different fingerprint conflicts; concurrent commit/rollback/unknown outcomes follow the accepted semantics.
+  - id: MVP-FRESH-START
+    verifies: [REQ-MVP-001]
+    expect: Empty PostgreSQL through migrate then serve and public HTTP can complete the full backend journey without manual database fabrication.
 
-trace_rule: Every scenario traces to accepted canonical requirements/domain/architecture; implementation tests are evidence, not product/domain/architecture authority.
+coverage_rule: Every ACCEPTED REQ-* in canonical Product Requirements must appear in at least one scenario verifies list or have an explicit non-test verification method.
