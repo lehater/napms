@@ -26,30 +26,35 @@ Support the narrow end-to-end backend journey from describing Resources and appl
 
 ### PR-BUSINESS
 
-11. The product can identify/describe a Business Process and represent a Connectivity Need stating that the Process requires an application-level Interaction.
-12. Connectivity Need is independent from concrete Access Request and from IP/current deployment realization.
-13. One Process can have multiple Needs; the same Interaction can support Needs from multiple Processes.
-14. One Need can lead to multiple concrete Access Requests over time or for different deployments.
-15. A deliberate Access Request requires a current Process-backed Connectivity Need at submission time.
-16. Process/Need is business justification, not proof that connectivity is permitted.
+11. The product can identify/describe a Business Process and associate descriptive organizational responsibility with it.
+12. The product can represent a Connectivity Need stating that the Process requires an application-level Interaction.
+13. Connectivity Need is independent from concrete Access Request and from IP/current deployment realization.
+14. One Process can have multiple Needs; the same Interaction can support Needs from multiple Processes.
+15. One Need can lead to multiple concrete Access Requests over time or for different deployments.
+16. A deliberate Access Request requires a current Process-backed Connectivity Need at submission time.
+17. Process/Need is business justification, not proof that connectivity is permitted.
 
 ### PR-ACCESS
 
-17. A deliberate request for connectivity is expressed using semantic application/deployment references rather than raw firewall/vendor syntax.
-18. Authority to submit/request connectivity is distinct from the permission decision whether connectivity is allowed.
-19. A denied permission decision creates no current effective desired access.
-20. Technical realization/address changes alone do not silently rewrite the business permission/intention they realize.
-21. The backend preserves enough provenance to explain how request/business intent and permission decision contribute to current desired access.
+18. A deliberate request for connectivity is expressed using semantic application/deployment references rather than raw firewall/vendor syntax.
+19. Authority to submit/request connectivity is distinct from the permission decision whether connectivity is allowed.
+20. A denied permission decision creates no current effective desired access.
+21. Technical realization/address changes alone do not silently rewrite the business permission/intention they realize.
+22. The backend preserves enough provenance to explain how request/business intent and permission decision contribute to current desired access.
 
 ### PR-POLICY-OUTPUT
 
-22. Current effective desired access can be materialized for one logical evaluation time into a vendor-neutral normalized technical policy result.
-23. The result preserves source/destination technical realization, interaction traffic meaning and provenance sufficient to explain each materialized access effect.
-24. One semantic access may expand into several technical effects where realization requires it; expansion must not broaden/narrow accepted traffic meaning.
-25. Independently meaningful access intent must not be merged when doing so would erase business/decision provenance.
-26. If any included effective access lacks required trustworthy current realization/communication data, the backend must not present the result as a complete successful policy output.
-27. Diagnostic partial information may be exposed only with explicit unresolved/non-success semantics.
-28. Access that is not currently effective contributes no output and does not create an output-completeness failure solely because its technical realization is absent.
+23. Current effective desired access can be materialized for one logical evaluation time into a vendor-neutral normalized technical policy result.
+24. The result preserves source/destination technical realization, interaction traffic meaning and provenance sufficient to explain each materialized access effect.
+25. One semantic access may expand into several technical effects where realization requires it; expansion must not broaden/narrow accepted traffic meaning.
+26. Independently meaningful access intent must not be merged when doing so would erase business/decision provenance.
+27. If any included effective access lacks required trustworthy current realization/communication data, the backend must not present the result as a complete successful policy output.
+28. Diagnostic partial information may be exposed only with explicit unresolved/non-success semantics.
+29. Access that is not currently effective contributes no output and does not create an output-completeness failure solely because its technical realization is absent.
+
+## Deferred accepted problem-space input
+
+Stakeholder evidence says business importance/criticality information may be useful for downstream impact analysis, while its attributes, scale and propagation semantics are explicitly unresolved. The selected first policy-export MVP does not consume criticality. Therefore no criticality field/enum/score is part of this MVP contract; reopen Product Requirements when impact-analysis scope is selected.
 
 ## Current non-goals
 
@@ -59,6 +64,7 @@ Support the narrow end-to-end backend journey from describing Resources and appl
 - brownfield traffic recognition/reverse attribution as an MVP prerequisite;
 - BPMN/workflow engine for Business Process modeling;
 - speculative Process hierarchy/monetary valuation or automatic criticality propagation;
+- business-impact/criticality analysis in the selected MVP;
 - frontend layout/component/visual design.
 
 ## Acceptance semantics
