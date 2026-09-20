@@ -147,8 +147,8 @@ Implement read-only shared-snapshot CurrentPolicyMaterializer with:
 - current/retired Need resolution from Business Connectivity;
 - NO_CURRENT_BUSINESS_JUSTIFICATION reconciliation flag;
 - no automatic deactivation when current Need count is zero;
-- exact normalized traffic/address expansion for selected effective Rules only;
-- self-contained streamed `ruleProvenance` for every selected Rule containing all authorization evidence and participant-attributed Need justification/currentness/reconciliation; normalized technical rows correlate by PolicyRuleRef and carry explicit Resource-address actor-time facts; paginated Rule endpoints remain an additional audit surface; no generic provenance blob;
+- exact canonical ipProtocol/port-range and IPv4/IPv6 HOST/PREFIX expansion for selected effective Rules only;
+- self-contained streamed `ruleProvenance` for every selected Rule containing AuthorizationEvidence with request submitter/time/initialNeed + decision actor/time and participant-attributed Need justification/currentness/reconciliation; normalized technical rows correlate by PolicyRuleRef and carry explicit Resource-address actor-time facts; paginated Rule endpoints remain an additional audit surface; no generic provenance blob;
 - stable nonEffective and MaterializationIssue representations.
 
 Completion:
@@ -179,8 +179,8 @@ Completion: V8 and all Test Design obligations green; no manual DB state fabrica
 - owner-local FK/check/unique/exclusion constraints implement Persistence Design;
 - no FK across independently owned module schemas;
 - effective temporal rows use `timestamptz`;
-- address storage may use validated text or PostgreSQL network types only if HOST/PREFIX distinction and canonical output are preserved;
-- protocol storage uses a stable normalized identifier; accepted API aliases map at the adapter boundary;
+- address storage may use validated canonical text or PostgreSQL network types only if HOST/PREFIX distinction, IPv4/IPv6 family, mapped-IPv6 identity and strict no-host-bits Prefix semantics are preserved; never let a database cast silently mask a Prefix;
+- traffic storage follows Persistence Design exactly: ipProtocol integer 0..255; separate normalized source/destination range rows; ports only for TCP(6)/UDP(17); no protocol-name alias parsing at HTTP/domain boundary;
 - Resource/Application/Interaction/BusinessProcess/AccessRequest/PolicyRule optimistic versions follow Persistence Design exactly; no duplicate child version semantics;
 - transaction runner sets isolation explicitly; current materialization uses REPEATABLE READ or stronger;
 - prepared/bound parameters only;
