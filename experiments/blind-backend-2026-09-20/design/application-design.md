@@ -125,11 +125,11 @@ One read-only REPEATABLE READ (or stronger) snapshot is opened and `evaluationAt
    - INACTIVE -> non-effective;
    - ACTIVE outside effectiveWindow -> non-effective;
    - ACTIVE inside/unbounded window -> effective;
-3. page AuthorizationEvidence and justification associations for every selected Rule; resolve Need current/retired state in bounded batches and construct the complete per-Rule export provenance projection;
+3. page AuthorizationEvidence and justification associations for **every selected Rule**; resolve every referenced Need as current or retired in bounded batches and construct the complete per-Rule export provenance projection; an accepted provenance reference that cannot be resolved is REFERENCE_UNRESOLVABLE and makes the materialization UNRESOLVED regardless of Rule effectiveness;
 4. for every selected effective Rule resolve exact InteractionRevision, Deployments, Resources and current addressed Endpoints in bounded/chunked reads;
-5. determine every stable MaterializationIssue and nonEffective reason;
+5. determine every stable MaterializationIssue and nonEffective reason; provenance-reference issues may belong to any selected Rule, while technical-realization issues belong only to selected effective Rules;
 6. verify required DB/dependency reads complete successfully;
-7. compute final application status COMPLETE or UNRESOLVED and verify every selected Rule has a complete export provenance projection;
+7. compute final application status COMPLETE only when every selected Rule has complete permission/business provenance and every selected effective Rule has complete technical realization; otherwise UNRESOLVED;
 8. do not build the full normalized row set in memory;
 9. do not commit/write HTTP response status, headers or body yet.
 
@@ -151,7 +151,7 @@ The two phases must be deterministic over the same snapshot. Phase 2 must not di
 
 If client cancellation/transport failure occurs after HTTP response commitment, the response is truncated/incomplete and is not a valid policy export artifact. The server must not fabricate a closing COMPLETE body/event after the stream failed.
 
-Zero current Need is not a MaterializationIssue and does not make an otherwise effective Rule non-effective.
+Zero current Need is not a missing provenance reference: associated RETIRED Needs remain resolvable historical provenance, and zero currently ACTIVE Needs yields NO_CURRENT_BUSINESS_JUSTIFICATION without making the Rule non-effective.
 
 Historical/time-travel export is outside MVP.
 
