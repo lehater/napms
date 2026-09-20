@@ -1,46 +1,135 @@
 # Backend quality design
 
-Status: ACCEPTED candidate
+Status: ACCEPTED after Coding-Agent Challenge 04 repair
 
 ## Correctness and integrity
 
 - No protected mutation returns success before its owning transaction commits.
-- A failed/unknown commit is surfaced as failure/unknown; retries rely on idempotency keys or owner identity constraints rather than blind replay.
-- Concurrent mutation of one aggregate uses optimistic version checking; stale writes fail explicitly.
-- Permission recording is final per AccessRequest and idempotent for the same decision payload.
-- First ALLOWED rule materialization is idempotent for one AccessRequest.
-- Policy materialization never reports COMPLETE when any included effective rule is unresolved.
+- Unknown/failed commit is never fabricated as success; recovery uses accepted idempotency semantics.
+- Concurrent mutation of one aggregate uses its accepted optimistic version and fails stale writes explicitly.
+- Cross-Application Interaction is valid when referenced Components and communication semantics are valid; quality/infrastructure layers must not reintroduce a same-Application constraint.
+- Equal AccessSubjects across multiple ALLOWED AccessRequests converge on one authoritative PolicyRule.
+- A new AuthorizationEvidence or justification association mutates the whole PolicyRule aggregate version; operational state/window is not reset by later ALLOWED evidence.
+- DENIED creates no new Rule/current access.
+- Need currentness is Business Connectivity truth; retirement does not silently rewrite permission/operational state.
+- PolicyRule effectiveness is evaluated from ACTIVE/INACTIVE + absolute effective window at one server-owned evaluationAt.
+- Policy materialization reports COMPLETE only when every selected **effective** Rule is fully resolvable.
+- INACTIVE/out-of-window selected Rules do not impose technical-realization completeness.
+- Zero current Need yields reconciliation evidence, not automatic revocation and not materialization failure by itself.
+- Normalization never broadens/narrows traffic semantics or erases independent Rule provenance.
 
 ## Consistency
 
-- Write consistency: strong atomic consistency inside one aggregate/owning module transaction.
-- Cross-context writes: none required for accepted flows; references are validated synchronously then stored as immutable references/provenance.
-- Policy materialization: one coherent read snapshot across all required module-owned persistence at the requested logical `asOf`.
-- Historical references must remain resolvable or produce explicit UNRESOLVED; no silent rebinding to newer semantic identity.
+### Write ownership
+
+Strong atomic consistency is required inside each owner transaction.
+
+Optimistic aggregate owners:
+- Resource — endpoint/address/Site/responsibility mutation;
+- Application — Component creation;
+- Interaction — revision publication;
+- BusinessProcess — organization/Need mutation;
+- AccessRequest — final decision;
+- PolicyRule — authorization-evidence set, justification set, operational state/window.
+
+No child-level competing version is allowed.
+
+### Cross-owner reads
+
+- Cross-owner references are validated synchronously through owner ports.
+- SubmitAccessRequest and justification attachment validate peer facts in the same database snapshot as the Access Policy write.
+- Peer owner tables are read-only participants.
+- Historical immutable refs are never silently rebound.
+
+### Idempotency
+
+For accepted duplicate-sensitive commands:
+- committed same-key/same-fingerprint replay is resolved before NEW-command If-Match validation;
+- concrete target participates in idempotency scope;
+- different fingerprint conflicts;
+- state + idempotency result commit atomically;
+- automatic application-level mutation retry is forbidden.
+
+### Current policy materialization
+
+- caller-selected historical asOf is not supported;
+- backend assigns one current `evaluationAt` when the read snapshot begins;
+- selected Rules, Need currentness, InteractionRevision, Deployment and Resource realization are read from one coherent snapshot;
+- materialization is read-only and owns no durable semantic state;
+- dependency failure is not converted into UNRESOLVED.
+
+## Collection/query boundedness
+
+No accepted source supplies numeric dataset-size/latency/throughput targets, but unbounded request memory/query surfaces are not acceptable implementation ambiguity.
+
+Therefore every externally exposed **growing collection query** has a cursor-paged contract:
+- Resource endpoints;
+- Resource history;
+- Application Components;
+- Interaction revisions;
+- BusinessProcess Needs;
+- PolicyRule AuthorizationEvidence;
+- PolicyRule justifications;
+- PolicyRule operational history.
+
+Interface Design owns the page contract:
+- default page size 50;
+- valid range 1–200;
+- opaque query-specific forward cursor;
+- no silent truncation.
+
+Parent/current entity reads expose scalar state and collection counts, not unbounded embedded arrays.
+
+Fixed-cardinality values are exempt:
+- Resource OWNER/ADMINISTRATOR current slots;
+- AccessSubject;
+- current operational state/window.
+
+## Materialization capacity behavior
+
+Policy materialization is an export operation rather than an ordinary collection-query endpoint.
+
+Requirements:
+- internal Rule/fact scans are page/chunk processed inside the one coherent read snapshot;
+- normalized output rows may be streamed incrementally in the single HTTP response;
+- implementation must not require holding the complete export row set in memory;
+- row order has no domain meaning unless Interface Design states otherwise;
+- PolicyRuleRef is the authoritative provenance correlation in every row;
+- full AuthorizationEvidence/Need-justification audit remains available through paginated Rule read endpoints rather than unbounded row sub-arrays.
+
+Exact SQL cursor/chunk size, HTTP buffering/chunking implementation and memory data structures are implementation freedoms so long as the response contract and one-snapshot semantics are preserved.
 
 ## Reliability/failure semantics
 
 - Dependency timeout/unavailability is distinct from domain rejection.
-- Retriable transport/storage failure does not change domain outcome without a committed transaction.
-- No automatic retry of non-idempotent operation without an idempotency key/known commit status.
-- Cancellation propagates to in-flight read/query work; committed mutations are never represented as cancelled/rolled back after commit.
+- Retriable transport/storage error cannot alter domain outcome without committed transaction.
+- No automatic retry of a mutation after unknown commit.
+- Client cancellation/deadline propagates to DB/materialization work.
+- A committed mutation is never later represented as rolled back because response delivery was cancelled.
+- OIDC invalid credential is distinct from inability to validate because key dependency is unavailable.
 
 ## Performance/capacity applicability
 
-No accepted source supplies numeric latency, throughput, dataset-size or availability targets. Therefore:
-- numeric SLO/capacity optimization is DEFERRED_NONBLOCKING;
-- queries exposed as collections must be paginated/bounded;
-- materialization must stream or page internal reads where necessary but preserve one logical snapshot;
-- reopen performance/capacity design when concrete deployment/load targets appear.
+Numeric latency, throughput, concurrency and dataset-size objectives are DEFERRED_NONBLOCKING because no source target exists.
+
+Correctness gates still include:
+- accepted pagination limits;
+- request/database timeouts;
+- bounded materialization memory behavior;
+- no accidental N+1 external dependency fetch in materialization (all current dependencies are local DB owner reads).
+
+Reopen quantitative Performance/Capacity Design when concrete load/SLO inputs exist.
 
 ## Availability/recovery applicability
 
-The selected MVP requires durable authoritative state but no accepted RPO/RTO/site-failure target. Recovery technology/topology is DEFERRED_NONBLOCKING for product-code implementation and must be resolved before a production deployment claims backup/continuity guarantees. Data migrations must remain deterministic and restart-safe.
+Authoritative state is durable, but no accepted RPO/RTO/site-failure target exists. Backup/restore/HA topology remains DEFERRED_NONBLOCKING for product-code closure and must be resolved before production continuity claims.
+
+Migrations remain deterministic and restart-safe.
 
 ## Change-transition applicability
 
-This experiment defines a greenfield target backend rather than migration from the current NAPMS implementation. Change Transition Design is NOT_APPLICABLE to blind target closure. Any later adoption/migration from old NAPMS is a separate post-freeze transition problem.
+Blind target is greenfield. Migration/adoption from existing NAPMS is NOT_APPLICABLE until post-freeze comparison/transition work.
 
 ## External dependency applicability
 
-Material dependencies are limited to runtime/framework, relational database and OIDC provider/client libraries selected downstream. Dependency provenance/vulnerability policy is Engineering Policy/verification work; no product semantics are derived from packages.
+Material runtime dependencies are PostgreSQL, OIDC/JWT validation and selected Go/runtime libraries. Dependency pinning/provenance/vulnerability verification belongs to Engineering Policy/Verification; package contents do not define product semantics.
