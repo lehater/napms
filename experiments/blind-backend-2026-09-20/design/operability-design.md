@@ -63,7 +63,7 @@ Serve-mode required environment keys:
 | --- | --- | --- |
 | `NAPMS_LISTEN_ADDR` | non-empty HTTP listen address | no |
 | `NAPMS_DATABASE_DSN` | PostgreSQL connection DSN | yes |
-| `NAPMS_OIDC_ISSUER` | absolute HTTPS issuer URL except explicitly local test issuer | no |
+| `NAPMS_OIDC_ISSUER` | absolute HTTPS issuer URL; no HTTP/local-production exception | no |
 | `NAPMS_OIDC_AUDIENCE` | non-empty required audience | no |
 | `NAPMS_OIDC_PERMISSION_CLAIM` | non-empty top-level claim name containing effective permission strings | no |
 | `NAPMS_OIDC_ALLOWED_ALGS` | non-empty unique comma-separated subset of RS256,RS384,RS512,PS256,PS384,PS512,ES256,ES384,ES512,EdDSA; HS*/none/unknown forbidden | no |
@@ -114,14 +114,16 @@ Configuration (issuer/audience/permission-claim/allowed-algs/clock-skew) is immu
 ### Initial acquisition
 
 After serve-mode configuration + exact database schema verification and before opening the HTTP listener:
-1. fetch/validate OIDC metadata and JWKS using the bounded retry contract;
-2. require at least one usable public verification key compatible with configured allowed algorithms;
-3. if initial usable validation material cannot be established, emit safe `runtime.startup.failed` dependency evidence and exit non-zero;
-4. only after successful initial acquisition may the listener start/readiness become UP.
+1. fetch OIDC discovery from the configured absolute HTTPS issuer using the bounded retry contract;
+2. require discovery metadata `issuer` to exactly match configuration and `jwks_uri` to be absolute HTTPS; reject redirect downgrade to non-HTTPS;
+3. fetch/validate JWKS using the same transport rule;
+4. require at least one usable public verification key compatible with configured allowed algorithms;
+5. if initial usable validation material cannot be established, emit safe `runtime.startup.failed` dependency evidence and exit non-zero;
+6. only after successful initial acquisition may the listener start/readiness become UP.
 
 ### Runtime refresh/cache
 
-- every metadata/JWKS HTTP attempt is bounded by `NAPMS_OIDC_HTTP_TIMEOUT`;
+- every metadata/JWKS HTTP attempt is HTTPS-only, rejects downgrade redirects, and is bounded by `NAPMS_OIDC_HTTP_TIMEOUT`;
 - one refresh sequence uses at most `NAPMS_OIDC_FETCH_MAX_ATTEMPTS` with configured backoff;
 - concurrent refresh triggers share one in-flight single-flight refresh; they do not fan out independent fetch storms;
 - bearer JWT requires non-empty string `kid`; missing/wrong-type kid -> 401 with no refresh;
