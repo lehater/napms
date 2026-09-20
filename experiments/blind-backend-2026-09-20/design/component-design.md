@@ -1,6 +1,6 @@
 # Backend component design
 
-Status: ACCEPTED after Source Corpus amendment 01
+Status: ACCEPTED after Source Corpus amendment 02
 
 ## Design intent
 
@@ -130,16 +130,33 @@ Responsibility set/clear is a Resource aggregate operation and enforces at most 
 Public services:
 - ApplicationCommandService
 - ApplicationQueryService
-- InteractionRevisionQueryService
+- InteractionCommandService
+- InteractionQueryService
 
 Owner ports:
-- ApplicationRepository: load/save Application under expected Application version;
-- InteractionRevisionReader: immutable exact-revision lookup.
+- `ApplicationRepository`: load/save Application under expected Application version for Component creation;
+- `InteractionRepository`: insert Interaction; load/save Interaction under expected Interaction version for revision publication;
+- `InteractionRevisionReader`: immutable exact-revision lookup.
+
+Interaction creation collaboration:
+- Authorizer(`application.write`);
+- IdempotentCommandGuard;
+- two read-only `resolveComponent` calls;
+- insert one independent Interaction aggregate;
+- no Application row/version is mutated.
+
+Revision publication collaboration:
+- Authorizer(`application.write`);
+- IdempotentCommandGuard before NEW-command Interaction ETag validation;
+- InteractionRepository under expected Interaction version;
+- append immutable revision/TrafficClauses.
 
 Public `CommunicationResolutionPort`:
-- `resolveComponent(ComponentRef)`;
+- `resolveComponent(ComponentRef)` -> ComponentRef + owning ApplicationRef;
 - `resolveInteraction(InteractionRef)` -> source/destination ComponentRefs;
 - `resolveInteractionRevision(InteractionRevisionRef)` -> InteractionRef, source/destination ComponentRefs, immutable TrafficClauses, createdAt/provenance.
+
+No public contract assumes source/destination Components share an Application.
 
 ## Application Deployment module
 
@@ -321,7 +338,7 @@ No service locator reaches domain/application code.
 - owner adapters cannot mutate peer schemas;
 - Access Policy code cannot persist/cache Need currentness as authoritative data;
 - CurrentPolicyMaterializer has no write dependency;
-- only Resource/Application/BusinessProcess/AccessRequest/PolicyRule owners expose mutable aggregate versions;
+- only Resource/Application/Interaction/BusinessProcess/AccessRequest/PolicyRule aggregates expose mutable versions;
 - environment reads occur only at startup config/bootstrap;
 - public HTTP DTOs do not appear in domain packages;
 - resolve-or-create Rule uniqueness is owned by Access Policy persistence, not a generic global service.
