@@ -1,35 +1,41 @@
 # Backend cross-cutting applicability coverage
 
-Status: ACCEPTED candidate
+Status: ACCEPTED after Source Corpus amendments 01–02
 
-This document is an analysis view, not a second owner of the referenced decisions.
+This is an analysis view, not a second owner of decisions.
 
 | Concern | State | Owner/result |
 | --- | --- | --- |
-| Failure/error semantics | COVERED | Application Design + API Contract distinguish validation, auth, conflict, unresolved, dependency and internal failure. |
-| Concurrency | COVERED | Quality/Data: optimistic aggregate versions; snapshot-consistent validation/materialization. |
-| Transactions | COVERED | Data/System: one semantic owner written per transaction; decision+rule atomic; shared peer reads allowed. |
-| Consistency | COVERED | Strong owner writes; coherent current read snapshot for materialization; no silent rebinding. |
-| Idempotency | COVERED | Data/API for duplicate-sensitive external mutations and final decision handling. |
-| Time semantics | COVERED | Server-owned current evaluationAt; Resource history intervals; no historical policy export. |
-| Configuration | COVERED | Operability: typed startup config, explicit failure, secret-capable sources. |
-| Logging/diagnostics | COVERED | Operability allow-listed structured evidence; domain history remains authoritative. |
-| Metrics/tracing | COVERED | Required diagnostic metrics/correlation; backend technology remains free. |
-| Health/readiness | COVERED | Liveness independent; readiness checks DB/config/OIDC key material. |
-| Retries/timeouts/cancellation | COVERED | Operability/Quality explicit retry/idempotency and cancellation rules. |
-| Reliability/resilience | COVERED for MVP semantics | Explicit dependency/unavailable/unknown-commit behavior; no HA/SLA claim. |
-| Performance/capacity | DEFERRED_NONBLOCKING | No numeric source targets. Bounded pagination/queries required; reopen on concrete load/SLO. |
-| Recovery/backup/continuity | DEFERRED_NONBLOCKING for code closure | Authoritative state is identified, but no RPO/RTO exists. Must resolve before production continuity claims. |
-| Data provenance | COVERED | Need/decision/rule/revision/realization provenance carried into materialization. |
-| Data lifecycle/governance | COVERED/DEFERRED | Required domain histories retained; no external privacy/retention obligation supplied. Reopen on applicable obligation. |
-| Migrations | COVERED for greenfield | Ordered versioned migrations; destructive future change requires Change Transition Design. |
-| Change/transition design | NOT_APPLICABLE | Blind experiment defines a greenfield target, not migration from old NAPMS. Adoption is post-freeze work. |
-| External service dependencies | COVERED | OIDC and database trust/failure contracts defined; concrete library acquisition verified downstream. |
-| External normative obligations | NOT_APPLICABLE from source corpus | No law/regulation/contract/org mandate was supplied as applicable source input. |
+| Failure/error semantics | COVERED | Application + Interface distinguish validation/auth/conflict, normal UNRESOLVED materialization, dependency and internal failure. |
+| Concurrency | COVERED | Aggregate versions: Resource, Application, Interaction, BusinessProcess, AccessRequest, PolicyRule. Child objects cannot invent competing version semantics. |
+| Transactions | COVERED | One semantic owner written per transaction; ALLOWED request finalization + Rule/evidence/initial justification atomic; shared peer reads permitted. |
+| Consistency | COVERED | Strong owner writes; request/attachment validation and materialization use coherent DB snapshots; no silent rebinding. |
+| Idempotency | COVERED | Target-scoped key/fingerprint, replay-before-NEW-If-Match, atomic result recording, concurrent convergence. |
+| Time semantics | COVERED | Resource temporal history; server-owned materialization evaluationAt; PolicyRule absolute [effectiveFrom,effectiveUntil) window; OIDC token time; no historical export API. |
+| Current-access identity | COVERED | Access Policy: one Rule per source Deployment + destination Deployment + exact InteractionRevision; Need/address excluded. |
+| Permission evidence | COVERED | Append-only ALLOWED AccessRequest evidence; multiple decisions for same semantic access may support one Rule. |
+| Business justification | COVERED | Need associations append-only; currentness owned by Business Connectivity; zero-current justification becomes reconciliation flag, not revocation. |
+| Cross-Application communication | COVERED | Application Communication: Interaction is an independent aggregate and may reference Components from different Applications. |
+| Configuration | COVERED | Operability startup-only environment contract, validation, unknown-key failure, no runtime reload. |
+| Logging/diagnostics | COVERED | Operability allow-listed structured evidence; domain/history remains authoritative. |
+| Metrics/tracing | COVERED | Required dimensions/correlation; concrete telemetry library/exporter free. |
+| Health/readiness | COVERED | Liveness process-only; readiness DB + usable OIDC validation material. |
+| Retries/timeouts/cancellation | COVERED | No automatic DB mutation retry; bounded OIDC fetch; request cancellation and timeout propagate. |
+| Reliability/resilience | COVERED for MVP semantics | Explicit dependency unavailable/unknown-commit/replay behavior; no HA/SLA claim. |
+| Performance/capacity | DEFERRED_NONBLOCKING | No numeric source targets; bounded request timeout/history page size. |
+| Recovery/backup/continuity | DEFERRED_NONBLOCKING for code closure | Authoritative state identified but no accepted RPO/RTO. Required before production continuity claims. |
+| Data provenance | COVERED | Rule, all authorization evidence, Need justifications/currentness, revision/deployment/resource/endpoint facts carried to materialization. |
+| Data lifecycle/governance | COVERED/DEFERRED | Accepted histories retained; no external privacy/retention obligation supplied. |
+| Migrations | COVERED for greenfield | Ordered immutable versioned migrations; destructive future change reopens transition design. |
+| Change/transition design | NOT_APPLICABLE | Blind target is greenfield; migration from old NAPMS is post-freeze. |
+| External service dependencies | COVERED | OIDC and PostgreSQL trust/failure/cache/timeout contracts defined. |
+| External normative obligations | NOT_APPLICABLE from source corpus | No law/regulation/contract/org mandate supplied as applicable input. |
 | Asynchronous messaging | NOT_APPLICABLE | No accepted behavior requires async completion/eventual consistency. |
-| Internationalization/localization | NOT_APPLICABLE to backend semantics | No locale-sensitive domain behavior or human-formatted backend output requirement. |
+| Internationalization/localization | NOT_APPLICABLE to backend semantics | No locale-sensitive behavior/output requirement. |
 | Provider/network device integration | NOT_APPLICABLE | Explicit MVP non-goal. |
-| Brownfield evidence/reconciliation/remediation | NOT_APPLICABLE to selected MVP | Retained as future problem-space evidence, not current capability. |
-| Business criticality/impact scoring | DEFERRED_NONBLOCKING | Source says useful but model/propagation unresolved; current policy-export MVP does not consume it. |
+| Brownfield evidence/reconciliation/remediation | PARTIALLY NOT_APPLICABLE | Device/config reconciliation excluded; only source-required NO_CURRENT_BUSINESS_JUSTIFICATION condition is represented. |
+| Business criticality/impact scoring | DEFERRED_NONBLOCKING | Source says potentially useful but representation/propagation unresolved and current export does not consume it. |
+| Recurring/periodic schedule language | DEFERRED_NONBLOCKING | Source requires supported declarative effective condition; MVP closes this with absolute effective window only. Recurrence reopens Product Requirements when concrete semantics are required. |
+| Authorization scope granularity | COVERED for selected MVP / reopenable | Security treats current backend instance as the authorization scope; token validity supplies action time. Narrower tenant/resource/application scope requires new Product/Security input. |
 
-No omission in this table should be interpreted as a new requirement; every state is derived from accepted scope or an explicit reopening condition.
+No row creates a new requirement. Every state traces to accepted scope/design or a stated reopening condition.
