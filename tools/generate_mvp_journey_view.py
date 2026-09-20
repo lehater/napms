@@ -26,7 +26,7 @@ def render(requirements,m):
       "stop",
       "",
       "legend left",
-      f'  Goal: {esc(requirements["goal"])}',
+      f'  Goal: {esc(requirements["content"]["purpose"])}',
       f'  Composition: {esc(m["workflow_composition"]["name"])} (non-peer)',
       "  Generated view contains no independent truth.",
       "endlegend",
