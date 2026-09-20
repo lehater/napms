@@ -66,7 +66,7 @@ It defines:
 
 A binding may have an empty `provides` list when the artifact is canonical and owned but its semantics are internal to the Authority's public contract. Do not expose language/process/decision fragments as public capabilities unless another Authority actually consumes them.
 
-Run `make design-check` with the pinned Harness checked out at `.harness-tool` (CI does this automatically), or set `HARNESS_ROOT` to that exact pinned checkout.
+Run `make harness-bootstrap` once to obtain the exact version from `../.harness-version`, then run `make design-check`. Every Harness-backed local command verifies the checkout SHA before evaluation; CI performs the same pinned checkout automatically.
 
 
 
