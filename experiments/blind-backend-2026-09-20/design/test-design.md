@@ -16,6 +16,20 @@ Precondition: Endpoint exists with no current address.
 Operation: GET Resource.  
 Oracle: endpoint remains visible with currentAddress:null; never omitted or widened to 0.0.0.0/0.
 
+### T-ADDRESS-CANONICAL
+Variants:
+- IPv4 HOST;
+- IPv6 HOST;
+- IPv4 PREFIX with zero host bits;
+- IPv6 PREFIX with zero host bits;
+- IPv4-mapped IPv6 HOST.
+
+Oracle: accepted values return canonical text; HOST/PREFIX kinds and IP family are preserved; mapped IPv6 is not silently converted to IPv4.
+
+### T-PREFIX-HOST-BITS
+Variants: `192.0.2.7/24`, IPv6 prefix with non-zero host bits.  
+Oracle: request is rejected as INVALID_INPUT; backend never silently masks to a broader network.
+
 ### T-RES-SITE-HISTORY
 Precondition: Resource current Site S1.  
 Operation: set S2, then clear.  
@@ -62,6 +76,22 @@ Oracle: first succeeds/new Interaction ETag; second 409; no Application ETag is 
 Precondition: Interaction has revision V1.  
 Operation: attempt to mutate V1; separately publish changed supported traffic as V2.  
 Oracle: V1 immutable; V2 distinct; unsupported protocol-specific semantics reject rather than widen.
+
+### T-TRAFFIC-IP-PROTOCOL
+Variants:
+- TCP ipProtocol=6 with ports;
+- UDP=17 with ports;
+- ICMP=1 with empty ports;
+- arbitrary 0..255 protocol with empty ports;
+- non-TCP/UDP with any port range;
+- ipProtocol outside 0..255;
+- protocol name field such as `"TCP"` instead of ipProtocol.
+
+Oracle: first four are representable according to exact rules; non-TCP/UDP ports -> UNSUPPORTED_TRAFFIC_SEMANTICS; out-of-range/name-alias input -> validation failure; no approximation.
+
+### T-PORT-RANGE-NORMALIZATION
+Input source/destination range lists contain unsorted duplicates, overlaps and directly adjacent ranges.  
+Oracle: accepted revision exposes sorted merged canonical ranges representing exactly the same port set; ranges separated by a gap are never merged.
 
 ## Application Deployment / Business Connectivity
 
@@ -324,7 +354,7 @@ Oracle:
 - address fact exposes effectiveFrom/effectiveTo + changedBySubject;
 - revision exposes createdAt + createdBySubject;
 - Need exposes createdAt + createdBySubject + participantComponentRef;
-- export ruleProvenance contains every AuthorizationEvidence and every associated Need with current/retired status/participant attribution/reconciliation;
+- export ruleProvenance contains every AuthorizationEvidence including submittedBySubject/submittedAt/initialNeedRef + decision actor/time, and every associated Need with current/retired status/participant attribution/reconciliation;
 - materialized row exposes addressEffectiveFrom + addressChangedBySubject and correlates through PolicyRuleRef;
 - export remains explainable without separate policy.read calls;
 - no untyped public `provenance` object/string is required or emitted.
