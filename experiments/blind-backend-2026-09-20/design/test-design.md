@@ -144,6 +144,16 @@ Precondition: existing Rule S is INACTIVE or has bounded effectiveWindow; new re
 Operation: finalize.  
 Oracle: evidence/Need association append, but preexisting state/window remain unchanged.
 
+### T-RULE-EVIDENCE-VERSION
+Precondition: existing Rule S at version V; a distinct pending AccessRequest with the same AccessSubject becomes ALLOWED.  
+Operation: finalize ALLOWED.  
+Oracle: same RuleRef; new AuthorizationEvidence exists; Rule version becomes V+1 exactly once; operational state/window unchanged; no OPERATIONAL_CHANGED history row is added.
+
+### T-RULE-EVIDENCE-RACE-MANAGE
+Precondition: existing Rule at version V; one transaction finalizes another ALLOWED request for the same AccessSubject while another manager submits operational mutation with If-Match V.  
+Operation: exercise both commit orderings.  
+Oracle: Rule aggregate serialization prevents lost update. If evidence append wins first, manager gets STALE_VERSION; if manager wins first, ALLOWED append uses resulting state/window and advances the latest Rule version without resetting them.
+
 ### T-JUSTIFICATION-ATTACH
 Precondition: Rule S exists; current Need N2 matches Rule Interaction.  
 Operation: attach N2 with manage permission.  
@@ -214,7 +224,7 @@ Oracle: duplicate/empty -> INVALID_INPUT; unknown -> REFERENCE_INVALID; no parti
 ### T-MATERIALIZE-COMPLETE
 Precondition: one selected effective Rule; two source addresses, one destination, two traffic clauses.  
 Operation: materialize.  
-Oracle: HTTP 200 COMPLETE; exact Cartesian expansion; exact ports/address kinds; authorization evidence + justifications + reconciliation flags preserved; issues empty.
+Oracle: HTTP 200 COMPLETE; exact Cartesian expansion; exact ports/address kinds; authorization evidence + participant-attributed justifications + reconciliation flags preserved; source/destination rows contain addressEffectiveFrom/addressChangedBySubject; issues empty.
 
 ### T-MATERIALIZE-NON-EFFECTIVE
 Precondition: selected Rule INACTIVE or ACTIVE outside window; technical address missing.  
@@ -282,6 +292,16 @@ Operation: two concurrent identical scoped requests.
 Oracle: at most one authoritative mutation; other converges to replay or bounded failure, never duplicate state.
 
 ## HTTP contract
+
+### T-PROVENANCE-CONTRACT
+Precondition: authenticated actors create/change Resource address, publish InteractionRevision and declare ConnectivityNeed.  
+Operation: read Resource history, revision, Need and materialized row.  
+Oracle:
+- address fact exposes effectiveFrom/effectiveTo + changedBySubject;
+- revision exposes createdAt + createdBySubject;
+- Need exposes createdAt + createdBySubject;
+- materialized address exposes addressEffectiveFrom + addressChangedBySubject;
+- no untyped public `provenance` object/string is required or emitted.
 
 ### T-STRICT-JSON
 Variants: unknown field, forbidden null, missing required field, server-owned actor/id/version/time.  
@@ -388,7 +408,7 @@ Oracle: required event fields exist, secrets/full request bodies absent.
 - Cross-Application Component pairs are treated identically to same-Application pairs except for their actual refs.
 - Interaction revisions form immutable append-only semantics under Interaction version.
 - AccessRequest permits PENDING -> ALLOWED or DENIED exactly once.
-- Equal AccessSubject ALLOWED request sequences converge on one Rule.
+- Equal AccessSubject ALLOWED request sequences converge on one Rule and every newly appended AuthorizationEvidence advances whole-Rule version exactly once.
 - AuthorizationEvidence and Need associations are append-only sets keyed by request/Need.
 - PolicyRule ACTIVE <-> INACTIVE + effective-window changes preserve subject/evidence/justifications.
 - Source/destination participant Needs remain independently attributed through request/Rule/materialization provenance.
