@@ -1,0 +1,76 @@
+version: 0
+kind: canonical-artifact-contract-experiment
+status: research
+
+question: >-
+  Is the reusable schema/format contract better attached to a canonical artifact
+  materialization than to Authority, CapabilityId, or knowledge_kind?
+
+artifacts:
+  - artifact: FIRST-MVP-REQUIREMENTS
+    capability_claims:
+      - engineering.requirements.product-intent
+      - engineering.requirements.acceptance
+    candidate_artifact_kind: product-requirements
+    representation: yaml
+    structural_validator: project
+    deterministic_consumption: true
+
+  - artifact: C4-STRUCTURE
+    capability_claims: [engineering.architecture.c4-model]
+    candidate_artifact_kind: structural-architecture
+    representation: structurizr-dsl
+    structural_validator: standard-plus-project
+    deterministic_consumption: true
+
+  - artifact: SYSTEM-RULES
+    capability_claims:
+      - engineering.architecture.rules
+      - engineering.architecture.async-messaging-not-applicable
+    candidate_artifact_kind: application-architecture-rules
+    representation: yaml
+    structural_validator: project
+    deterministic_consumption: true
+
+  - artifact: MODULE-CONTRACTS
+    capability_claims: [engineering.architecture.module-contracts]
+    candidate_artifact_kind: module-contract-design
+    representation: yaml
+    structural_validator: project
+    deterministic_consumption: true
+
+  - artifact: OPENAPI
+    capability_claims: [engineering.interface.http-contract]
+    candidate_artifact_kind: http-contract
+    representation: openapi-yaml
+    structural_validator: standard-plus-project
+    deterministic_consumption: true
+
+  - artifact: MVP-TEST-INTENT
+    capability_claims:
+      - engineering.verification.strategy
+      - engineering.verification.acceptance-scenarios
+    candidate_artifact_kind: test-intent
+    representation: yaml
+    structural_validator: project
+    deterministic_consumption: true
+
+cardinality_evidence:
+  same_capability_multiple_provider_kinds:
+    capability: engineering.domain.tactical-model
+    providers:
+      - {artifact: RC-DOMAIN, canonical_kind: tactical-domain-model}
+      - {artifact: AM-LANGUAGE, canonical_kind: domain-language}
+      - {artifact: ACC-DOMAIN, canonical_kind: tactical-domain-model}
+      - {artifact: AD-DOMAIN, canonical_kind: tactical-domain-model}
+      - {artifact: BC-DOMAIN, canonical_kind: tactical-domain-model}
+      - {artifact: AP-DOMAIN, canonical_kind: tactical-domain-model}
+  one_artifact_multiple_capabilities:
+    - {artifact: FIRST-MVP-REQUIREMENTS, count: 2}
+    - {artifact: MVP-TEST-INTENT, count: 2}
+
+observations:
+  - authority is too coarse because SYSTEM-ARCHITECTURE owns several artifact kinds
+  - capability is too coarse to determine representation because one capability may have provider artifacts of different kinds
+  - one artifact may materialize several public capabilities
+  - the project already treats canonical artifact kind plus format/validator as a materialization concern
