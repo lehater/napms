@@ -312,6 +312,16 @@ For every Idempotent-create operation.
 Operation: same principal/method/route/target/key/body twice.  
 Oracle: one mutation; second returns original semantic status/body/Location/ETag.
 
+### T-IDEMPOTENCY-EXACT-REPLAY-BYTES
+Precondition: idempotent command commits response R; later independent commands change the affected aggregate/current view.  
+Operation: replay the original scoped key/fingerprint.  
+Oracle: replay returns the originally persisted status/body/Location/ETag, not a reconstruction from current state; only X-Correlation-Id belongs to the retry request.
+
+### T-IDEMPOTENCY-NO-TTL
+Precondition: a committed idempotency record exists.  
+Operation: advance test/application time far beyond ordinary retry horizons and replay.  
+Oracle: selected MVP has no expiry/purge semantics; record remains replayable. A TTL implementation violates the accepted Data contract.
+
 ### T-IDEMPOTENCY-TARGET-SCOPE
 Precondition: same principal/key/body shape against two different target Resources/Processes/Rules.  
 Operation: execute both.  
@@ -387,6 +397,11 @@ Precondition: export large enough to require multiple internal chunks.
 Operation: materialize under instrumentation/fault-capable test adapter.  
 Oracle: one logical snapshot/evaluationAt; output semantics equal small in-memory reference result; implementation does not require materializing all Rule/fact/row data at once; output row order is not used as an oracle.
 
+### T-MATERIALIZE-EVALUATION-AT
+Precondition: instrument the first statement of the materialization read-only REPEATABLE READ transaction and capture PostgreSQL transaction_timestamp().  
+Operation: materialize Rules whose effective windows bracket that instant.  
+Oracle: response evaluationAt equals that exact DB timestamp and effectiveness decisions use it; independently sampled application wall-clock time cannot change the outcome.
+
 ### T-MATERIALIZE-PREFLIGHT-DEPENDENCY-FAILURE
 Precondition: a required DB/owner read fails during preflight after some earlier Rules were successfully inspected.  
 Operation: materialize.  
@@ -435,7 +450,7 @@ Oracle:
 
 ### T-AUTH-ALGORITHM-AUDIENCE-TIME
 Variants:
-- configured allowed RS256/ES256-style asymmetric algorithm with compatible JWKS key;
+- configured allowed asymmetric algorithm with compatible JWKS key;
 - token alg not in allow-list;
 - alg=none;
 - HS256;
@@ -446,9 +461,16 @@ Variants:
 - missing exp;
 - exp just inside/outside configured skew;
 - nbf just inside/outside configured skew;
-- empty/missing sub.
+- empty/missing sub;
+- missing/wrong-type kid;
+- unknown kid with successful refresh but key still absent;
+- unknown kid with refresh dependency failure.
 
-Oracle: only variants satisfying Security Architecture validate; invalid claim/algorithm semantics -> 401; no library default expands the allow-list or time tolerance.
+Oracle:
+- only exact Security Architecture semantics validate;
+- missing/wrong-type kid and successfully-refreshed-but-still-unknown kid -> 401;
+- unknown kid whose validity cannot be established because refresh cannot complete -> 503;
+- no JWT library default expands algorithm or time tolerance.
 
 ### T-OIDC-INITIAL-ACQUISITION
 Precondition: valid startup config.  
@@ -476,6 +498,11 @@ Oracle: usable cache may validate; inability to establish validity -> 503/readin
 Request contains actor/permission/server-owned provenance fields.  
 Oracle: strict DTO rejects; trusted principal unchanged.
 
+### T-FORWARDED-IDENTITY-IGNORED
+Precondition: attacker supplies X-Forwarded-User, X-Remote-User and permission-like proxy headers with a missing or different bearer identity.  
+Operation: protected request.  
+Oracle: those headers never establish/override Principal or permissions; only validated bearer-token identity controls admission.
+
 ### T-PROBLEM-DISCLOSURE
 Trigger validation/auth/dependency/unexpected failures with secret-like config.  
 Oracle: no token/DSN/password/private stack in public result/allow-listed logs.
@@ -493,6 +520,33 @@ Oracle: startup fails rather than ignore typo.
 ### T-CONFIG-PRECEDENCE
 Attempt config file/CLI/runtime mutation.  
 Oracle: no supported override/reload; RuntimeConfig immutable until restart.
+
+### T-CONFIG-MODE-PROFILES
+Variants:
+- migrate mode with DB DSN + DB statement timeout only;
+- serve mode missing a serve-required OIDC/listen/body-size key;
+- either mode with unknown NAPMS_* key;
+- mode argument plus attempted CLI configuration override.
+Oracle: migrate accepts its minimal profile; serve rejects missing full config; unknown key fails both; mode selects process action only and no CLI argument overrides configuration values.
+
+### T-MIGRATION-FRESH
+Precondition: empty PostgreSQL database.  
+Operation: run `napms migrate`, then `napms serve`.  
+Oracle: migrate applies ordered ids/checksums and exits without listener; serve performs no DDL, verifies exact schema, initializes runtime and may open listener.
+
+### T-MIGRATION-CONCURRENT
+Precondition: empty or partially migrated database.  
+Operation: run two migrate processes concurrently.  
+Oracle: exclusive PostgreSQL advisory migration lock serializes them; each migration is applied at most once and both observe one valid final set.
+
+### T-MIGRATION-CHECKSUM-STATE
+Variants: changed checksum, unknown applied id, missing earlier expected id, pending expected migration on serve.  
+Oracle: invalid historical state fails; serve refuses listener and never auto-repairs/applies pending DDL.
+
+### T-MIGRATION-ROLLBACK
+Precondition: inject failure inside one current migration transaction.  
+Operation: run migrate.  
+Oracle: that migration and its applied-id/checksum record roll back; prior fully committed migration set remains intact; process exits non-zero.
 
 ### T-OIDC-RETRY-BOUND
 OIDC dependency fails.  
