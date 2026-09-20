@@ -10,8 +10,8 @@ This is an analysis view, not a second owner of decisions.
 | Concurrency | COVERED | Aggregate versions: Resource, Application, Interaction, BusinessProcess, AccessRequest, PolicyRule. Child objects cannot invent competing version semantics. |
 | Transactions | COVERED | One semantic owner written per transaction; ALLOWED request finalization + Rule/evidence/initial justification atomic; shared peer reads permitted. |
 | Consistency | COVERED | Strong owner writes; request/attachment validation and materialization use coherent DB snapshots; no silent rebinding. |
-| Idempotency | COVERED | Target-scoped key/fingerprint, replay-before-NEW-If-Match, atomic result recording, concurrent convergence. |
-| Time semantics | COVERED | Resource temporal history; server-owned materialization evaluationAt; PolicyRule absolute [effectiveFrom,effectiveUntil) window; OIDC token time; no historical export API. |
+| Idempotency | COVERED | Target-scoped key/fingerprint, exact persisted original response replay before NEW-If-Match, no MVP TTL, atomic result recording, concurrent commit/rollback/503 resolution. |
+| Time semantics | COVERED | Resource temporal history; materialization evaluationAt is PostgreSQL transaction_timestamp() from the exact REPEATABLE READ snapshot; PolicyRule absolute [effectiveFrom,effectiveUntil) window; OIDC exp/nbf use configured skew; no historical export API. |
 | Current-access identity | COVERED | Access Policy: one Rule per source Deployment + destination Deployment + exact InteractionRevision; Need/address excluded. |
 | Permission evidence | COVERED | Append-only ALLOWED AccessRequest evidence; multiple decisions for same semantic access may support one Rule. |
 | Business justification | COVERED | Need includes participantComponentRef for independent source/destination attribution; associations append-only; currentness owned by Business Connectivity; zero-current justification becomes reconciliation flag, not revocation. |
