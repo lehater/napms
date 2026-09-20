@@ -116,7 +116,15 @@ Unexpected implementation detail, stack/schema names, credentials and tokens nev
 - host: `{"kind":"HOST","value":"192.0.2.10"}`
 - prefix: `{"kind":"PREFIX","value":"192.0.2.0/24"}`
 
-The backend returns normalized address/prefix text.
+Validation/canonicalization:
+- both IPv4 and IPv6 are supported;
+- HOST accepts one IP literal only and rejects a CIDR suffix;
+- PREFIX accepts CIDR only and requires all host bits already zero;
+- a prefix with host bits set is `400 INVALID_INPUT`, never silently masked;
+- IPv4 output uses canonical dotted-decimal text;
+- IPv6 output uses canonical compressed lowercase text;
+- IPv4-mapped IPv6 remains IPv6 and is not silently converted to IPv4;
+- canonicalization must not broaden/narrow the represented address set.
 
 ### PortRange
 
@@ -124,12 +132,17 @@ The backend returns normalized address/prefix text.
 
 ### TrafficClause
 
-`{"protocol":"TCP","sourcePorts":[],"destinationPorts":[{"from":443,"to":443}]}`.
+`{"ipProtocol":6,"sourcePorts":[],"destinationPorts":[{"from":443,"to":443}]}`.
 
-- `protocol` is a normalized protocol name or numeric protocol identifier;
-- empty source/destination port arrays mean unrestricted ports for that side where ports are applicable;
-- port ranges are rejected for protocols whose accepted semantics do not use ports;
-- protocol-specific semantics that cannot be represented by this contract are rejected with `UNSUPPORTED_TRAFFIC_SEMANTICS`, never approximated.
+- `ipProtocol` is required integer 0..255; the canonical boundary accepts no protocol-name aliases;
+- TCP = 6 and UDP = 17 are the only port-bearing protocols in this MVP representation;
+- for TCP/UDP, empty source/destination port arrays mean all ports on that side;
+- for every other ipProtocol, both port arrays must be empty;
+- attempting to provide ports for another protocol -> `422 UNSUPPORTED_TRAFFIC_SEMANTICS`;
+- each range is inclusive and satisfies `0 <= from <= to <= 65535`;
+- each input port list is normalized by sorting then merging overlapping/directly adjacent ranges;
+- output always returns that canonical normalized range list;
+- semantics requiring absent protocol-specific fields are rejected/unsupported, never approximated.
 
 ## Resource Description
 
@@ -332,7 +345,7 @@ External representations identify the semantic access using:
 
 If non-null, at least one bound is required and when both exist `effectiveFrom < effectiveUntil`.
 
-`AuthorizationEvidenceView = {accessRequestRef, externalDecisionRef:null|string, decidedBySubject, decidedAt}`.
+`AuthorizationEvidenceView = {accessRequestRef, submittedBySubject, submittedAt, initialNeedRef, externalDecisionRef:null|string, decidedBySubject, decidedAt}`.
 
 `JustificationView = {needRef, processRef, interactionRef, participantComponentRef, businessBasis, needStatus:"ACTIVE"|"RETIRED", needCreatedAt, needCreatedBySubject, attachedAt, attachedBySubject, sourceAccessRequestRef:null|string}`.
 
@@ -440,7 +453,7 @@ This provenance is part of the export result itself and is available to a caller
 - `interactionRevisionRef`;
 - source: `{deploymentRef,resourceRef,endpointRef,address:AddressRealization,addressEffectiveFrom,addressChangedBySubject}`;
 - destination: same shape;
-- `protocol`, `sourcePorts:[PortRange]`, `destinationPorts:[PortRange]`.
+- `ipProtocol`, `sourcePorts:[PortRange]`, `destinationPorts:[PortRange]`.
 
 Independent PolicyRule provenance is never merged away even when two rows have equal technical effect.
 
