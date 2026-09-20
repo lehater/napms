@@ -1,423 +1,195 @@
 openapi: 3.1.0
 info:
-  title: NAPMS First MVP Application API
-  version: 1.0.0
-  description: >-
-    Canonical HTTP application contract for the accepted first-MVP journey.
-    Domain semantics are owned by docs/model/**; this contract defines only the
-    HTTP representation and outcomes required to drive that journey.
+  title: NAPMS First MVP Backend API
+  version: 2.0.0
 security:
-  - SessionCookie: []
+  - OIDCBearer: []
+
 paths:
-  /api/resources:
+  /v1/resources:
     post:
       operationId: createResource
-      summary: Register a Resource
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/CreateResourceRequest'}
-      responses:
-        '201':
-          description: Resource created
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/ResourceCreated'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Conflict'}
-        '422': {$ref: '#/components/responses/DomainRejected'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/resources/{resourceId}:
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateResourceRequest'}}}}
+      responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/resources/{resourceRef}:
     get:
-      operationId: getResourceDetail
-      summary: Inspect current and historical Resource catalogue facts
-      parameters:
-        - {$ref: '#/components/parameters/ResourceId'}
-      responses:
-        '200':
-          description: Resource detail with current facts and ended/replaced history
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/ResourceDetail'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '404':
-          description: Resource not found
-          content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/resources/{resourceId}/address-space:
+      operationId: getResource
+      parameters: [{$ref: '#/components/parameters/ResourceRef'}]
+      responses: {'200': {description: Resource, content: {application/json: {schema: {$ref: '#/components/schemas/ResourceView'}}}}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/resources/{resourceRef}/endpoints:
+    post:
+      operationId: addResourceEndpoint
+      parameters: [{$ref: '#/components/parameters/ResourceRef'}]
+      requestBody: {required: true, content: {application/json: {schema: {type: object, additionalProperties: false}}}}
+      responses: {'201': {description: Endpoint created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/resources/{resourceRef}/endpoints/{endpointRef}/address:
     put:
-      operationId: setResourceAddressSpace
-      summary: Establish or replace the current Resource AddressSpace while preserving history
-      parameters:
-        - {$ref: '#/components/parameters/ResourceId'}
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/SetAddressSpaceRequest'}
-      responses:
-        '200':
-          description: Current AddressSpace updated
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/ResourceAddressSpaceUpdated'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Conflict'}
-        '422': {$ref: '#/components/responses/DomainRejected'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/applications:
+      operationId: setEndpointAddress
+      parameters: [{$ref: '#/components/parameters/ResourceRef'}, {$ref: '#/components/parameters/EndpointRef'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/AddressRealization'}}}}
+      responses: {'200': {description: Updated}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/applications:
     post:
       operationId: createApplication
-      summary: Create an ApplicationDefinition
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/CreateApplicationRequest'}
-      responses:
-        '201':
-          description: Application created
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/ApplicationCreated'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Conflict'}
-        '422': {$ref: '#/components/responses/DomainRejected'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/applications/{applicationId}/components:
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateNamedRequest'}}}}
+      responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/applications/{applicationRef}/components:
     post:
       operationId: addComponent
-      summary: Add a Component to one ApplicationDefinition
-      parameters:
-        - {$ref: '#/components/parameters/ApplicationId'}
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/AddComponentRequest'}
-      responses:
-        '201':
-          description: Component created
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/ComponentCreated'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Conflict'}
-        '422': {$ref: '#/components/responses/DomainRejected'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/applications/{applicationId}/interactions:
+      parameters: [{$ref: '#/components/parameters/ApplicationRef'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateNamedRequest'}}}}
+      responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/interactions:
     post:
       operationId: createInteraction
-      summary: Create a stable directed Interaction between two Components in one Application
-      parameters:
-        - {$ref: '#/components/parameters/ApplicationId'}
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/CreateInteractionRequest'}
-      responses:
-        '201':
-          description: Interaction created
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/InteractionCreated'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Conflict'}
-        '422': {$ref: '#/components/responses/DomainRejected'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/interactions/{interactionId}/revisions:
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateInteractionRequest'}}}}
+      responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/interactions/{interactionRef}/revisions:
     post:
-      operationId: publishInteractionContractRevision
-      summary: Publish one immutable vendor-neutral traffic revision
-      parameters:
-        - {$ref: '#/components/parameters/InteractionId'}
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/PublishRevisionRequest'}
-      responses:
-        '201':
-          description: Immutable revision published and made ACC-current
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/RevisionPublished'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Conflict'}
-        '422': {$ref: '#/components/responses/DomainRejected'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/component-deployments:
+      operationId: publishInteractionRevision
+      parameters: [{$ref: '#/components/parameters/InteractionRef'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/PublishRevisionRequest'}}}}
+      responses: {'201': {description: Published}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/deployments:
     post:
-      operationId: createComponentDeployment
-      summary: Bind one concrete Component deployment to one Resource
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/CreateComponentDeploymentRequest'}
-      responses:
-        '201':
-          description: ComponentDeployment created
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/ComponentDeploymentCreated'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Conflict'}
-        '422': {$ref: '#/components/responses/DomainRejected'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/business-processes:
+      operationId: createDeployment
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateDeploymentRequest'}}}}
+      responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/processes:
     post:
       operationId: createBusinessProcess
-      summary: Create a BusinessProcess
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/CreateBusinessProcessRequest'}
-      responses:
-        '201':
-          description: BusinessProcess created
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/BusinessProcessCreated'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Conflict'}
-        '422': {$ref: '#/components/responses/DomainRejected'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/business-processes/{businessProcessId}/connectivity-needs:
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateProcessRequest'}}}}
+      responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/processes/{processRef}/criticality:
+    put:
+      operationId: setProcessCriticality
+      parameters: [{$ref: '#/components/parameters/ProcessRef'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SetCriticalityRequest'}}}}
+      responses: {'200': {description: Updated}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/processes/{processRef}/needs:
     post:
-      operationId: createConnectivityNeed
-      summary: Create a current Process-backed ConnectivityNeed for a stable Interaction
-      parameters:
-        - {$ref: '#/components/parameters/BusinessProcessId'}
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/CreateConnectivityNeedRequest'}
-      responses:
-        '201':
-          description: ConnectivityNeed created
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/ConnectivityNeedCreated'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Conflict'}
-        '422': {$ref: '#/components/responses/DomainRejected'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/policy-rules:
+      operationId: declareConnectivityNeed
+      parameters: [{$ref: '#/components/parameters/ProcessRef'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateNeedRequest'}}}}
+      responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/access-requests:
     post:
-      operationId: submitRuleChange
-      summary: Create or reuse the PolicyRule for an exact directed deployment pair and submit one Pending RuleChange
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/SubmitRuleChangeRequest'}
-      responses:
-        '201':
-          description: Pending RuleChange submitted
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/RuleChangeSubmitted'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Conflict'}
-        '422': {$ref: '#/components/responses/DomainRejected'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/policy-rules/{policyRuleId}/changes/{ruleChangeId}/decision:
+      operationId: submitAccessRequest
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SubmitAccessRequestRequest'}}}}
+      responses: {'201': {description: Submitted}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/access-requests/{requestRef}/decision:
     post:
-      operationId: decideRuleChange
-      summary: Record the formal Accepted or Rejected outcome for a Pending RuleChange
-      parameters:
-        - {$ref: '#/components/parameters/PolicyRuleId'}
-        - {$ref: '#/components/parameters/RuleChangeId'}
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/DecideRuleChangeRequest'}
-      responses:
-        '200':
-          description: Decision recorded
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/RuleChangeDecided'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Conflict'}
-        '422': {$ref: '#/components/responses/DomainRejected'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/policy-rules/{policyRuleId}/withdrawal:
+      operationId: decideAccessRequest
+      parameters: [{$ref: '#/components/parameters/RequestRef'}, {$ref: '#/components/parameters/IfMatch'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/DecideAccessRequestRequest'}}}}
+      responses: {'200': {description: Decision recorded}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/policy-rules/{policyRuleRef}/operational-state:
+    put:
+      operationId: setPolicyRuleOperationalState
+      parameters: [{$ref: '#/components/parameters/PolicyRuleRef'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SetPolicyRuleOperationalStateRequest'}}}}
+      responses: {'200': {description: Updated}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/policy-rules/{policyRuleRef}/justifications:
     post:
-      operationId: withdrawPolicyRule
-      summary: Clear current effectiveness while preserving PolicyRule and decision history
-      parameters:
-        - {$ref: '#/components/parameters/PolicyRuleId'}
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/WithdrawPolicyRuleRequest'}
-      responses:
-        '200':
-          description: PolicyRule withdrawn
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/PolicyRuleWithdrawn'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Conflict'}
-        '422': {$ref: '#/components/responses/DomainRejected'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/policy-export:
+      operationId: attachPolicyRuleJustification
+      parameters: [{$ref: '#/components/parameters/PolicyRuleRef'}, {$ref: '#/components/parameters/IfMatch'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/AttachJustificationRequest'}}}}
+      responses: {'200': {description: Attached}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/policy-rules/{policyRuleRef}:
     get:
-      operationId: getCurrentPolicyExport
-      summary: Materialize the complete current vendor-neutral policy
+      operationId: getPolicyRule
+      parameters: [{$ref: '#/components/parameters/PolicyRuleRef'}]
+      responses: {'200': {description: PolicyRule}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/policy-materializations:
+    post:
+      operationId: materializeCurrentPolicy
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/PolicyMaterializationRequest'}}}}
       responses:
         '200':
-          description: Complete successful current export
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/PolicyExportSuccess'}
+          description: COMPLETE or UNRESOLVED application result
+          content: {application/json: {schema: {$ref: '#/components/schemas/PolicyMaterializationResult'}}}
         '401': {$ref: '#/components/responses/Unauthenticated'}
         '403': {$ref: '#/components/responses/Forbidden'}
-        '422':
-          description: Complete export is unresolved; no partial successful row set is returned
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/PolicyExportUnresolved'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
-
-  /api/policy-export.csv:
-    get:
-      operationId: downloadCurrentPolicyExportCsv
-      summary: Download the same successful policy semantics as CSV
-      responses:
-        '200':
-          description: CSV representation of the same complete successful current export
-          content:
-            text/csv:
-              schema:
-                type: string
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '422':
-          description: Export is unresolved; CSV is not returned
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/PolicyExportUnresolved'}
-        '503': {$ref: '#/components/responses/ServiceUncertain'}
+        '422': {$ref: '#/components/responses/Rejected'}
+        '503': {$ref: '#/components/responses/Unavailable'}
 
 components:
   securitySchemes:
-    SessionCookie:
-      type: apiKey
-      in: cookie
-      name: napms_session
-      description: Server-side authenticated session. Actor identity is derived by the backend and is never supplied as a trusted request field.
+    OIDCBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 
   parameters:
-    ResourceId: {name: resourceId, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
-    ApplicationId: {name: applicationId, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
-    InteractionId: {name: interactionId, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
-    BusinessProcessId: {name: businessProcessId, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
-    PolicyRuleId: {name: policyRuleId, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
-    RuleChangeId: {name: ruleChangeId, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
+    ResourceRef: {name: resourceRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
+    EndpointRef: {name: endpointRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
+    ApplicationRef: {name: applicationRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
+    InteractionRef: {name: interactionRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
+    ProcessRef: {name: processRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
+    RequestRef: {name: requestRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
+    PolicyRuleRef: {name: policyRuleRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
+    IfMatch: {name: If-Match, in: header, required: true, schema: {type: string}}
+    IdempotencyKey: {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1}}
 
   responses:
-    Unauthenticated:
-      description: No valid backend session
-      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
-    Forbidden:
-      description: Authority Management denied the protected action
-      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
-    Conflict:
-      description: Optimistic concurrency or safe duplicate/idempotency conflict
-      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
-    DomainRejected:
-      description: Domain or structural validation rejected the requested mutation atomically
-      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
-    ServiceUncertain:
-      description: Persistence or transport uncertainty prevented a reliable application outcome
-      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
+    Unauthenticated: {description: Missing or invalid authentication}
+    Forbidden: {description: Required permission or scoped authority not effective}
+    Conflict: {description: Stale version or idempotency conflict}
+    Rejected: {description: Semantic validation or reference rejection}
+    NotFound: {description: Not found}
+    Unavailable: {description: Dependency unavailable or outcome cannot be established}
 
   schemas:
-    StableId:
-      type: string
-      format: uuid
-
-    Timestamp:
-      type: string
-      format: date-time
-
-    Provenance:
-      type: object
-      additionalProperties: false
-      required: [source, recordedAt]
-      properties:
-        source: {type: string, minLength: 1}
-        recordedAt: {$ref: '#/components/schemas/Timestamp'}
-        detail:
-          type: object
-          additionalProperties: true
-
-    Problem:
-      type: object
-      additionalProperties: false
-      required: [code, message]
-      properties:
-        code: {type: string}
-        message: {type: string}
-        details:
-          type: array
-          items: {type: string}
+    StableId: {type: string, format: uuid}
+    Timestamp: {type: string, format: date-time}
 
     HostAddress:
       type: object
       additionalProperties: false
       required: [kind, value]
-      properties:
-        kind: {const: HostAddress}
-        value: {type: string, minLength: 1}
-
+      properties: {kind: {const: HOST}, value: {type: string, minLength: 1}}
     Prefix:
       type: object
       additionalProperties: false
       required: [kind, value]
-      properties:
-        kind: {const: Prefix}
-        value: {type: string, minLength: 1}
-
-    AddressSpace:
+      properties: {kind: {const: PREFIX}, value: {type: string, minLength: 1}}
+    AddressRealization:
       oneOf:
         - {$ref: '#/components/schemas/HostAddress'}
         - {$ref: '#/components/schemas/Prefix'}
+
+    CreateResourceRequest:
+      type: object
+      additionalProperties: false
+      required: [displayName, authorityScopeRef]
+      properties:
+        displayName: {type: string, minLength: 1}
+        authorityScopeRef: {type: string, minLength: 1}
+        siteRef: {$ref: '#/components/schemas/StableId'}
+    ResourceView:
+      type: object
+      required: [resourceRef, displayName, authorityScopeRef, endpointCount]
+      properties:
+        resourceRef: {$ref: '#/components/schemas/StableId'}
+        displayName: {type: string}
+        authorityScopeRef: {type: string}
+        endpointCount: {type: integer, minimum: 0}
+
+    CreateNamedRequest:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties: {name: {type: string, minLength: 1}}
+
+    CreateInteractionRequest:
+      type: object
+      additionalProperties: false
+      required: [sourceComponentRef, destinationComponentRef]
+      properties:
+        sourceComponentRef: {$ref: '#/components/schemas/StableId'}
+        destinationComponentRef: {$ref: '#/components/schemas/StableId'}
+        purpose: {type: string}
 
     PortRange:
       type: object
@@ -426,324 +198,126 @@ components:
       properties:
         from: {type: integer, minimum: 0, maximum: 65535}
         to: {type: integer, minimum: 0, maximum: 65535}
-
-    TrafficAlternative:
+    TrafficClause:
       type: object
       additionalProperties: false
-      required: [protocol]
+      required: [ipProtocol]
       properties:
-        protocol: {type: string, minLength: 1}
-        service: {type: string}
-        sourcePort: {$ref: '#/components/schemas/PortRange'}
-        destinationPort: {$ref: '#/components/schemas/PortRange'}
-
-    ValidityInterval:
-      type: object
-      additionalProperties: false
-      required: [validFrom, validTo]
-      properties:
-        validFrom: {$ref: '#/components/schemas/Timestamp'}
-        validTo:
-          oneOf:
-            - {$ref: '#/components/schemas/Timestamp'}
-            - {type: 'null'}
-
-    ResourceRealizationFactView:
-      type: object
-      additionalProperties: false
-      required: [factId, addressSpace, validity, provenance]
-      properties:
-        factId: {$ref: '#/components/schemas/StableId'}
-        addressSpace: {$ref: '#/components/schemas/AddressSpace'}
-        validity: {$ref: '#/components/schemas/ValidityInterval'}
-        provenance: {$ref: '#/components/schemas/Provenance'}
-
-    ResourceScopeAffiliationView:
-      type: object
-      additionalProperties: false
-      required: [factId, responsibilityScopeId, validity, provenance]
-      properties:
-        factId: {$ref: '#/components/schemas/StableId'}
-        responsibilityScopeId: {$ref: '#/components/schemas/StableId'}
-        validity: {$ref: '#/components/schemas/ValidityInterval'}
-        provenance: {$ref: '#/components/schemas/Provenance'}
-
-    ResourceResponsibilityView:
-      type: object
-      additionalProperties: false
-      required: [factId, responsiblePartyRef, role, validity, provenance]
-      properties:
-        factId: {$ref: '#/components/schemas/StableId'}
-        responsiblePartyRef: {type: string, minLength: 1}
-        role: {type: string, minLength: 1}
-        validity: {$ref: '#/components/schemas/ValidityInterval'}
-        provenance: {$ref: '#/components/schemas/Provenance'}
-
-    ResourceDetail:
-      type: object
-      additionalProperties: false
-      required: [resourceId, current, history]
-      properties:
-        resourceId: {$ref: '#/components/schemas/StableId'}
-        current:
-          type: object
-          additionalProperties: false
-          required: [realization, scopeAffiliations, responsibilities]
-          properties:
-            realization:
-              oneOf:
-                - {$ref: '#/components/schemas/ResourceRealizationFactView'}
-                - {type: 'null'}
-            scopeAffiliations:
-              type: array
-              items: {$ref: '#/components/schemas/ResourceScopeAffiliationView'}
-            responsibilities:
-              type: array
-              items: {$ref: '#/components/schemas/ResourceResponsibilityView'}
-        history:
-          type: object
-          additionalProperties: false
-          required: [realizations, scopeAffiliations, responsibilities]
-          properties:
-            realizations:
-              type: array
-              items: {$ref: '#/components/schemas/ResourceRealizationFactView'}
-            scopeAffiliations:
-              type: array
-              items: {$ref: '#/components/schemas/ResourceScopeAffiliationView'}
-            responsibilities:
-              type: array
-              items: {$ref: '#/components/schemas/ResourceResponsibilityView'}
-
-    CreateResourceRequest:
-      type: object
-      additionalProperties: false
-      required: [provenance]
-      properties:
-        provenance: {$ref: '#/components/schemas/Provenance'}
-    ResourceCreated:
-      type: object
-      additionalProperties: false
-      required: [resourceId]
-      properties:
-        resourceId: {$ref: '#/components/schemas/StableId'}
-
-    SetAddressSpaceRequest:
-      type: object
-      additionalProperties: false
-      required: [addressSpace, effectiveFrom, provenance]
-      properties:
-        addressSpace: {$ref: '#/components/schemas/AddressSpace'}
-        effectiveFrom: {$ref: '#/components/schemas/Timestamp'}
-        provenance: {$ref: '#/components/schemas/Provenance'}
-    ResourceAddressSpaceUpdated:
-      type: object
-      additionalProperties: false
-      required: [resourceId, addressSpace]
-      properties:
-        resourceId: {$ref: '#/components/schemas/StableId'}
-        addressSpace: {$ref: '#/components/schemas/AddressSpace'}
-
-    CreateApplicationRequest:
-      type: object
-      additionalProperties: false
-    ApplicationCreated:
-      type: object
-      additionalProperties: false
-      required: [applicationId]
-      properties:
-        applicationId: {$ref: '#/components/schemas/StableId'}
-
-    AddComponentRequest:
-      type: object
-      additionalProperties: false
-    ComponentCreated:
-      type: object
-      additionalProperties: false
-      required: [componentId]
-      properties:
-        componentId: {$ref: '#/components/schemas/StableId'}
-
-    CreateInteractionRequest:
-      type: object
-      additionalProperties: false
-      required: [sourceComponentId, destinationComponentId]
-      properties:
-        sourceComponentId: {$ref: '#/components/schemas/StableId'}
-        destinationComponentId: {$ref: '#/components/schemas/StableId'}
-    InteractionCreated:
-      type: object
-      additionalProperties: false
-      required: [interactionId]
-      properties:
-        interactionId: {$ref: '#/components/schemas/StableId'}
-
+        ipProtocol: {type: integer, minimum: 0, maximum: 255}
+        sourcePorts: {type: array, items: {$ref: '#/components/schemas/PortRange'}}
+        destinationPorts: {type: array, items: {$ref: '#/components/schemas/PortRange'}}
     PublishRevisionRequest:
       type: object
       additionalProperties: false
-      required: [trafficAlternatives, provenance]
+      required: [trafficClauses]
       properties:
-        trafficAlternatives:
-          type: array
-          minItems: 1
-          items: {$ref: '#/components/schemas/TrafficAlternative'}
-        provenance: {$ref: '#/components/schemas/Provenance'}
-    RevisionPublished:
-      type: object
-      additionalProperties: false
-      required: [revisionId]
-      properties:
-        revisionId: {$ref: '#/components/schemas/StableId'}
+        trafficClauses: {type: array, minItems: 1, items: {$ref: '#/components/schemas/TrafficClause'}}
 
-    CreateComponentDeploymentRequest:
+    CreateDeploymentRequest:
       type: object
       additionalProperties: false
-      required: [componentId, resourceId, provenance]
+      required: [componentRef, resourceRef]
       properties:
-        componentId: {$ref: '#/components/schemas/StableId'}
-        resourceId: {$ref: '#/components/schemas/StableId'}
-        provenance: {$ref: '#/components/schemas/Provenance'}
-    ComponentDeploymentCreated:
-      type: object
-      additionalProperties: false
-      required: [componentDeploymentId]
-      properties:
-        componentDeploymentId: {$ref: '#/components/schemas/StableId'}
+        componentRef: {$ref: '#/components/schemas/StableId'}
+        resourceRef: {$ref: '#/components/schemas/StableId'}
 
-    CreateBusinessProcessRequest:
+    CreateProcessRequest:
       type: object
       additionalProperties: false
-      required: [provenance]
+      required: [name]
       properties:
-        provenance: {$ref: '#/components/schemas/Provenance'}
-    BusinessProcessCreated:
+        name: {type: string, minLength: 1}
+        description: {type: string}
+        criticalityLabel: {type: string, minLength: 1}
+    SetCriticalityRequest:
       type: object
       additionalProperties: false
-      required: [businessProcessId]
+      required: [criticalityLabel]
       properties:
-        businessProcessId: {$ref: '#/components/schemas/StableId'}
-
-    CreateConnectivityNeedRequest:
-      type: object
-      additionalProperties: false
-      required: [interactionId, provenance]
-      properties:
-        interactionId: {$ref: '#/components/schemas/StableId'}
-        provenance: {$ref: '#/components/schemas/Provenance'}
-    ConnectivityNeedCreated:
-      type: object
-      additionalProperties: false
-      required: [connectivityNeedId]
-      properties:
-        connectivityNeedId: {$ref: '#/components/schemas/StableId'}
-
-    SubmitRuleChangeRequest:
-      type: object
-      additionalProperties: false
-      required: [sourceComponentDeploymentId, destinationComponentDeploymentId, revisionId, connectivityNeedId, provenance]
-      properties:
-        sourceComponentDeploymentId: {$ref: '#/components/schemas/StableId'}
-        destinationComponentDeploymentId: {$ref: '#/components/schemas/StableId'}
-        revisionId: {$ref: '#/components/schemas/StableId'}
-        connectivityNeedId: {$ref: '#/components/schemas/StableId'}
-        provenance: {$ref: '#/components/schemas/Provenance'}
-    RuleChangeSubmitted:
-      type: object
-      additionalProperties: false
-      required: [policyRuleId, ruleChangeId, state]
-      properties:
-        policyRuleId: {$ref: '#/components/schemas/StableId'}
-        ruleChangeId: {$ref: '#/components/schemas/StableId'}
-        state: {const: Pending}
-
-    DecideRuleChangeRequest:
-      type: object
-      additionalProperties: false
-      required: [decision, provenance]
-      properties:
-        decision:
-          type: string
-          enum: [Accepted, Rejected]
-        provenance: {$ref: '#/components/schemas/Provenance'}
-    RuleChangeDecided:
-      type: object
-      additionalProperties: false
-      required: [policyRuleId, ruleChangeId, state]
-      properties:
-        policyRuleId: {$ref: '#/components/schemas/StableId'}
-        ruleChangeId: {$ref: '#/components/schemas/StableId'}
-        state:
-          type: string
-          enum: [Accepted, Rejected]
-        effectiveRevisionId:
+        criticalityLabel:
           oneOf:
-            - {$ref: '#/components/schemas/StableId'}
+            - {type: string, minLength: 1}
             - {type: 'null'}
 
-    WithdrawPolicyRuleRequest:
+    CreateNeedRequest:
       type: object
       additionalProperties: false
-      required: [provenance]
+      required: [interactionRef, participantComponentRef, businessBasis]
       properties:
-        provenance: {$ref: '#/components/schemas/Provenance'}
-    PolicyRuleWithdrawn:
-      type: object
-      additionalProperties: false
-      required: [policyRuleId, effective]
-      properties:
-        policyRuleId: {$ref: '#/components/schemas/StableId'}
-        effective: {const: false}
+        interactionRef: {$ref: '#/components/schemas/StableId'}
+        participantComponentRef: {$ref: '#/components/schemas/StableId'}
+        businessBasis: {type: string, minLength: 1}
 
-    PolicyExportRow:
+    SubmitAccessRequestRequest:
       type: object
       additionalProperties: false
-      required:
-        - sourceAddressSpace
-        - destinationAddressSpace
-        - traffic
-        - policyRuleId
-        - revisionId
-        - sourceComponentDeploymentId
-        - destinationComponentDeploymentId
-        - sourceResourceId
-        - destinationResourceId
+      required: [sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef, needRef]
       properties:
-        sourceAddressSpace: {$ref: '#/components/schemas/AddressSpace'}
-        destinationAddressSpace: {$ref: '#/components/schemas/AddressSpace'}
-        traffic: {$ref: '#/components/schemas/TrafficAlternative'}
-        policyRuleId: {$ref: '#/components/schemas/StableId'}
-        revisionId: {$ref: '#/components/schemas/StableId'}
-        sourceComponentDeploymentId: {$ref: '#/components/schemas/StableId'}
-        destinationComponentDeploymentId: {$ref: '#/components/schemas/StableId'}
-        sourceResourceId: {$ref: '#/components/schemas/StableId'}
-        destinationResourceId: {$ref: '#/components/schemas/StableId'}
+        sourceDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        destinationDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
+        needRef: {$ref: '#/components/schemas/StableId'}
 
-    PolicyExportSuccess:
+    DecideAccessRequestRequest:
       type: object
       additionalProperties: false
-      required: [status, rows]
+      required: [result]
       properties:
-        status: {const: Success}
-        rows:
-          type: array
-          items: {$ref: '#/components/schemas/PolicyExportRow'}
+        result: {type: string, enum: [ALLOWED, DENIED]}
+        externalDecisionRef: {type: string}
 
-    UnresolvedCause:
+    EffectiveWindow:
       type: object
       additionalProperties: false
-      required: [code, reference]
       properties:
-        code: {type: string}
-        reference: {type: string}
-        message: {type: string}
+        effectiveFrom: {$ref: '#/components/schemas/Timestamp'}
+        effectiveUntil: {$ref: '#/components/schemas/Timestamp'}
+    SetPolicyRuleOperationalStateRequest:
+      type: object
+      additionalProperties: false
+      required: [effectState]
+      properties:
+        effectState: {type: string, enum: [ACTIVE, INACTIVE]}
+        effectiveWindow:
+          oneOf:
+            - {$ref: '#/components/schemas/EffectiveWindow'}
+            - {type: 'null'}
+    AttachJustificationRequest:
+      type: object
+      additionalProperties: false
+      required: [needRef]
+      properties: {needRef: {$ref: '#/components/schemas/StableId'}}
 
-    PolicyExportUnresolved:
+    PolicyMaterializationRequest:
       type: object
       additionalProperties: false
-      required: [status, causes]
       properties:
-        status: {const: Unresolved}
-        causes:
+        policyRuleRefs:
           type: array
           minItems: 1
-          items: {$ref: '#/components/schemas/UnresolvedCause'}
+          uniqueItems: true
+          items: {$ref: '#/components/schemas/StableId'}
+
+    AuthorityEvidence:
+      type: object
+      required: [action, scopeRef, evaluatedAt]
+      properties:
+        actorSubject: {type: string}
+        action: {type: string}
+        scopeRef: {type: string}
+        effectiveFrom: {$ref: '#/components/schemas/Timestamp'}
+        effectiveUntil: {$ref: '#/components/schemas/Timestamp'}
+        evaluatedAt: {$ref: '#/components/schemas/Timestamp'}
+
+    PolicyMaterializationResult:
+      type: object
+      required: [status, evaluationAt, selection, exportAuthorityEvidence, ruleProvenance, nonEffective, rows, issues]
+      properties:
+        status: {type: string, enum: [COMPLETE, UNRESOLVED]}
+        evaluationAt: {$ref: '#/components/schemas/Timestamp'}
+        selection: {type: object}
+        exportAuthorityEvidence: {type: array, items: {$ref: '#/components/schemas/AuthorityEvidence'}}
+        ruleProvenance: {type: array, items: {type: object}}
+        nonEffective: {type: array, items: {type: object}}
+        rows: {type: array, items: {type: object}}
+        issues: {type: array, items: {type: object}}
