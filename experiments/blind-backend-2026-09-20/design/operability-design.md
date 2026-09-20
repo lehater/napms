@@ -21,7 +21,8 @@ Required structured event classes:
 - `policy.materialization.completed`: correlationId, COMPLETE|UNRESOLVED, evaluationAt, ruleCount, rowCount, unresolvedCount, duration;
 - `dependency.failure`: correlationId when request-bound, dependency `DATABASE|OIDC`, `TIMEOUT|UNAVAILABLE|INVALID_RESPONSE`;
 - `unexpected.failure`: correlationId, stable internal error class; stack trace only in protected server logs;
-- `runtime.startup.failed`: configuration/dependency category without secret values;
+- `runtime.startup.failed`: serve configuration/schema/dependency category without secret values;
+- `runtime.migration.failed`: migration id/category (`LOCK|CHECKSUM|ORDER|DDL|DATABASE`) without secret values;
 - `runtime.shutdown`: start/completed/forced-cancellation and in-flight count.
 
 Logs are diagnostic evidence, never authoritative domain/audit history.
@@ -54,7 +55,9 @@ A platform secret manager may inject environment values, but there is:
 
 Changing configuration requires process restart.
 
-Required environment keys:
+The binary process mode is selected by one positional action: `migrate` or `serve`. It is not a configuration override.
+
+Serve-mode required environment keys:
 
 | Key | Meaning / validation | Secret |
 | --- | --- | --- |
@@ -78,12 +81,29 @@ Optional:
 - `NAPMS_LOG_LEVEL`: `DEBUG|INFO|WARN|ERROR`, default `INFO`;
 - telemetry exporter/sink configuration may be added by the selected observability library, but must not change application semantics or leak secrets.
 
-Unknown `NAPMS_*` keys are startup errors rather than silently ignored typos.
+In `migrate` mode, only `NAPMS_DATABASE_DSN` and `NAPMS_DB_STATEMENT_TIMEOUT` are required. Other known NAPMS_* keys may be present and, if present, are validated but not used by migration logic. Unknown NAPMS_* keys are errors in both modes.
 
-Invalid/missing required configuration:
-1. emits `runtime.startup.failed` with safe key/category only;
+In `serve` mode all serve-required keys above are required.
+
+No mode interprets command-line arguments as configuration values.
+
+Invalid/missing required configuration for the selected mode:
+1. emits the appropriate safe startup/migration failure event;
 2. exits non-zero;
-3. never starts the HTTP listener.
+3. serve never starts the HTTP listener; migrate never starts a listener at all.
+
+Serve startup sequence is normative:
+1. validate serve configuration;
+2. connect PostgreSQL and verify applied migration ids/checksums exactly match the binary;
+3. initialize OIDC validation material;
+4. only then create/open the HTTP listener.
+
+Migrate sequence is normative:
+1. validate migrate-profile configuration;
+2. connect PostgreSQL;
+3. acquire the exclusive NAPMS migration advisory lock;
+4. validate checksums/order and apply pending migrations transactionally;
+5. exit; no application listener/services are constructed.
 
 The application never logs the value of a key classified secret.
 
@@ -93,7 +113,7 @@ Configuration (issuer/audience/permission-claim/allowed-algs/clock-skew) is immu
 
 ### Initial acquisition
 
-After configuration validation and before opening the HTTP listener:
+After serve-mode configuration + exact database schema verification and before opening the HTTP listener:
 1. fetch/validate OIDC metadata and JWKS using the bounded retry contract;
 2. require at least one usable public verification key compatible with configured allowed algorithms;
 3. if initial usable validation material cannot be established, emit safe `runtime.startup.failed` dependency evidence and exit non-zero;
@@ -104,7 +124,10 @@ After configuration validation and before opening the HTTP listener:
 - every metadata/JWKS HTTP attempt is bounded by `NAPMS_OIDC_HTTP_TIMEOUT`;
 - one refresh sequence uses at most `NAPMS_OIDC_FETCH_MAX_ATTEMPTS` with configured backoff;
 - concurrent refresh triggers share one in-flight single-flight refresh; they do not fan out independent fetch storms;
-- unknown token key id may trigger one bounded refresh sequence;
+- bearer JWT requires non-empty string `kid`; missing/wrong-type kid -> 401 with no refresh;
+- unknown kid may trigger one bounded refresh sequence;
+- if refresh succeeds and kid is still absent from usable JWKS -> 401;
+- if refresh cannot complete and token validity therefore cannot be established -> 503;
 - readiness, when no currently usable key material exists, may trigger one bounded single-flight refresh and reports UP only if usable material is established;
 - protected token validation may also trigger that refresh path when required;
 - cached signing keys remain usable after refresh failure only while cache age <= `NAPMS_JWKS_MAX_STALE`;
@@ -152,7 +175,7 @@ On SIGTERM/SIGINT:
 4. then cancel remaining request contexts and close database/telemetry resources;
 5. never claim rollback of a transaction already committed.
 
-No background jobs are part of this MVP, so there is no independent worker-drain contract.
+No product/domain background jobs are part of this MVP, so there is no independent worker-drain contract. OIDC refresh is request/readiness-triggered, not a product worker.
 
 ## Sensitive evidence rules
 
