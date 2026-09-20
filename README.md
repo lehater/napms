@@ -42,8 +42,11 @@ Current major owners include:
 Validate current canonical design:
 
 ```bash
+make harness-bootstrap
 make design-check
 ```
+
+`make harness-bootstrap` checks out the immutable Harness commit declared in `.harness-version`; design tooling rejects a mismatched local Harness checkout.
 
 Regenerate disposable projections:
 

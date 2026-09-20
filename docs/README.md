@@ -34,11 +34,13 @@ Do not reconstruct missing product/domain/architecture truth from product code, 
 - `contracts/http/napms.openapi.yaml` — canonical first-MVP HTTP contract.
 - `plans/` — implementation design/readiness and verification intent; these never authorize implementation by themselves.
 - `canonical-graph.yaml` — routing/dependency metadata only; it does not duplicate semantic truth.
-- `harness-core.yaml` — NAPMS-owned ownership/capability/consumer-contract projection over the canonical graph.
+- `harness-engineering-graph.yaml` — NAPMS project Authority/Capability/Consumer topology.
+- `harness-projection.yaml` — thin project mapping of canonical artifacts to Authorities/capabilities and Questions.
+- `../.harness-version` — immutable canonical Harness runtime version used to interpret both.
 
 ## Engineering-knowledge vertical
 
-The Harness pilot uses `harness-core.yaml` to make engineering-decision boundaries explicit without turning them into workflow state.
+NAPMS uses the pinned canonical Harness runtime to make engineering-decision boundaries explicit without turning them into workflow state. The project owns its graph/projection data; evaluator semantics live only in `lehater/harness`.
 
 The model deliberately separates:
 
@@ -64,20 +66,14 @@ It defines:
 
 A binding may have an empty `provides` list when the artifact is canonical and owned but its semantics are internal to the Authority's public contract. Do not expose language/process/decision fragments as public capabilities unless another Authority actually consumes them.
 
-Run:
+Run `make harness-bootstrap` once to obtain the exact version from `../.harness-version`, then run `make design-check`. Every Harness-backed local command verifies the checkout SHA before evaluation; CI performs the same pinned checkout automatically.
 
-```sh
-python tools/check_harness_vertical.py
-python tools/test_harness_vertical.py
-python tools/test_authority_execution.py
-```
 
-or `make design-check`.
 
 To prepare the bounded input/output context for one engineering Authority:
 
 ```sh
-make authority-context AUTHORITY=SYSTEM-ARCHITECTURE
+make authority-context AUTHORITY=SYSTEM-ARCHITECTURE CAPABILITY=engineering.architecture.rules
 ```
 
 This command does not create workflow state or a persistent task capsule. It deterministically resolves the Authority's declared input capabilities to canonical provider artifacts, adds only the provider's same-Authority dependency closure needed to understand that public capability, lists only the selected Authority's owned write paths/public outputs, and returns `BLOCKED` when a required input is missing or blocked. It never follows undeclared cross-Authority dependencies while building the execution context.
@@ -86,7 +82,7 @@ After artifact authoring, pass the changed canonical paths with `--check-write` 
 
 A downstream gap is not repaired by editing another engineering Authority's artifact. It becomes a Question for the Authority that owns that kind of project decision. An unresolved Question blocks affected downstream contracts through canonical dependency closure.
 
-The repository has no runtime dependency on the separate `lehater/harness` project. This is an NAPMS-owned local application of the same ideas.
+The product has no runtime dependency on Harness. Engineering/design tooling has an explicit development-time dependency on the immutable Harness commit in `.harness-version`; NAPMS does not fork its evaluator.
 
 ## Generated views
 

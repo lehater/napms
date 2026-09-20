@@ -1,334 +1,107 @@
 #!/usr/bin/env python3
+"""NAPMS adapter for the pinned Harness Authority execution context."""
 from __future__ import annotations
 
 import argparse
+import json
+import os
+import sys
 from pathlib import Path
-from typing import Any
 
 import yaml
 
-from check_harness_vertical import GRAPH, PROJECTION, VerticalError, evaluate, load_yaml
-
-
-def _index_projection(
-    graph: dict[str, Any], projection: dict[str, Any]
-) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]], dict[str, list[str]]]:
-    nodes = {item["id"]: item for item in graph.get("nodes", [])}
-    bindings: dict[str, dict[str, Any]] = {}
-    capability_providers: dict[str, list[str]] = {}
-
-    for binding in projection.get("bindings", []) or []:
-        artifact = binding["artifact"]
-        bindings[artifact] = binding
-        for capability in binding.get("provides", []) or []:
-            capability_providers.setdefault(capability, []).append(artifact)
-
-    return nodes, bindings, capability_providers
-
-
-def _same_authority_dependency_closure(
-    artifact_id: str,
-    nodes: dict[str, dict[str, Any]],
-    bindings: dict[str, dict[str, Any]],
-) -> set[str]:
-    owner = bindings[artifact_id]["authority"]
-    result: set[str] = set()
-    stack = [artifact_id]
-    while stack:
-        current = stack.pop()
-        for dependency in nodes[current].get("depends_on", []) or []:
-            if dependency not in bindings:
-                raise VerticalError(
-                    f"canonical dependency {dependency} of {current} has no Authority binding"
-                )
-            if bindings[dependency]["authority"] != owner:
-                continue
-            if dependency not in result:
-                result.add(dependency)
-                stack.append(dependency)
-    return result
-
-
-def build_execution_context(
-    authority_id: str,
-    graph: dict[str, Any],
-    projection: dict[str, Any],
-) -> dict[str, Any]:
-    evaluation = evaluate(graph, projection)
-    authorities = {item["id"]: item for item in projection.get("authorities", [])}
-    if authority_id not in authorities:
-        raise VerticalError(f"unknown engineering Authority {authority_id}")
-
-    nodes, bindings, capability_providers = _index_projection(graph, projection)
-    root_ids = {item["id"] for item in projection.get("root_authorities", []) or []}
-
-    owned_artifacts: list[dict[str, Any]] = []
-    public_outputs: set[str] = set()
-    for artifact_id, binding in bindings.items():
-        if binding["authority"] != authority_id:
-            continue
-        node = nodes[artifact_id]
-        provides = sorted(binding.get("provides", []) or [])
-        public_outputs.update(provides)
-        owned_artifacts.append(
-            {
-                "id": artifact_id,
-                "kind": node.get("kind"),
-                "path": node.get("path"),
-                "provides": provides,
-            }
-        )
-    owned_artifacts.sort(key=lambda item: item["id"])
-
-    contract_results = {
-        item["id"]: item
-        for item in evaluation.get("contracts", [])
-        if item.get("consumer") == authority_id
-    }
-    contract_specs = [
-        item for item in projection.get("contracts", []) or []
-        if item.get("consumer") == authority_id
-    ]
-
-    if authority_id not in root_ids and not contract_specs:
-        raise VerticalError(f"Authority {authority_id} has no input contract")
-
-    requirements: list[dict[str, Any]] = []
-    input_artifact_ids: set[str] = set()
-    supporting_artifact_ids: set[str] = set()
-    blockers: list[dict[str, Any]] = []
-
-    for spec in contract_specs:
-        result = contract_results[spec["id"]]
-        result_requirements = {item["id"]: item for item in result["requirements"]}
-        for requirement_spec in spec.get("requires", []) or []:
-            requirement_result = result_requirements[requirement_spec["id"]]
-            provider_artifacts: list[dict[str, Any]] = []
-            for artifact_id in requirement_result.get("providers", []) or []:
-                provider = bindings[artifact_id]
-                node = nodes[artifact_id]
-                input_artifact_ids.add(artifact_id)
-                supporting_artifact_ids.update(
-                    _same_authority_dependency_closure(artifact_id, nodes, bindings)
-                )
-                provider_artifacts.append(
-                    {
-                        "id": artifact_id,
-                        "authority": provider["authority"],
-                        "kind": node.get("kind"),
-                        "path": node.get("path"),
-                    }
-                )
-
-            requirement = {
-                "contract": spec["id"],
-                "id": requirement_spec["id"],
-                "capability": requirement_spec["capability"],
-                "authority": requirement_spec["authority"],
-                "status": requirement_result["status"],
-                "providers": provider_artifacts,
-            }
-            if requirement_result.get("evidence_capability"):
-                requirement["evidence_capability"] = requirement_result["evidence_capability"]
-            if requirement_result.get("blocked_by"):
-                requirement["blocked_by"] = requirement_result["blocked_by"]
-            if requirement_result.get("question"):
-                requirement["question"] = requirement_result["question"]
-            requirements.append(requirement)
-
-            if requirement_result["status"] in {"BLOCKED", "DESIGN_GAP"}:
-                blockers.append(
-                    {
-                        "contract": spec["id"],
-                        "requirement": requirement_spec["id"],
-                        "status": requirement_result["status"],
-                        "owner": requirement_spec["authority"],
-                        "capability": requirement_spec["capability"],
-                        "blocked_by": requirement_result.get("blocked_by", []),
-                        "question": requirement_result.get("question"),
-                    }
-                )
-
-    downstream: list[dict[str, Any]] = []
-    for contract in projection.get("contracts", []) or []:
-        consumed: list[str] = []
-        for requirement in contract.get("requires", []) or []:
-            capability = requirement.get("capability")
-            evidence = (requirement.get("not_applicable") or {}).get("evidence_capability")
-            if capability in public_outputs:
-                consumed.append(capability)
-            if evidence in public_outputs:
-                consumed.append(evidence)
-        if consumed:
-            downstream.append(
-                {
-                    "contract": contract["id"],
-                    "consumer": contract["consumer"],
-                    "capabilities": sorted(set(consumed)),
-                }
-            )
-    downstream.sort(key=lambda item: (item["consumer"], item["contract"]))
-
-    input_artifacts = [
-        {
-            "id": artifact_id,
-            "authority": bindings[artifact_id]["authority"],
-            "kind": nodes[artifact_id].get("kind"),
-            "path": nodes[artifact_id].get("path"),
-        }
-        for artifact_id in sorted(input_artifact_ids)
-    ]
-
-    supporting_artifact_ids.difference_update(input_artifact_ids)
-    supporting_input_artifacts = [
-        {
-            "id": artifact_id,
-            "authority": bindings[artifact_id]["authority"],
-            "kind": nodes[artifact_id].get("kind"),
-            "path": nodes[artifact_id].get("path"),
-        }
-        for artifact_id in sorted(supporting_artifact_ids)
-    ]
-
-    status = "ROOT" if authority_id in root_ids else ("BLOCKED" if blockers else "READY")
-    allowed_reads = sorted(
-        {
-            item["path"]
-            for item in input_artifacts + supporting_input_artifacts + owned_artifacts
-            if item.get("path")
-        }
-    )
-    allowed_writes = sorted(
-        item["path"] for item in owned_artifacts if item.get("path")
+ROOT = Path(__file__).resolve().parents[1]
+HARNESS_ROOT = Path(os.environ.get("HARNESS_ROOT", ROOT / ".harness-tool"))
+if not (HARNESS_ROOT / "authority_context.py").exists():
+    raise SystemExit(
+        "Pinned Harness runtime not found. Set HARNESS_ROOT or checkout the pinned "
+        "lehater/harness commit into .harness-tool."
     )
 
-    return {
-        "kind": "authority-execution-context",
-        "authority": authority_id,
-        "status": status,
-        "responsibility": authorities[authority_id].get("responsibility"),
-        "input_contracts": [item["id"] for item in contract_specs],
-        "requirements": requirements,
-        "input_artifacts": input_artifacts,
-        "supporting_input_artifacts": supporting_input_artifacts,
-        "owned_artifacts": owned_artifacts,
-        "public_outputs": sorted(public_outputs),
-        "downstream_consumers": downstream,
-        "blockers": blockers,
-        "access": {
-            "read": allowed_reads,
-            "write": allowed_writes,
-        },
-        "execution_rules": [
-            "Use only declared input capability providers, their same-Authority internal dependency closure, and the selected Authority's own current artifacts as engineering context.",
-            "Write only artifacts owned by this Authority.",
-            "Do not invent missing upstream semantics; a BLOCKED or DESIGN_GAP input stops artifact production.",
-            "After edits, run design validation so public capabilities and downstream contracts are re-evaluated.",
-        ],
-    }
+sys.path.insert(0, str(HARNESS_ROOT))
+from authority_context import (  # noqa: E402
+    build_authority_context,
+    validate_extracted_references,
+    validate_write_set,
+)
+from integration_alignment import validate_project_alignment  # noqa: E402
 
 
-def find_undeclared_canonical_references(
-    context: dict[str, Any],
-    graph: dict[str, Any],
-    repo_root: Path,
+def load(path: str):
+    value = yaml.safe_load((ROOT / path).read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise SystemExit(f"{path} must be a mapping")
+    return value
+
+
+def extract_canonical_references(
+    context: dict,
+    source_graph: dict,
 ) -> list[dict[str, str]]:
-    allowed_reads = set(context["access"]["read"])
+    """NAPMS-specific text/path extractor; Harness owns boundary validation."""
     canonical_paths = sorted(
-        {
-            node.get("path")
-            for node in graph.get("nodes", []) or []
-            if isinstance(node, dict) and isinstance(node.get("path"), str)
-        }
+        node["path"]
+        for node in source_graph.get("nodes", [])
+        if isinstance(node, dict) and isinstance(node.get("path"), str)
     )
-    violations: list[dict[str, str]] = []
+    references: list[dict[str, str]] = []
     for owned in context.get("owned_artifacts", []):
         path = owned.get("path")
-        if not isinstance(path, str):
+        if not path:
             continue
-        artifact_path = repo_root / path
-        text = artifact_path.read_text(encoding="utf-8")
-        for referenced_path in canonical_paths:
-            if referenced_path == path:
-                continue
-            if referenced_path in text and referenced_path not in allowed_reads:
-                violations.append(
+        text = (ROOT / path).read_text(encoding="utf-8")
+        for candidate in canonical_paths:
+            if candidate != path and candidate in text:
+                references.append(
                     {
                         "artifact": owned["id"],
-                        "path": path,
-                        "referenced_path": referenced_path,
+                        "referenced_path": candidate,
                     }
                 )
-    return sorted(
-        violations,
-        key=lambda item: (item["artifact"], item["referenced_path"]),
-    )
-
-
-def validate_write_set(context: dict[str, Any], changed_paths: list[str]) -> list[str]:
-    if context["status"] == "BLOCKED":
-        raise VerticalError(
-            f"Authority {context['authority']} is BLOCKED; artifact production is not allowed"
-        )
-    allowed = set(context["access"]["write"])
-    normalized = [Path(path).as_posix().lstrip("./") for path in changed_paths]
-    outside = sorted(set(normalized) - allowed)
-    if outside:
-        raise VerticalError(
-            f"Authority {context['authority']} may not write outside owned artifacts: {outside}"
-        )
-    return sorted(set(normalized))
+    return references
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Prepare a bounded engineering context for one Harness Authority."
-    )
-    parser.add_argument("authority", help="Engineering Authority ID")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("authority")
     parser.add_argument(
-        "--format",
-        choices=("yaml", "json"),
-        default="yaml",
-        help="Output format (default: yaml)",
+        "--capability",
+        action="append",
+        dest="capabilities",
+        required=True,
+        help="Produced capability whose bounded context is being prepared; repeatable.",
     )
-    parser.add_argument(
-        "--allow-blocked",
-        action="store_true",
-        help="Return zero even when the Authority is blocked; useful for inspection.",
-    )
-    parser.add_argument(
-        "--check-write",
-        nargs="*",
-        metavar="PATH",
-        help="Validate that changed canonical paths are owned by this Authority.",
-    )
+    parser.add_argument("--check-write", nargs="*")
     args = parser.parse_args()
 
-    graph = load_yaml(GRAPH)
-    projection = load_yaml(PROJECTION)
-    context = build_execution_context(args.authority, graph, projection)
-    context["undeclared_canonical_references"] = find_undeclared_canonical_references(
-        context, graph, Path(__file__).resolve().parents[1]
+    source = load("docs/canonical-graph.yaml")
+    projection = load("docs/harness-projection.yaml")
+    graph = load("docs/harness-engineering-graph.yaml")
+    model = validate_project_alignment(
+        source,
+        projection,
+        graph,
+        target_consumer="BACKEND-IMPLEMENTATION",
+    )["model"]
+
+    context = build_authority_context(
+        graph,
+        model,
+        args.authority,
+        args.capabilities,
     )
 
-    if context["undeclared_canonical_references"]:
-        raise VerticalError(
-            f"Authority {args.authority} artifacts reference canonical paths outside "
-            f"the execution context: {context['undeclared_canonical_references']}"
-        )
+    references = extract_canonical_references(context, source)
+    validate_extracted_references(context, references)
+    context["canonical_references"] = references
 
     if args.check_write is not None:
-        context["validated_write_set"] = validate_write_set(context, args.check_write)
+        context["validated_write_set"] = validate_write_set(
+            context, args.check_write
+        )
 
-    if args.format == "json":
-        import json
-        print(json.dumps(context, indent=2, sort_keys=False))
-    else:
-        print(yaml.safe_dump(context, sort_keys=False, allow_unicode=True), end="")
-
-    if context["status"] == "BLOCKED" and not args.allow_blocked:
-        return 2
-    return 0
+    print(json.dumps(context, indent=2, sort_keys=False))
+    return 2 if context["status"] == "BLOCKED" else 0
 
 
 if __name__ == "__main__":

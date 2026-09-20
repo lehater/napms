@@ -1,10 +1,11 @@
-.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore design-sync design-check authority-context human-implementation-package architecture architecture-check check
+.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-bootstrap harness-pin-check design-sync design-check authority-context human-implementation-package architecture architecture-check check
 
 STRUCTURIZR_IMAGE ?= structurizr/structurizr:2026.06.28-noble
 STRUCTURIZR_DIR := $(CURDIR)/docs/architecture/structurizr
 GENERATED_ARCH_DIR := $(CURDIR)/docs-generated/architecture
 PLANTUML_SERVER_IMAGE ?= plantuml/plantuml-server:jetty
 PLANTUML_CONTAINER ?= napms-plantuml
+HARNESS_ROOT ?= $(CURDIR)/.harness-tool
 
 test:
 	cd backend && python -m pytest -q -m "not postgres"
@@ -45,9 +46,19 @@ dev-restore:
 	@test "$(CONFIRM_RESET)" = "yes" || (echo "Restore replaces the local PostgreSQL volume; rerun with CONFIRM_RESET=yes" >&2; exit 2)
 	python tools/local_postgres_backup.py restore-clean "$(BACKUP)" --confirm-reset
 
-design-sync:
+
+harness-bootstrap:
+	rm -rf "$(HARNESS_ROOT)"
+	git clone --filter=blob:none --no-checkout https://github.com/lehater/harness.git "$(HARNESS_ROOT)"
+	git -C "$(HARNESS_ROOT)" checkout --detach "$(cat .harness-version)"
+
+harness-pin-check:
+	@test -d "$(HARNESS_ROOT)/.git" || (echo "Pinned Harness checkout missing; run 'make harness-bootstrap'" >&2; exit 2)
+	@test "$(git -C "$(HARNESS_ROOT)" rev-parse HEAD)" = "$(cat .harness-version)" || (echo "Harness checkout does not match .harness-version; run 'make harness-bootstrap'" >&2; exit 2)
+
+design-sync: harness-pin-check
 	python tools/check_canonical_graph.py
-	python tools/check_harness_vertical.py
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_harness_integration.py
 	python tools/check_knowledge_completeness.py
 	python tools/generate_strategic_views.py
 	python tools/generate_resource_catalogue_views.py
@@ -58,12 +69,10 @@ design-sync:
 	python tools/generate_mvp_journey_view.py
 	python tools/generate_persistence_erd.py
 
-design-check:
+design-check: harness-pin-check
 	python tools/check_canonical_graph.py
-	python tools/check_harness_vertical.py
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_harness_integration.py
 	python tools/check_knowledge_completeness.py
-	python tools/test_harness_vertical.py
-	python tools/test_authority_execution.py
 	python tools/check_openapi_contract.py
 	python tools/check_persistence_model.py
 	python tools/check_design_control.py
@@ -77,12 +86,13 @@ design-check:
 	python tools/generate_mvp_journey_view.py --check
 	python tools/generate_persistence_erd.py --check
 
-authority-context:
-	@test -n "$(AUTHORITY)" || (echo "Usage: make authority-context AUTHORITY=SYSTEM-ARCHITECTURE" >&2; exit 2)
-	python tools/prepare_authority_execution.py "$(AUTHORITY)"
+authority-context: harness-pin-check
+	@test -n "$(AUTHORITY)" || (echo "Usage: make authority-context AUTHORITY=SYSTEM-ARCHITECTURE CAPABILITY=engineering.architecture.rules" >&2; exit 2)
+	@test -n "$(CAPABILITY)" || (echo "CAPABILITY is required; Authority contexts are capability-scoped" >&2; exit 2)
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/prepare_authority_execution.py "$(AUTHORITY)" --capability "$(CAPABILITY)"
 
-human-implementation-package:
-	python tools/generate_human_context_package.py --consumer IMPLEMENTATION-CONSUMER
+human-implementation-package: harness-pin-check
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/generate_human_context_package.py --consumer BACKEND-IMPLEMENTATION
 
 architecture: design-sync
 	@docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true

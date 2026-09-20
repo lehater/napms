@@ -1,4 +1,4 @@
-version: 13
+version: 14
 kind: canonical-design-control
 id: NAPMS-DESIGN-CONTROL
 status: PILOT_CURRENT
@@ -8,18 +8,21 @@ purpose: Keep engineering knowledge visible, owned, linked and machine-checkable
 authority:
   canonical_root: docs/
   routing_graph: docs/canonical-graph.yaml
-  responsibility_contracts: docs/harness-core.yaml
+  engineering_graph: docs/harness-engineering-graph.yaml
+  project_projection: docs/harness-projection.yaml
+  harness_version: .harness-version
   generated_root: docs-generated/
   generated_is_authority: false
   retired_migration_evidence: [docs/migration/revalidated/, docs-legacy/]
   product_code_tests_as_design_truth: forbidden
-  external_harness_runtime_dependency: forbidden
+  product_runtime_dependency_on_harness: forbidden
+  design_tooling_harness_dependency: pinned_immutable_commit
 
 normal_work:
   start:
     - Read AGENTS.md.
     - Read docs/canonical-graph.yaml to locate the owning artifact and direct dependencies.
-    - Read docs/harness-core.yaml when work crosses an Authority boundary or prepares downstream implementation/verification.
+    - Read docs/harness-engineering-graph.yaml and docs/harness-projection.yaml when work crosses an Authority boundary or prepares downstream implementation/verification.
     - Read a current workstream state only when the task belongs to an active workstream.
   cycle:
     - challenge affected Authority boundaries with the recursive boundary-convergence checks
@@ -36,7 +39,7 @@ normal_work:
     - per-artifact fingerprints
     - copied provenance wrappers
     - a universal design DSL
-    - runtime access to the separate lehater/harness repository
+    - an unpinned or moving Harness dependency
 
 authority_boundary_convergence:
   candidate_rule: Engineering decision families are Authority hypotheses. Bounded Contexts, aggregates, modules and artifact filenames are subject/representation boundaries unless separately proven to own a distinct kind of engineering decision.
@@ -54,23 +57,21 @@ authority_boundary_convergence:
 
 commands:
   validate: make design-check
-  validate_vertical: python tools/check_harness_vertical.py
-  regression_vertical: python tools/test_harness_vertical.py
-  regression_authority_execution: python tools/test_authority_execution.py
-  prepare_authority_context: make authority-context AUTHORITY=SYSTEM-ARCHITECTURE
+  validate_harness_integration: python tools/check_harness_integration.py
+  prepare_authority_context: make authority-context AUTHORITY=SYSTEM-ARCHITECTURE CAPABILITY=engineering.architecture.rules
   regenerate: make design-sync
   affected_example: python tools/check_canonical_graph.py --affected AP-DOMAIN
 
 authority_execution:
   purpose: Deterministically prepare the bounded engineering context for one Authority before creating or updating its canonical artifacts.
   persistent_state: false
-  input_source: The Authority's consumer contract resolved to canonical provider artifacts.
+  input_source: The selected produced CapabilityId prerequisites from docs/harness-engineering-graph.yaml resolved by the pinned Harness runtime to canonical provider artifacts.
   provider_support_rule: Include the provider artifact's dependency closure only while dependencies remain inside the same provider Authority; never cross into an undeclared Authority.
   own_context: The Authority's current canonical artifacts are also readable because they are the only permitted write targets.
-  write_rule: Only canonical artifacts bound to the selected Authority may be modified; changed paths can be checked with prepare_authority_execution.py --check-write.
+  write_rule: Only canonical artifacts bound to the selected Authority may be modified; changed paths are checked by the NAPMS adapter over the pinned Harness authority-context/write validator.
   reference_fence: An owned canonical artifact may reference another canonical artifact path only when that path is present in the Authority execution context; undeclared downstream/cross-Authority path references are invalid.
-  ready_rule: Artifact production is allowed only when every required capability is PROVIDED or canonically NOT_APPLICABLE.
-  blocked_rule: BLOCKED or DESIGN_GAP stops artifact production and routes the issue to the upstream engineering Authority.
+  ready_rule: Artifact production is allowed only when the selected capability context is READY/ROOT under the pinned Harness evaluator.
+  blocked_rule: WAIT/BLOCKED or a missing prerequisite stops artifact production and routes the issue to the upstream engineering Authority.
   postcondition: After owned artifacts change, rerun design validation to republish capabilities and reevaluate downstream contracts.
   anti_workflow_rule: Execution context is ephemeral routing data; it is not a stage, task capsule, approval, maturity state or project workflow record.
 

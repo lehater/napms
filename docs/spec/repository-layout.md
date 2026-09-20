@@ -8,6 +8,8 @@ Storage follows semantic ownership. Lifecycle stages and historical migration ph
 docs/
 ├── README.md
 ├── canonical-graph.yaml
+├── harness-engineering-graph.yaml    # project producer/consumer policy for pinned Harness
+├── harness-projection.yaml           # thin artifact/Authority/capability mapping
 ├── discovery/
 ├── model/
 │   ├── strategic/
@@ -41,6 +43,8 @@ docs-generated/                # disposable non-canonical projections
 | implementation readiness/test intent | `docs/plans/*.yaml` |
 | durable design decision | `docs/decisions/*` when needed |
 | dependency/routing metadata | `docs/canonical-graph.yaml` |
+| engineering producer/consumer policy | `docs/harness-engineering-graph.yaml` |
+| canonical-artifact Harness projection | `docs/harness-projection.yaml` |
 | rendered diagrams | `docs-generated/**`, never authority |
 
 A file is created only when its knowledge has an independent owner. Small contexts do not need mandatory file templates.

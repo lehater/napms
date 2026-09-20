@@ -27,7 +27,9 @@ Repository state, not chat history, determines where work resumes.
 - `docs/contracts/http/napms.openapi.yaml` — HTTP contract.
 - `docs/plans/**` — implementation design/readiness and verification intent.
 - `docs/canonical-graph.yaml` — routing/dependency metadata only.
-- `docs/harness-core.yaml` — NAPMS-owned Authority/Capability/Question/consumer-contract projection over the canonical graph; it never owns artifact paths, dependencies or product/domain/architecture semantics.
+- `docs/harness-engineering-graph.yaml` — NAPMS-owned Authority/Capability/Consumer policy interpreted by the pinned canonical Harness runtime.
+- `docs/harness-projection.yaml` — thin NAPMS mapping from canonical artifacts to Authority/Capability providers and Questions; it does not duplicate Harness evaluator semantics.
+- `.harness-version` — the single immutable `lehater/harness` commit used by NAPMS design tooling and CI.
 - `docs-generated/**` — generated non-canonical views.
 - `docs/migration/revalidated/**` and `docs-legacy/**` — historical migration evidence.
 
@@ -35,7 +37,7 @@ Product code/tests are implementation/evidence. Never use them to invent or reco
 
 ## Engineering-knowledge vertical
 
-For the pilot, engineering-design responsibility boundaries are checked through `docs/harness-core.yaml`.
+Engineering-design responsibility boundaries are checked by the pinned `lehater/harness` runtime using `docs/harness-engineering-graph.yaml`, `docs/harness-projection.yaml` and `docs/canonical-graph.yaml`. NAPMS does not implement a second Harness evaluator.
 
 Keep three levels distinct:
 
@@ -70,9 +72,9 @@ An engineering discipline/decision family is only a candidate Authority boundary
 
 If any check fails, split the engineering responsibility into smaller decision families and run the same checks again. Stop only when all three pass and the current canonical graph has no unowned node. Do not split by Bounded Context, aggregate, module, file, table, service, screen, package, technology or deployment unit unless that split also proves a distinct engineering-decision owner.
 
-Use `python tools/check_harness_vertical.py` for the real first-MVP contracts and `python tools/test_harness_vertical.py` for acceptance/regression behavior.
+Use `make harness-bootstrap` to materialize the exact Harness commit from `.harness-version` into the ignored `.harness-tool/` checkout, then use `make design-check`. Every design command verifies that the checkout HEAD exactly matches the immutable pin. CI performs the same pinned checkout automatically.
 
-This repository does not import, pin or call the separate `lehater/harness` repository. The local files are NAPMS-owned copies/adaptations of the ideas being piloted here.
+Universal Harness semantics are owned only by `lehater/harness`. NAPMS owns project graph/projection data and project-specific checks. Any generally useful evaluator change must be implemented and accepted in Harness first, then adopted here by updating the immutable pin.
 
 ## Semantic harvesting during elicitation
 
@@ -100,7 +102,7 @@ For explicit evidence synthesis or substantial harvesting across one or more sta
 For work that creates or updates artifacts inside one engineering Authority, first prepare its bounded execution context:
 
 ```sh
-make authority-context AUTHORITY=SYSTEM-ARCHITECTURE
+make authority-context AUTHORITY=SYSTEM-ARCHITECTURE CAPABILITY=engineering.architecture.rules
 ```
 
 The execution context is ephemeral routing data, not a canonical artifact, work item, approval or workflow state. It contains only:
@@ -117,6 +119,7 @@ Before finalizing an Authority edit, the changed canonical paths can be checked 
 
 ```sh
 python tools/prepare_authority_execution.py SYSTEM-ARCHITECTURE \
+  --capability engineering.architecture.rules \
   --check-write docs/architecture/mvp-system-rules.yaml docs/architecture/mvp-module-contracts.yaml
 ```
 
