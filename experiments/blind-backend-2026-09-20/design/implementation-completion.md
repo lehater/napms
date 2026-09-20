@@ -16,7 +16,7 @@ IMPLEMENTATION may claim realization complete only when every item below has exe
 
 5. **Current-access identity** — exactly one PolicyRule exists per AccessSubject(source Deployment, destination Deployment, exact InteractionRevision); NeedRef and technical realization are not Rule identity.
 
-6. **Permission evidence** — ALLOWED request finalization is atomic with Rule resolve/create, AuthorizationEvidence and initial Need justification; DENIED creates no Rule/evidence; concurrent equal subjects converge on one Rule.
+6. **Permission evidence/version** — ALLOWED request finalization is atomic with Rule resolve/create, AuthorizationEvidence and initial Need justification; DENIED creates no Rule/evidence; concurrent equal subjects converge on one Rule; every new AuthorizationEvidence appended to an existing Rule advances whole-Rule version exactly once without operational-history entry or state/window reset.
 
 7. **Business justification** — ConnectivityNeed preserves participantComponentRef (source or destination participant), source/destination Needs remain independently attributable, additional current matching Need can attach without new permission evidence or duplicate Rule, Need status is not copied as Access Policy truth, and later Need retirement changes derived justification status only.
 
@@ -26,7 +26,7 @@ IMPLEMENTATION may claim realization complete only when every item below has exe
 
 10. **Policy selection/materialization** — all/current subset selection, nonEffective handling, exact endpoint/traffic expansion, COMPLETE/UNRESOLVED and stable issue semantics match Application/Interface Design. Only selected effective Rules impose realization completeness.
 
-11. **Provenance** — normalized output preserves independent PolicyRule identity, authorization evidence, Need justifications/currentness/reconciliation, interaction/deployment/resource/endpoint realization provenance; technically equal independent Rules are not provenance-erased.
+11. **Provenance** — normalized output preserves independent PolicyRule identity, authorization evidence, participant-attributed Need justifications/currentness/reconciliation and explicit actor/time source facts; Resource address uses effectiveFrom/changedBySubject, InteractionRevision and Need use createdAt/createdBySubject; no generic public provenance blob is invented; technically equal independent Rules are not provenance-erased.
 
 12. **Idempotency/concurrency recovery** — idempotency scope includes concrete target; same committed replay precedes current If-Match evaluation; different fingerprint conflicts; different targets do not collide; concurrent identical commands create at most one authoritative result; no automatic DB mutation retry.
 
