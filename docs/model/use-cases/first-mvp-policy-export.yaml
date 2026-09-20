@@ -1,9 +1,10 @@
 version: 2
 kind: cross-context-use-case
 id: FIRST-MVP-POLICY-EXPORT
+status: STALE_AFTER_REQUIREMENTS_RECONCILIATION
 
-requirements_ref: docs/requirements/first-mvp-policy-export.yaml
-requirements_id: NAPMS-FIRST-MVP-REQUIREMENTS
+requirements_ref: docs/requirements/first-mvp-product-requirements.yaml
+requirements_id: NAPMS-FIRST-MVP-PRODUCT-REQUIREMENTS
 purpose: Realize the accepted first-MVP requirements as a cross-context domain/application flow while preserving each context's semantic ownership.
 
 participating_strategic_owners:
