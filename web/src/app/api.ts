@@ -302,7 +302,7 @@ export const api = {
       {
         method: "POST",
         headers: { "If-Match": String(version) },
-        body: JSON.stringify({ needRef }),
+        body: JSON.stringify(body),
       },
     ),
   retireNeed: (processRef: string, needRef: string, version: number) =>
@@ -364,7 +364,7 @@ export const api = {
           "If-Match": String(version),
           "Idempotency-Key": crypto.randomUUID(),
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ needRef }),
       },
     ),
   materialize: (policyRuleRefs?: string[]) =>
