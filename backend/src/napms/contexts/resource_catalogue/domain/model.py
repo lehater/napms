@@ -90,11 +90,7 @@ class ResourceEndpoint:
         if self.current_address is None:
             return self
         _require_later(effective_at, self.current_address.effective_from)
-        ended = replace(
-            self.current_address,
-            effective_to=effective_at,
-            changed_by_subject=subject,
-        )
+        ended = replace(self.current_address, effective_to=effective_at)
         return replace(self, current_address=None, address_history=self.address_history + (ended,))
 
 
@@ -150,11 +146,11 @@ class Resource:
     ) -> "Resource":
         endpoint = self._endpoint(endpoint_ref)
         updated = endpoint.set_address(address, effective_at=effective_at, subject=subject)
-        if updated is endpoint:
-            return self
         return replace(
             self,
-            endpoints=tuple(updated if item.endpoint_ref == endpoint_ref else item for item in self.endpoints),
+            endpoints=tuple(
+                updated if item.endpoint_ref == endpoint_ref else item for item in self.endpoints
+            ),
             version=self.version + 1,
         )
 
@@ -171,7 +167,9 @@ class Resource:
             return self
         return replace(
             self,
-            endpoints=tuple(updated if item.endpoint_ref == endpoint_ref else item for item in self.endpoints),
+            endpoints=tuple(
+                updated if item.endpoint_ref == endpoint_ref else item for item in self.endpoints
+            ),
             version=self.version + 1,
         )
 

@@ -52,6 +52,7 @@ def test_resource_and_endpoint_identity_survive_address_changes() -> None:
     assert endpoint.current_address.address.value == "10.20.40.0/24"
     assert endpoint.address_history[0].address.value == "10.20.30.40"
     assert endpoint.address_history[0].effective_to == NOW + timedelta(minutes=1)
+    assert endpoint.address_history[0].changed_by_subject == "alice"
 
 
 def test_endpoint_may_exist_without_current_address_and_clear_preserves_history() -> None:
@@ -74,6 +75,7 @@ def test_endpoint_may_exist_without_current_address_and_clear_preserves_history(
     assert endpoint.current_address is None
     assert endpoint.address_history[0].address.value == "2001:db8::10"
     assert endpoint.address_history[0].effective_to == NOW + timedelta(minutes=1)
+    assert endpoint.address_history[0].changed_by_subject == "alice"
 
 
 def test_prefix_input_is_strict_and_not_silently_masked() -> None:

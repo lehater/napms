@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
@@ -160,7 +161,7 @@ class ResourceCatalogueApplication:
         resource_ref: UUID,
         expected_version: int,
         context: MutationContext,
-        transform,
+        transform: Callable[[Resource], Resource],
     ) -> Resource:
         self._admit(context)
         resource = self._resources.get(resource_ref)
