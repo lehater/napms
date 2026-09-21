@@ -62,8 +62,7 @@ class PostgresResourceCatalogueRepository:
                 (resource_ref,),
             ).fetchall()
             endpoints = tuple(
-                self._load_endpoint(connection, endpoint_ref)
-                for (endpoint_ref,) in endpoint_rows
+                self._load_endpoint(connection, endpoint_ref) for (endpoint_ref,) in endpoint_rows
             )
 
             site_rows = connection.execute(
@@ -132,9 +131,7 @@ class PostgresResourceCatalogueRepository:
                     (fact for fact in site_facts if fact.effective_to is None),
                     None,
                 ),
-                site_history=tuple(
-                    fact for fact in site_facts if fact.effective_to is not None
-                ),
+                site_history=tuple(fact for fact in site_facts if fact.effective_to is not None),
                 responsibilities=tuple(
                     fact for fact in responsibility_facts if fact.effective_to is None
                 ),
