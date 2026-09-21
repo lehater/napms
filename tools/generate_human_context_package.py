@@ -50,6 +50,7 @@ SECTIONS = {
     "quality-requirements": "07-quality",
     "threat-model": "07-quality",
     "observability-requirements": "07-quality",
+    "component-design": "08-implementation",
     "implementation-plan": "08-implementation",
     "test-intent": "09-verification",
 }
