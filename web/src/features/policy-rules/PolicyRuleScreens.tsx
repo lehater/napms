@@ -18,7 +18,6 @@ export function PolicyRuleScreens({ ruleRef }: { ruleRef?: string }) {
   const [items, setItems] = useState<PolicyRuleView[]>([]);
   const [selected, setSelected] = useState<PolicyRuleView | null>(null);
   const [state, setState] = useState("loading");
-  const [processRef, setProcessRef] = useState("");
   const [needRef, setNeedRef] = useState("");
 
   useEffect(() => {
@@ -55,13 +54,13 @@ export function PolicyRuleScreens({ ruleRef }: { ruleRef?: string }) {
     if (!selected) return;
     setState("submitting");
     try {
-      await api.attachPolicyRuleJustification(selected.policyRuleRef, selected.version, {
-        processRef,
+      await api.attachPolicyRuleJustification(
+        selected.policyRuleRef,
+        selected.version,
         needRef,
-      });
+      );
       const value = await api.getPolicyRule(selected.policyRuleRef);
       setSelected(value);
-      setProcessRef("");
       setNeedRef("");
       setState("loaded");
     } catch (error) {
@@ -111,9 +110,12 @@ export function PolicyRuleScreens({ ruleRef }: { ruleRef?: string }) {
             </button>
           </VersionedEditor>
           <FormSection onSubmit={attachJustification}>
-            <ReferenceField label="Business Process ID" value={processRef} onChange={setProcessRef} />
-            <ReferenceField label="Connectivity Need ID" value={needRef} onChange={setNeedRef} />
-            <button type="submit" disabled={!processRef || !needRef || state === "submitting"}>
+            <ReferenceField
+              label="Connectivity Need ID"
+              value={needRef}
+              onChange={setNeedRef}
+            />
+            <button type="submit" disabled={!needRef || state === "submitting"}>
               Attach justification
             </button>
           </FormSection>
