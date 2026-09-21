@@ -43,13 +43,13 @@ class ApplicationCommunicationCatalogue:
         name: str,
         expected_version: int,
     ) -> Application:
-        application = self._applications.get(application_ref)
+        application = self._applications.get_application(application_ref)
         if application is None:
             raise CatalogueNotFound(str(application_ref))
         if application.version != expected_version:
             raise CatalogueVersionConflict(str(application_ref))
         updated = application.add_component(component_ref=self._new_ref(), name=name)
-        self._applications.save(updated, expected_version=expected_version)
+        self._applications.save_application(updated, expected_version=expected_version)
         return updated
 
     def create_interaction(
@@ -80,7 +80,7 @@ class ApplicationCommunicationCatalogue:
         expected_version: int,
         subject: str,
     ) -> Interaction:
-        interaction = self._interactions.get(interaction_ref)
+        interaction = self._interactions.get_interaction(interaction_ref)
         if interaction is None:
             raise CatalogueNotFound(str(interaction_ref))
         if interaction.version != expected_version:
@@ -90,5 +90,5 @@ class ApplicationCommunicationCatalogue:
             traffic_clauses=traffic_clauses,
             subject=subject,
         )
-        self._interactions.save(updated, expected_version=expected_version)
+        self._interactions.save_interaction(updated, expected_version=expected_version)
         return updated
