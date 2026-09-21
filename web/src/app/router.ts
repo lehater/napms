@@ -25,33 +25,101 @@ function decoded(match: RegExpMatchArray, index: number): string {
 }
 
 export function parseRoute(pathname: string): Route {
-  if (pathname === "/" || pathname === "/resources") return { id: "resources", path: "/resources" };
-  if (pathname === "/resources/new") return { id: "resource-new", path: "/resources/new" };
+  if (pathname === "/" || pathname === "/resources") {
+    return { id: "resources", path: "/resources" };
+  }
+  if (pathname === "/resources/new") {
+    return { id: "resource-new", path: "/resources/new" };
+  }
   let match = pathname.match(/^\/resources\/([^/]+)$/);
-  if (match) return { id: "resource-detail", path: pathname, resourceRef: decoded(match, 1) };
-  if (pathname === "/applications") return { id: "applications", path: "/applications" };
-  if (pathname === "/applications/new") return { id: "application-new", path: "/applications/new" };
+  if (match) {
+    return {
+      id: "resource-detail",
+      path: pathname,
+      resourceRef: decoded(match, 1),
+    };
+  }
+  if (pathname === "/applications") {
+    return { id: "applications", path: "/applications" };
+  }
+  if (pathname === "/applications/new") {
+    return { id: "application-new", path: "/applications/new" };
+  }
   match = pathname.match(/^\/applications\/([^/]+)\/components\/new$/);
-  if (match) return { id: "component-new", path: pathname, applicationRef: decoded(match, 1) };
+  if (match) {
+    return {
+      id: "component-new",
+      path: pathname,
+      applicationRef: decoded(match, 1),
+    };
+  }
   match = pathname.match(/^\/applications\/([^/]+)$/);
-  if (match) return { id: "application-detail", path: pathname, applicationRef: decoded(match, 1) };
-  if (pathname === "/interactions/new") return { id: "interaction-new", path: "/interactions/new" };
+  if (match) {
+    return {
+      id: "application-detail",
+      path: pathname,
+      applicationRef: decoded(match, 1),
+    };
+  }
+  if (pathname === "/interactions/new") {
+    return { id: "interaction-new", path: "/interactions/new" };
+  }
   match = pathname.match(/^\/interactions\/([^/]+)\/revisions\/new$/);
-  if (match) return { id: "revision-new", path: pathname, interactionRef: decoded(match, 1) };
-  if (pathname === "/deployments") return { id: "deployments", path: "/deployments" };
-  if (pathname === "/deployments/new") return { id: "deployment-new", path: "/deployments/new" };
-  if (pathname === "/business-processes") return { id: "processes", path: "/business-processes" };
-  if (pathname === "/business-processes/new") return { id: "process-new", path: "/business-processes/new" };
+  if (match) {
+    return {
+      id: "revision-new",
+      path: pathname,
+      interactionRef: decoded(match, 1),
+    };
+  }
+  if (pathname === "/deployments") {
+    return { id: "deployments", path: "/deployments" };
+  }
+  if (pathname === "/deployments/new") {
+    return { id: "deployment-new", path: "/deployments/new" };
+  }
+  if (pathname === "/business-processes") {
+    return { id: "processes", path: "/business-processes" };
+  }
+  if (pathname === "/business-processes/new") {
+    return { id: "process-new", path: "/business-processes/new" };
+  }
   match = pathname.match(/^\/business-processes\/([^/]+)$/);
-  if (match) return { id: "process-detail", path: pathname, processRef: decoded(match, 1) };
-  if (pathname === "/access-requests") return { id: "access-requests", path: "/access-requests" };
-  if (pathname === "/access-requests/new") return { id: "access-request-new", path: "/access-requests/new" };
+  if (match) {
+    return {
+      id: "process-detail",
+      path: pathname,
+      processRef: decoded(match, 1),
+    };
+  }
+  if (pathname === "/access-requests") {
+    return { id: "access-requests", path: "/access-requests" };
+  }
+  if (pathname === "/access-requests/new") {
+    return { id: "access-request-new", path: "/access-requests/new" };
+  }
   match = pathname.match(/^\/access-requests\/([^/]+)\/decision$/);
-  if (match) return { id: "access-request-decision", path: pathname, requestRef: decoded(match, 1) };
-  if (pathname === "/policy-rules") return { id: "policy-rules", path: "/policy-rules" };
+  if (match) {
+    return {
+      id: "access-request-decision",
+      path: pathname,
+      requestRef: decoded(match, 1),
+    };
+  }
+  if (pathname === "/policy-rules") {
+    return { id: "policy-rules", path: "/policy-rules" };
+  }
   match = pathname.match(/^\/policy-rules\/([^/]+)$/);
-  if (match) return { id: "policy-rule-detail", path: pathname, policyRuleRef: decoded(match, 1) };
-  if (pathname === "/policy-materializations/new") return { id: "policy-export", path: "/policy-materializations/new" };
+  if (match) {
+    return {
+      id: "policy-rule-detail",
+      path: pathname,
+      policyRuleRef: decoded(match, 1),
+    };
+  }
+  if (pathname === "/policy-materializations/new") {
+    return { id: "policy-export", path: "/policy-materializations/new" };
+  }
   return { id: "resources", path: "/resources" };
 }
 
