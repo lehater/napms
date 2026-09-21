@@ -45,6 +45,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = ["--import-mode=importlib"]
 markers = [
     "postgres: requires the PostgreSQL integration test environment",
 ]
