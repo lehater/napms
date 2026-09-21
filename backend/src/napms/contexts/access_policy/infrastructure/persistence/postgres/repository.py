@@ -47,21 +47,29 @@ class PostgresAccessPolicyRepository:
 
     def find_rule_by_subject(self, subject: AccessSubject) -> PolicyRule | None:
         with psycopg.connect(self._dsn) as connection:
-            row = connection.execute(
-                """
-                SELECT rule_ref
-                FROM access_policy.policy_rule
-                WHERE source_deployment_ref = %s
-                  AND destination_deployment_ref = %s
-                  AND interaction_revision_ref = %s
-                """,
-                (
-                    subject.source_deployment_ref,
-                    subject.destination_deployment_ref,
-                    subject.interaction_revision_ref,
-                ),
-            ).fetchone()
-            return None if row is None else self.get_rule_in(connection, row[0])
+            return self.find_rule_by_subject_in(connection, subject)
+
+    @classmethod
+    def find_rule_by_subject_in(
+        cls,
+        connection: psycopg.Connection[Any],
+        subject: AccessSubject,
+    ) -> PolicyRule | None:
+        row = connection.execute(
+            """
+            SELECT rule_ref
+            FROM access_policy.policy_rule
+            WHERE source_deployment_ref = %s
+              AND destination_deployment_ref = %s
+              AND interaction_revision_ref = %s
+            """,
+            (
+                subject.source_deployment_ref,
+                subject.destination_deployment_ref,
+                subject.interaction_revision_ref,
+            ),
+        ).fetchone()
+        return None if row is None else cls.get_rule_in(connection, row[0])
 
     def save_rule(self, rule: PolicyRule, *, expected_version: int) -> None:
         with psycopg.connect(self._dsn) as connection:
