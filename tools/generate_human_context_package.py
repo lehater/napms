@@ -18,9 +18,7 @@ if not (HARNESS_ROOT / "engineering_graph.py").exists():
     )
 
 sys.path.insert(0, str(HARNESS_ROOT))
-from engineering_graph import derive_profile  # noqa: E402
-from harness import capability_resolve  # noqa: E402
-from integration_alignment import validate_project_alignment  # noqa: E402
+from human_projection import compile_manifest, realize_projection_model  # noqa: E402
 
 GRAPH = ROOT / "docs/canonical-graph.yaml"
 PROJECTION = ROOT / "docs/harness-projection.yaml"
@@ -67,48 +65,27 @@ def resolve(consumer_id: str):
     source = load(GRAPH)
     projection = load(PROJECTION)
     engineering = load(ENGINEERING)
-
-    aligned = validate_project_alignment(
-        source,
-        projection,
+    model = realize_projection_model(
         engineering,
-        target_consumer=consumer_id,
+        consumer_id=consumer_id,
+        source_graph=source,
+        projection=projection,
     )
-    model = aligned["model"]
-    profile = derive_profile(engineering, consumer_id)
+    manifest = compile_manifest(
+        engineering,
+        model,
+        consumer_id,
+        harness_version=(ROOT / ".harness-version").read_text(encoding="utf-8").strip(),
+        source_root=ROOT,
+    )
 
     node_by_id = {item["id"]: item for item in source["nodes"]}
-    artifact_by_id = {
-        item["id"]: item for item in model.get("artifacts", []) or []
-    }
-
-    required_caps = [item["capability"] for item in profile["expectations"]]
-    root_ids: list[str] = []
-    for capability in required_caps:
-        try:
-            providers = capability_resolve(model, capability)
-        except Exception:
-            continue
-        root_ids.extend(providers)
-    root_ids = list(dict.fromkeys(root_ids))
-
-    closure: set[str] = set()
-
-    def visit(node_id: str):
-        if node_id in closure:
-            return
-        closure.add(node_id)
-        for dep in node_by_id[node_id].get("depends_on", []) or []:
-            visit(dep)
-
-    for root_id in root_ids:
-        if root_id in node_by_id:
-            visit(root_id)
-
-    # Only project-canonical artifacts are materialized in the human package.
-    nodes = [node for node in source["nodes"] if node["id"] in closure]
-    return root_ids, nodes
-
+    nodes = [
+        node_by_id[item["artifact"]]
+        for item in manifest["sources"]
+        if item["artifact"] in node_by_id
+    ]
+    return manifest, manifest["direct_provider_artifacts"], nodes
 
 def render_readme(consumer_id, roots, nodes):
     lines = [
@@ -118,7 +95,7 @@ def render_readme(consumer_id, roots, nodes):
         "",
         "Consumer: " + consumer_id,
         "",
-        "Scope: full-consumer",
+        "Scope: selected Consumer capability closure",
         "",
         "This is the human-readable control view of the exact canonical knowledge resolved for implementation.",
         "",
@@ -144,33 +121,13 @@ def render_readme(consumer_id, roots, nodes):
 
 
 def materialize(consumer_id, out):
-    roots, nodes = resolve(consumer_id)
+    manifest, roots, nodes = resolve(consumer_id)
     if out.exists():
         shutil.rmtree(out)
     sources = out / "sources"
     human = out / "human"
     sources.mkdir(parents=True)
     human.mkdir(parents=True)
-    manifest = {
-        "version": 1,
-        "kind": "human-context-package-manifest",
-        "consumer": consumer_id,
-        "scope": "full-consumer",
-        "generated_from": [
-            "docs/harness-engineering-graph.yaml",
-            "docs/harness-projection.yaml",
-            "docs/canonical-graph.yaml",
-        ],
-        "direct_artifacts": roots,
-        "artifacts": [
-            {
-                "id": n["id"],
-                "kind": n["kind"],
-                "canonical_path": n["path"],
-            }
-            for n in nodes
-        ],
-    }
     (out / "manifest.yaml").write_text(
         yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8"
     )
