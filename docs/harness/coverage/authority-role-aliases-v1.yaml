@@ -5,4 +5,3 @@ status: canonical
 bindings:
   APPLICATION-JOURNEY-DESIGN: [application]
   SECURITY-ARCHITECTURE-DESIGN: [security-architecture]
-  FRONTEND-ARCHITECTURE-DESIGN: [architecture, reliability]
