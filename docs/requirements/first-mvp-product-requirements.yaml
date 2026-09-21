@@ -389,6 +389,44 @@ content:
         - docs/requirements/first-mvp-quality-targets.yaml#decision
       rationale: Preserve the explicit 2026-09-19 product answer rather than treating these targets as unknown.
 
+    - id: REQ-SCALE-001
+      statement: >-
+        The first MVP shall validate that the complete accepted context set and end-to-end
+        product idea work coherently; it is expected to be exercised primarily by one
+        developer and may be shared with approximately five to ten concurrent users.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-21
+      rationale: Define the implementation scale needed for the proof-of-concept MVP without inventing production-scale demand.
+
+    - id: REQ-SCALE-002
+      statement: >-
+        The first MVP shall use one installation for one organization; multi-tenant or
+        multi-organization hosting within one installation is not required.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-21
+
+    - id: REQ-SCALE-003
+      statement: >-
+        The first MVP is not required to accommodate material future growth in users,
+        traffic volume or processing scale; production scaling is a later-scope concern
+        that shall reopen architecture when concrete requirements are accepted.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-21
+
+    - id: REQ-SCALE-004
+      statement: >-
+        First-MVP workload is ordinary interactive catalogue, request and policy-export
+        use. Future production capabilities may include many users and heavy asynchronous
+        network-reading, comparison and policy-generation jobs, but such background job
+        processing and queueing are outside the first-MVP runtime requirement.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-21
+      rationale: Preserve the future architectural reopening signal without prematurely adding distributed or asynchronous runtime complexity to the MVP.
+
   non_goals:
     - Provider/device-specific configuration rendering.
     - Direct firewall/provider execution and deployment.
