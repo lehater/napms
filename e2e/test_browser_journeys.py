@@ -66,7 +66,8 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
 
         resource_ref = create_resource(page, f"E2E Resource {suffix}")
         page.get_by_role("heading", name="Current facts").wait_for()
-        page.locator("[data-version]").wait_for()\n        assert page.locator("[data-version]").get_attribute("data-version") == "0"
+        page.locator("[data-version]").wait_for()
+        assert page.locator("[data-version]").get_attribute("data-version") == "0"
         page.get_by_text("Provenance and history").click()
 
         application_ref = create_application(page, f"E2E Application {suffix}")
