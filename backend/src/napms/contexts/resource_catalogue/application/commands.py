@@ -5,11 +5,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from napms.contexts.authority_management.application.service import RequireScopedAuthority
 from napms.contexts.authority_management.domain.model import Principal
 from napms.contexts.resource_catalogue.application.ports import (
-    RESOURCE_CATALOGUE_AUTHORITY_SCOPE,
-    RESOURCE_CATALOGUE_CURATION_ACTION,
     ResourceCatalogueRepository,
     ResourceNotFound,
     ResourceVersionConflict,
@@ -32,11 +29,9 @@ class ResourceCatalogueApplication:
         self,
         *,
         resources: ResourceCatalogueRepository,
-        authority: RequireScopedAuthority,
         new_ref: Callable[[], UUID] = uuid4,
     ) -> None:
         self._resources = resources
-        self._authority = authority
         self._new_ref = new_ref
 
     def register_resource(
@@ -155,13 +150,10 @@ class ResourceCatalogueApplication:
             ),
         )
 
-    def _admit(self, context: MutationContext) -> None:
-        self._authority.require(
-            principal=context.principal,
-            action=RESOURCE_CATALOGUE_CURATION_ACTION,
-            scopes=(RESOURCE_CATALOGUE_AUTHORITY_SCOPE,),
-            evaluated_at=context.effective_at,
-        )
+    @staticmethod
+    def _admit(context: MutationContext) -> None:
+        if "resource.write" not in context.principal.instance_permissions:
+            raise PermissionError("resource.write is required")
 
     def _change(
         self,
