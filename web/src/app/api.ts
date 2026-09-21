@@ -10,6 +10,10 @@ export class ApiError extends Error {
   }
 }
 
+export function idempotencyKey(): string {
+  return idempotencyKey();
+}
+
 export async function request<T>(
   path: string,
   init: RequestInit = {},
@@ -206,7 +210,7 @@ export const api = {
   }) =>
     request<AccessRequestResult>("/v1/access-requests", {
       method: "POST",
-      headers: { "Idempotency-Key": crypto.randomUUID() },
+      headers: { "Idempotency-Key": idempotencyKey() },
       body: JSON.stringify(body),
     }),
   listApplications: () => request<ApplicationView[]>("/v1/applications"),
@@ -359,7 +363,7 @@ export const api = {
       method: "POST",
       headers: {
         "If-Match": String(version),
-        "Idempotency-Key": crypto.randomUUID(),
+        "Idempotency-Key": idempotencyKey(),
       },
       body: JSON.stringify({
         result,
@@ -377,7 +381,7 @@ export const api = {
         method: "POST",
         headers: {
           "If-Match": String(version),
-          "Idempotency-Key": crypto.randomUUID(),
+          "Idempotency-Key": idempotencyKey(),
         },
         body: JSON.stringify({ needRef }),
       },
