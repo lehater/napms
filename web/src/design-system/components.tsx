@@ -1,4 +1,4 @@
-import type { FormEvent, ReactNode } from "react";
+import { type FormEvent, type ReactNode, useId } from "react";
 
 export function PageHeader({
   eyebrow,
@@ -58,16 +58,19 @@ export function ReferenceField({
   onChange?: (value: string) => void;
   readOnly?: boolean;
 }) {
+  const id = useId();
   return (
-    <FieldGroup label={label}>
+    <div className="field-group">
+      <label htmlFor={id}>{label}</label>
       <input
+        id={id}
         value={value}
         readOnly={readOnly}
         onChange={
           onChange ? (event) => onChange(event.target.value) : undefined
         }
       />
-    </FieldGroup>
+    </div>
   );
 }
 
