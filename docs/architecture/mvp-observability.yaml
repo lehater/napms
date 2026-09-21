@@ -15,3 +15,27 @@ requirements:
 not_required:
   - Distributed tracing backend.
   - Numeric production SLOs dashboards or alert thresholds because numeric latency throughput availability and scale targets are explicitly NOT_REQUIRED for first MVP.
+
+configuration_contract:
+  rule: Required runtime configuration is resolved deterministically at startup; invalid or incomplete security/database/OIDC configuration fails before serving requests.
+  material_inputs: [database connectivity, OIDC issuer/discovery/JWKS policy, listener/runtime settings required by accepted deployment]
+  runtime_reload: NOT_REQUIRED
+
+health_readiness:
+  readiness: Ready only after required configuration is valid, database schema/connectivity checks pass and OIDC validation dependencies can satisfy the accepted startup/dependency policy.
+  liveness: Process/listener running; liveness does not claim downstream dependency readiness.
+  dependency_visibility: Database and OIDC dependency inability remain distinguishable from domain rejection.
+
+incident_contract:
+  first_mvp: No paging/on-call workflow is created by this design.
+  behavior:
+    - Fail closed for invalid startup/security/schema state.
+    - Surface technical dependency failure distinctly from accepted application outcomes.
+    - Preserve safe correlation and diagnostic evidence sufficient to identify the failing boundary.
+    - Recovery after corrected configuration/dependency state is by restart or a subsequent request according to the owning dependency semantics.
+
+signal_applicability:
+  dedicated_metrics: NOT_REQUIRED
+  distributed_tracing: NOT_REQUIRED
+  alerting: NOT_REQUIRED
+  rationale: No accepted SLI/SLO, monitoring or paging consumer requires these signals for first MVP; reopen when such a consumer or numeric objective is accepted.
