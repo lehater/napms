@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ApiError, type ApplicationView, api } from "../../app/api";
 import { navigate } from "../../app/router";
+import { parseIpProtocol, parsePortRanges } from "./traffic";
 import {
   EmptyState,
   FormSection,
@@ -233,18 +234,6 @@ export function InteractionAuthoring({
       .catch((error) => setState(errorKind(error)));
   }, [interactionRef]);
 
-  function parsePorts(value: string) {
-    return value
-      .split(",")
-      .map((part) => part.trim())
-      .filter(Boolean)
-      .map((part) => {
-        const [from, to] = part.split("-").map(Number);
-        return { from, to: Number.isFinite(to) ? to : from };
-      })
-      .sort((left, right) => left.from - right.from || left.to - right.to);
-  }
-
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setState("submitting");
@@ -253,9 +242,9 @@ export function InteractionAuthoring({
         if (version === null) return;
         await api.publishRevision(interactionRef, version, [
           {
-            ipProtocol: Number(protocol),
-            sourcePorts: parsePorts(sourcePorts),
-            destinationPorts: parsePorts(destinationPorts),
+            ipProtocol: parseIpProtocol(protocol),
+            sourcePorts: parsePortRanges(sourcePorts),
+            destinationPorts: parsePortRanges(destinationPorts),
           },
         ]);
         setState("loaded");
