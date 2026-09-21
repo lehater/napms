@@ -83,7 +83,9 @@ class AccessRequestSubmissionService:
         if need.interaction_ref != interaction.interaction_ref:
             raise AccessRequestSubmissionRejected("need does not justify the selected interaction")
         if source.component_ref != interaction.source_component_ref:
-            raise AccessRequestSubmissionRejected("source deployment does not realize interaction source")
+            raise AccessRequestSubmissionRejected(
+                "source deployment does not realize interaction source"
+            )
         if destination.component_ref != interaction.destination_component_ref:
             raise AccessRequestSubmissionRejected(
                 "destination deployment does not realize interaction destination"
