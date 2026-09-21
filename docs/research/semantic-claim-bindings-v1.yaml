@@ -103,3 +103,41 @@ bindings:
 
 # Broad capabilities remain only partially bound above. Unlisted concern semantics
 # are intentionally left open rather than inferred from artifact existence.
+
+  - capability: engineering.frontend.human-interface
+    semantic_claims:
+      - engineering.interface.human.journeys
+      - engineering.interface.human.usability
+      - engineering.interface.human.accessibility
+      - engineering.interface.human.responsiveness
+
+  - capability: engineering.frontend.architecture
+    semantic_claims:
+      - engineering.architecture.structure
+      - engineering.reliability.availability
+      - engineering.reliability.recovery
+
+  - capability: engineering.frontend.component-design
+    semantic_claims:
+      - engineering.engineering.principles
+      - engineering.engineering.components
+      - engineering.engineering.error-handling
+      - engineering.engineering.code-quality
+
+  - capability: engineering.frontend.verification
+    semantic_claims:
+      - engineering.verification.strategy
+      - engineering.verification.requirement-traceability
+      - engineering.verification.functional
+      - engineering.verification.quality
+      - engineering.verification.security
+      - engineering.verification.interface.machine
+      - engineering.verification.interface.human
+      - engineering.verification.architecture
+      - engineering.verification.data
+      - engineering.transition.revalidation
+
+  - capability: engineering.frontend.implementation-design
+    semantic_claims:
+      - engineering.delivery.release
+      - engineering.delivery.rollback
