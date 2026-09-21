@@ -169,7 +169,9 @@ def test_operational_change_needs_no_new_permission_decision() -> None:
     service = AccessPolicyService(
         requests=requests,
         rules=rules,
-        new_ref=Refs(UUID(int=10), UUID(int=20), UUID(int=21), UUID(int=22), UUID(int=23), UUID(int=24)),
+        new_ref=Refs(
+            UUID(int=10), UUID(int=20), UUID(int=21), UUID(int=22), UUID(int=23), UUID(int=24)
+        ),
     )
     request = service.submit_validated_request(
         access_subject=SUBJECT,
