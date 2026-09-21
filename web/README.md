@@ -26,4 +26,4 @@ npm run dev
 
 `package-lock.json` is repository-owned and CI/Docker use `npm ci`. Vite proxies `/api` and `/health` to `127.0.0.1:8000`.
 
-Current product behavior is defined by `docs/requirements/`; current UI composition guidance is in `docs/ui/`. Existing runtime routes/components are implementation evidence and do not define product semantics when they disagree with those owners.
+Current product behavior is defined by `docs/requirements/`; current UI behavior and frontend design are owned by `docs/contracts/ui/`, `docs/architecture/mvp-frontend-*.yaml`, and `docs/plans/mvp-frontend-*.yaml`. Existing runtime routes/components are implementation evidence and do not define product semantics when they disagree with those owners. `docs-legacy/ui/` is retired migration evidence only.
