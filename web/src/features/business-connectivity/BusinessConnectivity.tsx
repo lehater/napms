@@ -35,7 +35,10 @@ export function BusinessConnectivity({
     void load
       .then((value) => {
         if (Array.isArray(value)) setItems(value);
-        else setSelected(value);
+        else {
+          setSelected(value);
+          setCriticality(value.criticalityLabel ?? "");
+        }
         setState("loaded");
       })
       .catch((error) => setState(errorKind(error)));
@@ -51,6 +54,24 @@ export function BusinessConnectivity({
         ...(criticality ? { criticalityLabel: criticality } : {}),
       });
       navigate(`/business-processes/${value.processRef}`);
+    } catch (error) {
+      setState(errorKind(error));
+    }
+  }
+
+  async function saveCriticality() {
+    if (!selected) return;
+    setState("submitting");
+    try {
+      await api.setProcessCriticality(
+        selected.processRef,
+        selected.version,
+        criticality || null,
+      );
+      const value = await api.getProcess(selected.processRef);
+      setSelected(value);
+      setCriticality(value.criticalityLabel ?? "");
+      setState("loaded");
     } catch (error) {
       setState(errorKind(error));
     }
@@ -143,6 +164,18 @@ export function BusinessConnectivity({
               {selected.description || "No description"} · criticality{" "}
               {selected.criticalityLabel || "unset"}
             </p>
+            <ReferenceField
+              label="Criticality"
+              value={criticality}
+              onChange={setCriticality}
+            />
+            <button
+              type="button"
+              disabled={state === "submitting"}
+              onClick={() => void saveCriticality()}
+            >
+              Save criticality
+            </button>
             <h4>Connectivity Needs</h4>
             {selected.needs.length === 0 && (
               <EmptyState>No Connectivity Needs.</EmptyState>

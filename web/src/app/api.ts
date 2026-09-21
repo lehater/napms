@@ -305,6 +305,19 @@ export const api = {
         body: JSON.stringify(body),
       },
     ),
+  setProcessCriticality: (
+    processRef: string,
+    version: number,
+    criticalityLabel: string | null,
+  ) =>
+    request<{ processRef: string; version: number }>(
+      `/v1/processes/${processRef}/criticality`,
+      {
+        method: "PUT",
+        headers: { "If-Match": String(version) },
+        body: JSON.stringify({ criticalityLabel }),
+      },
+    ),
   retireNeed: (processRef: string, needRef: string, version: number) =>
     request<{ processRef: string; needRef: string; version: number }>(
       `/v1/processes/${processRef}/needs/${needRef}/retirement`,
