@@ -196,11 +196,16 @@ export function ResourceDetail({ resourceRef }: { resourceRef: string }) {
           value={endpointRef}
           onChange={setEndpointRef}
         />
-        <ReferenceField
-          label="Address kind"
-          value={addressKind}
-          onChange={setAddressKind}
-        />
+        <label>
+          Address kind
+          <select
+            value={addressKind}
+            onChange={(event) => setAddressKind(event.target.value)}
+          >
+            <option value="HOST">HOST</option>
+            <option value="PREFIX">PREFIX</option>
+          </select>
+        </label>
         <ReferenceField
           label="Address value"
           value={addressValue}
