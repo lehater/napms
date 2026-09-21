@@ -15,7 +15,7 @@ from napms.contexts.application_communication_catalogue.application.ports import
     InteractionRevisionResolver,
 )
 from napms.contexts.application_deployment.application.ports import (
-    ComponentDeploymentRepository,
+    ComponentDeploymentResolver,
 )
 from napms.contexts.authority_management.application.service import RequireScopedAuthority
 from napms.contexts.authority_management.domain.model import Principal
@@ -36,7 +36,7 @@ class AccessRequestSubmissionService:
         *,
         policy: AccessPolicyService,
         needs: CurrentNeedLocker,
-        deployments: ComponentDeploymentRepository,
+        deployments: ComponentDeploymentResolver,
         revisions: InteractionRevisionResolver,
         interactions: InteractionResolver,
         resource_scopes: AuthorityScopeResolver,
