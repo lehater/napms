@@ -30,7 +30,7 @@ class IdentityDependency(Protocol):
 
 
 class _Body(BaseModel):
-    model_config = ConfigDict(extra="forbid", populate_by_name=True, alias_generator=_camel)
+    model_config = ConfigDict(extra="forbid", populate_by_name=False, alias_generator=_camel)
 
 
 class NamedBody(_Body):

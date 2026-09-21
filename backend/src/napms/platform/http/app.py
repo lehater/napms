@@ -53,7 +53,7 @@ def _camel(name: str) -> str:
 class _Body(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
-        populate_by_name=True,
+        populate_by_name=False,
         alias_generator=_camel,
     )
 
