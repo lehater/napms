@@ -5,7 +5,11 @@ from uuid import UUID, uuid4
 from fastapi.testclient import TestClient
 
 from napms.contexts.access_policy.application.submission import AccessRequestSubmissionRejected
-from napms.contexts.access_policy.domain.model import AccessRequest, AccessSubject, RequestAuthorityEvidence
+from napms.contexts.access_policy.domain.model import (
+    AccessRequest,
+    AccessSubject,
+    RequestAuthorityEvidence,
+)
 from napms.contexts.authority_management.application.service import AuthorityForbidden
 from napms.contexts.authority_management.domain.model import Principal
 from napms.platform.http.app import HttpDependencies, create_app
@@ -44,7 +48,9 @@ def request() -> AccessRequest:
         validated_business_process_version=1,
         submitter_subject="subject:alice",
         submitted_at=now,
-        authority_evidence=(RequestAuthorityEvidence(uuid4(), "scope:a", "access.request", None, None, now),),
+        authority_evidence=(
+            RequestAuthorityEvidence(uuid4(), "scope:a", "access.request", None, None, now),
+        ),
     )
 
 
@@ -75,16 +81,26 @@ def test_submit_access_request_uses_authenticated_principal() -> None:
 
 def test_authentication_status_mapping() -> None:
     submitter = Submitter(request())
-    assert client(Identity(AuthenticationRejected()), submitter).post(
-        "/v1/access-requests",
-        headers={"Authorization": "Bearer token", "Idempotency-Key": "key-1"},
-        json=body(),
-    ).status_code == 401
-    assert client(Identity(IdentityDependencyUnavailable()), submitter).post(
-        "/v1/access-requests",
-        headers={"Authorization": "Bearer token", "Idempotency-Key": "key-1"},
-        json=body(),
-    ).status_code == 503
+    assert (
+        client(Identity(AuthenticationRejected()), submitter)
+        .post(
+            "/v1/access-requests",
+            headers={"Authorization": "Bearer token", "Idempotency-Key": "key-1"},
+            json=body(),
+        )
+        .status_code
+        == 401
+    )
+    assert (
+        client(Identity(IdentityDependencyUnavailable()), submitter)
+        .post(
+            "/v1/access-requests",
+            headers={"Authorization": "Bearer token", "Idempotency-Key": "key-1"},
+            json=body(),
+        )
+        .status_code
+        == 503
+    )
 
 
 def test_submission_status_mapping_and_required_idempotency_key() -> None:
