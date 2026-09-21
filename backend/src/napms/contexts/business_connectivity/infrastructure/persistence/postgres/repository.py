@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 from uuid import UUID
 
 import psycopg
@@ -92,6 +93,37 @@ class PostgresBusinessProcessRepository:
                     ) in needs
                 ),
             )
+
+    @staticmethod
+    def lock_current_need_in(
+        connection: psycopg.Connection[Any],
+        need_ref: UUID,
+    ) -> tuple[ConnectivityNeed, int] | None:
+        row = connection.execute(
+            """
+            SELECT n.need_ref, n.interaction_ref, n.participant_component_ref,
+                   n.business_basis, n.status, n.created_by_subject, n.retired_at,
+                   p.version
+            FROM business_connectivity.connectivity_need AS n
+            JOIN business_connectivity.business_process AS p
+              ON p.process_ref = n.process_ref
+            WHERE n.need_ref = %s AND n.status = 'ACTIVE'
+            FOR UPDATE OF n, p
+            """,
+            (need_ref,),
+        ).fetchone()
+        if row is None:
+            return None
+        need = ConnectivityNeed(
+            need_ref=row[0],
+            interaction_ref=row[1],
+            participant_component_ref=row[2],
+            business_basis=row[3],
+            status=NeedStatus(row[4]),
+            created_by_subject=row[5],
+            retired_at=row[6],
+        )
+        return need, row[7]
 
     def save_process(self, process: BusinessProcess, *, expected_version: int) -> None:
         with psycopg.connect(self._dsn) as connection:
