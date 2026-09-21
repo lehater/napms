@@ -139,6 +139,102 @@ function Resources() {
   );
 }
 
+function Applications() {
+  const [name, setName] = useState("");
+  const [created, setCreated] = useState<{ applicationRef: string; version: number } | null>(null);
+  const [error, setError] = useState(false);
+  async function create(event: React.FormEvent) {
+    event.preventDefault();
+    setError(false);
+    try {
+      setCreated(await api.createApplication(name));
+      setName("");
+    } catch {
+      setError(true);
+    }
+  }
+  return (
+    <>
+      <p className="eyebrow">Application catalogue</p>
+      <h2>Applications</h2>
+      <p className="lede">Create reusable Applications. Components and directed Interactions remain subordinate authoring tasks.</p>
+      <form className="panel" onSubmit={create}>
+        <label htmlFor="application-name">Application name</label>
+        <input id="application-name" value={name} onChange={(event) => setName(event.target.value)} />
+        <button type="submit" disabled={!name}>Create application</button>
+      </form>
+      {error && <p role="alert" className="status">Application could not be created.</p>}
+      {created && <div className="panel"><p className="eyebrow">Created</p><p>{created.applicationRef}</p><p>Version: {created.version}</p></div>}
+    </>
+  );
+}
+
+function Deployments() {
+  const [componentRef, setComponentRef] = useState("");
+  const [resourceRef, setResourceRef] = useState("");
+  const [created, setCreated] = useState<{ deploymentRef: string; componentRef: string; resourceRef: string } | null>(null);
+  const [error, setError] = useState(false);
+  async function create(event: React.FormEvent) {
+    event.preventDefault();
+    setError(false);
+    try {
+      setCreated(await api.createDeployment(componentRef, resourceRef));
+    } catch {
+      setError(true);
+    }
+  }
+  return (
+    <>
+      <p className="eyebrow">Deployments</p>
+      <h2>Component deployments</h2>
+      <p className="lede">Bind one Component identity to one Resource realization while keeping both identities explicit.</p>
+      <form className="panel form-grid" onSubmit={create}>
+        <label>Component ID<input value={componentRef} onChange={(event) => setComponentRef(event.target.value)} /></label>
+        <label>Resource ID<input value={resourceRef} onChange={(event) => setResourceRef(event.target.value)} /></label>
+        <button type="submit" disabled={!componentRef || !resourceRef}>Create deployment</button>
+      </form>
+      {error && <p role="alert" className="status">Deployment could not be created.</p>}
+      {created && <div className="panel"><p className="eyebrow">Created deployment</p><p>{created.deploymentRef}</p><p>Component: {created.componentRef}</p><p>Resource: {created.resourceRef}</p></div>}
+    </>
+  );
+}
+
+function BusinessConnectivity() {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [criticality, setCriticality] = useState("");
+  const [created, setCreated] = useState<{ processRef: string; version: number } | null>(null);
+  const [error, setError] = useState(false);
+  async function create(event: React.FormEvent) {
+    event.preventDefault();
+    setError(false);
+    try {
+      setCreated(await api.createProcess({
+        name,
+        ...(description ? { description } : {}),
+        ...(criticality ? { criticalityLabel: criticality } : {}),
+      }));
+    } catch {
+      setError(true);
+    }
+  }
+  return (
+    <>
+      <p className="eyebrow">Business connectivity</p>
+      <h2>Business processes and needs</h2>
+      <p className="lede">Business justification remains independent from permission decisions.</p>
+      <form className="panel form-grid" onSubmit={create}>
+        <label>Process name<input value={name} onChange={(event) => setName(event.target.value)} /></label>
+        <label>Description<input value={description} onChange={(event) => setDescription(event.target.value)} /></label>
+        <label>Criticality label<input value={criticality} onChange={(event) => setCriticality(event.target.value)} /></label>
+        <button type="submit" disabled={!name}>Create business process</button>
+      </form>
+      {error && <p role="alert" className="status">Business Process could not be created.</p>}
+      {created && <div className="panel"><p className="eyebrow">Business Process</p><p>{created.processRef}</p><p>Version: {created.version}</p><p className="muted">Connectivity Needs are authored within this process context.</p></div>}
+    </>
+  );
+}
+
 function AccessRequests() {
   const [fields, setFields] = useState({
     sourceDeploymentRef: "",
@@ -401,6 +497,12 @@ function App() {
         <h1>Network Access Policy Management</h1>
         {workspace === "Resources" ? (
           <Resources />
+        ) : workspace === "Applications" ? (
+          <Applications />
+        ) : workspace === "Deployments" ? (
+          <Deployments />
+        ) : workspace === "Business connectivity" ? (
+          <BusinessConnectivity />
         ) : workspace === "Access requests" ? (
           <AccessRequests />
         ) : workspace === "Policy rules" ? (
