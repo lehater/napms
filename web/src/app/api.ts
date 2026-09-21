@@ -162,7 +162,11 @@ export const api = {
   declareNeed: (
     processRef: string,
     version: number,
-    body: { interactionRef: string; participantComponentRef: string; businessBasis: string },
+    body: {
+      interactionRef: string;
+      participantComponentRef: string;
+      businessBasis: string;
+    },
   ) =>
     request<{ processRef: string; needRef: string; version: number }>(
       `/v1/processes/${processRef}/needs`,

@@ -412,11 +412,15 @@ function BusinessConnectivity() {
     if (!process) return;
     setError(false);
     try {
-      const created = await api.declareNeed(process.processRef, process.version, {
-        interactionRef,
-        participantComponentRef,
-        businessBasis,
-      });
+      const created = await api.declareNeed(
+        process.processRef,
+        process.version,
+        {
+          interactionRef,
+          participantComponentRef,
+          businessBasis,
+        },
+      );
       setProcess({ processRef: created.processRef, version: created.version });
       setNeedRef(created.needRef);
     } catch {
@@ -435,7 +439,10 @@ function BusinessConnectivity() {
       <form className="panel form-grid" onSubmit={create}>
         <label>
           Process name
-          <input value={name} onChange={(event) => setName(event.target.value)} />
+          <input
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+          />
         </label>
         <label>
           Description
@@ -469,7 +476,9 @@ function BusinessConnectivity() {
             Participant Component ID
             <input
               value={participantComponentRef}
-              onChange={(event) => setParticipantComponentRef(event.target.value)}
+              onChange={(event) =>
+                setParticipantComponentRef(event.target.value)
+              }
             />
           </label>
           <label>
@@ -481,7 +490,9 @@ function BusinessConnectivity() {
           </label>
           <button
             type="submit"
-            disabled={!interactionRef || !participantComponentRef || !businessBasis}
+            disabled={
+              !interactionRef || !participantComponentRef || !businessBasis
+            }
           >
             Declare Connectivity Need
           </button>
