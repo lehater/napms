@@ -33,3 +33,8 @@ decisions:
     state: NOT_APPLICABLE
     rationale: Alerting/paging is explicitly not required without an accepted monitoring or paging consumer.
     evidence: [OBSERVABILITY]
+  - concern: interface.human.i18n
+    consumers: [FRONTEND-IMPLEMENTATION]
+    state: NOT_APPLICABLE
+    rationale: The accepted first-MVP human-interface contract defines no multilingual/localization requirement.
+    evidence: [FRONTEND-HUMAN-INTERFACE]
