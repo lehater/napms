@@ -110,6 +110,15 @@ bindings:
       - engineering.interface.human.usability
       - engineering.interface.human.accessibility
       - engineering.interface.human.responsiveness
+      - {claim: engineering.interface.human.journeys, subject: Resource management}
+      - {claim: engineering.interface.human.journeys, subject: Application management}
+      - {claim: engineering.interface.human.journeys, subject: Component management}
+      - {claim: engineering.interface.human.journeys, subject: Interaction management}
+      - {claim: engineering.interface.human.journeys, subject: Deployment management}
+      - {claim: engineering.interface.human.journeys, subject: Business process and connectivity need}
+      - {claim: engineering.interface.human.journeys, subject: Access request}
+      - {claim: engineering.interface.human.journeys, subject: Policy rule}
+      - {claim: engineering.interface.human.journeys, subject: Policy export}
 
   - capability: engineering.frontend.architecture
     semantic_claims:
