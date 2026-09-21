@@ -25,9 +25,7 @@ DSN = os.environ["NAPMS_TEST_POSTGRES_DSN"]
 @pytest.fixture(autouse=True)
 def fresh_schema() -> None:
     with psycopg.connect(DSN) as connection:
-        connection.execute(
-            "DROP SCHEMA IF EXISTS application_communication_catalogue CASCADE"
-        )
+        connection.execute("DROP SCHEMA IF EXISTS application_communication_catalogue CASCADE")
         migrate(connection)
 
 
