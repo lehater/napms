@@ -1,0 +1,127 @@
+version: 1
+kind: component-design
+id: NAPMS-MVP-BACKEND-COMPONENT-DESIGN
+status: CURRENT
+
+purpose: Define implementation-facing backend codebase components, dependency directions and code-quality boundaries for the first MVP without using product code as design authority.
+
+basis:
+  system_structure: docs/architecture/structurizr/workspace.dsl
+  application_architecture: docs/architecture/mvp-system-rules.yaml
+  module_contracts: docs/architecture/mvp-module-contracts.yaml
+  security_architecture: docs/architecture/mvp-security-architecture.yaml
+  shared_technical_conventions: docs/architecture/mvp-technical-representation.yaml
+  http_contract: docs/contracts/http/napms.openapi.yaml
+  persistence: docs/architecture/persistence/mvp-persistence.yaml
+  quality_requirements: docs/architecture/mvp-quality-requirements.yaml
+  threat_model: docs/architecture/mvp-threat-model.yaml
+  observability: docs/architecture/mvp-observability.yaml
+
+codebase_principles:
+  - The modular-monolith module boundary is also the primary backend code ownership boundary.
+  - Domain and application code depend on abstractions owned by their module, never on HTTP, database, OIDC or framework types.
+  - Cross-module calls use only contracts declared in mvp-module-contracts.yaml; peer persistence access and internal HTTP are forbidden.
+  - Transport, persistence, identity and diagnostics are adapters around accepted application/module contracts.
+  - Composition is centralized; leaf modules do not construct peer adapters, database pools, identity clients or global runtime services.
+  - Dependency direction points from adapters toward application/module ports and domain semantics, not from domain code toward infrastructure.
+  - A technical representation may translate accepted semantics but may not redefine domain identity, lifecycle, authority or failure meaning.
+  - Shared code is restricted to technical primitives that are truly cross-module; domain concepts remain with their semantic owner.
+
+components:
+  runtime:
+    responsibility: Own process startup and the serve/migrate execution modes.
+    depends_on: [composition]
+    may_contain: [process entry points, configuration loading, lifecycle coordination]
+    must_not_contain: [domain decisions, module business logic]
+
+  composition:
+    responsibility: Assemble concrete adapters and module applications into one runtime.
+    depends_on: [resource-catalogue, application-communication-catalogue, application-deployment, business-connectivity, access-policy, authority-management, policy-materialization, http-adapter, persistence-adapters, identity-adapter, diagnostics]
+    may_contain: [dependency wiring, transaction/snapshot wiring, runtime lifecycle wiring]
+    must_not_contain: [domain rules, transport-specific business decisions]
+
+  http-adapter:
+    responsibility: Realize the accepted OpenAPI contract and translate HTTP requests/responses to application/module contracts.
+    depends_on: [resource-catalogue, application-communication-catalogue, application-deployment, business-connectivity, access-policy, policy-materialization, authority-management, diagnostics]
+    may_contain: [routing, request decoding, response encoding, HTTP error mapping, correlation extraction]
+    must_not_contain: [domain state mutation outside module contracts, persistence access]
+
+  identity-adapter:
+    responsibility: Validate accepted OIDC/JWKS identity semantics and supply authenticated principal/grant input to Authority Management.
+    depends_on: [authority-management, diagnostics]
+    must_not_contain: [resource scope invention, product permission decisions]
+
+  persistence-adapters:
+    responsibility: Implement module-owned repositories and shared transaction/snapshot mechanics against the accepted PostgreSQL design.
+    depends_on: [resource-catalogue, application-communication-catalogue, application-deployment, business-connectivity, access-policy, authority-management, policy-materialization, diagnostics]
+    may_contain: [SQL, row mapping, migration execution, repository implementations, transaction/snapshot coordination]
+    must_not_contain: [cross-module table coupling, domain rule ownership]
+
+  diagnostics:
+    responsibility: Provide correlation-safe logging, health/dependency diagnostics and implementation-facing observability primitives.
+    depends_on: []
+    must_not_contain: [domain outcome reinterpretation, secret-bearing diagnostic payloads]
+
+  resource-catalogue:
+    responsibility: Own Resource Catalogue domain/application behavior and its declared in-process ports.
+    depends_on: [authority-management]
+    contracts: [RegisterResource, AddEndpoint, SetEndpointAddress, ClearEndpointAddress, SetSite, SetResponsibility, ResolveResource, ReadResourceDetail, ResolveAuthorityScope, CurrentEndpointAddresses]
+
+  application-communication-catalogue:
+    responsibility: Own Application, Component and Interaction domain/application behavior and declared ports.
+    depends_on: []
+    contracts: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionRevision, ResolveComponent, ResolveInteractionRevision]
+
+  application-deployment:
+    responsibility: Own ComponentDeployment domain/application behavior and declared ports.
+    depends_on: [application-communication-catalogue, resource-catalogue]
+    contracts: [RegisterComponentDeployment, ResolveComponentDeployment]
+
+  business-connectivity:
+    responsibility: Own BusinessProcess and ConnectivityNeed domain/application behavior and declared ports.
+    depends_on: [application-communication-catalogue]
+    contracts: [RegisterBusinessProcess, SetResponsibleOrganization, SetCriticalityLabel, DeclareNeed, RetireNeed, LockAndResolveCurrentNeed, ResolveNeedCurrentOrHistory]
+
+  access-policy:
+    responsibility: Own AccessRequest and PolicyRule behavior, evidence and operational history.
+    depends_on: [business-connectivity, application-communication-catalogue, authority-management, resource-catalogue]
+    contracts: [SubmitAccessRequest, RecordPermissionDecision, SetPolicyRuleOperationalState, AttachPolicyRuleJustification, ReadPolicyRule, PageCurrentPolicyRules]
+
+  authority-management:
+    responsibility: Own evaluation of authenticated scoped authority grants.
+    depends_on: []
+    contracts: [RequireScopedAuthority]
+
+  policy-materialization:
+    responsibility: Orchestrate read-only current-policy materialization over owner read ports in one accepted snapshot.
+    depends_on: [access-policy, business-connectivity, application-communication-catalogue, application-deployment, resource-catalogue, authority-management]
+    contracts: [MaterializeCurrentPolicy]
+
+dependency_rules:
+  - Cycles between module components are forbidden; a needed reverse dependency must be expressed through an owner contract or orchestration boundary.
+  - HTTP adapter may call module application contracts but modules never depend on HTTP.
+  - Persistence adapters implement module-owned repository ports; module/domain layers never import SQL or database-driver types.
+  - Identity adapter produces authenticated identity evidence; Authority Management owns scoped admission semantics.
+  - Policy Materialization may read owner ports but may not mutate or duplicate peer truth.
+  - Diagnostics may be called from adapters and application boundaries but must not become a semantic dependency of domain decisions.
+
+error_handling:
+  - Domain rejection, unresolved materialization, authentication failure, authorization denial, concurrency conflict and technical dependency failure remain distinct types/categories until the HTTP boundary maps them.
+  - Adapter/library exceptions are translated at the adapter that owns the dependency.
+  - Unknown commit outcome or unavailable dependency is never converted to a successful or accepted domain result.
+  - Retry behavior is explicit at the owning contract; generic wrappers do not invent retries.
+
+code_quality:
+  - Public module ports have explicit request/result/error shapes and no framework/database types.
+  - New cross-module dependencies require a declared module contract and graph update.
+  - No duplicated domain enum/value-object definition may exist outside its owning module merely for transport or persistence convenience.
+  - Pure domain/application behavior is testable without network, database or OIDC services.
+  - Adapter contract tests cover translation at HTTP, persistence and identity boundaries.
+  - Dependency-direction checks must be deterministic where repository tooling can enforce them.
+  - Dead compatibility aliases, speculative abstractions and unused generic repositories are not part of the first-MVP baseline.
+  - Source files remain cohesive to one component responsibility; cross-cutting utilities require an explicit technical ownership rationale.
+
+implementation_freedom:
+  - Exact Python package/file names may vary if the component boundaries and dependency rules remain mechanically enforceable.
+  - Internal class/function decomposition inside one component is implementation freedom when it does not change a public module port or accepted semantic boundary.
+  - Framework/library choices not fixed by canonical upstream contracts remain implementation choices, but may not weaken security, persistence, interface, quality or operability requirements.
