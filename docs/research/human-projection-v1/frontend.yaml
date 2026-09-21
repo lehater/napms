@@ -1,0 +1,25 @@
+version: 1
+kind: harness-human-projection
+id: napms-frontend-human-docs-current
+consumer: FRONTEND-IMPLEMENTATION
+
+documents:
+  - id: frontend-guide
+    title: NAPMS Frontend Design Guide
+    sections:
+      - id: journeys
+        select: {artifacts: [MVP-UI-NAVIGATION]}
+      - id: interaction-semantics
+        select: {artifacts: [FRONTEND-HUMAN-INTERFACE]}
+      - id: presentation-system
+        select: {artifacts: [FRONTEND-PRESENTATION-SYSTEM]}
+      - id: screen-view-design
+        select: {artifacts: [FRONTEND-SCREEN-VIEW-DESIGN]}
+      - id: architecture
+        select: {artifacts: [FRONTEND-ARCHITECTURE]}
+      - id: components
+        select: {artifacts: [FRONTEND-COMPONENT-DESIGN]}
+      - id: verification
+        select: {artifacts: [FRONTEND-VERIFICATION, FRONTEND-TEST-DESIGN]}
+      - id: implementation
+        select: {artifacts: [FRONTEND-IMPLEMENTATION-DESIGN]}
