@@ -85,13 +85,21 @@ function Resources() {
             value={ref}
             onChange={(event) => setRef(event.target.value)}
           />
-          <button\n            type="button"\n            onClick={open}\n            disabled={!ref || state === "loading"}\n          >
+          <button
+            type="button"
+            onClick={open}
+            disabled={!ref || state === "loading"}
+          >
             Open resource
           </button>
         </div>
       </div>
       {state === "loading" && <Status>Loading Resource…</Status>}
-      {state === "not-found" && (\n        <p role="alert" className="status">\n          Resource not found.\n        </p>\n      )}
+      {state === "not-found" && (
+        <p role="alert" className="status">
+          Resource not found.
+        </p>
+      )}
       {state === "error" && (
         <p role="alert" className="status">
           Resource could not be loaded. Retry when the service is available.
@@ -109,15 +117,20 @@ function Resources() {
               <h4>Current facts</h4>
               <p>Site: {resource.current.siteRef ?? "Not assigned"}</p>
               <p>Endpoints: {resource.current.endpoints.length}</p>
-              <p>\n                Responsibilities: {resource.current.responsibilities.length}\n              </p>
+              <p>
+                Responsibilities: {resource.current.responsibilities.length}
+              </p>
             </div>
             <details className="panel">
               <summary>History</summary>
               <p>Site facts: {resource.history.sites.length}</p>
               <p>
-                Endpoint address facts:{" "}\n                {resource.history.endpointAddresses.length}
+                Endpoint address facts:{" "}
+                {resource.history.endpointAddresses.length}
               </p>
-              <p>\n                Responsibility facts: {resource.history.responsibilities.length}\n              </p>
+              <p>
+                Responsibility facts: {resource.history.responsibilities.length}
+              </p>
             </details>
           </div>
         </section>
@@ -136,7 +149,9 @@ function AccessRequests() {
   const [result, setResult] = useState<Awaited<
     ReturnType<typeof api.submitAccessRequest>
   > | null>(null);
-  const [state, setState] = useState<\n    "idle" | "submitting" | "rejected" | "error"\n  >("idle");
+  const [state, setState] = useState<
+    "idle" | "submitting" | "rejected" | "error"
+  >("idle");
 
   function field(name: keyof typeof fields, label: string) {
     return (
@@ -160,7 +175,11 @@ function AccessRequests() {
       setResult(await api.submitAccessRequest(fields));
       setState("idle");
     } catch (error) {
-      setState(\n        error instanceof Error && error.message === "rejected"\n          ? "rejected"\n          : "error",\n      );
+      setState(
+        error instanceof Error && error.message === "rejected"
+          ? "rejected"
+          : "error",
+      );
     }
   }
 
@@ -183,10 +202,14 @@ function AccessRequests() {
       </form>
       {state === "submitting" && <Status>Submitting request…</Status>}
       {state === "rejected" && (
-        <p role="alert" className="status">\n          Request was rejected by domain validation.\n        </p>
+        <p role="alert" className="status">
+          Request was rejected by domain validation.
+        </p>
       )}
       {state === "error" && (
-        <p role="alert" className="status">\n          Request could not be established.\n        </p>
+        <p role="alert" className="status">
+          Request could not be established.
+        </p>
       )}
       {result && (
         <div className="panel">
@@ -203,7 +226,9 @@ function AccessRequests() {
 function PolicyRules() {
   const [ref, setRef] = useState("");
   const [rule, setRule] = useState<PolicyRuleView | null>(null);
-  const [state, setState] = useState<\n    "idle" | "loading" | "saving" | "not-found" | "error"\n  >("idle");
+  const [state, setState] = useState<
+    "idle" | "loading" | "saving" | "not-found" | "error"
+  >("idle");
 
   async function open() {
     setState("loading");
@@ -212,7 +237,11 @@ function PolicyRules() {
       setRule(await api.getPolicyRule(ref));
       setState("idle");
     } catch (error) {
-      setState(\n        error instanceof Error && error.message === "not-found"\n          ? "not-found"\n          : "error",\n      );
+      setState(
+        error instanceof Error && error.message === "not-found"
+          ? "not-found"
+          : "error",
+      );
     }
   }
 
@@ -221,7 +250,11 @@ function PolicyRules() {
     setState("saving");
     try {
       const effectState = rule.effectState === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-      const updated = await api.setPolicyRuleState(\n        rule.policyRuleRef,\n        rule.version,\n        effectState,\n      );
+      const updated = await api.setPolicyRuleState(
+        rule.policyRuleRef,
+        rule.version,
+        effectState,
+      );
       setRule({ ...rule, effectState, version: updated.version });
       setState("idle");
     } catch {
@@ -236,15 +269,27 @@ function PolicyRules() {
       <div className="panel">
         <label htmlFor="rule-ref">Policy Rule ID</label>
         <div>
-          <input\n            id="rule-ref"\n            value={ref}\n            onChange={(event) => setRef(event.target.value)}\n          />
+          <input
+            id="rule-ref"
+            value={ref}
+            onChange={(event) => setRef(event.target.value)}
+          />
           <button type="button" onClick={open} disabled={!ref || state === "loading"}>
             Open rule
           </button>
         </div>
       </div>
       {state === "loading" && <Status>Loading Policy Rule…</Status>}
-      {state === "not-found" && (\n        <p role="alert" className="status">\n          Policy Rule not found.\n        </p>\n      )}
-      {state === "error" && (\n        <p role="alert" className="status">\n          Policy operation failed.\n        </p>\n      )}
+      {state === "not-found" && (
+        <p role="alert" className="status">
+          Policy Rule not found.
+        </p>
+      )}
+      {state === "error" && (
+        <p role="alert" className="status">
+          Policy operation failed.
+        </p>
+      )}
       {rule && (
         <section className="panel">
           <p className="eyebrow">Authoritative detail</p>
@@ -295,10 +340,20 @@ function Export() {
           Policy Rule IDs
           <span className="muted"> (comma-separated; blank selects all)</span>
         </label>
-        <input\n          id="export-scope"\n          value={selection}\n          onChange={(event) => setSelection(event.target.value)}\n        />
-        <button type="button" onClick={run}>\n          Execute export\n        </button>
+        <input
+          id="export-scope"
+          value={selection}
+          onChange={(event) => setSelection(event.target.value)}
+        />
+        <button type="button" onClick={run}>
+          Execute export
+        </button>
       </div>
-      {error && (\n        <p role="alert" className="status">\n          Export could not be established.\n        </p>\n      )}
+      {error && (
+        <p role="alert" className="status">
+          Export could not be established.
+        </p>
+      )}
       {result && (
         <div className="panel">
           <p className="eyebrow">Authoritative outcome</p>
