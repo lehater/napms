@@ -62,3 +62,9 @@ delivery_contract:
     - Code rollback is allowed only when current schema and public contracts remain compatible with the previous baseline.
     - An incompatible migration requires an explicitly tested reverse/repair migration or restoration of a compatible pre-migration database state; code must not reinterpret a newer incompatible schema.
     - A destructive or semantics-changing migration without an accepted recovery path blocks release.
+error_handling_contract:
+  - Domain rejection, UNRESOLVED materialization, authentication/authorization denial, concurrency conflict and technical dependency failure remain distinct through application and HTTP mapping.
+  - Infrastructure/library exceptions are translated at their owning adapter boundary; framework/database/OIDC exception types do not cross into domain contracts.
+  - Catch-all handling must not convert unknown commit outcome, dependency inability or internal failure into an accepted domain result.
+  - Errors exposed externally use the accepted HTTP status/representation contract; diagnostic detail remains safe and correlation-friendly without leaking secrets.
+  - Retry is never invented by a generic error wrapper; retry/idempotency behavior follows the owning system/interface contract.
