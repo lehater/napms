@@ -59,6 +59,7 @@ harness-pin-check:
 design-sync: harness-pin-check
 	python tools/check_canonical_graph.py
 	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_harness_integration.py
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_design_closure.py
 	python tools/check_knowledge_completeness.py
 	python tools/generate_strategic_views.py
 	python tools/generate_resource_catalogue_views.py
