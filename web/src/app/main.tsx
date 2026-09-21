@@ -30,21 +30,6 @@ function Status({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Placeholder({ name }: { name: Workspace }) {
-  return (
-    <>
-      <p className="eyebrow">Workspace</p>
-      <h2>{name}</h2>
-      <div className="panel">
-        <p className="muted">
-          No records loaded. Use the supported authoring actions when backend
-          data is available.
-        </p>
-      </div>
-    </>
-  );
-}
-
 function Resources() {
   const [ref, setRef] = useState("");
   const [catalogue, setCatalogue] = useState<
@@ -860,7 +845,7 @@ function App() {
         ) : workspace === "Policy export" ? (
           <Export />
         ) : (
-          <Placeholder name={workspace} />
+          <Export />
         )}
       </main>
     </div>
