@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, ApiError, type ResourceView } from "../../app/api";
+import { ApiError, api, type ResourceView } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
   EmptyState,
@@ -108,20 +108,16 @@ export function ResourceDetail({ resourceRef }: { resourceRef: string }) {
   const [role, setRole] = useState("");
   const [organizationRef, setOrganizationRef] = useState("");
 
-  async function load() {
-    setState("loading");
-    try {
-      const value = await api.getResource(resourceRef);
-      setResource(value);
-      setSiteRef(value.current.siteRef ?? "");
-      setState("loaded");
-    } catch (error) {
-      setState(errorKind(error));
-    }
-  }
-
   useEffect(() => {
-    void load();
+    setState("loading");
+    void api
+      .getResource(resourceRef)
+      .then((value) => {
+        setResource(value);
+        setSiteRef(value.current.siteRef ?? "");
+        setState("loaded");
+      })
+      .catch((error) => setState(errorKind(error)));
   }, [resourceRef]);
 
   async function mutate(call: () => Promise<ResourceView>) {

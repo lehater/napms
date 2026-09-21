@@ -40,10 +40,10 @@ export function FieldGroup({
   children: ReactNode;
 }) {
   return (
-    <label>
-      {label}
+    <div className="field-group">
+      <span>{label}</span>
       {children}
-    </label>
+    </div>
   );
 }
 

@@ -1,12 +1,17 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AppShell } from "../components/AppShell";
-import { ResourceCatalogue, ResourceDetail } from "../features/resources/ResourceScreens";
+import {
+  ResourceCatalogue,
+  ResourceDetail,
+} from "../features/resources/ResourceScreens";
 import { parseRoute, type Route } from "./router";
 import "../design-system/base.css";
 
 function App() {
-  const [route, setRoute] = useState<Route>(() => parseRoute(window.location.pathname));
+  const [route, setRoute] = useState<Route>(() =>
+    parseRoute(window.location.pathname),
+  );
 
   useEffect(() => {
     const update = () => setRoute(parseRoute(window.location.pathname));
