@@ -37,3 +37,7 @@ class ComponentResolver(Protocol):
 
 class InteractionRevisionResolver(Protocol):
     def resolve_revision(self, revision_ref: UUID) -> InteractionRevision | None: ...
+
+
+class InteractionResolver(Protocol):
+    def get_interaction(self, interaction_ref: UUID) -> Interaction | None: ...
