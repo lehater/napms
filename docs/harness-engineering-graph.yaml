@@ -287,6 +287,7 @@ authorities:
           - engineering.security.threat-analysis
           - engineering.operability.observability
           - engineering.architecture.async-messaging-not-applicable
+          - engineering.backend.component-design
       - capability: engineering.implementation.completion-criteria
         knowledge_kind: implementation-design
         requires:
@@ -303,6 +304,7 @@ authorities:
           - engineering.security.threat-analysis
           - engineering.operability.observability
           - engineering.architecture.async-messaging-not-applicable
+          - engineering.backend.component-design
       - capability: engineering.frontend.implementation-design
         knowledge_kind: implementation-design
         requires:
@@ -311,12 +313,24 @@ authorities:
           - engineering.frontend.test-design
 
   - id: COMPONENT-DESIGN
-    responsibility: Own implementation-facing frontend component and dependency boundaries.
+    responsibility: Own implementation-facing backend and frontend component, codebase and dependency boundaries.
     boundary:
-      semantic_cohesion: Component responsibilities and dependency contracts form one code-facing design family.
-      independent_change: Component decomposition can change behind stable interface and architecture contracts.
-      public_contract: Provides code-facing frontend component design.
+      semantic_cohesion: Component responsibilities, dependency rules and code-quality constraints form one code-facing design family.
+      independent_change: Component decomposition can change behind stable domain, interface and architecture contracts.
+      public_contract: Provides code-facing component design to implementation design and verification.
     produces:
+      - capability: engineering.backend.component-design
+        knowledge_kind: component-design
+        requires:
+          - engineering.architecture.c4-model
+          - engineering.architecture.rules
+          - engineering.architecture.module-contracts
+          - engineering.architecture.security
+          - engineering.interface.http-contract
+          - engineering.data.persistence-model
+          - engineering.quality.constraints
+          - engineering.security.threat-analysis
+          - engineering.operability.observability
       - capability: engineering.frontend.component-design
         knowledge_kind: component-design
         requires:
