@@ -63,6 +63,10 @@ required_scenarios:
     verifies: [REQ-QUAL-001]
     method: INSPECTION
     expect: No implementation or acceptance gate invents mandatory numeric latency throughput availability or scale targets.
+  - id: MVP-REQ-SCALE
+    verifies: [REQ-SCALE-001, REQ-SCALE-002, REQ-SCALE-003, REQ-SCALE-004]
+    method: INSPECTION
+    expect: Architecture Driver Closure and system topology preserve the accepted first-MVP scale, single-organization boundary, no-growth assumption and no heavy asynchronous runtime requirement; listed reopen conditions remain explicit.
   - id: MVP-OIDC
     verifies: [REQ-AUTH-001, REQ-AUTH-002]
     expect: HTTPS-only issuer/discovery/JWKS asymmetric algorithm allow-list required kid exact issuer/audience/exp/nbf/sub and malformed permission/authority claims have accepted 401 versus 503 behavior.
