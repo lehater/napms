@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseRoute } from "../src/app/router";
+import { parseRoute } from "../src/app/router.ts";
 
 test("canonical static routes resolve to their workspace ids", () => {
   const cases = [
