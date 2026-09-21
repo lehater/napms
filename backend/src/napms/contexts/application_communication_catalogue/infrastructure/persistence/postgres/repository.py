@@ -183,25 +183,57 @@ class PostgresApplicationCommunicationCatalogue:
 
     def resolve_revision(self, revision_ref: UUID) -> ResolvedInteractionRevision | None:
         with psycopg.connect(self._dsn) as connection:
-            row = connection.execute(
+            return self.resolve_revision_in(connection, revision_ref)
+
+    @classmethod
+    def resolve_revision_in(
+        cls,
+        connection: psycopg.Connection[Any],
+        revision_ref: UUID,
+    ) -> ResolvedInteractionRevision | None:
+        row = connection.execute(
                 """
                 SELECT revision_ref, interaction_ref, revision_no, created_by_subject
                 FROM application_communication_catalogue.interaction_revision
                 WHERE revision_ref = %s
                 """,
-                (revision_ref,),
-            ).fetchone()
-            if row is None:
-                return None
-            return ResolvedInteractionRevision(
-                interaction_ref=row[1],
-                revision=InteractionRevision(
-                    revision_ref=row[0],
-                    revision_no=row[2],
-                    traffic_clauses=self._load_clauses(connection, row[0]),
-                    created_by_subject=row[3],
-                ),
-            )
+            (revision_ref,),
+        ).fetchone()
+        if row is None:
+            return None
+        return ResolvedInteractionRevision(
+            interaction_ref=row[1],
+            revision=InteractionRevision(
+                revision_ref=row[0],
+                revision_no=row[2],
+                traffic_clauses=cls._load_clauses(connection, row[0]),
+                created_by_subject=row[3],
+            ),
+        )
+
+    @staticmethod
+    def resolve_interaction_in(
+        connection: psycopg.Connection[Any],
+        interaction_ref: UUID,
+    ) -> Interaction | None:
+        row = connection.execute(
+            """
+            SELECT interaction_ref, source_component_ref, destination_component_ref,
+                   purpose, version
+            FROM application_communication_catalogue.interaction
+            WHERE interaction_ref = %s
+            """,
+            (interaction_ref,),
+        ).fetchone()
+        if row is None:
+            return None
+        return Interaction(
+            interaction_ref=row[0],
+            source_component_ref=row[1],
+            destination_component_ref=row[2],
+            purpose=row[3],
+            version=row[4],
+        )
 
     def _add_application(self, value: Application) -> None:
         with psycopg.connect(self._dsn) as connection:
