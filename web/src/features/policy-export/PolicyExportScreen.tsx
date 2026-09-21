@@ -1,9 +1,5 @@
 import { useState } from "react";
-import {
-  ApiError,
-  api,
-  type PolicyMaterializationResult,
-} from "../../app/api";
+import { ApiError, api, type PolicyMaterializationResult } from "../../app/api";
 import {
   EmptyState,
   FormSection,
@@ -19,7 +15,9 @@ const errorKind = (error: unknown) =>
 export function PolicyExportScreen() {
   const [refs, setRefs] = useState("");
   const [state, setState] = useState("editing");
-  const [result, setResult] = useState<PolicyMaterializationResult | null>(null);
+  const [result, setResult] = useState<PolicyMaterializationResult | null>(
+    null,
+  );
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -39,12 +37,6 @@ export function PolicyExportScreen() {
     }
   }
 
-  const unresolved =
-    result &&
-    ("unresolved" in result ||
-      ("status" in result &&
-        String(result.status).toUpperCase() !== "COMPLETE"));
-
   return (
     <>
       <PageHeader eyebrow="Policy materialization" title="Policy Export" />
@@ -60,16 +52,35 @@ export function PolicyExportScreen() {
       </FormSection>
       {result && (
         <>
-          <StatusBanner kind={unresolved ? "warning" : "success"}>
-            {unresolved ? "UNRESOLVED / DEGRADED" : "COMPLETE"}
+          <StatusBanner kind={result.status === "UNRESOLVED" ? "blocked" : "success"}>
+            Export result: {result.status}
           </StatusBanner>
+          <p>Evaluated at {result.evaluationAt}</p>
+          {result.status === "UNRESOLVED" && result.issues.length > 0 && (
+            <section className="panel">
+              <h3>Blocking issues</h3>
+              <pre>{JSON.stringify(result.issues, null, 2)}</pre>
+            </section>
+          )}
           <section className="panel">
-            <h3>Materialized policy</h3>
-            <pre>{JSON.stringify(result, null, 2)}</pre>
+            <h3>Effective policy rows</h3>
+            {result.rows.length === 0 ? (
+              <EmptyState>No effective rows.</EmptyState>
+            ) : (
+              <pre>{JSON.stringify(result.rows, null, 2)}</pre>
+            )}
           </section>
           <ProvenancePanel>
-            Evaluation and provenance are preserved in the authoritative
-            materialization response.
+            <h3>Rule provenance</h3>
+            <pre>{JSON.stringify(result.ruleProvenance, null, 2)}</pre>
+            <h3>Export authority evidence</h3>
+            <pre>{JSON.stringify(result.exportAuthorityEvidence, null, 2)}</pre>
+            {result.nonEffective.length > 0 && (
+              <>
+                <h3>Non-effective rules</h3>
+                <pre>{JSON.stringify(result.nonEffective, null, 2)}</pre>
+              </>
+            )}
           </ProvenancePanel>
         </>
       )}

@@ -210,8 +210,7 @@ def router(
                         {
                             "ipProtocol": clause.ip_protocol,
                             "sourcePorts": [
-                                {"from": port.start, "to": port.end}
-                                for port in clause.source_ports
+                                {"from": port.start, "to": port.end} for port in clause.source_ports
                             ],
                             "destinationPorts": [
                                 {"from": port.start, "to": port.end}
