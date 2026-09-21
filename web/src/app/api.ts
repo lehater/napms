@@ -1,5 +1,5 @@
 import { authSession } from "./auth-session";
-import { statusToErrorKind, type ApiErrorKind } from "./http-semantics";
+import { type ApiErrorKind, statusToErrorKind } from "./http-semantics";
 
 export class ApiError extends Error {
   constructor(
