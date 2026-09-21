@@ -5,10 +5,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID, uuid4
 
+from napms.contexts.authority_management.application.service import RequireScopedAuthority
+from napms.contexts.authority_management.domain.model import Principal
 from napms.contexts.resource_catalogue.application.ports import (
     RESOURCE_CATALOGUE_AUTHORITY_SCOPE,
     RESOURCE_CATALOGUE_CURATION_ACTION,
-    ResourceCatalogueAuthority,
     ResourceCatalogueRepository,
     ResourceNotFound,
     ResourceVersionConflict,
@@ -22,7 +23,7 @@ from napms.contexts.resource_catalogue.domain.model import (
 
 @dataclass(frozen=True)
 class MutationContext:
-    principal: str
+    principal: Principal
     effective_at: datetime
 
 
@@ -31,7 +32,7 @@ class ResourceCatalogueApplication:
         self,
         *,
         resources: ResourceCatalogueRepository,
-        authority: ResourceCatalogueAuthority,
+        authority: RequireScopedAuthority,
         new_ref: Callable[[], UUID] = uuid4,
     ) -> None:
         self._resources = resources
@@ -88,7 +89,7 @@ class ResourceCatalogueApplication:
                 address,
                 fact_ref=fact_ref,
                 effective_at=context.effective_at,
-                subject=context.principal,
+                subject=context.principal.subject,
             ),
         )
 
@@ -127,7 +128,7 @@ class ResourceCatalogueApplication:
                 site_ref,
                 fact_ref=fact_ref,
                 effective_at=context.effective_at,
-                subject=context.principal,
+                subject=context.principal.subject,
             ),
         )
 
@@ -150,7 +151,7 @@ class ResourceCatalogueApplication:
                 group_ref,
                 fact_ref=fact_ref,
                 effective_at=context.effective_at,
-                subject=context.principal,
+                subject=context.principal.subject,
             ),
         )
 
@@ -158,7 +159,7 @@ class ResourceCatalogueApplication:
         self._authority.require(
             principal=context.principal,
             action=RESOURCE_CATALOGUE_CURATION_ACTION,
-            scope=RESOURCE_CATALOGUE_AUTHORITY_SCOPE,
+            scopes=(RESOURCE_CATALOGUE_AUTHORITY_SCOPE,),
             evaluated_at=context.effective_at,
         )
 
