@@ -23,7 +23,7 @@ dev = [
     "import-linter==2.15",
     "pip-audit==2.10.1",
 ]
-runtime = ["uvicorn>=0.52,<1", "psycopg[binary]>=3.2,<4"]
+runtime = ["uvicorn>=0.52,<1", "psycopg[binary]>=3.2,<4", "PyJWT[crypto]>=2.10,<3"]
 postgres = ["psycopg[binary]>=3.2,<4"]
 e2e = ["pytest>=8.0.0", "playwright>=1.55,<2", "pillow>=11,<13"]
 
