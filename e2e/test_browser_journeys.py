@@ -36,7 +36,7 @@ def create_resource(page: Page, name: str) -> str:
     page.get_by_label("Display name").fill(name)
     page.get_by_label("Authority scope").fill("e2e-scope")
     page.get_by_role("button", name="Create Resource", exact=True).click()
-    page.wait_for_url(lambda url: url.path.startswith("/resources/") and url.path != "/resources/new")
+    page.wait_for_url(lambda url: "/resources/" in url and not url.endswith("/resources/new"))
     return page.url.rsplit("/", 1)[-1]
 
 
@@ -44,7 +44,7 @@ def create_application(page: Page, name: str) -> str:
     goto(page, "/applications/new", "Applications")
     page.get_by_label("Name").fill(name)
     page.get_by_role("button", name="Create Application", exact=True).click()
-    page.wait_for_url(lambda url: url.path.startswith("/applications/") and url.path != "/applications/new")
+    page.wait_for_url(lambda url: "/applications/" in url and not url.endswith("/applications/new"))
     return page.url.rsplit("/", 1)[-1]
 
 
