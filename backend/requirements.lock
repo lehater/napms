@@ -25,12 +25,16 @@ certifi==2026.7.22
     #   httpcore
     #   httpx
     #   requests
+cffi==2.1.1
+    # via cryptography
 charset-normalizer==3.5.1
     # via requests
 click==8.5.0
     # via
     #   import-linter
     #   uvicorn
+cryptography==50.0.1
+    # via pyjwt
 cyclonedx-python-lib==11.12.0
     # via pip-audit
 defusedxml==0.7.1
@@ -101,6 +105,8 @@ psycopg-binary==3.3.6
     # via psycopg
 py-serializable==2.1.0
     # via cyclonedx-python-lib
+pycparser==3.0
+    # via cffi
 pydantic==2.13.5
     # via fastapi
 pydantic-core==2.46.5
@@ -109,6 +115,10 @@ pygments==2.21.0
     # via
     #   pytest
     #   rich
+pyjwt[crypto]==2.14.0
+    # via
+    #   napms (backend/pyproject.toml)
+    #   pyjwt
 pyparsing==3.3.3
     # via pip-requirements-parser
 pytest==9.1.1
@@ -138,6 +148,7 @@ tomli-w==1.2.0
 typing-extensions==4.16.0
     # via
     #   anyio
+    #   cryptography
     #   cyclonedx-python-lib
     #   exceptiongroup
     #   fastapi
@@ -146,6 +157,7 @@ typing-extensions==4.16.0
     #   psycopg
     #   pydantic
     #   pydantic-core
+    #   pyjwt
     #   starlette
     #   typing-inspection
     #   uvicorn
