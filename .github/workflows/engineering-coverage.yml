@@ -46,7 +46,7 @@ jobs:
 
       - name: Evaluate backend coverage
         run: |
-          python .harness-coverage-tool/engineering_coverage.py             docs/harness-engineering-graph.yaml             docs/harness-projection.yaml             BACKEND-IMPLEMENTATION             --canonical-source docs/canonical-graph.yaml             --scope first-mvp             --authority-aliases docs/harness/coverage/authority-role-aliases-v1.yaml             --overlay docs/harness/coverage/concern-activation-overlay-v1.yaml             --semantic-claim-bindings docs/harness/coverage/semantic-claim-bindings-v1.yaml             > /tmp/backend-coverage.json
+          python .harness-coverage-tool/engineering_coverage.py             docs/harness-engineering-graph.yaml             docs/harness-projection.yaml             BACKEND-IMPLEMENTATION             --canonical-source docs/canonical-graph.yaml             --scope first-mvp             --authority-aliases docs/harness/coverage/authority-role-aliases-v1.yaml             --overlay docs/harness/coverage/concern-activation-overlay-v1.yaml             --semantic-claim-bindings docs/harness/coverage/semantic-claim-bindings-v1.yaml             --subject-obligations docs/harness/coverage/backend-subject-obligations-v1.yaml             --scope-source docs/requirements/first-mvp-product-requirements.yaml             > /tmp/backend-coverage.json
 
       - name: Evaluate frontend coverage
         run: |
