@@ -22,6 +22,11 @@ from napms.contexts.access_policy.domain.model import (
 )
 from napms.contexts.authority_management.application.service import AuthorityForbidden
 from napms.contexts.authority_management.domain.model import Principal
+from napms.platform.database.idempotency import (
+    IdempotencyConflict,
+    PersistedHttpResponse,
+    PostgresIdempotencyStore,
+)
 from napms.platform.database.policy_materialization import MaterializationResult
 from napms.platform.database.policy_rule_justification import JustificationRejected
 from napms.platform.security.oidc import (
@@ -143,6 +148,7 @@ class HttpDependencies:
     policy_rule_operations: PolicyRuleOperator | None = None
     policy_materialization: PolicyMaterializer | None = None
     policy_rules: PolicyRuleReader | None = None
+    idempotency: PostgresIdempotencyStore | None = None
 
 
 def create_app(dependencies: HttpDependencies) -> FastAPI:
@@ -184,7 +190,21 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         idempotency_key: str = Header(alias="Idempotency-Key", min_length=1),
         caller: Principal = Depends(principal),
     ) -> dict[str, object]:
-        del idempotency_key
+        payload = body.model_dump(mode="json", by_alias=True)
+        if dependencies.idempotency is not None:
+            try:
+                replay = dependencies.idempotency.lookup(
+                    principal=caller.subject,
+                    method="POST",
+                    route="/v1/access-requests",
+                    target="",
+                    key=idempotency_key,
+                    payload=payload,
+                )
+            except IdempotencyConflict as exc:
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
+            if replay is not None:
+                return replay.body
         try:
             request = dependencies.access_requests.submit(
                 principal=caller,
@@ -197,7 +217,18 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN) from exc
         except AccessRequestSubmissionRejected as exc:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
-        return {"requestRef": str(request.request_ref), "version": request.version}
+        response = {"requestRef": str(request.request_ref), "version": request.version}
+        if dependencies.idempotency is not None:
+            response = dependencies.idempotency.record(
+                principal=caller.subject,
+                method="POST",
+                route="/v1/access-requests",
+                target="",
+                key=idempotency_key,
+                payload=payload,
+                response=PersistedHttpResponse(status_code=201, body=response),
+            ).body
+        return response
 
     @app.post("/v1/access-requests/{request_ref}/decision")
     def decide_access_request(
