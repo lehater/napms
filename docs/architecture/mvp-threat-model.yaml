@@ -17,3 +17,14 @@ threats:
 
 deferred_nonblocking:
   - production infrastructure hardening beyond the accepted application and deployment boundary
+
+vulnerability_management:
+  - Runtime and build dependencies used by the accepted backend are version-locked by the implementation baseline.
+  - Material known advisories affecting the accepted OIDC, HTTP, PostgreSQL or serialization trust boundary are reviewed before release/update.
+  - A material unresolved advisory that invalidates an accepted control becomes a Security Question or blocks release; no universal CVSS threshold is invented.
+
+secure_development:
+  - Security-sensitive changes preserve fail-closed OIDC validation, scoped authorization, trusted-time boundaries and secret-redaction rules.
+  - Caller-controlled identity, permission, authority or provenance is never accepted as trusted input.
+  - Security controls are verified through executable API/security evidence rather than assumed from framework defaults.
+  - Dependency/framework changes that alter the trust boundary require threat-model revalidation.

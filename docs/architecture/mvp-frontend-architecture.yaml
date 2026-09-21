@@ -1,0 +1,45 @@
+version: 1
+kind: frontend-architecture
+id: NAPMS-MVP-FRONTEND-ARCHITECTURE
+status: CURRENT
+
+purpose: Realize the accepted first-MVP human-interface contracts as one browser frontend over the canonical HTTP API without duplicating product/domain/security authority.
+
+basis:
+  human_interface: docs/contracts/ui/mvp-human-interface.yaml
+  http: docs/contracts/http/napms.openapi.yaml
+  security: docs/architecture/mvp-security-architecture.yaml
+  quality: docs/architecture/mvp-quality-requirements.yaml
+
+structure:
+  runtime: browser application delivered by the existing application deployment boundary
+  integration: HTTP/JSON only through the canonical OpenAPI application API
+  ownership:
+    server: product/domain truth, authorization, persistence, authoritative validation
+    frontend: navigation, transient interaction state, presentation mapping, local form state
+  forbidden:
+    - direct database access
+    - domain-rule reimplementation as frontend authority
+    - security authority derived from hidden/disabled controls
+    - persistent duplicate canonical domain state
+
+state_model:
+  remote_state: Server responses are authoritative snapshots and are refreshed after accepted mutations.
+  local_state: Form input, disclosure state, loading state and ephemeral view state only.
+  errors: Preserve accepted not-found, validation, authorization, concurrency and technical-failure distinctions.
+
+security:
+  - Bearer/session identity and authorization remain backend-owned.
+  - Frontend visibility is convenience, never proof of permission.
+  - Untrusted rendered content is escaped/safely rendered.
+  - Security-sensitive diagnostics do not expose tokens or protected policy/member facts.
+
+reliability:
+  availability: No independent frontend availability target beyond the accepted first-MVP application deployment.
+  recovery: Browser/page reload reconstructs transient frontend state from authoritative API state.
+  durability: Frontend owns no durable business state.
+
+quality:
+  - Preserve feature ownership and avoid a global mutable client data model.
+  - Shared UI abstractions require demonstrated repeated interaction semantics.
+  - User-visible state transitions remain testable independent from visual styling.

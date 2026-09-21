@@ -1,0 +1,20 @@
+version: 1
+kind: harness-project-authority-role-bindings
+project: NAPMS
+status: research
+
+bindings:
+  PRODUCT-REQUIREMENTS: [product]
+  STRATEGIC-DOMAIN-DESIGN: [domain]
+  DOMAIN-USE-CASE-DESIGN: [application]
+  TACTICAL-DOMAIN-DESIGN: [domain]
+  APPLICATION-JOURNEY-DESIGN: [application]
+  SYSTEM-ARCHITECTURE: [architecture, reliability]
+  SECURITY-ARCHITECTURE-DESIGN: [security-architecture]
+  SECURITY-ANALYSIS: [security-analysis]
+  INTERFACE-DESIGN: [interface]
+  DATA-DESIGN: [data]
+  QUALITY-DESIGN: [quality]
+  OPERABILITY-DESIGN: [operability]
+  VERIFICATION-DESIGN: [verification]
+  COMPONENT-DESIGN: [engineering]

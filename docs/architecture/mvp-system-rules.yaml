@@ -49,3 +49,14 @@ excluded_from_mvp_runtime:
   - configured-state reconciliation
   - historical policy export
   - distributed services
+
+reliability_contract:
+  availability:
+    target: No numeric availability target is required for first MVP.
+    behavior: Service availability depends on the single application process plus required PostgreSQL/OIDC dependencies; dependency inability is a technical failure, never a successful domain outcome.
+  durability:
+    behavior: A mutation is acknowledged only after its owning PostgreSQL transaction commits; unknown commit outcome is never reported as confirmed success.
+  recovery:
+    process: Application-process recovery is restart using committed PostgreSQL state and exact schema verification.
+    dependency: Transient database/OIDC inability may recover on restart or subsequent request without rewriting accepted domain state.
+    disaster_recovery: No RPO/RTO or automatic failover/backup product requirement is invented for first MVP; such a requirement reopens System/Operability/Data design.

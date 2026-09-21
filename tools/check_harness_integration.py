@@ -52,9 +52,8 @@ def main() -> int:
     frontend = evaluate_engineering_target(
         graph, "FRONTEND-IMPLEMENTATION", model
     )
-    expected_frontier = {"engineering.frontend.human-interface"}
     actual_frontier = {item["capability"] for item in frontend["create"]}
-    if frontend["status"] != "READY" or actual_frontier != expected_frontier:
+    if frontend["status"] != "COMPLETE" or actual_frontier:
         raise SystemExit(
             "FRONTEND-IMPLEMENTATION target mismatch: "
             f"status={frontend['status']} create={sorted(actual_frontier)}"
@@ -62,7 +61,7 @@ def main() -> int:
 
     print("NAPMS pinned Harness integration PASS")
     print("BACKEND-IMPLEMENTATION: COMPLETE")
-    print("FRONTEND-IMPLEMENTATION: READY -> engineering.frontend.human-interface")
+    print("FRONTEND-IMPLEMENTATION: COMPLETE")
     return 0
 
 

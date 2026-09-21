@@ -1,0 +1,38 @@
+version: 1
+kind: test-design
+id: NAPMS-MVP-FRONTEND-TEST-DESIGN
+status: CURRENT
+
+purpose: Define executable frontend behavioral test contracts before implementation changes.
+
+basis:
+  verification: docs/plans/mvp-frontend-verification.yaml
+  human_interface: docs/contracts/ui/mvp-human-interface.yaml
+
+tests:
+  - id: UI-RESOURCE-OPEN
+    given: Resource catalogue returns a selectable Resource.
+    when: User selects it.
+    then: Detail loads by stable ResourceId and distinguishes loading from loaded/not-found/error.
+  - id: UI-HISTORY
+    given: Current and ended/replaced Resource facts exist.
+    when: User opens History.
+    then: Current remains readable and historical validity/provenance is inspectable.
+  - id: UI-MUTATION-REFRESH
+    given: A supported replace/end action succeeds.
+    when: Result is accepted.
+    then: Detail refreshes from server truth and previous fact appears in History.
+  - id: UI-ERROR-DISTINCTION
+    given: validation, authorization, conflict, not-found and technical failures.
+    when: Each is returned by the API boundary.
+    then: User-visible state preserves the semantic distinction and offers only valid next actions.
+  - id: UI-ACCESSIBILITY
+    given: Resource detail at loaded/error/history states.
+    when: Operated by keyboard and semantic queries.
+    then: Required actions, labels, focus and status/error information remain available without color-only meaning.
+  - id: UI-RESPONSIVE
+    given: Desktop and narrower supported viewport classes.
+    when: Resource detail/history is rendered.
+    then: Required information and actions remain available without semantic loss.
+
+oracle_rule: Tests prove accepted contracts; snapshots/pixel output alone are not semantic proof.

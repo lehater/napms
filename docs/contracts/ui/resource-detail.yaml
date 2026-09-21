@@ -88,3 +88,15 @@ out_of_scope:
   - exact component library choice
   - pixel layout and responsive breakpoints
   - pagination of per-Resource history until evidence requires it
+
+human_interface_baseline:
+  accessibility:
+    - Current versus historical facts and loading/not-found/error states are conveyed by semantic text/state, not color alone.
+    - History disclosure and retry/return actions are keyboard reachable with visible focus.
+    - Loading/error/status changes are exposed through appropriate semantic status/error structure in the implementation.
+  responsiveness:
+    - The current/history distinction and all required actions must remain available at ordinary desktop and narrower browser widths without information loss.
+    - Exact breakpoints and component-library mechanics remain implementation choices.
+  internationalization:
+    state: NOT_APPLICABLE
+    rationale: The accepted first-MVP product/interface scope defines no multilingual/localization requirement; adding one reopens Interface Design.
