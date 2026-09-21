@@ -79,9 +79,31 @@ export type AccessRequestResult = {
   policyRuleRef?: string | null;
 };
 
-export type ApplicationView = { applicationRef: string; name: string; version: number; components: Array<{ componentRef: string; name: string }> };
-export type DeploymentView = { deploymentRef: string; componentRef: string; resourceRef: string };
-export type ProcessView = { processRef: string; name: string; description: string | null; criticalityLabel: string | null; version: number; needs: Array<{ needRef: string; interactionRef: string; participantComponentRef: string; businessBasis: string; status: string }> };
+export type ApplicationView = {
+  applicationRef: string;
+  name: string;
+  version: number;
+  components: Array<{ componentRef: string; name: string }>;
+};
+export type DeploymentView = {
+  deploymentRef: string;
+  componentRef: string;
+  resourceRef: string;
+};
+export type ProcessView = {
+  processRef: string;
+  name: string;
+  description: string | null;
+  criticalityLabel: string | null;
+  version: number;
+  needs: Array<{
+    needRef: string;
+    interactionRef: string;
+    participantComponentRef: string;
+    businessBasis: string;
+    status: string;
+  }>;
+};
 
 export const api = {
   listResources: () => request<ResourceView[]>("/v1/resources"),

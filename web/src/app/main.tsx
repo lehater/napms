@@ -36,7 +36,10 @@ function Resources() {
     Awaited<ReturnType<typeof api.listResources>>
   >([]);
   useEffect(() => {
-    void api.listResources().then(setCatalogue).catch(() => undefined);
+    void api
+      .listResources()
+      .then(setCatalogue)
+      .catch(() => undefined);
   }, []);
   const [state, setState] = useState<
     "idle" | "loading" | "not-found" | "error"
@@ -152,7 +155,10 @@ function Applications() {
     Awaited<ReturnType<typeof api.listApplications>>
   >([]);
   useEffect(() => {
-    void api.listApplications().then(setCatalogue).catch(() => undefined);
+    void api
+      .listApplications()
+      .then(setCatalogue)
+      .catch(() => undefined);
   }, []);
   const [application, setApplication] = useState<{
     applicationRef: string;
@@ -347,7 +353,10 @@ function Deployments() {
     Awaited<ReturnType<typeof api.listDeployments>>
   >([]);
   useEffect(() => {
-    void api.listDeployments().then(setCatalogue).catch(() => undefined);
+    void api
+      .listDeployments()
+      .then(setCatalogue)
+      .catch(() => undefined);
   }, []);
   const [resourceRef, setResourceRef] = useState("");
   const [created, setCreated] = useState<{
@@ -428,7 +437,10 @@ function BusinessConnectivity() {
     Awaited<ReturnType<typeof api.listProcesses>>
   >([]);
   useEffect(() => {
-    void api.listProcesses().then(setCatalogue).catch(() => undefined);
+    void api
+      .listProcesses()
+      .then(setCatalogue)
+      .catch(() => undefined);
   }, []);
   const [description, setDescription] = useState("");
   const [criticality, setCriticality] = useState("");
