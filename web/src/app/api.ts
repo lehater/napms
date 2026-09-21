@@ -150,6 +150,42 @@ export const api = {
   listAccessRequests: () => request<AccessRequestView[]>("/v1/access-requests"),
   getAccessRequest: (ref: string) =>
     request<AccessRequestView>(`/v1/access-requests/${ref}`),
+  addResourceEndpoint: (ref: string, version: number) =>
+    request<ResourceView>(`/v1/resources/${ref}/endpoints`, {
+      method: "POST",
+      headers: { "If-Match": String(version) },
+    }),
+  setResourceSite: (ref: string, version: number, siteRef: string | null) =>
+    request<ResourceView>(`/v1/resources/${ref}/site`, {
+      method: "PUT",
+      headers: { "If-Match": String(version) },
+      body: JSON.stringify({ siteRef }),
+    }),
+  setResourceAddress: (
+    ref: string,
+    endpointRef: string,
+    version: number,
+    address: { kind: string; value: string },
+  ) =>
+    request<ResourceView>(
+      `/v1/resources/${ref}/endpoints/${endpointRef}/address`,
+      {
+        method: "PUT",
+        headers: { "If-Match": String(version) },
+        body: JSON.stringify(address),
+      },
+    ),
+  setResourceResponsibility: (
+    ref: string,
+    role: string,
+    version: number,
+    organizationRef: string | null,
+  ) =>
+    request<ResourceView>(`/v1/resources/${ref}/responsibilities/${role}`, {
+      method: "PUT",
+      headers: { "If-Match": String(version) },
+      body: JSON.stringify({ organizationRef }),
+    }),
   submitAccessRequest: (body: {
     sourceDeploymentRef: string;
     destinationDeploymentRef: string;
