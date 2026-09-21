@@ -283,13 +283,46 @@ function BusinessConnectivity() {
         Business justification remains independent from permission decisions.
       </p>
       <form className="panel form-grid" onSubmit={create}>
-        <label>Process name<input value={name} onChange={(event) => setName(event.target.value)} /></label>
-        <label>Description<input value={description} onChange={(event) => setDescription(event.target.value)} /></label>
-        <label>Criticality label<input value={criticality} onChange={(event) => setCriticality(event.target.value)} /></label>
-        <button type="submit" disabled={!name}>Create business process</button>
+        <label>
+          Process name
+          <input
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+          />
+        </label>
+        <label>
+          Description
+          <input
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+          />
+        </label>
+        <label>
+          Criticality label
+          <input
+            value={criticality}
+            onChange={(event) => setCriticality(event.target.value)}
+          />
+        </label>
+        <button type="submit" disabled={!name}>
+          Create business process
+        </button>
       </form>
-      {error && <p role="alert" className="status">Business Process could not be created.</p>}
-      {created && <div className="panel"><p className="eyebrow">Business Process</p><p>{created.processRef}</p><p>Version: {created.version}</p><p className="muted">Connectivity Needs are authored within this process context.</p></div>}
+      {error && (
+        <p role="alert" className="status">
+          Business Process could not be created.
+        </p>
+      )}
+      {created && (
+        <div className="panel">
+          <p className="eyebrow">Business Process</p>
+          <p>{created.processRef}</p>
+          <p>Version: {created.version}</p>
+          <p className="muted">
+            Connectivity Needs are authored within this process context.
+          </p>
+        </div>
+      )}
     </>
   );
 }
