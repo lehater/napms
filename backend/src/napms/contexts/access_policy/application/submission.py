@@ -115,7 +115,7 @@ class AccessRequestSubmissionService:
                 grant_effective_until=item.effective_until,
                 evaluated_at=item.evaluated_at,
             )
-            for item in authority_evidence
+            for item in sorted(authority_evidence, key=lambda value: (value.scope, value.action))
         )
 
         return self._policy.submit_validated_request(
