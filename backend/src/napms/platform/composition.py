@@ -58,9 +58,7 @@ class RuntimeConfig:
             oidc_issuer=_required("NAPMS_OIDC_ISSUER"),
             oidc_audience=_required("NAPMS_OIDC_AUDIENCE"),
             oidc_algorithms=algorithms,
-            oidc_permissions_claim=os.environ.get(
-                "NAPMS_OIDC_PERMISSIONS_CLAIM", "permissions"
-            ),
+            oidc_permissions_claim=os.environ.get("NAPMS_OIDC_PERMISSIONS_CLAIM", "permissions"),
             oidc_authority_claim=os.environ.get("NAPMS_OIDC_AUTHORITY_CLAIM", "authority"),
         )
 
@@ -84,9 +82,7 @@ def build_app(config: RuntimeConfig) -> FastAPI:
                 authority=authority,
             ),
             access_request_decisions=PostgresAccessRequestDecision(dsn=config.database_dsn),
-            policy_rule_justifications=PostgresPolicyRuleJustification(
-                dsn=config.database_dsn
-            ),
+            policy_rule_justifications=PostgresPolicyRuleJustification(dsn=config.database_dsn),
             policy_rule_operations=PostgresPolicyRuleOperation(dsn=config.database_dsn),
             policy_materialization=PostgresPolicyMaterialization(dsn=config.database_dsn),
             policy_rules=PostgresAccessPolicyRepository(config.database_dsn),

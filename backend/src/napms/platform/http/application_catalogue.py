@@ -142,8 +142,7 @@ def router(
                     PortRange(start=port.start, end=port.end) for port in item.source_ports
                 ),
                 destination_ports=tuple(
-                    PortRange(start=port.start, end=port.end)
-                    for port in item.destination_ports
+                    PortRange(start=port.start, end=port.end) for port in item.destination_ports
                 ),
             )
             for item in body.traffic_clauses

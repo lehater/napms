@@ -223,9 +223,7 @@ def _view(resource: Resource) -> dict[str, object]:
         "version": resource.version,
         "current": {
             "siteRef": (
-                None
-                if resource.current_site is None
-                else str(resource.current_site.site_ref)
+                None if resource.current_site is None else str(resource.current_site.site_ref)
             ),
             "endpoints": [
                 {

@@ -174,8 +174,7 @@ class PostgresResourceCatalogueRepository:
             authority_scope_ref=row[2],
             version=row[3],
             endpoints=tuple(
-                cls._load_endpoint(connection, endpoint_ref)
-                for (endpoint_ref,) in endpoint_rows
+                cls._load_endpoint(connection, endpoint_ref) for (endpoint_ref,) in endpoint_rows
             ),
         )
 

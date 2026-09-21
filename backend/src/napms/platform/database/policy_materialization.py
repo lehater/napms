@@ -53,8 +53,7 @@ class MaterializationResult:
             "nonEffective": list(self.non_effective),
             "rows": list(self.rows),
             "issues": [
-                {"policyRuleRef": str(item.rule_ref), "reason": item.reason}
-                for item in self.issues
+                {"policyRuleRef": str(item.rule_ref), "reason": item.reason} for item in self.issues
             ],
         }
 
@@ -162,9 +161,7 @@ class PostgresPolicyMaterialization:
                                     {
                                         "policyRuleRef": str(rule.rule_ref),
                                         "sourceDeploymentRef": str(source.deployment_ref),
-                                        "destinationDeploymentRef": str(
-                                            destination.deployment_ref
-                                        ),
+                                        "destinationDeploymentRef": str(destination.deployment_ref),
                                         "interactionRevisionRef": str(
                                             rule.access_subject.interaction_revision_ref
                                         ),

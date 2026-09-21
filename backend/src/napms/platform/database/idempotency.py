@@ -71,9 +71,7 @@ class PostgresIdempotencyStore:
         response: PersistedHttpResponse,
     ) -> PersistedHttpResponse:
         fingerprint = _fingerprint(payload)
-        body = json.dumps(
-            response.body, sort_keys=True, separators=(",", ":")
-        ).encode()
+        body = json.dumps(response.body, sort_keys=True, separators=(",", ":")).encode()
         with psycopg.connect(self._dsn) as connection:
             row = connection.execute(
                 """
@@ -119,7 +117,5 @@ class PostgresIdempotencyStore:
 
 
 def _fingerprint(payload: dict[str, object]) -> str:
-    encoded = json.dumps(
-        payload, sort_keys=True, separators=(",", ":"), default=str
-    ).encode()
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str).encode()
     return hashlib.sha256(encoded).hexdigest()
