@@ -1,7 +1,7 @@
 version: 1
 kind: harness-semantic-claim-bindings
 project: NAPMS
-status: research
+status: canonical
 
 bindings:
   - capability: engineering.requirements.product-intent
