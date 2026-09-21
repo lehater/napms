@@ -5,7 +5,10 @@ status: research
 
 bindings:
   - capability: engineering.requirements.product-intent
-    semantic_claims: [engineering.intent.behavior]
+    semantic_claims:
+      - engineering.intent.scope
+      - engineering.intent.behavior
+      - engineering.intent.quality-targets
   - capability: engineering.domain.strategic-model
     semantic_claims: [engineering.domain.model, engineering.domain.boundaries]
   - capability: engineering.domain.tactical-model
@@ -13,21 +16,60 @@ bindings:
   - capability: engineering.domain.use-case-model
     semantic_claims: [engineering.application.use-cases]
   - capability: engineering.application.journey
-    semantic_claims: [engineering.application.use-cases]
+    semantic_claims:
+      - engineering.application.use-cases
+      - engineering.application.orchestration
+      - engineering.application.failures
   - capability: engineering.architecture.c4-model
     semantic_claims: [engineering.architecture.structure]
   - capability: engineering.architecture.module-contracts
     semantic_claims: [engineering.architecture.boundaries]
   - capability: engineering.interface.http-contract
-    semantic_claims: [engineering.interface.machine.contract]
+    semantic_claims:
+      - engineering.interface.machine.contract
+      - engineering.interface.machine.errors
   - capability: engineering.data.persistence-model
-    semantic_claims: [engineering.data.model]
+    semantic_claims:
+      - engineering.data.model
+      - engineering.data.integrity
+      - engineering.data.lifecycle
+      - engineering.delivery.migration
   - capability: engineering.security.threat-analysis
-    semantic_claims: [engineering.security.threat-analysis]
+    semantic_claims:
+      - engineering.security.threat-analysis
+      - engineering.security.availability-abuse
   - capability: engineering.verification.strategy
-    semantic_claims: [engineering.verification.strategy]
+    semantic_claims:
+      - engineering.verification.strategy
+  - capability: engineering.verification.acceptance-scenarios
+    semantic_claims:
+      - engineering.verification.requirement-traceability
+      - engineering.verification.functional
+      - engineering.verification.quality
+      - engineering.verification.security
+      - engineering.verification.interface.machine
+      - engineering.verification.data
+
+  - capability: engineering.architecture.security
+    semantic_claims:
+      - engineering.security.boundaries
+      - engineering.security.confidentiality
+      - engineering.security.integrity
+  - capability: engineering.operability.observability
+    semantic_claims:
+      - engineering.operability.logging
+  - capability: engineering.interface.ui-navigation
+    semantic_claims:
+      - engineering.interface.human.journeys
+      - engineering.interface.human.usability
+  - capability: engineering.interface.resource-detail-ui
+    semantic_claims:
+      - engineering.interface.human.journeys
+      - engineering.interface.human.usability
+  - capability: engineering.quality.constraints
+    semantic_claims:
+      - engineering.quality.maintainability.modularity
 
 # Intentionally unbound because current capability semantics are too broad:
-# - engineering.architecture.security
-# - engineering.quality.constraints
-# - engineering.operability.observability
+# Broad capabilities remain only partially bound above. Unlisted concern semantics
+# are intentionally left open rather than inferred from artifact existence.
