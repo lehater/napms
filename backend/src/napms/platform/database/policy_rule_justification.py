@@ -40,10 +40,7 @@ class PostgresPolicyRuleJustification:
         expected_version: int,
     ) -> PolicyRule:
         with psycopg.connect(self._dsn) as connection:
-            if (
-                PostgresBusinessProcessRepository.lock_current_need_in(connection, need_ref)
-                is None
-            ):
+            if PostgresBusinessProcessRepository.lock_current_need_in(connection, need_ref) is None:
                 raise JustificationRejected(str(need_ref))
             repository = _TransactionRuleRepository(connection)
             existing = repository.get_rule(rule_ref)
