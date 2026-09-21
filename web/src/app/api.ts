@@ -305,6 +305,14 @@ export const api = {
         body: JSON.stringify(body),
       },
     ),
+  retireNeed: (processRef: string, needRef: string, version: number) =>
+    request<{ processRef: string; needRef: string; version: number }>(
+      `/v1/processes/${processRef}/needs/${needRef}/retirement`,
+      {
+        method: "POST",
+        headers: { "If-Match": String(version) },
+      },
+    ),
   listPolicyRules: () => request<PolicyRuleView[]>("/v1/policy-rules"),
   getPolicyRule: (ref: string) =>
     request<PolicyRuleView>(`/v1/policy-rules/${ref}`),

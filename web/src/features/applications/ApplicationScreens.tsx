@@ -154,10 +154,34 @@ export function ApplicationDetail({
           Add Component
         </button>
         <h3>Interactions</h3>
-        <p className="muted">
-          Interactions are independently identified and revisioned communication
-          contracts.
-        </p>
+        {(application.interactions ?? []).length === 0 && (
+          <EmptyState>No Interactions.</EmptyState>
+        )}
+        {(application.interactions ?? []).map((interaction) => (
+          <section className="panel" key={interaction.interactionRef}>
+            <p>
+              {interaction.sourceComponentRef} → {interaction.destinationComponentRef}
+            </p>
+            <p>{interaction.purpose || "No stated purpose"}</p>
+            <p>Interaction ID: {interaction.interactionRef}</p>
+            {interaction.revisions.map((revision) => (
+              <div key={revision.interactionRevisionRef}>
+                <strong>Revision {revision.revisionNo}</strong>
+                <pre>{JSON.stringify(revision.trafficClauses, null, 2)}</pre>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() =>
+                navigate(
+                  `/interactions/${interaction.interactionRef}/revisions/new`,
+                )
+              }
+            >
+              Publish Revision
+            </button>
+          </section>
+        ))}
         <button type="button" onClick={() => navigate("/interactions/new")}>
           Create Interaction
         </button>

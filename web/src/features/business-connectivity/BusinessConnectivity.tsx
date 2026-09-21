@@ -56,6 +56,19 @@ export function BusinessConnectivity({
     }
   }
 
+  async function retireNeed(needRef: string) {
+    if (!selected) return;
+    setState("submitting");
+    try {
+      await api.retireNeed(selected.processRef, needRef, selected.version);
+      const value = await api.getProcess(selected.processRef);
+      setSelected(value);
+      setState("loaded");
+    } catch (error) {
+      setState(errorKind(error));
+    }
+  }
+
   async function declareNeed(event: React.FormEvent) {
     event.preventDefault();
     if (!selected) return;
@@ -135,11 +148,21 @@ export function BusinessConnectivity({
               <EmptyState>No Connectivity Needs.</EmptyState>
             )}
             {selected.needs.map((need) => (
-              <p key={need.needRef}>
-                {need.needRef} · {need.status} · Interaction{" "}
-                {need.interactionRef} · Participant{" "}
-                {need.participantComponentRef} · {need.businessBasis}
-              </p>
+              <div key={need.needRef}>
+                <p>
+                  {need.needRef} · {need.status} · Interaction{" "}
+                  {need.interactionRef} · Participant{" "}
+                  {need.participantComponentRef} · {need.businessBasis}
+                </p>
+                {need.status === "ACTIVE" && (
+                  <button
+                    type="button"
+                    onClick={() => void retireNeed(need.needRef)}
+                  >
+                    Retire Connectivity Need
+                  </button>
+                )}
+              </div>
             ))}
           </VersionedEditor>
           <FormSection onSubmit={declareNeed}>
