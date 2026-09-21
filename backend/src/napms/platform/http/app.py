@@ -174,6 +174,14 @@ class HttpDependencies:
 def create_app(dependencies: HttpDependencies) -> FastAPI:
     app = FastAPI(title="NAPMS", version="1.0")
 
+    @app.get("/health/live", include_in_schema=False)
+    def health_live() -> dict[str, str]:
+        return {"status": "live"}
+
+    @app.get("/health/ready", include_in_schema=False)
+    def health_ready() -> dict[str, str]:
+        return {"status": "ready"}
+
     def principal(authorization: str | None = Header(default=None)) -> Principal:
         if authorization is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
