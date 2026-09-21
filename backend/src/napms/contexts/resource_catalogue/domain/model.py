@@ -198,19 +198,18 @@ class Resource:
             history += (replace(self.current_site, effective_to=effective_at),)
         if site_ref is not None and fact_ref is None:
             raise ValueError("fact_ref is required for a current site fact")
-        if site_ref is not None:
-            assert fact_ref is not None
-        current = (
-            None
-            if site_ref is None
-            else SiteFact(
+        if site_ref is None:
+            current = None
+        else:
+            if fact_ref is None:
+                raise ValueError("fact_ref is required for a current site fact")
+            current = SiteFact(
                 fact_ref=fact_ref,
                 site_ref=site_ref,
                 effective_from=effective_at,
                 effective_to=None,
                 changed_by_subject=subject,
             )
-        )
         return replace(
             self,
             current_site=current,
@@ -238,13 +237,13 @@ class Resource:
             history += (replace(current_for_role, effective_to=effective_at),)
         if group_ref is not None and fact_ref is None:
             raise ValueError("fact_ref is required for a current responsibility fact")
-        if group_ref is not None:
-            assert fact_ref is not None
         remaining = tuple(item for item in self.responsibilities if item.role is not role)
-        current = (
-            ()
-            if group_ref is None
-            else (
+        if group_ref is None:
+            current: tuple[ResponsibilityFact, ...] = ()
+        else:
+            if fact_ref is None:
+                raise ValueError("fact_ref is required for a current responsibility fact")
+            current = (
                 ResponsibilityFact(
                     fact_ref=fact_ref,
                     role=role,
@@ -254,7 +253,6 @@ class Resource:
                     changed_by_subject=subject,
                 ),
             )
-        )
         return replace(
             self,
             responsibilities=remaining + current,
