@@ -221,4 +221,77 @@ def _view(resource: Resource) -> dict[str, object]:
         "displayName": resource.display_name,
         "authorityScopeRef": resource.authority_scope_ref,
         "version": resource.version,
+        "current": {
+            "siteRef": (
+                None
+                if resource.current_site is None
+                else str(resource.current_site.site_ref)
+            ),
+            "endpoints": [
+                {
+                    "endpointRef": str(endpoint.endpoint_ref),
+                    "address": (
+                        None
+                        if endpoint.current_address is None
+                        else {
+                            "kind": endpoint.current_address.address.kind.value,
+                            "value": endpoint.current_address.address.value,
+                        }
+                    ),
+                }
+                for endpoint in resource.endpoints
+            ],
+            "responsibilities": [
+                {
+                    "role": fact.role.value,
+                    "organizationRef": str(fact.group_ref),
+                }
+                for fact in resource.responsibilities
+            ],
+        },
+        "history": {
+            "sites": [_site_fact(item) for item in resource.site_history],
+            "addresses": [
+                {
+                    "endpointRef": str(endpoint.endpoint_ref),
+                    "facts": [_address_fact(item) for item in endpoint.address_history],
+                }
+                for endpoint in resource.endpoints
+            ],
+            "responsibilities": [
+                _responsibility_fact(item) for item in resource.responsibility_history
+            ],
+        },
+    }
+
+
+def _site_fact(item) -> dict[str, object]:
+    return {
+        "factRef": str(item.fact_ref),
+        "siteRef": str(item.site_ref),
+        "effectiveFrom": item.effective_from.isoformat(),
+        "effectiveTo": None if item.effective_to is None else item.effective_to.isoformat(),
+        "changedBySubject": item.changed_by_subject,
+    }
+
+
+def _address_fact(item) -> dict[str, object]:
+    return {
+        "factRef": str(item.fact_ref),
+        "kind": item.address.kind.value,
+        "value": item.address.value,
+        "effectiveFrom": item.effective_from.isoformat(),
+        "effectiveTo": None if item.effective_to is None else item.effective_to.isoformat(),
+        "changedBySubject": item.changed_by_subject,
+    }
+
+
+def _responsibility_fact(item) -> dict[str, object]:
+    return {
+        "factRef": str(item.fact_ref),
+        "role": item.role.value,
+        "organizationRef": str(item.group_ref),
+        "effectiveFrom": item.effective_from.isoformat(),
+        "effectiveTo": None if item.effective_to is None else item.effective_to.isoformat(),
+        "changedBySubject": item.changed_by_subject,
     }
