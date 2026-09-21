@@ -274,7 +274,11 @@ function PolicyRules() {
             value={ref}
             onChange={(event) => setRef(event.target.value)}
           />
-          <button type="button" onClick={open} disabled={!ref || state === "loading"}>
+          <button
+            type="button"
+            onClick={open}
+            disabled={!ref || state === "loading"}
+          >
             Open rule
           </button>
         </div>
@@ -296,9 +300,12 @@ function PolicyRules() {
           <h3>{rule.effectState}</h3>
           <p>{rule.policyRuleRef}</p>
           <dl>
-            <dt>Source deployment</dt><dd>{rule.sourceDeploymentRef}</dd>
-            <dt>Destination deployment</dt><dd>{rule.destinationDeploymentRef}</dd>
-            <dt>Interaction revision</dt><dd>{rule.interactionRevisionRef}</dd>
+            <dt>Source deployment</dt>
+            <dd>{rule.sourceDeploymentRef}</dd>
+            <dt>Destination deployment</dt>
+            <dd>{rule.destinationDeploymentRef}</dd>
+            <dt>Interaction revision</dt>
+            <dd>{rule.interactionRevisionRef}</dd>
           </dl>
           <button type="button" onClick={toggle} disabled={state === "saving"}>
             Set {rule.effectState === "ACTIVE" ? "inactive" : "active"}
@@ -360,7 +367,9 @@ function Export() {
           <h3>{String(result.status)}</h3>
           <p>Evaluation: {String(result.evaluationAt)}</p>
           <p>Rows: {Array.isArray(result.rows) ? result.rows.length : 0}</p>
-          <p>Issues: {Array.isArray(result.issues) ? result.issues.length : 0}</p>
+          <p>
+            Issues: {Array.isArray(result.issues) ? result.issues.length : 0}
+          </p>
           <details>
             <summary>Diagnostics and provenance</summary>
             <pre>{JSON.stringify(result, null, 2)}</pre>
