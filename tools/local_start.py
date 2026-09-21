@@ -49,7 +49,7 @@ def issue_local_token(oidc_url: str) -> str:
 
 def read_only_smoke(*, base_url: str, token: str) -> None:
     request = urllib.request.Request(
-        f"{base_url}/api/v1/resources?page=1&pageSize=1",
+        f"{base_url}/v1/resources?page=1&pageSize=1",
         headers={"Authorization": f"Bearer {token}"},
     )
     with urllib.request.urlopen(request, timeout=5) as response:
