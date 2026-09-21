@@ -1,0 +1,28 @@
+version: 1
+kind: harness-engineering-coverage-overlay
+project: NAPMS
+scope: first-mvp
+status: research
+
+# LEGACY RESEARCH ORACLE: the manual required list below is retained only to compare
+# automatic activation results. It is not the target Coverage control input.
+
+# Only project-specific applicability/attention decisions live here.
+required:
+  - interface.human.journeys
+  - verification.interface.human
+  - data.lifecycle
+  - data.classification
+  - security.vulnerability-management
+  - security.secure-development
+  - reliability.recovery
+  - operability.incident
+  - quality.performance.resource-efficiency
+
+decisions:
+  - concern: quality.flexibility.scalability
+    state: NOT_APPLICABLE
+    rationale: Distributed scaling is outside the accepted first-MVP runtime topology.
+    evidence: [SYSTEM-RULES]
+
+freshness: {}

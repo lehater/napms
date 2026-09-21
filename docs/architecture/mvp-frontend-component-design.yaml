@@ -1,0 +1,38 @@
+version: 1
+kind: component-design
+id: NAPMS-MVP-FRONTEND-COMPONENT-DESIGN
+status: CURRENT
+
+purpose: Define code-facing frontend component and dependency boundaries without using implementation code as design authority.
+
+basis:
+  human_interface: docs/contracts/ui/mvp-human-interface.yaml
+  architecture: docs/architecture/mvp-frontend-architecture.yaml
+  http: docs/contracts/http/napms.openapi.yaml
+
+components:
+  app_shell:
+    owns: routing composition and top-level dependency wiring
+  api_boundary:
+    owns: OpenAPI DTO/request mapping and transport/error translation
+  resource_catalogue_feature:
+    owns: Resource catalogue/list interaction and navigation entry
+  resource_detail_feature:
+    owns: Resource detail current/history presentation, replace/end interaction and retry/not-found/error view state
+  design_system:
+    owns: reusable visual primitives only after demonstrated cross-feature need
+
+rules:
+  - Feature components depend on the API boundary, not raw transport/client internals.
+  - DTOs are mapped at the API boundary; transport shapes do not become domain models.
+  - Cross-feature shared state is avoided unless an accepted cross-feature interaction requires it.
+  - Components do not manufacture authorization or business decisions.
+  - Error translation preserves accepted semantic categories.
+  - Feature tests can substitute the API boundary with deterministic fakes.
+
+maintainability:
+  modularity: Feature ownership is explicit and shared primitives remain semantically narrow.
+  analysability: Data flow and error ownership are traceable from feature to API boundary.
+  modifiability: A feature-local interaction change need not modify unrelated feature internals.
+  testability: Ordinary interaction logic is verifiable without a live backend.
+  code_quality: Public component/API-boundary contracts use explicit names and typed semantic distinctions; speculative shared abstractions are forbidden.

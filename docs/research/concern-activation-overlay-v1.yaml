@@ -1,0 +1,40 @@
+version: 1
+kind: harness-concern-activation-overlay
+project: NAPMS
+scope: first-mvp
+status: research
+
+# Intentionally empty: current hypothesis is that all currently important
+# first-MVP activation is structurally derivable from project topology/roles.
+activate: []
+
+decisions:
+  - concern: quality.flexibility.scalability
+    state: NOT_APPLICABLE
+    rationale: Distributed scaling is outside the accepted first-MVP runtime topology.
+    evidence: [SYSTEM-RULES]
+  - concern: interface.human.i18n
+    consumers: [BACKEND-IMPLEMENTATION]
+    state: NOT_APPLICABLE
+    rationale: The accepted first-MVP UI contracts define no multilingual/localization requirement.
+    evidence: [RESOURCE-DETAIL-UI]
+  - concern: operability.metrics
+    consumers: [BACKEND-IMPLEMENTATION, FRONTEND-IMPLEMENTATION]
+    state: NOT_APPLICABLE
+    rationale: Dedicated metrics are explicitly not required for first MVP absent an accepted SLI/SLO or monitoring consumer.
+    evidence: [OBSERVABILITY]
+  - concern: operability.tracing
+    consumers: [BACKEND-IMPLEMENTATION, FRONTEND-IMPLEMENTATION]
+    state: NOT_APPLICABLE
+    rationale: Distributed tracing backend is explicitly not required for first MVP.
+    evidence: [OBSERVABILITY]
+  - concern: operability.alerting
+    consumers: [BACKEND-IMPLEMENTATION, FRONTEND-IMPLEMENTATION]
+    state: NOT_APPLICABLE
+    rationale: Alerting/paging is explicitly not required without an accepted monitoring or paging consumer.
+    evidence: [OBSERVABILITY]
+  - concern: interface.human.i18n
+    consumers: [FRONTEND-IMPLEMENTATION]
+    state: NOT_APPLICABLE
+    rationale: The accepted first-MVP human-interface contract defines no multilingual/localization requirement.
+    evidence: [FRONTEND-HUMAN-INTERFACE]

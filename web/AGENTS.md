@@ -10,10 +10,11 @@ Apply root `AGENTS.md` first.
 
 For one Web task:
 1. follow task-first routing from root; load the active capsule only when current execution/gate/implementation authorization constrains the task;
-2. read the relevant accepted requirement plus matching `docs/ui/` guidance;
-3. for reusable UI/layout work, read `docs/ui/design-system.md` and `docs/ui/component-composition.md`;
-4. inspect the feature-local page/components and only the API boundary used by that feature;
-5. expand beyond that set only for a concrete cross-cutting dependency or contradiction.
+2. read the relevant accepted requirement plus the matching current UI contract under `docs/contracts/ui/`;
+3. for cross-cutting frontend structure/composition work, read `docs/contracts/ui/mvp-human-interface.yaml`, `docs/architecture/mvp-frontend-architecture.yaml`, and `docs/architecture/mvp-frontend-component-design.yaml`;
+4. for verification/implementation work, read the matching current frontend plan under `docs/plans/mvp-frontend-*.yaml`;
+5. inspect the feature-local page/components and only the API boundary used by that feature;
+6. expand beyond that set only for a concrete cross-cutting dependency or contradiction.
 
 ## Structure and ownership
 
@@ -25,7 +26,7 @@ For one Web task:
 - backend Authority Management remains authoritative for visibility/action admission;
 - never invent placeholder business state to complete a screen.
 
-Mechanical styling/ownership constraints that can be checked deterministically belong to the Web build/checker rather than being duplicated here. `docs/ui/design-system.md` and `docs/ui/component-composition.md` own the human-readable design contracts.
+Mechanical styling/ownership constraints that can be checked deterministically belong to the Web build/checker rather than being duplicated here. Current human-interface, frontend-architecture and component-design contracts under `docs/contracts/ui/` and `docs/architecture/` own the design semantics; `docs-legacy/ui/` is migration evidence only.
 
 ## Validation
 

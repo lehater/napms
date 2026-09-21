@@ -332,3 +332,18 @@ migration_rules:
 physical_detail_status: COMPLETE_FOR_FIRST_MVP
 erd_status: GENERATED_FROM_THIS_MODEL
 erd_projection: docs-generated/architecture/mvp-persistence-erd.puml
+
+data_classification:
+  security_sensitive:
+    - authenticated subject identifiers and scoped authority evidence
+    - permission/decision provenance
+    - desired-access and exported policy data that reveals protected connectivity intent
+  internal_domain:
+    - Resource/Application/Component/Deployment/Business Process and current/history facts
+  operational:
+    - idempotency response records and migration metadata
+  prohibited_persistence:
+    - bearer tokens
+    - database credentials
+    - private signing material
+  rule: Classification constrains exposure/logging/protection but does not invent external privacy or retention obligations.

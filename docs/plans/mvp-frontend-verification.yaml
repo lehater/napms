@@ -1,0 +1,37 @@
+version: 1
+kind: verification-design
+id: NAPMS-MVP-FRONTEND-VERIFICATION
+status: CURRENT
+
+purpose: Define evidence proving the accepted frontend human-interface and architecture contracts.
+
+basis:
+  requirements: docs/requirements/first-mvp-product-requirements.yaml
+  human_interface: docs/contracts/ui/mvp-human-interface.yaml
+  architecture: docs/architecture/mvp-frontend-architecture.yaml
+  components: docs/architecture/mvp-frontend-component-design.yaml
+  http: docs/contracts/http/napms.openapi.yaml
+
+levels:
+  contract: API mapping and accepted HTTP/error semantics
+  feature: deterministic feature/controller/view-state behavior
+  accessibility: keyboard, semantic labeling/status/error structure and non-color-only state distinctions
+  integration: browser frontend against canonical API boundary
+  end_to_end: selected first-MVP Resource journey
+
+required_evidence:
+  - Resource selection opens stable ResourceId detail.
+  - Current facts and History remain distinguishable and simultaneously inspectable where required.
+  - loading/empty/not-found/error states are not conflated.
+  - replace/end action refreshes authoritative server state and history.
+  - authorization/validation/concurrency/technical failures remain distinguishable.
+  - responsive rendering preserves required information/actions at selected narrow and desktop viewport classes.
+  - accessibility obligations are exercised with keyboard and semantic-role/name/status assertions.
+  - frontend never treats disabled/hidden UI as security authority.
+  - transport DTO mapping remains confined to the API boundary.
+
+traceability:
+  rule: Each evidence item references the accepted UI/HTTP/security/design contract it proves; implementation behavior alone cannot create a requirement.
+
+transition_revalidation:
+  rule: Changes to human-interface state model, API contract, security boundary, routing or component ownership re-run affected evidence classes.

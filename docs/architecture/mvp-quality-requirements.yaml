@@ -31,3 +31,15 @@ not_required_numeric_targets:
   throughput: NOT_REQUIRED
   availability: NOT_REQUIRED
   scale: NOT_REQUIRED
+
+coverage_decisions:
+  performance:
+    latency: Numeric latency target is NOT_REQUIRED for first MVP; no hidden numeric acceptance threshold may be invented.
+    throughput: Numeric throughput target is NOT_REQUIRED for first MVP; no hidden numeric acceptance threshold may be invented.
+    capacity: No numeric capacity target is accepted. Requests/exports must remain bounded by accepted HTTP and materialization constraints; evidence requiring a concrete capacity reopens Quality Design.
+    resource_efficiency: Materialization must use bounded/chunked traversal and must not require an unbounded in-memory copy of the complete policy result before emission.
+  maintainability:
+    modularity: Owner/module boundaries and no internal HTTP/cross-owner table coupling remain mandatory.
+    analysability: Failure, owner and boundary distinctions must remain diagnosable through explicit contracts and operability evidence.
+    modifiability: A change local to one owner must not require changing unrelated owner internals when public contracts remain stable.
+    testability: Domain/module contracts must permit verification at owner, integration and API levels without requiring unrelated infrastructure.

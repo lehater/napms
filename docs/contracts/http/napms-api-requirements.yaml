@@ -53,3 +53,11 @@ transport_decisions:
 
 canonical_openapi_target: docs/contracts/http/napms.openapi.yaml
 openapi_status: COMPLETE
+
+compatibility_policy:
+  current_major: v1
+  rules:
+    - Existing accepted v1 operation semantics and field meaning may not be silently redefined.
+    - Adding optional representation fields is compatible only when existing consumers can ignore them without semantic loss.
+    - Removing/renaming required fields or operations, changing identifier/time/error semantics, or weakening authorization/provenance is breaking and requires explicit interface/version revalidation.
+    - Diagnostic message text is not a compatibility contract unless separately declared.
