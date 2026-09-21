@@ -52,7 +52,9 @@ export function PolicyExportScreen() {
       </FormSection>
       {result && (
         <>
-          <StatusBanner kind={result.status === "UNRESOLVED" ? "blocked" : "success"}>
+          <StatusBanner
+            kind={result.status === "UNRESOLVED" ? "blocked" : "success"}
+          >
             Export result: {result.status}
           </StatusBanner>
           <p>Evaluated at {result.evaluationAt}</p>
