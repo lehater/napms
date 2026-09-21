@@ -1,8 +1,0 @@
-version: 1
-kind: harness-project-authority-role-aliases
-project: NAPMS
-status: research
-bindings:
-  APPLICATION-JOURNEY-DESIGN: [application]
-  SECURITY-ARCHITECTURE-DESIGN: [security-architecture]
-  FRONTEND-ARCHITECTURE-DESIGN: [architecture, reliability]
