@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timezone
 from uuid import UUID
 
 import psycopg
@@ -18,6 +19,15 @@ from napms.contexts.application_deployment.infrastructure.persistence.postgres.m
 )
 from napms.contexts.authority_management.application.service import RequireScopedAuthority
 from napms.contexts.authority_management.domain.model import AuthorityGrant, Principal
+from napms.contexts.access_policy.domain.model import (
+    AccessRequest,
+    AccessSubject,
+    RequestAuthorityEvidence,
+    AuthorizationEvidence,
+    JustificationAssociation,
+    PolicyRule,
+)
+from napms.platform.database.policy_materialization import PostgresPolicyMaterialization
 from napms.contexts.business_connectivity.infrastructure.persistence.postgres.migration import (
     migrate as migrate_business,
 )
@@ -235,3 +245,120 @@ def test_current_need_lock_blocks_retirement_until_owner_transaction_ends() -> N
     finally:
         first.close()
         second.close()
+
+
+def seed_materializable_rule(*, with_addresses: bool) -> tuple[dict[str, UUID], UUID]:
+    ids = seed_journey()
+    rule_ref = UUID(int=300)
+    request_ref = UUID(int=301)
+    now = datetime.now(timezone.utc)
+    request = AccessRequest.submit(
+        request_ref=request_ref,
+        access_subject=AccessSubject(
+            source_deployment_ref=ids["source_deployment"],
+            destination_deployment_ref=ids["destination_deployment"],
+            interaction_revision_ref=ids["revision"],
+        ),
+        initial_need_ref=ids["need"],
+        validated_business_process_version=1,
+        submitter_subject="subject:requester",
+        submitted_at=now,
+        authority_evidence=(
+            RequestAuthorityEvidence(
+                evidence_ref=UUID(int=302),
+                scope_ref="scope:source",
+                action="access.request",
+                grant_effective_from=None,
+                grant_effective_until=None,
+                evaluated_at=now,
+            ),
+        ),
+    )
+    policy = PostgresAccessPolicyRepository(DSN)
+    policy.add_request(request)
+    rule = PolicyRule.create_allowed(
+        rule_ref=rule_ref,
+        access_subject=request.access_subject,
+        authorization_evidence=AuthorizationEvidence(
+            evidence_ref=UUID(int=303),
+            access_request_ref=request_ref,
+            external_decision_ref="decision:materialization",
+            decided_by_subject="subject:approver",
+            decided_at=now,
+        ),
+        justification=JustificationAssociation(
+            association_ref=UUID(int=304),
+            need_ref=ids["need"],
+            attached_at=now,
+            attached_by_subject="subject:approver",
+            source_access_request_ref=request_ref,
+        ),
+        history_ref=UUID(int=305),
+    )
+    policy.add_rule(rule)
+    if with_addresses:
+        with psycopg.connect(DSN) as connection:
+            connection.execute(
+                """
+                INSERT INTO resource_catalogue.resource_endpoint(endpoint_ref, resource_ref)
+                VALUES (%s, %s), (%s, %s)
+                """,
+                (UUID(int=306), ids["source_resource"], UUID(int=307), ids["destination_resource"]),
+            )
+            connection.execute(
+                """
+                INSERT INTO resource_catalogue.resource_endpoint_address_history
+                    (address_fact_ref, endpoint_ref, address_kind, address_value,
+                     effective_from, changed_by_subject)
+                VALUES (%s, %s, 'HOST', '10.0.0.1', %s, 'subject:network'),
+                       (%s, %s, 'HOST', '10.0.0.2', %s, 'subject:network')
+                """,
+                (UUID(int=308), UUID(int=306), now, UUID(int=309), UUID(int=307), now),
+            )
+    return ids, rule_ref
+
+
+def export_principal() -> Principal:
+    return Principal(
+        subject="subject:exporter",
+        authority_grants=(
+            AuthorityGrant(action="policy.export", scope="scope:source"),
+            AuthorityGrant(action="policy.export", scope="scope:destination"),
+        ),
+    )
+
+
+def test_policy_materialization_resolves_addresses_and_emits_provenance() -> None:
+    _, rule_ref = seed_materializable_rule(with_addresses=True)
+    result = PostgresPolicyMaterialization(dsn=DSN).materialize(
+        principal=export_principal(),
+        rule_refs=(rule_ref,),
+    )
+
+    assert result.status == "COMPLETE"
+    assert result.issues == ()
+    assert len(result.rows) == 1
+    assert result.rows[0]["sourceAddress"] == "10.0.0.1"
+    assert result.rows[0]["destinationAddress"] == "10.0.0.2"
+    assert result.rows[0]["ipProtocol"] == 1
+    assert {item["scopeRef"] for item in result.export_authority_evidence} == {
+        "scope:source",
+        "scope:destination",
+    }
+    assert result.rule_provenance[0]["policyRuleRef"] == str(rule_ref)
+
+
+def test_policy_materialization_reports_unresolved_address_without_rows() -> None:
+    _, rule_ref = seed_materializable_rule(with_addresses=False)
+    result = PostgresPolicyMaterialization(dsn=DSN).materialize(
+        principal=export_principal(),
+        rule_refs=(rule_ref,),
+    )
+
+    assert result.status == "UNRESOLVED"
+    assert result.rows == ()
+    assert [issue.reason for issue in result.issues] == ["address realization unresolved"]
+    assert {item["scopeRef"] for item in result.export_authority_evidence} == {
+        "scope:source",
+        "scope:destination",
+    }
