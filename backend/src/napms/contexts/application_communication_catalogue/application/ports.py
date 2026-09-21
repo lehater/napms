@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
 
@@ -35,8 +36,14 @@ class ComponentResolver(Protocol):
     def resolve(self, component_ref: UUID) -> Component | None: ...
 
 
+@dataclass(frozen=True)
+class ResolvedInteractionRevision:
+    interaction_ref: UUID
+    revision: InteractionRevision
+
+
 class InteractionRevisionResolver(Protocol):
-    def resolve_revision(self, revision_ref: UUID) -> InteractionRevision | None: ...
+    def resolve_revision(self, revision_ref: UUID) -> ResolvedInteractionRevision | None: ...
 
 
 class InteractionResolver(Protocol):
