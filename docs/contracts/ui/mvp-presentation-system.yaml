@@ -1,0 +1,196 @@
+version: 1
+kind: presentation-system-design
+id: NAPMS-MVP-PRESENTATION-SYSTEM
+status: CURRENT
+
+purpose: >-
+  Define one reusable first-MVP presentation language for all NAPMS browser
+  workspaces so equivalent tasks, actions, states and information structures
+  are presented consistently without each screen inventing its own UI style.
+
+basis:
+  requirements: docs/requirements/first-mvp-product-requirements.yaml
+  journeys: docs/contracts/ui/mvp-navigation.yaml
+  human_interface: docs/contracts/ui/mvp-human-interface.yaml
+  quality: docs/architecture/mvp-quality-requirements.yaml
+  security: docs/architecture/mvp-security-architecture.yaml
+
+scope:
+  surfaces:
+    - RESOURCE-CATALOGUE
+    - RESOURCE-DETAIL
+    - APPLICATION-CATALOGUE
+    - APPLICATION-DETAIL
+    - DEPLOYMENTS
+    - BUSINESS-CONNECTIVITY
+    - ACCESS-REQUESTS
+    - POLICY-RULES
+    - POLICY-EXPORT
+
+presentation_language:
+  character: operational-productivity
+  priorities:
+    - make current context and authoritative state obvious;
+    - favor readable structured information over decorative presentation;
+    - keep task actions near the context they affect;
+    - keep provenance/history available without competing with current task-critical facts;
+    - preserve semantic distinctions through text, structure and labels rather than color alone.
+
+hierarchy:
+  page:
+    order: [context, primary-content, task-actions, secondary-content, feedback]
+  actions:
+    primary: one task-leading action per active task context when such an action exists
+    secondary: supporting non-destructive actions
+    destructive_or_state_changing: visually and semantically distinguished and confirmed when consequence is not safely reversible
+  information:
+    current_or_effective: primary
+    historical_or_provenance: secondary-inspectable
+    identifiers: visible where required for stable product identity, subordinate to human-readable meaning
+
+layout:
+  shell:
+    pattern: APP-SHELL
+    regions: [primary-navigation, workspace-context, workspace-content, global-feedback]
+  content_width: use available workspace width while keeping forms and prose readable
+  density:
+    default: compact-readable
+    rationale: First-MVP workspaces are structured operational interfaces with lists, facts and relationships; density must not remove labels, status meaning or action discoverability.
+  alignment:
+    - align repeated field/value structures consistently;
+    - keep action groups visually separate from read-only facts;
+    - keep filters/search adjacent to the collection they affect.
+
+visual_roles:
+  typography:
+    - page-title
+    - section-title
+    - body
+    - label
+    - supporting
+    - monospace-or-identifier
+  color:
+    roles: [surface, text, muted-text, border, primary-action, success, warning, error, focus]
+    rule: semantic meaning never depends on color alone
+  spacing:
+    roles: [inline, control, group, section, page]
+    rule: use the shared spacing scale consistently; exact numeric realization may be selected by the implementation component layer
+  iconography:
+    rule: icons may reinforce recognized actions/status but do not replace required text labels where meaning would become ambiguous
+
+patterns:
+  APP-SHELL:
+    purpose: persistent application navigation and current-workspace context
+    rules:
+      - primary navigation exposes the canonical workspace set;
+      - current workspace is visibly identified;
+      - routine operation feedback uses a non-modal global feedback region.
+
+  CATALOGUE:
+    purpose: locate/select an entity and start supported creation
+    regions: [heading-actions, search-filter, collection, collection-state]
+    states: [loading, loaded, empty, error]
+
+  DETAIL:
+    purpose: inspect one stable product entity and supported current facts
+    regions: [identity-context, primary-facts, task-actions, secondary-details]
+    states: [loading, loaded, empty-current, not-found, error]
+
+  EDITOR:
+    purpose: create or change accepted facts
+    rules:
+      - labels remain visible;
+      - validation is attached to fields and summarized for rejected submission;
+      - cancel/return does not masquerade as successful save.
+    states: [editing, submitting, validation-rejected, authorization-rejected, conflict, saved, technical-error]
+
+  STRUCTURED-LIST:
+    purpose: render repeatable records with stable labels and row-level actions
+    responsive: may transform to labeled stacked records while preserving all required data/actions
+
+  DATA-TABLE:
+    purpose: compare repeated structured records where column comparison materially helps the task
+    responsive: may become labeled stacked records; semantic column labels remain available
+
+  FILTER-BAR:
+    purpose: narrow a visible collection
+    rules:
+      - active filtering is visible;
+      - clearing filters is directly available;
+      - filtering does not silently change domain truth.
+
+  TASK-ACTIONS:
+    purpose: group actions for the currently active context
+    order: [primary, secondary, destructive-or-state-changing]
+
+  DISCLOSURE:
+    purpose: expose secondary/history/provenance information without navigating away
+    rules:
+      - collapsed content remains discoverable;
+      - keyboard/focus semantics are preserved.
+
+  STATUS:
+    purpose: represent loading, success, warning, rejection, conflict and technical failure
+    rules:
+      - status has text/semantic structure;
+      - retry appears only where retry is meaningful;
+      - validation, authorization, conflict and technical failure remain distinct.
+
+  OUTCOME:
+    purpose: show immutable or authoritative operation outcome with provenance/diagnostics
+    regions: [summary, details, provenance, next-actions]
+
+  SCOPE-SELECTOR:
+    purpose: select an accepted scope for an operation such as policy export
+    rules:
+      - current selection is explicit before execution;
+      - selection does not imply authorization.
+
+responsive:
+  target: desktop-first-browser-with-narrow-reflow
+  defaults:
+    - preserve workspace identity, required information and actions at narrower widths;
+    - multi-column regions may stack in semantic reading order;
+    - repeated tabular data may transform to labeled records;
+    - primary action remains discoverable after reflow;
+    - secondary disclosure remains available after reflow.
+  exact_breakpoints: implementation freedom
+
+accessibility_defaults:
+  - semantic headings preserve content hierarchy;
+  - all actions are keyboard reachable with visible focus;
+  - focus/read order follows semantic order after responsive transformations;
+  - form labels and validation messages are programmatically associated;
+  - status/error changes use appropriate semantic status/error structure;
+  - color is never the sole carrier of state;
+  - disclosure, tab or equivalent controls expose state programmatically.
+
+content_rules:
+  - use accepted domain/product language from canonical contracts;
+  - distinguish not-found, empty, rejected, conflict and technical failure;
+  - avoid wording that implies frontend authority for permission/domain decisions;
+  - preserve provenance/evaluation time where accepted semantics require it.
+
+design_tokens:
+  policy: >-
+    Tokenize stable semantic roles used across workspaces. Concrete numeric/color
+    values may be chosen during component realization unless a requirement,
+    accessibility criterion or accepted visual invariant makes the value canonical.
+  required_role_groups: [typography, color, spacing, focus, status]
+
+deviation_policy:
+  rule: Screen/View contracts inherit this system by default.
+  local_override:
+    allowed_when: the screen task or semantic structure cannot be represented clearly with shared patterns
+    requires:
+      - explicit overridden rule or pattern
+      - rationale
+      - preserved accessibility/security/interface semantics
+
+implementation_freedom:
+  - frontend framework and component library
+  - CSS Grid/Flexbox or equivalent layout mechanics
+  - exact breakpoints
+  - exact pixel coordinates
+  - private component decomposition
+  - token serialization/file format
