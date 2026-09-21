@@ -24,9 +24,10 @@ export function ResourceCatalogue({ create = false }: { create?: boolean }) {
 
   useEffect(() => {
     void api.listResources().then((value) => {
-      setItems(value);
-      setState("loaded");
-    }).catch((error) => setState(errorKind(error)));
+        setItems(value);
+        setState("loaded");
+      })
+      .catch((error) => setState(errorKind(error)));
   }, []);
 
   async function submit(event: React.FormEvent) {
@@ -47,10 +48,10 @@ export function ResourceCatalogue({ create = false }: { create?: boolean }) {
   return (
     <>
       <PageHeader eyebrow="Resource catalogue" title="Resources">
-        <p className="lede">Locate a Resource by stable identity and inspect current facts before history.</p>
+        <p className="lede">\n          Locate a Resource by stable identity and inspect current facts before\n          history.\n        </p>
       </PageHeader>
       {state === "loading" && <StatusBanner>Loading Resources…</StatusBanner>}
-      {state !== "loading" && items.length === 0 && <EmptyState>No Resources.</EmptyState>}
+      {state !== "loading" && items.length === 0 && (\n        <EmptyState>No Resources.</EmptyState>\n      )}
       <section className="panel">
         {items.map((item) => (
           <button type="button" key={item.resourceRef} onClick={() => navigate(`/resources/${item.resourceRef}`)}>
@@ -58,16 +59,16 @@ export function ResourceCatalogue({ create = false }: { create?: boolean }) {
           </button>
         ))}
       </section>
-      {!create && <button type="button" onClick={() => navigate("/resources/new")}>Create Resource</button>}
+      {!create && (\n        <button type="button" onClick={() => navigate("/resources/new")}>\n          Create Resource\n        </button>\n      )}
       {create && (
         <FormSection onSubmit={submit}>
-          <ReferenceField label="Display name" value={displayName} onChange={setDisplayName} />
-          <ReferenceField label="Authority scope" value={authorityScopeRef} onChange={setAuthorityScopeRef} />
-          <ReferenceField label="Initial site ID" value={siteRef} onChange={setSiteRef} />
-          <button type="submit" disabled={!displayName || !authorityScopeRef || state === "submitting"}>Create Resource</button>
+          <ReferenceField\n            label="Display name"\n            value={displayName}\n            onChange={setDisplayName}\n          />
+          <ReferenceField\n            label="Authority scope"\n            value={authorityScopeRef}\n            onChange={setAuthorityScopeRef}\n          />
+          <ReferenceField\n            label="Initial site ID"\n            value={siteRef}\n            onChange={setSiteRef}\n          />
+          <button\n            type="submit"\n            disabled={!displayName || !authorityScopeRef || state === "submitting"}\n          >\n            Create Resource\n          </button>
         </FormSection>
       )}
-      {!["loading", "loaded", "submitting"].includes(state) && <StatusBanner kind="failed">Resource operation: {state}.</StatusBanner>}
+      {!["loading", "loaded", "submitting"].includes(state) && (\n        <StatusBanner kind="failed">Resource operation: {state}.</StatusBanner>\n      )}
     </>
   );
 }
@@ -107,31 +108,31 @@ export function ResourceDetail({ resourceRef }: { resourceRef: string }) {
     }
   }
 
-  if (state === "loading") return <StatusBanner>Loading Resource…</StatusBanner>;
-  if (!resource) return <StatusBanner kind="failed">Resource: {state}.</StatusBanner>;
+  if (state === "loading")\n    return <StatusBanner>Loading Resource…</StatusBanner>;
+  if (!resource)\n    return <StatusBanner kind="failed">Resource: {state}.</StatusBanner>;
 
   return (
     <>
       <PageHeader eyebrow="Resource detail" title={resource.displayName}>
-        <p className="muted">{resource.resourceRef} · authority {resource.authorityScopeRef}</p>
+        <p className="muted">\n          {resource.resourceRef} · authority {resource.authorityScopeRef}\n        </p>
       </PageHeader>
       <VersionedEditor version={resource.version}>
         <h3>Current facts</h3>
         <ReferenceField label="Site ID" value={siteRef} onChange={setSiteRef} />
-        <button type="button" onClick={() => void mutate(() => api.setResourceSite(resource.resourceRef, resource.version, siteRef || null))}>Save site</button>
+        <button\n          type="button"\n          onClick={() =>\n            void mutate(() =>\n              api.setResourceSite(\n                resource.resourceRef,\n                resource.version,\n                siteRef || null,\n              ),\n            )\n          }\n        >\n          Save site\n        </button>
         <h4>Endpoints</h4>
         {resource.current.endpoints.map((endpoint) => (
-          <p key={endpoint.endpointRef}>{endpoint.endpointRef} · {endpoint.address ? `${endpoint.address.kind} ${endpoint.address.value}` : "No address"}</p>
+          <p key={endpoint.endpointRef}>\n            {endpoint.endpointRef} ·{" "}\n            {endpoint.address\n              ? `${endpoint.address.kind} ${endpoint.address.value}`\n              : "No address"}\n          </p>
         ))}
-        <button type="button" onClick={() => void mutate(() => api.addResourceEndpoint(resource.resourceRef, resource.version))}>Add endpoint</button>
+        <button\n          type="button"\n          onClick={() =>\n            void mutate(() =>\n              api.addResourceEndpoint(resource.resourceRef, resource.version),\n            )\n          }\n        >\n          Add endpoint\n        </button>
         <h4>Responsibilities</h4>
-        {resource.current.responsibilities.map((item) => <p key={item.role}>{item.role}: {item.organizationRef}</p>)}
-        <ReferenceField label="Responsibility role" value={role} onChange={setRole} />
-        <ReferenceField label="Organization ID" value={organizationRef} onChange={setOrganizationRef} />
-        <button type="button" disabled={!role} onClick={() => void mutate(() => api.setResourceResponsibility(resource.resourceRef, role, resource.version, organizationRef || null))}>Save responsibility</button>
+        {resource.current.responsibilities.map((item) => (\n          <p key={item.role}>\n            {item.role}: {item.organizationRef}\n          </p>\n        ))}
+        <ReferenceField\n          label="Responsibility role"\n          value={role}\n          onChange={setRole}\n        />
+        <ReferenceField\n          label="Organization ID"\n          value={organizationRef}\n          onChange={setOrganizationRef}\n        />
+        <button\n          type="button"\n          disabled={!role}\n          onClick={() =>\n            void mutate(() =>\n              api.setResourceResponsibility(\n                resource.resourceRef,\n                role,\n                resource.version,\n                organizationRef || null,\n              ),\n            )\n          }\n        >\n          Save responsibility\n        </button>
       </VersionedEditor>
-      {state !== "loaded" && <StatusBanner kind="failed">Resource operation: {state}.</StatusBanner>}
-      <ProvenancePanel><pre>{JSON.stringify(resource.history, null, 2)}</pre></ProvenancePanel>
+      {state !== "loaded" && (\n        <StatusBanner kind="failed">Resource operation: {state}.</StatusBanner>\n      )}
+      <ProvenancePanel>\n        <pre>{JSON.stringify(resource.history, null, 2)}</pre>\n      </ProvenancePanel>
     </>
   );
 }
