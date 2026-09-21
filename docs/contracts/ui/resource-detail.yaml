@@ -61,7 +61,7 @@ interaction:
     transition: RESOURCE-DETAIL.current -> RESOURCE-DETAIL.current+history
     invariant: Current facts remain visible/readable while history is inspected.
   - id: REPLACE-OR-END-FACT
-    trigger: User completes an accepted Resource mutation: set/clear Endpoint address, replace/clear Site, or replace/clear OWNER/ADMINISTRATOR responsibility.
+    trigger: "User completes an accepted Resource mutation: set/clear Endpoint address, replace/clear Site, or replace/clear OWNER/ADMINISTRATOR responsibility."
     transition: RESOURCE-DETAIL -> refresh RESOURCE-DETAIL
     postcondition:
       - New effective fact, when applicable, appears in current.
