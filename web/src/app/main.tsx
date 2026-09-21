@@ -232,7 +232,9 @@ function Deployments() {
             onChange={(event) => setResourceRef(event.target.value)}
           />
         </label>
-        <button type="submit" disabled={!componentRef || !resourceRef}>Create deployment</button>
+        <button type="submit" disabled={!componentRef || !resourceRef}>
+          Create deployment
+        </button>
       </form>
       {error && (
         <p role="alert" className="status">
