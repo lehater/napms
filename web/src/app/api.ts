@@ -1,5 +1,5 @@
-import { authSession } from "./auth-session.ts";
-import { type ApiErrorKind, statusToErrorKind } from "./http-semantics.ts";
+import { authSession } from "./auth-session";
+import { type ApiErrorKind, statusToErrorKind } from "./http-semantics";
 
 export class ApiError extends Error {
   readonly kind: ApiErrorKind;
