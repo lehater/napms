@@ -109,7 +109,7 @@ def router(
     ) -> dict[str, object]:
         if "resource.read" not in caller.instance_permissions:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-        resource = application._resources.get(resource_ref)
+        resource = application.get_resource(resource_ref)
         if resource is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         return _view(resource)
