@@ -28,16 +28,20 @@ bindings:
     semantic_claims:
       - engineering.interface.machine.contract
       - engineering.interface.machine.errors
+      - engineering.interface.machine.compatibility
   - capability: engineering.data.persistence-model
     semantic_claims:
       - engineering.data.model
       - engineering.data.integrity
       - engineering.data.lifecycle
+      - engineering.data.classification
       - engineering.delivery.migration
   - capability: engineering.security.threat-analysis
     semantic_claims:
       - engineering.security.threat-analysis
       - engineering.security.availability-abuse
+      - engineering.security.vulnerability-management
+      - engineering.security.secure-development
   - capability: engineering.verification.strategy
     semantic_claims:
       - engineering.verification.strategy
@@ -48,7 +52,10 @@ bindings:
       - engineering.verification.quality
       - engineering.verification.security
       - engineering.verification.interface.machine
+      - engineering.verification.interface.human
+      - engineering.verification.architecture
       - engineering.verification.data
+      - engineering.transition.revalidation
 
   - capability: engineering.architecture.security
     semantic_claims:
@@ -58,6 +65,9 @@ bindings:
   - capability: engineering.operability.observability
     semantic_claims:
       - engineering.operability.logging
+      - engineering.operability.configuration
+      - engineering.operability.health
+      - engineering.operability.incident
   - capability: engineering.interface.ui-navigation
     semantic_claims:
       - engineering.interface.human.journeys
@@ -66,10 +76,30 @@ bindings:
     semantic_claims:
       - engineering.interface.human.journeys
       - engineering.interface.human.usability
+      - engineering.interface.human.accessibility
+      - engineering.interface.human.responsiveness
   - capability: engineering.quality.constraints
     semantic_claims:
       - engineering.quality.maintainability.modularity
+      - engineering.quality.maintainability.analysability
+      - engineering.quality.maintainability.modifiability
+      - engineering.quality.maintainability.testability
+      - engineering.quality.performance.latency
+      - engineering.quality.performance.throughput
+      - engineering.quality.performance.capacity
+      - engineering.quality.performance.resource-efficiency
 
 # Intentionally unbound because current capability semantics are too broad:
+  - capability: engineering.architecture.rules
+    semantic_claims:
+      - engineering.reliability.availability
+      - engineering.reliability.durability
+      - engineering.reliability.recovery
+  - capability: engineering.implementation.plan
+    semantic_claims:
+      - engineering.engineering.error-handling
+      - engineering.delivery.release
+      - engineering.delivery.rollback
+
 # Broad capabilities remain only partially bound above. Unlisted concern semantics
 # are intentionally left open rather than inferred from artifact existence.
