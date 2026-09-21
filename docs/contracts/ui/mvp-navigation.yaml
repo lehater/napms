@@ -3,36 +3,84 @@ kind: ui-navigation-model
 id: NAPMS-MVP-UI-NAVIGATION
 status: CURRENT
 
-purpose: Define the minimum supported web-navigation knowledge needed by the Resource history pilot without designing the whole NAPMS UI.
+purpose: Define the first-MVP browser navigation/workspace model for all accepted user-facing product subjects.
 
 workspaces:
-  - id: RESOURCE-CATALOGUE
-    responsibility: Entry workspace for locating/selecting a Resource and starting existing Resource authoring journeys.
-  - id: RESOURCE-DETAIL
-    responsibility: Inspect one stable Resource identity, its current facts and its ended/replaced history.
+  - {id: RESOURCE-CATALOGUE, responsibility: Locate/select Resources and start Resource authoring.}
+  - {id: RESOURCE-DETAIL, responsibility: Inspect and author one Resource current state and history.}
+  - {id: APPLICATION-CATALOGUE, responsibility: Locate/select reusable Applications.}
+  - {id: APPLICATION-DETAIL, responsibility: Author one Application with Components and directed Interactions.}
+  - {id: DEPLOYMENTS, responsibility: Locate/create Component deployments and inspect their Resource realization.}
+  - {id: BUSINESS-CONNECTIVITY, responsibility: Manage Business Processes and Connectivity Needs independently from permission.}
+  - {id: ACCESS-REQUESTS, responsibility: Submit connectivity requests and inspect/record permission outcomes allowed by authority.}
+  - {id: POLICY-RULES, responsibility: Inspect authoritative desired-access rules and change supported operational state.}
+  - {id: POLICY-EXPORT, responsibility: Select effective policy scope, execute normalized export and inspect completeness diagnostics.}
 
 transitions:
   - {from: RESOURCE-CATALOGUE, action: select-resource, to: RESOURCE-DETAIL, identity: ResourceId}
-  - {from: RESOURCE-DETAIL, action: back-to-catalogue, to: RESOURCE-CATALOGUE}
+  - {from: APPLICATION-CATALOGUE, action: select-application, to: APPLICATION-DETAIL, identity: ApplicationId}
+  - {from: APPLICATION-DETAIL, action: manage-components, to: APPLICATION-DETAIL, local_state: components}
+  - {from: APPLICATION-DETAIL, action: manage-interactions, to: APPLICATION-DETAIL, local_state: interactions}
+  - {from: DEPLOYMENTS, action: create-or-select-deployment, to: DEPLOYMENTS, identity: ComponentDeploymentId}
+  - {from: BUSINESS-CONNECTIVITY, action: create-or-select-need, to: BUSINESS-CONNECTIVITY, identity: ConnectivityNeedId}
+  - {from: ACCESS-REQUESTS, action: submit-request, to: ACCESS-REQUESTS, identity: AccessRequestId}
+  - {from: ACCESS-REQUESTS, action: inspect-resulting-rule, to: POLICY-RULES, identity: PolicyRuleId}
+  - {from: POLICY-RULES, action: export-effective-policy, to: POLICY-EXPORT}
   - {from: RESOURCE-DETAIL, action: open-history, to: RESOURCE-DETAIL, local_state: history-open}
 
-journey:
-  id: RESOURCE-HISTORY-INSPECTION
-  steps:
-    - User locates/selects a Resource in RESOURCE-CATALOGUE.
-    - System opens RESOURCE-DETAIL for the selected ResourceId.
-    - Current Resource facts are immediately readable.
-    - User opens History without leaving RESOURCE-DETAIL.
-    - Ended/replaced facts are inspectable with validity and provenance.
-    - After an existing replace/end action completes, RESOURCE-DETAIL refreshes so the new current fact and previous historical fact can be verified together.
+journeys:
+  - id: RESOURCE-MANAGEMENT
+    subject: Resource management
+    steps:
+      - Locate/select a Resource and inspect current facts.
+      - Create or change accepted Resource facts through admitted actions.
+      - Inspect ended/replaced facts with validity and provenance.
+  - id: APPLICATION-MANAGEMENT
+    subject: Application management
+    steps:
+      - Locate or create a reusable Application description.
+      - Inspect identity and communication structure independently from deployment realization.
+  - id: COMPONENT-MANAGEMENT
+    subject: Component management
+    steps:
+      - Open one Application description.
+      - Add/edit Component participants without treating them as network devices.
+  - id: INTERACTION-MANAGEMENT
+    subject: Interaction management
+    steps:
+      - Create an independently meaningful directed Interaction between valid Components.
+      - Capture its complete minimal traffic semantics and preserve distinct reasons as distinct Interactions.
+  - id: DEPLOYMENT-MANAGEMENT
+    subject: Deployment management
+    steps:
+      - Select a Component and Resource.
+      - Create/inspect a ComponentDeployment independent from the Resource current address.
+  - id: BUSINESS-CONNECTIVITY
+    subject: Business process and connectivity need
+    steps:
+      - Create/inspect a Business Process and organizational responsibility.
+      - Create/retire Connectivity Needs linking Process, Interaction and participant perspective.
+      - Keep business justification distinct from permission.
+  - id: ACCESS-REQUEST
+    subject: Access request
+    steps:
+      - Select an eligible Connectivity Need/deployment subject.
+      - Submit only when effective request authority is confirmed by the backend.
+      - Inspect immutable request subject and permission outcome without treating UI state as authority.
+  - id: POLICY-RULE
+    subject: Policy rule
+    steps:
+      - Inspect authoritative desired-access identity created only from Allowed permission.
+      - Change supported Active/Inactive state while preserving history and decision provenance.
+  - id: POLICY-EXPORT
+    subject: Policy export
+    steps:
+      - Select all current desired policy or an explicit domain-policy subset.
+      - Execute export only when effective export authority is confirmed by the backend.
+      - Distinguish complete success from unresolved/degraded output and expose provenance/evaluation time.
 
 rules:
-  - Navigation passes stable ResourceId, never a database row identity.
-  - History is subordinate state of Resource detail, not a separate business object or independent workspace.
-  - Loading, not-found and error states do not change Resource domain semantics.
-  - This model owns navigation/interaction structure only; HTTP representation remains owned by the HTTP/OpenAPI contracts.
-
-out_of_scope:
-  - navigation for unrelated MVP capabilities
-  - global visual shell and styling
-  - component-library selection
+  - Navigation passes stable product identifiers, never database-row identities.
+  - Loading, empty, not-found, rejected, conflict and technical-error states remain distinct.
+  - Frontend navigation/actions never establish domain truth or security authority.
+  - HTTP representation remains owned by canonical HTTP/OpenAPI contracts.
