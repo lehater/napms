@@ -8,11 +8,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "format-check": "biome format --check .",
-    "lint": "biome lint .",
     "ui-boundary-check": "node scripts/check-ui-boundaries.mjs",
     "build": "npm run ui-boundary-check && tsc -b && vite build",
-    "check": "npm run format-check && npm run lint && npm run ui-boundary-check && tsc -b --pretty false"
+    "check": "biome check . && npm run ui-boundary-check && tsc -b --pretty false"
   },
   "dependencies": {
     "lucide-react": "^1.43.0",
