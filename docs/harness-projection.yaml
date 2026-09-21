@@ -13,6 +13,7 @@ authorities:
   - {id: TACTICAL-DOMAIN-DESIGN}
   - {id: APPLICATION-JOURNEY-DESIGN}
   - {id: SYSTEM-ARCHITECTURE}
+  - {id: FRONTEND-ARCHITECTURE-DESIGN}
   - {id: SECURITY-ARCHITECTURE-DESIGN}
   - {id: INTERFACE-DESIGN}
   - {id: DATA-DESIGN}
@@ -66,7 +67,7 @@ bindings:
   - {artifact: MVP-IMPLEMENTATION-READINESS, authority: IMPLEMENTATION-DESIGN, provides: [engineering.implementation.plan, engineering.implementation.completion-criteria]}
   - {artifact: MVP-TEST-INTENT, authority: VERIFICATION-DESIGN, provides: [engineering.verification.strategy, engineering.verification.acceptance-scenarios]}
   - {artifact: FRONTEND-HUMAN-INTERFACE, authority: INTERFACE-DESIGN, provides: [engineering.frontend.human-interface]}
-  - {artifact: FRONTEND-ARCHITECTURE, authority: SYSTEM-ARCHITECTURE, provides: [engineering.frontend.architecture]}
+  - {artifact: FRONTEND-ARCHITECTURE, authority: FRONTEND-ARCHITECTURE-DESIGN, provides: [engineering.frontend.architecture]}
   - {artifact: FRONTEND-COMPONENT-DESIGN, authority: COMPONENT-DESIGN, provides: [engineering.frontend.component-design]}
   - {artifact: FRONTEND-VERIFICATION, authority: VERIFICATION-DESIGN, provides: [engineering.frontend.verification]}
   - {artifact: FRONTEND-TEST-DESIGN, authority: TEST-DESIGN, provides: [engineering.frontend.test-design]}
