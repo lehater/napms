@@ -11,7 +11,12 @@ from napms.contexts.access_policy.application.ports import (
     AccessPolicyNotFound,
     AccessPolicyVersionConflict,
 )
+from napms.contexts.access_policy.application.ports import (
+    AccessPolicyNotFound,
+    AccessPolicyVersionConflict,
+)
 from napms.contexts.access_policy.application.submission import AccessRequestSubmissionRejected
+from napms.contexts.access_policy.domain.model import PermissionDecision
 from napms.contexts.access_policy.domain.model import AccessRequest, PermissionDecision, PolicyRule
 from napms.contexts.authority_management.application.service import AuthorityForbidden
 from napms.contexts.authority_management.domain.model import Principal
@@ -46,6 +51,18 @@ class AccessRequestDecider(Protocol):
     ) -> tuple[AccessRequest, PolicyRule | None]: ...
 
 
+class AccessRequestDecider(Protocol):
+    def decide(
+        self,
+        *,
+        request_ref: UUID,
+        result: PermissionDecision,
+        decided_by_subject: str,
+        expected_version: int,
+        external_decision_ref: str | None = None,
+    ): ...
+
+
 class SubmitAccessRequestBody(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
     source_deployment_ref: UUID
@@ -65,6 +82,7 @@ class HttpDependencies:
     identity: OidcIdentityValidator
     access_requests: AccessRequestSubmitter
     access_request_decisions: AccessRequestDecider | None = None
+    access_request_decisions: AccessRequestDecider | None = None
 
 
 def create_app(dependencies: HttpDependencies) -> FastAPI:
@@ -82,6 +100,23 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED) from exc
         except IdentityDependencyUnavailable as exc:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE) from exc
+
+    def require_permission(caller: Principal, permission: str) -> None:
+        if permission not in caller.instance_permissions:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    def expected_version(if_match: str) -> int:
+        value = if_match.strip()
+        if value.startswith('W/'):
+            value = value[2:]
+        value = value.strip('"')
+        try:
+            version = int(value)
+        except ValueError as exc:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
+        if version < 0:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+        return version
 
     @app.post("/v1/access-requests", status_code=status.HTTP_201_CREATED)
     def submit_access_request(
@@ -137,6 +172,44 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
             "requestRef": str(request.request_ref),
             "version": request.version,
             "result": request.decision_result.value,
+            "policyRuleRef": None if rule is None else str(rule.rule_ref),
+        }
+
+    class DecideAccessRequestBody(BaseModel):
+        model_config = ConfigDict(extra="forbid", populate_by_name=True)
+        result: PermissionDecision
+        external_decision_ref: str | None = None
+
+    @app.post("/v1/access-requests/{request_ref}/decision")
+    def decide_access_request(
+        request_ref: UUID,
+        body: DecideAccessRequestBody,
+        if_match: str = Header(alias="If-Match"),
+        idempotency_key: str = Header(alias="Idempotency-Key", min_length=1),
+        caller: Principal = Depends(principal),
+    ) -> dict[str, object]:
+        del idempotency_key
+        require_permission(caller, "access.decide")
+        if dependencies.access_request_decisions is None:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+        try:
+            decided, rule = dependencies.access_request_decisions.decide(
+                request_ref=request_ref,
+                result=body.result,
+                decided_by_subject=caller.subject,
+                expected_version=expected_version(if_match),
+                external_decision_ref=body.external_decision_ref,
+            )
+        except AccessPolicyVersionConflict as exc:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
+        except AccessPolicyNotFound as exc:
+            # The canonical decision operation has no 404 response; inability to
+            # establish its outcome is represented as unavailable.
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE) from exc
+        return {
+            "requestRef": str(decided.request_ref),
+            "version": decided.version,
+            "result": decided.decision_result.value if decided.decision_result else None,
             "policyRuleRef": None if rule is None else str(rule.rule_ref),
         }
 
