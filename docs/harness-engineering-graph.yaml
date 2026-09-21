@@ -372,6 +372,7 @@ authorities:
           - engineering.requirements.product-intent
           - engineering.frontend.human-interface
           - engineering.frontend.architecture
+          - engineering.frontend.component-design
 
   - id: TEST-DESIGN
     responsibility: Own executable frontend behavioral test contracts before implementation.
