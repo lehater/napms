@@ -16,10 +16,20 @@ export class ApiError extends Error {
   }
 }
 
+let accessToken: string | null = null;
+
+export function setRuntimeAccessToken(token: string | null) {
+  accessToken = token;
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(path, {
     ...init,
-    headers: { "Content-Type": "application/json", ...init.headers },
+    headers: {
+      "Content-Type": "application/json",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      ...init.headers,
+    },
   });
   if (!response.ok) {
     const kind: ApiErrorKind =
