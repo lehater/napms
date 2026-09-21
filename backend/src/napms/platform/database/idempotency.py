@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 import hashlib
 import json
-from typing import Any
+from uuid import uuid4
 
 import psycopg
 
@@ -16,8 +17,8 @@ class IdempotencyConflict(Exception):
 class PersistedHttpResponse:
     status_code: int
     body: dict[str, object]
-    location: str | None
-    etag: str | None
+    location: str | None = None
+    etag: str | None = None
 
 
 class PostgresIdempotencyStore:
@@ -38,10 +39,12 @@ class PostgresIdempotencyStore:
         with psycopg.connect(self._dsn) as connection:
             row = connection.execute(
                 """
-                SELECT request_fingerprint, status_code, response_body, location, etag
-                FROM napms_technical.idempotency
-                WHERE principal = %s AND method = %s AND route = %s
-                  AND target = %s AND idempotency_key = %s
+                SELECT request_fingerprint, response_status,
+                       response_body_json_bytes, location, response_etag
+                FROM application_edge.idempotency_record
+                WHERE principal_subject = %s AND http_method = %s
+                  AND route_template = %s AND target_key = %s
+                  AND idempotency_key = %s
                 """,
                 (principal, method, route, target, key),
             ).fetchone()
@@ -51,7 +54,7 @@ class PostgresIdempotencyStore:
             raise IdempotencyConflict(key)
         return PersistedHttpResponse(
             status_code=row[1],
-            body=row[2],
+            body=json.loads(bytes(row[2]).decode()),
             location=row[3],
             etag=row[4],
         )
@@ -68,18 +71,26 @@ class PostgresIdempotencyStore:
         response: PersistedHttpResponse,
     ) -> PersistedHttpResponse:
         fingerprint = _fingerprint(payload)
+        body = json.dumps(
+            response.body, sort_keys=True, separators=(",", ":")
+        ).encode()
         with psycopg.connect(self._dsn) as connection:
             row = connection.execute(
                 """
-                INSERT INTO napms_technical.idempotency (
-                    principal, method, route, target, idempotency_key,
-                    request_fingerprint, status_code, response_body, location, etag
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s)
-                ON CONFLICT (principal, method, route, target, idempotency_key)
-                DO NOTHING
-                RETURNING status_code
+                INSERT INTO application_edge.idempotency_record (
+                    record_ref, principal_subject, http_method, route_template,
+                    target_key, idempotency_key, request_fingerprint,
+                    response_status, response_body_json_bytes, location,
+                    response_etag, committed_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (
+                    principal_subject, http_method, route_template,
+                    target_key, idempotency_key
+                ) DO NOTHING
+                RETURNING record_ref
                 """,
                 (
+                    uuid4(),
                     principal,
                     method,
                     route,
@@ -87,9 +98,10 @@ class PostgresIdempotencyStore:
                     key,
                     fingerprint,
                     response.status_code,
-                    json.dumps(response.body, sort_keys=True),
+                    body,
                     response.location,
                     response.etag,
+                    datetime.now(timezone.utc),
                 ),
             ).fetchone()
             if row is not None:
@@ -107,5 +119,7 @@ class PostgresIdempotencyStore:
 
 
 def _fingerprint(payload: dict[str, object]) -> str:
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str).encode()
+    encoded = json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), default=str
+    ).encode()
     return hashlib.sha256(encoded).hexdigest()
