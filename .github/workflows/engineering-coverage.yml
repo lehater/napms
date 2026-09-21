@@ -61,6 +61,9 @@ jobs:
           with open("/tmp/frontend-coverage.json", encoding="utf-8") as f:
               frontend = json.load(f)
 
+          print("BACKEND_REMAINING_WORK", json.dumps(backend["remaining_work"], sort_keys=True))
+          print("FRONTEND_REMAINING_WORK", json.dumps(frontend["remaining_work"], sort_keys=True))
+
           for expected_consumer, result in (
               ("BACKEND-IMPLEMENTATION", backend),
               ("FRONTEND-IMPLEMENTATION", frontend),
