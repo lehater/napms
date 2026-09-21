@@ -1,0 +1,30 @@
+name: Human Projection Current-Main Validation
+
+on:
+  pull_request:
+    paths:
+      - "docs/research/human-projection-v1/**"
+      - "tools/test_human_projection_v1_current.py"
+      - ".github/workflows/human-projection-current.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Checkout Harness Human Projection prototype
+        uses: actions/checkout@v5
+        with:
+          repository: lehater/harness
+          ref: 025239b68800cb56ed192ab4d51cbf9047e80f2e
+          path: .human-projection-harness
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14.7"
+      - run: python -m pip install PyYAML
+      - env:
+          HUMAN_PROJECTION_HARNESS: .human-projection-harness
+        run: python tools/test_human_projection_v1_current.py
