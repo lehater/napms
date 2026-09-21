@@ -251,8 +251,23 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         idempotency_key: str = Header(alias="Idempotency-Key", min_length=1),
         caller: Principal = Depends(principal),
     ) -> dict[str, object]:
-        del idempotency_key
         require_permission(caller, "access.decide")
+        payload = body.model_dump(mode="json", by_alias=True)
+        target = str(request_ref)
+        if dependencies.idempotency is not None:
+            try:
+                replay = dependencies.idempotency.lookup(
+                    principal=caller.subject,
+                    method="POST",
+                    route="/v1/access-requests/{requestRef}/decision",
+                    target=target,
+                    key=idempotency_key,
+                    payload=payload,
+                )
+            except IdempotencyConflict as exc:
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
+            if replay is not None:
+                return replay.body
         if dependencies.access_request_decisions is None:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
         try:
@@ -267,12 +282,23 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
         except AccessPolicyNotFound as exc:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE) from exc
-        return {
+        response = {
             "requestRef": str(decided.request_ref),
             "version": decided.version,
             "result": decided.decision_result.value if decided.decision_result else None,
             "policyRuleRef": None if rule is None else str(rule.rule_ref),
         }
+        if dependencies.idempotency is not None:
+            response = dependencies.idempotency.record(
+                principal=caller.subject,
+                method="POST",
+                route="/v1/access-requests/{requestRef}/decision",
+                target=target,
+                key=idempotency_key,
+                payload=payload,
+                response=PersistedHttpResponse(status_code=200, body=response),
+            ).body
+        return response
 
     @app.post("/v1/policy-rules/{rule_ref}/justifications")
     def attach_justification(
@@ -282,8 +308,23 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         idempotency_key: str = Header(alias="Idempotency-Key", min_length=1),
         caller: Principal = Depends(principal),
     ) -> dict[str, object]:
-        del idempotency_key
         require_permission(caller, "access.manage")
+        payload = body.model_dump(mode="json", by_alias=True)
+        target = str(rule_ref)
+        if dependencies.idempotency is not None:
+            try:
+                replay = dependencies.idempotency.lookup(
+                    principal=caller.subject,
+                    method="POST",
+                    route="/v1/policy-rules/{policyRuleRef}/justifications",
+                    target=target,
+                    key=idempotency_key,
+                    payload=payload,
+                )
+            except IdempotencyConflict as exc:
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
+            if replay is not None:
+                return replay.body
         if dependencies.policy_rule_justifications is None:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
         try:
@@ -297,7 +338,18 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
         except (JustificationRejected, AccessPolicyNotFound) as exc:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
-        return {"policyRuleRef": str(rule.rule_ref), "version": rule.version}
+        response = {"policyRuleRef": str(rule.rule_ref), "version": rule.version}
+        if dependencies.idempotency is not None:
+            response = dependencies.idempotency.record(
+                principal=caller.subject,
+                method="POST",
+                route="/v1/policy-rules/{policyRuleRef}/justifications",
+                target=target,
+                key=idempotency_key,
+                payload=payload,
+                response=PersistedHttpResponse(status_code=200, body=response),
+            ).body
+        return response
 
     @app.put("/v1/policy-rules/{rule_ref}/operational-state")
     def set_operational_state(

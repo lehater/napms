@@ -24,12 +24,17 @@ from napms.contexts.resource_catalogue.domain.model import (
 )
 
 
+def _camel(name: str) -> str:
+    first, *rest = name.split("_")
+    return first + "".join(part.capitalize() for part in rest)
+
+
 class IdentityDependency(Protocol):
     def __call__(self) -> Principal: ...
 
 
 class _Body(BaseModel):
-    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+    model_config = ConfigDict(extra="forbid", populate_by_name=True, alias_generator=_camel)
 
 
 class CreateResourceBody(_Body):
@@ -249,7 +254,7 @@ def _view(resource: Resource) -> dict[str, object]:
         },
         "history": {
             "sites": [_site_fact(item) for item in resource.site_history],
-            "addresses": [
+            "endpointAddresses": [
                 {
                     "endpointRef": str(endpoint.endpoint_ref),
                     "facts": [_address_fact(item) for item in endpoint.address_history],
@@ -268,7 +273,7 @@ def _site_fact(item) -> dict[str, object]:
         "factRef": str(item.fact_ref),
         "siteRef": str(item.site_ref),
         "effectiveFrom": item.effective_from.isoformat(),
-        "effectiveTo": None if item.effective_to is None else item.effective_to.isoformat(),
+        "effectiveUntil": None if item.effective_to is None else item.effective_to.isoformat(),
         "changedBySubject": item.changed_by_subject,
     }
 

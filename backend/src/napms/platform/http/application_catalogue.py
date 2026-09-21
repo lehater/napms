@@ -20,12 +20,17 @@ from napms.contexts.application_communication_catalogue.domain.model import (
 from napms.contexts.authority_management.domain.model import Principal
 
 
+def _camel(name: str) -> str:
+    first, *rest = name.split("_")
+    return first + "".join(part.capitalize() for part in rest)
+
+
 class IdentityDependency(Protocol):
     def __call__(self) -> Principal: ...
 
 
 class _Body(BaseModel):
-    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+    model_config = ConfigDict(extra="forbid", populate_by_name=True, alias_generator=_camel)
 
 
 class NamedBody(_Body):
