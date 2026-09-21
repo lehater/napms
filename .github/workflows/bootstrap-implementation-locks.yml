@@ -1,0 +1,50 @@
+name: bootstrap implementation locks
+
+on:
+  push:
+    branches:
+      - implementation/first-mvp-rebuild
+    paths:
+      - "backend/pyproject.toml"
+      - "web/package.json"
+      - ".github/workflows/bootstrap-implementation-locks.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  generate-locks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: implementation/first-mvp-rebuild
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+      - name: Generate deterministic backend resolution
+        run: |
+          python -m pip install "pip-tools==7.6.1"
+          python -m piptools compile backend/pyproject.toml \
+            --extra dev \
+            --extra runtime \
+            --extra postgres \
+            --resolver=backtracking \
+            --output-file backend/requirements.lock
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+      - name: Regenerate frontend lock
+        run: |
+          cd web
+          npm install --package-lock-only --ignore-scripts
+      - name: Commit generated lock files
+        run: |
+          if git diff --quiet -- backend/requirements.lock web/package-lock.json; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/requirements.lock web/package-lock.json
+          git commit -m "chore: lock implementation dependencies"
+          git push origin HEAD:implementation/first-mvp-rebuild
