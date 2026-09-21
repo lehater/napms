@@ -20,6 +20,15 @@ bindings:
       - engineering.application.use-cases
       - engineering.application.orchestration
       - engineering.application.failures
+      - {claim: engineering.application.use-cases, subject: Resource management}
+      - {claim: engineering.application.use-cases, subject: Application management}
+      - {claim: engineering.application.use-cases, subject: Component management}
+      - {claim: engineering.application.use-cases, subject: Interaction management}
+      - {claim: engineering.application.use-cases, subject: Deployment management}
+      - {claim: engineering.application.use-cases, subject: Business process and connectivity need}
+      - {claim: engineering.application.use-cases, subject: Access request}
+      - {claim: engineering.application.use-cases, subject: Policy rule}
+      - {claim: engineering.application.use-cases, subject: Policy export}
   - capability: engineering.architecture.c4-model
     semantic_claims: [engineering.architecture.structure]
   - capability: engineering.architecture.module-contracts
