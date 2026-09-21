@@ -41,7 +41,10 @@ function App() {
     screen = <ApplicationDetail applicationRef={route.applicationRef} />;
   } else if (route.id === "component-new") {
     screen = (
-      <ApplicationDetail applicationRef={route.applicationRef} createComponent />
+      <ApplicationDetail
+        applicationRef={route.applicationRef}
+        createComponent
+      />
     );
   } else if (route.id === "interaction-new") {
     screen = <InteractionAuthoring />;

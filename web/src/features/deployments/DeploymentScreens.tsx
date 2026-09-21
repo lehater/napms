@@ -82,7 +82,9 @@ export function DeploymentScreens({ create = false }: { create?: boolean }) {
         </FormSection>
       )}
       {!["loading", "loaded", "submitting"].includes(state) && (
-        <StatusBanner kind="failed">Deployment operation: {state}.</StatusBanner>
+        <StatusBanner kind="failed">
+          Deployment operation: {state}.
+        </StatusBanner>
       )}
     </>
   );

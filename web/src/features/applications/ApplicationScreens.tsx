@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ApiError, api, type ApplicationView } from "../../app/api";
+import { ApiError, type ApplicationView, api } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
   EmptyState,
@@ -42,7 +42,9 @@ export function ApplicationCatalogue({ create = false }: { create?: boolean }) {
   return (
     <>
       <PageHeader eyebrow="Application catalogue" title="Applications" />
-      {state === "loading" && <StatusBanner>Loading Applications…</StatusBanner>}
+      {state === "loading" && (
+        <StatusBanner>Loading Applications…</StatusBanner>
+      )}
       {state !== "loading" && items.length === 0 && (
         <EmptyState>No Applications.</EmptyState>
       )}
@@ -71,7 +73,9 @@ export function ApplicationCatalogue({ create = false }: { create?: boolean }) {
         </FormSection>
       )}
       {!["loading", "loaded", "submitting"].includes(state) && (
-        <StatusBanner kind="failed">Application operation: {state}.</StatusBanner>
+        <StatusBanner kind="failed">
+          Application operation: {state}.
+        </StatusBanner>
       )}
     </>
   );
@@ -104,7 +108,11 @@ export function ApplicationDetail({
     if (!application) return;
     setState("submitting");
     try {
-      await api.addComponent(application.applicationRef, application.version, name);
+      await api.addComponent(
+        application.applicationRef,
+        application.version,
+        name,
+      );
       const value = await api.getApplication(application.applicationRef);
       setApplication(value);
       setName("");
@@ -115,7 +123,8 @@ export function ApplicationDetail({
     }
   }
 
-  if (state === "loading") return <StatusBanner>Loading Application…</StatusBanner>;
+  if (state === "loading")
+    return <StatusBanner>Loading Application…</StatusBanner>;
   if (!application)
     return <StatusBanner kind="failed">Application: {state}.</StatusBanner>;
 
@@ -137,7 +146,9 @@ export function ApplicationDetail({
         <button
           type="button"
           onClick={() =>
-            navigate(`/applications/${application.applicationRef}/components/new`)
+            navigate(
+              `/applications/${application.applicationRef}/components/new`,
+            )
           }
         >
           Add Component
@@ -153,7 +164,11 @@ export function ApplicationDetail({
       </VersionedEditor>
       {createComponent && (
         <FormSection onSubmit={addComponent}>
-          <ReferenceField label="Component name" value={name} onChange={setName} />
+          <ReferenceField
+            label="Component name"
+            value={name}
+            onChange={setName}
+          />
           <button type="submit" disabled={!name || state === "submitting"}>
             Add Component
           </button>
@@ -204,21 +219,47 @@ export function InteractionAuthoring({
     <>
       <PageHeader
         eyebrow="Application detail"
-        title={interactionRef ? "Publish interaction revision" : "Create interaction"}
+        title={
+          interactionRef ? "Publish interaction revision" : "Create interaction"
+        }
       />
       <FormSection onSubmit={submit}>
         {!interactionRef && (
           <>
-            <ReferenceField label="Source Component ID" value={source} onChange={setSource} />
-            <ReferenceField label="Destination Component ID" value={destination} onChange={setDestination} />
-            <ReferenceField label="Purpose" value={purpose} onChange={setPurpose} />
+            <ReferenceField
+              label="Source Component ID"
+              value={source}
+              onChange={setSource}
+            />
+            <ReferenceField
+              label="Destination Component ID"
+              value={destination}
+              onChange={setDestination}
+            />
+            <ReferenceField
+              label="Purpose"
+              value={purpose}
+              onChange={setPurpose}
+            />
           </>
         )}
         {interactionRef && (
           <>
-            <ReferenceField label="Interaction ID" value={interactionRef} readOnly />
-            <ReferenceField label="Expected version" value={version} onChange={setVersion} />
-            <ReferenceField label="IP protocol number" value={protocol} onChange={setProtocol} />
+            <ReferenceField
+              label="Interaction ID"
+              value={interactionRef}
+              readOnly
+            />
+            <ReferenceField
+              label="Expected version"
+              value={version}
+              onChange={setVersion}
+            />
+            <ReferenceField
+              label="IP protocol number"
+              value={protocol}
+              onChange={setProtocol}
+            />
           </>
         )}
         <button

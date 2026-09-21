@@ -77,7 +77,9 @@ export function BusinessConnectivity({
   return (
     <>
       <PageHeader eyebrow="Business connectivity" title="Business Processes" />
-      {state === "loading" && <StatusBanner>Loading Business Processes…</StatusBanner>}
+      {state === "loading" && (
+        <StatusBanner>Loading Business Processes…</StatusBanner>
+      )}
       {!processRef && items.length === 0 && state !== "loading" && (
         <EmptyState>No Business Processes.</EmptyState>
       )}
@@ -93,7 +95,10 @@ export function BusinessConnectivity({
             </button>
           ))}
           {!create && (
-            <button type="button" onClick={() => navigate("/business-processes/new")}>
+            <button
+              type="button"
+              onClick={() => navigate("/business-processes/new")}
+            >
               Create Business Process
             </button>
           )}
@@ -102,8 +107,16 @@ export function BusinessConnectivity({
       {create && (
         <FormSection onSubmit={createProcess}>
           <ReferenceField label="Name" value={name} onChange={setName} />
-          <ReferenceField label="Description" value={description} onChange={setDescription} />
-          <ReferenceField label="Criticality" value={criticality} onChange={setCriticality} />
+          <ReferenceField
+          label="Description"
+          value={description}
+          onChange={setDescription}
+        />
+          <ReferenceField
+          label="Criticality"
+          value={criticality}
+          onChange={setCriticality}
+        />
           <button type="submit" disabled={!name || state === "submitting"}>
             Create Business Process
           </button>
@@ -113,23 +126,46 @@ export function BusinessConnectivity({
         <>
           <VersionedEditor version={selected.version}>
             <h3>{selected.name}</h3>
-            <p>{selected.description || "No description"} · criticality {selected.criticalityLabel || "unset"}</p>
+            <p>
+              {selected.description || "No description"} · criticality{" "}
+              {selected.criticalityLabel || "unset"}
+            </p>
             <h4>Connectivity Needs</h4>
-            {selected.needs.length === 0 && <EmptyState>No Connectivity Needs.</EmptyState>}
+            {selected.needs.length === 0 && (
+              <EmptyState>No Connectivity Needs.</EmptyState>
+            )}
             {selected.needs.map((need) => (
               <p key={need.needRef}>
-                {need.needRef} · {need.status} · Interaction {need.interactionRef} ·
-                Participant {need.participantComponentRef} · {need.businessBasis}
+                {need.needRef} · {need.status} · Interaction{" "}
+                {need.interactionRef} · Participant{" "}
+                {need.participantComponentRef} · {need.businessBasis}
               </p>
             ))}
           </VersionedEditor>
           <FormSection onSubmit={declareNeed}>
-            <ReferenceField label="Interaction ID" value={interactionRef} onChange={setInteractionRef} />
-            <ReferenceField label="Participant Component ID" value={componentRef} onChange={setComponentRef} />
-            <ReferenceField label="Business basis" value={basis} onChange={setBasis} />
+            <ReferenceField
+            label="Interaction ID"
+            value={interactionRef}
+            onChange={setInteractionRef}
+          />
+            <ReferenceField
+            label="Participant Component ID"
+            value={componentRef}
+            onChange={setComponentRef}
+          />
+            <ReferenceField
+            label="Business basis"
+            value={basis}
+            onChange={setBasis}
+          />
             <button
               type="submit"
-              disabled={!interactionRef || !componentRef || !basis || state === "submitting"}
+              disabled={
+              !interactionRef ||
+              !componentRef ||
+              !basis ||
+              state === "submitting"
+            }
             >
               Declare Connectivity Need
             </button>
