@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, implementation/first-mvp-rebuild]
     paths:
-      - "e2e/**"\n      - ".github/workflows/journey-e2e.yml"
+      - "e2e/**"
       - "web/**"
       - "backend/src/napms/contexts/**"
       - "backend/src/napms/platform/**"
