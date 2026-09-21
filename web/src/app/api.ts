@@ -302,7 +302,7 @@ export const api = {
       {
         method: "POST",
         headers: { "If-Match": String(version) },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ needRef }),
       },
     ),
   retireNeed: (processRef: string, needRef: string, version: number) =>
@@ -354,7 +354,7 @@ export const api = {
   attachPolicyRuleJustification: (
     ref: string,
     version: number,
-    body: { processRef: string; needRef: string },
+    needRef: string,
   ) =>
     request<{ policyRuleRef: string; version: number }>(
       `/v1/policy-rules/${ref}/justifications`,
