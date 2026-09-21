@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from napms.contexts.resource_catalogue.application.ports import (
     RESOURCE_CATALOGUE_AUTHORITY_SCOPE,
@@ -31,21 +31,22 @@ class ResourceCatalogueApplication:
         *,
         resources: ResourceCatalogueRepository,
         authority: ResourceCatalogueAuthority,
+        new_ref: Callable[[], UUID] = uuid4,
     ) -> None:
         self._resources = resources
         self._authority = authority
+        self._new_ref = new_ref
 
     def register_resource(
         self,
         *,
-        resource_ref: UUID,
         display_name: str,
         authority_scope_ref: str,
         context: MutationContext,
     ) -> Resource:
         self._admit(context)
         resource = Resource.register(
-            resource_ref=resource_ref,
+            resource_ref=self._new_ref(),
             display_name=display_name,
             authority_scope_ref=authority_scope_ref,
         )
@@ -56,10 +57,10 @@ class ResourceCatalogueApplication:
         self,
         *,
         resource_ref: UUID,
-        endpoint_ref: UUID,
         expected_version: int,
         context: MutationContext,
     ) -> Resource:
+        endpoint_ref = self._new_ref()
         return self._change(
             resource_ref=resource_ref,
             expected_version=expected_version,
@@ -76,6 +77,7 @@ class ResourceCatalogueApplication:
         expected_version: int,
         context: MutationContext,
     ) -> Resource:
+        fact_ref = self._new_ref()
         return self._change(
             resource_ref=resource_ref,
             expected_version=expected_version,
@@ -83,6 +85,7 @@ class ResourceCatalogueApplication:
             transform=lambda resource: resource.set_endpoint_address(
                 endpoint_ref,
                 address,
+                fact_ref=fact_ref,
                 effective_at=context.effective_at,
                 subject=context.principal,
             ),
@@ -103,7 +106,6 @@ class ResourceCatalogueApplication:
             transform=lambda resource: resource.clear_endpoint_address(
                 endpoint_ref,
                 effective_at=context.effective_at,
-                subject=context.principal,
             ),
         )
 
@@ -115,12 +117,14 @@ class ResourceCatalogueApplication:
         expected_version: int,
         context: MutationContext,
     ) -> Resource:
+        fact_ref = self._new_ref() if site_ref is not None else None
         return self._change(
             resource_ref=resource_ref,
             expected_version=expected_version,
             context=context,
             transform=lambda resource: resource.set_site(
                 site_ref,
+                fact_ref=fact_ref,
                 effective_at=context.effective_at,
                 subject=context.principal,
             ),
@@ -135,6 +139,7 @@ class ResourceCatalogueApplication:
         expected_version: int,
         context: MutationContext,
     ) -> Resource:
+        fact_ref = self._new_ref() if group_ref is not None else None
         return self._change(
             resource_ref=resource_ref,
             expected_version=expected_version,
@@ -142,6 +147,7 @@ class ResourceCatalogueApplication:
             transform=lambda resource: resource.set_responsibility(
                 role,
                 group_ref,
+                fact_ref=fact_ref,
                 effective_at=context.effective_at,
                 subject=context.principal,
             ),

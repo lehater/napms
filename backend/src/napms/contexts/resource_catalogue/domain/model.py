@@ -33,6 +33,7 @@ class AddressRealization:
 
 @dataclass(frozen=True)
 class AddressFact:
+    fact_ref: UUID
     address: AddressRealization
     effective_from: datetime
     effective_to: datetime | None
@@ -41,6 +42,7 @@ class AddressFact:
 
 @dataclass(frozen=True)
 class SiteFact:
+    fact_ref: UUID
     site_ref: UUID
     effective_from: datetime
     effective_to: datetime | None
@@ -49,6 +51,7 @@ class SiteFact:
 
 @dataclass(frozen=True)
 class ResponsibilityFact:
+    fact_ref: UUID
     role: ResponsibilityRole
     group_ref: UUID
     effective_from: datetime
@@ -66,6 +69,7 @@ class ResourceEndpoint:
         self,
         address: AddressRealization,
         *,
+        fact_ref: UUID,
         effective_at: datetime,
         subject: str,
     ) -> "ResourceEndpoint":
@@ -77,6 +81,7 @@ class ResourceEndpoint:
         return replace(
             self,
             current_address=AddressFact(
+                fact_ref=fact_ref,
                 address=address,
                 effective_from=effective_at,
                 effective_to=None,
@@ -85,7 +90,7 @@ class ResourceEndpoint:
             address_history=history,
         )
 
-    def clear_address(self, *, effective_at: datetime, subject: str) -> "ResourceEndpoint":
+    def clear_address(self, *, effective_at: datetime) -> "ResourceEndpoint":
         _require_aware(effective_at)
         if self.current_address is None:
             return self
@@ -141,11 +146,17 @@ class Resource:
         endpoint_ref: UUID,
         address: AddressRealization,
         *,
+        fact_ref: UUID,
         effective_at: datetime,
         subject: str,
     ) -> "Resource":
         endpoint = self._endpoint(endpoint_ref)
-        updated = endpoint.set_address(address, effective_at=effective_at, subject=subject)
+        updated = endpoint.set_address(
+            address,
+            fact_ref=fact_ref,
+            effective_at=effective_at,
+            subject=subject,
+        )
         return replace(
             self,
             endpoints=tuple(
@@ -159,10 +170,9 @@ class Resource:
         endpoint_ref: UUID,
         *,
         effective_at: datetime,
-        subject: str,
     ) -> "Resource":
         endpoint = self._endpoint(endpoint_ref)
-        updated = endpoint.clear_address(effective_at=effective_at, subject=subject)
+        updated = endpoint.clear_address(effective_at=effective_at)
         if updated == endpoint:
             return self
         return replace(
@@ -177,6 +187,7 @@ class Resource:
         self,
         site_ref: UUID | None,
         *,
+        fact_ref: UUID | None,
         effective_at: datetime,
         subject: str,
     ) -> "Resource":
@@ -185,10 +196,13 @@ class Resource:
         if self.current_site is not None:
             _require_later(effective_at, self.current_site.effective_from)
             history += (replace(self.current_site, effective_to=effective_at),)
+        if site_ref is not None and fact_ref is None:
+            raise ValueError("fact_ref is required for a current site fact")
         current = (
             None
             if site_ref is None
             else SiteFact(
+                fact_ref=fact_ref,
                 site_ref=site_ref,
                 effective_from=effective_at,
                 effective_to=None,
@@ -207,6 +221,7 @@ class Resource:
         role: ResponsibilityRole,
         group_ref: UUID | None,
         *,
+        fact_ref: UUID | None,
         effective_at: datetime,
         subject: str,
     ) -> "Resource":
@@ -219,12 +234,15 @@ class Resource:
         if current_for_role is not None:
             _require_later(effective_at, current_for_role.effective_from)
             history += (replace(current_for_role, effective_to=effective_at),)
+        if group_ref is not None and fact_ref is None:
+            raise ValueError("fact_ref is required for a current responsibility fact")
         remaining = tuple(item for item in self.responsibilities if item.role is not role)
         current = (
             ()
             if group_ref is None
             else (
                 ResponsibilityFact(
+                    fact_ref=fact_ref,
                     role=role,
                     group_ref=group_ref,
                     effective_from=effective_at,

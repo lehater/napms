@@ -33,12 +33,14 @@ def test_resource_and_endpoint_identity_survive_address_changes() -> None:
     value = value.set_endpoint_address(
         ENDPOINT,
         AddressRealization.host("10.20.30.40"),
+        fact_ref=UUID(int=30),
         effective_at=NOW,
         subject="alice",
     )
     value = value.set_endpoint_address(
         ENDPOINT,
         AddressRealization.prefix("10.20.40.0/24"),
+        fact_ref=UUID(int=31),
         effective_at=NOW + timedelta(minutes=1),
         subject="bob",
     )
@@ -50,6 +52,8 @@ def test_resource_and_endpoint_identity_survive_address_changes() -> None:
     assert endpoint.current_address is not None
     assert endpoint.current_address.address.kind is AddressKind.PREFIX
     assert endpoint.current_address.address.value == "10.20.40.0/24"
+    assert endpoint.current_address.fact_ref == UUID(int=31)
+    assert endpoint.address_history[0].fact_ref == UUID(int=30)
     assert endpoint.address_history[0].address.value == "10.20.30.40"
     assert endpoint.address_history[0].effective_to == NOW + timedelta(minutes=1)
     assert endpoint.address_history[0].changed_by_subject == "alice"
@@ -62,17 +66,18 @@ def test_endpoint_may_exist_without_current_address_and_clear_preserves_history(
     value = value.set_endpoint_address(
         ENDPOINT,
         AddressRealization.host("2001:db8::10"),
+        fact_ref=UUID(int=32),
         effective_at=NOW,
         subject="alice",
     )
     value = value.clear_endpoint_address(
         ENDPOINT,
         effective_at=NOW + timedelta(minutes=1),
-        subject="bob",
     )
 
     endpoint = value.endpoints[0]
     assert endpoint.current_address is None
+    assert endpoint.address_history[0].fact_ref == UUID(int=32)
     assert endpoint.address_history[0].address.value == "2001:db8::10"
     assert endpoint.address_history[0].effective_to == NOW + timedelta(minutes=1)
     assert endpoint.address_history[0].changed_by_subject == "alice"
@@ -85,31 +90,45 @@ def test_prefix_input_is_strict_and_not_silently_masked() -> None:
 
 def test_site_and_responsibility_are_singular_current_facts_with_history() -> None:
     value = resource()
-    value = value.set_site(SITE_A, effective_at=NOW, subject="alice")
+    value = value.set_site(
+        SITE_A,
+        fact_ref=UUID(int=40),
+        effective_at=NOW,
+        subject="alice",
+    )
     value = value.set_site(
         SITE_B,
+        fact_ref=UUID(int=41),
         effective_at=NOW + timedelta(minutes=1),
         subject="bob",
     )
     value = value.set_responsibility(
         ResponsibilityRole.OWNER,
         OWNER_A,
+        fact_ref=UUID(int=50),
         effective_at=NOW,
         subject="alice",
     )
     value = value.set_responsibility(
         ResponsibilityRole.OWNER,
         OWNER_B,
+        fact_ref=UUID(int=51),
         effective_at=NOW + timedelta(minutes=1),
         subject="bob",
     )
 
     assert value.current_site is not None
     assert value.current_site.site_ref == SITE_B
+    assert value.current_site.fact_ref == UUID(int=41)
     assert value.site_history[0].site_ref == SITE_A
+    assert value.site_history[0].fact_ref == UUID(int=40)
+    assert value.site_history[0].changed_by_subject == "alice"
     owners = [item for item in value.responsibilities if item.role is ResponsibilityRole.OWNER]
     assert [item.group_ref for item in owners] == [OWNER_B]
+    assert owners[0].fact_ref == UUID(int=51)
     assert value.responsibility_history[0].group_ref == OWNER_A
+    assert value.responsibility_history[0].fact_ref == UUID(int=50)
+    assert value.responsibility_history[0].changed_by_subject == "alice"
 
 
 def test_endpoints_are_added_only_by_explicit_membership() -> None:
