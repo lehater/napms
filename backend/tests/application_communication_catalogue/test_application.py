@@ -35,10 +35,10 @@ class Interactions:
     def add(self, interaction: Interaction) -> None:
         self.values[interaction.interaction_ref] = interaction
 
-    def get(self, interaction_ref: UUID) -> Interaction | None:
+    def get_interaction(self, interaction_ref: UUID) -> Interaction | None:
         return self.values.get(interaction_ref)
 
-    def save(self, interaction: Interaction, *, expected_version: int) -> None:
+    def save_interaction(self, interaction: Interaction, *, expected_version: int) -> None:
         assert self.values[interaction.interaction_ref].version == expected_version
         self.values[interaction.interaction_ref] = interaction
 
