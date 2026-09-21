@@ -1,13 +1,5 @@
 import { authSession } from "./auth-session";
-
-export type ApiErrorKind =
-  | "not-found"
-  | "rejected"
-  | "conflict"
-  | "unauthenticated"
-  | "forbidden"
-  | "unavailable"
-  | "technical";
+import { statusToErrorKind, type ApiErrorKind } from "./http-semantics";
 
 export class ApiError extends Error {
   constructor(
@@ -32,21 +24,7 @@ export async function request<T>(
     },
   });
   if (!response.ok) {
-    const kind: ApiErrorKind =
-      response.status === 404
-        ? "not-found"
-        : response.status === 401
-          ? "unauthenticated"
-          : response.status === 403
-            ? "forbidden"
-            : response.status === 409
-              ? "conflict"
-              : response.status === 422
-                ? "rejected"
-                : response.status === 503
-                  ? "unavailable"
-                  : "technical";
-    throw new ApiError(kind, response.status);
+    throw new ApiError(statusToErrorKind(response.status), response.status);
   }
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
