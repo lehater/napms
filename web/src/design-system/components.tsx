@@ -93,7 +93,7 @@ export function StatusBanner({
   kind = "status",
   children,
 }: {
-  kind?: "status" | "warning" | "blocked" | "failed";
+  kind?: "status" | "success" | "warning" | "blocked" | "failed";
   children: ReactNode;
 }) {
   return (

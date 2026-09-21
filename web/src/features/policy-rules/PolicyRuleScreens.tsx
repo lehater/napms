@@ -3,8 +3,10 @@ import { ApiError, api, type PolicyRuleView } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
   EmptyState,
+  FormSection,
   PageHeader,
   ProvenancePanel,
+  ReferenceField,
   StatusBanner,
   VersionedEditor,
 } from "../../design-system/components";
@@ -16,6 +18,8 @@ export function PolicyRuleScreens({ ruleRef }: { ruleRef?: string }) {
   const [items, setItems] = useState<PolicyRuleView[]>([]);
   const [selected, setSelected] = useState<PolicyRuleView | null>(null);
   const [state, setState] = useState("loading");
+  const [processRef, setProcessRef] = useState("");
+  const [needRef, setNeedRef] = useState("");
 
   useEffect(() => {
     const load = ruleRef ? api.getPolicyRule(ruleRef) : api.listPolicyRules();
@@ -40,6 +44,25 @@ export function PolicyRuleScreens({ ruleRef }: { ruleRef?: string }) {
       );
       const value = await api.getPolicyRule(selected.policyRuleRef);
       setSelected(value);
+      setState("loaded");
+    } catch (error) {
+      setState(errorKind(error));
+    }
+  }
+
+  async function attachJustification(event: React.FormEvent) {
+    event.preventDefault();
+    if (!selected) return;
+    setState("submitting");
+    try {
+      await api.attachPolicyRuleJustification(selected.policyRuleRef, selected.version, {
+        processRef,
+        needRef,
+      });
+      const value = await api.getPolicyRule(selected.policyRuleRef);
+      setSelected(value);
+      setProcessRef("");
+      setNeedRef("");
       setState("loaded");
     } catch (error) {
       setState(errorKind(error));
@@ -87,6 +110,13 @@ export function PolicyRuleScreens({ ruleRef }: { ruleRef?: string }) {
               Set {selected.effectState === "ACTIVE" ? "Inactive" : "Active"}
             </button>
           </VersionedEditor>
+          <FormSection onSubmit={attachJustification}>
+            <ReferenceField label="Business Process ID" value={processRef} onChange={setProcessRef} />
+            <ReferenceField label="Connectivity Need ID" value={needRef} onChange={setNeedRef} />
+            <button type="submit" disabled={!processRef || !needRef || state === "submitting"}>
+              Attach justification
+            </button>
+          </FormSection>
           <ProvenancePanel>
             <h3>Authorization evidence</h3>
             <pre>{JSON.stringify(selected.authorizationEvidence, null, 2)}</pre>

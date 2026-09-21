@@ -351,6 +351,22 @@ export const api = {
         ...(externalDecisionRef ? { externalDecisionRef } : {}),
       }),
     }),
+  attachPolicyRuleJustification: (
+    ref: string,
+    version: number,
+    body: { processRef: string; needRef: string },
+  ) =>
+    request<{ policyRuleRef: string; version: number }>(
+      `/v1/policy-rules/${ref}/justifications`,
+      {
+        method: "POST",
+        headers: {
+          "If-Match": String(version),
+          "Idempotency-Key": crypto.randomUUID(),
+        },
+        body: JSON.stringify(body),
+      },
+    ),
   materialize: (policyRuleRefs?: string[]) =>
     request<Record<string, unknown>>("/v1/policy-materializations", {
       method: "POST",
