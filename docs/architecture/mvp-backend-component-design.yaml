@@ -70,7 +70,7 @@ components:
   application-communication-catalogue:
     responsibility: Own Application, Component and Interaction domain/application behavior and declared ports.
     depends_on: []
-    contracts: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionRevision, ResolveComponent, ResolveInteractionRevision]
+    contracts: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionRevision, ResolveComponent, ResolveInteraction, ResolveInteractionRevision]
 
   application-deployment:
     responsibility: Own ComponentDeployment domain/application behavior and declared ports.
