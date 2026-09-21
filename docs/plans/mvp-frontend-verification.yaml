@@ -21,7 +21,7 @@ levels:
 
 required_evidence:
   - Resource selection opens stable ResourceId detail.
-  - Current facts and History remain distinguishable and simultaneously inspectable where required.
+  - Current Endpoint address, Site and OWNER/ADMINISTRATOR facts and their History remain distinguishable and simultaneously inspectable; immutable AuthorityScopeRef is not treated as historical affiliation.
   - loading/empty/not-found/error states are not conflated.
   - replace/end action refreshes authoritative server state and history.
   - authorization/validation/concurrency/technical failures remain distinguishable.

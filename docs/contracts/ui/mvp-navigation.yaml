@@ -1,7 +1,7 @@
 version: 1
 kind: ui-navigation-model
 id: NAPMS-MVP-UI-NAVIGATION
-status: PILOT_CURRENT
+status: CURRENT
 
 purpose: Define the minimum supported web-navigation knowledge needed by the Resource history pilot without designing the whole NAPMS UI.
 

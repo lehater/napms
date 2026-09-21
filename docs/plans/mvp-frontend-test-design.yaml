@@ -15,9 +15,9 @@ tests:
     when: User selects it.
     then: Detail loads by stable ResourceId and distinguishes loading from loaded/not-found/error.
   - id: UI-HISTORY
-    given: Current and ended/replaced Resource facts exist.
+    given: Current and ended/replaced Endpoint address, Site or OWNER/ADMINISTRATOR responsibility facts exist.
     when: User opens History.
-    then: Current remains readable and historical validity/provenance is inspectable.
+    then: Current remains readable and historical validity/provenance is inspectable; AuthorityScopeRef remains immutable identity context.
   - id: UI-MUTATION-REFRESH
     given: A supported replace/end action succeeds.
     when: Result is accepted.

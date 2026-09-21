@@ -1,7 +1,7 @@
 version: 2
 kind: ui-screen-contract
 id: NAPMS-RESOURCE-DETAIL-UI
-status: PILOT_CURRENT
+status: CURRENT
 
 purpose: Define the supported Resource detail workspace needed to inspect and author current Resource Catalogue facts while preserving inspectable history.
 
@@ -36,8 +36,9 @@ screen:
     priority: primary
     behavior:
       - Show the effective/current technical realization immediately when present; show explicit absence otherwise.
-      - Show effective/current Responsibility Scope affiliations.
-      - Show effective/current Resource Responsibility/contact assignments.
+      - Show immutable AuthorityScopeRef as Resource identity context; it is not a temporal affiliation and has no history stream.
+      - Show zero-or-one current Site assignment.
+      - Show zero-or-one current OWNER and zero-or-one current ADMINISTRATOR responsibility.
       - Existing authoring actions for replacing or ending supported facts remain available from the Resource workspace.
 
   history:
@@ -46,7 +47,7 @@ screen:
     behavior:
       - Provide an explicit History disclosure/section distinct from current facts.
       - Opening History does not navigate away from the Resource workspace.
-      - Show ended/replaced technical realizations, scope affiliations and responsibilities.
+      - Show ended/replaced Endpoint address realizations, Site assignments and OWNER/ADMINISTRATOR responsibilities.
       - For every historical fact expose its validity interval and provenance.
       - Do not present ended/replaced facts as current and do not collapse versions into mutable current state.
       - Empty history is represented explicitly rather than by a missing or broken section.
@@ -60,7 +61,7 @@ interaction:
     transition: RESOURCE-DETAIL.current -> RESOURCE-DETAIL.current+history
     invariant: Current facts remain visible/readable while history is inspected.
   - id: REPLACE-OR-END-FACT
-    trigger: User completes an existing supported replace/end authoring action.
+    trigger: "User completes an accepted Resource mutation: set/clear Endpoint address, replace/clear Site, or replace/clear OWNER/ADMINISTRATOR responsibility."
     transition: RESOURCE-DETAIL -> refresh RESOURCE-DETAIL
     postcondition:
       - New effective fact, when applicable, appears in current.
@@ -73,11 +74,12 @@ interaction:
     transition: RESOURCE-DETAIL -> RESOURCE-CATALOGUE
 
 data_contract:
-  source: GET /api/resources/{resourceId}
+  source: GET /v1/resources/{resourceRef}
   mapping:
-    identity: ResourceDetail.resourceId
-    current: ResourceDetail.current
-    history: ResourceDetail.history
+    identity: ResourceView.resourceRef
+    immutable_authority_scope: ResourceView.authorityScopeRef
+    current: ResourceView.current
+    history: ResourceView.history
   state_mapping:
     http_200: loaded or empty-current according to current fact presence
     http_404: not-found

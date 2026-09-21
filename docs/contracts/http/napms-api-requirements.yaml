@@ -13,6 +13,9 @@ operations:
   - GET /v1/resources/{resourceRef}
   - POST /v1/resources/{resourceRef}/endpoints
   - PUT /v1/resources/{resourceRef}/endpoints/{endpointRef}/address
+  - DELETE /v1/resources/{resourceRef}/endpoints/{endpointRef}/address
+  - PUT /v1/resources/{resourceRef}/site
+  - PUT /v1/resources/{resourceRef}/responsibilities/{role}
   - POST /v1/applications
   - POST /v1/applications/{applicationRef}/components
   - POST /v1/interactions
@@ -41,6 +44,9 @@ rules:
   - COMPLETE and UNRESOLVED are HTTP 200 application results; dependency inability is 503 before response commitment.
   - Export response is self-contained with ExportAuthorityEvidence and per-Rule authorization/business provenance.
   - Missing technical realization for a selected non-effective Rule does not make export incomplete.
+  - GET /v1/resources/{resourceRef} returns the accepted Resource detail read model: immutable AuthorityScopeRef, current endpoint/site/responsibility facts and explanatory address/site/responsibility history.
+  - Resource AuthorityScopeRef is never represented as a temporal affiliation.
+  - Endpoint address clear, Site replace/clear and OWNER/ADMINISTRATOR replace/clear are public first-MVP Resource curation operations.
 
 transport_decisions:
   security_scheme: HTTP bearer JWT security scheme named OIDCBearer.

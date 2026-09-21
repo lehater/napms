@@ -12,7 +12,7 @@ basis:
   http: docs/contracts/http/napms.openapi.yaml
 
 principles:
-  - Current state is primary; historical state is secondary but directly inspectable.
+  - Current Endpoint address, Site and responsibility state is primary; their history is secondary but directly inspectable. Immutable AuthorityScopeRef remains identity context rather than history.
   - Loading, empty, not-found, rejected and technical-error states are visibly distinct.
   - Frontend controls never establish domain truth or security authority.
   - Stable product identifiers are used for navigation; database-row identities are never user contracts.
