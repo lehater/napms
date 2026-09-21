@@ -2,11 +2,13 @@ import { authSession } from "./auth-session";
 import { type ApiErrorKind, statusToErrorKind } from "./http-semantics";
 
 export class ApiError extends Error {
-  constructor(
-    readonly kind: ApiErrorKind,
-    readonly status: number,
-  ) {
+  readonly kind: ApiErrorKind;
+  readonly status: number;
+
+  constructor(kind: ApiErrorKind, status: number) {
     super(kind);
+    this.kind = kind;
+    this.status = status;
   }
 }
 
