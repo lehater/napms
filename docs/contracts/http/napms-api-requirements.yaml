@@ -18,6 +18,7 @@ operations:
   - PUT /v1/resources/{resourceRef}/site
   - PUT /v1/resources/{resourceRef}/responsibilities/{role}
   - GET /v1/applications
+  - GET /v1/applications/{applicationRef}
   - POST /v1/applications
   - POST /v1/applications/{applicationRef}/components
   - POST /v1/interactions
@@ -28,6 +29,7 @@ operations:
   - POST /v1/processes
   - PUT /v1/processes/{processRef}/criticality
   - POST /v1/processes/{processRef}/needs
+  - POST /v1/processes/{processRef}/needs/{needRef}/retirement
   - GET /v1/access-requests
   - POST /v1/access-requests
   - GET /v1/access-requests/{requestRef}
@@ -52,6 +54,8 @@ rules:
   - Export response is self-contained with ExportAuthorityEvidence and per-Rule authorization/business provenance.
   - Missing technical realization for a selected non-effective Rule does not make export incomplete.
   - Catalogue GET operations return authoritative read collections required by the accepted frontend catalogue workspaces and use the corresponding read permission.
+  - GET /v1/applications/{applicationRef} returns Application identity/version, Components, and every directed Interaction touching those Components, including revision traffic semantics required by APPLICATION-DETAIL.
+  - Connectivity Need retirement is an explicit optimistic-concurrency mutation; retirement preserves the Need and historical request/decision facts while changing its current status.
   - Access Request catalogue/detail reads expose immutable request subject, current decision outcome and version required by the canonical decision route.
   - Policy Rule catalogue/detail reads expose effective state plus authorization, business-justification and operational-history provenance required by the canonical Policy Rule workspace.
   - GET /v1/resources/{resourceRef} returns the accepted Resource detail read model: immutable AuthorityScopeRef, current endpoint/site/responsibility facts and explanatory address/site/responsibility history.
