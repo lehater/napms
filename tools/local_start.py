@@ -56,7 +56,7 @@ def read_only_smoke(*, base_url: str, token: str) -> None:
         if response.status != 200:
             raise RuntimeError("OIDC authenticated read probe failed")
         payload = json.load(response)
-        if "items" not in payload:
+        if not isinstance(payload, list):
             raise RuntimeError("authenticated read response is malformed")
 
 

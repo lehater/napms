@@ -72,7 +72,7 @@ dev-restore:
 harness-bootstrap:
 	rm -rf "$(HARNESS_ROOT)"
 	git clone --filter=blob:none --no-checkout https://github.com/lehater/harness.git "$(HARNESS_ROOT)"
-	git -C "$(HARNESS_ROOT)" checkout --detach "$(cat .harness-version)"
+	git -C "$(HARNESS_ROOT)" checkout --detach "$$(cat .harness-version)"
 
 harness-pin-check:
 	@test -d "$(HARNESS_ROOT)/.git" || (echo "Pinned Harness checkout missing; run 'make harness-bootstrap'" >&2; exit 2)
