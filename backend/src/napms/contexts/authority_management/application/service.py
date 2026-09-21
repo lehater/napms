@@ -23,9 +23,9 @@ class RequireScopedAuthority:
     ) -> tuple[AuthorityEvidence, ...]:
         if evaluated_at.tzinfo is None or evaluated_at.utcoffset() is None:
             raise ValueError("evaluated_at must be timezone-aware")
-        required_scopes = tuple(dict.fromkeys(scope.strip() for scope in scopes if scope.strip()))
-        if not action.strip() or len(required_scopes) != len(set(scopes)):
+        if not action.strip() or any(not scope.strip() for scope in scopes):
             raise ValueError("action and scopes must be explicit")
+        required_scopes = tuple(dict.fromkeys(scope.strip() for scope in scopes))
 
         evidence: list[AuthorityEvidence] = []
         for scope in required_scopes:
