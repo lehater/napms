@@ -54,6 +54,24 @@ jobs:
           HARNESS_ROOT: .harness-tool
         run: python tools/check_harness_integration.py
 
+      - name: Diagnose backend graph health
+        run: |
+          python .harness-tool/graph_doctor.py \
+            docs/harness-engineering-graph.yaml \
+            --source-graph docs/canonical-graph.yaml \
+            --projection docs/harness-projection.yaml \
+            --target BACKEND-IMPLEMENTATION \
+            --source-root .
+
+      - name: Diagnose frontend graph health
+        run: |
+          python .harness-tool/graph_doctor.py \
+            docs/harness-engineering-graph.yaml \
+            --source-graph docs/canonical-graph.yaml \
+            --projection docs/harness-projection.yaml \
+            --target FRONTEND-IMPLEMENTATION \
+            --source-root .
+
       - name: Validate capability-scoped Authority context
         env:
           HARNESS_ROOT: .harness-tool
