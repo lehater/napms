@@ -18,7 +18,10 @@ export class ApiError extends Error {
   }
 }
 
-export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function request<T>(
+  path: string,
+  init: RequestInit = {},
+): Promise<T> {
   const accessToken = authSession.accessToken();
   const response = await fetch(path, {
     ...init,
@@ -145,7 +148,8 @@ export const api = {
       body: JSON.stringify(body),
     }),
   listAccessRequests: () => request<AccessRequestView[]>("/v1/access-requests"),
-  getAccessRequest: (ref: string) => request<AccessRequestView>(`/v1/access-requests/${ref}`),
+  getAccessRequest: (ref: string) =>
+    request<AccessRequestView>(`/v1/access-requests/${ref}`),
   submitAccessRequest: (body: {
     sourceDeploymentRef: string;
     destinationDeploymentRef: string;
@@ -258,20 +262,22 @@ export const api = {
     result: "ALLOWED" | "DENIED",
     externalDecisionRef?: string,
   ) =>
-    request<{ requestRef: string; version: number; result: "ALLOWED" | "DENIED"; policyRuleRef?: string | null }>(
-      `/v1/access-requests/${ref}/decision`,
-      {
-        method: "POST",
-        headers: {
-          "If-Match": String(version),
-          "Idempotency-Key": crypto.randomUUID(),
-        },
-        body: JSON.stringify({
-          result,
-          ...(externalDecisionRef ? { externalDecisionRef } : {}),
-        }),
+    request<{
+      requestRef: string;
+      version: number;
+      result: "ALLOWED" | "DENIED";
+      policyRuleRef?: string | null;
+    }>(`/v1/access-requests/${ref}/decision`, {
+      method: "POST",
+      headers: {
+        "If-Match": String(version),
+        "Idempotency-Key": crypto.randomUUID(),
       },
-    ),
+      body: JSON.stringify({
+        result,
+        ...(externalDecisionRef ? { externalDecisionRef } : {}),
+      }),
+    }),
   materialize: (policyRuleRefs?: string[]) =>
     request<Record<string, unknown>>("/v1/policy-materializations", {
       method: "POST",
