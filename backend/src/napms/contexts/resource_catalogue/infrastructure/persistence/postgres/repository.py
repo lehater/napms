@@ -140,6 +140,9 @@ class PostgresResourceCatalogueRepository:
                 ),
             )
 
+    def resolve_resource(self, resource_ref: UUID) -> Resource | None:
+        return self.get(resource_ref)
+
     def save(self, resource: Resource, *, expected_version: int) -> None:
         with psycopg.connect(self._dsn) as connection:
             updated = connection.execute(
