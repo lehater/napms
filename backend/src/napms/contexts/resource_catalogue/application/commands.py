@@ -34,6 +34,9 @@ class ResourceCatalogueApplication:
         self._resources = resources
         self._new_ref = new_ref
 
+    def get_resource(self, resource_ref: UUID) -> Resource | None:
+        return self._resources.get(resource_ref)
+
     def register_resource(
         self,
         *,
