@@ -224,6 +224,7 @@ export const api = {
         body: JSON.stringify({ name }),
       },
     ),
+  getInteraction: (ref: string) => request<InteractionView>(`/v1/interactions/${ref}`),
   createInteraction: (body: {
     sourceComponentRef: string;
     destinationComponentRef: string;

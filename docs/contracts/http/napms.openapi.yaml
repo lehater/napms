@@ -71,6 +71,11 @@ paths:
       operationId: createInteraction
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateInteractionRequest'}}}}
       responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/interactions/{interactionRef}:
+    get:
+      operationId: getInteraction
+      parameters: [{$ref: '#/components/parameters/InteractionRef'}]
+      responses: {'200': {description: Interaction detail}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/interactions/{interactionRef}/revisions:
     post:
       operationId: publishInteractionRevision

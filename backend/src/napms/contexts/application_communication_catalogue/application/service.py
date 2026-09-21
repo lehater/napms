@@ -64,6 +64,12 @@ class ApplicationCommunicationCatalogue:
         self._applications.save_application(updated, expected_version=expected_version)
         return updated
 
+    def get_interaction(self, interaction_ref: UUID) -> Interaction:
+        interaction = self._interactions.get_interaction(interaction_ref)
+        if interaction is None:
+            raise CatalogueNotFound(str(interaction_ref))
+        return interaction
+
     def create_interaction(
         self,
         *,

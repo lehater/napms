@@ -217,15 +217,27 @@ export function InteractionAuthoring({
   const [destination, setDestination] = useState("");
   const [purpose, setPurpose] = useState("");
   const [protocol, setProtocol] = useState("6");
-  const [version, setVersion] = useState("0");
-  const [state, setState] = useState("editing");
+  const [version, setVersion] = useState<number | null>(null);
+  const [state, setState] = useState(interactionRef ? "loading" : "editing");
+
+  useEffect(() => {
+    if (!interactionRef) return;
+    void api
+      .getInteraction(interactionRef)
+      .then((value) => {
+        setVersion(value.version);
+        setState("editing");
+      })
+      .catch((error) => setState(errorKind(error)));
+  }, [interactionRef]);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setState("submitting");
     try {
       if (interactionRef) {
-        await api.publishRevision(interactionRef, Number(version), [
+        if (version === null) return;
+        await api.publishRevision(interactionRef, version, [
           { ipProtocol: Number(protocol) },
         ]);
         setState("loaded");
@@ -278,9 +290,9 @@ export function InteractionAuthoring({
               readOnly
             />
             <ReferenceField
-              label="Expected version"
-              value={version}
-              onChange={setVersion}
+              label="Current version"
+              value={version === null ? "" : String(version)}
+              readOnly
             />
             <ReferenceField
               label="IP protocol number"

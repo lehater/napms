@@ -186,6 +186,46 @@ def router(
             "version": value.version,
         }
 
+    @api.get("/interactions/{interaction_ref}")
+    def get_interaction(
+        interaction_ref: UUID,
+        caller: Principal = Depends(identity),
+    ) -> dict[str, object]:
+        permission(caller, "application.read")
+        try:
+            item = catalogue.get_interaction(interaction_ref)
+        except CatalogueNotFound as exc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from exc
+        return {
+            "interactionRef": str(item.interaction_ref),
+            "sourceComponentRef": str(item.source_component_ref),
+            "destinationComponentRef": str(item.destination_component_ref),
+            "purpose": item.purpose,
+            "version": item.version,
+            "revisions": [
+                {
+                    "interactionRevisionRef": str(revision.revision_ref),
+                    "revisionNo": revision.revision_no,
+                    "trafficClauses": [
+                        {
+                            "ipProtocol": clause.ip_protocol,
+                            "sourcePorts": [
+                                {"from": port.start, "to": port.end}
+                                for port in clause.source_ports
+                            ],
+                            "destinationPorts": [
+                                {"from": port.start, "to": port.end}
+                                for port in clause.destination_ports
+                            ],
+                        }
+                        for clause in revision.traffic_clauses
+                    ],
+                    "createdBySubject": revision.created_by_subject,
+                }
+                for revision in item.revisions
+            ],
+        }
+
     @api.post("/interactions", status_code=status.HTTP_201_CREATED)
     def create_interaction(
         body: InteractionBody, caller: Principal = Depends(identity)

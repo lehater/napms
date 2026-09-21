@@ -22,6 +22,7 @@ operations:
   - GET /v1/applications/{applicationRef}
   - POST /v1/applications/{applicationRef}/components
   - POST /v1/interactions
+  - GET /v1/interactions/{interactionRef}
   - POST /v1/interactions/{interactionRef}/revisions
   - GET /v1/deployments
   - POST /v1/deployments
@@ -55,6 +56,7 @@ rules:
   - Missing technical realization for a selected non-effective Rule does not make export incomplete.
   - Catalogue GET operations return authoritative read collections required by the accepted frontend catalogue workspaces and use the corresponding read permission.
   - GET /v1/applications/{applicationRef} returns Application identity/version, Components, and every directed Interaction touching those Components, including revision traffic semantics required by APPLICATION-DETAIL.
+  - GET /v1/interactions/{interactionRef} reconstructs revision-authoring state after navigation or reload, including the authoritative current version and revision traffic semantics.
   - Connectivity Need retirement is an explicit optimistic-concurrency mutation; retirement preserves the Need and historical request/decision facts while changing its current status.
   - Access Request catalogue/detail reads expose immutable request subject, current decision outcome and version required by the canonical decision route.
   - Policy Rule catalogue/detail reads expose effective state plus authorization, business-justification and operational-history provenance required by the canonical Policy Rule workspace.
