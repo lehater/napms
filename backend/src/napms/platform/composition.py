@@ -11,6 +11,7 @@ from napms.contexts.access_policy.infrastructure.persistence.postgres.repository
 from napms.contexts.authority_management.application.service import RequireScopedAuthority
 from napms.platform.database.access_request_decision import PostgresAccessRequestDecision
 from napms.platform.database.access_request_submission import PostgresAccessRequestSubmission
+from napms.platform.database.idempotency import PostgresIdempotencyStore
 from napms.platform.database.policy_materialization import PostgresPolicyMaterialization
 from napms.platform.database.policy_rule_justification import PostgresPolicyRuleJustification
 from napms.platform.database.policy_rule_operation import PostgresPolicyRuleOperation
@@ -71,6 +72,7 @@ def build_app(config: RuntimeConfig) -> FastAPI:
             policy_rule_operations=PostgresPolicyRuleOperation(dsn=config.database_dsn),
             policy_materialization=PostgresPolicyMaterialization(dsn=config.database_dsn),
             policy_rules=PostgresAccessPolicyRepository(config.database_dsn),
+            idempotency=PostgresIdempotencyStore(dsn=config.database_dsn),
         )
     )
 
