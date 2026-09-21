@@ -29,8 +29,8 @@ function Placeholder({ name }: { name: Workspace }) {
       <h2>{name}</h2>
       <div className="panel">
         <p className="muted">
-          No records loaded. Use the supported authoring actions when backend data is
-          available.
+          No records loaded. Use the supported authoring actions when backend
+          data is available.
         </p>
       </div>
     </>
