@@ -29,7 +29,11 @@ from napms.platform.database.idempotency import (
 )
 from napms.platform.database.policy_materialization import MaterializationResult
 from napms.platform.database.policy_rule_justification import JustificationRejected
+from napms.contexts.application_communication_catalogue.application.service import (
+    ApplicationCommunicationCatalogue,
+)
 from napms.contexts.resource_catalogue.application.commands import ResourceCatalogueApplication
+from napms.platform.http.application_catalogue import router as application_catalogue_router
 from napms.platform.http.resource_catalogue import router as resource_catalogue_router
 from napms.platform.security.oidc import (
     AuthenticationRejected,
@@ -152,6 +156,7 @@ class HttpDependencies:
     policy_rules: PolicyRuleReader | None = None
     idempotency: PostgresIdempotencyStore | None = None
     resource_catalogue: ResourceCatalogueApplication | None = None
+    application_catalogue: ApplicationCommunicationCatalogue | None = None
 
 
 def create_app(dependencies: HttpDependencies) -> FastAPI:
@@ -364,6 +369,14 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         except AuthorityForbidden as exc:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN) from exc
         return result.as_http()
+
+    if dependencies.application_catalogue is not None:
+        app.include_router(
+            application_catalogue_router(
+                catalogue=dependencies.application_catalogue,
+                identity=principal,
+            )
+        )
 
     if dependencies.resource_catalogue is not None:
         app.include_router(
