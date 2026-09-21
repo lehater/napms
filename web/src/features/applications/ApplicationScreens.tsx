@@ -175,7 +175,9 @@ export function ApplicationDetail({
         </FormSection>
       )}
       {state !== "loaded" && (
-        <StatusBanner kind="failed">Application operation: {state}.</StatusBanner>
+        <StatusBanner kind="failed">
+          Application operation: {state}.
+        </StatusBanner>
       )}
     </>
   );

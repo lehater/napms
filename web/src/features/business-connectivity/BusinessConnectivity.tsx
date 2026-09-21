@@ -108,15 +108,15 @@ export function BusinessConnectivity({
         <FormSection onSubmit={createProcess}>
           <ReferenceField label="Name" value={name} onChange={setName} />
           <ReferenceField
-          label="Description"
-          value={description}
-          onChange={setDescription}
-        />
+            label="Description"
+            value={description}
+            onChange={setDescription}
+          />
           <ReferenceField
-          label="Criticality"
-          value={criticality}
-          onChange={setCriticality}
-        />
+            label="Criticality"
+            value={criticality}
+            onChange={setCriticality}
+          />
           <button type="submit" disabled={!name || state === "submitting"}>
             Create Business Process
           </button>
@@ -144,28 +144,28 @@ export function BusinessConnectivity({
           </VersionedEditor>
           <FormSection onSubmit={declareNeed}>
             <ReferenceField
-            label="Interaction ID"
-            value={interactionRef}
-            onChange={setInteractionRef}
-          />
+              label="Interaction ID"
+              value={interactionRef}
+              onChange={setInteractionRef}
+            />
             <ReferenceField
-            label="Participant Component ID"
-            value={componentRef}
-            onChange={setComponentRef}
-          />
+              label="Participant Component ID"
+              value={componentRef}
+              onChange={setComponentRef}
+            />
             <ReferenceField
-            label="Business basis"
-            value={basis}
-            onChange={setBasis}
-          />
+              label="Business basis"
+              value={basis}
+              onChange={setBasis}
+            />
             <button
               type="submit"
               disabled={
-              !interactionRef ||
-              !componentRef ||
-              !basis ||
-              state === "submitting"
-            }
+                !interactionRef ||
+                !componentRef ||
+                !basis ||
+                state === "submitting"
+              }
             >
               Declare Connectivity Need
             </button>

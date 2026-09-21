@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ApiError, type PolicyRuleView, api } from "../../app/api";
+import { ApiError, api, type PolicyRuleView } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
   EmptyState,
@@ -33,7 +33,11 @@ export function PolicyRuleScreens({ ruleRef }: { ruleRef?: string }) {
     setState("submitting");
     try {
       const next = selected.effectState === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-      await api.setPolicyRuleState(selected.policyRuleRef, selected.version, next);
+      await api.setPolicyRuleState(
+        selected.policyRuleRef,
+        selected.version,
+        next,
+      );
       const value = await api.getPolicyRule(selected.policyRuleRef);
       setSelected(value);
       setState("loaded");
@@ -45,7 +49,9 @@ export function PolicyRuleScreens({ ruleRef }: { ruleRef?: string }) {
   return (
     <>
       <PageHeader eyebrow="Desired access" title="Policy Rules" />
-      {state === "loading" && <StatusBanner>Loading Policy Rules…</StatusBanner>}
+      {state === "loading" && (
+        <StatusBanner>Loading Policy Rules…</StatusBanner>
+      )}
       {!ruleRef && items.length === 0 && state !== "loading" && (
         <EmptyState>No Policy Rules.</EmptyState>
       )}

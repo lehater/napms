@@ -24,7 +24,9 @@ export function PolicyExportScreen() {
         .split(",")
         .map((value) => value.trim())
         .filter(Boolean);
-      const value = await api.materialize(selected.length ? selected : undefined);
+      const value = await api.materialize(
+        selected.length ? selected : undefined,
+      );
       setResult(value);
       setState("complete");
     } catch (error) {

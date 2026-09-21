@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  ApiError,
-  type AccessRequestView,
-  api,
-} from "../../app/api";
+import { ApiError, type AccessRequestView, api } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
   EmptyState,
@@ -109,7 +105,10 @@ export function AccessRequestScreens({
             </button>
           ))}
           {!create && (
-            <button type="button" onClick={() => navigate("/access-requests/new")}>
+            <button
+              type="button"
+              onClick={() => navigate("/access-requests/new")}
+            >
               Submit Access Request
             </button>
           )}
@@ -132,10 +131,20 @@ export function AccessRequestScreens({
             value={revision}
             onChange={setRevision}
           />
-          <ReferenceField label="Connectivity Need ID" value={need} onChange={setNeed} />
+          <ReferenceField
+            label="Connectivity Need ID"
+            value={need}
+            onChange={setNeed}
+          />
           <button
             type="submit"
-            disabled={!source || !destination || !revision || !need || state === "submitting"}
+            disabled={
+              !source ||
+              !destination ||
+              !revision ||
+              !need ||
+              state === "submitting"
+            }
           >
             Submit Request
           </button>
@@ -144,7 +153,11 @@ export function AccessRequestScreens({
       {selected && (
         <>
           <VersionedEditor version={selected.version}>
-            <ReferenceField label="Request ID" value={selected.requestRef} readOnly />
+            <ReferenceField
+              label="Request ID"
+              value={selected.requestRef}
+              readOnly
+            />
             <ReferenceField
               label="Source Deployment ID"
               value={selected.sourceDeploymentRef}
@@ -160,7 +173,11 @@ export function AccessRequestScreens({
               value={selected.interactionRevisionRef}
               readOnly
             />
-            <ReferenceField label="Connectivity Need ID" value={selected.needRef} readOnly />
+            <ReferenceField
+              label="Connectivity Need ID"
+              value={selected.needRef}
+              readOnly
+            />
             <p>Outcome: {selected.decisionResult || "PENDING"}</p>
           </VersionedEditor>
           {!selected.decisionResult && (
