@@ -28,18 +28,6 @@ export function ApplicationCatalogue({ create = false }: { create?: boolean }) {
       .catch((error) => setState(errorKind(error)));
   }, []);
 
-  function parsePorts(value: string) {
-    return value
-      .split(",")
-      .map((part) => part.trim())
-      .filter(Boolean)
-      .map((part) => {
-        const [from, to] = part.split("-").map(Number);
-        return { from, to: Number.isFinite(to) ? to : from };
-      })
-      .sort((left, right) => left.from - right.from || left.to - right.to);
-  }
-
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setState("submitting");
@@ -244,6 +232,18 @@ export function InteractionAuthoring({
       })
       .catch((error) => setState(errorKind(error)));
   }, [interactionRef]);
+
+  function parsePorts(value: string) {
+    return value
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => {
+        const [from, to] = part.split("-").map(Number);
+        return { from, to: Number.isFinite(to) ? to : from };
+      })
+      .sort((left, right) => left.from - right.from || left.to - right.to);
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
