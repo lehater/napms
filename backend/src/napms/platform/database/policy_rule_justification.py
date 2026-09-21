@@ -40,9 +40,7 @@ class PostgresPolicyRuleJustification:
     ) -> PolicyRule:
         with psycopg.connect(self._dsn) as connection:
             if (
-                PostgresBusinessConnectivityRepository.lock_current_need_in(
-                    connection, need_ref
-                )
+                PostgresBusinessConnectivityRepository.lock_current_need_in(connection, need_ref)
                 is None
             ):
                 raise JustificationRejected(str(need_ref))

@@ -139,7 +139,7 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
 
     def expected_version(if_match: str) -> int:
         value = if_match.strip()
-        if value.startswith('W/'):
+        if value.startswith("W/"):
             value = value[2:]
         value = value.strip('"')
         try:
