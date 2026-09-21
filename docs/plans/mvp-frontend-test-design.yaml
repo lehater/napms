@@ -8,6 +8,8 @@ purpose: Define executable frontend behavioral contracts before implementation c
 basis:
   verification: docs/plans/mvp-frontend-verification.yaml
   human_interface: docs/contracts/ui/mvp-human-interface.yaml
+  presentation_system: docs/contracts/ui/mvp-presentation-system.yaml
+  screen_view_design: docs/contracts/ui/mvp-screen-view-design.yaml
 
 tests:
   - {id: UI-RESOURCE, subject: Resource management, oracle: Resource current/history and admitted mutations preserve accepted distinctions.}
@@ -21,5 +23,7 @@ tests:
   - {id: UI-POLICY-EXPORT, subject: Policy export, oracle: Complete export and unresolved/degraded diagnostics are never conflated.}
   - {id: UI-ACCESSIBILITY, subject: shared, oracle: Required actions, labels, focus and status/error information remain available without color-only meaning.}
   - {id: UI-RESPONSIVE, subject: shared, oracle: Required information/actions remain available across supported viewport classes.}
+  - {id: UI-PRESENTATION-INHERITANCE, subject: shared, oracle: Every canonical workspace inherits shared presentation rules and has no unexplained local presentation deviation.}
+  - {id: UI-SCREEN-COMPOSITION, subject: shared, oracle: Every canonical workspace exposes the required regions, hierarchy, patterns and state variants from the Screen/View contract.}
 
 oracle_rule: Tests prove accepted contracts; snapshots/pixel output alone are not semantic proof.
