@@ -47,3 +47,12 @@ subjects:
 excluded_requirements:
   - requirement: REQ-QUAL-001
     rationale: This accepted requirement explicitly says numeric quality targets are not mandatory first-MVP product requirements; it creates no independent human-interface subject.
+
+  - requirement: REQ-SCALE-001
+    rationale: MVP user/concurrency scale constrains architecture selection; it creates no independent human-interface subject.
+  - requirement: REQ-SCALE-002
+    rationale: Single-organization deployment scope constrains architecture selection; it creates no independent human-interface subject.
+  - requirement: REQ-SCALE-003
+    rationale: Growth is explicitly outside the first-MVP architecture horizon and creates no independent human-interface subject.
+  - requirement: REQ-SCALE-004
+    rationale: Workload mode and future heavy-job boundary constrain architecture selection; they create no independent human-interface subject.

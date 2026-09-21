@@ -4,6 +4,7 @@ id: NAPMS-MVP-SYSTEM-RULES
 status: CURRENT
 
 requirements_ref: docs/requirements/first-mvp-product-requirements.yaml
+architecture_driver_closure_ref: docs/requirements/first-mvp-architecture-driver-closure.yaml
 structural_model_ref: docs/architecture/structurizr/workspace.dsl
 
 architecture_goal: Realize the accepted backend MVP as one modular-monolith process plus PostgreSQL and external OIDC, preserving owner boundaries and complete policy materialization.
@@ -41,6 +42,7 @@ deployment:
   baseline: One stateless backend binary with explicit migrate and serve modes, PostgreSQL, external HTTPS OIDC issuer and trusted ingress terminating external TLS.
   migration_rule: migrate serializes with PostgreSQL advisory lock and immutable migration checksums; serve never runs DDL and verifies exact schema before listen.
   asynchronous_messaging: NOT_APPLICABLE
+  scale_rationale: First MVP validates the complete idea for one organization at proof-of-concept scale (primarily one developer; approximately five to ten concurrent users if shared). Future production scale and heavy asynchronous jobs explicitly reopen architecture.
 
 excluded_from_mvp_runtime:
   - provider-specific rendering

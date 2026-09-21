@@ -1,0 +1,71 @@
+version: 1
+kind: harness-architecture-driver-closure
+id: NAPMS-FIRST-MVP-ARCHITECTURE-DRIVER-CLOSURE
+scope: first-mvp
+
+drivers:
+  - concern: execution-mode
+    state: RESOLVED
+    decision: interactive browser application with a continuously running backend service for active use; no always-on background processing requirement
+    source_refs: [REQ-MVP-001, REQ-SCALE-004]
+
+  - concern: consumers
+    state: RESOLVED
+    decision: one organization; primarily one developer during validation and approximately five to ten concurrent users if the MVP is shared
+    source_refs: [REQ-SCALE-001, REQ-SCALE-002]
+
+  - concern: load-volume-frequency
+    state: RESOLVED
+    decision: ordinary low-volume interactive catalogue/request/export workload; no production throughput target and no heavy device-reading workload in first MVP
+    source_refs: [REQ-QUAL-001, REQ-SCALE-001, REQ-SCALE-004]
+
+  - concern: latency-freshness
+    state: RESOLVED
+    decision: no numeric latency target; correctness, coherent evaluation time and explicit unresolved outcomes take precedence
+    source_refs: [REQ-QUAL-001, REQ-EXP-003, REQ-EXP-005]
+
+  - concern: availability
+    state: NOT_APPLICABLE
+    rationale: first MVP has no numeric availability or high-availability requirement; single-process availability is acceptable for proof-of-concept use
+
+  - concern: recovery-durability
+    state: RESOLVED
+    decision: committed PostgreSQL state is durable; process recovery is restart and technical dependency failure is never reported as successful domain outcome
+    source_refs: [REQ-RULE-003, REQ-PROV-001]
+
+  - concern: growth-horizon
+    state: RESOLVED
+    decision: material scaling is outside first-MVP scope; future production scale with many users or heavy jobs explicitly reopens architecture
+    source_refs: [REQ-SCALE-003, REQ-SCALE-004]
+
+  - concern: deployment-environment
+    state: RESOLVED
+    decision: one installation for one organization using the accepted browser frontend, one backend deployment and PostgreSQL baseline
+    source_refs: [REQ-SCALE-002, REQ-MVP-001]
+
+  - concern: concurrency
+    state: RESOLVED
+    decision: support ordinary interactive concurrency for up to approximately five to ten MVP users; no independent worker fleet or horizontal scaling requirement
+    source_refs: [REQ-SCALE-001, REQ-SCALE-003]
+
+  - concern: integration-boundaries
+    state: RESOLVED
+    decision: first MVP uses the accepted frontend/backend HTTP boundary and excludes provider/device execution and future heavy network-integration jobs
+    source_refs: [REQ-MVP-001, REQ-SCALE-004]
+
+  - concern: persistence-history
+    state: RESOLVED
+    decision: PostgreSQL-backed current state plus the explicitly required explanatory/audit history are required; historical policy export is not
+    source_refs: [REQ-RES-006, REQ-RULE-003, REQ-PROV-001]
+
+  - concern: security-trust-boundary
+    state: RESOLVED
+    decision: authenticated browser/API use with server-owned authorization and accepted OIDC/trusted-ingress security boundary
+    source_refs: [REQ-AUTH-001, REQ-AUTH-002]
+
+reopen_conditions:
+  - accepted need for hundreds of concurrent/active users or materially higher request volume
+  - multi-organization or multi-tenant hosting
+  - numeric latency throughput availability capacity or scale objectives
+  - heavy asynchronous device-reading comparison or policy-generation workloads
+  - independent scaling failure-isolation or deployment requirements for modules
