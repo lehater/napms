@@ -3,10 +3,11 @@ kind: verification-design
 id: NAPMS-MVP-FRONTEND-VERIFICATION
 status: CURRENT
 
-purpose: Define evidence proving the accepted frontend human-interface and architecture contracts.
+purpose: Define evidence proving every accepted first-MVP frontend subject and shared human-interface constraint.
 
 basis:
   requirements: docs/requirements/first-mvp-product-requirements.yaml
+  subject_obligations: docs/harness/coverage/frontend-subject-obligations-v1.yaml
   human_interface: docs/contracts/ui/mvp-human-interface.yaml
   architecture: docs/architecture/mvp-frontend-architecture.yaml
   components: docs/architecture/mvp-frontend-component-design.yaml
@@ -14,24 +15,31 @@ basis:
 
 levels:
   contract: API mapping and accepted HTTP/error semantics
-  feature: deterministic feature/controller/view-state behavior
-  accessibility: keyboard, semantic labeling/status/error structure and non-color-only state distinctions
+  feature: deterministic subject-specific controller/view-state behavior
+  accessibility: keyboard and semantic status/error structure
   integration: browser frontend against canonical API boundary
-  end_to_end: selected first-MVP Resource journey
+  end_to_end: accepted first-MVP cross-subject journey
 
-required_evidence:
-  - Resource selection opens stable ResourceId detail.
-  - Current Endpoint address, Site and OWNER/ADMINISTRATOR facts and their History remain distinguishable and simultaneously inspectable; immutable AuthorityScopeRef is not treated as historical affiliation.
-  - loading/empty/not-found/error states are not conflated.
-  - replace/end action refreshes authoritative server state and history.
-  - authorization/validation/concurrency/technical failures remain distinguishable.
-  - responsive rendering preserves required information/actions at selected narrow and desktop viewport classes.
+required_subject_evidence:
+  - Resource management can locate/inspect/author current facts and inspect history.
+  - Application management preserves reusable description independent from deployment.
+  - Component management treats Components as communication participants, not network devices.
+  - Interaction management supports distinct directed reasons and complete traffic semantics.
+  - Deployment management binds Component to Resource independent from current address.
+  - Business Process/Connectivity Need workflows preserve justification independently from permission.
+  - Access Request submission exposes backend authority rejection and immutable permission outcome.
+  - Policy Rule workflow preserves authoritative identity/history and Active/Inactive semantics.
+  - Policy Export distinguishes complete success from unresolved/degraded output and preserves provenance.
+
+shared_evidence:
+  - loading/empty/not-found/rejected/conflict/technical states are not conflated.
+  - responsive rendering preserves required information/actions.
   - accessibility obligations are exercised with keyboard and semantic-role/name/status assertions.
   - frontend never treats disabled/hidden UI as security authority.
   - transport DTO mapping remains confined to the API boundary.
 
 traceability:
-  rule: Each evidence item references the accepted UI/HTTP/security/design contract it proves; implementation behavior alone cannot create a requirement.
+  rule: Every required subject is traced to the canonical subject-obligation contract and accepted requirement refs.
 
 transition_revalidation:
-  rule: Changes to human-interface state model, API contract, security boundary, routing or component ownership re-run affected evidence classes.
+  rule: Changes to accepted product scope, subject obligations, human-interface state model, API contract, security boundary, routing or component ownership re-run affected evidence.
