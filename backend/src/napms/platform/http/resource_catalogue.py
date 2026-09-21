@@ -84,6 +84,12 @@ def router(
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
 
+    @api.get("/resources")
+    def list_resources(caller: Principal = Depends(identity)) -> list[dict[str, object]]:
+        if "resource.read" not in caller.instance_permissions:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+        return [_view(value) for value in application.list_resources()]
+
     @api.post("/resources", status_code=status.HTTP_201_CREATED)
     def create_resource(
         body: CreateResourceBody,

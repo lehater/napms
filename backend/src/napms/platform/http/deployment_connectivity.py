@@ -68,6 +68,20 @@ def router(
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
 
+    @api.get("/deployments")
+    def list_deployments(
+        caller: Principal = Depends(identity),
+    ) -> list[dict[str, str]]:
+        permission(caller, "deployment.read")
+        return [
+            {
+                "deploymentRef": str(value.deployment_ref),
+                "componentRef": str(value.component_ref),
+                "resourceRef": str(value.resource_ref),
+            }
+            for value in deployments.list_component_deployments()
+        ]
+
     @api.post("/deployments", status_code=status.HTTP_201_CREATED)
     def create_deployment(
         body: DeploymentBody, caller: Principal = Depends(identity)
@@ -85,6 +99,32 @@ def router(
             "componentRef": str(value.component_ref),
             "resourceRef": str(value.resource_ref),
         }
+
+    @api.get("/processes")
+    def list_processes(
+        caller: Principal = Depends(identity),
+    ) -> list[dict[str, object]]:
+        permission(caller, "business.read")
+        return [
+            {
+                "processRef": str(value.process_ref),
+                "name": value.name,
+                "description": value.description,
+                "criticalityLabel": value.criticality_label,
+                "version": value.version,
+                "needs": [
+                    {
+                        "needRef": str(need.need_ref),
+                        "interactionRef": str(need.interaction_ref),
+                        "participantComponentRef": str(need.participant_component_ref),
+                        "businessBasis": need.business_basis,
+                        "status": need.status.value,
+                    }
+                    for need in value.needs
+                ],
+            }
+            for value in connectivity.list_business_processes()
+        ]
 
     @api.post("/processes", status_code=status.HTTP_201_CREATED)
     def create_process(

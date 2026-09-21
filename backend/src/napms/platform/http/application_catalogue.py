@@ -85,6 +85,24 @@ def router(
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
 
+    @api.get("/applications")
+    def list_applications(
+        caller: Principal = Depends(identity),
+    ) -> list[dict[str, object]]:
+        permission(caller, "application.read")
+        return [
+            {
+                "applicationRef": str(value.application_ref),
+                "name": value.name,
+                "version": value.version,
+                "components": [
+                    {"componentRef": str(item.component_ref), "name": item.name}
+                    for item in value.components
+                ],
+            }
+            for value in catalogue.list_applications()
+        ]
+
     @api.post("/applications", status_code=status.HTTP_201_CREATED)
     def create_application(
         body: NamedBody, caller: Principal = Depends(identity)
