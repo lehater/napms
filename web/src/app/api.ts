@@ -79,7 +79,12 @@ export type AccessRequestResult = {
   policyRuleRef?: string | null;
 };
 
+export type ApplicationView = { applicationRef: string; name: string; version: number; components: Array<{ componentRef: string; name: string }> };
+export type DeploymentView = { deploymentRef: string; componentRef: string; resourceRef: string };
+export type ProcessView = { processRef: string; name: string; description: string | null; criticalityLabel: string | null; version: number; needs: Array<{ needRef: string; interactionRef: string; participantComponentRef: string; businessBasis: string; status: string }> };
+
 export const api = {
+  listResources: () => request<ResourceView[]>("/v1/resources"),
   getResource: (ref: string) => request<ResourceView>(`/v1/resources/${ref}`),
   createResource: (body: {
     displayName: string;
@@ -101,6 +106,7 @@ export const api = {
       headers: { "Idempotency-Key": crypto.randomUUID() },
       body: JSON.stringify(body),
     }),
+  listApplications: () => request<ApplicationView[]>("/v1/applications"),
   createApplication: (name: string) =>
     request<{ applicationRef: string; version: number }>("/v1/applications", {
       method: "POST",
@@ -142,6 +148,7 @@ export const api = {
       headers: { "If-Match": String(version) },
       body: JSON.stringify({ trafficClauses }),
     }),
+  listDeployments: () => request<DeploymentView[]>("/v1/deployments"),
   createDeployment: (componentRef: string, resourceRef: string) =>
     request<{
       deploymentRef: string;
@@ -151,6 +158,7 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ componentRef, resourceRef }),
     }),
+  listProcesses: () => request<ProcessView[]>("/v1/processes"),
   createProcess: (body: {
     name: string;
     description?: string;
