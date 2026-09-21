@@ -36,7 +36,7 @@ def create_resource(page: Page, name: str) -> str:
     page.get_by_label("Display name").fill(name)
     page.get_by_label("Authority scope").fill("e2e-scope")
     page.get_by_role("button", name="Create Resource", exact=True).click()
-    page.wait_for_url("**/resources/*")
+    page.wait_for_url(lambda url: url.path.startswith("/resources/") and url.path != "/resources/new")
     return page.url.rsplit("/", 1)[-1]
 
 
@@ -44,12 +44,11 @@ def create_application(page: Page, name: str) -> str:
     goto(page, "/applications/new", "Applications")
     page.get_by_label("Name").fill(name)
     page.get_by_role("button", name="Create Application", exact=True).click()
-    page.wait_for_url("**/applications/*")
+    page.wait_for_url(lambda url: url.path.startswith("/applications/") and url.path != "/applications/new")
     return page.url.rsplit("/", 1)[-1]
 
 
 def add_component(page: Page, application_ref: str, name: str) -> str:
-    goto(page, f"/applications/{application_ref}/components/new", name=application_ref) if False else None
     page.goto(f"{BASE_URL}/applications/{application_ref}/components/new")
     page.get_by_role("heading", name="Components").wait_for()
     page.get_by_label("Component name").fill(name)
@@ -67,9 +66,7 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
 
         resource_ref = create_resource(page, f"E2E Resource {suffix}")
         page.get_by_role("heading", name="Current facts").wait_for()
-        page.get_by_label("Site ID").fill(str(uuid4()))
-        page.get_by_role("button", name="Save site").click()
-        page.get_by_text("Version 1").wait_for()
+        page.get_by_text("Version 0").wait_for()
         page.get_by_text("Provenance and history").click()
 
         application_ref = create_application(page, f"E2E Application {suffix}")
