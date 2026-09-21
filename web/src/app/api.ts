@@ -106,6 +106,41 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ name }),
     }),
+  addComponent: (applicationRef: string, version: number, name: string) =>
+    request<{ applicationRef: string; componentRef: string; version: number }>(
+      `/v1/applications/${applicationRef}/components`,
+      {
+        method: "POST",
+        headers: { "If-Match": String(version) },
+        body: JSON.stringify({ name }),
+      },
+    ),
+  createInteraction: (body: {
+    sourceComponentRef: string;
+    destinationComponentRef: string;
+    purpose?: string;
+  }) =>
+    request<{ interactionRef: string; version: number }>("/v1/interactions", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  publishRevision: (
+    interactionRef: string,
+    version: number,
+    trafficClauses: Array<{
+      ipProtocol: number;
+      sourcePorts?: Array<{ from: number; to: number }>;
+      destinationPorts?: Array<{ from: number; to: number }>;
+    }>,
+  ) =>
+    request<{ interactionRef: string; interactionRevisionRef: string; version: number }>(
+      `/v1/interactions/${interactionRef}/revisions`,
+      {
+        method: "POST",
+        headers: { "If-Match": String(version) },
+        body: JSON.stringify({ trafficClauses }),
+      },
+    ),
   createDeployment: (componentRef: string, resourceRef: string) =>
     request<{
       deploymentRef: string;
@@ -124,6 +159,19 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  declareNeed: (
+    processRef: string,
+    version: number,
+    body: { interactionRef: string; participantComponentRef: string; businessBasis: string },
+  ) =>
+    request<{ processRef: string; needRef: string; version: number }>(
+      `/v1/processes/${processRef}/needs`,
+      {
+        method: "POST",
+        headers: { "If-Match": String(version) },
+        body: JSON.stringify(body),
+      },
+    ),
   getPolicyRule: (ref: string) =>
     request<PolicyRuleView>(`/v1/policy-rules/${ref}`),
   setPolicyRuleState: (
