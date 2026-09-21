@@ -9,6 +9,8 @@ basis:
   requirements: docs/requirements/first-mvp-product-requirements.yaml
   subject_obligations: docs/harness/coverage/frontend-subject-obligations-v1.yaml
   human_interface: docs/contracts/ui/mvp-human-interface.yaml
+  presentation_system: docs/contracts/ui/mvp-presentation-system.yaml
+  screen_view_design: docs/contracts/ui/mvp-screen-view-design.yaml
   architecture: docs/architecture/mvp-frontend-architecture.yaml
   components: docs/architecture/mvp-frontend-component-design.yaml
   http: docs/contracts/http/napms.openapi.yaml
@@ -32,6 +34,9 @@ required_subject_evidence:
   - Policy Export distinguishes complete success from unresolved/degraded output and preserves provenance.
 
 shared_evidence:
+  - every canonical workspace implements the Screen/View composition that inherits NAPMS-MVP-PRESENTATION-SYSTEM.
+  - equivalent actions/states use the shared presentation patterns unless an accepted local deviation exists.
+  - primary/secondary information and action hierarchy remains recognizable across workspaces.
   - loading/empty/not-found/rejected/conflict/technical states are not conflated.
   - responsive rendering preserves required information/actions.
   - accessibility obligations are exercised with keyboard and semantic-role/name/status assertions.
@@ -42,4 +47,4 @@ traceability:
   rule: Every required subject is traced to the canonical subject-obligation contract and accepted requirement refs.
 
 transition_revalidation:
-  rule: Changes to accepted product scope, subject obligations, human-interface state model, API contract, security boundary, routing or component ownership re-run affected evidence.
+  rule: Changes to accepted product scope, subject obligations, human-interface state model, Presentation System, Screen/View composition, API contract, security boundary, routing or component ownership re-run affected evidence.
