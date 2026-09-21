@@ -52,3 +52,13 @@ completion_definition:
 
 open_questions: []
 implementation_authorization: DESIGN_COMPLETE_BACKEND
+
+delivery_contract:
+  release:
+    - Release one coherent backend baseline: locked runtime/dependencies, application package, migration set and matching verification baseline.
+    - Authorize release only when BACKEND-IMPLEMENTATION Coverage/Engineering Graph target is complete, required verification passes and no blocking Question remains.
+    - Serve refuses a schema whose applied migration ids/checksums do not match the release expectation.
+  rollback:
+    - Code rollback is allowed only when current schema and public contracts remain compatible with the previous baseline.
+    - An incompatible migration requires an explicitly tested reverse/repair migration or restoration of a compatible pre-migration database state; code must not reinterpret a newer incompatible schema.
+    - A destructive or semantics-changing migration without an accepted recovery path blocks release.
