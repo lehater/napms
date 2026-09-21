@@ -11,6 +11,7 @@ from napms.contexts.resource_catalogue.application.ports import (
     ResourceCatalogueAuthority,
     ResourceCatalogueRepository,
     ResourceNotFound,
+    ResourceVersionConflict,
 )
 from napms.contexts.resource_catalogue.domain.model import (
     AddressRealization,
@@ -174,7 +175,7 @@ class ResourceCatalogueApplication:
         if resource is None:
             raise ResourceNotFound(str(resource_ref))
         if resource.version != expected_version:
-            raise ValueError("resource version mismatch")
+            raise ResourceVersionConflict(str(resource_ref))
         updated = transform(resource)
         self._resources.save(updated, expected_version=expected_version)
         return updated

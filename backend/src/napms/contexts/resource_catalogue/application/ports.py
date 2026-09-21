@@ -19,6 +19,10 @@ class ResourceNotFound(Exception):
     pass
 
 
+class ResourceVersionConflict(Exception):
+    pass
+
+
 class ResourceCatalogueRepository(Protocol):
     def add(self, resource: Resource) -> None: ...
 
