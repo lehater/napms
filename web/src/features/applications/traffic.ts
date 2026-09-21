@@ -6,10 +6,10 @@ export function parsePortRanges(value: string): PortRange[] {
     .map((part) => part.trim())
     .filter(Boolean)
     .map((part) => {
-      if (!/^\\d+(?:-\\d+)?$/.test(part)) throw new Error("invalid port range");
-      const values = part.split("-");
-      const from = Number(values[0]);
-      const to = values.length === 2 ? Number(values[1]) : from;
+      const rangeMatch = part.match(/^(\d+)(?:-(\d+))?$/);
+      if (!rangeMatch) throw new Error("invalid port range");
+      const from = Number(rangeMatch[1]);
+      const to = rangeMatch[2] === undefined ? from : Number(rangeMatch[2]);
       if (
         !Number.isInteger(from) ||
         !Number.isInteger(to) ||
