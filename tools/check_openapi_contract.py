@@ -114,4 +114,17 @@ for forbidden in ("RuleChange","SessionCookie","napms_session","same Application
     if forbidden in text:
         fail(f"stale contract term remains: {forbidden}")
 
+ui=(ROOT/"docs/contracts/ui/resource-detail.yaml").read_text(encoding="utf-8")
+for forbidden in ("Responsibility Scope affiliations", "scope affiliations", "GET /api/resources/{resourceId}"):
+    if forbidden in ui:
+        fail(f"stale Resource UI semantic remains: {forbidden}")
+for required in (
+    "immutable AuthorityScopeRef",
+    "GET /v1/resources/{resourceRef}",
+    "Endpoint address realizations",
+    "OWNER/ADMINISTRATOR",
+):
+    if required not in ui:
+        fail(f"Resource UI missing current semantic: {required}")
+
 print("OpenAPI contract PASS")
