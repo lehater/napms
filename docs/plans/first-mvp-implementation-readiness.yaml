@@ -18,11 +18,12 @@ design_refs:
   quality_requirements: docs/architecture/mvp-quality-requirements.yaml
   threat_model: docs/architecture/mvp-threat-model.yaml
   observability: docs/architecture/mvp-observability.yaml
+  backend_component_design: docs/architecture/mvp-backend-component-design.yaml
 
 implementation_boundary:
   includes: [backend HTTP/JSON API, modular-monolith modules, PostgreSQL persistence, OIDC authentication, scoped/time authority admission, vendor-neutral policy materialization]
   excludes: [frontend implementation, provider-specific rendering, firewall/provider mutation, configured-state reconciliation, historical export, distributed services]
-  rule: Implement only accepted backend design; unexpected semantic gaps route upstream.
+  rule: Implement only accepted backend design; codebase structure and dependencies must satisfy the backend component design; unexpected semantic gaps route upstream.
 
 vertical_sequence:
   - foundation: migrate and serve modes, exact schema verification, PostgreSQL pool, OIDC/JWKS initialization, health and correlation
