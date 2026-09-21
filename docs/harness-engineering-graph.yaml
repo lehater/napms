@@ -119,18 +119,12 @@ authorities:
           - engineering.requirements.product-intent
           - engineering.domain.strategic-model
           - engineering.application.journey
-
-  - id: FRONTEND-ARCHITECTURE-DESIGN
-    responsibility: Own browser-frontend structural/runtime architecture behind accepted human-interface and system contracts.
-    boundary:
-      semantic_cohesion: Decisions define frontend runtime structure, client/server state ownership and API integration boundaries.
-      independent_change: Frontend architecture can evolve independently from backend system architecture while preserving shared contracts.
-      public_contract: Provides accepted frontend architecture to component, verification and implementation design.
-    produces:
       - capability: engineering.frontend.architecture
         knowledge_kind: system-architecture
         requires:
           - engineering.frontend.human-interface
+          - engineering.frontend.presentation-system
+          - engineering.frontend.screen-view-design
           - engineering.interface.http-contract
           - engineering.architecture.security
           - engineering.quality.constraints
@@ -201,6 +195,22 @@ authorities:
           - engineering.domain.tactical-model
           - engineering.application.journey
           - engineering.architecture.security
+          - engineering.interface.http-contract
+      - capability: engineering.frontend.presentation-system
+        knowledge_kind: presentation-system-design
+        requires:
+          - engineering.requirements.product-intent
+          - engineering.application.journey
+          - engineering.frontend.human-interface
+          - engineering.architecture.security
+          - engineering.quality.constraints
+      - capability: engineering.frontend.screen-view-design
+        knowledge_kind: screen-view-design
+        requires:
+          - engineering.frontend.human-interface
+          - engineering.frontend.presentation-system
+          - engineering.interface.ui-navigation
+          - engineering.interface.resource-detail-ui
           - engineering.interface.http-contract
 
   - id: DATA-DESIGN
@@ -335,6 +345,8 @@ authorities:
         knowledge_kind: component-design
         requires:
           - engineering.frontend.human-interface
+          - engineering.frontend.presentation-system
+          - engineering.frontend.screen-view-design
           - engineering.frontend.architecture
           - engineering.interface.http-contract
 
@@ -385,6 +397,8 @@ authorities:
         requires:
           - engineering.requirements.product-intent
           - engineering.frontend.human-interface
+          - engineering.frontend.presentation-system
+          - engineering.frontend.screen-view-design
           - engineering.frontend.architecture
           - engineering.frontend.component-design
 
@@ -400,6 +414,8 @@ authorities:
         requires:
           - engineering.frontend.verification
           - engineering.frontend.human-interface
+          - engineering.frontend.presentation-system
+          - engineering.frontend.screen-view-design
 
 consumers:
   - id: BACKEND-IMPLEMENTATION

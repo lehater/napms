@@ -7,6 +7,8 @@ goal: Realize the accepted first-MVP browser frontend without inventing user-vis
 
 basis:
   human_interface: docs/contracts/ui/mvp-human-interface.yaml
+  presentation_system: docs/contracts/ui/mvp-presentation-system.yaml
+  screen_view_design: docs/contracts/ui/mvp-screen-view-design.yaml
   architecture: docs/architecture/mvp-frontend-architecture.yaml
   components: docs/architecture/mvp-frontend-component-design.yaml
   verification: docs/plans/mvp-frontend-verification.yaml
@@ -30,7 +32,8 @@ implementation_boundary:
     - multilingual/localization support
 
 sequence:
-  - establish API boundary/error mapping and application shell
+  - realize shared Presentation System tokens/pattern primitives and application shell without changing canonical design semantics
+  - establish API boundary/error mapping and application shell composition
   - implement Resource and Application/Component/Interaction features
   - implement Deployment and Business Connectivity features
   - implement Access Request and Policy Rule features
@@ -46,6 +49,7 @@ delivery:
 completion_definition:
   - every REQUIRED frontend subject in docs/harness/coverage/frontend-subject-obligations-v1.yaml has exact subject-scoped semantic proof;
   - all selected frontend capabilities are materialized by canonical design artifacts;
+  - all nine canonical workspaces have accepted Screen/View composition inheriting the shared Presentation System;
   - frontend verification/test contracts are executable and green when implementation is authorized;
   - no unresolved design Question blocks FRONTEND-IMPLEMENTATION;
   - Engineering Coverage for FRONTEND-IMPLEMENTATION is complete.

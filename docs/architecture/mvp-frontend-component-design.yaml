@@ -7,6 +7,8 @@ purpose: Define code-facing frontend component and dependency boundaries for all
 
 basis:
   human_interface: docs/contracts/ui/mvp-human-interface.yaml
+  presentation_system: docs/contracts/ui/mvp-presentation-system.yaml
+  screen_view_design: docs/contracts/ui/mvp-screen-view-design.yaml
   architecture: docs/architecture/mvp-frontend-architecture.yaml
   http: docs/contracts/http/napms.openapi.yaml
 
@@ -29,13 +31,15 @@ components:
     owns: authoritative desired-access inspection and operational-state workflows
   policy_export_feature:
     owns: selection/export/completeness-diagnostic workflows
-  design_system:
-    owns: reusable visual primitives only after demonstrated cross-feature need
+  presentation_components:
+    owns: reusable implementation primitives realizing accepted Presentation System patterns/tokens without becoming design authority
 
 rules:
   - Feature components depend on the API boundary, not raw transport/client internals.
   - DTOs are mapped at the API boundary; transport shapes do not become domain models.
   - Cross-feature shared state is avoided unless an accepted interaction requires it.
+  - Shared visual/interaction primitives implement Presentation System roles and patterns; they do not invent screen-local semantics.
+  - Feature composition follows the canonical Screen/View contract and records any required design deviation upstream before implementation.
   - Components do not manufacture authorization, permission or business decisions.
   - Error translation preserves accepted semantic categories.
   - Feature tests can substitute the API boundary with deterministic fakes.

@@ -7,6 +7,8 @@ purpose: Realize the accepted first-MVP human-interface contracts as one browser
 
 basis:
   human_interface: docs/contracts/ui/mvp-human-interface.yaml
+  presentation_system: docs/contracts/ui/mvp-presentation-system.yaml
+  screen_view_design: docs/contracts/ui/mvp-screen-view-design.yaml
   http: docs/contracts/http/napms.openapi.yaml
   security: docs/architecture/mvp-security-architecture.yaml
   quality: docs/architecture/mvp-quality-requirements.yaml
@@ -41,5 +43,6 @@ reliability:
 
 quality:
   - Preserve feature ownership and avoid a global mutable client data model.
-  - Shared UI abstractions require demonstrated repeated interaction semantics.
-  - User-visible state transitions remain testable independent from visual styling.
+  - Shared presentation rules come from the canonical Presentation System rather than feature-local invention.
+  - Screen structure follows canonical Screen/View contracts; architecture does not redefine composition.
+  - User-visible state transitions remain testable independent from CSS/framework realization.
