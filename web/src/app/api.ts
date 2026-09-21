@@ -11,7 +11,7 @@ export class ApiError extends Error {
 }
 
 export function idempotencyKey(): string {
-  return idempotencyKey();
+  return crypto.randomUUID();
 }
 
 export async function request<T>(
