@@ -16,7 +16,13 @@ from napms.contexts.access_policy.application.ports import (
     AccessPolicyVersionConflict,
 )
 from napms.contexts.access_policy.application.submission import AccessRequestSubmissionRejected
-from napms.contexts.access_policy.domain.model import PermissionDecision
+from napms.contexts.access_policy.domain.model import (
+    EffectiveWindow,
+    PermissionDecision,
+    PolicyRule,
+    RuleEffectState,
+)
+from napms.platform.database.policy_rule_justification import JustificationRejected
 from napms.contexts.access_policy.domain.model import AccessRequest, PermissionDecision, PolicyRule
 from napms.contexts.authority_management.application.service import AuthorityForbidden
 from napms.contexts.authority_management.domain.model import Principal
@@ -63,6 +69,29 @@ class AccessRequestDecider(Protocol):
     ): ...
 
 
+class PolicyRuleJustifier(Protocol):
+    def attach(
+        self,
+        *,
+        rule_ref: UUID,
+        need_ref: UUID,
+        attached_by_subject: str,
+        expected_version: int,
+    ) -> PolicyRule: ...
+
+
+class PolicyRuleOperator(Protocol):
+    def set_state(
+        self,
+        *,
+        rule_ref: UUID,
+        effect_state: RuleEffectState,
+        effective_window: EffectiveWindow,
+        changed_by_subject: str,
+        expected_version: int,
+    ) -> PolicyRule: ...
+
+
 class SubmitAccessRequestBody(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
     source_deployment_ref: UUID
@@ -82,6 +111,8 @@ class HttpDependencies:
     identity: OidcIdentityValidator
     access_requests: AccessRequestSubmitter
     access_request_decisions: AccessRequestDecider | None = None
+    policy_rule_justifications: PolicyRuleJustifier | None = None
+    policy_rule_operations: PolicyRuleOperator | None = None
     access_request_decisions: AccessRequestDecider | None = None
 
 
@@ -212,5 +243,36 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
             "result": decided.decision_result.value if decided.decision_result else None,
             "policyRuleRef": None if rule is None else str(rule.rule_ref),
         }
+
+    class AttachJustificationBody(BaseModel):
+        model_config = ConfigDict(extra="forbid", populate_by_name=True)
+        need_ref: UUID
+
+    @app.post("/v1/policy-rules/{rule_ref}/justifications")
+    def attach_justification(
+        rule_ref: UUID,
+        body: AttachJustificationBody,
+        if_match: str = Header(alias="If-Match"),
+        idempotency_key: str = Header(alias="Idempotency-Key", min_length=1),
+        caller: Principal = Depends(principal),
+    ) -> dict[str, object]:
+        del idempotency_key
+        require_permission(caller, "access.manage")
+        if dependencies.policy_rule_justifications is None:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+        try:
+            rule = dependencies.policy_rule_justifications.attach(
+                rule_ref=rule_ref,
+                need_ref=body.need_ref,
+                attached_by_subject=caller.subject,
+                expected_version=expected_version(if_match),
+            )
+        except AccessPolicyVersionConflict as exc:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
+        except JustificationRejected as exc:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
+        except AccessPolicyNotFound as exc:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
+        return {"policyRuleRef": str(rule.rule_ref), "version": rule.version}
 
     return app
