@@ -70,6 +70,7 @@ design-sync: harness-pin-check
 	python tools/generate_persistence_erd.py
 
 design-check: harness-pin-check
+	python $(HARNESS_ROOT)/repository_realization.py docs/plans/mvp-repository-realization.yaml
 	python tools/check_canonical_graph.py
 	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_harness_integration.py
 	python tools/check_knowledge_completeness.py
