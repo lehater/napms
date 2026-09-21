@@ -6,8 +6,8 @@ export function parsePortRanges(value: string): PortRange[] {
     .map((part) => part.trim())
     .filter(Boolean)
     .map((part) => {
+      if (!/^\\d+(?:-\\d+)?$/.test(part)) throw new Error("invalid port range");
       const values = part.split("-");
-      if (values.length > 2) throw new Error("invalid port range");
       const from = Number(values[0]);
       const to = values.length === 2 ? Number(values[1]) : from;
       if (
