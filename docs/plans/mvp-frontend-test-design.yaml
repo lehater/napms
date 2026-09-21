@@ -3,36 +3,23 @@ kind: test-design
 id: NAPMS-MVP-FRONTEND-TEST-DESIGN
 status: CURRENT
 
-purpose: Define executable frontend behavioral test contracts before implementation changes.
+purpose: Define executable frontend behavioral contracts before implementation changes.
 
 basis:
   verification: docs/plans/mvp-frontend-verification.yaml
   human_interface: docs/contracts/ui/mvp-human-interface.yaml
 
 tests:
-  - id: UI-RESOURCE-OPEN
-    given: Resource catalogue returns a selectable Resource.
-    when: User selects it.
-    then: Detail loads by stable ResourceId and distinguishes loading from loaded/not-found/error.
-  - id: UI-HISTORY
-    given: Current and ended/replaced Endpoint address, Site or OWNER/ADMINISTRATOR responsibility facts exist.
-    when: User opens History.
-    then: Current remains readable and historical validity/provenance is inspectable; AuthorityScopeRef remains immutable identity context.
-  - id: UI-MUTATION-REFRESH
-    given: A supported replace/end action succeeds.
-    when: Result is accepted.
-    then: Detail refreshes from server truth and previous fact appears in History.
-  - id: UI-ERROR-DISTINCTION
-    given: validation, authorization, conflict, not-found and technical failures.
-    when: Each is returned by the API boundary.
-    then: User-visible state preserves the semantic distinction and offers only valid next actions.
-  - id: UI-ACCESSIBILITY
-    given: Resource detail at loaded/error/history states.
-    when: Operated by keyboard and semantic queries.
-    then: Required actions, labels, focus and status/error information remain available without color-only meaning.
-  - id: UI-RESPONSIVE
-    given: Desktop and narrower supported viewport classes.
-    when: Resource detail/history is rendered.
-    then: Required information and actions remain available without semantic loss.
+  - {id: UI-RESOURCE, subject: Resource management, oracle: Resource current/history and admitted mutations preserve accepted distinctions.}
+  - {id: UI-APPLICATION, subject: Application management, oracle: Reusable Application description remains independent from deployment realization.}
+  - {id: UI-COMPONENT, subject: Component management, oracle: Component authoring preserves participant semantics.}
+  - {id: UI-INTERACTION, subject: Interaction management, oracle: Directed Interactions preserve distinct reasons and traffic semantics.}
+  - {id: UI-DEPLOYMENT, subject: Deployment management, oracle: ComponentDeployment identity is independent from Resource current address.}
+  - {id: UI-BUSINESS-CONNECTIVITY, subject: Business process and connectivity need, oracle: Business justification remains independent from permission and concrete request identity.}
+  - {id: UI-ACCESS-REQUEST, subject: Access request, oracle: Submission/decision distinguishes authority rejection, NotAllowed and Allowed outcomes.}
+  - {id: UI-POLICY-RULE, subject: Policy rule, oracle: Active/Inactive changes preserve rule identity/history/provenance.}
+  - {id: UI-POLICY-EXPORT, subject: Policy export, oracle: Complete export and unresolved/degraded diagnostics are never conflated.}
+  - {id: UI-ACCESSIBILITY, subject: shared, oracle: Required actions, labels, focus and status/error information remain available without color-only meaning.}
+  - {id: UI-RESPONSIVE, subject: shared, oracle: Required information/actions remain available across supported viewport classes.}
 
 oracle_rule: Tests prove accepted contracts; snapshots/pixel output alone are not semantic proof.
