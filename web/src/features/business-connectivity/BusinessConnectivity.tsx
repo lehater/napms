@@ -26,6 +26,8 @@ export function BusinessConnectivity({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [criticality, setCriticality] = useState("");
+  const [organizationRef, setOrganizationRef] = useState("");
+  const [organizationName, setOrganizationName] = useState("");
   const [interactionRef, setInteractionRef] = useState("");
   const [componentRef, setComponentRef] = useState("");
   const [basis, setBasis] = useState("");
@@ -38,6 +40,8 @@ export function BusinessConnectivity({
         else {
           setSelected(value);
           setCriticality(value.criticalityLabel ?? "");
+          setOrganizationRef(value.organizationExternalReference ?? "");
+          setOrganizationName(value.organizationDisplayName ?? "");
         }
         setState("loaded");
       })
@@ -71,6 +75,26 @@ export function BusinessConnectivity({
       const value = await api.getProcess(selected.processRef);
       setSelected(value);
       setCriticality(value.criticalityLabel ?? "");
+      setState("loaded");
+    } catch (error) {
+      setState(errorKind(error));
+    }
+  }
+
+  async function saveOrganization() {
+    if (!selected) return;
+    setState("submitting");
+    try {
+      await api.setProcessResponsibleOrganization(
+        selected.processRef,
+        selected.version,
+        organizationRef || null,
+        organizationName || null,
+      );
+      const value = await api.getProcess(selected.processRef);
+      setSelected(value);
+      setOrganizationRef(value.organizationExternalReference ?? "");
+      setOrganizationName(value.organizationDisplayName ?? "");
       setState("loaded");
     } catch (error) {
       setState(errorKind(error));
@@ -164,6 +188,23 @@ export function BusinessConnectivity({
               {selected.description || "No description"} · criticality{" "}
               {selected.criticalityLabel || "unset"}
             </p>
+            <ReferenceField
+              label="Responsible organization reference"
+              value={organizationRef}
+              onChange={setOrganizationRef}
+            />
+            <ReferenceField
+              label="Responsible organization name"
+              value={organizationName}
+              onChange={setOrganizationName}
+            />
+            <button
+              type="button"
+              disabled={state === "submitting"}
+              onClick={() => void saveOrganization()}
+            >
+              Save responsible organization
+            </button>
             <ReferenceField
               label="Criticality"
               value={criticality}

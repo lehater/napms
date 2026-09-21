@@ -41,6 +41,11 @@ class ProcessBody(_Body):
     criticality_label: str | None = None
 
 
+class ResponsibleOrganizationBody(_Body):
+    external_reference: str | None = None
+    display_name: str | None = None
+
+
 class CriticalityBody(_Body):
     criticality_label: str | None
 
@@ -127,6 +132,45 @@ def router(
             for value in connectivity.list_business_processes()
         ]
 
+    def process_view(value) -> dict[str, object]:
+        return {
+            "processRef": str(value.process_ref),
+            "name": value.name,
+            "description": value.description,
+            "organizationExternalReference": value.organization_external_reference,
+            "organizationDisplayName": value.organization_display_name,
+            "criticalityLabel": value.criticality_label,
+            "version": value.version,
+            "needs": [
+                {
+                    "needRef": str(need.need_ref),
+                    "interactionRef": str(need.interaction_ref),
+                    "participantComponentRef": str(need.participant_component_ref),
+                    "businessBasis": need.business_basis,
+                    "status": need.status.value,
+                }
+                for need in value.needs
+            ],
+        }
+
+    @api.get("/processes/{process_ref}")
+    def get_process(
+        process_ref: UUID,
+        caller: Principal = Depends(identity),
+    ) -> dict[str, object]:
+        permission(caller, "business.read")
+        value = next(
+            (
+                item
+                for item in connectivity.list_business_processes()
+                if item.process_ref == process_ref
+            ),
+            None,
+        )
+        if value is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        return process_view(value)
+
     @api.post("/processes", status_code=status.HTTP_201_CREATED)
     def create_process(
         body: ProcessBody, caller: Principal = Depends(identity)
@@ -139,6 +183,27 @@ def router(
                 criticality_label=body.criticality_label,
             )
         except ValueError as exc:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
+        return {"processRef": str(value.process_ref), "version": value.version}
+
+    @api.put("/processes/{process_ref}/responsible-organization")
+    def set_responsible_organization(
+        process_ref: UUID,
+        body: ResponsibleOrganizationBody,
+        if_match: str = Header(alias="If-Match"),
+        caller: Principal = Depends(identity),
+    ) -> dict[str, object]:
+        permission(caller, "business.write")
+        try:
+            value = connectivity.set_responsible_organization(
+                process_ref=process_ref,
+                external_reference=body.external_reference,
+                display_name=body.display_name,
+                expected_version=version(if_match),
+            )
+        except BusinessConnectivityVersionConflict as exc:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
+        except BusinessConnectivityNotFound as exc:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
         return {"processRef": str(value.process_ref), "version": value.version}
 

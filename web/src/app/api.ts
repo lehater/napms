@@ -135,6 +135,8 @@ export type ProcessView = {
   name: string;
   description: string | null;
   criticalityLabel: string | null;
+  organizationExternalReference: string | null;
+  organizationDisplayName: string | null;
   version: number;
   needs: Array<{
     needRef: string;
@@ -264,12 +266,7 @@ export const api = {
       body: JSON.stringify({ componentRef, resourceRef }),
     }),
   listProcesses: () => request<ProcessView[]>("/v1/processes"),
-  getProcess: async (ref: string) => {
-    const items = await request<ProcessView[]>("/v1/processes");
-    const value = items.find((item) => item.processRef === ref);
-    if (!value) throw new ApiError("not-found", 404);
-    return value;
-  },
+  getProcess: (ref: string) => request<ProcessView>(`/v1/processes/${ref}`),
   createProcess: (body: {
     name: string;
     description?: string;
@@ -294,6 +291,20 @@ export const api = {
         method: "POST",
         headers: { "If-Match": String(version) },
         body: JSON.stringify(body),
+      },
+    ),
+  setProcessResponsibleOrganization: (
+    processRef: string,
+    version: number,
+    externalReference: string | null,
+    displayName: string | null,
+  ) =>
+    request<{ processRef: string; version: number }>(
+      `/v1/processes/${processRef}/responsible-organization`,
+      {
+        method: "PUT",
+        headers: { "If-Match": String(version) },
+        body: JSON.stringify({ externalReference, displayName }),
       },
     ),
   setProcessCriticality: (

@@ -27,6 +27,8 @@ operations:
   - GET /v1/deployments
   - POST /v1/deployments
   - GET /v1/processes
+  - GET /v1/processes/{processRef}
+  - PUT /v1/processes/{processRef}/responsible-organization
   - POST /v1/processes
   - PUT /v1/processes/{processRef}/criticality
   - POST /v1/processes/{processRef}/needs
