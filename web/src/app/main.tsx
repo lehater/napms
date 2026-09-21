@@ -1,4 +1,4 @@
-import { StrictMode, useState } from "react";
+import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { api, type PolicyRuleView } from "./api";
 import "../design-system/base.css";
@@ -47,6 +47,8 @@ function Placeholder({ name }: { name: Workspace }) {
 
 function Resources() {
   const [ref, setRef] = useState("");
+  const [catalogue, setCatalogue] = useState<Awaited<ReturnType<typeof api.listResources>>>([]);
+  useEffect(() => { void api.listResources().then(setCatalogue).catch(() => undefined); }, []);
   const [state, setState] = useState<
     "idle" | "loading" | "not-found" | "error"
   >("idle");
@@ -77,6 +79,10 @@ function Resources() {
         Locate a Resource by stable identity and inspect current facts before
         history.
       </p>
+      <div className="panel">
+        <h3>Catalogue</h3>
+        {catalogue.length === 0 ? <p className="muted">No Resources.</p> : catalogue.map((item) => <button type="button" key={item.resourceRef} onClick={() => setRef(item.resourceRef)}>{item.displayName} · {item.resourceRef}</button>)}
+      </div>
       <div className="panel">
         <label htmlFor="resource-ref">Resource ID</label>
         <div>
@@ -141,6 +147,8 @@ function Resources() {
 
 function Applications() {
   const [name, setName] = useState("");
+  const [catalogue, setCatalogue] = useState<Awaited<ReturnType<typeof api.listApplications>>>([]);
+  useEffect(() => { void api.listApplications().then(setCatalogue).catch(() => undefined); }, []);
   const [application, setApplication] = useState<{
     applicationRef: string;
     version: number;
@@ -234,6 +242,7 @@ function Applications() {
         Application structure and directed communication semantics are authored
         independently from deployments and access permission.
       </p>
+      <div className="panel"><h3>Catalogue</h3>{catalogue.length === 0 ? <p className="muted">No Applications.</p> : catalogue.map((item) => <p key={item.applicationRef}>{item.name} · {item.applicationRef} · Components {item.components.length}</p>)}</div>
       <form className="panel" onSubmit={createApplication}>
         <label htmlFor="application-name">Application name</label>
         <input
@@ -317,6 +326,8 @@ function Applications() {
 }
 function Deployments() {
   const [componentRef, setComponentRef] = useState("");
+  const [catalogue, setCatalogue] = useState<Awaited<ReturnType<typeof api.listDeployments>>>([]);
+  useEffect(() => { void api.listDeployments().then(setCatalogue).catch(() => undefined); }, []);
   const [resourceRef, setResourceRef] = useState("");
   const [created, setCreated] = useState<{
     deploymentRef: string;
@@ -341,6 +352,8 @@ function Deployments() {
         Bind one Component identity to one Resource realization while keeping
         both identities explicit.
       </p>
+      <div className="panel"><h3>Catalogue</h3>{catalogue.length === 0 ? <p className="muted">No Deployments.</p> : catalogue.map((item) => <p key={item.deploymentRef}>{item.deploymentRef} · Component {item.componentRef} · Resource {item.resourceRef}</p>)}</div>
+      <div className="panel"><h3>Business Processes</h3>{catalogue.length === 0 ? <p className="muted">No Business Processes.</p> : catalogue.map((item) => <p key={item.processRef}>{item.name} · {item.processRef} · Needs {item.needs.length}</p>)}</div>
       <form className="panel form-grid" onSubmit={create}>
         <label>
           Component ID
@@ -379,6 +392,8 @@ function Deployments() {
 
 function BusinessConnectivity() {
   const [name, setName] = useState("");
+  const [catalogue, setCatalogue] = useState<Awaited<ReturnType<typeof api.listProcesses>>>([]);
+  useEffect(() => { void api.listProcesses().then(setCatalogue).catch(() => undefined); }, []);
   const [description, setDescription] = useState("");
   const [criticality, setCriticality] = useState("");
   const [process, setProcess] = useState<{
