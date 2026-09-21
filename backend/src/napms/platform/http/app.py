@@ -103,6 +103,10 @@ class PolicyMaterializer(Protocol):
     ) -> MaterializationResult: ...
 
 
+class PolicyRuleReader(Protocol):
+    def get_rule(self, rule_ref: UUID) -> PolicyRule | None: ...
+
+
 class SubmitAccessRequestBody(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
     source_deployment_ref: UUID
@@ -125,6 +129,7 @@ class HttpDependencies:
     policy_rule_justifications: PolicyRuleJustifier | None = None
     policy_rule_operations: PolicyRuleOperator | None = None
     policy_materialization: PolicyMaterializer | None = None
+    policy_rules: PolicyRuleReader | None = None
     access_request_decisions: AccessRequestDecider | None = None
 
 
@@ -346,5 +351,37 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         except AuthorityForbidden as exc:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN) from exc
         return result.as_http()
+
+    @app.get("/v1/policy-rules/{rule_ref}")
+    def get_policy_rule(
+        rule_ref: UUID,
+        caller: Principal = Depends(principal),
+    ) -> dict[str, object]:
+        require_permission(caller, "policy.read")
+        if dependencies.policy_rules is None:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+        rule = dependencies.policy_rules.get_rule(rule_ref)
+        if rule is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        return {
+            "policyRuleRef": str(rule.rule_ref),
+            "version": rule.version,
+            "effectState": rule.effect_state.value,
+            "effectiveWindow": {
+                "effectiveFrom": (
+                    None
+                    if rule.effective_window.effective_from is None
+                    else rule.effective_window.effective_from.isoformat()
+                ),
+                "effectiveUntil": (
+                    None
+                    if rule.effective_window.effective_until is None
+                    else rule.effective_window.effective_until.isoformat()
+                ),
+            },
+            "sourceDeploymentRef": str(rule.access_subject.source_deployment_ref),
+            "destinationDeploymentRef": str(rule.access_subject.destination_deployment_ref),
+            "interactionRevisionRef": str(rule.access_subject.interaction_revision_ref),
+        }
 
     return app
