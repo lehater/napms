@@ -23,6 +23,7 @@ from napms.contexts.access_policy.domain.model import (
     PolicyRule,
     RuleEffectState,
 )
+from napms.platform.database.policy_materialization import MaterializationResult
 from napms.platform.database.policy_rule_justification import JustificationRejected
 from napms.contexts.access_policy.domain.model import AccessRequest, PermissionDecision, PolicyRule
 from napms.contexts.authority_management.application.service import AuthorityForbidden
@@ -93,6 +94,15 @@ class PolicyRuleOperator(Protocol):
     ) -> PolicyRule: ...
 
 
+class PolicyMaterializer(Protocol):
+    def materialize(
+        self,
+        *,
+        principal: Principal,
+        rule_refs: tuple[UUID, ...] | None,
+    ) -> MaterializationResult: ...
+
+
 class SubmitAccessRequestBody(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
     source_deployment_ref: UUID
@@ -114,6 +124,7 @@ class HttpDependencies:
     access_request_decisions: AccessRequestDecider | None = None
     policy_rule_justifications: PolicyRuleJustifier | None = None
     policy_rule_operations: PolicyRuleOperator | None = None
+    policy_materialization: PolicyMaterializer | None = None
     access_request_decisions: AccessRequestDecider | None = None
 
 
@@ -315,5 +326,25 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
         return {"policyRuleRef": str(rule.rule_ref), "version": rule.version}
+
+    class PolicyMaterializationBody(BaseModel):
+        model_config = ConfigDict(extra="forbid", populate_by_name=True)
+        policy_rule_refs: tuple[UUID, ...] | None = None
+
+    @app.post("/v1/policy-materializations")
+    def materialize_policy(
+        body: PolicyMaterializationBody,
+        caller: Principal = Depends(principal),
+    ) -> dict[str, object]:
+        if dependencies.policy_materialization is None:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+        try:
+            result = dependencies.policy_materialization.materialize(
+                principal=caller,
+                rule_refs=body.policy_rule_refs,
+            )
+        except AuthorityForbidden as exc:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN) from exc
+        return result.as_http()
 
     return app
