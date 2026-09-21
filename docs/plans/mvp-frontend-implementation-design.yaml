@@ -1,0 +1,51 @@
+version: 1
+kind: implementation-plan
+id: NAPMS-MVP-FRONTEND-IMPLEMENTATION-DESIGN
+status: CURRENT
+
+goal: Realize the accepted first-MVP browser frontend without inventing user-visible, security, architecture, component or test decisions.
+
+basis:
+  human_interface: docs/contracts/ui/mvp-human-interface.yaml
+  architecture: docs/architecture/mvp-frontend-architecture.yaml
+  components: docs/architecture/mvp-frontend-component-design.yaml
+  verification: docs/plans/mvp-frontend-verification.yaml
+  tests: docs/plans/mvp-frontend-test-design.yaml
+
+implementation_boundary:
+  includes:
+    - browser application shell/routing
+    - canonical API boundary/mapping
+    - Resource catalogue navigation entry
+    - Resource detail current/history states and accepted authoring actions
+    - accessibility/responsiveness obligations
+  excludes:
+    - new product/domain semantics
+    - alternate backend authorization
+    - direct persistence
+    - unrelated legacy screens
+    - multilingual/localization support
+
+sequence:
+  - establish API boundary/error mapping and application shell
+  - implement Resource catalogue navigation entry
+  - implement Resource detail loading/current/history/not-found/error states
+  - implement accepted replace/end interaction and authoritative refresh
+  - satisfy accessibility/responsiveness evidence
+  - run feature/integration/end-to-end verification
+
+delivery:
+  release: Frontend ships with a compatible backend/OpenAPI baseline; required frontend verification must pass.
+  rollback: Frontend rollback is permitted only against a compatible API/schema/application baseline; incompatible backend contract changes require coordinated rollback/release.
+  migration: No independent frontend persistence migration exists in this scope.
+
+error_handling:
+  - Preserve domain/validation, authorization, conflict/not-found and technical dependency distinctions.
+  - Transport/framework exceptions are translated at the API boundary.
+  - Catch-all handling cannot turn unknown/technical failure into accepted success.
+
+completion_definition:
+  - all selected frontend capabilities are materialized by canonical design artifacts;
+  - frontend verification/test contracts are executable and green when implementation is authorized;
+  - no unresolved design Question blocks FRONTEND-IMPLEMENTATION;
+  - Engineering Coverage for FRONTEND-IMPLEMENTATION is complete.
