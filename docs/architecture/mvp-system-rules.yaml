@@ -5,7 +5,6 @@ status: CURRENT
 
 requirements_ref: docs/requirements/first-mvp-product-requirements.yaml
 structural_model_ref: docs/architecture/structurizr/workspace.dsl
-module_contracts_ref: docs/architecture/mvp-module-contracts.yaml
 
 architecture_goal: Realize the accepted backend MVP as one modular-monolith process plus PostgreSQL and external OIDC, preserving owner boundaries and complete policy materialization.
 
