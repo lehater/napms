@@ -59,6 +59,26 @@ export type ResourceView = {
   };
 };
 
+export type PolicyRuleView = {
+  policyRuleRef: string;
+  version: number;
+  effectState: "ACTIVE" | "INACTIVE";
+  effectiveWindow: {
+    effectiveFrom: string | null;
+    effectiveUntil: string | null;
+  };
+  sourceDeploymentRef: string;
+  destinationDeploymentRef: string;
+  interactionRevisionRef: string;
+};
+
+export type AccessRequestResult = {
+  requestRef: string;
+  version: number;
+  result?: "ALLOWED" | "DENIED" | null;
+  policyRuleRef?: string | null;
+};
+
 export const api = {
   getResource: (ref: string) => request<ResourceView>(`/v1/resources/${ref}`),
   createResource: (body: {
@@ -70,6 +90,32 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  submitAccessRequest: (body: {
+    sourceDeploymentRef: string;
+    destinationDeploymentRef: string;
+    interactionRevisionRef: string;
+    needRef: string;
+  }) =>
+    request<AccessRequestResult>("/v1/access-requests", {
+      method: "POST",
+      headers: { "Idempotency-Key": crypto.randomUUID() },
+      body: JSON.stringify(body),
+    }),
+  getPolicyRule: (ref: string) =>
+    request<PolicyRuleView>(`/v1/policy-rules/${ref}`),
+  setPolicyRuleState: (
+    ref: string,
+    version: number,
+    effectState: "ACTIVE" | "INACTIVE",
+  ) =>
+    request<{ policyRuleRef: string; version: number }>(
+      `/v1/policy-rules/${ref}/operational-state`,
+      {
+        method: "PUT",
+        headers: { "If-Match": String(version) },
+        body: JSON.stringify({ effectState, effectiveWindow: null }),
+      },
+    ),
   materialize: (policyRuleRefs?: string[]) =>
     request<Record<string, unknown>>("/v1/policy-materializations", {
       method: "POST",
