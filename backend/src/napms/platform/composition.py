@@ -86,6 +86,7 @@ def build_app(config: RuntimeConfig) -> FastAPI:
             policy_rule_operations=PostgresPolicyRuleOperation(dsn=config.database_dsn),
             policy_materialization=PostgresPolicyMaterialization(dsn=config.database_dsn),
             policy_rules=PostgresAccessPolicyRepository(config.database_dsn),
+            access_request_reader=PostgresAccessPolicyRepository(config.database_dsn),
             idempotency=PostgresIdempotencyStore(dsn=config.database_dsn),
             application_deployment=ApplicationDeploymentService(
                 deployments=PostgresComponentDeploymentRepository(config.database_dsn),
