@@ -77,7 +77,7 @@ def main():
         print("Missing derived knowledge:")
         for rule, policy, subject in incomplete:
             print(f"  {policy:12} {rule} :: {subject}")
-    return 0
+    return 1 if accepted_incomplete else 0
 
 if __name__ == "__main__":
     sys.exit(main())
