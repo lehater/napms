@@ -39,6 +39,13 @@ class PostgresResourceCatalogueRepository:
                 ),
             )
 
+    def list(self) -> tuple[Resource, ...]:
+        with psycopg.connect(self._dsn) as connection:
+            rows = connection.execute(
+                """SELECT resource_ref FROM resource_catalogue.resource ORDER BY display_name, resource_ref"""
+            ).fetchall()
+        return tuple(resource for (ref,) in rows if (resource := self.get(ref)) is not None)
+
     def get(self, resource_ref: UUID) -> Resource | None:
         with psycopg.connect(self._dsn) as connection:
             row = connection.execute(

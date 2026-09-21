@@ -46,6 +46,13 @@ class PostgresApplicationCommunicationCatalogue:
         else:
             self.save_interaction(value, expected_version=expected_version)
 
+    def list_applications(self) -> tuple[Application, ...]:
+        with psycopg.connect(self._dsn) as connection:
+            rows = connection.execute(
+                """SELECT application_ref FROM application_communication_catalogue.application ORDER BY name, application_ref"""
+            ).fetchall()
+        return tuple(value for (ref,) in rows if (value := self.get_application(ref)) is not None)
+
     def get_application(self, application_ref: UUID) -> Application | None:
         with psycopg.connect(self._dsn) as connection:
             row = connection.execute(

@@ -40,6 +40,13 @@ class PostgresBusinessProcessRepository:
                 ),
             )
 
+    def list_processes(self) -> tuple[BusinessProcess, ...]:
+        with psycopg.connect(self._dsn) as connection:
+            rows = connection.execute(
+                """SELECT process_ref FROM business_connectivity.business_process ORDER BY name, process_ref"""
+            ).fetchall()
+        return tuple(value for (ref,) in rows if (value := self.get_process(ref)) is not None)
+
     def get_process(self, process_ref: UUID) -> BusinessProcess | None:
         with psycopg.connect(self._dsn) as connection:
             row = connection.execute(

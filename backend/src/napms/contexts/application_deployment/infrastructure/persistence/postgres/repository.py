@@ -25,6 +25,16 @@ class PostgresComponentDeploymentRepository:
                 ),
             )
 
+    def list(self) -> tuple[ComponentDeployment, ...]:
+        with psycopg.connect(self._dsn) as connection:
+            rows = connection.execute(
+                """SELECT deployment_ref, component_ref, resource_ref FROM application_deployment.component_deployment ORDER BY deployment_ref"""
+            ).fetchall()
+        return tuple(
+            ComponentDeployment(deployment_ref=row[0], component_ref=row[1], resource_ref=row[2])
+            for row in rows
+        )
+
     def resolve_deployment(self, deployment_ref: UUID) -> ComponentDeployment | None:
         with psycopg.connect(self._dsn) as connection:
             return self.resolve_deployment_in(connection, deployment_ref)
