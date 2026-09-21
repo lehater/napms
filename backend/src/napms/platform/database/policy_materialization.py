@@ -118,6 +118,12 @@ class PostgresPolicyMaterialization:
                 if source_resource is None or destination_resource is None:
                     issues.append(MaterializationIssue(rule.rule_ref, "resource unresolved"))
                     continue
+                scopes.update(
+                    (
+                        source_resource.authority_scope_ref,
+                        destination_resource.authority_scope_ref,
+                    )
+                )
                 if not self._addresses(source_resource) or not self._addresses(
                     destination_resource
                 ):
@@ -125,12 +131,6 @@ class PostgresPolicyMaterialization:
                         MaterializationIssue(rule.rule_ref, "address realization unresolved")
                     )
                     continue
-                scopes.update(
-                    (
-                        source_resource.authority_scope_ref,
-                        destination_resource.authority_scope_ref,
-                    )
-                )
                 realization[rule.rule_ref] = (
                     source,
                     destination,
