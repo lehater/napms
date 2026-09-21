@@ -1,0 +1,89 @@
+version: 1
+kind: repository-realization-design
+id: NAPMS-MVP-REPOSITORY-REALIZATION
+status: CURRENT
+owner: IMPLEMENTATION-DESIGN
+
+basis:
+  backend_components: docs/architecture/mvp-backend-component-design.yaml
+  frontend_components: docs/architecture/mvp-frontend-component-design.yaml
+  backend_implementation: docs/plans/first-mvp-implementation-readiness.yaml
+  frontend_implementation: docs/plans/mvp-frontend-implementation-design.yaml
+  security: docs/architecture/mvp-security-architecture.yaml
+  threat_model: docs/architecture/mvp-threat-model.yaml
+  persistence: docs/architecture/persistence/mvp-persistence.yaml
+
+repository_topology: one repository with independently buildable backend and frontend package roots, shared only through canonical contracts and repository-level delivery tooling
+
+module_realizations:
+  - {semantic_owner: backend runtime/composition/adapters, physical_root: backend/src/napms/platform}
+  - {semantic_owner: backend domain/application modules, physical_root: backend/src/napms/contexts}
+  - {semantic_owner: backend tests, physical_root: backend/tests}
+  - {semantic_owner: frontend app shell and API boundary, physical_root: web/src/app}
+  - {semantic_owner: frontend semantic features, physical_root: web/src/features}
+  - {semantic_owner: frontend shared presentation primitives, physical_root: web/src/components}
+  - {semantic_owner: cross-runtime end-to-end verification, physical_root: e2e}
+
+dependency_rules:
+  - rule: backend modules follow the directed graph and owner contracts in mvp-backend-component-design
+    enforcement: Import Linter contracts plus backend architecture tests
+  - rule: backend domain/application code never imports HTTP database OIDC or framework types
+    enforcement: Import Linter forbidden/layers contracts
+  - rule: peer backend modules never read or write another module persistence representation
+    enforcement: import contracts plus persistence architecture tests
+  - rule: frontend features depend on the typed API boundary and shared presentation primitives, not raw transport internals or each other without an accepted contract
+    enforcement: deterministic frontend boundary script/lint rule and TypeScript compilation
+  - rule: frontend has no direct persistence or alternate authorization path
+    enforcement: boundary checks plus integration/e2e tests
+
+obligations:
+  - {id: backend-format-lint, applicability: REQUIRED, enforcement: "Ruff format --check and Ruff check, pinned backend dev tooling, blocking PR CI"}
+  - {id: backend-static-typing, applicability: REQUIRED, enforcement: "mypy over backend package/contracts at accepted strictness, blocking PR CI"}
+  - {id: backend-architecture, applicability: REQUIRED, enforcement: "Import Linter plus architecture pytest checks, blocking PR CI"}
+  - {id: frontend-format-lint, applicability: REQUIRED, enforcement: "Biome check for TypeScript/React formatting and linting, pinned in package-lock, blocking PR CI"}
+  - {id: frontend-static-typing, applicability: REQUIRED, enforcement: "tsc -b --pretty false, blocking PR CI"}
+  - {id: frontend-boundaries, applicability: REQUIRED, enforcement: "project boundary checker plus typed build, blocking PR CI"}
+  - {id: backend-tests, applicability: REQUIRED, enforcement: "pytest unit/integration/PostgreSQL contract suites"}
+  - {id: frontend-tests, applicability: REQUIRED, enforcement: "component/integration/e2e evidence required by frontend Test Design"}
+  - {id: secret-scanning, applicability: REQUIRED, enforcement: "GitHub secret scanning with push protection or equivalent"}
+  - {id: dependency-review, applicability: REQUIRED, enforcement: "GitHub Dependency Review blocks pull requests introducing dependencies above the accepted vulnerability threshold"}
+  - {id: sast, applicability: REQUIRED, enforcement: "GitHub CodeQL for supported Python and JavaScript/TypeScript languages"}
+  - {id: backend-dependency-vulnerability, applicability: REQUIRED, enforcement: "pip-audit/OSV-equivalent against locked backend dependency resolution"}
+  - {id: frontend-dependency-vulnerability, applicability: REQUIRED, enforcement: "npm audit/dependency-review policy against package-lock"}
+  - {id: build-package-validation, applicability: REQUIRED, enforcement: "clean backend install/test plus npm ci and production frontend build in CI"}
+  - {id: migration-validation, applicability: REQUIRED, enforcement: "fresh PostgreSQL migration plus exact migration id/checksum and representative rollback/compatibility verification"}
+  - {id: dead-code, applicability: DEFERRED, rationale: blocking heuristic is added only after useful project-specific signal is demonstrated}
+  - {id: license-policy-gate, applicability: DEFERRED, rationale: no accepted organization/product allow-deny license policy currently exists}
+  - {id: pre-commit-hooks, applicability: NOT_APPLICABLE, rationale: repository make/npm commands provide local feedback and CI is authoritative}
+  - {id: sbom-provenance, applicability: DEFERRED, rationale: require when deployable release artifacts are published or organizational supply-chain policy adopts attestations}
+
+generated_artifacts:
+  - path: docs-generated/**
+    source_of_truth: canonical docs/** engineering knowledge
+    regenerate: make design-sync and canonical Human Documentation Projection
+  - path: generated client/schema derivatives if introduced
+    source_of_truth: accepted OpenAPI/interface contract
+    regenerate: deterministic generator check in design/build gate
+
+environment:
+  reproducibility: REQUIRED
+  lock_or_equivalent: "backend gains a committed deterministic Python lock/resolution; frontend uses package-lock with npm ci; runtime/tool versions are pinned in CI"
+
+quality_gates:
+  - id: pull-request-design
+    trigger: pull_request
+    blocking: true
+    command: make design-check
+  - id: pull-request-code
+    trigger: pull_request
+    blocking: true
+    command: "backend format/lint/type/architecture/tests + frontend check/build/tests + security/dependency checks"
+  - id: release
+    trigger: release
+    blocking: true
+    command: "clean backend/frontend builds + PostgreSQL migration/schema verification + required e2e/security evidence"
+
+implementation_freedoms:
+  - private Python module/function/class layout within accepted backend components
+  - private frontend file/component decomposition within accepted feature ownership
+  - exact checker implementation may change if the same obligation and gate semantics remain enforced
