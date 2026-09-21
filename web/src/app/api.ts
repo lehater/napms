@@ -1,3 +1,5 @@
+import { authSession } from "./auth-session";
+
 export type ApiErrorKind =
   | "not-found"
   | "rejected"
@@ -16,13 +18,8 @@ export class ApiError extends Error {
   }
 }
 
-let accessToken: string | null = null;
-
-export function setRuntimeAccessToken(token: string | null) {
-  accessToken = token;
-}
-
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const accessToken = authSession.accessToken();
   const response = await fetch(path, {
     ...init,
     headers: {
@@ -83,6 +80,23 @@ export type PolicyRuleView = {
   sourceDeploymentRef: string;
   destinationDeploymentRef: string;
   interactionRevisionRef: string;
+  authorizationEvidence: Array<Record<string, unknown>>;
+  justifications: Array<Record<string, unknown>>;
+  operationalHistory: Array<Record<string, unknown>>;
+};
+
+export type AccessRequestView = {
+  requestRef: string;
+  version: number;
+  sourceDeploymentRef: string;
+  destinationDeploymentRef: string;
+  interactionRevisionRef: string;
+  needRef: string;
+  submittedAt: string;
+  decisionResult: "ALLOWED" | "DENIED" | null;
+  externalDecisionRef?: string | null;
+  decidedBySubject?: string | null;
+  decidedAt?: string | null;
 };
 
 export type AccessRequestResult = {
@@ -130,6 +144,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  listAccessRequests: () => request<AccessRequestView[]>("/v1/access-requests"),
+  getAccessRequest: (ref: string) => request<AccessRequestView>(`/v1/access-requests/${ref}`),
   submitAccessRequest: (body: {
     sourceDeploymentRef: string;
     destinationDeploymentRef: string;
@@ -220,6 +236,7 @@ export const api = {
         body: JSON.stringify(body),
       },
     ),
+  listPolicyRules: () => request<PolicyRuleView[]>("/v1/policy-rules"),
   getPolicyRule: (ref: string) =>
     request<PolicyRuleView>(`/v1/policy-rules/${ref}`),
   setPolicyRuleState: (
@@ -233,6 +250,26 @@ export const api = {
         method: "PUT",
         headers: { "If-Match": String(version) },
         body: JSON.stringify({ effectState, effectiveWindow: null }),
+      },
+    ),
+  decideAccessRequest: (
+    ref: string,
+    version: number,
+    result: "ALLOWED" | "DENIED",
+    externalDecisionRef?: string,
+  ) =>
+    request<{ requestRef: string; version: number; result: "ALLOWED" | "DENIED"; policyRuleRef?: string | null }>(
+      `/v1/access-requests/${ref}/decision`,
+      {
+        method: "POST",
+        headers: {
+          "If-Match": String(version),
+          "Idempotency-Key": crypto.randomUUID(),
+        },
+        body: JSON.stringify({
+          result,
+          ...(externalDecisionRef ? { externalDecisionRef } : {}),
+        }),
       },
     ),
   materialize: (policyRuleRefs?: string[]) =>
