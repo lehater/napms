@@ -17,7 +17,7 @@ implementation_boundary:
     - browser application shell/routing
     - canonical API boundary/mapping
     - Resource catalogue navigation entry
-    - Resource detail current/history states and accepted authoring actions
+    - Resource detail current/history states for Endpoint address, Site and OWNER/ADMINISTRATOR responsibility plus immutable AuthorityScopeRef and accepted authoring actions
     - accessibility/responsiveness obligations
   excludes:
     - new product/domain semantics
