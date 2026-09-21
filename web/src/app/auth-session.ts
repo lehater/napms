@@ -2,7 +2,20 @@ export interface AuthSession {
   accessToken(): string | null;
 }
 
-let runtimeToken: string | null = null;
+declare global {
+  interface Window {
+    __NAPMS_RUNTIME_ACCESS_TOKEN__?: string;
+  }
+}
+
+let runtimeToken: string | null =
+  typeof window !== "undefined" && window.__NAPMS_RUNTIME_ACCESS_TOKEN__
+    ? window.__NAPMS_RUNTIME_ACCESS_TOKEN__
+    : null;
+
+if (typeof window !== "undefined") {
+  delete window.__NAPMS_RUNTIME_ACCESS_TOKEN__;
+}
 
 export const authSession: AuthSession = {
   accessToken: () => runtimeToken,
