@@ -20,7 +20,7 @@ from napms.contexts.application_deployment.infrastructure.persistence.postgres.r
 )
 from napms.contexts.business_connectivity.application.service import BusinessConnectivityService
 from napms.contexts.business_connectivity.infrastructure.persistence.postgres.repository import (
-    PostgresBusinessConnectivityRepository,
+    PostgresBusinessProcessRepository,
 )
 from napms.contexts.authority_management.application.service import RequireScopedAuthority
 from napms.contexts.resource_catalogue.application.commands import ResourceCatalogueApplication
@@ -93,7 +93,7 @@ def build_app(config: RuntimeConfig) -> FastAPI:
                 resources=PostgresResourceCatalogueRepository(config.database_dsn),
             ),
             business_connectivity=BusinessConnectivityService(
-                processes=PostgresBusinessConnectivityRepository(config.database_dsn),
+                processes=PostgresBusinessProcessRepository(config.database_dsn),
                 interactions=PostgresApplicationCommunicationCatalogue(config.database_dsn),
             ),
             application_catalogue=ApplicationCommunicationCatalogue(

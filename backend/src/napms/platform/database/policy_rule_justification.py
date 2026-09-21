@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from datetime import datetime
-from uuid import UUID, uuid4
+from typing import Any\nfrom uuid import UUID, uuid4
 
 import psycopg
 
@@ -12,7 +12,7 @@ from napms.contexts.access_policy.infrastructure.persistence.postgres.repository
     PostgresAccessPolicyRepository,
 )
 from napms.contexts.business_connectivity.infrastructure.persistence.postgres.repository import (
-    PostgresBusinessConnectivityRepository,
+    PostgresBusinessProcessRepository,
 )
 
 
@@ -40,7 +40,7 @@ class PostgresPolicyRuleJustification:
     ) -> PolicyRule:
         with psycopg.connect(self._dsn) as connection:
             if (
-                PostgresBusinessConnectivityRepository.lock_current_need_in(connection, need_ref)
+                PostgresBusinessProcessRepository.lock_current_need_in(connection, need_ref)
                 is None
             ):
                 raise JustificationRejected(str(need_ref))
@@ -69,14 +69,14 @@ class PostgresPolicyRuleJustification:
             )
 
     @staticmethod
-    def _now(connection: psycopg.Connection[object]) -> datetime:
+    def _now(connection: psycopg.Connection[Any]) -> datetime:
         row = connection.execute("SELECT transaction_timestamp()").fetchone()
         assert row is not None
         return row[0]
 
 
 class _TransactionRuleRepository:
-    def __init__(self, connection: psycopg.Connection[object]) -> None:
+    def __init__(self, connection: psycopg.Connection[Any]) -> None:
         self._connection = connection
 
     def add_request(self, request) -> None:

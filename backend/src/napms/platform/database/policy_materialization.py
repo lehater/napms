@@ -72,7 +72,7 @@ class PostgresPolicyMaterialization:
             connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
             evaluation_at = self._evaluation_at(connection)
             rules, missing = self._select_rules(connection, rule_refs)
-            selection = {
+            selection: dict[str, object] = {
                 "mode": "ALL" if rule_refs is None else "EXPLICIT",
                 "policyRuleRefs": [str(rule.rule_ref) for rule in rules],
             }
@@ -228,20 +228,25 @@ class PostgresPolicyMaterialization:
         scope: str,
         evaluation_at: datetime,
     ) -> dict[str, object]:
-        grant = RequireScopedAuthority("policy.export").require(
-            principal,
-            scope_ref=scope,
+        evidence = RequireScopedAuthority().require(
+            principal=principal,
+            action="policy.export",
+            scopes=(scope,),
             evaluated_at=evaluation_at,
-        )
+        )[0]
         return {
             "actorSubject": principal.subject,
-            "action": grant.action,
-            "scopeRef": grant.scope_ref,
+            "action": evidence.action,
+            "scopeRef": evidence.scope,
             "effectiveFrom": (
-                None if grant.effective_from is None else grant.effective_from.isoformat()
+                None
+                if evidence.effective_from is None
+                else evidence.effective_from.isoformat()
             ),
             "effectiveUntil": (
-                None if grant.effective_until is None else grant.effective_until.isoformat()
+                None
+                if evidence.effective_until is None
+                else evidence.effective_until.isoformat()
             ),
             "evaluatedAt": evaluation_at.isoformat(),
         }
