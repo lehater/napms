@@ -127,3 +127,33 @@ def test_optimistic_version_rejects_stale_save() -> None:
 
     with pytest.raises(ResourceVersionConflict):
         repository.save(stale, expected_version=1)
+
+
+def test_transactional_resource_resolver_reads_current_endpoint_realization() -> None:
+    repository = PostgresResourceCatalogueRepository(DSN)
+    resource = Resource.register(
+        resource_ref=UUID(int=200),
+        display_name="Resolver",
+        authority_scope_ref="scope:resolver",
+    )
+    repository.add(resource)
+    endpoint = UUID(int=201)
+    resource = resource.add_endpoint(endpoint)
+    resource = resource.set_endpoint_address(
+        endpoint,
+        AddressRealization.host("10.20.30.40"),
+        fact_ref=UUID(int=202),
+        effective_at=NOW,
+        subject="subject:resolver",
+    )
+    repository.save(resource, expected_version=1)
+
+    with psycopg.connect(DSN) as connection:
+        loaded = PostgresResourceCatalogueRepository.resolve_resource_in(
+            connection, resource.resource_ref
+        )
+
+    assert loaded is not None
+    assert loaded.authority_scope_ref == "scope:resolver"
+    assert loaded.endpoints[0].current_address is not None
+    assert loaded.endpoints[0].current_address.address.value == "10.20.30.40"

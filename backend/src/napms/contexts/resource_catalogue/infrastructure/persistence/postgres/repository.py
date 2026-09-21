@@ -169,7 +169,7 @@ class PostgresResourceCatalogueRepository:
         endpoint_rows = connection.execute(
             """
             SELECT endpoint_ref
-            FROM resource_catalogue.endpoint
+            FROM resource_catalogue.resource_endpoint
             WHERE resource_ref = %s
             ORDER BY endpoint_ref
             """,
