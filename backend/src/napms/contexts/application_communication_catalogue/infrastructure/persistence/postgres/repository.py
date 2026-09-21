@@ -192,7 +192,7 @@ class PostgresApplicationCommunicationCatalogue:
         revision_ref: UUID,
     ) -> ResolvedInteractionRevision | None:
         row = connection.execute(
-                """
+            """
                 SELECT revision_ref, interaction_ref, revision_no, created_by_subject
                 FROM application_communication_catalogue.interaction_revision
                 WHERE revision_ref = %s
