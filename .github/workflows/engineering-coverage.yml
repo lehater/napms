@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "docs/**"
+      - ".harness-version"
       - ".github/workflows/engineering-coverage.yml"
   pull_request:
     paths:
@@ -23,11 +24,15 @@ jobs:
       - name: Checkout NAPMS
         uses: actions/checkout@v5
 
+      - name: Read pinned Harness version
+        id: harness-version
+        run: echo "sha=$(cat .harness-version)" >> "$GITHUB_OUTPUT"
+
       - name: Checkout Harness
         uses: actions/checkout@v5
         with:
           repository: lehater/harness
-          ref: main
+          ref: ${{ steps.harness-version.outputs.sha }}
           path: .harness-coverage-tool
 
       - uses: actions/setup-python@v6
