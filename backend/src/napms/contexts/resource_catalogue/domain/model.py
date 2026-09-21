@@ -198,6 +198,8 @@ class Resource:
             history += (replace(self.current_site, effective_to=effective_at),)
         if site_ref is not None and fact_ref is None:
             raise ValueError("fact_ref is required for a current site fact")
+        if site_ref is not None:
+            assert fact_ref is not None
         current = (
             None
             if site_ref is None
@@ -236,6 +238,8 @@ class Resource:
             history += (replace(current_for_role, effective_to=effective_at),)
         if group_ref is not None and fact_ref is None:
             raise ValueError("fact_ref is required for a current responsibility fact")
+        if group_ref is not None:
+            assert fact_ref is not None
         remaining = tuple(item for item in self.responsibilities if item.role is not role)
         current = (
             ()
