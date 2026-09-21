@@ -12,17 +12,17 @@ from napms.contexts.access_policy.infrastructure.persistence.postgres.repository
     PostgresAccessPolicyRepository,
 )
 from napms.contexts.application_communication_catalogue.infrastructure.persistence.postgres.repository import (
-    PostgresApplicationCommunicationRepository,
+    PostgresApplicationCommunicationCatalogue,
 )
 from napms.contexts.application_deployment.infrastructure.persistence.postgres.repository import (
-    PostgresApplicationDeploymentRepository,
+    PostgresComponentDeploymentRepository,
 )
 from napms.contexts.authority_management.application.service import (
     Principal,
     RequireScopedAuthority,
 )
 from napms.contexts.resource_catalogue.infrastructure.persistence.postgres.repository import (
-    PostgresResourceRepository,
+    PostgresResourceCatalogueRepository,
 )
 
 
@@ -96,13 +96,13 @@ class PostgresPolicyMaterialization:
                     )
                     continue
                 subject = rule.access_subject
-                source = PostgresApplicationDeploymentRepository.resolve_deployment_in(
+                source = PostgresComponentDeploymentRepository.resolve_deployment_in(
                     connection, subject.source_deployment_ref
                 )
-                destination = PostgresApplicationDeploymentRepository.resolve_deployment_in(
+                destination = PostgresComponentDeploymentRepository.resolve_deployment_in(
                     connection, subject.destination_deployment_ref
                 )
-                revision = PostgresApplicationCommunicationRepository.resolve_revision_in(
+                revision = PostgresApplicationCommunicationCatalogue.resolve_revision_in(
                     connection, subject.interaction_revision_ref
                 )
                 if source is None or destination is None or revision is None:
@@ -110,10 +110,10 @@ class PostgresPolicyMaterialization:
                         MaterializationIssue(rule.rule_ref, "technical reference unresolved")
                     )
                     continue
-                source_resource = PostgresResourceRepository.resolve_resource_in(
+                source_resource = PostgresResourceCatalogueRepository.resolve_resource_in(
                     connection, source.resource_ref
                 )
-                destination_resource = PostgresResourceRepository.resolve_resource_in(
+                destination_resource = PostgresResourceCatalogueRepository.resolve_resource_in(
                     connection, destination.resource_ref
                 )
                 if source_resource is None or destination_resource is None:
