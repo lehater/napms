@@ -1,0 +1,49 @@
+version: 1
+kind: harness-coverage-subject-obligations
+project: NAPMS
+consumer: FRONTEND-IMPLEMENTATION
+scope: first-mvp
+source:
+  artifact: NAPMS-FIRST-MVP-PRODUCT-REQUIREMENTS
+  path: docs/requirements/first-mvp-product-requirements.yaml
+
+subjects:
+  - subject: Resource management
+    concerns: [interface.human.journeys]
+    requirement_refs: [REQ-MVP-001, REQ-RES-001, REQ-RES-002, REQ-RES-003, REQ-RES-004, REQ-RES-005, REQ-RES-006]
+
+  - subject: Application management
+    concerns: [interface.human.journeys]
+    requirement_refs: [REQ-MVP-001, REQ-APP-001]
+
+  - subject: Component management
+    concerns: [interface.human.journeys]
+    requirement_refs: [REQ-MVP-001, REQ-APP-002]
+
+  - subject: Interaction management
+    concerns: [interface.human.journeys]
+    requirement_refs: [REQ-MVP-001, REQ-INT-001, REQ-INT-002, REQ-INT-003]
+
+  - subject: Deployment management
+    concerns: [interface.human.journeys]
+    requirement_refs: [REQ-DEP-001, REQ-DEP-002]
+
+  - subject: Business process and connectivity need
+    concerns: [interface.human.journeys]
+    requirement_refs: [REQ-BUS-001, REQ-BUS-002, REQ-BUS-003, REQ-BUS-004, REQ-BUS-005, REQ-BUS-006, REQ-BUS-007, REQ-BUS-008, REQ-BUS-009]
+
+  - subject: Access request
+    concerns: [interface.human.journeys]
+    requirement_refs: [REQ-MVP-001, REQ-AUTH-001, REQ-PERM-001, REQ-PERM-002, REQ-PERM-003]
+
+  - subject: Policy rule
+    concerns: [interface.human.journeys]
+    requirement_refs: [REQ-MVP-001, REQ-RULE-001, REQ-RULE-002, REQ-RULE-003, REQ-RULE-004, REQ-RULE-005]
+
+  - subject: Policy export
+    concerns: [interface.human.journeys]
+    requirement_refs: [REQ-MVP-001, REQ-AUTH-002, REQ-EXP-001, REQ-EXP-002, REQ-EXP-003, REQ-EXP-004, REQ-EXP-005, REQ-EXP-006, REQ-EXP-007, REQ-PROV-001]
+
+excluded_requirements:
+  - requirement: REQ-QUAL-001
+    rationale: This accepted requirement explicitly says numeric quality targets are not mandatory first-MVP product requirements; it creates no independent human-interface subject.
