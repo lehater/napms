@@ -1,0 +1,203 @@
+version: 1
+kind: screen-view-design
+id: NAPMS-MVP-SCREEN-VIEW-DESIGN
+status: CURRENT
+inherits: NAPMS-MVP-PRESENTATION-SYSTEM
+
+purpose: >-
+  Define concrete first-MVP composition for every canonical NAPMS browser
+  workspace while inheriting shared presentation decisions from
+  NAPMS-MVP-PRESENTATION-SYSTEM.
+
+basis:
+  human_interface: docs/contracts/ui/mvp-human-interface.yaml
+  navigation: docs/contracts/ui/mvp-navigation.yaml
+  presentation_system: docs/contracts/ui/mvp-presentation-system.yaml
+  resource_detail: docs/contracts/ui/resource-detail.yaml
+  http: docs/contracts/http/napms.openapi.yaml
+
+screens:
+  - id: RESOURCE-CATALOGUE
+    purpose: Locate/select Resources and start supported Resource authoring.
+    patterns: [CATALOGUE, FILTER-BAR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    regions:
+      - {id: context, role: heading-context, priority: primary}
+      - {id: catalogue-controls, role: search-filter, priority: primary}
+      - {id: resources, role: collection, priority: primary}
+      - {id: actions, role: task-actions, priority: primary}
+      - {id: feedback, role: operation-status, priority: supporting}
+    primary_action_role: create-resource
+    exits:
+      - select Resource -> RESOURCE-DETAIL
+    states: [loading, loaded, empty, validation-rejected, authorization-rejected, conflict, technical-error]
+    responsive:
+      - collection preserves Resource identity, current distinguishing facts and open action
+      - structured rows may become labeled records
+    overrides: []
+
+  - id: RESOURCE-DETAIL
+    purpose: Inspect and author one Resource current state and inspect history.
+    patterns: [DETAIL, EDITOR, DISCLOSURE, TASK-ACTIONS, STATUS]
+    source_contract: docs/contracts/ui/resource-detail.yaml
+    regions:
+      - {id: identity-context, role: heading-context, priority: primary}
+      - {id: current-facts, role: primary-content, priority: primary}
+      - {id: actions, role: task-actions, priority: primary}
+      - {id: history, role: secondary-content, pattern: DISCLOSURE, priority: secondary}
+      - {id: feedback, role: operation-status, priority: supporting}
+    states: [loading, loaded, empty-current, not-found, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
+    responsive:
+      - current facts remain before historical facts in reading order
+      - actions remain available with their affected fact group
+      - history remains secondary but directly discoverable
+    overrides: []
+
+  - id: APPLICATION-CATALOGUE
+    purpose: Locate/select reusable Applications and start supported Application creation.
+    patterns: [CATALOGUE, FILTER-BAR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    regions:
+      - {id: context, role: heading-context, priority: primary}
+      - {id: catalogue-controls, role: search-filter, priority: primary}
+      - {id: applications, role: collection, priority: primary}
+      - {id: actions, role: task-actions, priority: primary}
+      - {id: feedback, role: operation-status, priority: supporting}
+    primary_action_role: create-application
+    exits:
+      - select Application -> APPLICATION-DETAIL
+    states: [loading, loaded, empty, validation-rejected, authorization-rejected, conflict, technical-error]
+    responsive:
+      - application records preserve stable identity and open action
+      - collection may transform to labeled records
+    overrides: []
+
+  - id: APPLICATION-DETAIL
+    purpose: Author one reusable Application together with Components and directed Interactions.
+    patterns: [DETAIL, EDITOR, STRUCTURED-LIST, DATA-TABLE, TASK-ACTIONS, STATUS]
+    regions:
+      - {id: application-context, role: heading-context, priority: primary}
+      - {id: application-facts, role: primary-content, priority: primary}
+      - {id: components, role: primary-content, pattern: STRUCTURED-LIST, priority: primary}
+      - {id: interactions, role: primary-content, pattern: DATA-TABLE, priority: primary}
+      - {id: actions, role: task-actions, priority: primary}
+      - {id: feedback, role: operation-status, priority: supporting}
+    action_hierarchy:
+      application: edit-application
+      components: add-or-edit-component
+      interactions: add-or-edit-interaction
+    states: [loading, loaded, empty-components, empty-interactions, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
+    responsive:
+      - application context remains first
+      - components precede interactions in reading order
+      - interaction table may become labeled records while preserving source/target/reason/traffic distinctions and actions
+    overrides: []
+
+  - id: DEPLOYMENTS
+    purpose: Locate/create Component deployments and inspect their Resource realization.
+    patterns: [CATALOGUE, FILTER-BAR, DETAIL, EDITOR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    regions:
+      - {id: context, role: heading-context, priority: primary}
+      - {id: controls, role: search-filter, priority: primary}
+      - {id: deployments, role: collection, priority: primary}
+      - {id: selected-deployment, role: detail-editor, priority: primary}
+      - {id: actions, role: task-actions, priority: primary}
+      - {id: feedback, role: operation-status, priority: supporting}
+    primary_action_role: create-deployment
+    states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
+    responsive:
+      - collection and selected detail stack with collection first
+      - Component and Resource identities remain explicit and distinct
+    overrides: []
+
+  - id: BUSINESS-CONNECTIVITY
+    purpose: Manage Business Processes and Connectivity Needs while preserving business justification independently from permission.
+    patterns: [CATALOGUE, FILTER-BAR, DETAIL, EDITOR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    regions:
+      - {id: context, role: heading-context, priority: primary}
+      - {id: business-processes, role: collection-detail, priority: primary}
+      - {id: connectivity-needs, role: collection-detail, priority: primary}
+      - {id: actions, role: task-actions, priority: primary}
+      - {id: feedback, role: operation-status, priority: supporting}
+    action_hierarchy:
+      business_process: create-or-edit-business-process
+      connectivity_need: create-or-retire-connectivity-need
+    states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
+    responsive:
+      - Business Process context precedes related Connectivity Need composition
+      - relationship labels remain visible when collections stack
+    overrides: []
+
+  - id: ACCESS-REQUESTS
+    purpose: Submit connectivity requests and inspect immutable permission outcomes under backend-confirmed authority.
+    patterns: [CATALOGUE, DETAIL, EDITOR, OUTCOME, TASK-ACTIONS, STATUS]
+    regions:
+      - {id: context, role: heading-context, priority: primary}
+      - {id: requests, role: collection, priority: primary}
+      - {id: request-composer, role: task-editor, priority: primary}
+      - {id: selected-outcome, role: authoritative-outcome, pattern: OUTCOME, priority: primary}
+      - {id: actions, role: task-actions, priority: primary}
+      - {id: feedback, role: operation-status, priority: supporting}
+    primary_action_role: submit-request
+    authority_rule: Visible/enabled controls never establish request authority; backend admission is authoritative.
+    states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, conflict, outcome-allowed, outcome-not-allowed, technical-error]
+    responsive:
+      - request composer and outcome become sequential regions
+      - immutable request subject and permission outcome remain jointly inspectable
+    overrides: []
+
+  - id: POLICY-RULES
+    purpose: Inspect authoritative desired-access rules and change supported Active/Inactive operational state.
+    patterns: [CATALOGUE, FILTER-BAR, DETAIL, OUTCOME, TASK-ACTIONS, STATUS]
+    regions:
+      - {id: context, role: heading-context, priority: primary}
+      - {id: controls, role: search-filter, priority: primary}
+      - {id: rules, role: collection, priority: primary}
+      - {id: selected-rule, role: authoritative-detail, priority: primary}
+      - {id: provenance-history, role: secondary-content, priority: secondary}
+      - {id: actions, role: task-actions, priority: primary}
+      - {id: feedback, role: operation-status, priority: supporting}
+    primary_action_role: change-supported-operational-state
+    states: [loading, loaded, empty, submitting, authorization-rejected, conflict, not-found, technical-error]
+    responsive:
+      - selected rule identity/state stays before provenance/history
+      - rule list may become labeled records
+    overrides: []
+
+  - id: POLICY-EXPORT
+    purpose: Select effective policy scope, execute normalized export and inspect completeness diagnostics.
+    patterns: [SCOPE-SELECTOR, OUTCOME, TASK-ACTIONS, STATUS]
+    regions:
+      - {id: context, role: heading-context, priority: primary}
+      - {id: scope, role: operation-input, pattern: SCOPE-SELECTOR, priority: primary}
+      - {id: actions, role: task-actions, priority: primary}
+      - {id: export-result, role: authoritative-outcome, pattern: OUTCOME, priority: primary}
+      - {id: diagnostics, role: secondary-content, priority: primary}
+      - {id: provenance, role: secondary-content, priority: secondary}
+      - {id: feedback, role: operation-status, priority: supporting}
+    primary_action_role: execute-export
+    authority_rule: Visible/enabled controls never establish export authority; backend admission is authoritative.
+    states: [editing, submitting, complete-success, unresolved-or-degraded, validation-rejected, authorization-rejected, conflict, technical-error]
+    responsive:
+      - scope and execute action remain visible before result
+      - completeness diagnostics remain distinct from technical failure
+      - provenance remains inspectable after reflow
+    overrides: []
+
+global_rules:
+  - every screen inherits NAPMS-MVP-PRESENTATION-SYSTEM;
+  - no screen redefines common visual/presentation rules locally without an explicit justified override;
+  - required data and actions remain traceable to accepted Human Interface and HTTP/application contracts;
+  - responsive transformations preserve semantic labels, distinctions and action availability;
+  - screen composition does not create domain or authorization semantics.
+
+coverage:
+  required_workspaces:
+    - RESOURCE-CATALOGUE
+    - RESOURCE-DETAIL
+    - APPLICATION-CATALOGUE
+    - APPLICATION-DETAIL
+    - DEPLOYMENTS
+    - BUSINESS-CONNECTIVITY
+    - ACCESS-REQUESTS
+    - POLICY-RULES
+    - POLICY-EXPORT
+  rule: FRONTEND-IMPLEMENTATION is not presentation-complete unless every required workspace is present here and inherits the shared Presentation System.
