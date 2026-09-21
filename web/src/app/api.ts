@@ -198,6 +198,12 @@ export const api = {
       body: JSON.stringify(body),
     }),
   listApplications: () => request<ApplicationView[]>("/v1/applications"),
+  getApplication: async (ref: string) => {
+    const items = await request<ApplicationView[]>("/v1/applications");
+    const value = items.find((item) => item.applicationRef === ref);
+    if (!value) throw new ApiError("not-found", 404);
+    return value;
+  },
   createApplication: (name: string) =>
     request<{ applicationRef: string; version: number }>("/v1/applications", {
       method: "POST",
@@ -250,6 +256,12 @@ export const api = {
       body: JSON.stringify({ componentRef, resourceRef }),
     }),
   listProcesses: () => request<ProcessView[]>("/v1/processes"),
+  getProcess: async (ref: string) => {
+    const items = await request<ProcessView[]>("/v1/processes");
+    const value = items.find((item) => item.processRef === ref);
+    if (!value) throw new ApiError("not-found", 404);
+    return value;
+  },
   createProcess: (body: {
     name: string;
     description?: string;
