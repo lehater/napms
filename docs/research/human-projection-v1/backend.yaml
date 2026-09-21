@@ -1,0 +1,36 @@
+version: 1
+kind: harness-human-projection
+id: napms-backend-human-docs-current
+consumer: BACKEND-IMPLEMENTATION
+
+documents:
+  - id: overview
+    title: NAPMS Backend Overview
+    sections:
+      - id: product
+        select: {authorities: [PRODUCT-REQUIREMENTS]}
+      - id: journey
+        select: {authorities: [APPLICATION-JOURNEY-DESIGN]}
+  - id: domain
+    title: Domain Design
+    sections:
+      - id: strategic
+        select: {authorities: [STRATEGIC-DOMAIN-DESIGN]}
+      - id: tactical
+        select: {authorities: [TACTICAL-DOMAIN-DESIGN]}
+  - id: architecture
+    title: Architecture and Interfaces
+    sections:
+      - id: system
+        select: {authorities: [SYSTEM-ARCHITECTURE]}
+      - id: interfaces
+        select: {authorities: [INTERFACE-DESIGN]}
+      - id: security
+        select: {authorities: [SECURITY-ARCHITECTURE-DESIGN]}
+  - id: implementation
+    title: Implementation and Verification
+    sections:
+      - id: implementation
+        select: {authorities: [IMPLEMENTATION-DESIGN]}
+      - id: verification
+        select: {authorities: [VERIFICATION-DESIGN]}
