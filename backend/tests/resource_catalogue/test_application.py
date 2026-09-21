@@ -8,9 +8,9 @@ from napms.contexts.resource_catalogue.application.commands import (
     ResourceCatalogueApplication,
 )
 from napms.contexts.resource_catalogue.application.ports import (
-    AuthorityDenied,
     RESOURCE_CATALOGUE_AUTHORITY_SCOPE,
     RESOURCE_CATALOGUE_CURATION_ACTION,
+    AuthorityDenied,
 )
 from napms.contexts.resource_catalogue.domain.model import Resource
 

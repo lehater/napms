@@ -23,11 +23,11 @@ class AddressRealization:
     value: str
 
     @classmethod
-    def host(cls, value: str) -> "AddressRealization":
+    def host(cls, value: str) -> AddressRealization:
         return cls(kind=AddressKind.HOST, value=str(ip_address(value)))
 
     @classmethod
-    def prefix(cls, value: str) -> "AddressRealization":
+    def prefix(cls, value: str) -> AddressRealization:
         return cls(kind=AddressKind.PREFIX, value=str(ip_network(value, strict=True)))
 
 
@@ -72,7 +72,7 @@ class ResourceEndpoint:
         fact_ref: UUID,
         effective_at: datetime,
         subject: str,
-    ) -> "ResourceEndpoint":
+    ) -> ResourceEndpoint:
         _require_aware(effective_at)
         history = self.address_history
         if self.current_address is not None:
@@ -90,7 +90,7 @@ class ResourceEndpoint:
             address_history=history,
         )
 
-    def clear_address(self, *, effective_at: datetime) -> "ResourceEndpoint":
+    def clear_address(self, *, effective_at: datetime) -> ResourceEndpoint:
         _require_aware(effective_at)
         if self.current_address is None:
             return self
@@ -118,7 +118,7 @@ class Resource:
         resource_ref: UUID,
         display_name: str,
         authority_scope_ref: str,
-    ) -> "Resource":
+    ) -> Resource:
         display_name = display_name.strip()
         authority_scope_ref = authority_scope_ref.strip()
         if not display_name:
@@ -132,7 +132,7 @@ class Resource:
             version=1,
         )
 
-    def add_endpoint(self, endpoint_ref: UUID) -> "Resource":
+    def add_endpoint(self, endpoint_ref: UUID) -> Resource:
         if any(endpoint.endpoint_ref == endpoint_ref for endpoint in self.endpoints):
             raise ValueError("endpoint_ref already belongs to resource")
         return replace(
@@ -149,7 +149,7 @@ class Resource:
         fact_ref: UUID,
         effective_at: datetime,
         subject: str,
-    ) -> "Resource":
+    ) -> Resource:
         endpoint = self._endpoint(endpoint_ref)
         updated = endpoint.set_address(
             address,
@@ -170,7 +170,7 @@ class Resource:
         endpoint_ref: UUID,
         *,
         effective_at: datetime,
-    ) -> "Resource":
+    ) -> Resource:
         endpoint = self._endpoint(endpoint_ref)
         updated = endpoint.clear_address(effective_at=effective_at)
         if updated == endpoint:
@@ -190,7 +190,7 @@ class Resource:
         fact_ref: UUID | None,
         effective_at: datetime,
         subject: str,
-    ) -> "Resource":
+    ) -> Resource:
         _require_aware(effective_at)
         history = self.site_history
         if self.current_site is not None:
@@ -224,7 +224,7 @@ class Resource:
         fact_ref: UUID | None,
         effective_at: datetime,
         subject: str,
-    ) -> "Resource":
+    ) -> Resource:
         _require_aware(effective_at)
         current_for_role = next(
             (item for item in self.responsibilities if item.role is role),
