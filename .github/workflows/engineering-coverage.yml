@@ -1,3 +1,4 @@
+# Coverage uses the Harness SHA pinned in .harness-version.
 name: Engineering Coverage
 
 on:
