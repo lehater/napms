@@ -18,3 +18,4 @@ web/*.tsbuildinfo
 .harness-tool/
 docs-generated/
 .idea/
+docs/architecture/structurizr/.structurizr/
