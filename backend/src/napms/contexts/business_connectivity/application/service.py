@@ -31,6 +31,9 @@ class BusinessConnectivityService:
         self._interactions = interactions
         self._new_ref = new_ref
 
+    def list_business_processes(self) -> tuple[BusinessProcess, ...]:
+        return self._processes.list_processes()
+
     def register_business_process(
         self,
         *,

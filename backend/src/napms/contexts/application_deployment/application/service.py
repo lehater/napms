@@ -24,6 +24,9 @@ class ApplicationDeploymentService:
         self._resources = resources
         self._new_ref = new_ref
 
+    def list_component_deployments(self) -> tuple[ComponentDeployment, ...]:
+        return self._deployments.list()
+
     def register_component_deployment(
         self,
         *,

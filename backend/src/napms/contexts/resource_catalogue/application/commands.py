@@ -34,6 +34,9 @@ class ResourceCatalogueApplication:
         self._resources = resources
         self._new_ref = new_ref
 
+    def list_resources(self) -> tuple[Resource, ...]:
+        return self._resources.list()
+
     def get_resource(self, resource_ref: UUID) -> Resource | None:
         return self._resources.get(resource_ref)
 

@@ -31,6 +31,9 @@ class ApplicationCommunicationCatalogue:
         self._components = components
         self._new_ref = new_ref
 
+    def list_applications(self) -> tuple[Application, ...]:
+        return self._applications.list_applications()
+
     def create_application(self, *, name: str) -> Application:
         value = Application.create(application_ref=self._new_ref(), name=name)
         self._applications.add(value)
