@@ -401,18 +401,6 @@ function Deployments() {
           ))
         )}
       </div>
-      <div className="panel">
-        <h3>Business Processes</h3>
-        {catalogue.length === 0 ? (
-          <p className="muted">No Business Processes.</p>
-        ) : (
-          catalogue.map((item) => (
-            <p key={item.processRef}>
-              {item.name} · {item.processRef} · Needs {item.needs.length}
-            </p>
-          ))
-        )}
-      </div>
       <form className="panel form-grid" onSubmit={create}>
         <label>
           Component ID
@@ -514,6 +502,18 @@ function BusinessConnectivity() {
         A Connectivity Need explains why an application Interaction is required;
         it is neither permission nor a concrete deployment.
       </p>
+      <div className="panel">
+        <h3>Business Processes</h3>
+        {catalogue.length === 0 ? (
+          <p className="muted">No Business Processes.</p>
+        ) : (
+          catalogue.map((item) => (
+            <p key={item.processRef}>
+              {item.name} · {item.processRef} · Needs {item.needs.length}
+            </p>
+          ))
+        )}
+      </div>
       <form className="panel form-grid" onSubmit={create}>
         <label>
           Process name
