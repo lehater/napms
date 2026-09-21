@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ApiError, type AccessRequestView, api } from "../../app/api";
+import { type AccessRequestView, ApiError, api } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
   EmptyState,

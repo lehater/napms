@@ -121,8 +121,7 @@ def router(
                     {"from": item.start, "to": item.end} for item in clause.source_ports
                 ],
                 "destinationPorts": [
-                    {"from": item.start, "to": item.end}
-                    for item in clause.destination_ports
+                    {"from": item.start, "to": item.end} for item in clause.destination_ports
                 ],
             }
 

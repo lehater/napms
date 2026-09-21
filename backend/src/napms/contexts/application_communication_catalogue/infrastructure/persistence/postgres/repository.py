@@ -163,9 +163,7 @@ class PostgresApplicationCommunicationCatalogue:
                 """,
                 (list(component_refs), list(component_refs)),
             ).fetchall()
-        return tuple(
-            value for (ref,) in rows if (value := self.get_interaction(ref)) is not None
-        )
+        return tuple(value for (ref,) in rows if (value := self.get_interaction(ref)) is not None)
 
     def save_interaction(self, value: Interaction, *, expected_version: int) -> None:
         with psycopg.connect(self._dsn) as connection:
