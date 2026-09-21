@@ -114,8 +114,14 @@ class PolicyMaterializer(Protocol):
     ) -> MaterializationResult: ...
 
 
+class AccessRequestReader(Protocol):
+    def get_request(self, request_ref: UUID) -> AccessRequest | None: ...
+    def list_requests(self) -> tuple[AccessRequest, ...]: ...
+
+
 class PolicyRuleReader(Protocol):
     def get_rule(self, rule_ref: UUID) -> PolicyRule | None: ...
+    def list_rules(self) -> tuple[PolicyRule, ...]: ...
 
 
 class SubmitAccessRequestBody(_Body):
@@ -157,6 +163,7 @@ class HttpDependencies:
     policy_rule_operations: PolicyRuleOperator | None = None
     policy_materialization: PolicyMaterializer | None = None
     policy_rules: PolicyRuleReader | None = None
+    access_request_reader: AccessRequestReader | None = None
     idempotency: PostgresIdempotencyStore | None = None
     resource_catalogue: ResourceCatalogueApplication | None = None
     application_catalogue: ApplicationCommunicationCatalogue | None = None
@@ -196,6 +203,51 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         if version < 0:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT)
         return version
+
+    def access_request_view(request: AccessRequest) -> dict[str, object]:
+        subject = request.access_subject
+        return {
+            "requestRef": str(request.request_ref), "version": request.version,
+            "sourceDeploymentRef": str(subject.source_deployment_ref),
+            "destinationDeploymentRef": str(subject.destination_deployment_ref),
+            "interactionRevisionRef": str(subject.interaction_revision_ref),
+            "needRef": str(request.initial_need_ref), "submittedAt": request.submitted_at.isoformat(),
+            "decisionResult": None if request.decision_result is None else request.decision_result.value,
+            "externalDecisionRef": request.external_decision_ref, "decidedBySubject": request.decided_by_subject,
+            "decidedAt": None if request.decided_at is None else request.decided_at.isoformat(),
+        }
+
+    def policy_rule_view(rule: PolicyRule) -> dict[str, object]:
+        return {
+            "policyRuleRef": str(rule.rule_ref), "version": rule.version, "effectState": rule.effect_state.value,
+            "effectiveWindow": {
+                "effectiveFrom": None if rule.effective_window.effective_from is None else rule.effective_window.effective_from.isoformat(),
+                "effectiveUntil": None if rule.effective_window.effective_until is None else rule.effective_window.effective_until.isoformat(),
+            },
+            "sourceDeploymentRef": str(rule.access_subject.source_deployment_ref),
+            "destinationDeploymentRef": str(rule.access_subject.destination_deployment_ref),
+            "interactionRevisionRef": str(rule.access_subject.interaction_revision_ref),
+            "authorizationEvidence": [{"evidenceRef": str(x.evidence_ref), "accessRequestRef": str(x.access_request_ref), "externalDecisionRef": x.external_decision_ref, "decidedBySubject": x.decided_by_subject, "decidedAt": x.decided_at.isoformat()} for x in rule.authorization_evidence],
+            "justifications": [{"associationRef": str(x.association_ref), "needRef": str(x.need_ref), "attachedAt": x.attached_at.isoformat(), "attachedBySubject": x.attached_by_subject, "sourceAccessRequestRef": None if x.source_access_request_ref is None else str(x.source_access_request_ref)} for x in rule.justifications],
+            "operationalHistory": [{"historyRef": str(x.history_ref), "ruleVersion": x.rule_version, "effectState": x.effect_state.value, "effectiveFrom": None if x.effective_window.effective_from is None else x.effective_window.effective_from.isoformat(), "effectiveUntil": None if x.effective_window.effective_until is None else x.effective_window.effective_until.isoformat(), "changedBySubject": x.changed_by_subject, "changedAt": x.changed_at.isoformat()} for x in rule.operational_history],
+        }
+
+    @app.get("/v1/access-requests")
+    def list_access_requests(caller: Principal = Depends(principal)) -> list[dict[str, object]]:
+        require_permission(caller, "access.read")
+        if dependencies.access_request_reader is None:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return [access_request_view(item) for item in dependencies.access_request_reader.list_requests()]
+
+    @app.get("/v1/access-requests/{request_ref}")
+    def get_access_request(request_ref: UUID, caller: Principal = Depends(principal)) -> dict[str, object]:
+        require_permission(caller, "access.read")
+        if dependencies.access_request_reader is None:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+        request = dependencies.access_request_reader.get_request(request_ref)
+        if request is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        return access_request_view(request)
 
     @app.post("/v1/access-requests", status_code=status.HTTP_201_CREATED)
     def submit_access_request(
@@ -379,37 +431,22 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
         return {"policyRuleRef": str(rule.rule_ref), "version": rule.version}
 
+    @app.get("/v1/policy-rules")
+    def list_policy_rules(caller: Principal = Depends(principal)) -> list[dict[str, object]]:
+        require_permission(caller, "policy.read")
+        if dependencies.policy_rules is None:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return [policy_rule_view(item) for item in dependencies.policy_rules.list_rules()]
+
     @app.get("/v1/policy-rules/{rule_ref}")
-    def get_policy_rule(
-        rule_ref: UUID,
-        caller: Principal = Depends(principal),
-    ) -> dict[str, object]:
+    def get_policy_rule(rule_ref: UUID, caller: Principal = Depends(principal)) -> dict[str, object]:
         require_permission(caller, "policy.read")
         if dependencies.policy_rules is None:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
         rule = dependencies.policy_rules.get_rule(rule_ref)
         if rule is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-        return {
-            "policyRuleRef": str(rule.rule_ref),
-            "version": rule.version,
-            "effectState": rule.effect_state.value,
-            "effectiveWindow": {
-                "effectiveFrom": (
-                    None
-                    if rule.effective_window.effective_from is None
-                    else rule.effective_window.effective_from.isoformat()
-                ),
-                "effectiveUntil": (
-                    None
-                    if rule.effective_window.effective_until is None
-                    else rule.effective_window.effective_until.isoformat()
-                ),
-            },
-            "sourceDeploymentRef": str(rule.access_subject.source_deployment_ref),
-            "destinationDeploymentRef": str(rule.access_subject.destination_deployment_ref),
-            "interactionRevisionRef": str(rule.access_subject.interaction_revision_ref),
-        }
+        return policy_rule_view(rule)
 
     @app.post("/v1/policy-materializations")
     def materialize_policy(

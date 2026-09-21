@@ -28,10 +28,13 @@ operations:
   - POST /v1/processes
   - PUT /v1/processes/{processRef}/criticality
   - POST /v1/processes/{processRef}/needs
+  - GET /v1/access-requests
   - POST /v1/access-requests
+  - GET /v1/access-requests/{requestRef}
   - POST /v1/access-requests/{requestRef}/decision
   - PUT /v1/policy-rules/{policyRuleRef}/operational-state
   - POST /v1/policy-rules/{policyRuleRef}/justifications
+  - GET /v1/policy-rules
   - GET /v1/policy-rules/{policyRuleRef}
   - POST /v1/policy-materializations
 
@@ -49,6 +52,8 @@ rules:
   - Export response is self-contained with ExportAuthorityEvidence and per-Rule authorization/business provenance.
   - Missing technical realization for a selected non-effective Rule does not make export incomplete.
   - Catalogue GET operations return authoritative read collections required by the accepted frontend catalogue workspaces and use the corresponding read permission.
+  - Access Request catalogue/detail reads expose immutable request subject, current decision outcome and version required by the canonical decision route.
+  - Policy Rule catalogue/detail reads expose effective state plus authorization, business-justification and operational-history provenance required by the canonical Policy Rule workspace.
   - GET /v1/resources/{resourceRef} returns the accepted Resource detail read model: immutable AuthorityScopeRef, current endpoint/site/responsibility facts and explanatory address/site/responsibility history.
   - Resource AuthorityScopeRef is never represented as a temporal affiliation.
   - Endpoint address clear, Site replace/clear and OWNER/ADMINISTRATOR replace/clear are public first-MVP Resource curation operations.

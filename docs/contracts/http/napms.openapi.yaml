@@ -101,17 +101,29 @@ paths:
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateNeedRequest'}}}}
       responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/access-requests:
+    get:
+      operationId: listAccessRequests
+      responses: {'200': {description: Access Request catalogue}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
     post:
       operationId: submitAccessRequest
       parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SubmitAccessRequestRequest'}}}}
       responses: {'201': {description: Submitted}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/access-requests/{requestRef}:
+    get:
+      operationId: getAccessRequest
+      parameters: [{$ref: '#/components/parameters/RequestRef'}]
+      responses: {'200': {description: Access Request, content: {application/json: {schema: {$ref: '#/components/schemas/AccessRequestView'}}}}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/access-requests/{requestRef}/decision:
     post:
       operationId: decideAccessRequest
       parameters: [{$ref: '#/components/parameters/RequestRef'}, {$ref: '#/components/parameters/IfMatch'}, {$ref: '#/components/parameters/IdempotencyKey'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/DecideAccessRequestRequest'}}}}
       responses: {'200': {description: Decision recorded}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/policy-rules:
+    get:
+      operationId: listPolicyRules
+      responses: {'200': {description: Policy Rule catalogue}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/policy-rules/{policyRuleRef}/operational-state:
     put:
       operationId: setPolicyRuleOperationalState
@@ -128,7 +140,7 @@ paths:
     get:
       operationId: getPolicyRule
       parameters: [{$ref: '#/components/parameters/PolicyRuleRef'}]
-      responses: {'200': {description: PolicyRule}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      responses: {'200': {description: PolicyRule, content: {application/json: {schema: {$ref: '#/components/schemas/PolicyRuleView'}}}}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/policy-materializations:
     post:
       operationId: materializeCurrentPolicy
@@ -364,6 +376,34 @@ components:
         interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
         needRef: {$ref: '#/components/schemas/StableId'}
 
+    AccessRequestView:
+      type: object
+      required: [requestRef, version, sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef, needRef, submittedAt, decisionResult]
+      properties:
+        requestRef: {$ref: '#/components/schemas/StableId'}
+        version: {type: integer, minimum: 0}
+        sourceDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        destinationDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
+        needRef: {$ref: '#/components/schemas/StableId'}
+        submittedAt: {$ref: '#/components/schemas/Timestamp'}
+        decisionResult:
+          oneOf:
+            - {type: string, enum: [ALLOWED, DENIED]}
+            - {type: 'null'}
+        externalDecisionRef:
+          oneOf:
+            - {type: string}
+            - {type: 'null'}
+        decidedBySubject:
+          oneOf:
+            - {type: string}
+            - {type: 'null'}
+        decidedAt:
+          oneOf:
+            - {$ref: '#/components/schemas/Timestamp'}
+            - {type: 'null'}
+
     DecideAccessRequestRequest:
       type: object
       additionalProperties: false
@@ -393,6 +433,21 @@ components:
       additionalProperties: false
       required: [needRef]
       properties: {needRef: {$ref: '#/components/schemas/StableId'}}
+
+    PolicyRuleView:
+      type: object
+      required: [policyRuleRef, version, effectState, effectiveWindow, sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef, authorizationEvidence, justifications, operationalHistory]
+      properties:
+        policyRuleRef: {$ref: '#/components/schemas/StableId'}
+        version: {type: integer, minimum: 0}
+        effectState: {type: string, enum: [ACTIVE, INACTIVE]}
+        effectiveWindow: {$ref: '#/components/schemas/EffectiveWindow'}
+        sourceDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        destinationDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
+        authorizationEvidence: {type: array, items: {type: object}}
+        justifications: {type: array, items: {type: object}}
+        operationalHistory: {type: array, items: {type: object}}
 
     PolicyMaterializationRequest:
       type: object

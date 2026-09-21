@@ -152,3 +152,37 @@ def test_submit_access_request_rejects_noncanonical_snake_case_body() -> None:
         json=snake_case,
     )
     assert response.status_code == 422
+
+
+@dataclass
+class AccessReader:
+    items: tuple[AccessRequest, ...]
+
+    def list_requests(self) -> tuple[AccessRequest, ...]:
+        return self.items
+
+    def get_request(self, request_ref):
+        return next((item for item in self.items if item.request_ref == request_ref), None)
+
+
+def test_access_request_read_endpoints_preserve_subject_and_outcome() -> None:
+    principal = Principal("subject:alice", frozenset({"access.read"}), ())
+    item = request()
+    app = create_app(HttpDependencies(identity=Identity(principal), access_requests=Submitter(item), access_request_reader=AccessReader((item,))))
+    http = TestClient(app)
+    headers = {"Authorization": "Bearer token"}
+    catalogue = http.get("/v1/access-requests", headers=headers)
+    detail = http.get(f"/v1/access-requests/{item.request_ref}", headers=headers)
+    assert catalogue.status_code == 200
+    assert detail.status_code == 200
+    assert catalogue.json()[0]["requestRef"] == str(item.request_ref)
+    assert detail.json()["sourceDeploymentRef"] == str(item.access_subject.source_deployment_ref)
+    assert detail.json()["decisionResult"] is None
+
+
+def test_access_request_read_requires_read_permission() -> None:
+    principal = Principal("subject:alice", frozenset(), ())
+    item = request()
+    app = create_app(HttpDependencies(identity=Identity(principal), access_requests=Submitter(item), access_request_reader=AccessReader((item,))))
+    response = TestClient(app).get("/v1/access-requests", headers={"Authorization": "Bearer token"})
+    assert response.status_code == 403

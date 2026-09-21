@@ -32,6 +32,17 @@ class PostgresAccessPolicyRepository:
         with psycopg.connect(self._dsn) as connection:
             return self.get_request_in(connection, request_ref)
 
+    def list_requests(self) -> tuple[AccessRequest, ...]:
+        with psycopg.connect(self._dsn) as connection:
+            rows = connection.execute(
+                "SELECT request_ref FROM access_policy.access_request ORDER BY submitted_at, request_ref"
+            ).fetchall()
+            return tuple(
+                request
+                for (request_ref,) in rows
+                if (request := self.get_request_in(connection, request_ref)) is not None
+            )
+
     def save_request(self, request: AccessRequest, *, expected_version: int) -> None:
         with psycopg.connect(self._dsn) as connection:
             self.save_request_in(connection, request, expected_version=expected_version)
@@ -43,6 +54,10 @@ class PostgresAccessPolicyRepository:
     def get_rule(self, rule_ref: UUID) -> PolicyRule | None:
         with psycopg.connect(self._dsn) as connection:
             return self.get_rule_in(connection, rule_ref)
+
+    def list_rules(self) -> tuple[PolicyRule, ...]:
+        with psycopg.connect(self._dsn) as connection:
+            return self.list_rules_in(connection)
 
     @classmethod
     def list_rules_in(
