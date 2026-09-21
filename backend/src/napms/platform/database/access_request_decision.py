@@ -7,8 +7,15 @@ from uuid import UUID, uuid4
 import psycopg
 
 from napms.contexts.access_policy.application.service import AccessPolicyService
-from napms.contexts.access_policy.domain.model import AccessRequest, PermissionDecision, PolicyRule
-from napms.contexts.access_policy.infrastructure.persistence.postgres.repository import PostgresAccessPolicyRepository
+from napms.contexts.access_policy.domain.model import (
+    AccessRequest,
+    AccessSubject,
+    PermissionDecision,
+    PolicyRule,
+)
+from napms.contexts.access_policy.infrastructure.persistence.postgres.repository import (
+    PostgresAccessPolicyRepository,
+)
 
 
 class PostgresAccessRequestDecision:
@@ -68,7 +75,7 @@ class _TransactionRepository:
             self._connection, request, expected_version=expected_version
         )
 
-    def find_rule_by_subject(self, subject):
+    def find_rule_by_subject(self, subject: AccessSubject) -> PolicyRule | None:
         return PostgresAccessPolicyRepository.find_rule_by_subject_in(self._connection, subject)
 
     def add_rule(self, rule: PolicyRule) -> None:
