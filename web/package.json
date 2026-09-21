@@ -10,7 +10,8 @@
     "dev": "vite",
     "ui-boundary-check": "node scripts/check-ui-boundaries.mjs",
     "build": "npm run ui-boundary-check && tsc -b && vite build",
-    "check": "biome check . && npm run ui-boundary-check && tsc -b --pretty false"
+    "check": "biome check . && npm run ui-boundary-check && tsc -b --pretty false && npm test",
+    "test": "tsx --test tests/**/*.test.ts"
   },
   "dependencies": {
     "lucide-react": "^1.43.0",
@@ -27,6 +28,7 @@
     "shadcn": "^4.21.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "tsx": "^4.20.6"
   }
 }
