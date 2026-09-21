@@ -82,8 +82,6 @@ services:
     init: true
     security_opt:
       - no-new-privileges:true
-    environment:
-      NAPMS_RUNTIME_ACCESS_TOKEN: ${NAPMS_RUNTIME_ACCESS_TOKEN:-}
     depends_on:
       api:
         condition: service_healthy

@@ -74,7 +74,6 @@ def up(*, print_credentials: bool = True) -> None:
         compose("up", "--build", "--detach", "oidc", env=env)
         wait_oidc(oidc_url)
         token = issue_local_token(oidc_url)
-        env["NAPMS_RUNTIME_ACCESS_TOKEN"] = token
         compose("up", "--build", "--detach", "--remove-orphans", env=env)
         wait_ready(base_url)
         read_only_smoke(base_url=base_url, token=token)
@@ -84,7 +83,7 @@ def up(*, print_credentials: bool = True) -> None:
 
     print(f"NAPMS ready: {base_url}")
     if print_credentials:
-        print("Authentication: signed local OIDC bearer token, held only in runtime memory.")
+        print("Authentication: OIDC-backed; startup probe used an ephemeral signed bearer token.")
 
 
 def main() -> None:

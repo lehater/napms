@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import ipaddress
 import json
 import os
 from pathlib import Path
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import ssl
 from urllib.parse import parse_qs, urlparse
 
@@ -20,7 +20,9 @@ AUDIENCE = os.environ.get("NAPMS_TEST_OIDC_AUDIENCE", "napms-e2e")
 KEY_ID = "napms-e2e-key-1"
 MATERIAL = Path("/material")
 MATERIAL.mkdir(parents=True, exist_ok=True)
+
 TLS_KEY = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+SIGNING_KEY = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "napms-e2e-oidc")])
 now = datetime.now(timezone.utc)
 certificate = (
@@ -42,7 +44,8 @@ certificate = (
     .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
     .sign(TLS_KEY, hashes.SHA256())
 )
-(MATERIAL / "tls.key").write_bytes(
+TLS_KEY_PATH = Path("/tmp/napms-e2e-oidc-tls.key")
+TLS_KEY_PATH.write_bytes(
     TLS_KEY.private_bytes(
         serialization.Encoding.PEM,
         serialization.PrivateFormat.PKCS8,
@@ -50,7 +53,7 @@ certificate = (
     )
 )
 (MATERIAL / "tls.crt").write_bytes(certificate.public_bytes(serialization.Encoding.PEM))
-PUBLIC_JWK = jwt.algorithms.RSAAlgorithm.to_jwk(TLS_KEY.public_key(), as_dict=True)
+PUBLIC_JWK = jwt.algorithms.RSAAlgorithm.to_jwk(SIGNING_KEY.public_key(), as_dict=True)
 PUBLIC_JWK.update({"kid": KEY_ID, "use": "sig", "alg": "RS256"})
 ALL_PERMISSIONS = [
     "resource.read", "resource.write", "application.read", "application.write",
@@ -65,7 +68,11 @@ def issue(profile: str) -> str:
         {"action": "access.request", "scope": "*"},
         {"action": "policy.export", "scope": "*"},
     ]
-    expiry = now - timedelta(minutes=1) if profile == "expired" else datetime.now(timezone.utc) + timedelta(minutes=15)
+    expiry = (
+        datetime.now(timezone.utc) - timedelta(minutes=1)
+        if profile == "expired"
+        else datetime.now(timezone.utc) + timedelta(minutes=15)
+    )
     return jwt.encode(
         {
             "iss": ISSUER,
@@ -75,7 +82,7 @@ def issue(profile: str) -> str:
             "permissions": permissions,
             "authority": authority,
         },
-        TLS_KEY,
+        SIGNING_KEY,
         algorithm="RS256",
         headers={"kid": KEY_ID},
     )
@@ -116,6 +123,6 @@ class Handler(BaseHTTPRequestHandler):
 
 server = ThreadingHTTPServer(("0.0.0.0", 8443), Handler)
 context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-context.load_cert_chain(MATERIAL / "tls.crt", MATERIAL / "tls.key")
+context.load_cert_chain(MATERIAL / "tls.crt", TLS_KEY_PATH)
 server.socket = context.wrap_socket(server.socket, server_side=True)
 server.serve_forever()
