@@ -1,0 +1,10 @@
+[importlinter]
+root_package = napms
+
+[importlinter:contract:contexts-do-not-depend-on-platform]
+name = Contexts do not depend on platform composition or adapters
+type = forbidden
+source_modules =
+    napms.contexts
+forbidden_modules =
+    napms.platform
