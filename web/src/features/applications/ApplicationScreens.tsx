@@ -28,6 +28,18 @@ export function ApplicationCatalogue({ create = false }: { create?: boolean }) {
       .catch((error) => setState(errorKind(error)));
   }, []);
 
+  function parsePorts(value: string) {
+    return value
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => {
+        const [from, to] = part.split("-").map(Number);
+        return { from, to: Number.isFinite(to) ? to : from };
+      })
+      .sort((left, right) => left.from - right.from || left.to - right.to);
+  }
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setState("submitting");
@@ -217,6 +229,8 @@ export function InteractionAuthoring({
   const [destination, setDestination] = useState("");
   const [purpose, setPurpose] = useState("");
   const [protocol, setProtocol] = useState("6");
+  const [sourcePorts, setSourcePorts] = useState("");
+  const [destinationPorts, setDestinationPorts] = useState("");
   const [version, setVersion] = useState<number | null>(null);
   const [state, setState] = useState(interactionRef ? "loading" : "editing");
 
@@ -238,7 +252,11 @@ export function InteractionAuthoring({
       if (interactionRef) {
         if (version === null) return;
         await api.publishRevision(interactionRef, version, [
-          { ipProtocol: Number(protocol) },
+          {
+            ipProtocol: Number(protocol),
+            sourcePorts: parsePorts(sourcePorts),
+            destinationPorts: parsePorts(destinationPorts),
+          },
         ]);
         setState("loaded");
       } else {
@@ -298,6 +316,16 @@ export function InteractionAuthoring({
               label="IP protocol number"
               value={protocol}
               onChange={setProtocol}
+            />
+            <ReferenceField
+              label="Source ports (comma-separated ranges, e.g. 1024-65535)"
+              value={sourcePorts}
+              onChange={setSourcePorts}
+            />
+            <ReferenceField
+              label="Destination ports (comma-separated ranges, e.g. 443 or 8000-8080)"
+              value={destinationPorts}
+              onChange={setDestinationPorts}
             />
           </>
         )}
