@@ -109,11 +109,32 @@ export type AccessRequestResult = {
   policyRuleRef?: string | null;
 };
 
+export type TrafficClauseView = {
+  ipProtocol: number;
+  sourcePorts: Array<{ from: number; to: number }>;
+  destinationPorts: Array<{ from: number; to: number }>;
+};
+
+export type InteractionView = {
+  interactionRef: string;
+  sourceComponentRef: string;
+  destinationComponentRef: string;
+  purpose: string | null;
+  version: number;
+  revisions: Array<{
+    interactionRevisionRef: string;
+    revisionNo: number;
+    trafficClauses: TrafficClauseView[];
+    createdBySubject: string;
+  }>;
+};
+
 export type ApplicationView = {
   applicationRef: string;
   name: string;
   version: number;
   components: Array<{ componentRef: string; name: string }>;
+  interactions?: InteractionView[];
 };
 export type DeploymentView = {
   deploymentRef: string;
@@ -198,12 +219,8 @@ export const api = {
       body: JSON.stringify(body),
     }),
   listApplications: () => request<ApplicationView[]>("/v1/applications"),
-  getApplication: async (ref: string) => {
-    const items = await request<ApplicationView[]>("/v1/applications");
-    const value = items.find((item) => item.applicationRef === ref);
-    if (!value) throw new ApiError("not-found", 404);
-    return value;
-  },
+  getApplication: (ref: string) =>
+    request<ApplicationView>(`/v1/applications/${ref}`),
   createApplication: (name: string) =>
     request<{ applicationRef: string; version: number }>("/v1/applications", {
       method: "POST",
