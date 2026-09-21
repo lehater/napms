@@ -141,30 +141,100 @@ function Resources() {
 
 function Applications() {
   const [name, setName] = useState("");
-  const [created, setCreated] = useState<{
+  const [application, setApplication] = useState<{
     applicationRef: string;
     version: number;
   } | null>(null);
+  const [componentName, setComponentName] = useState("");
+  const [componentRef, setComponentRef] = useState("");
+  const [sourceComponentRef, setSourceComponentRef] = useState("");
+  const [destinationComponentRef, setDestinationComponentRef] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [interaction, setInteraction] = useState<{
+    interactionRef: string;
+    version: number;
+  } | null>(null);
+  const [protocol, setProtocol] = useState("6");
+  const [revisionRef, setRevisionRef] = useState("");
   const [error, setError] = useState(false);
-  async function create(event: React.FormEvent) {
+
+  async function createApplication(event: React.FormEvent) {
     event.preventDefault();
     setError(false);
     try {
-      setCreated(await api.createApplication(name));
+      setApplication(await api.createApplication(name));
       setName("");
     } catch {
       setError(true);
     }
   }
+
+  async function addComponent(event: React.FormEvent) {
+    event.preventDefault();
+    if (!application) return;
+    setError(false);
+    try {
+      const created = await api.addComponent(
+        application.applicationRef,
+        application.version,
+        componentName,
+      );
+      setApplication({
+        applicationRef: created.applicationRef,
+        version: created.version,
+      });
+      setComponentRef(created.componentRef);
+      setComponentName("");
+    } catch {
+      setError(true);
+    }
+  }
+
+  async function createInteraction(event: React.FormEvent) {
+    event.preventDefault();
+    setError(false);
+    try {
+      setInteraction(
+        await api.createInteraction({
+          sourceComponentRef,
+          destinationComponentRef,
+          ...(purpose ? { purpose } : {}),
+        }),
+      );
+    } catch {
+      setError(true);
+    }
+  }
+
+  async function publishRevision(event: React.FormEvent) {
+    event.preventDefault();
+    if (!interaction) return;
+    setError(false);
+    try {
+      const created = await api.publishRevision(
+        interaction.interactionRef,
+        interaction.version,
+        [{ ipProtocol: Number(protocol) }],
+      );
+      setInteraction({
+        interactionRef: created.interactionRef,
+        version: created.version,
+      });
+      setRevisionRef(created.interactionRevisionRef);
+    } catch {
+      setError(true);
+    }
+  }
+
   return (
     <>
       <p className="eyebrow">Application catalogue</p>
-      <h2>Applications</h2>
+      <h2>Applications, components and interactions</h2>
       <p className="lede">
-        Create reusable Applications. Components and directed Interactions
-        remain subordinate authoring tasks.
+        Application structure and directed communication semantics are authored
+        independently from deployments and access permission.
       </p>
-      <form className="panel" onSubmit={create}>
+      <form className="panel" onSubmit={createApplication}>
         <label htmlFor="application-name">Application name</label>
         <input
           id="application-name"
@@ -175,22 +245,76 @@ function Applications() {
           Create application
         </button>
       </form>
+      {application && (
+        <form className="panel" onSubmit={addComponent}>
+          <p className="eyebrow">Application {application.applicationRef}</p>
+          <label>
+            Component name
+            <input
+              value={componentName}
+              onChange={(event) => setComponentName(event.target.value)}
+            />
+          </label>
+          <button type="submit" disabled={!componentName}>
+            Add component
+          </button>
+          {componentRef && <p>Latest Component: {componentRef}</p>}
+        </form>
+      )}
+      <form className="panel form-grid" onSubmit={createInteraction}>
+        <label>
+          Source Component
+          <input
+            value={sourceComponentRef}
+            onChange={(event) => setSourceComponentRef(event.target.value)}
+          />
+        </label>
+        <label>
+          Destination Component
+          <input
+            value={destinationComponentRef}
+            onChange={(event) => setDestinationComponentRef(event.target.value)}
+          />
+        </label>
+        <label>
+          Purpose
+          <input
+            value={purpose}
+            onChange={(event) => setPurpose(event.target.value)}
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={!sourceComponentRef || !destinationComponentRef}
+        >
+          Create interaction
+        </button>
+      </form>
+      {interaction && (
+        <form className="panel" onSubmit={publishRevision}>
+          <p className="eyebrow">Interaction {interaction.interactionRef}</p>
+          <label>
+            IP protocol number
+            <input
+              inputMode="numeric"
+              value={protocol}
+              onChange={(event) => setProtocol(event.target.value)}
+            />
+          </label>
+          <button type="submit" disabled={!protocol}>
+            Publish immutable revision
+          </button>
+          {revisionRef && <p>Published revision: {revisionRef}</p>}
+        </form>
+      )}
       {error && (
         <p role="alert" className="status">
-          Application could not be created.
+          Catalogue operation could not be completed.
         </p>
-      )}
-      {created && (
-        <div className="panel">
-          <p className="eyebrow">Created</p>
-          <p>{created.applicationRef}</p>
-          <p>Version: {created.version}</p>
-        </div>
       )}
     </>
   );
 }
-
 function Deployments() {
   const [componentRef, setComponentRef] = useState("");
   const [resourceRef, setResourceRef] = useState("");
@@ -257,16 +381,21 @@ function BusinessConnectivity() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [criticality, setCriticality] = useState("");
-  const [created, setCreated] = useState<{
+  const [process, setProcess] = useState<{
     processRef: string;
     version: number;
   } | null>(null);
+  const [interactionRef, setInteractionRef] = useState("");
+  const [participantComponentRef, setParticipantComponentRef] = useState("");
+  const [businessBasis, setBusinessBasis] = useState("");
+  const [needRef, setNeedRef] = useState("");
   const [error, setError] = useState(false);
+
   async function create(event: React.FormEvent) {
     event.preventDefault();
     setError(false);
     try {
-      setCreated(
+      setProcess(
         await api.createProcess({
           name,
           ...(description ? { description } : {}),
@@ -277,20 +406,36 @@ function BusinessConnectivity() {
       setError(true);
     }
   }
+
+  async function declareNeed(event: React.FormEvent) {
+    event.preventDefault();
+    if (!process) return;
+    setError(false);
+    try {
+      const created = await api.declareNeed(process.processRef, process.version, {
+        interactionRef,
+        participantComponentRef,
+        businessBasis,
+      });
+      setProcess({ processRef: created.processRef, version: created.version });
+      setNeedRef(created.needRef);
+    } catch {
+      setError(true);
+    }
+  }
+
   return (
     <>
       <p className="eyebrow">Business connectivity</p>
       <h2>Business processes and needs</h2>
       <p className="lede">
-        Business justification remains independent from permission decisions.
+        A Connectivity Need explains why an application Interaction is required;
+        it is neither permission nor a concrete deployment.
       </p>
       <form className="panel form-grid" onSubmit={create}>
         <label>
           Process name
-          <input
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
+          <input value={name} onChange={(event) => setName(event.target.value)} />
         </label>
         <label>
           Description
@@ -310,25 +455,47 @@ function BusinessConnectivity() {
           Create business process
         </button>
       </form>
+      {process && (
+        <form className="panel form-grid" onSubmit={declareNeed}>
+          <p className="eyebrow">Process {process.processRef}</p>
+          <label>
+            Interaction ID
+            <input
+              value={interactionRef}
+              onChange={(event) => setInteractionRef(event.target.value)}
+            />
+          </label>
+          <label>
+            Participant Component ID
+            <input
+              value={participantComponentRef}
+              onChange={(event) => setParticipantComponentRef(event.target.value)}
+            />
+          </label>
+          <label>
+            Business basis
+            <input
+              value={businessBasis}
+              onChange={(event) => setBusinessBasis(event.target.value)}
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={!interactionRef || !participantComponentRef || !businessBasis}
+          >
+            Declare Connectivity Need
+          </button>
+          {needRef && <p>Current Need: {needRef}</p>}
+        </form>
+      )}
       {error && (
         <p role="alert" className="status">
-          Business Process could not be created.
+          Business connectivity operation could not be completed.
         </p>
-      )}
-      {created && (
-        <div className="panel">
-          <p className="eyebrow">Business Process</p>
-          <p>{created.processRef}</p>
-          <p>Version: {created.version}</p>
-          <p className="muted">
-            Connectivity Needs are authored within this process context.
-          </p>
-        </div>
       )}
     </>
   );
 }
-
 function AccessRequests() {
   const [fields, setFields] = useState({
     sourceDeploymentRef: "",
