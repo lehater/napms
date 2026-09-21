@@ -59,4 +59,7 @@ def test_application_component_and_interaction_revision_round_trip() -> None:
     assert repository.get_application(application.application_ref) == application
     assert repository.resolve(UUID(int=2)) == application.components[0]
     assert repository.get_interaction(interaction.interaction_ref) == interaction
-    assert repository.resolve_revision(UUID(int=11)) == interaction.revisions[0]
+    resolved_revision = repository.resolve_revision(UUID(int=11))
+    assert resolved_revision is not None
+    assert resolved_revision.interaction_ref == interaction.interaction_ref
+    assert resolved_revision.revision == interaction.revisions[0]
