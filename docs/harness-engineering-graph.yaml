@@ -126,6 +126,8 @@ authorities:
           - engineering.interface.http-contract
           - engineering.architecture.security
           - engineering.quality.constraints
+          - engineering.security.threat-analysis
+          - engineering.operability.observability
 
   - id: SECURITY-ARCHITECTURE-DESIGN
     responsibility: Own authentication, identity-boundary and protected-action admission architecture.
