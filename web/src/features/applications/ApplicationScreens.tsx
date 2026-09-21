@@ -161,7 +161,7 @@ export function ApplicationDetail({
           <section className="panel" key={interaction.interactionRef}>
             <p>
               {interaction.sourceComponentRef} →{" "}
-                {interaction.destinationComponentRef}
+              {interaction.destinationComponentRef}
             </p>
             <p>{interaction.purpose || "No stated purpose"}</p>
             <p>Interaction ID: {interaction.interactionRef}</p>

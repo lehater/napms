@@ -198,5 +198,3 @@ def test_access_request_read_requires_read_permission() -> None:
     )
     response = TestClient(app).get("/v1/access-requests", headers={"Authorization": "Bearer token"})
     assert response.status_code == 403
-
-
