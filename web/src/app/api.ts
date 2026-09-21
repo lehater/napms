@@ -107,11 +107,19 @@ export const api = {
       body: JSON.stringify({ name }),
     }),
   createDeployment: (componentRef: string, resourceRef: string) =>
-    request<{ deploymentRef: string; componentRef: string; resourceRef: string }>(
-      "/v1/deployments",
-      { method: "POST", body: JSON.stringify({ componentRef, resourceRef }) },
-    ),
-  createProcess: (body: { name: string; description?: string; criticalityLabel?: string }) =>
+    request<{
+      deploymentRef: string;
+      componentRef: string;
+      resourceRef: string;
+    }>("/v1/deployments", {
+      method: "POST",
+      body: JSON.stringify({ componentRef, resourceRef }),
+    }),
+  createProcess: (body: {
+    name: string;
+    description?: string;
+    criticalityLabel?: string;
+  }) =>
     request<{ processRef: string; version: number }>("/v1/processes", {
       method: "POST",
       body: JSON.stringify(body),
