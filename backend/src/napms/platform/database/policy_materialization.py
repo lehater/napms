@@ -239,14 +239,10 @@ class PostgresPolicyMaterialization:
             "action": evidence.action,
             "scopeRef": evidence.scope,
             "effectiveFrom": (
-                None
-                if evidence.effective_from is None
-                else evidence.effective_from.isoformat()
+                None if evidence.effective_from is None else evidence.effective_from.isoformat()
             ),
             "effectiveUntil": (
-                None
-                if evidence.effective_until is None
-                else evidence.effective_until.isoformat()
+                None if evidence.effective_until is None else evidence.effective_until.isoformat()
             ),
             "evaluatedAt": evaluation_at.isoformat(),
         }
