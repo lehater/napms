@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { ApiError, api } from "../../app/api";
+import {
+  ApiError,
+  api,
+  type PolicyMaterializationResult,
+} from "../../app/api";
 import {
   FormSection,
   PageHeader,
@@ -14,7 +18,7 @@ const errorKind = (error: unknown) =>
 export function PolicyExportScreen() {
   const [refs, setRefs] = useState("");
   const [state, setState] = useState("editing");
-  const [result, setResult] = useState<Record<string, unknown> | null>(null);
+  const [result, setResult] = useState<PolicyMaterializationResult | null>(null);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();

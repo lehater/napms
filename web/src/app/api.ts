@@ -80,6 +80,17 @@ export type AccessRequestView = {
   decidedAt?: string | null;
 };
 
+export type PolicyMaterializationResult = {
+  status: "COMPLETE" | "UNRESOLVED";
+  evaluationAt: string;
+  selection: Record<string, unknown>;
+  exportAuthorityEvidence: Array<Record<string, unknown>>;
+  ruleProvenance: Array<Record<string, unknown>>;
+  nonEffective: Array<Record<string, unknown>>;
+  rows: Array<Record<string, unknown>>;
+  issues: Array<Record<string, unknown>>;
+};
+
 export type AccessRequestResult = {
   requestRef: string;
   version: number;
@@ -359,7 +370,7 @@ export const api = {
       },
     ),
   materialize: (policyRuleRefs?: string[]) =>
-    request<Record<string, unknown>>("/v1/policy-materializations", {
+    request<PolicyMaterializationResult>("/v1/policy-materializations", {
       method: "POST",
       body: JSON.stringify(policyRuleRefs ? { policyRuleRefs } : {}),
     }),
