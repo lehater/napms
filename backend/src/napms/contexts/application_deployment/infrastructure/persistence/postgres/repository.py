@@ -1,3 +1,4 @@
+from typing import Any
 from uuid import UUID
 
 import psycopg
@@ -26,18 +27,25 @@ class PostgresComponentDeploymentRepository:
 
     def resolve_deployment(self, deployment_ref: UUID) -> ComponentDeployment | None:
         with psycopg.connect(self._dsn) as connection:
-            row = connection.execute(
-                """
-                SELECT deployment_ref, component_ref, resource_ref
-                FROM application_deployment.component_deployment
-                WHERE deployment_ref = %s
-                """,
-                (deployment_ref,),
-            ).fetchone()
-            if row is None:
-                return None
-            return ComponentDeployment(
-                deployment_ref=row[0],
-                component_ref=row[1],
-                resource_ref=row[2],
-            )
+            return self.resolve_deployment_in(connection, deployment_ref)
+
+    @staticmethod
+    def resolve_deployment_in(
+        connection: psycopg.Connection[Any],
+        deployment_ref: UUID,
+    ) -> ComponentDeployment | None:
+        row = connection.execute(
+            """
+            SELECT deployment_ref, component_ref, resource_ref
+            FROM application_deployment.component_deployment
+            WHERE deployment_ref = %s
+            """,
+            (deployment_ref,),
+        ).fetchone()
+        if row is None:
+            return None
+        return ComponentDeployment(
+            deployment_ref=row[0],
+            component_ref=row[1],
+            resource_ref=row[2],
+        )
