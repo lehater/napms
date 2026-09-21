@@ -53,9 +53,7 @@ def token(private_key, **claims):
         "exp": NOW + timedelta(minutes=5),
         **claims,
     }
-    return jwt.encode(
-        payload, private_key, algorithm="RS256", headers={"kid": "key-1"}
-    )
+    return jwt.encode(payload, private_key, algorithm="RS256", headers={"kid": "key-1"})
 
 
 def test_valid_token_builds_principal_and_filters_unknown_grants() -> None:
