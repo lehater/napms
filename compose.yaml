@@ -65,20 +65,12 @@ services:
         condition: service_healthy
     restart: "no"
 
-  seed:
-    <<: *backend
-    command: ["napms-seed-local"]
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-    restart: "no"
-
   api:
     <<: *backend
     depends_on:
       oidc:
         condition: service_healthy
-      seed:
+      migrate:
         condition: service_completed_successfully
     restart: unless-stopped
 
