@@ -245,9 +245,8 @@ class PolicyRule:
         )
 
     def is_effective(self, evaluated_at: datetime) -> bool:
-        return (
-            self.effect_state is RuleEffectState.ACTIVE
-            and self.effective_window.contains(evaluated_at)
+        return self.effect_state is RuleEffectState.ACTIVE and self.effective_window.contains(
+            evaluated_at
         )
 
 
