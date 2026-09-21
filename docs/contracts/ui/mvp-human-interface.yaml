@@ -1,0 +1,46 @@
+version: 1
+kind: human-interface-design
+id: NAPMS-MVP-HUMAN-INTERFACE
+status: CURRENT
+
+purpose: Define the accepted human interaction contract for the first-MVP browser frontend from current product, UI-navigation and Resource-detail truth.
+
+basis:
+  requirements: docs/requirements/first-mvp-product-requirements.yaml
+  navigation: docs/contracts/ui/mvp-navigation.yaml
+  resource_detail: docs/contracts/ui/resource-detail.yaml
+  http: docs/contracts/http/napms.openapi.yaml
+
+principles:
+  - Current state is primary; historical state is secondary but directly inspectable.
+  - Loading, empty, not-found, rejected and technical-error states are visibly distinct.
+  - Frontend controls never establish domain truth or security authority.
+  - Stable product identifiers are used for navigation; database-row identities are never user contracts.
+  - State-changing actions expose outcome and refresh authoritative server state rather than maintaining a second frontend truth.
+
+accessibility:
+  - Required information and state distinctions are conveyed by semantic text/structure, not color alone.
+  - All required actions and History disclosure are keyboard reachable with visible focus.
+  - Validation/error/status feedback is associated with the affected operation or field and is exposed through semantic status/error structure.
+  - Implementation must preserve readable labels and control names independent from iconography.
+
+responsiveness:
+  - Required current facts, History access, primary actions and failure/retry states remain available at ordinary desktop and narrower browser widths.
+  - Exact breakpoints and component-library mechanics are implementation decisions; information or required action may not disappear solely because viewport width changes.
+
+internationalization:
+  state: NOT_APPLICABLE
+  rationale: No multilingual/localization requirement is accepted for first MVP.
+  reopening_condition: A product requirement introduces multiple locales, localized formatting/content, or translation ownership.
+
+journeys:
+  - id: RESOURCE-HISTORY-INSPECTION
+    source: docs/contracts/ui/mvp-navigation.yaml
+  - id: RESOURCE-DETAIL-AUTHORING
+    source: docs/contracts/ui/resource-detail.yaml
+
+error_contract:
+  - not-found is distinct from technical failure;
+  - validation/security rejection is distinct from retryable dependency failure;
+  - stale/current concurrency outcome is never rendered as silent success;
+  - technical detail is not exposed as trusted product semantics.
