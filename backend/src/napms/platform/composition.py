@@ -14,6 +14,14 @@ from napms.contexts.application_communication_catalogue.application.service impo
 from napms.contexts.application_communication_catalogue.infrastructure.persistence.postgres.repository import (
     PostgresApplicationCommunicationCatalogue,
 )
+from napms.contexts.application_deployment.application.service import ApplicationDeploymentService
+from napms.contexts.application_deployment.infrastructure.persistence.postgres.repository import (
+    PostgresComponentDeploymentRepository,
+)
+from napms.contexts.business_connectivity.application.service import BusinessConnectivityService
+from napms.contexts.business_connectivity.infrastructure.persistence.postgres.repository import (
+    PostgresBusinessConnectivityRepository,
+)
 from napms.contexts.authority_management.application.service import RequireScopedAuthority
 from napms.contexts.resource_catalogue.application.commands import ResourceCatalogueApplication
 from napms.contexts.resource_catalogue.infrastructure.persistence.postgres.repository import (
@@ -83,6 +91,15 @@ def build_app(config: RuntimeConfig) -> FastAPI:
             policy_materialization=PostgresPolicyMaterialization(dsn=config.database_dsn),
             policy_rules=PostgresAccessPolicyRepository(config.database_dsn),
             idempotency=PostgresIdempotencyStore(dsn=config.database_dsn),
+            application_deployment=ApplicationDeploymentService(
+                deployments=PostgresComponentDeploymentRepository(config.database_dsn),
+                components=PostgresApplicationCommunicationCatalogue(config.database_dsn),
+                resources=PostgresResourceCatalogueRepository(config.database_dsn),
+            ),
+            business_connectivity=BusinessConnectivityService(
+                processes=PostgresBusinessConnectivityRepository(config.database_dsn),
+                interactions=PostgresApplicationCommunicationCatalogue(config.database_dsn),
+            ),
             application_catalogue=ApplicationCommunicationCatalogue(
                 applications=PostgresApplicationCommunicationCatalogue(config.database_dsn),
                 interactions=PostgresApplicationCommunicationCatalogue(config.database_dsn),

@@ -32,8 +32,11 @@ from napms.platform.database.policy_rule_justification import JustificationRejec
 from napms.contexts.application_communication_catalogue.application.service import (
     ApplicationCommunicationCatalogue,
 )
+from napms.contexts.application_deployment.application.service import ApplicationDeploymentService
+from napms.contexts.business_connectivity.application.service import BusinessConnectivityService
 from napms.contexts.resource_catalogue.application.commands import ResourceCatalogueApplication
 from napms.platform.http.application_catalogue import router as application_catalogue_router
+from napms.platform.http.deployment_connectivity import router as deployment_connectivity_router
 from napms.platform.http.resource_catalogue import router as resource_catalogue_router
 from napms.platform.security.oidc import (
     AuthenticationRejected,
@@ -157,6 +160,8 @@ class HttpDependencies:
     idempotency: PostgresIdempotencyStore | None = None
     resource_catalogue: ResourceCatalogueApplication | None = None
     application_catalogue: ApplicationCommunicationCatalogue | None = None
+    application_deployment: ApplicationDeploymentService | None = None
+    business_connectivity: BusinessConnectivityService | None = None
 
 
 def create_app(dependencies: HttpDependencies) -> FastAPI:
@@ -369,6 +374,18 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         except AuthorityForbidden as exc:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN) from exc
         return result.as_http()
+
+    if (
+        dependencies.application_deployment is not None
+        and dependencies.business_connectivity is not None
+    ):
+        app.include_router(
+            deployment_connectivity_router(
+                deployments=dependencies.application_deployment,
+                connectivity=dependencies.business_connectivity,
+                identity=principal,
+            )
+        )
 
     if dependencies.application_catalogue is not None:
         app.include_router(
