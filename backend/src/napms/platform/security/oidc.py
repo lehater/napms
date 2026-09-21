@@ -12,11 +12,7 @@ import jwt
 from napms.contexts.authority_management.domain.model import AuthorityGrant, Principal
 
 
-KNOWN_INSTANCE_PERMISSIONS = frozenset({
-    "resource.read", "resource.write", "application.read", "application.write",
-    "deployment.read", "deployment.write", "business.read", "business.write",
-    "access.decide", "access.manage", "policy.read",
-})
+KNOWN_INSTANCE_PERMISSIONS = frozenset(\n    {\n        "resource.read",\n        "resource.write",\n        "application.read",\n        "application.write",\n        "deployment.read",\n        "deployment.write",\n        "business.read",\n        "business.write",\n        "access.decide",\n        "access.manage",\n        "policy.read",\n    }\n)
 KNOWN_SCOPED_ACTIONS = frozenset({"access.request", "policy.export"})
 
 
