@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
@@ -272,6 +273,46 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         except JustificationRejected as exc:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
         except AccessPolicyNotFound as exc:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
+        return {"policyRuleRef": str(rule.rule_ref), "version": rule.version}
+
+    class EffectiveWindowBody(BaseModel):
+        model_config = ConfigDict(extra="forbid", populate_by_name=True)
+        effective_from: datetime | None = None
+        effective_until: datetime | None = None
+
+    class SetOperationalStateBody(BaseModel):
+        model_config = ConfigDict(extra="forbid", populate_by_name=True)
+        effect_state: RuleEffectState
+        effective_window: EffectiveWindowBody | None = None
+
+    @app.put("/v1/policy-rules/{rule_ref}/operational-state")
+    def set_operational_state(
+        rule_ref: UUID,
+        body: SetOperationalStateBody,
+        if_match: str = Header(alias="If-Match"),
+        caller: Principal = Depends(principal),
+    ) -> dict[str, object]:
+        require_permission(caller, "access.manage")
+        if dependencies.policy_rule_operations is None:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+        window = body.effective_window
+        try:
+            rule = dependencies.policy_rule_operations.set_state(
+                rule_ref=rule_ref,
+                effect_state=body.effect_state,
+                effective_window=EffectiveWindow(
+                    effective_from=None if window is None else window.effective_from,
+                    effective_until=None if window is None else window.effective_until,
+                ),
+                changed_by_subject=caller.subject,
+                expected_version=expected_version(if_match),
+            )
+        except AccessPolicyVersionConflict as exc:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
+        except AccessPolicyNotFound as exc:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
+        except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
         return {"policyRuleRef": str(rule.rule_ref), "version": rule.version}
 
