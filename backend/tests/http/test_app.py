@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
