@@ -77,7 +77,6 @@ jobs:
           printf 'NAPMS_RUNTIME_ACCESS_TOKEN=%s\n' "$token" >> "$GITHUB_ENV"
       - name: Start local product stack
         run: |
-          python tools/prepare_local_postgres.py
           docker compose up --build --detach --remove-orphans
           python -c 'import os; from tools.local_start import wait_ready; wait_ready(os.environ["NAPMS_E2E_BASE_URL"])'
       - name: Run browser journeys
