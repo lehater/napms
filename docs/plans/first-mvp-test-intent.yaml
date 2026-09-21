@@ -74,3 +74,16 @@ required_scenarios:
     expect: Empty PostgreSQL through migrate then serve and public HTTP can complete the full backend journey without manual database fabrication.
 
 coverage_rule: Every ACCEPTED REQ-* in canonical Product Requirements must appear in at least one scenario verifies list or have an explicit non-test verification method.
+
+verification_coverage:
+  requirement_traceability: Every ACCEPTED REQ-* is mapped by coverage_rule to executable evidence or an explicit inspection method.
+  architecture: Verify owner/module dependency rules, no cross-owner persistence coupling, no internal HTTP and exact schema/startup boundaries.
+  interface_machine: Verify documented success/error/authorization/idempotency/concurrency semantics of the v1 HTTP contract.
+  interface_human: Verify the accepted Resource navigation/detail/history states and transitions where those contracts are included in the selected implementation scope.
+  data: Verify migration/schema constraints, history/current uniqueness, transaction semantics and representative fresh-database behavior.
+  security: Verify OIDC validation, scoped authority admission, fail-closed dependency semantics and relevant threat controls.
+  quality: Verify explicit qualitative quality constraints and inspect that forbidden numeric targets are not invented.
+
+transition_revalidation:
+  rule: Changes to schema, public HTTP semantics, OIDC/security boundary, owner/module topology or materialization consistency re-run the affected verification classes before acceptance.
+  scope: Revalidate the affected capability closure; unchanged upstream semantics need not be re-proven wholesale.
