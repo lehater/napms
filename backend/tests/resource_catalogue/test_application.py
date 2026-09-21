@@ -3,11 +3,7 @@ from uuid import UUID
 
 import pytest
 
-from napms.contexts.authority_management.application.service import (
-    AuthorityForbidden,
-    RequireScopedAuthority,
-)
-from napms.contexts.authority_management.domain.model import AuthorityGrant, Principal
+from napms.contexts.authority_management.domain.model import Principal
 from napms.contexts.resource_catalogue.application.commands import (
     MutationContext,
     ResourceCatalogueApplication,
@@ -47,20 +43,14 @@ class Refs:
 def curator(subject: str = "subject:alice") -> Principal:
     return Principal(
         subject=subject,
-        authority_grants=(
-            AuthorityGrant(
-                action="CurateResourceCatalogue",
-                scope="resource-catalogue",
-            ),
-        ),
+        instance_permissions=frozenset({"resource.write"}),
     )
 
 
-def test_register_resource_uses_server_owned_curation_action_and_scope() -> None:
+def test_register_resource_requires_resource_write_permission() -> None:
     resources = MemoryResources()
     app = ResourceCatalogueApplication(
         resources=resources,
-        authority=RequireScopedAuthority(),
         new_ref=Refs(UUID(int=100)),
     )
 
@@ -84,7 +74,6 @@ def test_add_endpoint_uses_server_generated_stable_identity() -> None:
     resources.add(initial)
     app = ResourceCatalogueApplication(
         resources=resources,
-        authority=RequireScopedAuthority(),
         new_ref=Refs(UUID(int=201)),
     )
 
@@ -107,11 +96,10 @@ def test_denied_mutation_leaves_resource_truth_unchanged() -> None:
     resources.add(initial)
     app = ResourceCatalogueApplication(
         resources=resources,
-        authority=RequireScopedAuthority(),
         new_ref=Refs(UUID(int=301)),
     )
 
-    with pytest.raises(AuthorityForbidden):
+    with pytest.raises(PermissionError):
         app.add_endpoint(
             resource_ref=initial.resource_ref,
             expected_version=initial.version,
