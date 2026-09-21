@@ -2,7 +2,8 @@ export type ApiErrorKind =
   | "not-found"
   | "rejected"
   | "conflict"
-  | "unauthorized"
+  | "unauthenticated"
+  | "forbidden"
   | "unavailable"
   | "technical";
 
@@ -24,9 +25,11 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const kind: ApiErrorKind =
       response.status === 404
         ? "not-found"
-        : response.status === 401 || response.status === 403
-          ? "unauthorized"
-          : response.status === 409
+        : response.status === 401
+          ? "unauthenticated"
+          : response.status === 403
+            ? "forbidden"
+            : response.status === 409
             ? "conflict"
             : response.status === 422
               ? "rejected"
