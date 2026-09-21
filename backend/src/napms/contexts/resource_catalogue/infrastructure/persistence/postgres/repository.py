@@ -143,6 +143,42 @@ class PostgresResourceCatalogueRepository:
     def resolve_resource(self, resource_ref: UUID) -> Resource | None:
         return self.get(resource_ref)
 
+    @classmethod
+    def resolve_resource_in(
+        cls,
+        connection: psycopg.Connection[Any],
+        resource_ref: UUID,
+    ) -> Resource | None:
+        row = connection.execute(
+            """
+            SELECT resource_ref, display_name, authority_scope_ref, version
+            FROM resource_catalogue.resource
+            WHERE resource_ref = %s
+            """,
+            (resource_ref,),
+        ).fetchone()
+        if row is None:
+            return None
+        endpoint_rows = connection.execute(
+            """
+            SELECT endpoint_ref
+            FROM resource_catalogue.endpoint
+            WHERE resource_ref = %s
+            ORDER BY endpoint_ref
+            """,
+            (resource_ref,),
+        ).fetchall()
+        return Resource(
+            resource_ref=row[0],
+            display_name=row[1],
+            authority_scope_ref=row[2],
+            version=row[3],
+            endpoints=tuple(
+                cls._load_endpoint(connection, endpoint_ref)
+                for (endpoint_ref,) in endpoint_rows
+            ),
+        )
+
     @staticmethod
     def resolve_authority_scope_in(
         connection: psycopg.Connection[Any],

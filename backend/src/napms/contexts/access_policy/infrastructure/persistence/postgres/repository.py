@@ -44,6 +44,20 @@ class PostgresAccessPolicyRepository:
         with psycopg.connect(self._dsn) as connection:
             return self.get_rule_in(connection, rule_ref)
 
+    @classmethod
+    def list_rules_in(
+        cls,
+        connection: psycopg.Connection[Any],
+    ) -> tuple[PolicyRule, ...]:
+        rows = connection.execute(
+            "SELECT rule_ref FROM access_policy.policy_rule ORDER BY rule_ref"
+        ).fetchall()
+        return tuple(
+            rule
+            for (rule_ref,) in rows
+            if (rule := cls.get_rule_in(connection, rule_ref)) is not None
+        )
+
     def find_rule_by_subject(self, subject: AccessSubject) -> PolicyRule | None:
         with psycopg.connect(self._dsn) as connection:
             return self.find_rule_by_subject_in(connection, subject)
