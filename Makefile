@@ -71,6 +71,7 @@ design-sync: harness-pin-check
 
 design-check: harness-pin-check
 	python $(HARNESS_ROOT)/repository_realization.py docs/plans/mvp-repository-realization.yaml
+	python $(HARNESS_ROOT)/architecture_driver_closure.py docs/requirements/first-mvp-architecture-driver-closure.yaml
 	python tools/check_canonical_graph.py
 	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_harness_integration.py
 	python tools/check_knowledge_completeness.py
