@@ -28,3 +28,7 @@ class ResourceCatalogueRepository(Protocol):
 
 class ResourceResolver(Protocol):
     def resolve_resource(self, resource_ref: UUID) -> Resource | None: ...
+
+
+class AuthorityScopeResolver(Protocol):
+    def resolve_authority_scope(self, resource_ref: UUID) -> str | None: ...
