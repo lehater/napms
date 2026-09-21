@@ -219,9 +219,7 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
             ),
             "externalDecisionRef": request.external_decision_ref,
             "decidedBySubject": request.decided_by_subject,
-            "decidedAt": (
-                None if request.decided_at is None else request.decided_at.isoformat()
-            ),
+            "decidedAt": (None if request.decided_at is None else request.decided_at.isoformat()),
         }
 
     def policy_rule_view(rule: PolicyRule) -> dict[str, object]:
@@ -230,15 +228,54 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
             "version": rule.version,
             "effectState": rule.effect_state.value,
             "effectiveWindow": {
-                "effectiveFrom": None if rule.effective_window.effective_from is None else rule.effective_window.effective_from.isoformat(),
-                "effectiveUntil": None if rule.effective_window.effective_until is None else rule.effective_window.effective_until.isoformat(),
+                "effectiveFrom": None
+                if rule.effective_window.effective_from is None
+                else rule.effective_window.effective_from.isoformat(),
+                "effectiveUntil": None
+                if rule.effective_window.effective_until is None
+                else rule.effective_window.effective_until.isoformat(),
             },
             "sourceDeploymentRef": str(rule.access_subject.source_deployment_ref),
             "destinationDeploymentRef": str(rule.access_subject.destination_deployment_ref),
             "interactionRevisionRef": str(rule.access_subject.interaction_revision_ref),
-            "authorizationEvidence": [{"evidenceRef": str(x.evidence_ref), "accessRequestRef": str(x.access_request_ref), "externalDecisionRef": x.external_decision_ref, "decidedBySubject": x.decided_by_subject, "decidedAt": x.decided_at.isoformat()} for x in rule.authorization_evidence],
-            "justifications": [{"associationRef": str(x.association_ref), "needRef": str(x.need_ref), "attachedAt": x.attached_at.isoformat(), "attachedBySubject": x.attached_by_subject, "sourceAccessRequestRef": None if x.source_access_request_ref is None else str(x.source_access_request_ref)} for x in rule.justifications],
-            "operationalHistory": [{"historyRef": str(x.history_ref), "ruleVersion": x.rule_version, "effectState": x.effect_state.value, "effectiveFrom": None if x.effective_window.effective_from is None else x.effective_window.effective_from.isoformat(), "effectiveUntil": None if x.effective_window.effective_until is None else x.effective_window.effective_until.isoformat(), "changedBySubject": x.changed_by_subject, "changedAt": x.changed_at.isoformat()} for x in rule.operational_history],
+            "authorizationEvidence": [
+                {
+                    "evidenceRef": str(x.evidence_ref),
+                    "accessRequestRef": str(x.access_request_ref),
+                    "externalDecisionRef": x.external_decision_ref,
+                    "decidedBySubject": x.decided_by_subject,
+                    "decidedAt": x.decided_at.isoformat(),
+                }
+                for x in rule.authorization_evidence
+            ],
+            "justifications": [
+                {
+                    "associationRef": str(x.association_ref),
+                    "needRef": str(x.need_ref),
+                    "attachedAt": x.attached_at.isoformat(),
+                    "attachedBySubject": x.attached_by_subject,
+                    "sourceAccessRequestRef": None
+                    if x.source_access_request_ref is None
+                    else str(x.source_access_request_ref),
+                }
+                for x in rule.justifications
+            ],
+            "operationalHistory": [
+                {
+                    "historyRef": str(x.history_ref),
+                    "ruleVersion": x.rule_version,
+                    "effectState": x.effect_state.value,
+                    "effectiveFrom": None
+                    if x.effective_window.effective_from is None
+                    else x.effective_window.effective_from.isoformat(),
+                    "effectiveUntil": None
+                    if x.effective_window.effective_until is None
+                    else x.effective_window.effective_until.isoformat(),
+                    "changedBySubject": x.changed_by_subject,
+                    "changedAt": x.changed_at.isoformat(),
+                }
+                for x in rule.operational_history
+            ],
         }
 
     @app.get("/v1/access-requests")
@@ -247,8 +284,7 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         if dependencies.access_request_reader is None:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
         return [
-            access_request_view(item)
-            for item in dependencies.access_request_reader.list_requests()
+            access_request_view(item) for item in dependencies.access_request_reader.list_requests()
         ]
 
     @app.get("/v1/access-requests/{request_ref}")

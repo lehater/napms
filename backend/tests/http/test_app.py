@@ -189,6 +189,12 @@ def test_access_request_read_endpoints_preserve_subject_and_outcome() -> None:
 def test_access_request_read_requires_read_permission() -> None:
     principal = Principal("subject:alice", frozenset(), ())
     item = request()
-    app = create_app(HttpDependencies(identity=Identity(principal), access_requests=Submitter(item), access_request_reader=AccessReader((item,))))
+    app = create_app(
+        HttpDependencies(
+            identity=Identity(principal),
+            access_requests=Submitter(item),
+            access_request_reader=AccessReader((item,)),
+        )
+    )
     response = TestClient(app).get("/v1/access-requests", headers={"Authorization": "Bearer token"})
     assert response.status_code == 403
