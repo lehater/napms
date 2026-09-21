@@ -14,7 +14,7 @@ Conversation history is disposable execution context. The repository working tre
 - `docs/architecture/` — current as-built and target architecture contracts.
 - `docs/decisions/` — design decisions still needed to reproduce or evolve the current system.
 - `docs/engineering/` — current API, persistence, runtime, configuration and operational contracts.
-- `docs/ui/` — current UI specifications and reusable guidance.
+- `docs/contracts/ui/` plus `docs/architecture/mvp-frontend-*.yaml` and `docs/plans/mvp-frontend-*.yaml` — current UI/frontend behavior, architecture, component, verification, test and implementation design.
 - `docs/plans/active/README.md` — compact current-task resume state, loaded only when current execution, gate or authorization matters to the requested task.
 - `docs/plans/active/PLAN-*.md` — active coordination only while needed for current execution.
 - `backend/src/AGENTS.md` and `web/AGENTS.md` — scoped implementation routing.
