@@ -105,18 +105,33 @@ def test_authentication_status_mapping() -> None:
 
 def test_submission_status_mapping_and_required_idempotency_key() -> None:
     principal = Principal("subject:alice", frozenset(), ())
-    assert client(Identity(principal), Submitter(AuthorityForbidden())).post(
-        "/v1/access-requests",
-        headers={"Authorization": "Bearer token", "Idempotency-Key": "key-1"},
-        json=body(),
-    ).status_code == 403
-    assert client(Identity(principal), Submitter(AccessRequestSubmissionRejected())).post(
-        "/v1/access-requests",
-        headers={"Authorization": "Bearer token", "Idempotency-Key": "key-1"},
-        json=body(),
-    ).status_code == 422
-    assert client(Identity(principal), Submitter(request())).post(
-        "/v1/access-requests",
-        headers={"Authorization": "Bearer token"},
-        json=body(),
-    ).status_code == 422
+    assert (
+        client(Identity(principal), Submitter(AuthorityForbidden()))
+        .post(
+            "/v1/access-requests",
+            headers={"Authorization": "Bearer token", "Idempotency-Key": "key-1"},
+            json=body(),
+        )
+        .status_code
+        == 403
+    )
+    assert (
+        client(Identity(principal), Submitter(AccessRequestSubmissionRejected()))
+        .post(
+            "/v1/access-requests",
+            headers={"Authorization": "Bearer token", "Idempotency-Key": "key-1"},
+            json=body(),
+        )
+        .status_code
+        == 422
+    )
+    assert (
+        client(Identity(principal), Submitter(request()))
+        .post(
+            "/v1/access-requests",
+            headers={"Authorization": "Bearer token"},
+            json=body(),
+        )
+        .status_code
+        == 422
+    )
