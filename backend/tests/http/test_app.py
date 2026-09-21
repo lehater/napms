@@ -198,3 +198,15 @@ def test_access_request_read_requires_read_permission() -> None:
     )
     response = TestClient(app).get("/v1/access-requests", headers={"Authorization": "Bearer token"})
     assert response.status_code == 403
+
+
+def test_canonical_frontend_read_and_mutation_routes_are_materialized() -> None:
+    from pathlib import Path
+
+    from napms.platform.http.app import create_app
+
+    source = Path(__file__).resolve().parents[2] / "src" / "napms" / "platform" / "http"
+    application_http = (source / "application_catalogue.py").read_text(encoding="utf-8")
+    connectivity_http = (source / "deployment_connectivity.py").read_text(encoding="utf-8")
+    assert '@api.get("/applications/{application_ref}")' in application_http
+    assert '@api.post("/processes/{process_ref}/needs/{need_ref}/retirement")' in connectivity_http
