@@ -5,6 +5,9 @@ import os
 
 from fastapi import FastAPI
 
+from napms.contexts.access_policy.infrastructure.persistence.postgres.repository import (
+    PostgresAccessPolicyRepository,
+)
 from napms.contexts.authority_management.application.service import RequireScopedAuthority
 from napms.platform.database.access_request_decision import PostgresAccessRequestDecision
 from napms.platform.database.access_request_submission import PostgresAccessRequestSubmission
@@ -67,6 +70,7 @@ def build_app(config: RuntimeConfig) -> FastAPI:
             ),
             policy_rule_operations=PostgresPolicyRuleOperation(dsn=config.database_dsn),
             policy_materialization=PostgresPolicyMaterialization(dsn=config.database_dsn),
+            policy_rules=PostgresAccessPolicyRepository(config.database_dsn),
         )
     )
 
