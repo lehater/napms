@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Protocol
 from uuid import UUID
 
@@ -186,6 +187,31 @@ def router(
         return {
             "processRef": str(value.process_ref),
             "needRef": str(need.need_ref),
+            "version": value.version,
+        }
+
+    @api.post("/processes/{process_ref}/needs/{need_ref}/retirement")
+    def retire_need(
+        process_ref: UUID,
+        need_ref: UUID,
+        if_match: str = Header(alias="If-Match"),
+        caller: Principal = Depends(identity),
+    ) -> dict[str, object]:
+        permission(caller, "business.write")
+        try:
+            value = connectivity.retire_need(
+                process_ref=process_ref,
+                need_ref=need_ref,
+                retired_at=datetime.now(timezone.utc),
+                expected_version=version(if_match),
+            )
+        except BusinessConnectivityVersionConflict as exc:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
+        except (BusinessConnectivityNotFound, ValueError) as exc:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
+        return {
+            "processRef": str(value.process_ref),
+            "needRef": str(need_ref),
             "version": value.version,
         }
 
