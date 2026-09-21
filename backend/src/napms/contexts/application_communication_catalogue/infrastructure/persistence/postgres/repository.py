@@ -7,6 +7,7 @@ import psycopg
 
 from napms.contexts.application_communication_catalogue.application.ports import (
     CatalogueVersionConflict,
+    ResolvedInteractionRevision,
 )
 from napms.contexts.application_communication_catalogue.domain.model import (
     Application,
@@ -180,11 +181,11 @@ class PostgresApplicationCommunicationCatalogue:
             ).fetchone()
             return None if row is None else Component(component_ref=row[0], name=row[1])
 
-    def resolve_revision(self, revision_ref: UUID) -> InteractionRevision | None:
+    def resolve_revision(self, revision_ref: UUID) -> ResolvedInteractionRevision | None:
         with psycopg.connect(self._dsn) as connection:
             row = connection.execute(
                 """
-                SELECT revision_ref, revision_no, created_by_subject
+                SELECT revision_ref, interaction_ref, revision_no, created_by_subject
                 FROM application_communication_catalogue.interaction_revision
                 WHERE revision_ref = %s
                 """,
@@ -192,11 +193,14 @@ class PostgresApplicationCommunicationCatalogue:
             ).fetchone()
             if row is None:
                 return None
-            return InteractionRevision(
-                revision_ref=row[0],
-                revision_no=row[1],
-                traffic_clauses=self._load_clauses(connection, row[0]),
-                created_by_subject=row[2],
+            return ResolvedInteractionRevision(
+                interaction_ref=row[1],
+                revision=InteractionRevision(
+                    revision_ref=row[0],
+                    revision_no=row[2],
+                    traffic_clauses=self._load_clauses(connection, row[0]),
+                    created_by_subject=row[3],
+                ),
             )
 
     def _add_application(self, value: Application) -> None:
