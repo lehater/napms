@@ -80,6 +80,8 @@ class ApplicationCommunicationCatalogue:
         expected_version: int,
         subject: str,
     ) -> Interaction:
+        if not traffic_clauses:
+            raise ValueError("interaction revision requires traffic clauses")
         interaction = self._interactions.get_interaction(interaction_ref)
         if interaction is None:
             raise CatalogueNotFound(str(interaction_ref))
