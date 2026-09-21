@@ -196,10 +196,10 @@ def test_submit_request_uses_one_transaction_and_exact_scoped_authority() -> Non
     persisted = PostgresAccessPolicyRepository(DSN).get_request(request.request_ref)
     assert persisted == request
     assert request.validated_business_process_version == 1
-    assert {item.scope_ref for item in request.authority_evidence} == {
-        "scope:source",
+    assert tuple(item.scope_ref for item in request.authority_evidence) == (
         "scope:destination",
-    }
+        "scope:source",
+    )
 
 
 def test_current_need_lock_blocks_retirement_until_owner_transaction_ends() -> None:
