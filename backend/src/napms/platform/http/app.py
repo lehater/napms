@@ -288,7 +288,7 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
 
     @app.get("/v1/access-requests")
     def list_access_requests(caller: Principal = Depends(principal)) -> list[dict[str, object]]:
-        require_permission(caller, "access.read")
+        require_permission(caller, "access.manage")
         if dependencies.access_request_reader is None:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
         return [
@@ -299,7 +299,7 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
     def get_access_request(
         request_ref: UUID, caller: Principal = Depends(principal)
     ) -> dict[str, object]:
-        require_permission(caller, "access.read")
+        require_permission(caller, "access.manage")
         if dependencies.access_request_reader is None:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
         request = dependencies.access_request_reader.get_request(request_ref)

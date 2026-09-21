@@ -166,7 +166,7 @@ class AccessReader:
 
 
 def test_access_request_read_endpoints_preserve_subject_and_outcome() -> None:
-    principal = Principal("subject:alice", frozenset({"access.read"}), ())
+    principal = Principal("subject:alice", frozenset({"access.manage"}), ())
     item = request()
     app = create_app(
         HttpDependencies(
