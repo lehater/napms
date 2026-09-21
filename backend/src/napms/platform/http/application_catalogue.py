@@ -103,6 +103,60 @@ def router(
             for value in catalogue.list_applications()
         ]
 
+    @api.get("/applications/{application_ref}")
+    def get_application(
+        application_ref: UUID,
+        caller: Principal = Depends(identity),
+    ) -> dict[str, object]:
+        permission(caller, "application.read")
+        try:
+            application, interactions = catalogue.get_application_detail(application_ref)
+        except CatalogueNotFound as exc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from exc
+
+        def clause_view(clause: TrafficClause) -> dict[str, object]:
+            return {
+                "ipProtocol": clause.ip_protocol,
+                "sourcePorts": [
+                    {"from": item.start, "to": item.end} for item in clause.source_ports
+                ],
+                "destinationPorts": [
+                    {"from": item.start, "to": item.end}
+                    for item in clause.destination_ports
+                ],
+            }
+
+        return {
+            "applicationRef": str(application.application_ref),
+            "name": application.name,
+            "version": application.version,
+            "components": [
+                {"componentRef": str(item.component_ref), "name": item.name}
+                for item in application.components
+            ],
+            "interactions": [
+                {
+                    "interactionRef": str(item.interaction_ref),
+                    "sourceComponentRef": str(item.source_component_ref),
+                    "destinationComponentRef": str(item.destination_component_ref),
+                    "purpose": item.purpose,
+                    "version": item.version,
+                    "revisions": [
+                        {
+                            "interactionRevisionRef": str(revision.revision_ref),
+                            "revisionNo": revision.revision_no,
+                            "trafficClauses": [
+                                clause_view(clause) for clause in revision.traffic_clauses
+                            ],
+                            "createdBySubject": revision.created_by_subject,
+                        }
+                        for revision in item.revisions
+                    ],
+                }
+                for item in interactions
+            ],
+        }
+
     @api.post("/applications", status_code=status.HTTP_201_CREATED)
     def create_application(
         body: NamedBody, caller: Principal = Depends(identity)

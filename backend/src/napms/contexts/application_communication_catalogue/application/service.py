@@ -34,6 +34,15 @@ class ApplicationCommunicationCatalogue:
     def list_applications(self) -> tuple[Application, ...]:
         return self._applications.list_applications()
 
+    def get_application_detail(
+        self, application_ref: UUID
+    ) -> tuple[Application, tuple[Interaction, ...]]:
+        application = self._applications.get_application(application_ref)
+        if application is None:
+            raise CatalogueNotFound(str(application_ref))
+        component_refs = tuple(item.component_ref for item in application.components)
+        return application, self._interactions.list_interactions_for_components(component_refs)
+
     def create_application(self, *, name: str) -> Application:
         value = Application.create(application_ref=self._new_ref(), name=name)
         self._applications.add(value)

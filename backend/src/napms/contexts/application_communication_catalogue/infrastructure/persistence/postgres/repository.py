@@ -147,6 +147,26 @@ class PostgresApplicationCommunicationCatalogue:
                 revisions=revisions,
             )
 
+    def list_interactions_for_components(
+        self, component_refs: tuple[UUID, ...]
+    ) -> tuple[Interaction, ...]:
+        if not component_refs:
+            return ()
+        with psycopg.connect(self._dsn) as connection:
+            rows = connection.execute(
+                """
+                SELECT interaction_ref
+                FROM application_communication_catalogue.interaction
+                WHERE source_component_ref = ANY(%s)
+                   OR destination_component_ref = ANY(%s)
+                ORDER BY interaction_ref
+                """,
+                (list(component_refs), list(component_refs)),
+            ).fetchall()
+        return tuple(
+            value for (ref,) in rows if (value := self.get_interaction(ref)) is not None
+        )
+
     def save_interaction(self, value: Interaction, *, expected_version: int) -> None:
         with psycopg.connect(self._dsn) as connection:
             updated = connection.execute(
