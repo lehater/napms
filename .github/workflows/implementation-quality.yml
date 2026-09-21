@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - implementation/first-mvp-rebuild
+    paths:
+      - "backend/**"
+      - "web/**"
+      - "Makefile"
+      - ".github/workflows/implementation-quality.yml"
   pull_request:
     branches:
       - main
@@ -13,7 +18,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'Makefile'
+              - '.github/workflows/implementation-quality.yml'
+            frontend:
+              - 'web/**'
+              - 'Makefile'
+              - '.github/workflows/implementation-quality.yml'
+
   backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,6 +67,8 @@ jobs:
         run: make backend-security
 
   frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

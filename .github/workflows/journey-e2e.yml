@@ -46,10 +46,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
       - name: Install browser test dependencies
         run: |
           python -m pip install -e "backend[e2e]"
-          python -m playwright install --with-deps chromium
+          python -m playwright install chromium
       - name: Start deterministic OIDC issuer
         run: |
           docker compose up --build --detach oidc
