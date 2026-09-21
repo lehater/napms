@@ -160,7 +160,8 @@ export function ApplicationDetail({
         {(application.interactions ?? []).map((interaction) => (
           <section className="panel" key={interaction.interactionRef}>
             <p>
-              {interaction.sourceComponentRef} → {interaction.destinationComponentRef}
+              {interaction.sourceComponentRef} →{" "}
+                {interaction.destinationComponentRef}
             </p>
             <p>{interaction.purpose || "No stated purpose"}</p>
             <p>Interaction ID: {interaction.interactionRef}</p>
