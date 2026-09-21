@@ -56,10 +56,10 @@ def request() -> AccessRequest:
 
 def body() -> dict[str, str]:
     return {
-        "source_deployment_ref": str(uuid4()),
-        "destination_deployment_ref": str(uuid4()),
-        "interaction_revision_ref": str(uuid4()),
-        "need_ref": str(uuid4()),
+        "sourceDeploymentRef": str(uuid4()),
+        "destinationDeploymentRef": str(uuid4()),
+        "interactionRevisionRef": str(uuid4()),
+        "needRef": str(uuid4()),
     }
 
 
@@ -135,3 +135,20 @@ def test_submission_status_mapping_and_required_idempotency_key() -> None:
         .status_code
         == 422
     )
+
+
+def test_submit_access_request_rejects_noncanonical_snake_case_body() -> None:
+    principal = Principal("subject:alice", frozenset(), ())
+    canonical = body()
+    snake_case = {
+        "source_deployment_ref": canonical["sourceDeploymentRef"],
+        "destination_deployment_ref": canonical["destinationDeploymentRef"],
+        "interaction_revision_ref": canonical["interactionRevisionRef"],
+        "need_ref": canonical["needRef"],
+    }
+    response = client(Identity(principal), Submitter(request())).post(
+        "/v1/access-requests",
+        headers={"Authorization": "Bearer token", "Idempotency-Key": "key-1"},
+        json=snake_case,
+    )
+    assert response.status_code == 422
