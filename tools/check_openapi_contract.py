@@ -82,6 +82,33 @@ process=schemas.get("CreateProcessRequest",{}).get("properties",{})
 if "criticalityLabel" not in process:
     fail("BusinessProcess criticalityLabel missing")
 
+resource_view=schemas.get("ResourceView",{})
+resource_required=set(resource_view.get("required",[]))
+for field in ("resourceRef","authorityScopeRef","version","current","history"):
+    if field not in resource_required:
+        fail(f"ResourceView missing required {field}")
+if "scopeAffiliations" in str(resource_view):
+    fail("stale Resource scope-affiliation semantics remain")
+
+required_resource_ops={
+    "DELETE /v1/resources/{resourceRef}/endpoints/{endpointRef}/address",
+    "PUT /v1/resources/{resourceRef}/site",
+    "PUT /v1/resources/{resourceRef}/responsibilities/{role}",
+}
+if not required_resource_ops.issubset(set(actual)):
+    fail(f"Resource curation operations missing: {sorted(required_resource_ops-set(actual))}")
+
+payload_response=api.get("components",{}).get("responses",{}).get("PayloadTooLarge")
+if not isinstance(payload_response,dict):
+    fail("413 PayloadTooLarge response is not materialized")
+for path,item in api.get("paths",{}).items():
+    for method in ("post","put","patch"):
+        operation=item.get(method)
+        if not isinstance(operation,dict) or "requestBody" not in operation:
+            continue
+        if "413" not in operation.get("responses",{}):
+            fail(f"{method.upper()} {path} request body has no 413 response")
+
 text=API.read_text(encoding="utf-8")
 for forbidden in ("RuleChange","SessionCookie","napms_session","same Application"):
     if forbidden in text:
