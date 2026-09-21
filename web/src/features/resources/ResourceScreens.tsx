@@ -23,7 +23,9 @@ export function ResourceCatalogue({ create = false }: { create?: boolean }) {
   const [siteRef, setSiteRef] = useState("");
 
   useEffect(() => {
-    void api.listResources().then((value) => {
+    void api
+      .listResources()
+      .then((value) => {
         setItems(value);
         setState("loaded");
       })
@@ -59,7 +61,11 @@ export function ResourceCatalogue({ create = false }: { create?: boolean }) {
       )}
       <section className="panel">
         {items.map((item) => (
-          <button type="button" key={item.resourceRef} onClick={() => navigate(`/resources/${item.resourceRef}`)}>
+          <button
+            type="button"
+            key={item.resourceRef}
+            onClick={() => navigate(`/resources/${item.resourceRef}`)}
+          >
             {item.displayName} · {item.resourceRef}
           </button>
         ))}
@@ -88,7 +94,9 @@ export function ResourceCatalogue({ create = false }: { create?: boolean }) {
           />
           <button
             type="submit"
-            disabled={!displayName || !authorityScopeRef || state === "submitting"}
+            disabled={
+              !displayName || !authorityScopeRef || state === "submitting"
+            }
           >
             Create Resource
           </button>
