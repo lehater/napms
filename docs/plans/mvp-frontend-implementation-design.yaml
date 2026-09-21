@@ -14,37 +14,37 @@ basis:
 
 implementation_boundary:
   includes:
-    - browser application shell/routing
-    - canonical API boundary/mapping
-    - Resource catalogue navigation entry
-    - Resource detail current/history states for Endpoint address, Site and OWNER/ADMINISTRATOR responsibility plus immutable AuthorityScopeRef and accepted authoring actions
-    - accessibility/responsiveness obligations
+    - application shell/routing and canonical API boundary
+    - Resource management
+    - Application/Component/Interaction management
+    - ComponentDeployment management
+    - Business Process/Connectivity Need management
+    - Access Request submission/outcome
+    - Policy Rule inspection/operational-state changes
+    - Policy Export selection/result/completeness diagnostics
+    - shared accessibility/responsiveness/error-state obligations
   excludes:
     - new product/domain semantics
-    - alternate backend authorization
+    - alternate frontend authorization
     - direct persistence
-    - unrelated legacy screens
     - multilingual/localization support
 
 sequence:
   - establish API boundary/error mapping and application shell
-  - implement Resource catalogue navigation entry
-  - implement Resource detail loading/current/history/not-found/error states
-  - implement accepted replace/end interaction and authoritative refresh
-  - satisfy accessibility/responsiveness evidence
-  - run feature/integration/end-to-end verification
+  - implement Resource and Application/Component/Interaction features
+  - implement Deployment and Business Connectivity features
+  - implement Access Request and Policy Rule features
+  - implement Policy Export feature
+  - satisfy shared accessibility/responsiveness evidence
+  - run subject-specific feature/integration/end-to-end verification
 
 delivery:
-  release: Frontend ships with a compatible backend/OpenAPI baseline; required frontend verification must pass.
-  rollback: Frontend rollback is permitted only against a compatible API/schema/application baseline; incompatible backend contract changes require coordinated rollback/release.
+  release: Frontend ships with a compatible backend/OpenAPI baseline and green required verification.
+  rollback: Frontend rollback requires API/schema/application compatibility.
   migration: No independent frontend persistence migration exists in this scope.
 
-error_handling:
-  - Preserve domain/validation, authorization, conflict/not-found and technical dependency distinctions.
-  - Transport/framework exceptions are translated at the API boundary.
-  - Catch-all handling cannot turn unknown/technical failure into accepted success.
-
 completion_definition:
+  - every REQUIRED frontend subject in docs/harness/coverage/frontend-subject-obligations-v1.yaml has exact subject-scoped semantic proof;
   - all selected frontend capabilities are materialized by canonical design artifacts;
   - frontend verification/test contracts are executable and green when implementation is authorized;
   - no unresolved design Question blocks FRONTEND-IMPLEMENTATION;
