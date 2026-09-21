@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { ApiError, type ApplicationView, api } from "../../app/api";
 import { navigate } from "../../app/router";
-import { parseIpProtocol, parsePortRanges } from "./traffic";
 import {
   EmptyState,
   FormSection,
@@ -10,6 +9,7 @@ import {
   StatusBanner,
   VersionedEditor,
 } from "../../design-system/components";
+import { parseIpProtocol, parsePortRanges } from "./traffic";
 
 const errorKind = (error: unknown) =>
   error instanceof ApiError ? error.kind : "technical";
