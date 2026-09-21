@@ -117,6 +117,12 @@ bindings:
       - engineering.reliability.availability
       - engineering.reliability.recovery
 
+  - capability: engineering.backend.component-design
+    semantic_claims:
+      - engineering.engineering.principles
+      - engineering.engineering.components
+      - engineering.engineering.code-quality
+
   - capability: engineering.frontend.component-design
     semantic_claims:
       - engineering.engineering.principles
