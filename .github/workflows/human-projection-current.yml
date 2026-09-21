@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Checkout Harness Human Projection prototype
+      - name: Checkout canonical Harness Human Projection
         uses: actions/checkout@v5
         with:
           repository: lehater/harness
-          ref: 025239b68800cb56ed192ab4d51cbf9047e80f2e
+          ref: aa3385168eda70d3263f49ed39b1b7d4b336adae
           path: .human-projection-harness
       - uses: actions/setup-python@v6
         with:
