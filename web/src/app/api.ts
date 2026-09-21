@@ -40,12 +40,12 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
           : response.status === 403
             ? "forbidden"
             : response.status === 409
-            ? "conflict"
-            : response.status === 422
-              ? "rejected"
-              : response.status === 503
-                ? "unavailable"
-                : "technical";
+              ? "conflict"
+              : response.status === 422
+                ? "rejected"
+                : response.status === 503
+                  ? "unavailable"
+                  : "technical";
     throw new ApiError(kind, response.status);
   }
   if (response.status === 204) return undefined as T;

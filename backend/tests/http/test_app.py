@@ -168,7 +168,13 @@ class AccessReader:
 def test_access_request_read_endpoints_preserve_subject_and_outcome() -> None:
     principal = Principal("subject:alice", frozenset({"access.read"}), ())
     item = request()
-    app = create_app(HttpDependencies(identity=Identity(principal), access_requests=Submitter(item), access_request_reader=AccessReader((item,))))
+    app = create_app(
+        HttpDependencies(
+            identity=Identity(principal),
+            access_requests=Submitter(item),
+            access_request_reader=AccessReader((item,)),
+        )
+    )
     http = TestClient(app)
     headers = {"Authorization": "Bearer token"}
     catalogue = http.get("/v1/access-requests", headers=headers)

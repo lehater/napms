@@ -207,19 +207,28 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
     def access_request_view(request: AccessRequest) -> dict[str, object]:
         subject = request.access_subject
         return {
-            "requestRef": str(request.request_ref), "version": request.version,
+            "requestRef": str(request.request_ref),
+            "version": request.version,
             "sourceDeploymentRef": str(subject.source_deployment_ref),
             "destinationDeploymentRef": str(subject.destination_deployment_ref),
             "interactionRevisionRef": str(subject.interaction_revision_ref),
-            "needRef": str(request.initial_need_ref), "submittedAt": request.submitted_at.isoformat(),
-            "decisionResult": None if request.decision_result is None else request.decision_result.value,
-            "externalDecisionRef": request.external_decision_ref, "decidedBySubject": request.decided_by_subject,
-            "decidedAt": None if request.decided_at is None else request.decided_at.isoformat(),
+            "needRef": str(request.initial_need_ref),
+            "submittedAt": request.submitted_at.isoformat(),
+            "decisionResult": (
+                None if request.decision_result is None else request.decision_result.value
+            ),
+            "externalDecisionRef": request.external_decision_ref,
+            "decidedBySubject": request.decided_by_subject,
+            "decidedAt": (
+                None if request.decided_at is None else request.decided_at.isoformat()
+            ),
         }
 
     def policy_rule_view(rule: PolicyRule) -> dict[str, object]:
         return {
-            "policyRuleRef": str(rule.rule_ref), "version": rule.version, "effectState": rule.effect_state.value,
+            "policyRuleRef": str(rule.rule_ref),
+            "version": rule.version,
+            "effectState": rule.effect_state.value,
             "effectiveWindow": {
                 "effectiveFrom": None if rule.effective_window.effective_from is None else rule.effective_window.effective_from.isoformat(),
                 "effectiveUntil": None if rule.effective_window.effective_until is None else rule.effective_window.effective_until.isoformat(),
@@ -237,10 +246,15 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         require_permission(caller, "access.read")
         if dependencies.access_request_reader is None:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
-        return [access_request_view(item) for item in dependencies.access_request_reader.list_requests()]
+        return [
+            access_request_view(item)
+            for item in dependencies.access_request_reader.list_requests()
+        ]
 
     @app.get("/v1/access-requests/{request_ref}")
-    def get_access_request(request_ref: UUID, caller: Principal = Depends(principal)) -> dict[str, object]:
+    def get_access_request(
+        request_ref: UUID, caller: Principal = Depends(principal)
+    ) -> dict[str, object]:
         require_permission(caller, "access.read")
         if dependencies.access_request_reader is None:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
@@ -439,7 +453,9 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         return [policy_rule_view(item) for item in dependencies.policy_rules.list_rules()]
 
     @app.get("/v1/policy-rules/{rule_ref}")
-    def get_policy_rule(rule_ref: UUID, caller: Principal = Depends(principal)) -> dict[str, object]:
+    def get_policy_rule(
+        rule_ref: UUID, caller: Principal = Depends(principal)
+    ) -> dict[str, object]:
         require_permission(caller, "policy.read")
         if dependencies.policy_rules is None:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
