@@ -13,3 +13,23 @@ decisions:
     state: NOT_APPLICABLE
     rationale: Distributed scaling is outside the accepted first-MVP runtime topology.
     evidence: [SYSTEM-RULES]
+  - concern: interface.human.i18n
+    consumers: [BACKEND-IMPLEMENTATION]
+    state: NOT_APPLICABLE
+    rationale: The accepted first-MVP UI contracts define no multilingual/localization requirement.
+    evidence: [RESOURCE-DETAIL-UI]
+  - concern: operability.metrics
+    consumers: [BACKEND-IMPLEMENTATION]
+    state: NOT_APPLICABLE
+    rationale: Dedicated metrics are explicitly not required for first MVP absent an accepted SLI/SLO or monitoring consumer.
+    evidence: [OBSERVABILITY]
+  - concern: operability.tracing
+    consumers: [BACKEND-IMPLEMENTATION]
+    state: NOT_APPLICABLE
+    rationale: Distributed tracing backend is explicitly not required for first MVP.
+    evidence: [OBSERVABILITY]
+  - concern: operability.alerting
+    consumers: [BACKEND-IMPLEMENTATION]
+    state: NOT_APPLICABLE
+    rationale: Alerting/paging is explicitly not required without an accepted monitoring or paging consumer.
+    evidence: [OBSERVABILITY]
