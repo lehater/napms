@@ -68,6 +68,15 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page.get_by_role("heading", name="Current facts").wait_for()
         page.locator("[data-version]").wait_for()
         assert page.locator("[data-version]").get_attribute("data-version") == "1"
+        page.get_by_role("button", name="Add endpoint", exact=True).click()
+        page.locator('[data-version="2"]').wait_for()
+        endpoint_line = page.locator("h4", has_text="Endpoints").locator("xpath=following-sibling::p[1]")
+        endpoint_ref = (endpoint_line.text_content() or "").split(" · ")[0].strip()
+        page.get_by_label("Endpoint ID").fill(endpoint_ref)
+        page.get_by_label("Address value").fill("10.10.0.1")
+        page.get_by_role("button", name="Set endpoint address", exact=True).click()
+        page.locator('[data-version="3"]').wait_for()
+        page.get_by_text("HOST 10.10.0.1").wait_for()
         page.get_by_text("Provenance and history").click()
 
         application_ref = create_application(page, f"E2E Application {suffix}")
@@ -109,6 +118,12 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page.get_by_label("Responsible organization reference").fill("ORG-E2E")
         page.get_by_label("Responsible organization name").fill("E2E Organization")
         page.get_by_role("button", name="Save responsible organization").click()
+        page.get_by_label("Interaction ID").fill(interaction_ref)
+        page.get_by_label("Participant Component ID").fill(source_ref)
+        page.get_by_label("Business basis").fill("Required for order processing")
+        page.locator("form").get_by_role("button", name="Declare Connectivity Need", exact=True).click()
+        page.get_by_text("Required for order processing").wait_for()
+        page.get_by_role("button", name="Retire Connectivity Need", exact=True).wait_for()
 
         for path, heading in [
             ("/access-requests", "Access Requests"),
