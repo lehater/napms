@@ -102,6 +102,18 @@ def router(
             )
         return _view(resource)
 
+    @api.get("/resources/{resource_ref}")
+    def get_resource(
+        resource_ref: UUID,
+        caller: Principal = Depends(identity),
+    ) -> dict[str, object]:
+        if "resource.read" not in caller.instance_permissions:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+        resource = application._resources.get(resource_ref)
+        if resource is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        return _view(resource)
+
     @api.post("/resources/{resource_ref}/endpoints", status_code=status.HTTP_201_CREATED)
     def add_endpoint(
         resource_ref: UUID,
