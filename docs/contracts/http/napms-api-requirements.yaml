@@ -18,8 +18,8 @@ operations:
   - PUT /v1/resources/{resourceRef}/site
   - PUT /v1/resources/{resourceRef}/responsibilities/{role}
   - GET /v1/applications
-  - GET /v1/applications/{applicationRef}
   - POST /v1/applications
+  - GET /v1/applications/{applicationRef}
   - POST /v1/applications/{applicationRef}/components
   - POST /v1/interactions
   - POST /v1/interactions/{interactionRef}/revisions
