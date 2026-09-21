@@ -1,0 +1,82 @@
+[
+  {
+    "id": "s1-observable-freshness-vs-s3-acquisition",
+    "prompt": "Нижележащая система должна понимать актуальность данных. Давайте routing и ACL names читать вместе, чтобы у них была одна дата обновления.",
+    "expected": [
+      {
+        "statement": "Downstream can determine freshness of network data used in the result.",
+        "semantic_owner": "S1",
+        "status": "accepted/known"
+      },
+      {
+        "statement": "Acquire routing/interface facts and ACL binding/name facts together as one coordinated refresh.",
+        "semantic_owner": "S3",
+        "status": "proposal_or_accepted_design_choice"
+      }
+    ],
+    "must_not": [
+      "Promote coordinated acquisition itself into S1 merely because the user proposed it while discussing requirements."
+    ]
+  },
+  {
+    "id": "explicit-implementation-choice-stays-lower-level",
+    "prompt": "Храним это в PostgreSQL одной таблицей, так проще.",
+    "expected": [
+      {
+        "statement": "Use one PostgreSQL table.",
+        "semantic_owner": "S3_or_S4",
+        "status": "proposal_unless_explicitly_accepted_by_the_design_owner"
+      }
+    ],
+    "must_not": [
+      "Rewrite the storage choice as a product requirement without an independent observable constraint."
+    ]
+  },
+  {
+    "id": "accepted-design-does-not-become-requirement",
+    "prompt": "Да, архитектурно фиксируем: для этого адаптера используем один logical snapshot.",
+    "expected": [
+      {
+        "statement": "Use one logical snapshot for this adapter/design scope.",
+        "semantic_owner": "S3",
+        "status": "accepted/known"
+      }
+    ],
+    "must_not": [
+      "Classify the statement as S1 only because its status is accepted/known."
+    ]
+  },
+  {
+    "id": "requirement-fixed-realization-unknown",
+    "prompt": "Пользователь всегда должен видеть причину отказа. Формат пока не решили.",
+    "expected": [
+      {
+        "statement": "The user receives an observable denial reason.",
+        "semantic_owner": "S1",
+        "status": "accepted/known"
+      },
+      {
+        "statement": "Concrete representation/format of the denial reason.",
+        "semantic_owner": "S3_or_external_contract_S1_if_later_explicitly_fixed",
+        "status": "unknown"
+      }
+    ],
+    "must_not": [
+      "Invent a response schema to close S1."
+    ]
+  },
+  {
+    "id": "domain-semantics-not-product-behavior",
+    "prompt": "Firewall здесь имеет собственную identity и живет независимо от Resource Catalogue Resource.",
+    "expected": [
+      {
+        "statement": "Firewall has independent domain identity from Resource Catalogue Resource.",
+        "semantic_owner": "S2",
+        "status": "accepted_or_proposed_depending_on_owner_evidence"
+      }
+    ],
+    "must_not": [
+      "Put domain identity into S1 merely because it constrains later implementation."
+    ]
+  }
+]

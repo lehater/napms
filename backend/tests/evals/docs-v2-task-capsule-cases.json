@@ -1,0 +1,156 @@
+[
+  {
+    "id": "valid-domain-task",
+    "expected": "PASS",
+    "capsule": {
+      "scope": "access-policy semantics",
+      "stage": "S2",
+      "state": "IN_PROGRESS",
+      "task": "Update the affected domain invariant",
+      "primary_instruction": "domain-design-stage",
+      "artifact_types": ["domain-model"],
+      "inputs": ["docs/domain/access/domain-model.puml"],
+      "outputs": ["domain-model"],
+      "validation_profile": ["artifact-edit"],
+      "implementation_authorization": null,
+      "authorized_scope": null,
+      "authorization_basis": null,
+      "context_refs": ["docs/domain/access/domain-model.puml"],
+      "context_expansions": [],
+      "blockers": [],
+      "next": null
+    }
+  },
+  {
+    "id": "valid-authorized-implementation",
+    "expected": "PASS",
+    "capsule": {
+      "scope": "revoke application access endpoint",
+      "stage": "IMPLEMENTATION",
+      "state": "IN_PROGRESS",
+      "task": "Implement the authorized endpoint slice and tests",
+      "primary_instruction": "implement-slice",
+      "artifact_types": ["automated-test"],
+      "inputs": ["REQ-ACCESS-017", "ADR-0042"],
+      "outputs": ["automated-test"],
+      "validation_profile": ["implementation-slice"],
+      "implementation_authorization": "G4 PASS",
+      "authorized_scope": "revoke application access endpoint",
+      "authorization_basis": "gate:G4:access-revoke-endpoint:v1",
+      "context_refs": ["REQ-ACCESS-017", "ADR-0042"],
+      "context_expansions": [],
+      "blockers": [],
+      "next": "Run journey validation"
+    }
+  },
+  {
+    "id": "implementation-missing-g4",
+    "expected": "BLOCK",
+    "capsule": {
+      "scope": "revoke application access endpoint",
+      "stage": "IMPLEMENTATION",
+      "state": "IN_PROGRESS",
+      "task": "Implement endpoint",
+      "primary_instruction": "implement-slice",
+      "artifact_types": ["automated-test"],
+      "inputs": [],
+      "outputs": ["automated-test"],
+      "validation_profile": ["implementation-slice"],
+      "implementation_authorization": null,
+      "authorized_scope": null,
+      "authorization_basis": null,
+      "context_refs": [],
+      "context_expansions": [],
+      "blockers": [],
+      "next": null
+    }
+  },
+  {
+    "id": "implementation-scope-mismatch",
+    "expected": "BLOCK",
+    "capsule": {
+      "scope": "revoke all application access",
+      "stage": "IMPLEMENTATION",
+      "state": "IN_PROGRESS",
+      "task": "Implement broader endpoint",
+      "primary_instruction": "implement-slice",
+      "artifact_types": ["automated-test"],
+      "inputs": [],
+      "outputs": ["automated-test"],
+      "validation_profile": ["implementation-slice"],
+      "implementation_authorization": "G4 PASS",
+      "authorized_scope": "revoke one application access",
+      "authorization_basis": "gate:G4:access-revoke-one:v1",
+      "context_refs": [],
+      "context_expansions": [],
+      "blockers": [],
+      "next": null
+    }
+  },
+  {
+    "id": "nonimplementation-carries-lease",
+    "expected": "BLOCK",
+    "capsule": {
+      "scope": "access requirement",
+      "stage": "S1",
+      "state": "IN_PROGRESS",
+      "task": "Refine observable behavior",
+      "primary_instruction": "requirements-stage",
+      "artifact_types": ["functional-requirement"],
+      "inputs": [],
+      "outputs": ["functional-requirement"],
+      "validation_profile": ["artifact-edit"],
+      "implementation_authorization": "G4 PASS",
+      "authorized_scope": "access requirement",
+      "authorization_basis": "gate:G4:stale",
+      "context_refs": [],
+      "context_expansions": [],
+      "blockers": [],
+      "next": null
+    }
+  },
+  {
+    "id": "multiple-primary-instructions",
+    "expected": "BLOCK",
+    "capsule": {
+      "scope": "access semantics",
+      "stage": "S2",
+      "state": "IN_PROGRESS",
+      "task": "Update semantics",
+      "primary_instruction": ["domain-design-stage", "architecture-stage"],
+      "artifact_types": ["domain-model"],
+      "inputs": [],
+      "outputs": ["domain-model"],
+      "validation_profile": ["artifact-edit"],
+      "implementation_authorization": null,
+      "authorized_scope": null,
+      "authorization_basis": null,
+      "context_refs": [],
+      "context_expansions": [],
+      "blockers": [],
+      "next": null
+    }
+  },
+  {
+    "id": "unreasoned-context-expansion",
+    "expected": "BLOCK",
+    "capsule": {
+      "scope": "access semantics",
+      "stage": "S2",
+      "state": "IN_PROGRESS",
+      "task": "Update semantics",
+      "primary_instruction": "domain-design-stage",
+      "artifact_types": ["domain-model"],
+      "inputs": [],
+      "outputs": ["domain-model"],
+      "validation_profile": ["artifact-edit"],
+      "implementation_authorization": null,
+      "authorized_scope": null,
+      "authorization_basis": null,
+      "context_refs": [],
+      "context_expansions": [{"ref": "docs/architecture/system-context.puml", "reason": ""}],
+      "blockers": [],
+      "next": null
+    }
+  }
+]
