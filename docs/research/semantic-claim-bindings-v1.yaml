@@ -1,0 +1,33 @@
+version: 1
+kind: harness-semantic-claim-bindings
+project: NAPMS
+status: research
+
+bindings:
+  - capability: engineering.requirements.product-intent
+    semantic_claims: [engineering.intent.behavior]
+  - capability: engineering.domain.strategic-model
+    semantic_claims: [engineering.domain.model, engineering.domain.boundaries]
+  - capability: engineering.domain.tactical-model
+    semantic_claims: [engineering.domain.model, engineering.domain.invariants]
+  - capability: engineering.domain.use-case-model
+    semantic_claims: [engineering.application.use-cases]
+  - capability: engineering.application.journey
+    semantic_claims: [engineering.application.use-cases]
+  - capability: engineering.architecture.c4-model
+    semantic_claims: [engineering.architecture.structure]
+  - capability: engineering.architecture.module-contracts
+    semantic_claims: [engineering.architecture.boundaries]
+  - capability: engineering.interface.http-contract
+    semantic_claims: [engineering.interface.machine.contract]
+  - capability: engineering.data.persistence-model
+    semantic_claims: [engineering.data.model]
+  - capability: engineering.security.threat-analysis
+    semantic_claims: [engineering.security.threat-analysis]
+  - capability: engineering.verification.strategy
+    semantic_claims: [engineering.verification.strategy]
+
+# Intentionally unbound because current capability semantics are too broad:
+# - engineering.architecture.security
+# - engineering.quality.constraints
+# - engineering.operability.observability
