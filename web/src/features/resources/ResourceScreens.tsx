@@ -113,8 +113,11 @@ export function ResourceDetail({ resourceRef }: { resourceRef: string }) {
   const [resource, setResource] = useState<ResourceView | null>(null);
   const [state, setState] = useState("loading");
   const [siteRef, setSiteRef] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState<"OWNER" | "ADMINISTRATOR">("OWNER");
   const [organizationRef, setOrganizationRef] = useState("");
+  const [endpointRef, setEndpointRef] = useState("");
+  const [addressKind, setAddressKind] = useState("HOST");
+  const [addressValue, setAddressValue] = useState("");
 
   useEffect(() => {
     setState("loading");
@@ -188,17 +191,55 @@ export function ResourceDetail({ resourceRef }: { resourceRef: string }) {
         >
           Add endpoint
         </button>
+        <ReferenceField
+          label="Endpoint ID"
+          value={endpointRef}
+          onChange={setEndpointRef}
+        />
+        <ReferenceField
+          label="Address kind"
+          value={addressKind}
+          onChange={setAddressKind}
+        />
+        <ReferenceField
+          label="Address value"
+          value={addressValue}
+          onChange={setAddressValue}
+        />
+        <button
+          type="button"
+          disabled={!endpointRef || !addressValue}
+          onClick={() =>
+            void mutate(() =>
+              api.setResourceAddress(
+                resource.resourceRef,
+                endpointRef,
+                resource.version,
+                { kind: addressKind, value: addressValue },
+              ),
+            )
+          }
+        >
+          Set endpoint address
+        </button>
         <h4>Responsibilities</h4>
         {resource.current.responsibilities.map((item) => (
           <p key={item.role}>
             {item.role}: {item.organizationRef}
           </p>
         ))}
-        <ReferenceField
-          label="Responsibility role"
-          value={role}
-          onChange={setRole}
-        />
+        <label>
+          Responsibility role
+          <select
+            value={role}
+            onChange={(event) =>
+              setRole(event.target.value as "OWNER" | "ADMINISTRATOR")
+            }
+          >
+            <option value="OWNER">OWNER</option>
+            <option value="ADMINISTRATOR">ADMINISTRATOR</option>
+          </select>
+        </label>
         <ReferenceField
           label="Organization ID"
           value={organizationRef}
