@@ -119,6 +119,14 @@ authorities:
           - engineering.requirements.product-intent
           - engineering.domain.strategic-model
           - engineering.application.journey
+
+  - id: FRONTEND-ARCHITECTURE-DESIGN
+    responsibility: Own browser-frontend structural/runtime architecture behind accepted human-interface and system contracts.
+    boundary:
+      semantic_cohesion: Decisions define frontend runtime structure, client/server state ownership and API integration boundaries.
+      independent_change: Frontend architecture can evolve independently from backend system architecture while preserving shared contracts.
+      public_contract: Provides accepted frontend architecture to component, verification and implementation design.
+    produces:
       - capability: engineering.frontend.architecture
         knowledge_kind: system-architecture
         requires:
