@@ -52,7 +52,7 @@ def add_component(page: Page, application_ref: str, name: str) -> str:
     page.goto(f"{BASE_URL}/applications/{application_ref}/components/new")
     page.get_by_role("heading", name="Components").wait_for()
     page.get_by_label("Component name").fill(name)
-    page.get_by_role("button", name="Add Component", exact=True).click()
+    page.locator("form").get_by_role("button", name="Add Component", exact=True).click()
     page.wait_for_url(f"**/applications/{application_ref}")
     line = page.get_by_text(name + " ·", exact=False).first.text_content() or ""
     return line.split("·", 1)[1].strip()
