@@ -133,14 +133,15 @@ export const api = {
       destinationPorts?: Array<{ from: number; to: number }>;
     }>,
   ) =>
-    request<{ interactionRef: string; interactionRevisionRef: string; version: number }>(
-      `/v1/interactions/${interactionRef}/revisions`,
-      {
-        method: "POST",
-        headers: { "If-Match": String(version) },
-        body: JSON.stringify({ trafficClauses }),
-      },
-    ),
+    request<{
+      interactionRef: string;
+      interactionRevisionRef: string;
+      version: number;
+    }>(`/v1/interactions/${interactionRef}/revisions`, {
+      method: "POST",
+      headers: { "If-Match": String(version) },
+      body: JSON.stringify({ trafficClauses }),
+    }),
   createDeployment: (componentRef: string, resourceRef: string) =>
     request<{
       deploymentRef: string;
