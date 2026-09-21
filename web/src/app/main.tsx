@@ -39,9 +39,12 @@ function Placeholder({ name }: { name: Workspace }) {
 
 function Resources() {
   const [ref, setRef] = useState("");
-  const [state, setState] = useState<"idle" | "loading" | "not-found" | "error">("idle");
-  const [resource, setResource] =
-    useState<Awaited<ReturnType<typeof api.getResource>> | null>(null);
+  const [state, setState] = useState<
+    "idle" | "loading" | "not-found" | "error"
+  >("idle");
+  const [resource, setResource] = useState<Awaited<
+    ReturnType<typeof api.getResource>
+  > | null>(null);
 
   async function open() {
     setState("loading");
@@ -50,7 +53,11 @@ function Resources() {
       setResource(await api.getResource(ref));
       setState("idle");
     } catch (error) {
-      setState(error instanceof Error && error.message === "not-found" ? "not-found" : "error");
+      setState(
+        error instanceof Error && error.message === "not-found"
+          ? "not-found"
+          : "error",
+      );
     }
   }
 
@@ -59,13 +66,22 @@ function Resources() {
       <p className="eyebrow">Resource catalogue</p>
       <h2>Resources</h2>
       <p className="lede">
-        Locate a Resource by stable identity and inspect current facts before history.
+        Locate a Resource by stable identity and inspect current facts before
+        history.
       </p>
       <div className="panel">
         <label htmlFor="resource-ref">Resource ID</label>
         <div>
-          <input id="resource-ref" value={ref} onChange={(event) => setRef(event.target.value)} />
-          <button type="button" onClick={open} disabled={!ref || state === "loading"}>
+          <input
+            id="resource-ref"
+            value={ref}
+            onChange={(event) => setRef(event.target.value)}
+          />
+          <button
+            type="button"
+            onClick={open}
+            disabled={!ref || state === "loading"}
+          >
             Open resource
           </button>
         </div>
@@ -97,13 +113,20 @@ function Resources() {
               <h4>Current facts</h4>
               <p>Site: {resource.current.siteRef ?? "Not assigned"}</p>
               <p>Endpoints: {resource.current.endpoints.length}</p>
-              <p>Responsibilities: {resource.current.responsibilities.length}</p>
+              <p>
+                Responsibilities: {resource.current.responsibilities.length}
+              </p>
             </div>
             <details className="panel">
               <summary>History</summary>
               <p>Site facts: {resource.history.sites.length}</p>
-              <p>Endpoint address facts: {resource.history.endpointAddresses.length}</p>
-              <p>Responsibility facts: {resource.history.responsibilities.length}</p>
+              <p>
+                Endpoint address facts:{" "}
+                {resource.history.endpointAddresses.length}
+              </p>
+              <p>
+                Responsibility facts: {resource.history.responsibilities.length}
+              </p>
             </details>
           </div>
         </section>
@@ -130,8 +153,8 @@ function Export() {
       <p className="eyebrow">Policy export</p>
       <h2>Materialize current policy</h2>
       <p className="lede">
-        Export authority is confirmed by the backend. COMPLETE and UNRESOLVED outcomes remain
-        distinct.
+        Export authority is confirmed by the backend. COMPLETE and UNRESOLVED
+        outcomes remain distinct.
       </p>
       <button type="button" onClick={run}>
         Execute export
