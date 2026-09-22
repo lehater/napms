@@ -9,7 +9,6 @@ export async function queryResourceCatalogue(): Promise<ResourceCatalogueScreenM
   return toResourceCatalogueScreenModel(resources);
 }
 
-
 export type CreateResourceInput = {
   displayName: string;
   authorityScopeRef: string;
