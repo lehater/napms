@@ -59,7 +59,7 @@ layout:
   alignment:
     - align repeated field/value structures consistently;
     - keep action groups visually separate from read-only facts;
-    - keep filters/search adjacent to the collection they affect.
+    - when accepted screen semantics include search/filter controls, keep them adjacent to the collection they affect.
 
 visual_roles:
   typography:
@@ -88,16 +88,20 @@ patterns:
 
   CATALOGUE:
     purpose: locate/select an entity and start supported creation
-    regions: [heading-actions, search-filter, collection, collection-state]
+    regions: [heading-actions, collection, collection-state]
+    optional_regions: [search-filter]
+    features: [open-item, create-item, search, filter, sort, paginate, bulk-operation, edit-item, delete-item]
     states: [loading, loaded, empty, error]
 
   DETAIL:
     purpose: inspect one stable product entity and supported current facts
     regions: [identity-context, primary-facts, task-actions, secondary-details]
+    features: [show-primary, show-secondary, edit, delete]
     states: [loading, loaded, empty-current, not-found, error]
 
   EDITOR:
     purpose: create or change accepted facts
+    features: [submit, cancel]
     rules:
       - labels remain visible;
       - validation is attached to fields and summarized for rejected submission;
@@ -106,6 +110,7 @@ patterns:
 
   STRUCTURED-LIST:
     purpose: render repeatable records with stable labels and row-level actions
+    features: [open-item, row-actions]
     responsive: may transform to labeled stacked records while preserving all required data/actions
 
   DATA-TABLE:
@@ -121,16 +126,19 @@ patterns:
 
   TASK-ACTIONS:
     purpose: group actions for the currently active context
+    features: [primary, secondary, destructive]
     order: [primary, secondary, destructive-or-state-changing]
 
   DISCLOSURE:
     purpose: expose secondary/history/provenance information without navigating away
+    features: [open-secondary]
     rules:
       - collapsed content remains discoverable;
       - keyboard/focus semantics are preserved.
 
   STATUS:
     purpose: represent loading, success, warning, rejection, conflict and technical failure
+    features: [loading, empty, success, rejected, conflict, error]
     rules:
       - status has text/semantic structure;
       - retry appears only where retry is meaningful;
@@ -139,9 +147,11 @@ patterns:
   OUTCOME:
     purpose: show immutable or authoritative operation outcome with provenance/diagnostics
     regions: [summary, details, provenance, next-actions]
+    features: [summary, details, provenance, diagnostics]
 
   SCOPE-SELECTOR:
     purpose: select an accepted scope for an operation such as policy export
+    features: [select-all, select-subset]
     rules:
       - current selection is explicit before execution;
       - selection does not imply authorization.
