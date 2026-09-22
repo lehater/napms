@@ -1,9 +1,9 @@
 import { api } from "../../app/api";
 import {
-  toApplicationCatalogueScreenModel,
-  toApplicationDetailScreenModel,
   type ApplicationCatalogueScreenModel,
   type ApplicationDetailScreenModel,
+  toApplicationCatalogueScreenModel,
+  toApplicationDetailScreenModel,
 } from "./applicationModels";
 import { parseIpProtocol, parsePortRanges } from "./traffic";
 
@@ -19,7 +19,9 @@ export async function createApplication(name: string): Promise<string> {
 export async function queryApplicationDetail(
   applicationRef: string,
 ): Promise<ApplicationDetailScreenModel> {
-  return toApplicationDetailScreenModel(await api.getApplication(applicationRef));
+  return toApplicationDetailScreenModel(
+    await api.getApplication(applicationRef),
+  );
 }
 
 export async function addApplicationComponent(

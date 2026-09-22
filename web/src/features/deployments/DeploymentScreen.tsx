@@ -9,14 +9,14 @@ import {
   StructuredListPattern,
 } from "../../presentation";
 import {
-  createApplication,
-  queryApplicationCatalogue,
-} from "./applicationApplication";
-import type { ApplicationCatalogueScreenModel } from "./applicationModels";
+  createDeployment,
+  queryDeployments,
+} from "./deploymentApplication";
+import type { DeploymentScreenModel } from "./deploymentModels";
 
 type LoadState =
   | { kind: "loading" }
-  | { kind: "loaded"; model: ApplicationCatalogueScreenModel }
+  | { kind: "loaded"; model: DeploymentScreenModel }
   | { kind: "authorization-rejected"; message: string }
   | { kind: "technical-error"; message: string };
 
@@ -27,12 +27,12 @@ function loadFailure(error: unknown): LoadState {
   ) {
     return {
       kind: "authorization-rejected",
-      message: "Application catalogue access was rejected by the backend.",
+      message: "Deployment catalogue access was rejected by the backend.",
     };
   }
   return {
     kind: "technical-error",
-    message: "Application catalogue could not be loaded.",
+    message: "Deployments could not be loaded.",
   };
 }
 
@@ -44,28 +44,34 @@ function createFailure(error: unknown): {
     if (error.kind === "unauthenticated" || error.kind === "forbidden") {
       return {
         state: "authorization-rejected",
-        message: "Application creation was rejected by the backend.",
+        message: "Deployment creation was rejected by the backend.",
+      };
+    }
+    if (error.kind === "rejected") {
+      return {
+        state: "validation-rejected",
+        message: "Deployment values were rejected by the backend.",
       };
     }
     if (error.kind === "conflict") {
       return {
         state: "conflict",
-        message: "Application creation conflicts with current server state.",
+        message: "Deployment creation conflicts with current server state.",
       };
     }
   }
   return {
     state: "technical-error",
-    message: "Application creation failed.",
+    message: "Deployment creation failed.",
   };
 }
 
-function ApplicationCatalogueListMode() {
+function DeploymentListMode() {
   const [loadState, setLoadState] = useState<LoadState>({ kind: "loading" });
 
   useEffect(() => {
     let active = true;
-    void queryApplicationCatalogue()
+    void queryDeployments()
       .then((model) => {
         if (active) setLoadState({ kind: "loaded", model });
       })
@@ -77,7 +83,8 @@ function ApplicationCatalogueListMode() {
     };
   }, []);
 
-  const rows = loadState.kind === "loaded" ? loadState.model.applications : [];
+  const rows =
+    loadState.kind === "loaded" ? loadState.model.deployments : [];
   const state: CatalogueState =
     loadState.kind === "loaded"
       ? rows.length === 0
@@ -92,32 +99,36 @@ function ApplicationCatalogueListMode() {
 
   return (
     <CataloguePattern
-      eyebrow="Application catalogue"
-      title="Applications"
-      description="Locate reusable Applications and continue authoring their Components and Interactions."
+      eyebrow="Deployment management"
+      title="Deployments"
+      description="Inspect Component deployments and the Resource realizing each deployment."
       primaryAction={{
-        label: "Create Application",
-        onInvoke: () => navigate("/applications/new"),
+        label: "Create Deployment",
+        onInvoke: () => navigate("/deployments/new"),
       }}
       state={state}
       statusMessage={statusMessage}
-      emptyMessage="No Applications."
+      emptyMessage="No Deployments."
     >
       <StructuredListPattern
-        label="Applications"
+        label="Deployments"
         rows={rows}
-        rowKey={(row) => row.applicationRef}
-        primary={(row) => row.name}
-        secondary={(row) => row.applicationRef}
-        onOpen={(row) => navigate(`/applications/${row.applicationRef}`)}
-        emptyMessage="No Applications."
+        rowKey={(row) => row.deploymentRef}
+        primary={(row) => (
+          <>
+            Component {row.componentRef} · Resource {row.resourceRef}
+          </>
+        )}
+        secondary={(row) => row.deploymentRef}
+        emptyMessage="No Deployments."
       />
     </CataloguePattern>
   );
 }
 
-function ApplicationCatalogueCreateMode() {
-  const [name, setName] = useState("");
+function DeploymentCreateMode() {
+  const [componentRef, setComponentRef] = useState("");
+  const [resourceRef, setResourceRef] = useState("");
   const [state, setState] = useState<EditorState>("editing");
   const [statusMessage, setStatusMessage] = useState<string>();
 
@@ -125,8 +136,8 @@ function ApplicationCatalogueCreateMode() {
     setState("submitting");
     setStatusMessage(undefined);
     try {
-      const applicationRef = await createApplication(name);
-      navigate(`/applications/${applicationRef}`);
+      await createDeployment({ componentRef, resourceRef });
+      navigate("/deployments");
     } catch (error) {
       const failure = createFailure(error);
       setState(failure.state);
@@ -136,20 +147,27 @@ function ApplicationCatalogueCreateMode() {
 
   return (
     <EditorPattern
-      eyebrow="Create Application"
-      title="Applications"
-      description="Create a reusable Application before adding Components and directed Interactions."
+      eyebrow="Deployment management"
+      title="Deployments"
+      description="Create a Component deployment realized by an existing Resource."
       fields={[
         {
-          id: "name",
-          label: "Name",
-          value: name,
+          id: "component-ref",
+          label: "Component ID",
+          value: componentRef,
           required: true,
-          onChange: setName,
+          onChange: setComponentRef,
+        },
+        {
+          id: "resource-ref",
+          label: "Resource ID",
+          value: resourceRef,
+          required: true,
+          onChange: setResourceRef,
         },
       ]}
-      submitLabel="Create Application"
-      submitDisabled={!name}
+      submitLabel="Create Deployment"
+      submitDisabled={!componentRef || !resourceRef}
       onSubmit={() => void submit()}
       state={state}
       statusMessage={statusMessage}
@@ -157,14 +175,10 @@ function ApplicationCatalogueCreateMode() {
   );
 }
 
-export function ApplicationCatalogueScreen({
+export function DeploymentScreen({
   create = false,
 }: {
   create?: boolean;
 }) {
-  return create ? (
-    <ApplicationCatalogueCreateMode />
-  ) : (
-    <ApplicationCatalogueListMode />
-  );
+  return create ? <DeploymentCreateMode /> : <DeploymentListMode />;
 }

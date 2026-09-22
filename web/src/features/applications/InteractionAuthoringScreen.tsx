@@ -28,7 +28,8 @@ function failureState(error: unknown): {
     if (error.kind === "conflict") {
       return {
         state: "conflict",
-        message: "The Interaction changed before this operation could be applied.",
+        message:
+          "The Interaction changed before this operation could be applied.",
       };
     }
   }

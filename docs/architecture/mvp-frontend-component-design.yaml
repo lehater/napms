@@ -43,7 +43,7 @@ presentation_provider:
   provider: mui-material
   version: 9.4.0
   feature_policy: {default: deny}
-  coverage_screens: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, APPLICATION-DETAIL]
+  coverage_screens: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, APPLICATION-DETAIL, DEPLOYMENTS, BUSINESS-CONNECTIVITY]
   required_patterns: [APP-SHELL]
   template_baseline:
     provider: mui-material

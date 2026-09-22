@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { ApiError } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
-  DataTablePattern,
   type DataTableColumn,
+  DataTablePattern,
   DetailPattern,
   type DetailState,
   type EditorPatternProps,
@@ -41,7 +41,8 @@ function failureState(error: unknown): {
     if (error.kind === "conflict") {
       return {
         state: "conflict",
-        message: "The Application changed before this operation could be applied.",
+        message:
+          "The Application changed before this operation could be applied.",
       };
     }
   }
@@ -208,9 +209,7 @@ export function ApplicationDetailScreen({
               rowAction={(row) => ({
                 label: "Publish Revision",
                 onInvoke: () =>
-                  navigate(
-                    `/interactions/${row.interactionRef}/revisions/new`,
-                  ),
+                  navigate(`/interactions/${row.interactionRef}/revisions/new`),
               })}
               emptyMessage="No Interactions."
             />
