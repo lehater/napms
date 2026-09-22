@@ -10,8 +10,7 @@ type DevelopmentLoginProps = {
 export function DevelopmentLogin({ onAuthenticated }: DevelopmentLoginProps) {
   const [login, setLogin] = useState("admin");
   const [password, setPassword] = useState("admin");
-  const [state, setState] =
-    useState<EditorPatternProps["state"]>("editing");
+  const [state, setState] = useState<EditorPatternProps["state"]>("editing");
   const [statusMessage, setStatusMessage] = useState<string>();
 
   async function submit() {

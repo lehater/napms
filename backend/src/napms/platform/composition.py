@@ -56,8 +56,7 @@ class RuntimeConfig:
             if item.strip()
         )
         return cls(
-            environment=os.environ.get("NAPMS_ENVIRONMENT", "production").strip()
-            or "production",
+            environment=os.environ.get("NAPMS_ENVIRONMENT", "production").strip() or "production",
             database_dsn=_required("NAPMS_DATABASE_DSN"),
             oidc_issuer=_required("NAPMS_OIDC_ISSUER"),
             oidc_audience=_required("NAPMS_OIDC_AUDIENCE"),

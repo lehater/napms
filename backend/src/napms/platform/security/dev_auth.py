@@ -21,10 +21,7 @@ class LocalDevelopmentTokenIssuer:
     timeout_seconds: float = 5.0
 
     def issue(self, *, login: str, password: str) -> str | None:
-        if not (
-            hmac.compare_digest(login, "admin")
-            and hmac.compare_digest(password, "admin")
-        ):
+        if not (hmac.compare_digest(login, "admin") and hmac.compare_digest(password, "admin")):
             return None
 
         token_url = f"{self.oidc_issuer.rstrip('/')}/token?profile=full"
@@ -37,12 +34,8 @@ class LocalDevelopmentTokenIssuer:
             ) from exc
 
         if not isinstance(payload, dict):
-            raise DevelopmentAuthUnavailable(
-                "local development token response is malformed"
-            )
+            raise DevelopmentAuthUnavailable("local development token response is malformed")
         token = payload.get("access_token")
         if not isinstance(token, str) or not token.strip():
-            raise DevelopmentAuthUnavailable(
-                "local development token response has no access token"
-            )
+            raise DevelopmentAuthUnavailable("local development token response has no access token")
         return token

@@ -219,9 +219,7 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
                     password=body.password,
                 )
             except DevelopmentAuthUnavailable as exc:
-                raise HTTPException(
-                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE
-                ) from exc
+                raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE) from exc
             if token is None:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
             return {"accessToken": token, "tokenType": "Bearer"}
