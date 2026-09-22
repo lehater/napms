@@ -25,8 +25,17 @@ for path,item in api.get("paths",{}).items():
     for method in ("get","post","put","patch","delete"):
         if method in item:
             actual.append(f"{method.upper()} {path}")
-if actual!=req["operations"]:
-    fail(f"operation set/order differs: {actual}")
+expected=req["operations"]
+if len(actual)!=len(set(actual)):
+    fail(f"OpenAPI contains duplicate operations: {actual}")
+if len(expected)!=len(set(expected)):
+    fail(f"requirements contain duplicate operations: {expected}")
+if set(actual)!=set(expected):
+    fail(
+        "operation set differs: "
+        f"missing={sorted(set(expected)-set(actual))}, "
+        f"unexpected={sorted(set(actual)-set(expected))}"
+    )
 
 sec=api.get("components",{}).get("securitySchemes",{}).get("OIDCBearer")
 if not (isinstance(sec,dict) and sec.get("type")=="http" and sec.get("scheme")=="bearer" and sec.get("bearerFormat")=="JWT"):

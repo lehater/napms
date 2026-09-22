@@ -1,19 +1,20 @@
-from napms.platform.bootstrap.http_process import build_local_dev_http_api
-from napms.platform.bootstrap.config import load_http_runtime_config
-from napms.platform.http.api import configure_json_logging
+from __future__ import annotations
 
+import os
 
-config = load_http_runtime_config()
-configure_json_logging()
-app = build_local_dev_http_api(config=config)
+import psycopg
+import uvicorn
+
+from napms.platform.composition import RuntimeConfig, build_app
+from napms.platform.database.migration import verify
 
 
 def run() -> None:
-    import uvicorn
-
+    config = RuntimeConfig.from_environment()
+    with psycopg.connect(config.database_dsn) as connection:
+        verify(connection)
     uvicorn.run(
-        "napms.platform.bootstrap.main:app",
-        host=config.server.host,
-        port=config.server.port,
-        reload=False,
+        build_app(config),
+        host=os.environ.get("NAPMS_HTTP_HOST", "127.0.0.1"),
+        port=int(os.environ.get("NAPMS_HTTP_PORT", "8000")),
     )

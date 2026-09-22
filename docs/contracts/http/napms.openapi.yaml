@@ -7,6 +7,9 @@ security:
 
 paths:
   /v1/resources:
+    get:
+      operationId: listResources
+      responses: {'200': {description: Resource catalogue}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
     post:
       operationId: createResource
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateResourceRequest'}}}}
@@ -45,10 +48,18 @@ paths:
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SetResourceResponsibilityRequest'}}}}
       responses: {'200': {description: Updated}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/applications:
+    get:
+      operationId: listApplications
+      responses: {'200': {description: Application catalogue}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
     post:
       operationId: createApplication
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateNamedRequest'}}}}
       responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/applications/{applicationRef}:
+    get:
+      operationId: getApplication
+      parameters: [{$ref: '#/components/parameters/ApplicationRef'}]
+      responses: {'200': {description: Application detail}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/applications/{applicationRef}/components:
     post:
       operationId: addComponent
@@ -60,6 +71,11 @@ paths:
       operationId: createInteraction
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateInteractionRequest'}}}}
       responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/interactions/{interactionRef}:
+    get:
+      operationId: getInteraction
+      parameters: [{$ref: '#/components/parameters/InteractionRef'}]
+      responses: {'200': {description: Interaction detail}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/interactions/{interactionRef}/revisions:
     post:
       operationId: publishInteractionRevision
@@ -67,15 +83,32 @@ paths:
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/PublishRevisionRequest'}}}}
       responses: {'201': {description: Published}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/deployments:
+    get:
+      operationId: listDeployments
+      responses: {'200': {description: Deployment catalogue}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
     post:
       operationId: createDeployment
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateDeploymentRequest'}}}}
       responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/processes:
+    get:
+      operationId: listBusinessProcesses
+      responses: {'200': {description: Business Process catalogue}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
     post:
       operationId: createBusinessProcess
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateProcessRequest'}}}}
       responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/processes/{processRef}:
+    get:
+      operationId: getBusinessProcess
+      parameters: [{$ref: '#/components/parameters/ProcessRef'}]
+      responses: {'200': {description: Business Process detail}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/processes/{processRef}/responsible-organization:
+    put:
+      operationId: setProcessResponsibleOrganization
+      parameters: [{$ref: '#/components/parameters/ProcessRef'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {type: object, properties: {externalReference: {type: [string, 'null']}, displayName: {type: [string, 'null']}}}}}}
+      responses: {'200': {description: Updated}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/processes/{processRef}/criticality:
     put:
       operationId: setProcessCriticality
@@ -88,18 +121,35 @@ paths:
       parameters: [{$ref: '#/components/parameters/ProcessRef'}, {$ref: '#/components/parameters/IfMatch'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateNeedRequest'}}}}
       responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/processes/{processRef}/needs/{needRef}/retirement:
+    post:
+      operationId: retireConnectivityNeed
+      parameters: [{$ref: '#/components/parameters/ProcessRef'}, {$ref: '#/components/parameters/NeedRef'}, {$ref: '#/components/parameters/IfMatch'}]
+      responses: {'200': {description: Retired}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/access-requests:
+    get:
+      operationId: listAccessRequests
+      responses: {'200': {description: Access Request catalogue}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
     post:
       operationId: submitAccessRequest
       parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SubmitAccessRequestRequest'}}}}
       responses: {'201': {description: Submitted}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/access-requests/{requestRef}:
+    get:
+      operationId: getAccessRequest
+      parameters: [{$ref: '#/components/parameters/RequestRef'}]
+      responses: {'200': {description: Access Request, content: {application/json: {schema: {$ref: '#/components/schemas/AccessRequestView'}}}}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/access-requests/{requestRef}/decision:
     post:
       operationId: decideAccessRequest
       parameters: [{$ref: '#/components/parameters/RequestRef'}, {$ref: '#/components/parameters/IfMatch'}, {$ref: '#/components/parameters/IdempotencyKey'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/DecideAccessRequestRequest'}}}}
       responses: {'200': {description: Decision recorded}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/policy-rules:
+    get:
+      operationId: listPolicyRules
+      responses: {'200': {description: Policy Rule catalogue}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/policy-rules/{policyRuleRef}/operational-state:
     put:
       operationId: setPolicyRuleOperationalState
@@ -116,7 +166,7 @@ paths:
     get:
       operationId: getPolicyRule
       parameters: [{$ref: '#/components/parameters/PolicyRuleRef'}]
-      responses: {'200': {description: PolicyRule}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      responses: {'200': {description: PolicyRule, content: {application/json: {schema: {$ref: '#/components/schemas/PolicyRuleView'}}}}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/policy-materializations:
     post:
       operationId: materializeCurrentPolicy
@@ -145,6 +195,7 @@ components:
     ApplicationRef: {name: applicationRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     InteractionRef: {name: interactionRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     ProcessRef: {name: processRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
+    NeedRef: {name: needRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     RequestRef: {name: requestRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     PolicyRuleRef: {name: policyRuleRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     IfMatch: {name: If-Match, in: header, required: true, schema: {type: string}}
@@ -352,6 +403,34 @@ components:
         interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
         needRef: {$ref: '#/components/schemas/StableId'}
 
+    AccessRequestView:
+      type: object
+      required: [requestRef, version, sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef, needRef, submittedAt, decisionResult]
+      properties:
+        requestRef: {$ref: '#/components/schemas/StableId'}
+        version: {type: integer, minimum: 0}
+        sourceDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        destinationDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
+        needRef: {$ref: '#/components/schemas/StableId'}
+        submittedAt: {$ref: '#/components/schemas/Timestamp'}
+        decisionResult:
+          oneOf:
+            - {type: string, enum: [ALLOWED, DENIED]}
+            - {type: 'null'}
+        externalDecisionRef:
+          oneOf:
+            - {type: string}
+            - {type: 'null'}
+        decidedBySubject:
+          oneOf:
+            - {type: string}
+            - {type: 'null'}
+        decidedAt:
+          oneOf:
+            - {$ref: '#/components/schemas/Timestamp'}
+            - {type: 'null'}
+
     DecideAccessRequestRequest:
       type: object
       additionalProperties: false
@@ -381,6 +460,21 @@ components:
       additionalProperties: false
       required: [needRef]
       properties: {needRef: {$ref: '#/components/schemas/StableId'}}
+
+    PolicyRuleView:
+      type: object
+      required: [policyRuleRef, version, effectState, effectiveWindow, sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef, authorizationEvidence, justifications, operationalHistory]
+      properties:
+        policyRuleRef: {$ref: '#/components/schemas/StableId'}
+        version: {type: integer, minimum: 0}
+        effectState: {type: string, enum: [ACTIVE, INACTIVE]}
+        effectiveWindow: {$ref: '#/components/schemas/EffectiveWindow'}
+        sourceDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        destinationDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
+        authorizationEvidence: {type: array, items: {type: object}}
+        justifications: {type: array, items: {type: object}}
+        operationalHistory: {type: array, items: {type: object}}
 
     PolicyMaterializationRequest:
       type: object

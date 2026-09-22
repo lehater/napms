@@ -40,6 +40,7 @@ schemas:
           - {name: site_ref, type: uuid, nullable: true}
           - {name: effective_from, type: timestamptz, nullable: false}
           - {name: effective_to, type: timestamptz, nullable: true}
+          - {name: changed_by_subject, type: text, nullable: false}
         local_foreign_keys:
           - {columns: [resource_ref], references: resource_catalogue.resource, target_columns: [resource_ref], on_delete: restrict}
           - {columns: [site_ref], references: resource_catalogue.site, target_columns: [site_ref], on_delete: restrict}
@@ -78,6 +79,7 @@ schemas:
           - {name: group_ref, type: uuid, nullable: false}
           - {name: effective_from, type: timestamptz, nullable: false}
           - {name: effective_to, type: timestamptz, nullable: true}
+          - {name: changed_by_subject, type: text, nullable: false}
         local_foreign_keys:
           - {columns: [resource_ref], references: resource_catalogue.resource, target_columns: [resource_ref], on_delete: restrict}
           - {columns: [group_ref], references: resource_catalogue.responsibility_group, target_columns: [group_ref], on_delete: restrict}

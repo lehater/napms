@@ -1,4 +1,4 @@
-.PHONY: test postgres-test web-check journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-bootstrap harness-pin-check design-sync design-check authority-context human-implementation-package architecture architecture-check check
+.PHONY: test postgres-test backend-format backend-lint backend-type backend-architecture backend-quality backend-security web-check web-security repository-quality journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-bootstrap harness-pin-check design-sync design-check authority-context human-implementation-package architecture architecture-check check
 
 STRUCTURIZR_IMAGE ?= structurizr/structurizr:2026.06.28-noble
 STRUCTURIZR_DIR := $(CURDIR)/docs/architecture/structurizr
@@ -13,8 +13,31 @@ test:
 postgres-test:
 	cd backend && python -m pytest -q -m postgres tests/integration/postgres
 
+backend-format:
+	python -m ruff format --check backend/src backend/tests
+
+backend-lint:
+	python -m ruff check backend/src backend/tests
+
+backend-type:
+	cd backend && python -m mypy src/napms
+
+backend-architecture:
+	cd backend && lint-imports --config .importlinter
+	cd backend && python -m pytest -q tests/architecture
+
+backend-quality: backend-format backend-lint backend-type backend-architecture test
+
+backend-security:
+	python -m pip_audit -r backend/requirements.lock
+
 web-check:
-	cd web && npm run build
+	cd web && npm run check && npm run build
+
+web-security:
+	cd web && npm audit --audit-level=high
+
+repository-quality: backend-quality backend-security web-check web-security
 
 journey-e2e:
 	python -m pytest -q e2e
@@ -46,11 +69,10 @@ dev-restore:
 	@test "$(CONFIRM_RESET)" = "yes" || (echo "Restore replaces the local PostgreSQL volume; rerun with CONFIRM_RESET=yes" >&2; exit 2)
 	python tools/local_postgres_backup.py restore-clean "$(BACKUP)" --confirm-reset
 
-
 harness-bootstrap:
 	rm -rf "$(HARNESS_ROOT)"
 	git clone --filter=blob:none --no-checkout https://github.com/lehater/harness.git "$(HARNESS_ROOT)"
-	git -C "$(HARNESS_ROOT)" checkout --detach "$(cat .harness-version)"
+	git -C "$(HARNESS_ROOT)" checkout --detach "$$(cat .harness-version)"
 
 harness-pin-check:
 	@test -d "$(HARNESS_ROOT)/.git" || (echo "Pinned Harness checkout missing; run 'make harness-bootstrap'" >&2; exit 2)
@@ -101,9 +123,9 @@ human-implementation-package: harness-pin-check
 architecture: design-sync
 	@docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true
 	@docker run -d --rm --name $(PLANTUML_CONTAINER) -p 127.0.0.1:8081:8080 $(PLANTUML_SERVER_IMAGE) >/dev/null
-	@trap 'docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true' EXIT INT TERM; 		docker run --rm -it -p 127.0.0.1:8080:8080 		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" 		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" 		$(STRUCTURIZR_IMAGE) local
+	@trap 'docker rm -f $(PLANTUML_CONTAINER) >/dev/null 2>&1 || true' EXIT INT TERM; docker run --rm -it -p 127.0.0.1:8080:8080 -v "$(STRUCTURIZR_DIR):/usr/local/structurizr" -v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" $(STRUCTURIZR_IMAGE) local
 
 architecture-check: design-sync
-	docker run --rm 		-v "$(STRUCTURIZR_DIR):/usr/local/structurizr" 		-v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" 		$(STRUCTURIZR_IMAGE) validate -workspace /usr/local/structurizr/workspace.dsl
+	docker run --rm -v "$(STRUCTURIZR_DIR):/usr/local/structurizr" -v "$(GENERATED_ARCH_DIR):/usr/local/structurizr/generated:ro" $(STRUCTURIZR_IMAGE) validate -workspace /usr/local/structurizr/workspace.dsl
 
-check: test design-check
+check: design-check repository-quality

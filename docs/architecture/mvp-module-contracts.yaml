@@ -7,7 +7,7 @@ purpose: Define explicit in-process contracts required to realize the corrected 
 
 contracts:
   Resource Catalogue: [RegisterResource, AddEndpoint, SetEndpointAddress, ClearEndpointAddress, SetSite, SetResponsibility, ResolveResource, ReadResourceDetail, ResolveAuthorityScope, CurrentEndpointAddresses]
-  Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionRevision, ResolveComponent, ResolveInteractionRevision]
+  Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionRevision, ResolveComponent, ResolveInteraction, ResolveInteractionRevision]
   Application Deployment: [RegisterComponentDeployment, ResolveComponentDeployment]
   Business Connectivity: [RegisterBusinessProcess, SetResponsibleOrganization, SetCriticalityLabel, DeclareNeed, RetireNeed, LockAndResolveCurrentNeed, ResolveNeedCurrentOrHistory]
   Access Policy: [SubmitAccessRequest, RecordPermissionDecision, SetPolicyRuleOperationalState, AttachPolicyRuleJustification, ReadPolicyRule, PageCurrentPolicyRules]
@@ -45,6 +45,15 @@ resource_catalogue_query_contracts:
       - Empty current Site/responsibility/address is explicit and does not erase history.
   CurrentEndpointAddresses:
     output: all current addressed Endpoints for one Resource with EndpointRef AddressRealization effectiveFrom changedBySubject
+
+application_communication_query_contracts:
+  ResolveInteraction:
+    input: [InteractionRef]
+    output: [interactionRef, sourceComponentRef, destinationComponentRef, purpose, version]
+    invariant: Resolution exposes owner truth required to validate participantComponentRef without peer-table access.
+  ResolveInteractionRevision:
+    input: [InteractionRevisionRef]
+    output: immutable InteractionRevision with canonical TrafficClauses and owning Interaction identity.
 
 authority_contract:
   RequireScopedAuthority:

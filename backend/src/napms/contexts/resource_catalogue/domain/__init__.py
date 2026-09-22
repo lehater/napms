@@ -1,1 +1,0 @@
-# Resource Catalogue domain layer.

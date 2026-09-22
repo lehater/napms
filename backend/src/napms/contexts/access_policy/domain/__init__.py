@@ -1,1 +1,0 @@
-"""Access Policy domain model."""

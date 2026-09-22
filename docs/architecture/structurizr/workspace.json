@@ -1,0 +1,700 @@
+{
+  "configuration" : {
+    "scope" : "SoftwareSystem"
+  },
+  "description" : "C4 architecture model for the first NAPMS MVP",
+  "documentation" : { },
+  "id" : 1,
+  "lastModifiedDate" : "2026-09-18T01:06:14Z",
+  "model" : {
+    "deploymentNodes" : [ {
+      "containerInstances" : [ {
+        "containerId" : "3",
+        "environment" : "MVP Baseline",
+        "id" : "35",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "mvp.client.b9ee84ab-a55f-4b0c-81a7-01323351e066"
+        },
+        "relationships" : [ {
+          "description" : "Uses application API",
+          "destinationId" : "37",
+          "id" : "38",
+          "linkedRelationshipId" : "15",
+          "sourceId" : "35",
+          "technology" : "HTTP/JSON; CSV export"
+        } ],
+        "tags" : "Container Instance"
+      } ],
+      "description" : "User-side runtime for the NAPMS browser frontend.",
+      "environment" : "MVP Baseline",
+      "id" : "34",
+      "instances" : "1",
+      "name" : "Client",
+      "properties" : {
+        "structurizr.dsl.identifier" : "mvp.client"
+      },
+      "tags" : "Element,Deployment Node",
+      "technology" : "Web browser"
+    }, {
+      "containerInstances" : [ {
+        "containerId" : "4",
+        "environment" : "MVP Baseline",
+        "id" : "37",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "mvp.applicationRuntime.f1edd653-24a0-44c6-83bd-752ebbbac233"
+        },
+        "relationships" : [ {
+          "description" : "Uses module-owned persistence",
+          "destinationId" : "40",
+          "id" : "41",
+          "linkedRelationshipId" : "16",
+          "sourceId" : "37",
+          "technology" : "PostgreSQL protocol"
+        } ],
+        "tags" : "Container Instance"
+      } ],
+      "description" : "Runtime hosting the single NAPMS modular-monolith backend deployment unit.",
+      "environment" : "MVP Baseline",
+      "id" : "36",
+      "instances" : "1",
+      "name" : "Backend Runtime",
+      "properties" : {
+        "structurizr.dsl.identifier" : "mvp.applicationRuntime"
+      },
+      "tags" : "Element,Deployment Node",
+      "technology" : "Application runtime"
+    }, {
+      "containerInstances" : [ {
+        "containerId" : "12",
+        "environment" : "MVP Baseline",
+        "id" : "40",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "mvp.databaseRuntime.0ac057d4-4c1d-4617-b539-bc2467e4868a"
+        },
+        "tags" : "Container Instance"
+      } ],
+      "description" : "Runtime hosting the single PostgreSQL deployment unit.",
+      "environment" : "MVP Baseline",
+      "id" : "39",
+      "instances" : "1",
+      "name" : "Database Runtime",
+      "properties" : {
+        "structurizr.dsl.identifier" : "mvp.databaseRuntime"
+      },
+      "tags" : "Element,Deployment Node",
+      "technology" : "PostgreSQL runtime"
+    } ],
+    "people" : [ {
+      "description" : "Authors catalogue, connectivity, and access-policy data and inspects the current vendor-neutral policy.",
+      "id" : "1",
+      "name" : "NAPMS User",
+      "properties" : {
+        "structurizr.dsl.identifier" : "user"
+      },
+      "relationships" : [ {
+        "description" : "Uses",
+        "destinationId" : "3",
+        "id" : "13",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Uses",
+        "destinationId" : "2",
+        "id" : "14",
+        "linkedRelationshipId" : "13",
+        "sourceId" : "1"
+      } ],
+      "tags" : "Element,Person"
+    } ],
+    "softwareSystems" : [ {
+      "containers" : [ {
+        "description" : "Browser UI for the complete MVP authoring and policy-export journey.",
+        "documentation" : { },
+        "id" : "3",
+        "name" : "Web Application",
+        "properties" : {
+          "structurizr.dsl.identifier" : "napms.web"
+        },
+        "relationships" : [ {
+          "description" : "Uses application API",
+          "destinationId" : "4",
+          "id" : "15",
+          "sourceId" : "3",
+          "tags" : "Relationship",
+          "technology" : "HTTP/JSON; CSV export"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Web application"
+      }, {
+        "components" : [ {
+          "description" : "Owns Resource and current AddressSpace realization.",
+          "documentation" : { },
+          "id" : "5",
+          "name" : "Resource Catalogue",
+          "properties" : {
+            "structurizr.dsl.identifier" : "napms.backend.rc"
+          },
+          "relationships" : [ {
+            "description" : "Reads/writes Resource Catalogue-owned schema",
+            "destinationId" : "12",
+            "id" : "17",
+            "sourceId" : "5",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Owns ApplicationDefinition, Component, Interaction, and immutable InteractionContractRevision realization.",
+          "documentation" : { },
+          "id" : "6",
+          "name" : "Application Communication Catalogue",
+          "properties" : {
+            "structurizr.dsl.identifier" : "napms.backend.acc"
+          },
+          "relationships" : [ {
+            "description" : "Reads/writes Application Communication Catalogue-owned schema",
+            "destinationId" : "12",
+            "id" : "18",
+            "sourceId" : "6",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Owns ComponentDeployment realization.",
+          "documentation" : { },
+          "id" : "7",
+          "name" : "Application Deployment",
+          "properties" : {
+            "structurizr.dsl.identifier" : "napms.backend.ad"
+          },
+          "relationships" : [ {
+            "description" : "Reads/writes Application Deployment-owned schema",
+            "destinationId" : "12",
+            "id" : "19",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Resolves Component identities through owner contract",
+            "destinationId" : "6",
+            "id" : "23",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Resolves Resource identities through owner contract",
+            "destinationId" : "5",
+            "id" : "24",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Owns BusinessProcess and ConnectivityNeed realization.",
+          "documentation" : { },
+          "id" : "8",
+          "name" : "Business Connectivity",
+          "properties" : {
+            "structurizr.dsl.identifier" : "napms.backend.bc"
+          },
+          "relationships" : [ {
+            "description" : "Reads/writes Business Connectivity-owned schema",
+            "destinationId" : "12",
+            "id" : "20",
+            "sourceId" : "8",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Owns PolicyRule, RuleChange, and current effective policy-rule realization.",
+          "documentation" : { },
+          "id" : "9",
+          "name" : "Access Policy",
+          "properties" : {
+            "structurizr.dsl.identifier" : "napms.backend.ap"
+          },
+          "relationships" : [ {
+            "description" : "Reads/writes Access Policy-owned schema",
+            "destinationId" : "12",
+            "id" : "21",
+            "sourceId" : "9",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Validates exact deployment endpoints through owner contract",
+            "destinationId" : "7",
+            "id" : "25",
+            "sourceId" : "9",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Validates exact immutable traffic revision through owner contract",
+            "destinationId" : "6",
+            "id" : "26",
+            "sourceId" : "9",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Validates current ConnectivityNeed basis through owner contract",
+            "destinationId" : "8",
+            "id" : "27",
+            "sourceId" : "9",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Requests protected-action admission",
+            "destinationId" : "10",
+            "id" : "28",
+            "sourceId" : "9",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Owns effective actor/action/scope authority and protected-action admission.",
+          "documentation" : { },
+          "id" : "10",
+          "name" : "Authority Management",
+          "properties" : {
+            "structurizr.dsl.identifier" : "napms.backend.am"
+          },
+          "relationships" : [ {
+            "description" : "Reads/writes Authority Management-owned schema",
+            "destinationId" : "12",
+            "id" : "22",
+            "sourceId" : "10",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Read-only orchestration that materializes a complete vendor-neutral policy and table/CSV projections; owns no domain truth.",
+          "documentation" : { },
+          "id" : "11",
+          "name" : "Policy Export Composition",
+          "properties" : {
+            "structurizr.dsl.identifier" : "napms.backend.export"
+          },
+          "relationships" : [ {
+            "description" : "Reads effective PolicyRules",
+            "destinationId" : "9",
+            "id" : "29",
+            "sourceId" : "11",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Resolves traffic revision semantics",
+            "destinationId" : "6",
+            "id" : "30",
+            "sourceId" : "11",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Resolves deployment endpoints",
+            "destinationId" : "7",
+            "id" : "31",
+            "sourceId" : "11",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Resolves current AddressSpace",
+            "destinationId" : "5",
+            "id" : "32",
+            "sourceId" : "11",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Resolves current connectivity basis",
+            "destinationId" : "8",
+            "id" : "33",
+            "sourceId" : "11",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        } ],
+        "description" : "Modular monolith exposing the NAPMS application API and coordinating domain modules.",
+        "documentation" : { },
+        "id" : "4",
+        "name" : "Backend",
+        "properties" : {
+          "structurizr.dsl.identifier" : "napms.backend"
+        },
+        "relationships" : [ {
+          "description" : "Uses module-owned persistence",
+          "destinationId" : "12",
+          "id" : "16",
+          "sourceId" : "4",
+          "tags" : "Relationship",
+          "technology" : "PostgreSQL protocol"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python"
+      }, {
+        "description" : "Single physical MVP database containing module-owned persistence schemas.",
+        "documentation" : { },
+        "id" : "12",
+        "name" : "PostgreSQL",
+        "properties" : {
+          "structurizr.dsl.identifier" : "napms.db"
+        },
+        "tags" : "Element,Container,Database",
+        "technology" : "PostgreSQL"
+      } ],
+      "description" : "Network Access Policy Management System",
+      "documentation" : { },
+      "id" : "2",
+      "name" : "NAPMS",
+      "properties" : {
+        "structurizr.dsl.identifier" : "napms"
+      },
+      "tags" : "Element,Software System"
+    } ]
+  },
+  "name" : "NAPMS",
+  "properties" : {
+    "structurizr.inspection.error" : "21",
+    "structurizr.inspection.info" : "0",
+    "structurizr.inspection.ignore" : "0",
+    "structurizr.inspection.warning" : "0"
+  },
+  "views" : {
+    "componentViews" : [ {
+      "containerId" : "4",
+      "description" : "Domain-aligned modules and policy-export composition inside the modular-monolith backend.",
+      "dimensions" : {
+        "height" : 2992,
+        "width" : 3243
+      },
+      "elements" : [ {
+        "id" : "5",
+        "x" : 299,
+        "y" : 1716
+      }, {
+        "id" : "6",
+        "x" : 1154,
+        "y" : 1716
+      }, {
+        "id" : "7",
+        "x" : 759,
+        "y" : 1206
+      }, {
+        "id" : "8",
+        "x" : 1924,
+        "y" : 1206
+      }, {
+        "id" : "9",
+        "x" : 1659,
+        "y" : 695
+      }, {
+        "id" : "10",
+        "x" : 2492,
+        "y" : 1716
+      }, {
+        "id" : "11",
+        "x" : 1344,
+        "y" : 243
+      }, {
+        "id" : "12",
+        "x" : 1779,
+        "y" : 2305
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "BackendComponents",
+      "name" : "Component View: NAPMS - Backend",
+      "order" : 3,
+      "relationships" : [ {
+        "id" : "17",
+        "vertices" : [ {
+          "x" : 524,
+          "y" : 2186
+        } ]
+      }, {
+        "id" : "18",
+        "vertices" : [ {
+          "x" : 1379,
+          "y" : 2186
+        } ]
+      }, {
+        "id" : "19",
+        "vertices" : [ {
+          "x" : 1774,
+          "y" : 1611
+        }, {
+          "x" : 1774,
+          "y" : 2186
+        } ]
+      }, {
+        "id" : "20",
+        "vertices" : [ {
+          "x" : 2149,
+          "y" : 2186
+        } ]
+      }, {
+        "id" : "21",
+        "vertices" : [ {
+          "x" : 2442,
+          "y" : 1101
+        }, {
+          "x" : 2442,
+          "y" : 2186
+        } ]
+      }, {
+        "id" : "22",
+        "vertices" : [ {
+          "x" : 2717,
+          "y" : 2186
+        } ]
+      }, {
+        "id" : "23",
+        "vertices" : [ {
+          "x" : 984,
+          "y" : 1611
+        } ]
+      }, {
+        "id" : "24",
+        "vertices" : [ {
+          "x" : 439,
+          "y" : 1611
+        } ]
+      }, {
+        "id" : "25",
+        "vertices" : [ {
+          "x" : 899,
+          "y" : 1101
+        } ]
+      }, {
+        "id" : "26",
+        "vertices" : [ {
+          "x" : 1379,
+          "y" : 1101
+        } ]
+      }, {
+        "id" : "27",
+        "vertices" : [ {
+          "x" : 1884,
+          "y" : 1101
+        } ]
+      }, {
+        "id" : "28",
+        "vertices" : [ {
+          "x" : 2717,
+          "y" : 1101
+        } ]
+      }, {
+        "id" : "29",
+        "vertices" : [ {
+          "x" : 1884,
+          "y" : 619
+        } ]
+      }, {
+        "id" : "30",
+        "vertices" : [ {
+          "x" : 1569,
+          "y" : 1611
+        } ]
+      }, {
+        "id" : "31",
+        "vertices" : [ {
+          "x" : 1157,
+          "y" : 619
+        }, {
+          "x" : 1157,
+          "y" : 1101
+        } ]
+      }, {
+        "id" : "32",
+        "vertices" : [ {
+          "x" : 609,
+          "y" : 619
+        }, {
+          "x" : 609,
+          "y" : 1611
+        } ]
+      }, {
+        "id" : "33",
+        "vertices" : [ {
+          "x" : 2279,
+          "y" : 619
+        }, {
+          "x" : 2279,
+          "y" : 1101
+        } ]
+      } ]
+    } ],
+    "configuration" : {
+      "lastSavedView" : "BackendComponents",
+      "properties" : {
+        "plantuml.format" : "svg",
+        "plantuml.url" : "http://127.0.0.1:8081"
+      },
+      "styles" : {
+        "elements" : [ {
+          "background" : "#85bbf0",
+          "color" : "#000000",
+          "tag" : "Component"
+        }, {
+          "background" : "#438dd5",
+          "color" : "#ffffff",
+          "tag" : "Container"
+        }, {
+          "shape" : "Cylinder",
+          "tag" : "Database"
+        }, {
+          "background" : "#f5f5f5",
+          "color" : "#333333",
+          "tag" : "Deployment Node"
+        }, {
+          "shape" : "RoundedBox",
+          "tag" : "Element"
+        }, {
+          "background" : "#08427b",
+          "color" : "#ffffff",
+          "shape" : "Person",
+          "tag" : "Person"
+        }, {
+          "background" : "#1168bd",
+          "color" : "#ffffff",
+          "tag" : "Software System"
+        } ]
+      },
+      "terminology" : { }
+    },
+    "containerViews" : [ {
+      "description" : "NAPMS first-MVP runtime topology: browser frontend, modular-monolith backend, and PostgreSQL.",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "Containers",
+      "name" : "Container View: NAPMS",
+      "order" : 2,
+      "relationships" : [ {
+        "id" : "13"
+      }, {
+        "id" : "15"
+      }, {
+        "id" : "16"
+      } ],
+      "softwareSystemId" : "2"
+    } ],
+    "deploymentViews" : [ {
+      "description" : "Deployment mapping for the accepted MVP baseline: browser frontend, one backend runtime, and one PostgreSQL runtime.",
+      "elements" : [ {
+        "id" : "34",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "35",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "36",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "37",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "39",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "40",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "environment" : "MVP Baseline",
+      "key" : "MVPDeployment",
+      "name" : "Deployment View: NAPMS - MVP Baseline",
+      "order" : 4,
+      "relationships" : [ {
+        "id" : "38"
+      }, {
+        "id" : "41"
+      } ],
+      "softwareSystemId" : "2"
+    } ],
+    "imageViews" : [ {
+      "content" : "http://127.0.0.1:8081/svg/VLRVRzf847xtNp5g7_fI88OGmbqLbIEaIdLDeoJg4z9fiSTuKtlNtLr3wUd-zvlTnMJjMa42OSzuVdpppRT-1vzMTwk7nTFg6cvk_rx10Aw_mjtN9rXTtpv5x-1UoMTC39S2f2WEVuB6aWd34s2roQNYvW2ARd6XWGimEG9B4gmCfl0OGwLaMYU6N7xKdFnG6DXW8VT3YlqeQvNW7v3AH8zAlbNCvXaftB62fun2ZF9uDYXtrU2PN0KUHZeUsSiTYbIgWS3QA5OCAbdmv330dvLKPdXWPH5zr8OfKzC_mqs1SCELDl3bspryzg4Y8oim4ZRI65b2IjMvDYFzdOkAALQ2pbagzrni8ME5ni2YP2tIH58S1V4uC2oKalkbBAI2jzFDnNGswHflf317XqbsFfkE-nmU-I-4UM0fS4ij_yMIxrkN-nZXndr-zvCgHVMwJr37U3Q99sclXoiaFWjR9vYOs1Aa_qO0hKpZR3gTp-Xk43lEnlF9BFelYbuUV1CFuHepBX0UK3iIQ60YjUpX2f9QASkJHPegrFgnOWckXK8YnI_7aE4RO1gEbFZdB8QtYDb5beKfngSKahwBgYA6k8TXpqqEIrbMP1369_RJntGjD2jn4BhV2eEAEMheJk9nN-B949PKgq7WPLaRjg6RGOmbGMF_Fk2EQxfUsyiietrg5aj3Hi2nLkPEuabVulDJnuaKYKAguDJbDLQ5FDZjq-y1MPB3XekKcBqM-9DI50S7qydVBaPeQCRaIZCvrsj1gzIfwholgkaGLjgYm7KEx3HRaXKQkXviYD6a58IAiEkt8pcvGpi7dmWRuKX3D6pMJQsfLKs5FDVQyEmuhav9qxwIBeOsVIMrbohj0PSXSBxRjUW1qF6bvPmY5I1S-ludRAbRzup3T2rUuKEp1mrIDc8R6zWmpRjKlEXhT1PYto2FMUQY8TmxrNoeoTKe4dEYOaxYiirTViAaP0NSe-E99SIYqNL2wm6VZmjZdr_cb16Xu1Jwa1JOAMxMLzpba8Byg0axtoxXLbWqVw_JgxjbgfFtTkpBljZp8NoX3LJSIWPwmh_4KxPZFnCt3pXkeDKOFuJtuN1Fc-D6qvJNRCHQX3BLAMxULrnyDYGowmgJJkVjGusOh-l2s7YC9kDqn1RWKN1FMgqAP8Cybu_VsYN4PwSIea0m1uEhGCQYGD5QbaaKI4xBSXu5Qz-oJADW-rgMYoYWQyioYmAkj2oNKJ3fbcKU1J275Zgj8d-07SzsEf0-RAu-ILPy66sk_DKYU4VPlbZivxMLMNYzy9lZjwOxb6QSnsZC7oLsUfx7D30tL2i7dOaRJ791paNZkkEufxSgnnKReeb9iuONHj0xYYWaI_qDJuA88diGekWZ_TeNeVy1",
+      "contentType" : "image/svg+xml",
+      "description" : "Generated ordered projection of the accepted S1 first-MVP journey.",
+      "key" : "MVPJourney",
+      "name" : "First MVP Journey",
+      "order" : 5,
+      "title" : "First MVP Journey"
+    }, {
+      "content" : "http://127.0.0.1:8081/svg/fLRVR-8u47xFNp7QVTWde41Pr7QlMWhqL6bBArhTAtASIV0siIFRWMLFzx_VEBy8DBJL7Gy8FDzy_cOydl4N-7E-c2ydp_CPtDxzc4C7PW-mU7Y6-UpksVi2ZrhzH6w5ag1alBi2WmcJLd1WcLqhBUmED2q9QK18i6i4nZcc5WDu6e2ncbcC75noWXlmCLRRBZ4_gKnpl8H0STDBH4H0sgMdSSDY4P1Nq5ltltPgXfuPzFP_E4kPBsBQlfEmjBjZIVp_EPMq-CjsDCQvdrcBr1JKturbscRqomeR8omcZ_TFC9lDO5eumJrBlHX32rQ15j7QGY1qaJdFl0YPCiqIC6iMgAsG4OGiDjYmQ9N9W2ijKKD_q31Cj5RRgOgLXiyZ_-jeF3mstfA44Z0CpyUZGHlWIVn6k6XOOenG1ZUClqJvtYN3RVvvZLCwGFqsfg5ZC1xsXq4h8XVIFsk6JcbYCgAq_kq17Emq24UZYp6jDhZxuU1YEFR-yRozuwURp0Y9nhZpa2xj6ogDJy0CI1NWoY_DAzumm-V0HnPYasT2nKiiZoeMlE7FykLLcY-t-jMtuPv95c62qZRSA-iggQrjB4iqUGN3b5aMgoZ3FOSkRIjUsLfrf2b9pCkNKf4acQp_lQPaUp0bfW7--1upJ6ErEugsGHlKzZQc1TgjqYymbw6Yq7BOOypuKVfa0LlX7hPAArWRxpFojOibXl8yvniHeEIDs6q5gSuMIyYxLG5Bf6xoEu_lH8NGOTMGj-FU2Ara7iP3YaMxCcs1rxYLgd4ri_T6ZNSwrsqbV0dBixvtkZZVS1ju7owUFKjxIJYweNUgl3_YVUwza_sQv9rS4bb_w7b5dm9VMQiIwZlV_Ek5iZdcyblFluQRc9Jz0IbIdxvnVPC6NJa329wtMv1PuYFDEbTGLeIx_KZaAewPhufDuM3GN97CuucIkacHCcjHIn1kmeQeDGPThv2sR18uUUNoMJ_N2grT4IWZ1mLDJkvpW5aWgJMPIppIqAvuVcQ60geklvzPfqegMxq6YgHtAnc3GaPRSpobul2gKIcRB24568QvDlUyoFTcGIACSR-sWjYTaYHLshgCrHLTSWhf4aW3jnOsB8MztorpdQqDhoJVBz1vql6u7k8IJcgaMooAW6BVhWNT_SbqIZYRFvXu1Igfr9QclplBMkTveVFrNFYFicgY8rNBlQZg8aBZ5fMSrTklpcE_okEf_kXaljtiIkg_K5DTOJ1TKul4EpemGYLiH-z54aAtZAgUtf01u2_a6Lsbg_ANsyHanVwK6acXLPokBgc0DgWZ5ttN8vxYVdlUT_fspxb_0G00",
+      "contentType" : "image/svg+xml",
+      "description" : "Generated projection containing peer Bounded Contexts only; accepted relationship meanings are listed in the legend rather than on arrows.",
+      "key" : "DomainContextMap",
+      "name" : "DDD Context Map",
+      "order" : 6,
+      "title" : "DDD Context Map"
+    }, {
+      "content" : "http://127.0.0.1:8081/svg/fLXDRziu4BthLmpQGqzEOhk9cwPRDB7THO363PnWhmObZMos4gabgRZkOl_x3YMAaXFverqV0fiSFhvvCnmEymR-dCwcy-l7wGG-ttwPGWycNs7szH6cazl7u0tSA_aD8yEb02dIpHLep9WmF09Mc9LKt6n0qH0N6hW0iq9WKOIvmHWU1g2DOWQNrbn4PAuXn5IkJmZvGHOgmlSGoqYVPdn9XhJBgS8dblAOLiMdg_v5poESwi5fyoDYEGjvIjltCfQVR5YM_dzCAGp-C3s5QRbEhtYkA-XFsZ1b2lfck4aHPjVtTm_muBqRopHbeQpsWpkM1oac1em4nPSh0p5NbOg1_iv5pXJBGAzOBDTSB25XgSRMZ9A5Y2Ef12he3reJrqh9DUqb5Rm-3o_EHyFdav_91sSmJDwEpWTT1W_y9y9bQoR59OhuXaNVb-NU3k5p-Nbf9rMCQhzDYyTWDEmFuqwBaaZ_hEqwoSJ4aYJ-9m3OsccGd9zVZcYqXTrF1fV3KV1l43GBNzqKcWlKcg8YX9NzYTBa5J0DGiQu2Dtq8cfDm-iuH9PW6-UQ4fbGxcNAezPwLWulydAuSvq_6NTCi2LcA4nhUJsxoFni5yeSTPdDC6Q6fN9PO8EXtDmYgkSwUUGvKQnISYoph13-rqj8rXYJC2tZu_UOO9xApJDlMx2nd-z2cg5PI_KTfYAHv5ffTf-ow9byeZ9RO6Eso6kpBjn7Z5RMbnHSFATFF4OHjNmtjKaTMtGc1xC2vaYLvMVftuuCeM1va_r-Ft4bHUd6rnohKgAx7FTs2-djFF9s2lrTKE69Qx9tLAqKxo2id65DETisXDS95PFaeerTgrYhEiT8BWNVngrrh1LHZP773FOSobxlOzUPUm_pitwm-pJjMJO8Zixs1gKxXotSCDXr7ezP_JReOEaN7WgAHJZ_3NUEmRq8zd7_9QZHOOcEWNaN777yVmdnCZXm-3tQlZGc9Bh03fhjJib-FpYASZV2LdMnQ8FWW977EL1GBDWm2AhB6a9fZCpeylqGVfn9Kzgy_t0QVeIRb4Bv1-H8pSgDRHweteohJkeAbWetD2caw9K6b9ovrAKaX5Ks922AB4Jg3AruXYURfe6CjhgghRRiYZ1XCfdKMzcUAxUzLCuCwIQ0stuqGKMAdWGLxtaRm79tmsVzqX7ex1k0vDeg-RJ8VhPiPaXiTM5F2rABM-DyApGvL5-FOM4iAo5DtJjN4JcfQGmg6btjmouMsvSHrKvTPCG0awJaPflnScyMPrnh-stD2TqoeK0eOnNp9THXSc45f9RK4niwOeVxYP9dPqlWm9i1YYU5nvuNApYn4NQmIWBoVRtYTCrSZyTaPyhdHLGREIYvflxOnjBpV5lnVDav_IOj3_ICrRmXLPSrQ1qnXrc_b1eTpvsEMq4ZQWVkwJhZ2afc8jW4jpAV5qJ99r-CkeIYN8Y8PFKSqms7Yr-AvN7CRcczOI7HkBMvK-MSFPZswvpAOfbvdYB-e66WoOJEHeTCevSKM_4vNgzQ0HSXHcMCrA6Shp2R2wrLU-m3rjLcNOJswUjflTkNNSTHyckluvWoHp_aT7CrmaGkmlvAQcULvt5PyTZRBnzFgLdIq22bojSoj6vPMtxf6KtdeYRIFwk8x6omBOazRQ8ZC9CgiwI8gBzvCxQ142c7LLdqQSeMprXYLJwvqPWcGD6r95t6ExWgU9wZA-rxQEmghSx4ylA2KExQ12-pHBECAW6TlV6AMcA4bDEnt4HfbMYqn38DDpdJsY4cfQVkUjjISb2drjw8lM3QVdsuFHwPMgAfWPmPhuediz2s_jlYaF1bONytrUIPSiEkOZN7BJRxtowEqb_aGy8nhdIo5OAiN8GftUc1JpIiPlW3euA2VUM-LKMZsfzEcg0wN6DQRSc99oHlIo49f-fKWk0J_RN_gVaF",
+      "contentType" : "image/svg+xml",
+      "description" : "Generated projection of peer Bounded Contexts plus non-peer compositions and all accepted strategic collaboration relationships.",
+      "key" : "StrategicCollaborationMap",
+      "name" : "Strategic Collaboration Map",
+      "order" : 7,
+      "title" : "Strategic Collaboration Map"
+    }, {
+      "content" : "http://127.0.0.1:8081/svg/hLTjRzis4FwkNt58FlIJuuQKQcHhWsQ9KmHeqi8EC0mOCD3aoUOYYGP99_66_VUTNlmYKKxJRa5YEEJTSyVdEPB7D_1fV3UUNDoFh-3wvlCO1d3r1Uw-tCFuwkO-UWDVhVaJfTUc05Dawv_1OIuAhoM8bLyOg_qQB0tfme4km2yGX9IuzAXWoc22pgoiHBWKNcHcla9OMYFHESYDmWncc9cd4meqhUn-0cMa6-PwRaKPT6ZnKMHQ2S8RBaxPmCg1N3LpZWqRC3Ahusmd1ytCoLhaMVJHUM7zYhvvxJFiI-koSInNN3f66QOUl06hvmiFIjkQXiWzw68fhCZ1BOGoJxgOGoeoXtiprgmA9OqjqC8fsvkuiDOyNPhCM3XEPk-I4UzENfl2DmOyZKS9wpEOwhyGplPcCfnZeNuHyc5UnMuGhgkVqCvOXVPbcxqys8YVSjLhKILo-dP_wKIJAEP4yjyHG2iIIvFaR4IZUzYdAJlZe-YVA8gMbBsO8noDIQrPfjrYfvDMI4NdrqSLwYx6qONAjGTyHBikAylJ35LUllALc4SW7AHKON-yFQr_uJZ5bCjH6sM2S-qyYRK963WoE5Op52bs7Pi4DmYe0bTEhZALMCPivp8OdBU3T2nOOC5BfhP4tTAsy_Itu-b2ATeARaec28PO0Qzp_77Ms4kitOfddQzoEXWGC4tB_V7OJY50Olr8K_JzQmW0-3TqQ150i0507AZ10ZLOHmqMgD4aqx7WWKKS_JZnx23nuqAzXYvsi6o_aWTQ4ijZlZHMPB2WwZLs7G3mGnkcZs_AgrN_DKGluonWd7KOPm7ZhCCu2nXd_urn_h-LEZzOwXDSPaBYQ_JZ1ylzbVhnYlpNwzVafWAKf4z27aZ8EnBoG4BUaP074fOvTopYm2BfFmQTD4lgFz9KPxgHjtlmDNDx_F-g_UBtWlvTciBf6KrJIpCjaVPeu9jpyCN3f_A2RGmL0B20HnuSFerbzCAMRyTfbp7V71pVaMdPzdJtBj-U7q72B4YushkzajWMhw4UpkdvtlqrwPXlqubV9K17nHgzjQpuW0vne4FyRHrUofPzTxPT1U832iI10d6F0ZU5Mr9Ce8ROKk-qIrhG2l1vQHn2rMVjji84q-76F1NIkq0kYq8DRDWZ9TisWNhMz5tRYHf0EYm73NBPc3SlYW20zGFSQjAHkknDRXQpgcOT7UZrELZjtswds04_S9FLL6mNHL_Im3NUowkzu9q6IQTdI8AU8Udq34dGCpJHIXth5XjcndkJaylxsVcTgU-izyFPEOtyXXavmGTOcapBzL0kK3wKBNT6hvaF84rE3pL50vyiOa4ZofJFjF8gB7mzlAPHMZ-vqnMvUPU9-hLN65y_qUYs93eQk67bFQn34iX5HZrl8ShRa3mj4hDKnRRsSLW-2UYibOlgVOZFX9sjooc5CXEbsMnTlHcbA4oX9LrahUVXIKHmDHLHz94-ooVSlm00",
+      "contentType" : "image/svg+xml",
+      "description" : "Generated projection of accepted Resource Catalogue policies, commands, domain events, and declared process-flow alternatives.",
+      "key" : "ResourceCurationProcess",
+      "name" : "Resource Catalogue Curation Process",
+      "order" : 8,
+      "title" : "Resource Catalogue Curation Process"
+    }, {
+      "content" : "http://127.0.0.1:8081/svg/hLTjRzf84FxkNp5gFbGwrSc5N1gLHb5TS5fBD23ZHbVf9BJOOzZhulNjBYJqTF_zPlq2nY4qoHqV4l3EFlFsp7ZcDNpoR_pGY_m-N0S37rpe3-5c687V3oBdDOoK_1DZmsK6CXFhzw1nmJB3Os1BCvUAcpKeUiGp3Jm3CqTWSOovmGJ67GXHowMA4NhCC25dImJ322vc0XOoGG5J5FBkc3ID2y4k93BM9mi-KyngFL6uOe8dZ01FvgSTLyLklApETEUaHYEvKfCRrvhSH5gxt4BFyPejXFD16wRCahuPRWJkCwzVN88lzf8ZC3LW92W-cnj8k2f3uUZlFCkPOWlGSvR8EvxD86L2O-D4oMMMn59bgE2qqpZmb99tFIcaWgFpwTlpYxFsuRNCJ2LmblvsSTxP9p3cFn3UDKu4pZ1BFhBu-wpGNI5S5v-7Sb8bg0xBDEpeN9oTdYLx9Gf3JdzjkavXOjcC0lot0x2ZgPEUdx-xeASDxDEqy-ximld7SMB1j8PNTLh-o2ulsMocS4Rffu1AStNr2fY6ZB8pGQAXMK_gnCDHCaMMOXiaHEBFZu8mrqGMYrdUF815NpQN9YdTWYDCqxTfsWOVnp97Bqsvu8Nmqz2rlJLXsskFmTF_N6QQJqdGh9zgUlFE1haD7IGMZcgBE2-djiQRe2kv1UG97ANdwTdMF2z9w5IFSrRcw00AAqKdsigsSMvjPPEHGMPG4SXFi5QL-8HNycsytN0LkGan_RcVZKjLRXIcZu8B754JMJy3MU0ajrSEmXRgGodmUVOgkj76fAQzmenbFyrElX7SG3XxQyjrh_OIemiyAMNtt_l5TPzOO5sGTvbsdYRSD6UNOLrealC5S0z9reKsJry0suXq5xRvUMRK7ZQEGs5xADrAutxUTs5_7Rr4oSkZUHZt_mbdgrKUfk2EwDv0xfHv8uhRXl5ox4Qnj_DZUyQpWVyBpHy5VImhJZaim5GQ8nVqyh-SNddrbCYp5LESPafzUJAzAW-3critxBdZoFiuyDtG7m-_XZtV3Vh-JHH4tof1--dDQT2WyUiDa08xXj50eJ0NBBO_DlDTepRVG9DKKbL0BRTi0LEVn1LDRx7LWHgshyxZNJE3cqzafdzzxVUYuDPtlNwVR1wxuv7Nynl6UeQ6Q0GQD8i1sF05JSjR8-VKcN-WajO7AqTlRZjlhh2w_iX4ynxkvfX1JXvGhe2JtSqU25m3tfESM5lK2kkprAQIgjMDYBRyVjUrpy4u6eRVt17vuuUtVh_XZRydu0mCBdAfoBi38TyNx0gqy4AjADfsbPXpRMZ7iC4gEYeZ4cr9Hil8CYTbbaMBfIdH4uds_LRZQIueAC8kANUqhDIGwrqtRxr1q7SZ_yje67e3zzhhHUE6fr7jKrqiclHfGxiB57LKs4LMAS7ot8PXaxcAHsRE3Aou53J7LfWisovALiZLQBQr04nPqjfNDftZVIvuJ1jBo-pXA0g6DsHmxsiOKcbGfGmy-wXflDUiWd9HAuqkM9D9e7LAMUBi9Anelq-g5BodYEhtmAP4lvfkfRtrHbXho3VBvAuVHAuH6Hry30PKtIwjdwxtDVey37ThVUD7yKQ2njXT961plDiUgoAcVP8ig6Ngxh5P-pRysQwrqxKrVg5H41qF6XmERVd_7ldsqS3VDRdLgSlu62nV30-OG_CRdsKBYfOkEC04hSUOL73BJDY2PM29fBO4KlZNafRJHL7_cL4oMSPevMABpMPuWlUnM6g-AlRrfS1ZX_fbsPOTvmFzjKlnlm00",
+      "contentType" : "image/svg+xml",
+      "description" : "Generated projection of the accepted Resource aggregate, owned entities, value objects, exact declared references, and invariants.",
+      "key" : "ResourceCatalogueDomainModel",
+      "name" : "Resource Catalogue Domain Model",
+      "order" : 9,
+      "title" : "Resource Catalogue Domain Model"
+    }, {
+      "content" : "http://127.0.0.1:8081/svg/dLRVJ-Cu47xFNp5Q7bOw4RfDAHKiGjjjootIBQ32xHCISf99Qt3idEq0vNJ_-usJD3yWS7lR1qZYySmtttmpzaVuVN6-M4wl5tCuFVjZ0JxCB-3yuXeMyxDhxoDSQdM7aULAWf9YynaCfanQ7W7BxLffRZUWwHEN1hW4kqPWKOIPnHYk0aYuDjR__kCIB2Cl4HEGgXW5X2ZKunu5k5AvZl08OXMPGSfNchbW0uqFJF2OaP_1UZZnquVCloDJYPk12GPRRuFMTpzM3eTV1DZRi5HuNunbskRqPBaL2ASE3ZWurriuys8JV7URF8691Qj0yzNQGinrcRfdxhdCc6Ofc3MBrIENAqYOCDXQqIgNSQG8YOPXq5gOQgqUPqee3JlZy60y6RrSF5NILWQZP7yo3leChlWpmc5hHU0APVoLHVUh8dRbuRJulRPJEaRzlaqBHp0P3KTnhqK1PFYfdJhHnEIA2FxR0-X42fBn-712Nrk-XqbmE9fu_tYUbn5wjaBui4HJ205cp3AXLZb-A9mrhXiJ7YCfa8J7P0nHhZMzmZDgvIljAuatSXh76esv8lT8BaX9puMiW6dIfw0lyUP6HamgMOY01F1j61J-d8LKLFmy4xH6-hkHQzIuzm6OgLLy-sbugp4tfFATX6gM7BXqwcocMRdPXPofDCrb_TPDBnBCc8xz71CkkNkwaSV7RBNIk28K9oSluWUtzHhin26o11j_53CZ8gHrFagoUXoK2vGAx62I72G9EUWFy9llz-ziGfv9Yvf5M-3_6JJuvQ11Rz0PwSizBl61cvy5CVfb4ACtwpt7JAXDIeQT4jSbQTRVB_2efy3jc5zpmoM9d0GcfPjJ3mIi4t9hGJCyed-TSFKSDwy2xzzkrmfflDPM4-uSNNlyVxT1RqRJoC64IqLSTZCfForpWUzpDdwlATpssPg6IU4aMdCHmniA6T-Mottg6B-fZcgNowcSbX0gQrLAsu_3avbMnlWHoHIVB2Hq_1qFmfDoxSfY1iCZU3q5AnltsouQm2TEnzWZj-jw_7KcNaAG3Cszlt8wmM98QEWAWgihHwbxvlLGt6jX28xW9sPN2rJBUXTgZPlTwl2awAqUBGOiFj4BS79iMKXpdResINXK-TDL-vOvjg6Dkj2QDcgX8Mr66fqCInfTl1YDvRBEvsKJ6WWvMRcBImjfvOzgc2bEz3QPkUj1NOasllqZw6t9DbbrkQgMz4FIFd7qigU8XeJE7EcAxP2PaghN05s29dUqL9PqY-4X6H47uHPDo0plG1qJbUrUwq1isgGGZdCQRMcDQzeWOrotwbdNZHi25ARSKkqhduLGdPyYjG9DiPEEuMXDkAVR2oE5M-9TAHkAdTB9h78RgHJRw0_UHdz1LrHotNXafM8SUL6P4nPSSkC2RwknI9A2VMpcJENGQhhbjeDFZk0q5m9-a3Jejd6EEUbNL4XWyPGfROalKeif3l4Mk9ueZgqx4XWXBKWgkPpEPZMVkp2TL_iRydsh_7fKbCtUlWejPptZu3FaaZufyL3NfHuGT8_BBOs5-qf43hzmzSOodp_hdK3AejiGMH7BTFcpD4RsFEAY77YUzuN-kllslm00",
+      "contentType" : "image/svg+xml",
+      "description" : "Generated projection of the accepted tactical aggregate/entity semantics participating in the first MVP journey.",
+      "key" : "MVPTacticalDomainModel",
+      "name" : "First MVP Tactical Domain Model",
+      "order" : 10,
+      "title" : "First MVP Tactical Domain Model"
+    }, {
+      "content" : "http://127.0.0.1:8081/svg/XLRRRXit47tVhnWu3sc1oefk5jm4GLnB3WmaiIiPVIgmeCZPNTPSSa5ohIX5WNvBFwrVqk7kQaMrbgi7QSWPdZES6_KQFYw_B5TN3yi5tDn-Mi805dVmvUu1belRX-Grt5lp6t8lZGQZrUujE2oPzf83gtrXhFGxiBGbjGEfmHS8Z7EiF0fOJq6MbS8IjMS1Oc2H2QdHEQZGEkayQevWjffMXQnWWyfipubsRMhByKSGXhjXANFRd1zQV69A2aRems9qEIYVgi4fYg6R3b_Id-zOgP8FpZFhQvAyz0hXyo_tS1_vTjVxzfqs7fQhnVU9mio3Ds1bNdWGqhO1IjoZr1Mph0HNC66sKkUGCUKmqbXJQy6D9LGOZIF5bRLcUssKiV1gjhcOpIV_LjuOxJk3IJQTpyRF6QpbDuJBIACmHor-OlmnRxWxX9lcyryxOmNQbsqYFyRpoMWYdhLe71czYQzEOM8wfo3_dW0SCOspsUnoJhiHzYWRNqxcoHz9aj5fXBDxutnkSVtpfxC6uO1tPj4r1PDovfaoUOs_wh___0ls-yUhb0b1iajTnJYU0JignzJnWWewVJE2LuZPHPOTSx6gKf8tnPHoKvQrxbV7vB6Xm4ng6SHMHmShewaeswNK7YtZ1tsqGIJQ1pcbwfUETavwFFv_ZmLMokpAdhbt9DASn9yyZx-fNTDHmLCTUk69fa8BtwigQpZzxaaFTgb652SPfoTkn7a3QkXU7LChfxPM-soJbFA2JfnEyUm4_7wqfJJhM8w7S54QZEt4teWv9tFzOkGkUYAgvxP9O6EyDoKnlzkyNtDJuRlXvdsxZARk9ZGjixjE6JxhmcpTOSpIE6GRvd3OaWrffUAX6kRsETpIf3Be84mnhfWiEp1kL5rgzmCyuew-CsEHBjEjEBCqB6daUecqb5hWro1GVpB8QgNYotQ0fH6epjjxh2W7C8fTZvo3smNTmcAF8KBqk3NE3GWa7BMOeGtOP4WH2msidiZE5pJByg83RT7sRU9Yxd74VLzlb7G57RyzTDTrTshLzHP85ngNyZDeuXPXJMAifjf086zF5UI_iRjmsgAdrn35M-2r9USzO9OrrOxDozTdWLnm-w05WkkcLlTGCVCqOhxUD-oYxzT34wym6-wd7CbDT3FvbQvCUGNfwOqMP4P56yFFOlZEvwjsHAx3XEmV-DNr8CHQDCbehjhbWtaewL6saahbMpDemCiIOvABYEHpazqEgt_Tss9eXbL8iScH_arOs4fVm8RUhz0pXo5rdj2wxQGa-K3VuGt_1m00",
+      "contentType" : "image/svg+xml",
+      "description" : "Generated implementation-readiness projection of PostgreSQL schema/table ownership. This is intentionally not an ERD and does not infer columns, keys, or cardinalities.",
+      "key" : "PersistenceOwnership",
+      "name" : "MVP Persistence Ownership",
+      "order" : 11,
+      "title" : "MVP Persistence Ownership"
+    } ],
+    "systemContextViews" : [ {
+      "description" : "NAPMS first-MVP system context.",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "key" : "SystemContext",
+      "name" : "System Context View: NAPMS",
+      "order" : 1,
+      "relationships" : [ {
+        "id" : "14"
+      } ],
+      "softwareSystemId" : "2"
+    } ]
+  }
+}

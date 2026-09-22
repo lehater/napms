@@ -1,1 +1,1 @@
-"""Network Access Policy Management System."""
+"""NAPMS first-MVP implementation package."""

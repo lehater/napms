@@ -1,1 +1,0 @@
-# Resource Catalogue bounded context.

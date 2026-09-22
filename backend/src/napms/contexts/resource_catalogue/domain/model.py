@@ -1,263 +1,277 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, replace
 from datetime import datetime
 from enum import Enum
+from ipaddress import ip_address, ip_network
+from uuid import UUID
 
 
-class ResourceCatalogueInvariantError(Exception):
-    """Raised when Resource Catalogue state is structurally invalid."""
+class AddressKind(str, Enum):
+    HOST = "HOST"
+    PREFIX = "PREFIX"
 
 
-def _require_aware(value: datetime, *, field_name: str) -> None:
-    if value.tzinfo is None or value.utcoffset() is None:
-        raise ResourceCatalogueInvariantError(f"{field_name} must be offset-aware")
+class ResponsibilityRole(str, Enum):
+    OWNER = "OWNER"
+    ADMINISTRATOR = "ADMINISTRATOR"
 
 
-def _require_non_empty(value: str, *, field_name: str) -> str:
-    if not value or not value.strip():
-        raise ResourceCatalogueInvariantError(f"{field_name} must be non-empty")
-    return value.strip()
+@dataclass(frozen=True)
+class AddressRealization:
+    kind: AddressKind
+    value: str
+
+    @classmethod
+    def host(cls, value: str) -> AddressRealization:
+        return cls(kind=AddressKind.HOST, value=str(ip_address(value)))
+
+    @classmethod
+    def prefix(cls, value: str) -> AddressRealization:
+        return cls(kind=AddressKind.PREFIX, value=str(ip_network(value, strict=True)))
 
 
-class ResourceLifecycleState(str, Enum):
-    ACTIVE = "Active"
-    RETIRED = "Retired"
+@dataclass(frozen=True)
+class AddressFact:
+    fact_ref: UUID
+    address: AddressRealization
+    effective_from: datetime
+    effective_to: datetime | None
+    changed_by_subject: str
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
+class SiteFact:
+    fact_ref: UUID
+    site_ref: UUID
+    effective_from: datetime
+    effective_to: datetime | None
+    changed_by_subject: str
+
+
+@dataclass(frozen=True)
+class ResponsibilityFact:
+    fact_ref: UUID
+    role: ResponsibilityRole
+    group_ref: UUID
+    effective_from: datetime
+    effective_to: datetime | None
+    changed_by_subject: str
+
+
+@dataclass(frozen=True)
+class ResourceEndpoint:
+    endpoint_ref: UUID
+    current_address: AddressFact | None = None
+    address_history: tuple[AddressFact, ...] = ()
+
+    def set_address(
+        self,
+        address: AddressRealization,
+        *,
+        fact_ref: UUID,
+        effective_at: datetime,
+        subject: str,
+    ) -> ResourceEndpoint:
+        _require_aware(effective_at)
+        history = self.address_history
+        if self.current_address is not None:
+            _require_later(effective_at, self.current_address.effective_from)
+            history += (replace(self.current_address, effective_to=effective_at),)
+        return replace(
+            self,
+            current_address=AddressFact(
+                fact_ref=fact_ref,
+                address=address,
+                effective_from=effective_at,
+                effective_to=None,
+                changed_by_subject=subject,
+            ),
+            address_history=history,
+        )
+
+    def clear_address(self, *, effective_at: datetime) -> ResourceEndpoint:
+        _require_aware(effective_at)
+        if self.current_address is None:
+            return self
+        _require_later(effective_at, self.current_address.effective_from)
+        ended = replace(self.current_address, effective_to=effective_at)
+        return replace(self, current_address=None, address_history=self.address_history + (ended,))
+
+
+@dataclass(frozen=True)
 class Resource:
-    resource_reference: str
-    provenance_reference: str
-    display_name: str | None = None
-    lifecycle_state: ResourceLifecycleState = ResourceLifecycleState.ACTIVE
-    retirement_provenance_reference: str | None = None
-    version: int = 1
+    resource_ref: UUID
+    display_name: str
+    authority_scope_ref: str
+    version: int
+    endpoints: tuple[ResourceEndpoint, ...] = ()
+    current_site: SiteFact | None = None
+    site_history: tuple[SiteFact, ...] = ()
+    responsibilities: tuple[ResponsibilityFact, ...] = ()
+    responsibility_history: tuple[ResponsibilityFact, ...] = ()
 
-    def __post_init__(self) -> None:
-        _require_non_empty(
-            self.resource_reference,
-            field_name="resource_reference",
+    @classmethod
+    def register(
+        cls,
+        *,
+        resource_ref: UUID,
+        display_name: str,
+        authority_scope_ref: str,
+    ) -> Resource:
+        display_name = display_name.strip()
+        authority_scope_ref = authority_scope_ref.strip()
+        if not display_name:
+            raise ValueError("display_name must be non-empty")
+        if not authority_scope_ref:
+            raise ValueError("authority_scope_ref must be non-empty")
+        return cls(
+            resource_ref=resource_ref,
+            display_name=display_name,
+            authority_scope_ref=authority_scope_ref,
+            version=1,
         )
-        _require_non_empty(
-            self.provenance_reference,
-            field_name="provenance_reference",
+
+    def add_endpoint(self, endpoint_ref: UUID) -> Resource:
+        if any(endpoint.endpoint_ref == endpoint_ref for endpoint in self.endpoints):
+            raise ValueError("endpoint_ref already belongs to resource")
+        return replace(
+            self,
+            endpoints=self.endpoints + (ResourceEndpoint(endpoint_ref=endpoint_ref),),
+            version=self.version + 1,
         )
-        if self.display_name is not None:
-            object.__setattr__(
-                self,
-                "display_name",
-                _require_non_empty(self.display_name, field_name="display_name"),
-            )
-        if self.lifecycle_state is ResourceLifecycleState.ACTIVE:
-            if self.retirement_provenance_reference is not None:
-                raise ResourceCatalogueInvariantError(
-                    "Active Resource cannot have retirement provenance"
-                )
+
+    def set_endpoint_address(
+        self,
+        endpoint_ref: UUID,
+        address: AddressRealization,
+        *,
+        fact_ref: UUID,
+        effective_at: datetime,
+        subject: str,
+    ) -> Resource:
+        endpoint = self._endpoint(endpoint_ref)
+        updated = endpoint.set_address(
+            address,
+            fact_ref=fact_ref,
+            effective_at=effective_at,
+            subject=subject,
+        )
+        return replace(
+            self,
+            endpoints=tuple(
+                updated if item.endpoint_ref == endpoint_ref else item for item in self.endpoints
+            ),
+            version=self.version + 1,
+        )
+
+    def clear_endpoint_address(
+        self,
+        endpoint_ref: UUID,
+        *,
+        effective_at: datetime,
+    ) -> Resource:
+        endpoint = self._endpoint(endpoint_ref)
+        updated = endpoint.clear_address(effective_at=effective_at)
+        if updated == endpoint:
+            return self
+        return replace(
+            self,
+            endpoints=tuple(
+                updated if item.endpoint_ref == endpoint_ref else item for item in self.endpoints
+            ),
+            version=self.version + 1,
+        )
+
+    def set_site(
+        self,
+        site_ref: UUID | None,
+        *,
+        fact_ref: UUID | None,
+        effective_at: datetime,
+        subject: str,
+    ) -> Resource:
+        _require_aware(effective_at)
+        history = self.site_history
+        if self.current_site is not None:
+            _require_later(effective_at, self.current_site.effective_from)
+            history += (replace(self.current_site, effective_to=effective_at),)
+        if site_ref is not None and fact_ref is None:
+            raise ValueError("fact_ref is required for a current site fact")
+        if site_ref is None:
+            current = None
         else:
-            if self.retirement_provenance_reference is None:
-                raise ResourceCatalogueInvariantError(
-                    "Retired Resource requires retirement provenance"
-                )
-            _require_non_empty(
-                self.retirement_provenance_reference,
-                field_name="retirement_provenance_reference",
+            if fact_ref is None:
+                raise ValueError("fact_ref is required for a current site fact")
+            current = SiteFact(
+                fact_ref=fact_ref,
+                site_ref=site_ref,
+                effective_from=effective_at,
+                effective_to=None,
+                changed_by_subject=subject,
             )
-        if self.version < 1:
-            raise ResourceCatalogueInvariantError("version must be >= 1")
-
-    def _require_active(self) -> None:
-        if self.lifecycle_state is ResourceLifecycleState.RETIRED:
-            raise ResourceCatalogueInvariantError("Retired Resource is immutable")
-
-    def renamed(self, display_name: str) -> "Resource":
-        self._require_active()
-        normalized = _require_non_empty(display_name, field_name="display_name")
-        if normalized == self.display_name:
-            raise ResourceCatalogueInvariantError(
-                "rename requires a different display name"
-            )
-        return replace(self, display_name=normalized, version=self.version + 1)
-
-    def retired(
-        self,
-        *,
-        retirement_provenance_reference: str,
-    ) -> "Resource":
-        self._require_active()
-        normalized = _require_non_empty(
-            retirement_provenance_reference,
-            field_name="retirement_provenance_reference",
-        )
         return replace(
             self,
-            lifecycle_state=ResourceLifecycleState.RETIRED,
-            retirement_provenance_reference=normalized,
+            current_site=current,
+            site_history=history,
             version=self.version + 1,
         )
 
-
-@dataclass(frozen=True, slots=True, order=True)
-class EndpointAddress:
-    endpoint_reference: str
-    technical_address: str
-
-    def __post_init__(self) -> None:
-        if not self.endpoint_reference:
-            raise ResourceCatalogueInvariantError(
-                "endpoint_reference must be non-empty"
-            )
-        if not self.technical_address:
-            raise ResourceCatalogueInvariantError(
-                "technical_address must be non-empty"
-            )
-
-
-@dataclass(frozen=True, slots=True)
-class ResourceRealizationVersion:
-    fact_reference: str
-    resource_reference: str
-    endpoint_realizations: tuple[EndpointAddress, ...]
-    valid_from: datetime
-    valid_to: datetime | None
-    provenance_reference: str
-    end_provenance_reference: str | None = None
-    version: int = 1
-
-    def __post_init__(self) -> None:
-        for field_name, value in (
-            ("fact_reference", self.fact_reference),
-            ("resource_reference", self.resource_reference),
-            ("provenance_reference", self.provenance_reference),
-        ):
-            if not value:
-                raise ResourceCatalogueInvariantError(
-                    f"{field_name} must be non-empty"
-                )
-
-        if self.end_provenance_reference is not None:
-            _require_non_empty(
-                self.end_provenance_reference,
-                field_name="end_provenance_reference",
-            )
-            if self.valid_to is None:
-                raise ResourceCatalogueInvariantError(
-                    "end provenance requires valid_to"
-                )
-
-        if not self.endpoint_realizations:
-            raise ResourceCatalogueInvariantError(
-                "resource realization requires at least one endpoint/address"
-            )
-        if len(set(self.endpoint_realizations)) != len(self.endpoint_realizations):
-            raise ResourceCatalogueInvariantError(
-                "duplicate endpoint/address realization is not allowed"
-            )
-
-        _require_aware(self.valid_from, field_name="valid_from")
-        if self.valid_to is not None:
-            _require_aware(self.valid_to, field_name="valid_to")
-            if self.valid_from >= self.valid_to:
-                raise ResourceCatalogueInvariantError(
-                    "valid_from must be before valid_to"
-                )
-        if self.version < 1:
-            raise ResourceCatalogueInvariantError("version must be >= 1")
-
-    def is_effective_at(self, as_of: datetime) -> bool:
-        _require_aware(as_of, field_name="as_of")
-        return self.valid_from <= as_of and (
-            self.valid_to is None or as_of < self.valid_to
-        )
-
-    def ended(
+    def set_responsibility(
         self,
+        role: ResponsibilityRole,
+        group_ref: UUID | None,
         *,
-        valid_to: datetime,
-        end_provenance_reference: str,
-    ) -> "ResourceRealizationVersion":
-        if self.valid_to is not None:
-            raise ResourceCatalogueInvariantError("realization is already ended")
-        _require_aware(valid_to, field_name="valid_to")
-        if valid_to <= self.valid_from:
-            raise ResourceCatalogueInvariantError("valid_to must be after valid_from")
-        end_provenance_reference = _require_non_empty(
-            end_provenance_reference,
-            field_name="end_provenance_reference",
+        fact_ref: UUID | None,
+        effective_at: datetime,
+        subject: str,
+    ) -> Resource:
+        _require_aware(effective_at)
+        current_for_role = next(
+            (item for item in self.responsibilities if item.role is role),
+            None,
         )
+        history = self.responsibility_history
+        if current_for_role is not None:
+            _require_later(effective_at, current_for_role.effective_from)
+            history += (replace(current_for_role, effective_to=effective_at),)
+        if group_ref is not None and fact_ref is None:
+            raise ValueError("fact_ref is required for a current responsibility fact")
+        remaining = tuple(item for item in self.responsibilities if item.role is not role)
+        if group_ref is None:
+            current: tuple[ResponsibilityFact, ...] = ()
+        else:
+            if fact_ref is None:
+                raise ValueError("fact_ref is required for a current responsibility fact")
+            current = (
+                ResponsibilityFact(
+                    fact_ref=fact_ref,
+                    role=role,
+                    group_ref=group_ref,
+                    effective_from=effective_at,
+                    effective_to=None,
+                    changed_by_subject=subject,
+                ),
+            )
         return replace(
             self,
-            valid_to=valid_to,
-            end_provenance_reference=end_provenance_reference,
+            responsibilities=remaining + current,
+            responsibility_history=history,
             version=self.version + 1,
         )
 
+    def _endpoint(self, endpoint_ref: UUID) -> ResourceEndpoint:
+        for endpoint in self.endpoints:
+            if endpoint.endpoint_ref == endpoint_ref:
+                return endpoint
+        raise KeyError(f"unknown endpoint_ref: {endpoint_ref}")
 
-@dataclass(frozen=True, slots=True)
-class ResourceScopeAffiliation:
-    affiliation_reference: str
-    resource_reference: str
-    responsibility_scope: str
-    valid_from: datetime
-    valid_to: datetime | None
-    provenance_reference: str
-    end_provenance_reference: str | None = None
-    version: int = 1
 
-    def __post_init__(self) -> None:
-        for field_name, value in (
-            ("affiliation_reference", self.affiliation_reference),
-            ("resource_reference", self.resource_reference),
-            ("responsibility_scope", self.responsibility_scope),
-            ("provenance_reference", self.provenance_reference),
-        ):
-            if not value:
-                raise ResourceCatalogueInvariantError(
-                    f"{field_name} must be non-empty"
-                )
+def _require_aware(value: datetime) -> None:
+    if value.tzinfo is None or value.utcoffset() is None:
+        raise ValueError("effective time must be timezone-aware")
 
-        if self.end_provenance_reference is not None:
-            _require_non_empty(
-                self.end_provenance_reference,
-                field_name="end_provenance_reference",
-            )
-            if self.valid_to is None:
-                raise ResourceCatalogueInvariantError(
-                    "end provenance requires valid_to"
-                )
 
-        _require_aware(self.valid_from, field_name="valid_from")
-        if self.valid_to is not None:
-            _require_aware(self.valid_to, field_name="valid_to")
-            if self.valid_from >= self.valid_to:
-                raise ResourceCatalogueInvariantError(
-                    "valid_from must be before valid_to"
-                )
-        if self.version < 1:
-            raise ResourceCatalogueInvariantError("version must be >= 1")
-
-    def is_effective_at(self, as_of: datetime) -> bool:
-        _require_aware(as_of, field_name="as_of")
-        return self.valid_from <= as_of and (
-            self.valid_to is None or as_of < self.valid_to
-        )
-
-    def ended(
-        self,
-        *,
-        valid_to: datetime,
-        end_provenance_reference: str,
-    ) -> "ResourceScopeAffiliation":
-        if self.valid_to is not None:
-            raise ResourceCatalogueInvariantError("scope affiliation is already ended")
-        _require_aware(valid_to, field_name="valid_to")
-        if valid_to <= self.valid_from:
-            raise ResourceCatalogueInvariantError("valid_to must be after valid_from")
-        end_provenance_reference = _require_non_empty(
-            end_provenance_reference,
-            field_name="end_provenance_reference",
-        )
-        return replace(
-            self,
-            valid_to=valid_to,
-            end_provenance_reference=end_provenance_reference,
-            version=self.version + 1,
-        )
+def _require_later(value: datetime, previous: datetime) -> None:
+    if value <= previous:
+        raise ValueError("replacement time must be later than current fact")

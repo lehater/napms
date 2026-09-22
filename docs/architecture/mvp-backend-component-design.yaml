@@ -70,7 +70,7 @@ components:
   application-communication-catalogue:
     responsibility: Own Application, Component and Interaction domain/application behavior and declared ports.
     depends_on: []
-    contracts: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionRevision, ResolveComponent, ResolveInteractionRevision]
+    contracts: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionRevision, ResolveComponent, ResolveInteraction, ResolveInteractionRevision]
 
   application-deployment:
     responsibility: Own ComponentDeployment domain/application behavior and declared ports.
@@ -84,7 +84,7 @@ components:
 
   access-policy:
     responsibility: Own AccessRequest and PolicyRule behavior, evidence and operational history.
-    depends_on: [business-connectivity, application-communication-catalogue, authority-management, resource-catalogue]
+    depends_on: [business-connectivity, application-communication-catalogue, application-deployment, authority-management, resource-catalogue]
     contracts: [SubmitAccessRequest, RecordPermissionDecision, SetPolicyRuleOperationalState, AttachPolicyRuleJustification, ReadPolicyRule, PageCurrentPolicyRules]
 
   authority-management:

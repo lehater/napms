@@ -1,287 +1,357 @@
-from datetime import datetime
+from __future__ import annotations
 
-from psycopg import Connection, Error as PsycopgError
+from collections.abc import Iterable
+from typing import Any
+from uuid import UUID
 
-from napms.contexts.resource_catalogue.application.ports import (
-    ResourceCataloguePersistenceError,
-)
+import psycopg
+
+from napms.contexts.resource_catalogue.application.ports import ResourceVersionConflict
 from napms.contexts.resource_catalogue.domain.model import (
-    EndpointAddress,
-    ResourceCatalogueInvariantError,
-    ResourceRealizationVersion,
-    ResourceScopeAffiliation,
+    AddressFact,
+    AddressKind,
+    AddressRealization,
+    Resource,
+    ResourceEndpoint,
+    ResponsibilityFact,
+    ResponsibilityRole,
+    SiteFact,
 )
 
 
 class PostgresResourceCatalogueRepository:
-    def __init__(self, connection: Connection) -> None:
-        self._connection = connection
+    def __init__(self, dsn: str) -> None:
+        self._dsn = dsn
 
-    def find_effective_realizations(
-        self,
-        *,
-        resource_reference: str,
-        as_of: datetime,
-    ) -> tuple[ResourceRealizationVersion, ...]:
-        try:
-            rows = self._connection.execute(
+    def add(self, resource: Resource) -> None:
+        with psycopg.connect(self._dsn) as connection:
+            connection.execute(
                 """
-                SELECT
-                    fact_reference,
-                    resource_reference,
-                    valid_from,
-                    valid_to,
-                    provenance_reference
-                FROM napms_resource_catalogue.resource_realization_versions
-                WHERE resource_reference = %s
-                  AND valid_from <= %s
-                  AND (valid_to IS NULL OR %s < valid_to)
-                ORDER BY fact_reference
+                INSERT INTO resource_catalogue.resource
+                    (resource_ref, display_name, authority_scope_ref, version)
+                VALUES (%s, %s, %s, %s)
                 """,
-                (resource_reference, as_of, as_of),
-            ).fetchall()
-            return self._hydrate_many(rows)
-        except ResourceCataloguePersistenceError:
-            raise
-        except (PsycopgError, ResourceCatalogueInvariantError) as exc:
-            raise ResourceCataloguePersistenceError() from exc
-
-    def has_realization_facts(self, *, resource_reference: str) -> bool:
-        try:
-            row = self._connection.execute(
-                """
-                SELECT EXISTS (
-                    SELECT 1
-                    FROM napms_resource_catalogue.resource_realization_versions
-                    WHERE resource_reference = %s
-                )
-                """,
-                (resource_reference,),
-            ).fetchone()
-            return bool(row[0])
-        except PsycopgError as exc:
-            raise ResourceCataloguePersistenceError() from exc
-
-    def find_effective_realizations_by_address(
-        self,
-        *,
-        technical_address: str,
-        as_of: datetime,
-    ) -> tuple[ResourceRealizationVersion, ...]:
-        try:
-            rows = self._connection.execute(
-                """
-                SELECT DISTINCT
-                    realization.fact_reference,
-                    realization.resource_reference,
-                    realization.valid_from,
-                    realization.valid_to,
-                    realization.provenance_reference
-                FROM napms_resource_catalogue.resource_realization_versions AS realization
-                JOIN napms_resource_catalogue.resource_endpoints AS endpoint
-                  ON endpoint.fact_reference = realization.fact_reference
-                WHERE endpoint.technical_address = %s
-                  AND realization.valid_from <= %s
-                  AND (realization.valid_to IS NULL OR %s < realization.valid_to)
-                ORDER BY realization.resource_reference, realization.fact_reference
-                """,
-                (technical_address, as_of, as_of),
-            ).fetchall()
-            return self._hydrate_many(rows)
-        except ResourceCataloguePersistenceError:
-            raise
-        except (PsycopgError, ResourceCatalogueInvariantError) as exc:
-            raise ResourceCataloguePersistenceError() from exc
-
-    def has_realization_facts_for_address(
-        self,
-        *,
-        technical_address: str,
-    ) -> bool:
-        try:
-            row = self._connection.execute(
-                """
-                SELECT EXISTS (
-                    SELECT 1
-                    FROM napms_resource_catalogue.resource_endpoints
-                    WHERE technical_address = %s
-                )
-                """,
-                (technical_address,),
-            ).fetchone()
-            return bool(row[0])
-        except PsycopgError as exc:
-            raise ResourceCataloguePersistenceError() from exc
-
-    def list_effective_for_scope(
-        self,
-        *,
-        responsibility_scope: str,
-        as_of: datetime,
-        offset: int,
-        limit: int,
-        search: str | None = None,
-    ) -> tuple[ResourceScopeAffiliation, ...]:
-        try:
-            ambiguous = self._connection.execute(
-                """
-                SELECT resource_reference
-                FROM napms_resource_catalogue.resource_scope_affiliations
-                WHERE responsibility_scope = %s
-                  AND valid_from <= %s
-                  AND (valid_to IS NULL OR %s < valid_to)
-                GROUP BY resource_reference
-                HAVING count(*) > 1
-                LIMIT 1
-                """,
-                (responsibility_scope, as_of, as_of),
-            ).fetchone()
-            if ambiguous is not None:
-                raise ResourceCataloguePersistenceError(
-                    "ambiguous effective Resource Scope Affiliation"
-                )
-
-            params = [responsibility_scope, as_of, as_of]
-            search_clause = ""
-            if search:
-                search_clause = " AND resource_reference ILIKE %s"
-                params.append(f"%{search}%")
-            params.extend((offset, limit))
-            rows = self._connection.execute(
-                f"""
-                SELECT
-                    affiliation_reference,
-                    resource_reference,
-                    responsibility_scope,
-                    valid_from,
-                    valid_to,
-                    provenance_reference
-                FROM napms_resource_catalogue.resource_scope_affiliations
-                WHERE responsibility_scope = %s
-                  AND valid_from <= %s
-                  AND (valid_to IS NULL OR %s < valid_to)
-                  {search_clause}
-                ORDER BY resource_reference, affiliation_reference
-                OFFSET %s
-                LIMIT %s
-                """,
-                tuple(params),
-            ).fetchall()
-            return tuple(
-                ResourceScopeAffiliation(
-                    affiliation_reference=row[0],
-                    resource_reference=row[1],
-                    responsibility_scope=row[2],
-                    valid_from=row[3],
-                    valid_to=row[4],
-                    provenance_reference=row[5],
-                )
-                for row in rows
+                (
+                    resource.resource_ref,
+                    resource.display_name,
+                    resource.authority_scope_ref,
+                    resource.version,
+                ),
             )
-        except ResourceCataloguePersistenceError:
-            raise
-        except (PsycopgError, ResourceCatalogueInvariantError) as exc:
-            raise ResourceCataloguePersistenceError() from exc
 
-    def find_effective_realizations_for_resources(
-        self,
-        *,
-        resource_references: tuple[str, ...],
-        as_of: datetime,
-    ) -> tuple[ResourceRealizationVersion, ...]:
-        if not resource_references:
-            return ()
-        try:
-            rows = self._connection.execute(
-                """
-                SELECT
-                    fact_reference,
-                    resource_reference,
-                    valid_from,
-                    valid_to,
-                    provenance_reference
-                FROM napms_resource_catalogue.resource_realization_versions
-                WHERE resource_reference = ANY(%s)
-                  AND valid_from <= %s
-                  AND (valid_to IS NULL OR %s < valid_to)
-                ORDER BY resource_reference, fact_reference
-                """,
-                (list(resource_references), as_of, as_of),
+    def list(self) -> tuple[Resource, ...]:
+        with psycopg.connect(self._dsn) as connection:
+            rows = connection.execute(
+                """SELECT resource_ref FROM resource_catalogue.resource ORDER BY display_name, resource_ref"""
             ).fetchall()
-            return self._hydrate_many(rows)
-        except ResourceCataloguePersistenceError:
-            raise
-        except (PsycopgError, ResourceCatalogueInvariantError) as exc:
-            raise ResourceCataloguePersistenceError() from exc
+        return tuple(resource for (ref,) in rows if (resource := self.get(ref)) is not None)
 
-    def find_resources_with_realization_facts(
-        self,
-        *,
-        resource_references: tuple[str, ...],
-    ) -> tuple[str, ...]:
-        if not resource_references:
-            return ()
-        try:
-            rows = self._connection.execute(
+    def get(self, resource_ref: UUID) -> Resource | None:
+        with psycopg.connect(self._dsn) as connection:
+            row = connection.execute(
                 """
-                SELECT DISTINCT resource_reference
-                FROM napms_resource_catalogue.resource_realization_versions
-                WHERE resource_reference = ANY(%s)
-                ORDER BY resource_reference
+                SELECT resource_ref, display_name, authority_scope_ref, version
+                FROM resource_catalogue.resource
+                WHERE resource_ref = %s
                 """,
-                (list(resource_references),),
+                (resource_ref,),
+            ).fetchone()
+            if row is None:
+                return None
+
+            endpoint_rows = connection.execute(
+                """
+                SELECT endpoint_ref
+                FROM resource_catalogue.resource_endpoint
+                WHERE resource_ref = %s
+                ORDER BY created_at, endpoint_ref
+                """,
+                (resource_ref,),
             ).fetchall()
-            return tuple(row[0] for row in rows)
-        except PsycopgError as exc:
-            raise ResourceCataloguePersistenceError() from exc
+            endpoints = tuple(
+                self._load_endpoint(connection, endpoint_ref) for (endpoint_ref,) in endpoint_rows
+            )
 
-    def _hydrate_many(
-        self,
-        rows: list[tuple] | tuple[tuple, ...],
-    ) -> tuple[ResourceRealizationVersion, ...]:
-        if not rows:
-            return ()
+            site_rows = connection.execute(
+                """
+                SELECT history_ref, site_ref, effective_from, effective_to, changed_by_subject
+                FROM resource_catalogue.resource_site_history
+                WHERE resource_ref = %s
+                ORDER BY effective_from, history_ref
+                """,
+                (resource_ref,),
+            ).fetchall()
+            site_facts = tuple(
+                SiteFact(
+                    fact_ref=history_ref,
+                    site_ref=site_ref,
+                    effective_from=effective_from,
+                    effective_to=effective_to,
+                    changed_by_subject=changed_by_subject,
+                )
+                for (
+                    history_ref,
+                    site_ref,
+                    effective_from,
+                    effective_to,
+                    changed_by_subject,
+                ) in site_rows
+                if site_ref is not None
+            )
 
-        fact_references = [row[0] for row in rows]
-        endpoint_rows = self._connection.execute(
+            responsibility_rows = connection.execute(
+                """
+                SELECT assignment_ref, role, group_ref, effective_from, effective_to,
+                       changed_by_subject
+                FROM resource_catalogue.resource_responsibility_history
+                WHERE resource_ref = %s
+                ORDER BY effective_from, assignment_ref
+                """,
+                (resource_ref,),
+            ).fetchall()
+            responsibility_facts = tuple(
+                ResponsibilityFact(
+                    fact_ref=assignment_ref,
+                    role=ResponsibilityRole(role),
+                    group_ref=group_ref,
+                    effective_from=effective_from,
+                    effective_to=effective_to,
+                    changed_by_subject=changed_by_subject,
+                )
+                for (
+                    assignment_ref,
+                    role,
+                    group_ref,
+                    effective_from,
+                    effective_to,
+                    changed_by_subject,
+                ) in responsibility_rows
+            )
+
+            return Resource(
+                resource_ref=row[0],
+                display_name=row[1],
+                authority_scope_ref=row[2],
+                version=row[3],
+                endpoints=endpoints,
+                current_site=next(
+                    (fact for fact in site_facts if fact.effective_to is None),
+                    None,
+                ),
+                site_history=tuple(fact for fact in site_facts if fact.effective_to is not None),
+                responsibilities=tuple(
+                    fact for fact in responsibility_facts if fact.effective_to is None
+                ),
+                responsibility_history=tuple(
+                    fact for fact in responsibility_facts if fact.effective_to is not None
+                ),
+            )
+
+    def resolve_resource(self, resource_ref: UUID) -> Resource | None:
+        return self.get(resource_ref)
+
+    @classmethod
+    def resolve_resource_in(
+        cls,
+        connection: psycopg.Connection[Any],
+        resource_ref: UUID,
+    ) -> Resource | None:
+        row = connection.execute(
             """
-            SELECT fact_reference, endpoint_reference, technical_address
-            FROM napms_resource_catalogue.resource_endpoints
-            WHERE fact_reference = ANY(%s)
-            ORDER BY fact_reference, endpoint_reference, technical_address
+            SELECT resource_ref, display_name, authority_scope_ref, version
+            FROM resource_catalogue.resource
+            WHERE resource_ref = %s
             """,
-            (fact_references,),
+            (resource_ref,),
+        ).fetchone()
+        if row is None:
+            return None
+        endpoint_rows = connection.execute(
+            """
+            SELECT endpoint_ref
+            FROM resource_catalogue.resource_endpoint
+            WHERE resource_ref = %s
+            ORDER BY endpoint_ref
+            """,
+            (resource_ref,),
         ).fetchall()
+        return Resource(
+            resource_ref=row[0],
+            display_name=row[1],
+            authority_scope_ref=row[2],
+            version=row[3],
+            endpoints=tuple(
+                cls._load_endpoint(connection, endpoint_ref) for (endpoint_ref,) in endpoint_rows
+            ),
+        )
 
-        endpoints_by_fact: dict[str, list[EndpointAddress]] = {
-            reference: [] for reference in fact_references
-        }
+    @staticmethod
+    def resolve_authority_scope_in(
+        connection: psycopg.Connection[Any],
+        resource_ref: UUID,
+    ) -> str | None:
+        row = connection.execute(
+            """
+            SELECT authority_scope_ref
+            FROM resource_catalogue.resource
+            WHERE resource_ref = %s
+            """,
+            (resource_ref,),
+        ).fetchone()
+        return None if row is None else row[0]
 
-        try:
-            for fact_reference, endpoint_reference, technical_address in endpoint_rows:
-                if fact_reference not in endpoints_by_fact:
-                    raise ResourceCataloguePersistenceError(
-                        "endpoint references an unexpected Resource realization fact"
-                    )
-                endpoints_by_fact[fact_reference].append(
-                    EndpointAddress(
-                        endpoint_reference=endpoint_reference,
-                        technical_address=technical_address,
-                    )
-                )
-
-            return tuple(
-                ResourceRealizationVersion(
-                    fact_reference=row[0],
-                    resource_reference=row[1],
-                    endpoint_realizations=tuple(endpoints_by_fact[row[0]]),
-                    valid_from=row[2],
-                    valid_to=row[3],
-                    provenance_reference=row[4],
-                )
-                for row in rows
+    def save(self, resource: Resource, *, expected_version: int) -> None:
+        with psycopg.connect(self._dsn) as connection:
+            updated = connection.execute(
+                """
+                UPDATE resource_catalogue.resource
+                SET version = %s
+                WHERE resource_ref = %s AND version = %s
+                """,
+                (resource.version, resource.resource_ref, expected_version),
             )
-        except ResourceCatalogueInvariantError as exc:
-            raise ResourceCataloguePersistenceError(
-                "invalid persisted Resource realization"
-            ) from exc
+            if updated.rowcount != 1:
+                raise ResourceVersionConflict(str(resource.resource_ref))
+
+            for endpoint in resource.endpoints:
+                connection.execute(
+                    """
+                    INSERT INTO resource_catalogue.resource_endpoint
+                        (endpoint_ref, resource_ref)
+                    VALUES (%s, %s)
+                    ON CONFLICT (endpoint_ref) DO NOTHING
+                    """,
+                    (endpoint.endpoint_ref, resource.resource_ref),
+                )
+                self._upsert_address_facts(
+                    connection,
+                    endpoint.endpoint_ref,
+                    (*endpoint.address_history,)
+                    + (() if endpoint.current_address is None else (endpoint.current_address,)),
+                )
+
+            self._upsert_site_facts(
+                connection,
+                resource.resource_ref,
+                (*resource.site_history,)
+                + (() if resource.current_site is None else (resource.current_site,)),
+            )
+            self._upsert_responsibility_facts(
+                connection,
+                resource.resource_ref,
+                (*resource.responsibility_history, *resource.responsibilities),
+            )
+
+    @staticmethod
+    def _load_endpoint(
+        connection: psycopg.Connection[Any],
+        endpoint_ref: UUID,
+    ) -> ResourceEndpoint:
+        rows = connection.execute(
+            """
+            SELECT address_fact_ref, address_kind, address_value, effective_from,
+                   effective_to, changed_by_subject
+            FROM resource_catalogue.resource_endpoint_address_history
+            WHERE endpoint_ref = %s
+            ORDER BY effective_from, address_fact_ref
+            """,
+            (endpoint_ref,),
+        ).fetchall()
+        facts = tuple(
+            AddressFact(
+                fact_ref=fact_ref,
+                address=AddressRealization(
+                    kind=AddressKind(kind),
+                    value=value,
+                ),
+                effective_from=effective_from,
+                effective_to=effective_to,
+                changed_by_subject=changed_by_subject,
+            )
+            for fact_ref, kind, value, effective_from, effective_to, changed_by_subject in rows
+        )
+        return ResourceEndpoint(
+            endpoint_ref=endpoint_ref,
+            current_address=next((fact for fact in facts if fact.effective_to is None), None),
+            address_history=tuple(fact for fact in facts if fact.effective_to is not None),
+        )
+
+    @staticmethod
+    def _upsert_address_facts(
+        connection: psycopg.Connection[Any],
+        endpoint_ref: UUID,
+        facts: Iterable[AddressFact],
+    ) -> None:
+        for fact in facts:
+            connection.execute(
+                """
+                INSERT INTO resource_catalogue.resource_endpoint_address_history
+                    (address_fact_ref, endpoint_ref, address_kind, address_value,
+                     effective_from, effective_to, changed_by_subject)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (address_fact_ref) DO UPDATE
+                SET effective_to = EXCLUDED.effective_to
+                """,
+                (
+                    fact.fact_ref,
+                    endpoint_ref,
+                    fact.address.kind.value,
+                    fact.address.value,
+                    fact.effective_from,
+                    fact.effective_to,
+                    fact.changed_by_subject,
+                ),
+            )
+
+    @staticmethod
+    def _upsert_site_facts(
+        connection: psycopg.Connection[Any],
+        resource_ref: UUID,
+        facts: Iterable[SiteFact],
+    ) -> None:
+        for fact in facts:
+            connection.execute(
+                """
+                INSERT INTO resource_catalogue.resource_site_history
+                    (history_ref, resource_ref, site_ref, effective_from,
+                     effective_to, changed_by_subject)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                ON CONFLICT (history_ref) DO UPDATE
+                SET effective_to = EXCLUDED.effective_to
+                """,
+                (
+                    fact.fact_ref,
+                    resource_ref,
+                    fact.site_ref,
+                    fact.effective_from,
+                    fact.effective_to,
+                    fact.changed_by_subject,
+                ),
+            )
+
+    @staticmethod
+    def _upsert_responsibility_facts(
+        connection: psycopg.Connection[Any],
+        resource_ref: UUID,
+        facts: Iterable[ResponsibilityFact],
+    ) -> None:
+        for fact in facts:
+            connection.execute(
+                """
+                INSERT INTO resource_catalogue.resource_responsibility_history
+                    (assignment_ref, resource_ref, role, group_ref, effective_from,
+                     effective_to, changed_by_subject)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (assignment_ref) DO UPDATE
+                SET effective_to = EXCLUDED.effective_to
+                """,
+                (
+                    fact.fact_ref,
+                    resource_ref,
+                    fact.role.value,
+                    fact.group_ref,
+                    fact.effective_from,
+                    fact.effective_to,
+                    fact.changed_by_subject,
+                ),
+            )

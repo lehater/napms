@@ -16,6 +16,28 @@ workspaces:
   - {id: POLICY-RULES, responsibility: Inspect authoritative desired-access rules and change supported operational state.}
   - {id: POLICY-EXPORT, responsibility: Select effective policy scope, execute normalized export and inspect completeness diagnostics.}
 
+routes:
+  - {path: /resources, workspace: RESOURCE-CATALOGUE}
+  - {path: /resources/new, workspace: RESOURCE-CATALOGUE, mode: create}
+  - {path: /resources/:resourceRef, workspace: RESOURCE-DETAIL, identity: ResourceId}
+  - {path: /applications, workspace: APPLICATION-CATALOGUE}
+  - {path: /applications/new, workspace: APPLICATION-CATALOGUE, mode: create}
+  - {path: /applications/:applicationRef, workspace: APPLICATION-DETAIL, identity: ApplicationId}
+  - {path: /applications/:applicationRef/components/new, workspace: APPLICATION-DETAIL, identity: ApplicationId, mode: create-component}
+  - {path: /interactions/new, workspace: APPLICATION-DETAIL, mode: create-interaction}
+  - {path: /interactions/:interactionRef/revisions/new, workspace: APPLICATION-DETAIL, identity: InteractionId, mode: publish-revision}
+  - {path: /deployments, workspace: DEPLOYMENTS}
+  - {path: /deployments/new, workspace: DEPLOYMENTS, mode: create}
+  - {path: /business-processes, workspace: BUSINESS-CONNECTIVITY}
+  - {path: /business-processes/new, workspace: BUSINESS-CONNECTIVITY, mode: create-process}
+  - {path: /business-processes/:processRef, workspace: BUSINESS-CONNECTIVITY, identity: BusinessProcessId}
+  - {path: /access-requests, workspace: ACCESS-REQUESTS}
+  - {path: /access-requests/new, workspace: ACCESS-REQUESTS, mode: create}
+  - {path: /access-requests/:requestRef/decision, workspace: ACCESS-REQUESTS, identity: AccessRequestId, mode: decision}
+  - {path: /policy-rules, workspace: POLICY-RULES}
+  - {path: /policy-rules/:policyRuleRef, workspace: POLICY-RULES, identity: PolicyRuleId}
+  - {path: /policy-materializations/new, workspace: POLICY-EXPORT}
+
 transitions:
   - {from: RESOURCE-CATALOGUE, action: select-resource, to: RESOURCE-DETAIL, identity: ResourceId}
   - {from: APPLICATION-CATALOGUE, action: select-application, to: APPLICATION-DETAIL, identity: ApplicationId}
@@ -80,7 +102,7 @@ journeys:
       - Distinguish complete success from unresolved/degraded output and expose provenance/evaluation time.
 
 rules:
-  - Navigation passes stable product identifiers, never database-row identities.
+  - Browser navigation is route-driven and canonical route paths carry stable product identifiers, never database-row identities.
   - Loading, empty, not-found, rejected, conflict and technical-error states remain distinct.
   - Frontend navigation/actions never establish domain truth or security authority.
   - HTTP representation remains owned by canonical HTTP/OpenAPI contracts.

@@ -1,8 +1,15 @@
-from napms.platform.bootstrap.config import load_application_config
-from napms.platform.database.migrations import apply_greenfield_migrations
+from __future__ import annotations
+
+import os
+
+import psycopg
+
+from napms.platform.database.migration import migrate
 
 
 def run() -> None:
-    config = load_application_config()
-    applied = apply_greenfield_migrations(config)
-    print(f"NAPMS migrations applied: {len(applied)}")
+    dsn = os.environ.get("NAPMS_DATABASE_DSN", "").strip()
+    if not dsn:
+        raise SystemExit("NAPMS_DATABASE_DSN is required")
+    with psycopg.connect(dsn) as connection:
+        migrate(connection)

@@ -1,1 +1,0 @@
-# Policy export tests.
