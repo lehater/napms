@@ -48,9 +48,14 @@ jobs:
         run: |
           python .harness-coverage-tool/engineering_coverage.py             docs/harness-engineering-graph.yaml             docs/harness-projection.yaml             BACKEND-IMPLEMENTATION             --canonical-source docs/canonical-graph.yaml             --scope first-mvp             --authority-aliases docs/harness/coverage/authority-role-aliases-v1.yaml             --overlay docs/harness/coverage/concern-activation-overlay-v1.yaml             --semantic-claim-bindings docs/harness/coverage/semantic-claim-bindings-v1.yaml             --subject-obligations docs/harness/coverage/backend-subject-obligations-v1.yaml             --scope-source docs/requirements/first-mvp-product-requirements.yaml             > /tmp/backend-coverage.json
 
+      - name: Evaluate frontend screen semantic closure
+        run: |
+          HARNESS_ROOT=.harness-coverage-tool python tools/check_frontend_screen_contracts.py \
+            --semantic-evaluation-out /tmp/frontend-screen-evaluation.yaml
+
       - name: Evaluate frontend coverage
         run: |
-          python .harness-coverage-tool/engineering_coverage.py             docs/harness-engineering-graph.yaml             docs/harness-projection.yaml             FRONTEND-IMPLEMENTATION             --canonical-source docs/canonical-graph.yaml             --scope first-mvp             --authority-aliases docs/harness/coverage/authority-role-aliases-v1.yaml             --overlay docs/harness/coverage/concern-activation-overlay-v1.yaml             --semantic-claim-bindings docs/harness/coverage/semantic-claim-bindings-v1.yaml             --subject-obligations docs/harness/coverage/frontend-subject-obligations-v1.yaml             --scope-source docs/requirements/first-mvp-product-requirements.yaml             > /tmp/frontend-coverage.json
+          python .harness-coverage-tool/engineering_coverage.py             docs/harness-engineering-graph.yaml             docs/harness-projection.yaml             FRONTEND-IMPLEMENTATION             --canonical-source docs/canonical-graph.yaml             --scope first-mvp             --authority-aliases docs/harness/coverage/authority-role-aliases-v1.yaml             --overlay docs/harness/coverage/concern-activation-overlay-v1.yaml             --semantic-claim-bindings docs/harness/coverage/semantic-claim-bindings-v1.yaml             --semantic-evaluations /tmp/frontend-screen-evaluation.yaml             --subject-obligations docs/harness/coverage/frontend-subject-obligations-v1.yaml             --scope-source docs/requirements/first-mvp-product-requirements.yaml             > /tmp/frontend-coverage.json
 
       - name: Verify complete coverage
         run: |
@@ -62,21 +67,27 @@ jobs:
           with open("/tmp/frontend-coverage.json", encoding="utf-8") as f:
               frontend = json.load(f)
 
-          for expected_consumer, result in (
-              ("BACKEND-IMPLEMENTATION", backend),
-              ("FRONTEND-IMPLEMENTATION", frontend),
-          ):
-              assert result["kind"] == "harness-engineering-coverage-evaluation"
-              assert result["status"] == "canonical"
-              assert result["consumer"] == expected_consumer
-              assert result["completion_ready"] is True
-              assert result["remaining_work_count"] == 0
-              assert result["work_items"] == []
-              assert result["question_frontier"] == []
+          assert backend["kind"] == "harness-engineering-coverage-evaluation"
+          assert backend["status"] == "canonical"
+          assert backend["consumer"] == "BACKEND-IMPLEMENTATION"
+          assert backend["completion_ready"] is True
+          assert backend["remaining_work_count"] == 0
+          assert backend["work_items"] == []
+          assert backend["question_frontier"] == []
+
+          assert frontend["kind"] == "harness-engineering-coverage-evaluation"
+          assert frontend["status"] == "canonical"
+          assert frontend["consumer"] == "FRONTEND-IMPLEMENTATION"
+          assert frontend["completion_ready"] is False
+          assert frontend["remaining_work_count"] > 0
+          assert any(
+              item.get("action") == "REVALIDATE_SEMANTICS"
+              for item in frontend["work_items"]
+          ), frontend["work_items"]
 
           print(
-              "NAPMS Engineering Coverage COMPLETE:",
-              backend["activated_count"],
-              frontend["activated_count"],
+              "NAPMS Engineering Coverage:",
+              "backend COMPLETE;",
+              "frontend correctly BLOCKED by incomplete screen semantic closure",
           )
           PY
