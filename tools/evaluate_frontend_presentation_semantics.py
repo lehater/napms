@@ -264,7 +264,7 @@ def evaluate() -> dict[str, Any]:
             ),
             semantic_evaluation(
                 artifact="FRONTEND-VERIFICATION",
-                capability="engineering.frontend.verification",
+                capability="engineering.frontend.presentation-verification",
                 claim="engineering.verification.interface.presentation",
                 findings=evaluate_verification(verification),
             ),
