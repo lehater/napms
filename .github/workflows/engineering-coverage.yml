@@ -62,6 +62,11 @@ jobs:
           with open("/tmp/frontend-coverage.json", encoding="utf-8") as f:
               frontend = json.load(f)
 
+          if not frontend["completion_ready"]:
+              print("FRONTEND COVERAGE GAPS")
+              for row in frontend["remaining_work"]:
+                  print(json.dumps(row, sort_keys=True))
+
           for expected_consumer, result in (
               ("BACKEND-IMPLEMENTATION", backend),
               ("FRONTEND-IMPLEMENTATION", frontend),
