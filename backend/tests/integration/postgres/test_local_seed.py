@@ -51,6 +51,12 @@ def test_local_demo_seed_is_connected_and_idempotent() -> None:
             "resources": connection.execute(
                 "SELECT COUNT(*) FROM resource_catalogue.resource"
             ).fetchone()[0],
+            "sites": connection.execute(
+                "SELECT COUNT(*) FROM resource_catalogue.site"
+            ).fetchone()[0],
+            "responsibility_groups": connection.execute(
+                "SELECT COUNT(*) FROM resource_catalogue.responsibility_group"
+            ).fetchone()[0],
             "deployments": connection.execute(
                 "SELECT COUNT(*) FROM application_deployment.component_deployment"
             ).fetchone()[0],
@@ -81,6 +87,8 @@ def test_local_demo_seed_is_connected_and_idempotent() -> None:
         "interactions": 10,
         "revisions": 10,
         "resources": 10,
+        "sites": 2,
+        "responsibility_groups": 8,
         "deployments": 10,
         "processes": 10,
         "needs": 10,
@@ -103,8 +111,6 @@ def test_local_demo_seed_is_connected_and_idempotent() -> None:
     assert inactive_rule is not None
     assert inactive_rule.effect_state is RuleEffectState.INACTIVE
 
-    pending = policy.get_request(
-        demo_ref("access-request", "platform-monitoring")
-    )
+    pending = policy.get_request(demo_ref("access-request", "platform-monitoring"))
     assert pending is not None
     assert pending.decision_result is None

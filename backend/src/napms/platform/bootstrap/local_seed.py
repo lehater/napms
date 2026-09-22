@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 import os
 from uuid import UUID, uuid5
 
+import psycopg
+
 from napms.contexts.access_policy.domain.model import (
     AccessRequest,
     PermissionDecision,
@@ -406,6 +408,22 @@ PROCESSES = (
     ),
 )
 
+SITES = {
+    "fra": ("Frankfurt", "Demo Frankfurt site"),
+    "ber": ("Berlin", "Demo Berlin site"),
+}
+
+RESPONSIBILITY_GROUPS = {
+    "digital": ("Digital Channels", "ORG-DIGITAL"),
+    "identity": ("Identity", "ORG-IDENTITY"),
+    "commerce": ("Commerce", "ORG-COMMERCE"),
+    "payments": ("Payments", "ORG-PAYMENTS"),
+    "supply": ("Supply Chain", "ORG-SUPPLY"),
+    "analytics": ("Analytics", "ORG-ANALYTICS"),
+    "sales": ("Sales", "ORG-SALES"),
+    "platform": ("Platform Engineering", "ORG-PLATFORM"),
+}
+
 REQUESTS = (
     RequestSpec(
         "customer-sign-in",
@@ -537,10 +555,58 @@ class LocalDemoSeeder:
         self._interactions = {item.key: item for item in INTERACTIONS}
 
     def seed(self) -> None:
+        self._seed_reference_data()
         self._seed_nodes()
         self._seed_interactions()
         self._seed_processes()
         self._seed_access_requests()
+
+    def _seed_reference_data(self) -> None:
+        with psycopg.connect(self._dsn) as connection:
+            for key, (name, description) in SITES.items():
+                site_ref = demo_ref("site", key)
+                row = connection.execute(
+                    """
+                    SELECT name, description
+                    FROM resource_catalogue.site
+                    WHERE site_ref = %s
+                    """,
+                    (site_ref,),
+                ).fetchone()
+                if row is None:
+                    connection.execute(
+                        """
+                        INSERT INTO resource_catalogue.site (site_ref, name, description)
+                        VALUES (%s, %s, %s)
+                        """,
+                        (site_ref, name, description),
+                    )
+                elif row != (name, description):
+                    self._conflict(f"site {key} differs from demo definition")
+
+            for key, (display_name, external_reference) in RESPONSIBILITY_GROUPS.items():
+                group_ref = demo_ref("organization", key)
+                row = connection.execute(
+                    """
+                    SELECT display_name, external_reference
+                    FROM resource_catalogue.responsibility_group
+                    WHERE group_ref = %s
+                    """,
+                    (group_ref,),
+                ).fetchone()
+                if row is None:
+                    connection.execute(
+                        """
+                        INSERT INTO resource_catalogue.responsibility_group
+                            (group_ref, display_name, external_reference)
+                        VALUES (%s, %s, %s)
+                        """,
+                        (group_ref, display_name, external_reference),
+                    )
+                elif row != (display_name, external_reference):
+                    self._conflict(
+                        f"responsibility group {key} differs from demo definition"
+                    )
 
     def _catalogue(self, ref: UUID) -> ApplicationCommunicationCatalogue:
         return ApplicationCommunicationCatalogue(
@@ -589,11 +655,7 @@ class LocalDemoSeeder:
 
         component_ref = _component_ref(spec.key)
         existing = next(
-            (
-                item
-                for item in application.components
-                if item.component_ref == component_ref
-            ),
+            (item for item in application.components if item.component_ref == component_ref),
             None,
         )
         if existing is not None:
@@ -623,9 +685,7 @@ class LocalDemoSeeder:
 
         site_ref = demo_ref("site", spec.site_key)
         if resource.current_site is None:
-            resource = self._resource_application(
-                demo_ref("site-fact", spec.key)
-            ).set_site(
+            resource = self._resource_application(demo_ref("site-fact", spec.key)).set_site(
                 resource_ref=resource_ref,
                 site_ref=site_ref,
                 expected_version=resource.version,
@@ -636,11 +696,7 @@ class LocalDemoSeeder:
 
         endpoint_ref = demo_ref("endpoint", spec.key)
         endpoint = next(
-            (
-                item
-                for item in resource.endpoints
-                if item.endpoint_ref == endpoint_ref
-            ),
+            (item for item in resource.endpoints if item.endpoint_ref == endpoint_ref),
             None,
         )
         if endpoint is None:
@@ -650,9 +706,7 @@ class LocalDemoSeeder:
                 context=self._resource_context,
             )
             endpoint = next(
-                item
-                for item in resource.endpoints
-                if item.endpoint_ref == endpoint_ref
+                item for item in resource.endpoints if item.endpoint_ref == endpoint_ref
             )
 
         expected_address = AddressRealization.host(spec.address)
@@ -699,9 +753,7 @@ class LocalDemoSeeder:
         )
         if existing is not None:
             if existing.group_ref != group_ref:
-                self._conflict(
-                    f"resource {key} {role.value.lower()} was changed"
-                )
+                self._conflict(f"resource {key} {role.value.lower()} was changed")
             return resource
         return self._resource_application(fact_ref).set_responsibility(
             resource_ref=resource.resource_ref,
@@ -720,10 +772,9 @@ class LocalDemoSeeder:
                 resource_ref=_resource_ref(spec.key),
             )
             return
-        if (
-            existing.component_ref != _component_ref(spec.key)
-            or existing.resource_ref != _resource_ref(spec.key)
-        ):
+        if existing.component_ref != _component_ref(
+            spec.key
+        ) or existing.resource_ref != _resource_ref(spec.key):
             self._conflict(f"deployment {spec.key} differs from demo definition")
 
     def _seed_interactions(self) -> None:
@@ -738,39 +789,26 @@ class LocalDemoSeeder:
                 )
             elif (
                 interaction.source_component_ref != _component_ref(spec.source_key)
-                or interaction.destination_component_ref
-                != _component_ref(spec.destination_key)
+                or interaction.destination_component_ref != _component_ref(spec.destination_key)
                 or interaction.purpose != spec.purpose
             ):
-                self._conflict(
-                    f"interaction {spec.key} differs from demo definition"
-                )
+                self._conflict(f"interaction {spec.key} differs from demo definition")
 
             revision_ref = _revision_ref(spec.key)
             clause = TrafficClause(
                 ip_protocol=spec.protocol,
-                destination_ports=(
-                    PortRange(spec.destination_port, spec.destination_port),
-                ),
+                destination_ports=(PortRange(spec.destination_port, spec.destination_port),),
             )
             revision = next(
-                (
-                    item
-                    for item in interaction.revisions
-                    if item.revision_ref == revision_ref
-                ),
+                (item for item in interaction.revisions if item.revision_ref == revision_ref),
                 None,
             )
             if revision is not None:
                 if revision.traffic_clauses != (clause,):
-                    self._conflict(
-                        f"interaction revision {spec.key} was changed"
-                    )
+                    self._conflict(f"interaction revision {spec.key} was changed")
                 continue
             if interaction.revisions:
-                self._conflict(
-                    f"interaction {spec.key} has unexpected revisions"
-                )
+                self._conflict(f"interaction {spec.key} has unexpected revisions")
             self._catalogue(revision_ref).publish_interaction_revision(
                 interaction_ref=interaction_ref,
                 traffic_clauses=(clause,),
@@ -793,9 +831,7 @@ class LocalDemoSeeder:
                 or process.description != spec.description
                 or process.criticality_label != spec.criticality
             ):
-                self._conflict(
-                    f"business process {spec.key} differs from demo definition"
-                )
+                self._conflict(f"business process {spec.key} differs from demo definition")
 
             if process.organization_external_reference is None:
                 process = self._process_service(
@@ -810,9 +846,7 @@ class LocalDemoSeeder:
                 process.organization_external_reference != spec.organization_ref
                 or process.organization_display_name != spec.organization_name
             ):
-                self._conflict(
-                    f"business process {spec.key} organization was changed"
-                )
+                self._conflict(f"business process {spec.key} organization was changed")
 
             need_ref = _need_ref(spec.key)
             need = next(
@@ -823,13 +857,10 @@ class LocalDemoSeeder:
             if need is not None:
                 if (
                     need.interaction_ref != _interaction_ref(spec.interaction_key)
-                    or need.participant_component_ref
-                    != _component_ref(interaction.source_key)
+                    or need.participant_component_ref != _component_ref(interaction.source_key)
                     or need.business_basis != spec.business_basis
                 ):
-                    self._conflict(
-                        f"connectivity need {spec.key} differs from demo definition"
-                    )
+                    self._conflict(f"connectivity need {spec.key} differs from demo definition")
                 continue
             self._process_service(need_ref).declare_need(
                 process_ref=process_ref,
@@ -854,9 +885,7 @@ class LocalDemoSeeder:
             interaction = self._interactions[spec.interaction_key]
             if request is None:
                 source_scope = self._nodes[interaction.source_key].authority_scope
-                destination_scope = self._nodes[
-                    interaction.destination_key
-                ].authority_scope
+                destination_scope = self._nodes[interaction.destination_key].authority_scope
                 scopes = sorted({source_scope, destination_scope})
                 refs = [
                     demo_ref(
@@ -872,12 +901,8 @@ class LocalDemoSeeder:
                     new_ref=_Refs(refs),
                 ).submit(
                     principal=principal,
-                    source_deployment_ref=_deployment_ref(
-                        interaction.source_key
-                    ),
-                    destination_deployment_ref=_deployment_ref(
-                        interaction.destination_key
-                    ),
+                    source_deployment_ref=_deployment_ref(interaction.source_key),
+                    destination_deployment_ref=_deployment_ref(interaction.destination_key),
                     interaction_revision_ref=_revision_ref(spec.interaction_key),
                     need_ref=_need_ref(spec.process_key),
                 )
@@ -892,21 +917,13 @@ class LocalDemoSeeder:
     ) -> None:
         subject = request.access_subject
         if (
-            subject.source_deployment_ref
-            != _deployment_ref(interaction.source_key)
-            or subject.destination_deployment_ref
-            != _deployment_ref(interaction.destination_key)
-            or subject.interaction_revision_ref
-            != _revision_ref(spec.interaction_key)
+            subject.source_deployment_ref != _deployment_ref(interaction.source_key)
+            or subject.destination_deployment_ref != _deployment_ref(interaction.destination_key)
+            or subject.interaction_revision_ref != _revision_ref(spec.interaction_key)
             or request.initial_need_ref != _need_ref(spec.process_key)
         ):
-            self._conflict(
-                f"access request {spec.key} differs from demo definition"
-            )
-        if (
-            request.decision_result is not None
-            and request.decision_result is not spec.decision
-        ):
+            self._conflict(f"access request {spec.key} differs from demo definition")
+        if request.decision_result is not None and request.decision_result is not spec.decision:
             self._conflict(f"access request {spec.key} decision was changed")
 
     def _ensure_decision(
@@ -916,9 +933,7 @@ class LocalDemoSeeder:
     ) -> None:
         if spec.decision is None:
             if request.decision_result is not None:
-                self._conflict(
-                    f"access request {spec.key} is expected to remain pending"
-                )
+                self._conflict(f"access request {spec.key} is expected to remain pending")
             return
 
         rule_ref = demo_ref("policy-rule", spec.key)
@@ -941,38 +956,25 @@ class LocalDemoSeeder:
                 expected_version=request.version,
                 external_decision_ref=f"demo-decision:{spec.key}",
             )
-            if (
-                spec.decision is PermissionDecision.ALLOWED
-                and (rule is None or rule.rule_ref != rule_ref)
+            if spec.decision is PermissionDecision.ALLOWED and (
+                rule is None or rule.rule_ref != rule_ref
             ):
-                self._conflict(
-                    f"policy rule {spec.key} did not receive stable demo identity"
-                )
+                self._conflict(f"policy rule {spec.key} did not receive stable demo identity")
 
         if spec.decision is PermissionDecision.DENIED:
             return
 
         rule = self._policy_repository.get_rule(rule_ref)
         if rule is None:
-            self._conflict(
-                f"policy rule {spec.key} is missing for allowed request"
-            )
-        desired_state = (
-            RuleEffectState.INACTIVE
-            if spec.inactive_rule
-            else RuleEffectState.ACTIVE
-        )
+            self._conflict(f"policy rule {spec.key} is missing for allowed request")
+        desired_state = RuleEffectState.INACTIVE if spec.inactive_rule else RuleEffectState.ACTIVE
         if rule.effect_state is desired_state:
             return
         if desired_state is RuleEffectState.ACTIVE:
-            self._conflict(
-                f"policy rule {spec.key} was deactivated after seeding"
-            )
+            self._conflict(f"policy rule {spec.key} was deactivated after seeding")
         PostgresPolicyRuleOperation(
             dsn=self._dsn,
-            new_ref=_fixed(
-                demo_ref("policy-history", f"{spec.key}:inactive")
-            ),
+            new_ref=_fixed(demo_ref("policy-history", f"{spec.key}:inactive")),
         ).set_state(
             rule_ref=rule.rule_ref,
             effect_state=RuleEffectState.INACTIVE,
@@ -984,8 +986,7 @@ class LocalDemoSeeder:
     @staticmethod
     def _conflict(message: str) -> None:
         raise DemoDataConflict(
-            f"{message}; reset the local database or restore the demo object "
-            "before reseeding"
+            f"{message}; reset the local database or restore the demo object before reseeding"
         )
 
 
@@ -997,16 +998,12 @@ def seed_local_demo(dsn: str) -> None:
 
 def run() -> None:
     if os.environ.get("NAPMS_ENVIRONMENT", "").strip() != "local-dev":
-        raise SystemExit(
-            "napms-seed-local is restricted to NAPMS_ENVIRONMENT=local-dev"
-        )
+        raise SystemExit("napms-seed-local is restricted to NAPMS_ENVIRONMENT=local-dev")
     dsn = os.environ.get("NAPMS_DATABASE_DSN", "").strip()
     if not dsn:
         raise SystemExit("NAPMS_DATABASE_DSN is required")
     seed_local_demo(dsn)
-    allowed = sum(
-        item.decision is PermissionDecision.ALLOWED for item in REQUESTS
-    )
+    allowed = sum(item.decision is PermissionDecision.ALLOWED for item in REQUESTS)
     print(
         "NAPMS demo data ready: "
         f"applications={len(NODES)}, resources={len(NODES)}, "
