@@ -8,6 +8,13 @@ export type AppShellProps = {
   children: ReactNode;
 };
 
+export type PresentationAction = {
+  label: string;
+  onInvoke: () => void;
+  disabled?: boolean;
+  tone?: "primary" | "secondary";
+};
+
 export type CatalogueState =
   | "loading"
   | "loaded"
@@ -31,10 +38,7 @@ export type CataloguePatternProps<Row> = {
   rowKey: (row: Row) => string;
   openColumnId: string;
   onOpen: (row: Row) => void;
-  primaryAction?: {
-    label: string;
-    onInvoke: () => void;
-  };
+  primaryAction?: PresentationAction;
   state: CatalogueState;
   statusMessage?: string;
   emptyMessage: string;
@@ -48,22 +52,67 @@ export type EditorState =
   | "conflict"
   | "technical-error";
 
+export type EditorOption = {
+  value: string;
+  label: string;
+};
+
 export type EditorField = {
   id: string;
   label: string;
   value: string;
   required?: boolean;
+  options?: readonly EditorOption[];
   onChange: (value: string) => void;
 };
 
 export type EditorPatternProps = {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description?: string;
   fields: readonly EditorField[];
   submitLabel: string;
+  submittingLabel?: string;
   submitDisabled?: boolean;
+  secondaryAction?: PresentationAction;
   onSubmit: () => void;
   state: EditorState;
   statusMessage?: string;
+  embedded?: boolean;
+};
+
+export type DetailState =
+  | "loading"
+  | "loaded"
+  | "empty-current"
+  | "not-found"
+  | "submitting"
+  | "validation-rejected"
+  | "authorization-rejected"
+  | "conflict"
+  | "technical-error";
+
+export type DetailSection = {
+  id: string;
+  title: string;
+  summary?: ReactNode;
+  actions?: readonly PresentationAction[];
+  editors?: readonly EditorPatternProps[];
+};
+
+export type DetailPatternProps = {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  technicalContext?: string;
+  version?: number;
+  sections: readonly DetailSection[];
+  secondary?: {
+    label: string;
+    content: ReactNode;
+  };
+  state: DetailState;
+  statusMessage?: string;
+  onRetry?: () => void;
+  onReturn?: () => void;
 };

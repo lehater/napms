@@ -193,6 +193,18 @@ export const api = {
         body: JSON.stringify(address),
       },
     ),
+  clearResourceAddress: (
+    ref: string,
+    endpointRef: string,
+    version: number,
+  ) =>
+    request<void>(
+      `/v1/resources/${ref}/endpoints/${endpointRef}/address`,
+      {
+        method: "DELETE",
+        headers: { "If-Match": String(version) },
+      },
+    ),
   setResourceResponsibility: (
     ref: string,
     role: string,

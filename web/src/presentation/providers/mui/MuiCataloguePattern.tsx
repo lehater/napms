@@ -1,8 +1,6 @@
 import {
-  Alert,
   Box,
   Button,
-  CircularProgress,
   Paper,
   Stack,
   Table,
@@ -14,6 +12,8 @@ import {
   Typography,
 } from "@mui/material";
 import type { CataloguePatternProps } from "../../contracts";
+import { MuiStatus } from "./MuiStatus";
+import { MuiTaskActions } from "./MuiTaskActions";
 
 export function MuiCataloguePattern<Row>({
   eyebrow,
@@ -57,34 +57,24 @@ export function MuiCataloguePattern<Row>({
           ) : null}
         </Box>
         {primaryAction ? (
-          <Button variant="contained" onClick={primaryAction.onInvoke}>
-            {primaryAction.label}
-          </Button>
+          <MuiTaskActions actions={[{ ...primaryAction, tone: "primary" }]} />
         ) : null}
       </Stack>
 
-      {state === "loading" ? (
-        <Stack
-          role="status"
-          direction="row"
-          spacing={1.5}
-          sx={{ alignItems: "center", minHeight: 72 }}
-        >
-          <CircularProgress size={20} />
-          <Typography>Loading…</Typography>
-        </Stack>
-      ) : null}
+      {state === "loading" ? <MuiStatus loading message="Loading…" /> : null}
 
       {state === "authorization-rejected" ? (
-        <Alert severity="error">
-          {statusMessage ?? "You are not authorized to view this catalogue."}
-        </Alert>
+        <MuiStatus
+          message={
+            statusMessage ?? "You are not authorized to view this catalogue."
+          }
+        />
       ) : null}
 
       {state === "technical-error" ? (
-        <Alert severity="error">
-          {statusMessage ?? "The catalogue could not be loaded."}
-        </Alert>
+        <MuiStatus
+          message={statusMessage ?? "The catalogue could not be loaded."}
+        />
       ) : null}
 
       {state === "empty" ? (

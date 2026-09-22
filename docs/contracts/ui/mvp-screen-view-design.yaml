@@ -183,7 +183,7 @@ screens:
         not-found: read:detail.404
         submitting: [command:add-endpoint.pending, command:set-address.pending, command:clear-address.pending, command:set-site.pending, command:set-responsibility.pending]
         validation-rejected: [command:set-address.422, command:set-site.422, command:set-responsibility.422]
-        authorization-rejected: [read:detail.403, command:add-endpoint.403, command:set-address.403, command:clear-address.403, command:set-site.403, command:set-responsibility.403]
+        authorization-rejected: [read:detail.401, read:detail.403, command:add-endpoint.401, command:add-endpoint.403, command:set-address.401, command:set-address.403, command:clear-address.401, command:clear-address.403, command:set-site.401, command:set-site.403, command:set-responsibility.401, command:set-responsibility.403]
         conflict: [command:add-endpoint.409, command:set-address.409, command:clear-address.409, command:set-site.409, command:set-responsibility.409]
         technical-error: [read:detail.failure, command:add-endpoint.failure, command:set-address.failure, command:clear-address.failure, command:set-site.failure, command:set-responsibility.failure]
       verification:

@@ -43,7 +43,7 @@ presentation_provider:
   provider: mui-material
   version: 9.4.0
   feature_policy: {default: deny}
-  coverage_screens: [RESOURCE-CATALOGUE]
+  coverage_screens: [RESOURCE-CATALOGUE, RESOURCE-DETAIL]
   required_patterns: [APP-SHELL]
   template_baseline:
     provider: mui-material
@@ -61,15 +61,21 @@ presentation_provider:
     DATA-TABLE:
       adapter: presentation/providers/mui/MuiCataloguePattern
       provider_primitives: [Table, TableBody, TableCell, TableContainer, TableHead, TableRow]
+    DETAIL:
+      adapter: presentation/providers/mui/MuiDetailPattern
+      provider_primitives: [Box, Paper, Stack, Typography]
     EDITOR:
       adapter: presentation/providers/mui/MuiEditorPattern
-      provider_primitives: [Alert, Button, Stack, TextField]
+      provider_primitives: [Button, MenuItem, Paper, Stack, TextField]
+    DISCLOSURE:
+      adapter: presentation/providers/mui/MuiDetailPattern
+      provider_primitives: [Accordion, AccordionDetails, AccordionSummary]
     TASK-ACTIONS:
-      adapter: presentation/providers/mui/MuiCataloguePattern
+      adapter: presentation/providers/mui/MuiTaskActions
       provider_primitives: [Button, Stack]
     STATUS:
-      adapter: presentation/providers/mui/MuiCataloguePattern
-      provider_primitives: [Alert, CircularProgress]
+      adapter: presentation/providers/mui/MuiStatus
+      provider_primitives: [Alert, CircularProgress, Stack, Typography]
   resource_catalogue_grid_decision:
     selected: mui-material-Table
     rejected_for_pilot: mui-x-DataGrid

@@ -1,6 +1,6 @@
 # Research — NAPMS frontend provider architecture and MUI migration v1
 
-Status: research branch candidate with RESOURCE-CATALOGUE pilot.
+Status: research branch candidate with RESOURCE-CATALOGUE and RESOURCE-DETAIL provider slices.
 
 ## Decision
 
@@ -320,9 +320,9 @@ Visual baselines prove accepted presentation invariants only; they do not author
 
 ## Migration plan
 
-1. Pilot RESOURCE-CATALOGUE with MUI shell + Catalogue/Table/Editor/Status adapters, including list and create modes.
-2. Verify build, semantic/provider checks, unit/E2E/rendered evidence.
-3. Migrate RESOURCE-DETAIL next; this exercises DETAIL + EDITOR + DISCLOSURE and mutation/error states.
+1. RESOURCE-CATALOGUE is migrated with MUI shell + Catalogue/Table/Editor/Status adapters, including list and create modes.
+2. RESOURCE-DETAIL is migrated through the same provider boundary with Detail/Editor/Disclosure/Task-Actions/Status realization and full accepted Resource mutation closure.
+3. Verify build, semantic/provider checks, unit/E2E/rendered evidence at coherent checkpoints.
 4. Migrate remaining catalogue/detail/editor workspaces by vertical slice, adding an adapter only when a new accepted pattern is first needed.
 5. Introduce MUI X DataGrid only on a screen whose accepted semantics require its capabilities.
 6. After every screen is off the legacy design-system, remove legacy CSS/components/token generator/Tailwind-shadcn setup and tighten the boundary checker.
