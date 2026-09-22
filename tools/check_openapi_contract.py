@@ -74,6 +74,19 @@ request=schemas.get("PolicyMaterializationRequest",{}).get("properties",{}).get(
 if request.get("minItems")!=1 or request.get("uniqueItems") is not True:
     fail("explicit Rule subset contract differs")
 
+catalogue_item=schemas.get("ResourceCatalogueItem",{})
+if catalogue_item.get("required")!=["resourceRef","displayName","authorityScopeRef"]:
+    fail("ResourceCatalogueItem must expose only Resource identity, label and immutable authority scope")
+catalogue_view=schemas.get("ResourceCatalogueView",{})
+catalogue_items=catalogue_view.get("properties",{}).get("items",{})
+if catalogue_view.get("required")!=["items"] or catalogue_items.get("items",{}).get("$ref")!="#/components/schemas/ResourceCatalogueItem":
+    fail("ResourceCatalogueView items contract differs")
+list_resource=api.get("paths",{}).get("/v1/resources",{}).get("get",{})
+if list_resource.get("operationId")!="listResources":
+    fail("modern Resource catalogue read operationId differs")
+if list_resource.get("parameters"):
+    fail("minimal Resource catalogue read must not inherit search/filter/sort/pagination controls")
+
 create_resource=schemas.get("CreateResourceRequest",{})
 if "authorityScopeRef" not in create_resource.get("required",[]):
     fail("Resource authorityScopeRef missing")
