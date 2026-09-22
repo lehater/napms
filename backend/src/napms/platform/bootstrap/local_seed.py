@@ -4,6 +4,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import os
+from typing import NoReturn
 from uuid import UUID, uuid5
 
 import psycopg
@@ -982,7 +983,7 @@ class LocalDemoSeeder:
         )
 
     @staticmethod
-    def _conflict(message: str) -> None:
+    def _conflict(message: str) -> NoReturn:
         raise DemoDataConflict(
             f"{message}; reset the local database or restore the demo object before reseeding"
         )
