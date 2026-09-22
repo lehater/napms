@@ -273,6 +273,7 @@ web/src/
         MuiPresentationRoot.tsx
         MuiAppShell.tsx
         MuiCataloguePattern.tsx
+        MuiEditorPattern.tsx
 ```
 
 Do not create `screen-models/`, `queries/`, `commands/` and other global directories merely to match conceptual layers. Keep feature-local code together until reuse is demonstrated.
@@ -292,18 +293,19 @@ canonical RESOURCE-CATALOGUE semantic_contract
   allowed: inspect/open/create
   excluded: search/filter/sort/pagination/bulk/edit/delete
   ↓
-patterns: CATALOGUE + DATA-TABLE + TASK-ACTIONS + STATUS
+list mode patterns: CATALOGUE + DATA-TABLE + TASK-ACTIONS + STATUS
+create mode pattern: EDITOR + STATUS
   ↓
 presentation facade
   ↓
-MuiCataloguePattern
+MuiCataloguePattern / MuiEditorPattern
   ↓
-MUI Stack/Button/Table/Alert/CircularProgress
+MUI Stack/Button/Table/TextField/Alert/CircularProgress
   ↓
-rendered catalogue
+rendered catalogue and create route
 ```
 
-The create action navigates to the existing authoring route during the pilot. That route remains on the legacy presentation layer until its own vertical slice is migrated.
+The pilot covers both accepted RESOURCE-CATALOGUE modes: `/resources` and `/resources/new`. Creation remains the canonical `createResource` command and navigates to RESOURCE-DETAIL only after backend acceptance.
 
 ## Verification model
 
@@ -319,7 +321,7 @@ Visual baselines prove accepted presentation invariants only; they do not author
 
 ## Migration plan
 
-1. Pilot RESOURCE-CATALOGUE with MUI shell + Catalogue/Table/Status adapter.
+1. Pilot RESOURCE-CATALOGUE with MUI shell + Catalogue/Table/Editor/Status adapters, including list and create modes.
 2. Verify build, semantic/provider checks, unit/E2E/rendered evidence.
 3. Migrate RESOURCE-DETAIL next; this exercises DETAIL + EDITOR + DISCLOSURE and mutation/error states.
 4. Migrate remaining catalogue/detail/editor workspaces by vertical slice, adding an adapter only when a new accepted pattern is first needed.
