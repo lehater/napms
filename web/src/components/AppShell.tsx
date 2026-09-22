@@ -15,27 +15,36 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="shell">
       <nav className="nav" aria-label="Primary">
-        <h1>NAPMS</h1>
-        {links.map(([path, label]) => (
-          <a
-            key={path}
-            href={path}
-            aria-current={
-              window.location.pathname.startsWith(path) ? "page" : undefined
-            }
-            onClick={(event) => {
-              event.preventDefault();
-              navigate(path);
-            }}
-          >
-            {label}
-          </a>
-        ))}
+        <div className="nav-brand">
+          <span className="nav-brand-mark" aria-hidden="true">
+            N
+          </span>
+          <span>
+            <strong>NAPMS</strong>
+            <small>Policy management</small>
+          </span>
+        </div>
+        <p className="nav-group-label">Workspaces</p>
+        <div className="nav-links">
+          {links.map(([path, label]) => (
+            <a
+              key={path}
+              className="nav-link"
+              href={path}
+              aria-current={
+                window.location.pathname.startsWith(path) ? "page" : undefined
+              }
+              onClick={(event) => {
+                event.preventDefault();
+                navigate(path);
+              }}
+            >
+              {label}
+            </a>
+          ))}
+        </div>
       </nav>
-      <main className="content">
-        <h1>Network Access Policy Management</h1>
-        {children}
-      </main>
+      <main className="content">{children}</main>
     </div>
   );
 }
