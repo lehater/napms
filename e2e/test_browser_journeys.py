@@ -61,8 +61,11 @@ def add_component(page: Page, application_ref: str, name: str) -> str:
     page.get_by_label("Component name").fill(name)
     page.locator("form").get_by_role("button", name="Add Component", exact=True).click()
     page.wait_for_url(f"**/applications/{application_ref}")
-    line = page.get_by_text(name + " ·", exact=False).first.text_content() or ""
-    return line.split("·", 1)[1].strip()
+    row = page.get_by_role("list", name="Components").locator("li", has_text=name)
+    marker = row.locator("[data-component-ref]").first
+    component_ref = marker.get_attribute("data-component-ref")
+    assert component_ref
+    return component_ref
 
 
 def test_00_rendered_presentation_evidence() -> None:
@@ -186,8 +189,10 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
 
         application_name = f"E2E Application {suffix}"
         application_ref = create_application(page, application_name)
-        source_ref = add_component(page, application_ref, f"Source {suffix}")
-        destination_ref = add_component(page, application_ref, f"Destination {suffix}")
+        source_name = f"Source {suffix}"
+        destination_name = f"Destination {suffix}"
+        source_ref = add_component(page, application_ref, source_name)
+        destination_ref = add_component(page, application_ref, destination_name)
 
         goto(page, "/applications", "Applications")
         page.get_by_label("Search Applications").fill(application_name)
@@ -216,6 +221,8 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
 
         goto(page, f"/applications/{application_ref}", f"E2E Application {suffix}")
         page.get_by_text("E2E directed business flow").wait_for()
+        page.get_by_text(source_name, exact=True).wait_for()
+        page.get_by_text(destination_name, exact=True).wait_for()
         page.get_by_text('"ipProtocol": 6').wait_for()
         revision_text = page.get_by_text("Revision 1").locator("..").text_content() or ""
         assert "443" in revision_text and "8000" in revision_text and "8080" in revision_text
@@ -234,6 +241,8 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page.wait_for_url(lambda url: "/deployments/" in url and not url.endswith("/deployments/new"))
         deployment_ref = page.url.rsplit("/", 1)[-1]
         page.get_by_role("heading", name="Deployment").wait_for()
+        page.get_by_text(source_name, exact=True).wait_for()
+        page.get_by_text(resource_name, exact=True).wait_for()
         page.get_by_text(source_ref, exact=True).wait_for()
         page.get_by_text(resource_ref, exact=True).wait_for()
 
@@ -247,8 +256,11 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page.get_by_role("option", name="Descending").click()
         deployment_row = page.locator("tbody tr", has_text=deployment_ref)
         deployment_row.wait_for()
-        assert source_ref in (deployment_row.text_content() or "")
-        assert resource_ref in (deployment_row.text_content() or "")
+        deployment_text = deployment_row.text_content() or ""
+        assert source_name in deployment_text
+        assert resource_name in deployment_text
+        assert source_ref in deployment_text
+        assert resource_ref in deployment_text
         deployment_row.click()
         page.wait_for_url(f"**/deployments/{deployment_ref}")
 

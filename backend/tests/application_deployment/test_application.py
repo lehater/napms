@@ -78,6 +78,10 @@ def test_deployment_identity_is_independent_from_resource_address() -> None:
     assert deployment.component_ref == UUID(int=1)
     assert deployment.resource_ref == UUID(int=2)
 
+    view = service.describe_component_deployment(deployment)
+    assert view.component_name == "API"
+    assert view.resource_display_name == "node-a"
+
 
 def test_missing_owner_reference_is_rejected_before_persistence() -> None:
     service = ApplicationDeploymentService(

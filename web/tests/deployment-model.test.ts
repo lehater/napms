@@ -12,7 +12,9 @@ test("Deployment Screen Model preserves page and entity identity", () => {
         {
           deploymentRef: "deployment-1",
           componentRef: "component-1",
+          componentName: "Payments API",
           resourceRef: "resource-1",
+          resourceDisplayName: "payments-node",
         },
       ],
       total: 3,
@@ -24,7 +26,9 @@ test("Deployment Screen Model preserves page and entity identity", () => {
         {
           deploymentRef: "deployment-1",
           componentRef: "component-1",
+          componentName: "Payments API",
           resourceRef: "resource-1",
+          resourceDisplayName: "payments-node",
         },
       ],
       total: 3,
@@ -39,12 +43,16 @@ test("Deployment detail model preserves accepted realization facts", () => {
     toDeploymentDetailScreenModel({
       deploymentRef: "deployment-1",
       componentRef: "component-1",
+      componentName: "Payments API",
       resourceRef: "resource-1",
+      resourceDisplayName: "payments-node",
     }),
     {
       deploymentRef: "deployment-1",
       componentRef: "component-1",
+      componentName: "Payments API",
       resourceRef: "resource-1",
+      resourceDisplayName: "payments-node",
     },
   );
 });

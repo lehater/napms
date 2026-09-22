@@ -16,6 +16,7 @@ from napms.contexts.application_communication_catalogue.application.ports import
 )
 from napms.contexts.application_communication_catalogue.domain.model import (
     Application,
+    Component,
     Interaction,
     TrafficClause,
 )
@@ -46,6 +47,12 @@ class ApplicationCommunicationCatalogue:
             raise CatalogueNotFound(str(application_ref))
         component_refs = tuple(item.component_ref for item in application.components)
         return application, self._interactions.list_interactions_for_components(component_refs)
+
+    def resolve_component(self, component_ref: UUID) -> Component:
+        component = self._components.resolve(component_ref)
+        if component is None:
+            raise CatalogueNotFound(str(component_ref))
+        return component
 
     def create_application(self, *, name: str) -> Application:
         value = Application.create(application_ref=self._new_ref(), name=name)

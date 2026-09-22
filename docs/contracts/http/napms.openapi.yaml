@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: NAPMS First MVP Backend API
-  version: 2.0.0
+  version: 2.1.0
 security:
   - OIDCBearer: []
 
@@ -86,7 +86,7 @@ paths:
     get:
       operationId: getApplication
       parameters: [{$ref: '#/components/parameters/ApplicationRef'}]
-      responses: {'200': {description: Application detail}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      responses: {'200': {description: Application detail, content: {application/json: {schema: {$ref: '#/components/schemas/ApplicationDetailView'}}}}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/applications/{applicationRef}/components:
     post:
       operationId: addComponent
@@ -102,7 +102,7 @@ paths:
     get:
       operationId: getInteraction
       parameters: [{$ref: '#/components/parameters/InteractionRef'}]
-      responses: {'200': {description: Interaction detail}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      responses: {'200': {description: Interaction detail, content: {application/json: {schema: {$ref: '#/components/schemas/InteractionView'}}}}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/interactions/{interactionRef}/revisions:
     post:
       operationId: publishInteractionRevision
@@ -472,6 +472,41 @@ components:
         componentRef: {$ref: '#/components/schemas/StableId'}
         name: {type: string, minLength: 1}
 
+    ApplicationDetailView:
+      type: object
+      additionalProperties: false
+      required: [applicationRef, name, version, components, interactions]
+      properties:
+        applicationRef: {$ref: '#/components/schemas/StableId'}
+        name: {type: string, minLength: 1}
+        version: {type: integer, minimum: 1}
+        components: {type: array, items: {$ref: '#/components/schemas/ApplicationComponentSummary'}}
+        interactions: {type: array, items: {$ref: '#/components/schemas/InteractionView'}}
+
+    InteractionView:
+      type: object
+      additionalProperties: false
+      required: [interactionRef, sourceComponentRef, destinationComponentRef, purpose, version, revisions]
+      properties:
+        interactionRef: {$ref: '#/components/schemas/StableId'}
+        sourceComponentRef: {$ref: '#/components/schemas/StableId'}
+        sourceComponentName: {type: string, minLength: 1}
+        destinationComponentRef: {$ref: '#/components/schemas/StableId'}
+        destinationComponentName: {type: string, minLength: 1}
+        purpose: {type: [string, 'null']}
+        version: {type: integer, minimum: 1}
+        revisions: {type: array, items: {$ref: '#/components/schemas/InteractionRevisionView'}}
+
+    InteractionRevisionView:
+      type: object
+      additionalProperties: false
+      required: [interactionRevisionRef, revisionNo, trafficClauses, createdBySubject]
+      properties:
+        interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
+        revisionNo: {type: integer, minimum: 1}
+        trafficClauses: {type: array, minItems: 1, items: {$ref: '#/components/schemas/TrafficClause'}}
+        createdBySubject: {type: string, minLength: 1}
+
     CreateNamedRequest:
       type: object
       additionalProperties: false
@@ -526,7 +561,9 @@ components:
       properties:
         deploymentRef: {$ref: '#/components/schemas/StableId'}
         componentRef: {$ref: '#/components/schemas/StableId'}
+        componentName: {type: string, minLength: 1}
         resourceRef: {$ref: '#/components/schemas/StableId'}
+        resourceDisplayName: {type: string, minLength: 1}
 
     CreateDeploymentRequest:
       type: object

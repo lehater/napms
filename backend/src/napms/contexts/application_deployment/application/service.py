@@ -9,6 +9,7 @@ from napms.contexts.application_deployment.application.ports import (
 from napms.contexts.application_deployment.application.queries import (
     DeploymentCataloguePage,
     DeploymentCatalogueQuery,
+    DeploymentReadModel,
 )
 from napms.contexts.application_deployment.domain.model import ComponentDeployment
 from napms.contexts.resource_catalogue.application.ports import ResourceResolver
@@ -33,6 +34,24 @@ class ApplicationDeploymentService:
         query: DeploymentCatalogueQuery,
     ) -> DeploymentCataloguePage:
         return self._deployments.query_deployments(query)
+
+    def describe_component_deployment(
+        self,
+        deployment: ComponentDeployment,
+    ) -> DeploymentReadModel:
+        component = self._components.resolve(deployment.component_ref)
+        resource = self._resources.resolve_resource(deployment.resource_ref)
+        if component is None:
+            raise DeploymentNotFound(str(deployment.component_ref))
+        if resource is None:
+            raise DeploymentNotFound(str(deployment.resource_ref))
+        return DeploymentReadModel(
+            deployment_ref=deployment.deployment_ref,
+            component_ref=deployment.component_ref,
+            component_name=component.name,
+            resource_ref=deployment.resource_ref,
+            resource_display_name=resource.display_name,
+        )
 
     def register_component_deployment(
         self,

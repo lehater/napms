@@ -144,7 +144,9 @@ export type TrafficClauseView = {
 export type InteractionView = {
   interactionRef: string;
   sourceComponentRef: string;
+  sourceComponentName?: string;
   destinationComponentRef: string;
+  destinationComponentName?: string;
   purpose: string | null;
   version: number;
   revisions: Array<{
@@ -165,7 +167,9 @@ export type ApplicationView = {
 export type DeploymentView = {
   deploymentRef: string;
   componentRef: string;
+  componentName?: string;
   resourceRef: string;
+  resourceDisplayName?: string;
 };
 export type ProcessView = {
   processRef: string;

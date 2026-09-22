@@ -1,6 +1,6 @@
 # Frontend usability closure research v1
 
-Status: research baseline for staged remediation. This file is non-canonical; accepted semantics remain owned by Product, Interface, Domain, HTTP and Verification artifacts.
+Status: Stage 1 implemented; Stage 2A implementation in progress. This file is non-canonical; accepted semantics remain owned by Product, Interface, Domain, HTTP and Verification artifacts.
 
 ## Trigger
 
@@ -96,7 +96,7 @@ Pilot on Application/Interaction and Deployment:
 - Deployment: Component label plus Resource label, Deployment ID secondary;
 - Interaction: source/destination Component labels plus purpose, Interaction ID secondary.
 
-Prefer authoritative read projections over ad-hoc frontend N+1 joins.
+Prefer authoritative read projections over ad-hoc frontend N+1 joins. The selected implementation composes labels on the backend read/application boundary from owner contracts: Component names remain owned by Application Communication Catalogue and Resource display names remain owned by Resource Catalogue. Stable references remain unchanged.
 
 ### Stage 2B — simple searchable pickers
 

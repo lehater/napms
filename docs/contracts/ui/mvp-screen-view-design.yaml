@@ -343,7 +343,11 @@ screens:
       root: detail-workspace
       ordered_regions: [application-context, application-facts, components, interactions, actions, feedback]
       components: {pattern: STRUCTURED-LIST}
-      interactions: {pattern: DATA-TABLE}
+      interactions:
+        pattern: DATA-TABLE
+        reference_presentation:
+          source_component: {primary: sourceComponentName, technical_identity: sourceComponentRef}
+          destination_component: {primary: destinationComponentName, technical_identity: destinationComponentRef}
     action_hierarchy:
       application: edit-application
       components: add-or-edit-component
@@ -385,8 +389,8 @@ screens:
         pattern: DATA-TABLE
         columns:
           - {id: deployment-reference, role: primary-identity, sort: deploymentRef}
-          - {id: component-reference, role: distinguishing-attribute, sort: componentRef}
-          - {id: resource-reference, role: distinguishing-attribute, sort: resourceRef}
+          - {id: component-reference, role: distinguishing-attribute, primary: componentName, technical_identity: componentRef, sort: componentRef}
+          - {id: resource-reference, role: distinguishing-attribute, primary: resourceDisplayName, technical_identity: resourceRef, sort: resourceRef}
         row_action: open-deployment
       create-editor:
         pattern: EDITOR
@@ -423,7 +427,9 @@ screens:
           - {id: page_size, source: read:catalogue.pageSize}
           - {id: deployment_ref, source: read:catalogue.items.deploymentRef}
           - {id: component_ref, source: read:catalogue.items.componentRef}
+          - {id: component_name, source: read:catalogue.items.componentName}
           - {id: resource_ref, source: read:catalogue.items.resourceRef}
+          - {id: resource_display_name, source: read:catalogue.items.resourceDisplayName}
       capabilities:
         allowed:
           - {id: inspect-catalogue, backed_by: read:catalogue}
@@ -469,6 +475,9 @@ screens:
     composition:
       root: detail-workspace
       ordered_regions: [identity-context, realization, feedback]
+      realization:
+        component: {primary: componentName, technical_identity: componentRef}
+        resource: {primary: resourceDisplayName, technical_identity: resourceRef}
     states: [loading, loaded, not-found, authorization-rejected, technical-error]
     semantic_contract:
       reads:
@@ -479,7 +488,9 @@ screens:
         fields:
           - {id: deployment_ref, source: read:detail.deploymentRef}
           - {id: component_ref, source: read:detail.componentRef}
+          - {id: component_name, source: read:detail.componentName}
           - {id: resource_ref, source: read:detail.resourceRef}
+          - {id: resource_display_name, source: read:detail.resourceDisplayName}
       capabilities:
         allowed:
           - {id: inspect-deployment, backed_by: read:detail}
@@ -499,7 +510,7 @@ screens:
         semantic: [deployment-detail-read-state-closure]
         rendered: [deployment-detail-reference-conformance]
     responsive:
-      - Component and Resource identities remain separately labeled
+      - Component name and Resource display name remain primary while their stable references remain inspectable technical context
       - technical Deployment identity remains inspectable after reflow
     overrides: []
 
@@ -948,7 +959,8 @@ global_rules:
   - required data and actions remain traceable to accepted Human Interface and HTTP/application contracts;
   - responsive transformations preserve semantic labels, distinctions and action availability;
   - screen composition does not create domain or authorization semantics;
-  - optional catalogue controls exist only when accepted machine/application semantics support them.
+  - optional catalogue controls exist only when accepted machine/application semantics support them;
+  - referenced entities with accepted human-readable labels present those labels as primary meaning while stable references remain secondary technical identity.
 
 coverage:
   required_workspaces:

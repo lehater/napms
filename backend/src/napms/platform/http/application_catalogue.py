@@ -90,6 +90,46 @@ def router(
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
 
+    def clause_view(clause: TrafficClause) -> dict[str, object]:
+        return {
+            "ipProtocol": clause.ip_protocol,
+            "sourcePorts": [
+                {"from": item.start, "to": item.end} for item in clause.source_ports
+            ],
+            "destinationPorts": [
+                {"from": item.start, "to": item.end}
+                for item in clause.destination_ports
+            ],
+        }
+
+    def component_name(component_ref: UUID) -> str:
+        try:
+            return catalogue.resolve_component(component_ref).name
+        except CatalogueNotFound as exc:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE) from exc
+
+    def interaction_view(item) -> dict[str, object]:
+        return {
+            "interactionRef": str(item.interaction_ref),
+            "sourceComponentRef": str(item.source_component_ref),
+            "sourceComponentName": component_name(item.source_component_ref),
+            "destinationComponentRef": str(item.destination_component_ref),
+            "destinationComponentName": component_name(item.destination_component_ref),
+            "purpose": item.purpose,
+            "version": item.version,
+            "revisions": [
+                {
+                    "interactionRevisionRef": str(revision.revision_ref),
+                    "revisionNo": revision.revision_no,
+                    "trafficClauses": [
+                        clause_view(clause) for clause in revision.traffic_clauses
+                    ],
+                    "createdBySubject": revision.created_by_subject,
+                }
+                for revision in item.revisions
+            ],
+        }
+
     @api.get("/applications")
     def list_applications(
         search: str | None = Query(default=None, max_length=200),
@@ -146,17 +186,6 @@ def router(
         except CatalogueNotFound as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from exc
 
-        def clause_view(clause: TrafficClause) -> dict[str, object]:
-            return {
-                "ipProtocol": clause.ip_protocol,
-                "sourcePorts": [
-                    {"from": item.start, "to": item.end} for item in clause.source_ports
-                ],
-                "destinationPorts": [
-                    {"from": item.start, "to": item.end} for item in clause.destination_ports
-                ],
-            }
-
         return {
             "applicationRef": str(application.application_ref),
             "name": application.name,
@@ -165,27 +194,7 @@ def router(
                 {"componentRef": str(item.component_ref), "name": item.name}
                 for item in application.components
             ],
-            "interactions": [
-                {
-                    "interactionRef": str(item.interaction_ref),
-                    "sourceComponentRef": str(item.source_component_ref),
-                    "destinationComponentRef": str(item.destination_component_ref),
-                    "purpose": item.purpose,
-                    "version": item.version,
-                    "revisions": [
-                        {
-                            "interactionRevisionRef": str(revision.revision_ref),
-                            "revisionNo": revision.revision_no,
-                            "trafficClauses": [
-                                clause_view(clause) for clause in revision.traffic_clauses
-                            ],
-                            "createdBySubject": revision.created_by_subject,
-                        }
-                        for revision in item.revisions
-                    ],
-                }
-                for item in interactions
-            ],
+            "interactions": [interaction_view(item) for item in interactions],
         }
 
     @api.post("/applications", status_code=status.HTTP_201_CREATED)
@@ -228,34 +237,7 @@ def router(
             item = catalogue.get_interaction(interaction_ref)
         except CatalogueNotFound as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from exc
-        return {
-            "interactionRef": str(item.interaction_ref),
-            "sourceComponentRef": str(item.source_component_ref),
-            "destinationComponentRef": str(item.destination_component_ref),
-            "purpose": item.purpose,
-            "version": item.version,
-            "revisions": [
-                {
-                    "interactionRevisionRef": str(revision.revision_ref),
-                    "revisionNo": revision.revision_no,
-                    "trafficClauses": [
-                        {
-                            "ipProtocol": clause.ip_protocol,
-                            "sourcePorts": [
-                                {"from": port.start, "to": port.end} for port in clause.source_ports
-                            ],
-                            "destinationPorts": [
-                                {"from": port.start, "to": port.end}
-                                for port in clause.destination_ports
-                            ],
-                        }
-                        for clause in revision.traffic_clauses
-                    ],
-                    "createdBySubject": revision.created_by_subject,
-                }
-                for revision in item.revisions
-            ],
-        }
+        return interaction_view(item)
 
     @api.post("/interactions", status_code=status.HTTP_201_CREATED)
     def create_interaction(

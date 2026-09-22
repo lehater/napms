@@ -110,16 +110,28 @@ function DeploymentListMode() {
       {
         id: "component-reference",
         label: "Component",
-        emphasis: "technical",
         sortKey: "componentRef",
-        render: (row) => row.componentRef,
+        render: (row) => (
+          <div>
+            <strong>{row.componentName}</strong>
+            {row.componentName !== row.componentRef ? (
+              <div data-presentation-technical-context>{row.componentRef}</div>
+            ) : null}
+          </div>
+        ),
       },
       {
         id: "resource-reference",
         label: "Resource",
-        emphasis: "technical",
         sortKey: "resourceRef",
-        render: (row) => row.resourceRef,
+        render: (row) => (
+          <div>
+            <strong>{row.resourceDisplayName}</strong>
+            {row.resourceDisplayName !== row.resourceRef ? (
+              <div data-presentation-technical-context>{row.resourceRef}</div>
+            ) : null}
+          </div>
+        ),
       },
     ],
     [],
