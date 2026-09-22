@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { ApiError, api, type ResourceView } from "../../app/api";
 import { navigate } from "../../app/router";
-import { ResourceCatalogueScreen } from "./ResourceCatalogueScreen";
 import {
   DataTable,
   DataTableCell,
@@ -15,6 +14,7 @@ import {
   StatusBanner,
   VersionedEditor,
 } from "../../design-system/components";
+import { ResourceCatalogueScreen } from "./ResourceCatalogueScreen";
 
 function errorKind(error: unknown): string {
   return error instanceof ApiError ? error.kind : "technical";
@@ -173,7 +173,11 @@ function LegacyResourceCatalogue({ create = false }: { create?: boolean }) {
 }
 
 export function ResourceCatalogue({ create = false }: { create?: boolean }) {
-  return create ? <LegacyResourceCatalogue create /> : <ResourceCatalogueScreen />;
+  return create ? (
+    <LegacyResourceCatalogue create />
+  ) : (
+    <ResourceCatalogueScreen />
+  );
 }
 
 export function ResourceDetail({ resourceRef }: { resourceRef: string }) {
