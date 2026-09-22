@@ -12,23 +12,22 @@
     "build": "npm run tokens:check && npm run ui-boundary-check && tsc -b && vite build",
     "check": "biome check . && npm run tokens:check && npm run ui-boundary-check && tsc -b --pretty false && npm test",
     "test": "node --experimental-strip-types --test tests/**/*.test.ts",
-    "tokens:generate": "node scripts/generate-design-tokens.mjs",
-    "tokens:check": "node scripts/generate-design-tokens.mjs --check"
+    "tokens:generate": "node scripts/generate-mui-theme-tokens.mjs",
+    "tokens:check": "node scripts/generate-mui-theme-tokens.mjs --check"
   },
   "dependencies": {
-    "lucide-react": "^1.43.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.1",
+    "@mui/material": "9.4.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
-    "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.5.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.1.1",
-    "shadcn": "^4.21.0",
-    "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.2"
   }

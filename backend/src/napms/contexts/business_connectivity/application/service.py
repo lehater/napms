@@ -7,6 +7,10 @@ from uuid import UUID, uuid4
 from napms.contexts.application_communication_catalogue.application.ports import (
     InteractionResolver,
 )
+from napms.contexts.business_connectivity.application.queries import (
+    BusinessProcessCataloguePage,
+    BusinessProcessCatalogueQuery,
+)
 from napms.contexts.business_connectivity.application.ports import (
     BusinessConnectivityNotFound,
     BusinessConnectivityVersionConflict,
@@ -31,8 +35,14 @@ class BusinessConnectivityService:
         self._interactions = interactions
         self._new_ref = new_ref
 
-    def list_business_processes(self) -> tuple[BusinessProcess, ...]:
-        return self._processes.list_processes()
+    def list_business_processes(
+        self,
+        query: BusinessProcessCatalogueQuery,
+    ) -> BusinessProcessCataloguePage:
+        return self._processes.query_processes(query)
+
+    def resolve_business_process(self, process_ref: UUID) -> BusinessProcess:
+        return self._required_process(process_ref)
 
     def register_business_process(
         self,

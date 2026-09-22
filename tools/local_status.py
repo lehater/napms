@@ -61,7 +61,7 @@ def main() -> int:
     base_url = f"http://127.0.0.1:{port}"
 
     run_compose_ps()
-    check_http(f"{base_url}/health/live", "alive")
+    check_http(f"{base_url}/health/live", "live")
     check_http(f"{base_url}/health/ready", "ready")
     check_postgres()
 

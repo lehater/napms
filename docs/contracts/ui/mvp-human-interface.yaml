@@ -48,7 +48,7 @@ subjects:
     primary_workspaces: [APPLICATION-DETAIL]
   - subject: Deployment management
     journeys: [DEPLOYMENT-MANAGEMENT]
-    primary_workspaces: [DEPLOYMENTS]
+    primary_workspaces: [DEPLOYMENTS, DEPLOYMENT-DETAIL]
   - subject: Business process and connectivity need
     journeys: [BUSINESS-CONNECTIVITY]
     primary_workspaces: [BUSINESS-CONNECTIVITY]

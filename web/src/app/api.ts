@@ -1,5 +1,29 @@
+import {
+  type AccessRequestCatalogueQuery,
+  serializeAccessRequestCatalogueQuery,
+} from "./access-request-catalogue-query";
+import {
+  type ApplicationCatalogueQuery,
+  serializeApplicationCatalogueQuery,
+} from "./application-catalogue-query";
 import { authSession } from "./auth-session";
+import {
+  type BusinessProcessCatalogueQuery,
+  serializeBusinessProcessCatalogueQuery,
+} from "./business-process-catalogue-query";
+import {
+  type DeploymentCatalogueQuery,
+  serializeDeploymentCatalogueQuery,
+} from "./deployment-catalogue-query";
 import { type ApiErrorKind, statusToErrorKind } from "./http-semantics";
+import {
+  type PolicyRuleCatalogueQuery,
+  serializePolicyRuleCatalogueQuery,
+} from "./policy-rule-catalogue-query";
+import {
+  type ResourceCatalogueQuery,
+  serializeResourceCatalogueQuery,
+} from "./resource-catalogue-query";
 
 export class ApiError extends Error {
   readonly kind: ApiErrorKind;
@@ -54,6 +78,13 @@ export type ResourceView = {
     endpointAddresses: unknown[];
     responsibilities: unknown[];
   };
+};
+
+export type CataloguePage<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
 };
 
 export type PolicyRuleView = {
@@ -154,7 +185,10 @@ export type ProcessView = {
 };
 
 export const api = {
-  listResources: () => request<ResourceView[]>("/v1/resources"),
+  listResources: (query: ResourceCatalogueQuery) =>
+    request<CataloguePage<ResourceView>>(
+      `/v1/resources?${serializeResourceCatalogueQuery(query)}`,
+    ),
   getResource: (ref: string) => request<ResourceView>(`/v1/resources/${ref}`),
   createResource: (body: {
     displayName: string;
@@ -165,7 +199,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  listAccessRequests: () => request<AccessRequestView[]>("/v1/access-requests"),
+  listAccessRequests: (query: AccessRequestCatalogueQuery) =>
+    request<CataloguePage<AccessRequestView>>(
+      `/v1/access-requests?${serializeAccessRequestCatalogueQuery(query)}`,
+    ),
   getAccessRequest: (ref: string) =>
     request<AccessRequestView>(`/v1/access-requests/${ref}`),
   addResourceEndpoint: (ref: string, version: number) =>
@@ -193,6 +230,11 @@ export const api = {
         body: JSON.stringify(address),
       },
     ),
+  clearResourceAddress: (ref: string, endpointRef: string, version: number) =>
+    request<void>(`/v1/resources/${ref}/endpoints/${endpointRef}/address`, {
+      method: "DELETE",
+      headers: { "If-Match": String(version) },
+    }),
   setResourceResponsibility: (
     ref: string,
     role: string,
@@ -215,7 +257,10 @@ export const api = {
       headers: { "Idempotency-Key": idempotencyKey() },
       body: JSON.stringify(body),
     }),
-  listApplications: () => request<ApplicationView[]>("/v1/applications"),
+  listApplications: (query: ApplicationCatalogueQuery) =>
+    request<CataloguePage<ApplicationView>>(
+      `/v1/applications?${serializeApplicationCatalogueQuery(query)}`,
+    ),
   getApplication: (ref: string) =>
     request<ApplicationView>(`/v1/applications/${ref}`),
   createApplication: (name: string) =>
@@ -261,7 +306,12 @@ export const api = {
       headers: { "If-Match": String(version) },
       body: JSON.stringify({ trafficClauses }),
     }),
-  listDeployments: () => request<DeploymentView[]>("/v1/deployments"),
+  listDeployments: (query: DeploymentCatalogueQuery) =>
+    request<CataloguePage<DeploymentView>>(
+      `/v1/deployments?${serializeDeploymentCatalogueQuery(query)}`,
+    ),
+  getDeployment: (ref: string) =>
+    request<DeploymentView>(`/v1/deployments/${ref}`),
   createDeployment: (componentRef: string, resourceRef: string) =>
     request<{
       deploymentRef: string;
@@ -271,7 +321,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ componentRef, resourceRef }),
     }),
-  listProcesses: () => request<ProcessView[]>("/v1/processes"),
+  listProcesses: (query: BusinessProcessCatalogueQuery) =>
+    request<CataloguePage<ProcessView>>(
+      `/v1/processes?${serializeBusinessProcessCatalogueQuery(query)}`,
+    ),
   getProcess: (ref: string) => request<ProcessView>(`/v1/processes/${ref}`),
   createProcess: (body: {
     name: string;
@@ -334,7 +387,10 @@ export const api = {
         headers: { "If-Match": String(version) },
       },
     ),
-  listPolicyRules: () => request<PolicyRuleView[]>("/v1/policy-rules"),
+  listPolicyRules: (query: PolicyRuleCatalogueQuery) =>
+    request<CataloguePage<PolicyRuleView>>(
+      `/v1/policy-rules?${serializePolicyRuleCatalogueQuery(query)}`,
+    ),
   getPolicyRule: (ref: string) =>
     request<PolicyRuleView>(`/v1/policy-rules/${ref}`),
   setPolicyRuleState: (

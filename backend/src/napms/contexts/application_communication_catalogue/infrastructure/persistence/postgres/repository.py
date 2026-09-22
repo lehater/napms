@@ -9,6 +9,12 @@ from napms.contexts.application_communication_catalogue.application.ports import
     CatalogueVersionConflict,
     ResolvedInteractionRevision,
 )
+from napms.contexts.application_communication_catalogue.application.queries import (
+    ApplicationCataloguePage,
+    ApplicationCatalogueQuery,
+    ApplicationSortField,
+    SortDirection,
+)
 from napms.contexts.application_communication_catalogue.domain.model import (
     Application,
     Component,
@@ -46,12 +52,66 @@ class PostgresApplicationCommunicationCatalogue:
         else:
             self.save_interaction(value, expected_version=expected_version)
 
-    def list_applications(self) -> tuple[Application, ...]:
+    def query_applications(self, query: ApplicationCatalogueQuery) -> ApplicationCataloguePage:
+        conditions: list[str] = []
+        parameters: list[object] = []
+
+        if query.search:
+            search = query.search.strip()
+            if search:
+                conditions.append("(a.name ILIKE %s OR CAST(a.application_ref AS text) ILIKE %s)")
+                pattern = f"%{search}%"
+                parameters.extend((pattern, pattern))
+
+        if query.component_ref is not None:
+            conditions.append(
+                """
+                EXISTS (
+                    SELECT 1
+                    FROM application_communication_catalogue.component AS component
+                    WHERE component.application_ref = a.application_ref
+                      AND component.component_ref = %s
+                )
+                """
+            )
+            parameters.append(query.component_ref)
+
+        where = "" if not conditions else " WHERE " + " AND ".join(conditions)
+        order_by = {
+            ApplicationSortField.NAME: "a.name",
+            ApplicationSortField.APPLICATION_REF: "a.application_ref",
+        }[query.sort_by]
+        direction = "ASC" if query.sort_direction is SortDirection.ASC else "DESC"
+        offset = (query.page - 1) * query.page_size
+
         with psycopg.connect(self._dsn) as connection:
+            total_row = connection.execute(
+                f"""
+                SELECT COUNT(*)
+                FROM application_communication_catalogue.application AS a
+                {where}
+                """,
+                parameters,
+            ).fetchone()
+            total = 0 if total_row is None else total_row[0]
             rows = connection.execute(
-                """SELECT application_ref FROM application_communication_catalogue.application ORDER BY name, application_ref"""
+                f"""
+                SELECT a.application_ref
+                FROM application_communication_catalogue.application AS a
+                {where}
+                ORDER BY {order_by} {direction}, a.application_ref ASC
+                LIMIT %s OFFSET %s
+                """,
+                (*parameters, query.page_size, offset),
             ).fetchall()
-        return tuple(value for (ref,) in rows if (value := self.get_application(ref)) is not None)
+
+        items = tuple(value for (ref,) in rows if (value := self.get_application(ref)) is not None)
+        return ApplicationCataloguePage(
+            items=items,
+            total=total,
+            page=query.page,
+            page_size=query.page_size,
+        )
 
     def get_application(self, application_ref: UUID) -> Application | None:
         with psycopg.connect(self._dsn) as connection:

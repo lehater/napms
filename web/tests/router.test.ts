@@ -30,6 +30,11 @@ test("canonical reference routes decode stable references", () => {
   assert.equal(parseRoute("/applications/app-1/components/new").id, "component-new");
   assert.equal(parseRoute("/applications/app-1").id, "application-detail");
   assert.equal(parseRoute("/interactions/i-1/revisions/new").id, "revision-new");
+  assert.deepEqual(parseRoute("/deployments/d%201"), {
+    id: "deployment-detail",
+    path: "/deployments/d%201",
+    deploymentRef: "d 1",
+  });
   assert.equal(parseRoute("/business-processes/p-1").id, "process-detail");
   assert.equal(parseRoute("/access-requests/a-1/decision").id, "access-request-decision");
   assert.equal(parseRoute("/policy-rules/rule-1").id, "policy-rule-detail");

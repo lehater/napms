@@ -1,6 +1,5 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { AppShell } from "../components/AppShell";
 import { AccessRequestScreens } from "../features/access-requests/AccessRequestScreens";
 import {
   ApplicationCatalogue,
@@ -15,9 +14,9 @@ import {
   ResourceCatalogue,
   ResourceDetail,
 } from "../features/resources/ResourceScreens";
-import { parseRoute, type Route } from "./router";
-import "../design-system/tokens.css";
-import "../design-system/base.css";
+import { AppShell, PresentationRoot } from "../presentation";
+import { primaryNavigation } from "./navigation";
+import { navigate, parseRoute, type Route } from "./router";
 
 function App() {
   const [route, setRoute] = useState<Route>(() =>
@@ -58,6 +57,8 @@ function App() {
     screen = <DeploymentScreens />;
   } else if (route.id === "deployment-new") {
     screen = <DeploymentScreens create />;
+  } else if (route.id === "deployment-detail") {
+    screen = <DeploymentScreens deploymentRef={route.deploymentRef} />;
   } else if (route.id === "processes") {
     screen = <BusinessConnectivity />;
   } else if (route.id === "process-new") {
@@ -78,19 +79,29 @@ function App() {
     screen = <PolicyExportScreen />;
   } else {
     screen = (
-      <section className="panel">
+      <section>
         <h2>Not found</h2>
       </section>
     );
   }
 
-  return <AppShell>{screen}</AppShell>;
+  return (
+    <AppShell
+      items={primaryNavigation}
+      currentPath={window.location.pathname}
+      onNavigate={navigate}
+    >
+      {screen}
+    </AppShell>
+  );
 }
 
 const root = document.getElementById("root");
 if (root === null) throw new Error("Missing #root mount point");
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <PresentationRoot>
+      <App />
+    </PresentationRoot>
   </StrictMode>,
 );

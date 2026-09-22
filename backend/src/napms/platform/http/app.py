@@ -5,12 +5,21 @@ from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
-from fastapi import Depends, FastAPI, Header, HTTPException, status
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict
 
 from napms.contexts.access_policy.application.ports import (
     AccessPolicyNotFound,
     AccessPolicyVersionConflict,
+)
+from napms.contexts.access_policy.application.queries import (
+    AccessRequestCataloguePage,
+    AccessRequestCatalogueQuery,
+    AccessRequestSortField,
+    PolicyRuleCataloguePage,
+    PolicyRuleCatalogueQuery,
+    PolicyRuleSortField,
+    SortDirection as AccessPolicySortDirection,
 )
 from napms.contexts.access_policy.application.submission import AccessRequestSubmissionRejected
 from napms.contexts.access_policy.domain.model import (
@@ -116,12 +125,20 @@ class PolicyMaterializer(Protocol):
 
 class AccessRequestReader(Protocol):
     def get_request(self, request_ref: UUID) -> AccessRequest | None: ...
-    def list_requests(self) -> tuple[AccessRequest, ...]: ...
+
+    def query_requests(
+        self,
+        query: AccessRequestCatalogueQuery,
+    ) -> AccessRequestCataloguePage: ...
 
 
 class PolicyRuleReader(Protocol):
     def get_rule(self, rule_ref: UUID) -> PolicyRule | None: ...
-    def list_rules(self) -> tuple[PolicyRule, ...]: ...
+
+    def query_rules(
+        self,
+        query: PolicyRuleCatalogueQuery,
+    ) -> PolicyRuleCataloguePage: ...
 
 
 class SubmitAccessRequestBody(_Body):
@@ -287,13 +304,53 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         }
 
     @app.get("/v1/access-requests")
-    def list_access_requests(caller: Principal = Depends(principal)) -> list[dict[str, object]]:
+    def list_access_requests(
+        search: str | None = Query(default=None, max_length=200),
+        source_deployment_ref: UUID | None = Query(
+            default=None,
+            alias="sourceDeploymentRef",
+        ),
+        destination_deployment_ref: UUID | None = Query(
+            default=None,
+            alias="destinationDeploymentRef",
+        ),
+        decision_result: PermissionDecision | None = Query(
+            default=None,
+            alias="decisionResult",
+        ),
+        sort_by: AccessRequestSortField = Query(
+            default=AccessRequestSortField.SUBMITTED_AT,
+            alias="sortBy",
+        ),
+        sort_direction: AccessPolicySortDirection = Query(
+            default=AccessPolicySortDirection.ASC,
+            alias="sortDirection",
+        ),
+        page: int = Query(default=1, ge=1),
+        page_size: int = Query(default=25, ge=1, le=100, alias="pageSize"),
+        caller: Principal = Depends(principal),
+    ) -> dict[str, object]:
         require_permission(caller, "access.manage")
         if dependencies.access_request_reader is None:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
-        return [
-            access_request_view(item) for item in dependencies.access_request_reader.list_requests()
-        ]
+        result = dependencies.access_request_reader.query_requests(
+            AccessRequestCatalogueQuery(
+                search=search.strip() if search and search.strip() else None,
+                source_deployment_ref=source_deployment_ref,
+                destination_deployment_ref=destination_deployment_ref,
+                decision_result=decision_result,
+                sort_by=sort_by,
+                sort_direction=sort_direction,
+                page=page,
+                page_size=page_size,
+            )
+        )
+        return {
+            "items": [access_request_view(item) for item in result.items],
+            "total": result.total,
+            "page": result.page,
+            "pageSize": result.page_size,
+        }
 
     @app.get("/v1/access-requests/{request_ref}")
     def get_access_request(
@@ -490,11 +547,53 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
         return {"policyRuleRef": str(rule.rule_ref), "version": rule.version}
 
     @app.get("/v1/policy-rules")
-    def list_policy_rules(caller: Principal = Depends(principal)) -> list[dict[str, object]]:
+    def list_policy_rules(
+        search: str | None = Query(default=None, max_length=200),
+        source_deployment_ref: UUID | None = Query(
+            default=None,
+            alias="sourceDeploymentRef",
+        ),
+        destination_deployment_ref: UUID | None = Query(
+            default=None,
+            alias="destinationDeploymentRef",
+        ),
+        effect_state: RuleEffectState | None = Query(
+            default=None,
+            alias="effectState",
+        ),
+        sort_by: PolicyRuleSortField = Query(
+            default=PolicyRuleSortField.POLICY_RULE_REF,
+            alias="sortBy",
+        ),
+        sort_direction: AccessPolicySortDirection = Query(
+            default=AccessPolicySortDirection.ASC,
+            alias="sortDirection",
+        ),
+        page: int = Query(default=1, ge=1),
+        page_size: int = Query(default=25, ge=1, le=100, alias="pageSize"),
+        caller: Principal = Depends(principal),
+    ) -> dict[str, object]:
         require_permission(caller, "policy.read")
         if dependencies.policy_rules is None:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
-        return [policy_rule_view(item) for item in dependencies.policy_rules.list_rules()]
+        result = dependencies.policy_rules.query_rules(
+            PolicyRuleCatalogueQuery(
+                search=search.strip() if search and search.strip() else None,
+                source_deployment_ref=source_deployment_ref,
+                destination_deployment_ref=destination_deployment_ref,
+                effect_state=effect_state,
+                sort_by=sort_by,
+                sort_direction=sort_direction,
+                page=page,
+                page_size=page_size,
+            )
+        )
+        return {
+            "items": [policy_rule_view(item) for item in result.items],
+            "total": result.total,
+            "page": result.page,
+            "pageSize": result.page_size,
+        }
 
     @app.get("/v1/policy-rules/{rule_ref}")
     def get_policy_rule(

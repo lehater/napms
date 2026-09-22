@@ -6,6 +6,10 @@ from napms.contexts.application_deployment.application.ports import (
     ComponentDeploymentRepository,
     DeploymentNotFound,
 )
+from napms.contexts.application_deployment.application.queries import (
+    DeploymentCataloguePage,
+    DeploymentCatalogueQuery,
+)
 from napms.contexts.application_deployment.domain.model import ComponentDeployment
 from napms.contexts.resource_catalogue.application.ports import ResourceResolver
 
@@ -24,8 +28,11 @@ class ApplicationDeploymentService:
         self._resources = resources
         self._new_ref = new_ref
 
-    def list_component_deployments(self) -> tuple[ComponentDeployment, ...]:
-        return self._deployments.list()
+    def list_component_deployments(
+        self,
+        query: DeploymentCatalogueQuery,
+    ) -> DeploymentCataloguePage:
+        return self._deployments.query_deployments(query)
 
     def register_component_deployment(
         self,

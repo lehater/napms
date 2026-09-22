@@ -1,17 +1,27 @@
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 import psycopg
 import pytest
 
+from napms.contexts.access_policy.application.queries import (
+    AccessRequestCatalogueQuery,
+    AccessRequestSortField,
+    PolicyRuleCatalogueQuery,
+    PolicyRuleSortField,
+    SortDirection,
+)
 from napms.contexts.access_policy.domain.model import (
     AccessRequest,
     AccessSubject,
     AuthorizationEvidence,
+    EffectiveWindow,
     JustificationAssociation,
+    PermissionDecision,
     PolicyRule,
     RequestAuthorityEvidence,
+    RuleEffectState,
 )
 from napms.contexts.access_policy.infrastructure.persistence.postgres.migration import migrate
 from napms.contexts.access_policy.infrastructure.persistence.postgres.repository import (
@@ -84,3 +94,196 @@ def test_request_and_rule_evidence_round_trip() -> None:
     assert repository.get_request(request.request_ref) == request
     assert repository.get_rule(rule.rule_ref) == rule
     assert repository.find_rule_by_subject(subject) == rule
+
+
+def test_access_request_catalogue_query_applies_filters_sort_and_paging() -> None:
+    repository = PostgresAccessPolicyRepository(DSN)
+    source_a = UUID(int=101)
+    source_b = UUID(int=102)
+    destination = UUID(int=201)
+
+    def make_request(
+        ref: int,
+        *,
+        source: UUID,
+        submitted_offset: int,
+        decision: PermissionDecision | None,
+    ) -> AccessRequest:
+        submitted_at = NOW + timedelta(minutes=submitted_offset)
+        value = AccessRequest.submit(
+            request_ref=UUID(int=ref),
+            access_subject=AccessSubject(source, destination, UUID(int=301)),
+            initial_need_ref=UUID(int=401),
+            validated_business_process_version=1,
+            submitter_subject="subject:alice",
+            submitted_at=submitted_at,
+            authority_evidence=(
+                RequestAuthorityEvidence(
+                    UUID(int=ref + 1000),
+                    "scope:a",
+                    "access.request",
+                    None,
+                    None,
+                    submitted_at,
+                ),
+            ),
+        )
+        if decision is None:
+            return value
+        return value.decide(
+            result=decision,
+            decided_by_subject="subject:approver",
+            decided_at=submitted_at + timedelta(minutes=1),
+        )
+
+    allowed_old = make_request(
+        501,
+        source=source_a,
+        submitted_offset=1,
+        decision=PermissionDecision.ALLOWED,
+    )
+    allowed_new = make_request(
+        502,
+        source=source_a,
+        submitted_offset=2,
+        decision=PermissionDecision.ALLOWED,
+    )
+    denied = make_request(
+        503,
+        source=source_b,
+        submitted_offset=3,
+        decision=PermissionDecision.DENIED,
+    )
+    for value in (allowed_old, allowed_new, denied):
+        repository.add_request(value)
+
+    first = repository.query_requests(
+        AccessRequestCatalogueQuery(
+            source_deployment_ref=source_a,
+            destination_deployment_ref=destination,
+            decision_result=PermissionDecision.ALLOWED,
+            sort_by=AccessRequestSortField.SUBMITTED_AT,
+            sort_direction=SortDirection.DESC,
+            page=1,
+            page_size=1,
+        )
+    )
+    assert first.total == 2
+    assert [item.request_ref for item in first.items] == [allowed_new.request_ref]
+
+    second = repository.query_requests(
+        AccessRequestCatalogueQuery(
+            source_deployment_ref=source_a,
+            decision_result=PermissionDecision.ALLOWED,
+            sort_by=AccessRequestSortField.SUBMITTED_AT,
+            sort_direction=SortDirection.DESC,
+            page=2,
+            page_size=1,
+        )
+    )
+    assert [item.request_ref for item in second.items] == [allowed_old.request_ref]
+
+    searched = repository.query_requests(
+        AccessRequestCatalogueQuery(search=str(denied.request_ref)[-8:])
+    )
+    assert searched.total == 1
+    assert [item.request_ref for item in searched.items] == [denied.request_ref]
+
+
+def test_policy_rule_catalogue_query_applies_filters_sort_and_paging() -> None:
+    repository = PostgresAccessPolicyRepository(DSN)
+    source_a = UUID(int=601)
+    source_b = UUID(int=602)
+    destination = UUID(int=701)
+
+    def make_rule(
+        ref: int,
+        *,
+        source: UUID,
+        state: RuleEffectState,
+    ) -> PolicyRule:
+        request_ref = UUID(int=ref + 100)
+        need_ref = UUID(int=ref + 200)
+        subject = AccessSubject(source, destination, UUID(int=ref + 800))
+        request = AccessRequest.submit(
+            request_ref=request_ref,
+            access_subject=subject,
+            initial_need_ref=need_ref,
+            validated_business_process_version=1,
+            submitter_subject="subject:alice",
+            submitted_at=NOW,
+            authority_evidence=(
+                RequestAuthorityEvidence(
+                    UUID(int=ref + 300),
+                    "scope:a",
+                    "access.request",
+                    None,
+                    None,
+                    NOW,
+                ),
+            ),
+        )
+        repository.add_request(request)
+        rule = PolicyRule.create_allowed(
+            rule_ref=UUID(int=ref),
+            access_subject=subject,
+            authorization_evidence=AuthorizationEvidence(
+                UUID(int=ref + 400),
+                request_ref,
+                None,
+                "subject:approver",
+                NOW,
+            ),
+            justification=JustificationAssociation(
+                UUID(int=ref + 500),
+                need_ref,
+                NOW,
+                "subject:approver",
+                request_ref,
+            ),
+            history_ref=UUID(int=ref + 600),
+        )
+        if state is RuleEffectState.INACTIVE:
+            rule = rule.set_operational_state(
+                effect_state=RuleEffectState.INACTIVE,
+                effective_window=EffectiveWindow(),
+                history_ref=UUID(int=ref + 700),
+                changed_by_subject="subject:operator",
+                changed_at=NOW + timedelta(minutes=1),
+            )
+        repository.add_rule(rule)
+        return rule
+
+    active_old = make_rule(901, source=source_a, state=RuleEffectState.ACTIVE)
+    active_new = make_rule(902, source=source_a, state=RuleEffectState.ACTIVE)
+    inactive = make_rule(903, source=source_b, state=RuleEffectState.INACTIVE)
+
+    first = repository.query_rules(
+        PolicyRuleCatalogueQuery(
+            source_deployment_ref=source_a,
+            destination_deployment_ref=destination,
+            effect_state=RuleEffectState.ACTIVE,
+            sort_by=PolicyRuleSortField.POLICY_RULE_REF,
+            sort_direction=SortDirection.DESC,
+            page=1,
+            page_size=1,
+        )
+    )
+    assert first.total == 2
+    assert [item.rule_ref for item in first.items] == [active_new.rule_ref]
+
+    second = repository.query_rules(
+        PolicyRuleCatalogueQuery(
+            source_deployment_ref=source_a,
+            effect_state=RuleEffectState.ACTIVE,
+            sort_by=PolicyRuleSortField.POLICY_RULE_REF,
+            sort_direction=SortDirection.DESC,
+            page=2,
+            page_size=1,
+        )
+    )
+    assert [item.rule_ref for item in second.items] == [active_old.rule_ref]
+
+    searched = repository.query_rules(PolicyRuleCatalogueQuery(search=str(inactive.rule_ref)[-8:]))
+    assert searched.total == 1
+    assert [item.rule_ref for item in searched.items] == [inactive.rule_ref]

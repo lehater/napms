@@ -7,6 +7,12 @@ from uuid import UUID
 import psycopg
 
 from napms.contexts.resource_catalogue.application.ports import ResourceVersionConflict
+from napms.contexts.resource_catalogue.application.queries import (
+    ResourceCataloguePage,
+    ResourceCatalogueQuery,
+    ResourceSortField,
+    SortDirection,
+)
 from napms.contexts.resource_catalogue.domain.model import (
     AddressFact,
     AddressKind,
@@ -39,12 +45,70 @@ class PostgresResourceCatalogueRepository:
                 ),
             )
 
-    def list(self) -> tuple[Resource, ...]:
+    def query(self, query: ResourceCatalogueQuery) -> ResourceCataloguePage:
+        conditions: list[str] = []
+        parameters: list[object] = []
+
+        if query.search:
+            search = query.search.strip()
+            if search:
+                conditions.append(
+                    "(r.display_name ILIKE %s OR CAST(r.resource_ref AS text) ILIKE %s)"
+                )
+                pattern = f"%{search}%"
+                parameters.extend((pattern, pattern))
+
+        if query.authority_scope_ref:
+            conditions.append("r.authority_scope_ref = %s")
+            parameters.append(query.authority_scope_ref)
+
+        if query.site_ref is not None:
+            conditions.append(
+                """
+                EXISTS (
+                    SELECT 1
+                    FROM resource_catalogue.resource_site_history AS site
+                    WHERE site.resource_ref = r.resource_ref
+                      AND site.effective_to IS NULL
+                      AND site.site_ref = %s
+                )
+                """
+            )
+            parameters.append(query.site_ref)
+
+        where = "" if not conditions else " WHERE " + " AND ".join(conditions)
+        order_by = {
+            ResourceSortField.DISPLAY_NAME: "r.display_name",
+            ResourceSortField.RESOURCE_REF: "r.resource_ref",
+            ResourceSortField.AUTHORITY_SCOPE_REF: "r.authority_scope_ref",
+        }[query.sort_by]
+        direction = "ASC" if query.sort_direction is SortDirection.ASC else "DESC"
+        offset = (query.page - 1) * query.page_size
+
         with psycopg.connect(self._dsn) as connection:
+            total_row = connection.execute(
+                f"SELECT COUNT(*) FROM resource_catalogue.resource AS r{where}",
+                parameters,
+            ).fetchone()
+            total = 0 if total_row is None else total_row[0]
             rows = connection.execute(
-                """SELECT resource_ref FROM resource_catalogue.resource ORDER BY display_name, resource_ref"""
+                f"""
+                SELECT r.resource_ref
+                FROM resource_catalogue.resource AS r
+                {where}
+                ORDER BY {order_by} {direction}, r.resource_ref ASC
+                LIMIT %s OFFSET %s
+                """,
+                (*parameters, query.page_size, offset),
             ).fetchall()
-        return tuple(resource for (ref,) in rows if (resource := self.get(ref)) is not None)
+
+        items = tuple(resource for (ref,) in rows if (resource := self.get(ref)) is not None)
+        return ResourceCataloguePage(
+            items=items,
+            total=total,
+            page=query.page,
+            page_size=query.page_size,
+        )
 
     def get(self, resource_ref: UUID) -> Resource | None:
         with psycopg.connect(self._dsn) as connection:

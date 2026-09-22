@@ -3,6 +3,10 @@ from __future__ import annotations
 from typing import Protocol
 from uuid import UUID
 
+from napms.contexts.business_connectivity.application.queries import (
+    BusinessProcessCataloguePage,
+    BusinessProcessCatalogueQuery,
+)
 from napms.contexts.business_connectivity.domain.model import BusinessProcess, ConnectivityNeed
 
 
@@ -17,7 +21,10 @@ class BusinessConnectivityVersionConflict(Exception):
 class BusinessProcessRepository(Protocol):
     def add(self, process: BusinessProcess) -> None: ...
 
-    def list_processes(self) -> tuple[BusinessProcess, ...]: ...
+    def query_processes(
+        self,
+        query: BusinessProcessCatalogueQuery,
+    ) -> BusinessProcessCataloguePage: ...
 
     def get_process(self, process_ref: UUID) -> BusinessProcess | None: ...
 

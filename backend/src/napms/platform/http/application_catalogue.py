@@ -3,12 +3,17 @@ from __future__ import annotations
 from typing import Protocol
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from napms.contexts.application_communication_catalogue.application.ports import (
     CatalogueNotFound,
     CatalogueVersionConflict,
+)
+from napms.contexts.application_communication_catalogue.application.queries import (
+    ApplicationCatalogueQuery,
+    ApplicationSortField,
+    SortDirection,
 )
 from napms.contexts.application_communication_catalogue.application.service import (
     ApplicationCommunicationCatalogue,
@@ -87,21 +92,48 @@ def router(
 
     @api.get("/applications")
     def list_applications(
+        search: str | None = Query(default=None, max_length=200),
+        component_ref: UUID | None = Query(default=None, alias="componentRef"),
+        sort_by: ApplicationSortField = Query(
+            default=ApplicationSortField.NAME,
+            alias="sortBy",
+        ),
+        sort_direction: SortDirection = Query(
+            default=SortDirection.ASC,
+            alias="sortDirection",
+        ),
+        page: int = Query(default=1, ge=1),
+        page_size: int = Query(default=25, ge=1, le=100, alias="pageSize"),
         caller: Principal = Depends(identity),
-    ) -> list[dict[str, object]]:
+    ) -> dict[str, object]:
         permission(caller, "application.read")
-        return [
-            {
-                "applicationRef": str(value.application_ref),
-                "name": value.name,
-                "version": value.version,
-                "components": [
-                    {"componentRef": str(item.component_ref), "name": item.name}
-                    for item in value.components
-                ],
-            }
-            for value in catalogue.list_applications()
-        ]
+        result = catalogue.list_applications(
+            ApplicationCatalogueQuery(
+                search=search.strip() if search and search.strip() else None,
+                component_ref=component_ref,
+                sort_by=sort_by,
+                sort_direction=sort_direction,
+                page=page,
+                page_size=page_size,
+            )
+        )
+        return {
+            "items": [
+                {
+                    "applicationRef": str(value.application_ref),
+                    "name": value.name,
+                    "version": value.version,
+                    "components": [
+                        {"componentRef": str(item.component_ref), "name": item.name}
+                        for item in value.components
+                    ],
+                }
+                for value in result.items
+            ],
+            "total": result.total,
+            "page": result.page,
+            "pageSize": result.page_size,
+        }
 
     @api.get("/applications/{application_ref}")
     def get_application(

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Protocol
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict
 
 from napms.contexts.authority_management.domain.model import Principal
@@ -15,6 +15,12 @@ from napms.contexts.resource_catalogue.application.commands import (
 from napms.contexts.resource_catalogue.application.ports import (
     ResourceNotFound,
     ResourceVersionConflict,
+)
+from napms.contexts.resource_catalogue.application.queries import (
+    ResourceCataloguePage,
+    ResourceCatalogueQuery,
+    ResourceSortField,
+    SortDirection,
 )
 from napms.contexts.resource_catalogue.domain.model import (
     AddressKind,
@@ -85,10 +91,40 @@ def router(
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
 
     @api.get("/resources")
-    def list_resources(caller: Principal = Depends(identity)) -> list[dict[str, object]]:
+    def list_resources(
+        search: str | None = Query(default=None, max_length=200),
+        authority_scope_ref: str | None = Query(default=None, alias="authorityScopeRef"),
+        site_ref: UUID | None = Query(default=None, alias="siteRef"),
+        sort_by: ResourceSortField = Query(
+            default=ResourceSortField.DISPLAY_NAME,
+            alias="sortBy",
+        ),
+        sort_direction: SortDirection = Query(
+            default=SortDirection.ASC,
+            alias="sortDirection",
+        ),
+        page: int = Query(default=1, ge=1),
+        page_size: int = Query(default=25, ge=1, le=100, alias="pageSize"),
+        caller: Principal = Depends(identity),
+    ) -> dict[str, object]:
         if "resource.read" not in caller.instance_permissions:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-        return [_view(value) for value in application.list_resources()]
+        result = application.list_resources(
+            ResourceCatalogueQuery(
+                search=search.strip() if search and search.strip() else None,
+                authority_scope_ref=(
+                    authority_scope_ref.strip()
+                    if authority_scope_ref and authority_scope_ref.strip()
+                    else None
+                ),
+                site_ref=site_ref,
+                sort_by=sort_by,
+                sort_direction=sort_direction,
+                page=page,
+                page_size=page_size,
+            )
+        )
+        return _page_view(result)
 
     @api.post("/resources", status_code=status.HTTP_201_CREATED)
     def create_resource(
@@ -224,6 +260,15 @@ def router(
         )
 
     return api
+
+
+def _page_view(page: ResourceCataloguePage) -> dict[str, object]:
+    return {
+        "items": [_view(value) for value in page.items],
+        "total": page.total,
+        "page": page.page,
+        "pageSize": page.page_size,
+    }
 
 
 def _view(resource: Resource) -> dict[str, object]:

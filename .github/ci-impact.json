@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "groups": {
+    "backend_quality": [
+      "backend/**",
+      "Makefile",
+      ".github/workflows/implementation-quality.yml",
+      ".github/ci-impact.json",
+      "tools/ci_impact.py"
+    ],
+    "frontend_quality": [
+      "web/**",
+      "Makefile",
+      ".github/workflows/implementation-quality.yml",
+      ".github/ci-impact.json",
+      "tools/ci_impact.py"
+    ],
+    "core": [
+      "backend/src/**",
+      "backend/tests/**",
+      "backend/pyproject.toml",
+      "Makefile",
+      ".github/workflows/ci.yml",
+      ".github/ci-impact.json",
+      "tools/ci_impact.py"
+    ],
+    "postgres": [
+      "backend/src/napms/contexts/**/infrastructure/persistence/postgres/**",
+      "backend/src/napms/platform/**",
+      "backend/tests/integration/postgres/**",
+      "backend/requirements.lock",
+      "backend/pyproject.toml",
+      "Makefile",
+      ".github/workflows/postgres.yml",
+      ".github/ci-impact.json",
+      "tools/ci_impact.py"
+    ],
+    "design": [
+      "AGENTS.md",
+      ".agents/**",
+      "backend/tests/evals/**",
+      "docs/README.md",
+      ".harness-version",
+      "docs/canonical-graph.yaml",
+      "docs/harness-engineering-graph.yaml",
+      "docs/harness-projection.yaml",
+      "docs/engineering-knowledge-completeness.yaml",
+      "docs/requirements/**",
+      "docs/discovery/**",
+      "docs/model/**",
+      "docs/architecture/**",
+      "docs/contracts/**",
+      "docs/plans/**",
+      "docs/spec/harness-control-plane.yaml",
+      "docs/spec/repository-layout.md",
+      "docs/spec/artifacts.md",
+      "docs/meta/current-workstream.yaml",
+      "tools/check_canonical_graph.py",
+      "tools/check_harness_integration.py",
+      "tools/check_design_closure.py",
+      "tools/prepare_authority_execution.py",
+      "tools/check_knowledge_completeness.py",
+      "tools/check_frontend_design_closure.py",
+      "tools/check_frontend_provider_mapping.py",
+      "tools/evaluate_frontend_presentation_semantics.py",
+      "tools/check_openapi_contract.py",
+      "tools/check_persistence_model.py",
+      "tools/check_design_control.py",
+      "tools/validate_skill_routing.py",
+      "tools/generate_*_view.py",
+      "tools/generate_*_views.py",
+      "tools/generate_persistence_erd.py",
+      "tools/generate_human_context_package.py",
+      "Makefile",
+      ".github/workflows/design.yml",
+      ".github/ci-impact.json",
+      "tools/ci_impact.py"
+    ],
+    "architecture": [
+      ".harness-version",
+      "docs/canonical-graph.yaml",
+      "docs/model/**",
+      "docs/architecture/**",
+      "tools/generate_*_view.py",
+      "tools/generate_*_views.py",
+      "tools/generate_persistence_erd.py",
+      "Makefile",
+      ".github/workflows/architecture.yml",
+      ".github/ci-impact.json",
+      "tools/ci_impact.py"
+    ],
+    "engineering_coverage": [
+      "docs/**",
+      ".harness-version",
+      "tools/evaluate_frontend_presentation_semantics.py",
+      ".github/workflows/engineering-coverage.yml",
+      ".github/ci-impact.json",
+      "tools/ci_impact.py"
+    ],
+    "unified_harness": [
+      ".harness-version",
+      "docs/canonical-graph.yaml",
+      "docs/harness-engineering-graph.yaml",
+      "docs/harness-projection.yaml",
+      "tools/check_harness_integration.py",
+      "tools/prepare_authority_execution.py",
+      ".github/workflows/unified-harness.yml",
+      ".github/ci-impact.json",
+      "tools/ci_impact.py"
+    ]
+  }
+}

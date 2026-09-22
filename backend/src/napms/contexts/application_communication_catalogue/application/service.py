@@ -3,6 +3,10 @@ from __future__ import annotations
 from collections.abc import Callable
 from uuid import UUID, uuid4
 
+from napms.contexts.application_communication_catalogue.application.queries import (
+    ApplicationCataloguePage,
+    ApplicationCatalogueQuery,
+)
 from napms.contexts.application_communication_catalogue.application.ports import (
     ApplicationRepository,
     CatalogueNotFound,
@@ -31,8 +35,8 @@ class ApplicationCommunicationCatalogue:
         self._components = components
         self._new_ref = new_ref
 
-    def list_applications(self) -> tuple[Application, ...]:
-        return self._applications.list_applications()
+    def list_applications(self, query: ApplicationCatalogueQuery) -> ApplicationCataloguePage:
+        return self._applications.query_applications(query)
 
     def get_application_detail(
         self, application_ref: UUID

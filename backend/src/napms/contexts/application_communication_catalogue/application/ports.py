@@ -4,6 +4,10 @@ from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
 
+from napms.contexts.application_communication_catalogue.application.queries import (
+    ApplicationCataloguePage,
+    ApplicationCatalogueQuery,
+)
 from napms.contexts.application_communication_catalogue.domain.model import (
     Application,
     Component,
@@ -22,7 +26,7 @@ class CatalogueVersionConflict(Exception):
 
 class ApplicationRepository(Protocol):
     def add(self, application: Application) -> None: ...
-    def list_applications(self) -> tuple[Application, ...]: ...
+    def query_applications(self, query: ApplicationCatalogueQuery) -> ApplicationCataloguePage: ...
     def get_application(self, application_ref: UUID) -> Application | None: ...
     def save_application(self, application: Application, *, expected_version: int) -> None: ...
 

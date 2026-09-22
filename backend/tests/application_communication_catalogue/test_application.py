@@ -2,6 +2,10 @@ from uuid import UUID
 
 import pytest
 
+from napms.contexts.application_communication_catalogue.application.queries import (
+    ApplicationCataloguePage,
+    ApplicationCatalogueQuery,
+)
 from napms.contexts.application_communication_catalogue.application.service import (
     ApplicationCommunicationCatalogue,
 )
@@ -16,9 +20,19 @@ from napms.contexts.application_communication_catalogue.domain.model import (
 class Applications:
     def __init__(self) -> None:
         self.values: dict[UUID, Application] = {}
+        self.last_query: ApplicationCatalogueQuery | None = None
 
     def add(self, application: Application) -> None:
         self.values[application.application_ref] = application
+
+    def query_applications(self, query: ApplicationCatalogueQuery) -> ApplicationCataloguePage:
+        self.last_query = query
+        return ApplicationCataloguePage(
+            items=tuple(self.values.values()),
+            total=len(self.values),
+            page=query.page,
+            page_size=query.page_size,
+        )
 
     def get(self, application_ref: UUID) -> Application | None:
         return self.values.get(application_ref)
@@ -111,3 +125,22 @@ def test_revision_requires_non_empty_traffic_semantics() -> None:
         subject="subject:alice",
     )
     assert updated.revisions[0].revision_ref == UUID(int=21)
+
+
+def test_application_catalogue_query_is_delegated_to_read_model() -> None:
+    applications = Applications()
+    item = Application.create(application_ref=UUID(int=30), name="Payments")
+    applications.add(item)
+    service = ApplicationCommunicationCatalogue(
+        applications=applications,
+        interactions=Interactions(),
+        components=Components(),
+    )
+    query = ApplicationCatalogueQuery(search="Payments", page=2, page_size=10)
+
+    result = service.list_applications(query)
+
+    assert applications.last_query == query
+    assert result.items == (item,)
+    assert result.page == 2
+    assert result.page_size == 10

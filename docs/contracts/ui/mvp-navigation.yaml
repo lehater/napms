@@ -10,7 +10,8 @@ workspaces:
   - {id: RESOURCE-DETAIL, responsibility: Inspect and author one Resource current state and history.}
   - {id: APPLICATION-CATALOGUE, responsibility: Locate/select reusable Applications.}
   - {id: APPLICATION-DETAIL, responsibility: Author one Application with Components and directed Interactions.}
-  - {id: DEPLOYMENTS, responsibility: Locate/create Component deployments and inspect their Resource realization.}
+  - {id: DEPLOYMENTS, responsibility: Locate/create Component deployments and open one Deployment.}
+  - {id: DEPLOYMENT-DETAIL, responsibility: Inspect one ComponentDeployment and its Resource realization.}
   - {id: BUSINESS-CONNECTIVITY, responsibility: Manage Business Processes and Connectivity Needs independently from permission.}
   - {id: ACCESS-REQUESTS, responsibility: Submit connectivity requests and inspect/record permission outcomes allowed by authority.}
   - {id: POLICY-RULES, responsibility: Inspect authoritative desired-access rules and change supported operational state.}
@@ -28,6 +29,7 @@ routes:
   - {path: /interactions/:interactionRef/revisions/new, workspace: APPLICATION-DETAIL, identity: InteractionId, mode: publish-revision}
   - {path: /deployments, workspace: DEPLOYMENTS}
   - {path: /deployments/new, workspace: DEPLOYMENTS, mode: create}
+  - {path: /deployments/:deploymentRef, workspace: DEPLOYMENT-DETAIL, identity: ComponentDeploymentId}
   - {path: /business-processes, workspace: BUSINESS-CONNECTIVITY}
   - {path: /business-processes/new, workspace: BUSINESS-CONNECTIVITY, mode: create-process}
   - {path: /business-processes/:processRef, workspace: BUSINESS-CONNECTIVITY, identity: BusinessProcessId}
@@ -43,7 +45,9 @@ transitions:
   - {from: APPLICATION-CATALOGUE, action: select-application, to: APPLICATION-DETAIL, identity: ApplicationId}
   - {from: APPLICATION-DETAIL, action: manage-components, to: APPLICATION-DETAIL, local_state: components}
   - {from: APPLICATION-DETAIL, action: manage-interactions, to: APPLICATION-DETAIL, local_state: interactions}
-  - {from: DEPLOYMENTS, action: create-or-select-deployment, to: DEPLOYMENTS, identity: ComponentDeploymentId}
+  - {from: DEPLOYMENTS, action: select-deployment, to: DEPLOYMENT-DETAIL, identity: ComponentDeploymentId}
+  - {from: DEPLOYMENTS, action: create-deployment, to: DEPLOYMENT-DETAIL, identity: ComponentDeploymentId}
+  - {from: DEPLOYMENT-DETAIL, action: return-to-catalogue, to: DEPLOYMENTS}
   - {from: BUSINESS-CONNECTIVITY, action: create-or-select-need, to: BUSINESS-CONNECTIVITY, identity: ConnectivityNeedId}
   - {from: ACCESS-REQUESTS, action: submit-request, to: ACCESS-REQUESTS, identity: AccessRequestId}
   - {from: ACCESS-REQUESTS, action: inspect-resulting-rule, to: POLICY-RULES, identity: PolicyRuleId}
@@ -76,7 +80,8 @@ journeys:
     subject: Deployment management
     steps:
       - Select a Component and Resource.
-      - Create/inspect a ComponentDeployment independent from the Resource current address.
+      - Create a ComponentDeployment independent from the Resource current address.
+      - Locate the Deployment in the catalogue and inspect its dedicated detail view.
   - id: BUSINESS-CONNECTIVITY
     subject: Business process and connectivity need
     steps:

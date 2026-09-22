@@ -65,8 +65,8 @@ ALL_PERMISSIONS = [
 def issue(profile: str) -> str:
     permissions = [] if profile == "restricted" else ALL_PERMISSIONS
     authority = [] if profile == "restricted" else [
-        {"action": "access.request", "scope": "*"},
-        {"action": "policy.export", "scope": "*"},
+        {"action": "access.request", "scope": "e2e-scope"},
+        {"action": "policy.export", "scope": "e2e-scope"},
     ]
     expiry = (
         datetime.now(timezone.utc) - timedelta(minutes=1)

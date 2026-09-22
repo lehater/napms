@@ -10,6 +10,8 @@ on:
       - "backend/requirements.lock"
       - "backend/pyproject.toml"
       - "Makefile"
+      - ".github/ci-impact.json"
+      - "tools/ci_impact.py"
       - ".github/workflows/postgres.yml"
   pull_request:
     branches: [main]
@@ -20,6 +22,8 @@ on:
       - "backend/requirements.lock"
       - "backend/pyproject.toml"
       - "Makefile"
+      - ".github/ci-impact.json"
+      - "tools/ci_impact.py"
       - ".github/workflows/postgres.yml"
 
 concurrency:
@@ -27,7 +31,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      postgres: ${{ steps.impact.outputs.postgres }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Select incremental persistence checks
+        id: impact
+        run: >-
+          python tools/ci_impact.py
+          --group postgres
+          --github-output "$GITHUB_OUTPUT"
+
   integration:
+    needs: changes
+    if: needs.changes.outputs.postgres == 'true'
     runs-on: ubuntu-latest
     services:
       postgres:

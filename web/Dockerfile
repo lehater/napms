@@ -5,7 +5,7 @@ WORKDIR /app/web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
-COPY web/index.html web/tsconfig.json web/vite.config.ts web/components.json ./
+COPY web/index.html web/tsconfig.json web/vite.config.ts ./
 COPY web/scripts ./scripts
 COPY web/src ./src
 COPY docs/contracts/ui/mvp-design-tokens.json /app/docs/contracts/ui/mvp-design-tokens.json

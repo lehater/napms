@@ -31,11 +31,82 @@ components:
     owns: authoritative desired-access inspection and operational-state workflows
   policy_export_feature:
     owns: selection/export/completeness-diagnostic workflows
-  presentation_components:
-    owns: reusable implementation primitives realizing accepted Presentation System patterns/tokens without becoming design authority
+  screen_application:
+    owns: feature-local query/command orchestration, transport-to-Screen-Model mapping and request lifecycle
+  presentation_facade:
+    owns: provider-neutral exports for the small set of accepted Presentation System patterns used by feature screens
+  presentation_provider_adapter:
+    owns: provider-specific realization of accepted presentation patterns, theme and template composition without adding product capabilities
+
+presentation_provider:
+  id: NAPMS-MUI-PROVIDER-V1
+  provider: mui-material
+  version: 9.4.0
+  feature_policy: {default: deny}
+  coverage_screens: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, APPLICATION-DETAIL, DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES, POLICY-EXPORT]
+  required_patterns: [APP-SHELL]
+  theme_tokens:
+    canonical_source: docs/contracts/ui/mvp-design-tokens.json
+    generated_provider_artifact: web/src/presentation/providers/mui/theme-tokens.generated.ts
+    generator: web/scripts/generate-mui-theme-tokens.mjs
+    rule: Canonical token changes must regenerate the MUI provider artifact; feature code never consumes provider tokens directly.
+  template_baseline:
+    provider: mui-material
+    artifact: official-crud-dashboard
+    source_ref: 548eaf46b9da61aabb721ea95eb81b33d8c2b8ff
+    role: composition-reference
+    policy: Selectively adopt shell/layout composition; template controls and routes have no product authority.
+  pattern_mappings:
+    APP-SHELL:
+      adapter: presentation/providers/mui/MuiAppShell
+      provider_primitives: [Box, Drawer, List, ListItemButton, Toolbar]
+    CATALOGUE:
+      adapter: presentation/providers/mui/MuiCataloguePattern
+      provider_primitives: [Box, Paper, Stack, Typography]
+    FILTER-BAR:
+      adapter: presentation/providers/mui/MuiFilterBar
+      provider_primitives: [Button, MenuItem, Stack, TextField]
+    STRUCTURED-LIST:
+      adapter: presentation/providers/mui/MuiStructuredListPattern
+      provider_primitives: [Button, List, ListItem, ListItemButton, ListItemText, Paper]
+    DATA-TABLE:
+      adapter: presentation/providers/mui/MuiDataTablePattern
+      provider_primitives: [ButtonBase, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TableSortLabel]
+    DETAIL:
+      adapter: presentation/providers/mui/MuiDetailPattern
+      provider_primitives: [Box, Paper, Stack, Typography]
+    EDITOR:
+      adapter: presentation/providers/mui/MuiEditorPattern
+      provider_primitives: [Button, MenuItem, Paper, Stack, TextField]
+    DISCLOSURE:
+      adapter: presentation/providers/mui/MuiDetailPattern
+      provider_primitives: [Accordion, AccordionDetails, AccordionSummary]
+    TASK-ACTIONS:
+      adapter: presentation/providers/mui/MuiTaskActions
+      provider_primitives: [Button, Stack]
+    STATUS:
+      adapter: presentation/providers/mui/MuiStatus
+      provider_primitives: [Alert, CircularProgress, Stack, Typography]
+    OUTCOME:
+      adapter: presentation/providers/mui/MuiOutcomePattern
+      provider_primitives: [Accordion, Alert, Box, Paper, Stack, Typography]
+    SCOPE-SELECTOR:
+      adapter: presentation/providers/mui/MuiScopeSelectorPattern
+      provider_primitives: [Button, Paper, Stack, TextField, Typography]
+  resource_catalogue_table_decision:
+    selected: mui-material-Table
+    rejected_for_current_semantics: mui-x-DataGrid
+    rationale: >-
+      RESOURCE-CATALOGUE accepts server-backed search/filter/sort/paging, but does
+      not require DataGrid-only capabilities such as virtualization, column management
+      or grid-owned client data operations. Plain Material Table plus project query
+      controls realizes the accepted semantics with the smaller dependency surface.
 
 rules:
-  - Feature components depend on the API boundary, not raw transport/client internals.
+  - Feature screen application code depends on the API boundary, not raw transport/client internals.
+  - Feature rendering imports the provider-neutral presentation facade; only provider adapter code may import the selected vendor UI packages.
+  - Provider/template optional features are disabled unless an accepted Screen/View capability and pattern feature binding authorizes them.
+  - Provider adapters realize semantic presentation patterns; they do not mirror the vendor component API behind a second framework.
   - DTOs are mapped at the API boundary; transport shapes do not become domain models.
   - Cross-feature shared state is avoided unless an accepted interaction requires it.
   - Shared visual/interaction primitives implement Presentation System roles and patterns; they do not invent screen-local semantics.

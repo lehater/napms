@@ -1,0 +1,34 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { serializeResourceCatalogueQuery } from "../src/app/resource-catalogue-query.ts";
+import {
+  defaultResourceCatalogueQuery,
+  toResourceCatalogueQuery,
+} from "../src/features/resources/resourceCatalogueQuery.ts";
+
+test("Resource catalogue query serialization preserves accepted server semantics", () => {
+  const query = toResourceCatalogueQuery({
+    ...defaultResourceCatalogueQuery,
+    search: "  edge gateway  ",
+    authorityScopeRef: "scope-1",
+    siteRef: "site-1",
+    sortBy: "resourceRef",
+    sortDirection: "desc",
+    page: 3,
+    pageSize: 50,
+  });
+
+  assert.equal(
+    serializeResourceCatalogueQuery(query),
+    "search=edge+gateway&authorityScopeRef=scope-1&siteRef=site-1&sortBy=resourceRef&sortDirection=desc&page=3&pageSize=50",
+  );
+});
+
+test("Resource catalogue query omits inactive filters", () => {
+  assert.equal(
+    serializeResourceCatalogueQuery(
+      toResourceCatalogueQuery(defaultResourceCatalogueQuery),
+    ),
+    "sortBy=displayName&sortDirection=asc&page=1&pageSize=25",
+  );
+});

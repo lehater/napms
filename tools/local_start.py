@@ -56,7 +56,13 @@ def read_only_smoke(*, base_url: str, token: str) -> None:
         if response.status != 200:
             raise RuntimeError("OIDC authenticated read probe failed")
         payload = json.load(response)
-        if not isinstance(payload, list):
+        if (
+            not isinstance(payload, dict)
+            or not isinstance(payload.get("items"), list)
+            or not isinstance(payload.get("total"), int)
+            or payload.get("page") != 1
+            or payload.get("pageSize") != 1
+        ):
             raise RuntimeError("authenticated read response is malformed")
 
 
@@ -71,11 +77,10 @@ def up(*, print_credentials: bool = True) -> None:
     env = os.environ.copy()
 
     try:
-        compose("up", "--build", "--detach", "oidc", env=env)
-        wait_oidc(oidc_url)
-        token = issue_local_token(oidc_url)
         compose("up", "--build", "--detach", "--remove-orphans", env=env)
+        wait_oidc(oidc_url)
         wait_ready(base_url)
+        token = issue_local_token(oidc_url)
         read_only_smoke(base_url=base_url, token=token)
     except Exception:
         compose("ps", env=env, check=False)

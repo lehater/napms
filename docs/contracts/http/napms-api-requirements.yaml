@@ -26,6 +26,7 @@ operations:
   - POST /v1/interactions/{interactionRef}/revisions
   - GET /v1/deployments
   - POST /v1/deployments
+  - GET /v1/deployments/{deploymentRef}
   - GET /v1/processes
   - GET /v1/processes/{processRef}
   - PUT /v1/processes/{processRef}/responsible-organization
@@ -43,6 +44,39 @@ operations:
   - GET /v1/policy-rules/{policyRuleRef}
   - POST /v1/policy-materializations
 
+catalogue_query_contract:
+  rule: >-
+    When a primary entity catalogue declares search/filter/sort/paging semantics,
+    the HTTP operation evaluates them over the complete authoritative collection;
+    the browser must not emulate those semantics over a partial page.
+  paging: {page: one-based, pageSize_default: 25, pageSize_max: 100}
+  ordering: sortBy is an operation-specific allow-list and sortDirection is [asc, desc].
+  response: {shape: page-envelope, fields: [items, total, page, pageSize]}
+  resource_catalogue:
+    search: [displayName, resourceRef]
+    filters: [authorityScopeRef, siteRef]
+    sort_by: [displayName, resourceRef, authorityScopeRef]
+  application_catalogue:
+    search: [name, applicationRef]
+    filters: [componentRef]
+    sort_by: [name, applicationRef]
+  deployment_catalogue:
+    search: [deploymentRef, componentRef, resourceRef]
+    filters: [componentRef, resourceRef]
+    sort_by: [deploymentRef, componentRef, resourceRef]
+  business_process_catalogue:
+    search: [name, processRef]
+    filters: [criticalityLabel, organizationExternalReference]
+    sort_by: [name, processRef, criticalityLabel]
+  access_request_catalogue:
+    search: [requestRef]
+    filters: [sourceDeploymentRef, destinationDeploymentRef, decisionResult]
+    sort_by: [submittedAt, requestRef, decisionResult]
+  policy_rule_catalogue:
+    search: [policyRuleRef]
+    filters: [sourceDeploymentRef, destinationDeploymentRef, effectState]
+    sort_by: [policyRuleRef, effectState]
+
 rules:
   - Authentication is OIDC Bearer token only; request bodies never contain trusted actor permission or authority fields.
   - access.request is admitted from effective scoped AuthorityGrants for every source/destination Resource AuthorityScopeRef at server-owned admissionAt.
@@ -59,6 +93,10 @@ rules:
   - Catalogue GET operations return authoritative read collections required by the accepted frontend catalogue workspaces and use the corresponding read permission.
   - GET /v1/applications/{applicationRef} returns Application identity/version, Components, and every directed Interaction touching those Components, including revision traffic semantics required by APPLICATION-DETAIL.
   - GET /v1/interactions/{interactionRef} reconstructs revision-authoring state after navigation or reload, including the authoritative current version and revision traffic semantics.
+  - GET /v1/deployments/{deploymentRef} returns immutable Deployment identity plus ComponentRef and ResourceRef required by DEPLOYMENT-DETAIL.
+  - GET /v1/processes applies the accepted Business Process search/filter/sort/paging contract over the authoritative collection before page selection.
+  - GET /v1/access-requests applies the accepted Access Request search/filter/sort/paging contract over the authoritative collection before page selection; PENDING remains presentation for a null decisionResult and is not a new decision enum.
+  - GET /v1/policy-rules applies the accepted Policy Rule search/filter/sort/paging contract over the authoritative collection before page selection without changing policy materialization selection semantics.
   - Connectivity Need retirement is an explicit optimistic-concurrency mutation; retirement preserves the Need and historical request/decision facts while changing its current status.
   - Access Request catalogue/detail reads expose immutable request subject, current decision outcome and version required by the canonical decision route.
   - Policy Rule catalogue/detail reads expose effective state plus authorization, business-justification and operational-history provenance required by the canonical Policy Rule workspace.

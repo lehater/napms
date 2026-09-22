@@ -4,14 +4,42 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
+from napms.contexts.access_policy.application.queries import (
+    AccessRequestCataloguePage,
+    AccessRequestCatalogueQuery,
+    AccessRequestSortField,
+    PolicyRuleCataloguePage,
+    PolicyRuleCatalogueQuery,
+    PolicyRuleSortField,
+    SortDirection as AccessPolicySortDirection,
+)
 from napms.contexts.access_policy.application.submission import AccessRequestSubmissionRejected
 from napms.contexts.access_policy.domain.model import (
     AccessRequest,
     AccessSubject,
+    AuthorizationEvidence,
+    JustificationAssociation,
+    PermissionDecision,
+    PolicyRule,
     RequestAuthorityEvidence,
+    RuleEffectState,
 )
+from napms.contexts.application_communication_catalogue.application.queries import (
+    ApplicationCataloguePage,
+    ApplicationCatalogueQuery,
+    ApplicationSortField,
+    SortDirection as ApplicationSortDirection,
+)
+from napms.contexts.application_communication_catalogue.domain.model import Application
 from napms.contexts.authority_management.application.service import AuthorityForbidden
 from napms.contexts.authority_management.domain.model import Principal
+from napms.contexts.resource_catalogue.application.queries import (
+    ResourceCataloguePage,
+    ResourceCatalogueQuery,
+    ResourceSortField,
+    SortDirection,
+)
+from napms.contexts.resource_catalogue.domain.model import Resource
 from napms.platform.http.app import HttpDependencies, create_app
 from napms.platform.security.oidc import AuthenticationRejected, IdentityDependencyUnavailable
 
@@ -157,9 +185,19 @@ def test_submit_access_request_rejects_noncanonical_snake_case_body() -> None:
 @dataclass
 class AccessReader:
     items: tuple[AccessRequest, ...]
+    received: AccessRequestCatalogueQuery | None = None
 
-    def list_requests(self) -> tuple[AccessRequest, ...]:
-        return self.items
+    def query_requests(
+        self,
+        query: AccessRequestCatalogueQuery,
+    ) -> AccessRequestCataloguePage:
+        self.received = query
+        return AccessRequestCataloguePage(
+            items=self.items,
+            total=len(self.items),
+            page=query.page,
+            page_size=query.page_size,
+        )
 
     def get_request(self, request_ref):
         return next((item for item in self.items if item.request_ref == request_ref), None)
@@ -181,9 +219,133 @@ def test_access_request_read_endpoints_preserve_subject_and_outcome() -> None:
     detail = http.get(f"/v1/access-requests/{item.request_ref}", headers=headers)
     assert catalogue.status_code == 200
     assert detail.status_code == 200
-    assert catalogue.json()[0]["requestRef"] == str(item.request_ref)
+    assert catalogue.json()["items"][0]["requestRef"] == str(item.request_ref)
     assert detail.json()["sourceDeploymentRef"] == str(item.access_subject.source_deployment_ref)
     assert detail.json()["decisionResult"] is None
+
+
+def test_access_request_catalogue_query_maps_http_params_to_reader() -> None:
+    principal = Principal("subject:alice", frozenset({"access.manage"}), ())
+    item = request()
+    reader = AccessReader((item,))
+    app = create_app(
+        HttpDependencies(
+            identity=Identity(principal),
+            access_requests=Submitter(item),
+            access_request_reader=reader,
+        )
+    )
+    http = TestClient(app)
+    headers = {"Authorization": "Bearer token"}
+    response = http.get(
+        (
+            "/v1/access-requests?search=%20request%20"
+            f"&sourceDeploymentRef={item.access_subject.source_deployment_ref}"
+            f"&destinationDeploymentRef={item.access_subject.destination_deployment_ref}"
+            "&decisionResult=ALLOWED&sortBy=requestRef&sortDirection=desc"
+            "&page=2&pageSize=10"
+        ),
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["total"] == 1
+    assert response.json()["page"] == 2
+    assert response.json()["pageSize"] == 10
+    assert reader.received == AccessRequestCatalogueQuery(
+        search="request",
+        source_deployment_ref=item.access_subject.source_deployment_ref,
+        destination_deployment_ref=item.access_subject.destination_deployment_ref,
+        decision_result=PermissionDecision.ALLOWED,
+        sort_by=AccessRequestSortField.REQUEST_REF,
+        sort_direction=AccessPolicySortDirection.DESC,
+        page=2,
+        page_size=10,
+    )
+
+
+def policy_rule() -> PolicyRule:
+    now = datetime.now(timezone.utc)
+    request_ref = uuid4()
+    need_ref = uuid4()
+    return PolicyRule.create_allowed(
+        rule_ref=uuid4(),
+        access_subject=AccessSubject(uuid4(), uuid4(), uuid4()),
+        authorization_evidence=AuthorizationEvidence(
+            evidence_ref=uuid4(),
+            access_request_ref=request_ref,
+            external_decision_ref=None,
+            decided_by_subject="subject:approver",
+            decided_at=now,
+        ),
+        justification=JustificationAssociation(
+            association_ref=uuid4(),
+            need_ref=need_ref,
+            attached_at=now,
+            attached_by_subject="subject:approver",
+            source_access_request_ref=request_ref,
+        ),
+        history_ref=uuid4(),
+    )
+
+
+@dataclass
+class PolicyReader:
+    items: tuple[PolicyRule, ...]
+    received: PolicyRuleCatalogueQuery | None = None
+
+    def query_rules(
+        self,
+        query: PolicyRuleCatalogueQuery,
+    ) -> PolicyRuleCataloguePage:
+        self.received = query
+        return PolicyRuleCataloguePage(
+            items=self.items,
+            total=len(self.items),
+            page=query.page,
+            page_size=query.page_size,
+        )
+
+    def get_rule(self, rule_ref):
+        return next((item for item in self.items if item.rule_ref == rule_ref), None)
+
+
+def test_policy_rule_catalogue_query_maps_http_params_to_reader() -> None:
+    principal = Principal("subject:alice", frozenset({"policy.read"}), ())
+    item = policy_rule()
+    reader = PolicyReader((item,))
+    app = create_app(
+        HttpDependencies(
+            identity=Identity(principal),
+            access_requests=Submitter(request()),
+            policy_rules=reader,
+        )
+    )
+    http = TestClient(app)
+    response = http.get(
+        (
+            "/v1/policy-rules?search=%20rule%20"
+            f"&sourceDeploymentRef={item.access_subject.source_deployment_ref}"
+            f"&destinationDeploymentRef={item.access_subject.destination_deployment_ref}"
+            "&effectState=ACTIVE&sortBy=effectState&sortDirection=desc"
+            "&page=2&pageSize=10"
+        ),
+        headers={"Authorization": "Bearer token"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["items"][0]["policyRuleRef"] == str(item.rule_ref)
+    assert response.json()["total"] == 1
+    assert reader.received == PolicyRuleCatalogueQuery(
+        search="rule",
+        source_deployment_ref=item.access_subject.source_deployment_ref,
+        destination_deployment_ref=item.access_subject.destination_deployment_ref,
+        effect_state=RuleEffectState.ACTIVE,
+        sort_by=PolicyRuleSortField.EFFECT_STATE,
+        sort_direction=AccessPolicySortDirection.DESC,
+        page=2,
+        page_size=10,
+    )
 
 
 def test_access_request_read_requires_read_permission() -> None:
@@ -198,3 +360,100 @@ def test_access_request_read_requires_read_permission() -> None:
     )
     response = TestClient(app).get("/v1/access-requests", headers={"Authorization": "Bearer token"})
     assert response.status_code == 403
+
+
+@dataclass
+class ResourceReader:
+    page: ResourceCataloguePage
+    received: ResourceCatalogueQuery | None = None
+
+    def list_resources(self, query: ResourceCatalogueQuery) -> ResourceCataloguePage:
+        self.received = query
+        return self.page
+
+
+def test_resource_catalogue_query_maps_http_params_to_application_query() -> None:
+    principal = Principal("subject:alice", frozenset({"resource.read"}), ())
+    item = Resource.register(
+        resource_ref=uuid4(),
+        display_name="Edge",
+        authority_scope_ref="scope:edge",
+    )
+    reader = ResourceReader(ResourceCataloguePage((item,), 1, 2, 10))
+    http = TestClient(
+        create_app(
+            HttpDependencies(
+                identity=Identity(principal),
+                access_requests=Submitter(request()),
+                resource_catalogue=reader,
+            )
+        )
+    )
+    site_ref = uuid4()
+    response = http.get(
+        (
+            "/v1/resources?search=%20edge%20"
+            f"&authorityScopeRef=scope%3Aedge&siteRef={site_ref}"
+            "&sortBy=resourceRef&sortDirection=desc&page=2&pageSize=10"
+        ),
+        headers={"Authorization": "Bearer token"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["items"][0]["resourceRef"] == str(item.resource_ref)
+    assert response.json()["total"] == 1
+    assert reader.received == ResourceCatalogueQuery(
+        search="edge",
+        authority_scope_ref="scope:edge",
+        site_ref=site_ref,
+        sort_by=ResourceSortField.RESOURCE_REF,
+        sort_direction=SortDirection.DESC,
+        page=2,
+        page_size=10,
+    )
+
+
+@dataclass
+class ApplicationReader:
+    page: ApplicationCataloguePage
+    received: ApplicationCatalogueQuery | None = None
+
+    def list_applications(self, query: ApplicationCatalogueQuery) -> ApplicationCataloguePage:
+        self.received = query
+        return self.page
+
+
+def test_application_catalogue_query_maps_http_params_to_application_query() -> None:
+    principal = Principal("subject:alice", frozenset({"application.read"}), ())
+    item = Application.create(application_ref=uuid4(), name="Payments")
+    reader = ApplicationReader(ApplicationCataloguePage((item,), 1, 2, 10))
+    http = TestClient(
+        create_app(
+            HttpDependencies(
+                identity=Identity(principal),
+                access_requests=Submitter(request()),
+                application_catalogue=reader,
+            )
+        )
+    )
+    component_ref = uuid4()
+    response = http.get(
+        (
+            "/v1/applications?search=%20payments%20"
+            f"&componentRef={component_ref}"
+            "&sortBy=applicationRef&sortDirection=desc&page=2&pageSize=10"
+        ),
+        headers={"Authorization": "Bearer token"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["items"][0]["applicationRef"] == str(item.application_ref)
+    assert response.json()["total"] == 1
+    assert reader.received == ApplicationCatalogueQuery(
+        search="payments",
+        component_ref=component_ref,
+        sort_by=ApplicationSortField.APPLICATION_REF,
+        sort_direction=ApplicationSortDirection.DESC,
+        page=2,
+        page_size=10,
+    )

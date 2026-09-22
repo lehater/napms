@@ -10,6 +10,7 @@ export type Route =
   | { id: "revision-new"; path: string; interactionRef: string }
   | { id: "deployments"; path: "/deployments" }
   | { id: "deployment-new"; path: "/deployments/new" }
+  | { id: "deployment-detail"; path: string; deploymentRef: string }
   | { id: "processes"; path: "/business-processes" }
   | { id: "process-new"; path: "/business-processes/new" }
   | { id: "process-detail"; path: string; processRef: string }
@@ -77,6 +78,14 @@ export function parseRoute(pathname: string): Route {
   }
   if (pathname === "/deployments/new") {
     return { id: "deployment-new", path: "/deployments/new" };
+  }
+  match = pathname.match(/^\/deployments\/([^/]+)$/);
+  if (match) {
+    return {
+      id: "deployment-detail",
+      path: pathname,
+      deploymentRef: decoded(match, 1),
+    };
   }
   if (pathname === "/business-processes") {
     return { id: "processes", path: "/business-processes" };
