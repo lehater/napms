@@ -408,7 +408,7 @@ screens:
     exits:
       - select Deployment -> DEPLOYMENT-DETAIL
       - create Deployment -> DEPLOYMENT-DETAIL
-    states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
+    states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, technical-error]
     semantic_contract:
       reads:
         - id: catalogue
