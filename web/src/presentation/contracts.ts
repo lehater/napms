@@ -39,3 +39,32 @@ export type CataloguePatternProps<Row> = {
   statusMessage?: string;
   emptyMessage: string;
 };
+
+
+export type EditorState =
+  | "editing"
+  | "submitting"
+  | "validation-rejected"
+  | "authorization-rejected"
+  | "conflict"
+  | "technical-error";
+
+export type EditorField = {
+  id: string;
+  label: string;
+  value: string;
+  required?: boolean;
+  onChange: (value: string) => void;
+};
+
+export type EditorPatternProps = {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  fields: readonly EditorField[];
+  submitLabel: string;
+  submitDisabled?: boolean;
+  onSubmit: () => void;
+  state: EditorState;
+  statusMessage?: string;
+};
