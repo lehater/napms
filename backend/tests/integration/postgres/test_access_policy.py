@@ -204,7 +204,7 @@ def test_policy_rule_catalogue_query_applies_filters_sort_and_paging() -> None:
     ) -> PolicyRule:
         request_ref = UUID(int=ref + 100)
         need_ref = UUID(int=ref + 200)
-        subject = AccessSubject(source, destination, UUID(int=801))
+        subject = AccessSubject(source, destination, UUID(int=ref + 800))
         request = AccessRequest.submit(
             request_ref=request_ref,
             access_subject=subject,
@@ -284,8 +284,6 @@ def test_policy_rule_catalogue_query_applies_filters_sort_and_paging() -> None:
     )
     assert [item.rule_ref for item in second.items] == [active_old.rule_ref]
 
-    searched = repository.query_rules(
-        PolicyRuleCatalogueQuery(search=str(inactive.rule_ref)[-8:])
-    )
+    searched = repository.query_rules(PolicyRuleCatalogueQuery(search=str(inactive.rule_ref)[-8:]))
     assert searched.total == 1
     assert [item.rule_ref for item in searched.items] == [inactive.rule_ref]

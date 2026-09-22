@@ -19,8 +19,8 @@ import {
   setPolicyRuleEffectState,
 } from "./policyRuleApplication";
 import {
-  type PolicyRuleCatalogueQueryState,
   defaultPolicyRuleCatalogueQuery,
+  type PolicyRuleCatalogueQueryState,
 } from "./policyRuleCatalogueQuery";
 import type {
   PolicyRuleCatalogueItem,
