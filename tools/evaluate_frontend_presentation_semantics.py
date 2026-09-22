@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +22,21 @@ PRESENTATION = ROOT / "docs/contracts/ui/mvp-presentation-system.yaml"
 SCREENS = ROOT / "docs/contracts/ui/mvp-screen-view-design.yaml"
 VERIFICATION = ROOT / "docs/plans/mvp-frontend-verification.yaml"
 TOKENS = ROOT / "docs/contracts/ui/mvp-design-tokens.json"
+OPENAPI = ROOT / "docs/contracts/http/napms.openapi.yaml"
+
+_harness_candidates = []
+if os.environ.get("HARNESS_ROOT"):
+    _harness_candidates.append(Path(os.environ["HARNESS_ROOT"]))
+_harness_candidates.extend([ROOT / ".harness-tool", ROOT / ".harness-coverage-tool"])
+HARNESS_ROOT = next(
+    (path for path in _harness_candidates if (path / "frontend_screen_contracts.py").exists()),
+    None,
+)
+if HARNESS_ROOT is None:
+    raise SystemExit("Pinned Harness checkout with frontend_screen_contracts.py is required")
+sys.path.insert(0, str(HARNESS_ROOT))
+
+from frontend_screen_contracts import evaluate_frontend_screen_contracts
 
 TOKEN_REF = re.compile(r"^\{([^{}]+)\}$")
 
@@ -145,6 +162,7 @@ def evaluate_presentation(
 def evaluate_screens(
     screens: dict[str, Any],
     presentation: dict[str, Any],
+    openapi: dict[str, Any],
 ) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
     rows = screens.get("screens", []) or []
@@ -185,6 +203,24 @@ def evaluate_screens(
     detail = by_id.get("RESOURCE-DETAIL", {})
     if not detail.get("reference_adaptation"):
         findings.append(finding("RESOURCE_DETAIL_REFERENCE_ADAPTATION", "Resource Detail must state how historical visual evidence is adopted without importing legacy semantics."))
+
+    pilot = set(screens.get("coverage", {}).get("semantic_contract_pilot", []) or [])
+    if pilot:
+        result = evaluate_frontend_screen_contracts(
+            presentation,
+            screens,
+            openapi,
+            screen_ids=pilot,
+        )
+        for item in result["findings"]:
+            details = {key: value for key, value in item.items() if key not in {"code", "detail"}}
+            findings.append(
+                finding(
+                    f"SCREEN_SEMANTIC_{item['code']}",
+                    item["detail"],
+                    **details,
+                )
+            )
 
     return findings
 
@@ -245,6 +281,7 @@ def evaluate() -> dict[str, Any]:
     screens = load_yaml(SCREENS)
     verification = load_yaml(VERIFICATION)
     tokens = load_json(TOKENS)
+    openapi = load_yaml(OPENAPI)
 
     return {
         "version": 1,
@@ -260,7 +297,7 @@ def evaluate() -> dict[str, Any]:
                 artifact="FRONTEND-SCREEN-VIEW-DESIGN",
                 capability="engineering.frontend.screen-view-design",
                 claim="engineering.interface.human.screen-composition",
-                findings=evaluate_screens(screens, presentation),
+                findings=evaluate_screens(screens, presentation, openapi),
             ),
             semantic_evaluation(
                 artifact="FRONTEND-VERIFICATION",
