@@ -56,6 +56,45 @@ export type ResourceView = {
   };
 };
 
+export type CataloguePage<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+export type ResourceSortField =
+  | "displayName"
+  | "resourceRef"
+  | "authorityScopeRef";
+
+export type ResourceCatalogueQuery = {
+  search?: string;
+  authorityScopeRef?: string;
+  siteRef?: string;
+  sortBy: ResourceSortField;
+  sortDirection: "asc" | "desc";
+  page: number;
+  pageSize: number;
+};
+
+export function serializeCatalogueQuery(
+  query: ResourceCatalogueQuery,
+): string {
+  const params = new URLSearchParams();
+  const search = query.search?.trim();
+  const authorityScopeRef = query.authorityScopeRef?.trim();
+  const siteRef = query.siteRef?.trim();
+  if (search) params.set("search", search);
+  if (authorityScopeRef) params.set("authorityScopeRef", authorityScopeRef);
+  if (siteRef) params.set("siteRef", siteRef);
+  params.set("sortBy", query.sortBy);
+  params.set("sortDirection", query.sortDirection);
+  params.set("page", String(query.page));
+  params.set("pageSize", String(query.pageSize));
+  return params.toString();
+}
+
 export type PolicyRuleView = {
   policyRuleRef: string;
   version: number;
@@ -154,7 +193,10 @@ export type ProcessView = {
 };
 
 export const api = {
-  listResources: () => request<ResourceView[]>("/v1/resources"),
+  listResources: (query: ResourceCatalogueQuery) =>
+    request<CataloguePage<ResourceView>>(
+      `/v1/resources?${serializeCatalogueQuery(query)}`,
+    ),
   getResource: (ref: string) => request<ResourceView>(`/v1/resources/${ref}`),
   createResource: (body: {
     displayName: string;

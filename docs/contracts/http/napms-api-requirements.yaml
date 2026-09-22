@@ -43,6 +43,19 @@ operations:
   - GET /v1/policy-rules/{policyRuleRef}
   - POST /v1/policy-materializations
 
+catalogue_query_contract:
+  rule: >-
+    When a primary entity catalogue declares search/filter/sort/paging semantics,
+    the HTTP operation evaluates them over the complete authoritative collection;
+    the browser must not emulate those semantics over a partial page.
+  paging: {page: one-based, pageSize_default: 25, pageSize_max: 100}
+  ordering: sortBy is an operation-specific allow-list and sortDirection is [asc, desc].
+  response: {shape: page-envelope, fields: [items, total, page, pageSize]}
+  resource_catalogue:
+    search: [displayName, resourceRef]
+    filters: [authorityScopeRef, siteRef]
+    sort_by: [displayName, resourceRef, authorityScopeRef]
+
 rules:
   - Authentication is OIDC Bearer token only; request bodies never contain trusted actor permission or authority fields.
   - access.request is admitted from effective scoped AuthorityGrants for every source/destination Resource AuthorityScopeRef at server-owned admissionAt.

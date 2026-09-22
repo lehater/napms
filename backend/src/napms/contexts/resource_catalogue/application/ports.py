@@ -3,6 +3,10 @@ from __future__ import annotations
 from typing import Protocol
 from uuid import UUID
 
+from napms.contexts.resource_catalogue.application.queries import (
+    ResourceCataloguePage,
+    ResourceCatalogueQuery,
+)
 from napms.contexts.resource_catalogue.domain.model import Resource
 
 
@@ -21,7 +25,7 @@ class ResourceVersionConflict(Exception):
 class ResourceCatalogueRepository(Protocol):
     def add(self, resource: Resource) -> None: ...
 
-    def list(self) -> tuple[Resource, ...]: ...
+    def query(self, query: ResourceCatalogueQuery) -> ResourceCataloguePage: ...
 
     def get(self, resource_ref: UUID) -> Resource | None: ...
 

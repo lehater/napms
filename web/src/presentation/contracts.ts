@@ -30,13 +30,45 @@ export type CataloguePatternProps = {
   state: CatalogueState;
   statusMessage?: string;
   emptyMessage: string;
+  queryControls?: ReactNode;
   children?: ReactNode;
+};
+
+export type FilterBarField = {
+  id: string;
+  label: string;
+  value: string;
+  placeholder?: string;
+  options?: readonly EditorOption[];
+  onChange: (value: string) => void;
+};
+
+export type FilterBarSort = {
+  field: string;
+  fields: readonly EditorOption[];
+  direction: "asc" | "desc";
+  onFieldChange: (field: string) => void;
+  onDirectionChange: (direction: "asc" | "desc") => void;
+};
+
+export type FilterBarPatternProps = {
+  search: {
+    label: string;
+    value: string;
+    placeholder?: string;
+    onChange: (value: string) => void;
+  };
+  filters: readonly FilterBarField[];
+  sort: FilterBarSort;
+  active: boolean;
+  onClear: () => void;
 };
 
 export type DataTableColumn<Row> = {
   id: string;
   label: string;
   emphasis?: "primary" | "technical" | "default";
+  sortKey?: string;
   render: (row: Row) => ReactNode;
 };
 
@@ -48,6 +80,19 @@ export type DataTablePatternProps<Row> = {
   openColumnId?: string;
   onOpen?: (row: Row) => void;
   rowAction?: (row: Row) => PresentationAction;
+  sort?: {
+    field: string;
+    direction: "asc" | "desc";
+    onChange: (field: string, direction: "asc" | "desc") => void;
+  };
+  paging?: {
+    page: number;
+    pageSize: number;
+    total: number;
+    pageSizeOptions?: readonly number[];
+    onPageChange: (page: number) => void;
+    onPageSizeChange: (pageSize: number) => void;
+  };
   emptyMessage?: string;
 };
 

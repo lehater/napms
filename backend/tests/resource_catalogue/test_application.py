@@ -8,6 +8,10 @@ from napms.contexts.resource_catalogue.application.commands import (
     MutationContext,
     ResourceCatalogueApplication,
 )
+from napms.contexts.resource_catalogue.application.queries import (
+    ResourceCataloguePage,
+    ResourceCatalogueQuery,
+)
 from napms.contexts.resource_catalogue.domain.model import Resource
 
 
@@ -18,9 +22,19 @@ class MemoryResources:
     def __init__(self) -> None:
         self.values: dict[UUID, Resource] = {}
         self.save_count = 0
+        self.last_query: ResourceCatalogueQuery | None = None
 
     def add(self, resource: Resource) -> None:
         self.values[resource.resource_ref] = resource
+
+    def query(self, query: ResourceCatalogueQuery) -> ResourceCataloguePage:
+        self.last_query = query
+        return ResourceCataloguePage(
+            items=tuple(self.values.values()),
+            total=len(self.values),
+            page=query.page,
+            page_size=query.page_size,
+        )
 
     def get(self, resource_ref: UUID) -> Resource | None:
         return self.values.get(resource_ref)
@@ -111,3 +125,22 @@ def test_denied_mutation_leaves_resource_truth_unchanged() -> None:
 
     assert resources.values[initial.resource_ref] == initial
     assert resources.save_count == 0
+
+
+def test_catalogue_query_is_delegated_to_authoritative_read_model() -> None:
+    resources = MemoryResources()
+    item = Resource.register(
+        resource_ref=UUID(int=400),
+        display_name="Edge",
+        authority_scope_ref="scope:edge",
+    )
+    resources.add(item)
+    app = ResourceCatalogueApplication(resources=resources)
+    query = ResourceCatalogueQuery(search="Edge", page=2, page_size=10)
+
+    result = app.list_resources(query)
+
+    assert resources.last_query == query
+    assert result.items == (item,)
+    assert result.page == 2
+    assert result.page_size == 10

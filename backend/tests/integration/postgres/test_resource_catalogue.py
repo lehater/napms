@@ -5,6 +5,11 @@ from uuid import UUID
 import psycopg
 import pytest
 
+from napms.contexts.resource_catalogue.application.queries import (
+    ResourceCatalogueQuery,
+    ResourceSortField,
+    SortDirection,
+)
 from napms.contexts.resource_catalogue.domain.model import (
     AddressRealization,
     Resource,
@@ -157,3 +162,72 @@ def test_transactional_resource_resolver_reads_current_endpoint_realization() ->
     assert loaded.authority_scope_ref == "scope:resolver"
     assert loaded.endpoints[0].current_address is not None
     assert loaded.endpoints[0].current_address.address.value == "10.20.30.40"
+
+
+def test_catalogue_query_applies_search_filters_sort_and_paging_in_postgres() -> None:
+    repository = PostgresResourceCatalogueRepository(DSN)
+    site = UUID(int=900)
+    with psycopg.connect(DSN) as connection:
+        connection.execute(
+            "INSERT INTO resource_catalogue.site(site_ref, name) VALUES (%s, %s)",
+            (site, "Primary"),
+        )
+
+    values = [
+        Resource.register(
+            resource_ref=UUID(int=901),
+            display_name="Zulu edge",
+            authority_scope_ref="scope:edge",
+        ),
+        Resource.register(
+            resource_ref=UUID(int=902),
+            display_name="Alpha edge",
+            authority_scope_ref="scope:edge",
+        ),
+        Resource.register(
+            resource_ref=UUID(int=903),
+            display_name="Other",
+            authority_scope_ref="scope:other",
+        ),
+    ]
+    for value in values:
+        repository.add(value)
+
+    for index in (0, 1):
+        value = values[index].set_site(
+            site,
+            fact_ref=UUID(int=910 + index),
+            effective_at=NOW,
+            subject="subject:query",
+        )
+        repository.save(value, expected_version=1)
+
+    page = repository.query(
+        ResourceCatalogueQuery(
+            search="edge",
+            authority_scope_ref="scope:edge",
+            site_ref=site,
+            sort_by=ResourceSortField.DISPLAY_NAME,
+            sort_direction=SortDirection.ASC,
+            page=1,
+            page_size=1,
+        )
+    )
+
+    assert page.total == 2
+    assert page.page == 1
+    assert page.page_size == 1
+    assert [item.display_name for item in page.items] == ["Alpha edge"]
+
+    second = repository.query(
+        ResourceCatalogueQuery(
+            search="edge",
+            authority_scope_ref="scope:edge",
+            site_ref=site,
+            sort_by=ResourceSortField.DISPLAY_NAME,
+            sort_direction=SortDirection.ASC,
+            page=2,
+            page_size=1,
+        )
+    )
+    assert [item.display_name for item in second.items] == ["Zulu edge"]

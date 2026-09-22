@@ -113,6 +113,24 @@ entity_collection_default:
     A Screen/View may depart from this model only with an explicit override and
     rationale showing that the task is not a normal entity catalogue/detail flow.
 
+catalogue_query_contract:
+  responsibility: >-
+    Represent user-owned collection query intent without moving authoritative
+    filtering, ordering or paging into the browser.
+  state:
+    search: optional text interpreted by the accepted entity query contract
+    filters: entity-specific accepted attribute predicates
+    sort: one accepted sort field plus explicit direction
+    paging: one-based page plus accepted page size
+  result:
+    required: [items, total, page, pageSize]
+    rule: items are the backend-confirmed result for the complete query state
+  interaction:
+    - changing search/filter/sort resets paging to the first page;
+    - clear/reset restores the screen's accepted default query;
+    - active query state remains visible;
+    - Data Table headers may change accepted sort state but cannot introduce unaccepted sort fields.
+
 hierarchy:
   page:
     order: [context, primary-content, task-actions, secondary-content, feedback]

@@ -11,6 +11,7 @@ export function MuiCataloguePattern({
   state,
   statusMessage,
   emptyMessage,
+  queryControls,
   children,
 }: CataloguePatternProps) {
   return (
@@ -45,6 +46,12 @@ export function MuiCataloguePattern({
         ) : null}
       </Stack>
 
+      {queryControls &&
+      state !== "authorization-rejected" &&
+      state !== "technical-error"
+        ? queryControls
+        : null}
+
       {state === "loading" ? <MuiStatus loading message="Loading…" /> : null}
 
       {state === "authorization-rejected" ? (
@@ -61,13 +68,13 @@ export function MuiCataloguePattern({
         />
       ) : null}
 
-      {state === "empty" ? (
+      {state === "empty" && !children ? (
         <Paper variant="outlined" sx={{ p: 3 }}>
           <Typography color="text.secondary">{emptyMessage}</Typography>
         </Paper>
       ) : null}
 
-      {state === "loaded" ? children : null}
+      {state === "loaded" || state === "empty" ? children : null}
     </Stack>
   );
 }

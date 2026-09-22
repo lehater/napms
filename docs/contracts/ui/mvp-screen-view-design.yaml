@@ -28,7 +28,7 @@ composition_contract:
   inherited_entity_collection_default: NAPMS-MVP-PRESENTATION-SYSTEM.entity_collection_default
   migration_gaps:
     - id: entity-catalogue-query-contracts
-      applies_to: [RESOURCE-CATALOGUE, APPLICATION-CATALOGUE, DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
+      applies_to: [APPLICATION-CATALOGUE, DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
       gap: >-
         Search/filter/sort and scalable paging semantics are not yet closed end-to-end
         through accepted query contracts for every primary entity collection.
@@ -45,24 +45,36 @@ composition_contract:
 screens:
   - id: RESOURCE-CATALOGUE
     purpose: Locate/select Resources and start supported Resource authoring.
-    patterns: [CATALOGUE, DATA-TABLE, EDITOR, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, FILTER-BAR, DATA-TABLE, EDITOR, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
+      - {id: query-controls, role: collection-query, pattern: FILTER-BAR, priority: primary, applies_when: list-mode}
       - {id: resources, role: collection, pattern: DATA-TABLE, priority: primary, applies_when: list-mode}
       - {id: create-editor, role: task-editor, pattern: EDITOR, priority: primary, applies_when: create-mode}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
     composition:
       root: catalogue-workspace
-      ordered_regions: [context, actions, resources, create-editor, feedback]
+      ordered_regions: [context, actions, query-controls, resources, create-editor, feedback]
       modes:
-        list: [context, actions, resources, feedback]
+        list: [context, actions, query-controls, resources, feedback]
         create: [context, create-editor, feedback]
+      query-controls:
+        pattern: FILTER-BAR
+        search: {source: query:listResources.search, matches: [displayName, resourceRef]}
+        filters:
+          - {id: authority-scope-ref, source: query:listResources.authorityScopeRef}
+          - {id: site-ref, source: query:listResources.siteRef}
+        sort:
+          fields: [displayName, resourceRef, authorityScopeRef]
+          default: {field: displayName, direction: asc}
+        paging: {page: query:listResources.page, page_size: query:listResources.pageSize}
       resources:
         pattern: DATA-TABLE
         columns:
-          - {id: display-name, role: primary-identity}
-          - {id: resource-reference, role: technical-identity}
+          - {id: display-name, role: primary-identity, sort: displayName}
+          - {id: resource-reference, role: technical-identity, sort: resourceRef}
+          - {id: authority-scope, role: distinguishing-attribute, sort: authorityScopeRef}
           - {id: site, role: current-fact}
           - {id: endpoints, role: current-fact-summary}
           - {id: responsibilities, role: current-fact-summary}
@@ -80,11 +92,8 @@ screens:
         - dark fixed-width desktop navigation and full-width operational workspace
         - compact hierarchy and dense table visual language
         - human-readable primary identity with technical reference subordinate
+        - backend-backed search, accepted attribute filters, sorting and paging
       not_adopted:
-        - {reference_feature: search, reason: listResources has no accepted search contract}
-        - {reference_feature: filters-and-quick-filters, reason: no accepted First-MVP filtering contract}
-        - {reference_feature: sorting, reason: no accepted First-MVP ordering contract}
-        - {reference_feature: pagination-and-page-size, reason: no accepted First-MVP paging contract}
         - {reference_feature: selection-and-bulk-actions, reason: no accepted First-MVP bulk action semantics}
         - {reference_feature: Resource-type-filter, reason: no accepted Resource type concept}
         - {reference_feature: New-Resource-modal, reason: current First-MVP navigation uses the accepted authoring route/state}
@@ -94,25 +103,44 @@ screens:
     states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
     semantic_contract:
       reads:
-        - {id: catalogue, operation_id: listResources, projection: "ResourceView[]"}
+        - id: catalogue
+          operation_id: listResources
+          projection: ResourceCataloguePage
+          query:
+            search: {source: local:query.search, semantics: accepted-text-search}
+            authorityScopeRef: {source: local:query.filters.authority-scope-ref, semantics: exact-attribute-filter}
+            siteRef: {source: local:query.filters.site-ref, semantics: exact-attribute-filter}
+            sortBy: {source: local:query.sort.field, accepted: [displayName, resourceRef, authorityScopeRef]}
+            sortDirection: {source: local:query.sort.direction, accepted: [asc, desc]}
+            page: {source: local:query.page, minimum: 1}
+            pageSize: {source: local:query.page-size, default: 25, maximum: 100}
       commands:
         - {id: create-resource, operation_id: createResource}
       view_model:
         id: ResourceCatalogueScreenModel
         fields:
-          - {id: resources, source: read:catalogue}
-          - {id: display_name, source: read:catalogue.displayName}
-          - {id: resource_ref, source: read:catalogue.resourceRef}
-          - {id: current, source: read:catalogue.current}
+          - {id: resources, source: read:catalogue.items}
+          - {id: total, source: read:catalogue.total}
+          - {id: page, source: read:catalogue.page}
+          - {id: page_size, source: read:catalogue.pageSize}
+          - {id: display_name, source: read:catalogue.items.displayName}
+          - {id: resource_ref, source: read:catalogue.items.resourceRef}
+          - {id: authority_scope_ref, source: read:catalogue.items.authorityScopeRef}
+          - {id: current, source: read:catalogue.items.current}
       capabilities:
         allowed:
           - {id: inspect-catalogue, backed_by: read:catalogue}
+          - {id: search, backed_by: read:catalogue}
+          - {id: filter, backed_by: read:catalogue}
+          - {id: sort, backed_by: read:catalogue}
+          - {id: pagination, backed_by: read:catalogue}
           - {id: open-resource, backed_by: navigation:resource-detail}
           - {id: create-resource, backed_by: command:create-resource}
-        excluded: [search, filter, sort, pagination, bulk-operation, edit-item, delete-item]
+        excluded: [bulk-operation, edit-item, delete-item]
       pattern_mapping:
         - {pattern: CATALOGUE, feature_bindings: {open-item: open-resource, create-item: create-resource}}
-        - {pattern: DATA-TABLE, feature_bindings: {}}
+        - {pattern: FILTER-BAR, feature_bindings: {search: search, filters: filter, sort: sort, clear: filter}}
+        - {pattern: DATA-TABLE, feature_bindings: {open-row: open-resource, sort: sort, paging: pagination}}
         - {pattern: EDITOR, feature_bindings: {}}
         - {pattern: TASK-ACTIONS, feature_bindings: {primary: create-resource}}
         - {pattern: STATUS, feature_bindings: {}}
@@ -127,11 +155,12 @@ screens:
         conflict: command:create-resource.409
         technical-error: [read:catalogue.failure, command:create-resource.failure]
       verification:
-        contract: [operation:listResources, operation:createResource]
-        semantic: [resource-catalogue-capability-and-state-closure]
-        rendered: [resource-catalogue-reference-conformance]
+        contract: [operation:listResources-query-parameters, operation:createResource]
+        semantic: [resource-catalogue-query-capability-and-state-closure]
+        rendered: [resource-catalogue-filter-table-density-reference-conformance]
     responsive:
       - collection preserves Resource identity, current distinguishing facts and open action
+      - query controls reflow without losing active state or clear action
       - table may become labeled records while preserving column labels and actions
     overrides: []
 

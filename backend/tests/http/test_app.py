@@ -12,6 +12,13 @@ from napms.contexts.access_policy.domain.model import (
 )
 from napms.contexts.authority_management.application.service import AuthorityForbidden
 from napms.contexts.authority_management.domain.model import Principal
+from napms.contexts.resource_catalogue.application.queries import (
+    ResourceCataloguePage,
+    ResourceCatalogueQuery,
+    ResourceSortField,
+    SortDirection,
+)
+from napms.contexts.resource_catalogue.domain.model import Resource
 from napms.platform.http.app import HttpDependencies, create_app
 from napms.platform.security.oidc import AuthenticationRejected, IdentityDependencyUnavailable
 
@@ -198,3 +205,53 @@ def test_access_request_read_requires_read_permission() -> None:
     )
     response = TestClient(app).get("/v1/access-requests", headers={"Authorization": "Bearer token"})
     assert response.status_code == 403
+
+
+@dataclass
+class ResourceReader:
+    page: ResourceCataloguePage
+    received: ResourceCatalogueQuery | None = None
+
+    def list_resources(self, query: ResourceCatalogueQuery) -> ResourceCataloguePage:
+        self.received = query
+        return self.page
+
+
+def test_resource_catalogue_query_maps_http_params_to_application_query() -> None:
+    principal = Principal("subject:alice", frozenset({"resource.read"}), ())
+    item = Resource.register(
+        resource_ref=uuid4(),
+        display_name="Edge",
+        authority_scope_ref="scope:edge",
+    )
+    reader = ResourceReader(ResourceCataloguePage((item,), 1, 2, 10))
+    http = TestClient(
+        create_app(
+            HttpDependencies(
+                identity=Identity(principal),
+                resource_catalogue=reader,
+            )
+        )
+    )
+    site_ref = uuid4()
+    response = http.get(
+        (
+            "/v1/resources?search=%20edge%20"
+            f"&authorityScopeRef=scope%3Aedge&siteRef={site_ref}"
+            "&sortBy=resourceRef&sortDirection=desc&page=2&pageSize=10"
+        ),
+        headers={"Authorization": "Bearer token"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["items"][0]["resourceRef"] == str(item.resource_ref)
+    assert response.json()["total"] == 1
+    assert reader.received == ResourceCatalogueQuery(
+        search="edge",
+        authority_scope_ref="scope:edge",
+        site_ref=site_ref,
+        sort_by=ResourceSortField.RESOURCE_REF,
+        sort_direction=SortDirection.DESC,
+        page=2,
+        page_size=10,
+    )

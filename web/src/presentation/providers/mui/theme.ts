@@ -94,6 +94,7 @@ export const napmsMuiTheme = createTheme({
     MuiTableCell: {
       styleOverrides: {
         root: {
+          boxSizing: "border-box",
           padding: `${token.component.tableCellPaddingY}px ${token.component.tableCellPaddingX}px`,
         },
         head: {

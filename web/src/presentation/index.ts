@@ -11,6 +11,9 @@ export type {
   EditorOption,
   EditorPatternProps,
   EditorState,
+  FilterBarField,
+  FilterBarPatternProps,
+  FilterBarSort,
   OutcomePatternProps,
   OutcomeTone,
   PresentationAction,
@@ -23,6 +26,7 @@ export { MuiCataloguePattern as CataloguePattern } from "./providers/mui/MuiCata
 export { MuiDataTablePattern as DataTablePattern } from "./providers/mui/MuiDataTablePattern";
 export { MuiDetailPattern as DetailPattern } from "./providers/mui/MuiDetailPattern";
 export { MuiEditorPattern as EditorPattern } from "./providers/mui/MuiEditorPattern";
+export { MuiFilterBar as FilterBarPattern } from "./providers/mui/MuiFilterBar";
 export { MuiOutcomePattern as OutcomePattern } from "./providers/mui/MuiOutcomePattern";
 export { MuiPresentationRoot as PresentationRoot } from "./providers/mui/MuiPresentationRoot";
 export { MuiScopeSelectorPattern as ScopeSelectorPattern } from "./providers/mui/MuiScopeSelectorPattern";

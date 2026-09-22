@@ -9,10 +9,13 @@ import {
   type EditorField,
   EditorPattern,
   type EditorState,
+  FilterBarPattern,
 } from "../../presentation";
 import {
   createResource,
+  defaultResourceCatalogueQuery,
   queryResourceCatalogue,
+  type ResourceCatalogueQueryState,
 } from "./resourceCatalogueApplication";
 import type {
   ResourceCatalogueItem,
@@ -72,11 +75,15 @@ function createFailureState(error: unknown): {
 }
 
 function ResourceCatalogueListMode() {
+  const [query, setQuery] = useState<ResourceCatalogueQueryState>(
+    defaultResourceCatalogueQuery,
+  );
   const [loadState, setLoadState] = useState<LoadState>({ kind: "loading" });
 
   useEffect(() => {
     let active = true;
-    void queryResourceCatalogue()
+    setLoadState({ kind: "loading" });
+    void queryResourceCatalogue(query)
       .then((model) => {
         if (active) setLoadState({ kind: "loaded", model });
       })
@@ -86,7 +93,18 @@ function ResourceCatalogueListMode() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [query]);
+
+  function updateQuery(
+    patch: Partial<ResourceCatalogueQueryState>,
+    resetPage = true,
+  ) {
+    setQuery((current) => ({
+      ...current,
+      ...patch,
+      page: resetPage ? 1 : (patch.page ?? current.page),
+    }));
+  }
 
   const columns = useMemo<readonly DataTableColumn<ResourceCatalogueItem>[]>(
     () => [
@@ -94,13 +112,21 @@ function ResourceCatalogueListMode() {
         id: "display-name",
         label: "Name",
         emphasis: "primary",
+        sortKey: "displayName",
         render: (row) => row.displayName,
       },
       {
         id: "resource-reference",
         label: "Reference",
         emphasis: "technical",
+        sortKey: "resourceRef",
         render: (row) => row.resourceRef,
+      },
+      {
+        id: "authority-scope",
+        label: "Authority scope",
+        sortKey: "authorityScopeRef",
+        render: (row) => row.authorityScopeRef,
       },
       { id: "site", label: "Site", render: (row) => row.site },
       { id: "endpoints", label: "Endpoints", render: (row) => row.endpoints },
@@ -113,7 +139,8 @@ function ResourceCatalogueListMode() {
     [],
   );
 
-  const rows = loadState.kind === "loaded" ? loadState.model.resources : [];
+  const model = loadState.kind === "loaded" ? loadState.model : undefined;
+  const rows = model?.resources ?? [];
   const state: CatalogueState =
     loadState.kind === "loaded"
       ? rows.length === 0
@@ -125,6 +152,13 @@ function ResourceCatalogueListMode() {
     loadState.kind === "technical-error"
       ? loadState.message
       : undefined;
+  const queryActive =
+    query.search !== "" ||
+    query.authorityScopeRef !== "" ||
+    query.siteRef !== "" ||
+    query.sortBy !== defaultResourceCatalogueQuery.sortBy ||
+    query.sortDirection !== defaultResourceCatalogueQuery.sortDirection ||
+    query.pageSize !== defaultResourceCatalogueQuery.pageSize;
 
   return (
     <CataloguePattern
@@ -137,16 +171,72 @@ function ResourceCatalogueListMode() {
       }}
       state={state}
       statusMessage={statusMessage}
-      emptyMessage="No Resources."
+      emptyMessage="No Resources match the current query."
+      queryControls={
+        <FilterBarPattern
+          search={{
+            label: "Search Resources",
+            value: query.search,
+            placeholder: "Name or Resource ID",
+            onChange: (value) => updateQuery({ search: value }),
+          }}
+          filters={[
+            {
+              id: "authority-scope-ref",
+              label: "Authority scope",
+              value: query.authorityScopeRef,
+              onChange: (value) => updateQuery({ authorityScopeRef: value }),
+            },
+            {
+              id: "site-ref",
+              label: "Site ID",
+              value: query.siteRef,
+              onChange: (value) => updateQuery({ siteRef: value }),
+            },
+          ]}
+          sort={{
+            field: query.sortBy,
+            fields: [
+              { value: "displayName", label: "Name" },
+              { value: "resourceRef", label: "Reference" },
+              { value: "authorityScopeRef", label: "Authority scope" },
+            ],
+            direction: query.sortDirection,
+            onFieldChange: (field) =>
+              updateQuery({
+                sortBy: field as ResourceCatalogueQueryState["sortBy"],
+              }),
+            onDirectionChange: (sortDirection) =>
+              updateQuery({ sortDirection }),
+          }}
+          active={queryActive}
+          onClear={() => setQuery(defaultResourceCatalogueQuery)}
+        />
+      }
     >
       <DataTablePattern
         label="Resources"
         rows={rows}
         columns={columns}
         rowKey={(row) => row.resourceRef}
-        openColumnId="display-name"
         onOpen={(row) => navigate(`/resources/${row.resourceRef}`)}
-        emptyMessage="No Resources."
+        sort={{
+          field: query.sortBy,
+          direction: query.sortDirection,
+          onChange: (field, sortDirection) =>
+            updateQuery({
+              sortBy: field as ResourceCatalogueQueryState["sortBy"],
+              sortDirection,
+            }),
+        }}
+        paging={{
+          page: model?.page ?? query.page,
+          pageSize: model?.pageSize ?? query.pageSize,
+          total: model?.total ?? 0,
+          onPageChange: (page) => updateQuery({ page }, false),
+          onPageSizeChange: (pageSize) => updateQuery({ pageSize }),
+        }}
+        emptyMessage="No Resources match the current query."
       />
     </CataloguePattern>
   );

@@ -9,7 +9,21 @@ paths:
   /v1/resources:
     get:
       operationId: listResources
-      responses: {'200': {description: Resource catalogue}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      parameters:
+        - {$ref: '#/components/parameters/CatalogueSearch'}
+        - {$ref: '#/components/parameters/ResourceAuthorityScopeFilter'}
+        - {$ref: '#/components/parameters/ResourceSiteFilter'}
+        - {$ref: '#/components/parameters/ResourceSortBy'}
+        - {$ref: '#/components/parameters/CatalogueSortDirection'}
+        - {$ref: '#/components/parameters/CataloguePage'}
+        - {$ref: '#/components/parameters/CataloguePageSize'}
+      responses:
+        '200':
+          description: Resource catalogue page
+          content: {application/json: {schema: {$ref: '#/components/schemas/ResourceCataloguePage'}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
     post:
       operationId: createResource
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateResourceRequest'}}}}
@@ -189,6 +203,13 @@ components:
       bearerFormat: JWT
 
   parameters:
+    CatalogueSearch: {name: search, in: query, required: false, schema: {type: string, maxLength: 200}}
+    CatalogueSortDirection: {name: sortDirection, in: query, required: false, schema: {type: string, enum: [asc, desc], default: asc}}
+    CataloguePage: {name: page, in: query, required: false, schema: {type: integer, minimum: 1, default: 1}}
+    CataloguePageSize: {name: pageSize, in: query, required: false, schema: {type: integer, minimum: 1, maximum: 100, default: 25}}
+    ResourceAuthorityScopeFilter: {name: authorityScopeRef, in: query, required: false, schema: {type: string, minLength: 1}}
+    ResourceSiteFilter: {name: siteRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
+    ResourceSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [displayName, resourceRef, authorityScopeRef], default: displayName}}
     ResourceRef: {name: resourceRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     EndpointRef: {name: endpointRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     ResponsibilityRole: {name: role, in: path, required: true, schema: {type: string, enum: [OWNER, ADMINISTRATOR]}}
@@ -237,6 +258,16 @@ components:
         displayName: {type: string, minLength: 1}
         authorityScopeRef: {type: string, minLength: 1}
         siteRef: {$ref: '#/components/schemas/StableId'}
+    ResourceCataloguePage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/ResourceView'}}
+        total: {type: integer, minimum: 0}
+        page: {type: integer, minimum: 1}
+        pageSize: {type: integer, minimum: 1, maximum: 100}
+
     ResourceView:
       type: object
       required: [resourceRef, displayName, authorityScopeRef, version, current, history]

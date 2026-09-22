@@ -32,7 +32,7 @@ def assert_resource_state(
         )
         page = context.new_page()
         with page.expect_response(
-            lambda response: response.url.endswith("/v1/resources")
+            lambda response: response.url.split("?", 1)[0].endswith("/v1/resources")
         ) as response_info:
             page.goto(f"{BASE_URL}/resources")
         assert response_info.value.status == expected_http_status

@@ -30,6 +30,14 @@ frontend_application:
   screen_runtime: Feature-local query/command orchestration maps transport projections into provider-neutral Screen Models and owns request lifecycle plus ephemeral interaction state.
   screen_contract: Canonical Screen/View Design remains the authority for screen purpose, states, capabilities, exclusions and presentation-pattern selection.
   presentation_boundary: Feature screens consume project presentation-pattern adapters; concrete provider APIs remain behind the selected provider implementation.
+  catalogue_query_model:
+    responsibility: >-
+      Own browser-local query intent for an accepted entity catalogue and serialize it
+      into the canonical HTTP query contract without evaluating authoritative collection
+      predicates over a partial client result.
+    input: [search, accepted attribute filters, accepted sort field/direction, paging]
+    output: backend-confirmed page envelope mapped into the Screen Model
+    state_rule: Search/filter/sort changes reset paging; server responses remain authoritative.
   bff:
     state: NOT_APPLICABLE
     rationale: Current First-MVP HTTP projections already supply the facts needed by browser screens; deterministic frontend mapping is sufficient and no trusted cross-service aggregation, credential mediation or server-side frontend composition is required.

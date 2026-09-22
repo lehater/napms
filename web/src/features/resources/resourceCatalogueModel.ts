@@ -1,8 +1,9 @@
-import type { ResourceView } from "../../app/api";
+import type { CataloguePage, ResourceView } from "../../app/api";
 
 export type ResourceCatalogueItem = {
   resourceRef: string;
   displayName: string;
+  authorityScopeRef: string;
   site: string;
   endpoints: string;
   responsibilities: string;
@@ -10,6 +11,9 @@ export type ResourceCatalogueItem = {
 
 export type ResourceCatalogueScreenModel = {
   resources: ResourceCatalogueItem[];
+  total: number;
+  page: number;
+  pageSize: number;
 };
 
 function endpointSummary(resource: ResourceView): string {
@@ -29,15 +33,19 @@ function responsibilitySummary(resource: ResourceView): string {
 }
 
 export function toResourceCatalogueScreenModel(
-  resources: readonly ResourceView[],
+  page: CataloguePage<ResourceView>,
 ): ResourceCatalogueScreenModel {
   return {
-    resources: resources.map((resource) => ({
+    resources: page.items.map((resource) => ({
       resourceRef: resource.resourceRef,
       displayName: resource.displayName,
+      authorityScopeRef: resource.authorityScopeRef,
       site: resource.current.siteRef ?? "—",
       endpoints: endpointSummary(resource),
       responsibilities: responsibilitySummary(resource),
     })),
+    total: page.total,
+    page: page.page,
+    pageSize: page.pageSize,
   };
 }

@@ -63,12 +63,15 @@ presentation_provider:
     CATALOGUE:
       adapter: presentation/providers/mui/MuiCataloguePattern
       provider_primitives: [Box, Paper, Stack, Typography]
+    FILTER-BAR:
+      adapter: presentation/providers/mui/MuiFilterBar
+      provider_primitives: [Button, MenuItem, Stack, TextField]
     STRUCTURED-LIST:
       adapter: presentation/providers/mui/MuiStructuredListPattern
       provider_primitives: [Button, List, ListItem, ListItemButton, ListItemText, Paper]
     DATA-TABLE:
       adapter: presentation/providers/mui/MuiDataTablePattern
-      provider_primitives: [ButtonBase, Table, TableBody, TableCell, TableContainer, TableHead, TableRow]
+      provider_primitives: [ButtonBase, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TableSortLabel]
     DETAIL:
       adapter: presentation/providers/mui/MuiDetailPattern
       provider_primitives: [Box, Paper, Stack, Typography]
@@ -90,10 +93,14 @@ presentation_provider:
     SCOPE-SELECTOR:
       adapter: presentation/providers/mui/MuiScopeSelectorPattern
       provider_primitives: [Button, Paper, Stack, TextField, Typography]
-  resource_catalogue_grid_decision:
+  resource_catalogue_table_decision:
     selected: mui-material-Table
-    rejected_for_pilot: mui-x-DataGrid
-    rationale: RESOURCE-CATALOGUE explicitly excludes sorting, filtering and pagination; Community DataGrid exposes sorting/filtering by default and requires pagination, while plain Table realizes the accepted comparison pattern without manufacturing capabilities.
+    rejected_for_current_semantics: mui-x-DataGrid
+    rationale: >-
+      RESOURCE-CATALOGUE accepts server-backed search/filter/sort/paging, but does
+      not require DataGrid-only capabilities such as virtualization, column management
+      or grid-owned client data operations. Plain Material Table plus project query
+      controls realizes the accepted semantics with the smaller dependency surface.
 
 rules:
   - Feature screen application code depends on the API boundary, not raw transport/client internals.

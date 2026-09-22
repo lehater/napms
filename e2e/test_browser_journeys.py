@@ -108,6 +108,7 @@ def test_00_rendered_presentation_evidence() -> None:
         )
 
         goto(page, "/resources", "Resources")
+        page.locator('[data-presentation-pattern="filter-bar"]').wait_for()
         header_cell = page.locator("thead th").first
         body_row = page.locator("tbody tr").first
         header_box = header_cell.bounding_box()
@@ -143,7 +144,22 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page = page_with_token(browser)
         suffix = uuid4().hex[:8]
 
-        resource_ref = create_resource(page, f"E2E Resource {suffix}")
+        resource_name = f"E2E Resource {suffix}"
+        resource_ref = create_resource(page, resource_name)
+
+        goto(page, "/resources", "Resources")
+        page.get_by_label("Search Resources").fill(resource_name)
+        page.get_by_label("Authority scope").fill("e2e-scope")
+        page.get_by_label("Sort by").click()
+        page.get_by_role("option", name="Reference").click()
+        page.get_by_label("Sort direction").click()
+        page.get_by_role("option", name="Descending").click()
+        resource_row = page.locator("tbody tr", has_text=resource_name)
+        resource_row.wait_for()
+        assert resource_ref in (resource_row.text_content() or "")
+        resource_row.click()
+        page.wait_for_url(f"**/resources/{resource_ref}")
+
         page.get_by_role("heading", name="Current facts").wait_for()
         page.locator("[data-version]").wait_for()
         assert page.locator("[data-version]").get_attribute("data-version") == "1"
@@ -157,6 +173,12 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page.locator('[data-version="3"]').wait_for()
         page.get_by_text("HOST 10.10.0.1").wait_for()
         page.get_by_text("Provenance and history").click()
+
+        goto(page, "/resources", "Resources")
+        page.get_by_label("Search Resources").fill(resource_name)
+        refreshed_row = page.locator("tbody tr", has_text=resource_name)
+        refreshed_row.wait_for()
+        assert "HOST 10.10.0.1" in (refreshed_row.text_content() or "")
 
         application_ref = create_application(page, f"E2E Application {suffix}")
         source_ref = add_component(page, application_ref, f"Source {suffix}")

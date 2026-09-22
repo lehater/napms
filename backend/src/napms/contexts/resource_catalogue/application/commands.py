@@ -11,6 +11,10 @@ from napms.contexts.resource_catalogue.application.ports import (
     ResourceNotFound,
     ResourceVersionConflict,
 )
+from napms.contexts.resource_catalogue.application.queries import (
+    ResourceCataloguePage,
+    ResourceCatalogueQuery,
+)
 from napms.contexts.resource_catalogue.domain.model import (
     AddressRealization,
     Resource,
@@ -34,8 +38,8 @@ class ResourceCatalogueApplication:
         self._resources = resources
         self._new_ref = new_ref
 
-    def list_resources(self) -> tuple[Resource, ...]:
-        return self._resources.list()
+    def list_resources(self, query: ResourceCatalogueQuery) -> ResourceCataloguePage:
+        return self._resources.query(query)
 
     def get_resource(self, resource_ref: UUID) -> Resource | None:
         return self._resources.get(resource_ref)
