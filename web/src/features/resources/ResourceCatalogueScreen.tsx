@@ -13,10 +13,12 @@ import {
 } from "../../presentation";
 import {
   createResource,
-  defaultResourceCatalogueQuery,
   queryResourceCatalogue,
-  type ResourceCatalogueQueryState,
 } from "./resourceCatalogueApplication";
+import {
+  defaultResourceCatalogueQuery,
+  type ResourceCatalogueQueryState,
+} from "./resourceCatalogueQuery";
 import type {
   ResourceCatalogueItem,
   ResourceCatalogueScreenModel,
