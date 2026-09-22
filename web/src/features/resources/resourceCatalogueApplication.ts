@@ -1,12 +1,12 @@
 import { api } from "../../app/api";
 import {
-  type ResourceCatalogueQueryState,
-  toResourceCatalogueQuery,
-} from "./resourceCatalogueQuery";
-import {
   type ResourceCatalogueScreenModel,
   toResourceCatalogueScreenModel,
 } from "./resourceCatalogueModel";
+import {
+  type ResourceCatalogueQueryState,
+  toResourceCatalogueQuery,
+} from "./resourceCatalogueQuery";
 
 export async function queryResourceCatalogue(
   query: ResourceCatalogueQueryState,

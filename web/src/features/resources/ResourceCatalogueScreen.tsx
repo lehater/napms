@@ -15,14 +15,14 @@ import {
   createResource,
   queryResourceCatalogue,
 } from "./resourceCatalogueApplication";
-import {
-  defaultResourceCatalogueQuery,
-  type ResourceCatalogueQueryState,
-} from "./resourceCatalogueQuery";
 import type {
   ResourceCatalogueItem,
   ResourceCatalogueScreenModel,
 } from "./resourceCatalogueModel";
+import {
+  defaultResourceCatalogueQuery,
+  type ResourceCatalogueQueryState,
+} from "./resourceCatalogueQuery";
 
 type LoadState =
   | { kind: "loading" }
