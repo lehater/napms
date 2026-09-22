@@ -78,16 +78,14 @@ jobs:
           assert frontend["kind"] == "harness-engineering-coverage-evaluation"
           assert frontend["status"] == "canonical"
           assert frontend["consumer"] == "FRONTEND-IMPLEMENTATION"
-          assert frontend["completion_ready"] is False
-          assert frontend["remaining_work_count"] > 0
-          assert any(
-              item.get("action") == "REVALIDATE_SEMANTICS"
-              for item in frontend["work_items"]
-          ), frontend["work_items"]
+          assert frontend["completion_ready"] is True
+          assert frontend["remaining_work_count"] == 0
+          assert frontend["work_items"] == []
+          assert frontend["question_frontier"] == []
 
           print(
-              "NAPMS Engineering Coverage:",
-              "backend COMPLETE;",
-              "frontend correctly BLOCKED by incomplete screen semantic closure",
+              "NAPMS Engineering Coverage COMPLETE:",
+              backend["activated_count"],
+              frontend["activated_count"],
           )
           PY
