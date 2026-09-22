@@ -43,7 +43,7 @@ presentation_provider:
   provider: mui-material
   version: 9.4.0
   feature_policy: {default: deny}
-  coverage_screens: [RESOURCE-CATALOGUE, RESOURCE-DETAIL]
+  coverage_screens: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, APPLICATION-DETAIL]
   required_patterns: [APP-SHELL]
   template_baseline:
     provider: mui-material
@@ -57,10 +57,13 @@ presentation_provider:
       provider_primitives: [Box, Drawer, List, ListItemButton, Toolbar]
     CATALOGUE:
       adapter: presentation/providers/mui/MuiCataloguePattern
-      provider_primitives: [Box, Stack, Typography, Button]
+      provider_primitives: [Box, Paper, Stack, Typography]
+    STRUCTURED-LIST:
+      adapter: presentation/providers/mui/MuiStructuredListPattern
+      provider_primitives: [Button, List, ListItem, ListItemButton, ListItemText, Paper]
     DATA-TABLE:
-      adapter: presentation/providers/mui/MuiCataloguePattern
-      provider_primitives: [Table, TableBody, TableCell, TableContainer, TableHead, TableRow]
+      adapter: presentation/providers/mui/MuiDataTablePattern
+      provider_primitives: [Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow]
     DETAIL:
       adapter: presentation/providers/mui/MuiDetailPattern
       provider_primitives: [Box, Paper, Stack, Typography]

@@ -22,25 +22,43 @@ export type CatalogueState =
   | "authorization-rejected"
   | "technical-error";
 
-export type CatalogueColumn<Row> = {
+export type CataloguePatternProps = {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  primaryAction?: PresentationAction;
+  state: CatalogueState;
+  statusMessage?: string;
+  emptyMessage: string;
+  children?: ReactNode;
+};
+
+export type DataTableColumn<Row> = {
   id: string;
   label: string;
   emphasis?: "primary" | "technical" | "default";
   render: (row: Row) => ReactNode;
 };
 
-export type CataloguePatternProps<Row> = {
-  eyebrow: string;
-  title: string;
-  description?: string;
+export type DataTablePatternProps<Row> = {
+  label: string;
   rows: readonly Row[];
-  columns: readonly CatalogueColumn<Row>[];
+  columns: readonly DataTableColumn<Row>[];
   rowKey: (row: Row) => string;
-  openColumnId: string;
-  onOpen: (row: Row) => void;
-  primaryAction?: PresentationAction;
-  state: CatalogueState;
-  statusMessage?: string;
+  openColumnId?: string;
+  onOpen?: (row: Row) => void;
+  rowAction?: (row: Row) => PresentationAction;
+  emptyMessage?: string;
+};
+
+export type StructuredListPatternProps<Row> = {
+  label: string;
+  rows: readonly Row[];
+  rowKey: (row: Row) => string;
+  primary: (row: Row) => ReactNode;
+  secondary?: (row: Row) => ReactNode;
+  onOpen?: (row: Row) => void;
+  rowAction?: (row: Row) => PresentationAction;
   emptyMessage: string;
 };
 
@@ -62,8 +80,9 @@ export type EditorField = {
   label: string;
   value: string;
   required?: boolean;
+  readOnly?: boolean;
   options?: readonly EditorOption[];
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
 };
 
 export type EditorPatternProps = {

@@ -1,34 +1,18 @@
-import {
-  Box,
-  Button,
-  Paper,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-} from "@mui/material";
+import { Box, Paper, Stack, Typography } from "@mui/material";
 import type { CataloguePatternProps } from "../../contracts";
 import { MuiStatus } from "./MuiStatus";
 import { MuiTaskActions } from "./MuiTaskActions";
 
-export function MuiCataloguePattern<Row>({
+export function MuiCataloguePattern({
   eyebrow,
   title,
   description,
-  rows,
-  columns,
-  rowKey,
-  openColumnId,
-  onOpen,
   primaryAction,
   state,
   statusMessage,
   emptyMessage,
-}: CataloguePatternProps<Row>) {
+  children,
+}: CataloguePatternProps) {
   return (
     <Stack spacing={3}>
       <Stack
@@ -83,57 +67,7 @@ export function MuiCataloguePattern<Row>({
         </Paper>
       ) : null}
 
-      {state === "loaded" ? (
-        <TableContainer component={Paper} variant="outlined">
-          <Table size="small" aria-label={title}>
-            <TableHead>
-              <TableRow>
-                {columns.map((column) => (
-                  <TableCell key={column.id}>{column.label}</TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={rowKey(row)} hover>
-                  {columns.map((column) => (
-                    <TableCell
-                      key={column.id}
-                      sx={
-                        column.emphasis === "technical"
-                          ? {
-                              color: "text.secondary",
-                              fontFamily: "monospace",
-                              fontSize: "0.78rem",
-                            }
-                          : undefined
-                      }
-                    >
-                      {column.id === openColumnId ? (
-                        <Button
-                          variant="text"
-                          size="small"
-                          onClick={() => onOpen(row)}
-                          sx={{
-                            minWidth: 0,
-                            p: 0,
-                            justifyContent: "flex-start",
-                            fontWeight: 650,
-                          }}
-                        >
-                          {column.render(row)}
-                        </Button>
-                      ) : (
-                        column.render(row)
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      ) : null}
+      {state === "loaded" ? children : null}
     </Stack>
   );
 }

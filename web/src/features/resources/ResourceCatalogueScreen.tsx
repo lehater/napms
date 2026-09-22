@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
-  type CatalogueColumn,
   CataloguePattern,
   type CatalogueState,
+  type DataTableColumn,
+  DataTablePattern,
   type EditorField,
   EditorPattern,
   type EditorState,
@@ -87,7 +88,7 @@ function ResourceCatalogueListMode() {
     };
   }, []);
 
-  const columns = useMemo<readonly CatalogueColumn<ResourceCatalogueItem>[]>(
+  const columns = useMemo<readonly DataTableColumn<ResourceCatalogueItem>[]>(
     () => [
       {
         id: "display-name",
@@ -130,11 +131,6 @@ function ResourceCatalogueListMode() {
       eyebrow="Resource catalogue"
       title="Resources"
       description="Locate a Resource by stable identity and inspect current facts before history."
-      rows={rows}
-      columns={columns}
-      rowKey={(row) => row.resourceRef}
-      openColumnId="display-name"
-      onOpen={(row) => navigate(`/resources/${row.resourceRef}`)}
       primaryAction={{
         label: "Create Resource",
         onInvoke: () => navigate("/resources/new"),
@@ -142,7 +138,17 @@ function ResourceCatalogueListMode() {
       state={state}
       statusMessage={statusMessage}
       emptyMessage="No Resources."
-    />
+    >
+      <DataTablePattern
+        label="Resources"
+        rows={rows}
+        columns={columns}
+        rowKey={(row) => row.resourceRef}
+        openColumnId="display-name"
+        onOpen={(row) => navigate(`/resources/${row.resourceRef}`)}
+        emptyMessage="No Resources."
+      />
+    </CataloguePattern>
   );
 }
 

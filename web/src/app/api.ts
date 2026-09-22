@@ -194,13 +194,10 @@ export const api = {
       },
     ),
   clearResourceAddress: (ref: string, endpointRef: string, version: number) =>
-    request<void>(
-      `/v1/resources/${ref}/endpoints/${endpointRef}/address`,
-      {
-        method: "DELETE",
-        headers: { "If-Match": String(version) },
-      },
-    ),
+    request<void>(`/v1/resources/${ref}/endpoints/${endpointRef}/address`, {
+      method: "DELETE",
+      headers: { "If-Match": String(version) },
+    }),
   setResourceResponsibility: (
     ref: string,
     role: string,

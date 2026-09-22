@@ -198,19 +198,29 @@ screens:
 
   - id: APPLICATION-CATALOGUE
     purpose: Locate/select reusable Applications and start supported Application creation.
-    patterns: [CATALOGUE, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, STRUCTURED-LIST, EDITOR, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: applications, role: collection, priority: primary}
+      - {id: applications, role: collection, pattern: STRUCTURED-LIST, priority: primary, applies_when: list-mode}
+      - {id: create-editor, role: task-editor, pattern: EDITOR, priority: primary, applies_when: create-mode}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
     composition:
       root: catalogue-workspace
-      ordered_regions: [context, actions, applications, feedback]
+      ordered_regions: [context, actions, applications, create-editor, feedback]
+      modes:
+        list: [context, actions, applications, feedback]
+        create: [context, create-editor, feedback]
+      applications: {pattern: STRUCTURED-LIST, row_action: open-application}
+      create-editor:
+        pattern: EDITOR
+        fields:
+          - {id: name, source: request:createApplication.name, required: true}
+        submit_action: create-application
     primary_action_role: create-application
     exits:
       - select Application -> APPLICATION-DETAIL
-    states: [loading, loaded, empty, validation-rejected, authorization-rejected, conflict, technical-error]
+    states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
     responsive:
       - application records preserve stable identity and open action
       - collection may transform to labeled records

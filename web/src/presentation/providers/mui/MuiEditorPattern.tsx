@@ -87,7 +87,8 @@ export function MuiEditorPattern({
               value={field.value}
               required={field.required}
               select={Boolean(field.options?.length)}
-              onChange={(event) => field.onChange(event.target.value)}
+              slotProps={{ htmlInput: { readOnly: field.readOnly } }}
+              onChange={(event) => field.onChange?.(event.target.value)}
               fullWidth
             >
               {field.options?.map((option) => (
