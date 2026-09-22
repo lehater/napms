@@ -31,11 +31,52 @@ components:
     owns: authoritative desired-access inspection and operational-state workflows
   policy_export_feature:
     owns: selection/export/completeness-diagnostic workflows
-  presentation_components:
-    owns: reusable implementation primitives realizing accepted Presentation System patterns/tokens without becoming design authority
+  screen_application:
+    owns: feature-local query/command orchestration, transport-to-Screen-Model mapping and request lifecycle
+  presentation_facade:
+    owns: provider-neutral exports for the small set of accepted Presentation System patterns used by feature screens
+  presentation_provider_adapter:
+    owns: provider-specific realization of accepted presentation patterns, theme and template composition without adding product capabilities
+
+presentation_provider:
+  id: NAPMS-MUI-PROVIDER-V1
+  provider: mui-material
+  version: 9.4.0
+  feature_policy: {default: deny}
+  coverage_screens: [RESOURCE-CATALOGUE]
+  required_patterns: [APP-SHELL]
+  template_baseline:
+    provider: mui-material
+    artifact: official-crud-dashboard
+    source_ref: 548eaf46b9da61aabb721ea95eb81b33d8c2b8ff
+    role: composition-reference
+    policy: Selectively adopt shell/layout composition; template controls and routes have no product authority.
+  pattern_mappings:
+    APP-SHELL:
+      adapter: presentation/providers/mui/MuiAppShell
+      provider_primitives: [Box, Drawer, List, ListItemButton, Toolbar]
+    CATALOGUE:
+      adapter: presentation/providers/mui/MuiCataloguePattern
+      provider_primitives: [Box, Stack, Typography, Button]
+    DATA-TABLE:
+      adapter: presentation/providers/mui/MuiCataloguePattern
+      provider_primitives: [Table, TableBody, TableCell, TableContainer, TableHead, TableRow]
+    TASK-ACTIONS:
+      adapter: presentation/providers/mui/MuiCataloguePattern
+      provider_primitives: [Button, Stack]
+    STATUS:
+      adapter: presentation/providers/mui/MuiCataloguePattern
+      provider_primitives: [Alert, CircularProgress]
+  resource_catalogue_grid_decision:
+    selected: mui-material-Table
+    rejected_for_pilot: mui-x-DataGrid
+    rationale: RESOURCE-CATALOGUE explicitly excludes sorting, filtering and pagination; Community DataGrid exposes sorting/filtering by default and requires pagination, while plain Table realizes the accepted comparison pattern without manufacturing capabilities.
 
 rules:
-  - Feature components depend on the API boundary, not raw transport/client internals.
+  - Feature screen application code depends on the API boundary, not raw transport/client internals.
+  - Feature rendering imports the provider-neutral presentation facade; only provider adapter code may import the selected vendor UI packages.
+  - Provider/template optional features are disabled unless an accepted Screen/View capability and pattern feature binding authorizes them.
+  - Provider adapters realize semantic presentation patterns; they do not mirror the vendor component API behind a second framework.
   - DTOs are mapped at the API boundary; transport shapes do not become domain models.
   - Cross-feature shared state is avoided unless an accepted interaction requires it.
   - Shared visual/interaction primitives implement Presentation System roles and patterns; they do not invent screen-local semantics.
