@@ -35,6 +35,11 @@ required_subject_evidence:
 
 shared_evidence:
   - every canonical workspace implements the Screen/View composition that inherits NAPMS-MVP-PRESENTATION-SYSTEM.
+  - every screen read/query and command binding resolves to an accepted HTTP operationId.
+  - every declared UI state maps to an accepted read/command/local outcome; impossible HTTP outcomes are rejected.
+  - every enabled presentation feature maps to an explicitly allowed screen capability; unbound template features remain disabled.
+  - every semantic Screen/View Model field traces to an accepted read/command/local source.
+  - every screen declares contract, semantic and rendered-conformance evidence.
   - equivalent actions/states use the shared presentation patterns unless an accepted local deviation exists.
   - primary/secondary information and action hierarchy remains recognizable across workspaces.
   - loading/empty/not-found/rejected/conflict/technical states are not conflated.
