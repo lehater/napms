@@ -113,6 +113,14 @@ bindings:
 # Broad capabilities remain only partially bound above. Unlisted concern semantics
 # are intentionally left open rather than inferred from artifact existence.
 
+  - capability: engineering.frontend.presentation-system
+    semantic_claims:
+      - engineering.interface.human.presentation-system
+
+  - capability: engineering.frontend.screen-view-design
+    semantic_claims:
+      - engineering.interface.human.screen-composition
+
   - capability: engineering.frontend.human-interface
     semantic_claims:
       - engineering.interface.human.journeys
@@ -147,6 +155,10 @@ bindings:
       - engineering.engineering.components
       - engineering.engineering.error-handling
       - engineering.engineering.code-quality
+
+  - capability: engineering.frontend.presentation-verification
+    semantic_claims:
+      - engineering.verification.interface.presentation
 
   - capability: engineering.frontend.verification
     semantic_claims:

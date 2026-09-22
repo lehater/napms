@@ -9,9 +9,11 @@
   "scripts": {
     "dev": "vite",
     "ui-boundary-check": "node scripts/check-ui-boundaries.mjs",
-    "build": "npm run ui-boundary-check && tsc -b && vite build",
-    "check": "biome check . && npm run ui-boundary-check && tsc -b --pretty false && npm test",
-    "test": "node --experimental-strip-types --test tests/**/*.test.ts"
+    "build": "npm run tokens:check && npm run ui-boundary-check && tsc -b && vite build",
+    "check": "biome check . && npm run tokens:check && npm run ui-boundary-check && tsc -b --pretty false && npm test",
+    "test": "node --experimental-strip-types --test tests/**/*.test.ts",
+    "tokens:generate": "node scripts/generate-design-tokens.mjs",
+    "tokens:check": "node scripts/generate-design-tokens.mjs --check"
   },
   "dependencies": {
     "lucide-react": "^1.43.0",

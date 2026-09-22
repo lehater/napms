@@ -16,6 +16,7 @@ import {
   ResourceDetail,
 } from "../features/resources/ResourceScreens";
 import { parseRoute, type Route } from "./router";
+import "../design-system/tokens.css";
 import "../design-system/base.css";
 
 function App() {

@@ -25,6 +25,8 @@ from engineering_graph import evaluate_engineering_target  # noqa: E402
 from engineering_coverage import evaluate_with_repository_policy, load_scope_source  # noqa: E402
 from integration_alignment import validate_project_alignment  # noqa: E402
 
+from evaluate_frontend_presentation_semantics import evaluate as evaluate_frontend_presentation_semantics
+
 
 def load(relative: str):
     value = yaml.safe_load((ROOT / relative).read_text(encoding="utf-8"))
@@ -45,6 +47,7 @@ def coverage_check(
     *,
     consumer: str,
     obligations_path: str,
+    semantic_evaluations=None,
 ) -> None:
     aligned = validate_project_alignment(
         source,
@@ -67,6 +70,7 @@ def coverage_check(
         project_overlay=load("docs/harness/coverage/concern-activation-overlay-v1.yaml"),
         semantic_claim_bindings=load("docs/harness/coverage/semantic-claim-bindings-v1.yaml"),
         canonical_source=source,
+        semantic_evaluations=semantic_evaluations,
         subject_obligations=load(obligations_path),
         scope_source=load_scope_source(ROOT / "docs/requirements/first-mvp-product-requirements.yaml"),
     )
@@ -137,6 +141,7 @@ def main() -> int:
         projection,
         consumer="FRONTEND-IMPLEMENTATION",
         obligations_path="docs/harness/coverage/frontend-subject-obligations-v1.yaml",
+        semantic_evaluations=evaluate_frontend_presentation_semantics(),
     )
     requirement_verification_check()
     frontend_subject_test_check()

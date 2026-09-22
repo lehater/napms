@@ -27,6 +27,46 @@ scope:
     - POLICY-RULES
     - POLICY-EXPORT
 
+reference_model:
+  precedence:
+    - modern canonical product/domain/application/security/interface semantics
+    - this accepted Presentation System and Screen/View composition
+    - historical visual/executable evidence used to reconstruct presentation intent
+  semantic_guard: >-
+    A reference may constrain presentation only. A control, field, state or workflow
+    visible in historical evidence is not admitted into the First MVP unless modern
+    canonical semantics independently require it.
+  sources:
+    - id: RESOURCE-CATALOGUE-CONCEPT
+      kind: visual-reference
+      path: docs-legacy/ui/references/resource-catalogue/catalogue-list.svg
+      role: presentation-evidence
+      constrains: [desktop shell proportions, operational density and hierarchy, catalogue surface/table visual language]
+      does_not_authorize: [Resource type semantics, search/filter/sort/pagination behavior, legacy business fields or actions]
+    - id: RESOURCE-DETAIL-CONCEPT
+      kind: visual-reference-family
+      paths:
+        - docs-legacy/ui/references/resource-catalogue/resource-overview.svg
+        - docs-legacy/ui/references/resource-catalogue/resource-history.svg
+      role: presentation-evidence
+      constrains: [full-width detail workspace, current-state-first hierarchy, secondary history/provenance presentation]
+    - id: LEGACY-PRESENTATION-DOCUMENTATION
+      kind: documentation-evidence
+      paths: [docs-legacy/ui/design-system.md, docs-legacy/ui/design-tokens.md, docs-legacy/ui/component-composition.md]
+      role: reconstruction-provenance
+    - id: MAIN-WEBUI-PRESENTATION
+      kind: executable-reference
+      repository_commit: dbd56ceaa69dff4c4e099f7a305bcf1eec43bac7
+      paths:
+        - web/src/design-system/
+        - web/src/app/AppShell.tsx
+        - web/src/features/catalogues/pages/ResourcesPage.tsx
+        - web/src/features/catalogues/pages/ResourceDetailsPage.tsx
+        - e2e/test_j00_resource_catalogue_visual.py
+      role: executable-presentation-evidence
+      may_supply: [exact reusable dimensions, component anatomy, hover/focus/selection states, responsive and keyboard behavior]
+      forbidden_authority: [product/domain semantics, First-MVP API behavior, authorization or business decisions]
+
 presentation_language:
   character: operational-productivity
   priorities:
@@ -53,6 +93,19 @@ layout:
     pattern: APP-SHELL
     regions: [primary-navigation, workspace-context, workspace-content, global-feedback]
   content_width: use available workspace width while keeping forms and prose readable
+  material_invariants:
+    - {id: shell-sidebar-width, token: component.app-shell.sidebar-width, applies_when: desktop-shell}
+    - {id: workspace-padding, token: component.app-shell.workspace-padding, applies_when: desktop-shell}
+    - {id: control-height, token: component.control.height, applies_when: standard-control}
+    - {id: dense-table-header, token: component.table.header-height, applies_when: DATA-TABLE}
+    - {id: dense-table-row, token: component.table.row-height, applies_when: DATA-TABLE}
+    - {id: table-selection-column, token: component.table.selection-column-width, applies_when: selectable-DATA-TABLE}
+    - {id: table-cell-horizontal-padding, token: component.table.cell-padding-x, applies_when: DATA-TABLE}
+  controlled_freedom:
+    - exact responsive breakpoint values
+    - CSS Grid/Flexbox or equivalent mechanics
+    - non-material internal gaps not represented by a semantic spacing token
+    - private DOM/component decomposition
   density:
     default: compact-readable
     rationale: First-MVP workspaces are structured operational interfaces with lists, facts and relationships; density must not remove labels, status meaning or action discoverability.
@@ -81,20 +134,40 @@ visual_roles:
 patterns:
   APP-SHELL:
     purpose: persistent application navigation and current-workspace context
+    anatomy:
+      ordered: [primary-navigation, workspace]
+      workspace: [workspace-context, workspace-content, global-feedback]
+    tokens:
+      sidebar_width: component.app-shell.sidebar-width
+      workspace_padding: component.app-shell.workspace-padding
+      navigation_background: semantic.color.navigation.background
+      navigation_text: semantic.color.navigation.text
     rules:
       - primary navigation exposes the canonical workspace set;
       - current workspace is visibly identified;
+      - desktop navigation uses the accepted dark navigation visual language;
       - routine operation feedback uses a non-modal global feedback region.
 
   CATALOGUE:
     purpose: locate/select an entity and start supported creation
-    regions: [heading-actions, search-filter, collection, collection-state]
+    anatomy:
+      ordered: [heading-actions, collection-surface]
+      collection_surface:
+        required: [collection-state, collection]
+        optional_when_semantics_exist: [search-filter, quick-filters, selection, pagination]
     states: [loading, loaded, empty, error]
+    rules:
+      - optional catalogue controls are present only when accepted read/application semantics support them;
+      - reference imagery cannot manufacture search/filter/sort/pagination behavior.
 
   DETAIL:
     purpose: inspect one stable product entity and supported current facts
-    regions: [identity-context, primary-facts, task-actions, secondary-details]
+    anatomy:
+      ordered: [identity-context, primary-facts, task-actions, secondary-details]
     states: [loading, loaded, empty-current, not-found, error]
+    rules:
+      - current/effective facts precede history/provenance;
+      - secondary historical information remains directly discoverable.
 
   EDITOR:
     purpose: create or change accepted facts
@@ -110,6 +183,17 @@ patterns:
 
   DATA-TABLE:
     purpose: compare repeated structured records where column comparison materially helps the task
+    anatomy: [header, rows]
+    tokens:
+      header_height: component.table.header-height
+      row_height: component.table.row-height
+      selection_column_width: component.table.selection-column-width
+      cell_padding_x: component.table.cell-padding-x
+      cell_padding_y: component.table.cell-padding-y
+    rules:
+      - the table owns its border/radius; ordinary toolbar/pagination regions are not wrapped in one oversized card;
+      - primary human-readable identity is visually stronger than stable technical identifiers;
+      - selection, lifecycle/status and tags remain separate presentation concepts when present.
     responsive: may become labeled stacked records; semantic column labels remain available
 
   FILTER-BAR:
@@ -172,11 +256,15 @@ content_rules:
   - preserve provenance/evaluation time where accepted semantics require it.
 
 design_tokens:
+  canonical_source: docs/contracts/ui/mvp-design-tokens.json
+  format: DTCG-2025.10
   policy: >-
-    Tokenize stable semantic roles used across workspaces. Concrete numeric/color
-    values may be chosen during component realization unless a requirement,
-    accessibility criterion or accepted visual invariant makes the value canonical.
+    Tokenize stable reusable visual decisions and aliases. Structural composition
+    and responsive transformations remain rules rather than constants. CSS/TypeScript
+    token files are materialized implementation artifacts and must not become an
+    independent source of presentation truth.
   required_role_groups: [typography, color, spacing, focus, status]
+  required_component_groups: [app-shell, control, table]
 
 deviation_policy:
   rule: Screen/View contracts inherit this system by default.
@@ -190,7 +278,7 @@ deviation_policy:
 implementation_freedom:
   - frontend framework and component library
   - CSS Grid/Flexbox or equivalent layout mechanics
-  - exact breakpoints
-  - exact pixel coordinates
+  - exact breakpoints unless later accepted as a material invariant
+  - pixel coordinates not represented by a material invariant
   - private component decomposition
-  - token serialization/file format
+  - generated CSS/TypeScript serialization mechanics

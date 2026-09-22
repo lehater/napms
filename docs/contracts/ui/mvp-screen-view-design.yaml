@@ -16,23 +16,58 @@ basis:
   resource_detail: docs/contracts/ui/resource-detail.yaml
   http: docs/contracts/http/napms.openapi.yaml
 
+composition_contract:
+  rule: >-
+    Every screen declares ordered composition in addition to semantic regions.
+    Pattern ids alone are insufficient when nesting/order affects hierarchy or
+    accepted presentation intent.
+  reference_rule: >-
+    Historical references constrain only explicitly adopted presentation facts.
+    Unsupported controls or fields are recorded as not-adopted rather than
+    recreated as client-only product behavior.
+
 screens:
   - id: RESOURCE-CATALOGUE
     purpose: Locate/select Resources and start supported Resource authoring.
-    patterns: [CATALOGUE, FILTER-BAR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, DATA-TABLE, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: catalogue-controls, role: search-filter, priority: primary}
-      - {id: resources, role: collection, priority: primary}
+      - {id: resources, role: collection, pattern: DATA-TABLE, priority: primary}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
+    composition:
+      root: catalogue-workspace
+      ordered_regions: [context, actions, resources, feedback]
+      resources:
+        pattern: DATA-TABLE
+        columns:
+          - {id: display-name, role: primary-identity}
+          - {id: resource-reference, role: technical-identity}
+          - {id: site, role: current-fact}
+          - {id: endpoints, role: current-fact-summary}
+          - {id: responsibilities, role: current-fact-summary}
+        row_action: open-resource
+    reference_adaptation:
+      sources: [RESOURCE-CATALOGUE-CONCEPT, MAIN-WEBUI-PRESENTATION]
+      adopted:
+        - dark fixed-width desktop navigation and full-width operational workspace
+        - compact hierarchy and dense table visual language
+        - human-readable primary identity with technical reference subordinate
+      not_adopted:
+        - {reference_feature: search, reason: listResources has no accepted search contract}
+        - {reference_feature: filters-and-quick-filters, reason: no accepted First-MVP filtering contract}
+        - {reference_feature: sorting, reason: no accepted First-MVP ordering contract}
+        - {reference_feature: pagination-and-page-size, reason: no accepted First-MVP paging contract}
+        - {reference_feature: selection-and-bulk-actions, reason: no accepted First-MVP bulk action semantics}
+        - {reference_feature: Resource-type-filter, reason: no accepted Resource type concept}
+        - {reference_feature: New-Resource-modal, reason: current First-MVP navigation uses the accepted authoring route/state}
     primary_action_role: create-resource
     exits:
       - select Resource -> RESOURCE-DETAIL
     states: [loading, loaded, empty, validation-rejected, authorization-rejected, conflict, technical-error]
     responsive:
       - collection preserves Resource identity, current distinguishing facts and open action
-      - structured rows may become labeled records
+      - table may become labeled records while preserving column labels and actions
     overrides: []
 
   - id: RESOURCE-DETAIL
@@ -45,6 +80,24 @@ screens:
       - {id: actions, role: task-actions, priority: primary}
       - {id: history, role: secondary-content, pattern: DISCLOSURE, priority: secondary}
       - {id: feedback, role: operation-status, priority: supporting}
+    composition:
+      root: detail-workspace
+      ordered_regions: [identity-context, current-facts, actions, history, feedback]
+      current-facts:
+        groups: [site, endpoints, responsibilities]
+        interaction: contextual-editor
+      history:
+        pattern: DISCLOSURE
+        priority: secondary
+    reference_adaptation:
+      sources: [RESOURCE-DETAIL-CONCEPT, MAIN-WEBUI-PRESENTATION]
+      adopted:
+        - full-width detail workspace
+        - current facts before temporal history/provenance
+        - secondary history remains directly inspectable
+      not_adopted:
+        - {reference_feature: legacy-detail-fields, reason: modern ResourceView and Resource contract remain semantic authority}
+        - {reference_feature: legacy-mutation-shapes, reason: modern HTTP/current-state operations remain semantic authority}
     states: [loading, loaded, empty-current, not-found, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
     responsive:
       - current facts remain before historical facts in reading order
@@ -54,13 +107,15 @@ screens:
 
   - id: APPLICATION-CATALOGUE
     purpose: Locate/select reusable Applications and start supported Application creation.
-    patterns: [CATALOGUE, FILTER-BAR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: catalogue-controls, role: search-filter, priority: primary}
       - {id: applications, role: collection, priority: primary}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
+    composition:
+      root: catalogue-workspace
+      ordered_regions: [context, actions, applications, feedback]
     primary_action_role: create-application
     exits:
       - select Application -> APPLICATION-DETAIL
@@ -80,6 +135,11 @@ screens:
       - {id: interactions, role: primary-content, pattern: DATA-TABLE, priority: primary}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
+    composition:
+      root: detail-workspace
+      ordered_regions: [application-context, application-facts, components, interactions, actions, feedback]
+      components: {pattern: STRUCTURED-LIST}
+      interactions: {pattern: DATA-TABLE}
     action_hierarchy:
       application: edit-application
       components: add-or-edit-component
@@ -93,14 +153,16 @@ screens:
 
   - id: DEPLOYMENTS
     purpose: Locate/create Component deployments and inspect their Resource realization.
-    patterns: [CATALOGUE, FILTER-BAR, DETAIL, EDITOR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, DETAIL, EDITOR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: controls, role: search-filter, priority: primary}
       - {id: deployments, role: collection, priority: primary}
       - {id: selected-deployment, role: detail-editor, priority: primary}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
+    composition:
+      root: split-collection-detail-workspace
+      ordered_regions: [context, actions, deployments, selected-deployment, feedback]
     primary_action_role: create-deployment
     states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
     responsive:
@@ -110,13 +172,16 @@ screens:
 
   - id: BUSINESS-CONNECTIVITY
     purpose: Manage Business Processes and Connectivity Needs while preserving business justification independently from permission.
-    patterns: [CATALOGUE, FILTER-BAR, DETAIL, EDITOR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, DETAIL, EDITOR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
       - {id: business-processes, role: collection-detail, priority: primary}
       - {id: connectivity-needs, role: collection-detail, priority: primary}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
+    composition:
+      root: relationship-workspace
+      ordered_regions: [context, actions, business-processes, connectivity-needs, feedback]
     action_hierarchy:
       business_process: create-or-edit-business-process
       connectivity_need: create-or-retire-connectivity-need
@@ -136,6 +201,10 @@ screens:
       - {id: selected-outcome, role: authoritative-outcome, pattern: OUTCOME, priority: primary}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
+    composition:
+      root: request-outcome-workspace
+      ordered_regions: [context, actions, requests, request-composer, selected-outcome, feedback]
+      selected-outcome: {pattern: OUTCOME}
     primary_action_role: submit-request
     authority_rule: Visible/enabled controls never establish request authority; backend admission is authoritative.
     states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, conflict, outcome-allowed, outcome-not-allowed, technical-error]
@@ -146,15 +215,17 @@ screens:
 
   - id: POLICY-RULES
     purpose: Inspect authoritative desired-access rules and change supported Active/Inactive operational state.
-    patterns: [CATALOGUE, FILTER-BAR, DETAIL, OUTCOME, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, DETAIL, OUTCOME, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: controls, role: search-filter, priority: primary}
       - {id: rules, role: collection, priority: primary}
       - {id: selected-rule, role: authoritative-detail, priority: primary}
       - {id: provenance-history, role: secondary-content, priority: secondary}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
+    composition:
+      root: rule-workspace
+      ordered_regions: [context, actions, rules, selected-rule, provenance-history, feedback]
     primary_action_role: change-supported-operational-state
     states: [loading, loaded, empty, submitting, authorization-rejected, conflict, not-found, technical-error]
     responsive:
@@ -173,6 +244,10 @@ screens:
       - {id: diagnostics, role: secondary-content, priority: primary}
       - {id: provenance, role: secondary-content, priority: secondary}
       - {id: feedback, role: operation-status, priority: supporting}
+    composition:
+      root: operation-outcome-workspace
+      ordered_regions: [context, scope, actions, export-result, diagnostics, provenance, feedback]
+      export-result: {pattern: OUTCOME}
     primary_action_role: execute-export
     authority_rule: Visible/enabled controls never establish export authority; backend admission is authoritative.
     states: [editing, submitting, complete-success, unresolved-or-degraded, validation-rejected, authorization-rejected, conflict, technical-error]
@@ -187,7 +262,8 @@ global_rules:
   - no screen redefines common visual/presentation rules locally without an explicit justified override;
   - required data and actions remain traceable to accepted Human Interface and HTTP/application contracts;
   - responsive transformations preserve semantic labels, distinctions and action availability;
-  - screen composition does not create domain or authorization semantics.
+  - screen composition does not create domain or authorization semantics;
+  - optional catalogue controls exist only when accepted machine/application semantics support them.
 
 coverage:
   required_workspaces:
@@ -200,4 +276,4 @@ coverage:
     - ACCESS-REQUESTS
     - POLICY-RULES
     - POLICY-EXPORT
-  rule: FRONTEND-IMPLEMENTATION is not presentation-complete unless every required workspace is present here and inherits the shared Presentation System.
+  rule: FRONTEND-IMPLEMENTATION is not presentation-complete unless every required workspace has explicit composition and inherits the shared Presentation System.
