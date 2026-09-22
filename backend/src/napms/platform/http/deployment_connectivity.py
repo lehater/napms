@@ -84,7 +84,7 @@ def router(
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
 
-    def deployment_view(value) -> dict[str, str]:
+    def deployment_view(value) -> dict[str, object]:
         try:
             view = deployments.describe_component_deployment(value)
         except DeploymentNotFound as exc:
