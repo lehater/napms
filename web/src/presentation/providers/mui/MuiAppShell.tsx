@@ -4,9 +4,9 @@ import {
   Button,
   Divider,
   Drawer,
+  Link,
   List,
   ListItemButton,
-  Link,
   ListItemText,
   Stack,
   Toolbar,
@@ -148,28 +148,29 @@ export function MuiAppShell({
         >
           {breadcrumbs.length > 1 ? (
             <Breadcrumbs aria-label="Breadcrumb" sx={{ mb: 2 }}>
-              {breadcrumbs.map((item, index) =>
-                item.path ? (
+              {breadcrumbs.map((item) => {
+                const path = item.path;
+                return path ? (
                   <Link
-                    key={`${item.path}:${item.label}`}
+                    key={`${path}:${item.label}`}
                     component="button"
                     type="button"
                     underline="hover"
                     color="inherit"
-                    onClick={() => onNavigate(item.path!)}
+                    onClick={() => onNavigate(path)}
                   >
                     {item.label}
                   </Link>
                 ) : (
                   <Typography
-                    key={`${index}:${item.label}`}
+                    key={`current:${item.label}`}
                     color="text.primary"
                     aria-current="page"
                   >
                     {item.label}
                   </Typography>
-                ),
-              )}
+                );
+              })}
             </Breadcrumbs>
           ) : null}
           {children}

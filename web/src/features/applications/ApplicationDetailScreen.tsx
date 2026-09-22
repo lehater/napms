@@ -62,7 +62,9 @@ const INTERACTION_COLUMNS: readonly DataTableColumn<
       <div>
         <strong>{row.sourceComponentName ?? row.sourceComponentRef}</strong>
         {row.sourceComponentName ? (
-          <div data-presentation-technical-context>{row.sourceComponentRef}</div>
+          <div data-presentation-technical-context>
+            {row.sourceComponentRef}
+          </div>
         ) : null}
       </div>
     ),

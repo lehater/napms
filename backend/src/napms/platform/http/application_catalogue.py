@@ -19,6 +19,7 @@ from napms.contexts.application_communication_catalogue.application.service impo
     ApplicationCommunicationCatalogue,
 )
 from napms.contexts.application_communication_catalogue.domain.model import (
+    Interaction,
     PortRange,
     TrafficClause,
 )
@@ -93,12 +94,9 @@ def router(
     def clause_view(clause: TrafficClause) -> dict[str, object]:
         return {
             "ipProtocol": clause.ip_protocol,
-            "sourcePorts": [
-                {"from": item.start, "to": item.end} for item in clause.source_ports
-            ],
+            "sourcePorts": [{"from": item.start, "to": item.end} for item in clause.source_ports],
             "destinationPorts": [
-                {"from": item.start, "to": item.end}
-                for item in clause.destination_ports
+                {"from": item.start, "to": item.end} for item in clause.destination_ports
             ],
         }
 
@@ -108,7 +106,7 @@ def router(
         except CatalogueNotFound as exc:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE) from exc
 
-    def interaction_view(item) -> dict[str, object]:
+    def interaction_view(item: Interaction) -> dict[str, object]:
         return {
             "interactionRef": str(item.interaction_ref),
             "sourceComponentRef": str(item.source_component_ref),
@@ -121,9 +119,7 @@ def router(
                 {
                     "interactionRevisionRef": str(revision.revision_ref),
                     "revisionNo": revision.revision_no,
-                    "trafficClauses": [
-                        clause_view(clause) for clause in revision.traffic_clauses
-                    ],
+                    "trafficClauses": [clause_view(clause) for clause in revision.traffic_clauses],
                     "createdBySubject": revision.created_by_subject,
                 }
                 for revision in item.revisions

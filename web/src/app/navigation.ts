@@ -20,7 +20,6 @@ export const primaryNavigation: readonly NavigationItem[] = [
   { path: "/policy-materializations/new", label: "Policy export" },
 ];
 
-
 export function breadcrumbsForRoute(route: Route): readonly BreadcrumbItem[] {
   switch (route.id) {
     case "resources":

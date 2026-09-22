@@ -67,12 +67,8 @@ def test_interaction_reads_expose_owner_resolved_component_names() -> None:
     )
     http = TestClient(app)
 
-    application_response = http.get(
-        f"/v1/applications/{application.application_ref}"
-    )
-    interaction_response = http.get(
-        f"/v1/interactions/{interaction.interaction_ref}"
-    )
+    application_response = http.get(f"/v1/applications/{application.application_ref}")
+    interaction_response = http.get(f"/v1/interactions/{interaction.interaction_ref}")
 
     assert application_response.status_code == 200
     row = application_response.json()["interactions"][0]
