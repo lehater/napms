@@ -359,7 +359,7 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
             destination_deployment_ref
         )
         page.get_by_label("State").click()
-        page.get_by_role("option", name="Active").click()
+        page.get_by_role("option", name="Active", exact=True).click()
         page.get_by_label("Sort by").click()
         page.get_by_role("option", name="State").click()
         page.get_by_label("Sort direction").click()
