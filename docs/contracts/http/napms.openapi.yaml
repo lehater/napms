@@ -54,16 +54,39 @@ paths:
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SetResourceResponsibilityRequest'}}}}
       responses: {'200': {description: Updated}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/applications:
+    get:
+      operationId: listApplications
+      responses:
+        '200': {description: Application catalogue, content: {application/json: {schema: {$ref: '#/components/schemas/ApplicationCatalogueView'}}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
     post:
       operationId: createApplication
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateNamedRequest'}}}}
       responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/applications/{applicationRef}:
+    get:
+      operationId: getApplication
+      parameters: [{$ref: '#/components/parameters/ApplicationRef'}]
+      responses:
+        '200': {description: Application detail, content: {application/json: {schema: {$ref: '#/components/schemas/ApplicationView'}}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '503': {$ref: '#/components/responses/Unavailable'}
   /v1/applications/{applicationRef}/components:
     post:
       operationId: addComponent
       parameters: [{$ref: '#/components/parameters/ApplicationRef'}, {$ref: '#/components/parameters/IfMatch'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateNamedRequest'}}}}
       responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/applications/{applicationRef}/components/{componentRef}:
+    put:
+      operationId: updateComponent
+      parameters: [{$ref: '#/components/parameters/ApplicationRef'}, {$ref: '#/components/parameters/ComponentRef'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateNamedRequest'}}}}
+      responses: {'200': {description: Updated}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/interactions:
     post:
       operationId: createInteraction
@@ -76,11 +99,25 @@ paths:
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/PublishRevisionRequest'}}}}
       responses: {'201': {description: Published}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/deployments:
+    get:
+      operationId: listDeployments
+      responses:
+        '200': {description: Deployment catalogue, content: {application/json: {schema: {$ref: '#/components/schemas/DeploymentCatalogueView'}}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
     post:
       operationId: createDeployment
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateDeploymentRequest'}}}}
       responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/processes:
+    get:
+      operationId: listBusinessProcesses
+      responses:
+        '200': {description: Business connectivity workspace projection, content: {application/json: {schema: {$ref: '#/components/schemas/BusinessConnectivityView'}}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
     post:
       operationId: createBusinessProcess
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateProcessRequest'}}}}
@@ -97,7 +134,20 @@ paths:
       parameters: [{$ref: '#/components/parameters/ProcessRef'}, {$ref: '#/components/parameters/IfMatch'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateNeedRequest'}}}}
       responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/processes/{processRef}/needs/{needRef}/status:
+    put:
+      operationId: setConnectivityNeedStatus
+      parameters: [{$ref: '#/components/parameters/ProcessRef'}, {$ref: '#/components/parameters/NeedRef'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SetConnectivityNeedStatusRequest'}}}}
+      responses: {'200': {description: Updated}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/access-requests:
+    get:
+      operationId: listAccessRequests
+      responses:
+        '200': {description: Access Request catalogue, content: {application/json: {schema: {$ref: '#/components/schemas/AccessRequestCatalogueView'}}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
     post:
       operationId: submitAccessRequest
       parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
@@ -109,6 +159,14 @@ paths:
       parameters: [{$ref: '#/components/parameters/RequestRef'}, {$ref: '#/components/parameters/IfMatch'}, {$ref: '#/components/parameters/IdempotencyKey'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/DecideAccessRequestRequest'}}}}
       responses: {'200': {description: Decision recorded}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/policy-rules:
+    get:
+      operationId: listPolicyRules
+      responses:
+        '200': {description: Policy Rule catalogue, content: {application/json: {schema: {$ref: '#/components/schemas/PolicyRuleCatalogueView'}}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
   /v1/policy-rules/{policyRuleRef}/operational-state:
     put:
       operationId: setPolicyRuleOperationalState
@@ -125,7 +183,7 @@ paths:
     get:
       operationId: getPolicyRule
       parameters: [{$ref: '#/components/parameters/PolicyRuleRef'}]
-      responses: {'200': {description: PolicyRule}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      responses: {'200': {description: PolicyRule, content: {application/json: {schema: {$ref: '#/components/schemas/PolicyRuleView'}}}}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/policy-materializations:
     post:
       operationId: materializeCurrentPolicy
@@ -152,8 +210,10 @@ components:
     EndpointRef: {name: endpointRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     ResponsibilityRole: {name: role, in: path, required: true, schema: {type: string, enum: [OWNER, ADMINISTRATOR]}}
     ApplicationRef: {name: applicationRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
+    ComponentRef: {name: componentRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     InteractionRef: {name: interactionRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     ProcessRef: {name: processRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
+    NeedRef: {name: needRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     RequestRef: {name: requestRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     PolicyRuleRef: {name: policyRuleRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     IfMatch: {name: If-Match, in: header, required: true, schema: {type: string}}
@@ -297,6 +357,56 @@ components:
             - {$ref: '#/components/schemas/StableId'}
             - {type: 'null'}
 
+    ApplicationCatalogueItem:
+      type: object
+      additionalProperties: false
+      required: [applicationRef, name]
+      properties:
+        applicationRef: {$ref: '#/components/schemas/StableId'}
+        name: {type: string, minLength: 1}
+    ApplicationCatalogueView:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/ApplicationCatalogueItem'}}
+    ComponentView:
+      type: object
+      additionalProperties: false
+      required: [componentRef, name]
+      properties:
+        componentRef: {$ref: '#/components/schemas/StableId'}
+        name: {type: string, minLength: 1}
+    InteractionRevisionView:
+      type: object
+      additionalProperties: false
+      required: [interactionRevisionRef, trafficClauses]
+      properties:
+        interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
+        trafficClauses: {type: array, minItems: 1, items: {$ref: '#/components/schemas/TrafficClause'}}
+    InteractionView:
+      type: object
+      additionalProperties: false
+      required: [interactionRef, sourceComponentRef, destinationComponentRef]
+      properties:
+        interactionRef: {$ref: '#/components/schemas/StableId'}
+        sourceComponentRef: {$ref: '#/components/schemas/StableId'}
+        destinationComponentRef: {$ref: '#/components/schemas/StableId'}
+        purpose: {type: string}
+        latestRevision:
+          oneOf:
+            - {$ref: '#/components/schemas/InteractionRevisionView'}
+            - {type: 'null'}
+    ApplicationView:
+      type: object
+      additionalProperties: false
+      required: [applicationRef, name, components, interactions]
+      properties:
+        applicationRef: {$ref: '#/components/schemas/StableId'}
+        name: {type: string, minLength: 1}
+        components: {type: array, items: {$ref: '#/components/schemas/ComponentView'}}
+        interactions: {type: array, items: {$ref: '#/components/schemas/InteractionView'}}
+
     CreateNamedRequest:
       type: object
       additionalProperties: false
@@ -334,6 +444,20 @@ components:
       properties:
         trafficClauses: {type: array, minItems: 1, items: {$ref: '#/components/schemas/TrafficClause'}}
 
+    DeploymentCatalogueItem:
+      type: object
+      additionalProperties: false
+      required: [deploymentRef, componentRef, resourceRef]
+      properties:
+        deploymentRef: {$ref: '#/components/schemas/StableId'}
+        componentRef: {$ref: '#/components/schemas/StableId'}
+        resourceRef: {$ref: '#/components/schemas/StableId'}
+    DeploymentCatalogueView:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/DeploymentCatalogueItem'}}
     CreateDeploymentRequest:
       type: object
       additionalProperties: false
@@ -360,6 +484,13 @@ components:
             - {type: string, minLength: 1}
             - {type: 'null'}
 
+    SetConnectivityNeedStatusRequest:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status: {type: string, enum: [ACTIVE, RETIRED]}
+
     CreateNeedRequest:
       type: object
       additionalProperties: false
@@ -368,6 +499,28 @@ components:
         interactionRef: {$ref: '#/components/schemas/StableId'}
         participantComponentRef: {$ref: '#/components/schemas/StableId'}
         businessBasis: {type: string, minLength: 1}
+
+    AccessRequestCatalogueItem:
+      type: object
+      additionalProperties: false
+      required: [requestRef, sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef, initialNeedRef, decision]
+      properties:
+        requestRef: {$ref: '#/components/schemas/StableId'}
+        sourceDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        destinationDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
+        initialNeedRef: {$ref: '#/components/schemas/StableId'}
+        decision: {type: string, enum: [PENDING, ALLOWED, DENIED]}
+        policyRuleRef:
+          oneOf:
+            - {$ref: '#/components/schemas/StableId'}
+            - {type: 'null'}
+    AccessRequestCatalogueView:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/AccessRequestCatalogueItem'}}
 
     SubmitAccessRequestRequest:
       type: object
@@ -408,6 +561,36 @@ components:
       additionalProperties: false
       required: [needRef]
       properties: {needRef: {$ref: '#/components/schemas/StableId'}}
+
+    PolicyRuleCatalogueItem:
+      type: object
+      additionalProperties: false
+      required: [policyRuleRef, sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef, effectState]
+      properties:
+        policyRuleRef: {$ref: '#/components/schemas/StableId'}
+        sourceDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        destinationDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
+        effectState: {type: string, enum: [ACTIVE, INACTIVE]}
+        effectiveWindow:
+          oneOf:
+            - {$ref: '#/components/schemas/EffectiveWindow'}
+            - {type: 'null'}
+    PolicyRuleCatalogueView:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/PolicyRuleCatalogueItem'}}
+    PolicyRuleView:
+      allOf:
+        - {$ref: '#/components/schemas/PolicyRuleCatalogueItem'}
+        - type: object
+          required: [authorizationEvidence, justificationNeedRefs, operationalHistory]
+          properties:
+            authorizationEvidence: {type: array, items: {type: object}}
+            justificationNeedRefs: {type: array, items: {$ref: '#/components/schemas/StableId'}}
+            operationalHistory: {type: array, items: {type: object}}
 
     PolicyMaterializationRequest:
       type: object
