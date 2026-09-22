@@ -43,6 +43,18 @@ button:hover:not(:disabled) {
   background: var(--napms-semantic-color-surface-subtle);
 }
 
+.button-primary {
+  border-color: var(--napms-semantic-color-action-primary);
+  background: var(--napms-semantic-color-action-primary);
+  color: white;
+  font-weight: 600;
+}
+
+.button-primary:hover:not(:disabled) {
+  border-color: var(--napms-semantic-color-action-primary-hover);
+  background: var(--napms-semantic-color-action-primary-hover);
+}
+
 button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
@@ -224,6 +236,11 @@ summary:focus-visible {
 }
 
 .field-group {
+  display: grid;
+  gap: var(--napms-primitive-space-1);
+}
+
+label {
   display: grid;
   gap: var(--napms-primitive-space-1);
 }
