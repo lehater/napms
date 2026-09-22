@@ -1,6 +1,5 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { AppShell, PresentationRoot } from "../presentation";
 import { AccessRequestScreens } from "../features/access-requests/AccessRequestScreens";
 import {
   ApplicationCatalogue,
@@ -15,6 +14,7 @@ import {
   ResourceCatalogue,
   ResourceDetail,
 } from "../features/resources/ResourceScreens";
+import { AppShell, PresentationRoot } from "../presentation";
 import { primaryNavigation } from "./navigation";
 import { navigate, parseRoute, type Route } from "./router";
 import "../design-system/tokens.css";
