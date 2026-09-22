@@ -71,6 +71,9 @@ bindings:
       - engineering.security.boundaries
       - engineering.security.confidentiality
       - engineering.security.integrity
+  - capability: engineering.security.browser-credential-lifecycle
+    semantic_claims:
+      - engineering.security.identity
   - capability: engineering.operability.observability
     semantic_claims:
       - engineering.operability.logging

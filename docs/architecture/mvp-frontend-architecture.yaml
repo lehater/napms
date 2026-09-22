@@ -56,7 +56,8 @@ state_model:
 security:
   - Bearer/session identity and authorization remain backend-owned.
   - In local-dev, the unauthenticated browser renders the development sign-in gate before the product shell and stores the returned bearer token in runtime memory only.
-  - The fixed local-dev credential bootstrap never defines production browser credential acquisition or authorization semantics.
+  - Reload or tab close clears the local-dev browser identity; there is no silent refresh, and reauthentication acquires a fresh short-lived token.
+  - The fixed local-dev credential bootstrap never defines production browser credential acquisition or authorization semantics; non-local browser authentication must reopen Security Architecture before deployment.
   - Frontend visibility is convenience, never proof of permission.
   - Untrusted rendered content is escaped/safely rendered.
   - Security-sensitive diagnostics do not expose tokens or protected policy/member facts.

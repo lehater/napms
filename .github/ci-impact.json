@@ -63,6 +63,8 @@
       "tools/check_frontend_design_closure.py",
       "tools/check_frontend_provider_mapping.py",
       "tools/evaluate_frontend_presentation_semantics.py",
+      "tools/evaluate_security_identity_semantics.py",
+      "tools/evaluate_frontend_coverage_semantics.py",
       "tools/check_openapi_contract.py",
       "tools/check_persistence_model.py",
       "tools/check_design_control.py",
@@ -93,6 +95,8 @@
       "docs/**",
       ".harness-version",
       "tools/evaluate_frontend_presentation_semantics.py",
+      "tools/evaluate_security_identity_semantics.py",
+      "tools/evaluate_frontend_coverage_semantics.py",
       ".github/workflows/engineering-coverage.yml",
       ".github/ci-impact.json",
       "tools/ci_impact.py"

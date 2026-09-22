@@ -1,4 +1,4 @@
-version: 2
+version: 3
 kind: security-architecture
 id: NAPMS-MVP-SECURITY-ARCHITECTURE
 status: CURRENT
@@ -36,6 +36,31 @@ development_authentication:
     - issued tokens pass through the normal OIDC validation, permission and AuthorityGrant admission path
     - fixed development credentials are not an accepted non-local or production authentication mechanism
     - returned bearer tokens remain runtime-only browser state and are never logged
+
+browser_credential_lifecycle:
+  current_scope: local-development browser access
+  acquisition:
+    local_dev:
+      mechanism: same-origin development sign-in exchanges fixed development credentials for an OIDC-backed bearer JWT
+      endpoint: /dev-auth/login
+      credentials: {login: admin, password: admin}
+  credential_storage:
+    location: browser runtime memory only
+    persistence: none; reload or tab close clears the browser-held bearer token
+  expiry_renewal:
+    access_token: short-lived JWT carrying the local issuer exp claim
+    refresh: NOT_APPLICABLE for the current local-development slice; no refresh token or silent renewal exists
+    recovery: reload the browser and sign in again to acquire a fresh development token
+  logout_invalidation:
+    explicit_logout: NOT_APPLICABLE for the current local-development slice
+    runtime_clear: reload or tab close clears the in-memory browser identity
+    server_invalidation: no active revocation channel is required for the local-development token; expiry is authoritative
+  rejection_recovery:
+    unauthenticated: a 401 remains an authentication rejection; reload returns to the sign-in gate because identity is runtime-only
+    forbidden: a 403 remains an authorization rejection and does not replace or broaden the authenticated identity
+  non_local:
+    state: DEFERRED
+    reopening_condition: Before any non-local browser deployment, define accepted OIDC browser acquisition, credential storage, renewal, logout and invalidation semantics; the development login endpoint remains absent.
 
 principal:
   subject: validated non-empty sub

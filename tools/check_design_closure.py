@@ -25,7 +25,7 @@ from engineering_graph import evaluate_engineering_target  # noqa: E402
 from engineering_coverage import evaluate_with_repository_policy, load_scope_source  # noqa: E402
 from integration_alignment import validate_project_alignment  # noqa: E402
 
-from evaluate_frontend_presentation_semantics import evaluate as evaluate_frontend_presentation_semantics
+from evaluate_frontend_coverage_semantics import evaluate as evaluate_frontend_coverage_semantics
 
 
 def load(relative: str):
@@ -141,7 +141,7 @@ def main() -> int:
         projection,
         consumer="FRONTEND-IMPLEMENTATION",
         obligations_path="docs/harness/coverage/frontend-subject-obligations-v1.yaml",
-        semantic_evaluations=evaluate_frontend_presentation_semantics(),
+        semantic_evaluations=evaluate_frontend_coverage_semantics(),
     )
     requirement_verification_check()
     frontend_subject_test_check()

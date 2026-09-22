@@ -101,6 +101,7 @@ design-check: harness-pin-check
 	python tools/check_frontend_design_closure.py
 	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_frontend_provider_mapping.py
 	python tools/evaluate_frontend_presentation_semantics.py --require-accepted
+	python tools/evaluate_security_identity_semantics.py --require-accepted
 	python tools/check_openapi_contract.py
 	python tools/check_persistence_model.py
 	python tools/check_design_control.py

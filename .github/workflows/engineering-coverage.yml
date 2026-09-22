@@ -9,6 +9,8 @@ on:
       - "docs/**"
       - ".harness-version"
       - "tools/evaluate_frontend_presentation_semantics.py"
+      - "tools/evaluate_security_identity_semantics.py"
+      - "tools/evaluate_frontend_coverage_semantics.py"
       - ".github/ci-impact.json"
       - "tools/ci_impact.py"
       - ".github/workflows/engineering-coverage.yml"
@@ -17,6 +19,8 @@ on:
       - "docs/**"
       - ".harness-version"
       - "tools/evaluate_frontend_presentation_semantics.py"
+      - "tools/evaluate_security_identity_semantics.py"
+      - "tools/evaluate_frontend_coverage_semantics.py"
       - ".github/ci-impact.json"
       - "tools/ci_impact.py"
       - ".github/workflows/engineering-coverage.yml"
@@ -68,14 +72,14 @@ jobs:
         run: |
           python .harness-coverage-tool/engineering_coverage.py             docs/harness-engineering-graph.yaml             docs/harness-projection.yaml             BACKEND-IMPLEMENTATION             --canonical-source docs/canonical-graph.yaml             --scope first-mvp             --authority-aliases docs/harness/coverage/authority-role-aliases-v1.yaml             --overlay docs/harness/coverage/concern-activation-overlay-v1.yaml             --semantic-claim-bindings docs/harness/coverage/semantic-claim-bindings-v1.yaml             --subject-obligations docs/harness/coverage/backend-subject-obligations-v1.yaml             --scope-source docs/requirements/first-mvp-product-requirements.yaml             > /tmp/backend-coverage.json
 
-      - name: Evaluate frontend presentation semantics
+      - name: Evaluate frontend semantic acceptance
         if: steps.impact.outputs.engineering_coverage == 'true'
-        run: python tools/evaluate_frontend_presentation_semantics.py --output /tmp/frontend-presentation-semantic-evaluations.json
+        run: python tools/evaluate_frontend_coverage_semantics.py --output /tmp/frontend-semantic-evaluations.json
 
       - name: Evaluate frontend coverage
         if: steps.impact.outputs.engineering_coverage == 'true'
         run: |
-          python .harness-coverage-tool/engineering_coverage.py             docs/harness-engineering-graph.yaml             docs/harness-projection.yaml             FRONTEND-IMPLEMENTATION             --canonical-source docs/canonical-graph.yaml             --scope first-mvp             --authority-aliases docs/harness/coverage/authority-role-aliases-v1.yaml             --overlay docs/harness/coverage/concern-activation-overlay-v1.yaml             --semantic-claim-bindings docs/harness/coverage/semantic-claim-bindings-v1.yaml             --semantic-evaluations /tmp/frontend-presentation-semantic-evaluations.json             --subject-obligations docs/harness/coverage/frontend-subject-obligations-v1.yaml             --scope-source docs/requirements/first-mvp-product-requirements.yaml             > /tmp/frontend-coverage.json
+          python .harness-coverage-tool/engineering_coverage.py             docs/harness-engineering-graph.yaml             docs/harness-projection.yaml             FRONTEND-IMPLEMENTATION             --canonical-source docs/canonical-graph.yaml             --scope first-mvp             --authority-aliases docs/harness/coverage/authority-role-aliases-v1.yaml             --overlay docs/harness/coverage/concern-activation-overlay-v1.yaml             --semantic-claim-bindings docs/harness/coverage/semantic-claim-bindings-v1.yaml             --semantic-evaluations /tmp/frontend-semantic-evaluations.json             --subject-obligations docs/harness/coverage/frontend-subject-obligations-v1.yaml             --scope-source docs/requirements/first-mvp-product-requirements.yaml             > /tmp/frontend-coverage.json
 
       - name: Verify complete coverage
         if: steps.impact.outputs.engineering_coverage == 'true'
