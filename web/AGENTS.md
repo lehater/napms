@@ -25,6 +25,8 @@ For one Web task:
 - the legacy `src/design-system/` presentation layer has been removed; feature rendering must stay behind the provider-neutral facade;
 - canonical visual tokens remain in `docs/contracts/ui/mvp-design-tokens.json` and are generated into the selected provider's theme-token artifact; generated provider tokens are implementation artifacts, not a second authority;
 - extend provider-neutral presentation patterns only after demonstrated reusable need; do not mirror the MUI component API behind wrappers;
+- primary stable entity collections inherit the general-to-specific default: DATA-TABLE with accepted search/filter/sort (and paging/virtualization when needed) -> row selection -> dedicated DETAIL -> entity editing in detail; STRUCTURED-LIST is for nested/secondary collections unless the Screen/View contract explicitly overrides this;
+- if the required catalogue query controls are missing from the backend/query contract, treat that as an upstream contract gap; do not silently omit the default and do not implement client-only filtering over partial data;
 - keep transport DTO/request mapping at the frontend API boundary;
 - backend Authority Management remains authoritative for visibility/action admission;
 - never invent placeholder business state to complete a screen.

@@ -25,6 +25,22 @@ composition_contract:
     Historical references constrain only explicitly adopted presentation facts.
     Unsupported controls or fields are recorded as not-adopted rather than
     recreated as client-only product behavior.
+  inherited_entity_collection_default: NAPMS-MVP-PRESENTATION-SYSTEM.entity_collection_default
+  migration_gaps:
+    - id: entity-catalogue-query-contracts
+      applies_to: [RESOURCE-CATALOGUE, APPLICATION-CATALOGUE, DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
+      gap: >-
+        Search/filter/sort and scalable paging semantics are not yet closed end-to-end
+        through accepted query contracts for every primary entity collection.
+    - id: primary-catalogue-table-adoption
+      applies_to: [APPLICATION-CATALOGUE, DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
+      gap: >-
+        Current realization still uses STRUCTURED-LIST for some primary entity
+        collections; migrate them to DATA-TABLE unless an explicit override is accepted.
+    - id: deployment-detail-drilldown
+      applies_to: [DEPLOYMENTS]
+      gap: >-
+        Deployment selection does not yet open a dedicated entity detail view.
 
 screens:
   - id: RESOURCE-CATALOGUE

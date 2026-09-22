@@ -76,6 +76,43 @@ presentation_language:
     - keep provenance/history available without competing with current task-critical facts;
     - preserve semantic distinctions through text, structure and labels rather than color alone.
 
+entity_collection_default:
+  applicability: >-
+    A primary collection of stable product entities whose individual instances
+    can be inspected independently.
+  navigation_model: general-to-specific
+  flow:
+    - enter the entity catalogue;
+    - inspect/compare entities in a DATA-TABLE;
+    - narrow/order the catalogue using accepted query controls;
+    - select/open one row;
+    - inspect that entity in a dedicated DETAIL view;
+    - perform accepted entity editing/state-changing commands in DETAIL by default.
+  catalogue:
+    default_pattern: DATA-TABLE
+    required_information:
+      - stable entity identity
+      - human-readable primary identity when available
+      - task-relevant distinguishing attributes
+    default_query_controls: [search, attribute-filter, sort]
+    scaling_controls: [pagination-or-virtualization]
+    query_contract_rule: >-
+      Query controls must be backed by an accepted frontend/backend query contract.
+      If that contract is missing, record and resolve the upstream gap; do not
+      silently remove the default controls and do not fake filtering over partial
+      client data.
+  detail:
+    default_pattern: DETAIL
+    row_transition: selecting/opening a catalogue row opens the corresponding entity instance
+    editing_rule: entity editing belongs in the detail context by default
+    inline_editing: explicit-override-only
+  structured_list_role: >-
+    STRUCTURED-LIST is the default for nested, secondary, relationship or otherwise
+    non-comparative repeated records, not for a primary entity catalogue.
+  override_rule: >-
+    A Screen/View may depart from this model only with an explicit override and
+    rationale showing that the task is not a normal entity catalogue/detail flow.
+
 hierarchy:
   page:
     order: [context, primary-content, task-actions, secondary-content, feedback]
@@ -151,14 +188,17 @@ patterns:
   CATALOGUE:
     purpose: locate/select an entity and start supported creation
     anatomy:
-      ordered: [heading-actions, collection-surface]
+      ordered: [heading-actions, query-controls, collection-surface]
       collection_surface:
         required: [collection-state, collection]
-        optional_when_semantics_exist: [search-filter, quick-filters, selection, pagination]
     states: [loading, loaded, empty, error]
     rules:
-      - optional catalogue controls are present only when accepted read/application semantics support them;
-      - reference imagery cannot manufacture search/filter/sort/pagination behavior.
+      - primary entity catalogues inherit entity_collection_default and therefore use DATA-TABLE by default;
+      - search/filter/sort are default catalogue capabilities for entity collections and require accepted query semantics;
+      - pagination or virtualization is required when collection size makes unbounded rendering inappropriate;
+      - selecting/opening a row transitions to the entity DETAIL view by default;
+      - missing query semantics are an upstream contract gap, not permission to invent client-only behavior;
+      - reference imagery cannot manufacture additional product/domain fields or actions.
 
   DETAIL:
     purpose: inspect one stable product entity and supported current facts
@@ -178,7 +218,9 @@ patterns:
     states: [editing, submitting, validation-rejected, authorization-rejected, conflict, saved, technical-error]
 
   STRUCTURED-LIST:
-    purpose: render repeatable records with stable labels and row-level actions
+    purpose: render nested, secondary, relationship or non-comparative repeated records with stable labels and row-level actions
+    rules:
+      - do not use as the primary entity catalogue unless Screen/View explicitly overrides entity_collection_default;
     responsive: may transform to labeled stacked records while preserving all required data/actions
 
   DATA-TABLE:
@@ -197,11 +239,13 @@ patterns:
     responsive: may become labeled stacked records; semantic column labels remain available
 
   FILTER-BAR:
-    purpose: narrow a visible collection
+    purpose: search, filter and order a visible entity collection
     rules:
+      - primary entity catalogues expose accepted search and attribute filters by default;
       - active filtering is visible;
       - clearing filters is directly available;
-      - filtering does not silently change domain truth.
+      - sort state is explicit and stable;
+      - filtering/sorting operates through accepted query semantics and does not silently change domain truth.
 
   TASK-ACTIONS:
     purpose: group actions for the currently active context
@@ -274,6 +318,7 @@ deviation_policy:
       - explicit overridden rule or pattern
       - rationale
       - preserved accessibility/security/interface semantics
+      - explicit justification when overriding entity_collection_default
 
 implementation_freedom:
   - frontend framework and component library
