@@ -1,6 +1,6 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { AppShell } from "../components/AppShell";
+import { AppShell, PresentationRoot } from "../presentation";
 import { AccessRequestScreens } from "../features/access-requests/AccessRequestScreens";
 import {
   ApplicationCatalogue,
@@ -15,7 +15,8 @@ import {
   ResourceCatalogue,
   ResourceDetail,
 } from "../features/resources/ResourceScreens";
-import { parseRoute, type Route } from "./router";
+import { primaryNavigation } from "./navigation";
+import { navigate, parseRoute, type Route } from "./router";
 import "../design-system/tokens.css";
 import "../design-system/base.css";
 
@@ -84,13 +85,23 @@ function App() {
     );
   }
 
-  return <AppShell>{screen}</AppShell>;
+  return (
+    <AppShell
+      items={primaryNavigation}
+      currentPath={window.location.pathname}
+      onNavigate={navigate}
+    >
+      {screen}
+    </AppShell>
+  );
 }
 
 const root = document.getElementById("root");
 if (root === null) throw new Error("Missing #root mount point");
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <PresentationRoot>
+      <App />
+    </PresentationRoot>
   </StrictMode>,
 );
