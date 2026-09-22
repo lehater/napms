@@ -134,20 +134,40 @@ visual_roles:
 patterns:
   APP-SHELL:
     purpose: persistent application navigation and current-workspace context
+    anatomy:
+      ordered: [primary-navigation, workspace]
+      workspace: [workspace-context, workspace-content, global-feedback]
+    tokens:
+      sidebar_width: component.app-shell.sidebar-width
+      workspace_padding: component.app-shell.workspace-padding
+      navigation_background: semantic.color.navigation.background
+      navigation_text: semantic.color.navigation.text
     rules:
       - primary navigation exposes the canonical workspace set;
       - current workspace is visibly identified;
+      - desktop navigation uses the accepted dark navigation visual language;
       - routine operation feedback uses a non-modal global feedback region.
 
   CATALOGUE:
     purpose: locate/select an entity and start supported creation
-    regions: [heading-actions, search-filter, collection, collection-state]
+    anatomy:
+      ordered: [heading-actions, collection-surface]
+      collection_surface:
+        required: [collection-state, collection]
+        optional_when_semantics_exist: [search-filter, quick-filters, selection, pagination]
     states: [loading, loaded, empty, error]
+    rules:
+      - optional catalogue controls are present only when accepted read/application semantics support them;
+      - reference imagery cannot manufacture search/filter/sort/pagination behavior.
 
   DETAIL:
     purpose: inspect one stable product entity and supported current facts
-    regions: [identity-context, primary-facts, task-actions, secondary-details]
+    anatomy:
+      ordered: [identity-context, primary-facts, task-actions, secondary-details]
     states: [loading, loaded, empty-current, not-found, error]
+    rules:
+      - current/effective facts precede history/provenance;
+      - secondary historical information remains directly discoverable.
 
   EDITOR:
     purpose: create or change accepted facts
@@ -163,6 +183,17 @@ patterns:
 
   DATA-TABLE:
     purpose: compare repeated structured records where column comparison materially helps the task
+    anatomy: [header, rows]
+    tokens:
+      header_height: component.table.header-height
+      row_height: component.table.row-height
+      selection_column_width: component.table.selection-column-width
+      cell_padding_x: component.table.cell-padding-x
+      cell_padding_y: component.table.cell-padding-y
+    rules:
+      - the table owns its border/radius; ordinary toolbar/pagination regions are not wrapped in one oversized card;
+      - primary human-readable identity is visually stronger than stable technical identifiers;
+      - selection, lifecycle/status and tags remain separate presentation concepts when present.
     responsive: may become labeled stacked records; semantic column labels remain available
 
   FILTER-BAR:
