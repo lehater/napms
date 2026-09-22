@@ -216,5 +216,9 @@ export function ResourceCatalogueScreen({
 }: {
   create?: boolean;
 }) {
-  return create ? <ResourceCatalogueCreateMode /> : <ResourceCatalogueListMode />;
+  return create ? (
+    <ResourceCatalogueCreateMode />
+  ) : (
+    <ResourceCatalogueListMode />
+  );
 }
