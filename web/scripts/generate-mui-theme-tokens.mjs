@@ -114,10 +114,22 @@ const tokens = {
   },
 };
 
+function render(value, indent = 0) {
+  const pad = " ".repeat(indent);
+  const childPad = " ".repeat(indent + 2);
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    const lines = Object.entries(value).map(
+      ([key, child]) => `${childPad}${key}: ${render(child, indent + 2)},`,
+    );
+    return `{\n${lines.join("\n")}\n${pad}}`;
+  }
+  return JSON.stringify(value);
+}
+
 const generated =
   "// Generated from docs/contracts/ui/mvp-design-tokens.json. Do not edit manually.\n" +
   "export const muiThemeTokens = " +
-  JSON.stringify(tokens, null, 2) +
+  render(tokens) +
   " as const;\n";
 
 if (checkOnly) {

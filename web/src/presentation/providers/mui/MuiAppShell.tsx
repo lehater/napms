@@ -78,7 +78,10 @@ export function MuiAppShell({
             <Typography variant="h6" color={token.color.navigationText}>
               NAPMS
             </Typography>
-            <Typography variant="caption" color={token.color.navigationMutedText}>
+            <Typography
+              variant="caption"
+              color={token.color.navigationMutedText}
+            >
               Policy management
             </Typography>
           </Stack>
@@ -86,7 +89,12 @@ export function MuiAppShell({
         <Divider sx={{ borderColor: token.color.navigationSelected, mb: 2 }} />
         <Typography
           variant="overline"
-          sx={{ px: 1, mb: 0.5, color: token.color.navigationMutedText, fontWeight: 700 }}
+          sx={{
+            px: 1,
+            mb: 0.5,
+            color: token.color.navigationMutedText,
+            fontWeight: 700,
+          }}
         >
           Workspaces
         </Typography>
