@@ -157,7 +157,6 @@ export function ConfirmationDialog({
   );
 }
 
-
 export function DataTable({ children }: { children: ReactNode }) {
   return (
     <div className="data-table-wrap">
