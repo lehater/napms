@@ -264,7 +264,10 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page.get_by_label("Description").fill("Independent business justification")
         page.get_by_label("Criticality").fill("HIGH")
         page.get_by_role("button", name="Create Business Process", exact=True).click()
-        page.wait_for_url("**/business-processes/*")
+        page.wait_for_url(
+            lambda url: "/business-processes/" in url
+            and not url.endswith("/business-processes/new")
+        )
         process_ref = page.url.rsplit("/", 1)[-1]
         page.get_by_text("Independent business justification").wait_for()
         page.get_by_label("Responsible organization reference").fill("ORG-E2E")
