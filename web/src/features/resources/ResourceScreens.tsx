@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ApiError, api, type ResourceView } from "../../app/api";
 import { navigate } from "../../app/router";
+import { ResourceCatalogueScreen } from "./ResourceCatalogueScreen";
 import {
   DataTable,
   DataTableCell,
@@ -35,7 +36,7 @@ function responsibilitySummary(resource: ResourceView): string {
   return values.length > 0 ? values.join(", ") : "No responsibility";
 }
 
-export function ResourceCatalogue({ create = false }: { create?: boolean }) {
+function LegacyResourceCatalogue({ create = false }: { create?: boolean }) {
   const [items, setItems] = useState<ResourceView[]>([]);
   const [state, setState] = useState("loading");
   const [displayName, setDisplayName] = useState("");
@@ -169,6 +170,10 @@ export function ResourceCatalogue({ create = false }: { create?: boolean }) {
       )}
     </>
   );
+}
+
+export function ResourceCatalogue({ create = false }: { create?: boolean }) {
+  return create ? <LegacyResourceCatalogue create /> : <ResourceCatalogueScreen />;
 }
 
 export function ResourceDetail({ resourceRef }: { resourceRef: string }) {
