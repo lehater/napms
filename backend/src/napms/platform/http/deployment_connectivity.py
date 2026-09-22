@@ -209,8 +209,7 @@ def router(
                 ),
                 organization_external_reference=(
                     organization_external_reference.strip()
-                    if organization_external_reference
-                    and organization_external_reference.strip()
+                    if organization_external_reference and organization_external_reference.strip()
                     else None
                 ),
                 sort_by=sort_by,

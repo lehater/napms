@@ -198,7 +198,8 @@ function BusinessProcessListMode() {
     query.criticalityLabel !== "" ||
     query.organizationExternalReference !== "" ||
     query.sortBy !== defaultBusinessProcessCatalogueQuery.sortBy ||
-    query.sortDirection !== defaultBusinessProcessCatalogueQuery.sortDirection ||
+    query.sortDirection !==
+      defaultBusinessProcessCatalogueQuery.sortDirection ||
     query.pageSize !== defaultBusinessProcessCatalogueQuery.pageSize;
 
   return (

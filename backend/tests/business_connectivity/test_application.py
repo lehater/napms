@@ -140,6 +140,7 @@ def test_business_process_catalogue_query_is_delegated_without_reinterpretation(
                 interaction_ref=UUID(int=21),
                 source_component_ref=UUID(int=22),
                 destination_component_ref=UUID(int=23),
+                purpose="catalogue-query",
             )
         ),
     )

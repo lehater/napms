@@ -1,14 +1,14 @@
 import { api } from "../../app/api";
 import {
-  type BusinessProcessCatalogueQueryState,
-  toBusinessProcessCatalogueQuery,
-} from "./businessProcessCatalogueQuery";
-import {
   type BusinessProcessCatalogueScreenModel,
   type BusinessProcessDetailScreenModel,
   toBusinessProcessCatalogueScreenModel,
   toBusinessProcessDetail,
 } from "./businessConnectivityModels";
+import {
+  type BusinessProcessCatalogueQueryState,
+  toBusinessProcessCatalogueQuery,
+} from "./businessProcessCatalogueQuery";
 
 export async function queryBusinessProcesses(
   query: BusinessProcessCatalogueQueryState,

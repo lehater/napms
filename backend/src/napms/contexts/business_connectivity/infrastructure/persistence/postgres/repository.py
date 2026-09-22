@@ -56,9 +56,7 @@ class PostgresBusinessProcessRepository:
         if query.search:
             search = query.search.strip()
             if search:
-                conditions.append(
-                    "(name ILIKE %s OR CAST(process_ref AS text) ILIKE %s)"
-                )
+                conditions.append("(name ILIKE %s OR CAST(process_ref AS text) ILIKE %s)")
                 pattern = f"%{search}%"
                 parameters.extend((pattern, pattern))
 
