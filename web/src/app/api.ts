@@ -1,3 +1,7 @@
+import {
+  type ApplicationCatalogueQuery,
+  serializeApplicationCatalogueQuery,
+} from "./application-catalogue-query";
 import { authSession } from "./auth-session";
 import { type ApiErrorKind, statusToErrorKind } from "./http-semantics";
 import {
@@ -234,7 +238,10 @@ export const api = {
       headers: { "Idempotency-Key": idempotencyKey() },
       body: JSON.stringify(body),
     }),
-  listApplications: () => request<ApplicationView[]>("/v1/applications"),
+  listApplications: (query: ApplicationCatalogueQuery) =>
+    request<CataloguePage<ApplicationView>>(
+      `/v1/applications?${serializeApplicationCatalogueQuery(query)}`,
+    ),
   getApplication: (ref: string) =>
     request<ApplicationView>(`/v1/applications/${ref}`),
   createApplication: (name: string) =>

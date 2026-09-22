@@ -28,7 +28,7 @@ composition_contract:
   inherited_entity_collection_default: NAPMS-MVP-PRESENTATION-SYSTEM.entity_collection_default
   migration_gaps:
     - id: entity-catalogue-query-contracts
-      applies_to: [APPLICATION-CATALOGUE, DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
+      applies_to: [DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
       gap: >-
         Search/filter/sort and scalable paging semantics are not yet closed end-to-end
         through accepted query contracts for every primary entity collection.
@@ -243,20 +243,36 @@ screens:
 
   - id: APPLICATION-CATALOGUE
     purpose: Locate/select reusable Applications and start supported Application creation.
-    patterns: [CATALOGUE, STRUCTURED-LIST, EDITOR, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, FILTER-BAR, DATA-TABLE, EDITOR, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: applications, role: collection, pattern: STRUCTURED-LIST, priority: primary, applies_when: list-mode}
+      - {id: query-controls, role: collection-query, pattern: FILTER-BAR, priority: primary, applies_when: list-mode}
+      - {id: applications, role: collection, pattern: DATA-TABLE, priority: primary, applies_when: list-mode}
       - {id: create-editor, role: task-editor, pattern: EDITOR, priority: primary, applies_when: create-mode}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
     composition:
       root: catalogue-workspace
-      ordered_regions: [context, actions, applications, create-editor, feedback]
+      ordered_regions: [context, actions, query-controls, applications, create-editor, feedback]
       modes:
-        list: [context, actions, applications, feedback]
+        list: [context, actions, query-controls, applications, feedback]
         create: [context, create-editor, feedback]
-      applications: {pattern: STRUCTURED-LIST, row_action: open-application}
+      query-controls:
+        pattern: FILTER-BAR
+        search: {source: query:listApplications.search, matches: [name, applicationRef]}
+        filters:
+          - {id: component-ref, source: query:listApplications.componentRef}
+        sort:
+          fields: [name, applicationRef]
+          default: {field: name, direction: asc}
+        paging: {page: query:listApplications.page, page_size: query:listApplications.pageSize}
+      applications:
+        pattern: DATA-TABLE
+        columns:
+          - {id: name, role: primary-identity, sort: name}
+          - {id: application-reference, role: technical-identity, sort: applicationRef}
+          - {id: components, role: child-summary}
+        row_action: open-application
       create-editor:
         pattern: EDITOR
         fields:
@@ -266,9 +282,65 @@ screens:
     exits:
       - select Application -> APPLICATION-DETAIL
     states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
+    semantic_contract:
+      reads:
+        - id: catalogue
+          operation_id: listApplications
+          projection: ApplicationCataloguePage
+          query:
+            search: {source: local:query.search, semantics: accepted-text-search}
+            componentRef: {source: local:query.filters.component-ref, semantics: exact-child-identity-filter}
+            sortBy: {source: local:query.sort.field, accepted: [name, applicationRef]}
+            sortDirection: {source: local:query.sort.direction, accepted: [asc, desc]}
+            page: {source: local:query.page, minimum: 1}
+            pageSize: {source: local:query.page-size, default: 25, maximum: 100}
+      commands:
+        - {id: create-application, operation_id: createApplication}
+      view_model:
+        id: ApplicationCatalogueScreenModel
+        fields:
+          - {id: applications, source: read:catalogue.items}
+          - {id: total, source: read:catalogue.total}
+          - {id: page, source: read:catalogue.page}
+          - {id: page_size, source: read:catalogue.pageSize}
+          - {id: application_ref, source: read:catalogue.items.applicationRef}
+          - {id: name, source: read:catalogue.items.name}
+          - {id: components, source: read:catalogue.items.components}
+      capabilities:
+        allowed:
+          - {id: inspect-catalogue, backed_by: read:catalogue}
+          - {id: search, backed_by: read:catalogue}
+          - {id: filter, backed_by: read:catalogue}
+          - {id: sort, backed_by: read:catalogue}
+          - {id: pagination, backed_by: read:catalogue}
+          - {id: open-application, backed_by: navigation:application-detail}
+          - {id: create-application, backed_by: command:create-application}
+        excluded: [bulk-operation, edit-item, delete-item]
+      pattern_mapping:
+        - {pattern: CATALOGUE, feature_bindings: {open-item: open-application, create-item: create-application}}
+        - {pattern: FILTER-BAR, feature_bindings: {search: search, filters: filter, sort: sort, clear: filter}}
+        - {pattern: DATA-TABLE, feature_bindings: {open-row: open-application, sort: sort, paging: pagination}}
+        - {pattern: EDITOR, feature_bindings: {}}
+        - {pattern: TASK-ACTIONS, feature_bindings: {primary: create-application}}
+        - {pattern: STATUS, feature_bindings: {}}
+      state_mapping:
+        loading: read:catalogue.pending
+        loaded: read:catalogue.200
+        empty: read:catalogue.200
+        editing: local:create-application-form
+        submitting: command:create-application.pending
+        validation-rejected: command:create-application.422
+        authorization-rejected: [read:catalogue.401, read:catalogue.403, command:create-application.401, command:create-application.403]
+        conflict: command:create-application.409
+        technical-error: [read:catalogue.failure, command:create-application.failure]
+      verification:
+        contract: [operation:listApplications-query-parameters, operation:createApplication]
+        semantic: [application-catalogue-query-capability-and-state-closure]
+        rendered: [application-catalogue-filter-table-density-conformance]
     responsive:
-      - application records preserve stable identity and open action
-      - collection may transform to labeled records
+      - application records preserve stable identity, component summary and open action
+      - query controls reflow without losing active state or clear action
+      - table may become labeled records while preserving labels and actions
     overrides: []
 
   - id: APPLICATION-DETAIL
@@ -456,5 +528,5 @@ coverage:
     - ACCESS-REQUESTS
     - POLICY-RULES
     - POLICY-EXPORT
-  semantic_contract_pilot: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, POLICY-EXPORT]
+  semantic_contract_pilot: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, POLICY-EXPORT]
   rule: FRONTEND-IMPLEMENTATION is not presentation-complete unless every required workspace has explicit composition and inherits the shared Presentation System; pilot screens additionally require machine-checked semantic closure.

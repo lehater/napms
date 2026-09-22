@@ -55,6 +55,10 @@ catalogue_query_contract:
     search: [displayName, resourceRef]
     filters: [authorityScopeRef, siteRef]
     sort_by: [displayName, resourceRef, authorityScopeRef]
+  application_catalogue:
+    search: [name, applicationRef]
+    filters: [componentRef]
+    sort_by: [name, applicationRef]
 
 rules:
   - Authentication is OIDC Bearer token only; request bodies never contain trusted actor permission or authority fields.

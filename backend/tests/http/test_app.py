@@ -10,6 +10,13 @@ from napms.contexts.access_policy.domain.model import (
     AccessSubject,
     RequestAuthorityEvidence,
 )
+from napms.contexts.application_communication_catalogue.application.queries import (
+    ApplicationCataloguePage,
+    ApplicationCatalogueQuery,
+    ApplicationSortField,
+    SortDirection as ApplicationSortDirection,
+)
+from napms.contexts.application_communication_catalogue.domain.model import Application
 from napms.contexts.authority_management.application.service import AuthorityForbidden
 from napms.contexts.authority_management.domain.model import Principal
 from napms.contexts.resource_catalogue.application.queries import (
@@ -253,6 +260,52 @@ def test_resource_catalogue_query_maps_http_params_to_application_query() -> Non
         site_ref=site_ref,
         sort_by=ResourceSortField.RESOURCE_REF,
         sort_direction=SortDirection.DESC,
+        page=2,
+        page_size=10,
+    )
+
+
+@dataclass
+class ApplicationReader:
+    page: ApplicationCataloguePage
+    received: ApplicationCatalogueQuery | None = None
+
+    def list_applications(self, query: ApplicationCatalogueQuery) -> ApplicationCataloguePage:
+        self.received = query
+        return self.page
+
+
+def test_application_catalogue_query_maps_http_params_to_application_query() -> None:
+    principal = Principal("subject:alice", frozenset({"application.read"}), ())
+    item = Application.create(application_ref=uuid4(), name="Payments")
+    reader = ApplicationReader(ApplicationCataloguePage((item,), 1, 2, 10))
+    http = TestClient(
+        create_app(
+            HttpDependencies(
+                identity=Identity(principal),
+                access_requests=Submitter(request()),
+                application_catalogue=reader,
+            )
+        )
+    )
+    component_ref = uuid4()
+    response = http.get(
+        (
+            "/v1/applications?search=%20payments%20"
+            f"&componentRef={component_ref}"
+            "&sortBy=applicationRef&sortDirection=desc&page=2&pageSize=10"
+        ),
+        headers={"Authorization": "Bearer token"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["items"][0]["applicationRef"] == str(item.application_ref)
+    assert response.json()["total"] == 1
+    assert reader.received == ApplicationCatalogueQuery(
+        search="payments",
+        component_ref=component_ref,
+        sort_by=ApplicationSortField.APPLICATION_REF,
+        sort_direction=ApplicationSortDirection.DESC,
         page=2,
         page_size=10,
     )

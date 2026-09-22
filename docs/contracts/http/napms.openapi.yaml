@@ -64,11 +64,24 @@ paths:
   /v1/applications:
     get:
       operationId: listApplications
-      responses: {'200': {description: Application catalogue}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      parameters:
+        - {$ref: '#/components/parameters/CatalogueSearch'}
+        - {$ref: '#/components/parameters/ApplicationComponentFilter'}
+        - {$ref: '#/components/parameters/ApplicationSortBy'}
+        - {$ref: '#/components/parameters/CatalogueSortDirection'}
+        - {$ref: '#/components/parameters/CataloguePage'}
+        - {$ref: '#/components/parameters/CataloguePageSize'}
+      responses:
+        '200':
+          description: Application catalogue page
+          content: {application/json: {schema: {$ref: '#/components/schemas/ApplicationCataloguePage'}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
     post:
       operationId: createApplication
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateNamedRequest'}}}}
-      responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/applications/{applicationRef}:
     get:
       operationId: getApplication
@@ -210,6 +223,8 @@ components:
     ResourceAuthorityScopeFilter: {name: authorityScopeRef, in: query, required: false, schema: {type: string, minLength: 1}}
     ResourceSiteFilter: {name: siteRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
     ResourceSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [displayName, resourceRef, authorityScopeRef], default: displayName}}
+    ApplicationComponentFilter: {name: componentRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
+    ApplicationSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [name, applicationRef], default: name}}
     ResourceRef: {name: resourceRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     EndpointRef: {name: endpointRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     ResponsibilityRole: {name: role, in: path, required: true, schema: {type: string, enum: [OWNER, ADMINISTRATOR]}}
@@ -351,6 +366,36 @@ components:
           oneOf:
             - {$ref: '#/components/schemas/StableId'}
             - {type: 'null'}
+
+    ApplicationCataloguePage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/ApplicationCatalogueItem'}}
+        total: {type: integer, minimum: 0}
+        page: {type: integer, minimum: 1}
+        pageSize: {type: integer, minimum: 1, maximum: 100}
+
+    ApplicationCatalogueItem:
+      type: object
+      additionalProperties: false
+      required: [applicationRef, name, version, components]
+      properties:
+        applicationRef: {$ref: '#/components/schemas/StableId'}
+        name: {type: string, minLength: 1}
+        version: {type: integer, minimum: 1}
+        components:
+          type: array
+          items: {$ref: '#/components/schemas/ApplicationComponentSummary'}
+
+    ApplicationComponentSummary:
+      type: object
+      additionalProperties: false
+      required: [componentRef, name]
+      properties:
+        componentRef: {$ref: '#/components/schemas/StableId'}
+        name: {type: string, minLength: 1}
 
     CreateNamedRequest:
       type: object

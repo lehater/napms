@@ -38,15 +38,27 @@ const application = {
   ],
 };
 
-test("Application Catalogue Screen Model exposes stable application identity", () => {
-  assert.deepEqual(toApplicationCatalogueScreenModel([application]), {
-    applications: [
-      {
-        applicationRef: "application-1",
-        name: "Payments",
-      },
-    ],
-  });
+test("Application Catalogue Screen Model preserves page and stable identity", () => {
+  assert.deepEqual(
+    toApplicationCatalogueScreenModel({
+      items: [application],
+      total: 17,
+      page: 2,
+      pageSize: 10,
+    }),
+    {
+      applications: [
+        {
+          applicationRef: "application-1",
+          name: "Payments",
+          components: "API, Worker",
+        },
+      ],
+      total: 17,
+      page: 2,
+      pageSize: 10,
+    },
+  );
 });
 
 test("Application Detail Screen Model preserves components and directed interactions", () => {

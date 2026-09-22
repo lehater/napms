@@ -180,9 +180,23 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         refreshed_row.wait_for()
         assert "HOST 10.10.0.1" in (refreshed_row.text_content() or "")
 
-        application_ref = create_application(page, f"E2E Application {suffix}")
+        application_name = f"E2E Application {suffix}"
+        application_ref = create_application(page, application_name)
         source_ref = add_component(page, application_ref, f"Source {suffix}")
         destination_ref = add_component(page, application_ref, f"Destination {suffix}")
+
+        goto(page, "/applications", "Applications")
+        page.get_by_label("Search Applications").fill(application_name)
+        page.get_by_label("Component ID").fill(source_ref)
+        page.get_by_label("Sort by").click()
+        page.get_by_role("option", name="Reference").click()
+        page.get_by_label("Sort direction").click()
+        page.get_by_role("option", name="Descending").click()
+        application_row = page.locator("tbody tr", has_text=application_name)
+        application_row.wait_for()
+        assert application_ref in (application_row.text_content() or "")
+        application_row.click()
+        page.wait_for_url(f"**/applications/{application_ref}")
 
         goto(page, "/interactions/new", "Create interaction")
         page.get_by_label("Source Component ID").fill(source_ref)

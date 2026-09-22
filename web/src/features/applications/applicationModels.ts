@@ -1,12 +1,20 @@
-import type { ApplicationView, InteractionView } from "../../app/api";
+import type {
+  ApplicationView,
+  CataloguePage,
+  InteractionView,
+} from "../../app/api";
 
 export type ApplicationCatalogueItem = {
   applicationRef: string;
   name: string;
+  components: string;
 };
 
 export type ApplicationCatalogueScreenModel = {
   applications: ApplicationCatalogueItem[];
+  total: number;
+  page: number;
+  pageSize: number;
 };
 
 export type ApplicationDetailScreenModel = {
@@ -21,13 +29,20 @@ export type ApplicationDetailScreenModel = {
 };
 
 export function toApplicationCatalogueScreenModel(
-  applications: readonly ApplicationView[],
+  page: CataloguePage<ApplicationView>,
 ): ApplicationCatalogueScreenModel {
   return {
-    applications: applications.map((application) => ({
+    applications: page.items.map((application) => ({
       applicationRef: application.applicationRef,
       name: application.name,
+      components:
+        application.components.length > 0
+          ? application.components.map((component) => component.name).join(", ")
+          : "No components",
     })),
+    total: page.total,
+    page: page.page,
+    pageSize: page.pageSize,
   };
 }
 

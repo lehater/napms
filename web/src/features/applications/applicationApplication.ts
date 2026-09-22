@@ -1,5 +1,9 @@
 import { api } from "../../app/api";
 import {
+  type ApplicationCatalogueQueryState,
+  toApplicationCatalogueQuery,
+} from "./applicationCatalogueQuery";
+import {
   type ApplicationCatalogueScreenModel,
   type ApplicationDetailScreenModel,
   toApplicationCatalogueScreenModel,
@@ -7,8 +11,12 @@ import {
 } from "./applicationModels";
 import { parseIpProtocol, parsePortRanges } from "./traffic";
 
-export async function queryApplicationCatalogue(): Promise<ApplicationCatalogueScreenModel> {
-  return toApplicationCatalogueScreenModel(await api.listApplications());
+export async function queryApplicationCatalogue(
+  query: ApplicationCatalogueQueryState,
+): Promise<ApplicationCatalogueScreenModel> {
+  return toApplicationCatalogueScreenModel(
+    await api.listApplications(toApplicationCatalogueQuery(query)),
+  );
 }
 
 export async function createApplication(name: string): Promise<string> {
