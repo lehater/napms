@@ -63,11 +63,9 @@ def test_deployment_catalogue_query_maps_http_params_to_application_query() -> N
     item = ComponentDeployment(UUID(int=101), UUID(int=201), UUID(int=301))
     deployments = Deployments((item,))
     response = client(deployments).get(
-        (
-            "/v1/deployments?search=%200067%20"
-            f"&componentRef={UUID(int=201)}&resourceRef={UUID(int=301)}"
-            "&sortBy=resourceRef&sortDirection=desc&page=2&pageSize=10"
-        )
+        "/v1/deployments?search=%200067%20"
+        f"&componentRef={UUID(int=201)}&resourceRef={UUID(int=301)}"
+        "&sortBy=resourceRef&sortDirection=desc&page=2&pageSize=10"
     )
 
     assert response.status_code == 200

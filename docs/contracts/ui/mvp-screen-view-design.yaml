@@ -96,7 +96,7 @@ screens:
     primary_action_role: create-resource
     exits:
       - select Resource -> RESOURCE-DETAIL
-    states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
+    states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, technical-error]
     semantic_contract:
       reads:
         - id: catalogue
@@ -459,7 +459,6 @@ screens:
         submitting: command:create-deployment.pending
         validation-rejected: command:create-deployment.422
         authorization-rejected: [read:catalogue.401, read:catalogue.403, command:create-deployment.401, command:create-deployment.403]
-        conflict: command:create-deployment.409
         technical-error: [read:catalogue.failure, command:create-deployment.failure]
       verification:
         contract: [operation:listDeployments-query-parameters, operation:createDeployment]

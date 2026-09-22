@@ -59,12 +59,6 @@ function createFailure(error: unknown): {
         message: "Deployment values were rejected by the backend.",
       };
     }
-    if (error.kind === "conflict") {
-      return {
-        state: "conflict",
-        message: "Deployment creation conflicts with current server state.",
-      };
-    }
   }
   return {
     state: "technical-error",
