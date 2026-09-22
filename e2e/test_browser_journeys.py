@@ -104,6 +104,7 @@ def test_00_rendered_presentation_evidence() -> None:
             path=str(artifacts / "resource-detail-desktop.png"),
             full_page=True,
             mask=[page.locator("[data-presentation-technical-context]")],
+            mask_color="#E2E8F0",
         )
 
         goto(page, "/resources", "Resources")
@@ -119,6 +120,7 @@ def test_00_rendered_presentation_evidence() -> None:
             path=str(artifacts / "resource-catalogue-desktop.png"),
             full_page=True,
             mask=[page.locator('[data-emphasis="technical"]')],
+            mask_color="#E2E8F0",
         )
 
         narrow = page_with_token(browser, width=390, height=900)
@@ -129,6 +131,7 @@ def test_00_rendered_presentation_evidence() -> None:
             path=str(artifacts / "resource-catalogue-narrow.png"),
             full_page=True,
             mask=[narrow.locator('[data-emphasis="technical"]')],
+            mask_color="#E2E8F0",
         )
 
         browser.close()

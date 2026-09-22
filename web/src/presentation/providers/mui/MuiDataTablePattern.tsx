@@ -58,19 +58,18 @@ export function MuiDataTablePattern<Row>({
                   }
                 >
                   {column.id === openColumnId && onOpen ? (
-                    <Button
-                      variant="text"
-                      size="small"
+                    <ButtonBase
                       onClick={() => onOpen(row)}
                       sx={{
-                        minWidth: 0,
                         p: 0,
-                        justifyContent: "flex-start",
+                        color: "primary.main",
+                        font: "inherit",
                         fontWeight: 650,
+                        textAlign: "left",
                       }}
                     >
                       {column.render(row)}
-                    </Button>
+                    </ButtonBase>
                   ) : (
                     column.render(row)
                   )}
