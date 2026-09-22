@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import argparse
 import os
 import sys
 import yaml
@@ -8,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 HARNESS_ROOT = Path(os.environ.get("HARNESS_ROOT", ROOT / ".harness-tool")).resolve()
 sys.path.insert(0, str(HARNESS_ROOT))
 
-from frontend_screen_contracts import evaluate_frontend_screen_contracts  # noqa: E402
+from frontend_screen_contracts import evaluate_frontend_screen_contracts, semantic_evaluation  # noqa: E402
 
 PRESENTATION = ROOT / "docs/contracts/ui/mvp-presentation-system.yaml"
 SCREENS = ROOT / "docs/contracts/ui/mvp-screen-view-design.yaml"
@@ -23,6 +24,10 @@ def load(path: Path):
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--semantic-evaluation-out")
+    args = parser.parse_args()
+
     presentation = load(PRESENTATION)
     screens = load(SCREENS)
     openapi = load(OPENAPI)
@@ -58,6 +63,35 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}", file=sys.stderr)
         return 1
+
+    if args.semantic_evaluation_out:
+        coverage_result = dict(result)
+        coverage_result["findings"] = list(result["findings"])
+        if remaining:
+            coverage_result["status"] = "REJECTED"
+            coverage_result["findings"].append(
+                {
+                    "code": "UNPROVEN_REQUIRED_SCREENS",
+                    "detail": "required screens remain without semantic screen-contract proof: "
+                    + ", ".join(sorted(remaining)),
+                }
+            )
+        evidence = {
+            "version": 1,
+            "kind": "harness-semantic-evaluation-set",
+            "semantic_evaluations": [
+                semantic_evaluation(
+                    coverage_result,
+                    artifact="FRONTEND-SCREEN-VIEW-DESIGN",
+                    capability="engineering.frontend.screen-view-design",
+                    semantic_claims=["engineering.interface.human.screen-composition"],
+                )
+            ],
+        }
+        Path(args.semantic_evaluation_out).write_text(
+            yaml.safe_dump(evidence, sort_keys=False),
+            encoding="utf-8",
+        )
 
     print(
         "Frontend screen semantic closure PASS: "
