@@ -29,15 +29,19 @@ composition_contract:
 screens:
   - id: RESOURCE-CATALOGUE
     purpose: Locate/select Resources and start supported Resource authoring.
-    patterns: [CATALOGUE, DATA-TABLE, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, DATA-TABLE, EDITOR, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: resources, role: collection, pattern: DATA-TABLE, priority: primary}
+      - {id: resources, role: collection, pattern: DATA-TABLE, priority: primary, applies_when: list-mode}
+      - {id: create-editor, role: task-editor, pattern: EDITOR, priority: primary, applies_when: create-mode}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
     composition:
       root: catalogue-workspace
-      ordered_regions: [context, actions, resources, feedback]
+      ordered_regions: [context, actions, resources, create-editor, feedback]
+      modes:
+        list: [context, actions, resources, feedback]
+        create: [context, create-editor, feedback]
       resources:
         pattern: DATA-TABLE
         columns:
@@ -47,6 +51,13 @@ screens:
           - {id: endpoints, role: current-fact-summary}
           - {id: responsibilities, role: current-fact-summary}
         row_action: open-resource
+      create-editor:
+        pattern: EDITOR
+        fields:
+          - {id: display-name, source: request:createResource.displayName, required: true}
+          - {id: authority-scope-ref, source: request:createResource.authorityScopeRef, required: true}
+          - {id: site-ref, source: request:createResource.siteRef, required: false}
+        submit_action: create-resource
     reference_adaptation:
       sources: [RESOURCE-CATALOGUE-CONCEPT, MAIN-WEBUI-PRESENTATION]
       adopted:
@@ -64,7 +75,7 @@ screens:
     primary_action_role: create-resource
     exits:
       - select Resource -> RESOURCE-DETAIL
-    states: [loading, loaded, empty, validation-rejected, authorization-rejected, conflict, technical-error]
+    states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
     semantic_contract:
       reads:
         - {id: catalogue, operation_id: listResources, projection: "ResourceView[]"}
@@ -86,12 +97,15 @@ screens:
       pattern_mapping:
         - {pattern: CATALOGUE, feature_bindings: {open-item: open-resource, create-item: create-resource}}
         - {pattern: DATA-TABLE, feature_bindings: {}}
+        - {pattern: EDITOR, feature_bindings: {}}
         - {pattern: TASK-ACTIONS, feature_bindings: {primary: create-resource}}
         - {pattern: STATUS, feature_bindings: {}}
       state_mapping:
         loading: read:catalogue.pending
         loaded: read:catalogue.200
         empty: read:catalogue.200
+        editing: local:create-resource-form
+        submitting: command:create-resource.pending
         validation-rejected: command:create-resource.422
         authorization-rejected: [read:catalogue.403, command:create-resource.403]
         conflict: command:create-resource.409
