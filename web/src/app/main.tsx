@@ -17,7 +17,7 @@ import {
 import { AppShell, PresentationRoot } from "../presentation";
 import { authSession } from "./auth-session";
 import { DevelopmentLogin } from "./DevelopmentLogin";
-import { primaryNavigation } from "./navigation";
+import { breadcrumbsForRoute, primaryNavigation } from "./navigation";
 import { navigate, parseRoute, type Route } from "./router";
 
 function App() {
@@ -98,6 +98,7 @@ function App() {
     <AppShell
       items={primaryNavigation}
       currentPath={window.location.pathname}
+      breadcrumbs={breadcrumbsForRoute(route)}
       onNavigate={navigate}
     >
       {screen}

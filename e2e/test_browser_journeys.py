@@ -159,7 +159,8 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         assert resource_ref in (resource_row.text_content() or "")
         resource_row.click()
         page.wait_for_url(f"**/resources/{resource_ref}")
-        page.get_by_role("button", name="Back", exact=True).wait_for()
+        breadcrumb = page.get_by_role("navigation", name="Breadcrumb")
+        breadcrumb.get_by_role("button", name="Resources", exact=True).wait_for()
 
         page.get_by_role("heading", name="Current facts").wait_for()
         page.locator("[data-version]").wait_for()
@@ -175,7 +176,9 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page.get_by_text("HOST 10.10.0.1").wait_for()
         page.get_by_text("Provenance and history").click()
 
-        goto(page, "/resources", "Resources")
+        breadcrumb.get_by_role("button", name="Resources", exact=True).click()
+        page.wait_for_url("**/resources")
+        page.get_by_role("heading", name="Resources").wait_for()
         page.get_by_label("Search Resources").fill(resource_name)
         refreshed_row = page.locator("tbody tr", has_text=resource_name)
         refreshed_row.wait_for()

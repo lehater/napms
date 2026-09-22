@@ -108,6 +108,9 @@ journeys:
 
 rules:
   - Browser navigation is route-driven and canonical route paths carry stable product identifiers, never database-row identities.
+  - Nested route context is presented as breadcrumbs derived from the canonical workspace hierarchy; ancestor crumbs navigate to canonical parent workspaces and the current crumb is not a navigation link.
+  - Breadcrumb hierarchy expresses conceptual workspace/route containment, not browser visit history, so direct deep links render the same navigation context as in-app transitions.
+  - Create/edit modes retain a deterministic parent navigation target; cancellation returns to that parent without implying domain rollback.
   - Loading, empty, not-found, rejected, conflict and technical-error states remain distinct.
   - Frontend navigation/actions never establish domain truth or security authority.
   - HTTP representation remains owned by canonical HTTP/OpenAPI contracts.

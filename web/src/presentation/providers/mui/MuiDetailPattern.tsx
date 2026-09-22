@@ -42,17 +42,12 @@ export function MuiDetailPattern({
   state,
   statusMessage,
   onRetry,
-  onReturn,
 }: DetailPatternProps) {
   const failure = failureMessage(state);
   const loaded = sections.length > 0;
 
   return (
     <Stack spacing={3}>
-      {onReturn ? (
-        <MuiTaskActions actions={[{ label: "Back", onInvoke: onReturn }]} />
-      ) : null}
-
       <Box>
         <Typography
           variant="overline"

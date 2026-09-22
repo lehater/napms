@@ -1,10 +1,12 @@
 import {
   Box,
+  Breadcrumbs,
   Button,
   Divider,
   Drawer,
   List,
   ListItemButton,
+  Link,
   ListItemText,
   Stack,
   Toolbar,
@@ -18,6 +20,7 @@ const drawerWidth = token.component.sidebarWidth;
 export function MuiAppShell({
   items,
   currentPath,
+  breadcrumbs,
   onNavigate,
   children,
 }: AppShellProps) {
@@ -143,6 +146,32 @@ export function MuiAppShell({
             minWidth: 0,
           }}
         >
+          {breadcrumbs.length > 1 ? (
+            <Breadcrumbs aria-label="Breadcrumb" sx={{ mb: 2 }}>
+              {breadcrumbs.map((item, index) =>
+                item.path ? (
+                  <Link
+                    key={`${item.path}:${item.label}`}
+                    component="button"
+                    type="button"
+                    underline="hover"
+                    color="inherit"
+                    onClick={() => onNavigate(item.path!)}
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <Typography
+                    key={`${index}:${item.label}`}
+                    color="text.primary"
+                    aria-current="page"
+                  >
+                    {item.label}
+                  </Typography>
+                ),
+              )}
+            </Breadcrumbs>
+          ) : null}
           {children}
         </Box>
       </Box>

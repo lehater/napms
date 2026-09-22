@@ -15,13 +15,21 @@ These symptoms share a usability surface but have different causes and must not 
 
 ## Findings
 
-### P1 — detail navigation continuity is an implementation/provider defect
+### P1 — navigation continuity needs route hierarchy, not a generic Back button
 
-Feature detail screens already pass `onReturn`. The MUI `DetailPattern` currently renders that action only when no loaded detail sections exist and hard-codes the text `Back to Resources` for every subject.
+The immediate symptom came from `DetailPattern`: feature screens supplied `onReturn`, while the MUI provider exposed it only in failure/empty states and even hard-coded `Back to Resources`.
 
-No backend/domain change is required. The provider must expose the generic return action during normal loaded state too. This branch fixes this item first and adds browser evidence.
+The broader requirement is stronger than restoring that button. Users need stable location context and the ability to return to any conceptual ancestor regardless of browser visit history. The accepted direction is therefore route-derived breadcrumbs:
 
-Authoring routes such as `/interactions/new` remain a separate navigation issue: they currently lack explicit parent context for deterministic Cancel/Back behavior.
+- breadcrumbs represent canonical workspace/route containment, not browser history;
+- ancestor crumbs navigate to deterministic canonical parents;
+- the current crumb is non-navigable;
+- stable IDs stay in the route but are not primary breadcrumb copy;
+- human-readable current-entity labels can replace generic `Resource`/`Application`/`Deployment` labels once Stage 2A supplies them.
+
+The generic Detail-level Back action is therefore removed from normal loaded navigation. Create/edit flows still need explicit cancellation semantics in addition to breadcrumbs when abandoning draft input matters.
+
+Routes such as `/interactions/new` have only a workspace-level parent today; if later UX requires return to a specific Application context, the route/context contract must carry that parent explicitly rather than reconstructing it from browser history.
 
 ### P1 — entity-reference presentation is a cross-screen design/API gap
 
@@ -72,9 +80,12 @@ This is a reusable engineering-knowledge gap, but it is not a Harness Core probl
 
 ### Stage 1 — navigation continuity
 
-- expose Detail return action in loaded state;
-- remove Resource-specific copy from the generic MUI provider;
-- verify rendered behavior.
+- define breadcrumbs as canonical route/workspace hierarchy in Interface Design;
+- render breadcrumbs in the application shell, independent of concrete detail screens;
+- make every ancestor crumb navigate to its deterministic parent route;
+- keep current crumb non-navigable and avoid raw UUIDs as primary breadcrumb copy;
+- keep explicit Cancel only where an authoring mode needs abandonment semantics;
+- verify direct deep links and in-app transitions render the same breadcrumb hierarchy.
 
 ### Stage 2A — human-readable relationship display
 

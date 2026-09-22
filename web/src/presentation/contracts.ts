@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
-import type { NavigationItem } from "../app/navigation";
+import type { BreadcrumbItem, NavigationItem } from "../app/navigation";
 
 export type AppShellProps = {
   items: readonly NavigationItem[];
   currentPath: string;
+  breadcrumbs: readonly BreadcrumbItem[];
   onNavigate: (path: string) => void;
   children: ReactNode;
 };
