@@ -27,6 +27,46 @@ scope:
     - POLICY-RULES
     - POLICY-EXPORT
 
+reference_model:
+  precedence:
+    - modern canonical product/domain/application/security/interface semantics
+    - this accepted Presentation System and Screen/View composition
+    - historical visual/executable evidence used to reconstruct presentation intent
+  semantic_guard: >-
+    A reference may constrain presentation only. A control, field, state or workflow
+    visible in historical evidence is not admitted into the First MVP unless modern
+    canonical semantics independently require it.
+  sources:
+    - id: RESOURCE-CATALOGUE-CONCEPT
+      kind: visual-reference
+      path: docs-legacy/ui/references/resource-catalogue/catalogue-list.svg
+      role: presentation-evidence
+      constrains: [desktop shell proportions, operational density and hierarchy, catalogue surface/table visual language]
+      does_not_authorize: [Resource type semantics, search/filter/sort/pagination behavior, legacy business fields or actions]
+    - id: RESOURCE-DETAIL-CONCEPT
+      kind: visual-reference-family
+      paths:
+        - docs-legacy/ui/references/resource-catalogue/resource-overview.svg
+        - docs-legacy/ui/references/resource-catalogue/resource-history.svg
+      role: presentation-evidence
+      constrains: [full-width detail workspace, current-state-first hierarchy, secondary history/provenance presentation]
+    - id: LEGACY-PRESENTATION-DOCUMENTATION
+      kind: documentation-evidence
+      paths: [docs-legacy/ui/design-system.md, docs-legacy/ui/design-tokens.md, docs-legacy/ui/component-composition.md]
+      role: reconstruction-provenance
+    - id: MAIN-WEBUI-PRESENTATION
+      kind: executable-reference
+      repository_commit: dbd56ceaa69dff4c4e099f7a305bcf1eec43bac7
+      paths:
+        - web/src/design-system/
+        - web/src/app/AppShell.tsx
+        - web/src/features/catalogues/pages/ResourcesPage.tsx
+        - web/src/features/catalogues/pages/ResourceDetailsPage.tsx
+        - e2e/test_j00_resource_catalogue_visual.py
+      role: executable-presentation-evidence
+      may_supply: [exact reusable dimensions, component anatomy, hover/focus/selection states, responsive and keyboard behavior]
+      forbidden_authority: [product/domain semantics, First-MVP API behavior, authorization or business decisions]
+
 presentation_language:
   character: operational-productivity
   priorities:
