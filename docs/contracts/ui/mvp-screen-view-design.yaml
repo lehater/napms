@@ -19,10 +19,9 @@ basis:
 screens:
   - id: RESOURCE-CATALOGUE
     purpose: Locate/select Resources and start supported Resource authoring.
-    patterns: [CATALOGUE, FILTER-BAR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: catalogue-controls, role: search-filter, priority: primary}
       - {id: resources, role: collection, priority: primary}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
@@ -30,8 +29,47 @@ screens:
     exits:
       - select Resource -> RESOURCE-DETAIL
     states: [loading, loaded, empty, validation-rejected, authorization-rejected, conflict, technical-error]
+    semantic_contract:
+      reads:
+        - {id: catalogue, operation_id: listResources, projection: ResourceCatalogueView}
+      commands:
+        - {id: create-resource, operation_id: createResource}
+      view_model:
+        id: ResourceCatalogueScreenModel
+        fields:
+          - {id: items, source: read:catalogue.items}
+          - {id: resource_ref, source: read:catalogue.items.resourceRef}
+          - {id: display_name, source: read:catalogue.items.displayName}
+          - {id: authority_scope_ref, source: read:catalogue.items.authorityScopeRef}
+      capabilities:
+        allowed:
+          - {id: inspect-catalogue, backed_by: read:catalogue}
+          - {id: open-resource, backed_by: navigation:resource-detail}
+          - {id: create-resource, backed_by: command:create-resource}
+        excluded: [search, filter, sort, paginate, bulk-operation, edit-item, delete-item]
+      pattern_mapping:
+        - pattern: CATALOGUE
+          feature_bindings: {open-item: open-resource, create-item: create-resource}
+        - pattern: STRUCTURED-LIST
+          feature_bindings: {open-item: open-resource}
+        - pattern: TASK-ACTIONS
+          feature_bindings: {primary: create-resource}
+        - pattern: STATUS
+          feature_bindings: {}
+      state_mapping:
+        loading: read:catalogue.pending
+        loaded: read:catalogue.200-items
+        empty: read:catalogue.200-empty
+        validation-rejected: command:create-resource.422
+        authorization-rejected: [read:catalogue.403, command:create-resource.403]
+        conflict: command:create-resource.409
+        technical-error: [read:catalogue.failure, command:create-resource.failure]
+      verification:
+        contract: [operation:listResources, operation:createResource]
+        semantic: [resource-catalogue-minimal-read-and-create-state-matrix]
+        rendered: [resource-catalogue-pattern-conformance]
     responsive:
-      - collection preserves Resource identity, current distinguishing facts and open action
+      - collection preserves Resource identity, display name, immutable authority scope and open action
       - structured rows may become labeled records
     overrides: []
 
@@ -46,6 +84,60 @@ screens:
       - {id: history, role: secondary-content, pattern: DISCLOSURE, priority: secondary}
       - {id: feedback, role: operation-status, priority: supporting}
     states: [loading, loaded, empty-current, not-found, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
+    semantic_contract:
+      reads:
+        - {id: resource-detail, operation_id: getResource, projection: ResourceView}
+      commands:
+        - {id: add-endpoint, operation_id: addResourceEndpoint}
+        - {id: set-endpoint-address, operation_id: setEndpointAddress}
+        - {id: clear-endpoint-address, operation_id: clearEndpointAddress}
+        - {id: set-site, operation_id: setResourceSite}
+        - {id: set-responsibility, operation_id: setResourceResponsibility}
+      view_model:
+        id: ResourceDetailScreenModel
+        fields:
+          - {id: identity, source: read:resource-detail.resourceRef}
+          - {id: display_name, source: read:resource-detail.displayName}
+          - {id: immutable_authority_scope, source: read:resource-detail.authorityScopeRef}
+          - {id: version, source: read:resource-detail.version}
+          - {id: current, source: read:resource-detail.current}
+          - {id: history, source: read:resource-detail.history}
+      capabilities:
+        allowed:
+          - {id: inspect-current, backed_by: read:resource-detail}
+          - {id: inspect-history, backed_by: read:resource-detail}
+          - {id: open-history, backed_by: local:history-disclosure}
+          - {id: add-endpoint, backed_by: command:add-endpoint}
+          - {id: set-endpoint-address, backed_by: command:set-endpoint-address}
+          - {id: clear-endpoint-address, backed_by: command:clear-endpoint-address}
+          - {id: set-site, backed_by: command:set-site}
+          - {id: set-responsibility, backed_by: command:set-responsibility}
+        excluded: [delete-resource, search, filter, bulk-operation]
+      pattern_mapping:
+        - pattern: DETAIL
+          feature_bindings: {show-primary: inspect-current, show-secondary: inspect-history}
+        - pattern: EDITOR
+          feature_bindings: {}
+        - pattern: DISCLOSURE
+          feature_bindings: {open-secondary: open-history}
+        - pattern: TASK-ACTIONS
+          feature_bindings: {}
+        - pattern: STATUS
+          feature_bindings: {}
+      state_mapping:
+        loading: read:resource-detail.pending
+        loaded: read:resource-detail.200
+        empty-current: read:resource-detail.200-empty-current
+        not-found: read:resource-detail.404
+        submitting: [command:add-endpoint.pending, command:set-endpoint-address.pending, command:clear-endpoint-address.pending, command:set-site.pending, command:set-responsibility.pending]
+        validation-rejected: [command:add-endpoint.422, command:set-endpoint-address.422, command:set-site.422, command:set-responsibility.422]
+        authorization-rejected: [read:resource-detail.403, command:add-endpoint.403, command:set-endpoint-address.403, command:clear-endpoint-address.403, command:set-site.403, command:set-responsibility.403]
+        conflict: [command:add-endpoint.409, command:set-endpoint-address.409, command:clear-endpoint-address.409, command:set-site.409, command:set-responsibility.409]
+        technical-error: [read:resource-detail.failure, command:add-endpoint.failure, command:set-endpoint-address.failure, command:clear-endpoint-address.failure, command:set-site.failure, command:set-responsibility.failure]
+      verification:
+        contract: [operation:getResource, operation:addResourceEndpoint, operation:setEndpointAddress, operation:clearEndpointAddress, operation:setResourceSite, operation:setResourceResponsibility]
+        semantic: [resource-detail-current-history-command-state-matrix]
+        rendered: [resource-detail-detail-editor-disclosure-conformance]
     responsive:
       - current facts remain before historical facts in reading order
       - actions remain available with their affected fact group
@@ -175,7 +267,53 @@ screens:
       - {id: feedback, role: operation-status, priority: supporting}
     primary_action_role: execute-export
     authority_rule: Visible/enabled controls never establish export authority; backend admission is authoritative.
-    states: [editing, submitting, complete-success, unresolved-or-degraded, validation-rejected, authorization-rejected, conflict, technical-error]
+    states: [editing, submitting, complete-success, unresolved-or-degraded, validation-rejected, authorization-rejected, technical-error]
+    semantic_contract:
+      reads: []
+      commands:
+        - {id: materialize-policy, operation_id: materializeCurrentPolicy, projection: PolicyMaterializationResult}
+      view_model:
+        id: PolicyExportScreenModel
+        fields:
+          - {id: status, source: command:materialize-policy.status}
+          - {id: evaluation_at, source: command:materialize-policy.evaluationAt}
+          - {id: selection, source: command:materialize-policy.selection}
+          - {id: export_authority_evidence, source: command:materialize-policy.exportAuthorityEvidence}
+          - {id: rule_provenance, source: command:materialize-policy.ruleProvenance}
+          - {id: non_effective, source: command:materialize-policy.nonEffective}
+          - {id: rows, source: command:materialize-policy.rows}
+          - {id: issues, source: command:materialize-policy.issues}
+      capabilities:
+        allowed:
+          - {id: select-all-policy, backed_by: local:all-current-policy}
+          - {id: select-explicit-subset, backed_by: local:explicit-policy-rule-refs}
+          - {id: execute-export, backed_by: command:materialize-policy}
+          - {id: inspect-export-summary, backed_by: command:materialize-policy}
+          - {id: inspect-export-details, backed_by: command:materialize-policy}
+          - {id: inspect-export-provenance, backed_by: command:materialize-policy}
+          - {id: inspect-export-diagnostics, backed_by: command:materialize-policy}
+        excluded: [search, filter, sort, bulk-edit, implicit-success-on-unresolved]
+      pattern_mapping:
+        - pattern: SCOPE-SELECTOR
+          feature_bindings: {select-all: select-all-policy, select-subset: select-explicit-subset}
+        - pattern: OUTCOME
+          feature_bindings: {summary: inspect-export-summary, details: inspect-export-details, provenance: inspect-export-provenance, diagnostics: inspect-export-diagnostics}
+        - pattern: TASK-ACTIONS
+          feature_bindings: {primary: execute-export}
+        - pattern: STATUS
+          feature_bindings: {}
+      state_mapping:
+        editing: local:scope-selection
+        submitting: command:materialize-policy.pending
+        complete-success: command:materialize-policy.200-COMPLETE
+        unresolved-or-degraded: command:materialize-policy.200-UNRESOLVED
+        validation-rejected: command:materialize-policy.422
+        authorization-rejected: command:materialize-policy.403
+        technical-error: command:materialize-policy.failure
+      verification:
+        contract: [operation:materializeCurrentPolicy]
+        semantic: [policy-export-complete-vs-unresolved-state-matrix]
+        rendered: [policy-export-outcome-diagnostics-provenance-conformance]
     responsive:
       - scope and execute action remain visible before result
       - completeness diagnostics remain distinct from technical failure
@@ -188,6 +326,7 @@ global_rules:
   - required data and actions remain traceable to accepted Human Interface and HTTP/application contracts;
   - responsive transformations preserve semantic labels, distinctions and action availability;
   - screen composition does not create domain or authorization semantics.
+  - reusable presentation/template features are disabled unless semantic_contract.pattern_mapping binds them to an allowed capability.
 
 coverage:
   required_workspaces:
@@ -200,4 +339,7 @@ coverage:
     - ACCESS-REQUESTS
     - POLICY-RULES
     - POLICY-EXPORT
-  rule: FRONTEND-IMPLEMENTATION is not presentation-complete unless every required workspace is present here and inherits the shared Presentation System.
+  semantic_contract_pilot:
+    proven: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, POLICY-EXPORT]
+    remaining: [APPLICATION-CATALOGUE, APPLICATION-DETAIL, DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
+  rule: Workspace inventory/presentation inheritance alone is insufficient for frontend semantic completion; each required screen must eventually satisfy the semantic screen-contract proof obligations.
