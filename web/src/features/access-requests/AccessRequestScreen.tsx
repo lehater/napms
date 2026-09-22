@@ -1,16 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
   CataloguePattern,
   type CatalogueState,
+  type DataTableColumn,
+  DataTablePattern,
   DetailPattern,
   type DetailState,
   EditorPattern,
   type EditorPatternProps,
   type EditorState,
+  FilterBarPattern,
   OutcomePattern,
-  StructuredListPattern,
 } from "../../presentation";
 import {
   decideAccessRequest,
@@ -18,14 +20,19 @@ import {
   queryAccessRequests,
   submitAccessRequest,
 } from "./accessRequestApplication";
+import {
+  type AccessRequestCatalogueQueryState,
+  defaultAccessRequestCatalogueQuery,
+} from "./accessRequestCatalogueQuery";
 import type {
   AccessRequestCatalogueItem,
+  AccessRequestCatalogueScreenModel,
   AccessRequestDetailScreenModel,
 } from "./accessRequestModels";
 
 type CatalogueLoadState =
   | { kind: "loading" }
-  | { kind: "loaded"; items: AccessRequestCatalogueItem[] }
+  | { kind: "loaded"; model: AccessRequestCatalogueScreenModel }
   | { kind: "authorization-rejected"; message: string }
   | { kind: "technical-error"; message: string };
 
@@ -97,15 +104,19 @@ function editorFailure(error: unknown): {
 }
 
 function AccessRequestListMode() {
+  const [query, setQuery] = useState<AccessRequestCatalogueQueryState>(
+    defaultAccessRequestCatalogueQuery,
+  );
   const [loadState, setLoadState] = useState<CatalogueLoadState>({
     kind: "loading",
   });
 
   useEffect(() => {
     let active = true;
-    void queryAccessRequests()
-      .then((items) => {
-        if (active) setLoadState({ kind: "loaded", items });
+    setLoadState({ kind: "loading" });
+    void queryAccessRequests(query)
+      .then((model) => {
+        if (active) setLoadState({ kind: "loaded", model });
       })
       .catch((error) => {
         if (active) setLoadState(catalogueFailure(error));
@@ -113,9 +124,60 @@ function AccessRequestListMode() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [query]);
 
-  const rows = loadState.kind === "loaded" ? loadState.items : [];
+  function updateQuery(
+    patch: Partial<AccessRequestCatalogueQueryState>,
+    resetPage = true,
+  ) {
+    setQuery((current) => ({
+      ...current,
+      ...patch,
+      page: resetPage ? 1 : (patch.page ?? current.page),
+    }));
+  }
+
+  const columns = useMemo<
+    readonly DataTableColumn<AccessRequestCatalogueItem>[]
+  >(
+    () => [
+      {
+        id: "request-reference",
+        label: "Request",
+        emphasis: "primary",
+        sortKey: "requestRef",
+        render: (row) => row.requestRef,
+      },
+      {
+        id: "decision",
+        label: "Decision",
+        sortKey: "decisionResult",
+        render: (row) => row.decisionResult ?? "PENDING",
+      },
+      {
+        id: "source-deployment",
+        label: "Source Deployment",
+        emphasis: "technical",
+        render: (row) => row.sourceDeploymentRef,
+      },
+      {
+        id: "destination-deployment",
+        label: "Destination Deployment",
+        emphasis: "technical",
+        render: (row) => row.destinationDeploymentRef,
+      },
+      {
+        id: "submitted-at",
+        label: "Submitted",
+        sortKey: "submittedAt",
+        render: (row) => row.submittedAt,
+      },
+    ],
+    [],
+  );
+
+  const model = loadState.kind === "loaded" ? loadState.model : undefined;
+  const rows = model?.requests ?? [];
   const state: CatalogueState =
     loadState.kind === "loaded"
       ? rows.length === 0
@@ -127,6 +189,15 @@ function AccessRequestListMode() {
     loadState.kind === "technical-error"
       ? loadState.message
       : undefined;
+  const queryActive =
+    query.search !== "" ||
+    query.sourceDeploymentRef !== "" ||
+    query.destinationDeploymentRef !== "" ||
+    query.decisionResult !== "" ||
+    query.sortBy !== defaultAccessRequestCatalogueQuery.sortBy ||
+    query.sortDirection !==
+      defaultAccessRequestCatalogueQuery.sortDirection ||
+    query.pageSize !== defaultAccessRequestCatalogueQuery.pageSize;
 
   return (
     <CataloguePattern
@@ -139,18 +210,90 @@ function AccessRequestListMode() {
       }}
       state={state}
       statusMessage={statusMessage}
-      emptyMessage="No Access Requests."
+      emptyMessage="No Access Requests match the current query."
+      queryControls={
+        <FilterBarPattern
+          search={{
+            label: "Search Access Requests",
+            value: query.search,
+            placeholder: "Request ID",
+            onChange: (value) => updateQuery({ search: value }),
+          }}
+          filters={[
+            {
+              id: "source-deployment-ref",
+              label: "Source Deployment ID",
+              value: query.sourceDeploymentRef,
+              onChange: (value) => updateQuery({ sourceDeploymentRef: value }),
+            },
+            {
+              id: "destination-deployment-ref",
+              label: "Destination Deployment ID",
+              value: query.destinationDeploymentRef,
+              onChange: (value) =>
+                updateQuery({ destinationDeploymentRef: value }),
+            },
+            {
+              id: "decision-result",
+              label: "Decision",
+              value: query.decisionResult,
+              options: [
+                { value: "", label: "Any decision" },
+                { value: "ALLOWED", label: "Allowed" },
+                { value: "DENIED", label: "Denied" },
+              ],
+              onChange: (value) =>
+                updateQuery({
+                  decisionResult:
+                    value as AccessRequestCatalogueQueryState["decisionResult"],
+                }),
+            },
+          ]}
+          sort={{
+            field: query.sortBy,
+            fields: [
+              { value: "submittedAt", label: "Submitted" },
+              { value: "requestRef", label: "Request" },
+              { value: "decisionResult", label: "Decision" },
+            ],
+            direction: query.sortDirection,
+            onFieldChange: (field) =>
+              updateQuery({
+                sortBy: field as AccessRequestCatalogueQueryState["sortBy"],
+              }),
+            onDirectionChange: (sortDirection) =>
+              updateQuery({ sortDirection }),
+          }}
+          active={queryActive}
+          onClear={() => setQuery(defaultAccessRequestCatalogueQuery)}
+        />
+      }
     >
-      <StructuredListPattern
+      <DataTablePattern
         label="Access Requests"
         rows={rows}
+        columns={columns}
         rowKey={(row) => row.requestRef}
-        primary={(row) => row.requestRef}
-        secondary={(row) => row.decisionResult ?? "PENDING"}
         onOpen={(row) =>
           navigate(`/access-requests/${row.requestRef}/decision`)
         }
-        emptyMessage="No Access Requests."
+        sort={{
+          field: query.sortBy,
+          direction: query.sortDirection,
+          onChange: (field, sortDirection) =>
+            updateQuery({
+              sortBy: field as AccessRequestCatalogueQueryState["sortBy"],
+              sortDirection,
+            }),
+        }}
+        paging={{
+          page: model?.page ?? query.page,
+          pageSize: model?.pageSize ?? query.pageSize,
+          total: model?.total ?? 0,
+          onPageChange: (page) => updateQuery({ page }, false),
+          onPageSizeChange: (pageSize) => updateQuery({ pageSize }),
+        }}
+        emptyMessage="No Access Requests match the current query."
       />
     </CataloguePattern>
   );

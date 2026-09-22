@@ -6,6 +6,12 @@ from uuid import UUID
 import psycopg
 
 from napms.contexts.access_policy.application.ports import AccessPolicyVersionConflict
+from napms.contexts.access_policy.application.queries import (
+    AccessRequestCataloguePage,
+    AccessRequestCatalogueQuery,
+    AccessRequestSortField,
+    SortDirection,
+)
 from napms.contexts.access_policy.domain.model import (
     AccessRequest,
     AccessSubject,
@@ -32,16 +38,72 @@ class PostgresAccessPolicyRepository:
         with psycopg.connect(self._dsn) as connection:
             return self.get_request_in(connection, request_ref)
 
-    def list_requests(self) -> tuple[AccessRequest, ...]:
+    def query_requests(
+        self,
+        query: AccessRequestCatalogueQuery,
+    ) -> AccessRequestCataloguePage:
+        conditions: list[str] = []
+        parameters: list[object] = []
+
+        if query.search:
+            search = query.search.strip()
+            if search:
+                conditions.append("CAST(request_ref AS text) ILIKE %s")
+                parameters.append(f"%{search}%")
+
+        if query.source_deployment_ref is not None:
+            conditions.append("source_deployment_ref = %s")
+            parameters.append(query.source_deployment_ref)
+
+        if query.destination_deployment_ref is not None:
+            conditions.append("destination_deployment_ref = %s")
+            parameters.append(query.destination_deployment_ref)
+
+        if query.decision_result is not None:
+            conditions.append("decision_result = %s")
+            parameters.append(query.decision_result.value)
+
+        where = "" if not conditions else " WHERE " + " AND ".join(conditions)
+        order_by = {
+            AccessRequestSortField.SUBMITTED_AT: "submitted_at",
+            AccessRequestSortField.REQUEST_REF: "request_ref",
+            AccessRequestSortField.DECISION_RESULT: "decision_result",
+        }[query.sort_by]
+        direction = "ASC" if query.sort_direction is SortDirection.ASC else "DESC"
+        offset = (query.page - 1) * query.page_size
+
         with psycopg.connect(self._dsn) as connection:
+            total_row = connection.execute(
+                f"""
+                SELECT COUNT(*)
+                FROM access_policy.access_request
+                {where}
+                """,
+                parameters,
+            ).fetchone()
+            total = 0 if total_row is None else total_row[0]
             rows = connection.execute(
-                "SELECT request_ref FROM access_policy.access_request ORDER BY submitted_at, request_ref"
+                f"""
+                SELECT request_ref
+                FROM access_policy.access_request
+                {where}
+                ORDER BY {order_by} {direction} NULLS LAST, request_ref ASC
+                LIMIT %s OFFSET %s
+                """,
+                (*parameters, query.page_size, offset),
             ).fetchall()
-            return tuple(
+            items = tuple(
                 request
                 for (request_ref,) in rows
                 if (request := self.get_request_in(connection, request_ref)) is not None
             )
+
+        return AccessRequestCataloguePage(
+            items=items,
+            total=total,
+            page=query.page,
+            page_size=query.page_size,
+        )
 
     def save_request(self, request: AccessRequest, *, expected_version: int) -> None:
         with psycopg.connect(self._dsn) as connection:

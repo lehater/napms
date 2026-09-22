@@ -4,10 +4,17 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
+from napms.contexts.access_policy.application.queries import (
+    AccessRequestCataloguePage,
+    AccessRequestCatalogueQuery,
+    AccessRequestSortField,
+    SortDirection as AccessRequestSortDirection,
+)
 from napms.contexts.access_policy.application.submission import AccessRequestSubmissionRejected
 from napms.contexts.access_policy.domain.model import (
     AccessRequest,
     AccessSubject,
+    PermissionDecision,
     RequestAuthorityEvidence,
 )
 from napms.contexts.application_communication_catalogue.application.queries import (
@@ -171,9 +178,19 @@ def test_submit_access_request_rejects_noncanonical_snake_case_body() -> None:
 @dataclass
 class AccessReader:
     items: tuple[AccessRequest, ...]
+    received: AccessRequestCatalogueQuery | None = None
 
-    def list_requests(self) -> tuple[AccessRequest, ...]:
-        return self.items
+    def query_requests(
+        self,
+        query: AccessRequestCatalogueQuery,
+    ) -> AccessRequestCataloguePage:
+        self.received = query
+        return AccessRequestCataloguePage(
+            items=self.items,
+            total=len(self.items),
+            page=query.page,
+            page_size=query.page_size,
+        )
 
     def get_request(self, request_ref):
         return next((item for item in self.items if item.request_ref == request_ref), None)
@@ -195,9 +212,49 @@ def test_access_request_read_endpoints_preserve_subject_and_outcome() -> None:
     detail = http.get(f"/v1/access-requests/{item.request_ref}", headers=headers)
     assert catalogue.status_code == 200
     assert detail.status_code == 200
-    assert catalogue.json()[0]["requestRef"] == str(item.request_ref)
+    assert catalogue.json()["items"][0]["requestRef"] == str(item.request_ref)
     assert detail.json()["sourceDeploymentRef"] == str(item.access_subject.source_deployment_ref)
     assert detail.json()["decisionResult"] is None
+
+
+def test_access_request_catalogue_query_maps_http_params_to_reader() -> None:
+    principal = Principal("subject:alice", frozenset({"access.manage"}), ())
+    item = request()
+    reader = AccessReader((item,))
+    app = create_app(
+        HttpDependencies(
+            identity=Identity(principal),
+            access_requests=Submitter(item),
+            access_request_reader=reader,
+        )
+    )
+    http = TestClient(app)
+    headers = {"Authorization": "Bearer token"}
+    response = http.get(
+        (
+            "/v1/access-requests?search=%20request%20"
+            f"&sourceDeploymentRef={item.access_subject.source_deployment_ref}"
+            f"&destinationDeploymentRef={item.access_subject.destination_deployment_ref}"
+            "&decisionResult=ALLOWED&sortBy=requestRef&sortDirection=desc"
+            "&page=2&pageSize=10"
+        ),
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["total"] == 1
+    assert response.json()["page"] == 2
+    assert response.json()["pageSize"] == 10
+    assert reader.received == AccessRequestCatalogueQuery(
+        search="request",
+        source_deployment_ref=item.access_subject.source_deployment_ref,
+        destination_deployment_ref=item.access_subject.destination_deployment_ref,
+        decision_result=PermissionDecision.ALLOWED,
+        sort_by=AccessRequestSortField.REQUEST_REF,
+        sort_direction=AccessRequestSortDirection.DESC,
+        page=2,
+        page_size=10,
+    )
 
 
 def test_access_request_read_requires_read_permission() -> None:

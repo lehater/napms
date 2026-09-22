@@ -1,14 +1,20 @@
 import { api } from "../../app/api";
 import {
-  type AccessRequestCatalogueItem,
+  type AccessRequestCatalogueQueryState,
+  toAccessRequestCatalogueQuery,
+} from "./accessRequestCatalogueQuery";
+import {
+  type AccessRequestCatalogueScreenModel,
   type AccessRequestDetailScreenModel,
-  toAccessRequestCatalogue,
+  toAccessRequestCatalogueScreenModel,
 } from "./accessRequestModels";
 
-export async function queryAccessRequests(): Promise<
-  AccessRequestCatalogueItem[]
-> {
-  return toAccessRequestCatalogue(await api.listAccessRequests());
+export async function queryAccessRequests(
+  query: AccessRequestCatalogueQueryState,
+): Promise<AccessRequestCatalogueScreenModel> {
+  return toAccessRequestCatalogueScreenModel(
+    await api.listAccessRequests(toAccessRequestCatalogueQuery(query)),
+  );
 }
 
 export async function queryAccessRequest(

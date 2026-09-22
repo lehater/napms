@@ -1,4 +1,8 @@
 import {
+  type AccessRequestCatalogueQuery,
+  serializeAccessRequestCatalogueQuery,
+} from "./access-request-catalogue-query";
+import {
   type ApplicationCatalogueQuery,
   serializeApplicationCatalogueQuery,
 } from "./application-catalogue-query";
@@ -191,7 +195,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  listAccessRequests: () => request<AccessRequestView[]>("/v1/access-requests"),
+  listAccessRequests: (query: AccessRequestCatalogueQuery) =>
+    request<CataloguePage<AccessRequestView>>(
+      `/v1/access-requests?${serializeAccessRequestCatalogueQuery(query)}`,
+    ),
   getAccessRequest: (ref: string) =>
     request<AccessRequestView>(`/v1/access-requests/${ref}`),
   addResourceEndpoint: (ref: string, version: number) =>

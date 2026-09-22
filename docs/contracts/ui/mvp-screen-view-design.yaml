@@ -28,12 +28,12 @@ composition_contract:
   inherited_entity_collection_default: NAPMS-MVP-PRESENTATION-SYSTEM.entity_collection_default
   migration_gaps:
     - id: entity-catalogue-query-contracts
-      applies_to: [ACCESS-REQUESTS, POLICY-RULES]
+      applies_to: [POLICY-RULES]
       gap: >-
         Search/filter/sort and scalable paging semantics are not yet closed end-to-end
         through accepted query contracts for every primary entity collection.
     - id: primary-catalogue-table-adoption
-      applies_to: [ACCESS-REQUESTS, POLICY-RULES]
+      applies_to: [POLICY-RULES]
       gap: >-
         Current realization still uses STRUCTURED-LIST for some primary entity
         collections; migrate them to DATA-TABLE unless an explicit override is accepted.
@@ -643,25 +643,129 @@ screens:
     overrides: []
 
   - id: ACCESS-REQUESTS
-    purpose: Submit connectivity requests and inspect immutable permission outcomes under backend-confirmed authority.
-    patterns: [CATALOGUE, DETAIL, EDITOR, STRUCTURED-LIST, OUTCOME, TASK-ACTIONS, STATUS]
+    purpose: Locate/submit Access Requests and inspect or record immutable permission outcomes under backend-confirmed authority.
+    patterns: [CATALOGUE, FILTER-BAR, DATA-TABLE, DETAIL, EDITOR, OUTCOME, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: requests, role: collection, priority: primary}
-      - {id: request-composer, role: task-editor, priority: primary}
-      - {id: selected-outcome, role: authoritative-outcome, pattern: OUTCOME, priority: primary}
+      - {id: query-controls, role: collection-query, pattern: FILTER-BAR, priority: primary, applies_when: list-mode}
+      - {id: requests, role: collection, pattern: DATA-TABLE, priority: primary, applies_when: list-mode}
+      - {id: request-detail, role: primary-content, pattern: DETAIL, priority: primary, applies_when: detail-mode}
+      - {id: request-editor, role: task-editor, pattern: EDITOR, priority: primary, applies_when: [create-mode, pending-detail]}
+      - {id: selected-outcome, role: authoritative-outcome, pattern: OUTCOME, priority: primary, applies_when: detail-mode}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
     composition:
-      root: request-outcome-workspace
-      ordered_regions: [context, actions, requests, request-composer, selected-outcome, feedback]
-      selected-outcome: {pattern: OUTCOME}
+      root: access-request-workspace
+      ordered_regions: [context, actions, query-controls, requests, request-detail, request-editor, selected-outcome, feedback]
+      modes:
+        list: [context, actions, query-controls, requests, feedback]
+        create: [context, request-editor, feedback]
+        detail: [context, request-detail, request-editor, selected-outcome, feedback]
+      query-controls:
+        pattern: FILTER-BAR
+        search: {source: query:listAccessRequests.search, matches: [requestRef]}
+        filters:
+          - {id: source-deployment-ref, source: query:listAccessRequests.sourceDeploymentRef}
+          - {id: destination-deployment-ref, source: query:listAccessRequests.destinationDeploymentRef}
+          - {id: decision-result, source: query:listAccessRequests.decisionResult}
+        sort:
+          fields: [submittedAt, requestRef, decisionResult]
+          default: {field: submittedAt, direction: asc}
+        paging: {page: query:listAccessRequests.page, page_size: query:listAccessRequests.pageSize}
+      requests:
+        pattern: DATA-TABLE
+        columns:
+          - {id: request-reference, role: primary-identity, sort: requestRef}
+          - {id: decision, role: authoritative-outcome-summary, sort: decisionResult}
+          - {id: source-deployment, role: distinguishing-attribute}
+          - {id: destination-deployment, role: distinguishing-attribute}
+          - {id: submitted-at, role: distinguishing-attribute, sort: submittedAt}
+        row_action: open-access-request
     primary_action_role: submit-request
-    authority_rule: Visible/enabled controls never establish request authority; backend admission is authoritative.
-    states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, conflict, outcome-allowed, outcome-not-allowed, technical-error]
+    action_hierarchy:
+      request: record-decision
+    authority_rule: Visible/enabled controls never establish request or decision authority; backend admission is authoritative.
+    exits:
+      - select Access Request -> ACCESS-REQUESTS detail/decision route
+      - submit Access Request -> ACCESS-REQUESTS detail/decision route
+      - allowed decision may navigate to the resulting POLICY-RULES detail
+    states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
+    semantic_contract:
+      reads:
+        - id: catalogue
+          operation_id: listAccessRequests
+          projection: AccessRequestCataloguePage
+          query:
+            search: {source: local:query.search, semantics: accepted-text-search}
+            sourceDeploymentRef: {source: local:query.filters.source-deployment-ref, semantics: exact-attribute-filter}
+            destinationDeploymentRef: {source: local:query.filters.destination-deployment-ref, semantics: exact-attribute-filter}
+            decisionResult: {source: local:query.filters.decision-result, accepted: [ALLOWED, DENIED]}
+            sortBy: {source: local:query.sort.field, accepted: [submittedAt, requestRef, decisionResult]}
+            sortDirection: {source: local:query.sort.direction, accepted: [asc, desc]}
+            page: {source: local:query.page, minimum: 1}
+            pageSize: {source: local:query.page-size, default: 25, maximum: 100}
+        - {id: detail, operation_id: getAccessRequest, projection: AccessRequestView}
+      commands:
+        - {id: submit-request, operation_id: submitAccessRequest}
+        - {id: record-decision, operation_id: decideAccessRequest}
+      view_model:
+        id: AccessRequestScreenModel
+        fields:
+          - {id: requests, source: read:catalogue.items}
+          - {id: total, source: read:catalogue.total}
+          - {id: page, source: read:catalogue.page}
+          - {id: page_size, source: read:catalogue.pageSize}
+          - {id: request_ref, source: read:detail.requestRef}
+          - {id: source_deployment_ref, source: read:detail.sourceDeploymentRef}
+          - {id: destination_deployment_ref, source: read:detail.destinationDeploymentRef}
+          - {id: interaction_revision_ref, source: read:detail.interactionRevisionRef}
+          - {id: need_ref, source: read:detail.needRef}
+          - {id: submitted_at, source: read:detail.submittedAt}
+          - {id: decision_result, source: read:detail.decisionResult}
+          - {id: decided_by_subject, source: read:detail.decidedBySubject}
+          - {id: decided_at, source: read:detail.decidedAt}
+          - {id: version, source: read:detail.version}
+      capabilities:
+        allowed:
+          - {id: inspect-catalogue, backed_by: read:catalogue}
+          - {id: search, backed_by: read:catalogue}
+          - {id: filter, backed_by: read:catalogue}
+          - {id: sort, backed_by: read:catalogue}
+          - {id: pagination, backed_by: read:catalogue}
+          - {id: open-access-request, backed_by: navigation:access-request-detail}
+          - {id: submit-request, backed_by: command:submit-request}
+          - {id: inspect-access-request, backed_by: read:detail}
+          - {id: inspect-outcome, backed_by: read:detail}
+          - {id: record-decision, backed_by: command:record-decision}
+        excluded: [bulk-operation, inline-edit-request-subject, rewrite-final-decision]
+      pattern_mapping:
+        - {pattern: CATALOGUE, feature_bindings: {open-item: open-access-request, create-item: submit-request}}
+        - {pattern: FILTER-BAR, feature_bindings: {search: search, filters: filter, sort: sort, clear: filter}}
+        - {pattern: DATA-TABLE, feature_bindings: {open-row: open-access-request, sort: sort, paging: pagination}}
+        - {pattern: DETAIL, feature_bindings: {show-primary: inspect-access-request}}
+        - {pattern: EDITOR, feature_bindings: {}}
+        - {pattern: OUTCOME, feature_bindings: {}}
+        - {pattern: TASK-ACTIONS, feature_bindings: {primary: submit-request}}
+        - {pattern: STATUS, feature_bindings: {}}
+      state_mapping:
+        loading: [read:catalogue.pending, read:detail.pending]
+        loaded: [read:catalogue.200, read:detail.200]
+        empty: read:catalogue.200
+        editing: local:access-request-editor
+        submitting: [command:submit-request.pending, command:record-decision.pending]
+        validation-rejected: command:submit-request.422
+        authorization-rejected: [read:catalogue.401, read:catalogue.403, read:detail.401, read:detail.403, command:submit-request.401, command:submit-request.403, command:record-decision.401, command:record-decision.403]
+        conflict: [command:submit-request.409, command:record-decision.409]
+        not-found: read:detail.404
+        technical-error: [read:catalogue.failure, read:detail.failure, command:submit-request.failure, command:record-decision.failure]
+      verification:
+        contract: [operation:listAccessRequests-query-parameters, operation:getAccessRequest, operation:submitAccessRequest, operation:decideAccessRequest]
+        semantic: [access-request-catalogue-query-capability-and-state-closure, pending-is-null-decision-not-new-domain-enum]
+        rendered: [access-request-filter-table-detail-outcome-conformance]
     responsive:
-      - request composer and outcome become sequential regions
-      - immutable request subject and permission outcome remain jointly inspectable
+      - Request identity, subject deployments, submission time and outcome remain available when the catalogue reflows
+      - query controls reflow without losing active state or clear action
+      - immutable request subject and permission outcome remain jointly inspectable in detail
     overrides: []
 
   - id: POLICY-RULES
@@ -762,5 +866,5 @@ coverage:
     - ACCESS-REQUESTS
     - POLICY-RULES
     - POLICY-EXPORT
-  semantic_contract_pilot: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, DEPLOYMENTS, DEPLOYMENT-DETAIL, BUSINESS-CONNECTIVITY, POLICY-EXPORT]
+  semantic_contract_pilot: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, DEPLOYMENTS, DEPLOYMENT-DETAIL, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-EXPORT]
   rule: FRONTEND-IMPLEMENTATION is not presentation-complete unless every required workspace has explicit composition and inherits the shared Presentation System; pilot screens additionally require machine-checked semantic closure.

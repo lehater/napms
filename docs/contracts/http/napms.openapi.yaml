@@ -190,7 +190,20 @@ paths:
   /v1/access-requests:
     get:
       operationId: listAccessRequests
-      responses: {'200': {description: Access Request catalogue}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      parameters:
+        - {$ref: '#/components/parameters/CatalogueSearch'}
+        - {$ref: '#/components/parameters/AccessRequestSourceDeploymentFilter'}
+        - {$ref: '#/components/parameters/AccessRequestDestinationDeploymentFilter'}
+        - {$ref: '#/components/parameters/AccessRequestDecisionFilter'}
+        - {$ref: '#/components/parameters/AccessRequestSortBy'}
+        - {$ref: '#/components/parameters/CatalogueSortDirection'}
+        - {$ref: '#/components/parameters/CataloguePage'}
+        - {$ref: '#/components/parameters/CataloguePageSize'}
+      responses:
+        '200': {description: Access Request catalogue, content: {application/json: {schema: {$ref: '#/components/schemas/AccessRequestCataloguePage'}}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
     post:
       operationId: submitAccessRequest
       parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
@@ -265,6 +278,10 @@ components:
     ProcessCriticalityFilter: {name: criticalityLabel, in: query, required: false, schema: {type: string, minLength: 1}}
     ProcessOrganizationFilter: {name: organizationExternalReference, in: query, required: false, schema: {type: string, minLength: 1}}
     ProcessSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [name, processRef, criticalityLabel], default: name}}
+    AccessRequestSourceDeploymentFilter: {name: sourceDeploymentRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
+    AccessRequestDestinationDeploymentFilter: {name: destinationDeploymentRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
+    AccessRequestDecisionFilter: {name: decisionResult, in: query, required: false, schema: {type: string, enum: [ALLOWED, DENIED]}}
+    AccessRequestSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [submittedAt, requestRef, decisionResult], default: submittedAt}}
     ResourceRef: {name: resourceRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     EndpointRef: {name: endpointRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     ResponsibilityRole: {name: role, in: path, required: true, schema: {type: string, enum: [OWNER, ADMINISTRATOR]}}
@@ -587,6 +604,16 @@ components:
         destinationDeploymentRef: {$ref: '#/components/schemas/StableId'}
         interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
         needRef: {$ref: '#/components/schemas/StableId'}
+
+    AccessRequestCataloguePage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/AccessRequestView'}}
+        total: {type: integer, minimum: 0}
+        page: {type: integer, minimum: 1}
+        pageSize: {type: integer, minimum: 1, maximum: 100}
 
     AccessRequestView:
       type: object
