@@ -256,11 +256,15 @@ content_rules:
   - preserve provenance/evaluation time where accepted semantics require it.
 
 design_tokens:
+  canonical_source: docs/contracts/ui/mvp-design-tokens.json
+  format: DTCG-2025.10
   policy: >-
-    Tokenize stable semantic roles used across workspaces. Concrete numeric/color
-    values may be chosen during component realization unless a requirement,
-    accessibility criterion or accepted visual invariant makes the value canonical.
+    Tokenize stable reusable visual decisions and aliases. Structural composition
+    and responsive transformations remain rules rather than constants. CSS/TypeScript
+    token files are materialized implementation artifacts and must not become an
+    independent source of presentation truth.
   required_role_groups: [typography, color, spacing, focus, status]
+  required_component_groups: [app-shell, control, table]
 
 deviation_policy:
   rule: Screen/View contracts inherit this system by default.
@@ -274,7 +278,7 @@ deviation_policy:
 implementation_freedom:
   - frontend framework and component library
   - CSS Grid/Flexbox or equivalent layout mechanics
-  - exact breakpoints
-  - exact pixel coordinates
+  - exact breakpoints unless later accepted as a material invariant
+  - pixel coordinates not represented by a material invariant
   - private component decomposition
-  - token serialization/file format
+  - generated CSS/TypeScript serialization mechanics
