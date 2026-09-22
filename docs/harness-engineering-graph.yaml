@@ -401,6 +401,12 @@ authorities:
           - engineering.frontend.screen-view-design
           - engineering.frontend.architecture
           - engineering.frontend.component-design
+      - capability: engineering.frontend.presentation-verification
+        knowledge_kind: verification-strategy
+        requires:
+          - engineering.frontend.human-interface
+          - engineering.frontend.presentation-system
+          - engineering.frontend.screen-view-design
 
   - id: TEST-DESIGN
     responsibility: Own executable frontend behavioral test contracts before implementation.
@@ -413,6 +419,7 @@ authorities:
         knowledge_kind: test-design
         requires:
           - engineering.frontend.verification
+          - engineering.frontend.presentation-verification
           - engineering.frontend.human-interface
           - engineering.frontend.presentation-system
           - engineering.frontend.screen-view-design
