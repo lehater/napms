@@ -42,7 +42,12 @@ export function MuiAppShell({
         >
           <ListItemText
             primary={item.label}
-            primaryTypographyProps={{ fontSize: 14, fontWeight: 550 }}
+            sx={{
+              "& .MuiListItemText-primary": {
+                fontSize: 14,
+                fontWeight: 550,
+              },
+            }}
           />
         </ListItemButton>
       ))}
