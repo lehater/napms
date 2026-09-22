@@ -1,5 +1,5 @@
 import {
-  Button,
+  ButtonBase,
   Paper,
   Table,
   TableBody,
@@ -78,16 +78,23 @@ export function MuiDataTablePattern<Row>({
               ))}
               {rowAction ? (
                 <TableCell>
-                  <Button
-                    type="button"
-                    size="small"
-                    variant="outlined"
+                  <ButtonBase
                     disabled={rowAction(row).disabled}
                     onClick={rowAction(row).onInvoke}
-                    sx={{ minHeight: 0, py: 0.25 }}
+                    sx={{
+                      border: 1,
+                      borderColor: "divider",
+                      borderRadius: 1,
+                      px: 1,
+                      py: 0.25,
+                      color: "primary.main",
+                      "&.Mui-disabled": {
+                        color: "text.disabled",
+                      },
+                    }}
                   >
                     {rowAction(row).label}
-                  </Button>
+                  </ButtonBase>
                 </TableCell>
               ) : null}
             </TableRow>

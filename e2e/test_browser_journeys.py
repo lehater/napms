@@ -123,7 +123,7 @@ def test_00_rendered_presentation_evidence() -> None:
 
         narrow = page_with_token(browser, width=390, height=900)
         goto(narrow, "/resources", "Resources")
-        assert narrow.locator(".MuiDrawer-paper").count() == 0
+        assert not narrow.locator(".MuiDrawer-paper").is_visible()
         assert narrow.get_by_role("navigation", name="Primary").is_visible()
         narrow.screenshot(
             path=str(artifacts / "resource-catalogue-narrow.png"),

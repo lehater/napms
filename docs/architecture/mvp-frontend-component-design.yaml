@@ -68,7 +68,7 @@ presentation_provider:
       provider_primitives: [Button, List, ListItem, ListItemButton, ListItemText, Paper]
     DATA-TABLE:
       adapter: presentation/providers/mui/MuiDataTablePattern
-      provider_primitives: [Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow]
+      provider_primitives: [ButtonBase, Table, TableBody, TableCell, TableContainer, TableHead, TableRow]
     DETAIL:
       adapter: presentation/providers/mui/MuiDetailPattern
       provider_primitives: [Box, Paper, Stack, Typography]
