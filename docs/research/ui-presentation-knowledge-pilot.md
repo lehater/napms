@@ -2,7 +2,7 @@
 
 Status: research evidence  
 Branch: `research/ui-presentation-knowledge-pilot`  
-Harness experiment: `lehater/harness@fad6ab83d89a9220b7cc04a3a4efe6367ba688aa` branch `research/ui-presentation-coverage`
+Pinned Harness runtime used by this pilot: `308a61f98ab569d694d3149192c92523c2bf3e45`; current Harness research branch head: `fad6ab83d89a9220b7cc04a3a4efe6367ba688aa` (`research/ui-presentation-coverage`).
 
 ## Question
 
