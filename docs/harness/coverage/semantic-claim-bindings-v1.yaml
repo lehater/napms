@@ -156,9 +156,12 @@ bindings:
       - engineering.engineering.error-handling
       - engineering.engineering.code-quality
 
-  - capability: engineering.frontend.verification
+  - capability: engineering.frontend.presentation-verification
     semantic_claims:
       - engineering.verification.interface.presentation
+
+  - capability: engineering.frontend.verification
+    semantic_claims:
       - engineering.verification.strategy
       - engineering.verification.requirement-traceability
       - engineering.verification.functional
