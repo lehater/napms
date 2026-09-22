@@ -237,4 +237,4 @@ NAPMS should merge:
 
 Do not merge an MUI dependency/template adoption from this research alone.
 
-Before enabling full frontend completion gating in NAPMS, migrate or explicitly block the remaining six screens so Engineering Coverage cannot report complete from legacy Screen/View presence alone.
+Full frontend completion gating is enabled. Engineering Coverage now reports COMPLETE only after all nine canonical screens pass semantic screen-contract evaluation.
