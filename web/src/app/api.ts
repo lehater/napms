@@ -3,6 +3,10 @@ import {
   serializeApplicationCatalogueQuery,
 } from "./application-catalogue-query";
 import { authSession } from "./auth-session";
+import {
+  type DeploymentCatalogueQuery,
+  serializeDeploymentCatalogueQuery,
+} from "./deployment-catalogue-query";
 import { type ApiErrorKind, statusToErrorKind } from "./http-semantics";
 import {
   type ResourceCatalogueQuery,
@@ -287,7 +291,12 @@ export const api = {
       headers: { "If-Match": String(version) },
       body: JSON.stringify({ trafficClauses }),
     }),
-  listDeployments: () => request<DeploymentView[]>("/v1/deployments"),
+  listDeployments: (query: DeploymentCatalogueQuery) =>
+    request<CataloguePage<DeploymentView>>(
+      `/v1/deployments?${serializeDeploymentCatalogueQuery(query)}`,
+    ),
+  getDeployment: (ref: string) =>
+    request<DeploymentView>(`/v1/deployments/${ref}`),
   createDeployment: (componentRef: string, resourceRef: string) =>
     request<{
       deploymentRef: string;

@@ -4,10 +4,15 @@ from datetime import datetime, timezone
 from typing import Protocol
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict
 
 from napms.contexts.application_deployment.application.ports import DeploymentNotFound
+from napms.contexts.application_deployment.application.queries import (
+    DeploymentCatalogueQuery,
+    DeploymentSortField,
+    SortDirection,
+)
 from napms.contexts.application_deployment.application.service import ApplicationDeploymentService
 from napms.contexts.authority_management.domain.model import Principal
 from napms.contexts.business_connectivity.application.ports import (
@@ -74,19 +79,60 @@ def router(
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
 
+    def deployment_view(value) -> dict[str, str]:
+        return {
+            "deploymentRef": str(value.deployment_ref),
+            "componentRef": str(value.component_ref),
+            "resourceRef": str(value.resource_ref),
+        }
+
     @api.get("/deployments")
     def list_deployments(
+        search: str | None = Query(default=None, max_length=200),
+        component_ref: UUID | None = Query(default=None, alias="componentRef"),
+        resource_ref: UUID | None = Query(default=None, alias="resourceRef"),
+        sort_by: DeploymentSortField = Query(
+            default=DeploymentSortField.DEPLOYMENT_REF,
+            alias="sortBy",
+        ),
+        sort_direction: SortDirection = Query(
+            default=SortDirection.ASC,
+            alias="sortDirection",
+        ),
+        page: int = Query(default=1, ge=1),
+        page_size: int = Query(default=25, ge=1, le=100, alias="pageSize"),
         caller: Principal = Depends(identity),
-    ) -> list[dict[str, str]]:
+    ) -> dict[str, object]:
         permission(caller, "deployment.read")
-        return [
-            {
-                "deploymentRef": str(value.deployment_ref),
-                "componentRef": str(value.component_ref),
-                "resourceRef": str(value.resource_ref),
-            }
-            for value in deployments.list_component_deployments()
-        ]
+        result = deployments.list_component_deployments(
+            DeploymentCatalogueQuery(
+                search=search.strip() if search and search.strip() else None,
+                component_ref=component_ref,
+                resource_ref=resource_ref,
+                sort_by=sort_by,
+                sort_direction=sort_direction,
+                page=page,
+                page_size=page_size,
+            )
+        )
+        return {
+            "items": [deployment_view(value) for value in result.items],
+            "total": result.total,
+            "page": result.page,
+            "pageSize": result.page_size,
+        }
+
+    @api.get("/deployments/{deployment_ref}")
+    def get_deployment(
+        deployment_ref: UUID,
+        caller: Principal = Depends(identity),
+    ) -> dict[str, str]:
+        permission(caller, "deployment.read")
+        try:
+            value = deployments.resolve_component_deployment(deployment_ref)
+        except DeploymentNotFound as exc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from exc
+        return deployment_view(value)
 
     @api.post("/deployments", status_code=status.HTTP_201_CREATED)
     def create_deployment(

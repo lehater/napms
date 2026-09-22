@@ -57,6 +57,8 @@ function App() {
     screen = <DeploymentScreens />;
   } else if (route.id === "deployment-new") {
     screen = <DeploymentScreens create />;
+  } else if (route.id === "deployment-detail") {
+    screen = <DeploymentScreens deploymentRef={route.deploymentRef} />;
   } else if (route.id === "processes") {
     screen = <BusinessConnectivity />;
   } else if (route.id === "process-new") {

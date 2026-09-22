@@ -4,7 +4,14 @@ import pytest
 
 from napms.contexts.application_communication_catalogue.domain.model import Component
 from napms.contexts.application_deployment.application.ports import DeploymentNotFound
+from napms.contexts.application_deployment.application.queries import (
+    DeploymentCataloguePage,
+    DeploymentCatalogueQuery,
+    DeploymentSortField,
+    SortDirection,
+)
 from napms.contexts.application_deployment.application.service import ApplicationDeploymentService
+from napms.contexts.application_deployment.domain.model import ComponentDeployment
 from napms.contexts.resource_catalogue.domain.model import Resource
 
 
@@ -30,12 +37,21 @@ class Resources:
 
 class Deployments:
     def __init__(self) -> None:
-        self.values: dict[UUID, object] = {}
+        self.values: dict[UUID, ComponentDeployment] = {}
+        self.received_query: DeploymentCatalogueQuery | None = None
 
-    def add(self, deployment) -> None:
+    def add(self, deployment: ComponentDeployment) -> None:
         self.values[deployment.deployment_ref] = deployment
 
-    def resolve_deployment(self, deployment_ref: UUID):
+    def query_deployments(
+        self,
+        query: DeploymentCatalogueQuery,
+    ) -> DeploymentCataloguePage:
+        self.received_query = query
+        values = tuple(self.values.values())
+        return DeploymentCataloguePage(values, len(values), query.page, query.page_size)
+
+    def resolve_deployment(self, deployment_ref: UUID) -> ComponentDeployment | None:
         return self.values.get(deployment_ref)
 
 
@@ -76,3 +92,35 @@ def test_missing_owner_reference_is_rejected_before_persistence() -> None:
             component_ref=UUID(int=1),
             resource_ref=UUID(int=2),
         )
+
+
+def test_deployment_catalogue_query_is_delegated_without_reinterpretation() -> None:
+    deployments = Deployments()
+    deployment = ComponentDeployment(
+        deployment_ref=UUID(int=3),
+        component_ref=UUID(int=1),
+        resource_ref=UUID(int=2),
+    )
+    deployments.add(deployment)
+    service = ApplicationDeploymentService(
+        deployments=deployments,
+        components=Components(None),
+        resources=Resources(None),
+    )
+    query = DeploymentCatalogueQuery(
+        search="0003",
+        component_ref=UUID(int=1),
+        resource_ref=UUID(int=2),
+        sort_by=DeploymentSortField.RESOURCE_REF,
+        sort_direction=SortDirection.DESC,
+        page=2,
+        page_size=10,
+    )
+
+    result = service.list_component_deployments(query)
+
+    assert deployments.received_query == query
+    assert result.items == (deployment,)
+    assert result.total == 1
+    assert result.page == 2
+    assert result.page_size == 10

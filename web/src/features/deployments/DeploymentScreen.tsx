@@ -1,15 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
   CataloguePattern,
   type CatalogueState,
+  type DataTableColumn,
+  DataTablePattern,
   EditorPattern,
   type EditorState,
-  StructuredListPattern,
+  FilterBarPattern,
 } from "../../presentation";
 import { createDeployment, queryDeployments } from "./deploymentApplication";
-import type { DeploymentScreenModel } from "./deploymentModels";
+import {
+  type DeploymentCatalogueQueryState,
+  defaultDeploymentCatalogueQuery,
+} from "./deploymentCatalogueQuery";
+import type {
+  DeploymentCatalogueItem,
+  DeploymentScreenModel,
+} from "./deploymentModels";
 
 type LoadState =
   | { kind: "loading" }
@@ -64,11 +73,15 @@ function createFailure(error: unknown): {
 }
 
 function DeploymentListMode() {
+  const [query, setQuery] = useState<DeploymentCatalogueQueryState>(
+    defaultDeploymentCatalogueQuery,
+  );
   const [loadState, setLoadState] = useState<LoadState>({ kind: "loading" });
 
   useEffect(() => {
     let active = true;
-    void queryDeployments()
+    setLoadState({ kind: "loading" });
+    void queryDeployments(query)
       .then((model) => {
         if (active) setLoadState({ kind: "loaded", model });
       })
@@ -78,9 +91,48 @@ function DeploymentListMode() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [query]);
 
-  const rows = loadState.kind === "loaded" ? loadState.model.deployments : [];
+  function updateQuery(
+    patch: Partial<DeploymentCatalogueQueryState>,
+    resetPage = true,
+  ) {
+    setQuery((current) => ({
+      ...current,
+      ...patch,
+      page: resetPage ? 1 : (patch.page ?? current.page),
+    }));
+  }
+
+  const columns = useMemo<readonly DataTableColumn<DeploymentCatalogueItem>[]>(
+    () => [
+      {
+        id: "deployment-reference",
+        label: "Deployment",
+        emphasis: "primary",
+        sortKey: "deploymentRef",
+        render: (row) => row.deploymentRef,
+      },
+      {
+        id: "component-reference",
+        label: "Component",
+        emphasis: "technical",
+        sortKey: "componentRef",
+        render: (row) => row.componentRef,
+      },
+      {
+        id: "resource-reference",
+        label: "Resource",
+        emphasis: "technical",
+        sortKey: "resourceRef",
+        render: (row) => row.resourceRef,
+      },
+    ],
+    [],
+  );
+
+  const model = loadState.kind === "loaded" ? loadState.model : undefined;
+  const rows = model?.deployments ?? [];
   const state: CatalogueState =
     loadState.kind === "loaded"
       ? rows.length === 0
@@ -92,31 +144,91 @@ function DeploymentListMode() {
     loadState.kind === "technical-error"
       ? loadState.message
       : undefined;
+  const queryActive =
+    query.search !== "" ||
+    query.componentRef !== "" ||
+    query.resourceRef !== "" ||
+    query.sortBy !== defaultDeploymentCatalogueQuery.sortBy ||
+    query.sortDirection !== defaultDeploymentCatalogueQuery.sortDirection ||
+    query.pageSize !== defaultDeploymentCatalogueQuery.pageSize;
 
   return (
     <CataloguePattern
       eyebrow="Deployment management"
       title="Deployments"
-      description="Inspect Component deployments and the Resource realizing each deployment."
+      description="Locate Component deployments and inspect the Resource realizing each deployment."
       primaryAction={{
         label: "Create Deployment",
         onInvoke: () => navigate("/deployments/new"),
       }}
       state={state}
       statusMessage={statusMessage}
-      emptyMessage="No Deployments."
+      emptyMessage="No Deployments match the current query."
+      queryControls={
+        <FilterBarPattern
+          search={{
+            label: "Search Deployments",
+            value: query.search,
+            placeholder: "Deployment, Component, or Resource ID",
+            onChange: (value) => updateQuery({ search: value }),
+          }}
+          filters={[
+            {
+              id: "component-ref",
+              label: "Component ID",
+              value: query.componentRef,
+              onChange: (value) => updateQuery({ componentRef: value }),
+            },
+            {
+              id: "resource-ref",
+              label: "Resource ID",
+              value: query.resourceRef,
+              onChange: (value) => updateQuery({ resourceRef: value }),
+            },
+          ]}
+          sort={{
+            field: query.sortBy,
+            fields: [
+              { value: "deploymentRef", label: "Deployment" },
+              { value: "componentRef", label: "Component" },
+              { value: "resourceRef", label: "Resource" },
+            ],
+            direction: query.sortDirection,
+            onFieldChange: (field) =>
+              updateQuery({
+                sortBy: field as DeploymentCatalogueQueryState["sortBy"],
+              }),
+            onDirectionChange: (sortDirection) =>
+              updateQuery({ sortDirection }),
+          }}
+          active={queryActive}
+          onClear={() => setQuery(defaultDeploymentCatalogueQuery)}
+        />
+      }
     >
-      <StructuredListPattern
+      <DataTablePattern
         label="Deployments"
         rows={rows}
+        columns={columns}
         rowKey={(row) => row.deploymentRef}
-        primary={(row) => (
-          <>
-            Component {row.componentRef} · Resource {row.resourceRef}
-          </>
-        )}
-        secondary={(row) => row.deploymentRef}
-        emptyMessage="No Deployments."
+        onOpen={(row) => navigate(`/deployments/${row.deploymentRef}`)}
+        sort={{
+          field: query.sortBy,
+          direction: query.sortDirection,
+          onChange: (field, sortDirection) =>
+            updateQuery({
+              sortBy: field as DeploymentCatalogueQueryState["sortBy"],
+              sortDirection,
+            }),
+        }}
+        paging={{
+          page: model?.page ?? query.page,
+          pageSize: model?.pageSize ?? query.pageSize,
+          total: model?.total ?? 0,
+          onPageChange: (page) => updateQuery({ page }, false),
+          onPageSizeChange: (pageSize) => updateQuery({ pageSize }),
+        }}
+        emptyMessage="No Deployments match the current query."
       />
     </CataloguePattern>
   );
@@ -132,8 +244,11 @@ function DeploymentCreateMode() {
     setState("submitting");
     setStatusMessage(undefined);
     try {
-      await createDeployment({ componentRef, resourceRef });
-      navigate("/deployments");
+      const deploymentRef = await createDeployment({
+        componentRef,
+        resourceRef,
+      });
+      navigate(`/deployments/${deploymentRef}`);
     } catch (error) {
       const failure = createFailure(error);
       setState(failure.state);

@@ -28,19 +28,15 @@ composition_contract:
   inherited_entity_collection_default: NAPMS-MVP-PRESENTATION-SYSTEM.entity_collection_default
   migration_gaps:
     - id: entity-catalogue-query-contracts
-      applies_to: [DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
+      applies_to: [BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
       gap: >-
         Search/filter/sort and scalable paging semantics are not yet closed end-to-end
         through accepted query contracts for every primary entity collection.
     - id: primary-catalogue-table-adoption
-      applies_to: [APPLICATION-CATALOGUE, DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
+      applies_to: [BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
       gap: >-
         Current realization still uses STRUCTURED-LIST for some primary entity
         collections; migrate them to DATA-TABLE unless an explicit override is accepted.
-    - id: deployment-detail-drilldown
-      applies_to: [DEPLOYMENTS]
-      gap: >-
-        Deployment selection does not yet open a dedicated entity detail view.
 
 screens:
   - id: RESOURCE-CATALOGUE
@@ -370,22 +366,152 @@ screens:
     overrides: []
 
   - id: DEPLOYMENTS
-    purpose: Locate/create Component deployments and inspect their Resource realization.
-    patterns: [CATALOGUE, DETAIL, EDITOR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    purpose: Locate/create Component deployments and open dedicated Deployment detail.
+    patterns: [CATALOGUE, FILTER-BAR, DATA-TABLE, EDITOR, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: deployments, role: collection, priority: primary}
-      - {id: selected-deployment, role: detail-editor, priority: primary}
+      - {id: query-controls, role: collection-query, pattern: FILTER-BAR, priority: primary, applies_when: list-mode}
+      - {id: deployments, role: collection, pattern: DATA-TABLE, priority: primary, applies_when: list-mode}
+      - {id: create-editor, role: task-editor, pattern: EDITOR, priority: primary, applies_when: create-mode}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
     composition:
-      root: split-collection-detail-workspace
-      ordered_regions: [context, actions, deployments, selected-deployment, feedback]
+      root: catalogue-workspace
+      ordered_regions: [context, actions, query-controls, deployments, create-editor, feedback]
+      modes:
+        list: [context, actions, query-controls, deployments, feedback]
+        create: [context, create-editor, feedback]
+      query-controls:
+        pattern: FILTER-BAR
+        search: {source: query:listDeployments.search, matches: [deploymentRef, componentRef, resourceRef]}
+        filters:
+          - {id: component-ref, source: query:listDeployments.componentRef}
+          - {id: resource-ref, source: query:listDeployments.resourceRef}
+        sort:
+          fields: [deploymentRef, componentRef, resourceRef]
+          default: {field: deploymentRef, direction: asc}
+        paging: {page: query:listDeployments.page, page_size: query:listDeployments.pageSize}
+      deployments:
+        pattern: DATA-TABLE
+        columns:
+          - {id: deployment-reference, role: primary-identity, sort: deploymentRef}
+          - {id: component-reference, role: distinguishing-attribute, sort: componentRef}
+          - {id: resource-reference, role: distinguishing-attribute, sort: resourceRef}
+        row_action: open-deployment
+      create-editor:
+        pattern: EDITOR
+        fields:
+          - {id: component-ref, source: request:createDeployment.componentRef, required: true}
+          - {id: resource-ref, source: request:createDeployment.resourceRef, required: true}
+        submit_action: create-deployment
     primary_action_role: create-deployment
-    states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
+    exits:
+      - select Deployment -> DEPLOYMENT-DETAIL
+      - create Deployment -> DEPLOYMENT-DETAIL
+    states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
+    semantic_contract:
+      reads:
+        - id: catalogue
+          operation_id: listDeployments
+          projection: DeploymentCataloguePage
+          query:
+            search: {source: local:query.search, semantics: accepted-text-search}
+            componentRef: {source: local:query.filters.component-ref, semantics: exact-attribute-filter}
+            resourceRef: {source: local:query.filters.resource-ref, semantics: exact-attribute-filter}
+            sortBy: {source: local:query.sort.field, accepted: [deploymentRef, componentRef, resourceRef]}
+            sortDirection: {source: local:query.sort.direction, accepted: [asc, desc]}
+            page: {source: local:query.page, minimum: 1}
+            pageSize: {source: local:query.page-size, default: 25, maximum: 100}
+      commands:
+        - {id: create-deployment, operation_id: createDeployment}
+      view_model:
+        id: DeploymentScreenModel
+        fields:
+          - {id: deployments, source: read:catalogue.items}
+          - {id: total, source: read:catalogue.total}
+          - {id: page, source: read:catalogue.page}
+          - {id: page_size, source: read:catalogue.pageSize}
+          - {id: deployment_ref, source: read:catalogue.items.deploymentRef}
+          - {id: component_ref, source: read:catalogue.items.componentRef}
+          - {id: resource_ref, source: read:catalogue.items.resourceRef}
+      capabilities:
+        allowed:
+          - {id: inspect-catalogue, backed_by: read:catalogue}
+          - {id: search, backed_by: read:catalogue}
+          - {id: filter, backed_by: read:catalogue}
+          - {id: sort, backed_by: read:catalogue}
+          - {id: pagination, backed_by: read:catalogue}
+          - {id: open-deployment, backed_by: navigation:deployment-detail}
+          - {id: create-deployment, backed_by: command:create-deployment}
+        excluded: [bulk-operation, edit-item, delete-item]
+      pattern_mapping:
+        - {pattern: CATALOGUE, feature_bindings: {open-item: open-deployment, create-item: create-deployment}}
+        - {pattern: FILTER-BAR, feature_bindings: {search: search, filters: filter, sort: sort, clear: filter}}
+        - {pattern: DATA-TABLE, feature_bindings: {open-row: open-deployment, sort: sort, paging: pagination}}
+        - {pattern: EDITOR, feature_bindings: {}}
+        - {pattern: TASK-ACTIONS, feature_bindings: {primary: create-deployment}}
+        - {pattern: STATUS, feature_bindings: {}}
+      state_mapping:
+        loading: read:catalogue.pending
+        loaded: read:catalogue.200
+        empty: read:catalogue.200
+        editing: local:create-deployment-form
+        submitting: command:create-deployment.pending
+        validation-rejected: command:create-deployment.422
+        authorization-rejected: [read:catalogue.401, read:catalogue.403, command:create-deployment.401, command:create-deployment.403]
+        conflict: command:create-deployment.409
+        technical-error: [read:catalogue.failure, command:create-deployment.failure]
+      verification:
+        contract: [operation:listDeployments-query-parameters, operation:createDeployment]
+        semantic: [deployment-catalogue-query-capability-and-state-closure]
+        rendered: [deployment-catalogue-filter-table-conformance]
     responsive:
-      - collection and selected detail stack with collection first
-      - Component and Resource identities remain explicit and distinct
+      - Deployment, Component and Resource identities remain explicit when the table reflows
+      - query controls reflow without losing active state or clear action
+    overrides: []
+
+  - id: DEPLOYMENT-DETAIL
+    purpose: Inspect one ComponentDeployment and the Resource realization it references.
+    patterns: [DETAIL, STATUS]
+    regions:
+      - {id: identity-context, role: heading-context, priority: primary}
+      - {id: realization, role: primary-content, priority: primary}
+      - {id: feedback, role: operation-status, priority: supporting}
+    composition:
+      root: detail-workspace
+      ordered_regions: [identity-context, realization, feedback]
+    states: [loading, loaded, not-found, authorization-rejected, technical-error]
+    semantic_contract:
+      reads:
+        - {id: detail, operation_id: getDeployment, projection: DeploymentView}
+      commands: []
+      view_model:
+        id: DeploymentDetailScreenModel
+        fields:
+          - {id: deployment_ref, source: read:detail.deploymentRef}
+          - {id: component_ref, source: read:detail.componentRef}
+          - {id: resource_ref, source: read:detail.resourceRef}
+      capabilities:
+        allowed:
+          - {id: inspect-deployment, backed_by: read:detail}
+          - {id: return-to-catalogue, backed_by: navigation:deployments}
+        excluded: [edit-deployment, delete-deployment, bulk-operation]
+      pattern_mapping:
+        - {pattern: DETAIL, feature_bindings: {show-primary: inspect-deployment}}
+        - {pattern: STATUS, feature_bindings: {}}
+      state_mapping:
+        loading: read:detail.pending
+        loaded: read:detail.200
+        not-found: read:detail.404
+        authorization-rejected: [read:detail.401, read:detail.403]
+        technical-error: read:detail.failure
+      verification:
+        contract: [operation:getDeployment]
+        semantic: [deployment-detail-read-state-closure]
+        rendered: [deployment-detail-reference-conformance]
+    responsive:
+      - Component and Resource identities remain separately labeled
+      - technical Deployment identity remains inspectable after reflow
     overrides: []
 
   - id: BUSINESS-CONNECTIVITY
@@ -524,9 +650,10 @@ coverage:
     - APPLICATION-CATALOGUE
     - APPLICATION-DETAIL
     - DEPLOYMENTS
+    - DEPLOYMENT-DETAIL
     - BUSINESS-CONNECTIVITY
     - ACCESS-REQUESTS
     - POLICY-RULES
     - POLICY-EXPORT
-  semantic_contract_pilot: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, POLICY-EXPORT]
+  semantic_contract_pilot: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, DEPLOYMENTS, DEPLOYMENT-DETAIL, POLICY-EXPORT]
   rule: FRONTEND-IMPLEMENTATION is not presentation-complete unless every required workspace has explicit composition and inherits the shared Presentation System; pilot screens additionally require machine-checked semantic closure.
