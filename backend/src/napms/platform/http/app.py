@@ -209,12 +209,13 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
     def health_ready() -> dict[str, str]:
         return {"status": "ready"}
 
-    if dependencies.development_auth is not None:
+    development_auth = dependencies.development_auth
+    if development_auth is not None:
 
         @app.post("/dev-auth/login", include_in_schema=False)
         def development_login(body: DevelopmentLoginBody) -> dict[str, str]:
             try:
-                token = dependencies.development_auth.issue(
+                token = development_auth.issue(
                     login=body.login,
                     password=body.password,
                 )
