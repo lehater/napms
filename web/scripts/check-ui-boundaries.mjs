@@ -67,6 +67,9 @@ for (const path of await sourceFiles(featureRoot)) {
   if (content.includes("@/components/ui/")) {
     failures.push(`${displayPath}: feature code must import durable design-system owners, not legacy components/ui`)
   }
+  if (/from\s+["']@mui\//.test(content)) {
+    failures.push(`${displayPath}: feature code must use the provider-neutral presentation facade, not import MUI directly`)
+  }
   if (rawHexColor.test(content)) {
     failures.push(`${displayPath}: raw hex colors belong in design-system tokens, not feature code`)
   }
