@@ -130,7 +130,7 @@ screens:
         empty-current: read:resource-detail.200-empty-current
         not-found: read:resource-detail.404
         submitting: [command:add-endpoint.pending, command:set-endpoint-address.pending, command:clear-endpoint-address.pending, command:set-site.pending, command:set-responsibility.pending]
-        validation-rejected: [command:add-endpoint.422, command:set-endpoint-address.422, command:set-site.422, command:set-responsibility.422]
+        validation-rejected: [command:set-endpoint-address.422, command:set-site.422, command:set-responsibility.422]
         authorization-rejected: [read:resource-detail.403, command:add-endpoint.403, command:set-endpoint-address.403, command:clear-endpoint-address.403, command:set-site.403, command:set-responsibility.403]
         conflict: [command:add-endpoint.409, command:set-endpoint-address.409, command:clear-endpoint-address.409, command:set-site.409, command:set-responsibility.409]
         technical-error: [read:resource-detail.failure, command:add-endpoint.failure, command:set-endpoint-address.failure, command:clear-endpoint-address.failure, command:set-site.failure, command:set-responsibility.failure]
