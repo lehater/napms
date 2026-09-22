@@ -1,20 +1,21 @@
 FROM node:22-alpine AS build
 
-WORKDIR /app
+WORKDIR /app/web
 
-COPY package.json package-lock.json ./
+COPY web/package.json web/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
-COPY index.html tsconfig.json vite.config.ts components.json ./
-COPY scripts ./scripts
-COPY src ./src
+COPY web/index.html web/tsconfig.json web/vite.config.ts web/components.json ./
+COPY web/scripts ./scripts
+COPY web/src ./src
+COPY docs/contracts/ui/mvp-design-tokens.json /app/docs/contracts/ui/mvp-design-tokens.json
 
 RUN npm run build
 
 FROM nginx:1.27-alpine AS runtime
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY web/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/web/dist /usr/share/nginx/html
 
 EXPOSE 8080
 
