@@ -9,6 +9,7 @@ delivery_protocol: HTTP/JSON
 contract_rule: One external application API; internal module boundaries are not HTTP boundaries.
 
 operations:
+  - GET /v1/resources
   - POST /v1/resources
   - GET /v1/resources/{resourceRef}
   - POST /v1/resources/{resourceRef}/endpoints
