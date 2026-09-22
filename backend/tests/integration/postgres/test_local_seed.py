@@ -51,9 +51,9 @@ def test_local_demo_seed_is_connected_and_idempotent() -> None:
             "resources": connection.execute(
                 "SELECT COUNT(*) FROM resource_catalogue.resource"
             ).fetchone()[0],
-            "sites": connection.execute(
-                "SELECT COUNT(*) FROM resource_catalogue.site"
-            ).fetchone()[0],
+            "sites": connection.execute("SELECT COUNT(*) FROM resource_catalogue.site").fetchone()[
+                0
+            ],
             "responsibility_groups": connection.execute(
                 "SELECT COUNT(*) FROM resource_catalogue.responsibility_group"
             ).fetchone()[0],

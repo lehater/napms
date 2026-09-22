@@ -604,9 +604,7 @@ class LocalDemoSeeder:
                         (group_ref, display_name, external_reference),
                     )
                 elif row != (display_name, external_reference):
-                    self._conflict(
-                        f"responsibility group {key} differs from demo definition"
-                    )
+                    self._conflict(f"responsibility group {key} differs from demo definition")
 
     def _catalogue(self, ref: UUID) -> ApplicationCommunicationCatalogue:
         return ApplicationCommunicationCatalogue(
