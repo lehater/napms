@@ -25,9 +25,7 @@ class Applications:
     def add(self, application: Application) -> None:
         self.values[application.application_ref] = application
 
-    def query_applications(
-        self, query: ApplicationCatalogueQuery
-    ) -> ApplicationCataloguePage:
+    def query_applications(self, query: ApplicationCatalogueQuery) -> ApplicationCataloguePage:
         self.last_query = query
         return ApplicationCataloguePage(
             items=tuple(self.values.values()),

@@ -15,8 +15,8 @@ import {
   queryApplicationCatalogue,
 } from "./applicationApplication";
 import {
-  defaultApplicationCatalogueQuery,
   type ApplicationCatalogueQueryState,
+  defaultApplicationCatalogueQuery,
 } from "./applicationCatalogueQuery";
 import type {
   ApplicationCatalogueItem,

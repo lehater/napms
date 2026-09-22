@@ -59,9 +59,7 @@ class PostgresApplicationCommunicationCatalogue:
         if query.search:
             search = query.search.strip()
             if search:
-                conditions.append(
-                    "(a.name ILIKE %s OR CAST(a.application_ref AS text) ILIKE %s)"
-                )
+                conditions.append("(a.name ILIKE %s OR CAST(a.application_ref AS text) ILIKE %s)")
                 pattern = f"%{search}%"
                 parameters.extend((pattern, pattern))
 
@@ -107,9 +105,7 @@ class PostgresApplicationCommunicationCatalogue:
                 (*parameters, query.page_size, offset),
             ).fetchall()
 
-        items = tuple(
-            value for (ref,) in rows if (value := self.get_application(ref)) is not None
-        )
+        items = tuple(value for (ref,) in rows if (value := self.get_application(ref)) is not None)
         return ApplicationCataloguePage(
             items=items,
             total=total,

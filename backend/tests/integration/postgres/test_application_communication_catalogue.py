@@ -109,8 +109,6 @@ def test_application_catalogue_query_applies_search_filter_sort_and_paging() -> 
     )
     assert [item.name for item in second.items] == ["Zulu app"]
 
-    filtered = repository.query_applications(
-        ApplicationCatalogueQuery(component_ref=UUID(int=201))
-    )
+    filtered = repository.query_applications(ApplicationCatalogueQuery(component_ref=UUID(int=201)))
     assert filtered.total == 1
     assert [item.application_ref for item in filtered.items] == [UUID(int=101)]

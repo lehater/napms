@@ -12,14 +12,15 @@ export type ApplicationCatalogueQueryState = {
   pageSize: number;
 };
 
-export const defaultApplicationCatalogueQuery: ApplicationCatalogueQueryState = {
-  search: "",
-  componentRef: "",
-  sortBy: "name",
-  sortDirection: "asc",
-  page: 1,
-  pageSize: 25,
-};
+export const defaultApplicationCatalogueQuery: ApplicationCatalogueQueryState =
+  {
+    search: "",
+    componentRef: "",
+    sortBy: "name",
+    sortDirection: "asc",
+    page: 1,
+    pageSize: 25,
+  };
 
 export function toApplicationCatalogueQuery(
   state: ApplicationCatalogueQueryState,
