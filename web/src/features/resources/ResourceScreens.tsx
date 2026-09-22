@@ -71,7 +71,7 @@ export function ResourceCatalogue({ create = false }: { create?: boolean }) {
     <>
       <PageHeader
         eyebrow="Resource catalogue"
-        title={create ? "New Resource" : "Resources"}
+        title="Resources"
         actions={
           !create ? (
             <button
