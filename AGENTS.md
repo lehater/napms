@@ -97,6 +97,18 @@ Harvesting is secondary to the user's current task: do not derail an interview b
 
 For explicit evidence synthesis or substantial harvesting across one or more stakeholder answers, use the `stakeholder-evidence-synthesis` Skill.
 
+## Change and CI batching discipline
+
+Treat commits and CI runs as checkpoints, not as a per-file feedback mechanism.
+
+- Keep the pull request in draft while exploring, debugging or making a sequence of related fixes.
+- Before committing after a failure, inspect all known failing jobs and related evidence, then batch the coherent fixes together.
+- Prefer one commit per coherent checkpoint, not one commit per file or mechanical correction. When repository APIs would otherwise create one commit per file, use a multi-file tree/commit operation when available.
+- During iteration, run the smallest deterministic checks that cover the changed surface. Run the full PR gate set only when a coherent checkpoint or final candidate is ready.
+- Workflows triggered only by `ready_for_review` are final-checkpoint gates: mark ready only after the branch is stable. If they fail, return to draft, batch the fixes, then make one new ready transition.
+- Do not change the branch head merely to poll or retrigger CI; rerun an existing workflow without content changes when the platform supports it.
+- A merge candidate is one stable head for which every applicable required gate is green.
+
 ## Work
 
 For work that creates or updates artifacts inside one engineering Authority, first prepare its bounded execution context:

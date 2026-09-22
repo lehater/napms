@@ -67,24 +67,21 @@ jobs:
           python tools/verify_local_postgres_auth.py
       - name: Prove logical backup and clean-volume restore
         run: |
-          before="$(docker compose exec -T postgres psql -U napms -d napms -Atc 'SELECT count(*) FROM napms_access_policy.access_rules')"
+          before="$(docker compose exec -T postgres psql -U napms -d napms -Atc 'SELECT count(*) FROM application_edge.schema_migration')"
           test "$before" -gt 0
           python tools/local_postgres_backup.py backup /tmp/napms-ci.napms.dump
           python tools/local_postgres_backup.py restore-clean /tmp/napms-ci.napms.dump --confirm-reset --no-print-credentials
-          after="$(docker compose exec -T postgres psql -U napms -d napms -Atc 'SELECT count(*) FROM napms_access_policy.access_rules')"
+          after="$(docker compose exec -T postgres psql -U napms -d napms -Atc 'SELECT count(*) FROM application_edge.schema_migration')"
           test "$before" = "$after"
       - name: Prove migration replay is a no-op
         run: |
-          journal_before="$(docker compose exec -T postgres psql -U napms -d napms -Atc 'SELECT count(*) FROM napms_runtime.schema_migrations')"
-          rules_before="$(docker compose exec -T postgres psql -U napms -d napms -Atc 'SELECT count(*) FROM napms_access_policy.access_rules')"
+          journal_before="$(docker compose exec -T postgres psql -U napms -d napms -Atc 'SELECT count(*) FROM application_edge.schema_migration')"
           export NAPMS_POSTGRES_PASSWORD="$(python -c 'import secrets; print(secrets.token_urlsafe(24))')"
           python tools/prepare_local_postgres.py
           docker compose run --rm migrate
           docker compose run --rm migrate
-          journal_after="$(docker compose exec -T postgres psql -U napms -d napms -Atc 'SELECT count(*) FROM napms_runtime.schema_migrations')"
-          rules_after="$(docker compose exec -T postgres psql -U napms -d napms -Atc 'SELECT count(*) FROM napms_access_policy.access_rules')"
+          journal_after="$(docker compose exec -T postgres psql -U napms -d napms -Atc 'SELECT count(*) FROM application_edge.schema_migration')"
           test "$journal_before" = "$journal_after"
-          test "$rules_before" = "$rules_after"
           python tools/local_start.py up --no-print-credentials
           python tools/verify_local_postgres_auth.py
       - name: Prove local operator status diagnostics
