@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
-  CataloguePattern,
   type CatalogueColumn,
+  CataloguePattern,
   type CatalogueState,
 } from "../../presentation";
 import { queryResourceCatalogue } from "./resourceCatalogueApplication";
