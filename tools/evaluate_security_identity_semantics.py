@@ -195,7 +195,7 @@ def semantic_evaluation(findings: list[dict[str, Any]]) -> dict[str, Any]:
         "version": 1,
         "kind": "harness-artifact-semantic-evaluation",
         "artifact": "SECURITY-ARCHITECTURE",
-        "capability": "engineering.security.browser-identity",
+        "capability": "engineering.security.browser-credential-lifecycle",
         "status": "ACCEPTED" if accepted else "REJECTED",
         "findings": findings,
         "semantic_claims": {
